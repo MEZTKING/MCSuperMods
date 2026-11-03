@@ -1,0 +1,67 @@
+# MCSuperMods
+
+MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: pre-code, docs only.
+
+## Directory map
+
+- `docs/` — DESIGN.md (authoritative), ROADMAP.md, DEVLOG.md, `adr/`
+- `app/` — `@msm/app`, Electron shell (`main/`, `preload/`, `renderer/`)
+- `packages/core/` — `@msm/core`, IR, project load/save, command stack, lowering driver
+- `packages/schemas/` — `@msm/schemas`, Spyglass/mcdoc adapter, MSM mcdoc extensions
+- `packages/plugin-api/` — `@msm/plugin-api`, public interfaces only
+- `packages/plugins/` — `@msm/plugin-<name>`, eight built-in plugins
+- `packages/exporters/` — `@msm/exporters`, vanilla-packs, fabric-content-jar, java-project
+- `packages/targets/` — `@msm/target-*`, one folder per MC version (`mc-26.3/`, `mc-26.2/`)
+- `packages/interop/` — `@msm/interop`, Blockbench, NBT/schem, Minecraft installation
+- `engine-mod/` — `msm_runtime` Fabric mod (Gradle, Java 25)
+- `tools/` — dev scripts: sync-mcdoc, sync-mcmeta, new-plugin
+- `.claude/agents/` — `orchestrator.md`, `executor.md`
+
+## Scoped guides
+
+Read only the one for the area you work in, plus docs/DESIGN.md sections it links.
+
+- `docs/CLAUDE.md` — design docs, roadmap, ADR conventions
+- `app/CLAUDE.md` — Electron shell, UI, IPC rules
+- `packages/core/CLAUDE.md` — IR, persistence, undo, lowering driver
+- `packages/schemas/CLAUDE.md` — mcdoc schemas and form models
+- `packages/plugin-api/CLAUDE.md` — public plugin interfaces, versioning rules
+- `packages/plugins/CLAUDE.md` — built-in plugins, kinds, lowering
+- `packages/exporters/CLAUDE.md` — packs, content jar, Java eject
+- `packages/targets/CLAUDE.md` — per-version Minecraft facts and migrations
+- `packages/interop/CLAUDE.md` — Blockbench, NBT, game install access
+- `engine-mod/CLAUDE.md` — Fabric runtime mod, Java conventions
+
+## Golden rules
+
+- Version-specific facts live only in `packages/targets`.
+- `@msm/plugin-api` has no internal dependencies.
+- Built-in plugins use only the public plugin API (plus `@msm/schemas`).
+- Everything lowers to files: `lower(element, target) -> OutputFile[]`.
+- Never bundle Mojang assets; extract from the user's client jar at runtime.
+- Project files are JSON only, 2-space, sorted keys.
+- British English in docs. No emojis.
+- TypeScript strict everywhere.
+- engine-mod: Java 25 and Mojang names only (no Yarn).
+- Write "(verify at implementation)" rather than guessing versions.
+- When a decision changes, update DESIGN.md/ROADMAP.md and add an ADR in `docs/adr/`.
+
+## Agent workflow
+
+- Fable = orchestrator/planner: reads DESIGN + ROADMAP, decides, writes briefs, reviews.
+- Opus at medium effort = executor: implements one brief, runs tests, reports.
+- Briefs name files, paths and exit criteria.
+- Executors do not change architecture without an ADR.
+- Parallel executors never touch the same file.
+
+## Every session
+
+- Read the latest `docs/DEVLOG.md` entry first.
+- Append an entry at the end: `## YYYY-MM-DD — <agent> — <topic>`, then What / Decisions / Next.
+
+## Commands (planned)
+
+Not yet wired — Phase 0.
+
+- `pnpm i` / `pnpm dev` (app) / `pnpm test` / `pnpm lint` / `pnpm build`
+- `cd engine-mod && ./gradlew build` / `./gradlew runClient`
