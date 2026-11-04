@@ -53,6 +53,20 @@ export interface ValidateOptions {
 const DEFAULT_MAX_DEPTH = 64;
 const MAX_LISTED_KEYS = 10;
 const MC_PREFIX = 'minecraft:';
+
+/**
+ * The registry id of `value` under an `#[id(path=...)]` prefix: `ns:name` becomes
+ * `ns:<path>name` (`minecraft` when no namespace is written). Tag references and values
+ * without a path are returned unchanged.
+ */
+function registryId(value: string, path: string | undefined): string {
+  if (path === undefined || value.startsWith('#')) return value;
+  const colon = value.indexOf(':');
+  const namespace = colon === -1 ? 'minecraft' : value.slice(0, colon);
+  const name = colon === -1 ? value : value.slice(colon + 1);
+  return `${namespace}:${path}${name}`;
+}
+
 const MAX_DESCRIBE_DEPTH = 3;
 
 type JsonObject = { [key: string]: Json };
@@ -62,6 +76,21 @@ interface Siblings {
   value: JsonObject;
   path: string;
 }
+
+/** Keys a struct and its spreads declare for one object (see `State.claims`). */
+interface Claims {
+  /** Keys of the object that a struct field or `'*'` field matched. */
+  matched: Set<string>;
+  /** Every named field key the struct and its spreads declare, for messages. */
+  declared: Set<string>;
+  /** A spread could not be resolved to fields (any, unknown member, ...): allow every key. */
+  open: boolean;
+}
+
+/** Marks the spread being walked as unresolvable, so the owner allows unknown keys. */
+const openClaims = (state: State): void => {
+  if (state.claims !== undefined) state.claims.open = true;
+};
 
 interface State {
   path: string;
@@ -73,6 +102,11 @@ interface State {
   siblings?: Siblings;
   /** Unknown keys are allowed (validating a struct spread against the whole object). */
   open: boolean;
+  /**
+   * Set while a struct's spreads are validated against the whole object: the keys they
+   * declare, so the owning struct can report keys that neither it nor a spread knows.
+   */
+  claims?: Claims;
   /**
    * The value is a dispatcher discriminator (a resource location such as `"type"`), so an
    * enum also accepts it with a `minecraft:` prefix, as the game does.
@@ -100,8 +134,13 @@ export interface CollectedReference {
   path: string;
   /** The `#[id]` registry, without a `minecraft:` prefix, e.g. `item`. */
   registry: string;
-  /** The string as written; a tag reference keeps its `#`. */
+  /**
+   * The registry id: the string as written, or, under `#[id(path=...)]`, `ns:<path>name`
+   * (e.g. `minecraft:entity/banner/creeper` for `creeper`). A tag reference keeps its `#`.
+   */
   id: string;
+  /** The string as written, set only when it differs from `id` (an `#[id(path=...)]` prefix). */
+  written?: string;
   /** Set when the id is an object key (map-like struct) rather than a string value. */
   key?: true;
 }
@@ -324,10 +363,14 @@ function validate(
   ctx: Context,
   out: SchemaProblem[],
 ): void {
-  if (state.depth > ctx.maxDepth || state.hops > ctx.maxDepth) return;
+  if (state.depth > ctx.maxDepth || state.hops > ctx.maxDepth) {
+    openClaims(state);
+    return;
+  }
   switch (node.kind) {
     case 'any':
     case 'unsupported':
+      openClaims(state);
       return;
     case 'struct':
       validateStruct(value, node, state, ctx, out);
@@ -373,7 +416,9 @@ function validate(
         const registry = node.idRegistry.startsWith(MC_PREFIX)
           ? node.idRegistry.slice(MC_PREFIX.length)
           : node.idRegistry;
-        const ref: CollectedReference = { path: state.path, registry, id: value };
+        const id = registryId(value, node.idPath);
+        const ref: CollectedReference = { path: state.path, registry, id };
+        if (id !== value) ref.written = value;
         if (state.isKey === true) ref.key = true;
         ctx.refs.push(ref);
       }
@@ -382,12 +427,14 @@ function validate(
         const registry = node.idRegistry;
         const known = registries.registries();
         const name = registry.startsWith('minecraft:') ? registry.slice(10) : registry;
-        if (known.includes(name) && !registries.has(name, value)) {
+        const id = registryId(value, node.idPath);
+        if (known.includes(name) && !registries.has(name, id)) {
+          const shown = id === value ? '' : ` (${JSON.stringify(id)})`;
           out.push({
             severity: 'warning',
             code: 'schema.unknown-id',
             path: state.path,
-            message: `Unknown ${name} id ${JSON.stringify(value)}.`,
+            message: `Unknown ${name} id ${JSON.stringify(value)}${shown}.`,
             expected: `${name} id`,
           });
         }
@@ -471,6 +518,7 @@ function validate(
         target = node.resolve();
       } catch {
         // An unknown path (e.g. a dangling reference in the export) cannot be checked.
+        openClaims(state);
         return;
       }
       const next = hop(state);
@@ -520,6 +568,11 @@ function validateStruct(
   const info = structInfo(node);
   const siblings: Siblings = { value, path: state.path };
   const allowUnknown = state.open || node.spreads.length > 0;
+  // The outermost struct with spreads owns the claims; spread structs add to them.
+  const owner = state.claims === undefined && node.spreads.length > 0;
+  const claims: Claims | undefined =
+    state.claims ?? (owner ? { matched: new Set(), declared: new Set(), open: false } : undefined);
+  if (claims !== undefined) for (const key of info.byKey.keys()) claims.declared.add(key);
 
   for (const field of info.required) {
     if (!Object.hasOwn(value, field.key)) {
@@ -547,11 +600,13 @@ function validateStruct(
     if (info.discriminators.has(key)) entryState.dispatchKey = true;
     const field = info.byKey.get(key);
     if (field !== undefined) {
+      claims?.matched.add(key);
       validate(entry, field.type, entryState, ctx, out);
       continue;
     }
     const wildcard = matchWildcard(key, info.wildcards, entryState, ctx, out);
     if (wildcard !== undefined) {
+      claims?.matched.add(key);
       validate(entry, wildcard.type, entryState, ctx, out);
       continue;
     }
@@ -570,12 +625,28 @@ function validateStruct(
   }
 
   // Spreads that could not be inlined (dispatchers, mostly) apply to the whole object; their
-  // own keys are checked there, and keys they do not know are allowed.
+  // own keys are checked there. A key is unknown when neither the struct nor any spread
+  // declares it; when a spread cannot be resolved to fields, every key is allowed.
   const acceptedKeys = acceptedDiscriminators(value, info, state, ctx);
   for (const spread of node.spreads) {
     const spreadState: State = { ...hop(state), siblings, open: true };
+    if (claims !== undefined) spreadState.claims = claims;
     if (acceptedKeys.size > 0) spreadState.acceptedKeys = acceptedKeys;
     validate(value, spread, spreadState, ctx, out);
+  }
+  if (!owner || claims === undefined || claims.open || state.open) return;
+  const known = [...claims.declared].sort(compare);
+  for (const key of Object.keys(value)) {
+    if (claims.matched.has(key)) continue;
+    out.push({
+      severity: 'error',
+      code: 'schema.unknown-field',
+      path: child(state.path, key),
+      message:
+        known.length === 0
+          ? `Unknown field "${key}".`
+          : `Unknown field "${key}"; expected one of ${known.slice(0, MAX_LISTED_KEYS).join(', ')}${known.length > MAX_LISTED_KEYS ? ', ...' : ''}.`,
+    });
   }
 }
 
@@ -616,7 +687,10 @@ function isRegisteredId(value: Json, node: SchemaNode, ctx: Context, depth = 0):
       const name = node.idRegistry.startsWith(MC_PREFIX)
         ? node.idRegistry.slice(MC_PREFIX.length)
         : node.idRegistry;
-      return registries.registries().includes(name) && registries.has(name, value);
+      return (
+        registries.registries().includes(name) &&
+        registries.has(name, registryId(value, node.idPath))
+      );
     }
     case 'union':
       return node.members.some((member) => isRegisteredId(value, member, ctx, depth + 1));
@@ -812,17 +886,26 @@ function validateDispatcher(
 ): void {
   const keys = node.keys();
   // A registry the export lacks (or that has nothing in this version) cannot be checked.
-  if (keys.length === 0) return;
+  if (keys.length === 0) {
+    openClaims(state);
+    return;
+  }
   const next = hop(state);
 
   if (node.discriminator.length === 0) {
     const member = node.dispatch('');
     if (member !== undefined) validate(value, member, next, ctx, out);
+    else openClaims(state);
     return;
   }
   // Accessors that climb to the parent's parent are not modelled in Phase 1.
-  if (node.discriminator.includes('%parent')) return;
-  if (node.discriminator.includes('%key') && node.discriminator.length > 1) return;
+  if (
+    node.discriminator.includes('%parent') ||
+    (node.discriminator.includes('%key') && node.discriminator.length > 1)
+  ) {
+    openClaims(state);
+    return;
+  }
 
   const { key, path } = readDiscriminator(value, node.discriminator, state);
   if (key === undefined) {
@@ -831,6 +914,7 @@ function validateDispatcher(
       validate(value, none, next, ctx, out);
       return;
     }
+    openClaims(state);
     const name = node.discriminator.join('.');
     out.push({
       severity: 'error',
@@ -858,6 +942,7 @@ function validateDispatcher(
   // the member simply adds no fields.
   const only = node.discriminator.length === 1 ? node.discriminator[0] : undefined;
   if (only !== undefined && state.acceptedKeys?.has(only) === true) return;
+  openClaims(state);
   const listed = keys.filter((entry) => !entry.startsWith('%'));
   const shown = listed.slice(0, MAX_LISTED_KEYS).join(', ');
   out.push({

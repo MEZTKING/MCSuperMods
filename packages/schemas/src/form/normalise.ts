@@ -137,6 +137,14 @@ function idRegistry(attributes: readonly RawAttribute[] | undefined): string | u
   return literalString(value);
 }
 
+/** The tree form's `path`, e.g. `entity/banner/` in `#[id(registry="texture", path=...)]`. */
+function idPath(attributes: readonly RawAttribute[] | undefined): string | undefined {
+  const value = attributes?.find((a) => a.name === 'id')?.value;
+  if (value === undefined || value.kind !== 'tree') return undefined;
+  const path = literalString(value.values.path);
+  return path === undefined || path === '' ? undefined : path;
+}
+
 function tagsOf(attributes: readonly RawAttribute[] | undefined): string[] {
   if (attributes === undefined) return [];
   const names = new Set<string>();
@@ -210,7 +218,11 @@ export function normaliseType(
     case 'string': {
       const node: SchemaNode = { kind: 'string' };
       const registry = idRegistry(raw.attributes);
-      if (registry !== undefined) node.idRegistry = registry;
+      if (registry !== undefined) {
+        node.idRegistry = registry;
+        const path = idPath(raw.attributes);
+        if (path !== undefined) node.idPath = path;
+      }
       if (raw.lengthRange !== undefined) node.lengthRange = normaliseRange(raw.lengthRange);
       return withBase(node, raw);
     }

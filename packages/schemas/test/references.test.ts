@@ -57,6 +57,20 @@ const short = (refs: CollectedReference[]): string[] =>
   refs.map((r) => `${r.path} ${r.registry} ${r.id}${r.key ? ' key' : ''}`);
 
 describe('collectReferences', () => {
+  it('records the #[id(path=...)] registry id and keeps the written value', () => {
+    const node = struct([
+      field('asset_id', { kind: 'string', idRegistry: 'texture', idPath: 'painting/' }),
+    ]);
+    expect(collectReferences({ asset_id: 'minecraft:kebab' }, node)).toEqual([
+      {
+        path: '/asset_id',
+        registry: 'texture',
+        id: 'minecraft:painting/kebab',
+        written: 'minecraft:kebab',
+      },
+    ]);
+  });
+
   it('collects through lists and nested dispatchers, sorted by path', () => {
     const value: Json = {
       pools: [

@@ -68,6 +68,11 @@ export type SchemaNode =
       kind: 'string';
       /** From `#[id=...]` (string form, or the tree form's `registry`). */
       idRegistry?: string;
+      /**
+       * The tree form's `path`, e.g. `entity/banner/`: the registry id of a written `ns:name`
+       * is `ns:<idPath>name`. The written value stays unprefixed; completions strip and apply it.
+       */
+      idPath?: string;
       lengthRange?: NumericRange;
     })
   | (NodeBase & { kind: 'number'; numberKind: NumberKind; range?: NumericRange })

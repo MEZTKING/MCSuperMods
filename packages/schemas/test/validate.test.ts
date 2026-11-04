@@ -411,6 +411,43 @@ describe('validateJson: dispatchers', () => {
     ok({}, none);
   });
 
+  it('reports keys that neither the struct nor its spread member declares', () => {
+    expect(validateJson({ type: 'circle', radius: 1, bogus: 1 }, shape)).toEqual([
+      {
+        severity: 'error',
+        code: 'schema.unknown-field',
+        path: '/bogus',
+        message: 'Unknown field "bogus"; expected one of radius, type.',
+      },
+    ]);
+    // Nested spreads share the owner's keys.
+    const nested = struct(
+      [field('kind', str())],
+      [dispatcher('test:outer', ['kind'], { a: struct([field('type', str())], [shapes]) })],
+    );
+    ok({ kind: 'a', type: 'circle', radius: 1 }, nested);
+    expect(codes(validateJson({ kind: 'a', type: 'circle', radius: 1, y: 2 }, nested))).toEqual([
+      ['/y', 'schema.unknown-field'],
+    ]);
+  });
+
+  it('allows every key when a spread cannot be resolved to fields', () => {
+    const lenient = struct(
+      [field('type', str())],
+      [dispatcher('test:lenient', ['type'], { a: { kind: 'any' } })],
+    );
+    ok({ type: 'a', anything: 1 }, lenient);
+    // An unknown key is reported once, not followed by every other field.
+    expect(codes(validateJson({ type: 'hexagon', radius: 1 }, shape))).toEqual([
+      ['/type', 'schema.unknown-dispatch-key'],
+    ]);
+    const open = struct(
+      [field('type', str())],
+      [{ kind: 'unsupported', reason: 'x' } as SchemaNode],
+    );
+    ok({ type: 'a', extra: true }, open);
+  });
+
   it('reads a sibling field for a dispatcher-typed field', () => {
     const node = struct([
       field('type', str()),
@@ -478,8 +515,10 @@ describe('validateJson: dispatchers', () => {
     );
     ok({ type: 'empty' }, node);
     ok({ type: 'minecraft:empty' }, node);
-    // Extra fields stay allowed, as for any struct with spreads.
-    ok({ type: 'empty', note: 1 }, node);
+    // A member that adds no fields declares nothing, so extra fields are unknown.
+    expect(codes(validateJson({ type: 'empty', note: 1 }, node))).toEqual([
+      ['/note', 'schema.unknown-field'],
+    ]);
     // Known members are still checked.
     expect(codes(validateJson({ type: 'minecraft:circle' }, node))).toEqual([
       ['/radius', 'schema.missing-field'],
@@ -564,6 +603,29 @@ describe('validateJson: registry ids', () => {
         path: '',
         message: 'Unknown item id "demo:nothing".',
         expected: 'item id',
+      },
+    ]);
+  });
+
+  it('applies an #[id(path=...)] prefix to the lookup, not the written value', () => {
+    const textures = createRegistryIndex({
+      vanilla: { texture: ['entity/banner/creeper', 'palettes/trim/quartz'] },
+    });
+    const banner = str({ idRegistry: 'texture', idPath: 'entity/banner/' });
+    expect(validateJson('minecraft:creeper', banner, { registries: textures })).toEqual([]);
+    expect(validateJson('creeper', banner, { registries: textures })).toEqual([]);
+    const palette = str({ idRegistry: 'texture', idPath: 'palettes/' });
+    expect(validateJson('minecraft:trim/quartz', palette, { registries: textures })).toEqual([]);
+    expect(
+      validateJson('minecraft:entity/banner/creeper', banner, { registries: textures }),
+    ).toEqual([
+      {
+        severity: 'warning',
+        code: 'schema.unknown-id',
+        path: '',
+        message:
+          'Unknown texture id "minecraft:entity/banner/creeper" ("minecraft:entity/banner/entity/banner/creeper").',
+        expected: 'texture id',
       },
     ]);
   });

@@ -204,8 +204,19 @@ describe('normalisation rules', () => {
         values: { registry: { kind: 'literal', value: { kind: 'string', value: 'item' } } },
       },
     };
+    const pathTree = {
+      name: 'id',
+      value: {
+        kind: 'tree',
+        values: {
+          registry: { kind: 'literal', value: { kind: 'string', value: 'texture' } },
+          path: { kind: 'literal', value: { kind: 'string', value: 'entity/banner/' } },
+        },
+      },
+    };
     const index = indexOf({
       '::t::Id': { kind: 'string', attributes: [idTree] },
+      '::t::Texture': { kind: 'string', attributes: [pathTree] },
       '::t::U': {
         kind: 'union',
         members: [
@@ -224,6 +235,9 @@ describe('normalisation rules', () => {
       },
     });
     expect(expectKind(index.resolve('::t::Id'), 'string').idRegistry).toBe('item');
+    expect(expectKind(index.resolve('::t::Id'), 'string').idPath).toBeUndefined();
+    const texture = expectKind(index.resolve('::t::Texture'), 'string');
+    expect([texture.idRegistry, texture.idPath]).toEqual(['texture', 'entity/banner/']);
     const union = expectKind(index.resolve('::t::U'), 'union');
     expect(union.members.map((m) => m.kind)).toEqual(['boolean', 'string']);
     expect(union.members[1]?.deprecated).toBe(true);
