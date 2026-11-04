@@ -1,0 +1,651 @@
+/**
+ * MSM's structural JSON validator over the version-gated `SchemaNode` model (ADR 0009).
+ * Pure: no I/O, never mutates nodes (instantiated nodes are shared). Used live by the editor
+ * and as the export gate on lowered JSON files.
+ */
+
+import type { Json } from '@msm/plugin-api';
+import type { NumericRange, SchemaField, SchemaNode } from '../form/schema-node';
+import type { RegistryIndex } from '../registry/registry-index';
+
+/** Machine-readable problem codes produced by `validateJson`. */
+export type SchemaProblemCode =
+  | 'schema.type-mismatch'
+  | 'schema.missing-field'
+  | 'schema.unknown-field'
+  | 'schema.out-of-range'
+  | 'schema.invalid-enum'
+  | 'schema.invalid-literal'
+  | 'schema.no-union-match'
+  | 'schema.unknown-dispatch-key'
+  | 'schema.missing-discriminator'
+  | 'schema.invalid-length'
+  | 'schema.unknown-id'
+  | 'schema.not-integer';
+
+/** One validation finding. */
+export interface SchemaProblem {
+  severity: 'error' | 'warning';
+  code: SchemaProblemCode;
+  /**
+   * RFC 6901 pointer into the validated value (`''` for the root). For a missing field it
+   * points at where the field belongs, e.g. `/elements/0/from`.
+   */
+  path: string;
+  /** British English; names the expected shape. */
+  message: string;
+  /** Short type description for the UI. */
+  expected?: string;
+}
+
+/** Options for `validateJson`. */
+export interface ValidateOptions {
+  /** When given, `#[id]` strings are checked against it (warnings). */
+  registries?: RegistryIndex;
+  /**
+   * Nesting limit, default 64. It bounds both the depth of the value and the number of
+   * reference, union or dispatcher hops taken without descending into the value; beyond it
+   * the value is accepted.
+   */
+  maxDepth?: number;
+}
+
+const DEFAULT_MAX_DEPTH = 64;
+const MAX_LISTED_KEYS = 10;
+const MAX_DESCRIBE_DEPTH = 3;
+
+type JsonObject = { [key: string]: Json };
+
+/** The object a dynamic dispatcher reads its discriminator from, and its pointer. */
+interface Siblings {
+  value: JsonObject;
+  path: string;
+}
+
+interface State {
+  path: string;
+  depth: number;
+  hops: number;
+  /** Key under which the value sits in its parent object (`%key` discriminators). */
+  parentKey?: string;
+  /** The struct object that contains the value, or the value itself inside a spread. */
+  siblings?: Siblings;
+  /** Unknown keys are allowed (validating a struct spread against the whole object). */
+  open: boolean;
+}
+
+interface Context {
+  registries?: RegistryIndex;
+  maxDepth: number;
+}
+
+/**
+ * Validates `value` against `node`. Problems are sorted by path, then code. Schema violations
+ * are errors; unknown registry ids are warnings. `any` and `unsupported` nodes accept anything.
+ */
+export function validateJson(
+  value: Json,
+  node: SchemaNode,
+  options: ValidateOptions = {},
+): SchemaProblem[] {
+  const ctx: Context = { maxDepth: options.maxDepth ?? DEFAULT_MAX_DEPTH };
+  if (options.registries !== undefined) ctx.registries = options.registries;
+  const out: SchemaProblem[] = [];
+  validate(value, node, { path: '', depth: 0, hops: 0, open: false }, ctx, out);
+  return sortProblems(dedupe(out));
+}
+
+// Helpers -------------------------------------------------------------------------------
+
+const isObject = (value: Json): value is JsonObject =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/** RFC 6901 reference token escaping. */
+const escapeToken = (token: string): string => token.replace(/~/g, '~0').replace(/\//g, '~1');
+
+const child = (path: string, token: string | number): string =>
+  `${path}/${typeof token === 'number' ? token : escapeToken(token)}`;
+
+const compare = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+
+function sortProblems(problems: SchemaProblem[]): SchemaProblem[] {
+  return problems.sort((a, b) => compare(a.path, b.path) || compare(a.code, b.code));
+}
+
+function dedupe(problems: SchemaProblem[]): SchemaProblem[] {
+  if (problems.length < 2) return problems;
+  const seen = new Set<string>();
+  return problems.filter((problem) => {
+    const key = `${problem.path}\u0000${problem.code}\u0000${problem.message}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function jsonKind(value: Json): string {
+  if (value === null) return 'null';
+  if (Array.isArray(value)) return 'a list';
+  if (typeof value === 'object') return 'an object';
+  if (typeof value === 'string') return 'a string';
+  if (typeof value === 'number') return 'a number';
+  return 'a boolean';
+}
+
+function formatRange(range: NumericRange): string {
+  const { min, max, minExclusive, maxExclusive } = range;
+  if (min !== undefined && max !== undefined) {
+    if (min === max && !minExclusive && !maxExclusive) return `exactly ${min}`;
+    return `${minExclusive ? '>' : ''}${min}..${maxExclusive ? '<' : ''}${max}`;
+  }
+  if (min !== undefined) return `${minExclusive ? 'greater than' : 'at least'} ${min}`;
+  if (max !== undefined) return `${maxExclusive ? 'less than' : 'at most'} ${max}`;
+  return 'any';
+}
+
+function inRange(n: number, range: NumericRange): boolean {
+  const { min, max, minExclusive, maxExclusive } = range;
+  if (min !== undefined && (minExclusive ? n <= min : n < min)) return false;
+  if (max !== undefined && (maxExclusive ? n >= max : n > max)) return false;
+  return true;
+}
+
+const literalText = (value: string | number | boolean): string =>
+  typeof value === 'string' ? JSON.stringify(value) : String(value);
+
+/** A short description of the shape `node` expects, for messages and `expected`. */
+export function describeSchemaNode(node: SchemaNode, depth = 0): string {
+  switch (node.kind) {
+    case 'struct':
+      return 'object';
+    case 'list':
+      return node.primitiveArray !== undefined ? `${node.primitiveArray} array` : 'list';
+    case 'tuple':
+      return `list of ${node.items.length}`;
+    case 'string':
+      return node.idRegistry !== undefined ? `${node.idRegistry} id` : 'string';
+    case 'number':
+      return node.numberKind;
+    case 'boolean':
+      return 'boolean';
+    case 'enum':
+      return `one of ${node.values.map((entry) => literalText(entry.value)).join(', ')}`;
+    case 'literal':
+      return literalText(node.value);
+    case 'union':
+      if (depth >= MAX_DESCRIBE_DEPTH) return 'union';
+      return node.members.map((member) => describeSchemaNode(member, depth + 1)).join(' | ');
+    case 'reference': {
+      if (depth >= MAX_DESCRIBE_DEPTH) return node.path.split('::').pop() ?? node.path;
+      try {
+        return describeSchemaNode(node.resolve(), depth + 1);
+      } catch {
+        return node.path.split('::').pop() ?? node.path;
+      }
+    }
+    case 'dispatcher':
+      return `${node.registry} member`;
+    case 'any':
+    case 'unsupported':
+      return 'any';
+  }
+}
+
+function mismatch(value: Json, node: SchemaNode, state: State, out: SchemaProblem[]): void {
+  const expected = describeSchemaNode(node);
+  out.push({
+    severity: 'error',
+    code: 'schema.type-mismatch',
+    path: state.path,
+    message: `Expected ${expected}, found ${jsonKind(value)}.`,
+    expected,
+  });
+}
+
+/** Per-struct lookup tables, built once per (shared) node. */
+interface StructInfo {
+  byKey: Map<string, SchemaField>;
+  wildcards: SchemaField[];
+  required: SchemaField[];
+}
+
+const structInfoCache = new WeakMap<SchemaNode, StructInfo>();
+
+function structInfo(node: SchemaNode & { kind: 'struct' }): StructInfo {
+  const cached = structInfoCache.get(node);
+  if (cached !== undefined) return cached;
+  const info: StructInfo = { byKey: new Map(), wildcards: [], required: [] };
+  for (const field of node.fields) {
+    if (field.key === '*') {
+      info.wildcards.push(field);
+      continue;
+    }
+    if (!info.byKey.has(field.key)) info.byKey.set(field.key, field);
+    if (!field.optional) info.required.push(field);
+  }
+  structInfoCache.set(node, info);
+  return info;
+}
+
+const hasError = (problems: readonly SchemaProblem[]): boolean =>
+  problems.some((problem) => problem.severity === 'error');
+
+const errorCount = (problems: readonly SchemaProblem[]): number =>
+  problems.reduce((count, problem) => count + (problem.severity === 'error' ? 1 : 0), 0);
+
+/** A hop that does not descend into the value: same path, one more hop. */
+const hop = (state: State): State => ({ ...state, hops: state.hops + 1 });
+
+// Core ----------------------------------------------------------------------------------
+
+function validate(
+  value: Json,
+  node: SchemaNode,
+  state: State,
+  ctx: Context,
+  out: SchemaProblem[],
+): void {
+  if (state.depth > ctx.maxDepth || state.hops > ctx.maxDepth) return;
+  switch (node.kind) {
+    case 'any':
+    case 'unsupported':
+      return;
+    case 'struct':
+      validateStruct(value, node, state, ctx, out);
+      return;
+    case 'list': {
+      if (!Array.isArray(value)) {
+        mismatch(value, node, state, out);
+        return;
+      }
+      checkLength(value.length, node.lengthRange, node, state, out);
+      for (let i = 0; i < value.length; i += 1) {
+        validate(value[i] as Json, node.item, itemState(state, i), ctx, out);
+      }
+      return;
+    }
+    case 'tuple': {
+      if (!Array.isArray(value)) {
+        mismatch(value, node, state, out);
+        return;
+      }
+      if (value.length !== node.items.length) {
+        out.push({
+          severity: 'error',
+          code: 'schema.invalid-length',
+          path: state.path,
+          message: `Expected exactly ${node.items.length} items, found ${value.length}.`,
+          expected: describeSchemaNode(node),
+        });
+      }
+      const count = Math.min(value.length, node.items.length);
+      for (let i = 0; i < count; i += 1) {
+        validate(value[i] as Json, node.items[i] as SchemaNode, itemState(state, i), ctx, out);
+      }
+      return;
+    }
+    case 'string': {
+      if (typeof value !== 'string') {
+        mismatch(value, node, state, out);
+        return;
+      }
+      checkLength(value.length, node.lengthRange, node, state, out, 'characters');
+      const registries = ctx.registries;
+      if (node.idRegistry !== undefined && registries !== undefined) {
+        const registry = node.idRegistry;
+        const known = registries.registries();
+        const name = registry.startsWith('minecraft:') ? registry.slice(10) : registry;
+        if (known.includes(name) && !registries.has(name, value)) {
+          out.push({
+            severity: 'warning',
+            code: 'schema.unknown-id',
+            path: state.path,
+            message: `Unknown ${name} id ${JSON.stringify(value)}.`,
+            expected: `${name} id`,
+          });
+        }
+      }
+      return;
+    }
+    case 'number': {
+      if (typeof value !== 'number') {
+        mismatch(value, node, state, out);
+        return;
+      }
+      const integral = node.numberKind !== 'float' && node.numberKind !== 'double';
+      if (integral && !Number.isInteger(value)) {
+        out.push({
+          severity: 'error',
+          code: 'schema.not-integer',
+          path: state.path,
+          message: `Expected a whole number (${node.numberKind}), found ${value}.`,
+          expected: node.numberKind,
+        });
+      }
+      if (node.range !== undefined && !inRange(value, node.range)) {
+        out.push({
+          severity: 'error',
+          code: 'schema.out-of-range',
+          path: state.path,
+          message: `Expected ${node.numberKind} in range ${formatRange(node.range)}, found ${value}.`,
+          expected: `${node.numberKind} ${formatRange(node.range)}`,
+        });
+      }
+      return;
+    }
+    case 'boolean':
+      if (typeof value !== 'boolean') mismatch(value, node, state, out);
+      return;
+    case 'enum': {
+      const expected = describeSchemaNode(node);
+      const first = node.values[0];
+      const valueType = first === undefined ? 'string' : typeof first.value;
+      if (typeof value !== valueType) {
+        mismatch(value, node, state, out);
+        return;
+      }
+      if (!node.values.some((entry) => entry.value === value)) {
+        out.push({
+          severity: 'error',
+          code: 'schema.invalid-enum',
+          path: state.path,
+          message: `Expected ${expected}, found ${literalText(value as string | number)}.`,
+          expected,
+        });
+      }
+      return;
+    }
+    case 'literal': {
+      if (value === node.value) return;
+      if (typeof value !== typeof node.value) {
+        mismatch(value, node, state, out);
+        return;
+      }
+      const expected = literalText(node.value);
+      out.push({
+        severity: 'error',
+        code: 'schema.invalid-literal',
+        path: state.path,
+        message: `Expected ${expected}, found ${literalText(value as string | number | boolean)}.`,
+        expected,
+      });
+      return;
+    }
+    case 'union':
+      validateUnion(value, node, state, ctx, out);
+      return;
+    case 'reference': {
+      let target: SchemaNode;
+      try {
+        target = node.resolve();
+      } catch {
+        // An unknown path (e.g. a dangling reference in the export) cannot be checked.
+        return;
+      }
+      validate(value, target, hop(state), ctx, out);
+      return;
+    }
+    case 'dispatcher':
+      validateDispatcher(value, node, state, ctx, out);
+      return;
+  }
+}
+
+function itemState(state: State, index: number): State {
+  return { path: child(state.path, index), depth: state.depth + 1, hops: 0, open: false };
+}
+
+function checkLength(
+  length: number,
+  range: NumericRange | undefined,
+  node: SchemaNode,
+  state: State,
+  out: SchemaProblem[],
+  unit = 'items',
+): void {
+  if (range === undefined || inRange(length, range)) return;
+  out.push({
+    severity: 'error',
+    code: 'schema.invalid-length',
+    path: state.path,
+    message: `Expected ${formatRange(range)} ${unit}, found ${length}.`,
+    expected: describeSchemaNode(node),
+  });
+}
+
+function validateStruct(
+  value: Json,
+  node: SchemaNode & { kind: 'struct' },
+  state: State,
+  ctx: Context,
+  out: SchemaProblem[],
+): void {
+  if (!isObject(value)) {
+    mismatch(value, node, state, out);
+    return;
+  }
+  const info = structInfo(node);
+  const siblings: Siblings = { value, path: state.path };
+  const allowUnknown = state.open || node.spreads.length > 0;
+
+  for (const field of info.required) {
+    if (!Object.hasOwn(value, field.key)) {
+      const expected = describeSchemaNode(field.type);
+      out.push({
+        severity: 'error',
+        code: 'schema.missing-field',
+        path: child(state.path, field.key),
+        message: `Missing required field "${field.key}" (${expected}).`,
+        expected,
+      });
+    }
+  }
+
+  for (const key of Object.keys(value)) {
+    const entry = value[key] as Json;
+    const entryState: State = {
+      path: child(state.path, key),
+      depth: state.depth + 1,
+      hops: 0,
+      parentKey: key,
+      siblings,
+      open: false,
+    };
+    const field = info.byKey.get(key);
+    if (field !== undefined) {
+      validate(entry, field.type, entryState, ctx, out);
+      continue;
+    }
+    const wildcard = matchWildcard(key, info.wildcards, entryState, ctx, out);
+    if (wildcard !== undefined) {
+      validate(entry, wildcard.type, entryState, ctx, out);
+      continue;
+    }
+    if (!allowUnknown) {
+      const known = [...info.byKey.keys()];
+      out.push({
+        severity: 'error',
+        code: 'schema.unknown-field',
+        path: entryState.path,
+        message:
+          known.length === 0
+            ? `Unknown field "${key}".`
+            : `Unknown field "${key}"; expected one of ${known.slice(0, MAX_LISTED_KEYS).join(', ')}${known.length > MAX_LISTED_KEYS ? ', ...' : ''}.`,
+      });
+    }
+  }
+
+  // Spreads that could not be inlined (dispatchers, mostly) apply to the whole object; their
+  // own keys are checked there, and keys they do not know are allowed.
+  for (const spread of node.spreads) {
+    validate(value, spread, { ...hop(state), siblings, open: true }, ctx, out);
+  }
+}
+
+/**
+ * Picks the first `'*'` field whose key type accepts `key`. When none does, reports the first
+ * one's key problems and still returns it so the value is checked.
+ */
+function matchWildcard(
+  key: string,
+  wildcards: readonly SchemaField[],
+  state: State,
+  ctx: Context,
+  out: SchemaProblem[],
+): SchemaField | undefined {
+  if (wildcards.length === 0) return undefined;
+  let firstProblems: SchemaProblem[] | undefined;
+  for (const field of wildcards) {
+    if (field.keyType === undefined) return field;
+    const problems: SchemaProblem[] = [];
+    validate(key, field.keyType, { ...state, open: false }, ctx, problems);
+    if (!hasError(problems)) {
+      out.push(...problems);
+      return field;
+    }
+    firstProblems ??= problems;
+  }
+  for (const problem of firstProblems ?? []) {
+    out.push({ ...problem, message: `Invalid key "${key}": ${problem.message}` });
+  }
+  return wildcards[0];
+}
+
+/** Codes that mean "this member does not describe this kind of value at all". */
+const SHAPE_CODES: ReadonlySet<SchemaProblemCode> = new Set([
+  'schema.type-mismatch',
+  'schema.invalid-literal',
+  'schema.invalid-enum',
+  'schema.no-union-match',
+]);
+
+function validateUnion(
+  value: Json,
+  node: SchemaNode & { kind: 'union' },
+  state: State,
+  ctx: Context,
+  out: SchemaProblem[],
+): void {
+  if (node.members.length === 0) return;
+  let best: SchemaProblem[] | undefined;
+  let bestErrors = Number.POSITIVE_INFINITY;
+  const memberState = hop(state);
+  for (const member of node.members) {
+    const problems: SchemaProblem[] = [];
+    validate(value, member, memberState, ctx, problems);
+    if (!hasError(problems)) {
+      out.push(...problems);
+      return;
+    }
+    // A member whose shape does not fit at all ranks below every member that does.
+    const shapeMiss = problems.some(
+      (problem) => problem.path === state.path && SHAPE_CODES.has(problem.code),
+    );
+    if (shapeMiss) continue;
+    const errors = errorCount(problems);
+    if (errors < bestErrors) {
+      best = problems;
+      bestErrors = errors;
+    }
+  }
+  const expected = describeSchemaNode(node);
+  if (best === undefined) {
+    out.push({
+      severity: 'error',
+      code: 'schema.no-union-match',
+      path: state.path,
+      message: `No union member matched: expected ${expected}, found ${jsonKind(value)}.`,
+      expected,
+    });
+    return;
+  }
+  for (const problem of best) {
+    out.push({ ...problem, message: `No union member matched; closest: ${problem.message}` });
+  }
+}
+
+/** Reads a discriminator value; `undefined` when absent or not a scalar. */
+function readDiscriminator(
+  value: Json,
+  steps: readonly string[],
+  state: State,
+): { key: string | undefined; path: string } {
+  if (steps.length === 1 && steps[0] === '%key') {
+    return { key: state.parentKey, path: state.path };
+  }
+  // Without a containing struct (the root, a list item) the value itself is read.
+  let current: Json | undefined = state.siblings?.value ?? value;
+  let path = state.siblings?.path ?? state.path;
+  for (const step of steps) {
+    if (current === undefined || !isObject(current)) return { key: undefined, path };
+    current = Object.hasOwn(current, step) ? current[step] : undefined;
+    path = child(path, step);
+  }
+  if (typeof current === 'string') return { key: current, path };
+  if (typeof current === 'number' || typeof current === 'boolean') {
+    return { key: String(current), path };
+  }
+  return { key: undefined, path };
+}
+
+function validateDispatcher(
+  value: Json,
+  node: SchemaNode & { kind: 'dispatcher' },
+  state: State,
+  ctx: Context,
+  out: SchemaProblem[],
+): void {
+  const keys = node.keys();
+  // A registry the export lacks (or that has nothing in this version) cannot be checked.
+  if (keys.length === 0) return;
+  const next = hop(state);
+
+  if (node.discriminator.length === 0) {
+    const member = node.dispatch('');
+    if (member !== undefined) validate(value, member, next, ctx, out);
+    return;
+  }
+  // Accessors that climb to the parent's parent are not modelled in Phase 1.
+  if (node.discriminator.includes('%parent')) return;
+  if (node.discriminator.includes('%key') && node.discriminator.length > 1) return;
+
+  const { key, path } = readDiscriminator(value, node.discriminator, state);
+  if (key === undefined) {
+    const none = keys.includes('%none') ? node.dispatch('%none') : undefined;
+    if (none !== undefined) {
+      validate(value, none, next, ctx, out);
+      return;
+    }
+    const name = node.discriminator.join('.');
+    out.push({
+      severity: 'error',
+      code: 'schema.missing-discriminator',
+      path,
+      message:
+        name === '%key'
+          ? `Cannot choose a ${node.registry} member without a key.`
+          : `Missing "${name}", which selects the ${node.registry} member.`,
+      expected: `${node.registry} key`,
+    });
+    return;
+  }
+  const member = node.dispatch(key);
+  if (member !== undefined) {
+    validate(value, member, next, ctx, out);
+    return;
+  }
+  const unknown = keys.includes('%unknown') ? node.dispatch('%unknown') : undefined;
+  if (unknown !== undefined) {
+    validate(value, unknown, next, ctx, out);
+    return;
+  }
+  const listed = keys.filter((entry) => !entry.startsWith('%'));
+  const shown = listed.slice(0, MAX_LISTED_KEYS).join(', ');
+  out.push({
+    severity: 'error',
+    code: 'schema.unknown-dispatch-key',
+    path,
+    message: `Unknown ${node.registry} key ${JSON.stringify(key)}; expected one of ${shown}${listed.length > MAX_LISTED_KEYS ? ', ...' : ''}.`,
+    expected: `${node.registry} key`,
+  });
+}

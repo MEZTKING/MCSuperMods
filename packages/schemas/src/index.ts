@@ -29,9 +29,21 @@ export type {
   SchemaNodeKind,
 } from './form/schema-node';
 export {
+  createRegistryIndex,
+  type RegistryIndex,
+  type RegistryIndexInput,
+} from './registry/registry-index';
+export {
   parseVanillaMcdocSymbols,
   SymbolsFormatError,
   type VanillaMcdocSymbols,
 } from './symbols/parse';
 export type * from './symbols/raw-types';
+export {
+  describeSchemaNode,
+  type SchemaProblem,
+  type SchemaProblemCode,
+  type ValidateOptions,
+  validateJson,
+} from './validate/validate';
 export { compareGameVersions, isVersionInRange } from './version/compare';
