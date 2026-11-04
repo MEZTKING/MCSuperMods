@@ -831,3 +831,18 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
   - tags `v0.2.3` from `main` and checks the single draft has its three assets;
   - **publishes** it; installed copies should then update.
 - Phase 3 wave 2: B73 structures plugin, B74 worldgen plugin, B75 worldgen tags and `level.dat` world names.
+
+---
+
+## 2026-11-04 — main session — CI red on v0.2.3: Turborepo cache masked two failures
+
+**What**
+- GitHub CI failed on `2666fe8` (v0.2.3) in `@msm/targets`. Its test still expected 17 data folders after B70 added `structure`, `dimension` and `worldgen`. A second failure was in the library: B75's three worldgen tag kinds had no per-kind examples.
+- **Both passed in every local and clean-worktree run because Turborepo replayed cached test results.** GitHub has no cache.
+- Fixed:
+  - the expected folder list;
+  - three new tag examples (`example_tag_worldgen_{biome,structure,world_preset}`), with the `examples/` mirror regenerated;
+  - the library counts (33 per-kind, 37 total).
+
+**Decisions**
+- **Process change:** verification now runs `pnpm turbo run test --force`, which bypasses the cache, in the clean worktree. Executors' briefs should do the same. `main` is still fast-forwarded only on green GitHub CI.
