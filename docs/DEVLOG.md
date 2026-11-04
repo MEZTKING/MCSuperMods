@@ -574,3 +574,11 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 - Action items, not yet done:
   - move `actions/checkout`, `setup-node` and `upload-artifact` to versions that run on Node 24; GitHub warns that Node 20 actions are deprecated;
   - consider merging the development branch into `main`.
+
+---
+
+## 2026-11-04 — main session — v0.1.0 installed on Windows; Prism Launcher support requested
+
+**What**
+- The user installed `MCSuperMods-0.1.0-win-x64.exe` from the draft release and the app opens. This is the first real Windows run of the packaged app.
+- The user asked for Prism Launcher support. The orchestrator is planning it as a small Phase 2 add-on, before Phase 3.
