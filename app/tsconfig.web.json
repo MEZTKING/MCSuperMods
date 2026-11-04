@@ -6,7 +6,8 @@
     "tsBuildInfoFile": "dist-types/web.tsbuildinfo",
     "lib": ["es2024", "dom", "dom.iterable"],
     "jsx": "react-jsx",
-    "types": []
+    "types": ["vite/client"]
   },
-  "include": ["src/renderer", "src/shared"]
+  "include": ["src/renderer", "src/shared"],
+  "references": [{ "path": "../packages/plugin-api" }, { "path": "../packages/core" }]
 }

@@ -8,11 +8,16 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
+    "smoke": "electron-vite build && node scripts/smoke.mjs",
     "test": "vitest run"
   },
   "dependencies": {
+    "@msm/core": "workspace:*",
+    "@msm/plugin-api": "workspace:*",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "zod": "catalog:",
+    "zustand": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

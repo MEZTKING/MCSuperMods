@@ -10,7 +10,7 @@ A desktop mod maker for Minecraft Java Edition that takes you from a simple text
 
 ## Status
 
-- Pre-alpha: documentation phase. There is no code and there are no releases yet.
+- Pre-alpha: Phase 0 (Foundations) is complete — monorepo, core project model, 26.3 schemas and a minimal Electron shell. There are no releases yet.
 - Current Minecraft target: **Java 26.3** (with 26.2 as the previous supported release at launch).
 
 ## How it works

@@ -1,6 +1,6 @@
 # MCSuperMods
 
-MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: pre-code, docs only.
+MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 0 complete; Phase 1 (Resource Pack Studio) next.
 
 ## Directory map
 

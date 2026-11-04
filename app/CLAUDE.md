@@ -1,6 +1,6 @@
 # app/ — Electron desktop shell
 
-No code yet; this directory is planned for Phase 0/1. This file describes intent and conventions.
+Phase 0 shell implemented (project new/open/save, element list, raw JSON, undo/redo, headless smoke via `pnpm --filter @msm/app smoke`). Save is refused while error-severity problems exist (DESIGN Q9).
 
 ## Purpose
 

@@ -21,3 +21,5 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+      - run: node app/node_modules/electron/install.js
+      - run: xvfb-run -a pnpm --filter @msm/app smoke

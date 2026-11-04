@@ -1,6 +1,6 @@
 # docs/ — design docs, roadmap, devlog, ADRs
 
-No code yet; this directory is active from Phase 0. This file describes intent and conventions.
+Active since Phase 0. This file describes conventions.
 
 ## Purpose
 

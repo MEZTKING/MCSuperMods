@@ -104,3 +104,92 @@ Append-only record of every working session. Newest entry at the bottom. Format:
   - the Electron shell opening and saving a project
 - Resolve the open questions due in Phase 0: the exact Electron, Node and Loom versions, and the mcmeta branch naming.
 - Choose a licence (open question in DESIGN.md section 18).
+
+---
+
+## 2026-11-04 — orchestrator (Fable) — Phase 0 plan
+
+**What**
+- Read the root CLAUDE.md, ROADMAP Phase 0, DESIGN sections 3–7, 9 and 14–19, and the scoped guides.
+- Wrote 8 implementation briefs (B01, B02, B04–B09; B03 was merged into B07) in 4 dependency-ordered waves, with no file shared within a wave. Each brief listed exact APIs, tests, acceptance commands and what was out of scope.
+
+**Decisions** (pinned and checked against npm and the upstream repos)
+- **Toolchain:** Node ≥22.18, pnpm 10.28 with a catalog, TypeScript 6.0.3 (7.x is the Go port and the tooling is not ready), Vite 8, electron-vite 6, Vitest 5, Biome 2.6, Turborepo 2.11, React 19.3, Electron 45.2.2.
+- **Internal packages:** source-first, typechecked with `tsc -b` project references.
+- **vanilla-mcdoc:** it has no tags, so we pin a commit sha. Phase 0 consumes the vendored Spyglass symbol export; the Spyglass Service is deferred to Phase 1.
+- **mcmeta:** refs are the tags `26.3-summary` and `26.3-registries`.
+- **26.3 pack formats:** resource 97.1, data 121.0 (verified).
+- **App:** core runs in the renderer. The main process implements `PlatformAdapter` over zod-validated, versioned IPC.
+- **IR types** live in `@msm/plugin-api`; their behaviour lives in `@msm/core`.
+- **Licence:** left for the user (MIT proposed).
+
+---
+
+## 2026-11-04 — executors (Opus, medium effort) — Phase 0 implementation
+
+**What** (main session verified and committed each wave in turn)
+- **Wave 1, B01:** the monorepo skeleton:
+  - pnpm workspace and catalog, Turborepo, Biome, `tsconfig` project references
+  - CI workflow
+  - `tools/check-deps`: enforces the layer map and rejects any `26.<n>` literal outside `packages/targets`
+  - stub packages
+- **Wave 2:**
+  - **B02:** `@msm/plugin-api` 0.1.0, with the full public surface and `definePlugin`.
+  - **B04:** `tools/sync-mcdoc` and `tools/sync-mcmeta`, plus vendored 26.3 data (4.4 MB). mcdoc-cli 0.1.63 build mode produced an empty export. The fix is an `env.dependencies` entry in the temporary checkout, and the output is now byte-identical to upstream.
+  - **B05:** `@msm/schemas`: the `SchemaNode` model, `since`/`until` version gating, a lazy memoised schema index, and a fixture subset.
+- **Wave 3:**
+  - **B06:** `@msm/core`:
+    - a deterministic sorted-key serialiser
+    - an injected file system with an in-memory version
+    - load, save and migrators
+    - the element kind registry
+    - an Immer command stack with RFC 6902 patches, undo/redo and dirty tracking
+    - golden round-trip fixtures
+  - **B07:** `@msm/target-mc-26.3`: the target facts and the "26.3 schemas load" exit-criterion test (2,105 types, loads in about 95 ms).
+- **Wave 4:**
+  - **B08:** `@msm/app` Electron shell:
+    - sandboxed renderer and CommonJS preload
+    - project-scoped file system in the main process
+    - new, open and save; element list; raw JSON editor; problems panel; undo/redo
+    - a headless smoke run under xvfb
+  - **B09:** ADRs 0001–0008. DESIGN sections 5, 6, 9, 14, 15 and 18 corrected to match the implementation (including the incorrect "tag exists" claim in §6). Four scoped CLAUDE.md files refreshed.
+
+**Decisions**
+- **Data-loss risk found by B06.** Load skips invalid element files, and save deletes `content/*.json` files it did not write. The main session decided that for Phase 0 the app refuses to save while error-severity problems exist; B08 implemented this with a test. The permanent fix is DESIGN Q9, for Phase 1.
+- Only one executor per wave may change `pnpm-lock.yaml`, so parallel executors don't produce conflicting lockfiles.
+
+---
+
+## 2026-11-04 — main session — Phase 0 review and close
+
+**What**
+- Ran the exit criteria on a clean install, and all passed:
+  - `pnpm install --frozen-lockfile`, `pnpm lint` (Biome and check-deps), `pnpm typecheck`, `pnpm test` and `pnpm build`
+  - `pnpm --filter @msm/app smoke` exits 0
+  - 8 ADRs; DESIGN still has 19 H2 headings
+- Tests: 203 in total.
+
+| Package | Tests |
+|---|---|
+| core | 109 |
+| schemas | 27 |
+| app | 26 |
+| tools | 23 |
+| plugin-api | 11 |
+| target | 7 |
+
+- Ticked the `@msm/app` box in ROADMAP and added a Phase 0 row to the Milestone Log.
+- Updated the status lines in the README, root CLAUDE.md, `docs/CLAUDE.md` and `app/CLAUDE.md`.
+- Added the Electron binary download and the xvfb smoke step to CI. The CI workflow has not yet run on GitHub.
+
+**Open / Next**
+- **Licence:** awaiting the user (MIT proposed). The Phase 0 release is left untagged until it is decided.
+- **Phase 1 carry-overs:**
+  - the permanent fix for the save-time data loss
+  - symlink containment in the scoped file system
+  - a shared path-validation module for core and app
+  - live problems and clearing the save block
+  - concrete and template mcdoc types (`ItemStack`), which currently normalise to `unsupported`
+  - a `keyType` on `'*'` fields
+  - `typescript` devDependencies in plugin-api, schemas and target
+- **Next:** the orchestrator plans Phase 1, Resource Pack Studio.

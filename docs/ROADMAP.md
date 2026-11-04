@@ -43,7 +43,7 @@ Stand up the monorepo and the three foundation packages, prove that a project ca
 - [x] `@msm/schemas`: Spyglass adapter loading `vanilla-mcdoc` for 26.3 and exposing our own `SchemaNode` model.
 - [x] `@msm/target-mc-26.3`: first target package with pack formats, mcdoc ref and mcmeta ref (verify at implementation).
 - [x] `tools/sync-mcdoc` and `tools/sync-mcmeta` scripts.
-- [ ] `@msm/app`: Electron shell (electron-vite, React 19) that creates, opens and saves a project through `PlatformAdapter`.
+- [x] `@msm/app`: Electron shell (electron-vite, React 19) that creates, opens and saves a project through `PlatformAdapter`.
 - [x] CI: install, Biome, typecheck, Vitest on every push.
 - [x] First ADRs in `docs/adr/` (Electron over Tauri, hybrid architecture, Rhino for scripting).
 
@@ -284,3 +284,4 @@ Not committed; each needs an ADR before work starts.
 
 | Date | Milestone | Notes |
 |---|---|---|
+| 2026-11-04 | Phase 0 — Foundations complete | Monorepo, plugin-api 0.1.0, schemas, core, target mc-26.3, Electron shell, ADRs 0001–0008. 203 tests; headless smoke passes. Untagged: licence pending. |
