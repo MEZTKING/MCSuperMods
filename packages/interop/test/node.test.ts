@@ -1,9 +1,10 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   assetCacheDir,
+  discoverGameLocations,
   extractPreviewAssets,
   joinInstallPath,
   listInstalledVersions,
@@ -77,4 +78,54 @@ describe('@msm/interop/node', () => {
     expect(env.platform).toBe(process.platform);
     expect(env.home.length).toBeGreaterThan(0);
   });
+
+  it('reads XDG_DATA_HOME and PRISMLAUNCHER_DATA_DIR', () => {
+    const saved = { xdg: process.env.XDG_DATA_HOME, prism: process.env.PRISMLAUNCHER_DATA_DIR };
+    try {
+      process.env.XDG_DATA_HOME = '/xdg/data';
+      process.env.PRISMLAUNCHER_DATA_DIR = '/prism/data';
+      expect(nodeEnv()).toMatchObject({ xdgDataHome: '/xdg/data', prismDataDirEnv: '/prism/data' });
+      delete process.env.XDG_DATA_HOME;
+      delete process.env.PRISMLAUNCHER_DATA_DIR;
+      expect(nodeEnv().xdgDataHome).toBeUndefined();
+      expect(nodeEnv().prismDataDirEnv).toBeUndefined();
+    } finally {
+      if (saved.xdg === undefined) delete process.env.XDG_DATA_HOME;
+      else process.env.XDG_DATA_HOME = saved.xdg;
+      if (saved.prism === undefined) delete process.env.PRISMLAUNCHER_DATA_DIR;
+      else process.env.PRISMLAUNCHER_DATA_DIR = saved.prism;
+    }
+  });
+
+  it('resolves real paths and rejects missing ones', async () => {
+    const fs = createNodeInstallFileSystem();
+    const target = joinInstallPath(root, 'target');
+    await fs.mkdirp(target);
+    const link = join(root, 'link');
+    await symlink(target, link, 'dir');
+    const real = await fs.realpath?.(link);
+    expect(real).toBe(await fs.realpath?.(target));
+    await expect(fs.realpath?.(joinInstallPath(root, 'missing'))).rejects.toThrow();
+  });
+
+  it.skipIf(process.platform === 'win32')(
+    'skips a symlinked Prism instance escaping the instances folder on disk',
+    async () => {
+      const fs = createNodeInstallFileSystem();
+      const prism = joinInstallPath(root, 'prism');
+      const seed = async (dir: string) => {
+        await fs.mkdirp(joinInstallPath(dir, 'minecraft'));
+        await fs.writeFile(joinInstallPath(dir, 'instance.cfg'), new TextEncoder().encode(''));
+      };
+      await seed(joinInstallPath(prism, 'instances', 'inside'));
+      await seed(joinInstallPath(root, 'outside', 'escaped'));
+      await symlink(join(root, 'outside', 'escaped'), join(prism, 'instances', 'away'), 'dir');
+      const locations = await discoverGameLocations(
+        fs,
+        { platform: 'linux', home: joinInstallPath(root, 'home') },
+        { minecraftDir: null, prismDataDirs: [prism], multimcRoots: [], curseForgeRoots: [] },
+      );
+      expect(locations.map((location) => location.ref.instance)).toEqual(['inside']);
+    },
+  );
 });

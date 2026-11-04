@@ -19,6 +19,34 @@ export class MemoryInstallFileSystem implements InstallFileSystem {
   readonly dirs = new Set<string>(['/']);
   /** Every write and remove, in order, for asserting write ordering. */
   readonly log: string[] = [];
+  /** Symbolic links: link path to target path, both absolute. */
+  readonly links = new Map<string, string>();
+
+  /** Adds a symbolic link at `path` pointing at `target` (absolute), creating parents. */
+  link(path: string, target: string): this {
+    const abs = normalise(path);
+    this.addDirs(parentOf(abs));
+    this.links.set(abs, normalise(target));
+    return this;
+  }
+
+  /** Resolves every link along the path, segment by segment (at most 32 hops). */
+  resolve(path: string): string {
+    let hops = 0;
+    let current = '/';
+    for (const segment of normalise(path)
+      .split('/')
+      .filter((part) => part !== '')) {
+      current = current === '/' ? `/${segment}` : `${current}/${segment}`;
+      let target = this.links.get(current);
+      while (target !== undefined) {
+        if (++hops > 32) throw new Error(`ELOOP: ${path}`);
+        current = this.resolve(target);
+        target = this.links.get(current);
+      }
+    }
+    return current;
+  }
 
   /** Adds a file and its parent directories directly, without logging. */
   seed(path: string, data: Uint8Array | string): this {
@@ -37,12 +65,12 @@ export class MemoryInstallFileSystem implements InstallFileSystem {
   }
 
   async exists(absPath: string): Promise<boolean> {
-    const abs = normalise(absPath);
+    const abs = this.resolve(absPath);
     return this.files.has(abs) || this.dirs.has(abs);
   }
 
   async readDir(absPath: string): Promise<InstallDirEntry[]> {
-    const abs = normalise(absPath);
+    const abs = this.resolve(absPath);
     if (!this.dirs.has(abs)) throw new Error(`ENOENT: ${abs}`);
     const prefix = abs === '/' ? '/' : `${abs}/`;
     const result: InstallDirEntry[] = [];
@@ -56,24 +84,38 @@ export class MemoryInstallFileSystem implements InstallFileSystem {
         result.push({ name: file.slice(prefix.length), kind: 'file' });
       }
     }
+    for (const link of this.links.keys()) {
+      if (this.resolve(parentOf(link)) !== abs) continue;
+      const target = this.resolve(link);
+      if (this.dirs.has(target))
+        result.push({ name: link.slice(link.lastIndexOf('/') + 1), kind: 'directory' });
+      else if (this.files.has(target))
+        result.push({ name: link.slice(link.lastIndexOf('/') + 1), kind: 'file' });
+    }
     return result;
   }
 
   async readFile(absPath: string): Promise<Uint8Array> {
-    const data = this.files.get(normalise(absPath));
+    const data = this.files.get(this.resolve(absPath));
     if (data === undefined) throw new Error(`ENOENT: ${absPath}`);
     return data;
   }
 
   async writeFile(absPath: string, data: Uint8Array): Promise<void> {
-    const abs = normalise(absPath);
+    const abs = this.resolve(absPath);
     if (!this.dirs.has(parentOf(abs))) throw new Error(`ENOENT: parent of ${abs}`);
     this.log.push(`write ${abs}`);
     this.files.set(abs, data);
   }
 
   async mkdirp(absPath: string): Promise<void> {
-    this.addDirs(absPath);
+    this.addDirs(this.resolve(absPath));
+  }
+
+  async realpath(absPath: string): Promise<string> {
+    const abs = this.resolve(absPath);
+    if (!this.files.has(abs) && !this.dirs.has(abs)) throw new Error(`ENOENT: ${absPath}`);
+    return abs;
   }
 
   async remove(absPath: string): Promise<void> {
@@ -81,6 +123,7 @@ export class MemoryInstallFileSystem implements InstallFileSystem {
     this.log.push(`remove ${abs}`);
     const prefix = `${abs}/`;
     this.files.delete(abs);
+    this.links.delete(abs);
     for (const file of [...this.files.keys()]) if (file.startsWith(prefix)) this.files.delete(file);
     for (const dir of [...this.dirs])
       if (dir === abs || dir.startsWith(prefix)) this.dirs.delete(dir);

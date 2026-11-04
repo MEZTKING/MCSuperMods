@@ -3,7 +3,7 @@
  */
 
 import { createHash } from 'node:crypto';
-import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, realpath, rm, stat, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { normalize } from 'node:path';
 import type { InstallDirEntry, InstallEnv, InstallFileSystem } from './minecraft-install/index';
@@ -52,6 +52,9 @@ export function createNodeInstallFileSystem(): InstallFileSystem {
     async remove(absPath) {
       await rm(normalize(absPath), { recursive: true, force: true });
     },
+    async realpath(absPath) {
+      return realpath(normalize(absPath));
+    },
   };
 }
 
@@ -60,7 +63,16 @@ export function sha1Hex(bytes: Uint8Array): string {
   return createHash('sha1').update(bytes).digest('hex');
 }
 
-/** The current process's platform, home directory and `%APPDATA%`. */
+/**
+ * The current process's platform, home directory, `%APPDATA%`, `$XDG_DATA_HOME` and
+ * `$PRISMLAUNCHER_DATA_DIR`.
+ */
 export function nodeEnv(): InstallEnv {
-  return { platform: process.platform, home: homedir(), appData: process.env.APPDATA };
+  return {
+    platform: process.platform,
+    home: homedir(),
+    appData: process.env.APPDATA,
+    xdgDataHome: process.env.XDG_DATA_HOME,
+    prismDataDirEnv: process.env.PRISMLAUNCHER_DATA_DIR,
+  };
 }

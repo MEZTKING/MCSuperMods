@@ -4,7 +4,7 @@
 
 import { type InstallFileSystem, joinInstallPath } from './fs';
 
-/** The host facts {@link defaultMinecraftDir} needs. `@msm/interop/node` provides `nodeEnv()`. */
+/** The host facts {@link defaultMinecraftDir} and launcher discovery need. `@msm/interop/node` provides `nodeEnv()`. */
 export interface InstallEnv {
   /** `process.platform`. */
   platform: 'win32' | 'darwin' | 'linux' | string;
@@ -12,6 +12,10 @@ export interface InstallEnv {
   home: string;
   /** `%APPDATA%` on Windows, when set. */
   appData?: string | undefined;
+  /** `$XDG_DATA_HOME` on Linux, when set; used for the Prism Launcher data folder. */
+  xdgDataHome?: string | undefined;
+  /** `$PRISMLAUNCHER_DATA_DIR`, when set; Prism's data folder override. */
+  prismDataDirEnv?: string | undefined;
 }
 
 /**

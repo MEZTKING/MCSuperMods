@@ -26,6 +26,11 @@ export interface InstallFileSystem {
   mkdirp(absPath: string): Promise<void>;
   /** Removes a file or directory tree. Succeeds when nothing exists at the path. */
   remove(absPath: string): Promise<void>;
+  /**
+   * Resolves symbolic links to the canonical absolute path. Rejects when nothing exists at
+   * the path. Optional: without it, launcher discovery skips its symlink containment check.
+   */
+  realpath?(absPath: string): Promise<string>;
 }
 
 /**
