@@ -924,7 +924,9 @@ export class ProjectSession {
     if (element !== undefined) assertElementIdAllowed(element.kind, newId);
     const index = this.#referenceIndex();
     const references: Reference[] =
-      element === undefined || index === null ? [] : referencesForRename(index, element);
+      element === undefined || index === null
+        ? []
+        : referencesForRename(index, element, this.registry);
     try {
       stack.execute(commands.renameElement(oldId, newId, references));
       return { renamed: true, references: references.length };

@@ -10,7 +10,7 @@ A desktop mod maker for Minecraft Java Edition that takes you from a simple text
 
 ## Status
 
-- Pre-alpha: Phase 1 (Resource Pack Studio), Phase 2 (Data Pack Studio), launcher support (Prism Launcher, CurseForge, MultiMC) and the templates and examples library are done; the in-game checks below are still to be confirmed. Windows installers are published on the [Releases page](https://github.com/MEZTKING/MCSuperMods/releases) and update themselves. Phase 3 (Structures & Worldgen) is next.
+- Pre-alpha: Phase 1 (Resource Pack Studio), Phase 2 (Data Pack Studio), launcher support (Prism Launcher, CurseForge, MultiMC) and the templates and examples library are done; the in-game checks below are still to be confirmed. Windows installers are published on the [Releases page](https://github.com/MEZTKING/MCSuperMods/releases) and update themselves. Phase 3 (Structures & Worldgen) is being finished: structure import and export, jigsaw pools, custom biomes, features and World Types are in the app, and their in-game check is still to be confirmed.
 - Installed releases update themselves: the app checks for a new version shortly after start-up and offers "Restart to update" once it has downloaded.
 - Releases will be for Windows only to begin with; Linux builds are made in CI for testing, and macOS builds are not planned for now.
 - Current Minecraft target: **Java 26.3** (with 26.2 as the previous supported release at launch).
@@ -60,13 +60,23 @@ The data pack sample works the same way, with the app running from source as abo
 
 More checks (loot table, item modifier, smelting) are listed in `fixtures/sample-datapack/README.md`.
 
+## Try the worldgen sample
+
+The worldgen sample is the **Custom biome with a jigsaw structure** starter saved as a project: a custom biome, Amber Woods, reached through a World Type of its own, and a jigsaw hamlet that generates in that biome and in every vanilla forest.
+
+1. Copy the folder `fixtures/sample-worldgen` out of the repository and open the copy.
+2. Choose **File → Export Both…**. This writes a resource pack zip (the English names) and a data pack zip.
+3. Follow the in-game check in [`fixtures/sample-worldgen/README.md`](fixtures/sample-worldgen/README.md#in-game-check-windows-minecraft-java-263): the hamlet in an existing world after reopening it, then the biome in a new world with **World Type** set to **Amber Woods**.
+
+The [Structures](docs/guide/structures.md) and [Worldgen](docs/guide/worldgen.md) guides explain how the sample is built and how to make your own.
+
 ## Templates and examples
 
 MCSuperMods comes with ready-made content, all validated and exported in CI for every supported Minecraft version. The full lists are in [Templates, starters and examples](docs/guide/templates-and-examples.md).
 
-- **Project starters (8).** Click the arrow next to **New** and choose **New from starter…**, or use **File → New Project from Starter…**. Pick a starter, choose **Choose folder and create** and an empty folder; the folder name becomes the namespace. There are a blank project, minimal resource, data and combined packs, and four themed projects: **Custom ore**, **Recipe pack**, **Custom music disc** and **Functions**. **New** on its own still creates a blank project.
-- **Element templates (66).** **Add element** (Ctrl+N) lists a template for every element kind, grouped by category (models, blockstates, recipes, loot tables, advancements, tags, enchantments, dialogs and more) with a filter box.
-- **Examples gallery (34).** **Help → Examples…** shows one commented example for each element kind plus the four themed starters. Search by title, kind, category or tag and read each element's notes. **Open as new project…** creates a new project from an example; **Copy into my project** adds it to the open project in one undoable step, skipping ids that already exist. The notes stay with each element and show above the editor.
+- **Project starters (11).** Click the arrow next to **New** and choose **New from starter…**, or use **File → New Project from Starter…**. Pick a starter, choose **Choose folder and create** and an empty folder; the folder name becomes the namespace. There are a blank project, minimal resource, data and combined packs, and seven themed projects: **Custom ore**, **Recipe pack**, **Custom music disc**, **Functions**, **Custom biome**, **Jigsaw village-style structure** and **Custom biome with a jigsaw structure**. **New** on its own still creates a blank project.
+- **Element templates (99).** **Add element** (Ctrl+N) lists a template for every element kind, grouped by category (models, blockstates, recipes, loot tables, advancements, tags, enchantments, dialogs, structures, biomes, features, dimensions and more) with a filter box.
+- **Examples gallery (56).** **Help → Examples…** shows one commented example for each element kind plus four themed starter projects. Search by title, kind, category or tag and read each element's notes. **Open as new project…** creates a new project from an example; **Copy into my project** adds it to the open project in one undoable step, skipping ids that already exist. The notes stay with each element and show above the editor.
 
 Two things to know:
 
@@ -115,17 +125,16 @@ So one installed copy of a version, in any launcher, is enough. **Settings → V
 ## Known limitations
 
 - A `resourcepacks`, `saves` or `datapacks` folder that is a symlink pointing outside the selected game folder (for example one resource pack folder shared across instances) is refused; install into each instance's own folder instead.
-- Go to definition does not yet work from the caret inside the Monaco function editor; use it from form fields or the plain text editor.
-- Clicking a function problem jumps to the start of its line, not to the exact column.
-- If either pack has errors, every export and install action is disabled, including the one for the pack without errors.
 - The 3D preview crops each texture to 16×16 pixels, so HD textures preview cropped (exports are unaffected). Animated textures preview frame by frame.
 - Rename also rewrites a matching id inside function comments and quoted text; the change is one undo step.
-- The world picker shows world folder names, not the names shown in Minecraft.
 - Loot tables and advancements use the general form plus templates; there is no dedicated studio for them yet.
 - F2 inside the function editor has not been checked on Windows; it may also trigger the editor's own rename.
 - Releases are unsigned, so Windows SmartScreen warns on first install.
 - The CurseForge client jar location (`Install\versions` inside the modding folder) and the way vanilla CurseForge instances are recognised come from older sources and still need confirming on a real Windows machine. If the jar is not found there, preview textures still work whenever another launcher (for example the official one) has the same version.
 - MultiMC and PolyMC are never detected automatically, nor is a portable Prism; add their folders in Settings.
+- There is no noise-sampled biome or terrain preview yet: the climate map shows where each biome sits in climate space, not where it lands in a real world.
+- The blocks of a structure template cannot be edited in MCSuperMods: rebuild the piece in the game, save it with a structure block and use **Replace from file…**. Jigsaw block settings can be edited.
+- A structure file with several random palettes is read with its first palette only.
 - Mods are not installed into instances yet: MCSuperMods installs resource and data packs only. Installing the Fabric content jar into an instance comes with Phase 4.
 
 ## How it works
@@ -155,7 +164,7 @@ Full plan with checklists: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Documentation
 
-- [User guide](docs/guide/README.md): [getting started](docs/guide/getting-started.md) and [templates, starters and examples](docs/guide/templates-and-examples.md).
+- [User guide](docs/guide/README.md): [getting started](docs/guide/getting-started.md), [structures](docs/guide/structures.md), [worldgen](docs/guide/worldgen.md) and [templates, starters and examples](docs/guide/templates-and-examples.md).
 - [docs/DESIGN.md](docs/DESIGN.md): the authoritative design document.
 - [docs/ROADMAP.md](docs/ROADMAP.md): phased delivery plan and milestone log.
 - [docs/DEVLOG.md](docs/DEVLOG.md): session-by-session development log.

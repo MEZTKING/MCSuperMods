@@ -17,7 +17,12 @@ import {
 } from '@msm/core';
 import type { SchemaNode } from '@msm/schemas';
 import { FUNCTION_KIND, functionLines } from './mcfunction-problems';
-import { kindRegistry, type SchemaContext } from './schema-context';
+import {
+  BUILT_IN_KIND_LOOKUP,
+  type KindRegistryLookup,
+  kindRegistry,
+  type SchemaContext,
+} from './schema-context';
 
 /** Every element id of `project` (the ids text references are matched against). */
 export function projectElementIds(project: Project): Set<string> {
@@ -62,9 +67,15 @@ export function buildSessionReferenceIndex(
  *
  * @param index - The project's reference index.
  * @param element - The element being renamed.
+ * @param kinds - The registered kinds (the session's kind registry); defaults to the built-in
+ *   plugins' kinds.
  */
-export function referencesForRename(index: ReferenceIndex, element: Element): Reference[] {
-  const registry = kindRegistry(element.kind);
+export function referencesForRename(
+  index: ReferenceIndex,
+  element: Element,
+  kinds: KindRegistryLookup = BUILT_IN_KIND_LOOKUP,
+): Reference[] {
+  const registry = kindRegistry(element.kind, kinds);
   return index
     .referencesTo(element.id)
     .filter((reference) => reference.registry === '' || reference.registry === registry);

@@ -1,6 +1,6 @@
 # packages/plugin-api — Public plugin API
 
-`API_VERSION` 0.5.0: `ElementKind.registry`, `ProjectValidator` (`PluginContributions.validators`), `Target.dataVersion`, `Target.worldgen` and the `structure`, `dimension`, `worldgen` data folders (ADR 0022) on top of the library contribution points `elementTemplates`, `projectStarters`, `examples` (`src/library.ts`; ADR 0020) on top of the Phase 2 surface (`OutputFile.language`, `Problem.range`, `Target.folders.data`; ADR 0017), IR types, `definePlugin` and shared path validation. Plugins declaring `^0.4.0` no longer load.
+`API_VERSION` 0.5.0: `ElementKind.registry`, `ProjectValidator` (`PluginContributions.validators`), `Target.dataVersion`, `Target.worldgen` (`featureSteps`; optional `biomeAttributes`, added within 0.5.0 without a bump) and the `structure`, `dimension`, `worldgen` data folders (ADR 0022) on top of the library contribution points `elementTemplates`, `projectStarters`, `examples` (`src/library.ts`; ADR 0020) on top of the Phase 2 surface (`OutputFile.language`, `Problem.range`, `Target.folders.data`; ADR 0017), IR types, `definePlugin` and shared path validation. Plugins declaring `^0.4.0` no longer load.
 
 ## Purpose
 
@@ -10,7 +10,7 @@
 
 - `src/json.ts`, `src/model.ts`: JSON and IR types.
 - `src/output.ts`, `src/problems.ts`: `OutputFile` (optional `schema` for the validation gate, `language` for text checks such as `mcfunction`), `OutputSink`, `Problem` (optional `file`, and `range` in UTF-16 offsets within `path`'s string or `file`), `ProblemReporter`.
-- `src/target.ts`: `Target` (incl. `folders.resource: Record<ResourceFolderKey, string>`, `folders.data: Record<DataFolderKey, string>`, `dataVersion`, `worldgen: WorldgenFacts`), `PackFormat` (`{ major, minor }`), `MigrationReport`.
+- `src/target.ts`: `Target` (incl. `folders.resource: Record<ResourceFolderKey, string>`, `folders.data: Record<DataFolderKey, string>`, `dataVersion`, `worldgen: WorldgenFacts` with `featureSteps` and optional `biomeAttributes: BiomeAttributeFacts` (colour attributes, `skyColour`, `naturalMobSpawns`)), `PackFormat` (`{ major, minor }`), `MigrationReport`.
 - `src/contributions.ts`: `ElementKind` (`defaultData`, `hiddenPaths`, `previewKind`, `registry`), `EditorContribution`, `Exporter` (`ExporterInput.meta`), `Importer`, `Command`, `ProjectValidator` (`ValidationInput`, `ValidationRegistry`).
 - `src/library.ts`: `TemplateContext`, `ElementTemplate`, `ContentBundle`, `BundleContext`, `ProjectStarter`, `ExampleProject` (host-interpreted; `Uint8Array` for asset bytes).
 - `src/paths.ts`: `isProjectRelativePath`, `assertProjectRelativePath` (shared by core and app main).

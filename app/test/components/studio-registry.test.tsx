@@ -71,8 +71,15 @@ describe('studio registry', () => {
     expect(() =>
       collectStudios({ './x/studios.tsx': { studios: [{ id: 'x', component: FakeStudio }] } }),
     ).toThrow(/kindId or matches/);
-    // No area Studios exist yet in the app itself.
-    expect(Array.isArray(DISCOVERED_STUDIOS)).toBe(true);
+    // The app's own area Studios (`studios/<area>/studios.tsx`) are discovered.
+    expect(DISCOVERED_STUDIOS.map((entry) => entry.id)).toEqual(
+      expect.arrayContaining([
+        'msm.structure-template',
+        'msm.template-pool',
+        'msm.worldgen.biome',
+        'msm.worldgen.placed-feature',
+      ]),
+    );
   });
 
   it('merges the built-in Studios first and picks the first match', () => {

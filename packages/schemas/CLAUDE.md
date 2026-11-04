@@ -1,6 +1,6 @@
 # packages/schemas — Schema system (mcdoc)
 
-Phase 2 code complete: `SchemaNode` normalisation (generics, tuples, primitive arrays, key types, attribute tags, mcdoc `indexed` types and generic dispatchers), `validateJson`, `collectReferences`, the registry index, the built-in `msm:function` extension and the offline Spyglass mcfunction service (ADRs 0009, 0014).
+Phase 2 code complete: `SchemaNode` normalisation (generics, tuples, primitive arrays, key types, attribute tags, mcdoc `indexed` types and generic dispatchers), `validateJson`, `collectReferences`, the registry index, the built-in `msm:function` extension and the offline Spyglass mcfunction service (ADRs 0009, 0014). Phase 3: the `msm:structure_template` extension (ADR 0021) and schema coverage of the 26.3 worldgen, dimension and structure resources (tested in the target package). Known gap: `#[id(tags="implicit")]` is not supported yet, so the ore vein template uses `block_match`.
 
 ## Purpose
 
@@ -11,7 +11,7 @@ Phase 2 code complete: `SchemaNode` normalisation (generics, tuples, primitive a
 - `src/symbols/`, `src/version/`: raw export types, `parseVanillaMcdocSymbols`, `since`/`until` checks.
 - `src/form/schema-node.ts`: the `SchemaNode` model; strings under `#[id(path=...)]` carry `idPath` (registry id `ns:<idPath>name`, value written unprefixed).
 - `src/form/normalise.ts`, `index-builder.ts`: `createSchemaIndex(symbols, { mcVersion })`; `indexed` types and generic dispatchers become dispatchers; `resolveSchemaRef` handles `resource:<kind>`, `tag:<registry>` (instantiated `Tag<E>` accepting `#` refs) and extensions.
-- `src/form/extensions.ts`: `BUILT_IN_EXTENSIONS` (`msm:function`: `{ lines: string[] }`) until MSM mcdoc arrives in Phase 4.
+- `src/form/extensions.ts`: `BUILT_IN_EXTENSIONS` (`msm:function`: `{ lines: string[] }`; `msm:structure_template`: size, palette, block tuples, block entities and jigsaws as JSON) until MSM mcdoc arrives in Phase 4.
 - `src/validate/`: `validateJson` (`schema.*` codes), `describeSchemaNode`, `collectReferences` (same walker; `{ path, registry, id, written?, key? }`).
 - `src/registry/`: `createRegistryIndex` over mcmeta registries plus project ids (unknown ids are warnings; `#x` checks `tag/<registry>`).
 - `src/mcfunction/`: `createMcfunctionService` (`service.ts`), mcdoc symbol loading (`mcdoc-symbols.ts`), MSM block-state checks (`block-states.ts`). Never re-exported from the root entry.

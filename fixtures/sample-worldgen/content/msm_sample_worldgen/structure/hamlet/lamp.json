@@ -55,6 +55,6 @@
   "kind": "minecraft:structure_template",
   "meta": {
     "createdAt": "2026-11-04T00:00:00.000Z",
-    "notes": "A lamp post with a glowstone top. Its foot is a jigsaw named msm_sample_worldgen:street, so it fits the same openings as a street: beside a street as a decoration, or at the end of one as a terminator."
+    "notes": "A lamp post with a glowstone top. Its foot is a jigsaw named msm_sample_worldgen:street, the name a street's near end carries, so it fits any opening that targets that name: beside a street as a decoration, or at the end of one as a terminator."
   }
 }

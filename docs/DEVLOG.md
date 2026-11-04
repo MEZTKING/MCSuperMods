@@ -1024,3 +1024,38 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 **Next**
 - B81 guide: labels and test ids are in the B80 report.
 - `@msm/plugin-structures` templates still say "the same id" (not in this brief).
+
+---
+
+## 2026-11-04 — executor — B81 user guide pages, README, scoped guides
+
+**What**
+- New guide pages:
+  - `docs/guide/structures.md`: importing, the Structure Studio, jigsaw blocks in the game, pools and connections, making a structure generate, exporting `.nbt` and `.schem`;
+  - `docs/guide/worldgen.md`: the worldgen starters, World Types, the Biome Studio, features and the feature order rule, the climate map.
+  - Both explain why linked elements have different ids (`amber_tree` / `amber_tree_placed`, `hamlet` / `hamlets`) and link the in-game check in `fixtures/sample-worldgen/README.md` instead of repeating it.
+- `docs/guide/README.md` lists both pages; `getting-started.md` links them under "Where next".
+- `README.md`:
+  - a "Try the worldgen sample" section and an updated status;
+  - counts of 11 starters, 99 templates and 56 examples;
+  - three new known limitations: no noise preview, structure blocks are not editable, only the first random palette is read.
+- Status lines updated in the root `CLAUDE.md` and in the app, plugins, interop, plugin-api, targets (`WorldgenFacts.biomeAttributes`), schemas and exporters guides. Real totals: 52 kinds and 99 templates (resourcepack 14, datapack 55, structures 9, worldgen 21).
+- Code follow-ups:
+  - `referencesForRename` takes the kind registry, and the session passes `this.registry`. New test: `app/test/session-references.test.ts`.
+  - The out-of-date "No area Studios exist yet" comment is gone. The test now checks the four discovered Studio ids.
+  - The lamp note in `jigsaw-structure.ts` no longer says "fits the same openings". `UPDATE_GOLDENS=1` regenerated three `lamp.json` mirrors: two starters and the fixture. The pinned zip hashes are unchanged, because notes are not exported.
+- Every bold label in the two new pages was found in `app/src` or the plugins' `src`. The two exceptions are bold paragraph lead-ins, not UI labels. Links and anchors in all changed docs were checked with a script, and all resolve.
+- `pnpm turbo run test --force`, `pnpm lint` and `pnpm typecheck` all pass (app 626 tests, exporters 170).
+
+**Decisions**
+- Four README known limitations were already fixed in Phase 3 wave 1 and 2, so they were removed:
+  - Monaco go to definition;
+  - column navigation;
+  - per-pack gating;
+  - world folder names.
+- `getting-started.md` "Where next" said that structures and worldgen come next. It now says that blocks and items come next.
+
+**Next**
+- `docs/guide/templates-and-examples.md` still lists 66 templates, 8 starters and 34 examples. It needs the 33 new templates, the three starters and the 22 examples; it was not in this brief's paths.
+- `docs/CLAUDE.md`'s guide list does not name the two new pages yet (B83).
+- B82 e2e; B83 close.

@@ -121,7 +121,7 @@ export function jigsawStructureContent(
         ids.lamp,
         KINDS.structureTemplate,
         lamp(ids),
-        `A lamp post with a glowstone top. Its foot is a jigsaw named ${ids.connector}, so it fits the same openings as a street: beside a street as a decoration, or at the end of one as a terminator.`,
+        `A lamp post with a glowstone top. Its foot is a jigsaw named ${ids.connector}, the name a street's near end carries, so it fits any opening that targets that name: beside a street as a decoration, or at the end of one as a terminator.`,
       ),
       element(
         ids.processors,

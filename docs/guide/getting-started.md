@@ -149,4 +149,5 @@ Press **Ctrl+Shift+P** to open the command palette and type part of a command's 
 
 - [Templates, starters and examples](templates-and-examples.md): every template, starter and example, and the Examples gallery.
 - [Known limitations](../../README.md#known-limitations) in the README.
-- The [roadmap](../ROADMAP.md): structures and worldgen come next, then real custom blocks and items.
+- [Structures](structures.md) and [Worldgen](worldgen.md): jigsaw structures, custom biomes and World Types.
+- The [roadmap](../ROADMAP.md): real custom blocks and items come next.

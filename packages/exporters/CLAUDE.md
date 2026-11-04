@@ -1,6 +1,6 @@
 # packages/exporters — Exporters
 
-Phase 2 code complete: `runExport` (collect, lower, merge assets, validate JSON and text, write), deterministic fflate zips, memory/folder/zip sinks, and `vanilla-packs` as `resourcePackExporter` (id `vanilla-packs`) and `dataPackExporter` (id `vanilla-packs-data`) from `createVanillaPacksExporter` (ADR 0015). `fabric-content-jar` and `java-project` follow in Phases 4 and 6.
+Phase 2 code complete: `runExport` (collect, lower, merge assets, validate JSON and text, write), deterministic fflate zips, memory/folder/zip sinks, and `vanilla-packs` as `resourcePackExporter` (id `vanilla-packs`) and `dataPackExporter` (id `vanilla-packs-data`) from `createVanillaPacksExporter` (ADR 0015). Phase 3: structure templates lower to `data/<ns>/structure/*.nbt` inside the data pack; the `.nbt` and `.schem` folder exports are plugin exporters of `@msm/plugin-structures` run by the app (ADR 0021); `sample-worldgen.golden.test.ts` pins `fixtures/sample-worldgen` (zip SHA-256, `.nbt` round trip, chain walk in `test/chain-walk.ts`, validators). `fabric-content-jar` and `java-project` follow in Phases 4 and 6.
 
 ## Purpose
 
@@ -18,9 +18,9 @@ Shared modules in `src/`: `run-export.ts`, `zip.ts`, `sinks.ts`, `assets.ts` (as
 
 ## Conventions
 
-- Exporters consume `OutputFile[]` from the lowering pipeline, never elements directly. Source may not import `@msm/targets`, `@msm/target-*` or any `@msm/plugin-*` but `@msm/plugin-api` (Biome); tests may use `@msm/targets`, `@msm/plugin-resourcepack`, `@msm/plugin-datapack` and `@msm/plugin-library` (dev dependency only; ADRs 0013, 0017, 0020).
+- Exporters consume `OutputFile[]` from the lowering pipeline, never elements directly. Source may not import `@msm/targets`, `@msm/target-*` or any `@msm/plugin-*` but `@msm/plugin-api` (Biome); tests may use `@msm/targets` and the built-in plugins (`resourcepack`, `datapack`, `structures`, `worldgen`, `library`) (dev dependency only; ADRs 0013, 0017, 0020).
 - Output is deterministic (stable file ordering, fixed zip timestamps) so builds are reproducible and diffable.
-- Every exporter has a golden test on a sample project (`vanilla-packs`: SHA-256 of the `fixtures/sample-resourcepack` and `fixtures/sample-datapack` zips, identical across timezones).
+- Every exporter has a golden test on a sample project (`vanilla-packs`: SHA-256 of the `fixtures/sample-resourcepack`, `sample-datapack` and `sample-worldgen` zips, identical across timezones).
 - `test/library.test.ts` builds every library starter and example per target, reloads, validates and exports both packs with zero problems, and pins the `examples/` mirror (`UPDATE_GOLDENS=1` rewrites it).
 - The validation gate runs before anything is written: `validateJson` for outputs with `schema` (ADR 0009), the injected `validateText` for outputs with `language` (`mcfunction`; ADR 0014). Errors block; warnings pass; no validator gives `export.language-unchecked` info.
 - The data exporter synthesises `pack.mcmeta` from `packFormats.data` when absent; a combined export is two runs into two sinks, not a third exporter.
@@ -38,7 +38,7 @@ Shared modules in `src/`: `run-export.ts`, `zip.ts`, `sinks.ts`, `assets.ts` (as
 
 ## Commands
 
-- `pnpm --filter @msm/exporters test` (includes both sample-project zip SHA-256 goldens and the library test)
+- `pnpm --filter @msm/exporters test` (includes the three sample-project zip SHA-256 goldens and the library test)
 - `pnpm typecheck` and `pnpm lint` from the repository root
 
 ## Read next

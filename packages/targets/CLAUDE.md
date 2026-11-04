@@ -1,6 +1,6 @@
 # packages/targets — Minecraft version targets
 
-Phase 2 code complete: `mc-26.3/` with `Target.folders.resource` and `folders.data` (plugin-api 0.3.0, ADR 0017), the vendored command tree and block states, and the `@msm/targets` aggregator in `all/` (ADR 0013). A second target (`mc-26.2/`) arrives in Phase 7.
+Phase 2 code complete: `mc-26.3/` with `Target.folders.resource` and `folders.data` (plugin-api 0.3.0, ADR 0017), the vendored command tree and block states, and the `@msm/targets` aggregator in `all/` (ADR 0013). Phase 3 (plugin-api 0.5.0, ADR 0022): `dataVersion` 5023, data folders `structure`, `dimension`, `worldgen`, and `worldgen` facts: `featureSteps` (the eleven decoration steps) and `biomeAttributes` (`WorldgenFacts.biomeAttributes`: the `minecraft:visual/*` colour attributes, `skyColour`, `naturalMobSpawns` = `minecraft:gameplay/natural_mob_spawns`), verified against the vendored mcdoc and mcmeta. A second target (`mc-26.2/`) arrives in Phase 7.
 
 ## Purpose
 
@@ -29,7 +29,7 @@ One package per Minecraft version, `@msm/target-mc-<version>`, holding every ver
 ## Do / Don't
 
 - Do add a version by copying the previous folder, updating facts and pins, re-running both sync scripts, and running the tests.
-- Do keep the real-data tests: schema load and coverage (zero unsupported nodes in Phase 2 kinds), loot validation and the mcfunction service over the vendored data.
+- Do keep the real-data tests: schema load and coverage (zero unsupported nodes in Phase 2 and Phase 3 kinds), loot validation and the mcfunction service over the vendored data.
 - Don't let version facts leak into any other package (`tools/check-deps` enforces this).
 - Don't add pre-26.1 targets in v1.
 

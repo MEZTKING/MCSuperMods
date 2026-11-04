@@ -1,6 +1,6 @@
 # MCSuperMods
 
-MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 2 code complete plus two add-ons: launcher support (Prism, CurseForge, MultiMC; ADR 0019) and the templates and samples library (66 templates, 8 starters, 34 examples; plugin-api 0.4.0; ADR 0020); awaiting in-game checks; Phase 3 (Structures & Worldgen) next. Releases: Windows only (MIT; README "Releasing"). Toolchain: Node 24, pnpm 12.
+MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 2 code complete plus two add-ons: launcher support (Prism, CurseForge, MultiMC; ADR 0019) and the templates and samples library (ADR 0020). Phase 3 (Structures & Worldgen; ADRs 0021–0023; plugin-api 0.5.0) code in progress: structures and worldgen plugins (52 kinds in all), Studios, previews and guides done; e2e and close (B82, B83) next. Library: 99 templates (resourcepack 14, datapack 55, structures 9, worldgen 21), 11 starters, 56 examples. Awaiting in-game checks. Releases: Windows only (MIT; README "Releasing"). Toolchain: Node 24, pnpm 12.
 
 ## Directory map
 
@@ -9,13 +9,13 @@ MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla p
 - `packages/core/` — `@msm/core`, IR, project load/save, command stack, lowering driver
 - `packages/schemas/` — `@msm/schemas`, mcdoc adapter, `validateJson`; `@msm/schemas/mcfunction` (offline Spyglass)
 - `packages/plugin-api/` — `@msm/plugin-api`, public interfaces only
-- `packages/plugins/` — `@msm/plugin-<name>`: `resourcepack`, `datapack` (kinds and their templates), `library` (starters, examples); six more planned
+- `packages/plugins/` — `@msm/plugin-<name>`: `resourcepack`, `datapack`, `structures`, `worldgen` (kinds, templates, validators), `library` (starters, examples); four more planned
 - `packages/exporters/` — `@msm/exporters`, vanilla-packs (resource, data, combined); later content jar, java-project
 - `packages/targets/` — `@msm/target-*`, one folder per MC version (`mc-26.3/`), plus the `@msm/targets` aggregator (`all/`)
-- `packages/interop/` — `@msm/interop`, Blockbench, NBT/schem, Minecraft installation and launcher instances
+- `packages/interop/` — `@msm/interop`, Minecraft installation, launcher instances, `level.dat` world names; Blockbench later
 - `engine-mod/` — `msm_runtime` Fabric mod (Gradle, Java 25)
 - `tools/` — dev scripts: check-deps, check-size, sync-mcdoc, sync-mcmeta, new-plugin
-- `fixtures/sample-resourcepack/`, `fixtures/sample-datapack/` — sample projects for the in-game checks
+- `fixtures/sample-resourcepack/`, `sample-datapack/`, `sample-worldgen/` — sample projects for the in-game checks
 - `examples/` — generated mirror of the library's starters and examples (golden; `UPDATE_GOLDENS=1`)
 - `.claude/agents/` — `orchestrator.md`, `executor.md`
 
