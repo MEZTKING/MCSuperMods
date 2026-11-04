@@ -52,6 +52,7 @@ export interface ValidateOptions {
 
 const DEFAULT_MAX_DEPTH = 64;
 const MAX_LISTED_KEYS = 10;
+const MC_PREFIX = 'minecraft:';
 const MAX_DESCRIBE_DEPTH = 3;
 
 type JsonObject = { [key: string]: Json };
@@ -72,6 +73,11 @@ interface State {
   siblings?: Siblings;
   /** Unknown keys are allowed (validating a struct spread against the whole object). */
   open: boolean;
+  /**
+   * The value is a dispatcher discriminator (a resource location such as `"type"`), so an
+   * enum also accepts it with a `minecraft:` prefix, as the game does.
+   */
+  dispatchKey?: boolean;
 }
 
 interface Context {
@@ -207,6 +213,8 @@ interface StructInfo {
   byKey: Map<string, SchemaField>;
   wildcards: SchemaField[];
   required: SchemaField[];
+  /** Field names a spread dispatcher reads its key from (`minecraft:item_model[[type]]`). */
+  discriminators: Set<string>;
 }
 
 const structInfoCache = new WeakMap<SchemaNode, StructInfo>();
@@ -214,7 +222,12 @@ const structInfoCache = new WeakMap<SchemaNode, StructInfo>();
 function structInfo(node: SchemaNode & { kind: 'struct' }): StructInfo {
   const cached = structInfoCache.get(node);
   if (cached !== undefined) return cached;
-  const info: StructInfo = { byKey: new Map(), wildcards: [], required: [] };
+  const info: StructInfo = {
+    byKey: new Map(),
+    wildcards: [],
+    required: [],
+    discriminators: new Set(),
+  };
   for (const field of node.fields) {
     if (field.key === '*') {
       info.wildcards.push(field);
@@ -222,6 +235,11 @@ function structInfo(node: SchemaNode & { kind: 'struct' }): StructInfo {
     }
     if (!info.byKey.has(field.key)) info.byKey.set(field.key, field);
     if (!field.optional) info.required.push(field);
+  }
+  for (const spread of node.spreads) {
+    const step = spread.kind === 'dispatcher' ? spread.discriminator : [];
+    const key = step.length === 1 ? step[0] : undefined;
+    if (key !== undefined && key !== '%key' && key !== '%parent') info.discriminators.add(key);
   }
   structInfoCache.set(node, info);
   return info;
@@ -344,7 +362,10 @@ function validate(
         mismatch(value, node, state, out);
         return;
       }
-      if (!node.values.some((entry) => entry.value === value)) {
+      const prefixed =
+        state.dispatchKey === true && typeof value === 'string' && value.startsWith(MC_PREFIX);
+      const bare = prefixed ? value.slice(MC_PREFIX.length) : value;
+      if (!node.values.some((entry) => entry.value === value || entry.value === bare)) {
         out.push({
           severity: 'error',
           code: 'schema.invalid-enum',
@@ -451,6 +472,7 @@ function validateStruct(
       siblings,
       open: false,
     };
+    if (info.discriminators.has(key)) entryState.dispatchKey = true;
     const field = info.byKey.get(key);
     if (field !== undefined) {
       validate(entry, field.type, entryState, ctx, out);

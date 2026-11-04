@@ -105,6 +105,20 @@ describe('validateJson over the fixture recipe dispatcher', () => {
     expect(codes(bad)).toContainEqual(['/cookingtime', 'schema.type-mismatch']);
   });
 
+  it('accepts the dispatch key with or without the minecraft: prefix', () => {
+    const errors = (value: Json): SchemaProblem[] =>
+      validateJson(value, recipe).filter((p) => p.severity === 'error');
+    expect(errors(smelting)).toEqual([]);
+    expect(errors({ ...(smelting as object), type: 'smelting' })).toEqual([]);
+  });
+
+  it('keeps rejecting a minecraft: prefix on a non-dispatch enum', () => {
+    const face = withElement({ faces: { up: { texture: '#all', cullface: 'minecraft:up' } } });
+    expect(codes(validateJson(face, model))).toEqual([
+      ['/elements/0/faces/up/cullface', 'schema.invalid-enum'],
+    ]);
+  });
+
   it('warns about unknown registry ids', () => {
     const registries = createRegistryIndex({ vanilla: { recipe_serializer: ['smelting'] } });
     expect(
