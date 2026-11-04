@@ -214,7 +214,9 @@ First release:
 5. When the workflow has finished, open the draft under Releases and check that it has the installer `.exe`, its `.exe.blockmap` and `latest.yml`. Then press **Publish release**.
 6. Install on Windows from the published release. The build is unsigned, so SmartScreen warns on first run: choose **More info**, then **Run anyway**.
 
-Later releases repeat steps 3 to 5 with a higher version each time (for example `0.1.1`, then tag `v0.1.1`). The version in `app/package.json` must match the tag. Installed copies check for the new release a few seconds after start-up (unless "Check for updates automatically" is off in Settings), download it in the background and install it when the user chooses **Restart to update**. Only published releases are offered; drafts are not.
+Later releases repeat steps 3 to 5 with a higher version each time (for example `0.1.1`, then tag `v0.1.1`). The version in `app/package.json` must match the tag.
+
+Releasing without git: instead of step 4, open **Actions > Release > Run workflow** on GitHub, keep the branch `main`, type the version (for example `0.3.0`) and, to release an older commit, paste its full commit SHA. The workflow creates the tag `v<version>` on that commit, checks it matches `app/package.json`, and builds into a draft release just as a tag push does. It never moves an existing tag. Leave the version empty to build an installer without releasing it. Installed copies check for the new release a few seconds after start-up (unless "Check for updates automatically" is off in Settings), download it in the background and install it when the user chooses **Restart to update**. Only published releases are offered; drafts are not.
 
 ## Contributing
 

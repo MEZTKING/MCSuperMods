@@ -6,8 +6,14 @@
 # MEZTKING/MCSuperMods named after the version in app/package.json, then electron-builder
 # publishes into it (ADR 0018): the installer, its `.blockmap` and `latest.yml`, which a last
 # step checks. The maintainer reviews and
-# publishes the draft by hand; the in-app updater only sees published releases. Manual runs
-# build without publishing and keep the files as a workflow artefact.
+# publishes the draft by hand; the in-app updater only sees published releases.
+#
+# Manual runs (Actions > Release > Run workflow):
+# - with a version (for example 0.2.4) and optionally a commit: the workflow creates the tag
+#   `v<version>` on that commit (default: the selected branch) with GITHUB_TOKEN, then builds
+#   and uploads to a draft exactly as a tag push does. No local `git tag` is needed. A tag made
+#   with GITHUB_TOKEN does not start a second run.
+# - without a version: build only, no tag, no release; files kept as a workflow artefact.
 # Action versions: checkout, setup-node and upload-artifact v7 (Node 24; checked 2026-11-04).
 name: Release
 
@@ -15,6 +21,15 @@ on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version without the v (for example 0.2.4). Leave empty to build without releasing."
+        required: false
+        default: ""
+      commit:
+        description: "Full 40-character commit SHA to tag. Leave empty for the tip of the selected branch."
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -26,8 +41,13 @@ jobs:
       CI: true
       # Unsigned until the user supplies signing credentials.
       CSC_IDENTITY_AUTO_DISCOVERY: false
+      # The release tag for this run: the pushed tag, or v<version> for a manual release run,
+      # or empty for a build-only run.
+      RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || (inputs.version != '' && format('v{0}', inputs.version) || '') }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.commit != '' && inputs.commit || github.ref }}
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
@@ -37,13 +57,33 @@ jobs:
       # after the package version, so a mismatched tag (for example v0.2.1 on 0.2.2 code)
       # would silently publish under a different version.
       - name: Check the tag matches the app version
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: env.RELEASE_TAG != ''
         shell: bash
         run: |
           version=$(node -p "require('./app/package.json').version")
-          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
-            echo "::error::Tag ${GITHUB_REF_NAME} does not match app/package.json version ${version}. Tag v${version} instead."
+          if [ "${RELEASE_TAG}" != "v${version}" ]; then
+            echo "::error::Tag ${RELEASE_TAG} does not match app/package.json version ${version}. Tag v${version} instead."
             exit 1
+          fi
+      # Manual release runs create the tag on the checked-out commit. An existing tag must
+      # already point at that commit; the workflow never moves a tag.
+      - name: Create the tag (manual release runs)
+        if: github.event_name == 'workflow_dispatch' && env.RELEASE_TAG != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          sha=$(git rev-parse HEAD)
+          existing=$(gh api "repos/${GH_REPO}/git/ref/tags/${RELEASE_TAG}" --jq '.object.sha' 2>/dev/null || true)
+          if [ -z "$existing" ]; then
+            gh api "repos/${GH_REPO}/git/refs" -f ref="refs/tags/${RELEASE_TAG}" -f sha="$sha" >/dev/null
+            echo "Created ${RELEASE_TAG} at $sha"
+          elif [ "$existing" != "$sha" ]; then
+            echo "::error::${RELEASE_TAG} already exists at $existing, not $sha. Pick that commit or a new version."
+            exit 1
+          else
+            echo "${RELEASE_TAG} already at $sha"
           fi
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
@@ -51,27 +91,27 @@ jobs:
       # exists for the tag, both uploads create one and the assets end up split across two
       # drafts (seen on v0.2.2). Creating the draft once first means it only ever finds it.
       - name: Create the draft release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: env.RELEASE_TAG != ''
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
           version=$(node -p "require('./app/package.json').version")
-          count=$(gh release list --limit 100 --json tagName --jq "[.[] | select(.tagName == \"${GITHUB_REF_NAME}\")] | length")
+          count=$(gh release list --limit 100 --json tagName --jq "[.[] | select(.tagName == \"${RELEASE_TAG}\")] | length")
           if [ "$count" -gt 1 ]; then
-            echo "::error::$count releases already exist for ${GITHUB_REF_NAME}; delete the extra drafts and re-run."
+            echo "::error::$count releases already exist for ${RELEASE_TAG}; delete the extra drafts and re-run."
             exit 1
           fi
           if [ "$count" -eq 0 ]; then
-            gh release create "${GITHUB_REF_NAME}" --draft --title "${version}" --notes "MCSuperMods ${version}" --verify-tag
+            gh release create "${RELEASE_TAG}" --draft --title "${version}" --notes "MCSuperMods ${version}" --verify-tag
           fi
       - name: Build the installer (and upload it to the draft release on tags)
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+          if [ -n "$RELEASE_TAG" ]; then
             pnpm --filter @msm/app exec electron-builder --publish always
           else
             pnpm --filter @msm/app exec electron-builder --publish never
@@ -79,28 +119,28 @@ jobs:
       # The updater needs all three files on one release: the installer, its `.blockmap` and
       # `latest.yml`. Upload `latest.yml` again if it is missing; fail on anything else.
       - name: Check the draft release assets
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: env.RELEASE_TAG != ''
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
           version=$(node -p "require('./app/package.json').version")
-          count=$(gh release list --limit 100 --json tagName --jq "[.[] | select(.tagName == \"${GITHUB_REF_NAME}\")] | length")
+          count=$(gh release list --limit 100 --json tagName --jq "[.[] | select(.tagName == \"${RELEASE_TAG}\")] | length")
           if [ "$count" -ne 1 ]; then
-            echo "::error::Expected exactly one release for ${GITHUB_REF_NAME}, found $count."
+            echo "::error::Expected exactly one release for ${RELEASE_TAG}, found $count."
             exit 1
           fi
-          assets() { gh release view "${GITHUB_REF_NAME}" --json assets --jq '.assets[].name'; }
+          assets() { gh release view "${RELEASE_TAG}" --json assets --jq '.assets[].name'; }
           if ! assets | grep -qx "latest.yml"; then
-            gh release upload "${GITHUB_REF_NAME}" app/dist/latest.yml --clobber
+            gh release upload "${RELEASE_TAG}" app/dist/latest.yml --clobber
           fi
           names=$(assets)
           echo "$names"
           missing=0
           for name in "MCSuperMods-${version}-win-x64.exe" "MCSuperMods-${version}-win-x64.exe.blockmap" "latest.yml"; do
             if ! grep -qx "$name" <<< "$names"; then
-              echo "::error::The draft release ${GITHUB_REF_NAME} is missing $name."
+              echo "::error::The draft release ${RELEASE_TAG} is missing $name."
               missing=1
             fi
           done

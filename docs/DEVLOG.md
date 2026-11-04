@@ -1129,3 +1129,18 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 - User: tag `v0.2.3`, publish; tag `v0.2.4`; then `v0.3.0` (each from `main`), and run the in-game checks.
 - Remove the last two `minimumReleaseAgeExclude` entries after 2026-11-05 06:11 UTC.
 - Phase 4 (custom blocks and items, content jar, `msm_runtime`): plan next.
+
+---
+
+## 2026-11-04 — main session — release workflow: manual release runs
+
+**What**
+- `.github/workflows/release.yml`: `workflow_dispatch` gains `version` and `commit` inputs. With a version, the run creates the tag `v<version>` on the commit (the branch tip by default) through the GitHub API with `GITHUB_TOKEN`, then follows the tag path (version guard, draft first, publish, asset check). Without a version it builds only, as before. All tag-only steps now key on a job-level `RELEASE_TAG`.
+- README "Releasing": the no-git route.
+
+**Decisions**
+- The session cannot push tags (403), and the user asked why releases need them at all. A tag created by `GITHUB_TOKEN` does not trigger the tag workflow again, so a manual run is one run, not two. The workflow refuses to move an existing tag.
+- Publishing the draft stays manual (user decision, ADR 0018).
+
+**Next**
+- Releases: v0.2.3 at 56885610ca9f, v0.2.4 at 6d48c71104d4, then v0.3.0 at `main`, each via Run workflow.
