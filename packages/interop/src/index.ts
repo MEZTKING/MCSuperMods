@@ -1,9 +1,10 @@
 /**
  * `@msm/interop`: Blockbench, NBT and Minecraft installation access.
  *
- * Skeleton only. `minecraft-install/` arrives in Phase 1. This entry point stays free of
- * Node built-ins; the Node adapter lives under `@msm/interop/node`.
+ * Phase 1 provides `minecraft-install/` (locate the game directory, list installed versions,
+ * extract preview assets into the cache, ADR 0011) and a PNG header reader. This entry point
+ * stays free of Node built-ins; the Node adapter lives under `@msm/interop/node`.
  */
 
-/** Placeholder so the package has a module surface until `minecraft-install/` lands. */
-export const INTEROP_PACKAGE = '@msm/interop';
+export * from './minecraft-install/index';
+export { PngFormatError, type PngHeader, readPngHeader } from './png';
