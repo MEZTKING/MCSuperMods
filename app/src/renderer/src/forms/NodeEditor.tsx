@@ -22,8 +22,11 @@ import {
   StringControl,
 } from './scalars';
 import {
+  type DispatchContext,
   defaultValue,
   describeNode,
+  type FieldDispatch,
+  fieldDispatch,
   flattenUnion,
   inferMember,
   isInlineList,
@@ -46,6 +49,11 @@ export interface NodeEditorProps {
   depth: number;
   /** The key under which the value sits in its parent object, for `%key` dispatchers. */
   parentKey?: string;
+  /**
+   * The object that contains the value (struct fields and map entries only), for dispatchers
+   * whose member a sibling field selects.
+   */
+  siblings?: { [key: string]: Json } | undefined;
 }
 
 /** Problems at one pointer, listed under its control. */
@@ -79,11 +87,20 @@ export function DescriptionTip({ label, desc }: { label: string; desc: string | 
   );
 }
 
-function isComposite(node: SchemaNode, value: Json | undefined): boolean {
+function isComposite(
+  node: SchemaNode,
+  value: Json | undefined,
+  context?: DispatchContext,
+): boolean {
   const target = resolveNode(node);
   switch (target.kind) {
+    case 'dispatcher': {
+      const field = fieldDispatch(target, context);
+      if (field?.kind === 'member') return isComposite(field.member, value, context);
+      if (field !== undefined) return false;
+      return value === undefined || isJsonObject(value);
+    }
     case 'struct':
-    case 'dispatcher':
       return value === undefined || isJsonObject(value);
     case 'list':
       return !isInlineList(target) && (value === undefined || Array.isArray(value));
@@ -94,7 +111,7 @@ function isComposite(node: SchemaNode, value: Json | undefined): boolean {
       if (literalChoices(target) !== undefined) return false;
       const index = inferMember(members, value);
       const member = members[index];
-      return member !== undefined && isComposite(member, value);
+      return member !== undefined && isComposite(member, value, context);
     }
     default:
       return false;
@@ -126,7 +143,10 @@ export function Field({
 }) {
   const { hidden } = useForm();
   const problems = useProblems(editor.pointer);
-  const composite = isComposite(editor.node, editor.value);
+  const composite = isComposite(editor.node, editor.value, {
+    siblings: editor.siblings,
+    parentKey: editor.parentKey,
+  });
   const [open, setOpen] = useState(editor.depth < COLLAPSE_DEPTH);
   const problemId = useId();
   if (hidden.has(editor.pointer)) return null;
@@ -223,8 +243,23 @@ export function NodeEditor(props: NodeEditorProps) {
   }
   const scalar = { pointer, label, invalid };
   switch (node.kind) {
+    case 'dispatcher': {
+      const field = fieldDispatch(node, { siblings: props.siblings, parentKey: props.parentKey });
+      if (field?.kind === 'member') return <NodeEditor {...props} node={field.member} />;
+      if (field !== undefined) {
+        return (
+          <JsonFallback
+            pointer={pointer}
+            value={value}
+            label={label}
+            notice={unresolvedNotice(node.registry, field)}
+          />
+        );
+      }
+      if (value !== undefined && !isJsonObject(value)) return <Mismatch {...props} />;
+      return <StructEditor {...props} node={node} value={value} />;
+    }
     case 'struct':
-    case 'dispatcher':
       if (value !== undefined && !isJsonObject(value)) return <Mismatch {...props} />;
       return <StructEditor {...props} node={node} value={value} />;
     case 'list':
@@ -262,6 +297,19 @@ export function NodeEditor(props: NodeEditorProps) {
     case 'reference':
       // resolveNode never returns a reference.
       return null;
+  }
+}
+
+/** Why a field-position dispatcher has no member, as a JSON fallback notice. */
+function unresolvedNotice(registry: string, field: FieldDispatch & { kind: 'unresolved' }): string {
+  const source = field.discriminator === '%key' ? 'its key' : `"${field.discriminator}"`;
+  switch (field.reason) {
+    case 'missing-key':
+      return `Set ${source} to choose the ${registry} type of this value; until then edit it as JSON.`;
+    case 'unknown-key':
+      return `Unknown ${registry} type ${JSON.stringify(field.key)} (from ${source}); edit this value as JSON.`;
+    case 'no-keys':
+      return `No ${registry} types are known for this version; edit this value as JSON.`;
   }
 }
 

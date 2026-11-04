@@ -16,6 +16,7 @@ const MC_PREFIX = 'minecraft:';
 type UnsupportedNode = SchemaNode & { kind: 'unsupported' };
 type StructNode = SchemaNode & { kind: 'struct' };
 type DispatcherNode = SchemaNode & { kind: 'dispatcher' };
+type JsonObject = { [key: string]: Json };
 
 const resolved = new WeakMap<SchemaNode, SchemaNode>();
 
@@ -187,6 +188,72 @@ export function dispatchMember(
   return node.dispatch(key) ?? (keys.includes('%unknown') ? node.dispatch('%unknown') : undefined);
 }
 
+/**
+ * Where a value sits, for dispatchers that choose their member from outside the value: the
+ * object that contains it (a struct field or map entry; absent for the root and list items)
+ * and the key it sits under. Mirrors the validator's `siblings` and `parentKey`.
+ */
+export interface DispatchContext {
+  siblings?: JsonObject | undefined;
+  parentKey?: string | undefined;
+}
+
+/** How a field-position dispatcher resolves for the current sibling or key value. */
+export type FieldDispatch =
+  | { kind: 'member'; member: SchemaNode; key: string | undefined }
+  | {
+      kind: 'unresolved';
+      reason: 'missing-key' | 'unknown-key' | 'no-keys';
+      /** The sibling field name, or `%key`. */
+      discriminator: string;
+      key: string | undefined;
+    };
+
+function scalarKey(raw: Json | undefined): string | undefined {
+  if (typeof raw === 'string') return raw;
+  if (typeof raw === 'number' || typeof raw === 'boolean') return String(raw);
+  return undefined;
+}
+
+/**
+ * A dispatcher in field position whose member is chosen by a sibling field
+ * (`minecraft:environment_attribute[[attribute]][value]` under `value`) or by the key the
+ * value sits under (`%key`), as `validateJson` reads it. `undefined` when the dispatcher
+ * reads its key from the value itself (the root, list items, spreads) or uses an accessor
+ * the form does not model; such dispatchers are edited as structs.
+ */
+export function fieldDispatch(
+  node: DispatcherNode,
+  context: DispatchContext | undefined,
+): FieldDispatch | undefined {
+  const steps = node.discriminator;
+  const step = steps[0];
+  if (steps.length !== 1 || step === undefined || step === '%parent') return undefined;
+  let key: string | undefined;
+  if (step === '%key') {
+    key = context?.parentKey;
+    if (key === undefined) return undefined;
+  } else {
+    const siblings = context?.siblings;
+    if (siblings === undefined) return undefined;
+    key = scalarKey(Object.hasOwn(siblings, step) ? siblings[step] : undefined);
+  }
+  if (node.keys().length === 0) {
+    return { kind: 'unresolved', reason: 'no-keys', discriminator: step, key };
+  }
+  const member =
+    key === undefined || key === ''
+      ? dispatchMember(node, undefined)
+      : (node.dispatch(key) ?? node.dispatch(stripMinecraft(key)) ?? dispatchMember(node, key));
+  if (member !== undefined) return { kind: 'member', member, key };
+  return {
+    kind: 'unresolved',
+    reason: key === undefined || key === '' ? 'missing-key' : 'unknown-key',
+    discriminator: step,
+    key,
+  };
+}
+
 /** A field-keyed dispatcher (`registry[[field]]`) whose key the form edits as a select. */
 export interface DiscriminatorField {
   key: string;
@@ -308,8 +375,11 @@ export function structShape(
   return shape;
 }
 
-/** A default value for a newly added field, item or variant. */
-export function defaultValue(node: SchemaNode, depth = 0): Json {
+/**
+ * A default value for a newly added field, item or variant. `context` places the value (its
+ * containing object and key) so field-position dispatchers default to the selected member.
+ */
+export function defaultValue(node: SchemaNode, depth = 0, context?: DispatchContext): Json {
   const target = resolveNode(node);
   if (depth > MAX_DEFAULT_DEPTH) return target.kind === 'list' || target.kind === 'tuple' ? [] : {};
   switch (target.kind) {
@@ -333,10 +403,15 @@ export function defaultValue(node: SchemaNode, depth = 0): Json {
       return target.items.map((item) => defaultValue(item, depth + 1));
     case 'union': {
       const first = flattenUnion(target)[0];
-      return first === undefined ? null : defaultValue(first, depth + 1);
+      return first === undefined ? null : defaultValue(first, depth + 1, context);
+    }
+    case 'dispatcher': {
+      const field = fieldDispatch(target, context);
+      if (field?.kind === 'member') return defaultValue(field.member, depth + 1, context);
+      if (field !== undefined) return {};
+      return defaultObject(target, {}, depth);
     }
     case 'struct':
-    case 'dispatcher':
       return defaultObject(target, {}, depth);
     case 'any':
     case 'unsupported':
@@ -370,9 +445,21 @@ export function defaultObject(
     if (!changed) break;
   }
   const shape = structShape(node, out);
+  const declared = new Set(shape.fields.map((field) => field.key));
+  // A required field whose dispatcher reads a sibling: choose the sibling's key first.
   for (const field of shape.fields) {
     if (field.optional || out[field.key] !== undefined) continue;
-    out[field.key] = defaultValue(field.type, depth + 1);
+    const target = resolveNode(field.type);
+    if (target.kind !== 'dispatcher' || target.discriminator.length !== 1) continue;
+    const sibling = target.discriminator[0];
+    if (sibling === undefined || sibling.startsWith('%') || !declared.has(sibling)) continue;
+    if (out[sibling] !== undefined && out[sibling] !== '') continue;
+    const first = pickableKeys(target)[0];
+    if (first !== undefined) out[sibling] = first;
+  }
+  for (const field of shape.fields) {
+    if (field.optional || out[field.key] !== undefined) continue;
+    out[field.key] = defaultValue(field.type, depth + 1, { siblings: out, parentKey: field.key });
   }
   return out;
 }

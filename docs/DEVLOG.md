@@ -366,3 +366,27 @@ Append-only record of every working session. Newest entry at the bottom. Format:
 - Wave 4: B42 Studio wiring, B43 animated textures, B44 Spyglass symbols inside commands, B45 sample data pack.
 - Wave 5: B46 data pack e2e, B47 docs sync.
 - Auto-update brief: add to wave 4 or 5.
+
+---
+
+## 2026-11-04 — main session — Phase 2 wave 3 close
+
+**What**
+- **B40 landed:**
+  - **Field-position dispatchers in SchemaForm**, using a sibling or `%key` discriminator. `environment_attribute_check.value` and `%key` component values now render as proper forms instead of JSON.
+  - **Id inputs:** `IdInput` with `#tag` suggestions.
+  - **RecipeStudio:** a 3×3 shaped grid with automatic key letters, shapeless and cooking editors, and an "advanced" toggle to the schema form.
+  - **TagStudio:** a `replace` toggle and optional entries.
+  - **FunctionEditor:** lazy Monaco with an mcfunction Monarch tokenizer, problem markers from `/lines/<n>` plus `range`, and snippet completions. The textarea fallback has Ctrl+Space completion.
+  - **CommandPalette** and **WorldPickerDialog**.
+  - **form-coverage test:** every member of the six key dispatchers renders without a JSON fallback.
+- Removed stray `zz-explore` test files left by executors.
+- Verified: lint, typecheck and `pnpm test` are green. App tests: 296.
+
+**Decisions**
+- Recipe `category` suggestions come from the schema (B42), not from values hard-coded in the app, because they are version facts.
+- The components are presentational; B42 connects them to the session and store.
+
+**Next**
+- Wave 4: B42 Studio wiring, B43 animated textures, B44 Spyglass symbols for JSON/NBT inside commands, B45 sample data pack.
+- Auto-update brief (B48) runs alongside wave 4.

@@ -4,9 +4,20 @@
  */
 export type { ChangeOptions, CompletionSource, FormChange, FormProblem } from './context';
 export {
+  IdDraftInput,
+  type IdDraftInputProps,
+  IdInput,
+  type IdInputProps,
+  idSuggestions,
+  type SuggestIds,
+} from './IdInput';
+export { ProblemList } from './NodeEditor';
+export { isWithin } from './pointer';
+export {
   DEFAULT_MAX_DEPTH,
   SchemaForm,
   type SchemaFormHandle,
   type SchemaFormProps,
 } from './SchemaForm';
+export { inputClass } from './scalars';
 export { defaultValue, inferMember, resolveNode } from './schema-utils';

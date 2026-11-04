@@ -128,6 +128,7 @@ export function StructEditor(
             label={field.key}
             depth={depth + 1}
             parentKey={field.key}
+            siblings={object}
             desc={field.desc}
             deprecated={field.deprecated}
             onRemove={field.optional && has ? () => setField(field.key, undefined) : undefined}
@@ -150,7 +151,12 @@ export function StructEditor(
         <AddFieldMenu
           label={label}
           fields={missing}
-          onAdd={(field) => setField(field.key, defaultValue(field.type))}
+          onAdd={(field) =>
+            setField(
+              field.key,
+              defaultValue(field.type, 0, { siblings: object, parentKey: field.key }),
+            )
+          }
         />
       )}
       <ProblemList problems={orphans} />
@@ -314,7 +320,7 @@ function MapEditor({
   const canAdd = draft !== '' && !taken(draft);
   const add = () => {
     if (!canAdd) return;
-    const initial = defaultValue(field.type);
+    const initial = defaultValue(field.type, 0, { siblings: object, parentKey: draft });
     if (absent) onChange(pointer, { [draft]: initial });
     else onChange(childPointer(pointer, draft), initial);
     setDraft('');
@@ -335,6 +341,7 @@ function MapEditor({
           label={key}
           depth={depth + 1}
           parentKey={key}
+          siblings={object}
           desc={field.desc}
           labelSlot={
             <KeyInput

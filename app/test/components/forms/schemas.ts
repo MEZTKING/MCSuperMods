@@ -6,7 +6,7 @@
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { createSchemaIndex, parseVanillaMcdocSymbols, type SchemaIndex } from '@msm/schemas';
-import { builtInTargets, readVendoredJson } from '@msm/targets';
+import { builtInTargets, readVendoredJson, type TargetBundle } from '@msm/targets';
 
 /**
  * Under happy-dom, Vitest serves modules over HTTP, so `import.meta.url` (and the vendored
@@ -20,17 +20,28 @@ function toPath(url: URL): string {
   throw new Error(`Cannot read ${url.href} from the file system.`);
 }
 
-let cached: Promise<SchemaIndex> | undefined;
+const cache = new Map<TargetBundle, Promise<SchemaIndex>>();
+
+/** The schema index of one built-in target, built once per test file. */
+export function schemaIndexFor(bundle: TargetBundle): Promise<SchemaIndex> {
+  let index = cache.get(bundle);
+  if (index === undefined) {
+    index = (async () => {
+      const raw = await readVendoredJson(bundle, 'vanillaMcdocSymbols', (url) =>
+        readFile(toPath(url)),
+      );
+      return createSchemaIndex(parseVanillaMcdocSymbols(raw), {
+        mcVersion: bundle.target.mcVersion,
+      });
+    })();
+    cache.set(bundle, index);
+  }
+  return index;
+}
 
 /** The schema index of `builtInTargets[0]`, built once per test file. */
 export function schemaIndex(): Promise<SchemaIndex> {
-  cached ??= (async () => {
-    const bundle = builtInTargets[0];
-    if (bundle === undefined) throw new Error('No built-in target.');
-    const raw = await readVendoredJson(bundle, 'vanillaMcdocSymbols', (url) =>
-      readFile(toPath(url)),
-    );
-    return createSchemaIndex(parseVanillaMcdocSymbols(raw), { mcVersion: bundle.target.mcVersion });
-  })();
-  return cached;
+  const bundle = builtInTargets[0];
+  if (bundle === undefined) return Promise.reject(new Error('No built-in target.'));
+  return schemaIndexFor(bundle);
 }
