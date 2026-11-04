@@ -1,0 +1,27 @@
+{
+  "contents": {
+    "carvers": "minecraft:cave",
+    "downfall": 0.6,
+    "effects": {
+      "grass_color": 7979098,
+      "water_color": "#3f76e4"
+    },
+    "features": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [
+        "minecraft:ore_dirt",
+        "example:ruby_ore"
+      ]
+    ],
+    "has_precipitation": true,
+    "temperature": 0.6
+  },
+  "layer": "datapack",
+  "path": "data/example/worldgen/biome/ruby_grove.json",
+  "schema": "resource:worldgen/biome"
+}

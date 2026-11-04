@@ -1,4 +1,18 @@
 /**
- * Element kinds contributed by `@msm/plugin-structures`. One module per kind; none yet.
+ * Element kinds contributed by `@msm/plugin-structures`.
  */
-export {};
+import type { ElementKind } from '@msm/plugin-api';
+import { processorListKind, structureKind, structureSetKind, templatePoolKind } from './json-kinds';
+import { structureTemplateKind } from './structure-template';
+
+export * from './json-kinds';
+export * from './structure-template';
+
+/** Every kind of this plugin, in sidebar order. */
+export const structureKinds: readonly ElementKind[] = Object.freeze([
+  structureTemplateKind,
+  templatePoolKind,
+  structureKind,
+  structureSetKind,
+  processorListKind,
+]);

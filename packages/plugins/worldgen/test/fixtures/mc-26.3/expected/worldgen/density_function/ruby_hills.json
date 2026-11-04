@@ -1,0 +1,15 @@
+{
+  "contents": {
+    "left": {
+      "noise": "example:ruby_noise",
+      "type": "minecraft:noise",
+      "xz_scale": 1,
+      "y_scale": 0
+    },
+    "right": 0.5,
+    "type": "minecraft:mul"
+  },
+  "layer": "datapack",
+  "path": "data/example/worldgen/density_function/ruby_hills.json",
+  "schema": "resource:worldgen/density_function"
+}

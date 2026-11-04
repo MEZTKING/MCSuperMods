@@ -1,0 +1,16 @@
+{
+  "contents": {
+    "generator": {
+      "biome_source": {
+        "biome": "minecraft:plains",
+        "type": "minecraft:fixed"
+      },
+      "settings": "minecraft:overworld",
+      "type": "minecraft:noise"
+    },
+    "type": "minecraft:overworld"
+  },
+  "layer": "datapack",
+  "path": "data/example/dimension/sample.json",
+  "schema": "resource:dimension"
+}

@@ -1,0 +1,19 @@
+{
+  "contents": {
+    "discard_chance_on_air_exposure": 0.5,
+    "size": 6,
+    "targets": [
+      {
+        "state": "minecraft:redstone_ore",
+        "target": {
+          "block": "minecraft:stone",
+          "predicate_type": "minecraft:block_match"
+        }
+      }
+    ],
+    "type": "minecraft:ore"
+  },
+  "layer": "datapack",
+  "path": "data/example/worldgen/feature/ruby_ore.json",
+  "schema": "resource:worldgen/feature"
+}

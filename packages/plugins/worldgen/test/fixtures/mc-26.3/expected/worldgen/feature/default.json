@@ -1,0 +1,12 @@
+{
+  "contents": {
+    "to_place": {
+      "state": "minecraft:short_grass",
+      "type": "minecraft:simple"
+    },
+    "type": "minecraft:simple_block"
+  },
+  "layer": "datapack",
+  "path": "data/example/worldgen/feature/sample.json",
+  "schema": "resource:worldgen/feature"
+}

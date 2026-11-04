@@ -1,0 +1,9 @@
+{
+  "contents": {
+    "feature": "minecraft:oak",
+    "placement": []
+  },
+  "layer": "datapack",
+  "path": "data/example/worldgen/placed_feature/sample.json",
+  "schema": "resource:worldgen/placed_feature"
+}

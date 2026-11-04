@@ -1,0 +1,16 @@
+{
+  "contents": {
+    "generator": {
+      "biome_source": {
+        "biome": "example:ruby_grove",
+        "type": "minecraft:fixed"
+      },
+      "settings": "minecraft:overworld",
+      "type": "minecraft:noise"
+    },
+    "type": "minecraft:overworld"
+  },
+  "layer": "datapack",
+  "path": "data/example/dimension/ruby_realm.json",
+  "schema": "resource:dimension"
+}

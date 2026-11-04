@@ -1,0 +1,8 @@
+{
+  "contents": {
+    "preset": "minecraft:overworld"
+  },
+  "layer": "datapack",
+  "path": "data/example/worldgen/multi_noise_biome_source_parameter_list/sample.json",
+  "schema": "resource:worldgen/multi_noise_biome_source_parameter_list"
+}

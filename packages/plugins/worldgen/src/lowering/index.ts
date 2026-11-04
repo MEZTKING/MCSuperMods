@@ -1,5 +1,6 @@
 /**
- * Pure lowering functions (`lower(element, target) -> OutputFile[]`) for
- * `@msm/plugin-worldgen`. None yet.
+ * Pure lowering helpers (`lower(element, target) -> OutputFile[]`) for `@msm/plugin-worldgen`.
  */
-export {};
+
+export { lowerJsonData } from './json-data';
+export { dataPath, splitResourceLocation, WorldgenLoweringError } from './paths';

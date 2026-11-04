@@ -1,0 +1,25 @@
+{
+  "contents": {
+    "display": "minecraft:grass_block",
+    "settings": {
+      "biome": "minecraft:plains",
+      "layers": [
+        {
+          "block": "minecraft:bedrock",
+          "height": 1
+        },
+        {
+          "block": "minecraft:dirt",
+          "height": 2
+        },
+        {
+          "block": "minecraft:grass_block",
+          "height": 1
+        }
+      ]
+    }
+  },
+  "layer": "datapack",
+  "path": "data/example/worldgen/flat_level_generator_preset/sample.json",
+  "schema": "resource:worldgen/flat_level_generator_preset"
+}
