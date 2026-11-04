@@ -1,8 +1,22 @@
 /**
  * `@msm/exporters`: turns lowered output into packs, jars and projects.
  *
- * Skeleton only. The export pipeline and the `vanilla-packs` exporter arrive in Phase 1.
+ * Phase 1 provides the export pipeline (`runExport`), deterministic zips, output sinks and
+ * the `vanilla-packs` exporter (resource pack layer).
+ *
+ * @packageDocumentation
  */
 
-/** Placeholder so the package has a module surface until the pipeline lands. */
-export const EXPORTERS_PACKAGE = '@msm/exporters';
+export { assetOutputFiles, EXPORTED_ASSET_FOLDERS } from './assets';
+export { outputFileBytes } from './contents';
+export { EXPORT_MANIFEST_FILE, EXPORT_MANIFEST_FORMAT_VERSION, exportManifest } from './manifest';
+export { type ExportProblemCode, ExportProblemCodes } from './problem-codes';
+export { type ExportReport, type ExportRequest, runExport } from './run-export';
+export { createFileSystemSink, createMemorySink, createZipSink } from './sinks';
+export {
+  defaultResourcePackMcmeta,
+  PACK_MCMETA_FILE,
+  packFileName,
+  vanillaPacksExporter,
+} from './vanilla-packs/index';
+export { createZipBytes } from './zip';

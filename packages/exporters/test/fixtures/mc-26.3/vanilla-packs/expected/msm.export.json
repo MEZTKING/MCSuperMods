@@ -1,0 +1,11 @@
+{
+  "exporter": "vanilla-packs",
+  "fileCount": 7,
+  "formatVersion": 1,
+  "minecraft": "26.3",
+  "msmVersion": "0.1.0",
+  "plugins": [
+    "msm.resourcepack"
+  ],
+  "target": "mc-26.3"
+}
