@@ -526,3 +526,21 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - The user retries the setup. Consider merging the development branch into `main` with a pull request, so that cloning gives the current code.
+
+---
+
+## 2026-11-04 — main session — Windows setup, second attempt (Node 26)
+
+**What**
+- `winget install OpenJS.NodeJS.LTS` installed **Node 26.13.0**, the current LTS, not 24.
+- The user ran the next commands in the same PowerShell window, so `node`, `npm` and `pnpm` were not on PATH yet. The earlier clone folder was also no longer at `D:\Claude\MCSuperMods\MCSuperMods`.
+- Node 25+ no longer bundles corepack (confirmed: the Node 26.13 Linux distribution has no `corepack` binary). README now uses `npm install -g pnpm@12.16.1` as the primary step.
+- README "Try it" rewritten:
+  - Node 24–26;
+  - open a new terminal, or reload PATH in place with a one-liner;
+  - `git clone -b ccr-d077e76e-4gnbx2`;
+  - the execution-policy note.
+- Verified the user's exact flow on Node 26.13.0 (checksum-verified download) in a clean worktree: `npm install -g pnpm@12.16.1`, then `pnpm install --frozen-lockfile`, typecheck, `pnpm test` (11/11) and build. All pass. The `engines` range `>=24 <27` already covers 26.
+
+**Next**
+- The user retries in a fresh terminal. Consider moving `.nvmrc` and CI to Node 26 LTS in Phase 3 (Q11 follow-up), since winget now installs 26.

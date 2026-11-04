@@ -17,18 +17,16 @@ A desktop mod maker for Minecraft Java Edition that takes you from a simple text
 
 ## Try it
 
-There is no published installer yet, so you run the app from source. On Windows you need [Git](https://git-scm.com/), [Node.js](https://nodejs.org/) 24 LTS (24.x up to, but not including, 27) and Minecraft Java Edition 26.3.
+There is no published installer yet, so you run the app from source. On Windows you need [Git](https://git-scm.com/), [Node.js](https://nodejs.org/) 24, 25 or 26 (the current LTS from `winget install OpenJS.NodeJS.LTS` works) and Minecraft Java Edition 26.3.
 
-Install Node.js first, either from the nodejs.org installer or with `winget install OpenJS.NodeJS.LTS`, then **open a new terminal** so it is on your PATH (`node -v` should print `v24.x`). `pnpm` and `corepack` come with Node.js; if PowerShell says they are "not recognized", Node.js is not installed or the terminal is older than the install.
+After installing Node.js, **close every terminal and open a new one** so Node is on your PATH; `node -v` and `npm -v` should both print a version. If they are "not recognized", the terminal predates the install: open a new one, restart Windows, or reload the PATH in the current window with `$env:Path = [Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [Environment]::GetEnvironmentVariable("Path","User")`.
 
 In PowerShell:
 
 ```powershell
-git clone https://github.com/MEZTKING/MCSuperMods.git
+git clone -b ccr-d077e76e-4gnbx2 https://github.com/MEZTKING/MCSuperMods.git   # development branch until merged into main
 cd MCSuperMods
-git checkout ccr-d077e76e-4gnbx2   # development branch; skip once the work is merged into main
-corepack enable                    # provides the pinned pnpm; needs an Administrator PowerShell
-# without admin rights, use instead:  npm install -g pnpm@12.16.1
+npm install -g pnpm@12.16.1        # Node 25+ no longer bundles corepack; on Node 24 `corepack enable` (admin) also works
 pnpm install
 pnpm dev                           # opens the MCSuperMods window
 ```
