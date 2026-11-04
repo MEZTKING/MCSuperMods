@@ -1,6 +1,7 @@
 import type { Json, ResourceLocation } from '@msm/core';
 import { Dialog } from 'radix-ui';
 import { type FormEvent, type ReactNode, useId, useState } from 'react';
+import { useUiStore } from '../store/ui-store';
 import { type ElementTemplate, templateElementId } from '../studios/templates';
 import { Button } from './ui/Button';
 
@@ -106,11 +107,22 @@ export interface NewElementInput {
 }
 
 /**
+ * The namespace a template without its own default starts in: the one the last element was
+ * created in when the project has it, else the first namespace other than `minecraft` (which
+ * sorts first once the load or tick tag adds it), else the first.
+ */
+export function fallbackNamespace(namespaces: readonly string[], last: string | null): string {
+  if (last !== null && namespaces.includes(last)) return last;
+  return namespaces.find((entry) => entry !== 'minecraft') ?? namespaces[0] ?? '';
+}
+
+/**
  * The "New element" template picker: a template (Block model, Item model, Blockstate, …), a
  * namespace and a name. The template sets the id prefix or default name, the starting data
  * and optionally a default namespace (`minecraft` for the tick and load function tags). A
  * namespace the project does not have yet is offered too; the dialog says that creating the
- * element adds it (the session adds it in the same undo step).
+ * element adds it (the session adds it in the same undo step). Without a template default the
+ * namespace is {@link fallbackNamespace}, remembered in the UI store across opens.
  */
 export function NewElementDialog(props: {
   namespaces: readonly string[];
@@ -120,7 +132,9 @@ export function NewElementDialog(props: {
   onCancel(): void;
   onSubmit(input: NewElementInput): void;
 }) {
-  const firstNamespace = props.namespaces[0] ?? '';
+  const lastNamespace = useUiStore((state) => state.lastNamespace);
+  const setLastNamespace = useUiStore((state) => state.setLastNamespace);
+  const firstNamespace = fallbackNamespace(props.namespaces, lastNamespace);
   const [namespace, setNamespace] = useState(
     props.templates[0]?.defaultNamespace ?? firstNamespace,
   );
@@ -140,8 +154,8 @@ export function NewElementDialog(props: {
     else if (template?.defaultName !== undefined && name === template.defaultName) setName('');
     if (next.defaultNamespace !== undefined) setNamespace(next.defaultNamespace);
     else if (template?.defaultNamespace !== undefined && namespace === template.defaultNamespace) {
-      // Leave the template's namespace again unless the user picked it themselves.
-      setNamespace(props.namespaces.includes(namespace) ? namespace : firstNamespace);
+      // The namespace is still the template's own: leave it for the usual default.
+      setNamespace(firstNamespace);
     }
     setTemplateId(next.id);
     setError(null);
@@ -175,6 +189,7 @@ export function NewElementDialog(props: {
               namespaces: props.namespaces,
             }),
           });
+          if (template.defaultNamespace === undefined) setLastNamespace(namespace);
         }, setError)
       }
     >

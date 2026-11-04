@@ -4,16 +4,21 @@ import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  fallbackNamespace,
   NewElementDialog,
   type NewElementInput,
 } from '../../src/renderer/src/components/NewElementDialog';
+import { useUiStore } from '../../src/renderer/src/store/ui-store';
 import {
   RESOURCE_PACK_TEMPLATES,
   templateElementId,
   templatesFor,
 } from '../../src/renderer/src/studios/templates';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  useUiStore.setState({ lastNamespace: null });
+});
 
 const kinds = resourcePackKinds;
 const kindDefault = (kind: string) => kinds.find((entry) => entry.id === kind)?.defaultData;
@@ -161,5 +166,66 @@ describe('NewElementDialog default namespace', () => {
     await user.click(screen.getByTestId('template-function'));
     expect((screen.getByTestId('new-element-namespace') as HTMLSelectElement).value).toBe('demo');
     expect(screen.queryByTestId('new-element-new-namespace')).toBeNull();
+  });
+});
+
+describe('NewElementDialog fallback namespace', () => {
+  const dataKinds = ['minecraft:tag/function', 'minecraft:function', 'minecraft:recipe'];
+
+  function renderData(namespaces: readonly string[], onSubmit = vi.fn()) {
+    render(
+      <NewElementDialog
+        namespaces={namespaces}
+        templates={templatesFor(dataKinds)}
+        kindDefault={() => undefined}
+        onCancel={vi.fn()}
+        onSubmit={onSubmit}
+      />,
+    );
+    return onSubmit;
+  }
+
+  const selected = () => (screen.getByTestId('new-element-namespace') as HTMLSelectElement).value;
+
+  it('picks the last-used namespace, else the first other than minecraft', () => {
+    expect(fallbackNamespace(['minecraft', 'demo', 'zed'], null)).toBe('demo');
+    expect(fallbackNamespace(['minecraft', 'demo', 'zed'], 'zed')).toBe('zed');
+    expect(fallbackNamespace(['minecraft', 'demo'], 'gone')).toBe('demo');
+    expect(fallbackNamespace(['minecraft'], null)).toBe('minecraft');
+    expect(fallbackNamespace([], null)).toBe('');
+  });
+
+  it('does not default to minecraft once the project has it', async () => {
+    renderData(['minecraft', 'demo']);
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('template-function'));
+    expect(selected()).toBe('demo');
+    await user.click(screen.getByTestId('template-function_load'));
+    expect(selected()).toBe('minecraft');
+    await user.click(screen.getByTestId('template-function'));
+    expect(selected()).toBe('demo');
+  });
+
+  it('remembers the namespace used last across opens', async () => {
+    const user = userEvent.setup();
+    renderData(['minecraft', 'demo', 'other']);
+    await user.click(screen.getByTestId('template-function'));
+    await user.selectOptions(screen.getByTestId('new-element-namespace'), 'other');
+    await user.type(screen.getByTestId('new-element-name'), 'hello');
+    await user.click(screen.getByTestId('new-element-dialog-submit'));
+    expect(useUiStore.getState().lastNamespace).toBe('other');
+    cleanup();
+
+    renderData(['minecraft', 'demo', 'other']);
+    await user.click(screen.getByTestId('template-function'));
+    expect(selected()).toBe('other');
+  });
+
+  it('does not remember a template default namespace', async () => {
+    const user = userEvent.setup();
+    renderData(['minecraft', 'demo']);
+    await user.click(screen.getByTestId('template-function_load'));
+    await user.click(screen.getByTestId('new-element-dialog-submit'));
+    expect(useUiStore.getState().lastNamespace).toBeNull();
   });
 });

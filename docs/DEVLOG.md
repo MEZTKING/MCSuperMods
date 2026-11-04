@@ -435,3 +435,43 @@ Append-only record of every working session. Newest entry at the bottom. Format:
 
 **Next**
 - Wave 5: B46 data pack e2e, B48 auto-update, B49 mcdoc symbols in the app with JSON/NBT completion and the cache schema bump, then B47 docs sync.
+
+---
+
+## 2026-11-04 — main session — Phase 2 wave 5 (implementation) close
+
+**What** (each brief verified and committed)
+- **B49:**
+  - The app's mcfunction broker now passes the vanilla-mcdoc symbols, so text and item components and NBT inside commands are type-checked in the running app.
+  - Added `@spyglassmc/json` 0.3.61 and `@spyglassmc/nbt` 0.3.63, the versions java-edition pins. When symbols are loaded the service checks the document before completing, because typed completers need that type information. `tellraw @a {"` now suggests `text`, `color` and `bold`, and `{No` suggests `NoAI`.
+  - The lazy mcfunction chunk grew by 20 kB.
+  - Asset cache schema bumped to 2, so Phase 1 caches without `.png.mcmeta` are re-extracted.
+- **B48, auto-update (ADR 0018):**
+  - `electron-updater` sits behind an injectable wrapper and is active only in packaged Windows builds outside test runs.
+  - The startup check runs 5 s after load (setting `updates.autoCheck`, on by default), plus Help > Check for Updates and a command-palette entry.
+  - Updates download in the background. A "Restart to update" banner installs only through the normal close guard, so unsaved work still gets its prompt.
+  - The release workflow publishes the installer, blockmap and `latest.yml` to a DRAFT GitHub release, which the user publishes.
+  - electron-updater bundles as a 527 kB lazy main chunk and loads from `app.asar`.
+- **B46, data pack golden-path e2e:**
+  - Covers: a function with a deliberate error, then fixed; a load tag in a new `minecraft` namespace; a shaped recipe from grid cells; rename through the command palette; data and combined export checked with fflate; install into a fake world; reopen.
+  - 3 of 3 runs passed, about 7 s each.
+- **Bug fixes found by B46** (main-session follow-up):
+  - **Fast typing in Monaco could scramble text.** A stale echo of the editor's own value reset the model and the caret. Both Monaco editors now go through `bindControlledModel`, which ignores the editor's own echoes and applies external changes with `pushEditOperations`, keeping the selection. A unit test with a stand-in model reproduces the scramble without the fix. Electron did not reproduce it on demand, so the unit test is the regression guard. The e2e now types into Monaco directly.
+  - **New element defaulted to the `minecraft` namespace.** It now uses the last-used namespace, else the first non-`minecraft` one.
+- **Verification:**
+  - A clean worktree of the committed HEAD typechecks with 0 errors; lint is clean; 11/11 test tasks pass.
+  - The working tree passes lint, typecheck and app tests (397). Each executor ran e2e 3/3.
+  - asar 12.7 MB of 25 MB.
+
+**Needs the user — first release** (from B48's report, to be put in README by B47)
+1. Make `MEZTKING/MCSuperMods` public.
+2. Repository Settings > Actions > General > Workflow permissions: read and write.
+3. Set `app/package.json` `version` (currently `0.0.0`, for example `0.1.0`) and commit.
+4. Push the tag `v0.1.0`.
+5. Check the draft release has the `.exe`, `.blockmap` and `latest.yml`, then press Publish.
+6. Install on Windows. SmartScreen will warn because the build is unsigned.
+
+Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before tagging `v0.1.0`.
+
+**Next**
+- B47: docs sync, ROADMAP ticks, Milestone Log, and CLAUDE.md status lines. It must also record: ADR 0010/0011 updates for animated textures; ADR 0014 for checking with symbols and JSON/NBT completion; the stale DESIGN §14 auto-update line; the schemas and plugins CLAUDE.md files; and the known gaps listed in the wave 4 entry.

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { bindControlledModel, type ControlledModelBinding } from '../json-editor/controlled-model';
 import { monaco } from '../json-editor/monaco-setup';
 import {
   MCFUNCTION_LANGUAGE_ID,
@@ -18,8 +19,9 @@ function themeFor(dark: boolean): string {
 registerMcfunction(monaco);
 
 /**
- * Monaco mcfunction editor (lazy-loaded; see `FunctionEditor`). Controlled: `value` replaces
- * the model's text when it differs, and every edit calls `onChange`. Problems become markers;
+ * Monaco mcfunction editor (lazy-loaded; see `FunctionEditor`). Controlled: every edit calls
+ * `onChange`; a `value` the editor did not emit is applied as an edit that keeps the selection
+ * (see `controlled-model`). Problems become markers;
  * completions come from `complete`, inserted as snippets.
  */
 export default function MonacoFunctionEditor({
@@ -36,7 +38,10 @@ export default function MonacoFunctionEditor({
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const onChangeRef = useRef(onChange);
   const completeRef = useRef<CompleteFunction | undefined>(complete);
-  const initialValue = useRef(value);
+  const bindingRef = useRef<ControlledModelBinding | null>(null);
+  /** The latest `value`, for a model created after `id` or `label` changes. */
+  const valueRef = useRef(value);
+  valueRef.current = value;
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -47,7 +52,7 @@ export default function MonacoFunctionEditor({
     const host = hostRef.current;
     if (host === null) return;
     const media = window.matchMedia(darkQuery);
-    const model = monaco.editor.createModel(initialValue.current, MCFUNCTION_LANGUAGE_ID);
+    const model = monaco.editor.createModel(valueRef.current, MCFUNCTION_LANGUAGE_ID);
     setModelCompleter(model, (source, offset) =>
       completeRef.current === undefined ? Promise.resolve([]) : completeRef.current(source, offset),
     );
@@ -64,13 +69,15 @@ export default function MonacoFunctionEditor({
     });
     editorRef.current = editor;
     host.querySelector('.native-edit-context, textarea')?.setAttribute('id', id);
-    const subscription = model.onDidChangeContent(() => onChangeRef.current(model.getValue()));
+    const binding = bindControlledModel(model, (text) => onChangeRef.current(text));
+    bindingRef.current = binding;
     const onScheme = (event: MediaQueryListEvent): void =>
       monaco.editor.setTheme(themeFor(event.matches));
     media.addEventListener('change', onScheme);
     return () => {
       media.removeEventListener('change', onScheme);
-      subscription.dispose();
+      binding.dispose();
+      bindingRef.current = null;
       setModelCompleter(model, undefined);
       editor.dispose();
       model.dispose();
@@ -78,9 +85,9 @@ export default function MonacoFunctionEditor({
     };
   }, [id, label]);
 
+  // Echoes of the editor's own edits are ignored; external changes keep the selection.
   useEffect(() => {
-    const model = editorRef.current?.getModel();
-    if (model !== null && model !== undefined && model.getValue() !== value) model.setValue(value);
+    bindingRef.current?.setValue(value);
   }, [value]);
 
   useEffect(() => {

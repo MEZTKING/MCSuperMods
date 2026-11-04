@@ -89,32 +89,43 @@ async function exportMenuItem(window: Page, testId: string): Promise<Locator> {
   return item;
 }
 
-/**
- * Uses the textarea function editor for this spec. Typing quickly into Monaco under xvfb
- * sometimes resets the caret to the start of the document mid-word (three of five probe runs
- * lost or reordered characters; the textarea never did), so the spec disables Monaco the same
- * way `MSM_SMOKE` does. The flag is read on every render, so setting it before the first
- * editor mounts is enough.
- */
-async function disableMonaco(window: Page): Promise<void> {
-  await window.evaluate(() => {
-    (window as unknown as { msmNoMonaco?: boolean }).msmNoMonaco = true;
-  });
+/** The Monaco function editor's text, read from its rendered lines in document order. */
+async function monacoText(window: Page): Promise<string> {
+  return window
+    .getByTestId('function-editor')
+    .locator('.monaco-editor .view-lines')
+    .evaluate((host) => {
+      // The e2e build has no DOM types: just the fields read here.
+      type Line = { style: { top: string }; textContent: string | null };
+      const lines = [...host.querySelectorAll('.view-line')] as unknown as Line[];
+      return lines
+        .sort((a, b) => Number.parseFloat(a.style.top) - Number.parseFloat(b.style.top))
+        .map((line) => (line.textContent ?? '').replace(/\u00a0/g, ' '))
+        .join('\n');
+    });
 }
 
-/** Replaces the function editor's whole source with `lines`, typed key by key. */
+/**
+ * Replaces the Monaco function editor's whole source with `lines`, typed key by key without
+ * pauses (fast typing used to scramble the text; see `controlled-model`). Escape closes any
+ * completion list first, so Enter starts a new line instead of accepting a proposal.
+ */
 async function typeSource(window: Page, lines: readonly string[]): Promise<void> {
-  const area = window.getByTestId('function-editor').getByTestId('function-editor-fallback');
-  await expect(area).toBeVisible();
-  await area.click();
+  const view = window.getByTestId('function-editor').locator('.monaco-editor .view-lines');
+  await expect(view).toBeVisible();
+  await view.click();
   await window.keyboard.press('ControlOrMeta+A');
   await window.keyboard.press('Delete');
-  await expect(area).toHaveValue('');
+  await expect.poll(() => monacoText(window)).toBe('');
   for (const [index, line] of lines.entries()) {
-    if (index > 0) await window.keyboard.press('Enter');
+    if (index > 0) {
+      await window.keyboard.press('Escape');
+      await window.keyboard.press('Enter');
+    }
     await window.keyboard.type(line);
   }
-  await expect(area).toHaveValue(lines.join('\n'));
+  await window.keyboard.press('Escape');
+  await expect.poll(() => monacoText(window)).toBe(lines.join('\n'));
 }
 
 /** Decodes a shaped recipe's `pattern` and `key` back into a grid of item ids. */
@@ -160,7 +171,6 @@ test('data pack: function, problem, load tag, recipe grid, rename, export, insta
   launches.push(first);
   const { window } = first;
   await window.waitForLoadState('domcontentloaded');
-  await disableMonaco(window);
 
   await window.getByTestId('toolbar-new-project').click();
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
@@ -227,8 +237,7 @@ test('data pack: function, problem, load tag, recipe grid, rename, export, insta
   dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('template-recipe_shaped').check();
-  // The picker defaults to the first namespace, which is now `minecraft`: choose the project's.
-  await dialog.getByTestId('new-element-namespace').selectOption(NAMESPACE);
+  // The picker returns to the project's namespace, not `minecraft` (now sorted first).
   await expect(dialog.getByTestId('new-element-namespace')).toHaveValue(NAMESPACE);
   await dialog.getByTestId('new-element-name').fill('ruby_block');
   await dialog.getByTestId('new-element-dialog-submit').click();

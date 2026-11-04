@@ -43,6 +43,8 @@ export interface UiState {
   message: StatusMessage | null;
   /** Problems reported by the last export or install (cleared by the next one). */
   exportProblems: readonly Problem[];
+  /** The namespace the last element was created in (New element dialog), or `null`. */
+  lastNamespace: string | null;
 
   setSnapshot(snapshot: SessionSnapshot): void;
   /** Selects an element (and optionally a field in it); clears the field otherwise. */
@@ -56,6 +58,7 @@ export interface UiState {
   setMinecraftStatus(status: MinecraftStatus | null): void;
   setMinecraftProgress(progress: MinecraftProgress | null): void;
   setMessage(message: StatusMessage | null): void;
+  setLastNamespace(namespace: string | null): void;
 }
 
 /** The UI store. */
@@ -68,6 +71,7 @@ export const useUiStore = create<UiState>()((set) => ({
   minecraft: { status: null, progress: null },
   message: null,
   exportProblems: [],
+  lastNamespace: null,
   setSnapshot: (snapshot) =>
     set((state) => {
       const stillExists =
@@ -88,4 +92,5 @@ export const useUiStore = create<UiState>()((set) => ({
   setMinecraftProgress: (progress) =>
     set((state) => ({ minecraft: { ...state.minecraft, progress } })),
   setMessage: (message) => set({ message }),
+  setLastNamespace: (lastNamespace) => set({ lastNamespace }),
 }));
