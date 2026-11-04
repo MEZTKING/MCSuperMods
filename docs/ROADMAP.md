@@ -177,6 +177,20 @@ Carried over from Phase 2 (known gaps recorded in DEVLOG); none blocks the v0.2 
 - [ ] World names from `level.dat` in the world picker (today it shows folder names; [ADR 0015](adr/0015-data-pack-element-model.md)).
 - [ ] Remove the pnpm `minimumReleaseAgeExclude` entries in `pnpm-workspace.yaml` (`electron-to-chromium`, `electron`, `lucide-react`) once those versions are older than the release-age rule.
 
+### Phase 2 add-on — Launcher support
+
+Requested on 2026-11-04: preview-asset extraction and pack install for users who play through the CurseForge app or Prism Launcher (first-class, auto-detected), with MultiMC and PolyMC through a manually added folder; Windows first. Design in [Minecraft installation](DESIGN.md#13-interop-blockbench-nbt-minecraft-installation) and [ADR 0019](adr/0019-game-locations-launcher-instances.md). Does not block Phase 3.
+
+- [ ] B50: `@msm/interop` `launchers/`: Prism/MultiMC and CurseForge instance readers, discovery and client-jar search across launcher stores.
+- [ ] B51: shared IPC contract, preload and settings store (`launchers`, `installTarget`, `minecraft:listLocations`).
+- [ ] B52: renderer components: Settings "Game locations", toolbar install target and submenu, world picker location name.
+- [ ] B53: ADR 0019 and DESIGN Minecraft installation.
+- [ ] B54: main process: location resolver, installs into the selected instance, extraction from launcher stores.
+- [ ] B55: renderer wiring and session (`listLocations`, `setInstallTarget`, warnings, command palette entry).
+- [ ] B56: end-to-end test installing and extracting through fake Prism and CurseForge instances.
+- [ ] B57: README "Using Prism Launcher or the CurseForge app", scoped guides, ROADMAP ticks and ADR status.
+- [ ] User check: confirm the CurseForge `Install/versions/` jar path, `baseModLoader: null` for vanilla instances and the Prism jar path on a real Windows machine, then run the in-game checks through the chosen instance.
+
 ### Exit criteria
 
 A custom biome containing a custom jigsaw structure generates in a 26.3 world.
