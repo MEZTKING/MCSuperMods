@@ -1,0 +1,5593 @@
+{
+  "mcdoc": {
+    "::java::assets::model::CustomizableItemDisplayContext": {
+      "kind": "enum",
+      "enumKind": "string",
+      "values": [
+        {
+          "identifier": "FirstPersonRighthand",
+          "value": "firstperson_righthand"
+        },
+        {
+          "identifier": "FirstPersonLefthand",
+          "value": "firstperson_lefthand"
+        },
+        {
+          "identifier": "ThirdPersonRighthand",
+          "value": "thirdperson_righthand"
+        },
+        {
+          "identifier": "ThirdPersonLefthand",
+          "value": "thirdperson_lefthand"
+        },
+        {
+          "identifier": "Gui",
+          "value": "gui"
+        },
+        {
+          "identifier": "Head",
+          "value": "head"
+        },
+        {
+          "identifier": "Ground",
+          "value": "ground"
+        },
+        {
+          "identifier": "Fixed",
+          "value": "fixed"
+        },
+        {
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.21.9"
+                }
+              }
+            }
+          ],
+          "identifier": "OnShelf",
+          "value": "on_shelf"
+        }
+      ]
+    },
+    "::java::assets::model::ItemDisplayContext": {
+      "kind": "enum",
+      "enumKind": "string",
+      "values": [
+        {
+          "identifier": "None",
+          "value": "none"
+        },
+        {
+          "identifier": "FirstPersonRighthand",
+          "value": "firstperson_righthand"
+        },
+        {
+          "identifier": "FirstPersonLefthand",
+          "value": "firstperson_lefthand"
+        },
+        {
+          "identifier": "ThirdPersonRighthand",
+          "value": "thirdperson_righthand"
+        },
+        {
+          "identifier": "ThirdPersonLefthand",
+          "value": "thirdperson_lefthand"
+        },
+        {
+          "identifier": "Gui",
+          "value": "gui"
+        },
+        {
+          "identifier": "Head",
+          "value": "head"
+        },
+        {
+          "identifier": "Ground",
+          "value": "ground"
+        },
+        {
+          "identifier": "Fixed",
+          "value": "fixed"
+        },
+        {
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.21.9"
+                }
+              }
+            }
+          ],
+          "identifier": "OnShelf",
+          "value": "on_shelf"
+        }
+      ]
+    },
+    "::java::assets::model::ItemTransform": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "rotation",
+          "type": {
+            "kind": "list",
+            "item": {
+              "kind": "float"
+            },
+            "lengthRange": {
+              "kind": 0,
+              "min": 3,
+              "max": 3
+            }
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "translation",
+          "type": {
+            "kind": "list",
+            "item": {
+              "kind": "float",
+              "valueRange": {
+                "kind": 0,
+                "min": -80,
+                "max": 80
+              }
+            },
+            "lengthRange": {
+              "kind": 0,
+              "min": 3,
+              "max": 3
+            }
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "scale",
+          "type": {
+            "kind": "list",
+            "item": {
+              "kind": "float",
+              "valueRange": {
+                "kind": 0,
+                "min": -4,
+                "max": 4
+              }
+            },
+            "lengthRange": {
+              "kind": 0,
+              "min": 3,
+              "max": 3
+            }
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::assets::model::Model": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "parent",
+          "type": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "model"
+                  }
+                }
+              }
+            ]
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "ambientocclusion",
+          "type": {
+            "kind": "boolean"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "gui_light",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "front"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "side"
+                }
+              }
+            ]
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "textures",
+          "type": {
+            "kind": "struct",
+            "fields": [
+              {
+                "kind": "pair",
+                "key": {
+                  "kind": "string",
+                  "attributes": [
+                    {
+                      "name": "texture_slot",
+                      "value": {
+                        "kind": "tree",
+                        "values": {
+                          "kind": {
+                            "kind": "literal",
+                            "value": {
+                              "kind": "string",
+                              "value": "definition"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "type": {
+                  "kind": "union",
+                  "members": [
+                    {
+                      "kind": "string",
+                      "attributes": [
+                        {
+                          "name": "texture_slot",
+                          "value": {
+                            "kind": "tree",
+                            "values": {
+                              "kind": {
+                                "kind": "literal",
+                                "value": {
+                                  "kind": "string",
+                                  "value": "value"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "reference",
+                      "path": "::java::assets::model::TextureMaterial",
+                      "attributes": [
+                        {
+                          "name": "since",
+                          "value": {
+                            "kind": "literal",
+                            "value": {
+                              "kind": "string",
+                              "value": "26.1"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "elements",
+          "type": {
+            "kind": "list",
+            "item": {
+              "kind": "reference",
+              "path": "::java::assets::model::ModelElement"
+            }
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "display",
+          "type": {
+            "kind": "struct",
+            "fields": [
+              {
+                "kind": "pair",
+                "key": {
+                  "kind": "reference",
+                  "path": "::java::assets::model::CustomizableItemDisplayContext"
+                },
+                "type": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "kind": "pair",
+                      "key": "rotation",
+                      "type": {
+                        "kind": "list",
+                        "item": {
+                          "kind": "float"
+                        },
+                        "lengthRange": {
+                          "kind": 0,
+                          "min": 3,
+                          "max": 3
+                        }
+                      },
+                      "optional": true
+                    },
+                    {
+                      "kind": "pair",
+                      "key": "translation",
+                      "type": {
+                        "kind": "list",
+                        "item": {
+                          "kind": "float",
+                          "valueRange": {
+                            "kind": 0,
+                            "min": -80,
+                            "max": 80
+                          }
+                        },
+                        "lengthRange": {
+                          "kind": 0,
+                          "min": 3,
+                          "max": 3
+                        }
+                      },
+                      "optional": true
+                    },
+                    {
+                      "kind": "pair",
+                      "key": "scale",
+                      "type": {
+                        "kind": "list",
+                        "item": {
+                          "kind": "float",
+                          "valueRange": {
+                            "kind": 0,
+                            "min": -4,
+                            "max": 4
+                          }
+                        },
+                        "lengthRange": {
+                          "kind": 0,
+                          "min": 3,
+                          "max": 3
+                        }
+                      },
+                      "optional": true
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "attributes": [
+            {
+              "name": "until",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.21.4"
+                }
+              }
+            }
+          ],
+          "key": "overrides",
+          "type": {
+            "kind": "list",
+            "item": {
+              "kind": "struct",
+              "fields": [
+                {
+                  "kind": "pair",
+                  "key": "predicate",
+                  "type": {
+                    "kind": "struct",
+                    "fields": [
+                      {
+                        "kind": "pair",
+                        "key": {
+                          "kind": "reference",
+                          "path": "::java::assets::model::Predicates"
+                        },
+                        "type": {
+                          "kind": "float"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "kind": "pair",
+                  "key": "model",
+                  "type": {
+                    "kind": "reference",
+                    "path": "::java::assets::model::ModelRef"
+                  }
+                }
+              ]
+            }
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::assets::model::ModelDisplay": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": {
+            "kind": "reference",
+            "path": "::java::assets::model::CustomizableItemDisplayContext"
+          },
+          "type": {
+            "kind": "struct",
+            "fields": [
+              {
+                "kind": "pair",
+                "key": "rotation",
+                "type": {
+                  "kind": "list",
+                  "item": {
+                    "kind": "float"
+                  },
+                  "lengthRange": {
+                    "kind": 0,
+                    "min": 3,
+                    "max": 3
+                  }
+                },
+                "optional": true
+              },
+              {
+                "kind": "pair",
+                "key": "translation",
+                "type": {
+                  "kind": "list",
+                  "item": {
+                    "kind": "float",
+                    "valueRange": {
+                      "kind": 0,
+                      "min": -80,
+                      "max": 80
+                    }
+                  },
+                  "lengthRange": {
+                    "kind": 0,
+                    "min": 3,
+                    "max": 3
+                  }
+                },
+                "optional": true
+              },
+              {
+                "kind": "pair",
+                "key": "scale",
+                "type": {
+                  "kind": "list",
+                  "item": {
+                    "kind": "float",
+                    "valueRange": {
+                      "kind": 0,
+                      "min": -4,
+                      "max": 4
+                    }
+                  },
+                  "lengthRange": {
+                    "kind": 0,
+                    "min": 3,
+                    "max": 3
+                  }
+                },
+                "optional": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "::java::assets::model::ModelElement": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "from",
+          "type": {
+            "kind": "list",
+            "item": {
+              "kind": "float",
+              "valueRange": {
+                "kind": 0,
+                "min": -16,
+                "max": 32
+              }
+            },
+            "lengthRange": {
+              "kind": 0,
+              "min": 3,
+              "max": 3
+            }
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "to",
+          "type": {
+            "kind": "list",
+            "item": {
+              "kind": "float",
+              "valueRange": {
+                "kind": 0,
+                "min": -16,
+                "max": 32
+              }
+            },
+            "lengthRange": {
+              "kind": 0,
+              "min": 3,
+              "max": 3
+            }
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "faces",
+          "type": {
+            "kind": "struct",
+            "fields": [
+              {
+                "kind": "pair",
+                "key": {
+                  "kind": "reference",
+                  "path": "::java::util::direction::Direction"
+                },
+                "type": {
+                  "kind": "struct",
+                  "fields": [
+                    {
+                      "kind": "pair",
+                      "key": "texture",
+                      "type": {
+                        "kind": "string",
+                        "attributes": [
+                          {
+                            "name": "texture_slot",
+                            "value": {
+                              "kind": "tree",
+                              "values": {
+                                "kind": {
+                                  "kind": "literal",
+                                  "value": {
+                                    "kind": "string",
+                                    "value": "reference"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "kind": "pair",
+                      "key": "uv",
+                      "type": {
+                        "kind": "list",
+                        "item": {
+                          "kind": "float"
+                        },
+                        "lengthRange": {
+                          "kind": 0,
+                          "min": 4,
+                          "max": 4
+                        }
+                      },
+                      "optional": true
+                    },
+                    {
+                      "kind": "pair",
+                      "key": "cullface",
+                      "type": {
+                        "kind": "reference",
+                        "path": "::java::util::direction::Direction"
+                      },
+                      "optional": true
+                    },
+                    {
+                      "kind": "pair",
+                      "key": "rotation",
+                      "type": {
+                        "kind": "union",
+                        "members": [
+                          {
+                            "kind": "literal",
+                            "value": {
+                              "kind": "int",
+                              "value": 0
+                            }
+                          },
+                          {
+                            "kind": "literal",
+                            "value": {
+                              "kind": "int",
+                              "value": 90
+                            }
+                          },
+                          {
+                            "kind": "literal",
+                            "value": {
+                              "kind": "int",
+                              "value": 180
+                            }
+                          },
+                          {
+                            "kind": "literal",
+                            "value": {
+                              "kind": "int",
+                              "value": 270
+                            }
+                          }
+                        ]
+                      },
+                      "optional": true
+                    },
+                    {
+                      "kind": "pair",
+                      "key": "tintindex",
+                      "type": {
+                        "kind": "int"
+                      },
+                      "optional": true
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "rotation",
+          "type": {
+            "kind": "reference",
+            "path": "::java::assets::model::ModelElementRotation"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "attributes": [
+            {
+              "name": "until",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.3"
+                }
+              }
+            }
+          ],
+          "key": "shade",
+          "type": {
+            "kind": "boolean"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.3"
+                }
+              }
+            }
+          ],
+          "key": "shade_direction_override",
+          "type": {
+            "kind": "reference",
+            "path": "::java::util::direction::Direction"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.21.2"
+                }
+              }
+            }
+          ],
+          "key": "light_emission",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0,
+              "max": 15
+            }
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::assets::model::ModelElementFace": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "texture",
+          "type": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "texture_slot",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "kind": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "reference"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "uv",
+          "type": {
+            "kind": "list",
+            "item": {
+              "kind": "float"
+            },
+            "lengthRange": {
+              "kind": 0,
+              "min": 4,
+              "max": 4
+            }
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "cullface",
+          "type": {
+            "kind": "reference",
+            "path": "::java::util::direction::Direction"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "rotation",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "int",
+                  "value": 0
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "int",
+                  "value": 90
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "int",
+                  "value": 180
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "int",
+                  "value": 270
+                }
+              }
+            ]
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "tintindex",
+          "type": {
+            "kind": "int"
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::assets::model::ModelElementFaceMap": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": {
+            "kind": "reference",
+            "path": "::java::util::direction::Direction"
+          },
+          "type": {
+            "kind": "struct",
+            "fields": [
+              {
+                "kind": "pair",
+                "key": "texture",
+                "type": {
+                  "kind": "string",
+                  "attributes": [
+                    {
+                      "name": "texture_slot",
+                      "value": {
+                        "kind": "tree",
+                        "values": {
+                          "kind": {
+                            "kind": "literal",
+                            "value": {
+                              "kind": "string",
+                              "value": "reference"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "pair",
+                "key": "uv",
+                "type": {
+                  "kind": "list",
+                  "item": {
+                    "kind": "float"
+                  },
+                  "lengthRange": {
+                    "kind": 0,
+                    "min": 4,
+                    "max": 4
+                  }
+                },
+                "optional": true
+              },
+              {
+                "kind": "pair",
+                "key": "cullface",
+                "type": {
+                  "kind": "reference",
+                  "path": "::java::util::direction::Direction"
+                },
+                "optional": true
+              },
+              {
+                "kind": "pair",
+                "key": "rotation",
+                "type": {
+                  "kind": "union",
+                  "members": [
+                    {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "int",
+                        "value": 0
+                      }
+                    },
+                    {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "int",
+                        "value": 90
+                      }
+                    },
+                    {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "int",
+                        "value": 180
+                      }
+                    },
+                    {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "int",
+                        "value": 270
+                      }
+                    }
+                  ]
+                },
+                "optional": true
+              },
+              {
+                "kind": "pair",
+                "key": "tintindex",
+                "type": {
+                  "kind": "int"
+                },
+                "optional": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "::java::assets::model::ModelElementRotation": {
+      "kind": "union",
+      "members": [
+        {
+          "kind": "struct",
+          "fields": [
+            {
+              "kind": "spread",
+              "type": {
+                "kind": "reference",
+                "path": "::java::assets::model::ModelElementRotationBase"
+              }
+            },
+            {
+              "kind": "pair",
+              "key": "axis",
+              "type": {
+                "kind": "reference",
+                "path": "::java::util::direction::Axis"
+              }
+            },
+            {
+              "kind": "pair",
+              "key": "angle",
+              "type": {
+                "kind": "union",
+                "members": [
+                  {
+                    "kind": "union",
+                    "members": [
+                      {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "double",
+                          "value": -45
+                        }
+                      },
+                      {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "double",
+                          "value": -22.5
+                        }
+                      },
+                      {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "double",
+                          "value": 0
+                        }
+                      },
+                      {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "double",
+                          "value": 22.5
+                        }
+                      },
+                      {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "double",
+                          "value": 45
+                        }
+                      }
+                    ],
+                    "attributes": [
+                      {
+                        "name": "until",
+                        "value": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "1.21.6"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "float",
+                    "valueRange": {
+                      "kind": 0,
+                      "min": -45,
+                      "max": 45
+                    },
+                    "attributes": [
+                      {
+                        "name": "since",
+                        "value": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "1.21.6"
+                          }
+                        }
+                      },
+                      {
+                        "name": "until",
+                        "value": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "1.21.11"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "float",
+                    "attributes": [
+                      {
+                        "name": "since",
+                        "value": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "1.21.11"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "deprecated",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.21.11"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "kind": "struct",
+          "fields": [
+            {
+              "kind": "spread",
+              "type": {
+                "kind": "reference",
+                "path": "::java::assets::model::ModelElementRotationBase"
+              }
+            },
+            {
+              "kind": "pair",
+              "key": {
+                "kind": "reference",
+                "path": "::java::util::direction::Axis"
+              },
+              "type": {
+                "kind": "float"
+              },
+              "optional": true
+            }
+          ],
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.21.11"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "::java::assets::model::ModelElementRotationBase": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "origin",
+          "type": {
+            "kind": "list",
+            "item": {
+              "kind": "float"
+            },
+            "lengthRange": {
+              "kind": 0,
+              "min": 3,
+              "max": 3
+            }
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "Defaults to `false`.",
+          "key": "rescale",
+          "type": {
+            "kind": "boolean"
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::assets::model::ModelOverride": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "predicate",
+          "type": {
+            "kind": "struct",
+            "fields": [
+              {
+                "kind": "pair",
+                "key": {
+                  "kind": "reference",
+                  "path": "::java::assets::model::Predicates"
+                },
+                "type": {
+                  "kind": "float"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "model",
+          "type": {
+            "kind": "reference",
+            "path": "::java::assets::model::ModelRef"
+          }
+        }
+      ]
+    },
+    "::java::assets::model::ModelOverridePredicates": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": {
+            "kind": "reference",
+            "path": "::java::assets::model::Predicates"
+          },
+          "type": {
+            "kind": "float"
+          }
+        }
+      ]
+    },
+    "::java::assets::model::ModelRef": {
+      "kind": "string",
+      "attributes": [
+        {
+          "name": "id",
+          "value": {
+            "kind": "tree",
+            "values": {
+              "registry": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "model"
+                }
+              },
+              "exclude": {
+                "kind": "tree",
+                "values": {
+                  "0": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "builtin/generated"
+                    }
+                  },
+                  "1": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "builtin/entity"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "::java::assets::model::ModelTextures": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "texture_slot",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "kind": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "definition"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "string",
+                "attributes": [
+                  {
+                    "name": "texture_slot",
+                    "value": {
+                      "kind": "tree",
+                      "values": {
+                        "kind": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "value"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "reference",
+                "path": "::java::assets::model::TextureMaterial",
+                "attributes": [
+                  {
+                    "name": "since",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "26.1"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "::java::assets::model::MultipleAxesModelElementRotation": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::java::assets::model::ModelElementRotationBase"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": {
+            "kind": "reference",
+            "path": "::java::util::direction::Axis"
+          },
+          "type": {
+            "kind": "float"
+          },
+          "optional": true
+        }
+      ],
+      "attributes": [
+        {
+          "name": "since",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "1.21.11"
+            }
+          }
+        }
+      ]
+    },
+    "::java::assets::model::Predicates": {
+      "kind": "enum",
+      "enumKind": "string",
+      "values": [
+        {
+          "desc": "Used on compasses to determine the current angle, expressed in a decimal value of less than one.",
+          "identifier": "Angle",
+          "value": "angle"
+        },
+        {
+          "desc": "Used on shields to determine if currently blocking. If `1`, the player is blocking.",
+          "identifier": "Blocking",
+          "value": "blocking"
+        },
+        {
+          "desc": "Used on Elytra to determine if broken. If `1`, the Elytra is broken.",
+          "identifier": "Broken",
+          "value": "broken"
+        },
+        {
+          "desc": "Used on fishing rods to determine if the fishing rod has been cast. If `1`, the fishing rod has been cast.",
+          "identifier": "Cast",
+          "value": "cast"
+        },
+        {
+          "desc": "Used on crossbows to determine if they are charged with any projectile. If `1`, the crossbow is charged.",
+          "identifier": "Charged",
+          "value": "charged"
+        },
+        {
+          "desc": "Used on ender pearls and chorus fruit to determine the remaining cooldown, expressed in a decimal value between `0` and `1`.",
+          "identifier": "Cooldown",
+          "value": "cooldown"
+        },
+        {
+          "desc": "Used on any item and is compared to the CustomModelData NBT, expressed in an integer value.\n\nThe number is still internally converted to float, causing a precision loss for some numbers above 16 million. \\\nIf the value read from the item data is greater than or equal to the value used for the predicate, the predicate is positive.",
+          "identifier": "CustomModelData",
+          "value": "custom_model_data"
+        },
+        {
+          "desc": "Used on items with durability to determine the amount of damage, expressed in a decimal value between `0` and `1`.",
+          "identifier": "Damage",
+          "value": "damage"
+        },
+        {
+          "desc": "Used on items with durability to determine if it is damaged. If 1, the item is damaged. \\\nNote that if an item has the unbreakable tag, this may be `0` while the item has a non-zero `'damage'` tag.",
+          "identifier": "Damaged",
+          "value": "damaged"
+        },
+        {
+          "desc": "Used on crossbows. If `1`, the crossbow is charged with a firework rocket.",
+          "identifier": "Firework",
+          "value": "firework"
+        },
+        {
+          "desc": "Used for honey level on bee nests and beehives.",
+          "identifier": "HoneyLevel",
+          "value": "honey_level"
+        },
+        {
+          "desc": "Determines the model used by left handed players. It affects the item they see in inventories, along with the item players see them holding or wearing.",
+          "identifier": "Lefthanded",
+          "value": "lefthanded"
+        },
+        {
+          "desc": "Used for the `level` block state on light items.",
+          "identifier": "Level",
+          "value": "level"
+        },
+        {
+          "desc": "Determines the amount a bow or crossbow has been pulled, expressed in a decimal value of less than one.",
+          "identifier": "Pull",
+          "value": "pull"
+        },
+        {
+          "desc": "Used on bows and crossbows to determine if the bow is being pulled. If `1`, the bow is currently being pulled.",
+          "identifier": "Pulling",
+          "value": "pulling"
+        },
+        {
+          "desc": "Used on the trident to determine if the trident is ready to be thrown by the player. If `1`, the trident is ready for fire.",
+          "identifier": "Throwing",
+          "value": "throwing"
+        },
+        {
+          "desc": "Used on clocks to determine the current time, expressed in a decimal value of less than one.",
+          "identifier": "Time",
+          "value": "time"
+        },
+        {
+          "desc": "Whether the goat horn is being used.",
+          "identifier": "Tooting",
+          "value": "tooting"
+        },
+        {
+          "identifier": "TrimType",
+          "value": "trim_type"
+        }
+      ]
+    },
+    "::java::assets::model::SingleAxisModelElementRotation": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::java::assets::model::ModelElementRotationBase"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "axis",
+          "type": {
+            "kind": "reference",
+            "path": "::java::util::direction::Axis"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "angle",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "union",
+                "members": [
+                  {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "double",
+                      "value": -45
+                    }
+                  },
+                  {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "double",
+                      "value": -22.5
+                    }
+                  },
+                  {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "double",
+                      "value": 0
+                    }
+                  },
+                  {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "double",
+                      "value": 22.5
+                    }
+                  },
+                  {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "double",
+                      "value": 45
+                    }
+                  }
+                ],
+                "attributes": [
+                  {
+                    "name": "until",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "1.21.6"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "float",
+                "valueRange": {
+                  "kind": 0,
+                  "min": -45,
+                  "max": 45
+                },
+                "attributes": [
+                  {
+                    "name": "since",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "1.21.6"
+                      }
+                    }
+                  },
+                  {
+                    "name": "until",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "1.21.11"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "float",
+                "attributes": [
+                  {
+                    "name": "since",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "1.21.11"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "attributes": [
+        {
+          "name": "deprecated",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "1.21.11"
+            }
+          }
+        }
+      ]
+    },
+    "::java::assets::model::TextureMaterial": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "sprite",
+          "type": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "Whether the texture should be forced into the translucent render pass. \\\nTextures without any translucent pixels are not assigned to the translucent pass by default. \\\nDefaults to `false`.",
+          "key": "force_translucent",
+          "type": {
+            "kind": "boolean"
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::data::advancement::predicate::EntityEffectsPredicate": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "mob_effect"
+                  }
+                }
+              }
+            ]
+          },
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::advancement::predicate::MobEffectPredicate"
+          }
+        }
+      ]
+    },
+    "::java::data::advancement::predicate::MobEffectPredicate": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "amplifier",
+          "type": {
+            "kind": "concrete",
+            "child": {
+              "kind": "reference",
+              "path": "::java::data::util::MinMaxBounds"
+            },
+            "typeArgs": [
+              {
+                "kind": "int"
+              }
+            ]
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "duration",
+          "type": {
+            "kind": "concrete",
+            "child": {
+              "kind": "reference",
+              "path": "::java::data::util::MinMaxBounds"
+            },
+            "typeArgs": [
+              {
+                "kind": "int"
+              }
+            ]
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "ambient",
+          "type": {
+            "kind": "boolean"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "visible",
+          "type": {
+            "kind": "boolean"
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::data::recipe::<anonymous 0>": {
+      "kind": "struct",
+      "fields": []
+    },
+    "::java::data::recipe::<anonymous 10>": {
+      "kind": "struct",
+      "fields": [],
+      "attributes": [
+        {
+          "name": "until",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::<anonymous 11>": {
+      "kind": "struct",
+      "fields": [],
+      "attributes": [
+        {
+          "name": "until",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::<anonymous 12>": {
+      "kind": "struct",
+      "fields": [],
+      "attributes": [
+        {
+          "name": "until",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::<anonymous 1>": {
+      "kind": "struct",
+      "fields": [],
+      "attributes": [
+        {
+          "name": "until",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::<anonymous 2>": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "Defaults to `200`.",
+          "key": "cookingtime",
+          "type": {
+            "kind": "int"
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::data::recipe::<anonymous 3>": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "Hint: The \"Normal\" value for this is `200`.",
+          "key": "cookingtime",
+          "type": {
+            "kind": "int"
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::<anonymous 4>": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "Material that will be used.",
+          "key": "addition",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "Template item that will be used for the pattern.",
+          "key": "template",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::<anonymous 5>": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "Material that will be used.",
+          "key": "addition",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "desc": "Template item that will be used for the pattern.",
+          "key": "template",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::data::recipe::<anonymous 6>": {
+      "kind": "struct",
+      "fields": [],
+      "attributes": [
+        {
+          "name": "until",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::<anonymous 7>": {
+      "kind": "struct",
+      "fields": [],
+      "attributes": [
+        {
+          "name": "until",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::<anonymous 8>": {
+      "kind": "struct",
+      "fields": [],
+      "attributes": [
+        {
+          "name": "until",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::<anonymous 9>": {
+      "kind": "struct",
+      "fields": [],
+      "attributes": [
+        {
+          "name": "until",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::Brewing": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "The original potion.",
+          "key": "input",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::PotionIngredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "The ingredient.",
+          "key": "reagent",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::PotionIngredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "output",
+          "type": {
+            "kind": "reference",
+            "path": "::java::world::item::ItemStackTemplate"
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::CookingBookCategory": {
+      "kind": "enum",
+      "enumKind": "string",
+      "values": [
+        {
+          "identifier": "Food",
+          "value": "food"
+        },
+        {
+          "identifier": "Blocks",
+          "value": "blocks"
+        },
+        {
+          "identifier": "Misc",
+          "value": "misc"
+        }
+      ]
+    },
+    "::java::data::recipe::CookingBookInfo": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "Identifier to group multiple recipes in the recipe book.",
+          "key": "group",
+          "type": {
+            "kind": "string"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "desc": "Identifier for the category this goes in the recipe book.",
+          "key": "category",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::CookingBookCategory"
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingBookCategory": {
+      "kind": "enum",
+      "enumKind": "string",
+      "values": [
+        {
+          "identifier": "Building",
+          "value": "building"
+        },
+        {
+          "identifier": "Redstone",
+          "value": "redstone"
+        },
+        {
+          "identifier": "Equipment",
+          "value": "equipment"
+        },
+        {
+          "identifier": "Misc",
+          "value": "misc"
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingBookInfo": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "Identifier to group multiple recipes in the recipe book.",
+          "key": "group",
+          "type": {
+            "kind": "string"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "desc": "Identifier for the category this goes in the recipe book.",
+          "key": "category",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::CraftingBookCategory"
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingDecoratedPot": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "back",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "left",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "right",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "front",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "The `pot_decorations` component will store the 4 ingredients.",
+          "key": "result",
+          "type": {
+            "kind": "reference",
+            "path": "::java::world::item::ItemStackTemplate"
+          }
+        }
+      ],
+      "attributes": [
+        {
+          "name": "since",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingDye": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "spread",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.1"
+                }
+              }
+            }
+          ],
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::NotificationInfo"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::CraftingBookInfo"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "The item to be dyed. \\\nIts `dyed_color` component will be dyed. The other components are copied.",
+          "key": "target",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "The items to provide dye color. \\\nColors are provided by the `dye` component. \\\nMultiple dyes can be used at the same time.",
+          "key": "dye",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "result",
+          "type": {
+            "kind": "reference",
+            "path": "::java::world::item::ItemStackTemplate"
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingImbue": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "spread",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.1"
+                }
+              }
+            }
+          ],
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::NotificationInfo"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::CraftingBookInfo"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "The item to provide potion effect. \\\nIts `potion_contents` component will be copied. \\\nThis item is placed at the center grid.",
+          "key": "source",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "Additional ingredients. \\\n8 `material` items are required to surroud the `source` item.",
+          "key": "material",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "result",
+          "type": {
+            "kind": "reference",
+            "path": "::java::world::item::ItemStackTemplate"
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingIngredients": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "crafting_ingredient"
+              }
+            ]
+          },
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingShaped": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "spread",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.19.4"
+                }
+              }
+            }
+          ],
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::NotificationInfo"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::CraftingBookInfo"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "pattern",
+          "type": {
+            "kind": "list",
+            "item": {
+              "kind": "string",
+              "lengthRange": {
+                "kind": 0,
+                "min": 1,
+                "max": 3
+              },
+              "attributes": [
+                {
+                  "name": "crafting_ingredient",
+                  "value": {
+                    "kind": "tree",
+                    "values": {
+                      "definition": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "boolean",
+                          "value": true
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "lengthRange": {
+              "kind": 0,
+              "min": 1,
+              "max": 3
+            }
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "key",
+          "type": {
+            "kind": "struct",
+            "fields": [
+              {
+                "kind": "pair",
+                "key": {
+                  "kind": "string",
+                  "attributes": [
+                    {
+                      "name": "crafting_ingredient"
+                    }
+                  ]
+                },
+                "type": {
+                  "kind": "reference",
+                  "path": "::java::data::recipe::Ingredient"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "result",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "reference",
+                "path": "::java::data::recipe::ItemResult",
+                "attributes": [
+                  {
+                    "name": "until",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "1.20.5"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "reference",
+                "path": "::java::world::item::ItemStackTemplate",
+                "attributes": [
+                  {
+                    "name": "since",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "1.20.5"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingShapeless": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "spread",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.1"
+                }
+              }
+            }
+          ],
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::NotificationInfo"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::CraftingBookInfo"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "ingredients",
+          "type": {
+            "kind": "list",
+            "item": {
+              "kind": "reference",
+              "path": "::java::data::recipe::Ingredient"
+            },
+            "lengthRange": {
+              "kind": 0,
+              "min": 1,
+              "max": 9
+            }
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "result",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "reference",
+                "path": "::java::data::recipe::ItemResult",
+                "attributes": [
+                  {
+                    "name": "until",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "1.20.5"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "reference",
+                "path": "::java::world::item::ItemStackTemplate",
+                "attributes": [
+                  {
+                    "name": "since",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "1.20.5"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingSpecialBannerDuplicate": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "The banner item. The item type is required to be `BannerItem`. \\\nExactly 2 banners of the same color are required. \\\nThe one with patterns is viewed as \"source\". Its components will be copied. \\\nThe other is viewed as \"target\". It is required to have no patterns. \\\n\\\nThe source banner will be kept in the crafting grid.",
+          "key": "banner",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "result",
+          "type": {
+            "kind": "reference",
+            "path": "::java::world::item::ItemStackTemplate"
+          }
+        }
+      ],
+      "attributes": [
+        {
+          "name": "since",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingSpecialBookCloning": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "The book item. \\\nIts `written_book_contents` component will be copied, with `generation` value increased by 1. \\\nThe other components are copied as-is. \\\n\\\nThe book will be kept in the crafting grid.",
+          "key": "source",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "Additional ingredients. \\\nMultiple materials can be used at the same time. \\\nThe number of materials beyond the first one will be added to the result count.",
+          "key": "material",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "Limits the generation of the `source` item that can be copied.\nDefaults to allow generation 0 and 1 (original and first copy).",
+          "key": "allowed_generations",
+          "type": {
+            "kind": "concrete",
+            "child": {
+              "kind": "reference",
+              "path": "::java::data::util::MinMaxBounds"
+            },
+            "typeArgs": [
+              {
+                "kind": "int",
+                "valueRange": {
+                  "kind": 0,
+                  "min": 0,
+                  "max": 2
+                }
+              }
+            ]
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "result",
+          "type": {
+            "kind": "reference",
+            "path": "::java::world::item::ItemStackTemplate"
+          }
+        }
+      ],
+      "attributes": [
+        {
+          "name": "since",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingSpecialFireworkRocket": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "Additional ingredient. \\\nExactly 1 additional ingredient is required.",
+          "key": "shell",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "The fuel ingredient. \\\nThe count of fuel ingredients controls the `flight_duration` field. \\\nOnly 1 ~ 3 fuels are allowed.",
+          "key": "fuel",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "The firework star ingredient. \\\nProvides explosion data by the `firework_explosion` component. \\\nAny count of stars (including 0) are allowed.",
+          "key": "star",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "The `fireworks` component is controlled by `fuel` and `star`.",
+          "key": "result",
+          "type": {
+            "kind": "reference",
+            "path": "::java::world::item::ItemStackTemplate"
+          }
+        }
+      ],
+      "attributes": [
+        {
+          "name": "since",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingSpecialFireworkStar": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "If this ingredient is provided, the result will have `has_trail` field set.",
+          "key": "trail",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "If this ingredient is provided, the result will have `has_twinkle` field set.",
+          "key": "twinkle",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "Additional ingredient. \\\nExactly 1 additional ingredient is required.",
+          "key": "fuel",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "The items to provide explosion color. \\\nColors are provided by the `dye` component. \\\nMultiple dyes can be used at the same time.",
+          "key": "dye",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "If one of the ingredients is provided, the result will have the corresponding `shape` value. \\\nIf no shape ingredient is provided, the shape will be `small_ball`.",
+          "key": "shapes",
+          "type": {
+            "kind": "struct",
+            "fields": [
+              {
+                "kind": "pair",
+                "key": {
+                  "kind": "reference",
+                  "path": "::java::world::component::item::FireworkShape"
+                },
+                "type": {
+                  "kind": "reference",
+                  "path": "::java::data::recipe::Ingredient"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "The `firework_explosion` component is controlled by the ingredients.",
+          "key": "result",
+          "type": {
+            "kind": "reference",
+            "path": "::java::world::item::ItemStackTemplate"
+          }
+        }
+      ],
+      "attributes": [
+        {
+          "name": "since",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingSpecialFireworkStarFade": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "The firework star item. \\\nThe fade effect of its `firework_explosion` will be changed. \\\nThe other components are copied.",
+          "key": "target",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "The items to provide fade color. \\\nColors are provided by the `dye` component. \\\nMultiple dyes can be used at the same time.",
+          "key": "dye",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "result",
+          "type": {
+            "kind": "reference",
+            "path": "::java::world::item::ItemStackTemplate"
+          }
+        }
+      ],
+      "attributes": [
+        {
+          "name": "since",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingSpecialMapExtending": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "The map item. \\\nThe `map_id` component is used to determine the resulting item. \\\nThe other components are copied. \\\nThis item is placed at the center grid. \\\n\\\nThe source map will be kept in the crafting grid.",
+          "key": "map",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "Additional ingredients. \\\n8 `material` items are required to surroud the `map` item.",
+          "key": "material",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "The previewing result will have `map_post_processing` transient component. \\\nThe crafted result will have a new `map_id` component, which shows the extended version of the original map.",
+          "key": "result",
+          "type": {
+            "kind": "reference",
+            "path": "::java::world::item::ItemStackTemplate"
+          }
+        }
+      ],
+      "attributes": [
+        {
+          "name": "since",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingSpecialShieldDecoration": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "The item to be decorated. It is required to have no patterns. \\\nIts components, except `base_color` and `banner_patterns`, are copied.",
+          "key": "target",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "The banner item. The item type is required to be `BannerItem`. \\\nDetermines the `base_color` component of the resulting item.",
+          "key": "banner",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "result",
+          "type": {
+            "kind": "reference",
+            "path": "::java::world::item::ItemStackTemplate"
+          }
+        }
+      ],
+      "attributes": [
+        {
+          "name": "since",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "26.1"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::CraftingTransmute": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "spread",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.1"
+                }
+              }
+            }
+          ],
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::NotificationInfo"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::CraftingBookInfo"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "The ingredient that will transfer its data components to the result item.",
+          "key": "input",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "An additional ingredient.",
+          "key": "material",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.1"
+                }
+              }
+            }
+          ],
+          "desc": "The allowed count of material.\nDefaults to `1`.",
+          "key": "material_count",
+          "type": {
+            "kind": "concrete",
+            "child": {
+              "kind": "reference",
+              "path": "::java::data::util::MinMaxBounds"
+            },
+            "typeArgs": [
+              {
+                "kind": "int",
+                "valueRange": {
+                  "kind": 0,
+                  "min": 1,
+                  "max": 8
+                }
+              }
+            ]
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.1"
+                }
+              }
+            }
+          ],
+          "desc": "When true, the number of materials will be added to the result count. \\\nDefaults to `false`.",
+          "key": "add_material_count_to_result",
+          "type": {
+            "kind": "boolean"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "desc": "The result item that will be merged with the input ingredient.",
+          "key": "result",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "string",
+                "attributes": [
+                  {
+                    "name": "until",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "26.1"
+                      }
+                    }
+                  },
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "reference",
+                "path": "::java::world::item::ItemStack",
+                "attributes": [
+                  {
+                    "name": "since",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "1.21.5"
+                      }
+                    }
+                  },
+                  {
+                    "name": "until",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "26.3"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "reference",
+                "path": "::java::data::recipe::TransmuteResult",
+                "attributes": [
+                  {
+                    "name": "since",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "26.3"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "string",
+                "attributes": [
+                  {
+                    "name": "since",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "26.1"
+                      }
+                    }
+                  },
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "tree",
+                      "values": {
+                        "registry": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "item"
+                          }
+                        },
+                        "exclude": {
+                          "kind": "tree",
+                          "values": {
+                            "0": {
+                              "kind": "literal",
+                              "value": {
+                                "kind": "string",
+                                "value": "air"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::FireworkShapeIngredients": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": {
+            "kind": "reference",
+            "path": "::java::world::component::item::FireworkShape"
+          },
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::Ingredient": {
+      "kind": "union",
+      "members": [
+        {
+          "kind": "reference",
+          "path": "::java::data::recipe::IngredientValue",
+          "attributes": [
+            {
+              "name": "until",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.21.2"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "kind": "list",
+          "item": {
+            "kind": "reference",
+            "path": "::java::data::recipe::IngredientValue"
+          },
+          "attributes": [
+            {
+              "name": "until",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.21.2"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "kind": "list",
+          "item": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    },
+                    "exclude": {
+                      "kind": "tree",
+                      "values": {
+                        "0": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "air"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "lengthRange": {
+            "kind": 0,
+            "min": 1
+          },
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.21.2"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "kind": "string",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.21.2"
+                }
+              }
+            },
+            {
+              "name": "id",
+              "value": {
+                "kind": "tree",
+                "values": {
+                  "registry": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "item"
+                    }
+                  },
+                  "tags": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "allowed"
+                    }
+                  },
+                  "exclude": {
+                    "kind": "tree",
+                    "values": {
+                      "0": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "air"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "::java::data::recipe::IngredientItem": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "item",
+          "type": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::IngredientTag": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "tag",
+          "type": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "implicit"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::IngredientValue": {
+      "kind": "union",
+      "members": [
+        {
+          "kind": "struct",
+          "fields": [
+            {
+              "kind": "pair",
+              "key": "item",
+              "type": {
+                "kind": "string",
+                "attributes": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "kind": "struct",
+          "fields": [
+            {
+              "kind": "pair",
+              "key": "tag",
+              "type": {
+                "kind": "string",
+                "attributes": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "tree",
+                      "values": {
+                        "registry": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "item"
+                          }
+                        },
+                        "tags": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "implicit"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "attributes": [
+        {
+          "name": "until",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "1.21.2"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::ItemResult": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "item",
+          "type": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "count",
+          "type": {
+            "kind": "int"
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::data::recipe::NotificationInfo": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "Determines if a notification is shown when unlocking this recipe.\nDefaults to `true`.",
+          "key": "show_notification",
+          "type": {
+            "kind": "boolean"
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::data::recipe::OptionalSmithingIngredients": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "Ingredient specifying an item to be trimmed. (eg. `\"#minecraft:trimmable_armor\"`)",
+          "key": "base",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "desc": "Material that will be used. (eg. `\"#minecraft:trim_materials\"`)",
+          "key": "addition",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "desc": "Template item that will be used for the pattern.",
+          "key": "template",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          },
+          "optional": true
+        }
+      ],
+      "attributes": [
+        {
+          "name": "since",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "1.21.2"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::PotionIngredient": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "item",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "potion_contents",
+          "type": {
+            "kind": "reference",
+            "path": "::java::world::component::predicate::PotionsPredicate"
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::data::recipe::Recipe": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "type",
+          "type": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "recipe_serializer"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "kind": "dynamic",
+                "accessor": ["type"]
+              }
+            ],
+            "registry": "minecraft:recipe_serializer"
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::RecipeListRef": {
+      "kind": "union",
+      "members": [
+        {
+          "kind": "string",
+          "attributes": [
+            {
+              "name": "id",
+              "value": {
+                "kind": "tree",
+                "values": {
+                  "registry": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "recipe"
+                    }
+                  },
+                  "tags": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "allowed"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "kind": "list",
+          "item": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "recipe"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::RequiredSmithingIngredients": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "Ingredient specifying an item to be trimmed. (eg. `{ \"tag\": \"minecraft:trimmable_armor\" }`)",
+          "key": "base",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "Material that will be used. (eg. `{ \"tag\": \"minecraft:trim_materials\" }`)",
+          "key": "addition",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "Template item that will be used for the pattern.",
+          "key": "template",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        }
+      ],
+      "attributes": [
+        {
+          "name": "until",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "1.21.2"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::Smelting": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "spread",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.1"
+                }
+              }
+            }
+          ],
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::NotificationInfo"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::CookingBookInfo"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "ingredient",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "result",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "string",
+                "attributes": [
+                  {
+                    "name": "until",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "1.20.5"
+                      }
+                    }
+                  },
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "reference",
+                "path": "::java::world::item::SingleItem",
+                "attributes": [
+                  {
+                    "name": "since",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "1.20.5"
+                      }
+                    }
+                  },
+                  {
+                    "name": "until",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "26.1"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "reference",
+                "path": "::java::world::item::ItemStackTemplate",
+                "attributes": [
+                  {
+                    "name": "since",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "26.1"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "experience",
+          "type": {
+            "kind": "float"
+          },
+          "optional": true
+        },
+        {
+          "kind": "spread",
+          "attributes": [
+            {
+              "name": "until",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.3"
+                }
+              }
+            }
+          ],
+          "type": {
+            "kind": "struct",
+            "fields": [
+              {
+                "kind": "pair",
+                "desc": "Defaults to `200`.",
+                "key": "cookingtime",
+                "type": {
+                  "kind": "int"
+                },
+                "optional": true
+              }
+            ]
+          }
+        },
+        {
+          "kind": "spread",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.3"
+                }
+              }
+            }
+          ],
+          "type": {
+            "kind": "struct",
+            "fields": [
+              {
+                "kind": "pair",
+                "desc": "Hint: The \"Normal\" value for this is `200`.",
+                "key": "cookingtime",
+                "type": {
+                  "kind": "int"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::Smithing": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "base",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::IngredientValue"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "addition",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::IngredientValue"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "result",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::ItemResult"
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::SmithingIngredients": {
+      "kind": "union",
+      "members": [
+        {
+          "kind": "struct",
+          "fields": [
+            {
+              "kind": "pair",
+              "desc": "Ingredient specifying an item to be trimmed. (eg. `{ \"tag\": \"minecraft:trimmable_armor\" }`)",
+              "key": "base",
+              "type": {
+                "kind": "reference",
+                "path": "::java::data::recipe::Ingredient"
+              }
+            },
+            {
+              "kind": "pair",
+              "desc": "Material that will be used. (eg. `{ \"tag\": \"minecraft:trim_materials\" }`)",
+              "key": "addition",
+              "type": {
+                "kind": "reference",
+                "path": "::java::data::recipe::Ingredient"
+              }
+            },
+            {
+              "kind": "pair",
+              "desc": "Template item that will be used for the pattern.",
+              "key": "template",
+              "type": {
+                "kind": "reference",
+                "path": "::java::data::recipe::Ingredient"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "until",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.21.2"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "kind": "struct",
+          "fields": [
+            {
+              "kind": "pair",
+              "desc": "Ingredient specifying an item to be trimmed. (eg. `\"#minecraft:trimmable_armor\"`)",
+              "key": "base",
+              "type": {
+                "kind": "reference",
+                "path": "::java::data::recipe::Ingredient"
+              },
+              "optional": true
+            },
+            {
+              "kind": "pair",
+              "desc": "Material that will be used. (eg. `\"#minecraft:trim_materials\"`)",
+              "key": "addition",
+              "type": {
+                "kind": "reference",
+                "path": "::java::data::recipe::Ingredient"
+              },
+              "optional": true
+            },
+            {
+              "kind": "pair",
+              "desc": "Template item that will be used for the pattern.",
+              "key": "template",
+              "type": {
+                "kind": "reference",
+                "path": "::java::data::recipe::Ingredient"
+              },
+              "optional": true
+            }
+          ],
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.21.2"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "::java::data::recipe::SmithingTransform": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "spread",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.1"
+                }
+              }
+            }
+          ],
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::NotificationInfo"
+          }
+        },
+        {
+          "kind": "pair",
+          "attributes": [
+            {
+              "name": "deprecated"
+            },
+            {
+              "name": "until",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.1"
+                }
+              }
+            }
+          ],
+          "desc": "This field is unused by the game.",
+          "key": "group",
+          "type": {
+            "kind": "string"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "desc": "Ingredient specifying an item to be transformed.",
+          "key": "base",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "spread",
+          "attributes": [
+            {
+              "name": "until",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.21.2"
+                }
+              }
+            }
+          ],
+          "type": {
+            "kind": "struct",
+            "fields": [
+              {
+                "kind": "pair",
+                "desc": "Material that will be used.",
+                "key": "addition",
+                "type": {
+                  "kind": "reference",
+                  "path": "::java::data::recipe::Ingredient"
+                }
+              },
+              {
+                "kind": "pair",
+                "desc": "Template item that will be used for the pattern.",
+                "key": "template",
+                "type": {
+                  "kind": "reference",
+                  "path": "::java::data::recipe::Ingredient"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "spread",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.21.2"
+                }
+              }
+            }
+          ],
+          "type": {
+            "kind": "struct",
+            "fields": [
+              {
+                "kind": "pair",
+                "desc": "Material that will be used.",
+                "key": "addition",
+                "type": {
+                  "kind": "reference",
+                  "path": "::java::data::recipe::Ingredient"
+                },
+                "optional": true
+              },
+              {
+                "kind": "pair",
+                "desc": "Template item that will be used for the pattern.",
+                "key": "template",
+                "type": {
+                  "kind": "reference",
+                  "path": "::java::data::recipe::Ingredient"
+                },
+                "optional": true
+              }
+            ]
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "Resulting transformed item.",
+          "key": "result",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "struct",
+                "fields": [
+                  {
+                    "kind": "pair",
+                    "key": "item",
+                    "type": {
+                      "kind": "string",
+                      "attributes": [
+                        {
+                          "name": "id",
+                          "value": {
+                            "kind": "literal",
+                            "value": {
+                              "kind": "string",
+                              "value": "item"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "attributes": [
+                  {
+                    "name": "until",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "1.20.5"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "reference",
+                "path": "::java::world::item::ItemStackTemplate",
+                "attributes": [
+                  {
+                    "name": "since",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "1.20.5"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::SmithingTransformResult": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "item",
+          "type": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "attributes": [
+        {
+          "name": "until",
+          "value": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "1.20.5"
+            }
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::SmithingTrim": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "spread",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.1"
+                }
+              }
+            }
+          ],
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::NotificationInfo"
+          }
+        },
+        {
+          "kind": "pair",
+          "attributes": [
+            {
+              "name": "deprecated"
+            },
+            {
+              "name": "until",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.1"
+                }
+              }
+            }
+          ],
+          "desc": "This field is unused by the game.",
+          "key": "group",
+          "type": {
+            "kind": "string"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "desc": "Ingredient specifying an item to be trimmed.",
+          "key": "base",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "Material that will be used.",
+          "key": "addition",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "desc": "Template item that will be used for the pattern.",
+          "key": "template",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.21.5"
+                }
+              }
+            }
+          ],
+          "desc": "The trim pattern to apply to the result item.",
+          "key": "pattern",
+          "type": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "trim_pattern"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::Stonecutting": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "spread",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.1"
+                }
+              }
+            }
+          ],
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::NotificationInfo"
+          }
+        },
+        {
+          "kind": "pair",
+          "attributes": [
+            {
+              "name": "deprecated"
+            },
+            {
+              "name": "until",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.1"
+                }
+              }
+            }
+          ],
+          "desc": "This field is unused by the game.",
+          "key": "group",
+          "type": {
+            "kind": "string"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "ingredient",
+          "type": {
+            "kind": "reference",
+            "path": "::java::data::recipe::Ingredient"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": "result",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "string",
+                "attributes": [
+                  {
+                    "name": "until",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "1.20.5"
+                      }
+                    }
+                  },
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "reference",
+                "path": "::java::world::item::ItemStackTemplate",
+                "attributes": [
+                  {
+                    "name": "since",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "1.20.5"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "kind": "pair",
+          "attributes": [
+            {
+              "name": "until",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "1.20.5"
+                }
+              }
+            }
+          ],
+          "key": "count",
+          "type": {
+            "kind": "int"
+          }
+        }
+      ]
+    },
+    "::java::data::recipe::TransmuteResult": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "desc": "Defaults to the input item.",
+          "key": "id",
+          "type": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    },
+                    "exclude": {
+                      "kind": "tree",
+                      "values": {
+                        "0": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "air"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "desc": "Defaults to `1`.",
+          "key": "count",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1,
+              "max": 99
+            }
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "components",
+          "type": {
+            "kind": "reference",
+            "path": "::java::world::component::DataComponentPatch"
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::data::util::MinMaxBounds": {
+      "kind": "template",
+      "child": {
+        "kind": "union",
+        "members": [
+          {
+            "kind": "reference",
+            "path": "::java::data::util::T"
+          },
+          {
+            "kind": "struct",
+            "fields": [
+              {
+                "kind": "pair",
+                "key": "min",
+                "type": {
+                  "kind": "reference",
+                  "path": "::java::data::util::T"
+                },
+                "optional": true
+              },
+              {
+                "kind": "pair",
+                "key": "max",
+                "type": {
+                  "kind": "reference",
+                  "path": "::java::data::util::T"
+                },
+                "optional": true
+              }
+            ]
+          }
+        ]
+      },
+      "typeParams": [
+        {
+          "path": "::java::data::util::T"
+        }
+      ]
+    },
+    "::java::util::direction::Axis": {
+      "kind": "enum",
+      "enumKind": "string",
+      "values": [
+        {
+          "identifier": "X",
+          "value": "x"
+        },
+        {
+          "identifier": "Y",
+          "value": "y"
+        },
+        {
+          "identifier": "Z",
+          "value": "z"
+        }
+      ]
+    },
+    "::java::util::direction::Direction": {
+      "kind": "enum",
+      "enumKind": "string",
+      "values": [
+        {
+          "identifier": "Down",
+          "value": "down"
+        },
+        {
+          "identifier": "Up",
+          "value": "up"
+        },
+        {
+          "identifier": "North",
+          "value": "north"
+        },
+        {
+          "identifier": "East",
+          "value": "east"
+        },
+        {
+          "identifier": "South",
+          "value": "south"
+        },
+        {
+          "identifier": "West",
+          "value": "west"
+        }
+      ]
+    },
+    "::java::world::component::DataComponentPatch": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": {
+            "kind": "reference",
+            "path": "::java::world::component::PersistentDataComponent"
+          },
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "kind": "dynamic",
+                "accessor": [
+                  {
+                    "keyword": "key"
+                  }
+                ]
+              }
+            ],
+            "registry": "minecraft:data_component"
+          }
+        },
+        {
+          "kind": "pair",
+          "key": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "data_component_type"
+                      }
+                    },
+                    "prefix": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "!"
+                      }
+                    },
+                    "exclude": {
+                      "kind": "tree",
+                      "values": {
+                        "0": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "additional_trade_cost"
+                          }
+                        },
+                        "1": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "creative_slot_lock"
+                          }
+                        },
+                        "2": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "map_post_processing"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "type": {
+            "kind": "struct",
+            "fields": []
+          }
+        }
+      ]
+    },
+    "::java::world::component::PersistentDataComponent": {
+      "kind": "string",
+      "attributes": [
+        {
+          "name": "id",
+          "value": {
+            "kind": "tree",
+            "values": {
+              "registry": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "data_component_type"
+                }
+              },
+              "exclude": {
+                "kind": "tree",
+                "values": {
+                  "0": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "additional_trade_cost"
+                    }
+                  },
+                  "1": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "creative_slot_lock"
+                    }
+                  },
+                  "2": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "map_post_processing"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "::java::world::component::item::FireworkShape": {
+      "kind": "enum",
+      "enumKind": "string",
+      "values": [
+        {
+          "identifier": "SmallBall",
+          "value": "small_ball"
+        },
+        {
+          "identifier": "LargeBall",
+          "value": "large_ball"
+        },
+        {
+          "identifier": "Star",
+          "value": "star"
+        },
+        {
+          "identifier": "Creeper",
+          "value": "creeper"
+        },
+        {
+          "identifier": "Burst",
+          "value": "burst"
+        }
+      ]
+    },
+    "::java::world::component::predicate::CollectionPredicate": {
+      "kind": "template",
+      "child": {
+        "kind": "struct",
+        "fields": [
+          {
+            "kind": "pair",
+            "desc": "A list of tests. For each test, there must be at least one entry whose contents match exactly.",
+            "key": "contains",
+            "type": {
+              "kind": "list",
+              "item": {
+                "kind": "reference",
+                "path": "::java::world::component::predicate::P"
+              }
+            },
+            "optional": true
+          },
+          {
+            "kind": "pair",
+            "key": "count",
+            "type": {
+              "kind": "list",
+              "item": {
+                "kind": "struct",
+                "fields": [
+                  {
+                    "kind": "pair",
+                    "desc": "The contents an entry's text must match exactly.",
+                    "key": "test",
+                    "type": {
+                      "kind": "reference",
+                      "path": "::java::world::component::predicate::P"
+                    }
+                  },
+                  {
+                    "kind": "pair",
+                    "desc": "The number of entries that must match the test.",
+                    "key": "count",
+                    "type": {
+                      "kind": "concrete",
+                      "child": {
+                        "kind": "reference",
+                        "path": "::java::data::util::MinMaxBounds"
+                      },
+                      "typeArgs": [
+                        {
+                          "kind": "int"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "optional": true
+          },
+          {
+            "kind": "pair",
+            "desc": "When set, total number of entries in the this collection.",
+            "key": "size",
+            "type": {
+              "kind": "concrete",
+              "child": {
+                "kind": "reference",
+                "path": "::java::data::util::MinMaxBounds"
+              },
+              "typeArgs": [
+                {
+                  "kind": "int"
+                }
+              ]
+            },
+            "optional": true
+          }
+        ]
+      },
+      "typeParams": [
+        {
+          "path": "::java::world::component::predicate::P"
+        }
+      ]
+    },
+    "::java::world::component::predicate::PotionTypeMatch": {
+      "kind": "union",
+      "members": [
+        {
+          "kind": "string",
+          "attributes": [
+            {
+              "name": "id",
+              "value": {
+                "kind": "tree",
+                "values": {
+                  "registry": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "potion"
+                    }
+                  },
+                  "tags": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "allowed"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "kind": "list",
+          "item": {
+            "kind": "string",
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "potion"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "::java::world::component::predicate::PotionsPredicate": {
+      "kind": "struct",
+      "fields": [
+        {
+          "kind": "pair",
+          "key": "potions",
+          "type": {
+            "kind": "reference",
+            "path": "::java::world::component::predicate::PotionTypeMatch"
+          },
+          "optional": true
+        },
+        {
+          "kind": "pair",
+          "key": "effects",
+          "type": {
+            "kind": "concrete",
+            "child": {
+              "kind": "reference",
+              "path": "::java::world::component::predicate::CollectionPredicate"
+            },
+            "typeArgs": [
+              {
+                "kind": "reference",
+                "path": "::java::data::advancement::predicate::EntityEffectsPredicate"
+              }
+            ]
+          },
+          "optional": true
+        }
+      ]
+    },
+    "::java::world::item::ItemStack": {
+      "kind": "concrete",
+      "child": {
+        "kind": "reference",
+        "path": "::java::world::item::ItemStackOfComponent"
+      },
+      "typeArgs": [
+        {
+          "kind": "reference",
+          "path": "::java::world::component::DataComponentPatch"
+        }
+      ]
+    },
+    "::java::world::item::ItemStackOfComponent": {
+      "kind": "template",
+      "child": {
+        "kind": "struct",
+        "fields": [
+          {
+            "kind": "spread",
+            "type": {
+              "kind": "concrete",
+              "child": {
+                "kind": "reference",
+                "path": "::java::world::item::SingleItemOfComponent"
+              },
+              "typeArgs": [
+                {
+                  "kind": "reference",
+                  "path": "::java::world::item::T"
+                }
+              ]
+            }
+          },
+          {
+            "kind": "pair",
+            "attributes": [
+              {
+                "name": "since",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "1.20.5"
+                  }
+                }
+              }
+            ],
+            "desc": "Number of items in the stack.\nDefaults to `1`.",
+            "key": "count",
+            "type": {
+              "kind": "int",
+              "valueRange": {
+                "kind": 0,
+                "min": 1,
+                "max": 99
+              }
+            },
+            "optional": true
+          },
+          {
+            "kind": "pair",
+            "attributes": [
+              {
+                "name": "until",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "1.20.5"
+                  }
+                }
+              }
+            ],
+            "desc": "Number of items in the stack.",
+            "key": "Count",
+            "type": {
+              "kind": "byte"
+            },
+            "optional": true
+          }
+        ]
+      },
+      "typeParams": [
+        {
+          "path": "::java::world::item::T"
+        }
+      ]
+    },
+    "::java::world::item::ItemStackTemplate": {
+      "kind": "union",
+      "members": [
+        {
+          "kind": "reference",
+          "path": "::java::world::item::ItemStack",
+          "attributes": [
+            {
+              "name": "canonical"
+            }
+          ]
+        },
+        {
+          "kind": "string",
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "26.1"
+                }
+              }
+            },
+            {
+              "name": "id",
+              "value": {
+                "kind": "tree",
+                "values": {
+                  "registry": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "item"
+                    }
+                  },
+                  "exclude": {
+                    "kind": "tree",
+                    "values": {
+                      "0": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "air"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "::java::world::item::SingleItem": {
+      "kind": "concrete",
+      "child": {
+        "kind": "reference",
+        "path": "::java::world::item::SingleItemOfComponent"
+      },
+      "typeArgs": [
+        {
+          "kind": "reference",
+          "path": "::java::world::component::DataComponentPatch"
+        }
+      ]
+    },
+    "::java::world::item::SingleItemOfComponent": {
+      "kind": "template",
+      "child": {
+        "kind": "struct",
+        "fields": [
+          {
+            "kind": "pair",
+            "desc": "ID of the item.",
+            "key": "id",
+            "type": {
+              "kind": "union",
+              "members": [
+                {
+                  "kind": "string",
+                  "attributes": [
+                    {
+                      "name": "until",
+                      "value": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "1.20.5"
+                        }
+                      }
+                    },
+                    {
+                      "name": "id",
+                      "value": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "item"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "string",
+                  "attributes": [
+                    {
+                      "name": "since",
+                      "value": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "1.20.5"
+                        }
+                      }
+                    },
+                    {
+                      "name": "id",
+                      "value": {
+                        "kind": "tree",
+                        "values": {
+                          "registry": {
+                            "kind": "literal",
+                            "value": {
+                              "kind": "string",
+                              "value": "item"
+                            }
+                          },
+                          "exclude": {
+                            "kind": "tree",
+                            "values": {
+                              "0": {
+                                "kind": "literal",
+                                "value": {
+                                  "kind": "string",
+                                  "value": "air"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "kind": "pair",
+            "attributes": [
+              {
+                "name": "since",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "1.20.5"
+                  }
+                }
+              }
+            ],
+            "key": "components",
+            "type": {
+              "kind": "reference",
+              "path": "::java::world::item::T"
+            },
+            "optional": true
+          },
+          {
+            "kind": "pair",
+            "attributes": [
+              {
+                "name": "until",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "1.20.5"
+                  }
+                }
+              }
+            ],
+            "key": "tag",
+            "type": {
+              "kind": "dispatcher",
+              "parallelIndices": [
+                {
+                  "kind": "dynamic",
+                  "accessor": ["id"]
+                }
+              ],
+              "registry": "minecraft:item"
+            },
+            "optional": true
+          }
+        ]
+      },
+      "typeParams": [
+        {
+          "path": "::java::world::item::T"
+        }
+      ]
+    }
+  },
+  "mcdoc/dispatcher": {
+    "minecraft:recipe_serializer": {
+      "%unknown": {
+        "kind": "struct",
+        "fields": []
+      },
+      "blasting": {
+        "kind": "reference",
+        "path": "::java::data::recipe::Smelting"
+      },
+      "brewing": {
+        "kind": "reference",
+        "path": "::java::data::recipe::Brewing",
+        "attributes": [
+          {
+            "name": "since",
+            "value": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "26.3"
+              }
+            }
+          }
+        ]
+      },
+      "campfire_cooking": {
+        "kind": "reference",
+        "path": "::java::data::recipe::Smelting"
+      },
+      "crafting_decorated_pot": {
+        "kind": "union",
+        "members": [
+          {
+            "kind": "struct",
+            "fields": [],
+            "attributes": [
+              {
+                "name": "until",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "kind": "reference",
+            "path": "::java::data::recipe::CraftingDecoratedPot",
+            "attributes": [
+              {
+                "name": "since",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "crafting_dye": {
+        "kind": "reference",
+        "path": "::java::data::recipe::CraftingDye",
+        "attributes": [
+          {
+            "name": "since",
+            "value": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "26.1"
+              }
+            }
+          }
+        ]
+      },
+      "crafting_imbue": {
+        "kind": "reference",
+        "path": "::java::data::recipe::CraftingImbue",
+        "attributes": [
+          {
+            "name": "since",
+            "value": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "26.1"
+              }
+            }
+          }
+        ]
+      },
+      "crafting_shaped": {
+        "kind": "reference",
+        "path": "::java::data::recipe::CraftingShaped"
+      },
+      "crafting_shapeless": {
+        "kind": "reference",
+        "path": "::java::data::recipe::CraftingShapeless"
+      },
+      "crafting_special_bannerduplicate": {
+        "kind": "union",
+        "members": [
+          {
+            "kind": "struct",
+            "fields": [],
+            "attributes": [
+              {
+                "name": "until",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "kind": "reference",
+            "path": "::java::data::recipe::CraftingSpecialBannerDuplicate",
+            "attributes": [
+              {
+                "name": "since",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "crafting_special_bookcloning": {
+        "kind": "union",
+        "members": [
+          {
+            "kind": "struct",
+            "fields": [],
+            "attributes": [
+              {
+                "name": "until",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "kind": "reference",
+            "path": "::java::data::recipe::CraftingSpecialBookCloning",
+            "attributes": [
+              {
+                "name": "since",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "crafting_special_firework_rocket": {
+        "kind": "union",
+        "members": [
+          {
+            "kind": "struct",
+            "fields": [],
+            "attributes": [
+              {
+                "name": "until",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "kind": "reference",
+            "path": "::java::data::recipe::CraftingSpecialFireworkRocket",
+            "attributes": [
+              {
+                "name": "since",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "crafting_special_firework_star": {
+        "kind": "union",
+        "members": [
+          {
+            "kind": "struct",
+            "fields": [],
+            "attributes": [
+              {
+                "name": "until",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "kind": "reference",
+            "path": "::java::data::recipe::CraftingSpecialFireworkStar",
+            "attributes": [
+              {
+                "name": "since",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "crafting_special_firework_star_fade": {
+        "kind": "union",
+        "members": [
+          {
+            "kind": "struct",
+            "fields": [],
+            "attributes": [
+              {
+                "name": "until",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "kind": "reference",
+            "path": "::java::data::recipe::CraftingSpecialFireworkStarFade",
+            "attributes": [
+              {
+                "name": "since",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "crafting_special_mapextending": {
+        "kind": "union",
+        "members": [
+          {
+            "kind": "struct",
+            "fields": [],
+            "attributes": [
+              {
+                "name": "until",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "kind": "reference",
+            "path": "::java::data::recipe::CraftingSpecialMapExtending",
+            "attributes": [
+              {
+                "name": "since",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "crafting_special_shielddecoration": {
+        "kind": "union",
+        "members": [
+          {
+            "kind": "struct",
+            "fields": [],
+            "attributes": [
+              {
+                "name": "until",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "kind": "reference",
+            "path": "::java::data::recipe::CraftingSpecialShieldDecoration",
+            "attributes": [
+              {
+                "name": "since",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "26.1"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "crafting_transmute": {
+        "kind": "reference",
+        "path": "::java::data::recipe::CraftingTransmute",
+        "attributes": [
+          {
+            "name": "since",
+            "value": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "1.21.2"
+              }
+            }
+          }
+        ]
+      },
+      "smelting": {
+        "kind": "reference",
+        "path": "::java::data::recipe::Smelting"
+      },
+      "smithing": {
+        "kind": "reference",
+        "path": "::java::data::recipe::Smithing",
+        "attributes": [
+          {
+            "name": "until",
+            "value": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "1.20"
+              }
+            }
+          }
+        ]
+      },
+      "smithing_transform": {
+        "kind": "reference",
+        "path": "::java::data::recipe::SmithingTransform",
+        "attributes": [
+          {
+            "name": "since",
+            "value": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "1.19.4"
+              }
+            }
+          }
+        ]
+      },
+      "smithing_trim": {
+        "kind": "reference",
+        "path": "::java::data::recipe::SmithingTrim",
+        "attributes": [
+          {
+            "name": "since",
+            "value": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "1.19.4"
+              }
+            }
+          }
+        ]
+      },
+      "smoking": {
+        "kind": "reference",
+        "path": "::java::data::recipe::Smelting"
+      },
+      "stonecutting": {
+        "kind": "reference",
+        "path": "::java::data::recipe::Stonecutting"
+      }
+    },
+    "minecraft:resource": {
+      "model": {
+        "kind": "reference",
+        "path": "::java::assets::model::Model"
+      },
+      "recipe": {
+        "kind": "reference",
+        "path": "::java::data::recipe::Recipe"
+      }
+    }
+  },
+  "ref": "0ca060a4f1631f9d5eb7198cfe94c7b77a773d32"
+}
