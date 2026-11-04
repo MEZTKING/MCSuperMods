@@ -21,6 +21,16 @@ export const ExportProblemCodes = {
   layerSkipped: 'export.layer-skipped',
   /** An output file uses a path the exporter reserves, such as `msm.export.json`. */
   reservedPath: 'export.reserved-path',
+  /**
+   * The injected `validateText` checker threw for an output file with a `language`. The
+   * export is blocked.
+   */
+  textValidationFailed: 'export.text-validation-failed',
+  /**
+   * Output files carry a `language` but the request has no `validateText` checker, so their
+   * text was not checked. One info per language; the export goes ahead.
+   */
+  languageUnchecked: 'export.language-unchecked',
   /** The exporter threw while packaging. Some files may already have been written. */
   failed: 'export.failed',
 } as const;

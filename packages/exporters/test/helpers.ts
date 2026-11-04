@@ -94,6 +94,7 @@ export interface RawData {
   json?: Json;
   text?: string;
   schema?: string;
+  language?: string;
 }
 
 /** Lowers to exactly the file its data describes, for edge cases. */
@@ -109,6 +110,7 @@ export const rawKind: ElementKind = {
       contents: data.text !== undefined ? new TextEncoder().encode(data.text) : (data.json ?? null),
     };
     if (data.schema !== undefined) file.schema = data.schema;
+    if (data.language !== undefined) file.language = data.language;
     return [file];
   },
 };

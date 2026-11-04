@@ -31,6 +31,14 @@ export interface ExportRequest {
   registries?: RegistryIndex;
   exporter: Exporter;
   sink: OutputSink;
+  /**
+   * Checks one output file that carries a `language` (such as `mcfunction`) and returns its
+   * problems. The host injects it (the renderer passes an IPC-backed checker; tests pass the
+   * Node service), so the exporters never import a language service. Error problems block
+   * the export; warnings and infos pass through. When absent, such files are reported with
+   * one `export.language-unchecked` info per language.
+   */
+  validateText?: (file: OutputFile) => Promise<Problem[]>;
   /** Reads one project asset's bytes, given its namespace and asset path. */
   readAsset(namespace: string, path: string): Promise<Uint8Array>;
   meta: { msmVersion: string; plugins: string[] };
@@ -104,6 +112,46 @@ function validateFile(
 }
 
 /**
+ * Checks every file with a `language` through `validateText`, one file at a time in the
+ * given (sorted) order. Problems without a `file` are attributed to the checked file; a
+ * throw becomes `export.text-validation-failed`.
+ */
+async function validateTextFiles(
+  files: readonly OutputFile[],
+  validateText: ExportRequest['validateText'],
+): Promise<Problem[]> {
+  const problems: Problem[] = [];
+  const unchecked = new Map<string, number>();
+  for (const file of files) {
+    if (file.language === undefined) continue;
+    if (validateText === undefined) {
+      unchecked.set(file.language, (unchecked.get(file.language) ?? 0) + 1);
+      continue;
+    }
+    try {
+      for (const problem of await validateText(file)) {
+        problems.push(problem.file === undefined ? { ...problem, file: file.path } : problem);
+      }
+    } catch (error) {
+      problems.push({
+        severity: 'error',
+        code: ExportProblemCodes.textValidationFailed,
+        file: file.path,
+        message: `${file.path} could not be checked as ${file.language}: ${error instanceof Error ? error.message : String(error)}`,
+      });
+    }
+  }
+  for (const [language, count] of [...unchecked].sort((a, b) => comparePaths(a[0], b[0]))) {
+    problems.push({
+      severity: 'info',
+      code: ExportProblemCodes.languageUnchecked,
+      message: `${count} ${language} file(s) were exported without being checked: no ${language} checker is available.`,
+    });
+  }
+  return problems;
+}
+
+/**
  * Runs one export.
  *
  * 1. Lowers the project with `lowerProject` (unknown kinds, thrown lowering and lowering
@@ -114,6 +162,10 @@ function validateFile(
  *    lowered file already uses is an `export.conflict` error.
  * 4. Validates every file that names a `schema` against the schema index. Schema errors
  *    block; warnings pass through.
+ *    4b. Checks every file with a `language` through `request.validateText`; its error
+ *    problems block, warnings pass through. Without a checker, one
+ *    `export.language-unchecked` info per language; a throwing checker is
+ *    `export.text-validation-failed`.
  * 5. When any error was found, returns `ok: false` without writing anything. Otherwise runs
  *    the exporter, which writes to the sink; an exporter error problem or a throw makes the
  *    report not ok.
@@ -171,6 +223,7 @@ export async function runExport(request: ExportRequest): Promise<ExportReport> {
     (a, b) => comparePaths(a.layer, b.layer) || comparePaths(a.path, b.path),
   );
   for (const file of files) problems.push(...validateFile(file, schemaIndex, registries));
+  problems.push(...(await validateTextFiles(files, request.validateText)));
 
   const hasError = (): boolean => problems.some((problem) => problem.severity === 'error');
   if (hasError()) return { ok: false, problems, files: [] };
