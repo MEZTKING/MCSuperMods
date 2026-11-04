@@ -2,6 +2,7 @@ import { mkdir, mkdtemp, readFile, rm, symlink, utimes, writeFile } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createNodeInstallFileSystem } from '@msm/interop/node';
+import { NbtCompound, NbtFile, NbtString } from 'deepslate/nbt';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createLocationResolver } from '../src/main/platform/locations';
 import { createMinecraftService, type MinecraftService } from '../src/main/platform/minecraft';
@@ -12,11 +13,24 @@ let temp: string;
 let minecraftDir: string;
 let service: MinecraftService;
 
-async function makeWorld(dir: string, mtime: Date | null): Promise<void> {
+/** A synthetic gzip `level.dat` (never a Mojang file) with `Data.LevelName`. */
+function levelDat(levelName: string): Uint8Array {
+  const root = new NbtCompound().set(
+    'Data',
+    new NbtCompound().set('LevelName', new NbtString(levelName)),
+  );
+  return new NbtFile('', root, 'gzip', false, undefined).write();
+}
+
+async function makeWorld(
+  dir: string,
+  mtime: Date | null,
+  contents: Uint8Array = new Uint8Array([0]),
+): Promise<void> {
   const world = join(minecraftDir, 'saves', dir);
   await mkdir(world, { recursive: true });
   if (mtime !== null) {
-    await writeFile(join(world, 'level.dat'), new Uint8Array([0]));
+    await writeFile(join(world, 'level.dat'), contents);
     await utimes(join(world, 'level.dat'), mtime, mtime);
   }
 }
@@ -54,6 +68,19 @@ describe('world listing', () => {
     expect(worlds).toEqual([
       { dir: 'Newer', name: 'Newer', lastModified: '2026-02-01T00:00:00.000Z' },
       { dir: 'Older', name: 'Older', lastModified: '2026-01-01T00:00:00.000Z' },
+    ]);
+    expect(ipcContract[InvokeChannels.minecraftListWorlds].response.parse(worlds)).toEqual(worlds);
+  });
+
+  it('names worlds from level.dat and falls back to the folder name', async () => {
+    await makeWorld('New World (1)', new Date('2026-03-01T00:00:00Z'), levelDat('Castle Build'));
+    await makeWorld('Broken', new Date('2026-02-01T00:00:00Z'), new Uint8Array([0x1f, 0x8b, 1]));
+    await makeWorld('Blank', new Date('2026-01-01T00:00:00Z'), levelDat('  '));
+    const worlds = await service.listWorlds();
+    expect(worlds).toEqual([
+      { dir: 'New World (1)', name: 'Castle Build', lastModified: '2026-03-01T00:00:00.000Z' },
+      { dir: 'Broken', name: 'Broken', lastModified: '2026-02-01T00:00:00.000Z' },
+      { dir: 'Blank', name: 'Blank', lastModified: '2026-01-01T00:00:00.000Z' },
     ]);
     expect(ipcContract[InvokeChannels.minecraftListWorlds].response.parse(worlds)).toEqual(worlds);
   });

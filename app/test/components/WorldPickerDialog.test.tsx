@@ -25,6 +25,20 @@ describe('WorldPickerDialog', () => {
     ]);
   });
 
+  it('shows the level.dat name, with the folder in muted text only when it differs', () => {
+    const named: WorldOption[] = [
+      { dir: 'New World (1)', name: 'Castle Build', lastModified: '2026-10-30T18:30:00.000Z' },
+      { dir: 'Unreadable', name: 'Unreadable', lastModified: '2026-06-15T08:00:00.000Z' },
+    ];
+    render(<WorldPickerDialog open worlds={named} onPick={vi.fn()} onClose={vi.fn()} />);
+    expect(screen.getByTestId('world-name-New World (1)').textContent).toBe('Castle Build');
+    const folder = screen.getByTestId('world-folder-New World (1)');
+    expect(folder.textContent).toContain('New World (1)');
+    expect(folder.closest('.text-muted')).not.toBeNull();
+    expect(screen.getByTestId('world-name-Unreadable').textContent).toBe('Unreadable');
+    expect(screen.queryByTestId('world-folder-Unreadable')).toBeNull();
+  });
+
   it('renders nothing while closed', () => {
     render(<WorldPickerDialog open={false} worlds={worlds} onPick={vi.fn()} onClose={vi.fn()} />);
     expect(screen.queryByTestId('world-picker')).toBeNull();

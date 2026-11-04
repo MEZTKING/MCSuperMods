@@ -181,7 +181,7 @@ export interface GameLocationList {
 export interface WorldInfo {
   /** The world's folder name (one path segment). */
   dir: string;
-  /** Display name: the folder name until `level.dat` is parsed (Phase 3). */
+  /** Display name: `Data.LevelName` from `level.dat`, or the folder name when unreadable. */
   name: string;
   /** ISO 8601 modification time of `level.dat`. */
   lastModified: string;

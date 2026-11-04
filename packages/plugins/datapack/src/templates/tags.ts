@@ -1,6 +1,6 @@
 /**
  * Tag templates for every tag registry except `function` (see `functions.ts`), each with two
- * vanilla example values.
+ * vanilla example values, except the `minecraft:normal` world preset tag, which starts empty.
  */
 import type { ElementTemplate } from '@msm/plugin-api';
 
@@ -44,4 +44,28 @@ export const tagTemplates: readonly ElementTemplate[] = [
     'minecraft:sharpness',
     'minecraft:smite',
   ]),
+  {
+    ...tag('tag_worldgen_biome', 'worldgen/biome', 'Biome tag (has_structure)', 'biomes', [
+      'minecraft:plains',
+      'minecraft:savanna',
+    ]),
+    description:
+      'A named group of biomes, used as #<namespace>:has_structure/<name> in a structure\'s "biomes".',
+    prefix: 'has_structure/',
+  },
+  tag('tag_worldgen_structure', 'worldgen/structure', 'Structure tag', 'structures', [
+    'minecraft:village_plains',
+    'minecraft:village_savanna',
+  ]),
+  {
+    id: 'tag_worldgen_world_preset_normal',
+    kind: 'minecraft:tag/worldgen/world_preset',
+    category: 'Tags',
+    title: 'World preset tag: normal',
+    description:
+      'Adds world presets to the create-world screen (minecraft:normal); add preset ids to "values".',
+    defaultNamespace: 'minecraft',
+    defaultName: 'normal',
+    data: () => ({ replace: false, values: [] }),
+  },
 ];

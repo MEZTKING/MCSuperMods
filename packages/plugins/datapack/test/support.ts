@@ -39,6 +39,9 @@ export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
   'tag/function': ['example:others'],
   'tag/game_event': ['example:others'],
   'tag/item': ['demo:gems', 'example:others'],
+  'tag/worldgen/biome': ['example:others'],
+  'tag/worldgen/structure': ['example:others'],
+  'tag/worldgen/world_preset': ['example:others'],
   // Full texture paths, as a project's own `textures/` files would declare them.
   texture: ['example:entity/banner/ruby', 'example:painting/ruby', 'example:palettes/trim/ruby'],
 };

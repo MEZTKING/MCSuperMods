@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "replace": false,
+    "values": [
+      "minecraft:plains",
+      "#minecraft:is_overworld",
+      "#example:others",
+      {
+        "id": "minecraft:plains",
+        "required": false
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/tags/worldgen/biome/mixed.json",
+  "schema": "tag:worldgen/biome"
+}

@@ -15,6 +15,9 @@ export const TAG_REGISTRIES = Object.freeze([
   'function',
   'damage_type',
   'enchantment',
+  'worldgen/biome',
+  'worldgen/structure',
+  'worldgen/world_preset',
 ] as const);
 
 /** A registry with a tag kind. */

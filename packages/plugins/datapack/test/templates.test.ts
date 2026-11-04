@@ -10,7 +10,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import plugin, { dataPackKinds, dataPackTemplates } from '../src/index';
 import { blockingProblems, indexesFor, PROJECT_IDS } from './support';
 
-/** The 52 template ids, in picker order (library plan section 2.1). */
+/** The 55 template ids, in picker order (library plan section 2.1). */
 const IDS = [
   'recipe_shaped',
   'recipe_shapeless',
@@ -52,6 +52,9 @@ const IDS = [
   'tag_game_event',
   'tag_damage_type',
   'tag_enchantment',
+  'tag_worldgen_biome',
+  'tag_worldgen_structure',
+  'tag_worldgen_world_preset_normal',
   'enchantment_damage',
   'enchantment_protection',
   'damage_type',
@@ -124,9 +127,9 @@ const byId = (id: string): ElementTemplate => {
 };
 
 describe('data pack templates', () => {
-  it('has the 52 ids in picker order, unique, and contributed by the plugin', () => {
+  it('has the 55 ids in picker order, unique, and contributed by the plugin', () => {
     expect(dataPackTemplates.map((template) => template.id)).toEqual(IDS);
-    expect(new Set(IDS).size).toBe(52);
+    expect(new Set(IDS).size).toBe(55);
     expect(plugin.contributes.elementTemplates?.map((template) => template.id)).toEqual(IDS);
     for (const id of KEPT) expect(IDS).toContain(id);
   });
@@ -164,6 +167,25 @@ describe('data pack templates', () => {
     expect(byId('function_load_body').defaultName).toBe('load');
     expect(byId('function_tick_body').defaultName).toBe('tick');
     expect(byId('advancement').defaultName).toBe('root');
+  });
+
+  it('starts the worldgen tags in the vanilla conventions', () => {
+    expect(byId('tag_worldgen_biome')).toMatchObject({
+      kind: 'minecraft:tag/worldgen/biome',
+      title: 'Biome tag (has_structure)',
+      prefix: 'has_structure/',
+    });
+    expect(byId('tag_worldgen_structure').kind).toBe('minecraft:tag/worldgen/structure');
+    const preset = byId('tag_worldgen_world_preset_normal');
+    expect(preset).toMatchObject({
+      kind: 'minecraft:tag/worldgen/world_preset',
+      title: 'World preset tag: normal',
+      defaultNamespace: 'minecraft',
+      defaultName: 'normal',
+    });
+    const context = contextFor(preset);
+    expect(context.id).toBe('minecraft:normal');
+    expect(preset.data(context)).toEqual({ replace: false, values: [] });
   });
 
   it('hangs child advancements from the project root advancement', () => {

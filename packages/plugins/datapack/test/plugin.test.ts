@@ -63,7 +63,7 @@ describe('@msm/plugin-datapack', () => {
     const actual = kinds().map(({ id, schema, folder }) => ({ id, schema, folder }));
     expect(actual).toEqual(expected);
     expect(dataPackKinds.map((kind) => kind.id)).toEqual(expected.map((kind) => kind.id));
-    expect(tagKinds).toHaveLength(8);
+    expect(tagKinds).toHaveLength(11);
     expect(genericKinds).toHaveLength(10);
     expect(new Set(kinds().map((kind) => kind.id)).size).toBe(kinds().length);
     expect(new Set(kinds().map((kind) => kind.folder)).size).toBe(kinds().length);
@@ -156,6 +156,18 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(blockingProblems(indexes, 'tag:item', { values: ['#example:missing'] })).not.toEqual(
         [],
       );
+      // The worldgen tag schemas resolve `Tag<E>` with the registry's own id type.
+      for (const [registry, valid, invalid] of [
+        ['worldgen/biome', 'minecraft:plains', 'minecraft:diamond'],
+        ['worldgen/structure', 'minecraft:village_plains', 'minecraft:plains'],
+        ['worldgen/world_preset', 'minecraft:flat', 'minecraft:plains'],
+      ] as const) {
+        expect(blockingProblems(indexes, `tag:${registry}`, { values: [valid] })).toEqual([]);
+        expect(
+          blockingProblems(indexes, `tag:${registry}`, { values: [invalid] }),
+          registry,
+        ).not.toEqual([]);
+      }
       // A texture id is accepted only when it exists after its mcdoc path prefix is applied.
       expect(
         blockingProblems(indexes, 'resource:painting_variant', {

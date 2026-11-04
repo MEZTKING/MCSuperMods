@@ -29,6 +29,7 @@ import {
   PREVIEW_ASSET_PATTERNS,
   pickVersionJar,
   readAssetCacheInfo,
+  readLevelName,
   writeAssetCache,
 } from '@msm/interop';
 import { sha1Hex } from '@msm/interop/node';
@@ -83,7 +84,10 @@ export interface MinecraftService {
   readAsset(mcVersion: string, path: string): Promise<Uint8Array | null>;
   listAssets(mcVersion: string, prefix: string): Promise<string[]>;
   installResourcePack(fileName: string, data: Uint8Array): Promise<{ path: string }>;
-  /** Worlds in `<gameDir>/saves/` of the selected location that contain `level.dat`, most recent first. */
+  /**
+   * Worlds in `<gameDir>/saves/` of the selected location that contain `level.dat`, most
+   * recent first, named by `Data.LevelName` (the folder name when `level.dat` is unreadable).
+   */
   listWorlds(): Promise<WorldInfo[]>;
   /** Writes a data pack zip into `<gameDir>/saves/<worldDir>/datapacks/` of the selected location. */
   installDataPack(worldDir: string, fileName: string, data: Uint8Array): Promise<{ path: string }>;
@@ -144,6 +148,15 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
     const { selected } = await deps.locations.selected();
     if (selected === null) throw new Error(NO_LOCATION_MESSAGE);
     return selected;
+  };
+
+  /** The world name from `level.dat` (read whole; it is small), else the folder name. */
+  const worldName = async (levelDat: string, dir: string): Promise<string> => {
+    try {
+      return readLevelName(await fs.readFile(levelDat)) ?? dir;
+    } catch {
+      return dir;
+    }
   };
 
   const realOrNull = async (path: string): Promise<string | null> => {
@@ -362,9 +375,10 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
       const worlds: WorldInfo[] = [];
       for (const entry of await fs.readDir(saves)) {
         if (entry.kind !== 'directory' || !isSafeSegment(entry.name)) continue;
-        const lastModified = await modifiedAt(joinInstallPath(saves, entry.name, 'level.dat'));
+        const levelDat = joinInstallPath(saves, entry.name, 'level.dat');
+        const lastModified = await modifiedAt(levelDat);
         if (lastModified === null) continue;
-        worlds.push({ dir: entry.name, name: entry.name, lastModified });
+        worlds.push({ dir: entry.name, name: await worldName(levelDat, entry.name), lastModified });
       }
       // Most recently played first; ties by folder name.
       return worlds.sort((a, b) =>

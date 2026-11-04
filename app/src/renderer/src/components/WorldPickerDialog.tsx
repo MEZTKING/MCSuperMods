@@ -1,6 +1,7 @@
 /**
  * Picks a singleplayer world to install a data pack into. Worlds are listed newest first;
- * the first one starts selected. Presentational: the host lists the worlds and installs.
+ * the first one starts selected. Each row shows the world name and, in muted text, the folder
+ * when it differs. Presentational: the host lists the worlds and installs.
  *
  * @packageDocumentation
  */
@@ -12,6 +13,7 @@ import { Modal } from './NewElementDialog';
 export interface WorldOption {
   /** Folder name under `saves/`. */
   dir: string;
+  /** The world name from `level.dat` (`Data.LevelName`), or the folder name. */
   name: string;
   /** ISO 8601 time of the last change. */
   lastModified: string;
@@ -113,9 +115,19 @@ export function WorldPickerDialog({
                 }}
               />
               <span className="flex min-w-0 flex-col">
-                <span className="truncate font-medium">{world.name}</span>
+                <span
+                  className="truncate font-medium"
+                  title={world.name}
+                  data-testid={`world-name-${world.dir}`}
+                >
+                  {world.name}
+                </span>
                 <span className="text-muted text-xs">
-                  {world.dir !== world.name && <span className="font-mono">{world.dir} · </span>}
+                  {world.dir !== world.name && (
+                    <span className="font-mono" data-testid={`world-folder-${world.dir}`}>
+                      {world.dir} ·{' '}
+                    </span>
+                  )}
                   Last changed {formatTime(world.lastModified)}
                 </span>
               </span>

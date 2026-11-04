@@ -39,6 +39,9 @@ const TAG_ENTRIES: Record<(typeof TAG_REGISTRIES)[number], [string, string]> = {
   function: ['example:greet', 'example:tick'],
   damage_type: ['minecraft:cactus', '#minecraft:is_fire'],
   enchantment: ['minecraft:sharpness', '#minecraft:curse'],
+  'worldgen/biome': ['minecraft:plains', '#minecraft:is_overworld'],
+  'worldgen/structure': ['minecraft:village_plains', '#minecraft:village'],
+  'worldgen/world_preset': ['minecraft:flat', '#minecraft:extended'],
 };
 
 const tagSamples: Sample[] = tagKinds.map((kind, index) => {
