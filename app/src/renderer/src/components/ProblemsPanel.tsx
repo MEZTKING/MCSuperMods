@@ -71,6 +71,7 @@ function ProblemRow(props: {
       className="flex items-start gap-1.5"
       data-testid="problem-row"
       data-severity={problem.severity}
+      data-code={problem.code}
     >
       <span className="mt-0.5 shrink-0">
         <SeverityIcon severity={problem.severity} />
