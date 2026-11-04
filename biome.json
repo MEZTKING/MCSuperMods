@@ -7,7 +7,15 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!**/dist-types", "!**/out", "!**/vendor", "!pnpm-lock.yaml", "!**/*.md"]
+    "includes": [
+      "**",
+      "!**/dist-types",
+      "!**/out",
+      "!**/vendor",
+      "!**/test/fixtures",
+      "!pnpm-lock.yaml",
+      "!**/*.md"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -59,6 +67,46 @@
                   {
                     "group": ["@msm/*"],
                     "message": "plugin-api has no internal dependencies"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/plugins/*/src/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@msm/targets", "@msm/target-*", "@msm/core", "@msm/core/*"],
+                    "message": "plugins ship only against @msm/plugin-api and @msm/schemas; @msm/targets is for tests"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/exporters/src/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@msm/targets", "@msm/target-*"],
+                    "message": "exporters take the target from their input; @msm/targets is for tests"
                   }
                 ]
               }

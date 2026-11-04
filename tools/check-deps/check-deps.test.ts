@@ -31,6 +31,57 @@ describe('matchesPattern and ruleFor', () => {
   });
 });
 
+describe('@msm/targets aggregator rules', () => {
+  const phase1: LayerMap = {
+    '@msm/exporters': ['@msm/plugin-api', '@msm/schemas', '@msm/core', '@msm/targets'],
+    '@msm/plugin-*': ['@msm/plugin-api', '@msm/schemas', '@msm/targets'],
+    '@msm/target-*': ['@msm/plugin-api', '@msm/schemas', '@msm/core'],
+    '@msm/targets': ['@msm/plugin-api', '@msm/schemas', '@msm/target-*'],
+  };
+
+  it('uses the exact @msm/targets key rather than the @msm/target-* glob', () => {
+    expect(ruleFor('@msm/targets', phase1)).toEqual([
+      '@msm/plugin-api',
+      '@msm/schemas',
+      '@msm/target-*',
+    ]);
+    expect(ruleFor('@msm/target-mc-x', phase1)).toEqual([
+      '@msm/plugin-api',
+      '@msm/schemas',
+      '@msm/core',
+    ]);
+  });
+
+  it('lets the aggregator depend on version targets but not on core', () => {
+    const ok = checkLayers(
+      [
+        {
+          name: '@msm/targets',
+          dir: 'packages/targets/all',
+          dependencies: ['@msm/plugin-api', '@msm/schemas', '@msm/target-mc-x'],
+        },
+        { name: '@msm/plugin-x', dir: 'packages/plugins/x', dependencies: ['@msm/targets'] },
+        { name: '@msm/exporters', dir: 'packages/exporters', dependencies: ['@msm/targets'] },
+      ],
+      phase1,
+    );
+    expect(ok).toEqual([]);
+    const bad = checkLayers(
+      [{ name: '@msm/targets', dir: 'packages/targets/all', dependencies: ['@msm/core'] }],
+      phase1,
+    );
+    expect(bad.map((v) => v.kind)).toEqual(['layer']);
+  });
+
+  it('does not let plugins depend on a version target directly', () => {
+    const violations = checkLayers(
+      [{ name: '@msm/plugin-x', dir: 'packages/plugins/x', dependencies: ['@msm/target-mc-x'] }],
+      phase1,
+    );
+    expect(violations.map((v) => v.kind)).toEqual(['layer']);
+  });
+});
+
 describe('checkLayers', () => {
   it('accepts dependencies that follow the layer map', () => {
     const violations = checkLayers(

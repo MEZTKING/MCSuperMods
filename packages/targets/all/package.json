@@ -1,0 +1,24 @@
+{
+  "name": "@msm/targets",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@msm/plugin-api": "workspace:*",
+    "@msm/schemas": "workspace:*",
+    "@msm/target-mc-26.3": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "vitest": "catalog:"
+  }
+}

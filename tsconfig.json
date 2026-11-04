@@ -1,12 +1,16 @@
 {
   "files": [],
   "references": [
-    { "path": "packages/plugin-api" },
-    { "path": "packages/schemas" },
-    { "path": "packages/core" },
-    { "path": "packages/targets/mc-26.3" },
-    { "path": "tools" },
     { "path": "app/tsconfig.node.json" },
-    { "path": "app/tsconfig.web.json" }
+    { "path": "app/tsconfig.web.json" },
+    { "path": "packages/core" },
+    { "path": "packages/exporters" },
+    { "path": "packages/interop" },
+    { "path": "packages/plugin-api" },
+    { "path": "packages/plugins/resourcepack" },
+    { "path": "packages/schemas" },
+    { "path": "packages/targets/all" },
+    { "path": "packages/targets/mc-26.3" },
+    { "path": "tools" }
   ]
 }
