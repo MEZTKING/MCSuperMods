@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "replace": false,
+    "values": [
+      "minecraft:sharpness",
+      "#minecraft:curse",
+      "#example:others",
+      {
+        "id": "minecraft:sharpness",
+        "required": false
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/tags/enchantment/mixed.json",
+  "schema": "tag:enchantment"
+}

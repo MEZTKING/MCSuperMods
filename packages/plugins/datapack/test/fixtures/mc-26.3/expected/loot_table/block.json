@@ -1,0 +1,27 @@
+{
+  "contents": {
+    "pools": [
+      {
+        "condition": {
+          "chance": 0.9,
+          "type": "minecraft:random_chance"
+        },
+        "entries": [
+          {
+            "modifier": {
+              "count": 2,
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:diamond",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "block"
+  },
+  "layer": "datapack",
+  "path": "data/example/loot_table/blocks/ruby_ore.json",
+  "schema": "resource:loot_table"
+}

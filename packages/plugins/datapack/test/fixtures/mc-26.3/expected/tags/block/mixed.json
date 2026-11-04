@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "replace": false,
+    "values": [
+      "minecraft:diamond_ore",
+      "#minecraft:logs",
+      "#example:others",
+      {
+        "id": "minecraft:diamond_ore",
+        "required": false
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/tags/block/mixed.json",
+  "schema": "tag:block"
+}

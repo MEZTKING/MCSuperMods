@@ -1,0 +1,38 @@
+{
+  "contents": {
+    "criteria": {
+      "has_diamond": {
+        "conditions": {
+          "items": [
+            {
+              "items": "minecraft:diamond"
+            }
+          ]
+        },
+        "trigger": "minecraft:inventory_changed"
+      }
+    },
+    "display": {
+      "background": "minecraft:gui/advancements/backgrounds/stone",
+      "description": "Pick up a diamond",
+      "frame": "task",
+      "icon": {
+        "id": "minecraft:diamond"
+      },
+      "title": "Shiny"
+    },
+    "rewards": {
+      "experience": 10,
+      "function": "example:reward",
+      "loot": [
+        "example:blocks/ruby_ore"
+      ],
+      "recipes": [
+        "example:diamond_sword"
+      ]
+    }
+  },
+  "layer": "datapack",
+  "path": "data/example/advancement/root.json",
+  "schema": "resource:advancement"
+}

@@ -1,0 +1,6 @@
+{
+  "contents": "# Greets the player.\nsay Hello\n$tellraw @s {\"text\":\"Hello, $(name)\"}\nfunction example:reward\n",
+  "language": "mcfunction",
+  "layer": "datapack",
+  "path": "data/example/function/greet.mcfunction"
+}

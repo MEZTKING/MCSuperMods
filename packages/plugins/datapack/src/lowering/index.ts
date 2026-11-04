@@ -1,5 +1,7 @@
 /**
- * Pure lowering functions (`lower(element, target) -> OutputFile[]`) for
- * `@msm/plugin-datapack`. None yet.
+ * Pure lowering helpers (`lower(element, target) -> OutputFile[]`) for `@msm/plugin-datapack`.
  */
-export {};
+
+export { lowerFunction, MCFUNCTION_LANGUAGE } from './function';
+export { lowerJsonData } from './json-data';
+export { DataPackLoweringError, dataPath, splitResourceLocation } from './paths';

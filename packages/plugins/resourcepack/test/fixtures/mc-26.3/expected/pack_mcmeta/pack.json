@@ -1,19 +1,40 @@
-{
-  "contents": {
-    "pack": {
-      "description": "Example resources",
-      "max_format": [
-        97,
-        1
-      ],
-      "min_format": [
-        97,
-        1
-      ],
-      "pack_format": 97
-    }
+[
+  {
+    "contents": {
+      "pack": {
+        "description": "Example resources",
+        "max_format": [
+          97,
+          1
+        ],
+        "min_format": [
+          97,
+          1
+        ],
+        "pack_format": 97
+      }
+    },
+    "layer": "resourcepack",
+    "path": "pack.mcmeta",
+    "schema": "::java::pack::Pack"
   },
-  "layer": "resourcepack",
-  "path": "pack.mcmeta",
-  "schema": "::java::pack::Pack"
-}
+  {
+    "contents": {
+      "pack": {
+        "description": "Example resources",
+        "max_format": [
+          121,
+          0
+        ],
+        "min_format": [
+          121,
+          0
+        ],
+        "pack_format": 121
+      }
+    },
+    "layer": "datapack",
+    "path": "pack.mcmeta",
+    "schema": "::java::pack::Pack"
+  }
+]

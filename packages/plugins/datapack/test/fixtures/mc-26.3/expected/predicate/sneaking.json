@@ -1,0 +1,14 @@
+{
+  "contents": {
+    "entity": "this",
+    "predicate": {
+      "flags": {
+        "is_sneaking": true
+      }
+    },
+    "type": "minecraft:entity_properties"
+  },
+  "layer": "datapack",
+  "path": "data/example/predicate/sneaking.json",
+  "schema": "resource:predicate"
+}

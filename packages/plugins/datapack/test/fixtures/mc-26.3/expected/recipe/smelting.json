@@ -1,0 +1,15 @@
+{
+  "contents": {
+    "category": "misc",
+    "cookingtime": 200,
+    "experience": 0.7,
+    "ingredient": "minecraft:raw_iron",
+    "result": {
+      "id": "minecraft:iron_ingot"
+    },
+    "type": "minecraft:smelting"
+  },
+  "layer": "datapack",
+  "path": "data/example/recipe/iron_from_raw.json",
+  "schema": "resource:recipe"
+}

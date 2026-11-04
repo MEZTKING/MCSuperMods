@@ -97,21 +97,25 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       '%s',
       async (_label, sample) => {
         const files = sample.kind.lower(element(sample), bundle.target);
-        expect(files).toHaveLength(1);
-        const [file] = files;
-        if (file === undefined) throw new Error('no output');
-        expect(file.layer).toBe('resourcepack');
-        expect(file.schema).toBe(sample.kind.schema);
+        // `pack.mcmeta` lowers to one file per pack; every other kind to one resource file.
+        const layers =
+          sample.kind.id === packMcmetaKind.id ? ['resourcepack', 'datapack'] : ['resourcepack'];
+        expect(files.map((file) => file.layer)).toEqual(layers);
 
         const indexes = await indexesFor(bundle);
-        expect(schemaErrors(indexes, file.schema ?? '', file.contents as Json)).toEqual([]);
+        for (const file of files) {
+          expect(file.schema).toBe(sample.kind.schema);
+          expect(schemaErrors(indexes, file.schema ?? '', file.contents as Json)).toEqual([]);
+        }
 
-        const actual = sortedJson({
+        const recorded = files.map((file) => ({
           contents: file.contents,
           layer: file.layer,
           path: file.path,
           schema: file.schema,
-        });
+        }));
+        // Single-file kinds keep the Phase 1 golden shape (one object, not an array).
+        const actual = sortedJson(recorded.length === 1 ? recorded[0] : recorded);
         const url = fixtureUrl(targetId, sample);
         if (UPDATE) {
           await mkdir(dirname(fileURLToPath(url)), { recursive: true });

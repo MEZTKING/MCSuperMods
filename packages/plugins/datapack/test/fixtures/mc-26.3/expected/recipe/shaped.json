@@ -1,0 +1,22 @@
+{
+  "contents": {
+    "category": "equipment",
+    "key": {
+      "D": "minecraft:diamond",
+      "S": "#minecraft:planks"
+    },
+    "pattern": [
+      "D",
+      "D",
+      "S"
+    ],
+    "result": {
+      "count": 1,
+      "id": "minecraft:diamond_sword"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "layer": "datapack",
+  "path": "data/example/recipe/diamond_sword.json",
+  "schema": "resource:recipe"
+}

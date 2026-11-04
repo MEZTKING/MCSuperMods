@@ -106,14 +106,17 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       ).not.toEqual([]);
     });
 
-    it('lowers the default pack metadata to valid JSON', async () => {
+    it('lowers the default pack metadata to valid JSON for both packs', async () => {
       const indexes = await indexesFor(bundle);
-      const [file] = packMcmetaKind.lower(
+      const files = packMcmetaKind.lower(
         element(packMcmetaKind.id, 'example:pack', packMcmetaKind.defaultData ?? {}),
         bundle.target,
       );
-      expect(file?.schema).toBe(packMcmetaKind.schema);
-      expect(schemaErrors(indexes, packMcmetaKind.schema, file?.contents as Json)).toEqual([]);
+      expect(files.map((file) => file.layer)).toEqual(['resourcepack', 'datapack']);
+      for (const file of files) {
+        expect(file.schema).toBe(packMcmetaKind.schema);
+        expect(schemaErrors(indexes, packMcmetaKind.schema, file.contents as Json)).toEqual([]);
+      }
     });
   },
 );
@@ -176,6 +179,38 @@ describe('lowering', () => {
     });
     expect(data.pack.pack_format).toBe(1);
     expect(data.pack.supported_formats).toEqual([1, 2]);
+  });
+
+  it('lowers pack metadata once per pack, each with its own formats', () => {
+    const data = { pack: { description: 'Both packs' } };
+    const files = packMcmetaKind.lower(
+      element(packMcmetaKind.id, 'example:pack', data),
+      firstTarget,
+    );
+    const format = (major: number, minor: number) => ({
+      pack: {
+        description: 'Both packs',
+        pack_format: major,
+        min_format: [major, minor],
+        max_format: [major, minor],
+      },
+    });
+    const { resource, data: dataFormat } = firstTarget.packFormats;
+    expect(files).toEqual([
+      {
+        path: 'pack.mcmeta',
+        contents: format(resource.major, resource.minor),
+        layer: 'resourcepack',
+        schema: packMcmetaKind.schema,
+      },
+      {
+        path: 'pack.mcmeta',
+        contents: format(dataFormat.major, dataFormat.minor),
+        layer: 'datapack',
+        schema: packMcmetaKind.schema,
+      },
+    ]);
+    expect(files[0]?.contents).not.toBe(files[1]?.contents);
   });
 
   it('adds a pack object when the data has none and rejects non-object data', () => {

@@ -1,6 +1,8 @@
 /**
- * `minecraft:pack_mcmeta`: the resource pack's `pack.mcmeta`. Lowering owns the pack formats,
- * so the form hides them.
+ * `minecraft:pack_mcmeta`: the project's `pack.mcmeta`. One element lowers to two files, one in
+ * the resource pack layer (resource pack format) and one in the data pack layer (data pack
+ * format), sharing the description (ADR 0015). Lowering owns the pack formats, so the form
+ * hides them.
  */
 import type { ElementKind } from '@msm/plugin-api';
 import { lowerPackMcmeta } from '../lowering/pack-mcmeta';
