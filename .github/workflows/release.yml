@@ -31,6 +31,18 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm --filter @msm/app dist
+      # Installer budget (tools/check-size/README.md): the NSIS installer is at most 150 MB.
+      - name: Check installer size
+        shell: bash
+        run: |
+          for file in app/dist/*.exe; do
+            size=$(wc -c < "$file" | tr -d " ")
+            echo "$file: $size bytes"
+            if [ "$size" -gt $((150 * 1024 * 1024)) ]; then
+              echo "::error::$file is over the 150 MB installer budget"
+              exit 1
+            fi
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: MCSuperMods-windows

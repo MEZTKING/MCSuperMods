@@ -23,3 +23,13 @@ jobs:
       - run: pnpm build
       - run: node app/node_modules/electron/install.js
       - run: xvfb-run -a pnpm --filter @msm/app smoke
+      - run: xvfb-run -a pnpm --filter @msm/app e2e
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-output
+          path: app/e2e/output
+          if-no-files-found: ignore
+      - run: pnpm --filter @msm/app dist:dir
+      - run: xvfb-run -a pnpm --filter @msm/app smoke:packaged
+      - run: node tools/check-size/index.ts
