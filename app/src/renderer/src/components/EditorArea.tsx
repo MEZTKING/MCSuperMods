@@ -19,7 +19,11 @@ export interface EditorAreaProps {
   onTabChange?(tab: EditorTab): void;
 }
 
-/** The centre editor area: Form and Raw JSON tabs over the selected element. */
+/**
+ * The centre editor area: Form and Raw JSON tabs over the selected element, with the
+ * element's `meta.notes` (a copied example's explanation) in a collapsible, read-only Notes
+ * callout above them.
+ */
 export function EditorArea({ element, onApply, form, tab, onTabChange }: EditorAreaProps) {
   const [ownTab, setOwnTab] = useState<EditorTab>('form');
   const current = tab ?? ownTab;
@@ -31,6 +35,8 @@ export function EditorArea({ element, onApply, form, tab, onTabChange }: EditorA
       </section>
     );
   }
+
+  const notes = element.meta.notes;
 
   return (
     <Tabs.Root
@@ -57,6 +63,23 @@ export function EditorArea({ element, onApply, form, tab, onTabChange }: EditorA
           <code className="font-mono">{element.id}</code> ({element.kind})
         </span>
       </div>
+      {notes !== undefined && notes.trim() !== '' && (
+        <details
+          open
+          data-testid="element-notes"
+          className="mx-2 mt-2 rounded border border-border bg-bg px-2 py-1 text-sm"
+        >
+          <summary className="cursor-pointer font-medium" data-testid="element-notes-toggle">
+            Notes
+          </summary>
+          <p
+            className="mt-1 max-h-40 overflow-auto whitespace-pre-line"
+            data-testid="element-notes-text"
+          >
+            {notes}
+          </p>
+        </details>
+      )}
       <Tabs.Content value="form" className="min-h-0 flex-1">
         <ScrollArea.Root className="size-full overflow-hidden">
           <ScrollArea.Viewport className="size-full">

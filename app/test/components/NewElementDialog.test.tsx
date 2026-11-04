@@ -1,12 +1,14 @@
 // @vitest-environment happy-dom
 import { resourcePackKinds } from '@msm/plugin-resourcepack';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   fallbackNamespace,
   NewElementDialog,
   type NewElementInput,
+  templateGroups,
+  templateMatches,
 } from '../../src/renderer/src/components/NewElementDialog';
 import { useUiStore } from '../../src/renderer/src/store/ui-store';
 import {
@@ -106,6 +108,52 @@ describe('NewElementDialog (template picker)', () => {
     await user.click(screen.getByTestId('new-element-dialog-submit'));
     expect(onSubmit).not.toHaveBeenCalled();
     expect(screen.getByRole('alert').textContent).toMatch(/Enter a name/);
+  });
+});
+
+describe('NewElementDialog (groups and filter)', () => {
+  it('groups templates under category headings in first-appearance order', () => {
+    renderDialog();
+    const groups = screen
+      .getAllByRole('group')
+      .map((group) => group.getAttribute('data-testid') ?? '')
+      .filter((id) => id.startsWith('template-group-'));
+    expect(groups.slice(0, 2)).toEqual(['template-group-models', 'template-group-blockstates']);
+    const models = screen.getByTestId('template-group-models');
+    expect(screen.getByRole('group', { name: 'Models' })).toBe(models);
+    expect(within(models).getByTestId('template-block_model')).toBeTruthy();
+    expect(templateGroups(templatesFor(kinds.map((kind) => kind.id))).length).toBe(groups.length);
+  });
+
+  it('filters by title, description, category, kind or id and selects the first match', async () => {
+    const onSubmit = renderDialog();
+    const user = userEvent.setup();
+    const all = screen.getAllByRole('radio').length;
+    await user.type(screen.getByTestId('new-element-filter'), 'language');
+    expect(screen.getAllByRole('radio').map((radio) => (radio as HTMLInputElement).value)).toEqual([
+      'lang',
+    ]);
+    expect(screen.getByTestId('new-element-count').textContent).toBe(`(1 of ${all})`);
+    expect((screen.getByTestId('template-lang') as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByTestId('new-element-name') as HTMLInputElement).value).toBe('en_us');
+    await user.clear(screen.getByTestId('new-element-filter'));
+    await user.type(screen.getByTestId('new-element-filter'), 'zzz');
+    expect(screen.getByTestId('new-element-no-match').textContent).toBe(
+      'No template matches "zzz".',
+    );
+    // The selection stays on the last match while nothing is shown.
+    await user.click(screen.getByTestId('new-element-dialog-submit'));
+    expect(onSubmit.mock.calls[0]?.[0]).toMatchObject({ id: 'demo:en_us' });
+  });
+
+  it('matches every word of the filter', () => {
+    const block = templatesFor(['minecraft:model'])[0];
+    if (block === undefined) throw new Error('no templates');
+    expect(templateMatches(block, 'MODEL cube')).toBe(true);
+    expect(templateMatches(block, 'minecraft:model')).toBe(true);
+    expect(templateMatches(block, 'block_model')).toBe(true);
+    expect(templateMatches(block, 'model recipe')).toBe(false);
+    expect(templateMatches(block, '  ')).toBe(true);
   });
 });
 

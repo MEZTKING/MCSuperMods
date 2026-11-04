@@ -455,6 +455,8 @@ describe('IPC contract', () => {
   it('recognises menu commands', () => {
     expect(isMenuCommand('checkForUpdates')).toBe(true);
     expect(isMenuCommand('save')).toBe(true);
+    expect(isMenuCommand('newProjectFromStarter')).toBe(true);
+    expect(isMenuCommand('examples')).toBe(true);
     expect(isMenuCommand('format-disk')).toBe(false);
     expect(isMenuCommand(1)).toBe(false);
   });

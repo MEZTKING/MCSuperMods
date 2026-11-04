@@ -167,11 +167,20 @@ describe('plugin templates (ADR 0020)', () => {
       session.library.templates,
     );
     const ids = templates.map((template) => template.id);
-    expect(ids[0]).toBe('note');
+    expect(ids).toContain('note');
     expect(ids).not.toContain('foreign_recipe');
     expect(ids).toContain('recipe_shaped');
+    expect(ids).toContain('block_model');
     expect(ids).not.toContain('kind:test:note');
-    const note = templates[0];
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const template of templates) expect(template.category, template.id).not.toBe('');
+    // An unknown (third-party) kind still gets the generic fallback.
+    const withUnknown = templatesFor(
+      [...session.registry.all().map((kind) => kind.id), 'example:thing'],
+      session.library.templates,
+    );
+    expect(withUnknown.at(-1)).toMatchObject({ id: 'kind:example:thing', category: 'Other' });
+    const note = templates.find((template) => template.id === 'note');
     if (note === undefined) throw new Error('missing');
     expect(note.data(templateContext('minecraft:x', ['minecraft', 'demo'], undefined))).toEqual({
       text: 'Hello from demo',

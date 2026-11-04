@@ -14,6 +14,7 @@ import type { PaletteCommand } from '../components/CommandPalette';
 /** The ids of the built-in commands (`data-testid="command-<id>"` in the palette). */
 export const BUILT_IN_COMMAND_IDS = [
   'newProject',
+  'newProjectFromStarter',
   'openProject',
   'save',
   'undo',
@@ -32,6 +33,7 @@ export const BUILT_IN_COMMAND_IDS = [
   'toggleRawJson',
   'settings',
   'chooseInstallTarget',
+  'examples',
   'checkForUpdates',
 ] as const;
 
@@ -43,6 +45,7 @@ export const BUILT_IN_COMMANDS: Readonly<
   Record<BuiltInCommandId, { title: string; shortcut?: string }>
 > = {
   newProject: { title: 'New project…', shortcut: 'Mod+Shift+N' },
+  newProjectFromStarter: { title: 'New project from starter…' },
   openProject: { title: 'Open project…', shortcut: 'Mod+O' },
   save: { title: 'Save', shortcut: 'Mod+S' },
   undo: { title: 'Undo', shortcut: 'Mod+Z' },
@@ -61,6 +64,7 @@ export const BUILT_IN_COMMANDS: Readonly<
   toggleRawJson: { title: 'Toggle Raw JSON' },
   settings: { title: 'Settings…' },
   chooseInstallTarget: { title: 'Choose install target…' },
+  examples: { title: 'Examples…' },
   checkForUpdates: { title: 'Check for updates' },
 };
 

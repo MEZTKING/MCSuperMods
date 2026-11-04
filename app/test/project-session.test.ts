@@ -461,14 +461,20 @@ describe('ProjectSession: library (ADR 0020)', () => {
 
   it('collects templates, starters and examples the registered kinds support', () => {
     const { session } = newLibrarySession(createMemoryFileSystem());
-    expect(session.library.templates.map((template) => template.id)).toEqual(['note']);
-    expect(session.library.starters.map((starter) => starter.id)).toEqual(['test_starter']);
-    expect(session.library.examples.map((example) => example.id)).toEqual(['test_example']);
-    expect(newSession(createMemoryFileSystem()).session.library).toEqual({
-      templates: [],
-      starters: [],
-      examples: [],
-    });
+    // The built-in plugins contribute library content too; assert only the fakes.
+    const templateIds = session.library.templates.map((template) => template.id);
+    expect(templateIds).toContain('note');
+    expect(templateIds).not.toContain('foreign_recipe');
+    const starterIds = session.library.starters.map((starter) => starter.id);
+    expect(starterIds).toContain('test_starter');
+    expect(starterIds).not.toContain('needs_missing');
+    const exampleIds = session.library.examples.map((example) => example.id);
+    expect(exampleIds).toContain('test_example');
+    expect(exampleIds).not.toContain('needs_missing');
+    const builtIn = newSession(createMemoryFileSystem()).session.library;
+    expect(builtIn.templates.map((template) => template.id)).not.toContain('note');
+    expect(builtIn.starters.map((starter) => starter.id)).not.toContain('test_starter');
+    expect(builtIn.examples.map((example) => example.id)).not.toContain('test_example');
   });
 
   it('keeps the blank project when no starter is given, without the library in plugins', async () => {

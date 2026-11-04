@@ -22,6 +22,7 @@ import { CommandPalette } from './components/CommandPalette';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { EditorArea } from './components/EditorArea';
 import { ElementSidebar } from './components/ElementSidebar';
+import { ExamplesDialog } from './components/ExamplesDialog';
 import { lineOffset } from './components/function-editor/source-text';
 import { ImportAssetsDialog, importFileFilters } from './components/ImportAssetsDialog';
 import {
@@ -32,6 +33,7 @@ import {
   type ManualLauncherRoot,
 } from './components/install-target';
 import { NewElementDialog, NewNamespaceDialog } from './components/NewElementDialog';
+import { NewProjectDialog } from './components/NewProjectDialog';
 import { RenameElementDialog } from './components/RenameElementDialog';
 import { RightDock } from './components/RightDock';
 import { SettingsDialog } from './components/SettingsDialog';
@@ -107,6 +109,8 @@ const menuEquivalent = {
 type DialogState =
   | { type: 'namespace' }
   | { type: 'element' }
+  | { type: 'new-project' }
+  | { type: 'examples' }
   | { type: 'import'; namespace?: string }
   | { type: 'settings' }
   | { type: 'remove-asset'; namespace: string; path: string }
@@ -710,6 +714,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
 
   const handlers: Record<MenuCommand, Action> = {
     new: () => void openWith('New project', () => session.newProject()),
+    newProjectFromStarter: () => setDialog({ type: 'new-project' }),
+    examples: () => setDialog({ type: 'examples' }),
     open: () => void openWith('Open project', () => session.openProject()),
     save: () => void save(),
     undo: () => {
@@ -739,6 +745,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
 
   const commandHandlers: CommandHandlers = {
     newProject: handlers.new,
+    newProjectFromStarter: handlers.newProjectFromStarter,
+    examples: handlers.examples,
     openProject: handlers.open,
     save: saveDisabledReason === null ? handlers.save : null,
     undo: snapshot.canUndo ? () => session.undo() : null,
@@ -826,7 +834,11 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   );
 
   const templates = useMemo(
-    () => templatesFor(session.registry.all().map((kind) => kind.id)),
+    () =>
+      templatesFor(
+        session.registry.all().map((kind) => kind.id),
+        session.library.templates,
+      ),
     [session],
   );
 
@@ -897,6 +909,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               primaryExport={hasDataPack && !hasResourcePack ? 'data' : 'resource'}
               exporting={exporting}
               onNew={handlers.new}
+              onNewFromStarter={handlers.newProjectFromStarter}
+              onExamples={handlers.examples}
               onOpen={handlers.open}
               onSave={handlers.save}
               onUndo={() => session.undo()}
@@ -973,6 +987,49 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               session.addElement(input);
               navigateTo(input.id, null);
               setDialog(null);
+            }}
+          />
+        )}
+        {dialog?.type === 'new-project' && (
+          <NewProjectDialog
+            starters={session.library.starters}
+            onCancel={() => setDialog(null)}
+            onSubmit={(starter) => {
+              setDialog(null);
+              void openWith(
+                starter === null ? 'New project' : `New project from "${starter.title}"`,
+                () => session.newProject(starter === null ? {} : { starter }),
+              );
+            }}
+          />
+        )}
+        {dialog?.type === 'examples' && (
+          <ExamplesDialog
+            examples={session.library.examples}
+            namespaces={project === null ? null : namespaces}
+            onClose={() => setDialog(null)}
+            onOpenAsProject={(example) => {
+              setDialog(null);
+              void openWith(`New project from example "${example.title}"`, () =>
+                session.newProject({ bundle: example }),
+              );
+            }}
+            onCopy={async (example, namespace) => {
+              const result = await session.addBundle(example, {
+                namespace,
+                label: `Copy example ${example.title}`,
+              });
+              if (result.assets.length > 0) setAssetRevision((revision) => revision + 1);
+              const skipped = result.duplicates.length + result.skippedAssets.length;
+              setMessage({
+                kind: 'info',
+                text:
+                  `Copied "${example.title}" into ${namespace}: ${result.added.length} element(s), ${result.assets.length} asset(s)` +
+                  (skipped > 0 ? `; ${skipped} already in the project and skipped.` : '.'),
+              });
+              const first = result.added[0];
+              if (first !== undefined) select(first);
+              return result;
             }}
           />
         )}

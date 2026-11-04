@@ -19,11 +19,13 @@ const nodeReadFile = async (url: URL): Promise<Uint8Array> => readFile(url);
 
 /**
  * Ids the test samples define as if they were project elements, per registry (tags under
- * `tag/<registry>`, without the `#`).
+ * `tag/<registry>`, without the `#`). The `demo:` ids are what the element templates derive
+ * from the project namespace (`demo:root`, `demo:tick`, `demo:load`) or reference as a
+ * project tag (`demo:gems`).
  */
 export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
-  advancement: ['example:root'],
-  function: ['example:greet', 'example:reward', 'example:tick'],
+  advancement: ['demo:root', 'example:root'],
+  function: ['demo:load', 'demo:tick', 'example:greet', 'example:reward', 'example:tick'],
   item_modifier: ['example:random_count'],
   loot_table: ['example:blocks/ruby_ore'],
   predicate: ['example:sneaking'],
@@ -36,7 +38,7 @@ export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
   'tag/fluid': ['example:others'],
   'tag/function': ['example:others'],
   'tag/game_event': ['example:others'],
-  'tag/item': ['example:others'],
+  'tag/item': ['demo:gems', 'example:others'],
   // Full texture paths, as a project's own `textures/` files would declare them.
   texture: ['example:entity/banner/ruby', 'example:painting/ruby', 'example:palettes/trim/ruby'],
 };

@@ -67,6 +67,27 @@ describe('Toolbar', () => {
     expect(p.onUndo).toHaveBeenCalledOnce();
   });
 
+  it('keeps New blank and offers starters and examples on the split arrow', async () => {
+    const onNewFromStarter = vi.fn();
+    const onExamples = vi.fn();
+    const p = props({ onNewFromStarter, onExamples });
+    renderToolbar(p);
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('toolbar-new-project'));
+    expect(p.onNew).toHaveBeenCalledOnce();
+    const arrow = screen.getByTestId('toolbar-new-menu');
+    expect(arrow.getAttribute('aria-label')).toBe('More ways to start a project');
+    await user.click(arrow);
+    await user.click(screen.getByTestId('toolbar-new-from-starter'));
+    expect(onNewFromStarter).toHaveBeenCalledOnce();
+    await user.click(screen.getByTestId('toolbar-new-menu'));
+    await user.click(screen.getByTestId('toolbar-examples'));
+    expect(onExamples).toHaveBeenCalledOnce();
+    await user.click(screen.getByTestId('toolbar-new-menu'));
+    await user.click(screen.getByTestId('toolbar-new-blank'));
+    expect(p.onNew).toHaveBeenCalledTimes(2);
+  });
+
   it('is a labelled toolbar', () => {
     renderToolbar(props());
     expect(screen.getByRole('toolbar', { name: 'Project' })).toBeTruthy();

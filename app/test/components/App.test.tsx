@@ -3,6 +3,7 @@
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { createMemoryFileSystem } from '@msm/core';
+import type { Plugin } from '@msm/plugin-api';
 import { builtInTargets, targetById } from '@msm/targets';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -22,6 +23,7 @@ import type {
   PlatformAdapter,
   WorldInfo,
 } from '../../src/shared/platform';
+import { fakeLibraryPlugin } from './library-fixtures';
 
 /** Reports line 1 of any source containing `bogus` as a parse error. */
 const stubChecker: McfunctionChecker = {
@@ -139,7 +141,7 @@ interface Harness {
   targetMissing: boolean;
 }
 
-async function renderApp(): Promise<Harness> {
+async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise<Harness> {
   let listener: ((command: MenuCommand) => void) | null = null;
   const updateListeners = new Set<(status: UpdateStatus) => void>();
   const harness = {
@@ -283,7 +285,7 @@ async function renderApp(): Promise<Harness> {
     fs: createMemoryFileSystem(),
   };
   const session = new ProjectSession(platform, {
-    plugins: builtInPlugins,
+    plugins: options.plugins ?? builtInPlugins,
     targets: builtInTargets,
     now: () => '2026-01-01T00:00:00.000Z',
     mcfunction: stubChecker,
@@ -462,6 +464,86 @@ describe('App menu commands', () => {
     expect(
       harness.session.snapshot.project?.namespaces[0]?.elements.some((e) => e.id === 'demo:greet'),
     ).toBe(true);
+  });
+});
+
+describe('App library (starters and examples)', () => {
+  const elementIds = (harness: Harness) =>
+    harness.session.snapshot.project?.namespaces.flatMap((namespace) =>
+      namespace.elements.map((element) => element.id),
+    ) ?? [];
+
+  it('creates a project from a starter chosen in the New project dialog', async () => {
+    const harness = await renderApp({ plugins: [...builtInPlugins, fakeLibraryPlugin] });
+    await harness.menu('newProjectFromStarter');
+    const dialog = await screen.findByTestId('new-project-dialog');
+    expect(within(dialog).queryByTestId('starter-needs_missing')).toBeNull();
+    const user = userEvent.setup();
+    await user.click(within(dialog).getByTestId('starter-test_starter'));
+    await user.click(within(dialog).getByTestId('new-project-dialog-submit'));
+    await toast(/New project from "Test starter"/);
+    expect(elementIds(harness)).toEqual(
+      expect.arrayContaining(['demo:item/ruby', 'demo:greet', 'demo:pack', 'minecraft:load']),
+    );
+  });
+
+  it('offers a blank project when no plugin contributes a blank starter', async () => {
+    const harness = await renderApp({
+      plugins: builtInPlugins.filter((plugin) => plugin.id !== 'msm.library'),
+    });
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    const user = userEvent.setup();
+    await user.click(within(palette).getByTestId('command-newProjectFromStarter'));
+    const dialog = await screen.findByTestId('new-project-dialog');
+    expect(within(dialog).getByTestId('starter-blank')).toBeTruthy();
+    await user.click(within(dialog).getByTestId('new-project-dialog-submit'));
+    await toast(/^New project: /);
+    expect(elementIds(harness)).toEqual(['demo:pack']);
+  });
+
+  it('copies an example, reports what it skipped and shows its notes', async () => {
+    const harness = await renderApp({ plugins: [...builtInPlugins, fakeLibraryPlugin] });
+    await harness.menu('examples');
+    const dialog = await screen.findByTestId('examples-dialog');
+    expect(within(dialog).queryByTestId('example-needs_missing')).toBeNull();
+    const user = userEvent.setup();
+    await user.click(within(dialog).getByTestId('example-test_example'));
+    expect(within(dialog).getByTestId('example-notes').textContent).toBe(
+      'Every face shows the same texture.',
+    );
+    await user.click(within(dialog).getByTestId('examples-copy'));
+    const result = await within(dialog).findByTestId('examples-copy-result');
+    expect(result.textContent).toContain('Added 1 element and 1 asset to demo.');
+    expect(elementIds(harness)).toContain('demo:block/ruby_ore');
+    expect(harness.session.snapshot.undoLabel).toBe('Copy example Ore block model');
+
+    await user.click(within(dialog).getByTestId('examples-copy'));
+    await waitFor(() =>
+      expect(within(dialog).getByTestId('examples-copy-duplicates').textContent).toContain(
+        'demo:block/ruby_ore',
+      ),
+    );
+    expect(within(dialog).getByTestId('examples-copy-skipped-assets').textContent).toContain(
+      'demo:textures/block/ruby_ore.png',
+    );
+    await user.click(within(dialog).getByTestId('examples-close'));
+    await waitFor(() => expect(screen.queryByTestId('examples-dialog')).toBeNull());
+    expect(useUiStore.getState().selectedId).toBe('demo:block/ruby_ore');
+    expect((await screen.findByTestId('element-notes-text')).textContent).toBe(
+      'Every face shows the same texture.',
+    );
+  });
+
+  it('opens an example as a new project', async () => {
+    const harness = await renderApp({ plugins: [...builtInPlugins, fakeLibraryPlugin] });
+    await harness.menu('examples');
+    const dialog = await screen.findByTestId('examples-dialog');
+    const user = userEvent.setup();
+    await user.click(within(dialog).getByTestId('example-test_example'));
+    await user.click(within(dialog).getByTestId('examples-open-new'));
+    await toast(/New project from example "Ore block model"/);
+    expect(elementIds(harness)).toEqual(['demo:block/ruby_ore', 'demo:pack']);
   });
 });
 

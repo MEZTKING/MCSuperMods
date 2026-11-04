@@ -117,7 +117,50 @@ export function fallbackNamespace(namespaces: readonly string[], last: string | 
 }
 
 /**
- * The "New element" template picker: a template (Block model, Item model, Blockstate, …), a
+ * Whether a template matches the picker's filter text: its title, description, category,
+ * kind or id contains every word of it (case-insensitive).
+ */
+export function templateMatches(template: ElementTemplate, filter: string): boolean {
+  const haystack = [
+    template.title,
+    template.description,
+    template.category,
+    template.kind,
+    template.id,
+  ]
+    .join(' ')
+    .toLowerCase();
+  return filter
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((word) => word !== '')
+    .every((word) => haystack.includes(word));
+}
+
+/** A category as a `data-testid` suffix: lower case, other characters as `-`. */
+export function categorySlug(category: string): string {
+  return category
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+/** Templates grouped by `category`, groups in order of first appearance. */
+export function templateGroups(
+  templates: readonly ElementTemplate[],
+): [string, ElementTemplate[]][] {
+  const groups = new Map<string, ElementTemplate[]>();
+  for (const template of templates) {
+    const list = groups.get(template.category) ?? [];
+    list.push(template);
+    groups.set(template.category, list);
+  }
+  return [...groups];
+}
+
+/**
+ * The "New element" template picker: a template (Block model, Item model, Blockstate, …,
+ * grouped under category headings, with a filter box), a
  * namespace and a name. The template sets the id prefix or default name, the starting data
  * and optionally a default namespace (`minecraft` for the tick and load function tags). A
  * namespace the project does not have yet is offered too; the dialog says that creating the
@@ -148,6 +191,9 @@ export function NewElementDialog(props: {
   const namespaceId = useId();
   const nameId = useId();
   const nameHintId = useId();
+  const filterId = useId();
+  const [filter, setFilter] = useState('');
+  const visible = props.templates.filter((entry) => templateMatches(entry, filter));
 
   const choose = (next: ElementTemplate): void => {
     if (next.defaultName !== undefined) setName(next.defaultName);
@@ -193,32 +239,78 @@ export function NewElementDialog(props: {
         }, setError)
       }
     >
-      <fieldset className="m-0 flex flex-col gap-1 border-0 p-0" data-testid="kind-picker">
-        <legend className="mb-1">Template</legend>
-        <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
-          {props.templates.map((entry) => (
-            <label
-              key={entry.id}
-              className={
-                'flex cursor-pointer items-start gap-2 rounded border px-2 py-1.5 ' +
-                (entry.id === templateId ? 'border-accent bg-bg' : 'border-border')
-              }
-            >
-              <input
-                type="radio"
-                name="template"
-                value={entry.id}
-                className="mt-1"
-                data-testid={`template-${entry.id}`}
-                checked={entry.id === templateId}
-                onChange={() => choose(entry)}
-              />
-              <span className="flex flex-col">
-                <span className="font-medium">{entry.title}</span>
-                <span className="text-xs text-muted">{entry.description}</span>
-              </span>
-            </label>
-          ))}
+      <label htmlFor={filterId}>Find a template</label>
+      <input
+        id={filterId}
+        type="search"
+        data-testid="new-element-filter"
+        className={fieldClass}
+        value={filter}
+        placeholder="Recipe, loot, tag, model…"
+        spellCheck={false}
+        onChange={(event) => {
+          const next = event.target.value;
+          setFilter(next);
+          const shown = props.templates.filter((entry) => templateMatches(entry, next));
+          const first = shown[0];
+          if (first !== undefined && !shown.some((entry) => entry.id === templateId)) {
+            choose(first);
+          }
+        }}
+      />
+      <fieldset className="m-0 flex min-w-0 flex-col gap-1 border-0 p-0" data-testid="kind-picker">
+        <legend className="mb-1">
+          Template{' '}
+          <span className="text-xs text-muted" aria-live="polite" data-testid="new-element-count">
+            {visible.length === props.templates.length
+              ? `(${props.templates.length})`
+              : `(${visible.length} of ${props.templates.length})`}
+          </span>
+        </legend>
+        <div className="flex max-h-[45vh] flex-col gap-2 overflow-auto pr-1">
+          {visible.length === 0 && (
+            <p className="text-sm text-muted" data-testid="new-element-no-match">
+              No template matches "{filter.trim()}".
+            </p>
+          )}
+          {templateGroups(visible).map(([category, entries]) => {
+            return (
+              <fieldset
+                key={category}
+                data-testid={`template-group-${categorySlug(category)}`}
+                className="m-0 min-w-0 border-0 p-0 flex flex-col gap-1"
+              >
+                <legend className="text-xs font-semibold tracking-wide text-muted uppercase">
+                  {category}
+                </legend>
+                <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+                  {entries.map((entry) => (
+                    <label
+                      key={entry.id}
+                      className={
+                        'flex cursor-pointer items-start gap-2 rounded border px-2 py-1.5 ' +
+                        (entry.id === templateId ? 'border-accent bg-bg' : 'border-border')
+                      }
+                    >
+                      <input
+                        type="radio"
+                        name="template"
+                        value={entry.id}
+                        className="mt-1"
+                        data-testid={`template-${entry.id}`}
+                        checked={entry.id === templateId}
+                        onChange={() => choose(entry)}
+                      />
+                      <span className="flex flex-col">
+                        <span className="font-medium">{entry.title}</span>
+                        <span className="text-xs text-muted">{entry.description}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            );
+          })}
         </div>
       </fieldset>
       <label htmlFor={namespaceId}>Namespace</label>

@@ -69,6 +69,7 @@ export type InvokeChannel = (typeof InvokeChannels)[keyof typeof InvokeChannels]
 /** Commands the application menu sends to the renderer. */
 export const MENU_COMMANDS = [
   'new',
+  'newProjectFromStarter',
   'open',
   'save',
   'undo',
@@ -83,6 +84,7 @@ export const MENU_COMMANDS = [
   'renameElement',
   'commandPalette',
   'checkForUpdates',
+  'examples',
 ] as const;
 
 /** A command the application menu sends to the renderer. */

@@ -54,6 +54,10 @@ export interface ToolbarProps {
   /** `true` while an export or install runs. */
   exporting?: boolean;
   onNew(): void;
+  /** Opens the New project dialog with the starters (the "New" split arrow). */
+  onNewFromStarter?(): void;
+  /** Opens the Examples gallery (the "New" split arrow). */
+  onExamples?(): void;
   onOpen(): void;
   onSave(): void;
   onUndo(): void;
@@ -310,6 +314,33 @@ export function Toolbar(props: ToolbarProps) {
         testId="toolbar-new-project"
         icon={<FilePlus size={iconSize} aria-hidden />}
         onClick={props.onNew}
+      />
+      <ToolMenu
+        label=""
+        ariaLabel="More ways to start a project"
+        tip="Start from a starter or an example"
+        testId="toolbar-new-menu"
+        icon={<ChevronDown size={iconSize} aria-hidden />}
+        entries={[
+          {
+            label: 'Blank project…',
+            testId: 'toolbar-new-blank',
+            reason: null,
+            onSelect: props.onNew,
+          },
+          {
+            label: 'New from starter…',
+            testId: 'toolbar-new-from-starter',
+            reason: null,
+            onSelect: props.onNewFromStarter,
+          },
+          {
+            label: 'Examples…',
+            testId: 'toolbar-examples',
+            reason: null,
+            onSelect: props.onExamples,
+          },
+        ]}
       />
       <ToolButton
         label="Open"

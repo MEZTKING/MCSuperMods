@@ -21,6 +21,7 @@ export function installMenu(): void {
       submenu: [
         // Ctrl/Cmd+N is left to the renderer, where it adds a new element.
         { label: 'New Project…', accelerator: 'CmdOrCtrl+Shift+N', click: () => send('new') },
+        { label: 'New Project from Starter…', click: () => send('newProjectFromStarter') },
         { label: 'Open Project…', accelerator: 'CmdOrCtrl+O', click: () => send('open') },
         { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => send('save') },
         { type: 'separator' },
@@ -69,7 +70,11 @@ export function installMenu(): void {
     },
     {
       label: 'Help',
-      submenu: [{ label: 'Check for Updates…', click: () => send('checkForUpdates') }],
+      submenu: [
+        { label: 'Examples…', click: () => send('examples') },
+        { type: 'separator' },
+        { label: 'Check for Updates…', click: () => send('checkForUpdates') },
+      ],
     },
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
