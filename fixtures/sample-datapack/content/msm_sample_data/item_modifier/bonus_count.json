@@ -1,0 +1,18 @@
+{
+  "data": {
+    "add": true,
+    "condition": "msm_sample_data:is_sneaking",
+    "count": {
+      "max": 3,
+      "min": 1,
+      "type": "minecraft:uniform"
+    },
+    "type": "minecraft:set_count"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_data:bonus_count",
+  "kind": "minecraft:item_modifier",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z"
+  }
+}

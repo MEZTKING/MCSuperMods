@@ -1,0 +1,16 @@
+{
+  "formatVersion": 1,
+  "name": "MSM Sample Data Pack",
+  "namespaces": [
+    "minecraft",
+    "msm_sample_data"
+  ],
+  "plugins": [
+    "msm.datapack",
+    "msm.resourcepack"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

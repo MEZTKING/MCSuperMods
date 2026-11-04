@@ -1,0 +1,14 @@
+{
+  "data": {
+    "lines": [
+      "# Runs on every /reload through the #minecraft:load function tag.",
+      "say MCSuperMods sample data pack loaded. Run /function msm_sample_data:greet"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_data:load",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z"
+  }
+}

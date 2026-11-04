@@ -1,0 +1,17 @@
+{
+  "data": {
+    "entity": "this",
+    "predicate": {
+      "flags": {
+        "is_sneaking": true
+      }
+    },
+    "type": "minecraft:entity_properties"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_data:is_sneaking",
+  "kind": "minecraft:predicate",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z"
+  }
+}

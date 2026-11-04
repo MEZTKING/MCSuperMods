@@ -1,0 +1,17 @@
+{
+  "data": {
+    "lines": [
+      "# Run with /function msm_sample_data:greet",
+      "say Hello from the MCSuperMods sample data pack!",
+      "tellraw @s {\"text\":\"Craft eight emeralds around a block of redstone to make a Ruby Block.\",\"color\":\"green\"}",
+      "give @s minecraft:emerald 8",
+      "give @s minecraft:redstone_block 1"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_data:greet",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "data": {
+    "category": "misc",
+    "cookingtime": 200,
+    "experience": 0.1,
+    "ingredient": "minecraft:rotten_flesh",
+    "result": {
+      "id": "minecraft:leather"
+    },
+    "type": "minecraft:smelting"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_data:leather_from_rotten_flesh",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z"
+  }
+}

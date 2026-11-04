@@ -1,0 +1,13 @@
+{
+  "data": {
+    "pack": {
+      "description": "MCSuperMods sample: /function msm_sample_data:greet"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_data:pack",
+  "kind": "minecraft:pack_mcmeta",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z"
+  }
+}

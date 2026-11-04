@@ -16,7 +16,7 @@ A desktop mod maker for Minecraft Java Edition that takes you from a simple text
 
 ## Try it
 
-There is no installer yet, so you run the app from source. On Windows you need [Git](https://git-scm.com/), [Node.js](https://nodejs.org/) 22.18 or later and Minecraft Java Edition 26.3. In a terminal (PowerShell or Command Prompt):
+There is no installer yet, so you run the app from source. On Windows you need [Git](https://git-scm.com/), [Node.js](https://nodejs.org/) 24 or later and Minecraft Java Edition 26.3. In a terminal (PowerShell or Command Prompt):
 
 ```sh
 git clone https://github.com/MEZTKING/MCSuperMods.git
@@ -34,6 +34,22 @@ Then:
 4. In a world, hold a stick: the sample pack replaces the stick's look with the ruby, so you can see that the pack is active.
 
 The sample contains no Mojang files; its two textures are drawn by `fixtures/sample-resourcepack/tools/make-textures.mjs`.
+
+## Try the data pack
+
+The data pack sample works the same way, with the app running from source as above. It uses vanilla items only, so it needs no resource pack.
+
+1. Open the folder `fixtures/sample-datapack` from the repository. It holds a greeting function, a load function with its `#minecraft:load` tag, three recipes, an advancement, a loot table, a predicate, an item modifier and an item tag.
+2. Choose **File → Install Data Pack…** and pick a world. MCSuperMods writes `msm-sample-data-pack-mc-26.3.zip` into that world's `datapacks` folder. Close the world in Minecraft first if it is open.
+3. Start Minecraft Java 26.3 and open the world with cheats allowed (or open it to LAN with cheats on). Then run:
+   - `/reload`: chat shows `[Server] MCSuperMods sample data pack loaded. Run /function msm_sample_data:greet`.
+   - `/datapack list`: the enabled packs include `file/msm-sample-data-pack-mc-26.3.zip`.
+   - `/function msm_sample_data:greet`: the game says hello, prints a green hint and gives you eight emeralds and a block of redstone.
+4. Craft the recipe: put the block of redstone in the middle of a crafting table and the eight emeralds around it. The result is a block of redstone named **Ruby Block**.
+5. Taking the Ruby Block out of the crafting table shows the advancement toast **Ruby Crafter**. Its reward is 10 experience and a roll of the sample loot table.
+6. Open `.minecraft/logs/latest.log` (on Windows, `%APPDATA%\.minecraft\logs\latest.log`) and check that it has no `Failed to load`, `Couldn't parse` or other errors mentioning `msm_sample_data`.
+
+More checks (loot table, item modifier, smelting) are listed in `fixtures/sample-datapack/README.md`.
 
 ## How it works
 
@@ -78,7 +94,7 @@ More in [Users and Personas](docs/DESIGN.md#2-users-and-personas).
 
 ## Development
 
-Requires Node 22.18 or later (see `.nvmrc`) and pnpm 10.28.0 via corepack.
+Requires Node 24 or later (see `.nvmrc`) and pnpm 12.16.1 via corepack.
 
 ```sh
 corepack enable                     # use the pinned pnpm
