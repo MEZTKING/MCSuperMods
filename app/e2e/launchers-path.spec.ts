@@ -33,6 +33,11 @@ const CF_FOLDER = 'MSM CF';
 const WORLD = 'MSM World';
 const FABRIC_VERSION = '0.1.0';
 
+/** Extra instances with long folder names: the list then has five rows and long paths. */
+const EXTRA_FOLDERS = ['msm_extra_one', 'msm_extra_two'].map(
+  (folder) => `${folder}_${'with_a_very_long_instance_folder_name_'.repeat(2)}end`,
+);
+
 const PRISM_ID = `prism:${PRISM_FOLDER}`;
 const OLD_ID = `prism:${OLD_FOLDER}`;
 const CF_ID = 'curseforge:MSM_CF';
@@ -63,9 +68,8 @@ function zipsIn(dir: string): string[] {
 }
 
 /**
- * Closes Settings through its Close button. With every Game locations section filled, the
- * dialog is taller than the e2e window and does not scroll, so the button is out of view and
- * a real click cannot reach it: the click event is dispatched instead.
+ * Closes Settings through its Close button with a real click. The dialog scrolls within 90%
+ * of the window height, so the button stays reachable however many locations are listed.
  */
 async function closeSettings(window: Page): Promise<void> {
   await window.getByTestId('settings-close').click();
@@ -122,6 +126,7 @@ test('launchers: Prism and CurseForge instances, extract from Prism, install pac
         worlds: [WORLD],
       },
       { folder: OLD_FOLDER, name: OLD_NAME, mcVersion: OLD_VERSION },
+      ...EXTRA_FOLDERS.map((folder) => ({ folder, name: folder, mcVersion: version })),
     ],
     jars: { [version]: buildSyntheticJar() },
   });
@@ -158,6 +163,27 @@ test('launchers: Prism and CurseForge instances, extract from Prism, install pac
   let settings = window.getByTestId('settings-dialog');
   await expect(settings).toBeVisible();
   await expect(settings.getByTestId('settings-locations')).toBeVisible();
+
+  // Every row is reachable (the list grows inside the scrolling dialog rather than spilling
+  // under the next heading), and long paths wrap instead of scrolling the dialog sideways.
+  const rows = settings.locator('[data-testid^="location-row-"]');
+  await expect(rows).toHaveCount(5);
+  const lastRow = rows.last();
+  await lastRow.scrollIntoViewIfNeeded();
+  await expect(lastRow).toBeInViewport();
+  const officialHeading = settings.getByRole('heading', { name: 'Official launcher folder' });
+  const lastBox = await lastRow.boundingBox();
+  const headingBox = await officialHeading.boundingBox();
+  expect(lastBox).not.toBeNull();
+  expect(headingBox).not.toBeNull();
+  if (lastBox !== null && headingBox !== null) {
+    expect(lastBox.y + lastBox.height).toBeLessThanOrEqual(headingBox.y);
+  }
+  const widths = await settings.evaluate((element) => ({
+    scroll: element.scrollWidth,
+    client: element.clientWidth,
+  }));
+  expect(widths.scroll).toBeLessThanOrEqual(widths.client);
 
   const prismRow = settings.getByTestId(`location-row-${PRISM_ID}`);
   await expect(prismRow).toContainText(PRISM_NAME);

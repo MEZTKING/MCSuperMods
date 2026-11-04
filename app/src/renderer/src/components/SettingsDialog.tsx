@@ -60,11 +60,83 @@ const badgeClass =
 const errorText = (problem: unknown): string =>
   problem instanceof Error ? problem.message : String(problem);
 
+/** Lets long paths wrap at any character instead of widening the dialog. */
+const pathClass = 'break-all font-mono text-xs [overflow-wrap:anywhere]';
+
+/**
+ * A comparison key for a folder path: forward slashes, no trailing slash, and lower case for
+ * Windows paths (a drive letter or a UNC prefix), whose file systems ignore case.
+ */
+export function pathKey(path: string): string {
+  let key = path.trim().replace(/\\/g, '/');
+  while (key.length > 1 && key.endsWith('/') && !/^[A-Za-z]:\/$/.test(key)) {
+    key = key.slice(0, -1);
+  }
+  return /^[A-Za-z]:/.test(key) || key.startsWith('//') ? key.toLowerCase() : key;
+}
+
+/** `true` when `path` is `folder` or lies inside it (both already {@link pathKey}s). */
+const within = (path: string, folder: string): boolean =>
+  path === folder || path.startsWith(folder.endsWith('/') ? folder : `${folder}/`);
+
+/**
+ * The launcher instance whose folder holds `override` (the official launcher folder override),
+ * or `null`. An instance's folder is its game folder, plus the folder above it when the game
+ * folder is the instance's own `minecraft` or `.minecraft` subfolder.
+ */
+export function overrideInstance(
+  override: string | null,
+  locations: readonly InstallTargetOption[] | null | undefined,
+): InstallTargetOption | null {
+  if (override === null || override.trim() === '' || locations == null) return null;
+  const key = pathKey(override);
+  for (const location of locations) {
+    if (location.launcher === 'official') continue;
+    const gameDir = pathKey(location.gameDir);
+    const folders = [gameDir];
+    const slash = gameDir.lastIndexOf('/');
+    const last = gameDir.slice(slash + 1);
+    if (slash > 0 && (last === 'minecraft' || last === '.minecraft')) {
+      folders.push(gameDir.slice(0, slash));
+    }
+    if (folders.some((folder) => within(key, folder))) return location;
+  }
+  return null;
+}
+
+/** Says the override belongs to a launcher instance, with a button that selects it. */
+function OverrideHint(props: {
+  instance: InstallTargetOption;
+  onSelect: ((id: string) => void) | undefined;
+  testId: string;
+}) {
+  const { instance } = props;
+  return (
+    <span className="flex flex-col items-start gap-1 text-xs" data-testid={props.testId}>
+      <span>
+        This folder belongs to the {launcherLabel(instance.launcher)} instance '
+        {instance.displayName}'. Select that instance above instead, and click Use detected here.
+      </span>
+      {props.onSelect !== undefined && (
+        <Button
+          className="max-w-full text-left [overflow-wrap:anywhere]"
+          data-testid={`${props.testId}-select`}
+          onClick={() => props.onSelect?.(instance.id)}
+        >
+          Select {instance.displayName}
+        </Button>
+      )}
+    </span>
+  );
+}
+
 /** The radio list of game locations; the checked one is the install target. */
 function LocationList(props: {
   locations: readonly InstallTargetOption[] | null;
   selectedId: string | null;
   onSelect: ((id: string) => void) | undefined;
+  /** The instance that holds the official folder override, shown on the official row. */
+  overrideInstance: InstallTargetOption | null;
 }) {
   const baseId = useId();
   if (props.locations === null) {
@@ -85,7 +157,7 @@ function LocationList(props: {
   return (
     <fieldset
       data-testid="settings-locations"
-      className="m-0 flex max-h-64 flex-col gap-1 overflow-auto border-0 p-0"
+      className="m-0 flex min-w-0 flex-col gap-1 border-0 p-0"
     >
       <legend className="mb-1 text-sm">Install packs into</legend>
       {props.locations.map((location, index) => {
@@ -113,12 +185,14 @@ function LocationList(props: {
               aria-describedby={detailsId}
               onChange={() => props.onSelect?.(location.id)}
             />
-            <span className="flex min-w-0 flex-col gap-0.5">
-              <span className="flex flex-wrap items-center gap-1">
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <span className="flex min-w-0 flex-wrap items-center gap-1">
                 <span className={badgeClass} data-testid={`location-launcher-${location.id}`}>
                   {launcherLabel(location.launcher)}
                 </span>
-                <span className="font-medium">{location.displayName}</span>
+                <span className="min-w-0 font-medium [overflow-wrap:anywhere]">
+                  {location.displayName}
+                </span>
                 {location.mcVersion !== null && (
                   <span className={badgeClass} data-testid={`location-version-${location.id}`}>
                     MC {location.mcVersion}
@@ -130,8 +204,12 @@ function LocationList(props: {
                   </span>
                 )}
               </span>
-              <span id={detailsId} className="flex flex-col gap-0.5">
-                <span className="truncate font-mono text-xs text-muted" title={location.gameDir}>
+              <span id={detailsId} className="flex min-w-0 flex-col gap-0.5">
+                <span
+                  className={`${pathClass} text-muted`}
+                  data-testid={`location-path-${location.id}`}
+                  title={location.gameDir}
+                >
                   {location.gameDir}
                 </span>
                 {location.problems.map((problem) => (
@@ -144,6 +222,13 @@ function LocationList(props: {
                     {warning}
                   </span>
                 ))}
+                {location.launcher === 'official' && props.overrideInstance !== null && (
+                  <OverrideHint
+                    instance={props.overrideInstance}
+                    onSelect={props.onSelect}
+                    testId="location-override-hint"
+                  />
+                )}
               </span>
             </span>
           </label>
@@ -286,6 +371,7 @@ export function SettingsDialog(props: SettingsDialogProps) {
     progress === null &&
     status !== null &&
     ((status.chosen !== null && status.minecraftDir !== null) || jarSource !== null);
+  const heldBy = overrideInstance(view?.minecraftDir ?? null, props.locations);
 
   return (
     <Dialog.Root
@@ -299,11 +385,11 @@ export function SettingsDialog(props: SettingsDialogProps) {
         <Dialog.Content
           aria-describedby={undefined}
           data-testid="settings-dialog"
-          className="fixed top-1/2 left-1/2 z-50 max-h-[90vh] w-[min(94vw,520px)] overflow-y-auto -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-panel p-4 text-text shadow-lg"
+          className="fixed top-1/2 left-1/2 z-50 max-h-[90vh] w-[min(94vw,520px)] overflow-x-hidden overflow-y-auto -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-panel p-4 text-text shadow-lg"
         >
           <Dialog.Title className="mb-2 text-base font-semibold">Settings</Dialog.Title>
           <form
-            className="flex flex-col gap-1.5"
+            className="flex min-w-0 flex-col gap-1.5"
             onSubmit={(event) => {
               event.preventDefault();
               void save();
@@ -320,17 +406,21 @@ export function SettingsDialog(props: SettingsDialogProps) {
                 locations={props.locations}
                 selectedId={props.selectedId ?? null}
                 onSelect={props.onSelectTarget}
+                overrideInstance={heldBy}
               />
             )}
             <h4 className="mt-1 text-sm font-semibold">Official launcher folder</h4>
-            <p className="text-sm text-muted" data-testid="settings-detected">
+            <p
+              className="text-sm text-muted [overflow-wrap:anywhere]"
+              data-testid="settings-detected"
+            >
               Detected:{' '}
               {view === null ? '…' : (view.detectedMinecraftDir ?? 'no launcher folder found')}
             </p>
             <label htmlFor={folderId}>
               Use this folder instead (leave empty for the detected one)
             </label>
-            <div className="flex gap-1.5">
+            <div className="flex min-w-0 gap-1.5">
               <input
                 id={folderId}
                 data-testid="settings-minecraft-folder"
@@ -341,6 +431,7 @@ export function SettingsDialog(props: SettingsDialogProps) {
                 onChange={(event) => setFolder(event.target.value)}
               />
               <Button
+                className="shrink-0"
                 onClick={() =>
                   void props.browse().then((path) => {
                     if (path !== null) setFolder(path);
@@ -349,10 +440,17 @@ export function SettingsDialog(props: SettingsDialogProps) {
               >
                 Browse…
               </Button>
-              <Button onClick={() => setFolder('')} disabled={folder === ''}>
+              <Button className="shrink-0" onClick={() => setFolder('')} disabled={folder === ''}>
                 Use detected
               </Button>
             </div>
+            {heldBy !== null && (
+              <OverrideHint
+                instance={heldBy}
+                onSelect={props.onSelectTarget}
+                testId="settings-override-hint"
+              />
+            )}
             <div className="flex gap-1.5">
               <Button type="submit" disabled={busy} data-testid="settings-save">
                 Save folder
@@ -392,7 +490,7 @@ export function SettingsDialog(props: SettingsDialogProps) {
                   >
                     <span className={badgeClass}>{launcherLabel(root.kind)}</span>
                     <span className="flex min-w-0 flex-1 flex-col">
-                      <span className="truncate font-mono text-xs" title={root.path}>
+                      <span className={pathClass} title={root.path}>
                         {root.path}
                       </span>
                       {root.found === 0 && (

@@ -5,6 +5,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { InstallTargetOption } from '../../src/renderer/src/components/install-target';
 import {
   minecraftSummary,
+  overrideInstance,
+  pathKey,
   SettingsDialog,
   type SettingsDialogProps,
 } from '../../src/renderer/src/components/SettingsDialog';
@@ -249,5 +251,109 @@ describe('minecraftSummary', () => {
     await waitFor(() =>
       expect((screen.getByTestId('settings-extract') as HTMLButtonElement).disabled).toBe(false),
     );
+  });
+});
+
+const LONG_PATH = `C:\\Users\\someone\\AppData\\Roaming\\PrismLauncher\\instances\\${'Very-Long-Instance-Name-'.repeat(4)}\\minecraft`;
+
+function prismInstance(index: number, gameDir: string): InstallTargetOption {
+  return {
+    id: `prism:Instance-${index}`,
+    launcher: 'prism',
+    displayName: `Instance ${index}`,
+    mcVersion: '1.0-test',
+    loader: null,
+    gameDir,
+    warnings: [],
+    problems: [],
+    installable: true,
+  };
+}
+
+describe('SettingsDialog layout', () => {
+  it('renders every row inside a list that grows instead of clipping', () => {
+    const many = [
+      ...LOCATIONS,
+      ...Array.from({ length: 6 }, (_, index) =>
+        prismInstance(index, `/home/me/prism/instances/Instance-${index}/minecraft`),
+      ),
+    ];
+    renderLocations({ locations: many });
+    const list = screen.getByTestId('settings-locations');
+    for (const location of many) {
+      expect(list.contains(screen.getByTestId(`location-row-${location.id}`))).toBe(true);
+    }
+    // Either no height limit at all, or one that scrolls; never a limit that lets rows spill.
+    const classes = list.className.split(/\s+/);
+    const limited = classes.some((name) => /^(max-)?h-/.test(name));
+    expect(!limited || classes.includes('overflow-y-auto')).toBe(true);
+    expect(classes).toContain('min-w-0');
+    expect(screen.getByTestId('settings-dialog').className).toContain('overflow-x-hidden');
+  });
+
+  it('wraps long paths rather than widening the dialog', () => {
+    renderLocations({ locations: [...LOCATIONS, prismInstance(1, LONG_PATH)] });
+    const path = screen.getByTestId('location-path-prism:Instance-1');
+    expect(path.textContent).toBe(LONG_PATH);
+    expect(path.getAttribute('title')).toBe(LONG_PATH);
+    expect(path.className).toContain('break-all');
+    expect(path.className).toContain('[overflow-wrap:anywhere]');
+    expect(path.className).not.toContain('truncate');
+    const input = screen.getByTestId('settings-minecraft-folder');
+    expect(input.className).toContain('min-w-0');
+    expect(input.className).toContain('flex-1');
+  });
+});
+
+describe('SettingsDialog override inside an instance', () => {
+  const instanceDir = 'C:\\Users\\me\\AppData\\Roaming\\PrismLauncher\\instances\\26.3';
+  const prism: InstallTargetOption = {
+    ...prismInstance(7, 'c:/users/me/appdata/roaming/PrismLauncher/instances/26.3/minecraft/'),
+    id: 'prism:26.3',
+    displayName: '26.3',
+  };
+  const official: InstallTargetOption = {
+    ...(LOCATIONS[0] as InstallTargetOption),
+    gameDir: instanceDir,
+  };
+
+  it('normalises Windows paths', () => {
+    expect(pathKey('C:\\Games\\MC\\')).toBe('c:/games/mc');
+    expect(pathKey('/home/Me/mc/')).toBe('/home/Me/mc');
+    expect(overrideInstance(instanceDir, [official, prism])).toBe(prism);
+    expect(overrideInstance(`${instanceDir}\\minecraft\\saves`, [prism])).toBe(prism);
+    expect(overrideInstance('C:\\Users\\me\\AppData\\Roaming\\PrismLauncher', [prism])).toBeNull();
+    expect(overrideInstance('C:\\Users\\me\\AppData\\Roaming\\.minecraft', [prism])).toBeNull();
+    expect(overrideInstance(null, [prism])).toBeNull();
+  });
+
+  it('shows a hint with a button that selects the instance', async () => {
+    const props = renderLocations({
+      load: async () => ({ ...VIEW, minecraftDir: instanceDir }),
+      locations: [official, prism],
+    });
+    const hint = await screen.findByTestId('settings-override-hint');
+    expect(hint.textContent).toContain(
+      "This folder belongs to the Prism Launcher instance '26.3'. Select that instance above instead, and click Use detected here.",
+    );
+    const rowHint = screen.getByTestId('location-override-hint');
+    expect(screen.getByTestId('location-row-official:default').contains(rowHint)).toBe(true);
+    const button = screen.getByTestId('settings-override-hint-select');
+    expect(button.textContent).toBe('Select 26.3');
+    await userEvent.setup().click(button);
+    expect(props.onSelectTarget).toHaveBeenCalledExactlyOnceWith('prism:26.3');
+    await userEvent.setup().click(screen.getByTestId('location-override-hint-select'));
+    expect(props.onSelectTarget).toHaveBeenLastCalledWith('prism:26.3');
+    expect(props.save).not.toHaveBeenCalled();
+  });
+
+  it('shows no hint for an ordinary override', async () => {
+    renderLocations({
+      load: async () => ({ ...VIEW, minecraftDir: '/games/minecraft' }),
+      locations: [{ ...official, gameDir: '/games/minecraft' }, prism],
+    });
+    await waitFor(() => expect(toggle().disabled).toBe(false));
+    expect(screen.queryByTestId('settings-override-hint')).toBeNull();
+    expect(screen.queryByTestId('location-override-hint')).toBeNull();
   });
 });

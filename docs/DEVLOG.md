@@ -694,3 +694,18 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
   - New Project starters such as "Custom ore" and "Recipe pack";
   - an examples gallery with one commented example per kind, exported and validated in CI.
 - After that: **"all the others"**, meaning Phase 3 (Structures & Worldgen), then Phases 4–7 in roadmap order, each closed with verification, a devlog entry, a release and a `main` fast-forward when CI is green.
+
+---
+
+## 2026-11-04 — main session — Settings layout fix; v0.2.1 prepared
+
+**What**
+- **Root cause:** the Game locations list was a `<fieldset>` with `max-h-64 overflow-auto`. A fieldset's default `min-inline-size: min-content` stopped `truncate` working, so long paths widened the list to about 1,018 px inside the 520 px dialog. That produced the horizontal scrollbar, and the list's own vertical scrollbar ended up off-screen, clipping rows below the third.
+- **Fix:**
+  - the list grows and the dialog scrolls instead;
+  - `min-w-0` on the row text, paths wrap;
+  - `overflow-x-hidden` on the dialog;
+  - a new hint when the official-folder override lies inside a launcher instance ("This folder belongs to the Prism Launcher instance '<name>'…"), with a "Select <name>" button.
+  - The e2e test now has 5 locations and checks real geometry (last row in view and above the next heading; `scrollWidth <= clientWidth`). It fails against the old code (1032 > 503) and passes with the fix.
+- Version bumped to 0.2.1, the first release that installed copies should pick up through auto-update.
+- The orchestrator is planning the templates and samples library (the user's next priority), with Phase 3 onwards after it.
