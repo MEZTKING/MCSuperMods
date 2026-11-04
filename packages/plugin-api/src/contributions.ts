@@ -7,6 +7,7 @@
  */
 
 import type { Json } from './json';
+import type { ElementTemplate, ExampleProject, ProjectStarter } from './library';
 import type { Asset, Element } from './model';
 import type { OutputFile, OutputLayer, OutputSink } from './output';
 import type { Problem, ProblemReporter } from './problems';
@@ -181,4 +182,13 @@ export interface PluginContributions {
   commands?: Command[];
   /** paths to extra mcdoc files, relative to the plugin package */
   schemas?: string[];
+  /**
+   * "New element" picker entries; see {@link ElementTemplate}. Each template's `kind` must be
+   * one of this plugin's own {@link PluginContributions.elementKinds}. Since 0.4.0.
+   */
+  elementTemplates?: ElementTemplate[];
+  /** "New project" starters; see {@link ProjectStarter}. Since 0.4.0. */
+  projectStarters?: ProjectStarter[];
+  /** Examples gallery entries; see {@link ExampleProject}. Since 0.4.0. */
+  examples?: ExampleProject[];
 }

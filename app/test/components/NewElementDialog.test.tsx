@@ -54,7 +54,7 @@ describe('NewElementDialog (template picker)', () => {
   it('offers every resource pack template as a labelled radio', () => {
     renderDialog();
     for (const template of RESOURCE_PACK_TEMPLATES) {
-      expect(screen.getByRole('radio', { name: new RegExp(`^${template.label}`) })).toBeTruthy();
+      expect(screen.getByRole('radio', { name: new RegExp(`^${template.title}`) })).toBeTruthy();
     }
   });
 

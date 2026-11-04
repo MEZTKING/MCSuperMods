@@ -35,9 +35,9 @@ describe('ElementKindRegistry', () => {
 
 describe('registerPlugin', () => {
   it('accepts a compatible apiVersion range', () => {
-    expect(API_VERSION).toBe('0.3.0');
+    expect(API_VERSION).toBe('0.4.0');
     const registry = new ElementKindRegistry();
-    registerPlugin(registry, testPlugin('^0.3.0'));
+    registerPlugin(registry, testPlugin('^0.4.0'));
     expect(registry.all().map((kind) => kind.id)).toEqual(['test:thing', 'test:nested']);
   });
 
@@ -49,7 +49,7 @@ describe('registerPlugin', () => {
 
   it('rejects a plugin still declaring the previous minor range', () => {
     const registry = new ElementKindRegistry();
-    expect(() => registerPlugin(registry, testPlugin('^0.2.0'))).toThrow(PluginCompatibilityError);
+    expect(() => registerPlugin(registry, testPlugin('^0.3.0'))).toThrow(PluginCompatibilityError);
     expect(registry.all()).toEqual([]);
   });
 
@@ -70,7 +70,7 @@ describe('registerPlugin', () => {
     registry.register(nestedKind);
     const plugin = definePlugin({
       id: 'test.partial',
-      apiVersion: '^0.3.0',
+      apiVersion: '^0.4.0',
       contributes: {
         elementKinds: [{ ...thingKind, id: 'test:fresh', folder: 'fresh' }, nestedKind],
       },
@@ -79,9 +79,34 @@ describe('registerPlugin', () => {
     expect(registry.get('test:fresh')).toBeUndefined();
   });
 
+  it('ignores contributions it does not register, such as templates and starters', () => {
+    const registry = new ElementKindRegistry();
+    const plugin = definePlugin({
+      id: 'test.library',
+      apiVersion: '^0.4.0',
+      contributes: {
+        elementTemplates: [
+          {
+            id: 'thing',
+            kind: 'test:thing',
+            title: 'Thing',
+            description: 'A thing.',
+            category: 'Things',
+            data: () => ({}),
+          },
+        ],
+        projectStarters: [],
+        examples: [],
+        ...({ futureField: true } as object),
+      },
+    });
+    registerPlugin(registry, plugin);
+    expect(registry.all()).toEqual([]);
+  });
+
   it('accepts plugins without element kinds', () => {
     const registry = new ElementKindRegistry();
-    registerPlugin(registry, definePlugin({ id: 'empty', apiVersion: '^0.3.0', contributes: {} }));
+    registerPlugin(registry, definePlugin({ id: 'empty', apiVersion: '^0.4.0', contributes: {} }));
     expect(registry.all()).toEqual([]);
   });
 });

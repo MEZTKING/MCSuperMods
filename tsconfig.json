@@ -8,6 +8,7 @@
     { "path": "packages/interop" },
     { "path": "packages/plugin-api" },
     { "path": "packages/plugins/datapack" },
+    { "path": "packages/plugins/library" },
     { "path": "packages/plugins/resourcepack" },
     { "path": "packages/schemas" },
     { "path": "packages/targets/all" },

@@ -11,6 +11,6 @@ export * from './lowering';
 
 export default definePlugin({
   id: 'msm.datapack',
-  apiVersion: '^0.3.0',
+  apiVersion: '^0.4.0',
   contributes: { elementKinds: [...dataPackKinds] },
 });

@@ -5,8 +5,17 @@ import {
   defaultElementData,
   namespaceFromFolderName,
 } from '../src/renderer/src/session/element-defaults';
-import { SessionProblemCodes } from '../src/renderer/src/session/project-session';
-import { defaultTarget, newSession } from './session-fixture';
+import {
+  type ContentBundleBuilder,
+  SessionProblemCodes,
+} from '../src/renderer/src/session/project-session';
+import {
+  defaultTarget,
+  fakeExample,
+  fakeStarter,
+  newLibrarySession,
+  newSession,
+} from './session-fixture';
 
 async function openSaved(fs: MemoryFileSystem) {
   const { session, calls } = newSession(fs);
@@ -444,5 +453,155 @@ describe('ProjectSession: game locations (ADR 0019)', () => {
     const launchers = { prismDataDirs: ['/opt/prism'], multimcRoots: [], curseForgeRoots: [] };
     await session.setSettings({ launchers });
     expect(calls.settingsSets).toEqual([{ launchers }]);
+  });
+});
+
+describe('ProjectSession: library (ADR 0020)', () => {
+  const starterIds = ['demo:greet', 'demo:item/ruby', 'demo:pack', 'minecraft:load'];
+
+  it('collects templates, starters and examples the registered kinds support', () => {
+    const { session } = newLibrarySession(createMemoryFileSystem());
+    expect(session.library.templates.map((template) => template.id)).toEqual(['note']);
+    expect(session.library.starters.map((starter) => starter.id)).toEqual(['test_starter']);
+    expect(session.library.examples.map((example) => example.id)).toEqual(['test_example']);
+    expect(newSession(createMemoryFileSystem()).session.library).toEqual({
+      templates: [],
+      starters: [],
+      examples: [],
+    });
+  });
+
+  it('keeps the blank project when no starter is given, without the library in plugins', async () => {
+    const { session } = newSession(createMemoryFileSystem());
+    await session.newProject({});
+    expect(session.snapshot.project?.plugins).toEqual(['msm.resourcepack', 'msm.datapack']);
+    expect(session.snapshot.canUndo).toBe(false);
+  });
+
+  it('creates a project from a starter with its assets, a pack and zero problems', async () => {
+    const fs = createMemoryFileSystem();
+    const { session } = newLibrarySession(fs);
+    expect(await session.newProject({ starter: fakeStarter })).toEqual({ ok: true });
+    const project = session.snapshot.project;
+    expect(project?.namespaces.map((namespace) => namespace.name)).toEqual(['demo', 'minecraft']);
+    const ids = project?.namespaces.flatMap((namespace) => namespace.elements.map((e) => e.id));
+    expect(ids).toEqual(starterIds);
+    const model = project?.namespaces[0]?.elements.find((e) => e.id === 'demo:item/ruby');
+    expect(model?.meta.notes).toMatch(/flat item model/);
+    expect(model?.meta.tags).toEqual(['example', 'models']);
+    expect(project?.namespaces[0]?.assets).toEqual([
+      { path: 'textures/item/ruby.png', mediaType: 'image/png' },
+    ]);
+    expect(fs.list()).toContain('assets/demo/textures/item/ruby.png');
+    expect(session.snapshot.dirty).toBe(false);
+    expect(session.snapshot.canUndo).toBe(false);
+
+    await session.flushValidation();
+    expect(session.snapshot.problems).toEqual([]);
+
+    const { session: reloaded } = newLibrarySession(fs);
+    expect(await reloaded.openProject()).toEqual({ ok: true });
+    await reloaded.flushValidation();
+    expect(reloaded.snapshot.project).toEqual(project);
+    expect(reloaded.snapshot.problems).toEqual([]);
+  });
+
+  it('keeps a pack.mcmeta the bundle brings and reports a bundle that fails to build', async () => {
+    const withPack: ContentBundleBuilder = {
+      title: 'With pack',
+      build: () => ({
+        elements: [
+          {
+            id: 'demo:pack',
+            kind: 'minecraft:pack_mcmeta',
+            data: { pack: { description: 'Mine' } },
+          },
+        ],
+        assets: [],
+      }),
+    };
+    const { session } = newSession(createMemoryFileSystem());
+    expect(await session.newProject({ bundle: withPack })).toEqual({ ok: true });
+    const pack = session.snapshot.project?.namespaces[0]?.elements;
+    expect(pack?.map((element) => element.data)).toEqual([{ pack: { description: 'Mine' } }]);
+
+    const fs = createMemoryFileSystem();
+    const broken = newSession(fs).session;
+    const outcome = await broken.newProject({
+      bundle: {
+        title: 'Broken',
+        build: () => ({ elements: [{ id: 'demo:x', kind: 'test:missing', data: {} }], assets: [] }),
+      },
+    });
+    expect(outcome).toEqual({
+      ok: false,
+      reason: 'Could not build "Broken": Unknown element kind "test:missing" for demo:x.',
+    });
+    expect(broken.snapshot.project).toBeNull();
+    expect(fs.list()).toEqual([]);
+  });
+
+  it('copies an example into the open project as one undo step', async () => {
+    const fs = createMemoryFileSystem();
+    const { session } = newLibrarySession(fs);
+    await session.newProject();
+    const result = await session.addBundle(fakeExample, { namespace: 'gems' });
+    expect(result).toEqual({
+      added: ['gems:block/ruby_ore'],
+      duplicates: [],
+      assets: ['gems:textures/block/ruby_ore.png'],
+      skippedAssets: [],
+    });
+    expect(session.snapshot.undoLabel).toBe('Copy example Ore block model');
+    expect(session.snapshot.project?.namespaces.map((namespace) => namespace.name)).toEqual([
+      'demo',
+      'gems',
+    ]);
+    expect(fs.list()).toContain('assets/gems/textures/block/ruby_ore.png');
+    await session.flushValidation();
+    expect(session.snapshot.problems).toEqual([]);
+
+    expect(session.undo()).toBe(true);
+    await session.flushAssetFiles();
+    expect(session.snapshot.project?.namespaces.map((namespace) => namespace.name)).toEqual([
+      'demo',
+    ]);
+    expect(fs.list()).not.toContain('assets/gems/textures/block/ruby_ore.png');
+    expect(session.snapshot.canUndo).toBe(false);
+
+    expect(session.redo()).toBe(true);
+    await session.flushAssetFiles();
+    expect(fs.list()).toContain('assets/gems/textures/block/ruby_ore.png');
+  });
+
+  it('reports duplicates instead of throwing and adds nothing twice', async () => {
+    const { session } = newLibrarySession(createMemoryFileSystem());
+    await session.newProject();
+    await session.addBundle(fakeExample, { namespace: 'demo' });
+    const again = await session.addBundle(fakeExample, { namespace: 'demo', label: 'Again' });
+    expect(again).toEqual({
+      added: [],
+      duplicates: ['demo:block/ruby_ore'],
+      assets: [],
+      skippedAssets: ['demo:textures/block/ruby_ore.png'],
+    });
+    expect(session.snapshot.undoLabel).toBe('Copy example Ore block model');
+    await expect(session.addBundle(fakeExample, { namespace: 'Bad Name' })).rejects.toThrow(
+      /Invalid namespace/,
+    );
+  });
+
+  it('rejects bundle assets that are not valid PNG textures', async () => {
+    const { session } = newLibrarySession(createMemoryFileSystem());
+    await session.newProject();
+    const bad: ContentBundleBuilder = {
+      title: 'Bad',
+      build: () => ({
+        elements: [],
+        assets: [{ namespace: 'demo', path: 'textures/item/x.png', bytes: new Uint8Array(4) }],
+      }),
+    };
+    await expect(session.addBundle(bad, { namespace: 'demo' })).rejects.toThrow(/x\.png/);
+    expect(session.snapshot.canUndo).toBe(false);
   });
 });

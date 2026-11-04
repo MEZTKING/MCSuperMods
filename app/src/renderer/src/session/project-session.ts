@@ -3,8 +3,9 @@
  * stack, load/save through the platform's file system with a save manifest (ADR 0012), live
  * schema problems (plan D5), live mcfunction problems through an injected checker (ADR 0014),
  * project assets, the reference index and rename refactor (ADR 0016), and export of the
- * resource and data packs and install of the resource pack. No DOM access, so it is testable
- * with an in-memory platform.
+ * resource and data packs and install of the resource pack. It also collects the plugins'
+ * library contributions (templates, starters, examples; ADR 0020) and adds content bundles to
+ * new or open projects. No DOM access, so it is testable with an in-memory platform.
  *
  * @packageDocumentation
  */
@@ -19,6 +20,7 @@ import {
   type Element,
   ElementKindRegistry,
   elementFilePath,
+  isValidNamespace,
   type Json,
   loadProject,
   mediaTypeForPath,
@@ -44,7 +46,16 @@ import {
   resourcePackExporter,
   runExport,
 } from '@msm/exporters';
-import type { Command, Plugin, Target } from '@msm/plugin-api';
+import type {
+  BundleContext,
+  Command,
+  ContentBundle,
+  ElementTemplate,
+  ExampleProject,
+  Plugin,
+  ProjectStarter,
+  Target,
+} from '@msm/plugin-api';
 import { type SchemaNode, validateJson } from '@msm/schemas';
 import type {
   AppSettingsPatch,
@@ -179,6 +190,172 @@ export interface ProjectSessionOptions {
   mcfunction?: McfunctionChecker;
 }
 
+/**
+ * Anything that builds a {@link ContentBundle}: a {@link ProjectStarter}, an
+ * {@link ExampleProject}, or a host-made source.
+ */
+export interface ContentBundleBuilder {
+  /** Shown in the undo label and in error messages. */
+  title: string;
+  /** Builds the bundle for a namespace; must be pure. */
+  build(context: BundleContext): ContentBundle;
+}
+
+/** Options of {@link ProjectSession.newProject}. */
+export interface NewProjectOptions {
+  /** The starter whose bundle fills the new project. */
+  starter?: ProjectStarter;
+  /** Any other bundle source, for example an example opened as a new project. */
+  bundle?: ContentBundleBuilder;
+}
+
+/** Options of {@link ProjectSession.addBundle}. */
+export interface AddBundleOptions {
+  /** The project namespace the bundle is built for; created when the project lacks it. */
+  namespace: string;
+  /** The undo label; default `Copy example <title>`. */
+  label?: string;
+}
+
+/** The result of {@link ProjectSession.addBundle}. */
+export interface AddBundleResult {
+  /** Element ids added, in bundle order. */
+  added: ResourceLocation[];
+  /** Element ids skipped because the project (or the bundle, earlier) already has them. */
+  duplicates: ResourceLocation[];
+  /** Assets written and recorded, as `<namespace>:<path>`. */
+  assets: string[];
+  /** Assets skipped because the project already records that path, as `<namespace>:<path>`. */
+  skippedAssets: string[];
+}
+
+/**
+ * The library contributions of the registered plugins (ADR 0020), filtered to what the
+ * registered kinds support.
+ */
+export interface SessionLibrary {
+  /**
+   * Element templates in plugin order; a template counts only when its kind is one of its
+   * own plugin's kinds. The first template with a given id wins.
+   */
+  templates: readonly ElementTemplate[];
+  /** Project starters whose `requiresKinds` are all registered; first id wins. */
+  starters: readonly ProjectStarter[];
+  /** Examples whose `requiresKinds` are all registered; first id wins. */
+  examples: readonly ExampleProject[];
+}
+
+/** A bundle checked against a project state, ready to write and apply. */
+interface PreparedBundle {
+  elements: Element[];
+  duplicates: ResourceLocation[];
+  assets: { namespace: string; path: string; bytes: Uint8Array }[];
+  skippedAssets: string[];
+}
+
+function dedupeById<T extends { id: string }>(entries: readonly T[]): T[] {
+  const seen = new Set<string>();
+  return entries.filter((entry) => {
+    if (seen.has(entry.id)) return false;
+    seen.add(entry.id);
+    return true;
+  });
+}
+
+/**
+ * Checks a bundle against `state`: every kind registered, every id valid and allowed, every
+ * asset a safe path with valid bytes. Elements and assets the project already has are
+ * reported, not thrown.
+ *
+ * @throws Error If the bundle is invalid.
+ */
+function prepareBundle(
+  bundle: ContentBundle,
+  state: Project,
+  registry: ElementKindRegistry,
+  now: (() => string) | undefined,
+): PreparedBundle {
+  const existing = new Set(elementsById(state).keys());
+  const prepared: PreparedBundle = { elements: [], duplicates: [], assets: [], skippedAssets: [] };
+  for (const entry of bundle.elements) {
+    if (registry.get(entry.kind) === undefined) {
+      throw new Error(`Unknown element kind ${JSON.stringify(entry.kind)} for ${entry.id}.`);
+    }
+    assertElementIdAllowed(entry.kind, entry.id);
+    const element = createElement({
+      id: entry.id,
+      kind: entry.kind,
+      data: structuredClone(entry.data),
+      ...(now === undefined ? {} : { now }),
+      ...(entry.notes === undefined ? {} : { notes: entry.notes }),
+      ...(entry.tags === undefined ? {} : { tags: entry.tags }),
+    });
+    if (existing.has(element.id)) {
+      prepared.duplicates.push(element.id);
+      continue;
+    }
+    existing.add(element.id);
+    prepared.elements.push(element);
+  }
+  const recorded = assetKeys(state);
+  for (const asset of bundle.assets) {
+    if (!isValidNamespace(asset.namespace)) {
+      throw new Error(`Invalid namespace name ${JSON.stringify(asset.namespace)}.`);
+    }
+    const slash = asset.path.lastIndexOf('/');
+    const reason = assetImportError(
+      slash < 0 ? '.' : asset.path.slice(0, slash),
+      asset.path.slice(slash + 1),
+      asset.bytes,
+    );
+    if (slash < 0 || reason !== undefined) {
+      throw new Error(`Asset ${asset.namespace}:${asset.path}: ${reason ?? 'not in a folder.'}`);
+    }
+    const key = `${asset.namespace}\u0000${asset.path}`;
+    if (recorded.has(key)) {
+      prepared.skippedAssets.push(`${asset.namespace}:${asset.path}`);
+      continue;
+    }
+    recorded.add(key);
+    prepared.assets.push({ namespace: asset.namespace, path: asset.path, bytes: asset.bytes });
+  }
+  return prepared;
+}
+
+/**
+ * One undoable command adding a prepared bundle: missing namespaces, then elements, then
+ * asset records.
+ */
+function bundleCommand(prepared: PreparedBundle, label: string): ProjectCommand {
+  const namespaces = new Set<string>();
+  for (const element of prepared.elements) {
+    namespaces.add(element.id.slice(0, element.id.indexOf(':')));
+  }
+  for (const asset of prepared.assets) namespaces.add(asset.namespace);
+  const adds = prepared.elements.map((element) => commands.addElement(element));
+  const assets = prepared.assets.map((asset) =>
+    commands.addAsset(asset.namespace, {
+      path: asset.path,
+      mediaType: mediaTypeForPath(asset.path),
+    }),
+  );
+  const namespaceAdds = [...namespaces].sort().map((name) => ({
+    name,
+    command: commands.addNamespace(name),
+  }));
+  return {
+    id: 'app.add-bundle',
+    label,
+    apply(draft) {
+      for (const { name, command } of namespaceAdds) {
+        if (!draft.namespaces.some((entry) => entry.name === name)) command.apply(draft);
+      }
+      for (const command of adds) command.apply(draft);
+      for (const command of assets) command.apply(draft);
+    },
+  };
+}
+
 /** Problem codes the session itself reports. */
 export const SessionProblemCodes = {
   unknownTarget: 'project.unknown-target',
@@ -237,6 +414,7 @@ export class ProjectSession {
   readonly #fs: ProjectFileSystem;
   readonly #now: (() => string) | undefined;
   readonly #plugins: readonly Plugin[];
+  readonly #library: SessionLibrary;
   readonly #targets: readonly SessionTarget[];
   readonly #validationDelay: number;
   readonly #mcfunction: McfunctionChecker | undefined;
@@ -279,6 +457,40 @@ export class ProjectSession {
     this.#validationDelay = options.validationDelay ?? 150;
     this.#mcfunction = options.mcfunction;
     for (const plugin of this.#plugins) registerPlugin(this.registry, plugin);
+    this.#library = this.#collectLibrary();
+  }
+
+  #collectLibrary(): SessionLibrary {
+    const registered = (kind: string): boolean => this.registry.get(kind) !== undefined;
+    const templates = this.#plugins.flatMap((plugin) => {
+      const own = new Set((plugin.contributes.elementKinds ?? []).map((kind) => kind.id));
+      return (plugin.contributes.elementTemplates ?? []).filter(
+        (template) => own.has(template.kind) && registered(template.kind),
+      );
+    });
+    const supported = (entry: { requiresKinds: readonly string[] }): boolean =>
+      entry.requiresKinds.every(registered);
+    return Object.freeze({
+      templates: Object.freeze(dedupeById(templates)),
+      starters: Object.freeze(
+        dedupeById(
+          this.#plugins.flatMap((plugin) => plugin.contributes.projectStarters ?? []),
+        ).filter(supported),
+      ),
+      examples: Object.freeze(
+        dedupeById(this.#plugins.flatMap((plugin) => plugin.contributes.examples ?? [])).filter(
+          supported,
+        ),
+      ),
+    });
+  }
+
+  /**
+   * The registered plugins' templates, starters and examples (ADR 0020), filtered to the
+   * registered kinds. Fixed for the session's lifetime.
+   */
+  get library(): SessionLibrary {
+    return this.#library;
   }
 
   /** The current snapshot. */
@@ -343,42 +555,109 @@ export class ProjectSession {
 
   /**
    * Asks for an empty directory and creates a project there: the default target, the
-   * registered plugins, a namespace named after the folder and its `pack.mcmeta` element.
+   * plugins that contribute element kinds, a namespace named after the folder and its
+   * `pack.mcmeta` element. With a `starter` (or another `bundle` source) the bundle is built
+   * for that namespace and added too: its asset bytes are written, its elements and asset
+   * records go into the initial state (not an undo step), and the `pack.mcmeta` element is
+   * added only when the bundle has none. A bundle that fails to build or check leaves no
+   * project behind and is reported as `{ ok: false, reason }`.
    */
-  async newProject(): Promise<OpenOutcome> {
+  async newProject(options: NewProjectOptions = {}): Promise<OpenOutcome> {
     if (!(await this.#confirmDiscard())) return { ok: false, cancelled: true };
     const path = await this.#platform.dialogs.pickDirectory({
       title: 'Choose an empty folder for the new project',
       mustBeEmpty: true,
     });
     if (path === null) return { ok: false, cancelled: true };
-    const created = await this.#platform.project.createRoot(path);
-    if (!created.ok) return created;
     const name = baseName(path);
+    const namespace = namespaceFromFolderName(name);
     const targetId = this.defaultTargetId;
     const project = createEmptyProject(name, {
       targets: targetId === undefined ? [] : [targetId],
-      plugins: this.#plugins.map((plugin) => plugin.id),
+      plugins: this.#plugins
+        .filter((plugin) => (plugin.contributes.elementKinds ?? []).length > 0)
+        .map((plugin) => plugin.id),
     });
-    const namespace = namespaceFromFolderName(name);
-    const elements: Element[] = [];
-    const packKind = this.registry.get(PACK_MCMETA_KIND);
-    if (packKind !== undefined) {
-      const id: ResourceLocation = `${namespace}:pack`;
-      elements.push(
-        createElement({
+    project.namespaces.push({ name: namespace, elements: [], assets: [] });
+    const source = options.starter ?? options.bundle;
+    let prepared: PreparedBundle;
+    try {
+      const bundle: ContentBundle =
+        source === undefined
+          ? { elements: [], assets: [] }
+          : source.build({ namespace, projectName: name });
+      const elements = [...bundle.elements];
+      const packKind = this.registry.get(PACK_MCMETA_KIND);
+      if (packKind !== undefined && !elements.some((entry) => entry.kind === PACK_MCMETA_KIND)) {
+        const id: ResourceLocation = `${namespace}:pack`;
+        elements.unshift({
           id,
           kind: PACK_MCMETA_KIND,
           data: defaultElementData(PACK_MCMETA_KIND, id, packKind.defaultData),
-          ...(this.#now === undefined ? {} : { now: this.#now }),
-        }),
+        });
+      }
+      prepared = prepareBundle(
+        { elements, assets: bundle.assets },
+        project,
+        this.registry,
+        this.#now,
       );
+    } catch (error) {
+      const what = source === undefined ? 'the project' : `"${source.title}"`;
+      return { ok: false, reason: `Could not build ${what}: ${messageOf(error)}` };
     }
-    project.namespaces.push({ name: namespace, elements, assets: [] });
-    const saved = await saveProject(this.#fs, project, this.registry);
-    this.#adopt(path, project, [], saved.manifest);
+    const created = await this.#platform.project.createRoot(path);
+    if (!created.ok) return created;
+    await this.#writeBundleAssets(prepared);
+    const initial = new CommandStack(project);
+    initial.execute(bundleCommand(prepared, 'New project'));
+    const state = initial.state;
+    const saved = await saveProject(this.#fs, state, this.registry);
+    this.#adopt(path, state, [], saved.manifest);
     await this.#emptyTrash();
     return { ok: true };
+  }
+
+  /**
+   * Adds a content bundle (a copied example, for instance) to the open project. The bundle
+   * is built for `options.namespace`; its asset bytes are written immediately (like
+   * {@link importAssets}), then its elements, asset records and any namespaces the project
+   * lacks go in as one undoable command. Element ids and asset paths the project already has
+   * are skipped and reported, not thrown.
+   *
+   * @throws Error If no project is open, the namespace is invalid, or the bundle fails to
+   *   build or check (nothing is added then).
+   */
+  async addBundle(
+    source: ContentBundleBuilder,
+    options: AddBundleOptions,
+  ): Promise<AddBundleResult> {
+    const stack = this.#requireStack();
+    if (!isValidNamespace(options.namespace)) {
+      throw new Error(`Invalid namespace name ${JSON.stringify(options.namespace)}.`);
+    }
+    const bundle = source.build({ namespace: options.namespace, projectName: stack.state.name });
+    const prepared = prepareBundle(bundle, stack.state, this.registry, this.#now);
+    await this.#writeBundleAssets(prepared);
+    // The state may have moved on while the bytes were written: check again.
+    const current = prepareBundle(bundle, stack.state, this.registry, this.#now);
+    if (current.elements.length > 0 || current.assets.length > 0) {
+      stack.execute(bundleCommand(current, options.label ?? `Copy example ${source.title}`));
+    }
+    return {
+      added: current.elements.map((element) => element.id),
+      duplicates: current.duplicates,
+      assets: current.assets.map((asset) => `${asset.namespace}:${asset.path}`),
+      skippedAssets: current.skippedAssets,
+    };
+  }
+
+  async #writeBundleAssets(prepared: PreparedBundle): Promise<void> {
+    for (const asset of prepared.assets) {
+      const file = `assets/${asset.namespace}/${asset.path}`;
+      await this.#fs.mkdirp(file.slice(0, file.lastIndexOf('/')));
+      await this.#fs.writeFile(file, asset.bytes);
+    }
   }
 
   /**

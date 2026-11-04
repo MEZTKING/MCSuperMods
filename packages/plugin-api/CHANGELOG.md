@@ -2,6 +2,19 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 0.4.0 — 2026-11-04
+
+Templates and samples library surface (ADR 0020). `API_VERSION` is `0.4.0`. Built-in plugins declare `^0.4.0`.
+
+- `ElementTemplate` and `TemplateContext` (`src/library.ts`): an entry of the host's "New element" picker (`id`, `kind`, `title`, `description`, `category`, optional `prefix`, `defaultName`, `fixedName`, `defaultNamespace`) whose pure `data(context)` builds the starting data from the new element's id, namespace and path, the project namespace, every project namespace and the kind's `defaultData`.
+- `ProjectStarter`, `ExampleProject`, `ContentBundle` (`ContentBundleElement`, `ContentBundleAsset`) and `BundleContext`: starters for the host's "New project" dialog and entries of its Examples gallery. Each builds a self-contained bundle of elements (with optional `notes` and `tags`, which become `meta.notes` and `meta.tags`) and generated assets (`Uint8Array` bytes under `assets/<namespace>/`) for a namespace. `requiresKinds` lets the host hide entries whose kinds are not registered.
+- `PluginContributions.elementTemplates`, `projectStarters` and `examples`: optional, host-interpreted. A template's `kind` must be one of the contributing plugin's own kinds; starters and examples may use any registered kind.
+
+### Migration from 0.3.0
+
+- No interface changed incompatibly; the new fields are optional.
+- Plugins declaring `^0.3.0` no longer load, because `0.4.0` is outside a `^0.3.0` range (0.x minors are breaking under semver); declare `^0.4.0`.
+
 ## 0.3.0 — 2026-11-04
 
 Phase 2 (Data Pack Studio) surface. `API_VERSION` is `0.3.0`. Built-in plugins declare `^0.3.0`.

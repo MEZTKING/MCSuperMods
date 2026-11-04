@@ -1,6 +1,6 @@
 # packages/plugin-api — Public plugin API
 
-Phase 2 code complete: `API_VERSION` 0.3.0 (`OutputFile.language`, `Problem.range`, required `Target.folders.data` with `DataFolderKey`; ADR 0017), IR types, `definePlugin` and shared path validation. Plugins declaring `^0.2.0` no longer load.
+`API_VERSION` 0.4.0: library contribution points `elementTemplates`, `projectStarters`, `examples` (`src/library.ts`; ADR 0020) on top of the Phase 2 surface (`OutputFile.language`, `Problem.range`, `Target.folders.data`; ADR 0017), IR types, `definePlugin` and shared path validation. Plugins declaring `^0.3.0` no longer load.
 
 ## Purpose
 

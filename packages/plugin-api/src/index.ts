@@ -17,6 +17,16 @@ export type {
   PluginContributions,
 } from './contributions';
 export type { Json, JsonObject, ResourceLocation } from './json';
+export type {
+  BundleContext,
+  ContentBundle,
+  ContentBundleAsset,
+  ContentBundleElement,
+  ElementTemplate,
+  ExampleProject,
+  ProjectStarter,
+  TemplateContext,
+} from './library';
 export type { Asset, Element, ElementMeta, Namespace, Project } from './model';
 export type { OutputFile, OutputLayer, OutputSink } from './output';
 export { assertProjectRelativePath, isProjectRelativePath } from './paths';

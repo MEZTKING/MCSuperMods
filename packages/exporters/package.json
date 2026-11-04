@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@msm/plugin-datapack": "workspace:*",
+    "@msm/plugin-library": "workspace:*",
     "@msm/plugin-resourcepack": "workspace:*",
     "@msm/targets": "workspace:*",
     "@types/node": "catalog:",

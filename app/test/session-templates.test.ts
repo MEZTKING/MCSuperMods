@@ -4,10 +4,11 @@ import { createCompletionSource } from '../src/renderer/src/studios/completions'
 import {
   DATA_PACK_TEMPLATES,
   projectNamespace,
+  templateContext,
   templateElementId,
   templatesFor,
 } from '../src/renderer/src/studios/templates';
-import { newSession } from './session-fixture';
+import { newLibrarySession, newSession } from './session-fixture';
 
 async function openSession() {
   const fs = createMemoryFileSystem();
@@ -54,11 +55,12 @@ describe('data pack templates', () => {
     });
     const id = templateElementId(tick, tick.defaultNamespace ?? '', tick.defaultName ?? '');
     expect(id).toBe('minecraft:tick');
-    expect(tick.data(id, undefined, { namespaces: ['demo', 'minecraft'] })).toEqual({
+    expect(tick.data(templateContext(id, ['demo', 'minecraft'], undefined))).toEqual({
       values: ['demo:tick'],
     });
-    expect(projectNamespace('minecraft:tick', { namespaces: ['minecraft', 'zeta'] })).toBe('zeta');
+    expect(projectNamespace('minecraft:tick', ['minecraft', 'zeta'])).toBe('zeta');
     expect(projectNamespace('minecraft:tick')).toBe('my_project');
+    expect(projectNamespace('demo:tick')).toBe('demo');
   });
 
   it('produces data the current target validates without errors or unknown ids', async () => {
@@ -76,9 +78,13 @@ describe('data pack templates', () => {
       session.addElement({
         id,
         kind: template.kind,
-        data: template.data(id, kind?.defaultData, {
-          namespaces: session.snapshot.project?.namespaces.map((entry) => entry.name) ?? [],
-        }),
+        data: template.data(
+          templateContext(
+            id,
+            session.snapshot.project?.namespaces.map((entry) => entry.name) ?? [],
+            kind?.defaultData,
+          ),
+        ),
       });
       created.push(id);
     }
@@ -132,5 +138,55 @@ describe('data pack completions', () => {
     expect(vanillaTags.length).toBeGreaterThan(1);
     expect(vanillaTags.every((id) => id.startsWith('#'))).toBe(true);
     expect(source.suggest('tag/function', '#minecraft:t')).toEqual(['#minecraft:tick']);
+  });
+});
+
+describe('plugin templates (ADR 0020)', () => {
+  it('lists plugin templates first and keeps app built-ins only for uncovered kinds', () => {
+    const plugin = {
+      id: 'plugin_recipe',
+      kind: 'minecraft:recipe',
+      title: 'Plugin recipe',
+      description: 'From a plugin.',
+      category: 'Recipes',
+      data: () => ({}),
+    };
+    const ids = templatesFor(
+      ['minecraft:recipe', 'minecraft:function', 'example:thing'],
+      [plugin, { ...plugin, title: 'Duplicate id' }, { ...plugin, id: 'x', kind: 'example:gone' }],
+    ).map((template) => template.id);
+    expect(ids).toEqual(['plugin_recipe', 'function', 'kind:example:thing']);
+    expect(templatesFor(['example:thing'])[0]?.category).toBe('Other');
+  });
+
+  it('takes the session library templates and builds the context the host passes', async () => {
+    const { session } = newLibrarySession(createMemoryFileSystem());
+    await session.newProject();
+    const templates = templatesFor(
+      session.registry.all().map((kind) => kind.id),
+      session.library.templates,
+    );
+    const ids = templates.map((template) => template.id);
+    expect(ids[0]).toBe('note');
+    expect(ids).not.toContain('foreign_recipe');
+    expect(ids).toContain('recipe_shaped');
+    expect(ids).not.toContain('kind:test:note');
+    const note = templates[0];
+    if (note === undefined) throw new Error('missing');
+    expect(note.data(templateContext('minecraft:x', ['minecraft', 'demo'], undefined))).toEqual({
+      text: 'Hello from demo',
+    });
+
+    const kindDefault = { values: ['a'] };
+    const context = templateContext('demo:block/ore', ['demo'], kindDefault);
+    expect(context).toEqual({
+      id: 'demo:block/ore',
+      namespace: 'demo',
+      path: 'block/ore',
+      projectNamespace: 'demo',
+      namespaces: ['demo'],
+      kindDefault: { values: ['a'] },
+    });
+    expect(context.kindDefault).not.toBe(kindDefault);
   });
 });

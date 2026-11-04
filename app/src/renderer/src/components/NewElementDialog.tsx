@@ -2,7 +2,7 @@ import type { Json, ResourceLocation } from '@msm/core';
 import { Dialog } from 'radix-ui';
 import { type FormEvent, type ReactNode, useId, useState } from 'react';
 import { useUiStore } from '../store/ui-store';
-import { type ElementTemplate, templateElementId } from '../studios/templates';
+import { type ElementTemplate, templateContext, templateElementId } from '../studios/templates';
 import { Button } from './ui/Button';
 
 export const fieldClass = 'rounded border border-border bg-bg px-2 py-1';
@@ -185,9 +185,9 @@ export function NewElementDialog(props: {
           props.onSubmit({
             id,
             kind: template.kind,
-            data: template.data(id, props.kindDefault(template.kind), {
-              namespaces: props.namespaces,
-            }),
+            data: template.data(
+              templateContext(id, props.namespaces, props.kindDefault(template.kind)),
+            ),
           });
           if (template.defaultNamespace === undefined) setLastNamespace(namespace);
         }, setError)
@@ -214,7 +214,7 @@ export function NewElementDialog(props: {
                 onChange={() => choose(entry)}
               />
               <span className="flex flex-col">
-                <span className="font-medium">{entry.label}</span>
+                <span className="font-medium">{entry.title}</span>
                 <span className="text-xs text-muted">{entry.description}</span>
               </span>
             </label>
@@ -247,7 +247,7 @@ export function NewElementDialog(props: {
       )}
       <label htmlFor={nameId}>Name</label>
       <div className="flex items-center gap-1">
-        {template !== undefined && template.prefix !== '' && (
+        {template?.prefix !== undefined && template.prefix !== '' && (
           <code className="font-mono text-muted">{template.prefix}</code>
         )}
         <input
