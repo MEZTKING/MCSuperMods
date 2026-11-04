@@ -18,6 +18,7 @@ import {
   climateIndex,
   climateSources,
   projectBiomes,
+  projectSkyColourAttribute,
 } from './climate';
 
 /** Props of {@link ClimateMap}. */
@@ -80,15 +81,16 @@ export default function ClimateMap({ project, id, data }: ClimateMapProps) {
     [index, xAxis, yAxis, fixed],
   );
   const biomes = useMemo(() => projectBiomes(project), [project]);
+  const skyColour = useMemo(() => projectSkyColourAttribute(project), [project]);
   const legend = useMemo(() => {
     const ids = [...new Set(entries?.map((entry) => entry.biome) ?? [])];
     return ids.map((biome) => ({
       biome,
-      colour: biomeColour(biome, biomes.get(biome)),
+      colour: biomeColour(biome, biomes.get(biome), skyColour),
       inProject: biomes.has(biome),
       shown: cells.includes(biome),
     }));
-  }, [entries, biomes, cells]);
+  }, [entries, biomes, cells, skyColour]);
 
   useEffect(() => {
     const context = canvasRef.current?.getContext('2d') ?? null;

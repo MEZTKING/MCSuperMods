@@ -12,6 +12,7 @@ Structures and worldgen surface (ADR 0022). `API_VERSION` is `0.5.0`. Built-in p
 - `DataFolderKey` gains `structure` (structure template `.nbt` files), `dimension` and `worldgen` (the parent of the world generation registry folders, to which worldgen kinds append `/<registry>`, as tag kinds do with `tags`).
 - `Target.dataVersion: number`: the game's data version, written as `DataVersion` into structure and schematic files.
 - `Target.worldgen: WorldgenFacts` with `featureSteps`: the biome feature decoration step names in game order.
+- Later within 0.5.0 (additive, no version change): optional `WorldgenFacts.biomeAttributes` (`BiomeAttributeFacts`: `colours`, `skyColour`, `naturalMobSpawns`), the biome environment attribute ids the host's Biome Studio and climate map read. Targets without it get no attribute-based colours or spawn lists.
 
 ### Migration from 0.4.0
 

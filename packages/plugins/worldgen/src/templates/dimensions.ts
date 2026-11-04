@@ -40,7 +40,7 @@ export const dimensionTemplates: readonly ElementTemplate[] = [
       category: DIMENSIONS,
       title: 'Multi-noise overworld',
       description:
-        'Overworld terrain with the biome of the same id at a mild, humid climate point and vanilla biomes around it.',
+        "Overworld terrain with one biome at a mild, humid climate point and vanilla biomes around it. That entry starts as this element's own id: set it to your biome, such as amber_grove for amber_world.",
     },
     (id) => ({
       type: 'minecraft:overworld',
@@ -66,7 +66,8 @@ export const dimensionTemplates: readonly ElementTemplate[] = [
       kind: 'minecraft:dimension',
       category: DIMENSIONS,
       title: 'Single-biome dimension',
-      description: 'Overworld terrain where every column is the biome of the same id.',
+      description:
+        "Overworld terrain where every column is one biome. The biome starts as this element's own id: set it to your biome, such as amber_grove for amber_world.",
     },
     (id) => ({
       type: 'minecraft:overworld',

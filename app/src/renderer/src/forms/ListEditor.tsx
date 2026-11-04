@@ -9,7 +9,7 @@ import { Button, iconButtonClass } from '../components/ui/Button';
 import { useForm, useProblems } from './context';
 import { Field, NodeEditor, type NodeEditorProps, ProblemList } from './NodeEditor';
 import { childPointer } from './pointer';
-import { defaultValue, isInlineList, isScalar } from './schema-utils';
+import { childScopes, defaultValue, isInlineList, isScalar } from './schema-utils';
 
 /** Inline row of scalar slots, each with its own problems. */
 function InlineSlots({
@@ -117,6 +117,7 @@ export function ListEditor(
             pointer={childPointer(pointer, index)}
             label={name}
             depth={depth + 1}
+            scopes={childScopes(props)}
             headerExtra={
               <>
                 <button
@@ -182,6 +183,7 @@ export function TupleEditor(
           pointer={childPointer(pointer, index)}
           label={`${label} ${index + 1}`}
           depth={depth + 1}
+          scopes={childScopes(props)}
         />
       ))}
     </div>

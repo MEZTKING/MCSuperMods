@@ -101,12 +101,23 @@ export function jsonKind(
   return typeof value as 'string' | 'number' | 'boolean' | 'object';
 }
 
-/** True when a value of this JSON kind can satisfy `node` (shape only). */
-export function acceptsKind(node: SchemaNode, kind: ReturnType<typeof jsonKind>): boolean {
+/**
+ * True when a value of this JSON kind can satisfy `node` (shape only). With `context`, a
+ * field-position dispatcher (`%key` or a sibling field) is judged by the member it selects.
+ */
+export function acceptsKind(
+  node: SchemaNode,
+  kind: ReturnType<typeof jsonKind>,
+  context?: DispatchContext,
+): boolean {
   const target = resolveNode(node);
   switch (target.kind) {
+    case 'dispatcher': {
+      const field = context === undefined ? undefined : fieldDispatch(target, context);
+      if (field?.kind === 'member') return acceptsKind(field.member, kind, context);
+      return kind === 'object';
+    }
     case 'struct':
-    case 'dispatcher':
       return kind === 'object';
     case 'list':
     case 'tuple':
@@ -122,7 +133,7 @@ export function acceptsKind(node: SchemaNode, kind: ReturnType<typeof jsonKind>)
     case 'literal':
       return typeof target.value === kind;
     case 'union':
-      return flattenUnion(target).some((member) => acceptsKind(member, kind));
+      return flattenUnion(target).some((member) => acceptsKind(member, kind, context));
     case 'any':
     case 'unsupported':
       return true;
@@ -134,16 +145,21 @@ export function acceptsKind(node: SchemaNode, kind: ReturnType<typeof jsonKind>)
 /**
  * Index of the union member that best fits `value`: the first member for `undefined`,
  * otherwise the shape-compatible member with the fewest validation errors (ties go to the
- * earlier member). `-1` when no member accepts the value's JSON kind.
+ * earlier member). `-1` when no member accepts the value's JSON kind. `context` places the
+ * value, so members that are field-position dispatchers are judged by the member they select.
  */
-export function inferMember(members: readonly SchemaNode[], value: Json | undefined): number {
+export function inferMember(
+  members: readonly SchemaNode[],
+  value: Json | undefined,
+  context?: DispatchContext,
+): number {
   if (value === undefined) return members.length > 0 ? 0 : -1;
   const kind = jsonKind(value);
   let best = -1;
   let bestErrors = Number.POSITIVE_INFINITY;
   members.forEach((member, index) => {
-    if (!acceptsKind(member, kind)) return;
-    const errors = validateJson(value, member, { maxDepth: 16 }).filter(
+    if (!acceptsKind(member, kind, context)) return;
+    const errors = validateJson(value, selectedMember(member, context), { maxDepth: 16 }).filter(
       (problem) => problem.severity === 'error',
     ).length;
     if (errors < bestErrors) {
@@ -152,6 +168,15 @@ export function inferMember(members: readonly SchemaNode[], value: Json | undefi
     }
   });
   return best;
+}
+
+/** `node`, or the member a field-position dispatcher selects in `context`. */
+function selectedMember(node: SchemaNode, context: DispatchContext | undefined): SchemaNode {
+  if (context === undefined) return node;
+  const target = resolveNode(node);
+  if (target.kind !== 'dispatcher') return node;
+  const field = fieldDispatch(target, context);
+  return field?.kind === 'member' ? field.member : node;
 }
 
 /** Literal values when every member of a (flattened) union is a literal, else `undefined`. */
@@ -196,6 +221,21 @@ export function dispatchMember(
 export interface DispatchContext {
   siblings?: JsonObject | undefined;
   parentKey?: string | undefined;
+  /**
+   * The objects that enclose {@link siblings} (or the value itself when it has no siblings),
+   * nearest first. A dispatcher passed as a template type argument (`typeArgument`) reads its
+   * accessor from these when the nearest object lacks it, as the validator does.
+   */
+  scopes?: readonly JsonObject[] | undefined;
+}
+
+/**
+ * The enclosing objects for the children of a value: its own containing object (`siblings`)
+ * in front of its `scopes`.
+ */
+export function childScopes(context: DispatchContext): readonly JsonObject[] | undefined {
+  if (context.siblings === undefined) return context.scopes;
+  return [context.siblings, ...(context.scopes ?? [])];
 }
 
 /** How a field-position dispatcher resolves for the current sibling or key value. */
@@ -208,6 +248,11 @@ export type FieldDispatch =
       discriminator: string;
       key: string | undefined;
     };
+
+function readKey(object: JsonObject | undefined, step: string): string | undefined {
+  if (object === undefined) return undefined;
+  return scalarKey(Object.hasOwn(object, step) ? object[step] : undefined);
+}
 
 function scalarKey(raw: Json | undefined): string | undefined {
   if (typeof raw === 'string') return raw;
@@ -235,8 +280,15 @@ export function fieldDispatch(
     if (key === undefined) return undefined;
   } else {
     const siblings = context?.siblings;
-    if (siblings === undefined) return undefined;
-    key = scalarKey(Object.hasOwn(siblings, step) ? siblings[step] : undefined);
+    const scopes = node.typeArgument === true ? (context?.scopes ?? []) : [];
+    if (siblings === undefined && scopes.length === 0) return undefined;
+    key = readKey(siblings, step);
+    // A type-argument dispatcher's accessor belongs to the object that instantiated the
+    // template: try enclosing objects, nearest first.
+    for (const scope of scopes) {
+      if (key !== undefined) break;
+      key = readKey(scope, step);
+    }
   }
   if (node.keys().length === 0) {
     return { kind: 'unresolved', reason: 'no-keys', discriminator: step, key };
@@ -285,12 +337,18 @@ export interface StructShape {
 /**
  * Flattens a struct (or a bare dispatcher, treated as a struct with one spread) for the
  * given value: spread structs are inlined, and a dispatcher keyed by a field contributes the
- * fields of the member the value selects. `parentKey` feeds `%key` dispatchers.
+ * fields of the member the value selects. `parentKey` feeds `%key` dispatchers; `scopes` (the
+ * objects enclosing the value, nearest first) feed type-argument dispatchers whose key the
+ * value itself lacks.
+ *
+ * A member that is a union (version-gated alternatives) contributes the struct the value
+ * fits.
  */
 export function structShape(
   node: StructNode | DispatcherNode,
   value: Json | undefined,
   parentKey?: string,
+  scopes?: readonly JsonObject[],
 ): StructShape {
   const shape: StructShape = {
     fields: [],
@@ -334,9 +392,17 @@ export function structShape(
       key = parentKey;
     } else if (steps.length === 1 && steps[0] !== '%parent') {
       const name = steps[0] as string;
-      const raw = object?.[name];
-      key = typeof raw === 'string' ? raw : raw === undefined ? undefined : String(raw);
-      shape.discriminators.push({ key: name, dispatcher, optional: false });
+      key = readKey(object, name);
+      const outer =
+        key === undefined && dispatcher.typeArgument === true
+          ? (scopes ?? []).map((scope) => readKey(scope, name)).find((entry) => entry !== undefined)
+          : undefined;
+      if (outer === undefined) {
+        shape.discriminators.push({ key: name, dispatcher, optional: false });
+      } else {
+        // The key belongs to an enclosing object; it is edited there.
+        key = outer;
+      }
     } else {
       shape.opaque.push({ dispatcher, key: undefined, reason: 'unsupported-accessor' });
       return;
@@ -352,7 +418,13 @@ export function structShape(
       });
       return;
     }
-    const target = resolveNode(member);
+    let target = resolveNode(member);
+    if (target.kind === 'union') {
+      const members = flattenUnion(target);
+      const index = inferMember(members, object ?? {});
+      const chosen = members[index];
+      if (chosen !== undefined) target = resolveNode(chosen);
+    }
     if (target.kind === 'struct' || target.kind === 'dispatcher') {
       visit(target, depth + 1);
       return;
@@ -436,7 +508,7 @@ export function defaultObject(
     let changed = false;
     for (const discriminator of shape.discriminators) {
       if (out[discriminator.key] !== undefined || discriminator.optional) continue;
-      const first = pickableKeys(discriminator.dispatcher)[0];
+      const first = defaultKey(discriminator.dispatcher);
       if (first !== undefined) {
         out[discriminator.key] = first;
         changed = true;
@@ -454,7 +526,7 @@ export function defaultObject(
     const sibling = target.discriminator[0];
     if (sibling === undefined || sibling.startsWith('%') || !declared.has(sibling)) continue;
     if (out[sibling] !== undefined && out[sibling] !== '') continue;
-    const first = pickableKeys(target)[0];
+    const first = defaultKey(target);
     if (first !== undefined) out[sibling] = first;
   }
   for (const field of shape.fields) {
@@ -462,6 +534,49 @@ export function defaultObject(
     out[field.key] = defaultValue(field.type, depth + 1, { siblings: out, parentKey: field.key });
   }
   return out;
+}
+
+/**
+ * The key a new value of `dispatcher` starts with: the first pickable key whose member does
+ * not require another value of the same dispatcher (a block state provider that wraps a
+ * `source` provider would otherwise nest until the default depth runs out), else the first.
+ */
+export function defaultKey(dispatcher: DispatcherNode): string | undefined {
+  const keys = pickableKeys(dispatcher);
+  return (
+    keys.find((key) => {
+      const member = dispatcher.dispatch(key);
+      return member === undefined || !requiresRegistry(member, dispatcher.registry, 0);
+    }) ?? keys[0]
+  );
+}
+
+/** Whether a required field of `node` (looked at a few levels deep) is a `registry` value. */
+function requiresRegistry(node: SchemaNode, registry: string, depth: number): boolean {
+  if (depth > 4) return false;
+  const target = resolveNode(node);
+  switch (target.kind) {
+    case 'dispatcher':
+      return depth > 0 && target.registry === registry;
+    case 'union': {
+      // A default takes the first member.
+      const first = flattenUnion(target)[0];
+      return first !== undefined && requiresRegistry(first, registry, depth + 1);
+    }
+    case 'struct':
+      return (
+        target.fields.some(
+          (field) =>
+            !field.optional &&
+            field.key !== '*' &&
+            requiresRegistry(field.type, registry, depth + 1),
+        ) ||
+        (depth > 0 &&
+          target.spreads.some((spread) => requiresRegistry(spread, registry, depth + 1)))
+      );
+    default:
+      return false;
+  }
 }
 
 function defaultNumber(

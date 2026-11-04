@@ -5,7 +5,13 @@
  */
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { createSchemaIndex, parseVanillaMcdocSymbols, type SchemaIndex } from '@msm/schemas';
+import {
+  createRegistryIndex,
+  createSchemaIndex,
+  parseVanillaMcdocSymbols,
+  type RegistryIndex,
+  type SchemaIndex,
+} from '@msm/schemas';
 import { builtInTargets, readVendoredJson, type TargetBundle } from '@msm/targets';
 
 /**
@@ -44,4 +50,35 @@ export function schemaIndex(): Promise<SchemaIndex> {
   const bundle = builtInTargets[0];
   if (bundle === undefined) return Promise.reject(new Error('No built-in target.'));
   return schemaIndexFor(bundle);
+}
+
+const registryCache = new Map<TargetBundle, Promise<RegistryIndex>>();
+
+/** The vanilla registry index of one built-in target (mcmeta), built once per test file. */
+export function registryIndexFor(bundle: TargetBundle): Promise<RegistryIndex> {
+  let index = registryCache.get(bundle);
+  if (index === undefined) {
+    index = (async () => {
+      const vanilla = (await readVendoredJson(bundle, 'mcmetaRegistries', (url) =>
+        readFile(toPath(url)),
+      )) as Record<string, string[]>;
+      return createRegistryIndex({ vanilla });
+    })();
+    registryCache.set(bundle, index);
+  }
+  return index;
+}
+
+/** A form completion source over a registry index (no project ids). */
+export function completionsFrom(registries: RegistryIndex): {
+  suggest(registry: string, prefix: string): string[];
+  projectIds(): string[];
+} {
+  return {
+    suggest: (registry, prefix) =>
+      registries
+        .ids(registry)
+        .filter((id) => id.startsWith(prefix) || id.startsWith(`minecraft:${prefix}`)),
+    projectIds: () => [],
+  };
 }

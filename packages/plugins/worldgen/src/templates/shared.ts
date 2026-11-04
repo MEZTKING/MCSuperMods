@@ -20,8 +20,9 @@ export function fixed(fields: Omit<ElementTemplate, 'data'>, data: Json): Elemen
 }
 
 /**
- * A template whose data names the new element's own id, for example a placed feature that
- * places the configured feature of the same id.
+ * A template whose data names the new element's own id as a placeholder reference, for
+ * example a placed feature whose `feature` starts as its own id. Ids are unique across kinds,
+ * so the user points that reference at the real element (the template description says so).
  *
  * @param fields - Everything but `data`.
  * @param build - Builds the data from the new element's id.

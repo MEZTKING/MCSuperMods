@@ -1,7 +1,9 @@
 /**
  * Configured feature (`worldgen/feature`) and placed feature templates. A placed feature
- * template places the configured feature of the same id, so naming the two alike connects them
- * (a configured feature `ruby_ore` and a placed feature `ruby_ore`).
+ * template's `feature` starts as the new placed feature's own id. Ids are unique across kinds,
+ * so no configured feature can have that id: the user points `feature` at their configured
+ * feature (for example a placed feature `ruby_ore_placed` placing `ruby_ore`), and until then
+ * the schema check reports the unknown id.
  */
 import type { ElementTemplate, Json } from '@msm/plugin-api';
 import { FEATURES, fixed, ownId } from './shared';
@@ -106,7 +108,7 @@ export const featureTemplates: readonly ElementTemplate[] = [
       category: FEATURES,
       title: 'Ore placement',
       description:
-        'Places the configured feature of the same id ten times per chunk, spread evenly from the bottom of the world to y 64.',
+        "Places a configured feature ten times per chunk, spread evenly from the bottom of the world to y 64. Its feature starts as this element's own id: set it to your configured feature, such as ruby_ore for ruby_ore_placed.",
     },
     (id) => ({
       feature: id,
@@ -132,7 +134,7 @@ export const featureTemplates: readonly ElementTemplate[] = [
       category: FEATURES,
       title: 'Tree placement',
       description:
-        'Places the configured feature of the same id a few times per chunk on the surface, where an oak sapling would survive.',
+        "Places a configured feature a few times per chunk on the surface, where an oak sapling would survive. Its feature starts as this element's own id: set it to your configured feature, such as amber_tree for amber_tree_placed.",
     },
     (id) => ({
       feature: id,
@@ -159,7 +161,7 @@ export const featureTemplates: readonly ElementTemplate[] = [
       category: FEATURES,
       title: 'Patch placement',
       description:
-        'Scatters the configured feature of the same id into a patch on the surface, in about one chunk in four.',
+        "Scatters a configured feature into a patch on the surface, in about one chunk in four. Its feature starts as this element's own id: set it to your configured feature, such as flowers for flowers_placed.",
     },
     (id) => ({
       feature: id,

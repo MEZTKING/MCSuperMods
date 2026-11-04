@@ -999,3 +999,28 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 - `session/references.ts` (`referencesFrom`) still calls `kindRegistry(element.kind)` with the default lookup; it should use the session registry too (not in this brief's files).
 - `test/components/studio-registry.test.tsx` says "No area Studios exist yet"; the comment is out of date.
 - B82: e2e over the data-testids listed in the B79 report.
+
+---
+
+## 2026-11-04 — executor — B80 Biome Studio, Placed Feature Studio, worldgen form fixes
+
+**What**
+- `studios/worldgen/`: `BiomeStudio.tsx`, `PlacedFeatureStudio.tsx`, `ColourField.tsx`, `parts.tsx` (section, schema sub-form at a pointer, ordered id list, Advanced toggle), `worldgen-model.ts` (pure helpers) and `studios.tsx` (`msm.worldgen.biome`, `msm.worldgen.placed-feature`).
+- Biome Studio, mapped onto the 26.3 schema rather than the plan's pre-26.3 shape:
+  - Climate: temperature, downfall, precipitation, temperature modifier (choices from the schema enum).
+  - Colours: the `effects` `*_color` fields the schema declares (water, grass, foliage, dry foliage) plus the target's colour attributes (sky, fog, water fog under `attributes`), and the grass colour modifier. Seven pickers, not six.
+  - Features: one ordered placed-feature list per step, named from `target.worldgen.featureSteps`; short lists are padded.
+  - Spawns: the natural mob spawns attribute; categories from the schema's map key type; entity, weight, minimum and maximum count (`uniform` int provider); spawn costs and carvers as schema sub-forms.
+- Placed Feature Studio: configured feature picker, ordered placement modifiers (type from the dispatcher plus the registry's settings-free types, settings as a sub-form), "Used in" (project biomes and steps).
+- Forms: field-position dispatchers inside unions (biome attributes), union-valued dispatcher members (int providers), type-argument dispatchers read from enclosing objects (`DispatchContext.scopes`), registry-known keys without a member add no fields (with completions), discriminator choices include such registry ids, defaults avoid self-nesting providers (`defaultKey`).
+- Form coverage over biome, feature and placed feature (templates, defaults, every feature config and placement modifier member, all sections expanded): 58 JSON fallbacks before, 0 after; the baseline is 0.
+- `Target.worldgen.biomeAttributes` (optional, additive within plugin-api 0.5.0): colour attributes, sky colour, natural mob spawns; verified against the vendored mcdoc and mcmeta; `preview/climate.ts` and the Biome Studio read it.
+- Worldgen template descriptions no longer claim "the same id": placed features and dimensions start their reference as their own id and say to point it at the real element.
+
+**Decisions**
+- No `@msm/plugin-api` version bump: the new field is optional.
+- `ClimateMap.tsx` passes the project target's sky colour attribute (one-line change outside the listed paths).
+
+**Next**
+- B81 guide: labels and test ids are in the B80 report.
+- `@msm/plugin-structures` templates still say "the same id" (not in this brief).

@@ -20,8 +20,7 @@ const nodeReadFile = async (url: URL): Promise<Uint8Array> => readFile(url);
 /**
  * Ids the tests treat as project elements, per registry. `demo:sample` is what a template
  * creates when the user keeps the default name, so templates that derive a reference from their
- * own id (a placed feature naming the configured feature of the same id, a dimension naming the
- * biome of the same id) resolve. The `example:` ids are the golden samples' cross-references.
+ * own id as a placeholder reference (a placed feature's `feature`, a dimension's biome) resolve. The `example:` ids are the golden samples' cross-references.
  */
 export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
   'worldgen/biome': ['demo:sample', 'example:ruby_grove'],

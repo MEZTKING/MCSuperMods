@@ -63,6 +63,15 @@ export const target: Target = {
       'vegetal_decoration',
       'top_layer_modification',
     ],
+    biomeAttributes: {
+      colours: [
+        'minecraft:visual/sky_color',
+        'minecraft:visual/fog_color',
+        'minecraft:visual/water_fog_color',
+      ],
+      skyColour: 'minecraft:visual/sky_color',
+      naturalMobSpawns: 'minecraft:gameplay/natural_mob_spawns',
+    },
   },
   // fabric and geckolib are not set until Phase 4/5 (verify at implementation then).
 };

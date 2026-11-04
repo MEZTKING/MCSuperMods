@@ -1,4 +1,5 @@
-import type { Project } from '@msm/plugin-api';
+import type { Project, Target } from '@msm/plugin-api';
+import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import {
   biomeColour,
@@ -8,7 +9,11 @@ import {
   climateSources,
   hashColour,
   projectBiomes,
+  projectSkyColourAttribute,
+  skyColourAttribute,
 } from '../../../src/renderer/src/preview/climate';
+
+const firstTarget = (builtInTargets[0] as { target: Target }).target;
 
 const point = (temperature: number, humidity: number, offset = 0) => ({
   temperature,
@@ -124,16 +129,16 @@ describe('climate cell assignment', () => {
 
 describe('biome colours', () => {
   it('prefers the grass colour, then the sky colour attribute, then effects.sky_color', () => {
-    expect(biomeColour('demo:a', { effects: { grass_color: 0x79c05a } })).toBe('#79c05a');
+    const sky = skyColourAttribute(firstTarget);
+    expect(sky).toBe(firstTarget.worldgen.biomeAttributes?.skyColour);
+    if (sky === undefined) throw new Error('The target names no sky colour attribute.');
+    expect(biomeColour('demo:a', { effects: { grass_color: 0x79c05a } }, sky)).toBe('#79c05a');
     expect(
-      biomeColour('demo:a', {
-        attributes: { 'minecraft:visual/sky_color': 7972607 },
-        effects: { water_color: 1 },
-      }),
+      biomeColour('demo:a', { attributes: { [sky]: 7972607 }, effects: { water_color: 1 } }, sky),
     ).toBe('#79a6ff');
-    expect(biomeColour('demo:a', { attributes: { 'minecraft:visual/sky_color': '#ABCDEF' } })).toBe(
-      '#abcdef',
-    );
+    expect(biomeColour('demo:a', { attributes: { [sky]: '#ABCDEF' } }, sky)).toBe('#abcdef');
+    // Without the target's attribute id the attribute is not read.
+    expect(biomeColour('demo:a', { attributes: { [sky]: '#ABCDEF' } })).toBe(hashColour('demo:a'));
     expect(biomeColour('demo:a', { effects: { sky_color: 255 } })).toBe('#0000ff');
   });
 
@@ -159,5 +164,12 @@ describe('biome colours', () => {
       ],
     } as unknown as Project;
     expect([...projectBiomes(project).keys()]).toEqual(['demo:glade']);
+  });
+
+  it("reads the sky colour attribute id from the project's target", () => {
+    const project = { targets: [firstTarget.id], namespaces: [] } as unknown as Project;
+    expect(projectSkyColourAttribute(project)).toBe(skyColourAttribute(firstTarget));
+    const unknown = { targets: ['mc-0.0'], namespaces: [] } as unknown as Project;
+    expect(projectSkyColourAttribute(unknown)).toBe(skyColourAttribute(firstTarget));
   });
 });

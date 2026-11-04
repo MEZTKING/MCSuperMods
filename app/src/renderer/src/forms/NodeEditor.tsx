@@ -54,6 +54,11 @@ export interface NodeEditorProps {
    * whose member a sibling field selects.
    */
   siblings?: { [key: string]: Json } | undefined;
+  /**
+   * The objects enclosing {@link siblings} (or the value, for list items), nearest first, for
+   * dispatchers passed as template type arguments.
+   */
+  scopes?: readonly { [key: string]: Json }[] | undefined;
 }
 
 /** Problems at one pointer, listed under its control. */
@@ -109,7 +114,7 @@ function isComposite(
     case 'union': {
       const members = flattenUnion(target);
       if (literalChoices(target) !== undefined) return false;
-      const index = inferMember(members, value);
+      const index = inferMember(members, value, context);
       const member = members[index];
       return member !== undefined && isComposite(member, value, context);
     }
@@ -146,6 +151,7 @@ export function Field({
   const composite = isComposite(editor.node, editor.value, {
     siblings: editor.siblings,
     parentKey: editor.parentKey,
+    scopes: editor.scopes,
   });
   const [open, setOpen] = useState(editor.depth < COLLAPSE_DEPTH);
   const problemId = useId();
@@ -244,7 +250,11 @@ export function NodeEditor(props: NodeEditorProps) {
   const scalar = { pointer, label, invalid };
   switch (node.kind) {
     case 'dispatcher': {
-      const field = fieldDispatch(node, { siblings: props.siblings, parentKey: props.parentKey });
+      const field = fieldDispatch(node, {
+        siblings: props.siblings,
+        parentKey: props.parentKey,
+        scopes: props.scopes,
+      });
       if (field?.kind === 'member') return <NodeEditor {...props} node={field.member} />;
       if (field !== undefined) {
         return (
@@ -367,7 +377,11 @@ function UnionEditor(props: NodeEditorProps & { node: SchemaNode & { kind: 'unio
   const members = flattenUnion(node);
   const only = members[0];
   if (members.length === 1 && only !== undefined) return <NodeEditor {...props} node={only} />;
-  const index = inferMember(members, value);
+  const index = inferMember(members, value, {
+    siblings: props.siblings,
+    parentKey: props.parentKey,
+    scopes: props.scopes,
+  });
   const labels = uniqueLabels(members.map(typeLabel));
   const member = members[index];
   return (

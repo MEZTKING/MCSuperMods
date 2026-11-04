@@ -125,6 +125,28 @@ export interface WorldgenFacts {
    * them.
    */
   featureSteps: readonly string[];
+  /**
+   * Biome environment attribute ids the host's Biome Studio and climate map read from a
+   * biome's `attributes` map, with their namespace. Optional (added within 0.5.0); a target
+   * without it gets no attribute-based colours or spawn lists.
+   */
+  biomeAttributes?: BiomeAttributeFacts;
+}
+
+/**
+ * Biome environment attribute ids (keys of a biome's `attributes`), with their namespace.
+ * Added within 0.5.0.
+ */
+export interface BiomeAttributeFacts {
+  /**
+   * The colour attributes a biome commonly sets, in display order, for example the sky, fog
+   * and water fog colours. Their plain value is an RGB colour.
+   */
+  colours: readonly string[];
+  /** The sky colour attribute; one of {@link colours}. */
+  skyColour: string;
+  /** The attribute holding the biome's natural mob spawns (`spawns_by_category`, `spawn_costs`). */
+  naturalMobSpawns: string;
 }
 
 /**

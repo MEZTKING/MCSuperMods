@@ -14,12 +14,16 @@ import { Field, type NodeEditorProps, ProblemList } from './NodeEditor';
 import { childPointer, parsePointer } from './pointer';
 import { ChoiceControl, inputClass } from './scalars';
 import {
+  childScopes,
+  type DiscriminatorField as DiscriminatorInfo,
   defaultObject,
   defaultValue,
   literalChoices,
+  type OpaqueDispatch,
   pickableKeys,
   resolveNode,
   type StructShape,
+  stripMinecraft,
   structShape,
 } from './schema-utils';
 
@@ -46,9 +50,10 @@ function orphanProblems(
 export function StructEditor(
   props: NodeEditorProps & { node: StructLike; value: JsonObject | undefined },
 ) {
-  const { onChange, hidden, problems } = useForm();
+  const { onChange, hidden, problems, completions } = useForm();
   const { node, value, pointer, label, depth, parentKey } = props;
-  const shape = structShape(node, value, parentKey);
+  const scopes = childScopes(props);
+  const shape = structShape(node, value, parentKey, scopes);
   const object: JsonObject = value ?? {};
 
   /** Sets one field, creating the object when it is absent. */
@@ -81,7 +86,7 @@ export function StructEditor(
   for (const key of mapEntries) rendered.add(key);
   for (const discriminator of shape.discriminators) rendered.add(discriminator.key);
 
-  const opaque = shape.opaque[0];
+  const opaque = shape.opaque.find((entry) => !addsNoFields(shape, entry, completions));
   const orphans = orphanProblems(problems, pointer, rendered);
 
   return (
@@ -95,6 +100,8 @@ export function StructEditor(
           fieldKey={discriminator.key}
           pointer={pointer}
           depth={depth}
+          parentKey={parentKey}
+          scopes={scopes}
         />
       ))}
       {opaque !== undefined && (
@@ -129,6 +136,7 @@ export function StructEditor(
             depth={depth + 1}
             parentKey={field.key}
             siblings={object}
+            scopes={scopes}
             desc={field.desc}
             deprecated={field.deprecated}
             onRemove={field.optional && has ? () => setField(field.key, undefined) : undefined}
@@ -145,6 +153,7 @@ export function StructEditor(
           label={label}
           depth={depth}
           absent={value === undefined}
+          scopes={scopes}
         />
       )}
       {missing.length > 0 && (
@@ -154,7 +163,7 @@ export function StructEditor(
           onAdd={(field) =>
             setField(
               field.key,
-              defaultValue(field.type, 0, { siblings: object, parentKey: field.key }),
+              defaultValue(field.type, 0, { siblings: object, parentKey: field.key, scopes }),
             )
           }
         />
@@ -172,6 +181,8 @@ function DiscriminatorField({
   fieldKey,
   pointer,
   depth,
+  parentKey,
+  scopes,
 }: {
   shape: StructShape;
   node: StructLike;
@@ -179,16 +190,18 @@ function DiscriminatorField({
   fieldKey: string;
   pointer: string;
   depth: number;
+  parentKey: string | undefined;
+  scopes: readonly JsonObject[] | undefined;
 }) {
-  const { onChange, hidden } = useForm();
+  const { onChange, hidden, completions } = useForm();
   const child = childPointer(pointer, fieldKey);
   const discriminator = shape.discriminators.find((entry) => entry.key === fieldKey);
   if (discriminator === undefined || hidden.has(child)) return null;
-  const keys = pickableKeys(discriminator.dispatcher);
+  const keys = discriminatorKeys(discriminator, completions);
   const pick = (next: string | number | boolean) => {
     // Keep only what the new member (and the struct itself) still declares.
     const probe: JsonObject = { ...object, [fieldKey]: next };
-    const nextShape = structShape(node, probe);
+    const nextShape = structShape(node, probe, parentKey, scopes);
     const keep = new Set(nextShape.fields.map((field) => field.key));
     for (const entry of nextShape.discriminators) keep.add(entry.key);
     const base: JsonObject = {};
@@ -218,6 +231,63 @@ function DiscriminatorField({
       }
     />
   );
+}
+
+/**
+ * Whether an unknown dispatcher key simply adds no fields: the struct declares the key field
+ * as a registry id and the registry knows the key (as the validator accepts it), for example
+ * the `in_square` placement modifier, which has no settings.
+ */
+function addsNoFields(
+  shape: StructShape,
+  entry: OpaqueDispatch,
+  completions: CompletionSource | undefined,
+): boolean {
+  if (entry.reason !== 'unknown-key' || entry.key === undefined || completions === undefined) {
+    return false;
+  }
+  const name = entry.dispatcher.discriminator[0];
+  const discriminator = shape.discriminators.find(
+    (candidate) => candidate.dispatcher === entry.dispatcher && candidate.key === name,
+  );
+  const declared =
+    discriminator?.declared === undefined ? undefined : resolveNode(discriminator.declared.type);
+  if (declared?.kind !== 'string' || declared.idRegistry === undefined) return false;
+  const key = entry.key.includes(':') ? entry.key : `minecraft:${entry.key}`;
+  return completions
+    .suggest(declared.idRegistry, key, declared.idPath)
+    .some((id) => id === key || id === entry.key);
+}
+
+/**
+ * The keys a discriminator select offers: the dispatcher's keys plus, when the struct declares
+ * the field as a registry id, the registry's other ids (types whose member adds no fields,
+ * such as the `in_square` placement modifier), unprefixed like the dispatcher keys.
+ */
+export function discriminatorKeys(
+  discriminator: DiscriminatorInfo,
+  completions: CompletionSource | undefined,
+): string[] {
+  const keys = pickableKeys(discriminator.dispatcher);
+  const declared =
+    discriminator.declared === undefined ? undefined : resolveNode(discriminator.declared.type);
+  if (
+    declared?.kind !== 'string' ||
+    declared.idRegistry === undefined ||
+    completions === undefined
+  ) {
+    return keys;
+  }
+  const known = new Set(keys);
+  const extra: string[] = [];
+  for (const id of completions.suggest(declared.idRegistry, '')) {
+    const key = stripMinecraft(id);
+    if (!known.has(key) && !key.includes(':')) {
+      known.add(key);
+      extra.push(key);
+    }
+  }
+  return extra.length === 0 ? keys : [...keys, ...extra].sort();
 }
 
 /** "Add field" popover listing the missing optional fields. */
@@ -300,6 +370,7 @@ function MapEditor({
   label,
   depth,
   absent,
+  scopes,
 }: {
   field: SchemaField;
   object: JsonObject;
@@ -309,6 +380,7 @@ function MapEditor({
   label: string;
   depth: number;
   absent: boolean;
+  scopes: readonly JsonObject[] | undefined;
 }) {
   const { onChange, completions } = useForm();
   const [draft, setDraft] = useState('');
@@ -320,7 +392,7 @@ function MapEditor({
   const canAdd = draft !== '' && !taken(draft);
   const add = () => {
     if (!canAdd) return;
-    const initial = defaultValue(field.type, 0, { siblings: object, parentKey: draft });
+    const initial = defaultValue(field.type, 0, { siblings: object, parentKey: draft, scopes });
     if (absent) onChange(pointer, { [draft]: initial });
     else onChange(childPointer(pointer, draft), initial);
     setDraft('');
@@ -342,6 +414,7 @@ function MapEditor({
           depth={depth + 1}
           parentKey={key}
           siblings={object}
+          scopes={scopes}
           desc={field.desc}
           labelSlot={
             <KeyInput

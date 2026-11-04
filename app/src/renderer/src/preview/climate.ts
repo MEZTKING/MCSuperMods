@@ -5,7 +5,8 @@
  * deepslate's `Climate.Parameters`, the same R-tree search the game uses.
  */
 
-import type { Project } from '@msm/plugin-api';
+import type { Project, Target } from '@msm/plugin-api';
+import { defaultTargetId, targetById } from '@msm/targets';
 import { Climate } from 'deepslate/worldgen';
 
 /** The six climate parameters, in the order `Climate.target` takes them. */
@@ -226,17 +227,33 @@ export function hashColour(id: string): string {
 const BIOME_KIND = 'minecraft:worldgen/biome';
 
 /**
- * The colour a biome is drawn in: from the project biome of that id, its `effects.grass_color`,
- * else its sky colour (the `minecraft:visual/sky_color` attribute, or `effects.sky_color` in
- * older formats); otherwise, and for biomes not in the project, {@link hashColour}.
+ * The sky colour attribute id of a target (`target.worldgen.biomeAttributes.skyColour`), or
+ * `undefined` when the target names none.
  */
-export function biomeColour(id: string, biome: unknown): string {
+export function skyColourAttribute(target: Target | undefined): string | undefined {
+  return target?.worldgen.biomeAttributes?.skyColour;
+}
+
+/** {@link skyColourAttribute} of the project's first target (else the default target). */
+export function projectSkyColourAttribute(project: Project): string | undefined {
+  const id = project.targets[0] ?? defaultTargetId;
+  return skyColourAttribute((targetById(id) ?? targetById(defaultTargetId))?.target);
+}
+
+/**
+ * The colour a biome is drawn in: from the project biome of that id, its `effects.grass_color`,
+ * else its sky colour (the target's sky colour attribute, `skyColour`, or `effects.sky_color`
+ * in older formats); otherwise, and for biomes not in the project, {@link hashColour}.
+ *
+ * @param skyColour - The target's sky colour attribute id ({@link skyColourAttribute}).
+ */
+export function biomeColour(id: string, biome: unknown, skyColour?: string): string {
   if (isObject(biome)) {
     const effects = isObject(biome.effects) ? biome.effects : {};
     const attributes = isObject(biome.attributes) ? biome.attributes : {};
     const colour =
       colourOf(effects.grass_color) ??
-      colourOf(attributes['minecraft:visual/sky_color']) ??
+      (skyColour === undefined ? null : colourOf(attributes[skyColour])) ??
       colourOf(effects.sky_color);
     if (colour !== null) return colour;
   }
