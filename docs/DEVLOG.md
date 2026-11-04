@@ -557,3 +557,20 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 - The draft stays unpublished until the user publishes it. The in-game checks are still recommended first; auto-update starts only after publishing with the repository public.
 - **Release attempt:** the tag `v0.1.0` was created locally, but the cloud session's git proxy only allows pushes to the working branch. The tag push was dropped silently ("unexpected disconnect"; `git ls-remote` shows no tags), so the Release workflow never ran. The user pushes the tag from their own clone instead.
 - **CI on GitHub was red, and the main session had not been checking it.** Runs 53–55 failed in `@msm/schemas`: the "10,000 validations under 2000 ms" check took 2.8 s on GitHub's runner. It is now an under-10 s guard against pathological slowdowns, since absolute timings vary between machines. From now on the main session checks GitHub CI after pushes, not only local runs.
+
+---
+
+## 2026-11-04 — main session — v0.1.0 Windows installer built
+
+**What**
+- The user pushed the tag `v0.1.0` from their clone, at commit `b7ed264`.
+- **Release run #1 (Actions run 41868991772) succeeded** on `windows-latest` in about 2.5 minutes. This was the first ever Windows build.
+- electron-builder created the GitHub release `v0.1.0` as a DRAFT and uploaded `MCSuperMods-0.1.0-win-x64.exe` (123,039,273 bytes, within the 150 MB budget) and its `.blockmap`. The workflow artefact `MCSuperMods-windows` holds the `.exe`, `.blockmap` and `latest.yml`.
+- **CI is green on GitHub** for both the branch (run 58) and the tag (run 59) after the timing-test fix.
+
+**Next**
+- The user downloads the `.exe` from the draft release (SmartScreen warns because the build is unsigned) and tries it, including the stick and data pack in-game checks.
+- Publishing the draft, with the repository public, turns on auto-update for later versions.
+- Action items, not yet done:
+  - move `actions/checkout`, `setup-node` and `upload-artifact` to versions that run on Node 24; GitHub warns that Node 20 actions are deprecated;
+  - consider merging the development branch into `main`.
