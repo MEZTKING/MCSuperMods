@@ -683,3 +683,14 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - Release v0.2.1 with the fix. It is the first end-to-end test of auto-update: 0.2.0 should download it and offer "Restart to update".
+
+---
+
+## 2026-11-04 — main session — User sets the order: templates and samples library, then all remaining phases
+
+**Decisions (user)**
+- Next: the **templates and samples library**:
+  - a template for every element kind, with useful starting content validated against 26.3;
+  - New Project starters such as "Custom ore" and "Recipe pack";
+  - an examples gallery with one commented example per kind, exported and validated in CI.
+- After that: **"all the others"**, meaning Phase 3 (Structures & Worldgen), then Phases 4–7 in roadmap order, each closed with verification, a devlog entry, a release and a `main` fast-forward when CI is green.
