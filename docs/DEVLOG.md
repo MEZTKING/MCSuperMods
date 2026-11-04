@@ -767,3 +767,34 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - The user may delete the stray `v0.2.1` tag (`git push origin :refs/tags/v0.2.1`, then `git tag -d v0.2.1`). Then publish the v0.2.2 draft and confirm that the installed 0.2.0 auto-updates.
+
+---
+
+## 2026-11-04 — orchestrator (Fable) — Phase 3 (Structures & Worldgen) plan
+
+**What**
+- Verified against the vendored 26.3 data:
+  - 26.3 renames `worldgen/configured_feature` → `worldgen/feature` and `configured_carver` → `carver`, and adds the data-driven `block_state_provider`, `material_condition` and `material_rule`;
+  - every Phase 3 schema reference normalises with zero unsupported nodes;
+  - `data_version` is 5023;
+  - deepslate 0.27.2 already ships `nbt`, `Structure`, `StructureRenderer` and the worldgen climate tools.
+- Plan: 5 waves (B70–B83, with B84 in reserve).
+  - **Wave 1:** foundations, ADRs, Phase 2 carry-overs.
+  - **Wave 2:** the structures and worldgen plugins, worldgen tags and `level.dat` world names.
+  - **Wave 3:** library content and the `sample-worldgen` fixture with a chain-walk golden; host importers and validators; structure and climate-map preview.
+  - **Wave 4:** Structure, Template Pool, Biome and Placed Feature Studios; guide pages.
+  - **Wave 5:** e2e and phase close (v0.3.0).
+
+**Decisions** (ADRs 0021–0023, B71; vetoable defaults marked *)
+- **Structure templates:** structure templates are JSON elements (`minecraft:structure_template`*), lowered to gzip `.nbt` with `DataVersion`.
+- **NBT codec:** deepslate's `nbt`* rather than prismarine-nbt.
+- **New plugins:**
+  - `msm.structures` (template, template_pool, structure, structure_set, processor_list), whose importers/exporters are `.nbt` and Sponge `.schem` v3;
+  - `msm.worldgen` (biome, feature, placed_feature, dimension, world_preset, plus tier B, with the three 26.3-new registries as schema-form kinds*).
+  - `dimension_type` stays in datapack*.
+- **plugin-api 0.5.0:** `Target.dataVersion` and `worldgen`, new data folders, `ElementKind.registry`, `validators` contributions. Validator errors such as feature-order cycles and set spacing gate export.
+- **Exit-criterion proxy** for "custom biome with a jigsaw structure generates in 26.3": the `fixtures/sample-worldgen` export golden plus a chain walk over the zip, the validators, and e2e `worldgen-path`; the user does the in-game check manually.
+- **Preview:** a 3D structure preview and a 2D climate map; the noise-sampled terrain map is deferred* (B84, DESIGN Q15).
+
+**Next**
+- Wave 1 is running: B70 (foundations, lockfile owner), B71 (docs), B72 (carry-overs: CI action majors, per-pack export gating, export info noise, recipe field, music-disc notes, column navigation, Monaco go-to-definition).
