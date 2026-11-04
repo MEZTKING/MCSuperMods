@@ -104,4 +104,4 @@ Not open for contributions yet while the architecture settles. Issues with ideas
 
 ## Licence
 
-To be decided. The current recommendation is MIT for the app and `@msm/plugin-api`, and LGPL or MIT for the `msm_runtime` mod. This is tracked as an [open question](docs/DESIGN.md#18-open-questions).
+MCSuperMods is released under the [MIT Licence](LICENSE). You may use, modify and redistribute it freely, including commercially, provided the copyright notice and licence text are kept in all copies, which credits the project. The licence covers the MCSuperMods application and source code only: packs and mods you create with it are yours.
