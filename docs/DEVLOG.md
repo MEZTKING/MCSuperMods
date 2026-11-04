@@ -973,3 +973,29 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - Wave 4: B79 structure studios, B80 worldgen studios, B81 docs and guides. Fold in: template descriptions that say "the same id" (ids are unique across kinds), the `minecraft:visual/sky_color` key in `preview/climate.ts` moving to the target, `renameSelected` using `session.registry`, atomic `saveFile` (flaky golden-path zip read).
+
+---
+
+## 2026-11-04 — executor — B79 Structure Studio and Template Pool Studio
+
+**What**
+- `app/src/renderer/src/studios/structures/` (registered through `studios.tsx`; `ElementForm.tsx` untouched):
+  - `connections.ts` (pure): `poolConnections(project, poolId, { vanillaPools })` gives the pieces (project structure templates the pool places, `list_pool_element` followed) with each jigsaw's pool status (`project` / `vanilla` / `missing`) and `targetFound` (`null` outside the project), plus `usedBy` (structures by `start_pool`, pools whose templates' jigsaws target it).
+  - `TemplatePoolStudio.tsx`: "Fallback pool" (with its status), "Pieces" ("Weight", "Element type", "Location", "Processors", "Projection", move and remove, "Add piece"), "Connections" table and "Used by" with go-to buttons. Element types are the schema's `element_type` dispatcher keys plus the vanilla `worldgen/structure_pool_element` registry; the projection is the schema enum; fields show only when the schema has them for the selected type.
+  - `StructureStudio.tsx`: "Replace from file…", "Export structures (.nbt)…", "Export structures (.schem)…", a summary (size, blocks, palette entries, jigsaw blocks), the palette with counts, and one card per jigsaw ("Pool" with status, "Name", "Target", "Final state", "Joint" from the schema enum, "Placement priority", "Selection priority").
+  - Both Studios have "Advanced (all fields)" showing the schema form. `pickers.tsx` holds the labelled fields and schema readers; `host.ts` a React context (`StructureStudioHostContext`) that `App` provides for the replace, export and go-to actions.
+- `ProjectSession.replaceElementFromFile(id, file)`: the session's importer path, first element of the same kind replaces the data, one undo step "Replace <id> from <file>"; new problem code `import.kind-mismatch`.
+- `App.tsx`: the host context; `renameSelected` uses `session.registry`.
+- Main `saveFile` writes through `writeFileAtomic` (temporary file in the same folder, then rename; cleaned up on failure).
+- `@msm/plugin-structures` template descriptions no longer say "the same id": they say which link starts as the new element's own id and must be pointed at the real element.
+- Tests: `test/components/studios/structures/` (connections 5, Template Pool Studio 5, Structure Studio 5), `test/session-replace-from-file.test.ts` (4), one App rename test, one atomic save test. App 612 tests (including B80's in-progress files); every package green with `--force`; build and 6 e2e specs green; check-size within budget.
+
+**Decisions**
+- The Studios reach host actions through a React context provided by `App`, not new `StudioProps` fields, so neither `types.ts` nor `ElementForm.tsx` changed. Without a provider the buttons are disabled.
+- `poolConnections` takes an optional third argument for the vanilla pool ids (the brief's two-argument signature still works; vanilla pools then read as missing). Jigsaw entries also carry `name` and `target`.
+- `pool-connection-<n>` numbers jigsaw rows across all pieces of the pool.
+
+**Next**
+- `session/references.ts` (`referencesFrom`) still calls `kindRegistry(element.kind)` with the default lookup; it should use the session registry too (not in this brief's files).
+- `test/components/studio-registry.test.tsx` says "No area Studios exist yet"; the comment is out of date.
+- B82: e2e over the data-testids listed in the B79 report.
