@@ -16,6 +16,18 @@ export interface McfunctionData {
   registries: Readonly<Record<string, readonly string[]>>;
 }
 
+/** Options of `createMcfunctionService`. */
+export interface McfunctionServiceOptions {
+  /** The target's Minecraft version; gates command syntax and mcdoc `#[since]`/`#[until]`. */
+  mcVersion: string;
+  /**
+   * The parsed vanilla-mcdoc symbol export (`mcdoc-cli export symbols.json`) the target vendors.
+   * When given, JSON text components, SNBT and item components inside commands are typed and
+   * checked; without it they are only parsed.
+   */
+  mcdocSymbols?: unknown;
+}
+
 /** One diagnostic in an mcfunction source. */
 export interface McfunctionProblem {
   severity: 'error' | 'warning' | 'info';

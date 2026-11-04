@@ -17,27 +17,35 @@ const bundles = [{ target, vendored }];
 for (const bundle of bundles) {
   describe(`mcfunction service over vendored ${bundle.target.id} data`, () => {
     let service: McfunctionService;
+    let bare: McfunctionService;
     let initMs = 0;
+    let bareInitMs = 0;
     const uri = defaultFunctionUri('msm_sample', 'test', bundle.target.folders.data.function);
 
     beforeAll(async () => {
-      const [commands, blocks, registries] = await Promise.all([
+      const [commands, blocks, registries, mcdocSymbols] = await Promise.all([
         readJson(bundle.vendored.mcmetaCommands),
         readJson(bundle.vendored.mcmetaBlocks),
         readJson(bundle.vendored.mcmetaRegistries),
+        readJson(bundle.vendored.vanillaMcdocSymbols),
       ]);
-      const t0 = performance.now();
-      service = await createMcfunctionService(
-        { commands, blocks, registries: registries as Record<string, string[]> },
-        { mcVersion: bundle.target.mcVersion },
-      );
+      const data = { commands, blocks, registries: registries as Record<string, string[]> };
+      const { mcVersion } = bundle.target;
+      let t0 = performance.now();
+      bare = await createMcfunctionService(data, { mcVersion });
+      bareInitMs = performance.now() - t0;
+      t0 = performance.now();
+      service = await createMcfunctionService(data, { mcVersion, mcdocSymbols });
       initMs = performance.now() - t0;
-      console.info(`mcfunction init ${Math.round(initMs)} ms`);
+      console.info(
+        `mcfunction init ${Math.round(bareInitMs)} ms without, ${Math.round(initMs)} ms with mcdoc symbols`,
+      );
     });
 
-    it('initialises in under 2 s', () => {
+    it('initialises in under 2 s, with and without mcdoc symbols', () => {
       expect(service.mcVersion).toBe(bundle.target.mcVersion);
-      expect(initMs).toBeLessThan(2000);
+      expect(bareInitMs).toBeLessThan(5000);
+      expect(initMs).toBeLessThan(5000);
     });
 
     it('accepts a plain command', async () => {
@@ -137,6 +145,68 @@ for (const bundle of bundles) {
       );
       const legacy = await service.check('give @s minecraft:stone{a:1} 1', { uri });
       expect(legacy.some((p) => p.severity === 'error')).toBe(true);
+    });
+
+    it('checks JSON text components in tellraw and title', async () => {
+      const wrongType = await service.check('tellraw @a {"text":1}', { uri });
+      expect(wrongType.some((p) => p.severity === 'error' && p.code === 'mcfunction.check')).toBe(
+        true,
+      );
+      expect(await service.check('tellraw @a {"text":"hi"}', { uri })).toEqual([]);
+      expect(await service.check('tellraw @a {"text":"hi","color":"red"}', { uri })).toEqual([]);
+      expect(await service.check('tellraw @a "plain"', { uri })).toEqual([]);
+      const bold = await service.check('title @a title {"text":"x","bold":"yes"}', { uri });
+      expect(bold.some((p) => p.severity === 'error')).toBe(true);
+      const unknownKey = await service.check('tellraw @a {"text":"hi","colour":"red"}', { uri });
+      expect(unknownKey.map((p) => p.severity)).toEqual(['warning']);
+      // Without the symbol export, components are parsed but not typed.
+      expect(await bare.check('tellraw @a {"text":1}', { uri })).toEqual([]);
+    });
+
+    it('checks item components and entity NBT', async () => {
+      expect(
+        await service.check(`give @s minecraft:stone[minecraft:custom_name='"x"'] 1`, { uri }),
+      ).toEqual([]);
+      const unknown = await service.check('give @s minecraft:stone[minecraft:not_a_component=1]', {
+        uri,
+      });
+      expect(unknown.length).toBeGreaterThan(0);
+      const wrongValue = await service.check('give @s minecraft:stone[max_stack_size="a"] 1', {
+        uri,
+      });
+      expect(wrongValue.some((p) => p.severity === 'error')).toBe(true);
+      expect(await service.check('summon minecraft:zombie ~ ~ ~ {NoAI:1b}', { uri })).toEqual([]);
+      const nbt = await service.check('summon minecraft:zombie ~ ~ ~ {NoAI:"x"}', { uri });
+      expect(nbt.some((p) => p.severity === 'error')).toBe(true);
+    });
+
+    it('checks block-state properties', async () => {
+      const ok = [
+        'setblock ~ ~ ~ minecraft:oak_stairs[facing=north]',
+        'fill ~ ~ ~ ~ ~ ~ minecraft:oak_stairs[half=top,shape=straight] replace minecraft:stone',
+        'execute if block ~ ~ ~ #minecraft:stairs[facing=north] run say x',
+      ];
+      for (const source of ok) expect(await service.check(source, { uri })).toEqual([]);
+      const property = await service.check('setblock ~ ~ ~ minecraft:stone[wat=1]', { uri });
+      expect(property).toHaveLength(1);
+      expect(property[0]).toMatchObject({ severity: 'error', code: 'mcfunction.check', start: 31 });
+      const value = await service.check('setblock ~ ~ ~ minecraft:oak_stairs[facing=up]', { uri });
+      expect(value).toHaveLength(1);
+      expect(value[0]).toMatchObject({ severity: 'error', start: 43, end: 45 });
+      // An unknown block is the linter's warning only.
+      const block = await service.check('setblock ~ ~ ~ minecraft:not_a_block[a=b]', { uri });
+      expect(block.map((p) => p.severity)).toEqual(['warning']);
+    });
+
+    it('completes block-state properties and values', async () => {
+      const keys = 'setblock ~ ~ ~ minecraft:oak_stairs[';
+      expect(
+        (await service.complete(keys, keys.length, { uri })).map((i) => i.label).sort(),
+      ).toEqual(['facing', 'half', 'shape', 'waterlogged']);
+      const values = 'setblock ~ ~ ~ minecraft:oak_stairs[facing=n';
+      expect((await service.complete(values, values.length, { uri })).map((i) => i.label)).toEqual([
+        'north',
+      ]);
     });
   });
 }

@@ -18,4 +18,5 @@ export type {
   McfunctionData,
   McfunctionProblem,
   McfunctionService,
+  McfunctionServiceOptions,
 } from './types';

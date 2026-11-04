@@ -8,7 +8,10 @@
 
 import * as core from '@spyglassmc/core';
 import * as je from '@spyglassmc/java-edition';
+import * as mcdoc from '@spyglassmc/mcdoc';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { checkBlockStates } from './block-states';
+import { loadMcdocSymbols, readMcdocSymbolExport } from './mcdoc-symbols';
 import type {
   McfunctionCheckOptions,
   McfunctionCompleteOptions,
@@ -16,6 +19,7 @@ import type {
   McfunctionData,
   McfunctionProblem,
   McfunctionService,
+  McfunctionServiceOptions,
 } from './types';
 
 /** Sources longer than this (UTF-16 code units) are not parsed. */
@@ -116,7 +120,7 @@ function projectIdsKey(ids: Readonly<Record<string, readonly string[]>> | undefi
 
 export async function createMcfunctionService(
   data: McfunctionData,
-  options: { mcVersion: string },
+  options: McfunctionServiceOptions,
 ): Promise<McfunctionService> {
   const { mcVersion } = options;
   const logger = core.Logger.noop();
@@ -140,6 +144,16 @@ export async function createMcfunctionService(
     checksum: `msm:${mcVersion}`,
   } as unknown as McmetaSummary;
   je.dependency.symbolRegistrar(summary, release)(symbols, {});
+
+  if (options.mcdocSymbols !== undefined) {
+    // What `je.initialize` does with the downloaded `@vanilla-mcdoc`, offline: declare the bound
+    // type definitions, register mcdoc's built-in attributes (`id`, `color`, ...) and the
+    // version-gating ones (`since`, `until`, `deprecated`) for this release.
+    const exported = readMcdocSymbolExport(options.mcdocSymbols);
+    mcdoc.initialize({ meta } as Parameters<typeof mcdoc.initialize>[0]);
+    je.registerMcdocAttributes(meta, data.commands as McmetaCommands, release);
+    loadMcdocSymbols(symbols, exported);
+  }
 
   const project: core.ProjectData = {
     cacheRoot,
@@ -276,6 +290,8 @@ export async function createMcfunctionService(
     if (node === core.Failure) {
       return [failedParse()];
     }
+    // `core.file` does this for Spyglass's own projects; checkers and completers walk up.
+    core.AstNode.setParents(node);
     for (const e of pctx.err.dump()) problems.push(toProblem(doc, e, 'mcfunction.parse'));
 
     // Drop what an earlier check of this document bound, then bind afresh.
@@ -289,6 +305,9 @@ export async function createMcfunctionService(
     const checker = meta.getChecker(node.type);
     await symbols.contributeAsAsync('checker', async () => checker(node, cctx));
     for (const e of cctx.err.dump()) problems.push(toProblem(doc, e, 'mcfunction.check'));
+    for (const { message, range } of checkBlockStates(node, cctx)) {
+      problems.push(toProblem(doc, { message, range, severity: 3 }, 'mcfunction.check'));
+    }
 
     for (const [e, rule] of lint(node, doc)) {
       problems.push(toProblem(doc, e, `mcfunction.lint.${rule}`));
@@ -311,6 +330,7 @@ export async function createMcfunctionService(
     const doc = TextDocument.create(uri, LANGUAGE_ID, 0, source);
     const node = parse(new core.Source(source), core.ParserContext.create(project, { doc }));
     if (node === core.Failure) return [];
+    core.AstNode.setParents(node);
     let items = completer(node, core.CompleterContext.create(project, { doc, offset: at }));
     if (items.length === 0 && /^[ \t]*$/.test(linePrefix(source, at))) {
       // Spyglass offers nothing on a blank line; propose the root command literals there.
