@@ -1,0 +1,19 @@
+{
+  "contents": {
+    "pack": {
+      "description": "Example resources",
+      "max_format": [
+        97,
+        1
+      ],
+      "min_format": [
+        97,
+        1
+      ],
+      "pack_format": 97
+    }
+  },
+  "layer": "resourcepack",
+  "path": "pack.mcmeta",
+  "schema": "::java::pack::Pack"
+}

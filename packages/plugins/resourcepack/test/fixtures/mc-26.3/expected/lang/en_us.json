@@ -1,0 +1,9 @@
+{
+  "contents": {
+    "block.example.ruby_ore": "Ruby Ore",
+    "item.example.ruby": "Ruby"
+  },
+  "layer": "resourcepack",
+  "path": "assets/example/lang/en_us.json",
+  "schema": "::java::assets::lang::Lang"
+}

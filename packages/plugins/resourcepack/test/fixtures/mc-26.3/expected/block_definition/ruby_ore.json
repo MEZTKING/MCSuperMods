@@ -1,0 +1,12 @@
+{
+  "contents": {
+    "variants": {
+      "": {
+        "model": "example:block/ruby_ore"
+      }
+    }
+  },
+  "layer": "resourcepack",
+  "path": "assets/example/blockstates/ruby_ore.json",
+  "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+}

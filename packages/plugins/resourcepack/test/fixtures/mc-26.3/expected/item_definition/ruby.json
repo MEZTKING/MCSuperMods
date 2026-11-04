@@ -1,0 +1,11 @@
+{
+  "contents": {
+    "model": {
+      "model": "example:item/ruby",
+      "type": "model"
+    }
+  },
+  "layer": "resourcepack",
+  "path": "assets/example/items/ruby.json",
+  "schema": "::java::assets::item_definition::ItemDefinition"
+}

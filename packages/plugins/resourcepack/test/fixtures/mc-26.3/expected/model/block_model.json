@@ -1,0 +1,11 @@
+{
+  "contents": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "example:block/ruby_ore"
+    }
+  },
+  "layer": "resourcepack",
+  "path": "assets/example/models/block/ruby_ore.json",
+  "schema": "::java::assets::model::Model"
+}

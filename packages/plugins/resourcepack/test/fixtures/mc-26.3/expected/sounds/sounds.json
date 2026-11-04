@@ -1,0 +1,16 @@
+{
+  "contents": {
+    "block.ruby_ore.chime": {
+      "sounds": [
+        "example:block/ruby_ore/chime1",
+        {
+          "name": "example:block/ruby_ore/chime2"
+        }
+      ],
+      "subtitle": "subtitles.example.block.ruby_ore.chime"
+    }
+  },
+  "layer": "resourcepack",
+  "path": "assets/example/sounds.json",
+  "schema": "::java::assets::sounds::Sounds"
+}
