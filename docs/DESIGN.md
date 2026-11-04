@@ -163,7 +163,7 @@ All edits go through a command stack. A command is an Immer producer applied to 
 
 ### References and renames
 
-IDs are stable `namespace:path` ResourceLocations. The schema marks which fields are references, and `@msm/core` builds a **reference index** from them: for every id, which elements point at it. A rename is an explicit refactor command that moves the element file and rewrites every referencing field as one undoable command. Dangling references surface as problems, not silent breakage.
+IDs are stable `namespace:path` ResourceLocations. The schema marks which fields are references (strings typed with an id registry), and `collectReferences(value, node)` in `@msm/schemas` collects them with the same walker as `validateJson`. `@msm/core` builds a **reference index** from them with `buildReferenceIndex(project, resolveSchema, textReferences?)`: for every id, which elements point at it; function bodies contribute text references by exact id-token match. A rename is an explicit refactor command, `commands.renameElement(oldId, newId, references)`, that changes the id (save moves the element file) and rewrites every referencing field and function line as one undoable command. Dangling references surface as `schema.unknown-id` and mcfunction warnings, not silent breakage ([ADR 0016](adr/0016-reference-index-and-rename.md)).
 
 ## 5. Project File Format
 
@@ -178,7 +178,7 @@ MyMod/
   .msm/                                             # cache, git-ignored: generated .d.ts, thumbnails, index, trash
 ```
 
-The kind-folder is declared by the element kind: `recipe/` for `minecraft:recipe`, `msm/block/` for `msm:block`, and so on. A ruby ore block therefore lives at `content/mymod/msm/block/ruby_ore.json`.
+The kind-folder is declared by the element kind: `recipe/` for `minecraft:recipe`, `msm/block/` for `msm:block`, and so on. A ruby ore block therefore lives at `content/mymod/msm/block/ruby_ore.json`. Tag kinds use `tags/<registry>/` (`content/mymod/tags/item/gems.json` for `minecraft:tag/item`). A `minecraft:function` element stores its source as `{ "lines": [...] }`, one string per line, in `content/<namespace>/function/<path>.json`, so the project stays JSON only and diffs stay line-based; it lowers to a `.mcfunction` file ([ADR 0015](adr/0015-data-pack-element-model.md)).
 
 ### Example element file
 
@@ -221,7 +221,7 @@ We do not hand-write schemas. Vanilla file formats are described by **mcdoc**, t
 
 ### Libraries
 
-`@msm/schemas` exports our own `SchemaNode` model; Spyglass types never leak past it. This insulates the rest of the codebase from Spyglass internal API changes (section 17). It consumes the mcdoc-cli symbol export, vendored in the target package and injected into `@msm/schemas` ([ADR 0005](adr/0005-vanilla-mcdoc-pinning-and-loading.md)). Phase 1 has no Spyglass runtime dependency: `validateJson(value, node, options)` in `@msm/schemas` validates JSON against the version-gated `SchemaNode` model, live in the editor and as the export gate ([ADR 0009](adr/0009-phase1-validation-gate.md)). Phase 2 adds `@spyglassmc/core`, `@spyglassmc/mcdoc` and `@spyglassmc/json`, which mcfunction needs; if the Spyglass checker replaces our validator, it does so behind the same signature.
+`@msm/schemas` exports our own `SchemaNode` model; Spyglass types never leak past it. This insulates the rest of the codebase from Spyglass internal API changes (section 17). It consumes the mcdoc-cli symbol export, vendored in the target package and injected into `@msm/schemas` ([ADR 0005](adr/0005-vanilla-mcdoc-pinning-and-loading.md)). Phase 1 has no Spyglass runtime dependency: `validateJson(value, node, options)` in `@msm/schemas` validates JSON against the version-gated `SchemaNode` model, live in the editor and as the export gate ([ADR 0009](adr/0009-phase1-validation-gate.md)). Phase 2 adds Spyglass for mcfunction only: the `@msm/schemas/mcfunction` subpath wraps `@spyglassmc/*` offline, fed the vendored command tree, block states and registries, and runs in the Electron main process; `validateJson` remains the JSON gate ([ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)). If the Spyglass JSON checker ever replaces our validator, it does so behind the same signature (section 18, question 13).
 
 ### Pins and extensions
 
@@ -312,7 +312,7 @@ Both paths edit the same element through the same command stack, so switching be
 | Phase | Studios |
 |---|---|
 | 1 | Texture Studio, Model Studio (block/item models, blockstates), Sound Studio, Lang editor, Pack settings |
-| 2 | Recipe Studio, Loot Table Studio, Advancement Studio, Tag editor, Function editor |
+| 2 | Recipe Studio, Tag editor, Function editor (Monaco + Spyglass); Loot Table and Advancement Studios are the schema form plus templates in v0.2 ([ADR 0015](adr/0015-data-pack-element-model.md)) |
 | 3 | Structure Studio (import, preview, jigsaw pools), Biome Studio, Feature Studio |
 | 4 | Block Studio, Item Studio |
 | 5 | Entity Studio, Animation preview |
@@ -320,7 +320,7 @@ Both paths edit the same element through the same command stack, so switching be
 
 ### Command palette
 
-Every plugin command is reachable from a keyboard-driven palette (create, rename, export, test, switch target).
+Every plugin command is reachable from a keyboard-driven palette (create, rename, export, test, switch target), opened with Ctrl+Shift+P (`CmdOrCtrl+Shift+P`); Rename Element is F2 ([ADR 0017](adr/0017-phase2-toolchain.md)).
 
 ### Preview panel
 
@@ -329,11 +329,12 @@ Misode's `deepslate` renders block and item models with its own WebGL renderer (
 ### "Test in Minecraft"
 
 - **Phase 1:** export the resource pack and copy it into the user's `resourcepacks` folder; the user enables it in-game.
+- **Phase 2:** export the data pack and copy it into a chosen world's `datapacks` folder; the user runs `/reload`.
 - **Phase 4:** launch a **managed Fabric test instance** with `msm_runtime` and the current content jar installed, from inside the app.
 
 ### Error surfacing
 
-A Problems panel lists schema violations, dangling references and lowering errors, each linked to its element and field (`elementId` plus an RFC 6901 path, or a `file` for load and export problems). Schema problems are recomputed live as elements change. Schema violations are errors; unknown registry ids are warnings. Errors block export, never save; warnings block neither. Files that fail to load stay on disk as error problems until the user fixes or deletes them ([ADR 0012](adr/0012-save-deletes-only-loaded-files.md)).
+A Problems panel lists schema violations, dangling references and lowering errors, each linked to its element and field (`elementId` plus an RFC 6901 path, or a `file` for load and export problems); function problems add a `range` within `/lines/<n>`. Schema problems are recomputed live as elements change. Schema violations are errors; unknown registry ids are warnings. Errors block export, never save; warnings block neither. Files that fail to load stay on disk as error problems until the user fixes or deletes them ([ADR 0012](adr/0012-save-deletes-only-loaded-files.md)).
 
 ## 9. Targets and Exporters
 
@@ -350,7 +351,10 @@ interface Target {
   // 26.3: resource 97.1, data 121.0 (verified 2026-11-04)
   mcdocRef: string;           // vanilla-mcdoc commit sha
   mcmetaRef: string;          // misode/mcmeta version prefix, e.g. "26.3"
-  folders: { resource: Record<ResourceFolderKey, string> };  // vanilla folder names under assets/<ns>/ (ADR 0013)
+  folders: {
+    resource: Record<ResourceFolderKey, string>;  // vanilla folder names under assets/<ns>/ (ADR 0013)
+    data: Record<DataFolderKey, string>;          // vanilla folder names under data/<ns>/ (ADR 0017)
+  };
   fabric?: { loader: string; api: string; loom: string };   // required from Phase 4 (verify at implementation)
   geckolib?: string;          // required from Phase 5; 5.5+ line (verify at implementation)
   migrateFrom?(previous: Target, project: Project): MigrationReport;
@@ -367,7 +371,7 @@ Support policy: the current release (26.3) and the previous one (26.2) at launch
 
 | Exporter | Output | Phase |
 |---|---|---|
-| `vanilla-packs` | Resource pack `.zip`, data pack `.zip`, or a combined folder | 1 |
+| `vanilla-packs` | Resource pack `.zip` (Phase 1), data pack `.zip`, or both zips in a folder the user picks (Phase 2; [ADR 0015](adr/0015-data-pack-element-model.md)) | 1–2 |
 | `fabric-content-jar` | Jar with `assets/`, `data/`, `msm/`, `fabric.mod.json`; `msm_runtime` nested by default; GeckoLib nested when used | 4 |
 | `java-project` | Standalone Gradle project with generated Java (eject) | 6 |
 
@@ -376,12 +380,12 @@ Support policy: the current release (26.3) and the previous one (26.2) at launch
 1. **Collect** all elements in the enabled namespaces.
 2. **Lower** each element against the chosen target into `OutputFile[]`.
 3. **Merge** outputs; conflicts on the same path are errors.
-4. **Validate** every JSON output that declares `OutputFile.schema` against the schema model derived from the target's vanilla-mcdoc and MSM mcdoc ([ADR 0009](adr/0009-phase1-validation-gate.md)).
+4. **Validate** every JSON output that declares `OutputFile.schema` against the schema model derived from the target's vanilla-mcdoc and MSM mcdoc ([ADR 0009](adr/0009-phase1-validation-gate.md)), and every text output that declares `OutputFile.language` (`mcfunction`) with the injected text validator ([ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)).
 5. **Write** via the exporter: zip, folder, jar or Gradle project. Output is deterministic (entries sorted by path, fixed zip timestamps that are identical in every timezone; [ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)), and each output includes an `msm.export.json` manifest listing target, MSM version and plugins.
 
 ### Validation gate
 
-Step 4 is a hard gate: every lowered JSON file is validated against the schema model derived from vanilla-mcdoc. Invalid lowered output is a bug in a lowering function or target, not a user error; the export stops with a report. CI runs the same check on golden fixtures.
+Step 4 is a hard gate: every lowered JSON file is validated against the schema model derived from vanilla-mcdoc, and every `.mcfunction` file with Spyglass; parse and check errors block, warnings pass. Invalid lowered output is a bug in a lowering function or target, not a user error; the export stops with a report. CI runs the same check on golden fixtures.
 
 ## 10. Engine Mod (Runtime)
 
@@ -546,7 +550,8 @@ Structure `.nbt` (vanilla structure template) and Sponge `.schem` are read and w
 ### Minecraft installation
 
 - **Discovery:** default `.minecraft` locations per OS: `%APPDATA%\.minecraft` on Windows, `~/Library/Application Support/minecraft` on macOS, `~/.minecraft` on Linux. Users can override the path.
-- **Asset extraction:** the Electron main process reads vanilla models, blockstates, item definitions, block and item textures and `en_us` lang from `versions/<v>/<v>.jar` of the user's installed client into `~/.msm/cache/assets/<version>/` for previews, and serves them to the renderer over IPC ([ADR 0011](adr/0011-client-jar-asset-extraction.md)). The cache is keyed by the project target's `mcVersion`. Animation metadata (`.png.mcmeta`) is not extracted in Phase 1, so animated textures preview as their first frame. **These assets are never redistributed** and never written into exports. Tests use a synthetic jar built at test time; the repository holds no Mojang bytes.
+- **Asset extraction:** the Electron main process reads vanilla models, blockstates, item definitions, block and item textures and `en_us` lang from `versions/<v>/<v>.jar` of the user's installed client into `~/.msm/cache/assets/<version>/` for previews, and serves them to the renderer over IPC ([ADR 0011](adr/0011-client-jar-asset-extraction.md)). The cache is keyed by the project target's `mcVersion`. Animation metadata (`.png.mcmeta`) is extracted from Phase 2: project-authored sidecars are imported beside their texture and validated against `resource:texture_meta` at export, and the preview steps through frames without interpolation (in Phase 1 animated textures previewed as their first frame). **These assets are never redistributed** and never written into exports. Tests use a synthetic jar built at test time; the repository holds no Mojang bytes.
+- **Worlds:** from Phase 2 main lists worlds as `saves/<dir>/` folders containing `level.dat` and installs a data pack to `saves/<world>/datapacks/` ([ADR 0015](adr/0015-data-pack-element-model.md)).
 - **Launching:** Phase 1 is manual (copy pack, user starts the game). Phase 4 adds a managed instance created with the Fabric installer and a vanilla launcher profile (verify at implementation).
 
 We are read-only on the user's game directory, except for copying packs into `resourcepacks`/`datapacks` and managing our own instance folder.
@@ -566,7 +571,7 @@ We use **Electron**, not Tauri.
 | Radix primitives + Tailwind CSS | Accessible primitives; copied shadcn-style components; no runtime UI-library dependency. Icons: Lucide. |
 | Monaco Editor (`monaco-editor` directly, lazy-loaded) | JSON editing with schema diagnostics in Phase 1; mcfunction and TypeScript later, with Spyglass diagnostics from Phase 2. |
 | deepslate (own WebGL renderer) | 3D preview of block and item models from Phase 1; structures and worldgen later. three.js only if a later phase needs it ([ADR 0010](adr/0010-preview-with-deepslate.md)). |
-| `@spyglassmc/*` (Phase 2) | Spyglass checker and mcfunction support; Phase 1 validates with our own `validateJson` ([ADR 0009](adr/0009-phase1-validation-gate.md)). |
+| `@spyglassmc/*` (Phase 2; mcfunction, main process) | Offline mcfunction parsing, checking and completion behind `@msm/schemas/mcfunction`, loaded lazily in main; JSON stays on `validateJson` ([ADR 0009](adr/0009-phase1-validation-gate.md), [ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md), [ADR 0017](adr/0017-phase2-toolchain.md)). |
 | prismarine-nbt, fflate, esbuild, zod | NBT; zip (fflate everywhere); script transpilation; IPC and config validation. |
 
 Build and security ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)): the main build bundles the vendored target data into `out/main/vendor/` (electron-vite plugin `msm:bundle-vendored-data`), and the renderer build drops the vendored-data URLs so no vendored JSON reaches the renderer bundle; main aliases `fflate` to `fflate/browser` to avoid a `require` clash in ESM bundles. The production Content Security Policy allows scripts from `'self'` only, `style-src 'self' 'unsafe-inline'` (Monaco and Radix inject runtime styles and support no nonce) and `img-src 'self' data:` (thumbnails arrive as `data:` URLs).
@@ -578,7 +583,7 @@ Build and security ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)): the
 | pnpm workspaces + Turborepo | Fast installs, task caching. |
 | TypeScript project references; tsup only when publishing `@msm/plugin-api` | Enforce dependency direction; internal packages are consumed from source ([ADR 0004](adr/0004-phase0-toolchain.md)). |
 | Vitest, Biome | Fast tests with golden snapshots; lint and format in one tool. |
-| Node 22 (maintenance LTS) through Phase 1, moving to the active LTS in Phase 2 ([ADR 0004](adr/0004-phase0-toolchain.md), [ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)) | Tooling runtime; Electron bundles its own. |
+| Node 24 (active LTS) and pnpm 12 from Phase 2; Node 22 and pnpm 10 through Phase 1 ([ADR 0004](adr/0004-phase0-toolchain.md), [ADR 0017](adr/0017-phase2-toolchain.md)) | Tooling runtime; Electron bundles its own. |
 
 No Changesets: one developer, one version.
 
@@ -600,7 +605,7 @@ All OS access (filesystem, processes, zip, dialogs, Minecraft discovery and laun
 
 ### Bundle budget
 
-Installer under 150 MB. Monaco and the 3D preview are lazy-loaded; asar packaging and dependency pruning are on by default. Size is tracked in CI from Phase 1: `tools/check-size` enforces `app.asar` at most 25 MB, the renderer output at most 8 MB and no renderer JSON file over 100 kB, and the release workflow fails a Windows installer over 150 MB. The unpacked Linux build (about 284 MB, mostly the 224 MB Electron binary) is reported only. At Phase 1 close: `app.asar` 10.2 MB, renderer 5.6 MB, Windows installer about 122 MB ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
+Installer under 150 MB. Monaco and the 3D preview are lazy-loaded; asar packaging and dependency pruning are on by default. Size is tracked in CI from Phase 1: `tools/check-size` enforces `app.asar` at most 25 MB, the renderer output at most 8 MB and no renderer JSON file over 100 kB, and the release workflow fails a Windows installer over 150 MB. The unpacked Linux build (about 284 MB, mostly the 224 MB Electron binary) is reported only. At Phase 1 close: `app.asar` 10.2 MB, renderer 5.6 MB, Windows installer about 122 MB ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)). Phase 2 keeps the budgets; Spyglass lives only in the main bundle (about 14 MB asar expected), and `tools/check-size` also reports the main bundle size without a budget ([ADR 0017](adr/0017-phase2-toolchain.md)).
 
 ## 15. Repository Layout
 
@@ -637,7 +642,7 @@ Built-in plugins under `packages/plugins/`: `resourcepack/`, `datapack/`, `struc
 plugin-api  <-  schemas  <-  core  <-  plugins / exporters / targets / interop  <-  app
 ```
 
-`@msm/plugin-api` depends on nothing internal. The `@msm/targets` aggregator sits beside the target packages and depends on them. Plugins, exporters and interop may depend on `@msm/targets` for tests only: a Biome `noRestrictedImports` override forbids it (and `@msm/target-*`) in shipped plugin and exporter source, so shipped plugins still use only `@msm/plugin-api` and `@msm/schemas` ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)). `@msm/exporters` may also use `@msm/plugin-resourcepack` in tests (the sample-project golden); Biome forbids every `@msm/plugin-*` except `@msm/plugin-api` in exporter source, because exporters consume `OutputFile[]`, never plugins. The direction is enforced by TypeScript project references, Biome import rules and `tools/check-deps`, which checks every workspace `package.json` against a layer map and flags version literals outside `packages/targets`; it runs in `pnpm lint`, so a reverse import fails CI.
+`@msm/plugin-api` depends on nothing internal. The `@msm/targets` aggregator sits beside the target packages and depends on them. Plugins, exporters and interop may depend on `@msm/targets` for tests only: a Biome `noRestrictedImports` override forbids it (and `@msm/target-*`) in shipped plugin and exporter source, so shipped plugins still use only `@msm/plugin-api` and `@msm/schemas` ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)). `@msm/exporters` may also use `@msm/plugin-resourcepack` and `@msm/plugin-datapack` in tests (the sample-project goldens; [ADR 0017](adr/0017-phase2-toolchain.md)); Biome forbids every `@msm/plugin-*` except `@msm/plugin-api` in exporter source, because exporters consume `OutputFile[]`, never plugins. The direction is enforced by TypeScript project references, Biome import rules and `tools/check-deps`, which checks every workspace `package.json` against a layer map and flags version literals outside `packages/targets`; it runs in `pnpm lint`, so a reverse import fails CI.
 
 ### Naming
 
@@ -652,6 +657,7 @@ plugin-api  <-  schemas  <-  core  <-  plugins / exporters / targets / interop  
 | Unit | Vitest | IR, serialisation, migrations, patches and undo/redo, renames. |
 | Lowering | Vitest golden files | Each lowering function per target, under the plugin's `test/fixtures/<target id>/expected/`; exporters add a SHA-256 golden over the sample project's zip. |
 | Schema conformance | `validateJson` in CI (Spyglass checker from Phase 2 at the earliest) | Every lowered output, including golden fixtures, validated against the schema model derived from vanilla-mcdoc and MSM mcdoc. A failure is a bug. |
+| mcfunction conformance | `@msm/schemas/mcfunction` over the vendored command data, in the target packages | Parse, check and lint results for known-good and known-bad commands; every exported `.mcfunction`, including the sample data pack, has zero errors ([ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)). |
 | Engine mod logic | JUnit 5 | Definition parsing, component graph construction. |
 | Engine mod behaviour | Fabric GameTest | Components and events in a running server. |
 | End to end (mod) | CI headless server | From Phase 4, a "kitchen-sink" sample project is exported and loaded; load errors fail CI. |
@@ -686,8 +692,9 @@ CI runs from Phase 0: Biome, type checks and unit tests on every push.
 8. **Electron version:** which stable Electron line to start on. Resolved: see [ADR 0001](adr/0001-electron-over-tauri.md) and [ADR 0004](adr/0004-phase0-toolchain.md).
 9. **Save-time data loss:** load skipped invalid element files and save deleted `content/**/*.json` files it did not write, so saving after a failed load could delete the skipped files. Resolved: save deletes only files it loaded and is never blocked; see [ADR 0012](adr/0012-save-deletes-only-loaded-files.md).
 10. **Licence:** MIT is proposed for the app and `@msm/plugin-api`; awaiting the user's decision. No `LICENSE` file exists yet. Packaging does not need it, but no release tag is pushed until it is decided ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
-11. **Toolchain upgrades:** when to move from pnpm 10 to pnpm 12 and `.nvmrc` from Node 22 to Node 24. Deferred to Phase 2, when CI runners default to Node 24 ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
+11. **Toolchain upgrades:** when to move from pnpm 10 to pnpm 12 and `.nvmrc` from Node 22 to Node 24. Resolved: both at the start of Phase 2 (Node 24.22.2, pnpm 12.16.1); see [ADR 0017](adr/0017-phase2-toolchain.md).
 12. **MSM-authored preview fallback parents:** seven parent models (`msm:block/cube`, `cube_all`, `cube_column`, `cube_bottom_top`, `cross`, `msm:item/generated`, `msm:item/handheld`) are written from scratch, used only for preview without a client jar and never exported. Decided: acceptable under "never bundle Mojang assets", pending the user's veto ([ADR 0010](adr/0010-preview-with-deepslate.md)). If vetoed, they are removed and the preview without a client jar shows only models that declare their own `elements`.
+13. **Spyglass JSON checker adoption:** whether the Spyglass JSON checker replaces `validateJson` as the JSON gate. Open. Phase 2 uses Spyglass for mcfunction only ([ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)); revisit when loading the vendored mcdoc symbols into Spyglass for JSON and NBT inside commands proves itself.
 
 Resolved questions become ADRs in `docs/adr/` and update this document.
 

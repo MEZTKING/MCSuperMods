@@ -58,4 +58,4 @@ Not adopted in Phase 1: `three` 0.187.0, `@spyglassmc/*` (Phase 2), `yazl`/`yauz
 
 ## Status
 
-Accepted (2026-11-04). Amended at Phase 1 close (2026-11-04): Windows-only releases, build details, Content Security Policy, size budgets and the exporters test allowance for `@msm/plugin-resourcepack`.
+Accepted (2026-11-04). Amended at Phase 1 close (2026-11-04): Windows-only releases, build details, Content Security Policy, size budgets and the exporters test allowance for `@msm/plugin-resourcepack`. The Node and pnpm decision is superseded by [ADR 0017](0017-phase2-toolchain.md) (Node 24, pnpm 12 from Phase 2); the rest stands.

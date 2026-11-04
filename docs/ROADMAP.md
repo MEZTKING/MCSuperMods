@@ -112,20 +112,24 @@ Bring every common data pack file into the editor with validation and autocomple
 
 ### Deliverables
 
-- [ ] `@msm/plugin-datapack`: element kinds for recipes, loot tables, advancements, tags, predicates and item modifiers.
+- [ ] `@msm/plugin-datapack`: element kinds for recipes, loot tables, advancements, tags, predicates, item modifiers and functions ([ADR 0015](adr/0015-data-pack-element-model.md)).
+- [ ] Generic schema-form kinds: enchantment, damage type, dimension type, chat type, jukebox song, banner pattern, painting variant, trim material, trim pattern and dialog.
+- [ ] Loot tables and advancements: schema form plus templates (a bespoke Loot Table Studio is deferred to a later phase).
 - [ ] Recipe Studio: curated crafting-grid view over the recipe element.
 - [ ] Registry-backed autocomplete from mcmeta data held in `@msm/schemas`.
-- [ ] mcfunction editor in Monaco with Spyglass diagnostics and completion.
-- [ ] Reference index in `@msm/core` with rename refactor across elements.
+- [ ] mcfunction editor in Monaco with Spyglass diagnostics and completion, offline in the main process ([ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)).
+- [ ] Reference index in `@msm/core` with rename refactor across elements and function text ([ADR 0016](adr/0016-reference-index-and-rename.md)).
 - [ ] Command palette.
-- [ ] `vanilla-packs` exporter: data pack `.zip` and combined resource + data pack export.
-- [ ] "Install to world datapacks folder" action.
+- [ ] `vanilla-packs` exporter: data pack `.zip` and combined export (both zips into a folder the user picks).
+- [ ] "Install to world datapacks folder" action with a world picker.
 - [ ] Golden tests for every new kind.
-- [ ] Spyglass validation: populate a `SymbolUtil` from the vendored export behind the `validateJson` signature, offline and pinned ([ADR 0009](adr/0009-phase1-validation-gate.md) research note).
+- [ ] Sample data pack (`fixtures/sample-datapack/`) with SHA-256 exporter goldens and a documented in-game check.
+- [ ] Data pack golden-path e2e (recipe grid, function editor, data export, reopen).
+- [ ] Spyglass mcdoc symbols for JSON and NBT inside commands, best effort ([ADR 0009](adr/0009-phase1-validation-gate.md) research note, narrowed by [ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)); `validateJson` stays the JSON gate and adopting the Spyglass JSON checker is DESIGN [Open Question 13](DESIGN.md#18-open-questions).
 - [ ] Animated textures: extract and export `.png.mcmeta` animation metadata, and animate the preview ([ADR 0011](adr/0011-client-jar-asset-extraction.md)).
 - [ ] Application menu commands for export, install, asset import and settings.
-- [ ] Toolchain move to Node 24 and pnpm 12 (DESIGN [Open Question 11](DESIGN.md#18-open-questions)).
-- [ ] Auto-update with `electron-updater` and the GitHub provider, if the user approves (DESIGN [Open Question 4](DESIGN.md#18-open-questions)).
+- [ ] Toolchain move to Node 24 and pnpm 12, moved into the first Phase 2 wave (DESIGN [Open Question 11](DESIGN.md#18-open-questions), resolved by [ADR 0017](adr/0017-phase2-toolchain.md)).
+- [ ] Auto-update with `electron-updater` and the GitHub provider, if the user approves (DESIGN [Open Question 4](DESIGN.md#18-open-questions)). Excluded from Phase 2 work: waits on the user's licence and repository-visibility answers, as does release tagging; releases stay Windows only.
 
 ### Exit criteria
 

@@ -31,4 +31,4 @@ That plumbing is one to two weeks against an internal API ([risk 2](../DESIGN.md
 
 ## Status
 
-Accepted (2026-11-04). Implemented in Phase 1 (`validateJson`, `createRegistryIndex`); the Spyglass checker remains a Phase 2 deliverable.
+Accepted (2026-11-04). Implemented in Phase 1 (`validateJson`, `createRegistryIndex`). Amended in Phase 2 (2026-11-04) by [ADR 0014](0014-mcfunction-diagnostics-with-spyglass.md): Spyglass is adopted for mcfunction only, `validateJson` remains the JSON gate, and the research note is applied only to JSON and NBT inside commands; adopting the Spyglass JSON checker is DESIGN [Open Question 13](../DESIGN.md#18-open-questions).
