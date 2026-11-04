@@ -12,10 +12,12 @@ import {
   Redo2,
   Save,
   Settings,
+  Trash2,
   Undo2,
 } from 'lucide-react';
 import { DropdownMenu, Toolbar as RadixToolbar } from 'radix-ui';
 import type { ReactNode } from 'react';
+import type { RecentProjectView } from '../../../shared/platform';
 import {
   describeInstallTarget,
   type InstallTargetOption,
@@ -23,7 +25,7 @@ import {
   launcherLabel,
   loaderLabel,
 } from './install-target';
-import { buttonClass } from './ui/Button';
+import { buttonClass, iconButtonClass } from './ui/Button';
 import { Tip } from './ui/Tip';
 
 /** Props of {@link Toolbar}. */
@@ -59,6 +61,16 @@ export interface ToolbarProps {
   /** Opens the Examples gallery (the "New" split arrow). */
   onExamples?(): void;
   onOpen(): void;
+  /** Recent projects for the "Open" split arrow, newest first. */
+  recentProjects?: readonly RecentProjectView[];
+  /** Opens a recent project by its root. */
+  onOpenRecent?(root: string): void;
+  /** Removes a (missing) project from the recent list. */
+  onRemoveRecent?(root: string): void;
+  /** Empties the recent list. */
+  onClearRecent?(): void;
+  /** Called when the "Open" split arrow opens, so the host can re-read the list. */
+  onRecentMenuOpen?(): void;
   onSave(): void;
   onUndo(): void;
   onRedo(): void;
@@ -248,6 +260,100 @@ function ToolMenu(props: {
   );
 }
 
+/**
+ * The "Open" split arrow: recent projects (missing ones disabled with "(missing)" and a
+ * remove item), then "Clear list".
+ */
+function RecentMenu(props: {
+  projects: readonly RecentProjectView[];
+  onOpen: ((root: string) => void) | undefined;
+  onRemove: ((root: string) => void) | undefined;
+  onClear: (() => void) | undefined;
+  onMenuOpen: (() => void) | undefined;
+  iconSize: number;
+}) {
+  const { projects } = props;
+  return (
+    <DropdownMenu.Root
+      modal={false}
+      onOpenChange={(open) => {
+        if (open) props.onMenuOpen?.();
+      }}
+    >
+      <Tip label="Open a recent project">
+        <DropdownMenu.Trigger asChild>
+          <RadixToolbar.Button
+            type="button"
+            className={buttonClass}
+            data-testid="toolbar-open-menu"
+            aria-label="Recent projects"
+          >
+            <ChevronDown size={props.iconSize} aria-hidden />
+          </RadixToolbar.Button>
+        </DropdownMenu.Trigger>
+      </Tip>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="start"
+          sideOffset={4}
+          aria-label="Recent projects"
+          className={`${menuContentClass} max-w-[min(90vw,32rem)]`}
+        >
+          {projects.length === 0 ? (
+            <DropdownMenu.Item
+              disabled
+              data-testid="recent-projects-empty"
+              className={menuItemClass}
+            >
+              No recent projects
+            </DropdownMenu.Item>
+          ) : (
+            projects.map((entry, index) => (
+              <div key={entry.root} className="flex min-w-0 items-center gap-1">
+                <DropdownMenu.Item
+                  data-testid={`recent-project-${index}`}
+                  disabled={!entry.exists || props.onOpen === undefined}
+                  aria-label={`${entry.name}${entry.exists ? '' : ' (missing)'}, ${entry.root}`}
+                  className={`${menuItemClass} min-w-0 flex-1`}
+                  onSelect={() => props.onOpen?.(entry.root)}
+                >
+                  <span className="truncate">
+                    {entry.name}
+                    {!entry.exists && ' (missing)'}
+                  </span>
+                  <span className="truncate text-xs text-muted" title={entry.root}>
+                    {entry.root}
+                  </span>
+                </DropdownMenu.Item>
+                {!entry.exists && props.onRemove !== undefined && (
+                  <DropdownMenu.Item
+                    data-testid={`recent-project-remove-${index}`}
+                    aria-label={`Remove ${entry.name} from recent projects`}
+                    title="Remove from recent projects"
+                    className={`${iconButtonClass} outline-none data-[highlighted]:bg-bg data-[highlighted]:text-accent`}
+                    onSelect={() => props.onRemove?.(entry.root)}
+                  >
+                    <Trash2 size={14} aria-hidden />
+                  </DropdownMenu.Item>
+                )}
+              </div>
+            ))
+          )}
+          <DropdownMenu.Separator className="my-0.5 h-px bg-border" />
+          <DropdownMenu.Item
+            data-testid="recent-projects-clear"
+            disabled={projects.length === 0 || props.onClear === undefined}
+            className={menuItemClass}
+            onSelect={() => props.onClear?.()}
+          >
+            Clear list
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+}
+
 /** The platform's primary modifier key, for shortcut hints. */
 export const modKey =
   typeof navigator !== 'undefined' && /Mac/.test(navigator.platform) ? 'Cmd' : 'Ctrl';
@@ -348,6 +454,14 @@ export function Toolbar(props: ToolbarProps) {
         testId="toolbar-open-project"
         icon={<FolderOpen size={iconSize} aria-hidden />}
         onClick={props.onOpen}
+      />
+      <RecentMenu
+        projects={props.recentProjects ?? []}
+        onOpen={props.onOpenRecent}
+        onRemove={props.onRemoveRecent}
+        onClear={props.onClearRecent}
+        onMenuOpen={props.onRecentMenuOpen}
+        iconSize={iconSize}
       />
       <ToolButton
         label="Save"

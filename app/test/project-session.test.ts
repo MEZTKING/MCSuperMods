@@ -1,6 +1,7 @@
 import { createMemoryFileSystem, type MemoryFileSystem, utf8 } from '@msm/core';
 import { unzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
+import { builtInPlugins } from '../src/renderer/src/plugins/built-in';
 import {
   defaultElementData,
   namespaceFromFolderName,
@@ -17,6 +18,11 @@ import {
   newSession,
 } from './session-fixture';
 
+/** Every built-in plugin that contributes element kinds: what a new project lists. */
+const KIND_PLUGIN_IDS = builtInPlugins
+  .filter((plugin) => (plugin.contributes.elementKinds ?? []).length > 0)
+  .map((plugin) => plugin.id);
+
 async function openSaved(fs: MemoryFileSystem) {
   const { session, calls } = newSession(fs);
   expect(await session.openProject()).toEqual({ ok: true });
@@ -32,7 +38,14 @@ describe('ProjectSession: projects', () => {
     const project = session.snapshot.project;
     expect(project?.name).toBe('demo');
     expect(project?.targets).toEqual([defaultTarget.id]);
-    expect(project?.plugins).toEqual(['msm.resourcepack', 'msm.datapack']);
+    expect(project?.plugins).toEqual(KIND_PLUGIN_IDS);
+    expect(project?.plugins).toEqual([
+      'msm.resourcepack',
+      'msm.datapack',
+      'msm.structures',
+      'msm.worldgen',
+    ]);
+    expect(project?.plugins).not.toContain('msm.library');
     expect(project?.namespaces.map((namespace) => namespace.name)).toEqual(['demo']);
     const pack = project?.namespaces[0]?.elements[0];
     expect(pack?.id).toBe('demo:pack');
@@ -480,7 +493,8 @@ describe('ProjectSession: library (ADR 0020)', () => {
   it('keeps the blank project when no starter is given, without the library in plugins', async () => {
     const { session } = newSession(createMemoryFileSystem());
     await session.newProject({});
-    expect(session.snapshot.project?.plugins).toEqual(['msm.resourcepack', 'msm.datapack']);
+    expect(session.snapshot.project?.plugins).toEqual(KIND_PLUGIN_IDS);
+    expect(session.snapshot.project?.plugins).not.toContain('msm.library');
     expect(session.snapshot.canUndo).toBe(false);
   });
 
@@ -609,5 +623,62 @@ describe('ProjectSession: library (ADR 0020)', () => {
     };
     await expect(session.addBundle(bad, { namespace: 'demo' })).rejects.toThrow(/x\.png/);
     expect(session.snapshot.canUndo).toBe(false);
+  });
+});
+
+describe('ProjectSession: recent projects', () => {
+  const recentEntry = (root: string, exists = true) => ({
+    root,
+    name: root.slice(root.lastIndexOf('/') + 1),
+    openedAt: '2026-01-01T00:00:00.000Z',
+    exists,
+  });
+
+  it('opens a listed recent project like Open and refuses one that is not listed', async () => {
+    const fs = createMemoryFileSystem();
+    const first = newSession(fs);
+    await first.session.newProject();
+    await first.session.save();
+    const { session, calls } = newSession(fs, { recent: [recentEntry('/projects/demo')] });
+    expect(await session.recentProjects()).toEqual([recentEntry('/projects/demo')]);
+    expect(await session.openRecent('/projects/demo')).toEqual({ ok: true });
+    expect(session.snapshot.root).toBe('/projects/demo');
+    expect(session.snapshot.project?.name).toBe('demo');
+    expect(calls.openRecent).toEqual(['/projects/demo']);
+
+    const other = newSession(fs, { recent: [recentEntry('/projects/demo')] });
+    expect(await other.session.openRecent('/elsewhere/evil')).toEqual({
+      ok: false,
+      reason: '/elsewhere/evil is not in the recent projects list.',
+    });
+    expect(other.session.snapshot.project).toBeNull();
+  });
+
+  it('asks before discarding unsaved changes and keeps the project when cancelled', async () => {
+    const fs = createMemoryFileSystem();
+    const { session, calls } = newSession(fs, {
+      discard: false,
+      recent: [recentEntry('/projects/demo')],
+    });
+    await session.newProject();
+    session.addNamespace('extra');
+    expect(session.snapshot.dirty).toBe(true);
+    expect(await session.openRecent('/projects/demo')).toEqual({ ok: false, cancelled: true });
+    expect(calls.confirms).toEqual(['The current project has unsaved changes. Discard them?']);
+    expect(calls.openRecent).toEqual([]);
+    expect(session.snapshot.dirty).toBe(true);
+    expect(session.snapshot.project?.namespaces.map((namespace) => namespace.name)).toContain(
+      'extra',
+    );
+  });
+
+  it('removes and clears recent entries through the platform', async () => {
+    const { session } = newSession(createMemoryFileSystem(), {
+      recent: [recentEntry('/a/one'), recentEntry('/a/two', false)],
+    });
+    await session.removeRecentProject('/a/two');
+    expect((await session.recentProjects()).map((entry) => entry.root)).toEqual(['/a/one']);
+    await session.clearRecentProjects();
+    expect(await session.recentProjects()).toEqual([]);
   });
 });

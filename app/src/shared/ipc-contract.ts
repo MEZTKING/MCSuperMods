@@ -18,6 +18,7 @@ import {
 export type {
   InvokeChannel,
   MenuCommand,
+  MenuOpenRecent,
   MinecraftProgress,
   UpdateDisabledReason,
   UpdateStatus,
@@ -28,6 +29,7 @@ export {
   InvokeChannels,
   IPC_VERSION,
   isMenuCommand,
+  isMenuOpenRecent,
   isMinecraftProgress,
   isUpdateStatus,
   MENU_COMMANDS,
@@ -240,6 +242,19 @@ export const updateStatusSchema = z.discriminatedUnion('state', [
   z.object({ state: z.literal('disabled'), reason: z.enum(UPDATE_DISABLED_REASONS) }).strict(),
 ]);
 
+/** The most recent projects kept in settings and sent over IPC. */
+export const RECENT_PROJECTS_MAX = 10;
+/** A recent project root named by the renderer; main checks it against the stored list. */
+const recentRootRequest = z.object({ root: absoluteHostPath }).strict();
+const recentProjectView = z
+  .object({
+    root: absolutePath,
+    name: z.string().max(1024),
+    openedAt: z.string().max(64),
+    exists: z.boolean(),
+  })
+  .strict();
+
 const rootResult = z.union([
   z.object({ ok: z.literal(true) }).strict(),
   z.object({ ok: z.literal(false), reason: z.string() }).strict(),
@@ -255,6 +270,13 @@ export const ipcContract = {
   [InvokeChannels.projectCreateRoot]: { request: pathRequest, response: rootResult },
   [InvokeChannels.projectCloseRoot]: { request: noRequest, response: voidResponse },
   [InvokeChannels.projectCurrentRoot]: { request: noRequest, response: z.string().nullable() },
+  [InvokeChannels.projectRecent]: {
+    request: noRequest,
+    response: z.array(recentProjectView).max(RECENT_PROJECTS_MAX),
+  },
+  [InvokeChannels.projectOpenRecent]: { request: recentRootRequest, response: rootResult },
+  [InvokeChannels.projectRemoveRecent]: { request: recentRootRequest, response: voidResponse },
+  [InvokeChannels.projectClearRecent]: { request: noRequest, response: voidResponse },
   [InvokeChannels.fsReadFile]: { request: pathRequest, response: bytes },
   [InvokeChannels.fsWriteFile]: {
     request: z.object({ path: z.string().min(1), data: bytes }).strict(),

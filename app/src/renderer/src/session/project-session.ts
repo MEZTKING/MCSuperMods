@@ -65,6 +65,7 @@ import type {
   GameLocationRef,
   MinecraftStatus,
   PlatformAdapter,
+  RecentProjectView,
   WorldInfo,
 } from '../../../shared/platform';
 import { assetImportError } from './asset-files';
@@ -669,6 +670,36 @@ export class ProjectSession {
     if (path === null) return { ok: false, cancelled: true };
     const opened = await this.#platform.project.openRoot(path);
     if (!opened.ok) return opened;
+    return this.#loadOpened(path);
+  }
+
+  /**
+   * Opens a project from the recent list, with the same unsaved-changes guard and outcome as
+   * {@link openProject}. Main refuses a root that is not in the list.
+   */
+  async openRecent(root: string): Promise<OpenOutcome> {
+    if (!(await this.#confirmDiscard())) return { ok: false, cancelled: true };
+    const opened = await this.#platform.project.openRecent(root);
+    if (!opened.ok) return opened;
+    return this.#loadOpened(root);
+  }
+
+  /** The recent projects, newest first, each with whether it still exists. */
+  recentProjects(): Promise<RecentProjectView[]> {
+    return this.#platform.project.recent();
+  }
+
+  /** Removes one project from the recent list. */
+  removeRecentProject(root: string): Promise<void> {
+    return this.#platform.project.removeRecent(root);
+  }
+
+  /** Empties the recent list. */
+  clearRecentProjects(): Promise<void> {
+    return this.#platform.project.clearRecent();
+  }
+
+  async #loadOpened(path: string): Promise<OpenOutcome> {
     try {
       const { project, problems, manifest } = await loadProject(this.#fs, this.registry);
       this.#adopt(path, project, problems, manifest);

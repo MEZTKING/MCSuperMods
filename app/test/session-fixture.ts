@@ -23,7 +23,12 @@ import {
   ProjectSession,
   type ProjectSessionOptions,
 } from '../src/renderer/src/session/project-session';
-import type { AppSettingsPatch, GameLocationList, PlatformAdapter } from '../src/shared/platform';
+import type {
+  AppSettingsPatch,
+  GameLocationList,
+  PlatformAdapter,
+  RecentProjectView,
+} from '../src/shared/platform';
 import { stubPlatformServices } from './helpers/stub-platform';
 
 /** What the fake platform recorded. */
@@ -36,6 +41,8 @@ export interface PlatformCalls {
   settingsSets: AppSettingsPatch[];
   /** The Minecraft version of every `minecraft.listLocations` call. */
   locationReads: string[];
+  /** The root of every `project.openRecent` call. */
+  openRecent: string[];
 }
 
 /** Options for {@link fakePlatform}. */
@@ -47,6 +54,11 @@ export interface FakePlatformOptions {
   savePath?: string | null;
   /** What `minecraft.listLocations` resolves to; defaults to no locations. */
   locations?: GameLocationList;
+  /**
+   * The recent projects `project.recent` returns; `project.openRecent` accepts only these
+   * roots, as main does. Defaults to none.
+   */
+  recent?: RecentProjectView[];
 }
 
 /** Builds the fake platform over `fs`. */
@@ -58,7 +70,9 @@ export function fakePlatform(fs: MemoryFileSystem, options: FakePlatformOptions 
     vendoredReads: [],
     settingsSets: [],
     locationReads: [],
+    openRecent: [],
   };
+  const recent = options.recent ?? [];
   const stubs = stubPlatformServices();
   const directory = options.directory ?? '/projects/demo';
   const platform: PlatformAdapter = {
@@ -107,6 +121,20 @@ export function fakePlatform(fs: MemoryFileSystem, options: FakePlatformOptions 
       createRoot: async () => ({ ok: true }),
       closeRoot: async () => {},
       currentRoot: async () => directory,
+      recent: async () => recent.map((entry) => ({ ...entry })),
+      openRecent: async (root) => {
+        calls.openRecent.push(root);
+        return recent.some((entry) => entry.root === root)
+          ? { ok: true }
+          : { ok: false, reason: `${root} is not in the recent projects list.` };
+      },
+      removeRecent: async (root) => {
+        const index = recent.findIndex((entry) => entry.root === root);
+        if (index !== -1) recent.splice(index, 1);
+      },
+      clearRecent: async () => {
+        recent.splice(0);
+      },
     },
     fs,
   };

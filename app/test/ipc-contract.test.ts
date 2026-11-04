@@ -5,6 +5,7 @@ import {
   InvokeChannels,
   ipcContract,
   isMenuCommand,
+  isMenuOpenRecent,
   isMinecraftProgress,
   isUpdateStatus,
   type UpdateStatus,
@@ -75,6 +76,25 @@ const samples: Record<
   [InvokeChannels.projectCurrentRoot]: {
     request: [undefined, 'x'],
     response: ['/tmp/p', 1],
+  },
+  [InvokeChannels.projectRecent]: {
+    request: [undefined, { all: true }],
+    response: [
+      [{ root: '/tmp/p', name: 'p', openedAt: '2026-01-01T00:00:00.000Z', exists: false }],
+      [{ root: '/tmp/p', name: 'p', openedAt: '2026-01-01T00:00:00.000Z' }],
+    ],
+  },
+  [InvokeChannels.projectOpenRecent]: {
+    request: [{ root: 'C:\\Users\\a\\Projects\\ruby' }, { root: 'relative/p' }],
+    response: [{ ok: true }, { ok: 'yes' }],
+  },
+  [InvokeChannels.projectRemoveRecent]: {
+    request: [{ root: '/tmp/p' }, { path: '/tmp/p' }],
+    response: [undefined, true],
+  },
+  [InvokeChannels.projectClearRecent]: {
+    request: [undefined, { root: '/tmp/p' }],
+    response: [undefined, 0],
   },
   [InvokeChannels.fsReadFile]: {
     request: [{ path: 'msm.project.json' }, { path: 1 }],
@@ -461,5 +481,23 @@ describe('IPC contract', () => {
     expect(isMenuCommand('examples')).toBe(true);
     expect(isMenuCommand('format-disk')).toBe(false);
     expect(isMenuCommand(1)).toBe(false);
+    expect(isMenuCommand('clearRecentProjects')).toBe(true);
+  });
+
+  it('validates recent-project requests and menu payloads', () => {
+    const open = ipcContract[InvokeChannels.projectOpenRecent].request;
+    expect(open.safeParse({ root: '/home/a/ruby' }).success).toBe(true);
+    expect(open.safeParse({ root: '\\\\server\\share\\ruby' }).success).toBe(true);
+    for (const root of ['', 'ruby', '../ruby', '/a\0b', 1, null]) {
+      expect(open.safeParse({ root }).success).toBe(false);
+    }
+    expect(open.safeParse({ root: '/a', path: '/b' }).success).toBe(false);
+    const list = ipcContract[InvokeChannels.projectRecent].response;
+    const entry = { root: '/p', name: 'p', openedAt: 'now', exists: true };
+    expect(list.safeParse(Array.from({ length: 10 }, () => entry)).success).toBe(true);
+    expect(list.safeParse(Array.from({ length: 11 }, () => entry)).success).toBe(false);
+    expect(isMenuOpenRecent({ root: '/p' })).toBe(true);
+    expect(isMenuOpenRecent({ root: '' })).toBe(false);
+    expect(isMenuOpenRecent('/p')).toBe(false);
   });
 });

@@ -15,6 +15,64 @@ describe('ElementSidebar', () => {
     expect(screen.getByText(/No project is open/)).toBeTruthy();
   });
 
+  it('lists recent projects in the empty state with Open buttons', async () => {
+    const onOpenRecent = vi.fn();
+    const onRemoveRecent = vi.fn();
+    render(
+      <ElementSidebar
+        project={null}
+        selectedId={null}
+        onSelect={vi.fn()}
+        onRemove={vi.fn()}
+        recentProjects={[
+          { root: '/p/beta', name: 'Beta', openedAt: '2', exists: true },
+          { root: '/p/alpha', name: 'Alpha', openedAt: '1', exists: false },
+        ]}
+        onOpenRecent={onOpenRecent}
+        onRemoveRecent={onRemoveRecent}
+      />,
+    );
+    const list = screen.getByTestId('recent-projects');
+    expect(screen.getByRole('heading', { name: 'Recent projects' })).toBeTruthy();
+    const rows = within(list).getAllByRole('listitem');
+    expect(rows.map((row) => row.getAttribute('data-testid'))).toEqual([
+      'recent-row-0',
+      'recent-row-1',
+    ]);
+    const first = screen.getByTestId('recent-row-0');
+    expect(within(first).getByText('Beta')).toBeTruthy();
+    expect(within(first).getByText('/p/beta')).toBeTruthy();
+    const user = userEvent.setup();
+    await user.click(within(first).getByRole('button', { name: 'Open Beta' }));
+    expect(onOpenRecent).toHaveBeenCalledWith('/p/beta');
+
+    const missing = screen.getByTestId('recent-row-1');
+    expect(within(missing).getByText('(missing)')).toBeTruthy();
+    const open = within(missing).getByRole('button', {
+      name: 'Open Alpha (missing)',
+    }) as HTMLButtonElement;
+    expect(open.disabled).toBe(true);
+    await user.click(screen.getByTestId('recent-remove-1'));
+    expect(onRemoveRecent).toHaveBeenCalledWith('/p/alpha');
+  });
+
+  it('shows no recent list when it is empty or a project is open', () => {
+    const { rerender } = render(
+      <ElementSidebar project={null} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
+    );
+    expect(screen.queryByTestId('recent-projects')).toBeNull();
+    rerender(
+      <ElementSidebar
+        project={sampleProject()}
+        selectedId={null}
+        onSelect={vi.fn()}
+        onRemove={vi.fn()}
+        recentProjects={[{ root: '/p/a', name: 'A', openedAt: '1', exists: true }]}
+      />,
+    );
+    expect(screen.queryByTestId('recent-projects')).toBeNull();
+  });
+
   it('groups elements by namespace, then kind, and lists assets', () => {
     render(
       <ElementSidebar

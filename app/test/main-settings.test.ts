@@ -225,3 +225,91 @@ describe('settings store', () => {
     expect(await store().installTarget()).toBeNull();
   });
 });
+
+describe('settings store: recent projects', () => {
+  const storeOn = (platform: 'linux' | 'win32') =>
+    createSettingsStore({
+      msmHome: join(temp, 'msm'),
+      installEnv: { platform, home: join(temp, 'home') },
+    });
+  const entry = (root: string, openedAt = '2026-01-01T00:00:00.000Z') => ({
+    root,
+    name: root.slice(root.lastIndexOf('/') + 1),
+    openedAt,
+  });
+
+  it('is empty by default and leaves the field out of the file when empty', async () => {
+    const store = storeOn('linux');
+    expect(await store.recentProjects()).toEqual([]);
+    await store.set({ updates: { autoCheck: true } });
+    const text = await readFile(join(temp, 'msm', 'settings.json'), 'utf8');
+    expect(text).not.toContain('recentProjects');
+    // `get()` keeps its shape: the list is not part of the settings view.
+    expect(Object.keys(await store.get())).not.toContain('recentProjects');
+  });
+
+  it('records newest first, de-duplicates by normalised root and caps at ten', async () => {
+    const store = storeOn('linux');
+    await store.recordRecentProject(entry('/p/a', '1'));
+    await store.recordRecentProject(entry('/p/b', '2'));
+    // The same root with a trailing separator and a `.` segment moves to the top.
+    const list = await store.recordRecentProject({ ...entry('/p/a', '3'), root: '/p/./a/' });
+    expect(list).toEqual([{ root: '/p/a', name: 'a', openedAt: '3' }, entry('/p/b', '2')]);
+    for (let index = 0; index < 12; index += 1) {
+      await store.recordRecentProject(entry(`/q/${index}`, `t${index}`));
+    }
+    const capped = await store.recentProjects();
+    expect(capped).toHaveLength(10);
+    expect(capped[0]?.root).toBe('/q/11');
+    expect(capped.map((item) => item.root)).not.toContain('/p/a');
+  });
+
+  it('persists sorted keys and keeps the list across other settings changes', async () => {
+    const store = storeOn('linux');
+    await store.recordRecentProject(entry('/p/a', 'x'));
+    await store.set({ minecraftDir: join(temp, 'mc') });
+    expect(await store.recentProjects()).toEqual([entry('/p/a', 'x')]);
+    const text = await readFile(join(temp, 'msm', 'settings.json'), 'utf8');
+    expect(text).toContain(
+      '"recentProjects": [\n    {\n      "name": "a",\n      "openedAt": "x",\n      "root": "/p/a"\n    }\n  ],',
+    );
+    expect(text.indexOf('"minecraftDir"')).toBeLessThan(text.indexOf('"recentProjects"'));
+  });
+
+  it('matches roots case-insensitively on Windows only', async () => {
+    const win = storeOn('win32');
+    await win.recordRecentProject(entry('/Proj/Ruby', '1'));
+    await win.recordRecentProject({ ...entry('/proj/ruby', '2') });
+    expect((await win.recentProjects()).map((item) => item.openedAt)).toEqual(['2']);
+    expect(await win.findRecentProject('/PROJ/RUBY')).toEqual(entry('/proj/ruby', '2'));
+    await rm(join(temp, 'msm'), { recursive: true, force: true });
+    const linux = storeOn('linux');
+    await linux.recordRecentProject(entry('/Proj/Ruby', '1'));
+    await linux.recordRecentProject(entry('/proj/ruby', '2'));
+    expect(await linux.recentProjects()).toHaveLength(2);
+    expect(await linux.findRecentProject('/PROJ/RUBY')).toBeNull();
+  });
+
+  it('removes one entry, clears the list and drops malformed stored entries', async () => {
+    const store = storeOn('linux');
+    await store.recordRecentProject(entry('/p/a'));
+    await store.recordRecentProject(entry('/p/b'));
+    expect((await store.removeRecentProject('/p/a/')).map((item) => item.root)).toEqual(['/p/b']);
+    expect(await store.removeRecentProject('relative')).toHaveLength(1);
+    await store.clearRecentProjects();
+    expect(await store.recentProjects()).toEqual([]);
+    await writeFile(
+      join(temp, 'msm', 'settings.json'),
+      JSON.stringify({
+        recentProjects: [
+          entry('/p/ok'),
+          { root: 'relative', name: 'r', openedAt: 'x' },
+          { root: '/p/no-name', openedAt: 'x' },
+          'nonsense',
+          entry('/p/ok'),
+        ],
+      }),
+    );
+    expect(await store.recentProjects()).toEqual([entry('/p/ok')]);
+  });
+});

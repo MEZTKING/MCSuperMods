@@ -1,8 +1,9 @@
 import type { Element, Namespace, Project, ResourceLocation } from '@msm/core';
 import { Trash2 } from 'lucide-react';
 import { ScrollArea } from 'radix-ui';
+import type { RecentProjectView } from '../../../shared/platform';
 import { type AssetActions, AssetList } from './AssetList';
-import { iconButtonClass } from './ui/Button';
+import { buttonClass, iconButtonClass } from './ui/Button';
 
 /** Props of {@link ElementSidebar}. */
 export interface ElementSidebarProps {
@@ -12,6 +13,12 @@ export interface ElementSidebarProps {
   onRemove(id: ResourceLocation): void;
   /** Asset import, thumbnails, reveal and remove; read-only list without it. */
   assetActions?: AssetActions;
+  /** Recent projects, listed when no project is open (newest first). */
+  recentProjects?: readonly RecentProjectView[];
+  /** Opens a recent project by its root. */
+  onOpenRecent?(root: string): void;
+  /** Removes a recent project from the list by its root. */
+  onRemoveRecent?(root: string): void;
 }
 
 const NO_ASSET_ACTIONS: AssetActions = {};
@@ -141,6 +148,71 @@ function NamespaceSection(props: {
   );
 }
 
+/**
+ * The "Recent projects" list shown when no project is open: one row per project with its
+ * name, path and an Open button. A missing project is marked "(missing)", cannot be opened
+ * and can be removed from the list.
+ */
+export function RecentProjectsList(props: {
+  projects: readonly RecentProjectView[];
+  onOpen?: ((root: string) => void) | undefined;
+  onRemove?: ((root: string) => void) | undefined;
+}) {
+  if (props.projects.length === 0) return null;
+  return (
+    <section aria-labelledby="recent-projects-heading" className="mt-3">
+      <h2 id="recent-projects-heading" className={headingClass}>
+        Recent projects
+      </h2>
+      <ul data-testid="recent-projects" className="flex flex-col gap-1">
+        {props.projects.map((entry, index) => (
+          <li
+            key={entry.root}
+            data-testid={`recent-row-${index}`}
+            data-missing={entry.exists ? undefined : 'true'}
+            className="flex min-w-0 items-center gap-1 rounded border border-border px-2 py-1"
+          >
+            <div className="flex w-0 min-w-0 flex-1 flex-col">
+              <span className="truncate font-medium" title={entry.name}>
+                {entry.name}
+                {!entry.exists && <span className="ml-1 text-muted text-xs">(missing)</span>}
+              </span>
+              <span className="truncate text-muted text-xs" title={entry.root}>
+                {entry.root}
+              </span>
+            </div>
+            <button
+              type="button"
+              className={buttonClass}
+              data-testid={`recent-open-${index}`}
+              aria-label={`Open ${entry.name}${entry.exists ? '' : ' (missing)'}`}
+              title={
+                entry.exists ? `Open ${entry.root}` : `${entry.root} no longer holds a project`
+              }
+              disabled={!entry.exists || props.onOpen === undefined}
+              onClick={() => props.onOpen?.(entry.root)}
+            >
+              Open
+            </button>
+            {!entry.exists && props.onRemove !== undefined && (
+              <button
+                type="button"
+                className={iconButtonClass}
+                data-testid={`recent-remove-${index}`}
+                aria-label={`Remove ${entry.name} from recent projects`}
+                title="Remove from recent projects"
+                onClick={() => props.onRemove?.(entry.root)}
+              >
+                <Trash2 size={14} aria-hidden />
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /** The left sidebar: namespaces, then kinds, then elements, plus each namespace's assets. */
 export function ElementSidebar({
   project,
@@ -148,13 +220,23 @@ export function ElementSidebar({
   onSelect,
   onRemove,
   assetActions = NO_ASSET_ACTIONS,
+  recentProjects = [],
+  onOpenRecent,
+  onRemoveRecent,
 }: ElementSidebarProps) {
   return (
     <ScrollArea.Root className="min-h-0 overflow-hidden border-r border-border">
       <ScrollArea.Viewport className="size-full">
         <nav aria-label="Elements" className="p-2">
           {project === null ? (
-            <p className={emptyClass}>No project is open. Use New or Open.</p>
+            <>
+              <p className={emptyClass}>No project is open. Use New or Open.</p>
+              <RecentProjectsList
+                projects={recentProjects}
+                onOpen={onOpenRecent}
+                onRemove={onRemoveRecent}
+              />
+            </>
           ) : project.namespaces.length === 0 ? (
             <p className={emptyClass}>No namespaces yet. Use Add namespace.</p>
           ) : (

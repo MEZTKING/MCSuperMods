@@ -22,6 +22,7 @@ import type {
   LauncherSettings,
   MsmBridge,
   PlatformAdapter,
+  RecentProjectView,
   WorldInfo,
 } from '../../src/shared/platform';
 import { fakeLibraryPlugin } from './library-fixtures';
@@ -140,10 +141,17 @@ interface Harness {
   resourceInstalls: string[];
   /** Whether status reports that the stored target was not found. */
   targetMissing: boolean;
+  /** What `project.recent` returns. */
+  recent: RecentProjectView[];
+  /** The root of every `project.openRecent` call. */
+  openedRecent: string[];
+  /** Sends "Open Recent" from the application menu. */
+  menuOpenRecent(root: string): Promise<void>;
 }
 
 async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise<Harness> {
   let listener: ((command: MenuCommand) => void) | null = null;
+  let recentListener: ((root: string) => void) | null = null;
   const updateListeners = new Set<(status: UpdateStatus) => void>();
   const harness = {
     updateCheck: { state: 'not-available' },
@@ -165,8 +173,13 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
     pickedDirectory: '/home/me/prism',
     resourceInstalls: [],
     targetMissing: false,
+    recent: [],
+    openedRecent: [],
     menu: async (command) => {
       await act(async () => listener?.(command));
+    },
+    menuOpenRecent: async (root) => {
+      await act(async () => recentListener?.(root));
     },
   } as Omit<Harness, 'session'> as Harness;
   const platform: PlatformAdapter = {
@@ -282,6 +295,19 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
       createRoot: async () => ({ ok: true }),
       closeRoot: async () => {},
       currentRoot: async () => '/projects/demo',
+      recent: async () => harness.recent,
+      openRecent: async (root) => {
+        harness.openedRecent.push(root);
+        return harness.recent.some((entry) => entry.root === root)
+          ? { ok: true }
+          : { ok: false, reason: `${root} is not in the recent projects list.` };
+      },
+      removeRecent: async (root) => {
+        harness.recent = harness.recent.filter((entry) => entry.root !== root);
+      },
+      clearRecent: async () => {
+        harness.recent = [];
+      },
     },
     fs: createMemoryFileSystem(),
   };
@@ -298,6 +324,12 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
       listener = next;
       return () => {
         listener = null;
+      };
+    },
+    onMenuOpenRecent: (next) => {
+      recentListener = next;
+      return () => {
+        recentListener = null;
       };
     },
     onMinecraftProgress: () => () => {},
@@ -348,6 +380,38 @@ describe('App menu commands', () => {
     await waitFor(() => expect(screen.queryByTestId('command-palette')).toBeNull());
     await harness.menu('importAssets');
     expect(await screen.findByTestId('import-assets-dialog')).toBeTruthy();
+  });
+
+  it('opens a recent project from the palette quick pick and the Open Recent menu', async () => {
+    const harness = await renderApp();
+    harness.recent = [
+      { root: '/projects/demo', name: 'demo', openedAt: '2026-01-02T00:00:00.000Z', exists: true },
+      { root: '/projects/gone', name: 'gone', openedAt: '2026-01-01T00:00:00.000Z', exists: false },
+    ];
+    const user = userEvent.setup();
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    expect(within(palette).getByTestId('command-openRecent').textContent).toContain(
+      'Open recent project…',
+    );
+    await user.click(within(palette).getByTestId('command-openRecent'));
+    const picker = await screen.findByTestId('recent-picker');
+    await waitFor(() =>
+      expect(within(picker).getByTestId('command-recent-1').textContent).toContain(
+        'gone (missing) — /projects/gone',
+      ),
+    );
+    await user.click(within(picker).getByTestId('command-recent-0'));
+    await toast('Open project: /projects/demo');
+    expect(harness.openedRecent).toEqual(['/projects/demo']);
+
+    await harness.menuOpenRecent('/projects/elsewhere');
+    await toast('Open project failed: /projects/elsewhere is not in the recent projects list.');
+    expect(harness.openedRecent).toEqual(['/projects/demo', '/projects/elsewhere']);
+
+    await harness.menu('clearRecentProjects');
+    await toast('Cleared the recent projects list.');
+    expect(harness.recent).toEqual([]);
   });
 
   it('checks for updates from the menu and the palette, and shows the update banner', async () => {

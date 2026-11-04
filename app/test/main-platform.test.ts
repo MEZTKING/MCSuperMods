@@ -148,3 +148,90 @@ describe('main platform targets', () => {
     ).rejects.toThrow(/Unknown target/);
   });
 });
+
+describe('main platform recent projects', () => {
+  const recentPlatform = (events: { changed: string[][]; documents: string[]; cleared: number }) =>
+    createNodePlatform({
+      info: async () => ({ version: '0', electron: '0', platform: 'test' }),
+      dialogs,
+      showItemInFolder: (path) => revealed.push(path),
+      resizePng: (png) => png,
+      msmHome: join(temp, 'msm-home'),
+      installEnv: { platform: 'linux', home: join(temp, 'home') },
+      now: () => '2026-11-04T00:00:00.000Z',
+      onRecentChanged: (recent) => events.changed.push(recent.map((entry) => entry.root)),
+      addRecentDocument: (root) => events.documents.push(root),
+      clearRecentDocuments: () => {
+        events.cleared += 1;
+      },
+    });
+
+  it('records created and opened projects, newest first, with names and exists flags', async () => {
+    const events = { changed: [] as string[][], documents: [] as string[], cleared: 0 };
+    const p = recentPlatform(events);
+    const a = join(temp, 'alpha');
+    const b = join(temp, 'beta');
+    await p.project.createRoot(a);
+    // Before the project file is written, the folder name stands in.
+    expect(await p.project.recent()).toEqual([
+      { root: a, name: 'alpha', openedAt: '2026-11-04T00:00:00.000Z', exists: false },
+    ]);
+    await p.fs.writeFile('msm.project.json', new TextEncoder().encode('{"name":"Alpha Pack"}'));
+    await p.project.createRoot(b);
+    await p.fs.writeFile('msm.project.json', new TextEncoder().encode('{}'));
+    expect((await p.project.recent()).map((entry) => [entry.name, entry.exists])).toEqual([
+      ['beta', true],
+      ['Alpha Pack', true],
+    ]);
+    expect(await p.project.openRoot(a)).toEqual({ ok: true });
+    expect((await p.project.recent()).map((entry) => entry.root)).toEqual([a, b]);
+    expect(events.changed).toEqual([[a], [b, a], [a, b]]);
+    expect(events.documents).toEqual([a, b, a]);
+  });
+
+  it('opens only listed roots that still hold msm.project.json', async () => {
+    const events = { changed: [] as string[][], documents: [] as string[], cleared: 0 };
+    const p = recentPlatform(events);
+    const listed = join(temp, 'listed');
+    const unlisted = join(temp, 'unlisted');
+    for (const dir of [listed, unlisted]) {
+      await mkdir(dir, { recursive: true });
+      await writeFile(join(dir, 'msm.project.json'), '{}');
+    }
+    await p.project.openRoot(listed);
+    await p.project.closeRoot();
+    expect(await p.project.openRecent(unlisted)).toEqual({
+      ok: false,
+      reason: `${unlisted} is not in the recent projects list.`,
+    });
+    expect(await p.project.openRecent('relative')).toMatchObject({ ok: false });
+    expect(await p.project.currentRoot()).toBeNull();
+    expect(await p.project.openRecent(`${listed}/`)).toEqual({ ok: true });
+    expect(await p.project.currentRoot()).toBe(listed);
+
+    await rm(join(listed, 'msm.project.json'));
+    expect((await p.project.recent())[0]?.exists).toBe(false);
+    expect(await p.project.openRecent(listed)).toEqual({
+      ok: false,
+      reason: `${listed} does not contain msm.project.json.`,
+    });
+  });
+
+  it('removes and clears entries and tells the menu', async () => {
+    const events = { changed: [] as string[][], documents: [] as string[], cleared: 0 };
+    const p = recentPlatform(events);
+    const a = join(temp, 'a');
+    const b = join(temp, 'b');
+    await p.project.createRoot(a);
+    await p.project.createRoot(b);
+    await p.project.removeRecent(a);
+    expect((await p.project.recent()).map((entry) => entry.root)).toEqual([b]);
+    await p.project.clearRecent();
+    expect(await p.project.recent()).toEqual([]);
+    expect(events.changed.slice(-2)).toEqual([[b], []]);
+    expect(events.cleared).toBe(1);
+    // A cleared list stays out of settings.json.
+    const text = await readFile(join(temp, 'msm-home', 'settings.json'), 'utf8');
+    expect(text).not.toContain('recentProjects');
+  });
+});

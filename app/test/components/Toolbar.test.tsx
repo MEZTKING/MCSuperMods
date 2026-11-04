@@ -88,6 +88,52 @@ describe('Toolbar', () => {
     expect(p.onNew).toHaveBeenCalledTimes(2);
   });
 
+  it('lists recent projects on the Open split arrow, with missing ones disabled', async () => {
+    const onOpenRecent = vi.fn();
+    const onRemoveRecent = vi.fn();
+    const onClearRecent = vi.fn();
+    const onRecentMenuOpen = vi.fn();
+    renderToolbar(
+      props({
+        recentProjects: [
+          { root: '/p/beta', name: 'Beta', openedAt: '2', exists: true },
+          { root: '/p/alpha', name: 'Alpha', openedAt: '1', exists: false },
+        ],
+        onOpenRecent,
+        onRemoveRecent,
+        onClearRecent,
+        onRecentMenuOpen,
+      }),
+    );
+    const user = userEvent.setup();
+    const arrow = screen.getByTestId('toolbar-open-menu');
+    expect(arrow.getAttribute('aria-label')).toBe('Recent projects');
+    await user.click(arrow);
+    expect(onRecentMenuOpen).toHaveBeenCalledOnce();
+    const beta = screen.getByTestId('recent-project-0');
+    expect(beta.textContent).toContain('Beta');
+    expect(beta.textContent).toContain('/p/beta');
+    const alpha = screen.getByTestId('recent-project-1');
+    expect(alpha.textContent).toContain('Alpha (missing)');
+    expect(alpha.hasAttribute('data-disabled')).toBe(true);
+    expect(screen.queryByTestId('recent-project-remove-0')).toBeNull();
+    await user.click(screen.getByTestId('recent-project-remove-1'));
+    expect(onRemoveRecent).toHaveBeenCalledWith('/p/alpha');
+    await user.click(screen.getByTestId('toolbar-open-menu'));
+    await user.click(screen.getByTestId('recent-project-0'));
+    expect(onOpenRecent).toHaveBeenCalledWith('/p/beta');
+    await user.click(screen.getByTestId('toolbar-open-menu'));
+    await user.click(screen.getByTestId('recent-projects-clear'));
+    expect(onClearRecent).toHaveBeenCalledOnce();
+  });
+
+  it('says so when there are no recent projects', async () => {
+    renderToolbar(props({ recentProjects: [], onClearRecent: vi.fn() }));
+    await userEvent.setup().click(screen.getByTestId('toolbar-open-menu'));
+    expect(screen.getByTestId('recent-projects-empty').textContent).toBe('No recent projects');
+    expect(screen.getByTestId('recent-projects-clear').hasAttribute('data-disabled')).toBe(true);
+  });
+
   it('is a labelled toolbar', () => {
     renderToolbar(props());
     expect(screen.getByRole('toolbar', { name: 'Project' })).toBeTruthy();

@@ -12,7 +12,13 @@ import { basename, dirname, isAbsolute, join, normalize } from 'node:path';
 import type { ProjectFileSystem } from '@msm/core';
 import type { InstallEnv, InstallFileSystem } from '@msm/interop';
 import { createNodeInstallFileSystem } from '@msm/interop/node';
-import type { FileFilter, PlatformAdapter, RootResult } from '../../shared/platform';
+import type {
+  FileFilter,
+  PlatformAdapter,
+  RecentProject,
+  RecentProjectView,
+  RootResult,
+} from '../../shared/platform';
 import { createExportsService } from './exports';
 import { createLocationResolver } from './locations';
 import { createMcfunctionBroker } from './mcfunction';
@@ -61,8 +67,14 @@ export interface NodePlatformDeps {
   installEnv: InstallEnv;
   /** File access for the Minecraft service. Defaults to the Node adapter. */
   installFs?: InstallFileSystem;
-  /** ISO 8601 timestamp source for the asset cache. */
+  /** ISO 8601 timestamp source for the asset cache and the recent-projects list. */
   now?(): string;
+  /** Called after the recent-projects list changed (the menu rebuilds from it). */
+  onRecentChanged?(recent: readonly RecentProject[]): void;
+  /** Adds a project root to the OS recent documents (the Windows jump list); optional. */
+  addRecentDocument?(root: string): void;
+  /** Clears the OS recent documents; optional. */
+  clearRecentDocuments?(): void;
 }
 
 /**
@@ -77,6 +89,22 @@ export interface MainPlatform extends Omit<PlatformAdapter, 'updates'> {
 async function statOrNull(path: string): Promise<Awaited<ReturnType<typeof stat>> | null> {
   try {
     return await stat(path);
+  } catch {
+    return null;
+  }
+}
+
+async function isFile(path: string): Promise<boolean> {
+  return (await statOrNull(path))?.isFile() === true;
+}
+
+/** The `name` in `<root>/msm.project.json`, or `null` when it cannot be read. */
+async function readProjectName(root: string): Promise<string | null> {
+  try {
+    const parsed: unknown = JSON.parse(await readFile(join(root, PROJECT_FILE), 'utf8'));
+    if (typeof parsed !== 'object' || parsed === null) return null;
+    const name = (parsed as Record<string, unknown>).name;
+    return typeof name === 'string' && name.trim() !== '' ? name : null;
   } catch {
     return null;
   }
@@ -112,6 +140,44 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
   });
 
   const targets = createTargetsService();
+  const now = deps.now ?? (() => new Date().toISOString());
+
+  const recentChanged = (recent: readonly RecentProject[]): void => {
+    try {
+      deps.onRecentChanged?.(recent);
+    } catch {
+      // A menu rebuild failure must not fail the project operation.
+    }
+  };
+
+  /** Puts `root` first in the recent list. Failures never fail the open or create. */
+  const recordRecent = async (root: string): Promise<void> => {
+    try {
+      const name = (await readProjectName(root)) ?? (basename(root) || root);
+      recentChanged(await settings.recordRecentProject({ root, name, openedAt: now() }));
+    } catch {
+      // An unwritable settings file only loses the recent entry.
+    }
+    try {
+      deps.addRecentDocument?.(root);
+    } catch {
+      // The jump list is a convenience.
+    }
+  };
+
+  const openRoot = async (path: string): Promise<RootResult> => {
+    if (!isAbsolute(path)) return { ok: false, reason: 'The project path must be absolute.' };
+    const info = await statOrNull(path);
+    if (info === null || !info.isDirectory()) {
+      return { ok: false, reason: `${path} is not a directory.` };
+    }
+    if (!(await isFile(join(path, PROJECT_FILE)))) {
+      return { ok: false, reason: `${path} does not contain ${PROJECT_FILE}.` };
+    }
+    const result = open(path);
+    await recordRecent(path);
+    return result;
+  };
 
   const open = (path: string): RootResult => {
     currentRoot = path;
@@ -212,18 +278,7 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     }),
     thumbnails: createThumbnailService({ projectFs: active, resizePng: deps.resizePng }),
     project: {
-      async openRoot(path) {
-        if (!isAbsolute(path)) return { ok: false, reason: 'The project path must be absolute.' };
-        const info = await statOrNull(path);
-        if (info === null || !info.isDirectory()) {
-          return { ok: false, reason: `${path} is not a directory.` };
-        }
-        const file = await statOrNull(join(path, PROJECT_FILE));
-        if (file === null || !file.isFile()) {
-          return { ok: false, reason: `${path} does not contain ${PROJECT_FILE}.` };
-        }
-        return open(path);
-      },
+      openRoot,
       async createRoot(path) {
         if (!isAbsolute(path)) return { ok: false, reason: 'The project path must be absolute.' };
         const info = await statOrNull(path);
@@ -235,7 +290,9 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
         } else {
           await mkdir(path, { recursive: true });
         }
-        return open(path);
+        const result = open(path);
+        await recordRecent(path);
+        return result;
       },
       async closeRoot() {
         currentRoot = null;
@@ -243,6 +300,36 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
       },
       async currentRoot() {
         return currentRoot;
+      },
+      async recent() {
+        const list = await settings.recentProjects();
+        return Promise.all(
+          list.map(async (entry): Promise<RecentProjectView> => {
+            const exists = await isFile(join(entry.root, PROJECT_FILE));
+            const name = exists ? ((await readProjectName(entry.root)) ?? entry.name) : entry.name;
+            return { ...entry, name, exists };
+          }),
+        );
+      },
+      async openRecent(root) {
+        // Only roots already in the list: the renderer never opens an arbitrary path here.
+        const entry = await settings.findRecentProject(root);
+        if (entry === null) {
+          return { ok: false, reason: `${root} is not in the recent projects list.` };
+        }
+        return openRoot(entry.root);
+      },
+      async removeRecent(root) {
+        recentChanged(await settings.removeRecentProject(root));
+      },
+      async clearRecent() {
+        await settings.clearRecentProjects();
+        recentChanged([]);
+        try {
+          deps.clearRecentDocuments?.();
+        } catch {
+          // The jump list is a convenience.
+        }
       },
     },
     fs,

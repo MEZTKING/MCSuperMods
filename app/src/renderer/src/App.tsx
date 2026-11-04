@@ -8,6 +8,7 @@ import type {
   LauncherSettings,
   MinecraftStatus,
   MsmBridge,
+  RecentProjectView,
   WorldInfo,
 } from '../../shared/platform';
 import {
@@ -18,7 +19,7 @@ import {
   paletteCommands,
   referenceAt,
 } from './commands/built-in-commands';
-import { CommandPalette } from './components/CommandPalette';
+import { CommandPalette, type PaletteCommand } from './components/CommandPalette';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { EditorArea } from './components/EditorArea';
 import { ElementSidebar } from './components/ElementSidebar';
@@ -227,6 +228,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   const [dialog, setDialog] = useState<DialogState | null>(null);
   const [exporting, setExporting] = useState(false);
   const [assetRevision, setAssetRevision] = useState(0);
+  const [recentProjects, setRecentProjects] = useState<readonly RecentProjectView[]>([]);
+  const [recentPickerOpen, setRecentPickerOpen] = useState(false);
   const deduper = useRef(createCommandDeduper()).current;
 
   useEffect(() => {
@@ -287,6 +290,19 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     refreshLaunchers().catch(() => useUiStore.getState().setLauncherSettings(null));
   }, [refreshMinecraftStatus, refreshLaunchers]);
 
+  /** Reads the recent projects (with their `exists` flags) into state. */
+  const refreshRecent = useCallback(async (): Promise<void> => {
+    try {
+      setRecentProjects(await session.recentProjects());
+    } catch {
+      setRecentProjects([]);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    void refreshRecent();
+  }, [refreshRecent]);
+
   const run = useCallback(
     (label: string, action: () => void) => {
       try {
@@ -322,9 +338,39 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       } catch (error) {
         setMessage({ kind: 'error', text: `${label} failed: ${messageOf(error)}` });
       }
+      // Main records every successful open or create in the recent list.
+      void refreshRecent();
     },
-    [select, session, setMessage, setExportProblems, refreshMinecraftStatus],
+    [select, session, setMessage, setExportProblems, refreshMinecraftStatus, refreshRecent],
   );
+
+  const openRecent = useCallback(
+    (root: string) => void openWith('Open project', () => session.openRecent(root)),
+    [openWith, session],
+  );
+
+  const removeRecent = useCallback(
+    (root: string) => {
+      session
+        .removeRecentProject(root)
+        .catch((error: unknown) =>
+          setMessage({ kind: 'error', text: `Remove recent project: ${messageOf(error)}` }),
+        )
+        .finally(() => void refreshRecent());
+    },
+    [session, setMessage, refreshRecent],
+  );
+
+  const clearRecent = useCallback(() => {
+    session
+      .clearRecentProjects()
+      .then(
+        () => setMessage({ kind: 'info', text: 'Cleared the recent projects list.' }),
+        (error: unknown) =>
+          setMessage({ kind: 'error', text: `Clear recent projects: ${messageOf(error)}` }),
+      )
+      .finally(() => void refreshRecent());
+  }, [session, setMessage, refreshRecent]);
 
   const save = useCallback(async () => {
     try {
@@ -778,6 +824,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     renameElement: renameSelected,
     commandPalette: openPalette,
     checkForUpdates,
+    clearRecentProjects: clearRecent,
   };
 
   const commandHandlers: CommandHandlers = {
@@ -785,6 +832,10 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     newProjectFromStarter: handlers.newProjectFromStarter,
     examples: handlers.examples,
     openProject: handlers.open,
+    openRecent: () => {
+      void refreshRecent();
+      setRecentPickerOpen(true);
+    },
     save: saveDisabledReason === null ? handlers.save : null,
     undo: snapshot.canUndo ? () => session.undo() : null,
     redo: snapshot.canRedo ? () => session.redo() : null,
@@ -818,10 +869,22 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
 
   useEffect(() => bridge.onMenu((command) => dispatch(command, 'menu')));
 
+  useEffect(() => bridge.onMenuOpenRecent((root) => openRecent(root)), [bridge, openRecent]);
+
+  const recentPicks = useMemo<PaletteCommand[]>(
+    () =>
+      recentProjects.map((entry, index) => ({
+        id: `recent-${index}`,
+        title: `${entry.name}${entry.exists ? '' : ' (missing)'} — ${entry.root}`,
+        run: () => openRecent(entry.root),
+      })),
+    [recentProjects, openRecent],
+  );
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
       const command = shortcutFor(event);
-      if (command === null || dialog !== null || paletteOpen) return;
+      if (command === null || dialog !== null || paletteOpen || recentPickerOpen) return;
       // Text fields keep their native undo/redo.
       if ((command === 'undo' || command === 'redo') && isEditableTarget(document.activeElement)) {
         return;
@@ -950,6 +1013,11 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               onNewFromStarter={handlers.newProjectFromStarter}
               onExamples={handlers.examples}
               onOpen={handlers.open}
+              recentProjects={recentProjects}
+              onOpenRecent={openRecent}
+              onRemoveRecent={removeRecent}
+              onClearRecent={clearRecent}
+              onRecentMenuOpen={() => void refreshRecent()}
               onSave={handlers.save}
               onUndo={() => session.undo()}
               onRedo={() => session.redo()}
@@ -982,6 +1050,9 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 thumbnail,
                 revision: assetRevision,
               }}
+              recentProjects={recentProjects}
+              onOpenRecent={openRecent}
+              onRemoveRecent={removeRecent}
             />
             <EditorArea
               element={selected}
@@ -1161,6 +1232,15 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
           open={paletteOpen}
           commands={palette}
           onClose={() => setPaletteOpen(false)}
+        />
+        <CommandPalette
+          open={recentPickerOpen}
+          commands={recentPicks}
+          onClose={() => setRecentPickerOpen(false)}
+          title="Open recent project"
+          placeholder="Type a project name or folder"
+          testId="recent-picker"
+          emptyText="No recent projects."
         />
         {dialog?.type === 'settings' && (
           <SettingsDialog

@@ -11,6 +11,7 @@ import {
   EventChannels,
   InvokeChannels,
   isMenuCommand,
+  isMenuOpenRecent,
   isMinecraftProgress,
   isUpdateStatus,
 } from '../shared/ipc-channels';
@@ -127,6 +128,10 @@ const bridge: MsmBridge = {
     createRoot: (path) => ipcRenderer.invoke(InvokeChannels.projectCreateRoot, { path }),
     closeRoot: () => ipcRenderer.invoke(InvokeChannels.projectCloseRoot),
     currentRoot: () => ipcRenderer.invoke(InvokeChannels.projectCurrentRoot),
+    recent: () => ipcRenderer.invoke(InvokeChannels.projectRecent),
+    openRecent: (root) => ipcRenderer.invoke(InvokeChannels.projectOpenRecent, { root }),
+    removeRecent: (root) => ipcRenderer.invoke(InvokeChannels.projectRemoveRecent, { root }),
+    clearRecent: () => ipcRenderer.invoke(InvokeChannels.projectClearRecent),
   },
   fs: {
     readFile: (path) => ipcRenderer.invoke(InvokeChannels.fsReadFile, { path }),
@@ -143,6 +148,15 @@ const bridge: MsmBridge = {
     ipcRenderer.on(EventChannels.menu, handler);
     return () => {
       ipcRenderer.removeListener(EventChannels.menu, handler);
+    };
+  },
+  onMenuOpenRecent(listener) {
+    const handler = (_event: IpcRendererEvent, payload: unknown): void => {
+      if (isMenuOpenRecent(payload)) listener(payload.root);
+    };
+    ipcRenderer.on(EventChannels.menuOpenRecent, handler);
+    return () => {
+      ipcRenderer.removeListener(EventChannels.menuOpenRecent, handler);
     };
   },
   onMinecraftProgress(listener) {

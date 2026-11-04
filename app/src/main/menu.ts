@@ -6,15 +6,75 @@
  */
 
 import { BrowserWindow, Menu, type MenuItemConstructorOptions } from 'electron';
-import { EventChannels, type MenuCommand } from '../shared/ipc-channels';
+import { EventChannels, type MenuCommand, type MenuOpenRecent } from '../shared/ipc-channels';
+import type { RecentProject } from '../shared/platform';
 
-function send(command: MenuCommand): void {
-  const window = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
-  window?.webContents.send(EventChannels.menu, command);
+function targetWindow(): BrowserWindow | undefined {
+  return BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
 }
 
-/** Builds and installs the application menu. */
-export function installMenu(): void {
+function send(command: MenuCommand): void {
+  targetWindow()?.webContents.send(EventChannels.menu, command);
+}
+
+function sendOpenRecent(root: string): void {
+  const payload: MenuOpenRecent = { root };
+  targetWindow()?.webContents.send(EventChannels.menuOpenRecent, payload);
+}
+
+/** The longest path shown in an "Open Recent" label before the middle is elided. */
+export const RECENT_LABEL_PATH_MAX = 60;
+
+/**
+ * Shortens a path for a menu label: the first segment, an ellipsis and as many trailing
+ * segments as fit in `max` characters (always at least the last one).
+ */
+export function shortenPath(path: string, max = RECENT_LABEL_PATH_MAX): string {
+  if (path.length <= max) return path;
+  const separator = path.includes('\\') && !path.includes('/') ? '\\' : '/';
+  const parts = path.split(separator);
+  const head = parts[0] === '' ? `${separator}${parts[1] ?? ''}` : (parts[0] ?? '');
+  const rest = parts.slice(parts[0] === '' ? 2 : 1);
+  const tail: string[] = [];
+  for (let index = rest.length - 1; index >= 0; index -= 1) {
+    const candidate = [rest[index] ?? '', ...tail];
+    const text = `${head}${separator}…${separator}${candidate.join(separator)}`;
+    if (tail.length > 0 && text.length > max) break;
+    tail.unshift(rest[index] ?? '');
+  }
+  return `${head}${separator}…${separator}${tail.join(separator)}`;
+}
+
+/** The label of one "Open Recent" entry; `&` is doubled so it is not read as a mnemonic. */
+export function recentLabel(entry: Pick<RecentProject, 'name' | 'root'>): string {
+  return `${entry.name} — ${shortenPath(entry.root)}`.replaceAll('&', '&&');
+}
+
+/** The "Open Recent" submenu: one item per project, or a disabled note, then "Clear". */
+export function recentSubmenu(
+  recent: readonly RecentProject[],
+  open: (root: string) => void,
+  clear: () => void,
+): MenuItemConstructorOptions[] {
+  const items: MenuItemConstructorOptions[] =
+    recent.length === 0
+      ? [{ label: 'No recent projects', enabled: false }]
+      : recent.slice(0, 10).map((entry) => ({
+          label: recentLabel(entry),
+          click: () => open(entry.root),
+        }));
+  return [
+    ...items,
+    { type: 'separator' },
+    { label: 'Clear Recent Projects', enabled: recent.length > 0, click: clear },
+  ];
+}
+
+/**
+ * Builds and installs the application menu. Call again with the new list whenever the
+ * recent projects change.
+ */
+export function installMenu(recent: readonly RecentProject[] = []): void {
   const template: MenuItemConstructorOptions[] = [
     {
       label: 'File',
@@ -23,6 +83,10 @@ export function installMenu(): void {
         { label: 'New Project…', accelerator: 'CmdOrCtrl+Shift+N', click: () => send('new') },
         { label: 'New Project from Starter…', click: () => send('newProjectFromStarter') },
         { label: 'Open Project…', accelerator: 'CmdOrCtrl+O', click: () => send('open') },
+        {
+          label: 'Open Recent',
+          submenu: recentSubmenu(recent, sendOpenRecent, () => send('clearRecentProjects')),
+        },
         { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => send('save') },
         { type: 'separator' },
         { label: 'Import Assets…', click: () => send('importAssets') },

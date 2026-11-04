@@ -7,13 +7,18 @@
 import { mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
 import { isAbsolute, join, normalize, sep } from 'node:path';
 import { defaultMinecraftDir, type InstallEnv } from '@msm/interop';
-import { gameLocationRefSchema, LAUNCHER_ROOTS_MAX } from '../../shared/ipc-contract';
+import {
+  gameLocationRefSchema,
+  LAUNCHER_ROOTS_MAX,
+  RECENT_PROJECTS_MAX,
+} from '../../shared/ipc-contract';
 import type {
   AppSettings,
   AppSettingsPatch,
   AppSettingsView,
   GameLocationRef,
   LauncherSettings,
+  RecentProject,
 } from '../../shared/platform';
 
 /** The settings file name below the MSM home directory. */
@@ -45,10 +50,23 @@ export interface SettingsStore {
   installTarget(): Promise<GameLocationRef | null>;
   /** The manually added launcher folders (empty lists by default). */
   launcherSettings(): Promise<LauncherSettings>;
+  /** The recent projects, newest first (normalised absolute roots, deduplicated, capped). */
+  recentProjects(): Promise<RecentProject[]>;
+  /** The stored entry whose root matches `root` (normalised; case-folded on Windows/macOS). */
+  findRecentProject(root: string): Promise<RecentProject | null>;
+  /**
+   * Puts `entry` first in the recent list, replacing an entry with the same root, and keeps
+   * at most {@link RECENT_PROJECTS_MAX}. Returns the new list.
+   */
+  recordRecentProject(entry: RecentProject): Promise<RecentProject[]>;
+  /** Removes the entry matching `root`; returns the new list. */
+  removeRecentProject(root: string): Promise<RecentProject[]>;
+  /** Empties the recent list. */
+  clearRecentProjects(): Promise<void>;
 }
 
-/** {@link AppSettings} with every field present, as the store reads and writes it. */
-type StoredSettings = Required<AppSettings>;
+/** {@link AppSettings} with every field present, plus the recent projects. */
+type StoredSettings = Required<AppSettings> & { recentProjects: RecentProject[] };
 
 const LAUNCHER_LISTS = ['prismDataDirs', 'multimcRoots', 'curseForgeRoots'] as const;
 
@@ -63,6 +81,7 @@ const defaults = (): StoredSettings => ({
   updates: { autoCheck: true },
   launchers: emptyLaunchers(),
   installTarget: null,
+  recentProjects: [],
 });
 
 /** Normalises a folder path and drops a trailing separator (but keeps a root such as `/`). */
@@ -120,6 +139,38 @@ function parseInstallTarget(value: unknown): GameLocationRef | null {
   return parsed.data.instance === undefined
     ? { launcher: parsed.data.launcher, root }
     : { launcher: parsed.data.launcher, root, instance: parsed.data.instance };
+}
+
+/** A folder path as a comparison key: normalised, and lower-cased on case-insensitive hosts. */
+function folderKey(path: string, caseInsensitive: boolean): string {
+  const folder = normaliseFolder(path);
+  return caseInsensitive ? folder.toLowerCase() : folder;
+}
+
+/**
+ * Cleans a stored recent-projects list: drops malformed entries and relative roots,
+ * normalises roots, keeps the first of duplicate roots and at most
+ * {@link RECENT_PROJECTS_MAX} entries.
+ */
+function cleanRecent(values: unknown, caseInsensitive: boolean): RecentProject[] {
+  if (!Array.isArray(values)) return [];
+  const seen = new Set<string>();
+  const out: RecentProject[] = [];
+  for (const value of values) {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) continue;
+    const record = value as Record<string, unknown>;
+    const { root, name, openedAt } = record;
+    if (typeof root !== 'string' || root === '' || root.includes('\0') || !isAbsolute(root)) {
+      continue;
+    }
+    if (typeof name !== 'string' || typeof openedAt !== 'string') continue;
+    const key = folderKey(root, caseInsensitive);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ root: normaliseFolder(root), name, openedAt });
+    if (out.length === RECENT_PROJECTS_MAX) break;
+  }
+  return out;
 }
 
 const hasManualRoots = (launchers: LauncherSettings): boolean =>
@@ -186,7 +237,31 @@ export function createSettingsStore(deps: {
       updates: { autoCheck: autoCheck !== false },
       launchers: cleanLaunchers(record.launchers, caseInsensitive, false),
       installTarget: parseInstallTarget(record.installTarget),
+      recentProjects: cleanRecent(record.recentProjects, caseInsensitive),
     };
+  };
+
+  const write = async (next: StoredSettings): Promise<void> => {
+    await mkdir(deps.msmHome, { recursive: true });
+    // Default launcher, target and recent fields are left out, so files without them stay
+    // byte-for-byte the same.
+    const {
+      launchers: nextLaunchers,
+      installTarget: nextTarget,
+      recentProjects: nextRecent,
+      ...base
+    } = next;
+    const stored: AppSettings & { recentProjects?: RecentProject[] } = {
+      ...base,
+      ...(hasManualRoots(nextLaunchers) ? { launchers: nextLaunchers } : {}),
+      ...(nextTarget === null ? {} : { installTarget: nextTarget }),
+      ...(nextRecent.length === 0 ? {} : { recentProjects: nextRecent }),
+    };
+    // Sorted keys, 2-space indent; written to a temporary file and renamed into place.
+    const text = sortedJson(stored);
+    const temp = `${file}.tmp`;
+    await writeFile(temp, text, 'utf8');
+    await rename(temp, file);
   };
 
   const detected = async (): Promise<string | null> => {
@@ -196,7 +271,7 @@ export function createSettingsStore(deps: {
 
   return {
     async get() {
-      const settings = await read();
+      const { recentProjects: _recent, ...settings } = await read();
       return { ...settings, detectedMinecraftDir: await detected() };
     },
     async set(settings) {
@@ -225,20 +300,9 @@ export function createSettingsStore(deps: {
             : { autoCheck: settings.updates.autoCheck },
         launchers: launchers ?? current.launchers,
         installTarget: installTarget === undefined ? current.installTarget : installTarget,
+        recentProjects: current.recentProjects,
       };
-      await mkdir(deps.msmHome, { recursive: true });
-      // Default launcher fields are left out, so files without them stay byte-for-byte the same.
-      const { launchers: nextLaunchers, installTarget: nextTarget, ...base } = next;
-      const stored: AppSettings = {
-        ...base,
-        ...(hasManualRoots(nextLaunchers) ? { launchers: nextLaunchers } : {}),
-        ...(nextTarget === null ? {} : { installTarget: nextTarget }),
-      };
-      // Sorted keys, 2-space indent; written to a temporary file and renamed into place.
-      const text = sortedJson(stored);
-      const temp = `${file}.tmp`;
-      await writeFile(temp, text, 'utf8');
-      await rename(temp, file);
+      await write(next);
     },
     async minecraftDir() {
       return (await read()).minecraftDir ?? (await detected());
@@ -251,6 +315,37 @@ export function createSettingsStore(deps: {
     },
     async launcherSettings() {
       return (await read()).launchers;
+    },
+    async recentProjects() {
+      return (await read()).recentProjects;
+    },
+    async findRecentProject(root) {
+      if (!isAbsolute(root)) return null;
+      const key = folderKey(root, caseInsensitive);
+      const list = (await read()).recentProjects;
+      return list.find((entry) => folderKey(entry.root, caseInsensitive) === key) ?? null;
+    },
+    async recordRecentProject(entry) {
+      if (!isAbsolute(entry.root)) throw new Error('A recent project root must be absolute.');
+      const current = await read();
+      const recentProjects = cleanRecent([entry, ...current.recentProjects], caseInsensitive);
+      await write({ ...current, recentProjects });
+      return recentProjects;
+    },
+    async removeRecentProject(root) {
+      const current = await read();
+      const key = isAbsolute(root) ? folderKey(root, caseInsensitive) : null;
+      const recentProjects = current.recentProjects.filter(
+        (entry) => folderKey(entry.root, caseInsensitive) !== key,
+      );
+      if (recentProjects.length !== current.recentProjects.length) {
+        await write({ ...current, recentProjects });
+      }
+      return recentProjects;
+    },
+    async clearRecentProjects() {
+      const current = await read();
+      if (current.recentProjects.length > 0) await write({ ...current, recentProjects: [] });
     },
   };
 }

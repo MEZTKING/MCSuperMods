@@ -120,6 +120,17 @@ const platform = createNodePlatform({
   resizePng,
   msmHome: resolveMsmHome(process.env, app.getPath('home')),
   installEnv: nodeEnv(),
+  // The menu exists only once the app is ready; before that the start-up read installs it.
+  onRecentChanged: (recent) => {
+    if (app.isReady()) installMenu(recent);
+  },
+  // The Windows taskbar jump list; elsewhere a no-op.
+  addRecentDocument: (root) => {
+    if (process.platform === 'win32') app.addRecentDocument(root);
+  },
+  clearRecentDocuments: () => {
+    if (process.platform === 'win32') app.clearRecentDocuments();
+  },
 });
 
 // `<userData>/logs/updater.log`, created on the first logged error.
@@ -198,6 +209,12 @@ function runSmoke(window: BrowserWindow): void {
 void app.whenReady().then(() => {
   registerIpc(platform, updater);
   installMenu();
+  platform.settings.recentProjects().then(
+    (recent) => installMenu(recent),
+    () => {
+      // Unreadable settings: the menu keeps "No recent projects".
+    },
+  );
   const window = createMainWindow({ show: !smoke });
   if (smoke) runSmoke(window);
   window.webContents.once('did-finish-load', () => updater.scheduleStartupCheck());

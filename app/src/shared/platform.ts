@@ -120,6 +120,25 @@ export interface AppSettings {
   installTarget?: GameLocationRef | null;
 }
 
+/**
+ * One recently opened or created project, as stored in `settings.json` (`recentProjects`,
+ * newest first, at most `RECENT_PROJECTS_MAX` entries).
+ */
+export interface RecentProject {
+  /** The project folder. Absolute. */
+  root: string;
+  /** The project's `name` from `msm.project.json`, else the folder name. */
+  name: string;
+  /** ISO 8601 time the project was last opened or created. */
+  openedAt: string;
+}
+
+/** A {@link RecentProject} plus whether its folder still holds `msm.project.json`. */
+export interface RecentProjectView extends RecentProject {
+  /** Checked when the list is read. */
+  exists: boolean;
+}
+
 /** A partial settings update: fields left out keep their stored value. */
 export interface AppSettingsPatch {
   minecraftDir?: string | null | undefined;
@@ -297,6 +316,17 @@ export interface PlatformAdapter {
     createRoot(path: string): Promise<RootResult>;
     closeRoot(): Promise<void>;
     currentRoot(): Promise<string | null>;
+    /** The recent projects, newest first, each checked for `msm.project.json`. */
+    recent(): Promise<RecentProjectView[]>;
+    /**
+     * Opens a project from the recent list. Main refuses a root that is not in the list or
+     * has no `msm.project.json`; the outcome is the same as {@link openRoot}.
+     */
+    openRecent(root: string): Promise<RootResult>;
+    /** Removes one entry from the recent list (matching by normalised path). */
+    removeRecent(root: string): Promise<void>;
+    /** Empties the recent list. */
+    clearRecent(): Promise<void>;
   };
   /** File access scoped to the current project root. Rejects when no root is open. */
   fs: ProjectFileSystem;
@@ -306,6 +336,11 @@ export interface PlatformAdapter {
 export interface MsmBridge extends PlatformAdapter {
   /** Subscribes to application-menu commands; returns an unsubscribe function. */
   onMenu(listener: (command: MenuCommand) => void): () => void;
+  /**
+   * Subscribes to "Open Recent" choices from the application menu (the project root);
+   * returns an unsubscribe function.
+   */
+  onMenuOpenRecent(listener: (root: string) => void): () => void;
   /** Subscribes to asset extraction progress; returns an unsubscribe function. */
   onMinecraftProgress(listener: (progress: MinecraftProgress) => void): () => void;
   /** Tells the main process whether there are unsaved changes (for the close prompt). */

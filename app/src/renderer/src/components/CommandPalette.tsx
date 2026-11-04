@@ -63,9 +63,25 @@ export interface CommandPaletteProps {
   open: boolean;
   commands: readonly PaletteCommand[];
   onClose(): void;
+  /** The dialog's accessible title (default "Command palette"); reused for quick picks. */
+  title?: string;
+  /** The input's placeholder (default "Type a command"). */
+  placeholder?: string;
+  /** The dialog's `data-testid` (default `command-palette`). */
+  testId?: string;
+  /** Shown when nothing matches (default "No matching commands."). */
+  emptyText?: string;
 }
 
-export function CommandPalette({ open, commands, onClose }: CommandPaletteProps) {
+export function CommandPalette({
+  open,
+  commands,
+  onClose,
+  title = 'Command palette',
+  placeholder = 'Type a command',
+  testId = 'command-palette',
+  emptyText = 'No matching commands.',
+}: CommandPaletteProps) {
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const listId = useId();
@@ -96,10 +112,10 @@ export function CommandPalette({ open, commands, onClose }: CommandPaletteProps)
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/30" />
         <Dialog.Content
           aria-describedby={undefined}
-          data-testid="command-palette"
+          data-testid={testId}
           className="fixed top-[15vh] left-1/2 z-50 flex w-[min(94vw,520px)] -translate-x-1/2 flex-col gap-1 rounded-md border border-border bg-panel p-2 text-text shadow-lg"
         >
-          <Dialog.Title className="sr-only">Command palette</Dialog.Title>
+          <Dialog.Title className="sr-only">{title}</Dialog.Title>
           <input
             type="text"
             role="combobox"
@@ -108,7 +124,7 @@ export function CommandPalette({ open, commands, onClose }: CommandPaletteProps)
             aria-controls={listId}
             aria-activedescendant={selected === undefined ? undefined : `${listId}-${selected.id}`}
             data-testid="command-palette-input"
-            placeholder="Type a command"
+            placeholder={placeholder}
             className="rounded border border-border bg-bg px-2 py-1 text-sm"
             spellCheck={false}
             value={query}
@@ -157,9 +173,7 @@ export function CommandPalette({ open, commands, onClose }: CommandPaletteProps)
               </div>
             ))}
           </div>
-          {matches.length === 0 && (
-            <p className="px-2 py-1 text-muted text-sm">No matching commands.</p>
-          )}
+          {matches.length === 0 && <p className="px-2 py-1 text-muted text-sm">{emptyText}</p>}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

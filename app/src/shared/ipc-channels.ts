@@ -15,6 +15,10 @@ export const InvokeChannels = {
   projectCreateRoot: 'msm:v1:project:createRoot',
   projectCloseRoot: 'msm:v1:project:closeRoot',
   projectCurrentRoot: 'msm:v1:project:currentRoot',
+  projectRecent: 'msm:v1:project:recent',
+  projectOpenRecent: 'msm:v1:project:openRecent',
+  projectRemoveRecent: 'msm:v1:project:removeRecent',
+  projectClearRecent: 'msm:v1:project:clearRecent',
   fsReadFile: 'msm:v1:fs:readFile',
   fsWriteFile: 'msm:v1:fs:writeFile',
   fsReadDir: 'msm:v1:fs:readDir',
@@ -53,6 +57,8 @@ export const InvokeChannels = {
 export const EventChannels = {
   /** Main to renderer: a menu command, payload {@link MenuCommand}. */
   menu: 'msm:v1:menu',
+  /** Main to renderer: "Open Recent" in the application menu, payload {@link MenuOpenRecent}. */
+  menuOpenRecent: 'msm:v1:menu:openRecent',
   /** Main to renderer: asset extraction progress, payload {@link MinecraftProgress}. */
   minecraftProgress: 'msm:v1:minecraft:progress',
   /** Renderer to main: the renderer has rendered its first frame (used by smoke mode). */
@@ -85,6 +91,7 @@ export const MENU_COMMANDS = [
   'commandPalette',
   'checkForUpdates',
   'examples',
+  'clearRecentProjects',
 ] as const;
 
 /** A command the application menu sends to the renderer. */
@@ -93,6 +100,18 @@ export type MenuCommand = (typeof MENU_COMMANDS)[number];
 /** Whether a value is a known menu command. */
 export function isMenuCommand(value: unknown): value is MenuCommand {
   return typeof value === 'string' && (MENU_COMMANDS as readonly string[]).includes(value);
+}
+
+/** The payload of {@link EventChannels.menuOpenRecent}: the recent project's root. */
+export interface MenuOpenRecent {
+  root: string;
+}
+
+/** Whether a value is a well-formed {@link MenuOpenRecent} payload. */
+export function isMenuOpenRecent(value: unknown): value is MenuOpenRecent {
+  if (typeof value !== 'object' || value === null) return false;
+  const root = (value as Record<string, unknown>).root;
+  return typeof root === 'string' && root.length > 0 && root.length <= 4096;
 }
 
 /** The vendored data files of a target that the renderer may read. */
