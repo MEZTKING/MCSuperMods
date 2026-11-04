@@ -193,3 +193,105 @@ Append-only record of every working session. Newest entry at the bottom. Format:
   - a `keyType` on `'*'` fields
   - `typescript` devDependencies in plugin-api, schemas and target
 - **Next:** the orchestrator plans Phase 1, Resource Pack Studio.
+
+---
+
+## 2026-11-04 — orchestrator (Fable) — Phase 1 plan
+
+**What**
+- Planned Phase 1 (Resource Pack Studio): 6 waves, 20 briefs (B10–B29), with one lockfile owner per wave.
+
+**Decisions** (ADRs 0009–0013)
+- **Validation:** an MSM structural validator over `SchemaNode` serves as both the live check and the export gate; Spyglass is deferred to Phase 2.
+- **Preview:** deepslate's own renderer, no three.js. Seven MSM-authored fallback parent models.
+- **Asset extraction:** client-jar assets are extracted in the main process into `~/.msm/cache/assets/<version>/`, tested with a synthetic jar.
+- **Save:** save deletes only the files it loaded (`SaveManifest`), which resolves DESIGN Q9. Save is never blocked; errors block export only.
+- **Toolchain:** plugin-api 0.2.0, a `@msm/targets` aggregator, electron-builder 26.18, and version pins for deepslate, Monaco, Tailwind 4, Radix and fflate.
+
+---
+
+## 2026-11-04 — executors (Opus, medium effort) — Phase 1 implementation
+
+**What** (main session verified and committed each brief separately)
+- **Wave 1:**
+  - B10 plugin-api 0.2.0
+  - B11 schema generics, tuples, `keyType`, tags. Unsupported nodes in Phase 1 kinds dropped from 28 to 3.
+  - B13 workspace plumbing and the `tools/new-plugin` scaffold
+  - B16 ADRs 0009–0013
+- **Wave 2:**
+  - B12 `validateJson` and the registry index
+  - B14 client-jar extraction, with path-traversal and zip-bomb guards
+  - B15 the targets aggregator
+  - B17 core save manifest, `setElementValue` with typing coalescing, asset commands, `lowerProject`
+- **Wave 3:**
+  - B18 exporters: deterministic zip (identical in every timezone), the validation gate, `vanilla-packs`
+  - B19 six resource-pack kinds with golden fixtures validated against the real 26.3 schemas
+  - B20 main-process IPC domains and symlink containment
+  - B21 Tailwind/Radix shell with lazy Monaco
+- **Wave 4:**
+  - B22 `SchemaForm` generator
+  - B23 session integration: live problems, manifest save, assets, export and install
+  - B24 deepslate preview with fallback parents
+  - B25 Windows installer config, release workflow, Playwright harness
+- **Wave 5:**
+  - B26 Studio wiring: forms, preview, templates, import with thumbnails, language and pack studios, settings with asset extraction, problem navigation, undoable asset removal through `.msm/trash`
+  - B27 sample resource pack (self-made textures, `minecraft:stick` override), exporter SHA-256 golden, README "Try it"
+  - B28 golden-path e2e, CI e2e, packaged smoke and size steps, `tools/check-size`
+- **Wave 6:**
+  - B29 docs sync, ROADMAP ticks, Milestone Log
+- **Extra fixes from the main session:**
+  - The validator accepts `minecraft:`-prefixed dispatcher keys.
+  - Enum discriminators with no dispatcher member (such as item model `empty`) validate.
+  - Clipped sidebar row actions fixed.
+  - Problem navigation focuses map-entry values.
+
+**Decisions**
+- **User: Windows-only releases.** macOS is dropped and not planned. The Linux `dir` build is used only for verification.
+- **Main session decisions:**
+  - Production CSP keeps `style-src 'unsafe-inline'`, because Monaco and Radix inject runtime styles. Scripts stay `'self'`.
+  - The seven fallback parents are self-authored and acceptable (Q12, pending a user veto).
+  - Asset removal is undoable through `.msm/trash`, which is emptied on open or create.
+  - Exporters may use the resourcepack plugin in tests only.
+  - Size budgets replace the unachievable "150 MB unpacked" rule:
+    - asar ≤ 25 MB
+    - renderer ≤ 8 MB, with no renderer JSON over 100 kB
+    - Windows installer ≤ 150 MB
+- **Process:** GitHub push returned transient HTTP 500s twice. They were retried with backoff and nothing was lost.
+
+---
+
+## 2026-11-04 — main session — Phase 1 review and close
+
+**What**
+- Ran the Phase 1 exit criteria on a clean install, and all passed:
+  - `pnpm install --frozen-lockfile`, `lint`, `typecheck`, `test` and `build`
+  - xvfb smoke and e2e: 2 tests, golden path about 2.4 s, stable over 3 runs
+  - `dist:dir`, then the packaged smoke test
+  - `check-size`: asar 10.2 MB, renderer 5.6 MB
+  - 13 ADRs; DESIGN still has 19 H2 headings
+  - no `26.<n>` literal outside `packages/targets` (only the exempt dev scripts in `tools/`)
+  - no Mojang files or jars tracked
+- Tests: 629 in total.
+
+| Package | Tests |
+|---|---|
+| app | 178 |
+| core | 139 |
+| schemas | 97 |
+| tools | 52 |
+| exporters | 47 |
+| plugin-api | 41 |
+| interop | 31 |
+| resourcepack | 27 |
+| targets aggregator | 9 |
+| mc-26.3 | 8 |
+
+- Estimated Windows installer size is about 122 MB. It cannot be built here (no wine), and neither the CI nor the release workflow has run on GitHub yet.
+
+**Open / Next**
+- **Needs the user:**
+  - Licence (MIT proposed). This blocks the `v0.1.0` tag.
+  - Auto-update: make this repo public, or use a separate public releases repo.
+  - In-game check on Windows with Minecraft 26.3: install the sample pack and hold a stick.
+  - The Q12 fallback-parent policy (veto or accept).
+- **Next:** the orchestrator plans Phase 2, Data Pack Studio, including the Phase 2 carry-overs listed in ROADMAP.

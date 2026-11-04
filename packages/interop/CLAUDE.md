@@ -1,16 +1,18 @@
 # packages/interop — Blockbench, NBT and Minecraft installation
 
-Phase 1 adds the package and `minecraft-install/`: locate `.minecraft`, list versions and extract preview assets with fflate into `~/.msm/cache/assets/<version>/` (ADR 0011), tested with a synthetic jar. NBT and Blockbench follow in Phases 3 and 5.
+Phase 1 code complete: `minecraft-install/` locates `.minecraft`, lists versions and extracts preview assets with fflate into `~/.msm/cache/assets/<version>/` (ADR 0011), tested with a synthetic jar; `readPngHeader` reads PNG sizes. NBT and Blockbench follow in Phases 3 and 5.
 
 ## Purpose
 
 `@msm/interop` connects MSM to files and tools outside the project: Blockbench models, structure files and the user's Minecraft installation. Importers feed the IR; they never build a parallel model.
 
-## Contents (planned)
+## Contents
 
 | Subfolder | Phase | Role |
 |---|---|---|
-| `minecraft-install/` | 1 | Locate `.minecraft`, read `versions/<v>/<v>.jar` for preview assets into `~/.msm/cache/assets/<version>/`, launch helpers |
+| `minecraft-install/` | 1 | `locate.ts` (default dir, versions, jar pick), `extract.ts` (filtered `unzipSync`; no `.png.mcmeta` yet), `cache.ts`, injected `InstallFileSystem`; launch helpers in Phase 4 |
+| `png.ts` | 1 | `readPngHeader` (width, height) for imported textures |
+| `node.ts` | 1 | Subpath `@msm/interop/node`: Node `InstallFileSystem`, `nodeEnv`, `sha1Hex` (main process only) |
 | `nbt/` | 3 | Structure `.nbt` and Sponge `.schem` read/write via `prismarine-nbt` |
 | `blockbench/` | 5 | `.bbmodel` → Java block/item models, or GeckoLib geo + animation JSON |
 
@@ -30,12 +32,10 @@ Phase 1 adds the package and `minecraft-install/`: locate `.minecraft`, list ver
 - Don't modify Blockbench files in place.
 - Append an entry to `docs/DEVLOG.md` each session.
 
-## Commands (planned)
+## Commands
 
-Not yet wired (Phase 0).
-
-- `pnpm --filter @msm/interop test`
-- `pnpm --filter @msm/interop build`
+- `pnpm --filter @msm/interop test` (synthetic jar built at test time; no Mojang bytes)
+- `pnpm typecheck` and `pnpm lint` from the repository root
 
 ## Read next
 

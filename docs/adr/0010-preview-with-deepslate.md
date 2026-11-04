@@ -10,9 +10,9 @@ Previews also need vanilla parent models (`block/cube_all`, `item/generated`) an
 
 - The Phase 1 preview uses deepslate's own WebGL renderers, with `gl-matrix` 3.4.4 for view matrices. three.js is not a dependency. It is reconsidered in Phase 3 (structure preview) only if deepslate's `StructureRenderer` proves insufficient.
 - A model's parent chain resolves through, in order: project elements, the extracted vanilla cache ([ADR 0011](0011-client-jar-asset-extraction.md)), then a small set of **MSM-authored fallback parents**: `msm:block/cube`, `msm:block/cube_all`, `msm:block/cube_column`, `msm:block/cube_bottom_top`, `msm:block/cross`, `msm:item/generated` and `msm:item/handheld`. They are written from scratch in `app/src/renderer/src/preview/fallback-models.ts`, are not extracted from or copied out of Mojang files, are used only for preview and are never exported.
-- Missing textures render with deepslate's missing-texture checker (`TextureAtlas.fromBlobs` with only the textures we have).
+- Missing textures render with deepslate's missing-texture checker (`TextureAtlas.fromBlobs` with only the textures we have). The atlas crops each texture to its first 16×16 tile, so animated strips show their first frame.
 - Without vanilla assets, a banner says "Vanilla assets not found — set your Minecraft folder" and links to settings.
-- Without a WebGL context, the panel shows a message and the rest of the app works normally.
+- Without a WebGL context, the panel shows a message and the rest of the app works normally. Headless runs (CI smoke and e2e under xvfb) show "WebGL is disabled".
 - The preview is lazy-loaded.
 
 ## Consequences
@@ -24,4 +24,4 @@ Previews also need vanilla parent models (`block/cube_all`, `item/generated`) an
 
 ## Status
 
-Accepted (2026-11-04). The fallback-parent policy is pending the user's confirmation (DESIGN Q12).
+Accepted (2026-11-04). Implemented in Phase 1 as written: the seven fallback parents are from-scratch geometry. The fallback-parent policy is pending the user's confirmation (DESIGN Q12).

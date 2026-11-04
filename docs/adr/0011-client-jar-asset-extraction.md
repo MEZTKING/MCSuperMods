@@ -19,9 +19,11 @@ Previews need vanilla models, blockstates, item definitions, textures and lang s
 - The renderer stays sandboxed and the main process does the heavy I/O once per version; later loads read the cache.
 - The cache can be deleted at any time and is rebuilt on demand.
 - `@msm/interop` is testable headless on Linux CI without a game installation.
+- The cache is keyed by the project target's `mcVersion`, so each target reads assets from its own game version.
+- Animation metadata (`.png.mcmeta`) is not extracted, so animated vanilla textures preview as their first frame; extracting it is a Phase 2 candidate.
 - The exact layout of `versions/<v>/<v>.jar` in future releases is assumed stable (verify at implementation for each new target).
 - DESIGN [Caching](../DESIGN.md#6-schema-system-mcdoc) and [Minecraft installation](../DESIGN.md#13-interop-blockbench-nbt-minecraft-installation) name the `assets/` cache path.
 
 ## Status
 
-Accepted (2026-11-04).
+Accepted (2026-11-04). Implemented in Phase 1 as written.

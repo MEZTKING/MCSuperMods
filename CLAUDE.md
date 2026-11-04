@@ -1,6 +1,6 @@
 # MCSuperMods
 
-MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 0 complete; Phase 1 (Resource Pack Studio) in progress.
+MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 1 code complete; awaiting in-game check and licence; Phase 2 (Data Pack Studio) next. Releases: Windows only.
 
 ## Directory map
 
@@ -11,10 +11,11 @@ MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla p
 - `packages/plugin-api/` — `@msm/plugin-api`, public interfaces only
 - `packages/plugins/` — `@msm/plugin-<name>`, eight built-in plugins
 - `packages/exporters/` — `@msm/exporters`, vanilla-packs, fabric-content-jar, java-project
-- `packages/targets/` — `@msm/target-*`, one folder per MC version (`mc-26.3/`, `mc-26.2/`)
+- `packages/targets/` — `@msm/target-*`, one folder per MC version (`mc-26.3/`), plus the `@msm/targets` aggregator (`all/`)
 - `packages/interop/` — `@msm/interop`, Blockbench, NBT/schem, Minecraft installation
 - `engine-mod/` — `msm_runtime` Fabric mod (Gradle, Java 25)
-- `tools/` — dev scripts: sync-mcdoc, sync-mcmeta, new-plugin
+- `tools/` — dev scripts: check-deps, check-size, sync-mcdoc, sync-mcmeta, new-plugin
+- `fixtures/sample-resourcepack/` — sample project for the in-game check
 - `.claude/agents/` — `orchestrator.md`, `executor.md`
 
 ## Scoped guides
@@ -62,5 +63,5 @@ Read only the one for the area you work in, plus docs/DESIGN.md sections it link
 ## Commands
 
 - `pnpm i` / `pnpm dev` (app) / `pnpm lint` (Biome + check-deps) / `pnpm typecheck` / `pnpm test` / `pnpm build`
-- `pnpm --filter @msm/app smoke` (headless: `xvfb-run -a`)
+- `pnpm --filter @msm/app smoke|e2e|dist:dir|smoke:packaged|dist` (headless: `xvfb-run -a`); `node tools/check-size/index.ts`
 - engine-mod Gradle build is not wired until Phase 4.

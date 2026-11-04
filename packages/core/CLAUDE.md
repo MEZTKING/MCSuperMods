@@ -1,31 +1,33 @@
 # packages/core — Core project model (IR)
 
-Phase 0 code exists: model, serialisation, load/save, migrations, kind registry, command stack. Phase 1 adds the `SaveManifest` (ADR 0012), asset commands, value-level edits with coalescing and the `lowerProject` driver.
+Phase 1 code complete: model, serialisation, load/save with the `SaveManifest` (ADR 0012), migrations, kind registry, command stack with asset commands and coalesced value-level edits, and the `lowerProject` driver.
 
 ## Purpose
 
-`@msm/core` owns the project model's behaviour: it loads, saves and migrates projects, runs the command stack and registers element kinds, and later drives the lowering pipeline. The IR types themselves are declared in `@msm/plugin-api` and re-exported here unchanged (ADR 0008). It knows nothing about specific Minecraft versions or element kinds; plugins and targets supply those.
+`@msm/core` owns the project model's behaviour: it loads, saves and migrates projects, runs the command stack and registers element kinds, and drives lowering (`lowerProject`). The IR types themselves are declared in `@msm/plugin-api` and re-exported here unchanged (ADR 0008). It knows nothing about specific Minecraft versions or element kinds; plugins and targets supply those.
 
 ## Contents
 
 - `src/model/`: re-exported IR types plus `ResourceLocation` helpers.
 - `src/serialise/`: deterministic JSON (`stableStringify`, `parseJson`).
 - `src/fs/`: injected `ProjectFileSystem` interface, in-memory implementation, path checks.
-- `src/io/`: layout, load, save, append-only migrators for `msm.project.json` and `content/<ns>/<kind-folder>/<path>.json`.
-- `src/commands/`: command stack (Immer patches converted to RFC 6902 / RFC 6901 pointers, undo/redo).
+- `src/io/`: layout, load (returns a `SaveManifest`), save (`createSaveManifest`; deletes only loaded files), append-only migrators for `msm.project.json` and `content/<ns>/<kind-folder>/<path>.json`.
+- `src/commands/`: command stack (Immer patches as RFC 6902 / RFC 6901 pointers, undo/redo, `coalesce` keys within a time window); `commands.*` incl. `setElementValue`, `addAsset`, `removeAsset`.
 - `src/registry/`: element kind registry and `registerPlugin` (semver `apiVersion` check).
 - `src/problems/`: problem codes.
-- Later: `src/refs/` (reference index, renames), `src/lowering/` (pipeline driver).
-- `test/fixtures/`: golden projects; a nested `biome.json` keeps Biome off them.
+- `src/lowering/`: `lowerProject` (unknown kind, thrown lowering and same-path conflicts become `lowering.*` error problems).
+- Later: `src/refs/` (reference index, renames; Phase 2).
+- `test/fixtures/`: golden projects; the root `biome.json` excludes `**/test/fixtures`.
 
 ## Conventions
 
 - Pure TypeScript (strict). No DOM, no Node `fs`: file access is injected so core runs in tests and in the renderer (ADR 0007).
 - Deterministic serialisation: sorted keys, 2-space indent, trailing newline. JSON only.
 - Format v1 drops unknown fields on load; elements of unregistered kinds round-trip via `_unknown/<kind ns>/<kind path>`.
-- Load skips invalid element files. Until the Phase 1 `SaveManifest` lands, save deletes `content/**/*.json` it did not write; afterwards it deletes only files it loaded and is never blocked (ADR 0012).
+- Load skips invalid element files (error problems with `Problem.file`); save deletes only files in the manifest and is never blocked (ADR 0012).
+- Asset commands change only `Asset` records; byte moves (import, trash) belong to the app session.
 - Every public symbol is exported from `src/index.ts`.
-- Depends only on `@msm/plugin-api` today; the layer map also allows `@msm/schemas` when lowering needs it.
+- Depends only on `@msm/plugin-api`; the layer map also allows `@msm/schemas`.
 
 ## Do / Don't
 

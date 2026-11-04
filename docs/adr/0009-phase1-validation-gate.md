@@ -16,6 +16,7 @@ That plumbing is one to two weeks against an internal API ([risk 2](../DESIGN.md
 - It runs live in the editor (Problems panel) and as the export gate on every lowered JSON output file that declares `OutputFile.schema`.
 - Registry-id checks (`#[id]`) use the vendored mcmeta registries plus project ids, and report warnings, not errors. Schema violations are errors.
 - Problem codes use the `schema.*` prefix.
+- Dispatcher keys are accepted with or without the `minecraft:` prefix. An enum discriminator value that has no dispatcher member (such as the item model type `empty`) is valid and adds no fields.
 - No `@spyglassmc/*` runtime package is added in Phase 1.
 - Phase 2 adds `@spyglassmc/core`, `@spyglassmc/mcdoc` and `@spyglassmc/json`, which mcfunction support needs regardless. If the Spyglass checker replaces our validator, it does so behind the same `validateJson` signature.
 
@@ -30,4 +31,4 @@ That plumbing is one to two weeks against an internal API ([risk 2](../DESIGN.md
 
 ## Status
 
-Accepted (2026-11-04).
+Accepted (2026-11-04). Implemented in Phase 1 (`validateJson`, `createRegistryIndex`); the Spyglass checker remains a Phase 2 deliverable.

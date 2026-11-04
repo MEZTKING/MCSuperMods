@@ -1,12 +1,12 @@
 # docs/ — design docs, roadmap, devlog, ADRs
 
-Active since Phase 0. This file describes conventions.
+Active since Phase 0; Phase 1 code complete (ADRs 0001–0013). This file describes conventions.
 
 ## Purpose
 
 Holds the project's design record: the authoritative design, the delivery plan, the session log and architecture decision records (ADRs).
 
-## Contents (planned)
+## Contents
 
 - `DESIGN.md`: the authoritative design document. Everything else links here.
 - `ROADMAP.md`: phased plan with checklists and the milestone log.
@@ -31,9 +31,9 @@ Holds the project's design record: the authoritative design, the delivery plan, 
 - Don't write tutorials or user guides here; they belong in a future `docs/guide/`.
 - Don't edit past DEVLOG entries; correct them in a new entry.
 
-## Commands (planned)
+## Commands
 
-None. Docs are plain Markdown; `pnpm lint` may later check links and headings (Phase 0).
+None. Docs are plain Markdown and not linted. Before finishing, check by hand: 19 H2 headings in DESIGN.md, every `DESIGN.md#<anchor>` link resolves, no emojis, root CLAUDE.md at most 70 lines and scoped ones at most 55.
 
 ## Read next
 

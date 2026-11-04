@@ -10,16 +10,16 @@ DESIGN [Open Question 9](../DESIGN.md#18-open-questions): load skips element fil
 - `saveProject(fs, project, registry, { manifest })` writes the planned files and deletes only paths that are in the manifest and no longer planned (removed or moved elements). It never deletes a file it did not load.
 - `saveProject` returns the new manifest, which the session keeps for the next save.
 - Files that load skipped (invalid JSON, invalid shape, duplicate id) stay on disk. They remain error problems, carrying `Problem.file`, until the user fixes or deletes them. They no longer block saving.
-- The IR types are unchanged. `.msm/` and asset bytes are untouched by save, as before.
+- The IR types are unchanged. `.msm/` and asset bytes are untouched by save, as before. Removing an asset moves its bytes to `.msm/trash/<ns>/<path>` so that undo restores them; the trash is emptied when a project is opened or created, never on save.
 - The Phase 0 "refuse to save" block is removed from core and the app.
 
 ## Consequences
 
 - Saving can never destroy a file the user has not seen in the app.
-- A newly created element can be planned at the same path as a skipped file; save then writes over that file. Whether the app warns first is decided in the core and session briefs (verify at implementation).
+- A newly created element can be planned at the same path as a skipped file; save then writes over that file. The app warns first: the session reports a `project.overwrites-skipped-file` warning on that element, suggesting a rename.
 - Saving is always possible, so schema errors never trap unsaved work.
 - Resolves DESIGN Open Question 9.
 
 ## Status
 
-Accepted (2026-11-04).
+Accepted (2026-11-04). Implemented in Phase 1 (core `SaveManifest`, session save and overwrite warning).

@@ -28,6 +28,7 @@ MCSuperMods is a desktop application for making Minecraft Java content: resource
 | Real-time multiplayer collaboration | Projects are git-friendly directories; collaboration happens through git. |
 | Server hosting | Out of scope; we export files and launch a local test instance only. |
 | Replacing Spyglass or Misode's libraries | We consume them as dependencies. |
+| macOS and Linux release builds | Releases are a Windows installer only (user decision, [ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)). macOS is not planned for now; Linux builds exist only for local and CI verification and are never published. |
 
 ## 2. Users and Personas
 
@@ -174,7 +175,7 @@ MyMod/
   content/<namespace>/<kind-folder>/<path>.json     # one element per file
   assets/<namespace>/...                            # raw binaries: textures, sounds, .bbmodel, .nbt
   scripts/<namespace>/*.ts                          # Tier-1 scripts
-  .msm/                                             # cache, git-ignored: generated .d.ts, thumbnails, index
+  .msm/                                             # cache, git-ignored: generated .d.ts, thumbnails, index, trash
 ```
 
 The kind-folder is declared by the element kind: `recipe/` for `minecraft:recipe`, `msm/block/` for `msm:block`, and so on. A ruby ore block therefore lives at `content/mymod/msm/block/ruby_ore.json`.
@@ -207,7 +208,7 @@ The kind-folder is declared by the element kind: `recipe/` for `minecraft:recipe
 - JSON only. No YAML, no comments.
 - Two-space indentation, keys sorted on save, trailing newline. Sorted keys give stable diffs regardless of edit order.
 - Binary assets are never inlined into JSON.
-- `.msm/` is a disposable cache; deleting it never loses work.
+- `.msm/` is a disposable cache; deleting it never loses work. Removing an asset moves its bytes to `.msm/trash/<namespace>/<path>` so undo can restore them; the trash is emptied when a project is opened or created, never on save, so deleting `.msm/` loses at most the undo of asset removals ([ADR 0012](adr/0012-save-deletes-only-loaded-files.md)).
 - Format version 1 is closed: unknown fields in `msm.project.json` and in element files are dropped on load. Elements whose kind no plugin registers are kept and round-trip losslessly; they are saved under `content/<namespace>/_unknown/<kind namespace>/<kind path>/`.
 
 ### Migrations
@@ -545,7 +546,7 @@ Structure `.nbt` (vanilla structure template) and Sponge `.schem` are read and w
 ### Minecraft installation
 
 - **Discovery:** default `.minecraft` locations per OS: `%APPDATA%\.minecraft` on Windows, `~/Library/Application Support/minecraft` on macOS, `~/.minecraft` on Linux. Users can override the path.
-- **Asset extraction:** the Electron main process reads vanilla models, blockstates, item definitions, block and item textures and `en_us` lang from `versions/<v>/<v>.jar` of the user's installed client into `~/.msm/cache/assets/<version>/` for previews, and serves them to the renderer over IPC ([ADR 0011](adr/0011-client-jar-asset-extraction.md)). **These assets are never redistributed** and never written into exports. Tests use a synthetic jar built at test time; the repository holds no Mojang bytes.
+- **Asset extraction:** the Electron main process reads vanilla models, blockstates, item definitions, block and item textures and `en_us` lang from `versions/<v>/<v>.jar` of the user's installed client into `~/.msm/cache/assets/<version>/` for previews, and serves them to the renderer over IPC ([ADR 0011](adr/0011-client-jar-asset-extraction.md)). The cache is keyed by the project target's `mcVersion`. Animation metadata (`.png.mcmeta`) is not extracted in Phase 1, so animated textures preview as their first frame. **These assets are never redistributed** and never written into exports. Tests use a synthetic jar built at test time; the repository holds no Mojang bytes.
 - **Launching:** Phase 1 is manual (copy pack, user starts the game). Phase 4 adds a managed instance created with the Fabric installer and a vanilla launcher profile (verify at implementation).
 
 We are read-only on the user's game directory, except for copying packs into `resourcepacks`/`datapacks` and managing our own instance folder.
@@ -559,7 +560,7 @@ We use **Electron**, not Tauri.
 | Choice | Why |
 |---|---|
 | Electron 45 line (verified 2026-11-04; [ADR 0001](adr/0001-electron-over-tauri.md), [ADR 0004](adr/0004-phase0-toolchain.md)) | One language end to end; Chromium guarantees WebGL2 for the 3D preview (Tauri on Linux uses WebKitGTK, where WebGL is unreliable); Blockbench is Electron. |
-| electron-vite, electron-builder | Build/HMR; Win/macOS/Linux packaging with asar. Auto-update deferred. |
+| electron-vite, electron-builder | Build/HMR; packaging with asar. Releases are an unsigned Windows NSIS x64 installer only; a Linux `dir` build is for local and CI verification and is never published; macOS is not planned for now ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)). Auto-update deferred (section 18, question 4). |
 | React 19 + TypeScript (strict), Zustand | Mainstream and typed; Zustand for UI-only state. |
 | Immer + RFC 6902 patches | Command stack and undo/redo in `@msm/core`. |
 | Radix primitives + Tailwind CSS | Accessible primitives; copied shadcn-style components; no runtime UI-library dependency. Icons: Lucide. |
@@ -567,6 +568,8 @@ We use **Electron**, not Tauri.
 | deepslate (own WebGL renderer) | 3D preview of block and item models from Phase 1; structures and worldgen later. three.js only if a later phase needs it ([ADR 0010](adr/0010-preview-with-deepslate.md)). |
 | `@spyglassmc/*` (Phase 2) | Spyglass checker and mcfunction support; Phase 1 validates with our own `validateJson` ([ADR 0009](adr/0009-phase1-validation-gate.md)). |
 | prismarine-nbt, fflate, esbuild, zod | NBT; zip (fflate everywhere); script transpilation; IPC and config validation. |
+
+Build and security ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)): the main build bundles the vendored target data into `out/main/vendor/` (electron-vite plugin `msm:bundle-vendored-data`), and the renderer build drops the vendored-data URLs so no vendored JSON reaches the renderer bundle; main aliases `fflate` to `fflate/browser` to avoid a `require` clash in ESM bundles. The production Content Security Policy allows scripts from `'self'` only, `style-src 'self' 'unsafe-inline'` (Monaco and Radix inject runtime styles and support no nonce) and `img-src 'self' data:` (thumbnails arrive as `data:` URLs).
 
 ### Monorepo and tooling
 
@@ -597,7 +600,7 @@ All OS access (filesystem, processes, zip, dialogs, Minecraft discovery and laun
 
 ### Bundle budget
 
-Installer under 150 MB. Monaco and the 3D preview are lazy-loaded; asar packaging and dependency pruning are on by default. Memory and size are tracked in CI from Phase 1.
+Installer under 150 MB. Monaco and the 3D preview are lazy-loaded; asar packaging and dependency pruning are on by default. Size is tracked in CI from Phase 1: `tools/check-size` enforces `app.asar` at most 25 MB, the renderer output at most 8 MB and no renderer JSON file over 100 kB, and the release workflow fails a Windows installer over 150 MB. The unpacked Linux build (about 284 MB, mostly the 224 MB Electron binary) is reported only. At Phase 1 close: `app.asar` 10.2 MB, renderer 5.6 MB, Windows installer about 122 MB ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
 
 ## 15. Repository Layout
 
@@ -634,7 +637,7 @@ Built-in plugins under `packages/plugins/`: `resourcepack/`, `datapack/`, `struc
 plugin-api  <-  schemas  <-  core  <-  plugins / exporters / targets / interop  <-  app
 ```
 
-`@msm/plugin-api` depends on nothing internal. The `@msm/targets` aggregator sits beside the target packages and depends on them. Plugins, exporters and interop may depend on `@msm/targets` for tests only: a Biome `noRestrictedImports` override forbids it (and `@msm/target-*`) in shipped plugin and exporter source, so shipped plugins still use only `@msm/plugin-api` and `@msm/schemas` ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)). The direction is enforced by TypeScript project references, Biome import rules and `tools/check-deps`, which checks every workspace `package.json` against a layer map and flags version literals outside `packages/targets`; it runs in `pnpm lint`, so a reverse import fails CI.
+`@msm/plugin-api` depends on nothing internal. The `@msm/targets` aggregator sits beside the target packages and depends on them. Plugins, exporters and interop may depend on `@msm/targets` for tests only: a Biome `noRestrictedImports` override forbids it (and `@msm/target-*`) in shipped plugin and exporter source, so shipped plugins still use only `@msm/plugin-api` and `@msm/schemas` ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)). `@msm/exporters` may also use `@msm/plugin-resourcepack` in tests (the sample-project golden); Biome forbids every `@msm/plugin-*` except `@msm/plugin-api` in exporter source, because exporters consume `OutputFile[]`, never plugins. The direction is enforced by TypeScript project references, Biome import rules and `tools/check-deps`, which checks every workspace `package.json` against a layer map and flags version literals outside `packages/targets`; it runs in `pnpm lint`, so a reverse import fails CI.
 
 ### Naming
 
@@ -647,12 +650,12 @@ plugin-api  <-  schemas  <-  core  <-  plugins / exporters / targets / interop  
 | Level | Tooling | What it covers |
 |---|---|---|
 | Unit | Vitest | IR, serialisation, migrations, patches and undo/redo, renames. |
-| Lowering | Vitest golden files | Each lowering function per target, under `fixtures/<target>/expected/`. |
+| Lowering | Vitest golden files | Each lowering function per target, under the plugin's `test/fixtures/<target id>/expected/`; exporters add a SHA-256 golden over the sample project's zip. |
 | Schema conformance | `validateJson` in CI (Spyglass checker from Phase 2 at the earliest) | Every lowered output, including golden fixtures, validated against the schema model derived from vanilla-mcdoc and MSM mcdoc. A failure is a bug. |
 | Engine mod logic | JUnit 5 | Definition parsing, component graph construction. |
 | Engine mod behaviour | Fabric GameTest | Components and events in a running server. |
 | End to end (mod) | CI headless server | From Phase 4, a "kitchen-sink" sample project is exported and loaded; load errors fail CI. |
-| App | Playwright for Electron | Golden-path smoke test: new project, add block, export. |
+| App | Vitest + happy-dom; Playwright for Electron | Component tests; golden-path e2e (new project, block model, texture, export zip, reopen) and smoke runs of the built and packaged app under xvfb. |
 
 CI runs from Phase 0: Biome, type checks and unit tests on every push.
 
@@ -676,7 +679,7 @@ CI runs from Phase 0: Biome, type checks and unit tests on every push.
 1. **Fabric Loom for 26.3:** exact plugin id and version of the non-remapping variant (verify at implementation).
 2. **Rhino coverage:** whether Rhino's ES6 mode covers enough of what esbuild emits for realistic scripts, or whether we switch to GraalJS.
 3. **GeckoLib versus own renderer:** whether GeckoLib remains the animated-model backend long term, given churn risk.
-4. **Auto-update provider:** which update channel electron-builder publishes to (GitHub Releases or other). Phase 1 release builds upload to GitHub Releases of `MEZTKING/MCSuperMods`; auto-update itself stays deferred ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
+4. **Auto-update provider:** the user is interested. The planned path is `electron-updater` with the GitHub provider, which works for unsigned Windows builds (with a SmartScreen warning); `app/electron-builder.yml` carries a commented `publish:` placeholder. Open until the user answers two questions: the licence (question 10), and whether builds publish from this repository (made public) or from a separate public releases repository. Until then release builds attach to draft GitHub Releases of `MEZTKING/MCSuperMods` and auto-update stays deferred ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
 5. **Plugin sandbox mechanism:** `isolated-vm` versus an Electron utility process for third-party plugins.
 6. **NeoForge:** whether to add a NeoForge target in 1.x.
 7. **mcmeta branch naming:** which `misode/mcmeta` branches or refs to pin per target. Resolved: see [ADR 0006](adr/0006-mcmeta-refs.md).

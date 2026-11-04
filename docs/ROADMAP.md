@@ -67,27 +67,34 @@ The first public release. A beginner imports textures, edits block and item mode
 
 ### Deliverables
 
-- [ ] `@msm/plugin-resourcepack`: element kinds for block models, item models, blockstates, lang files, sounds and `pack.mcmeta`.
-- [ ] Schema-driven form generator in `@msm/app` covering string, enum, number, boolean, struct, list, union, reference and dispatcher nodes.
-- [ ] Raw JSON tab (Monaco + schema diagnostics) on every element, editing the same IR as the form.
-- [ ] Schema validation in `@msm/schemas` (`validateJson` over the version-gated `SchemaNode` model; Spyglass checker deferred to Phase 2, [ADR 0009](adr/0009-phase1-validation-gate.md)).
-- [ ] Problems panel fed by live schema validation; errors block export, never save.
-- [ ] DESIGN Q9 fix: save deletes only files it loaded and is never blocked ([ADR 0012](adr/0012-save-deletes-only-loaded-files.md)).
-- [ ] Texture import (PNG) into `assets/<namespace>/` with thumbnails cached in `.msm/`.
-- [ ] `@msm/interop` `minecraft-install/`: locate `.minecraft`, extract preview assets from the user's client jar into `~/.msm/cache/assets/<version>/` (never redistributed; [ADR 0011](adr/0011-client-jar-asset-extraction.md)).
-- [ ] 3D preview panel using deepslate for block and item models ([ADR 0010](adr/0010-preview-with-deepslate.md)).
-- [ ] `@msm/exporters` `vanilla-packs`: resource pack `.zip` and folder output, deterministic, with schema validation gate and `msm.export.json` manifest.
-- [ ] "Install to resourcepacks folder" action.
-- [ ] `@msm/plugin-api` 0.2.0 ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
-- [ ] `@msm/targets` aggregator (`packages/targets/all/`), so tests use real targets without version literals ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
-- [ ] `tools/new-plugin` scaffold, used to create `@msm/plugin-resourcepack`.
-- [ ] Golden-file tests for every lowering function under `fixtures/mc-26.3/expected/`.
-- [ ] Playwright-for-Electron smoke test: new project → add model → export.
-- [ ] CI release builds for Windows, macOS and Linux via electron-builder, attached to tagged releases.
+- [x] `@msm/plugin-resourcepack`: element kinds for block models, item models, blockstates, lang files, sounds and `pack.mcmeta`.
+- [x] Schema-driven form generator in `@msm/app` covering string, enum, number, boolean, struct, list, union, reference and dispatcher nodes.
+- [x] Raw JSON tab (Monaco + schema diagnostics) on every element, editing the same IR as the form.
+- [x] Schema validation in `@msm/schemas` (`validateJson` over the version-gated `SchemaNode` model; Spyglass checker deferred to Phase 2, [ADR 0009](adr/0009-phase1-validation-gate.md)).
+- [x] Problems panel fed by live schema validation; errors block export, never save.
+- [x] DESIGN Q9 fix: save deletes only files it loaded and is never blocked ([ADR 0012](adr/0012-save-deletes-only-loaded-files.md)).
+- [x] Texture import (PNG) into `assets/<namespace>/` with thumbnails cached in `.msm/`.
+- [x] `@msm/interop` `minecraft-install/`: locate `.minecraft`, extract preview assets from the user's client jar into `~/.msm/cache/assets/<version>/` (never redistributed; [ADR 0011](adr/0011-client-jar-asset-extraction.md)).
+- [x] 3D preview panel using deepslate for block and item models ([ADR 0010](adr/0010-preview-with-deepslate.md)).
+- [x] `@msm/exporters` `vanilla-packs`: resource pack `.zip` and folder output, deterministic, with schema validation gate and `msm.export.json` manifest.
+- [x] "Install to resourcepacks folder" action.
+- [x] `@msm/plugin-api` 0.2.0 ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
+- [x] `@msm/targets` aggregator (`packages/targets/all/`), so tests use real targets without version literals ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
+- [x] `tools/new-plugin` scaffold; `@msm/plugin-resourcepack` follows its layout.
+- [x] Golden-file tests for every lowering function under `packages/plugins/resourcepack/test/fixtures/mc-26.3/expected/`, plus a SHA-256 golden over the sample project's exported zip.
+- [x] Playwright-for-Electron golden-path e2e: new project → block model → texture → export zip → reopen, through forms only; built and packaged smoke runs in CI.
+- [x] Sample project `fixtures/sample-resourcepack` for the in-game check.
+- [x] Size budgets tracked in CI (`tools/check-size`; installer budget in the release workflow).
+- [x] Release workflow for Windows only: unsigned NSIS x64 installer via electron-builder, attached to a draft GitHub Release on `v*` tags (macOS not planned; Linux `dir` build for verification only; [ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
+- [ ] In-game verification by the user: install the sample pack in Minecraft Java 26.3 and confirm a held stick shows the ruby.
+- [ ] First tagged release `v0.1.0` (blocked on the licence, DESIGN [Open Question 10](DESIGN.md#18-open-questions)).
+- [ ] Signed Windows release (needs signing credentials from the user).
 
 ### Exit criteria
 
 A user makes and installs a working texture plus custom model pack without touching JSON.
+
+Status: code complete on 2026-11-04. The automated proxy passes (the golden-path e2e never opens the Raw JSON tab and the exported zip passes the schema gate); the in-game check and the first tagged release are pending.
 
 ### Estimate
 
@@ -114,6 +121,11 @@ Bring every common data pack file into the editor with validation and autocomple
 - [ ] `vanilla-packs` exporter: data pack `.zip` and combined resource + data pack export.
 - [ ] "Install to world datapacks folder" action.
 - [ ] Golden tests for every new kind.
+- [ ] Spyglass validation: populate a `SymbolUtil` from the vendored export behind the `validateJson` signature, offline and pinned ([ADR 0009](adr/0009-phase1-validation-gate.md) research note).
+- [ ] Animated textures: extract and export `.png.mcmeta` animation metadata, and animate the preview ([ADR 0011](adr/0011-client-jar-asset-extraction.md)).
+- [ ] Application menu commands for export, install, asset import and settings.
+- [ ] Toolchain move to Node 24 and pnpm 12 (DESIGN [Open Question 11](DESIGN.md#18-open-questions)).
+- [ ] Auto-update with `electron-updater` and the GitHub provider, if the user approves (DESIGN [Open Question 4](DESIGN.md#18-open-questions)).
 
 ### Exit criteria
 
@@ -260,7 +272,7 @@ Open the platform and harden it for release: third-party plugins, a second Minec
 - [ ] Second target package (26.4 or whatever is current) with migration hooks and an "upgrade project target" command.
 - [ ] Templates and wizards (custom ore, custom sword, custom mob).
 - [ ] Documentation site (user guide under `docs/guide/`).
-- [ ] Auto-update (provider: verify at implementation).
+- [ ] Auto-update (planned: `electron-updater` with the GitHub provider; moves to Phase 2 if the user approves, DESIGN [Open Question 4](DESIGN.md#18-open-questions)).
 - [ ] Licence finalised and contribution guidelines published.
 
 ### Exit criteria
@@ -290,3 +302,4 @@ Not committed; each needs an ADR before work starts.
 | Date | Milestone | Notes |
 |---|---|---|
 | 2026-11-04 | Phase 0 — Foundations complete | Monorepo, plugin-api 0.1.0, schemas, core, target mc-26.3, Electron shell, ADRs 0001–0008. 203 tests; headless smoke passes. Untagged: licence pending. |
+| 2026-11-04 | Phase 1 code complete — pending in-game check and licence | plugin-api 0.2.0, `@msm/plugin-resourcepack` (six kinds), `validateJson`, `@msm/exporters` `vanilla-packs`, `@msm/interop` client-jar extraction, `@msm/targets`, Resource Pack Studio with forms, Monaco, deepslate preview, export and install; golden-path e2e and packaged smoke in CI; ADRs 0009–0013. Sizes: `app.asar` 10.2 MB, renderer 5.6 MB, Windows installer about 122 MB. Releases are Windows only. Untagged: licence pending. Manual in-game verification pending. |

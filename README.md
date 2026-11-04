@@ -10,7 +10,7 @@ A desktop mod maker for Minecraft Java Edition that takes you from a simple text
 
 ## Status
 
-- Pre-alpha: Phase 0 (Foundations) is complete; Phase 1 (Resource Pack Studio) is in progress. There are no releases yet.
+- Pre-alpha: the Phase 1 code (Resource Pack Studio) is complete and awaits an in-game check. There are no releases yet: the first one waits for the licence decision. Phase 2 (Data Pack Studio) is next.
 - Releases will be for Windows only to begin with; Linux builds are made in CI for testing, and macOS builds are not planned for now.
 - Current Minecraft target: **Java 26.3** (with 26.2 as the previous supported release at launch).
 
@@ -29,7 +29,7 @@ pnpm dev               # opens the MCSuperMods window
 Then:
 
 1. Open the folder `fixtures/sample-resourcepack` from the repository. It is a small sample project: a ruby block, a ruby item and their textures, all made for MCSuperMods.
-2. Choose **Install to resourcepacks folder** from the export menu. MCSuperMods writes the pack into your Minecraft `resourcepacks` folder (set the Minecraft folder in Settings if it was not found).
+2. Choose **Install to resourcepacks folder** on the toolbar. MCSuperMods writes the pack into your Minecraft `resourcepacks` folder (set the Minecraft folder in Settings if it was not found).
 3. Start Minecraft Java 26.3, open **Options → Resource Packs** and move the pack named `msm-sample-resource-pack-mc-26.3.zip` (described as "MCSuperMods sample: a held stick shows a ruby") to the selected side.
 4. In a world, hold a stick: the sample pack replaces the stick's look with the ruby, so you can see that the pack is active.
 
@@ -89,6 +89,9 @@ pnpm typecheck                      # tsc -b over all project references
 pnpm test                           # unit tests (Vitest)
 pnpm build                          # build the app
 pnpm --filter @msm/core test        # tests for one package
+pnpm --filter @msm/app e2e          # Playwright golden path (Linux CI: xvfb-run -a)
+pnpm --filter @msm/app dist         # Windows installer (dist:dir for an unpacked test build)
+node tools/check-size/index.ts      # size budgets, after build and dist:dir
 ```
 
 Vendored Minecraft data is refreshed only by `tools/sync-mcdoc` and `tools/sync-mcmeta`; each has a README with its arguments. The `msm_runtime` engine mod (`cd engine-mod && ./gradlew build`) arrives in Phase 4.

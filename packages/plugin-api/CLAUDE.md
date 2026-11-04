@@ -1,6 +1,6 @@
 # packages/plugin-api — Public plugin API
 
-Phase 0 code exists: `apiVersion` 0.1.0 interfaces, IR types and `definePlugin`.
+Phase 1 code complete: `API_VERSION` 0.2.0 (additive over 0.1.0 plus required `Target.folders`; ADR 0013), IR types, `definePlugin` and shared path validation.
 
 ## Purpose
 
@@ -9,9 +9,10 @@ Phase 0 code exists: `apiVersion` 0.1.0 interfaces, IR types and `definePlugin`.
 ## Contents
 
 - `src/json.ts`, `src/model.ts`: JSON and IR types.
-- `src/output.ts`, `src/problems.ts`: `OutputFile`, `OutputSink`, `Problem`, `ProblemReporter`.
-- `src/target.ts`: `Target`, `PackFormat` (`{ major, minor }`), `MigrationReport`.
-- `src/contributions.ts`: `ElementKind`, `EditorContribution`, `Exporter`, `Importer`, `Command`.
+- `src/output.ts`, `src/problems.ts`: `OutputFile` (with optional `schema` for the validation gate), `OutputSink`, `Problem` (with optional `file`), `ProblemReporter`.
+- `src/target.ts`: `Target` (incl. `folders.resource: Record<ResourceFolderKey, string>`), `PackFormat` (`{ major, minor }`), `MigrationReport`.
+- `src/contributions.ts`: `ElementKind` (`defaultData`, `hiddenPaths`, `previewKind`), `EditorContribution`, `Exporter` (`ExporterInput.meta`), `Importer`, `Command`.
+- `src/paths.ts`: `isProjectRelativePath`, `assertProjectRelativePath` (shared by core and app main).
 - `src/plugin.ts`, `src/version.ts`: `Plugin`, `definePlugin`, `API_VERSION`.
 - `CHANGELOG.md`: every API change, with migration notes for breaking ones.
 
@@ -41,4 +42,4 @@ Phase 0 code exists: `apiVersion` 0.1.0 interfaces, IR types and `definePlugin`.
 
 - [DESIGN §7 Plugin System](../../docs/DESIGN.md#7-plugin-system)
 - [DESIGN §9 Targets and Exporters](../../docs/DESIGN.md#9-targets-and-exporters)
-- [ADR 0008](../../docs/adr/0008-ir-types-in-plugin-api.md), [ROADMAP, Phase 0 and Phase 7](../../docs/ROADMAP.md)
+- [ADR 0008](../../docs/adr/0008-ir-types-in-plugin-api.md), [ADR 0013](../../docs/adr/0013-phase1-toolchain-and-packaging.md), [ROADMAP, Phases 1 and 7](../../docs/ROADMAP.md)

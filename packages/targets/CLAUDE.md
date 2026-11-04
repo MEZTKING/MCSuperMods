@@ -1,6 +1,6 @@
 # packages/targets — Minecraft version targets
 
-Phase 0 code exists: `mc-26.3/`. Phase 1 adds `Target.folders` (plugin-api 0.2.0) and the `@msm/targets` aggregator in `all/` (`builtInTargets`, `targetById`; ADR 0013). A second target (`mc-26.2/`) arrives in Phase 7.
+Phase 1 code complete: `mc-26.3/` with `Target.folders` (plugin-api 0.2.0) and the `@msm/targets` aggregator in `all/` (ADR 0013). A second target (`mc-26.2/`) arrives in Phase 7.
 
 ## Purpose
 
@@ -13,6 +13,7 @@ One package per Minecraft version, `@msm/target-mc-<version>`, holding every ver
 - `mc-26.3/vendor/vanilla-mcdoc/`: Spyglass symbol export, `LICENSE`, `SOURCE.json` (ADR 0005).
 - `mc-26.3/vendor/mcmeta/`: `version.json`, `registries.json`, `SOURCE.json` (ADR 0006).
 - `mc-26.3/CHANGES.md`: verified facts with sources, and what Mojang changed that affected us.
+- `all/src/index.ts` (`@msm/targets`): `builtInTargets`, `defaultTargetId`, `targetById`, `readVendoredJson`. The only way code outside this tree reaches a target; plugin and exporter `src/` may not import it (tests only). The app's main build bundles vendored data into `out/main/vendor/`.
 - Later: `migrateFrom(previousTarget)` hooks for breaking changes between versions.
 
 ## Conventions
