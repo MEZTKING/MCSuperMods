@@ -21,12 +21,14 @@ export function StatusToast() {
             if (!open && useUiStore.getState().message === message) setMessage(null);
           }}
           className={
-            'flex items-start gap-2 rounded-md border bg-panel p-3 shadow-lg ' +
+            // Width-limited and wrapping, so long text never runs past the window edge.
+            'flex w-full max-w-[min(420px,90vw)] items-start gap-2 break-words rounded-md border bg-panel p-3 shadow-lg ' +
             (message.kind === 'error' ? 'border-error' : 'border-border')
           }
         >
           <Toast.Description
-            className={`flex-1 whitespace-pre-line ${message.kind === 'error' ? 'text-error' : ''}`}
+            data-testid="status-toast-text"
+            className={`max-h-48 min-w-0 flex-1 overflow-y-auto whitespace-pre-line break-words [overflow-wrap:anywhere] ${message.kind === 'error' ? 'text-error' : ''}`}
           >
             {message.text}
           </Toast.Description>
@@ -35,7 +37,7 @@ export function StatusToast() {
           </Toast.Close>
         </Toast.Root>
       )}
-      <Toast.Viewport className="fixed right-0 bottom-8 z-50 m-0 flex w-96 max-w-[100vw] list-none flex-col gap-2 p-4 outline-none" />
+      <Toast.Viewport className="fixed right-0 bottom-8 z-50 m-0 flex w-[min(452px,100vw)] max-w-[100vw] list-none flex-col gap-2 p-4 outline-none" />
     </>
   );
 }

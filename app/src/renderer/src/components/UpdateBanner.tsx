@@ -4,14 +4,27 @@ import type { UpdateStatus } from '../../../shared/ipc-channels';
 import type { PlatformAdapter } from '../../../shared/platform';
 import { Button, iconButtonClass } from './ui/Button';
 
-/** The status-bar text for the result of a manual update check (ADR 0018). */
-export function updateCheckMessage(status: UpdateStatus): { kind: 'info' | 'error'; text: string } {
+/**
+ * The status-toast text for the result of a manual update check (ADR 0018). `currentVersion`
+ * is the running app's version, shown when it is the latest. Error messages come from main
+ * already short and sanitised.
+ */
+export function updateCheckMessage(
+  status: UpdateStatus,
+  currentVersion?: string | null,
+): { kind: 'info' | 'error'; text: string } {
   switch (status.state) {
     case 'idle':
     case 'checking':
       return { kind: 'info', text: 'Checking for updates…' };
     case 'not-available':
-      return { kind: 'info', text: 'MCSuperMods is up to date.' };
+      return {
+        kind: 'info',
+        text:
+          currentVersion === undefined || currentVersion === null || currentVersion === ''
+            ? 'You have the latest version.'
+            : `You have the latest version (v${currentVersion.replace(/^v/, '')}).`,
+      };
     case 'available':
       return { kind: 'info', text: `Version ${status.version} is available; downloading it now.` };
     case 'downloading':
@@ -22,7 +35,7 @@ export function updateCheckMessage(status: UpdateStatus): { kind: 'info' | 'erro
         text: `Version ${status.version} is ready. Choose Restart to update to install it.`,
       };
     case 'error':
-      return { kind: 'error', text: `Could not check for updates: ${status.message}` };
+      return { kind: 'error', text: status.message || 'Could not check for updates.' };
     case 'disabled':
       return {
         kind: 'info',

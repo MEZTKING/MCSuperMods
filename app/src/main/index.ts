@@ -7,6 +7,7 @@
  * @packageDocumentation
  */
 
+import { join } from 'node:path';
 import { nodeEnv } from '@msm/interop/node';
 import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron';
 import { EventChannels } from '../shared/ipc-channels';
@@ -15,6 +16,7 @@ import { registerIpc } from './ipc';
 import { installMenu } from './menu';
 import { createNodePlatform, type NativeDialogs } from './platform/node-platform';
 import { resolveMsmHome } from './platform/settings';
+import { createUpdateLog } from './update-log';
 import { type AutoUpdaterLike, createUpdater } from './updater';
 import { createMainWindow } from './window';
 
@@ -120,6 +122,16 @@ const platform = createNodePlatform({
   installEnv: nodeEnv(),
 });
 
+// `<userData>/logs/updater.log`, created on the first logged error.
+let updateLog: { path: string; write: ReturnType<typeof createUpdateLog> } | null = null;
+const updateLogFile = () => {
+  if (updateLog === null) {
+    const path = join(app.getPath('userData'), 'logs', 'updater.log');
+    updateLog = { path, write: createUpdateLog(path) };
+  }
+  return updateLog;
+};
+
 const updater = createUpdater({
   gate: { isPackaged: app.isPackaged, platform: process.platform, env: process.env },
   // Loaded on the first check only, so runs where the updater is inactive never load it.
@@ -139,9 +151,15 @@ const updater = createUpdater({
   closeWindows() {
     for (const window of BrowserWindow.getAllWindows()) window.close();
   },
+  // The full error (headers, cookies, feed XML, stack) goes to the log file only; the
+  // console gets the one-line message.
   log(message, error) {
     if (error === undefined) console.log(message);
-    else console.error(message, error);
+    else {
+      const log = updateLogFile();
+      console.error(`${message} Details: ${log.path}`);
+      void log.write(message, error);
+    }
   },
 });
 

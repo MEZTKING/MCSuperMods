@@ -11,12 +11,19 @@
  * - Updates download automatically; installing happens only when the user asks
  *   ({@link Updater.install}), after every window has closed through the unsaved-changes
  *   prompt. Nothing installs on an ordinary quit.
- * - Errors are logged and reported as an `error` status; they never throw out of the updater.
+ * - Errors never throw out of the updater. Each is classified ({@link classifyUpdateError}):
+ *   "no published release" (for example only a draft exists) becomes `not-available`, network
+ *   failures and everything else become an `error` status with a short, sanitised message.
+ *   The full error (which can carry HTTP headers, cookies and feed XML) goes only to the log.
  *
  * @packageDocumentation
  */
 
-import type { UpdateDisabledReason, UpdateStatus } from '../shared/ipc-channels';
+import {
+  UPDATE_STATUS_MESSAGE_MAX,
+  type UpdateDisabledReason,
+  type UpdateStatus,
+} from '../shared/ipc-channels';
 
 /** The events of electron-updater's `autoUpdater` this module listens to. */
 export type AutoUpdaterEvent =
@@ -96,9 +103,136 @@ export interface Updater {
 /** The start-up check's default delay after the window has loaded. */
 export const STARTUP_CHECK_DELAY_MS = 5_000;
 
-function messageOf(error: unknown): string {
-  if (error instanceof Error && error.message !== '') return error.message;
-  return typeof error === 'string' && error !== '' ? error : 'The update check failed.';
+/** The message shown when GitHub could not be reached. */
+export const UPDATE_OFFLINE_MESSAGE =
+  'Could not reach GitHub to check for updates. Check your internet connection and try again.';
+/** The start of the message shown for any other failed check. */
+export const UPDATE_FAILED_MESSAGE = 'Could not check for updates.';
+/** The longest `error` message the updater builds from an unknown error. */
+export const UPDATE_REASON_MAX = 160;
+
+/**
+ * electron-updater 6.8.11 error codes that mean "no published release to update to" (GitHub
+ * provider): the `/releases/latest` lookup failed (also when only a draft exists), the feed
+ * has no published entry, or the release has no `latest.yml`.
+ */
+const NO_RELEASE_CODES: ReadonlySet<string> = new Set([
+  'ERR_UPDATER_LATEST_VERSION_NOT_FOUND',
+  'ERR_UPDATER_NO_PUBLISHED_VERSIONS',
+  'ERR_UPDATER_CHANNEL_FILE_NOT_FOUND',
+]);
+const NO_RELEASE_MESSAGE =
+  /Unable to find latest version on GitHub|No published versions on GitHub|please ensure a production release exists|Cannot find latest\.yml/i;
+/** Node and Chromium network failure codes. */
+const NETWORK_CODES: ReadonlySet<string> = new Set([
+  'ENOTFOUND',
+  'ECONNRESET',
+  'ECONNREFUSED',
+  'ECONNABORTED',
+  'ETIMEDOUT',
+  'ESOCKETTIMEDOUT',
+  'EAI_AGAIN',
+  'ENETUNREACH',
+  'ENETDOWN',
+  'EHOSTUNREACH',
+]);
+const NETWORK_MESSAGE =
+  /net::ERR_[A-Z_]+|\b(?:ENOTFOUND|ECONNRESET|ECONNREFUSED|ECONNABORTED|ETIMEDOUT|ESOCKETTIMEDOUT|EAI_AGAIN|ENETUNREACH|ENETDOWN|EHOSTUNREACH)\b/;
+
+/** How an updater error is reported. */
+export type UpdateErrorClass =
+  | { kind: 'no-release' }
+  | { kind: 'network'; message: string }
+  | { kind: 'other'; message: string };
+
+function rawMessageOf(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  if (typeof error === 'object' && error !== null) {
+    const message = (error as Record<string, unknown>).message;
+    if (typeof message === 'string') return message;
+  }
+  return '';
+}
+
+function codeOf(error: unknown): string | null {
+  if (typeof error === 'object' && error !== null) {
+    const code = (error as Record<string, unknown>).code;
+    if (typeof code === 'string') return code;
+  }
+  return null;
+}
+
+function statusCodeOf(error: unknown): number | null {
+  if (typeof error === 'object' && error !== null) {
+    const statusCode = (error as Record<string, unknown>).statusCode;
+    if (typeof statusCode === 'number') return statusCode;
+  }
+  const code = codeOf(error);
+  const match = code === null ? null : /^HTTP_ERROR_(\d{3})$/.exec(code);
+  return match === null ? null : Number(match[1]);
+}
+
+/**
+ * A short reason safe to show: the first line only, cut before headers, cookies, markup and
+ * stack frames, tokens redacted, at most `max` characters. Empty when nothing useful is left.
+ */
+export function sanitiseUpdateReason(raw: string, max = UPDATE_REASON_MAX): string {
+  let text = raw.split(/\r?\n/, 1)[0] ?? '';
+  const first = text;
+  for (const marker of [/Headers:/i, /set-cookie/i, /<[?!a-z]/i, /\s+at\s+\S+\s*\(/, /\{/]) {
+    const index = first.search(marker);
+    if (index >= 0 && index < text.length) text = text.slice(0, index);
+  }
+  text = text
+    .replace(/\b(?:gh[pousr]_|github_pat_)[A-Za-z0-9_]+/g, '[redacted]')
+    .replace(/\b(Bearer|token)\s+\S+/gi, '$1 [redacted]')
+    .replace(
+      /([?&](?:token|access_token|sig|signature|X-Amz-[A-Za-z-]+)=)[^&\s]+/gi,
+      '$1[redacted]',
+    )
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/[\s:,;(-]+$/, '');
+  if (text.length > max) text = `${text.slice(0, max - 1).trimEnd()}\u2026`;
+  return text;
+}
+
+/**
+ * Classifies an electron-updater error. Network failures come first because electron-updater
+ * wraps them in its own codes (`ERR_UPDATER_LATEST_VERSION_NOT_FOUND` includes the cause).
+ */
+export function classifyUpdateError(error: unknown): UpdateErrorClass {
+  const code = codeOf(error);
+  const raw = rawMessageOf(error);
+  if ((code !== null && NETWORK_CODES.has(code)) || NETWORK_MESSAGE.test(raw)) {
+    return { kind: 'network', message: UPDATE_OFFLINE_MESSAGE };
+  }
+  if (code !== null && NO_RELEASE_CODES.has(code)) return { kind: 'no-release' };
+  if (code === 'ERR_XML_MISSED_ELEMENT' && NO_RELEASE_MESSAGE.test(raw)) {
+    return { kind: 'no-release' };
+  }
+  const status = statusCodeOf(error);
+  // 404 or 406 from the releases feed or `/releases/latest` (not an installer download).
+  if ((status === 404 || status === 406) && !/\/releases\/download\/(?!.*latest\.yml)/.test(raw)) {
+    return { kind: 'no-release' };
+  }
+  if (NO_RELEASE_MESSAGE.test(raw)) return { kind: 'no-release' };
+  return { kind: 'other', message: failureMessage(UPDATE_FAILED_MESSAGE, raw) };
+}
+
+/** `lead` plus a sanitised reason, within {@link UPDATE_REASON_MAX} characters overall. */
+function failureMessage(lead: string, raw: string): string {
+  const reason = sanitiseUpdateReason(raw, UPDATE_REASON_MAX - lead.length - 1);
+  return reason === '' ? lead : `${lead} ${reason}`;
+}
+
+/** The status an updater error becomes. */
+export function statusForError(error: unknown): UpdateStatus {
+  const classified = classifyUpdateError(error);
+  return classified.kind === 'no-release'
+    ? { state: 'not-available' }
+    : { state: 'error', message: classified.message };
 }
 
 function versionOf(payload: unknown): string {
@@ -133,7 +267,7 @@ export function statusForEvent(event: AutoUpdaterEvent, payload: unknown): Updat
     case 'update-downloaded':
       return { state: 'downloaded', version: versionOf(payload) };
     case 'error':
-      return { state: 'error', message: messageOf(payload) };
+      return statusForError(payload);
   }
 }
 
@@ -160,7 +294,12 @@ export function createUpdater(deps: UpdaterDeps): Updater {
   let installRequested = false;
   let running: Promise<UpdateStatus> | null = null;
 
-  const setStatus = (next: UpdateStatus): void => {
+  const setStatus = (proposed: UpdateStatus): void => {
+    // Belt and braces: nothing long may cross IPC.
+    const next: UpdateStatus =
+      proposed.state === 'error' && proposed.message.length > UPDATE_STATUS_MESSAGE_MAX
+        ? { state: 'error', message: proposed.message.slice(0, UPDATE_STATUS_MESSAGE_MAX) }
+        : proposed;
     if (sameStatus(status, next)) return;
     status = next;
     deps.broadcast(next);
@@ -192,7 +331,8 @@ export function createUpdater(deps: UpdaterDeps): Updater {
       if (status.state === 'checking') setStatus(result === null ? { state: 'idle' } : status);
     } catch (error) {
       deps.log('MSM updates: the check failed.', error);
-      if (status.state !== 'error') setStatus({ state: 'error', message: messageOf(error) });
+      // The `error` event usually reported it already; the same status is not sent twice.
+      setStatus(statusForError(error));
     }
     return status;
   };
@@ -243,7 +383,10 @@ export function createUpdater(deps: UpdaterDeps): Updater {
       } catch (error) {
         installRequested = false;
         deps.log('MSM updates: the installer could not start.', error);
-        setStatus({ state: 'error', message: messageOf(error) });
+        setStatus({
+          state: 'error',
+          message: failureMessage('Could not start the update installer.', rawMessageOf(error)),
+        });
         return false;
       }
     },

@@ -145,6 +145,12 @@ export const UPDATE_DISABLED_REASONS = [
 /** Why the auto-updater is inactive. */
 export type UpdateDisabledReason = (typeof UPDATE_DISABLED_REASONS)[number];
 
+/**
+ * The longest `error` status message that may cross IPC. Main sends short, sanitised text
+ * only; the full error goes to the updater log file.
+ */
+export const UPDATE_STATUS_MESSAGE_MAX = 300;
+
 /** The auto-updater's state (ADR 0018), sent on {@link EventChannels.updatesStatus}. */
 export type UpdateStatus =
   | { state: 'idle' }
@@ -171,7 +177,9 @@ export function isUpdateStatus(value: unknown): value is UpdateStatus {
     case 'downloading':
       return typeof record.percent === 'number' && Number.isFinite(record.percent);
     case 'error':
-      return typeof record.message === 'string';
+      return (
+        typeof record.message === 'string' && record.message.length <= UPDATE_STATUS_MESSAGE_MAX
+      );
     case 'disabled':
       return (
         typeof record.reason === 'string' &&

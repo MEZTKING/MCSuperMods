@@ -618,10 +618,14 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
 
   const checkForUpdates = (): void => {
     setMessage({ kind: 'info', text: 'Checking for updates…' });
+    const version = bridge.app.info().then(
+      (info) => info.version,
+      () => null,
+    );
     bridge.updates.check().then(
-      (status) => setMessage(updateCheckMessage(status)),
-      (error: unknown) =>
-        setMessage({ kind: 'error', text: `Could not check for updates: ${messageOf(error)}` }),
+      async (status) => setMessage(updateCheckMessage(status, await version)),
+      // Main never rejects; an IPC failure gets the generic text (details stay out of the UI).
+      () => setMessage({ kind: 'error', text: 'Could not check for updates.' }),
     );
   };
   const browseMinecraft = useCallback(

@@ -11,6 +11,7 @@ import {
   type InvokeChannel,
   InvokeChannels,
   UPDATE_DISABLED_REASONS,
+  UPDATE_STATUS_MESSAGE_MAX,
   VENDORED_KEYS,
 } from './ipc-channels';
 
@@ -228,7 +229,9 @@ export const updateStatusSchema = z.discriminatedUnion('state', [
   z.object({ state: z.literal('not-available') }).strict(),
   z.object({ state: z.literal('downloading'), percent: z.number().min(0).max(100) }).strict(),
   z.object({ state: z.literal('downloaded'), version: z.string().max(256) }).strict(),
-  z.object({ state: z.literal('error'), message: z.string() }).strict(),
+  z
+    .object({ state: z.literal('error'), message: z.string().max(UPDATE_STATUS_MESSAGE_MAX) })
+    .strict(),
   z.object({ state: z.literal('disabled'), reason: z.enum(UPDATE_DISABLED_REASONS) }).strict(),
 ]);
 

@@ -623,3 +623,20 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 - Push the tag `v0.2.0` from their clone, because the cloud session cannot push tags.
 - Confirm the CurseForge jar path and `baseModLoader` on a real machine.
 - Decide whether the template and samples library comes next.
+
+---
+
+## 2026-11-04 — main session — Bug from the first Windows run: update check dumped raw errors
+
+**What**
+- The user ran Help > Check for Updates in the installed v0.1.0. The only release was a draft, which the updater cannot see, so electron-updater threw `ERR_UPDATER_LATEST_VERSION_NOT_FOUND`. It wraps a builder-util-runtime `HttpError` whose message includes the response headers (`set-cookie` with anonymous GitHub session cookies), the feed XML and a stack. The app showed all of it in a toast that overflowed the window. Two bugs: the classification (no published release should mean "up to date") and leaking raw error text into the UI.
+- Fixed (executor brief, verified by the main session):
+  - `classifyUpdateError` and `sanitiseUpdateReason` in `updater.ts`. Network errors are checked first, because offline errors arrive wrapped inside the "not found" code.
+  - Full errors go only to `<userData>/logs/updater.log`, rotated at 256 kB.
+  - IPC message capped at 300 characters (zod and the preload check).
+  - Toasts are width-limited and wrap.
+  - Tests use fake errors carrying headers, cookies, XML and stacks.
+- Verified: lint, typecheck, app tests (451), build, xvfb smoke, e2e 4/4, `dist:dir` and the packaged smoke test (updater inactive on Linux), `check-size` within budget. ADR 0018 updated.
+
+**Next**
+- The user tags `v0.2.0` (which includes this fix), publishes the draft, and installs 0.2.0 manually once. After that, updates work. The installed 0.1.0 keeps the old behaviour.

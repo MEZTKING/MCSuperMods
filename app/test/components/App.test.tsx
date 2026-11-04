@@ -350,12 +350,21 @@ describe('App menu commands', () => {
   it('checks for updates from the menu and the palette, and shows the update banner', async () => {
     const harness = await renderApp();
     await harness.menu('checkForUpdates');
-    await toast('MCSuperMods is up to date.');
-    harness.updateCheck = { state: 'error', message: 'offline' };
+    await toast('You have the latest version (v0.1.0-test).');
+    harness.updateCheck = {
+      state: 'error',
+      message:
+        'Could not reach GitHub to check for updates. Check your internet connection and try again.',
+    };
     await harness.menu('commandPalette');
     const palette = await screen.findByTestId('command-palette');
     await userEvent.setup().click(within(palette).getByTestId('command-checkForUpdates'));
-    await toast('Could not check for updates: offline');
+    const text = await toast(
+      'Could not reach GitHub to check for updates. Check your internet connection and try again.',
+    );
+    // The toast wraps and is width-limited, so long text never overflows the window.
+    expect(text.className).toMatch(/break-words/);
+    expect(text.closest('li')?.className ?? '').toMatch(/max-w-\[min\(420px,90vw\)\]/);
     expect(screen.queryByTestId('update-banner')).toBeNull();
     harness.pushUpdate({ state: 'downloaded', version: '9.9.9' });
     expect(await screen.findByText('Version 9.9.9 is ready to install.')).toBeTruthy();

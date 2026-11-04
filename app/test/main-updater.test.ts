@@ -2,9 +2,13 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   type AutoUpdaterEvent,
   type AutoUpdaterLike,
+  classifyUpdateError,
   createUpdater,
   STARTUP_CHECK_DELAY_MS,
+  sanitiseUpdateReason,
   statusForEvent,
+  UPDATE_OFFLINE_MESSAGE,
+  UPDATE_REASON_MAX,
   type UpdaterGate,
   updateDisabledReason,
 } from '../src/main/updater';
@@ -104,13 +108,13 @@ describe('statusForEvent', () => {
       state: 'downloaded',
       version: '1.2.0',
     });
-    expect(statusForEvent('error', new Error('offline'))).toEqual({
+    expect(statusForEvent('error', new Error('disk full'))).toEqual({
       state: 'error',
-      message: 'offline',
+      message: 'Could not check for updates. disk full',
     });
     expect(statusForEvent('error', undefined)).toEqual({
       state: 'error',
-      message: 'The update check failed.',
+      message: 'Could not check for updates.',
     });
   });
 });
@@ -210,12 +214,10 @@ describe('createUpdater', () => {
   it('logs errors and reports them without throwing', async () => {
     const { fake, deps, updater, sent } = setup();
     fake.failWith = new Error('net::ERR_INTERNET_DISCONNECTED');
-    expect(await updater.check()).toEqual({
-      state: 'error',
-      message: 'net::ERR_INTERNET_DISCONNECTED',
-    });
+    const offline = { state: 'error', message: UPDATE_OFFLINE_MESSAGE };
+    expect(await updater.check()).toEqual(offline);
     expect(deps.log).toHaveBeenCalled();
-    expect(sent.at(-1)).toEqual({ state: 'error', message: 'net::ERR_INTERNET_DISCONNECTED' });
+    expect(sent.at(-1)).toEqual(offline);
     // A later check can succeed.
     fake.failWith = null;
     expect(await updater.check()).toEqual({ state: 'not-available' });
@@ -224,7 +226,10 @@ describe('createUpdater', () => {
   it('reports a failure to load electron-updater as an error', async () => {
     const { deps, updater } = setup();
     deps.load.mockRejectedValueOnce(new Error('missing app-update.yml'));
-    expect(await updater.check()).toEqual({ state: 'error', message: 'missing app-update.yml' });
+    expect(await updater.check()).toEqual({
+      state: 'error',
+      message: 'Could not check for updates. missing app-update.yml',
+    });
   });
 
   it('shares one check between concurrent requests', async () => {
@@ -243,7 +248,140 @@ describe('createUpdater', () => {
     };
     await updater.install();
     expect(updater.finishInstall()).toBe(false);
-    expect(updater.status).toEqual({ state: 'error', message: 'spawn EPERM' });
+    expect(updater.status).toEqual({
+      state: 'error',
+      message: 'Could not start the update installer. spawn EPERM',
+    });
     expect(updater.installRequested).toBe(false);
+  });
+});
+
+/** An error shaped like electron-updater's `newError(message, code)`. */
+function updaterError(message: string, code?: string, statusCode?: number): Error {
+  const error = new Error(message) as Error & { code?: string; statusCode?: number };
+  if (code !== undefined) error.code = code;
+  if (statusCode !== undefined) error.statusCode = statusCode;
+  return error;
+}
+
+/** The kind of HttpError text builder-util-runtime builds: status, then headers, then more. */
+const HEADERS =
+  'Headers: {\n  "set-cookie": [\n    "_gh_sess=abc123secret; path=/; secure; HttpOnly",\n' +
+  '    "_octo=GH1.1.1234; Path=/", "logged_in=no; Path=/"\n  ],\n  "server": "github.com"\n}';
+const FEED =
+  '<?xml version="1.0" encoding="UTF-8"?>\n<feed xmlns="http://www.w3.org/2005/Atom">' +
+  '<id>tag:github.com,2008:https://github.com/MEZTKING/MCSuperMods/releases</id></feed>';
+const STACK =
+  'HttpError: 406 Not Acceptable\n    at createHttpError (C:\\app\\resources\\app.asar\\out\\main\\x.js:1:1)\n' +
+  '    at ClientRequest.<anonymous> (C:\\app\\x.js:2:2)';
+
+describe('classifyUpdateError', () => {
+  it('treats "no published release" (draft only, 404/406, no latest.yml) as not-available', () => {
+    const latest = updaterError(
+      'Unable to find latest version on GitHub (https://github.com/MEZTKING/MCSuperMods/releases/latest), ' +
+        `please ensure a production release exists: ${STACK}\n${HEADERS}\n${FEED}`,
+      'ERR_UPDATER_LATEST_VERSION_NOT_FOUND',
+    );
+    expect(classifyUpdateError(latest)).toEqual({ kind: 'no-release' });
+    expect(statusForEvent('error', latest)).toEqual({ state: 'not-available' });
+    for (const error of [
+      updaterError('No published versions on GitHub', 'ERR_UPDATER_NO_PUBLISHED_VERSIONS'),
+      updaterError('No published versions on GitHub', 'ERR_XML_MISSED_ELEMENT'),
+      updaterError(
+        'Cannot find latest.yml in the latest release artifacts (https://github.com/x/y/releases/download/v0.1.0/latest.yml): HttpError: 404',
+        'ERR_UPDATER_CHANNEL_FILE_NOT_FOUND',
+      ),
+      updaterError(`404 Not Found\n${HEADERS}`, 'HTTP_ERROR_404', 404),
+      updaterError(`406 Not Acceptable\n${HEADERS}\n${FEED}`, 'HTTP_ERROR_406', 406),
+      // Matched on the message when the code is missing.
+      updaterError(
+        'Unable to find latest version on GitHub (https://github.com/x/y/releases/latest)',
+      ),
+    ]) {
+      expect(classifyUpdateError(error)).toEqual({ kind: 'no-release' });
+    }
+  });
+
+  it('reports network failures with a friendly message, even when electron-updater wraps them', () => {
+    for (const error of [
+      updaterError('getaddrinfo ENOTFOUND github.com', 'ENOTFOUND'),
+      updaterError('socket hang up', 'ECONNRESET'),
+      updaterError('connect ETIMEDOUT 140.82.121.4:443', 'ETIMEDOUT'),
+      updaterError('getaddrinfo EAI_AGAIN github.com', 'EAI_AGAIN'),
+      updaterError('net::ERR_NAME_NOT_RESOLVED'),
+      updaterError(
+        'Unable to find latest version on GitHub (https://github.com/x/y/releases/latest), please ensure a production release exists: Error: net::ERR_INTERNET_DISCONNECTED',
+        'ERR_UPDATER_LATEST_VERSION_NOT_FOUND',
+      ),
+    ]) {
+      expect(classifyUpdateError(error)).toEqual({
+        kind: 'network',
+        message: UPDATE_OFFLINE_MESSAGE,
+      });
+    }
+  });
+
+  it('sanitises anything else to a short first line without headers, cookies, XML or stack', () => {
+    const error = updaterError(
+      `500 Internal Server Error ${'x'.repeat(400)}\n${HEADERS}\n${FEED}\n${STACK}`,
+      'HTTP_ERROR_500',
+      500,
+    );
+    const status = statusForEvent('error', error);
+    expect(status.state).toBe('error');
+    const message = status.state === 'error' ? status.message : '';
+    expect(message.startsWith('Could not check for updates. 500 Internal Server Error')).toBe(true);
+    expect(message.length).toBeLessThanOrEqual(UPDATE_REASON_MAX);
+    for (const banned of ['set-cookie', '_gh_sess', 'Headers', '<?xml', '<feed', ' at ', '\n']) {
+      expect(message).not.toContain(banned);
+    }
+    const inline = statusForEvent(
+      'error',
+      updaterError(
+        `Cannot parse releases feed: Bad thing Headers: {"set-cookie": "_octo=1"} <?xml`,
+      ),
+    );
+    expect(inline).toEqual({
+      state: 'error',
+      message: 'Cannot parse releases feed: Bad thing'.replace(
+        /^/,
+        'Could not check for updates. ',
+      ),
+    });
+  });
+
+  it('redacts tokens and stops at stack frames', () => {
+    expect(sanitiseUpdateReason('Bad credentials token ghp_abcDEF123 for Bearer abc.def')).toBe(
+      'Bad credentials token [redacted] for Bearer [redacted]',
+    );
+    expect(sanitiseUpdateReason('Error: boom    at Object.<anonymous> (x.js:1:1)')).toBe(
+      'Error: boom',
+    );
+    expect(sanitiseUpdateReason('a'.repeat(500)).length).toBe(UPDATE_REASON_MAX);
+  });
+
+  it('logs the full error but sends only the short message over IPC', async () => {
+    const { fake, deps, updater, sent } = setup();
+    const full = `500 Internal Server Error\n${HEADERS}\n${FEED}`;
+    fake.failWith = updaterError(full, 'HTTP_ERROR_500', 500);
+    const status = await updater.check();
+    expect(status).toEqual({
+      state: 'error',
+      message: 'Could not check for updates. 500 Internal Server Error',
+    });
+    expect(deps.log).toHaveBeenCalledWith(expect.any(String), fake.failWith);
+    const logged = deps.log.mock.calls.map((call) => (call as unknown[])[1]);
+    expect(logged.some((error) => error instanceof Error && error.message === full)).toBe(true);
+    expect(JSON.stringify(sent)).not.toMatch(/set-cookie|_gh_sess|<\?xml/);
+  });
+
+  it('reports a draft-only repository as up to date', async () => {
+    const { fake, updater, sent } = setup();
+    fake.failWith = updaterError(
+      `Unable to find latest version on GitHub (https://github.com/MEZTKING/MCSuperMods/releases/latest), please ensure a production release exists: HttpError: 406 Not Acceptable\n${HEADERS}\n${FEED}`,
+      'ERR_UPDATER_LATEST_VERSION_NOT_FOUND',
+    );
+    expect(await updater.check()).toEqual({ state: 'not-available' });
+    expect(sent.some((status) => status.state === 'error')).toBe(false);
   });
 });

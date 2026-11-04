@@ -79,15 +79,17 @@ describe('UpdateBanner', () => {
 
 describe('updateCheckMessage', () => {
   it('describes each manual check result', () => {
-    expect(updateCheckMessage({ state: 'not-available' })).toEqual({
+    expect(updateCheckMessage({ state: 'not-available' }, '0.1.0')).toEqual({
       kind: 'info',
-      text: 'MCSuperMods is up to date.',
+      text: 'You have the latest version (v0.1.0).',
     });
+    expect(updateCheckMessage({ state: 'not-available' }).text).toBe(
+      'You have the latest version.',
+    );
     expect(updateCheckMessage({ state: 'available', version: '2.0.0' }).text).toMatch(/2\.0\.0/);
-    expect(updateCheckMessage({ state: 'error', message: 'offline' })).toEqual({
-      kind: 'error',
-      text: 'Could not check for updates: offline',
-    });
+    expect(updateCheckMessage({ state: 'error', message: 'Could not check for updates.' })).toEqual(
+      { kind: 'error', text: 'Could not check for updates.' },
+    );
     expect(updateCheckMessage({ state: 'disabled', reason: 'not-packaged' }).text).toBe(
       'Automatic updates are available only in the installed Windows app.',
     );
