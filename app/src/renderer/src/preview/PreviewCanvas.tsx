@@ -5,7 +5,9 @@
  *
  * A block model or blockstate renders as a one-block structure that the user can orbit (drag or
  * arrow keys) and zoom (wheel or +/-). An item definition, or a model whose parents end at
- * `builtin/generated`, renders in the fixed GUI item view.
+ * `builtin/generated`, renders in the fixed GUI item view. A structure template renders as its
+ * own structure with the bounding-box grid, orbiting its centre at a distance fitted to its
+ * size.
  *
  * When a texture is animated (a `.png.mcmeta` sidecar), a frame scrubber steps through the
  * first animated texture's frames; every animated texture shows the frame of its own loop at
@@ -48,20 +50,63 @@ interface View {
 
 const DEFAULT_VIEW: View = { yaw: Math.PI / 4, pitch: Math.PI / 6, distance: 2.2 };
 const REBUILD_DELAY_MS = 100;
+/** Structures can be large; wait a little longer for typing to stop. */
+const STRUCTURE_REBUILD_DELAY_MS = 150;
 const MIN_DISTANCE = 1.2;
 const MAX_DISTANCE = 8;
 const KEY_STEP = Math.PI / 24;
+
+/** The orbit centre and zoom limits of a scene. */
+export interface Framing {
+  centre: [number, number, number];
+  distance: number;
+  minDistance: number;
+  maxDistance: number;
+}
+
+const BLOCK_FRAMING: Framing = {
+  centre: [0.5, 0.5, 0.5],
+  distance: DEFAULT_VIEW.distance,
+  minDistance: MIN_DISTANCE,
+  maxDistance: MAX_DISTANCE,
+};
+
+/**
+ * Centres the camera on a box of `size` blocks and fits the distance so the whole box shows
+ * within deepslate's 70 degree field of view.
+ */
+export function framingFor(size: readonly [number, number, number]): Framing {
+  const radius = Math.hypot(size[0], size[1], size[2]) / 2;
+  const distance = Math.max(DEFAULT_VIEW.distance, radius / Math.sin((35 * Math.PI) / 180) + 0.5);
+  return {
+    centre: [size[0] / 2, size[1] / 2, size[2] / 2],
+    distance,
+    minDistance: Math.min(MIN_DISTANCE, distance),
+    maxDistance: Math.max(MAX_DISTANCE, distance * 4),
+  };
+}
 
 type Status =
   | { state: 'loading' }
   | {
       state: 'ready';
-      info: Pick<
-        PreviewResources,
-        'missingModels' | 'missingTextures' | 'usedFallback' | 'mode' | 'animations'
-      >;
+      info: PreviewInfo;
     }
   | { state: 'error'; message: string };
+
+type PreviewInfo = Pick<
+  PreviewResources,
+  | 'missingModels'
+  | 'missingTextures'
+  | 'usedFallback'
+  | 'mode'
+  | 'animations'
+  | 'missingDefinitions'
+> & {
+  /** Structure palette entries that did not parse, and block tuples skipped. */
+  invalidPalette: string[];
+  skippedBlocks: number;
+};
 
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
@@ -70,6 +115,7 @@ const clamp = (value: number, min: number, max: number): number =>
 interface Scene {
   canvas: HTMLCanvasElement;
   gl: WebGLRenderingContext;
+  framing: Framing;
   draw(view: View): void;
   /** Re-uploads the atlas image after an animation step; `false` when it cannot. */
   updateAtlas(image: ImageData): boolean;
@@ -116,6 +162,7 @@ function createScene(prepared: PreviewResources): Scene | null {
     return {
       canvas,
       gl,
+      framing: BLOCK_FRAMING,
       updateAtlas: atlasUpdater(gl, renderer),
       draw: () => {
         resize();
@@ -125,11 +172,11 @@ function createScene(prepared: PreviewResources): Scene | null {
       },
     };
   }
-  const structure = new Structure([1, 1, 1]).addBlock(
-    [0, 0, 0],
-    prepared.block.name,
-    prepared.block.properties,
-  );
+  const template = prepared.mode === 'structure' ? prepared.structure : null;
+  const structure =
+    template?.structure ??
+    new Structure([1, 1, 1]).addBlock([0, 0, 0], prepared.block.name, prepared.block.properties);
+  const framing = template === null ? BLOCK_FRAMING : framingFor(template.size);
   const renderer = new StructureRenderer(gl, structure, prepared.resources, {
     chunkSize: 16,
     useInvisibleBlockBuffer: false,
@@ -137,6 +184,7 @@ function createScene(prepared: PreviewResources): Scene | null {
   return {
     canvas,
     gl,
+    framing,
     updateAtlas: atlasUpdater(gl, renderer),
     draw: (view) => {
       resize();
@@ -146,7 +194,9 @@ function createScene(prepared: PreviewResources): Scene | null {
       mat4.translate(matrix, matrix, [0, 0, -view.distance]);
       mat4.rotateX(matrix, matrix, view.pitch);
       mat4.rotateY(matrix, matrix, view.yaw);
-      mat4.translate(matrix, matrix, [-0.5, -0.5, -0.5]);
+      const [cx, cy, cz] = framing.centre;
+      mat4.translate(matrix, matrix, [-cx, -cy, -cz]);
+      if (template !== null) renderer.drawGrid(matrix);
       renderer.drawStructure(matrix);
     },
   };
@@ -212,52 +262,63 @@ export default function PreviewCanvas(props: PreviewCanvasProps) {
 
   useEffect(() => {
     let cancelled = false;
-    const timer = setTimeout(() => {
-      const { readProjectAsset, onWebGLUnavailable, createAtlas } = callbacksRef.current;
-      createPreviewResources({
-        project,
-        folders,
-        subject,
-        readProjectAsset,
-        vanilla,
-        ...(vanillaJson === undefined ? {} : { vanillaJson }),
-        ...(fallbackModels === undefined ? {} : { fallbackModels }),
-        ...(createAtlas === undefined ? {} : { createAtlas }),
-      })
-        .then((prepared) => {
-          if (cancelled) return;
-          const scene = createScene(prepared);
-          disposeScene(sceneRef.current);
-          sceneRef.current = scene;
-          preparedRef.current = prepared;
-          if (scene === null) {
-            onWebGLUnavailable?.();
-            setStatus({ state: 'error', message: 'Preview unavailable: WebGL is disabled.' });
-            return;
-          }
-          hostRef.current?.append(scene.canvas);
-          setStatus({
-            state: 'ready',
-            info: {
-              missingModels: prepared.missingModels,
-              missingTextures: prepared.missingTextures,
-              usedFallback: prepared.usedFallback,
-              mode: prepared.mode,
-              animations: prepared.animations,
-            },
-          });
-          requestDraw();
-          // The atlas starts at tick 0; catch up with the step the scrubber shows.
-          if (tickRef.current !== 0) void showTick(prepared, tickRef.current);
+    const timer = setTimeout(
+      () => {
+        const { readProjectAsset, onWebGLUnavailable, createAtlas } = callbacksRef.current;
+        createPreviewResources({
+          project,
+          folders,
+          subject,
+          readProjectAsset,
+          vanilla,
+          ...(vanillaJson === undefined ? {} : { vanillaJson }),
+          ...(fallbackModels === undefined ? {} : { fallbackModels }),
+          ...(createAtlas === undefined ? {} : { createAtlas }),
         })
-        .catch((error: unknown) => {
-          if (cancelled) return;
-          setStatus({
-            state: 'error',
-            message: `Preview failed: ${error instanceof Error ? error.message : String(error)}`,
+          .then((prepared) => {
+            if (cancelled) return;
+            const scene = createScene(prepared);
+            const previousFraming = sceneRef.current?.framing;
+            disposeScene(sceneRef.current);
+            sceneRef.current = scene;
+            preparedRef.current = prepared;
+            // A new subject or a resized template refits the camera; edits keep the user's view.
+            if (scene !== null && !sameFraming(previousFraming, scene.framing)) {
+              viewRef.current = { ...viewRef.current, distance: scene.framing.distance };
+            }
+            if (scene === null) {
+              onWebGLUnavailable?.();
+              setStatus({ state: 'error', message: 'Preview unavailable: WebGL is disabled.' });
+              return;
+            }
+            hostRef.current?.append(scene.canvas);
+            setStatus({
+              state: 'ready',
+              info: {
+                missingModels: prepared.missingModels,
+                missingTextures: prepared.missingTextures,
+                usedFallback: prepared.usedFallback,
+                mode: prepared.mode,
+                animations: prepared.animations,
+                missingDefinitions: prepared.missingDefinitions,
+                invalidPalette: prepared.structure?.invalidPalette ?? [],
+                skippedBlocks: prepared.structure?.skippedBlocks ?? 0,
+              },
+            });
+            requestDraw();
+            // The atlas starts at tick 0; catch up with the step the scrubber shows.
+            if (tickRef.current !== 0) void showTick(prepared, tickRef.current);
+          })
+          .catch((error: unknown) => {
+            if (cancelled) return;
+            setStatus({
+              state: 'error',
+              message: `Preview failed: ${error instanceof Error ? error.message : String(error)}`,
+            });
           });
-        });
-    }, REBUILD_DELAY_MS);
+      },
+      subject.previewKind === 'structure' ? STRUCTURE_REBUILD_DELAY_MS : REBUILD_DELAY_MS,
+    );
     return () => {
       cancelled = true;
       clearTimeout(timer);
@@ -296,13 +357,15 @@ export default function PreviewCanvas(props: PreviewCanvasProps) {
     };
   }, [requestDraw]);
 
-  const orbit = status.state === 'ready' && status.info.mode === 'block';
+  const orbit = status.state === 'ready' && status.info.mode !== 'item';
+  const framing = (): Framing => sceneRef.current?.framing ?? BLOCK_FRAMING;
 
   const update = (change: (view: View) => void): void => {
     if (!orbit) return;
     change(viewRef.current);
+    const { minDistance, maxDistance } = framing();
     viewRef.current.pitch = clamp(viewRef.current.pitch, -Math.PI / 2, Math.PI / 2);
-    viewRef.current.distance = clamp(viewRef.current.distance, MIN_DISTANCE, MAX_DISTANCE);
+    viewRef.current.distance = clamp(viewRef.current.distance, minDistance, maxDistance);
     requestDraw();
   };
 
@@ -352,7 +415,7 @@ export default function PreviewCanvas(props: PreviewCanvasProps) {
     update(change);
   };
   const reset = (): void => {
-    viewRef.current = { ...DEFAULT_VIEW };
+    viewRef.current = { ...DEFAULT_VIEW, distance: framing().distance };
     requestDraw();
   };
 
@@ -362,10 +425,11 @@ export default function PreviewCanvas(props: PreviewCanvasProps) {
     if (host === null || !orbit) return;
     const onWheel = (event: WheelEvent): void => {
       event.preventDefault();
+      const limits = sceneRef.current?.framing ?? BLOCK_FRAMING;
       viewRef.current.distance = clamp(
         viewRef.current.distance * Math.exp(event.deltaY / 500),
-        MIN_DISTANCE,
-        MAX_DISTANCE,
+        limits.minDistance,
+        limits.maxDistance,
       );
       requestDraw();
     };
@@ -426,13 +490,32 @@ export default function PreviewCanvas(props: PreviewCanvasProps) {
   );
 }
 
-function PreviewNotes({
-  info,
-}: {
-  info: Pick<PreviewResources, 'missingModels' | 'missingTextures' | 'usedFallback'>;
-}) {
+function sameFraming(a: Framing | undefined, b: Framing): boolean {
+  return (
+    a !== undefined && a.distance === b.distance && a.centre.every((v, i) => v === b.centre[i])
+  );
+}
+
+function PreviewNotes({ info }: { info: PreviewInfo }) {
   return (
     <ul className="flex flex-col gap-1 text-xs text-muted">
+      {info.invalidPalette.length > 0 ? (
+        <li className="text-warning">
+          Skipped palette entries that are not block states:{' '}
+          {info.invalidPalette.map((entry) => JSON.stringify(entry)).join(', ')}
+        </li>
+      ) : null}
+      {info.skippedBlocks > 0 ? (
+        <li className="text-warning">
+          Skipped {info.skippedBlocks} block{info.skippedBlocks === 1 ? '' : 's'} with a bad
+          position or palette index.
+        </li>
+      ) : null}
+      {info.missingDefinitions.length > 0 ? (
+        <li className="text-warning">
+          No blockstate for {info.missingDefinitions.join(', ')}; drawn with the missing texture.
+        </li>
+      ) : null}
       {info.usedFallback ? (
         <li>Some parent models use MSM stand-ins; the game may show them differently.</li>
       ) : null}

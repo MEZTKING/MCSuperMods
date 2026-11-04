@@ -86,7 +86,8 @@ describe('@msm/plugin-worldgen', () => {
       expect(kind.folder, kind.id).toBe(registry);
       expect(kind.registry, kind.id).toBeUndefined();
       expect(kind.defaultData, kind.id).toBeDefined();
-      expect(kind.previewKind, kind.id).toBeUndefined();
+      const climate = registry === 'dimension' || registry === 'worldgen/world_preset';
+      expect(kind.previewKind, kind.id).toBe(climate ? 'climate_map' : undefined);
     }
   });
 

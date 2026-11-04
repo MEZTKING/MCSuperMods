@@ -285,3 +285,51 @@ export function defaultVariantProperties(value: Json | undefined): Record<string
   }
   return props;
 }
+
+/** Where a block definition came from. */
+export type BlockDefinitionSource = 'project' | 'vanilla';
+
+/** Options for {@link createBlockDefinitionLookup}. */
+export interface BlockDefinitionLookupOptions {
+  project: Project;
+  /** The `minecraft:block_definition` kind id (default `minecraft:block_definition`). */
+  definitionKind?: string;
+  folders: ResourceFolders;
+  /** Cached vanilla JSON reads, or `null` when no vanilla assets are available. */
+  vanillaJson: ((path: string) => Promise<JsonObject | null>) | null;
+}
+
+/**
+ * Looks block definitions up by block id: project `minecraft:block_definition` elements first,
+ * then the extracted vanilla cache. Each id is looked up once per lookup.
+ */
+export function createBlockDefinitionLookup(
+  options: BlockDefinitionLookupOptions,
+): (id: string) => Promise<{ json: JsonObject; source: BlockDefinitionSource } | null> {
+  const projectDefinitions = projectElementsOfKind(
+    options.project,
+    options.definitionKind ?? 'minecraft:block_definition',
+  );
+  const cache = new Map<
+    string,
+    Promise<{ json: JsonObject; source: BlockDefinitionSource } | null>
+  >();
+  return (rawId) => {
+    const id = normaliseId(rawId);
+    let entry = cache.get(id);
+    if (entry === undefined) {
+      const element = projectDefinitions.get(id);
+      if (element !== undefined && isObject(element.data)) {
+        entry = Promise.resolve({ json: element.data, source: 'project' as const });
+      } else if (options.vanillaJson === null) {
+        entry = Promise.resolve(null);
+      } else {
+        entry = options
+          .vanillaJson(vanillaJsonPath(id, options.folders.block_definition))
+          .then((json) => (json === null ? null : { json, source: 'vanilla' as const }));
+      }
+      cache.set(id, entry);
+    }
+    return entry;
+  };
+}

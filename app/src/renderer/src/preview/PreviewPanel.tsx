@@ -3,6 +3,9 @@
  * lazily loaded `PreviewCanvas` chunk, which loads only for a previewable element on a machine
  * with WebGL. Without vanilla assets it still previews models built on MSM's fallback parents
  * and shows a banner that leads to the Minecraft folder settings.
+ *
+ * Structure templates render in the same WebGL canvas. Dimensions and world presets show the
+ * climate map instead, a 2D canvas that needs neither WebGL nor vanilla assets (ADR 0023).
  */
 
 import type { Element, Project } from '@msm/plugin-api';
@@ -17,8 +20,15 @@ import {
 import { hasWebGL } from './webgl';
 
 const PreviewCanvas = lazy(() => import('./PreviewCanvas'));
+const ClimateMap = lazy(() => import('./ClimateMap'));
 
-const PREVIEW_KINDS: readonly string[] = ['model', 'block_definition', 'item_definition'];
+const PREVIEW_KINDS: readonly string[] = [
+  'model',
+  'block_definition',
+  'item_definition',
+  'structure',
+  'climate_map',
+];
 
 /** True when the panel can preview an element whose kind declares `previewKind`. */
 export function isPreviewKind(previewKind: string | undefined): previewKind is PreviewKind {
@@ -59,11 +69,21 @@ export function PreviewPanel(props: PreviewPanelProps) {
   const kind = isPreviewKind(previewKind) ? previewKind : null;
   const subject = useMemo<PreviewSubject | null>(
     () =>
-      element === null || kind === null
+      element === null || kind === null || kind === 'climate_map'
         ? null
         : { data: element.data, id: element.id, previewKind: kind },
     [element, kind],
   );
+
+  if (element !== null && kind === 'climate_map') {
+    return (
+      <section aria-label="Preview" className="flex flex-col gap-3">
+        <Suspense fallback={<p className="text-sm text-muted">Loading climate map…</p>}>
+          <ClimateMap project={project} id={element.id} data={element.data} />
+        </Suspense>
+      </section>
+    );
+  }
 
   return (
     <section aria-label="Preview" className="flex flex-col gap-3">
@@ -78,7 +98,8 @@ export function PreviewPanel(props: PreviewPanelProps) {
       ) : null}
       {subject === null ? (
         <p className="text-sm text-muted">
-          Select a model, blockstate or item definition to preview it.
+          Select a model, blockstate, item definition, structure template or dimension to preview
+          it.
         </p>
       ) : !webgl ? (
         <p role="status" className="text-sm text-muted">

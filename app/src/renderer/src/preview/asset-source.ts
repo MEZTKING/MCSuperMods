@@ -36,6 +36,7 @@ import {
   collectBlockDefinitionModelRefs,
   collectItemModelRefs,
   collectTextureIds,
+  createBlockDefinitionLookup,
   createModelLookup,
   createVanillaJsonCache,
   defaultVariantProperties,
@@ -47,13 +48,20 @@ import {
   textureLocations,
   type VanillaAssetReader,
 } from './model-chain';
+import { structureFromTemplate, type TemplateStructure } from './structure';
 
-/** The host hint on an element kind (`ElementKind.previewKind`) that the preview understands. */
-export type PreviewKind = 'model' | 'block_definition' | 'item_definition';
+/** The preview kinds the WebGL canvas renders. */
+export type CanvasPreviewKind = 'model' | 'block_definition' | 'item_definition' | 'structure';
 
-/** The element to preview. */
+/**
+ * The host hints on an element kind (`ElementKind.previewKind`) that the preview understands:
+ * the canvas kinds, and `climate_map`, a 2D map drawn without WebGL.
+ */
+export type PreviewKind = CanvasPreviewKind | 'climate_map';
+
+/** The element to preview in the canvas. */
 export interface PreviewSubject {
-  previewKind: PreviewKind;
+  previewKind: CanvasPreviewKind;
   /** The element's identifier, for example `demo:block/ruby`. */
   id: string;
   /** The element's current data. */
@@ -94,8 +102,15 @@ export interface AnimatedTexture {
 /** Everything a preview renderer needs. */
 export interface PreviewResources {
   resources: Resources & ItemRendererResources;
-  /** `block` renders a one-block structure; `item` renders the item in the GUI view. */
-  mode: 'block' | 'item';
+  /**
+   * `block` renders a one-block structure; `item` renders the item in the GUI view;
+   * `structure` renders {@link PreviewResources.structure}.
+   */
+  mode: 'block' | 'item' | 'structure';
+  /** The structure template in `structure` mode, else `null`. */
+  structure: TemplateStructure | null;
+  /** Block ids of a structure with no block definition; drawn with the missing texture. */
+  missingDefinitions: string[];
   /** The block to place in `block` mode. */
   block: { name: Identifier; properties: Record<string, string> };
   /** The item stack to draw in `item` mode. */
@@ -164,6 +179,66 @@ interface AnimatedSource extends AnimatedTexture {
   imageWidth: number;
 }
 
+/**
+ * The model drawn for a structure block whose definition or model cannot be found: a full cube
+ * whose texture is never in the atlas, so deepslate draws its missing-texture checker.
+ */
+export const MISSING_BLOCK_MODEL = 'msm:preview/missing_block';
+const MISSING_BLOCK_JSON: JsonObject = {
+  elements: [
+    {
+      from: [0, 0, 0],
+      to: [16, 16, 16],
+      faces: Object.fromEntries(
+        ['down', 'up', 'north', 'south', 'west', 'east'].map((face) => [
+          face,
+          { cullface: face, texture: '#missing' },
+        ]),
+      ),
+    },
+  ],
+  textures: { missing: 'msm:preview/missing' },
+};
+
+/** What {@link prepareBlockResources} found for a set of block ids. */
+export interface PreparedBlocks {
+  /** Block definition JSON by normalised block id. */
+  definitions: Map<string, JsonObject>;
+  /** Properties selecting each definition's first variant, by block id. */
+  defaults: Map<string, Record<string, string>>;
+  /** Model ids the definitions reference, sorted. */
+  models: string[];
+  /** Block ids with no definition, sorted. */
+  missing: string[];
+}
+
+/**
+ * Looks up the block definition of every id (project elements first, then the vanilla cache)
+ * and collects the models they reference. Generalises the single-block path to many blocks.
+ */
+export async function prepareBlockResources(
+  ids: readonly string[],
+  lookup: ReturnType<typeof createBlockDefinitionLookup>,
+): Promise<PreparedBlocks> {
+  const definitions = new Map<string, JsonObject>();
+  const defaults = new Map<string, Record<string, string>>();
+  const models = new Set<string>();
+  const missing: string[] = [];
+  const unique = [...new Set(ids.map(normaliseId))].sort();
+  const found = await Promise.all(unique.map((id) => lookup(id).catch(() => null)));
+  unique.forEach((id, i) => {
+    const definition = found[i];
+    if (definition === null || definition === undefined) {
+      missing.push(id);
+      return;
+    }
+    definitions.set(id, definition.json);
+    defaults.set(id, defaultVariantProperties(definition.json));
+    for (const model of collectBlockDefinitionModelRefs(definition.json)) models.add(model);
+  });
+  return { definitions, defaults, models: [...models].sort(), missing };
+}
+
 const defaultCreateAtlas = async (textures: Record<string, Blob>): Promise<TextureAtlasProvider> =>
   TextureAtlas.fromBlobs(await decodableOnly(textures));
 
@@ -190,7 +265,28 @@ export async function createPreviewResources(
   const itemModels = new Map<string, ItemModel>();
   let rootModels: string[];
   let properties: Record<string, string> = {};
-  if (subject.previewKind === 'block_definition') {
+  let structure: TemplateStructure | null = null;
+  let blockDefaults = new Map<string, Record<string, string>>();
+  let missingDefinitions: string[] = [];
+  if (subject.previewKind === 'structure') {
+    structure = structureFromTemplate(data);
+    const blocks = await prepareBlockResources(
+      structure.blockIds,
+      createBlockDefinitionLookup({ project, folders, vanillaJson }),
+    );
+    for (const [id, json] of blocks.definitions) {
+      definitions.set(id, BlockDefinition.fromJson(structuredClone(json)));
+    }
+    for (const id of blocks.missing) {
+      definitions.set(
+        id,
+        BlockDefinition.fromJson({ variants: { '': { model: MISSING_BLOCK_MODEL } } }),
+      );
+    }
+    blockDefaults = blocks.defaults;
+    missingDefinitions = blocks.missing;
+    rootModels = blocks.models;
+  } else if (subject.previewKind === 'block_definition') {
     definitions.set(subjectId, BlockDefinition.fromJson(structuredClone(data)));
     rootModels = collectBlockDefinitionModelRefs(data);
     properties = defaultVariantProperties(data);
@@ -228,6 +324,12 @@ export async function createPreviewResources(
   const blockModels = new Map<string, BlockModel>();
   for (const [id, model] of resolved) {
     blockModels.set(id, BlockModel.fromJson(structuredClone(model.json)));
+  }
+  if (structure !== null) {
+    // A structure never drops a block: missing definitions and models draw the checker cube.
+    for (const id of [MISSING_BLOCK_MODEL, ...missingModels]) {
+      blockModels.set(id, BlockModel.fromJson(structuredClone(MISSING_BLOCK_JSON)));
+    }
   }
   const modelProvider = {
     getBlockModel: (id: Identifier): BlockModel | null => blockModels.get(id.toString()) ?? null,
@@ -334,7 +436,13 @@ export async function createPreviewResources(
     getPixelSize: () => atlas.getPixelSize?.() ?? 0,
     getBlockFlags: () => flags,
     getBlockProperties: () => null,
-    getDefaultBlockProperties: (id) => (id.toString() === subjectId ? { ...properties } : null),
+    getDefaultBlockProperties: (id) => {
+      if (structure !== null) {
+        const defaults = blockDefaults.get(id.toString());
+        return defaults === undefined ? null : { ...defaults };
+      }
+      return id.toString() === subjectId ? { ...properties } : null;
+    },
     getItemModel: (id) => itemModels.get(id.toString()) ?? null,
     getItemComponents: () => new Map(),
   };
@@ -346,15 +454,19 @@ export async function createPreviewResources(
     new Map([['minecraft:item_model', new NbtString(subjectId)]]),
   );
   const mode =
-    subject.previewKind === 'item_definition' ||
-    (subject.previewKind === 'model' && subjectGenerated)
-      ? 'item'
-      : 'block';
+    structure !== null
+      ? 'structure'
+      : subject.previewKind === 'item_definition' ||
+          (subject.previewKind === 'model' && subjectGenerated)
+        ? 'item'
+        : 'block';
   return {
     resources,
     mode,
     block: { name, properties },
     item,
+    structure,
+    missingDefinitions,
     missingModels: [...missingModels].sort(),
     missingTextures,
     usedFallback: [...resolved.values()].some((model) => model.source === 'fallback'),

@@ -35,6 +35,9 @@ export function worldgenKind(registry: WorldgenRegistry): ElementKind {
     schema,
     folder: registry,
     defaultData: structuredClone(WORLDGEN_DEFAULTS[registry]),
+    ...(registry === 'dimension' || registry === 'worldgen/world_preset'
+      ? { previewKind: 'climate_map' }
+      : {}),
     lower,
   };
 }
