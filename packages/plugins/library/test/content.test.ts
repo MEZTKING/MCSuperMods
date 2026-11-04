@@ -142,6 +142,18 @@ describe('project starters', () => {
     const sounds = bundle.elements.find((entry) => entry.kind === 'minecraft:sounds');
     expect(sounds?.id).toBe('demo:sounds');
     expect(JSON.stringify(sounds?.data)).toContain('"minecraft:records/cat"');
+    const song = bundle.elements.find((entry) => entry.kind === 'minecraft:jukebox_song');
+    expect(song?.data).toMatchObject({ sound_event: 'demo:music_disc.my_song' });
+    const definition = bundle.elements.find((entry) => entry.kind === 'minecraft:item_definition');
+    expect(definition?.id).toBe('minecraft:music_disc_13');
+    expect(definition?.data).toMatchObject({
+      model: {
+        type: 'minecraft:select',
+        property: 'minecraft:component',
+        component: 'minecraft:jukebox_playable',
+        cases: [{ when: 'demo:my_song' }],
+      },
+    });
   });
 });
 

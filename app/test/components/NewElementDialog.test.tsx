@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
-import { resourcePackKinds } from '@msm/plugin-resourcepack';
+import { dataPackTemplates } from '@msm/plugin-datapack';
+import { resourcePackKinds, resourcePackTemplates } from '@msm/plugin-resourcepack';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -12,9 +13,9 @@ import {
 } from '../../src/renderer/src/components/NewElementDialog';
 import { useUiStore } from '../../src/renderer/src/store/ui-store';
 import {
-  RESOURCE_PACK_TEMPLATES,
+  type ElementTemplate,
+  templatesFor as hostTemplatesFor,
   templateElementId,
-  templatesFor,
 } from '../../src/renderer/src/studios/templates';
 
 afterEach(() => {
@@ -23,6 +24,14 @@ afterEach(() => {
 });
 
 const kinds = resourcePackKinds;
+/** The built-in plugins' templates, as the session collects them. */
+const PLUGIN_TEMPLATES: readonly ElementTemplate[] = [
+  ...resourcePackTemplates,
+  ...dataPackTemplates,
+];
+/** The picker's templates for `kindIds`: the plugin templates plus the generic fallback. */
+const templatesFor = (kindIds: readonly string[]): ElementTemplate[] =>
+  hostTemplatesFor(kindIds, PLUGIN_TEMPLATES);
 const kindDefault = (kind: string) => kinds.find((entry) => entry.id === kind)?.defaultData;
 
 function renderDialog(onSubmit = vi.fn<(input: NewElementInput) => void>()) {
@@ -52,11 +61,16 @@ async function create(template: string, name: string | null) {
   return onSubmit.mock.calls[0]?.[0] as NewElementInput;
 }
 
+const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 describe('NewElementDialog (template picker)', () => {
   it('offers every resource pack template as a labelled radio', () => {
     renderDialog();
-    for (const template of RESOURCE_PACK_TEMPLATES) {
-      expect(screen.getByRole('radio', { name: new RegExp(`^${template.title}`) })).toBeTruthy();
+    for (const template of resourcePackTemplates) {
+      const radio = screen.getByTestId(`template-${template.id}`);
+      expect(
+        screen.getAllByRole('radio', { name: new RegExp(`^${escapeRegExp(template.title)}`) }),
+      ).toContain(radio);
     }
   });
 
@@ -160,11 +174,19 @@ describe('NewElementDialog (groups and filter)', () => {
 describe('templates', () => {
   it('adds a generic entry for kinds without a template', () => {
     const ids = templatesFor(['minecraft:model', 'example:thing']).map((entry) => entry.id);
-    expect(ids).toEqual(['block_model', 'item_model', 'kind:example:thing']);
+    expect(ids).toEqual([
+      ...resourcePackTemplates
+        .filter((template) => template.kind === 'minecraft:model')
+        .map((template) => template.id),
+      'kind:example:thing',
+    ]);
+    expect(hostTemplatesFor(['minecraft:model', 'example:thing']).map((entry) => entry.id)).toEqual(
+      ['kind:minecraft:model', 'kind:example:thing'],
+    );
   });
 
   it('builds ids and rejects invalid names', () => {
-    const block = RESOURCE_PACK_TEMPLATES[0];
+    const block = resourcePackTemplates[0];
     if (block === undefined) throw new Error('no templates');
     expect(templateElementId(block, 'demo', 'block/ore')).toBe('demo:block/ore');
     expect(() => templateElementId(block, 'demo', 'Bad Name')).toThrow(/not a valid name/);

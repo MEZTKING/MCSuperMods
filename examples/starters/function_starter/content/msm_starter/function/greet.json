@@ -3,6 +3,8 @@
     "lines": [
       "# Run with /function msm_starter:greet, or with /function #msm_starter:all",
       "say Hello!",
+      "tellraw @s [\"You have jumped \",{\"score\":{\"name\":\"@s\",\"objective\":\"jumps\"}},\" times.\"]",
+      "execute if score @s jumps matches 100.. run say I have jumped at least 100 times!",
       "title @s actionbar {\"text\":\"Stand on a gold block to run faster\",\"color\":\"gold\"}"
     ]
   },
@@ -11,6 +13,6 @@
   "kind": "minecraft:function",
   "meta": {
     "createdAt": "2026-11-04T00:00:00.000Z",
-    "notes": "A function you run yourself; it shows a hint above the hotbar."
+    "notes": "A function you run yourself: it tells you how often you have jumped (the jumps objective the load function creates) and shows a hint above the hotbar."
   }
 }

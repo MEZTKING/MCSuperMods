@@ -131,10 +131,17 @@ export function dataRegistryIds(project: Project): Record<string, string[]> {
   return sortedRecord(map);
 }
 
+/** The event keys of a `minecraft:sounds` element's data (a map from event key to event). */
+function soundEventKeys(data: unknown): string[] {
+  if (typeof data !== 'object' || data === null || Array.isArray(data)) return [];
+  return Object.keys(data).filter((key) => key !== '');
+}
+
 /**
  * The ids a project defines, per registry: `model` (model elements), `texture` (PNG assets
- * under `textures/`), `sound` (Ogg assets under `sounds/`) and the data pack registries of
- * {@link dataRegistryIds}. Sorted, namespaced.
+ * under `textures/`), `sound` (Ogg assets under `sounds/`), `sound_event` (every event key of
+ * a `minecraft:sounds` element: key `foo.bar` in namespace `ns` is `ns:foo.bar`) and the data
+ * pack registries of {@link dataRegistryIds}. Sorted, namespaced, without duplicates.
  *
  * @param project - The project.
  */
@@ -142,9 +149,13 @@ export function projectRegistryIds(project: Project): Record<string, string[]> {
   const model: string[] = [];
   const texture: string[] = [];
   const sound: string[] = [];
+  const soundEvent = new Set<string>();
   for (const namespace of project.namespaces) {
     for (const element of namespace.elements) {
       if (element.kind === 'minecraft:model') model.push(element.id);
+      if (element.kind === 'minecraft:sounds') {
+        for (const key of soundEventKeys(element.data)) soundEvent.add(`${namespace.name}:${key}`);
+      }
     }
     for (const asset of namespace.assets) {
       const textureId = between(asset.path, 'textures/', '.png');
@@ -157,6 +168,7 @@ export function projectRegistryIds(project: Project): Record<string, string[]> {
     ...dataRegistryIds(project),
     model: model.sort(),
     sound: sound.sort(),
+    sound_event: [...soundEvent].sort(),
     texture: texture.sort(),
   };
 }

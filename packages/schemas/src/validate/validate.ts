@@ -75,6 +75,8 @@ type JsonObject = { [key: string]: Json };
 interface Siblings {
   value: JsonObject;
   path: string;
+  /** The next enclosing object, outward (for type-argument dispatchers). */
+  outer?: Siblings;
 }
 
 /** Keys a struct and its spreads declare for one object (see `State.claims`). */
@@ -100,6 +102,8 @@ interface State {
   parentKey?: string;
   /** The struct object that contains the value, or the value itself inside a spread. */
   siblings?: Siblings;
+  /** For a list item: the object enclosing the list (see `Siblings.outer`). */
+  outer?: Siblings;
   /** Unknown keys are allowed (validating a struct spread against the whole object). */
   open: boolean;
   /**
@@ -533,7 +537,15 @@ function validate(
 }
 
 function itemState(state: State, index: number): State {
-  return { path: child(state.path, index), depth: state.depth + 1, hops: 0, open: false };
+  const item: State = {
+    path: child(state.path, index),
+    depth: state.depth + 1,
+    hops: 0,
+    open: false,
+  };
+  const outer = state.siblings ?? state.outer;
+  if (outer !== undefined) item.outer = outer;
+  return item;
 }
 
 function checkLength(
@@ -567,6 +579,10 @@ function validateStruct(
   }
   const info = structInfo(node);
   const siblings: Siblings = { value, path: state.path };
+  // A spread validates the same object again: keep its chain instead of nesting it in itself.
+  const outer =
+    state.siblings?.value === value ? state.siblings.outer : (state.siblings ?? state.outer);
+  if (outer !== undefined) siblings.outer = outer;
   const allowUnknown = state.open || node.spreads.length > 0;
   // The outermost struct with spreads owns the claims; spread structs add to them.
   const owner = state.claims === undefined && node.spreads.length > 0;
@@ -858,13 +874,37 @@ function readDiscriminator(
   value: Json,
   steps: readonly string[],
   state: State,
+  typeArgument = false,
 ): { key: string | undefined; path: string } {
   if (steps.length === 1 && steps[0] === '%key') {
     return { key: state.parentKey, path: state.path };
   }
-  // Without a containing struct (the root, a list item) the value itself is read.
-  let current: Json | undefined = state.siblings?.value ?? value;
-  let path = state.siblings?.path ?? state.path;
+  const own = readSteps(state.siblings?.value ?? value, state.siblings?.path ?? state.path, steps);
+  if (own.key !== undefined || !typeArgument) return own;
+  // A type-argument dispatcher's accessor belongs to the object that instantiated the
+  // template: try enclosing objects, nearest first.
+  for (
+    let scope = state.siblings?.outer ?? (state.siblings === undefined ? state.outer : undefined);
+    scope !== undefined;
+    scope = scope.outer
+  ) {
+    const found = readSteps(scope.value, scope.path, steps);
+    if (found.key !== undefined) return found;
+  }
+  return own;
+}
+
+/**
+ * Reads `steps` from `start` (at pointer `startPath`). Without a containing struct (the root,
+ * a list item) the caller passes the value itself.
+ */
+function readSteps(
+  start: Json,
+  startPath: string,
+  steps: readonly string[],
+): { key: string | undefined; path: string } {
+  let current: Json | undefined = start;
+  let path = startPath;
   for (const step of steps) {
     if (current === undefined || !isObject(current)) return { key: undefined, path };
     current = Object.hasOwn(current, step) ? current[step] : undefined;
@@ -907,7 +947,12 @@ function validateDispatcher(
     return;
   }
 
-  const { key, path } = readDiscriminator(value, node.discriminator, state);
+  const { key, path } = readDiscriminator(
+    value,
+    node.discriminator,
+    state,
+    node.typeArgument === true,
+  );
   if (key === undefined) {
     const none = keys.includes('%none') ? node.dispatch('%none') : undefined;
     if (none !== undefined) {

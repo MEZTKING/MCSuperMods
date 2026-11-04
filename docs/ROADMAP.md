@@ -201,8 +201,8 @@ Requested on 2026-11-04, ahead of Phase 3: a template for every element kind, Ne
 - [x] B63: data pack templates (52) in `@msm/plugin-datapack`, validated per target, functions through the mcfunction checker.
 - [x] B64: library content: 8 starters, 34 examples, the `examples/` mirror golden and the cross-plugin CI test in `@msm/exporters`.
 - [x] B65: app UI: New project dialog, Examples gallery, grouped and filterable template picker, Notes callout, menu and palette entries.
-- [ ] B66: end-to-end test of the library path (Custom ore starter, export both packs, copy an example, open an example as a new project).
-- [ ] B67: user guide (`docs/guide/`), README "Templates and examples", scoped guides, ROADMAP ticks and ADR status.
+- [x] B66: end-to-end test of the library path (Custom ore starter, export both packs, copy an example, open an example as a new project).
+- [x] B67: user guide (`docs/guide/`), README "Templates and examples", scoped guides, ROADMAP ticks and ADR status.
 - [ ] User decisions (defaults stand unless vetoed): Custom ore is an emerald-ore reskin ("Ruby Ore") until Phase 4; the music disc uses the vanilla `minecraft:records/cat` sound until the user imports their own `.ogg`; examples are mirrored on disk under `examples/`.
 - [ ] User check: in-game on Windows with the current target, the Custom ore starter (emerald ore shows as ruby ore, "Ruby" item name, ruby block recipe, advancement toast) and the music disc (`/function <namespace>:give_disc`, the disc plays in a jukebox).
 

@@ -304,7 +304,7 @@ function normaliseReference(
   }
   const bound = bindings.get(path);
   // Bound arguments are closed, so they normalise without the current bindings.
-  if (bound !== undefined) return decorate(normaliseType(bound, ctx), raw);
+  if (bound !== undefined) return decorate(markTypeArgument(normaliseType(bound, ctx)), raw);
   if (ctx.isTypeParam(path)) {
     return withBase(
       { kind: 'unsupported', reason: `unbound type parameter ${path}`, rawKind: 'reference' },
@@ -316,6 +316,17 @@ function normaliseReference(
     if (relevant.size > 0) return decorate(ctx.instantiate(path, relevant), raw);
   }
   return withBase({ kind: 'reference', path, resolve: () => ctx.resolvePath(path) }, raw);
+}
+
+/**
+ * A dynamic dispatcher used as a template type argument reads its accessor relative to where
+ * the template was instantiated, not where the parameter is used; marks a copy (shared nodes
+ * are never mutated).
+ */
+function markTypeArgument(node: SchemaNode): SchemaNode {
+  if (node.kind !== 'dispatcher' || node.discriminator.length === 0) return node;
+  if (node.typeArgument === true) return node;
+  return { ...node, typeArgument: true };
 }
 
 function normaliseConcrete(

@@ -2,9 +2,9 @@
  * The Custom music disc starter (ADR 0020, D3). No sound file is bundled: the sound event
  * plays the vanilla file `minecraft:records/cat` until the user imports their own `.ogg`
  * under `sounds/` and points the event at it. A vanilla pack cannot add an item, so the
- * disc is music disc 13 carrying a `jukebox_playable` component for the new song and an
- * `item_model` component naming the starter's own item definition, so vanilla discs keep
- * their look.
+ * disc is music disc 13 carrying a `jukebox_playable` component for the new song. The
+ * starter overrides music disc 13's item definition with a `select` on that component, so a
+ * disc playing the new song gets its own model and every other music disc 13 keeps its look.
  */
 import type { BundleContext, ContentBundle } from '@msm/plugin-api';
 import { COLOURS, element, KINDS, packElement, rl, texture } from '../content/bundle';
@@ -16,7 +16,6 @@ export function musicDiscBundle({ namespace, projectName }: BundleContext): Cont
   const song = rl(namespace, SONG);
   const event = `music_disc.${SONG}`;
   const discModel = rl(namespace, `item/${SONG}_disc`);
-  const discItem = rl(namespace, `${SONG}_disc`);
   return {
     elements: [
       packElement(namespace, `${projectName}: a new music disc`),
@@ -34,12 +33,12 @@ export function musicDiscBundle({ namespace, projectName }: BundleContext): Cont
         song,
         KINDS.jukeboxSong,
         {
-          sound_event: { sound_id: rl(namespace, event) },
+          sound_event: rl(namespace, event),
           description: { translate: `jukebox_song.${namespace}.${SONG}` },
           length_in_seconds: 185,
           comparator_output: 7,
         },
-        'The jukebox song: which sound event plays (written as an object with sound_id, so the event can live in this pack\'s sounds element), the "Now playing" text, how long the jukebox counts as playing and the redstone signal a comparator reads (0 to 15). Set length_in_seconds to the length of your own track.',
+        `The jukebox song: which sound event plays (${namespace}:${event}, defined in this pack's sounds element), the "Now playing" text, how long the jukebox counts as playing and the redstone signal a comparator reads (0 to 15). Set length_in_seconds to the length of your own track.`,
       ),
       element(
         rl(namespace, 'en_us'),
@@ -54,10 +53,18 @@ export function musicDiscBundle({ namespace, projectName }: BundleContext): Cont
         `The disc's item model, drawn from textures/item/${SONG}_disc.png.`,
       ),
       element(
-        discItem,
+        'minecraft:music_disc_13',
         KINDS.itemDefinition,
-        { model: { type: 'minecraft:model', model: discModel } },
-        `An item definition of your own. Items use it when their item_model component names it (${discItem}), so the vanilla discs keep their look.`,
+        {
+          model: {
+            type: 'minecraft:select',
+            property: 'minecraft:component',
+            component: 'minecraft:jukebox_playable',
+            cases: [{ when: song, model: { type: 'minecraft:model', model: discModel } }],
+            fallback: { type: 'minecraft:model', model: 'minecraft:item/music_disc_13' },
+          },
+        },
+        `Replaces music disc 13's item definition: a select on its jukebox_playable component picks the new model when the disc plays ${song}; every other music disc 13 falls back to the vanilla model.`,
       ),
       element(
         rl(namespace, 'give_disc'),
@@ -65,10 +72,10 @@ export function musicDiscBundle({ namespace, projectName }: BundleContext): Cont
         {
           lines: [
             `# Run with /function ${namespace}:give_disc`,
-            `give @s minecraft:music_disc_13[minecraft:jukebox_playable="${song}",minecraft:item_model="${discItem}",minecraft:item_name="My Song Disc"]`,
+            `give @s minecraft:music_disc_13[minecraft:jukebox_playable="${song}",minecraft:item_name="My Song Disc"]`,
           ],
         },
-        'Gives a music disc that plays the new song and is drawn with its own model. Put it in a jukebox to listen.',
+        'Gives a music disc that plays the new song; the item definition draws it with its own model. Put it in a jukebox to listen.',
       ),
     ],
     assets: [texture(namespace, `item/${SONG}_disc`, 'disc', COLOURS.violet)],

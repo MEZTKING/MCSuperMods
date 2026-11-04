@@ -1,8 +1,8 @@
 import { createMemoryFileSystem } from '@msm/core';
+import { dataPackTemplates } from '@msm/plugin-datapack';
 import { describe, expect, it } from 'vitest';
 import { createCompletionSource } from '../src/renderer/src/studios/completions';
 import {
-  DATA_PACK_TEMPLATES,
   projectNamespace,
   templateContext,
   templateElementId,
@@ -17,36 +17,42 @@ async function openSession() {
   return session;
 }
 
-describe('data pack templates', () => {
-  it('has the Phase 2 template ids', () => {
-    expect(DATA_PACK_TEMPLATES.map((template) => template.id)).toEqual([
-      'recipe_shaped',
-      'recipe_shapeless',
-      'recipe_smelting',
-      'loot_table_block',
-      'advancement',
-      'predicate',
-      'item_modifier',
-      'function',
-      'function_tick',
-      'function_load',
-      'tag_function',
-      'tag_item',
-      'tag_block',
-    ]);
+describe('data pack templates (from the data pack plugin)', () => {
+  it('keeps the Phase 2 template ids', () => {
+    expect(dataPackTemplates.map((template) => template.id)).toEqual(
+      expect.arrayContaining([
+        'recipe_shaped',
+        'recipe_shapeless',
+        'recipe_smelting',
+        'loot_table_block',
+        'advancement',
+        'predicate',
+        'item_modifier',
+        'function',
+        'function_tick',
+        'function_load',
+        'tag_function',
+        'tag_item',
+        'tag_block',
+      ]),
+    );
   });
 
   it('offers them for the registered kinds and keeps the generic fallback', async () => {
     const session = await openSession();
-    const templates = templatesFor(session.registry.all().map((kind) => kind.id));
+    const kinds = session.registry.all().map((kind) => kind.id);
+    const templates = templatesFor(kinds, dataPackTemplates);
     const ids = templates.map((template) => template.id);
-    for (const template of DATA_PACK_TEMPLATES) expect(ids).toContain(template.id);
-    expect(ids).toContain('kind:minecraft:tag/entity_type');
+    for (const template of dataPackTemplates) expect(ids).toContain(template.id);
     expect(ids).not.toContain('kind:minecraft:recipe');
+    // Without plugin templates every kind falls back to its generic entry.
+    expect(templatesFor(kinds).map((template) => template.id)).toEqual(
+      kinds.map((kind) => `kind:${kind}`),
+    );
   });
 
   it('points the tick and load tags at the project namespace', () => {
-    const tick = DATA_PACK_TEMPLATES.find((template) => template.id === 'function_tick');
+    const tick = dataPackTemplates.find((template) => template.id === 'function_tick');
     if (tick === undefined) throw new Error('missing');
     expect(tick).toMatchObject({
       kind: 'minecraft:tag/function',
@@ -65,14 +71,15 @@ describe('data pack templates', () => {
 
   it('produces data the current target validates without errors or unknown ids', async () => {
     const session = await openSession();
-    // The functions the tick and load tags run.
-    session.addElement({ id: 'demo:tick', kind: 'minecraft:function' });
-    session.addElement({ id: 'demo:load', kind: 'minecraft:function' });
+    // The load and tick function templates create the functions the tick and load tags run;
+    // a template whose default name is already taken gets a sample name.
     const created: string[] = [];
-    for (const template of DATA_PACK_TEMPLATES) {
+    for (const template of dataPackTemplates) {
       const namespace = template.defaultNamespace ?? 'demo';
       const name = template.defaultName ?? `sample_${template.id}`;
-      const id = templateElementId(template, namespace, name);
+      let id = templateElementId(template, namespace, name);
+      if (created.includes(id))
+        id = templateElementId(template, namespace, `sample_${template.id}`);
       const kind = session.registry.get(template.kind);
       expect(kind, template.kind).toBeDefined();
       session.addElement({
@@ -142,7 +149,7 @@ describe('data pack completions', () => {
 });
 
 describe('plugin templates (ADR 0020)', () => {
-  it('lists plugin templates first and keeps app built-ins only for uncovered kinds', () => {
+  it('lists plugin templates first and a generic entry for uncovered kinds', () => {
     const plugin = {
       id: 'plugin_recipe',
       kind: 'minecraft:recipe',
@@ -155,7 +162,7 @@ describe('plugin templates (ADR 0020)', () => {
       ['minecraft:recipe', 'minecraft:function', 'example:thing'],
       [plugin, { ...plugin, title: 'Duplicate id' }, { ...plugin, id: 'x', kind: 'example:gone' }],
     ).map((template) => template.id);
-    expect(ids).toEqual(['plugin_recipe', 'function', 'kind:example:thing']);
+    expect(ids).toEqual(['plugin_recipe', 'kind:minecraft:function', 'kind:example:thing']);
     expect(templatesFor(['example:thing'])[0]?.category).toBe('Other');
   });
 

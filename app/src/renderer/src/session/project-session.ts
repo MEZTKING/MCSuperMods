@@ -1256,8 +1256,15 @@ export class ProjectSession {
   #onCommand(event: CommandEvent): void {
     const before = elementsById(this.#lastState);
     const after = elementsById(event.state);
+    // Function objectives are project-wide too: a new `scoreboard objectives add` in one
+    // function changes the warnings in every other function.
     const idsKey = (project: Project | null) =>
-      project === null ? '' : JSON.stringify(projectRegistryIds(project));
+      project === null
+        ? ''
+        : JSON.stringify([
+            projectRegistryIds(project),
+            mcfunctionProjectIds(project).objective ?? [],
+          ]);
     this.#renameProblems = [];
     if (idsKey(this.#lastState) !== idsKey(event.state)) {
       // Project-defined ids changed, so `#[id]` warnings anywhere may change.

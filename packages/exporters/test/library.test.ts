@@ -48,7 +48,11 @@ import {
   type SchemaIndex,
   validateJson,
 } from '@msm/schemas';
-import { createMcfunctionService, type McfunctionService } from '@msm/schemas/mcfunction';
+import {
+  collectProjectObjectives,
+  createMcfunctionService,
+  type McfunctionService,
+} from '@msm/schemas/mcfunction';
 import { builtInTargets, readVendoredJson, type TargetBundle } from '@msm/targets';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createZipSink, dataPackExporter, resourcePackExporter, runExport } from '../src/index';
@@ -187,7 +191,7 @@ function between(path: string, prefix: string, suffix: string): string | undefin
 
 /** A copy of the app's `projectRegistryIds` (the app cannot be imported here). */
 function projectRegistryIds(project: Project): Record<string, string[]> {
-  const ids: Record<string, string[]> = { model: [], sound: [], texture: [] };
+  const ids: Record<string, string[]> = { model: [], sound: [], sound_event: [], texture: [] };
   const add = (registry: string, id: string): void => {
     const list = ids[registry] ?? [];
     list.push(id);
@@ -197,7 +201,11 @@ function projectRegistryIds(project: Project): Record<string, string[]> {
     for (const element of namespace.elements) {
       const name = element.kind.replace(/^minecraft:/, '');
       if (name === 'model') add('model', element.id);
-      else if (DATA_REGISTRY_KINDS.has(name) || name.startsWith('tag/')) add(name, element.id);
+      else if (name === 'sounds' && typeof element.data === 'object' && element.data !== null) {
+        for (const key of Object.keys(element.data)) {
+          if (key !== '') add('sound_event', `${namespace.name}:${key}`);
+        }
+      } else if (DATA_REGISTRY_KINDS.has(name) || name.startsWith('tag/')) add(name, element.id);
     }
     for (const asset of namespace.assets) {
       const texture = between(asset.path, 'textures/', '.png');
@@ -206,8 +214,35 @@ function projectRegistryIds(project: Project): Record<string, string[]> {
       if (sound !== undefined) add('sound', `${namespace.name}:${sound}`);
     }
   }
-  for (const list of Object.values(ids)) list.sort();
+  for (const [registry, list] of Object.entries(ids)) ids[registry] = [...new Set(list)].sort();
   return ids;
+}
+
+/**
+ * The ids the app's mcfunction checker declares (`mcfunctionProjectIds`): the data pack
+ * registries, the seeded function tags and, under `objective`, the scoreboard objectives any
+ * project function creates.
+ */
+function mcfunctionIds(project: Project, ids: Record<string, string[]>): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const [registry, list] of Object.entries(ids)) {
+    if (DATA_REGISTRY_KINDS.has(registry) || registry.startsWith('tag/')) out[registry] = list;
+  }
+  out['tag/function'] = [
+    ...new Set([...(out['tag/function'] ?? []), 'minecraft:load', 'minecraft:tick']),
+  ].sort();
+  const sources: string[] = [];
+  for (const namespace of project.namespaces) {
+    for (const element of namespace.elements) {
+      const lines = (element.data as { lines?: unknown }).lines;
+      if (element.kind === 'minecraft:function' && Array.isArray(lines)) {
+        sources.push(lines.filter((line) => typeof line === 'string').join('\n'));
+      }
+    }
+  }
+  const objective = collectProjectObjectives(sources);
+  if (objective.length > 0) out.objective = objective;
+  return out;
 }
 
 // Per-target context --------------------------------------------------------------------------
@@ -283,6 +318,7 @@ async function exportProblems(
   ids: Record<string, string[]>,
   exporter: Exporter,
 ): Promise<{ problems: Problem[]; ok: boolean; files: string[] }> {
+  const functionIds = mcfunctionIds(project, ids);
   const report = await runExport({
     project,
     registry,
@@ -298,7 +334,7 @@ async function exportProblems(
       const source = utf8.decode(file.contents as Uint8Array).replace(/\n$/, '');
       const found = await context.mcfunction.check(source, {
         uri: `file:///msm/${file.path}`,
-        projectIds: ids,
+        projectIds: functionIds,
       });
       return found.map(
         (problem): Problem => ({

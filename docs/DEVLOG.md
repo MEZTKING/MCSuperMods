@@ -709,3 +709,49 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
   - The e2e test now has 5 locations and checks real geometry (last row in view and above the next heading; `scrollWidth <= clientWidth`). It fails against the old code (1032 > 503) and passes with the fix.
 - Version bumped to 0.2.1, the first release that installed copies should pick up through auto-update.
 - The orchestrator is planning the templates and samples library (the user's next priority), with Phase 3 onwards after it.
+
+---
+
+## 2026-11-04 — orchestrator (Fable) + executors + main session — Templates and samples library add-on; v0.2.2 prepared
+
+**What** (each brief verified and committed by the main session)
+- **Plan and decisions:** the orchestrator planned 3 waves (B60–B67, plus B68 in reserve); ADR 0020 records the decisions:
+  - plugin-api 0.4.0 adds the `elementTemplates`, `projectStarters` and `examples` contribution points;
+  - content lives in plugins, and the app is only the picker.
+- **B60:** plugin-api 0.4.0, the `@msm/plugin-library` scaffold with deterministic placeholder PNGs, and the session's `library`, `newProject({ starter | bundle })` and `addBundle` (one undoable step).
+- **B61:** ADR 0020 and DESIGN §7/§8/§15/§16.
+- **Templates (66), every one valid on every target, with zero unknown ids, lowered cleanly, and functions passing Spyglass:**
+  - **B62:** 14 resource pack templates;
+  - **B63:** 52 data pack templates. It recorded real 26.3 schema facts: a pool `condition` is a single condition (use `all_of`); trigger `entity`/`player` fields take a loot condition; `time_check` needs `clock`; there is no `#minecraft:enchantable/sword` tag.
+- **B64:** 8 starters and 34 examples. Every bundle round-trips, validates and exports both packs with zero problems. The `examples/` mirror is a byte-for-byte golden.
+- **B65:**
+  - a New project dialog;
+  - an Examples gallery: search, kind filter, open as a new project, or copy in as one undo step with duplicates reported;
+  - a grouped template picker with a filter, and a Notes callout.
+- **B66:** the `library-path` e2e spec passed 3/3. **B67:** user guide `docs/guide/` (getting started, templates and examples), README, CLAUDE.md files.
+- **B68** (gap fixes found while building the content):
+  - `sound_event` ids are now taken from sounds elements;
+  - a type-argument dispatcher now reads its key from the enclosing `select`, so `select` on `minecraft:component` validates;
+  - project-wide scoreboard objectives are passed to the mcfunction checks;
+  - the music disc starter is back to the plain `sound_event` and a `select` item definition;
+  - the app's template arrays are removed.
+- **Main session:**
+  - functions are re-validated when objectives change, so other functions no longer keep a stale `undeclaredSymbol`;
+  - the README now leads with the installer;
+  - the version is 0.2.2.
+- **Verification on the combined tree:** lint, typecheck, `pnpm test` (12/12 tasks), build, e2e 5/5 specs in 16.9 s, `dist:dir`, the packaged smoke test and `check-size` all pass.
+
+**Decisions** (main-session defaults, user may veto)
+- Custom ore is an emerald-ore reskin until Phase 4.
+- The music disc uses vanilla `cat`; no audio is bundled.
+- Examples are mirrored on disk in `examples/`.
+
+**Follow-ups** (ROADMAP, Phase 2 follow-ups)
+- Data-only exports show a noisy "resourcepack files left out" info row.
+- The cooking recipe's result item field is too narrow.
+- The form editor ignores the `typeArgument` dispatcher marker.
+- The music disc's sound import path should match the starter's notes.
+
+**Next**
+- The user tags `v0.2.1` (the auto-update test) and `v0.2.2` from `main` once it is fast-forwarded.
+- Then Phase 3, Structures & Worldgen.

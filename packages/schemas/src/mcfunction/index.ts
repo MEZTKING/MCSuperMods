@@ -6,6 +6,7 @@
  */
 
 export {
+  collectProjectObjectives,
   createMcfunctionService,
   DEFAULT_COMPLETION_LIMIT,
   defaultFunctionUri,

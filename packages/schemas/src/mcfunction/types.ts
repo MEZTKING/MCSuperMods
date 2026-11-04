@@ -64,6 +64,11 @@ export interface McfunctionCheckOptions {
    * Ids the project declares, keyed by Spyglass symbol category: for example `function`,
    * `loot_table`, `predicate`, `advancement`, `tag/function` or `tag/item`. Ids are
    * `namespace:path` (a bare path is taken as `minecraft:`); tag ids are given without `#`.
+   *
+   * The `objective` category is project-wide scoreboard objectives, plain names declared as
+   * written: Spyglass checks each function on its own, so an objective created in one function
+   * (for example `load`) is declared here for the others. Collect them with
+   * `collectProjectObjectives` over every project function.
    */
   projectIds?: Readonly<Record<string, readonly string[]>>;
 }

@@ -31,6 +31,8 @@ export const DEFAULT_COMPLETION_LIMIT = 200;
 
 const LANGUAGE_ID = 'mcfunction';
 const PROJECT_CONTRIBUTOR = 'msm-project';
+/** Spyglass's symbol category for scoreboard objectives. */
+const OBJECTIVE_CATEGORY = 'objective';
 const PROJECT_URI = 'spyglass://msm';
 const DEFAULT_URI = 'file:///msm/untitled.mcfunction';
 
@@ -116,8 +118,37 @@ function projectIdsKey(ids: Readonly<Record<string, readonly string[]>> | undefi
   if (!ids) return '[]';
   const entries = Object.keys(ids)
     .sort()
-    .map((category) => [category, [...new Set((ids[category] ?? []).map(normaliseId))].sort()]);
+    .map((category) => {
+      const list = ids[category] ?? [];
+      const normalised = category === OBJECTIVE_CATEGORY ? list : list.map(normaliseId);
+      return [category, [...new Set(normalised)].sort()];
+    });
   return JSON.stringify(entries);
+}
+
+/** `scoreboard objectives add <name>` anywhere on a line (also after `execute ... run`). */
+const OBJECTIVE_ADD = /(?:^|\s)scoreboard\s+objectives\s+add\s+([^\s$]+)(?=\s|$)/g;
+
+/**
+ * The scoreboard objectives a set of function sources creates with
+ * `scoreboard objectives add <name>`, for `the `objective` category of `McfunctionCheckOptions.projectIds``. Comment
+ * lines are skipped, as are macro names (`$(...)`), which are only known at run time. Sorted,
+ * without duplicates; a lexical scan, so it never fails.
+ *
+ * @param sources - The text of every project function.
+ */
+export function collectProjectObjectives(sources: Iterable<string>): string[] {
+  const found = new Set<string>();
+  for (const source of sources) {
+    for (const line of source.split(/\r?\n/)) {
+      if (/^\s*#/.test(line)) continue;
+      for (const match of line.matchAll(OBJECTIVE_ADD)) {
+        const name = match[1];
+        if (name !== undefined) found.add(name);
+      }
+    }
+  }
+  return [...found].sort();
 }
 
 export async function createMcfunctionService(
@@ -187,16 +218,19 @@ export async function createMcfunctionService(
   const rootLiterals = rootCommandLiterals(data.commands);
 
   let currentIdsKey = '[]';
-  function applyProjectIds(ids: McfunctionCheckOptions['projectIds']): void {
+  function applyProjectIds(options: McfunctionCheckOptions): void {
+    const ids = options.projectIds;
     const key = projectIdsKey(ids);
     if (key === currentIdsKey) return;
     symbols.clear({ contributor: PROJECT_CONTRIBUTOR });
     if (ids) {
       symbols.contributeAs(PROJECT_CONTRIBUTOR, () => {
         for (const [category, list] of Object.entries(ids)) {
+          // Objective names are plain strings, not resource locations.
+          const plain = category === OBJECTIVE_CATEGORY;
           for (const id of list) {
             symbols
-              .query(PROJECT_URI, category, normaliseId(id))
+              .query(PROJECT_URI, category, plain ? id : normaliseId(id))
               .enter({ usage: { type: 'declaration' } });
           }
         }
@@ -309,7 +343,7 @@ export async function createMcfunctionService(
         },
       ];
     }
-    applyProjectIds(options.projectIds);
+    applyProjectIds(options);
     const doc = TextDocument.create(uri, LANGUAGE_ID, 0, source);
     const problems: McfunctionProblem[] = [];
 
@@ -345,7 +379,7 @@ export async function createMcfunctionService(
     if (source.length > MAX_SOURCE_LENGTH) return [];
     const limit = options.limit ?? DEFAULT_COMPLETION_LIMIT;
     const at = Math.min(Math.max(0, offset), source.length);
-    applyProjectIds(options.projectIds);
+    applyProjectIds(options);
     const uri = options.uri ?? DEFAULT_URI;
     const doc = TextDocument.create(uri, LANGUAGE_ID, 0, source);
     const node = parse(new core.Source(source), core.ParserContext.create(project, { doc }));

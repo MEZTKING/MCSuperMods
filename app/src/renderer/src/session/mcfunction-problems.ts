@@ -85,16 +85,46 @@ export function functionElementUri(id: ResourceLocation, target: Target): string
   return functionUri(id.slice(0, colon), id.slice(colon + 1), target.folders.data.function);
 }
 
+/** `scoreboard objectives add <name>` anywhere on a line (also after `execute ... run`). */
+const OBJECTIVE_ADD = /(?:^|\s)scoreboard\s+objectives\s+add\s+([^\s$]+)(?=\s|$)/g;
+
+/**
+ * The scoreboard objectives the project's function elements create with
+ * `scoreboard objectives add <name>`, skipping comment lines and macro names. The same scan as
+ * `collectProjectObjectives` in `@msm/schemas/mcfunction` (duplicated because the renderer
+ * must not import values from that subpath). Sorted, without duplicates.
+ */
+export function projectObjectives(project: Project): string[] {
+  const found = new Set<string>();
+  for (const namespace of project.namespaces) {
+    for (const element of namespace.elements) {
+      if (element.kind !== FUNCTION_KIND) continue;
+      for (const line of functionLines(element) ?? []) {
+        if (/^\s*#/.test(line)) continue;
+        for (const match of line.matchAll(OBJECTIVE_ADD)) {
+          const name = match[1];
+          if (name !== undefined) found.add(name);
+        }
+      }
+    }
+  }
+  return [...found].sort();
+}
+
 /**
  * The ids the project declares for the checker: every data registry of
- * {@link dataRegistryIds} (`function`, `recipe`, `tag/<registry>`, …) plus
- * {@link KNOWN_FUNCTION_TAGS} under `tag/function`. Sorted, namespaced.
+ * {@link dataRegistryIds} (`function`, `recipe`, `tag/<registry>`, …), plus
+ * {@link KNOWN_FUNCTION_TAGS} under `tag/function` and, under `objective`, the scoreboard
+ * objectives any project function creates ({@link projectObjectives}), so an objective made
+ * in `load` does not warn in other functions. Sorted; ids namespaced, objectives plain.
  */
 export function mcfunctionProjectIds(project: Project): Record<string, string[]> {
   const ids = dataRegistryIds(project);
   ids['tag/function'] = [
     ...new Set([...(ids['tag/function'] ?? []), ...KNOWN_FUNCTION_TAGS]),
   ].sort();
+  const objectives = projectObjectives(project);
+  if (objectives.length > 0) ids.objective = objectives;
   return ids;
 }
 

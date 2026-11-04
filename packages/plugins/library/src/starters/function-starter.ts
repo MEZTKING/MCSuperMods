@@ -43,10 +43,12 @@ export function functionStarterBundle({ namespace, projectName }: BundleContext)
           lines: [
             `# Run with /function ${greet}, or with /function #${rl(namespace, 'all')}`,
             'say Hello!',
+            'tellraw @s ["You have jumped ",{"score":{"name":"@s","objective":"jumps"}}," times."]',
+            'execute if score @s jumps matches 100.. run say I have jumped at least 100 times!',
             'title @s actionbar {"text":"Stand on a gold block to run faster","color":"gold"}',
           ],
         },
-        'A function you run yourself; it shows a hint above the hotbar.',
+        'A function you run yourself: it tells you how often you have jumped (the jumps objective the load function creates) and shows a hint above the hotbar.',
       ),
       element(
         'minecraft:load',

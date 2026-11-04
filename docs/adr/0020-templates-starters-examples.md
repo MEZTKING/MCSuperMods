@@ -77,4 +77,4 @@ The host enforces these rules, with tests in the app and in `@msm/exporters`:
 
 ## Status
 
-Accepted 2026-11-04; implementation B60–B67. Decisions 1–3 under "Decisions pending the user's veto" await the user's confirmation.
+Accepted and implemented (2026-11-04, B60–B68, released in v0.2.2): 66 element templates in the resource and data pack plugins, 8 project starters and 34 examples in `@msm/plugin-library`, `examples/` mirror, New project dialog, Examples gallery, grouped template picker, Notes callout. Follow-up fixes in B68: `sound_event` ids from sounds elements, type-argument dispatchers read from enclosing objects (select on `minecraft:component`), project-wide scoreboard objectives for mcfunction checks. The three defaults recorded above stand unless the user vetoes them.

@@ -98,6 +98,12 @@ export type SchemaNode =
       registry: string;
       /** Accessor for a dynamic index, e.g. `["type"]`; `[]` for a static index. */
       discriminator: DiscriminatorStep[];
+      /**
+       * Set when the dispatcher was a template type argument (e.g. `Cases<dispatch[[kind]]>`):
+       * its accessor belongs to the object where the template was instantiated, which may
+       * enclose the value, so validators also read it from enclosing objects.
+       */
+      typeArgument?: true;
       /** Keys available in this version, sorted. */
       keys(): string[];
       /** The member for `key` (ignored for a static index), or `undefined`. */

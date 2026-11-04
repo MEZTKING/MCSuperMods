@@ -5,9 +5,10 @@ import type { McfunctionChecker } from '../src/renderer/src/session/mcfunction-p
 import {
   functionIdOfOutput,
   mcfunctionProjectIds,
+  projectObjectives,
 } from '../src/renderer/src/session/mcfunction-problems';
 import { SessionProblemCodes } from '../src/renderer/src/session/project-session';
-import { dataRegistryIds } from '../src/renderer/src/session/schema-context';
+import { dataRegistryIds, projectRegistryIds } from '../src/renderer/src/session/schema-context';
 import { defaultTarget, newSession, nodeMcfunctionChecker } from './session-fixture';
 
 let checker: McfunctionChecker;
@@ -76,6 +77,40 @@ describe('ProjectSession: data pack kinds', () => {
     expect(registries.has('function', '#minecraft:load')).toBe(true);
     expect(registries.has('function', 'demo:greet')).toBe(true);
     expect(registries.has('item', '#demo:gems')).toBe(true);
+  });
+});
+
+describe('ProjectSession: sound event ids', () => {
+  it('declares every event key of a sounds element as a sound_event id', async () => {
+    const { session } = await dataProject();
+    session.addElement({
+      id: 'demo:sounds',
+      kind: 'minecraft:sounds',
+      data: {
+        'music_disc.my_song': { sounds: [{ name: 'minecraft:records/cat', stream: true }] },
+        'block.ping': { sounds: ['minecraft:random/orb'] },
+      },
+    });
+    session.addElement({
+      id: 'demo:my_song',
+      kind: 'minecraft:jukebox_song',
+      data: {
+        sound_event: 'demo:music_disc.my_song',
+        description: 'My Song',
+        length_in_seconds: 10,
+        comparator_output: 1,
+      },
+    });
+    await session.flushValidation();
+    const project = session.snapshot.project;
+    if (project === null) throw new Error('no project');
+    expect(projectRegistryIds(project).sound_event).toEqual([
+      'demo:block.ping',
+      'demo:music_disc.my_song',
+    ]);
+    const registries = (await session.schemas()).registries(project);
+    expect(registries.has('sound_event', 'demo:music_disc.my_song')).toBe(true);
+    expect(session.problemsFor('demo:my_song')).toEqual([]);
   });
 });
 
@@ -161,6 +196,52 @@ describe('ProjectSession: live mcfunction problems', () => {
       uri: `file:///msm/data/demo/${defaultTarget.folders.data.function}/sub/greet.mcfunction`,
     });
     expect(seen[0]?.projectIds.function).toEqual(['demo:sub/greet']);
+  });
+
+  it('declares scoreboard objectives created in any project function', async () => {
+    const { session } = await dataProject();
+    session.addElement({
+      id: 'demo:load',
+      kind: 'minecraft:function',
+      data: {
+        lines: [
+          '# scoreboard objectives add ignored dummy',
+          'scoreboard objectives add jumps minecraft.custom:minecraft.jump',
+        ],
+      },
+    });
+    session.addElement({
+      id: 'demo:tick',
+      kind: 'minecraft:function',
+      data: { lines: ['execute as @a[scores={jumps=1..}] run scoreboard players reset @s jumps'] },
+    });
+    await session.flushValidation();
+    const project = session.snapshot.project;
+    if (project === null) throw new Error('no project');
+    expect(projectObjectives(project)).toEqual(['jumps']);
+    expect(mcfunctionProjectIds(project).objective).toEqual(['jumps']);
+    expect(session.problemsFor('demo:tick')).toEqual([]);
+    expect(session.problemsFor('demo:load')).toEqual([]);
+    // The export gate declares them too.
+    const result = await session.exportPack('data', 'zip');
+    expect(result.problems.filter((problem) => problem.severity !== 'info')).toEqual([]);
+    expect(result.ok).toBe(true);
+  });
+
+  it('warns about an objective no project function creates', async () => {
+    const { session } = await dataProject();
+    session.addElement({
+      id: 'demo:tick',
+      kind: 'minecraft:function',
+      data: { lines: ['scoreboard players reset @s nowhere'] },
+    });
+    await session.flushValidation();
+    const project = session.snapshot.project;
+    if (project === null) throw new Error('no project');
+    expect(mcfunctionProjectIds(project).objective).toBeUndefined();
+    expect(session.problemsFor('demo:tick').map((problem) => problem.code)).toEqual([
+      'mcfunction.lint.undeclaredSymbol',
+    ]);
   });
 
   it('skips the checker without one: schema problems only', async () => {

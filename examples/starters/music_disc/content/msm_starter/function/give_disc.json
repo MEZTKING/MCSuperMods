@@ -2,7 +2,7 @@
   "data": {
     "lines": [
       "# Run with /function msm_starter:give_disc",
-      "give @s minecraft:music_disc_13[minecraft:jukebox_playable=\"msm_starter:my_song\",minecraft:item_model=\"msm_starter:my_song_disc\",minecraft:item_name=\"My Song Disc\"]"
+      "give @s minecraft:music_disc_13[minecraft:jukebox_playable=\"msm_starter:my_song\",minecraft:item_name=\"My Song Disc\"]"
     ]
   },
   "formatVersion": 1,
@@ -10,6 +10,6 @@
   "kind": "minecraft:function",
   "meta": {
     "createdAt": "2026-11-04T00:00:00.000Z",
-    "notes": "Gives a music disc that plays the new song and is drawn with its own model. Put it in a jukebox to listen."
+    "notes": "Gives a music disc that plays the new song; the item definition draws it with its own model. Put it in a jukebox to listen."
   }
 }

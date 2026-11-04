@@ -1,0 +1,29 @@
+{
+  "data": {
+    "model": {
+      "cases": [
+        {
+          "model": {
+            "model": "msm_starter:item/my_song_disc",
+            "type": "minecraft:model"
+          },
+          "when": "msm_starter:my_song"
+        }
+      ],
+      "component": "minecraft:jukebox_playable",
+      "fallback": {
+        "model": "minecraft:item/music_disc_13",
+        "type": "minecraft:model"
+      },
+      "property": "minecraft:component",
+      "type": "minecraft:select"
+    }
+  },
+  "formatVersion": 1,
+  "id": "minecraft:music_disc_13",
+  "kind": "minecraft:item_definition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Replaces music disc 13's item definition: a select on its jukebox_playable component picks the new model when the disc plays msm_starter:my_song; every other music disc 13 falls back to the vanilla model."
+  }
+}
