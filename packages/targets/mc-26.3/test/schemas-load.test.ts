@@ -12,11 +12,18 @@ function countUnsupported(node: SchemaNode, depth: number, seen = new Set<Schema
       return 1;
     case 'struct':
       return (
-        node.fields.reduce((sum, field) => sum + countUnsupported(field.type, depth - 1, seen), 0) +
-        node.spreads.reduce((sum, spread) => sum + countUnsupported(spread, depth - 1, seen), 0)
+        node.fields.reduce(
+          (sum, field) =>
+            sum +
+            countUnsupported(field.type, depth - 1, seen) +
+            (field.keyType ? countUnsupported(field.keyType, depth - 1, seen) : 0),
+          0,
+        ) + node.spreads.reduce((sum, spread) => sum + countUnsupported(spread, depth - 1, seen), 0)
       );
     case 'list':
       return countUnsupported(node.item, depth - 1, seen);
+    case 'tuple':
+      return node.items.reduce((sum, item) => sum + countUnsupported(item, depth - 1, seen), 0);
     case 'union':
       return node.members.reduce(
         (sum, member) => sum + countUnsupported(member, depth - 1, seen),
