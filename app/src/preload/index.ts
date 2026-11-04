@@ -7,7 +7,12 @@
  */
 
 import { contextBridge, type IpcRendererEvent, ipcRenderer } from 'electron';
-import { EventChannels, InvokeChannels, isMenuCommand } from '../shared/ipc-channels';
+import {
+  EventChannels,
+  InvokeChannels,
+  isMenuCommand,
+  isMinecraftProgress,
+} from '../shared/ipc-channels';
 import type { MsmBridge } from '../shared/platform';
 
 const bridge: MsmBridge = {
@@ -16,6 +21,33 @@ const bridge: MsmBridge = {
     pickDirectory: (opts) => ipcRenderer.invoke(InvokeChannels.projectPickDirectory, opts),
     confirmDiscard: (message) =>
       ipcRenderer.invoke(InvokeChannels.dialogConfirmDiscard, { message }),
+    pickFiles: (opts) => ipcRenderer.invoke(InvokeChannels.dialogPickFiles, opts),
+    saveFile: (opts) => ipcRenderer.invoke(InvokeChannels.dialogSaveFile, opts),
+  },
+  shell: {
+    showItemInFolder: (path) => ipcRenderer.invoke(InvokeChannels.shellShowItemInFolder, { path }),
+  },
+  targets: {
+    readVendored: (targetId, key) =>
+      ipcRenderer.invoke(InvokeChannels.targetsReadVendored, { targetId, key }),
+  },
+  settings: {
+    get: () => ipcRenderer.invoke(InvokeChannels.settingsGet),
+    set: (settings) =>
+      ipcRenderer.invoke(InvokeChannels.settingsSet, { minecraftDir: settings.minecraftDir }),
+  },
+  minecraft: {
+    status: (mcVersion) => ipcRenderer.invoke(InvokeChannels.minecraftStatus, { mcVersion }),
+    extract: (mcVersion) => ipcRenderer.invoke(InvokeChannels.minecraftExtract, { mcVersion }),
+    readAsset: (mcVersion, path) =>
+      ipcRenderer.invoke(InvokeChannels.minecraftReadAsset, { mcVersion, path }),
+    listAssets: (mcVersion, prefix) =>
+      ipcRenderer.invoke(InvokeChannels.minecraftListAssets, { mcVersion, prefix }),
+    installResourcePack: (fileName, data) =>
+      ipcRenderer.invoke(InvokeChannels.minecraftInstallResourcePack, { fileName, data }),
+  },
+  thumbnails: {
+    get: (assetPath, size) => ipcRenderer.invoke(InvokeChannels.thumbnailsGet, { assetPath, size }),
   },
   project: {
     openRoot: (path) => ipcRenderer.invoke(InvokeChannels.projectOpenRoot, { path }),
@@ -38,6 +70,15 @@ const bridge: MsmBridge = {
     ipcRenderer.on(EventChannels.menu, handler);
     return () => {
       ipcRenderer.removeListener(EventChannels.menu, handler);
+    };
+  },
+  onMinecraftProgress(listener) {
+    const handler = (_event: IpcRendererEvent, progress: unknown): void => {
+      if (isMinecraftProgress(progress)) listener(progress);
+    };
+    ipcRenderer.on(EventChannels.minecraftProgress, handler);
+    return () => {
+      ipcRenderer.removeListener(EventChannels.minecraftProgress, handler);
     };
   },
   setDirty(dirty) {

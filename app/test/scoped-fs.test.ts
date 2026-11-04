@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -52,11 +52,104 @@ describe('createScopedFileSystem', () => {
   });
 });
 
+describe('createScopedFileSystem symlink containment', () => {
+  let project: string;
+  let outside: string;
+
+  beforeEach(async () => {
+    project = join(root, 'project');
+    outside = join(root, 'outside');
+    await mkdir(join(project, 'assets'), { recursive: true });
+    await mkdir(outside);
+    await writeFile(join(outside, 'secret.txt'), 'secret');
+    await writeFile(join(project, 'assets', 'inside.txt'), 'inside');
+    await symlink(outside, join(project, 'assets', 'escape'), 'dir');
+    await symlink(join(outside, 'secret.txt'), join(project, 'assets', 'secret-link.txt'), 'file');
+    await symlink(
+      join(project, 'assets', 'inside.txt'),
+      join(project, 'assets', 'inside-link.txt'),
+      'file',
+    );
+    await symlink(join(outside, 'missing.txt'), join(project, 'assets', 'dangling.txt'), 'file');
+  });
+
+  it('refuses reads through a link to a folder outside the root', async () => {
+    const fs = createScopedFileSystem(project);
+    await expect(fs.readFile('assets/escape/secret.txt')).rejects.toThrow(/outside the project/);
+    await expect(fs.readFile('assets/secret-link.txt')).rejects.toThrow(/outside the project/);
+    await expect(fs.readDir('assets/escape')).rejects.toThrow(/outside the project/);
+    await expect(fs.exists('assets/escape/secret.txt')).rejects.toThrow(/outside the project/);
+  });
+
+  it('refuses writes through links, including dangling ones', async () => {
+    const fs = createScopedFileSystem(project);
+    await expect(fs.writeFile('assets/escape/new.txt', encode('x'))).rejects.toThrow(
+      /outside the project/,
+    );
+    await expect(fs.mkdirp('assets/escape/sub')).rejects.toThrow(/outside the project/);
+    await expect(fs.writeFile('assets/dangling.txt', encode('x'))).rejects.toThrow(
+      /outside the project/,
+    );
+    await expect(readFile(join(outside, 'missing.txt'))).rejects.toThrow();
+    await expect(readFile(join(outside, 'new.txt'))).rejects.toThrow();
+  });
+
+  it('hides escaping links in readDir and keeps contained ones', async () => {
+    const fs = createScopedFileSystem(project);
+    expect(await fs.readDir('assets')).toEqual([
+      { name: 'inside-link.txt', kind: 'file' },
+      { name: 'inside.txt', kind: 'file' },
+    ]);
+    expect(text(await fs.readFile('assets/inside-link.txt'))).toBe('inside');
+  });
+
+  it('removes only the link, never its target', async () => {
+    const fs = createScopedFileSystem(project);
+    await fs.remove('assets/escape');
+    await fs.remove('assets/secret-link.txt');
+    await fs.remove('assets/dangling.txt');
+    expect(await readFile(join(outside, 'secret.txt'), 'utf8')).toBe('secret');
+    expect(await fs.exists('assets/escape')).toBe(false);
+    expect(await fs.exists('assets/secret-link.txt')).toBe(false);
+    await expect(fs.remove('assets/escape/secret.txt')).resolves.toBeUndefined();
+  });
+
+  it('refuses to remove entries below a link that escapes', async () => {
+    const fs = createScopedFileSystem(project);
+    await expect(fs.remove('assets/escape/secret.txt')).rejects.toThrow(/outside the project/);
+    expect(await readFile(join(outside, 'secret.txt'), 'utf8')).toBe('secret');
+  });
+
+  it('accepts a root that is itself reached through a symlink', async () => {
+    await symlink(project, join(root, 'project-link'), 'dir');
+    const fs = createScopedFileSystem(join(root, 'project-link'));
+    expect(text(await fs.readFile('assets/inside.txt'))).toBe('inside');
+    await fs.writeFile('content/a.json', encode('{}'));
+    expect(await readFile(join(project, 'content', 'a.json'), 'utf8')).toBe('{}');
+  });
+
+  it('stats contained files', async () => {
+    const fs = createScopedFileSystem(project);
+    expect(await fs.stat('assets/inside.txt')).toMatchObject({ kind: 'file', size: 6 });
+    expect(await fs.stat('assets/none.txt')).toBeNull();
+    await expect(fs.stat('assets/escape')).rejects.toThrow(/outside the project/);
+  });
+});
+
 describe('createNodePlatform', () => {
   const platform = () =>
     createNodePlatform({
       info: async () => ({ version: '0', electron: '0', platform: 'test' }),
-      dialogs: { pickDirectory: async () => null, confirmDiscard: async () => true },
+      dialogs: {
+        pickDirectory: async () => null,
+        confirmDiscard: async () => true,
+        openFiles: async () => [],
+        saveFilePath: async () => null,
+      },
+      showItemInFolder: () => {},
+      resizePng: (png) => png,
+      msmHome: join(root, 'msm-home'),
+      installEnv: { platform: 'linux', home: join(root, 'home') },
     });
 
   it('rejects file access when no root is open', async () => {

@@ -5,6 +5,7 @@ import {
   InvokeChannels,
   ipcContract,
   isMenuCommand,
+  isMinecraftProgress,
 } from '../src/shared/ipc-contract';
 
 const bytes = new Uint8Array([1, 2, 3]);
@@ -72,6 +73,84 @@ const samples: Record<
     request: [{ message: 'Discard?' }, { text: 'Discard?' }],
     response: [true, 'true'],
   },
+  [InvokeChannels.dialogPickFiles]: {
+    request: [
+      { title: 'Import textures', filters: [{ name: 'PNG', extensions: ['png'] }] },
+      { title: 'Import', filters: [{ name: 'PNG' }] },
+    ],
+    response: [[{ path: '/tmp/a.png', name: 'a.png', data: bytes }], [{ path: '/tmp/a.png' }]],
+  },
+  [InvokeChannels.dialogSaveFile]: {
+    request: [
+      { title: 'Export', defaultName: 'pack.zip', data: bytes },
+      { title: 'Export', defaultName: '../pack.zip', data: bytes },
+    ],
+    response: ['/tmp/pack.zip', ''],
+  },
+  [InvokeChannels.shellShowItemInFolder]: {
+    request: [{ path: '/tmp/pack.zip' }, { path: '' }],
+    response: [undefined, '/tmp'],
+  },
+  [InvokeChannels.targetsReadVendored]: {
+    request: [
+      { targetId: 'some-target', key: 'mcmetaRegistries' },
+      { targetId: 'some-target', key: 'secrets' },
+    ],
+    response: [bytes, [1]],
+  },
+  [InvokeChannels.settingsGet]: {
+    request: [undefined, {}],
+    response: [
+      { minecraftDir: null, detectedMinecraftDir: '/home/a/.minecraft' },
+      { minecraftDir: null },
+    ],
+  },
+  [InvokeChannels.settingsSet]: {
+    request: [{ minecraftDir: '/games/minecraft' }, { minecraftDir: 3 }],
+    response: [undefined, false],
+  },
+  [InvokeChannels.minecraftStatus]: {
+    request: [{ mcVersion: '1.0-test' }, { mcVersion: '../x' }],
+    response: [
+      { minecraftDir: null, installed: [], chosen: null, cache: null },
+      { minecraftDir: null, installed: [], chosen: null },
+    ],
+  },
+  [InvokeChannels.minecraftExtract]: {
+    request: [{ mcVersion: '1.0' }, { mcVersion: '..' }],
+    response: [
+      { version: '1.0', jarSha1: 'ab', fileCount: 3, extractedAt: 'now', schemaVersion: 1 },
+      { version: '1.0', jarSha1: 'ab', fileCount: -1, extractedAt: 'now', schemaVersion: 1 },
+    ],
+  },
+  [InvokeChannels.minecraftReadAsset]: {
+    request: [
+      { mcVersion: '1.0', path: 'assets/minecraft/models/block/stone.json' },
+      { mcVersion: '1.0/x', path: 'assets/minecraft/models/block/stone.json' },
+    ],
+    response: [null, 'bytes'],
+  },
+  [InvokeChannels.minecraftListAssets]: {
+    request: [
+      { mcVersion: '1.0', prefix: 'assets/minecraft/textures/block/' },
+      { mcVersion: '1.0' },
+    ],
+    response: [['assets/minecraft/textures/block/a.png'], [1]],
+  },
+  [InvokeChannels.minecraftInstallResourcePack]: {
+    request: [
+      { fileName: 'My Pack-1.0.zip', data: bytes },
+      { fileName: '../evil.zip', data: bytes },
+    ],
+    response: [{ path: '/home/a/.minecraft/resourcepacks/My Pack-1.0.zip' }, {}],
+  },
+  [InvokeChannels.thumbnailsGet]: {
+    request: [
+      { assetPath: 'assets/demo/textures/block/ruby.png', size: 64 },
+      { assetPath: 'assets/demo/textures/block/ruby.png', size: 4096 },
+    ],
+    response: [bytes, null],
+  },
 };
 
 describe('IPC contract', () => {
@@ -94,6 +173,16 @@ describe('IPC contract', () => {
 
   it('has a schema for every invoke channel and nothing else', () => {
     expect(Object.keys(ipcContract).sort()).toEqual(Object.values(InvokeChannels).sort());
+  });
+
+  it('validates extraction progress payloads', () => {
+    expect(isMinecraftProgress({ mcVersion: '1.0', phase: 'writing', done: 3, total: 9 })).toBe(
+      true,
+    );
+    expect(isMinecraftProgress({ mcVersion: '1.0', phase: 'melting', done: 3, total: 9 })).toBe(
+      false,
+    );
+    expect(isMinecraftProgress(null)).toBe(false);
   });
 
   it('recognises menu commands', () => {

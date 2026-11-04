@@ -7,12 +7,16 @@ import {
   saveBlockers,
 } from '../src/renderer/src/session/project-session';
 import type { PlatformAdapter } from '../src/shared/platform';
+import { stubPlatformServices } from './helpers/stub-platform';
 
 function fakePlatform(fs: MemoryFileSystem, options: { discard?: boolean } = {}) {
   const calls: string[] = [];
+  const stubs = stubPlatformServices();
   const platform: PlatformAdapter = {
+    ...stubs,
     app: { info: async () => ({ version: '0', electron: '0', platform: 'test' }) },
     dialogs: {
+      ...stubs.dialogs,
       pickDirectory: async () => '/projects/demo',
       confirmDiscard: async (message) => {
         calls.push(`confirm:${message}`);

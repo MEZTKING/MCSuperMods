@@ -16,5 +16,11 @@
     "vitest.config.ts",
     "test"
   ],
-  "references": [{ "path": "../packages/plugin-api" }, { "path": "../packages/core" }]
+  "exclude": ["test/components"],
+  "references": [
+    { "path": "../packages/plugin-api" },
+    { "path": "../packages/core" },
+    { "path": "../packages/interop" },
+    { "path": "../packages/targets/all" }
+  ]
 }

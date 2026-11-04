@@ -23,12 +23,29 @@ export const InvokeChannels = {
   fsRemove: 'msm:v1:fs:remove',
   appInfo: 'msm:v1:app:info',
   dialogConfirmDiscard: 'msm:v1:dialog:confirmDiscard',
+  dialogPickFiles: 'msm:v1:dialog:pickFiles',
+  dialogSaveFile: 'msm:v1:dialog:saveFile',
+  shellShowItemInFolder: 'msm:v1:shell:showItemInFolder',
+  targetsReadVendored: 'msm:v1:targets:readVendored',
+  settingsGet: 'msm:v1:settings:get',
+  settingsSet: 'msm:v1:settings:set',
+  minecraftStatus: 'msm:v1:minecraft:status',
+  minecraftExtract: 'msm:v1:minecraft:extract',
+  minecraftReadAsset: 'msm:v1:minecraft:readAsset',
+  minecraftListAssets: 'msm:v1:minecraft:listAssets',
+  minecraftInstallResourcePack: 'msm:v1:minecraft:installResourcePack',
+  thumbnailsGet: 'msm:v1:thumbnails:get',
 } as const;
 
-/** One-way channels: main to renderer (`menu`) and renderer to main (the others). */
+/**
+ * One-way channels: main to renderer (`menu`, `minecraftProgress`) and renderer to main (the
+ * others).
+ */
 export const EventChannels = {
   /** Main to renderer: a menu command, payload {@link MenuCommand}. */
   menu: 'msm:v1:menu',
+  /** Main to renderer: asset extraction progress, payload {@link MinecraftProgress}. */
+  minecraftProgress: 'msm:v1:minecraft:progress',
   /** Renderer to main: the renderer has rendered its first frame (used by smoke mode). */
   smokeReady: 'msm:v1:app:smokeReady',
   /** Renderer to main: whether the open project has unsaved changes, payload `boolean`. */
@@ -47,4 +64,37 @@ export type MenuCommand = (typeof MENU_COMMANDS)[number];
 /** Whether a value is a known menu command. */
 export function isMenuCommand(value: unknown): value is MenuCommand {
   return typeof value === 'string' && (MENU_COMMANDS as readonly string[]).includes(value);
+}
+
+/** The vendored data files of a target that the renderer may read. */
+export const VENDORED_KEYS = ['vanillaMcdocSymbols', 'mcmetaRegistries', 'mcmetaVersion'] as const;
+
+/** A vendored data file key. */
+export type VendoredKeyName = (typeof VENDORED_KEYS)[number];
+
+/** The phases of client-jar asset extraction, in order. */
+export const MINECRAFT_PROGRESS_PHASES = ['reading', 'extracting', 'writing', 'done'] as const;
+
+/** Asset extraction progress, sent on {@link EventChannels.minecraftProgress}. */
+export interface MinecraftProgress {
+  /** The Minecraft version being extracted. */
+  mcVersion: string;
+  phase: (typeof MINECRAFT_PROGRESS_PHASES)[number];
+  /** Units done so far in this phase (files written in `writing`, otherwise 0 or 1). */
+  done: number;
+  /** Units in this phase. */
+  total: number;
+}
+
+/** Whether a value is a well-formed {@link MinecraftProgress} payload. */
+export function isMinecraftProgress(value: unknown): value is MinecraftProgress {
+  if (typeof value !== 'object' || value === null) return false;
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record.mcVersion === 'string' &&
+    typeof record.phase === 'string' &&
+    (MINECRAFT_PROGRESS_PHASES as readonly string[]).includes(record.phase) &&
+    typeof record.done === 'number' &&
+    typeof record.total === 'number'
+  );
 }

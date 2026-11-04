@@ -7,14 +7,90 @@
  * @packageDocumentation
  */
 
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import { nodeEnv } from '@msm/interop/node';
+import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron';
 import { EventChannels } from '../shared/ipc-channels';
+import { applyE2eHooks, readE2eHooks } from './e2e-hooks';
 import { registerIpc } from './ipc';
 import { installMenu } from './menu';
-import { createNodePlatform } from './platform/node-platform';
+import { createNodePlatform, type NativeDialogs } from './platform/node-platform';
+import { resolveMsmHome } from './platform/settings';
 import { createMainWindow } from './window';
 
 const smoke = process.env.MSM_SMOKE === '1';
+
+function focusedWindow(): BrowserWindow | null {
+  return BrowserWindow.getFocusedWindow();
+}
+
+const electronDialogs: NativeDialogs = {
+  async pickDirectory({ title, mustBeEmpty }) {
+    const parent = focusedWindow();
+    const properties: Electron.OpenDialogOptions['properties'] = mustBeEmpty
+      ? ['openDirectory', 'createDirectory', 'promptToCreate']
+      : ['openDirectory'];
+    const options: Electron.OpenDialogOptions = { title, properties };
+    const result =
+      parent === null
+        ? await dialog.showOpenDialog(options)
+        : await dialog.showOpenDialog(parent, options);
+    return result.canceled ? null : (result.filePaths[0] ?? null);
+  },
+  async confirmDiscard(message) {
+    const parent = focusedWindow();
+    const options: Electron.MessageBoxOptions = {
+      type: 'warning',
+      buttons: ['Discard changes', 'Cancel'],
+      defaultId: 1,
+      cancelId: 1,
+      message,
+    };
+    const { response } =
+      parent === null
+        ? await dialog.showMessageBox(options)
+        : await dialog.showMessageBox(parent, options);
+    return response === 0;
+  },
+  async openFiles({ title, filters }) {
+    const parent = focusedWindow();
+    const options: Electron.OpenDialogOptions = {
+      title,
+      properties: ['openFile', 'multiSelections'],
+      ...(filters === undefined ? {} : { filters }),
+    };
+    const result =
+      parent === null
+        ? await dialog.showOpenDialog(options)
+        : await dialog.showOpenDialog(parent, options);
+    return result.canceled ? [] : result.filePaths;
+  },
+  async saveFilePath({ title, defaultName, filters }) {
+    const parent = focusedWindow();
+    const options: Electron.SaveDialogOptions = {
+      title,
+      defaultPath: defaultName,
+      ...(filters === undefined ? {} : { filters }),
+    };
+    const result =
+      parent === null
+        ? await dialog.showSaveDialog(options)
+        : await dialog.showSaveDialog(parent, options);
+    return result.canceled || result.filePath === undefined || result.filePath === ''
+      ? null
+      : result.filePath;
+  },
+};
+
+/** Scales a PNG so its longer edge is `size` pixels, keeping the aspect ratio. */
+function resizePng(png: Uint8Array, size: number): Uint8Array {
+  const image = nativeImage.createFromBuffer(
+    Buffer.from(png.buffer, png.byteOffset, png.byteLength),
+  );
+  if (image.isEmpty()) throw new Error('The texture is not a readable PNG.');
+  const { width, height } = image.getSize();
+  const resized = image.resize(width >= height ? { width: size } : { height: size });
+  return new Uint8Array(resized.toPNG());
+}
 
 const platform = createNodePlatform({
   async info() {
@@ -24,35 +100,11 @@ const platform = createNodePlatform({
       platform: process.platform,
     };
   },
-  dialogs: {
-    async pickDirectory({ title, mustBeEmpty }) {
-      const parent = BrowserWindow.getFocusedWindow();
-      const properties: Electron.OpenDialogOptions['properties'] = mustBeEmpty
-        ? ['openDirectory', 'createDirectory', 'promptToCreate']
-        : ['openDirectory'];
-      const options: Electron.OpenDialogOptions = { title, properties };
-      const result =
-        parent === null
-          ? await dialog.showOpenDialog(options)
-          : await dialog.showOpenDialog(parent, options);
-      return result.canceled ? null : (result.filePaths[0] ?? null);
-    },
-    async confirmDiscard(message) {
-      const parent = BrowserWindow.getFocusedWindow();
-      const options: Electron.MessageBoxOptions = {
-        type: 'warning',
-        buttons: ['Discard changes', 'Cancel'],
-        defaultId: 1,
-        cancelId: 1,
-        message,
-      };
-      const { response } =
-        parent === null
-          ? await dialog.showMessageBox(options)
-          : await dialog.showMessageBox(parent, options);
-      return response === 0;
-    },
-  },
+  dialogs: applyE2eHooks(electronDialogs, readE2eHooks(process.env)),
+  showItemInFolder: (path) => shell.showItemInFolder(path),
+  resizePng,
+  msmHome: resolveMsmHome(process.env, app.getPath('home')),
+  installEnv: nodeEnv(),
 });
 
 function runSmoke(window: BrowserWindow): void {
