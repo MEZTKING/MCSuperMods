@@ -3,7 +3,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createNodeInstallFileSystem } from '@msm/interop/node';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { createLocationResolver } from '../src/main/platform/locations';
 import { createMinecraftService, type MinecraftService } from '../src/main/platform/minecraft';
+import { createSettingsStore } from '../src/main/platform/settings';
 import { InvokeChannels, ipcContract } from '../src/shared/ipc-contract';
 
 let temp: string;
@@ -22,12 +24,21 @@ async function makeWorld(dir: string, mtime: Date | null): Promise<void> {
 beforeEach(async () => {
   temp = await mkdtemp(join(tmpdir(), 'msm-main-worlds-'));
   minecraftDir = join(temp, 'minecraft');
-  service = createMinecraftService({
-    msmHome: join(temp, 'msm-home'),
-    fs: createNodeInstallFileSystem(),
-    minecraftDir: async () => minecraftDir,
-  });
+  await mkdir(minecraftDir, { recursive: true });
+  service = await serviceFor(join(temp, 'msm-home'), minecraftDir);
 });
+
+async function serviceFor(msmHome: string, dir: string | null): Promise<MinecraftService> {
+  const fs = createNodeInstallFileSystem();
+  const installEnv = { platform: 'linux', home: join(temp, 'home') };
+  const settings = createSettingsStore({ msmHome, installEnv });
+  if (dir !== null) await settings.set({ minecraftDir: dir });
+  return createMinecraftService({
+    msmHome,
+    fs,
+    locations: createLocationResolver({ fs, env: installEnv, settings }),
+  });
+}
 
 afterEach(async () => {
   await rm(temp, { recursive: true, force: true });
@@ -49,11 +60,7 @@ describe('world listing', () => {
 
   it('returns nothing without saves and refuses without a Minecraft folder', async () => {
     expect(await service.listWorlds()).toEqual([]);
-    const none = createMinecraftService({
-      msmHome: join(temp, 'msm-home'),
-      fs: createNodeInstallFileSystem(),
-      minecraftDir: async () => null,
-    });
+    const none = await serviceFor(join(temp, 'other-home'), null);
     await expect(none.listWorlds()).rejects.toThrow(/No Minecraft folder/);
   });
 });

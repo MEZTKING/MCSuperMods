@@ -14,6 +14,7 @@ import type { InstallEnv, InstallFileSystem } from '@msm/interop';
 import { createNodeInstallFileSystem } from '@msm/interop/node';
 import type { FileFilter, PlatformAdapter, RootResult } from '../../shared/platform';
 import { createExportsService } from './exports';
+import { createLocationResolver } from './locations';
 import { createMcfunctionBroker } from './mcfunction';
 import { createMinecraftService, type MinecraftService } from './minecraft';
 import { createScopedFileSystem, isWithin, type ScopedFileSystem } from './scoped-fs';
@@ -56,7 +57,7 @@ export interface NodePlatformDeps {
   resizePng(png: Uint8Array, size: number): Uint8Array | Promise<Uint8Array>;
   /** The MSM home directory (settings and the asset cache). */
   msmHome: string;
-  /** Host facts used to detect the default Minecraft directory. */
+  /** Host facts used to detect the default Minecraft and launcher folders. */
   installEnv: InstallEnv;
   /** File access for the Minecraft service. Defaults to the Node adapter. */
   installFs?: InstallFileSystem;
@@ -101,10 +102,12 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
   let lastExportFolder: string | null = null;
 
   const settings = createSettingsStore({ msmHome: deps.msmHome, installEnv: deps.installEnv });
+  const installFs = deps.installFs ?? createNodeInstallFileSystem();
+  const locations = createLocationResolver({ fs: installFs, env: deps.installEnv, settings });
   const minecraft = createMinecraftService({
     msmHome: deps.msmHome,
-    fs: deps.installFs ?? createNodeInstallFileSystem(),
-    minecraftDir: () => settings.minecraftDir(),
+    fs: installFs,
+    locations,
     ...(deps.now === undefined ? {} : { now: deps.now }),
   });
 
@@ -136,6 +139,13 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     if (currentRoot !== null) roots.push(currentRoot);
     const minecraftDir = await settings.minecraftDir();
     if (minecraftDir !== null) roots.push(minecraftDir);
+    // The selected install target's game folder (a launcher instance), where installs land.
+    try {
+      const { selected } = await locations.selected();
+      if (selected !== null) roots.push(normalize(selected.gameDir));
+    } catch {
+      // Discovery failed; reveal only the other roots.
+    }
     if (lastSavePath !== null) roots.push(dirname(lastSavePath));
     if (lastExportFolder !== null) roots.push(lastExportFolder);
     return Promise.all(roots.map(realpathOrSelf));
@@ -180,7 +190,9 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
         const real = await realpathOrSelf(path);
         const roots = await revealRoots();
         if (!roots.some((root) => isWithin(root, real))) {
-          throw new Error(`${path} is outside the project, Minecraft and save folders.`);
+          throw new Error(
+            `${path} is outside the project, Minecraft, install target and save folders.`,
+          );
         }
         deps.showItemInFolder(real);
       },

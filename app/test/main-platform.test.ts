@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { builtInTargets } from '@msm/targets';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createNodePlatform, type NativeDialogs } from '../src/main/platform/node-platform';
+import { makeMmcRoot } from './helpers/fake-launchers';
 
 let temp: string;
 let revealed: string[];
@@ -86,6 +87,31 @@ describe('main platform shell', () => {
     await expect(p.shell.showItemInFolder(join(temp, 'elsewhere.txt'))).rejects.toThrow(/outside/);
     await expect(p.shell.showItemInFolder('relative')).rejects.toThrow(/absolute/);
     expect(revealed).toHaveLength(3);
+  });
+});
+
+describe('main platform install target', () => {
+  it('reveals files in the selected launcher instance and installs there', async () => {
+    const prism = await makeMmcRoot(join(temp, 'prism'), {
+      instances: [{ folder: 'inst', mcVersion: '9.9-msm-test' }],
+    });
+    const p = platform();
+    await p.settings.set({
+      launchers: { prismDataDirs: [prism.root], multimcRoots: [], curseForgeRoots: [] },
+    });
+    const packs = join(prism.gameDir('inst'), 'resourcepacks');
+    await mkdir(packs, { recursive: true });
+    await expect(p.shell.showItemInFolder(packs)).rejects.toThrow(/outside/);
+
+    await p.settings.set({
+      installTarget: { launcher: 'prism', root: prism.root, instance: 'inst' },
+    });
+    const { path } = await p.minecraft.installResourcePack('Pack.zip', new Uint8Array([1]));
+    expect(path).toBe(join(packs, 'Pack.zip'));
+    await p.shell.showItemInFolder(path);
+    expect(revealed).toEqual([path]);
+    // Other instances stay out of reach.
+    await expect(p.shell.showItemInFolder(prism.instancesDir)).rejects.toThrow(/outside/);
   });
 });
 

@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createNodeInstallFileSystem } from '@msm/interop/node';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { createLocationResolver } from '../src/main/platform/locations';
 import {
   assertPreviewAssetPath,
   createMinecraftService,
@@ -10,6 +11,7 @@ import {
 } from '../src/main/platform/minecraft';
 import { createSettingsStore, resolveMsmHome } from '../src/main/platform/settings';
 import type { MinecraftProgress } from '../src/shared/ipc-channels';
+import { InvokeChannels, ipcContract } from '../src/shared/ipc-contract';
 import { buildSyntheticJar, KEPT_ENTRIES } from './helpers/synthetic-jar';
 
 /** A made-up version id; tests never name a real Minecraft version. */
@@ -30,15 +32,15 @@ beforeEach(async () => {
   temp = await mkdtemp(join(tmpdir(), 'msm-main-minecraft-'));
   msmHome = resolveMsmHome({ MSM_HOME: join(temp, 'msm-home') }, join(temp, 'home'));
   minecraftDir = join(temp, 'minecraft');
-  const settings = createSettingsStore({
-    msmHome,
-    installEnv: { platform: 'linux', home: join(temp, 'home') },
-  });
+  await mkdir(minecraftDir, { recursive: true });
+  const installEnv = { platform: 'linux', home: join(temp, 'home') };
+  const settings = createSettingsStore({ msmHome, installEnv });
   await settings.set({ minecraftDir });
+  const fs = createNodeInstallFileSystem();
   service = createMinecraftService({
     msmHome,
-    fs: createNodeInstallFileSystem(),
-    minecraftDir: () => settings.minecraftDir(),
+    fs,
+    locations: createLocationResolver({ fs, env: installEnv, settings }),
     now: () => '2026-01-01T00:00:00.000Z',
   });
 });
@@ -49,12 +51,18 @@ afterEach(async () => {
 
 describe('Minecraft service', () => {
   it('reports no installation and refuses to extract', async () => {
-    expect(await service.status(VERSION)).toEqual({
+    const status = await service.status(VERSION);
+    expect(status).toMatchObject({
       minecraftDir,
       installed: [],
       chosen: null,
       cache: null,
+      targetMissing: false,
+      jar: null,
+      warnings: [],
     });
+    expect(status.target).toMatchObject({ id: 'official:default', gameDir: minecraftDir });
+    expect(ipcContract[InvokeChannels.minecraftStatus].response.parse(status)).toEqual(status);
     await expect(service.extract(VERSION)).rejects.toThrow(/not installed/);
     expect(await service.readAsset(VERSION, 'assets/minecraft/lang/en_us.json')).toBeNull();
     expect(await service.listAssets(VERSION, '')).toEqual([]);
@@ -67,6 +75,7 @@ describe('Minecraft service', () => {
     const before = await service.status(VERSION);
     expect(before.installed).toEqual([{ id: '0.1' }, { id: VERSION }]);
     expect(before.chosen).toEqual({ id: VERSION });
+    expect(before.jar).toEqual({ versionId: VERSION, launcher: 'official' });
     expect(before.cache).toBeNull();
 
     const progress: MinecraftProgress[] = [];
@@ -159,14 +168,24 @@ describe('Minecraft service', () => {
   });
 
   it('refuses to install without a Minecraft folder', async () => {
+    const fs = createNodeInstallFileSystem();
+    const installEnv = { platform: 'linux', home: join(temp, 'empty-home') };
     const none = createMinecraftService({
-      msmHome,
-      fs: createNodeInstallFileSystem(),
-      minecraftDir: async () => null,
+      msmHome: join(temp, 'other-home'),
+      fs,
+      locations: createLocationResolver({
+        fs,
+        env: installEnv,
+        settings: createSettingsStore({ msmHome: join(temp, 'other-home'), installEnv }),
+      }),
     });
     await expect(none.installResourcePack('a.zip', new Uint8Array())).rejects.toThrow(
       /No Minecraft folder/,
     );
-    expect((await none.status(VERSION)).minecraftDir).toBeNull();
+    await expect(none.extract(VERSION)).rejects.toThrow(/No Minecraft folder/);
+    const status = await none.status(VERSION);
+    expect(status.minecraftDir).toBeNull();
+    expect(status.target).toBeNull();
+    expect(await none.listLocations(VERSION)).toEqual({ locations: [], selected: null });
   });
 });
