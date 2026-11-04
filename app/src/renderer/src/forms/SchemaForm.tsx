@@ -119,7 +119,15 @@ export function SchemaForm({
           }
           target.scrollIntoView?.({ block: 'nearest' });
           const candidates = [...target.querySelectorAll<HTMLElement>(FOCUSABLE)];
+          // Prefer the value control over header controls (a map entry's key input, the
+          // description tip, remove buttons) and union variant pickers; a pointer cannot say
+          // whether a map key is at fault, so the value wins.
+          const inValue = (element: HTMLElement) => element.closest('[data-field-header]') === null;
           const focusable =
+            candidates.find(
+              (element) => inValue(element) && !element.hasAttribute('data-variant-picker'),
+            ) ??
+            candidates.find(inValue) ??
             candidates.find((element) => !element.hasAttribute('data-collapse-toggle')) ??
             candidates[0];
           focusable?.focus();

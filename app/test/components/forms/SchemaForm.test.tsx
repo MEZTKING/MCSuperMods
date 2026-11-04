@@ -233,6 +233,21 @@ describe('SchemaForm over the model schema', () => {
     expect(exact).toBe(true);
     expect(document.activeElement).toBe(screen.getByLabelText('texture'));
   });
+
+  it('focuses the value of a map entry, not its key', async () => {
+    const ref = createRef<SchemaFormHandle>();
+    renderForm(MODEL, { textures: { all: 'demo:block/ruby' } }, { ref });
+    let exact = false;
+    await act(async () => {
+      exact = (await ref.current?.focusPointer('/textures/all')) ?? false;
+    });
+    expect(exact).toBe(true);
+    const entry = document.querySelector('[data-pointer="/textures/all"]');
+    const active = document.activeElement as HTMLInputElement | null;
+    expect(entry?.contains(active)).toBe(true);
+    expect(active).not.toBe(input('Key all in textures'));
+    expect(active?.value).toBe('demo:block/ruby');
+  });
 });
 
 describe('SchemaForm unions', () => {

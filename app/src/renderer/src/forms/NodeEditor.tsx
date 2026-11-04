@@ -132,7 +132,7 @@ export function Field({
   if (hidden.has(editor.pointer)) return null;
   const description = desc ?? describeNode(editor.node);
   const header = (
-    <div className="flex min-w-0 items-center gap-1">
+    <div className="flex min-w-0 items-center gap-1" data-field-header>
       {composite ? (
         <button
           type="button"
@@ -326,6 +326,7 @@ function UnionEditor(props: NodeEditorProps & { node: SchemaNode & { kind: 'unio
     <div className="flex min-w-0 flex-col gap-1">
       <select
         aria-label={`${label} variant`}
+        data-variant-picker
         className={`${inputClass} w-auto self-start`}
         value={index >= 0 ? String(index) : ''}
         onChange={(event) => {

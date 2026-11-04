@@ -64,7 +64,7 @@ function AssetRow(props: { namespace: string; asset: Asset; actions: AssetAction
   const name = `${namespace}:${asset.path}`;
   return (
     <li
-      className="group flex items-center gap-1.5 px-1 py-0.5"
+      className="group flex min-w-0 items-center gap-1.5 px-1 py-0.5"
       title={`${asset.path} (${asset.mediaType})`}
       data-testid={`asset-row-${name}`}
     >
@@ -81,7 +81,11 @@ function AssetRow(props: { namespace: string; asset: Asset; actions: AssetAction
       ) : (
         <FileAudio size={14} aria-hidden className="shrink-0 text-muted" />
       )}
-      <span className="flex-1 truncate">{asset.path}</span>
+      {/* `w-0` stops the name's width pushing the row (and the sidebar's scroll content) wider,
+          so the action buttons always fit; the full path is in the tooltip. */}
+      <span className="w-0 min-w-0 flex-1 truncate" title={asset.path}>
+        {asset.path}
+      </span>
       {actions.onReveal !== undefined && (
         <button
           type="button"

@@ -45,7 +45,7 @@ function ElementRow(props: {
 }) {
   const { element } = props;
   return (
-    <li className="group flex items-center gap-1">
+    <li className="group flex min-w-0 items-center gap-1">
       <button
         type="button"
         aria-label={element.id}
@@ -53,7 +53,7 @@ function ElementRow(props: {
         title={element.id}
         data-testid={`element-row-${element.id}`}
         className={
-          'flex-1 truncate rounded border px-2 py-0.5 text-left cursor-pointer ' +
+          'w-0 min-w-0 flex-1 truncate rounded border px-2 py-0.5 text-left cursor-pointer ' +
           (props.selected
             ? 'border-accent bg-panel'
             : 'border-transparent hover:bg-panel hover:border-border')

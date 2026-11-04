@@ -80,10 +80,8 @@ describe('ElementForm', () => {
     const props = renderForm(model, { problems: [problem], focusPointer: '/textures/all' });
     expect(screen.getByText('Texture is wrong.')).toBeTruthy();
     await waitFor(() => expect(props.onFocused).toHaveBeenCalled());
-    // The form focuses the first control of the field (the map key input here).
-    expect(
-      document.querySelector('[data-pointer="/textures/all"]')?.contains(document.activeElement),
-    ).toBe(true);
+    // The form focuses the entry's value control, not the map key input.
+    expect(document.activeElement).toBe(textureInput());
   });
 
   it('says when the schemas failed to load', () => {
