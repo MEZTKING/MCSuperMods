@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createEmptyProject,
   createMemoryFileSystem,
+  createSaveManifest,
   loadProject,
   type MemoryFileSystem,
   type Project,
@@ -65,14 +66,22 @@ describe('project round trip', () => {
     expect(fs.snapshot()).toEqual(before);
   });
 
-  it('removes stale element files and the directories they leave empty', async () => {
+  it('deletes manifest files it no longer writes and the directories they leave empty', async () => {
     const registry = testRegistry();
     const fs = createMemoryFileSystem({
       'content/alpha/thing/old.json': '{}',
       'content/gone/thing/deep/old.json': '{}',
       'content/alpha/thing/readme.txt': 'kept',
     });
-    await saveProject(fs, sampleProject(), registry);
+    const manifest = createSaveManifest([
+      'content/alpha/thing/old.json',
+      'content/gone/thing/deep/old.json',
+    ]);
+    const result = await saveProject(fs, sampleProject(), registry, { manifest });
+    expect(result.removed).toEqual([
+      'content/alpha/thing/old.json',
+      'content/gone/thing/deep/old.json',
+    ]);
     expect(fs.list()).toEqual([
       'content/alpha/thing/gadgets/widget.json',
       'content/alpha/thing/readme.txt',
@@ -81,6 +90,7 @@ describe('project round trip', () => {
       'msm.project.json',
     ]);
     expect(await fs.exists('content/gone')).toBe(false);
+    expect(await fs.exists('content')).toBe(true);
   });
 
   it('never writes the .msm cache directory', async () => {

@@ -26,6 +26,12 @@ export interface ProjectCommand {
   /** Label shown in the Edit menu ("Undo <label>"), in British English. */
   label: string;
   /**
+   * Coalescing key. When the previous history entry was recorded with the same key less than
+   * the stack's coalescing window ago, and nothing was undone, redone, reset or saved since,
+   * this command merges into that entry instead of adding a new undo step.
+   */
+  coalesce?: string;
+  /**
    * Mutates the draft. Throwing aborts the command and leaves the state unchanged.
    *
    * @param draft - A mutable draft of the project.
@@ -52,6 +58,19 @@ interface HistoryEntry {
   forwardJson: JsonPatchOperation[];
   inverseJson: JsonPatchOperation[];
   version: number;
+  coalesce?: string;
+  /** When the entry was last executed or merged into, from the stack's clock. */
+  time: number;
+}
+
+/** Options for {@link CommandStack}. */
+export interface CommandStackOptions {
+  /** Maximum number of undo steps (default 200). */
+  limit?: number;
+  /** How long, in milliseconds, commands with the same coalescing key keep merging (default 800). */
+  coalesceWindowMs?: number;
+  /** The clock used for coalescing, in milliseconds (default `Date.now`). */
+  now?: () => number;
 }
 
 /**
@@ -70,18 +89,29 @@ export class CommandStack {
   #savedVersion: number;
   #nextVersion = 0;
   readonly #limit: number;
+  readonly #coalesceWindowMs: number;
+  readonly #now: () => number;
+  /** The entry the next command may merge into; cleared by undo, redo, reset and save. */
+  #coalesceTarget: HistoryEntry | undefined;
   readonly #listeners = new Set<(event: CommandEvent) => void>();
 
   /**
    * @param initial - The starting state. It is deeply frozen and treated as saved.
-   * @param options - `limit` caps the number of undo steps (default 200).
+   * @param options - `limit` caps the number of undo steps (default 200); `coalesceWindowMs`
+   *   (default 800) and `now` (default `Date.now`) control command coalescing.
    */
-  constructor(initial: Project, options: { limit?: number } = {}) {
+  constructor(initial: Project, options: CommandStackOptions = {}) {
     const limit = options.limit ?? 200;
     if (!Number.isInteger(limit) || limit < 1) {
       throw new RangeError('CommandStack limit must be a positive integer.');
     }
+    const window = options.coalesceWindowMs ?? 800;
+    if (!Number.isFinite(window) || window < 0) {
+      throw new RangeError('CommandStack coalesceWindowMs must be a non-negative number.');
+    }
     this.#limit = limit;
+    this.#coalesceWindowMs = window;
+    this.#now = options.now ?? Date.now;
     this.#state = freeze(initial, true);
     this.#baseVersion = this.#nextVersion++;
     this.#savedVersion = this.#baseVersion;
@@ -119,7 +149,10 @@ export class CommandStack {
 
   /**
    * Runs a command and records it. Commands that change nothing are not recorded.
-   * Executing discards any redo history.
+   * Executing discards any redo history. A command with a `coalesce` key merges into the
+   * previous entry when that entry has the same key, was recorded within the coalescing
+   * window and nothing was undone, redone, reset or saved since; the merged entry keeps its
+   * label and undoes both edits in one step.
    *
    * @param command - The command.
    * @returns The RFC 6902 patch the command produced.
@@ -130,14 +163,40 @@ export class CommandStack {
     });
     if (forward.length === 0) return [];
     const forwardJson = immerPatchesToJsonPatch(forward);
+    const inverseJson = immerPatchesToJsonPatch(inverse);
+    const time = this.#now();
+
+    const previous = this.#coalesceTarget;
+    if (
+      command.coalesce !== undefined &&
+      previous !== undefined &&
+      previous.coalesce === command.coalesce &&
+      previous === this.#history[this.#position - 1] &&
+      this.#position === this.#history.length &&
+      time - previous.time < this.#coalesceWindowMs
+    ) {
+      previous.forward = [...previous.forward, ...forward];
+      previous.inverse = [...inverse, ...previous.inverse];
+      previous.forwardJson = [...previous.forwardJson, ...forwardJson];
+      previous.inverseJson = [...inverseJson, ...previous.inverseJson];
+      previous.version = this.#nextVersion++;
+      previous.time = time;
+      this.#state = next;
+      this.#emit({ type: 'execute', label: previous.label, state: next, patches: forwardJson });
+      return forwardJson;
+    }
+
     const entry: HistoryEntry = {
       label: command.label,
       forward,
       inverse,
       forwardJson,
-      inverseJson: immerPatchesToJsonPatch(inverse),
+      inverseJson,
       version: this.#nextVersion++,
+      time,
+      ...(command.coalesce === undefined ? {} : { coalesce: command.coalesce }),
     };
+    this.#coalesceTarget = entry;
     this.#history.splice(this.#position);
     this.#history.push(entry);
     while (this.#history.length > this.#limit) {
@@ -158,6 +217,7 @@ export class CommandStack {
   undo(): boolean {
     const entry = this.#history[this.#position - 1];
     if (entry === undefined) return false;
+    this.#coalesceTarget = undefined;
     this.#state = applyPatches(this.#state, entry.inverse);
     this.#position--;
     this.#emit({
@@ -177,6 +237,7 @@ export class CommandStack {
   redo(): boolean {
     const entry = this.#history[this.#position];
     if (entry === undefined) return false;
+    this.#coalesceTarget = undefined;
     this.#state = applyPatches(this.#state, entry.forward);
     this.#position++;
     this.#emit({
@@ -197,14 +258,16 @@ export class CommandStack {
   reset(state: Project): void {
     this.#state = freeze(state, true);
     this.#history = [];
+    this.#coalesceTarget = undefined;
     this.#position = 0;
     this.#baseVersion = this.#nextVersion++;
     this.#savedVersion = this.#baseVersion;
     this.#emit({ type: 'reset', state: this.#state, patches: [] });
   }
 
-  /** Records the current state as saved. */
+  /** Records the current state as saved. The next command starts a new undo step. */
   markSaved(): void {
+    this.#coalesceTarget = undefined;
     this.#savedVersion = this.#currentVersion();
   }
 

@@ -24,15 +24,23 @@ import { parseJson, utf8 } from '../serialise/stable-json';
 import { ASSETS_DIR, CONTENT_DIR, elementFilePath, mediaTypeForPath, PROJECT_FILE } from './layout';
 import { migrateDocument } from './migrate';
 import { elementMigrators, projectMigrators } from './migrators';
-import { folderForKind } from './save';
+import { createSaveManifest, folderForKind, type SaveManifest } from './save';
 import { listDirectories, walkFiles } from './walk';
 
 /** The result of {@link loadProject}. */
 export interface LoadResult {
   /** The loaded project. */
   project: Project;
-  /** Everything that was wrong but recoverable, in discovery order. */
+  /**
+   * Everything that was wrong but recoverable, in discovery order. Problems about one file
+   * carry its project-relative path in `file`.
+   */
   problems: Problem[];
+  /**
+   * The element files actually loaded. Pass it to `saveProject` so that saving deletes only
+   * files this load read; skipped files are not listed and stay on disk (ADR 0012).
+   */
+  manifest: SaveManifest;
 }
 
 function isObject(value: Json | undefined): value is JsonObject {
@@ -69,6 +77,7 @@ async function readProjectFile(
     problems.push({
       severity: 'warning',
       code: ProblemCodes.projectInvalidShape,
+      file: PROJECT_FILE,
       message: `${PROJECT_FILE}: "${field}" must be ${expected}; a default was used.`,
     });
   };
@@ -98,6 +107,7 @@ async function readProjectFile(
         problems.push({
           severity: 'warning',
           code: ProblemCodes.projectInvalidShape,
+          file: PROJECT_FILE,
           message: `${PROJECT_FILE}: namespace ${JSON.stringify(entry)} is not a valid namespace name and was ignored.`,
         });
       }
@@ -150,7 +160,7 @@ function toElement(document: JsonObject): Element | string {
  *
  * @param fs - The project file system.
  * @param registry - The kind registry.
- * @returns The project and the problems found.
+ * @returns The project, the problems found and the manifest of loaded element files.
  * @throws `UnsupportedFormatVersionError` If the project file or an element file has a
  *   `formatVersion` newer than this build supports, or no migration path exists.
  * @throws Error If `msm.project.json` is missing, unreadable or not a JSON object.
@@ -178,6 +188,7 @@ export async function loadProject(
   }
 
   const seen = new Set<string>();
+  const loaded: string[] = [];
   const namespaces: Namespace[] = [];
   for (const name of [...names].sort()) {
     const elements: Element[] = [];
@@ -190,12 +201,14 @@ export async function loadProject(
           severity: 'error',
           code: ProblemCodes.elementDuplicateId,
           elementId: element.id,
+          file: path,
           message: `${path}: another file already declares id "${element.id}"; this file was skipped.`,
         });
         continue;
       }
       seen.add(element.id);
       elements.push(element);
+      loaded.push(path);
     }
     elements.sort((a, b) => compare(a.id, b.id));
 
@@ -209,7 +222,7 @@ export async function loadProject(
     namespaces.push({ name, elements, assets });
   }
 
-  return { project: { ...header, namespaces }, problems };
+  return { project: { ...header, namespaces }, problems, manifest: createSaveManifest(loaded) };
 }
 
 async function loadElement(
@@ -226,6 +239,7 @@ async function loadElement(
     problems.push({
       severity: 'error',
       code: ProblemCodes.elementInvalidJson,
+      file: path,
       message: `${path}: not valid JSON (${error instanceof Error ? error.message : String(error)}); the file was skipped.`,
     });
     return undefined;
@@ -234,6 +248,7 @@ async function loadElement(
     problems.push({
       severity: 'error',
       code: ProblemCodes.elementInvalidShape,
+      file: path,
       message: `${path}: ${reason}; the file was skipped.`,
     });
     return undefined;
@@ -252,6 +267,7 @@ async function loadElement(
       severity: 'warning',
       code: ProblemCodes.elementIdMismatch,
       elementId: element.id,
+      file: path,
       message: `${path}: id "${element.id}" is not in namespace "${namespace}", the directory it was found in.`,
     });
   }
@@ -260,6 +276,7 @@ async function loadElement(
       severity: 'warning',
       code: ProblemCodes.elementUnknownKind,
       elementId: element.id,
+      file: path,
       message: `${path}: kind "${element.kind}" is not registered; the element is kept unchanged.`,
     });
   } else if (idNamespace === namespace) {
@@ -269,6 +286,7 @@ async function loadElement(
         severity: 'warning',
         code: ProblemCodes.elementFolderMismatch,
         elementId: element.id,
+        file: path,
         message: `${path}: an element of kind "${element.kind}" with this id belongs at ${expected}; it moves there on save.`,
       });
     }

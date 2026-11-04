@@ -53,7 +53,9 @@ describe('loadProject problems', () => {
       'msm.project.json': projectFile(),
       'content/ns/wrong/a.json': elementFile('ns:a', 'test:thing'),
     });
-    expect(problems).toMatchObject([{ code: 'element.folder-mismatch', elementId: 'ns:a' }]);
+    expect(problems).toMatchObject([
+      { code: 'element.folder-mismatch', elementId: 'ns:a', file: 'content/ns/wrong/a.json' },
+    ]);
     expect(project.namespaces[0]?.elements).toHaveLength(1);
   });
 
@@ -78,7 +80,9 @@ describe('loadProject problems', () => {
       'msm.project.json': projectFile(),
       'content/ns/thing/a.json': '{ not json',
     });
-    expect(problems).toMatchObject([{ code: 'element.invalid-json', severity: 'error' }]);
+    expect(problems).toMatchObject([
+      { code: 'element.invalid-json', severity: 'error', file: 'content/ns/thing/a.json' },
+    ]);
     expect(project.namespaces[0]?.elements).toEqual([]);
   });
 
@@ -90,11 +94,11 @@ describe('loadProject problems', () => {
       'content/ns/thing/c.json': elementFile('ns:c', 'test:thing', { meta: {} }),
       'content/ns/thing/d.json': elementFile('ns:d', 'test:thing', { formatVersion: 'x' }),
     });
-    expect(problems.map((problem) => problem.code)).toEqual([
-      'element.invalid-shape',
-      'element.invalid-shape',
-      'element.invalid-shape',
-      'element.invalid-shape',
+    expect(problems.map((problem) => [problem.code, problem.file])).toEqual([
+      ['element.invalid-shape', 'content/ns/thing/a.json'],
+      ['element.invalid-shape', 'content/ns/thing/b.json'],
+      ['element.invalid-shape', 'content/ns/thing/c.json'],
+      ['element.invalid-shape', 'content/ns/thing/d.json'],
     ]);
   });
 
@@ -112,7 +116,9 @@ describe('loadProject problems', () => {
       'content/ns/test/nested/a.json': elementFile('ns:a', 'test:nested'),
       'content/ns/thing/a.json': elementFile('ns:a', 'test:thing'),
     });
-    expect(problems.map((problem) => problem.code)).toEqual(['element.duplicate-id']);
+    expect(problems).toMatchObject([
+      { code: 'element.duplicate-id', file: 'content/ns/thing/a.json' },
+    ]);
     expect(project.namespaces[0]?.elements[0]?.kind).toBe('test:nested');
     expect(project.namespaces[0]?.elements).toHaveLength(1);
   });
@@ -169,6 +175,7 @@ describe('loadProject problems', () => {
       'project.invalid-shape',
       'project.invalid-shape',
     ]);
+    expect(problems.every((problem) => problem.file === 'msm.project.json')).toBe(true);
     expect(project.name).toBe('');
     expect(project.settings).toEqual({});
     expect(project.namespaces.map((namespace) => namespace.name)).toEqual(['ok']);
@@ -201,7 +208,8 @@ describe('loadProject problems', () => {
     };
     const fs = createMemoryFileSystem(files);
     const registry = testRegistry();
-    await saveProject(fs, (await loadProject(fs, registry)).project, registry);
+    const { project, manifest } = await loadProject(fs, registry);
+    await saveProject(fs, project, registry, { manifest });
     expect(fs.list()).toEqual(['content/ns/thing/a.json', 'msm.project.json']);
     expect((await loadProject(fs, registry)).problems).toEqual([]);
   });

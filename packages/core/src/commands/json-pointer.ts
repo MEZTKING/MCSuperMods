@@ -48,3 +48,27 @@ export function immerPatchesToJsonPatch(patches: Patch[]): JsonPatchOperation[] 
     return operation;
   });
 }
+
+/**
+ * Splits an RFC 6901 pointer into unescaped segments.
+ *
+ * @param pointer - The pointer, for example `/a~1b/0`; `""` is the whole document.
+ * @returns The segments, for example `['a/b', '0']`.
+ * @throws Error If the pointer is not empty and does not start with `/`, or contains a `~`
+ *   not followed by `0` or `1`.
+ */
+export function parseJsonPointer(pointer: string): string[] {
+  if (pointer === '') return [];
+  if (!pointer.startsWith('/')) {
+    throw new Error(`JSON pointer ${JSON.stringify(pointer)} must be empty or start with "/".`);
+  }
+  return pointer
+    .slice(1)
+    .split('/')
+    .map((segment) => {
+      if (/~(?![01])/.test(segment)) {
+        throw new Error(`JSON pointer ${JSON.stringify(pointer)} has an invalid "~" escape.`);
+      }
+      return segment.replaceAll('~1', '/').replaceAll('~0', '~');
+    });
+}

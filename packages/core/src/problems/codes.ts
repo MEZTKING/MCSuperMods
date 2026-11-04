@@ -4,7 +4,7 @@
  * @packageDocumentation
  */
 
-/** Problem codes reported while loading a project. */
+/** Problem codes reported while loading and lowering a project. */
 export const ProblemCodes = {
   /** `msm.project.json` has a field of the wrong type; a default was used. */
   projectInvalidShape: 'project.invalid-shape',
@@ -22,6 +22,12 @@ export const ProblemCodes = {
   elementIdMismatch: 'element.id-mismatch',
   /** Two element files declare the same id. The later file (in path order) is skipped. */
   elementDuplicateId: 'element.duplicate-id',
+  /** An element's kind is not registered, so `lowerProject` cannot lower it. */
+  loweringUnknownKind: 'lowering.unknown-kind',
+  /** A kind's `lower` function threw. The element contributes no output files. */
+  loweringFailed: 'lowering.failed',
+  /** Two output files share a layer and path. The first element's file is kept. */
+  loweringConflict: 'lowering.conflict',
 } as const;
 
 /** Any problem code reported by `@msm/core`. */

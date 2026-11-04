@@ -11,9 +11,11 @@ describe.each(['empty-project', 'sample-project'])('golden fixture %s', (name) =
   it('saves back to identical bytes in place', async () => {
     const fs = createMemoryFileSystem(fixture);
     const registry = testRegistry();
-    const { problems } = await loadProject(fs, registry);
+    const { problems, project, manifest } = await loadProject(fs, registry);
     expect(problems).toEqual([]);
-    await saveProject(fs, (await loadProject(fs, registry)).project, registry);
+    const result = await saveProject(fs, project, registry, { manifest });
+    expect(result.removed).toEqual([]);
+    expect(result.manifest).toEqual(manifest);
     expect(fs.snapshot()).toEqual(fixture);
   });
 

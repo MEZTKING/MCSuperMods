@@ -5,6 +5,7 @@
  */
 
 import type { Element, Json, JsonObject, Project } from '@msm/plugin-api';
+import { isProjectRelativePath, parentPath } from '../fs/paths';
 import type { ProjectFileSystem } from '../fs/project-file-system';
 import { ELEMENT_FORMAT_VERSION, PROJECT_FORMAT_VERSION } from '../model/project';
 import type { ElementKindRegistry } from '../registry/element-kind-registry';
@@ -16,7 +17,6 @@ import {
   PROJECT_FILE,
   unknownKindFolder,
 } from './layout';
-import { walkFiles } from './walk';
 
 /**
  * The document written to `msm.project.json`. Elements are not inlined.
@@ -63,38 +63,92 @@ export function folderForKind(registry: ElementKindRegistry, kind: string): stri
   return registry.folderFor(kind) ?? unknownKindFolder(kind);
 }
 
-async function removeEmptyDirectories(fs: ProjectFileSystem, directory: string): Promise<boolean> {
-  const entries = await fs.readDir(directory);
-  let empty = true;
-  for (const entry of entries) {
-    if (entry.kind === 'directory') {
-      if (!(await removeEmptyDirectories(fs, `${directory}/${entry.name}`))) empty = false;
-    } else {
-      empty = false;
+/**
+ * The element files a session knows it owns: the paths `loadProject` loaded, or the paths
+ * the last `saveProject` wrote. Saving deletes only files listed here (ADR 0012).
+ */
+export interface SaveManifest {
+  /** The manifest format version. */
+  formatVersion: 1;
+  /** Project-relative element file paths, sorted. */
+  elementFiles: string[];
+}
+
+/** Options for {@link saveProject}. */
+export interface SaveOptions {
+  /**
+   * The manifest from the last load or save. Element files listed in it that this save
+   * does not write are deleted. Without a manifest nothing is deleted.
+   */
+  manifest?: SaveManifest;
+}
+
+/** The result of {@link saveProject}. */
+export interface SaveResult {
+  /** The new manifest: every element file this save wrote. Keep it for the next save. */
+  manifest: SaveManifest;
+  /** Every file written, sorted (`msm.project.json` and the element files). */
+  written: string[];
+  /** Every element file deleted, sorted. */
+  removed: string[];
+}
+
+/**
+ * Builds a manifest from element file paths, sorted and without duplicates.
+ *
+ * @param elementFiles - Project-relative element file paths.
+ */
+export function createSaveManifest(elementFiles: Iterable<string>): SaveManifest {
+  return { formatVersion: 1, elementFiles: [...new Set(elementFiles)].sort(cmp) };
+}
+
+/** Whether a manifest entry is a path save may delete: a JSON file under `content/`. */
+function isDeletableElementFile(path: string): boolean {
+  return (
+    isProjectRelativePath(path) && path.startsWith(`${CONTENT_DIR}/`) && path.endsWith('.json')
+  );
+}
+
+/**
+ * Removes the directories a deleted file leaves empty, walking up from its parent and
+ * stopping below `content/`.
+ */
+async function removeEmptyParents(fs: ProjectFileSystem, file: string): Promise<void> {
+  let directory = parentPath(file);
+  while (directory.startsWith(`${CONTENT_DIR}/`)) {
+    if (!(await fs.exists(directory))) {
+      directory = parentPath(directory);
+      continue;
     }
+    if ((await fs.readDir(directory)).length > 0) return;
+    await fs.remove(directory);
+    directory = parentPath(directory);
   }
-  if (empty) await fs.remove(directory);
-  return empty;
 }
 
 /**
  * Saves a project.
  *
- * Writes `msm.project.json` and one file per element under `content/`, deletes any other
- * `*.json` file under `content/` (stale elements) and the directories that leaves empty,
- * and creates `assets/<ns>/` for every namespace. Asset bytes are owned by the host and are
- * never written here; `.msm/` is never touched. Output is deterministic.
+ * Writes `msm.project.json` and one file per element under `content/`, and creates
+ * `assets/<ns>/` for every namespace. Element files listed in `options.manifest` that are no
+ * longer written (removed or moved elements) are deleted, together with the directories
+ * those deletions leave empty. No other file is ever deleted: files that load skipped stay
+ * on disk (ADR 0012). Asset bytes are owned by the host and are never written here; `.msm/`
+ * is never touched. Output is deterministic.
  *
  * @param fs - The project file system.
  * @param project - The project to save.
  * @param registry - The kind registry, used for kind-folders.
+ * @param options - The manifest from the last load or save.
+ * @returns The new manifest and the files written and removed.
  * @throws Error If two elements map to the same file.
  */
 export async function saveProject(
   fs: ProjectFileSystem,
   project: Project,
   registry: ElementKindRegistry,
-): Promise<void> {
+  options: SaveOptions = {},
+): Promise<SaveResult> {
   const planned = new Map<string, Uint8Array>();
   for (const namespace of project.namespaces) {
     for (const element of namespace.elements) {
@@ -105,26 +159,31 @@ export async function saveProject(
       planned.set(path, utf8.encode(stableStringify(elementDocument(element))));
     }
   }
+  const elementFiles = [...planned.keys()].sort(cmp);
 
   await fs.writeFile(PROJECT_FILE, utf8.encode(stableStringify(projectDocument(project))));
-  for (const path of [...planned.keys()].sort()) {
+  for (const path of elementFiles) {
     await fs.writeFile(path, planned.get(path) as Uint8Array);
   }
 
-  for (const path of await walkFiles(fs, CONTENT_DIR)) {
-    if (path.endsWith('.json') && !planned.has(path)) await fs.remove(path);
-  }
-  if (await fs.exists(CONTENT_DIR)) {
-    for (const entry of await fs.readDir(CONTENT_DIR)) {
-      if (entry.kind === 'directory') {
-        await removeEmptyDirectories(fs, `${CONTENT_DIR}/${entry.name}`);
-      }
-    }
+  const removed: string[] = [];
+  for (const path of createSaveManifest(options.manifest?.elementFiles ?? []).elementFiles) {
+    if (planned.has(path) || !isDeletableElementFile(path)) continue;
+    if (!(await fs.exists(path))) continue;
+    await fs.remove(path);
+    removed.push(path);
+    await removeEmptyParents(fs, path);
   }
 
   for (const namespace of [...project.namespaces].sort((a, b) => cmp(a.name, b.name))) {
     await fs.mkdirp(`${ASSETS_DIR}/${namespace.name}`);
   }
+
+  return {
+    manifest: { formatVersion: 1, elementFiles },
+    written: [PROJECT_FILE, ...elementFiles].sort(cmp),
+    removed,
+  };
 }
 
 function cmp(a: string, b: string): number {
