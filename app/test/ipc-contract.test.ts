@@ -4,6 +4,7 @@ import {
   type InvokeChannel,
   InvokeChannels,
   ipcContract,
+  isExportFileName,
   isMenuCommand,
   isMenuOpenRecent,
   isMinecraftProgress,
@@ -482,6 +483,33 @@ describe('IPC contract', () => {
     expect(isMenuCommand('format-disk')).toBe(false);
     expect(isMenuCommand(1)).toBe(false);
     expect(isMenuCommand('clearRecentProjects')).toBe(true);
+    for (const command of ['importStructure', 'exportStructures', 'exportSchematics']) {
+      expect(isMenuCommand(command)).toBe(true);
+    }
+  });
+
+  it('accepts pack zips and namespaced structure paths as export file names', () => {
+    for (const name of ['demo-data.zip', 'demo/hut.nbt', 'demo/a/b.c_d-1.schem']) {
+      expect(isExportFileName(name)).toBe(true);
+    }
+    for (const name of [
+      'hut.nbt',
+      'nested/pack.zip',
+      '../demo/hut.nbt',
+      'demo/../hut.nbt',
+      'demo/./hut.nbt',
+      'Demo/hut.nbt',
+      'demo/hut.json',
+      '/demo/hut.nbt',
+      `demo/${'a'.repeat(260)}.nbt`,
+    ]) {
+      expect(isExportFileName(name)).toBe(false);
+    }
+    const write = ipcContract[InvokeChannels.exportsWriteFiles].request;
+    expect(
+      write.safeParse({ folder: '/tmp/out', files: [{ name: 'demo/hut.nbt', data: bytes }] })
+        .success,
+    ).toBe(true);
   });
 
   it('validates recent-project requests and menu payloads', () => {

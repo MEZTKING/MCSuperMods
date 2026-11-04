@@ -1,10 +1,11 @@
 /**
  * The Form tab: a `SchemaForm` over the selected element, with the kind's hidden paths, the
- * element's live problems and project completions. Studios route by kind: language files
- * (`LangStudio`), pack metadata (`PackSettings`), recipes of the common types
- * (`RecipeStudio`, with the schema form behind its "Advanced" toggle), tags (`TagStudio`)
- * and functions (`FunctionEditor`). Edits go to `session.setElementValue`, so the Raw JSON
- * tab stays in sync.
+ * element's live problems and project completions. Studios are chosen through the Studio
+ * registry (`studio-registry.ts`): the built-in ones here route language files
+ * (`LangStudio`), pack metadata (`PackSettings`), functions (`FunctionEditor`), recipes of the
+ * common types (`RecipeStudio`, with the schema form behind its "Advanced" toggle) and tags
+ * (`TagStudio`); area Studios come from `studios/<area>/studios.tsx`. Edits go to
+ * `session.setElementValue`, so the Raw JSON tab stays in sync.
  *
  * @packageDocumentation
  */
@@ -25,7 +26,9 @@ import {
 import { LangStudio } from './LangStudio';
 import { PackSettings } from './PackSettings';
 import { RECIPE_GRID_COALESCE, RecipeStudio, recipeLayout } from './RecipeStudio';
+import { DISCOVERED_STUDIOS, mergeStudios, studioFor } from './studio-registry';
 import { TagStudio } from './TagStudio';
+import type { StudioEntry, StudioProps } from './types';
 import type { SchemaContextState } from './use-schema-context';
 
 /** The kinds with their own Studio. */
@@ -114,31 +117,143 @@ export function recipeCategories(node: SchemaNode, data: Json): string[] {
   return [];
 }
 
+const NO_KEYS: readonly string[] = [];
+
 /**
- * Gives each recipe-grid gesture its own coalescing key. The grid reports `pattern` and
- * `key` with the same key synchronously, so they merge into one undo step; the nonce keeps
- * the next cell edit (even within the stack's coalescing window) a separate step.
+ * Gives each gesture of a Studio's `coalesceKeys` its own coalescing key (the recipe grid,
+ * for example, reports `pattern` and `key` with the same key synchronously, so they merge
+ * into one undo step); the nonce keeps the next gesture (even within the stack's coalescing
+ * window) a separate step.
  */
-function useGestureCoalesce(): (options: ChangeOptions | undefined) => ChangeOptions | undefined {
+function useGestureCoalesce(
+  keys: readonly string[],
+): (options: ChangeOptions | undefined) => ChangeOptions | undefined {
   const gesture = useRef<string | null>(null);
   const counter = useRef(0);
-  return useCallback((options) => {
-    if (options?.coalesce !== RECIPE_GRID_COALESCE) return options;
-    if (gesture.current === null) {
-      counter.current += 1;
-      gesture.current = `${RECIPE_GRID_COALESCE}:${counter.current}`;
-      queueMicrotask(() => {
-        gesture.current = null;
-      });
-    }
-    return { ...options, coalesce: gesture.current };
-  }, []);
+  return useCallback(
+    (options) => {
+      const key = options?.coalesce;
+      if (key === undefined || !keys.includes(key)) return options;
+      if (gesture.current === null) {
+        counter.current += 1;
+        gesture.current = `${key}:${counter.current}`;
+        queueMicrotask(() => {
+          gesture.current = null;
+        });
+      }
+      return { ...options, coalesce: gesture.current };
+    },
+    [keys],
+  );
 }
 
+/** The function editor with problem focus by line (`/lines/<n>`) and column. */
+function FunctionStudio(props: StudioProps) {
+  const { focusPointer, onFocused } = props;
+  const lines = functionLinesOf(props.element.data) ?? [];
+  const lineFocus = focusedLine(focusPointer);
+  // A function problem that is not line-addressed has nothing to focus.
+  useEffect(() => {
+    if (focusPointer !== null && lineFocus === null) onFocused();
+  }, [focusPointer, lineFocus, onFocused]);
+  const [functionFocus, setFunctionFocus] = useState<FunctionFocus | null>(null);
+  const focusColumn = props.focusColumn;
+  const focusKey = lineFocus === null ? null : `${lineFocus.line}:${focusColumn ?? 0}`;
+  useEffect(() => {
+    if (focusKey === null) return;
+    const [line = 0, column = 0] = focusKey.split(':').map(Number);
+    setFunctionFocus(column === 0 ? { line } : { line, column });
+  }, [focusKey]);
+  const functionFocused = useCallback(() => {
+    setFunctionFocus(null);
+    onFocused();
+  }, [onFocused]);
+  return (
+    <FunctionEditor
+      // Keyed by element so a pending edit is flushed to the right element on switch.
+      key={props.element.id}
+      lines={lines}
+      onChange={props.onChange}
+      problems={functionProblems(props.sessionProblems)}
+      {...(props.complete === undefined ? {} : { complete: props.complete })}
+      focusLine={functionFocus}
+      onFocused={functionFocused}
+    />
+  );
+}
+
+/** The built-in Studios, in priority order (before the area Studios). */
+export const BUILT_IN_STUDIOS: readonly StudioEntry[] = Object.freeze([
+  {
+    id: 'msm.lang',
+    kindId: 'minecraft:lang',
+    component: (props: StudioProps) => (
+      <LangStudio
+        ref={props.formRef}
+        element={props.element}
+        node={props.node}
+        problems={props.problems}
+        completions={props.completions}
+        onChange={props.onChange}
+      />
+    ),
+  },
+  {
+    id: 'msm.pack-settings',
+    kindId: 'minecraft:pack_mcmeta',
+    component: (props: StudioProps) => (
+      <PackSettings target={props.context.target}>{props.form}</PackSettings>
+    ),
+  },
+  {
+    id: 'msm.function',
+    kindId: FUNCTION_KIND,
+    matches: (element: Element) => functionLinesOf(element.data) !== undefined,
+    component: FunctionStudio,
+    handlesFocus: true,
+  },
+  {
+    id: 'msm.recipe',
+    kindId: RECIPE_KIND,
+    matches: (element: Element) => recipeLayout(recipeType(element.data)) !== undefined,
+    coalesceKeys: [RECIPE_GRID_COALESCE],
+    component: (props: StudioProps) => (
+      <RecipeStudio
+        key={props.element.id}
+        data={props.element.data}
+        onChange={props.onChange}
+        completions={props.completions}
+        problems={props.problems}
+        categories={recipeCategories(props.node, props.element.data)}
+      >
+        <div data-testid="schema-form">{props.form}</div>
+      </RecipeStudio>
+    ),
+  },
+  {
+    id: 'msm.tag',
+    matches: (element: Element) => element.kind.startsWith(TAG_KIND_PREFIX),
+    component: (props: StudioProps) => (
+      <TagStudio
+        key={props.element.id}
+        data={props.element.data}
+        registry={props.element.kind.slice(TAG_KIND_PREFIX.length)}
+        onChange={props.onChange}
+        suggest={props.suggest}
+        problems={props.problems}
+      />
+    ),
+  },
+] satisfies StudioEntry[]);
+
+/** The built-in Studios, then the discovered area Studios. */
+const ALL_STUDIOS: readonly StudioEntry[] = mergeStudios(BUILT_IN_STUDIOS, DISCOVERED_STUDIOS);
+
 /** The Form tab content for one element. */
-export function ElementForm(props: ElementFormProps) {
+export function ElementForm(props: ElementFormProps & { studios?: readonly StudioEntry[] }) {
   const { project, element, kind, schema, focusPointer, onFocused } = props;
   const formRef = useRef<SchemaFormHandle>(null);
+  const studios = props.studios ?? ALL_STUDIOS;
 
   const node = useMemo<SchemaNode | Error | null>(() => {
     if (schema.status !== 'ready' || kind === undefined) return null;
@@ -155,8 +270,9 @@ export function ElementForm(props: ElementFormProps) {
     [project, registries],
   );
   const problems = useMemo(() => formProblems(props.problems), [props.problems]);
+  const studio = kind === undefined ? undefined : studioFor(element, kind, studios);
   const onChange = props.onChange;
-  const withGesture = useGestureCoalesce();
+  const withGesture = useGestureCoalesce(studio?.coalesceKeys ?? NO_KEYS);
   const change = useCallback(
     (pointer: string, value: Json | undefined, options?: ChangeOptions) => {
       const effective = withGesture(options);
@@ -170,31 +286,14 @@ export function ElementForm(props: ElementFormProps) {
     [completions],
   );
 
-  const isFunction = element.kind === FUNCTION_KIND;
-  const lineFocus = isFunction ? focusedLine(focusPointer) : null;
+  const studioFocuses = studio?.handlesFocus === true;
   const ready = node !== null && !(node instanceof Error);
   useEffect(() => {
-    if (!ready || focusPointer === null || isFunction) return;
+    if (!ready || focusPointer === null || studioFocuses) return;
     const form = formRef.current;
     if (form === null) return;
     void form.focusPointer(focusPointer).finally(onFocused);
-  }, [ready, focusPointer, onFocused, isFunction]);
-  // A function problem that is not line-addressed has nothing to focus.
-  useEffect(() => {
-    if (isFunction && focusPointer !== null && lineFocus === null) onFocused();
-  }, [isFunction, focusPointer, lineFocus, onFocused]);
-  const [functionFocus, setFunctionFocus] = useState<FunctionFocus | null>(null);
-  const focusColumn = props.focusColumn;
-  const focusKey = lineFocus === null ? null : `${lineFocus.line}:${focusColumn ?? 0}`;
-  useEffect(() => {
-    if (focusKey === null) return;
-    const [line = 0, column = 0] = focusKey.split(':').map(Number);
-    setFunctionFocus(column === 0 ? { line } : { line, column });
-  }, [focusKey]);
-  const functionFocused = useCallback(() => {
-    setFunctionFocus(null);
-    onFocused();
-  }, [onFocused]);
+  }, [ready, focusPointer, onFocused, studioFocuses]);
 
   if (kind === undefined) {
     return (
@@ -211,7 +310,9 @@ export function ElementForm(props: ElementFormProps) {
       </p>
     );
   }
-  if (node === null) return <p className="text-muted">Loading the schema…</p>;
+  if (node === null || schema.status !== 'ready') {
+    return <p className="text-muted">Loading the schema…</p>;
+  }
   if (node instanceof Error) {
     return (
       <p role="alert" className="text-error">
@@ -233,63 +334,27 @@ export function ElementForm(props: ElementFormProps) {
     />
   );
 
-  if (element.kind === 'minecraft:lang') {
-    return (
-      <LangStudio
-        ref={formRef}
-        element={element}
-        node={node}
-        problems={problems}
-        completions={completions}
-        onChange={change}
-      />
-    );
-  }
-  if (element.kind === 'minecraft:pack_mcmeta' && schema.status === 'ready') {
-    return <PackSettings target={schema.context.target}>{form}</PackSettings>;
-  }
-  if (isFunction) {
-    const lines = functionLinesOf(element.data);
-    if (lines !== undefined) {
-      return (
-        <FunctionEditor
-          // Keyed by element so a pending edit is flushed to the right element on switch.
-          key={element.id}
-          lines={lines}
-          onChange={change}
-          problems={functionProblems(props.problems)}
-          {...(props.complete === undefined ? {} : { complete: props.complete })}
-          focusLine={functionFocus}
-          onFocused={functionFocused}
-        />
-      );
-    }
-  }
-  if (element.kind === RECIPE_KIND && recipeLayout(recipeType(element.data)) !== undefined) {
-    return (
-      <RecipeStudio
-        key={element.id}
-        data={element.data}
-        onChange={change}
-        completions={completions}
-        problems={problems}
-        categories={recipeCategories(node, element.data)}
-      >
-        <div data-testid="schema-form">{form}</div>
-      </RecipeStudio>
-    );
-  }
-  if (element.kind.startsWith(TAG_KIND_PREFIX)) {
-    return (
-      <TagStudio
-        key={element.id}
-        data={element.data}
-        registry={element.kind.slice(TAG_KIND_PREFIX.length)}
-        onChange={change}
-        suggest={suggest}
-        problems={problems}
-      />
-    );
-  }
-  return <div data-testid="schema-form">{form}</div>;
+  if (studio === undefined) return <div data-testid="schema-form">{form}</div>;
+  const Studio = studio.component;
+  return (
+    <Studio
+      project={project}
+      element={element}
+      kind={kind}
+      node={node}
+      context={schema.context}
+      target={schema.context.target}
+      problems={problems}
+      sessionProblems={props.problems}
+      completions={completions}
+      suggest={suggest}
+      onChange={change}
+      form={form}
+      formRef={formRef}
+      focusPointer={focusPointer}
+      focusColumn={props.focusColumn}
+      onFocused={onFocused}
+      complete={props.complete}
+    />
+  );
 }

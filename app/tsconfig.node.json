@@ -16,6 +16,8 @@
     "src/renderer/src/session/mcfunction-problems.ts",
     "src/renderer/src/session/references.ts",
     "src/renderer/src/session/schema-context.ts",
+    "src/renderer/src/session/importers.ts",
+    "src/renderer/src/session/validator-problems.ts",
     "src/renderer/src/plugins",
     "src/renderer/src/studios/completions.ts",
     "src/renderer/src/studios/templates.ts",

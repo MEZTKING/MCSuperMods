@@ -879,3 +879,97 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 **Next**
 - The user tags `v0.2.3` (the auto-update fix) when ready. 0.2.4 is the first release that should auto-update.
 - Phase 3 wave 3: B76 library content and the sample-worldgen fixture, B77 host importers and validators, B78 structure and climate-map preview.
+
+---
+
+## 2026-11-04 — executor — B78 structure preview and climate map
+
+**What**
+- `PREVIEW_KINDS` gains `structure` and `climate_map`. `climate_map` renders without WebGL and without the vanilla banner.
+- **Structure 3D mode:**
+  - `preview/structure.ts` is the app's own small reader of the `minecraft:structure_template` JSON: a block-state parser and `structureFromTemplate`. Bad palette entries and bad tuples are counted and skipped; air-like blocks are left out.
+  - `asset-source.ts` adds `prepareBlockResources(ids)`, with definitions from project `block_definition` elements first, then the vanilla cache, cached per id. A missing definition or model draws a checker cube (`MISSING_BLOCK_MODEL`), so no block is ever dropped.
+  - `PreviewCanvas` orbits the template centre at a distance fitted to its bounding box and draws the grid. It rebuilds 150 ms after edits stop, with `chunkSize 16`. The notes list skipped palette entries and blocks.
+- **Climate map:** `preview/climate.ts` reads the explicit `multi_noise` lists of a dimension or of each world preset dimension and builds deepslate's `Climate.Parameters`. It also derives colours, in this order:
+  1. `effects.grass_color`;
+  2. the `minecraft:visual/sky_color` attribute;
+  3. `effects.sky_color`;
+  4. an FNV hash.
+
+  `ClimateMap.tsx` is lazy-loaded. It has axis selects, four sliders, hover readout and a legend.
+- `@msm/plugin-worldgen`: `dimension` and `worldgen/world_preset` kinds now set `previewKind: 'climate_map'`. B74 had left them unset, and its test asserted that; the test is updated.
+- Tests: 4 new files under `app/test/components/preview/` (structure, climate, asset-source-structure, PreviewPanel); app 551 tests green.
+
+**Decisions**
+- The new tests live in `test/components/preview/`, not `test/preview/`. `tsconfig.node.json` type-checks `test/` without DOM types and lists renderer files one by one. The existing DOM preview tests already live in the web project.
+- Renderer lazy preview chunks are about +11 kB. deepslate now sits in a shared chunk used by `PreviewCanvas` and `ClimateMap`.
+
+**Next**
+- B79/B80 studios; the noise-sampled map stays with B84.
+
+---
+
+## 2026-11-04 — executor — B76 library worldgen content, examples mirror, sample-worldgen fixture, chain walk
+
+**What**
+- `@msm/plugin-library`:
+  - `src/content/structures.ts`: the library's own box builder (`BoxBuilder`, `saltFor`, pool element helpers); the library still imports no other plugin;
+  - 19 new `KINDS` (5 structures, 14 worldgen);
+  - three starters (`custom_biome`, `jigsaw_structure`, `worldgen_pack`), now 11;
+  - 19 per-kind examples (`examples/structures.ts`, `examples/worldgen.ts`): 52 per-kind and 56 in all.
+- Library content tests: worldgen bundles are self-contained, every jigsaw `target` is named in its pool or fallbacks, and the worldgen pack is wired as D5 says.
+- `packages/exporters/test/library.test.ts` registers `@msm/plugin-structures` and `@msm/plugin-worldgen`, derives project registry ids from `ElementKind.registry`, and runs every plugin validator (zero errors). The `examples/` mirror is regenerated. Existing mirrors change only in `msm.project.json`, which now lists `msm.structures` and `msm.worldgen`.
+- `fixtures/sample-worldgen/`: the `worldgen_pack` starter saved with namespace `msm_sample_worldgen`, plus a README holding the in-game check.
+- `sample-worldgen.golden.test.ts`:
+  - pins the fixture against the starter;
+  - zero schema and validator problems;
+  - pins the data zip's SHA-256 in two time zones;
+  - checks `.nbt` block counts;
+  - runs the chain walk (`test/chain-walk.ts`), which passes, and fails on a copy with a pool removed;
+  - a feature-order mutation gives exactly one `worldgen.feature-order` error.
+
+**Decisions**
+- Element ids are unique across kinds in a project (core load and add-element). Configured and placed features therefore have distinct ids (`amber_tree` / `amber_tree_placed`), and so do the structure and its set (`hamlet` / `hamlets`).
+- Jigsaw wiring uses one connector name, `<ns>:street`, so lamps work both as side decorations and as street terminators.
+- The custom biome is also added to `#minecraft:is_overworld`. An `en_us` lang element names the biome and the World Type, so `custom_biome` and `worldgen_pack` export both layers.
+- The fixture is written by the golden test under `UPDATE_GOLDENS=1`, with no separate script.
+
+**Next**
+- The user runs the in-game check in `fixtures/sample-worldgen/README.md`.
+- Follow-up: the worldgen and structures templates chain by "same id" across kinds. Two elements with one id cannot coexist in a project, so those templates cannot be used together under one name as their descriptions suggest.
+
+---
+
+## 2026-11-04 — executor — B77 host plumbing: importers, validators, plugin exporters, studio registry
+
+**What**
+- `session/importers.ts`: the registered plugins' importers by lower-case extension, picker filters, and target-aware replacements keyed by importer object. The two structure importers go through `@msm/plugin-structures`' public `importStructureFile` with `target.dataVersion`, so `structures.newer-data-version` now reaches the user.
+- `ProjectSession.importFiles(files, namespace)`: one undo step "Import <n> files" (namespace included when missing); `import.duplicate-id`, `import.unsupported-file`, `import.failed` problems; importer problems passed through.
+- `session/validator-problems.ts` plus session wiring: validators whose kinds changed run in the debounced pass after the schema problems, with the session's registry index; a throw becomes `validator.failed`; their problems follow the schema problems in the snapshot; their errors block exports of the layers their elements lower to (`#runPipeline`).
+- `ProjectSession.runPluginExporter(id, folder?)`: export pipeline into memory, then `exports.writeFiles`; nothing asked or written when blocked or empty.
+- `loadSchemaContext` and the ids key now use the session's kind registry (`this.registry`).
+- UI: File > Import Structure… (`ImportFilesDialog`), File > More Exports and the toolbar Export menu's "More exports" submenu (.nbt, .schem), three palette commands, sidebar "Worldgen" (registry before the name) and "Structures" groups.
+- Studio registry: `studios/types.ts`, `studios/studio-registry.ts` (`import.meta.glob('./*/studios.tsx')`), the five built-in Studios as entries in `ElementForm.tsx`; `coalesceKeys` and `handlesFocus` generalise the recipe-grid and function-editor special cases.
+
+**Decisions**
+- The export folder write (existing `exports:writeFiles` channel) now also accepts namespaced structure paths `<ns>/<path>.nbt|.schem` (lower-case, no `.`/`..`), creates subfolders with real-path containment, and takes up to 4096 files. No new channel.
+
+**Next**
+- B79/B80 add `studios/<area>/studios.tsx` files exporting `studios: StudioEntry[]`.
+- `app/CLAUDE.md` should mention importers, validators and the studio registry (orchestrator).
+
+---
+
+## 2026-11-04 — main session — Phase 3 wave 3 review
+
+**What**
+- Reviewed and committed B78 (previews), B76 (content, fixture) and B77 (host plumbing) separately, each verified in a clean worktree with `--force`.
+- `packages/plugins/CLAUDE.md` and `app/CLAUDE.md` updated for the new plugins, counts and studio registry.
+
+**Decisions**
+- Accepted B77's widening of `exports:writeFiles` to namespaced `.nbt`/`.schem` paths (up to 4096, real-path containment in main) rather than a new channel; it is the D3 folder export, so ADR 0021 covers it.
+- Import Structure… lists every registered importer (today only the two structure ones); rename to "Import Files…" if a non-structure importer appears.
+- Accepted B78's `previewKind: 'climate_map'` on the dimension and world preset kinds.
+
+**Next**
+- Wave 4: B79 structure studios, B80 worldgen studios, B81 docs and guides. Fold in: template descriptions that say "the same id" (ids are unique across kinds), the `minecraft:visual/sky_color` key in `preview/climate.ts` moving to the target, `renameSelected` using `session.registry`, atomic `saveFile` (flaky golden-path zip read).

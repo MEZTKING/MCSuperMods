@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -90,5 +90,50 @@ describe('export folder writes', () => {
     await expect(s.writeFiles(folder, [{ name: 'a.zip', data: new Uint8Array() }])).rejects.toThrow(
       /not a folder/,
     );
+  });
+
+  it('writes structure files into namespace subfolders', async () => {
+    const s = service();
+    const folder = (await s.pickFolder('Export')) as string;
+    const { paths } = await s.writeFiles(folder, [
+      { name: 'demo/hut.nbt', data: new Uint8Array([1]) },
+      { name: 'demo/village/house_1.schem', data: new Uint8Array([2]) },
+    ]);
+    expect(paths).toEqual([
+      join(folder, 'demo', 'hut.nbt'),
+      join(folder, 'demo', 'village', 'house_1.schem'),
+    ]);
+    expect(new Uint8Array(await readFile(paths[1] as string))).toEqual(new Uint8Array([2]));
+    expect(await readdir(join(folder, 'demo'))).toEqual(['hut.nbt', 'village']);
+  });
+
+  it('refuses structure paths that are not namespaced, safe and lower-case', async () => {
+    const s = service();
+    const folder = (await s.pickFolder('Export')) as string;
+    for (const name of [
+      'hut.nbt',
+      '../demo/hut.nbt',
+      'demo/../hut.nbt',
+      'Demo/hut.nbt',
+      'demo/hut.json',
+      'demo//hut.nbt',
+    ]) {
+      await expect(s.writeFiles(folder, [{ name, data: new Uint8Array() }])).rejects.toThrow(
+        /file name/,
+      );
+    }
+    expect(await readdir(folder)).toEqual([]);
+  });
+
+  it('refuses a subfolder that links outside the picked folder', async () => {
+    const s = service();
+    const folder = (await s.pickFolder('Export')) as string;
+    const outside = join(temp, 'outside');
+    await mkdir(outside);
+    await symlink(outside, join(folder, 'demo'), 'dir');
+    await expect(
+      s.writeFiles(folder, [{ name: 'demo/hut.nbt', data: new Uint8Array([1]) }]),
+    ).rejects.toThrow(/outside the export folder/);
+    expect(await readdir(outside)).toEqual([]);
   });
 });

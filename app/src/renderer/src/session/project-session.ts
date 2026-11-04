@@ -38,6 +38,7 @@ import {
 } from '@msm/core';
 import {
   combinedFileNames,
+  createMemorySink,
   createZipSink,
   dataPackExporter,
   ExportProblemCodes,
@@ -52,6 +53,9 @@ import type {
   ContentBundle,
   ElementTemplate,
   ExampleProject,
+  Exporter,
+  ImportResult,
+  OutputSink,
   Plugin,
   ProjectStarter,
   Target,
@@ -76,6 +80,12 @@ import {
   PACK_MCMETA_KIND,
 } from './element-defaults';
 import {
+  collectImporters,
+  importerFor,
+  type RegisteredImporter,
+  type TargetImporters,
+} from './importers';
+import {
   checkFunctionElement,
   FUNCTION_KIND,
   functionLines,
@@ -89,6 +99,15 @@ import {
   type SessionReferences,
 } from './references';
 import { loadSchemaContext, projectRegistryIds, type SchemaContext } from './schema-context';
+import {
+  blockingValidatorErrors,
+  changedKinds,
+  collectValidators,
+  projectElements,
+  type RegisteredValidator,
+  runValidator,
+  validatorsFor,
+} from './validator-problems';
 
 /** Everything the UI renders from the session. Replaced, never mutated. */
 export interface SessionSnapshot {
@@ -103,7 +122,8 @@ export interface SessionSnapshot {
   redoLabel: string | undefined;
   /**
    * Every live problem: load problems (with `file`), session warnings, then schema problems
-   * (with `elementId` and an RFC 6901 `path`) in element order.
+   * (with `elementId` and an RFC 6901 `path`) in element order, then the plugins' project
+   * validator problems in validator order.
    */
   problems: readonly Problem[];
 }
@@ -189,6 +209,22 @@ export interface ProjectSessionOptions {
    * export reports them as unchecked.
    */
   mcfunction?: McfunctionChecker;
+  /**
+   * Target-aware replacements for registered importers (default: the structure importers,
+   * which need the target's data version).
+   */
+  targetImporters?: TargetImporters;
+}
+
+/** The result of {@link ProjectSession.importFiles}. */
+export interface ImportFilesResult {
+  /** Element ids added, in file order. */
+  imported: ResourceLocation[];
+  /**
+   * Everything worth telling the user: unsupported or failed files, the importers' own
+   * problems and skipped duplicates (`import.duplicate-id`).
+   */
+  problems: Problem[];
 }
 
 /**
@@ -367,6 +403,16 @@ export const SessionProblemCodes = {
   mcfunctionUnavailable: 'mcfunction.unavailable',
   /** A rename onto an id that already exists (from `@msm/core`). */
   renameConflict: ProblemCodes.refsRenameConflict,
+  /** An imported element whose id the project (or an earlier imported file) already has. */
+  importDuplicateId: 'import.duplicate-id',
+  /** An imported asset whose path the project already records. */
+  importDuplicateAsset: 'import.duplicate-asset',
+  /** No registered importer accepts the file's extension. */
+  importUnsupported: 'import.unsupported-file',
+  /** An importer threw, or produced something the project cannot hold. */
+  importFailed: 'import.failed',
+  /** The named plugin exporter is not registered. */
+  unknownExporter: 'export.unknown-exporter',
 } as const;
 
 /**
@@ -419,6 +465,11 @@ export class ProjectSession {
   readonly #targets: readonly SessionTarget[];
   readonly #validationDelay: number;
   readonly #mcfunction: McfunctionChecker | undefined;
+  readonly #importers: readonly RegisteredImporter[];
+  readonly #validators: readonly RegisteredValidator[];
+  readonly #exporters: readonly Exporter[];
+  #validatorProblems = new Map<string, Problem[]>();
+  #pendingValidators = new Set<string>();
   readonly #loadedSchemas = new Map<string, SchemaContext>();
   #referenceCache: {
     state: Project;
@@ -459,6 +510,21 @@ export class ProjectSession {
     this.#mcfunction = options.mcfunction;
     for (const plugin of this.#plugins) registerPlugin(this.registry, plugin);
     this.#library = this.#collectLibrary();
+    this.#importers = Object.freeze(collectImporters(this.#plugins, options.targetImporters));
+    this.#validators = Object.freeze(collectValidators(this.#plugins));
+    this.#exporters = Object.freeze(
+      dedupeById(this.#plugins.flatMap((plugin) => plugin.contributes.exporters ?? [])),
+    );
+  }
+
+  /** The registered plugins' importers, in plugin order (first id wins). */
+  get importers(): readonly RegisteredImporter[] {
+    return this.#importers;
+  }
+
+  /** The registered plugins' exporters, in plugin order (first id wins). */
+  get pluginExporters(): readonly Exporter[] {
+    return this.#exporters;
   }
 
   #collectLibrary(): SessionLibrary {
@@ -544,7 +610,7 @@ export class ProjectSession {
     const target = this.target;
     let cached = this.#schemaCache.get(target.id);
     if (cached === undefined) {
-      cached = loadSchemaContext(this.#platform, target);
+      cached = loadSchemaContext(this.#platform, target, this.registry);
       this.#schemaCache.set(target.id, cached);
       cached.then(
         (context) => this.#loadedSchemas.set(target.id, context),
@@ -937,6 +1003,118 @@ export class ProjectSession {
   }
 
   /**
+   * Imports files through the registered importers (DESIGN §7): each file goes to the first
+   * importer that accepts its lower-case extension, run for the current target. Every element
+   * and asset of every file is added as one undoable command, "Import <n> files", together
+   * with the namespace when the project lacks it; asset bytes are written first (like
+   * {@link importAssets}). Elements whose id the project (or an earlier file) already has
+   * are skipped and reported as `import.duplicate-id`. Never throws for a bad file: an
+   * unsupported extension, a throwing importer or a result the project cannot hold is an
+   * error problem, and the other files are still imported.
+   *
+   * @param files - The files' names and bytes.
+   * @param namespace - The namespace the new elements and assets belong to.
+   * @throws Error If no project is open or the namespace name is invalid.
+   */
+  async importFiles(
+    files: readonly { name: string; data: Uint8Array }[],
+    namespace: string,
+  ): Promise<ImportFilesResult> {
+    const stack = this.#requireStack();
+    if (!isValidNamespace(namespace)) {
+      throw new Error(`Invalid namespace name ${JSON.stringify(namespace)}.`);
+    }
+    const target = this.target;
+    const problems: Problem[] = [];
+    const bundle: {
+      elements: ContentBundle['elements'][number][];
+      assets: ContentBundle['assets'][number][];
+    } = {
+      elements: [],
+      assets: [],
+    };
+    let accepted = 0;
+    for (const file of files) {
+      const entry = importerFor(this.#importers, file.name);
+      if (entry === undefined) {
+        problems.push({
+          severity: 'error',
+          code: SessionProblemCodes.importUnsupported,
+          file: file.name,
+          message: `${file.name} was not imported: no importer accepts this kind of file.`,
+        });
+        continue;
+      }
+      let result: ImportResult;
+      try {
+        result = await entry.run({ name: file.name, bytes: file.data }, namespace, target);
+      } catch (error) {
+        problems.push({
+          severity: 'error',
+          code: SessionProblemCodes.importFailed,
+          file: file.name,
+          message: `${file.name} could not be imported by ${entry.importer.displayName}: ${messageOf(error)}`,
+        });
+        continue;
+      }
+      problems.push(...result.problems);
+      const part: ContentBundle = {
+        elements: result.elements.map((element) => ({
+          id: element.id,
+          kind: element.kind,
+          data: element.data,
+          ...(element.meta?.notes === undefined ? {} : { notes: element.meta.notes }),
+          ...(element.meta?.tags === undefined ? {} : { tags: element.meta.tags }),
+        })),
+        assets: result.assets.map(({ asset, bytes }) => ({
+          namespace,
+          path: asset.path,
+          bytes,
+        })),
+      };
+      try {
+        // Checks kinds, ids and asset bytes; duplicates are reported below.
+        prepareBundle(part, stack.state, this.registry, this.#now);
+      } catch (error) {
+        problems.push({
+          severity: 'error',
+          code: SessionProblemCodes.importFailed,
+          file: file.name,
+          message: `${file.name} could not be imported: ${messageOf(error)}`,
+        });
+        continue;
+      }
+      if (part.elements.length + part.assets.length > 0) accepted += 1;
+      bundle.elements.push(...part.elements);
+      bundle.assets.push(...part.assets);
+    }
+    const prepared = prepareBundle(bundle, stack.state, this.registry, this.#now);
+    await this.#writeBundleAssets(prepared);
+    // The state may have moved on while the bytes were written: check again.
+    const current = prepareBundle(bundle, stack.state, this.registry, this.#now);
+    for (const id of current.duplicates) {
+      problems.push({
+        severity: 'warning',
+        code: SessionProblemCodes.importDuplicateId,
+        elementId: id,
+        message: `${id} already exists, so the imported copy was skipped. Rename or remove the existing element, then import again.`,
+      });
+    }
+    for (const asset of current.skippedAssets) {
+      problems.push({
+        severity: 'warning',
+        code: SessionProblemCodes.importDuplicateAsset,
+        message: `The asset ${asset} already exists, so the imported copy was skipped.`,
+      });
+    }
+    if (current.elements.length > 0 || current.assets.length > 0) {
+      const label = `Import ${accepted} file${accepted === 1 ? '' : 's'}`;
+      stack.execute({ ...bundleCommand(current, label), id: 'app.import-files' });
+    }
+    return { imported: current.elements.map((element) => element.id), problems };
+  }
+
+  /**
    * Removes an asset. The record goes through an undoable command; its bytes move to
    * {@link ASSET_TRASH_DIR} so that undo (which restores the record) can move them back.
    * Resolves when the bytes have moved.
@@ -1064,17 +1242,76 @@ export class ProjectSession {
     return { ...report, location: folder };
   }
 
+  /**
+   * Runs a plugin's exporter (for example `structure-nbt` or `sponge-schematic`) through the
+   * export pipeline into memory, then writes its files into a folder: `folder` when given,
+   * else one the user picks (`platform.exports.pickFolder`). Errors, including project
+   * validator errors, block as usual; nothing is asked or written then, nor when the
+   * exporter wrote no files.
+   *
+   * @param exporterId - The id of a registered plugin exporter.
+   * @param folder - A folder already picked in this session.
+   * @throws Error If no project is open.
+   */
+  async runPluginExporter(exporterId: string, folder?: string): Promise<ExportResult> {
+    const exporter = this.#exporters.find((entry) => entry.id === exporterId);
+    if (exporter === undefined) {
+      return {
+        ok: false,
+        files: [],
+        problems: [
+          {
+            severity: 'error',
+            code: SessionProblemCodes.unknownExporter,
+            message: `No plugin provides the exporter ${JSON.stringify(exporterId)}.`,
+          },
+        ],
+      };
+    }
+    const sink = createMemorySink();
+    const { report } = await this.#runPipeline(exporter, sink);
+    if (!report.ok) return report;
+    const written = sink.files();
+    if (written.size === 0) return report;
+    const chosen =
+      folder ??
+      (await this.#platform.exports.pickFolder(`${exporter.displayName}: choose a folder`));
+    if (chosen === null) return { ...report, cancelled: true };
+    await this.#platform.exports.writeFiles(
+      chosen,
+      [...written].map(([name, data]) => ({ name, data })),
+    );
+    return { ...report, location: chosen };
+  }
+
   /** Runs the export pipeline for one pack into a zip; `data` is absent when blocked. */
   async #buildPack(
     pack: PackKind,
   ): Promise<{ report: ExportReport; fileName: string; data?: Uint8Array }> {
+    const sink = createZipSink();
+    const { report, project, target } = await this.#runPipeline(
+      pack === 'data' ? dataPackExporter : resourcePackExporter,
+      sink,
+    );
+    const fileName = packFileName(project.name, target, pack);
+    if (!report.ok) return { report, fileName };
+    return { report, fileName, data: sink.finish() };
+  }
+
+  /**
+   * Runs `runExport` for the current project after pending validation. Project validator
+   * errors of elements in the exporter's layers block the report (they come first in it).
+   */
+  async #runPipeline(
+    exporter: Exporter,
+    sink: OutputSink,
+  ): Promise<{ report: ExportReport; project: Project; target: Target }> {
     const stack = this.#requireStack();
     await this.flushValidation();
     await this.flushAssetFiles();
     const project = stack.state;
     const context = await this.schemas();
     const info = await this.#platform.app.info();
-    const sink = createZipSink();
     const checker = this.#mcfunction;
     const report = await runExport({
       project,
@@ -1082,7 +1319,7 @@ export class ProjectSession {
       target: context.target,
       schemaIndex: context.schemaIndex,
       registries: context.registries(project),
-      exporter: pack === 'data' ? dataPackExporter : resourcePackExporter,
+      exporter,
       sink,
       readAsset: (namespace, path) => this.readAsset(namespace, path),
       meta: { msmVersion: info.version, plugins: [...project.plugins] },
@@ -1090,9 +1327,18 @@ export class ProjectSession {
         ? {}
         : { validateText: mcfunctionTextValidator(checker, project, context.target) }),
     });
-    const fileName = packFileName(project.name, context.target, pack);
-    if (!report.ok) return { report, fileName };
-    return { report, fileName, data: sink.finish() };
+    const blocking = blockingValidatorErrors(
+      [...this.#validatorProblems.values()].flat(),
+      project,
+      (element) => this.registry.get(element.kind)?.lower(element, context.target) ?? [],
+      exporter.layers,
+    );
+    if (blocking.length === 0) return { report, project, target: context.target };
+    return {
+      report: { ok: false, problems: [...blocking, ...report.problems], files: [] },
+      project,
+      target: context.target,
+    };
   }
 
   // Minecraft and settings ----------------------------------------------------------------
@@ -1165,7 +1411,9 @@ export class ProjectSession {
 
   async #validatePending(): Promise<void> {
     const generation = this.#generation;
-    if (this.#stack === null || this.#pending.size === 0) return;
+    if (this.#stack === null || (this.#pending.size === 0 && this.#pendingValidators.size === 0)) {
+      return;
+    }
     let context: SchemaContext;
     try {
       context = await this.schemas();
@@ -1179,6 +1427,7 @@ export class ProjectSession {
         },
       ];
       this.#pending.clear();
+      this.#pendingValidators.clear();
       this.#publish();
       return;
     }
@@ -1208,6 +1457,7 @@ export class ProjectSession {
         this.#schemaProblems.set(id, problems);
       }
     }
+    this.#runValidators(context, project);
     this.#publish();
     if (functions.length > 0) await this.#checkFunctions(functions, context, project, generation);
   }
@@ -1245,6 +1495,25 @@ export class ProjectSession {
       if (!elementsById(this.#stack.state).has(element.id)) continue;
       this.#schemaProblems.set(element.id, [...schemaProblems, ...problems]);
       this.#publish();
+    }
+  }
+
+  /**
+   * Runs the pending project validators (those whose kinds changed) over `project`, after the
+   * schema pass, with the registry index of the session's registered kinds.
+   */
+  #runValidators(context: SchemaContext, project: Project): void {
+    if (this.#pendingValidators.size === 0) return;
+    const pending = this.#pendingValidators;
+    this.#pendingValidators = new Set();
+    const input = {
+      elements: projectElements(project),
+      target: context.target,
+      registry: context.registries(project),
+    };
+    for (const entry of this.#validators) {
+      if (!pending.has(entry.validator.id)) continue;
+      this.#validatorProblems.set(entry.validator.id, runValidator(entry, input));
     }
   }
 
@@ -1293,14 +1562,22 @@ export class ProjectSession {
       project === null
         ? ''
         : JSON.stringify([
-            projectRegistryIds(project),
+            projectRegistryIds(project, this.registry),
             mcfunctionProjectIds(project).objective ?? [],
           ]);
     this.#renameProblems = [];
     if (idsKey(this.#lastState) !== idsKey(event.state)) {
       // Project-defined ids changed, so `#[id]` warnings anywhere may change.
       for (const id of after.keys()) this.#pending.add(id);
+      // Validators read registry ids too.
+      for (const entry of this.#validators) this.#pendingValidators.add(entry.validator.id);
     } else {
+      for (const entry of validatorsFor(
+        this.#validators,
+        changedKinds(this.#lastState, event.state),
+      )) {
+        this.#pendingValidators.add(entry.validator.id);
+      }
       for (const [id, element] of after) {
         if (before.get(id) !== element) this.#pending.add(id);
       }
@@ -1313,7 +1590,9 @@ export class ProjectSession {
     }
     this.#syncAssetFiles(this.#lastState, event.state);
     this.#lastState = event.state;
-    if (this.#pending.size > 0) this.#scheduleValidation(this.#validationDelay);
+    if (this.#pending.size > 0 || this.#pendingValidators.size > 0) {
+      this.#scheduleValidation(this.#validationDelay);
+    }
     this.#publish();
   }
 
@@ -1466,9 +1745,10 @@ export class ProjectSession {
     this.#targetProblems = this.#targetProblemsFor(project);
     this.#lastState = project;
     for (const id of elementsById(project).keys()) this.#pending.add(id);
+    for (const entry of this.#validators) this.#pendingValidators.add(entry.validator.id);
     this.#publish();
     // Full pass on open, without the debounce.
-    if (this.#pending.size > 0) this.#scheduleValidation(0);
+    if (this.#pending.size > 0 || this.#pendingValidators.size > 0) this.#scheduleValidation(0);
   }
 
   #reset(): void {
@@ -1485,6 +1765,8 @@ export class ProjectSession {
     this.#schemaLoadProblems = [];
     this.#schemaProblems = new Map();
     this.#pending.clear();
+    this.#validatorProblems = new Map();
+    this.#pendingValidators = new Set();
     this.#lastState = null;
     this.#assetProblems = [];
     this.#renameProblems = [];
@@ -1506,6 +1788,9 @@ export class ProjectSession {
       for (const id of elementsById(project).keys()) {
         schemaProblems.push(...(this.#schemaProblems.get(id) ?? []));
       }
+      const validatorProblems = this.#validators.flatMap(
+        (entry) => this.#validatorProblems.get(entry.validator.id) ?? [],
+      );
       this.#snapshot = {
         root: this.#root,
         project,
@@ -1522,6 +1807,7 @@ export class ProjectSession {
           ...this.#renameProblems,
           ...this.#overwriteProblems(project),
           ...schemaProblems,
+          ...validatorProblems,
         ],
       };
     }

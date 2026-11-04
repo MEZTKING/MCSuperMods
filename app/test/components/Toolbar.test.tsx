@@ -242,3 +242,35 @@ describe('Toolbar install target', () => {
     expect(screen.getByTestId('install-resource')).toBeTruthy();
   });
 });
+
+describe('Toolbar more exports', () => {
+  it('offers the structure exports in the Export menu submenu', async () => {
+    const onExportStructures = vi.fn();
+    const onExportSchematics = vi.fn();
+    renderToolbar(props({ onExportZip: vi.fn(), onExportStructures, onExportSchematics }));
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('toolbar-export-menu'));
+    await user.click(screen.getByTestId('export-more'));
+    const structures = await screen.findByTestId('export-structures');
+    expect(structures.textContent).toBe('Structures (.nbt) into a folder…');
+    expect(screen.getByTestId('export-schematics')).toBeTruthy();
+    fireEvent.click(structures);
+    expect(onExportStructures).toHaveBeenCalledOnce();
+  });
+
+  it('shows why the structure exports are disabled', async () => {
+    renderToolbar(
+      props({
+        onExportStructures: vi.fn(),
+        onExportSchematics: vi.fn(),
+        structureExportDisabledReason: 'Fix 1 error first (see Problems).',
+      }),
+    );
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('toolbar-export-menu'));
+    await user.click(screen.getByTestId('export-more'));
+    const reason = await screen.findByTestId('export-schematics-reason');
+    expect(reason.textContent).toBe('Fix 1 error first (see Problems).');
+    expect(screen.getByTestId('export-schematics').getAttribute('aria-disabled')).toBe('true');
+  });
+});

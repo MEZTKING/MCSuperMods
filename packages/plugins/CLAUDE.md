@@ -1,6 +1,6 @@
 # packages/plugins — Built-in plugins
 
-Phase 2 code complete: `@msm/plugin-resourcepack` (model, block definition, item definition, lang, sounds and dual-layer `pack.mcmeta`) and `@msm/plugin-datapack` (plugin id `msm.datapack`: recipe, loot table, advancement, predicate, item modifier, function, eight `minecraft:tag/<registry>` kinds, and ten schema-form kinds such as enchantment and dialog; ADR 0015), each with its element templates (14 and 52), and `@msm/plugin-library` (plugin id `msm.library`: 8 project starters, 34 examples, placeholder PNGs; no kinds; ADR 0020). All declare `apiVersion: '^0.4.0'`. The others follow in Phases 3–6.
+Phase 2 code complete: `@msm/plugin-resourcepack` (model, block definition, item definition, lang, sounds and dual-layer `pack.mcmeta`) and `@msm/plugin-datapack` (plugin id `msm.datapack`: recipe, loot table, advancement, predicate, item modifier, function, eight `minecraft:tag/<registry>` kinds, and ten schema-form kinds such as enchantment and dialog; ADR 0015), each with its element templates (14 and 52), and `@msm/plugin-library` (plugin id `msm.library`: 11 project starters, 56 examples, placeholder PNGs; no kinds; ADR 0020). Phase 3: `@msm/plugin-structures` (5 kinds, `.nbt`/`.schem` I/O, 9 templates) and `@msm/plugin-worldgen` (14 kinds, 21 templates; ADR 0021, 0022). Element ids are unique across kinds, so chained worldgen elements need distinct ids (`x` and `x_placed`). All declare `apiVersion: '^0.5.0'`. The others follow in Phases 4–6.
 
 ## Purpose
 
@@ -20,7 +20,7 @@ Built-in plugins contribute element kinds, lowering, commands and library conten
 | `models-anim/` | `@msm/plugin-models-anim` | 5 |
 | `scripting/` | `@msm/plugin-scripting` | 6 |
 
-Layout per plugin (from `tools/new-plugin`): `src/index.ts` (`definePlugin`, `apiVersion: '^0.4.0'`), `src/kinds/`, `src/lowering/`, `src/templates/` (one module per category), `test/plugin.test.ts`, goldens under `test/fixtures/<target id>/expected/<kind folder>/`.
+Layout per plugin (from `tools/new-plugin`): `src/index.ts` (`definePlugin`, `apiVersion: '^0.5.0'`), `src/kinds/`, `src/lowering/`, `src/templates/` (one module per category), `test/plugin.test.ts`, goldens under `test/fixtures/<target id>/expected/<kind folder>/`.
 
 ## Conventions
 

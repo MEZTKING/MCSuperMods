@@ -90,12 +90,23 @@ export function installMenu(recent: readonly RecentProject[] = []): void {
         { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => send('save') },
         { type: 'separator' },
         { label: 'Import Assets…', click: () => send('importAssets') },
+        { label: 'Import Structure…', click: () => send('importStructure') },
         { type: 'separator' },
         { label: 'Export Resource Pack…', click: () => send('exportResourcePack') },
         { label: 'Export Data Pack…', click: () => send('exportDataPack') },
         { label: 'Export Both…', click: () => send('exportCombined') },
         { label: 'Install Resource Pack', click: () => send('installResourcePack') },
         { label: 'Install Data Pack…', click: () => send('installDataPack') },
+        {
+          label: 'More Exports',
+          submenu: [
+            { label: 'Export Structures (.nbt)…', click: () => send('exportStructures') },
+            {
+              label: 'Export Structures as Sponge Schematics (.schem)…',
+              click: () => send('exportSchematics'),
+            },
+          ],
+        },
         { type: 'separator' },
         { label: 'Settings…', click: () => send('settings') },
         { type: 'separator' },

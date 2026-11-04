@@ -279,13 +279,14 @@ export interface PlatformAdapter {
       options: { uri: string; projectIds: McfunctionProjectIds; limit?: number },
     ): Promise<McfunctionCompletion[]>;
   };
-  /** Writing several export files into one folder the user picked (combined export). */
+  /** Writing several export files into one folder the user picked (combined and plugin exports). */
   exports: {
     /** Shows a folder picker; returns the chosen absolute folder, or `null` when cancelled. */
     pickFolder(title: string): Promise<string | null>;
     /**
-     * Writes pack files into a folder returned by {@link pickFolder} in this session. Names
-     * are single `.zip` file names; each file is replaced atomically.
+     * Writes export files into a folder returned by {@link pickFolder} in this session. Names
+     * are single `.zip` file names or structure paths `<namespace>/<path>.nbt` (or `.schem`);
+     * missing subfolders are created and each file is replaced atomically.
      */
     writeFiles(
       folder: string,

@@ -94,8 +94,34 @@ export const MCFUNCTION_MAX_SOURCE_LENGTH = 2 * 1024 * 1024;
 export const MCFUNCTION_MAX_PROJECT_IDS = 50_000;
 /** The largest completion limit a request may ask for. */
 export const MCFUNCTION_MAX_COMPLETION_LIMIT = 10_000;
-/** The most files one combined export may write. */
-export const EXPORT_MAX_FILES = 16;
+/**
+ * The most files one export folder write may hold: two pack zips for a combined export, or
+ * every structure file of a plugin exporter (`structure-nbt`, `sponge-schematic`).
+ */
+export const EXPORT_MAX_FILES = 4096;
+
+/**
+ * A structure file a plugin exporter writes into an export folder: `<namespace>/<path>.nbt`
+ * or `.schem`, lower-case resource location characters, `/`-separated.
+ */
+export const STRUCTURE_EXPORT_FILE = /^[a-z0-9_.-]+(?:\/[a-z0-9_.-]+)+\.(?:nbt|schem)$/;
+
+/**
+ * Whether `name` may be written into an export folder: a single pack zip name, or a
+ * {@link STRUCTURE_EXPORT_FILE} path without `.` or `..` segments. At most 255 characters.
+ */
+export function isExportFileName(name: string): boolean {
+  if (name.length > 255) return false;
+  if (PACK_FILE_NAME.test(name)) return true;
+  return (
+    STRUCTURE_EXPORT_FILE.test(name) &&
+    name.split('/').every((segment) => segment !== '.' && segment !== '..')
+  );
+}
+
+const exportFileName = z.string().max(255).refine(isExportFileName, {
+  message: 'Not an export file name',
+});
 
 const targetId = z.string().min(1).max(128);
 const mcfunctionSource = z.string().max(MCFUNCTION_MAX_SOURCE_LENGTH);
@@ -442,7 +468,7 @@ export const ipcContract = {
       .object({
         folder: absolutePath,
         files: z
-          .array(z.object({ name: packFileName, data: bytes }).strict())
+          .array(z.object({ name: exportFileName, data: bytes }).strict())
           .min(1)
           .max(EXPORT_MAX_FILES),
       })

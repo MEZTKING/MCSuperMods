@@ -31,6 +31,7 @@ import {
 } from './components/function-editor/caret';
 import { lineOffset } from './components/function-editor/source-text';
 import { ImportAssetsDialog, importFileFilters } from './components/ImportAssetsDialog';
+import { ImportFilesDialog } from './components/ImportFilesDialog';
 import {
   describeJarSource,
   type InstallTargetOption,
@@ -51,6 +52,7 @@ import { UsagesDialog } from './components/UsagesDialog';
 import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
+import { importerFileFilters } from './session/importers';
 import {
   FUNCTION_KIND,
   functionElementUri,
@@ -121,6 +123,7 @@ type DialogState =
   | { type: 'new-project' }
   | { type: 'examples' }
   | { type: 'import'; namespace?: string }
+  | { type: 'import-files' }
   | { type: 'settings' }
   | { type: 'remove-asset'; namespace: string; path: string }
   | { type: 'rename'; id: ResourceLocation; references: number }
@@ -467,6 +470,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     minecraft.status,
     hasDataPack,
   );
+  // Structure files come from the data pack layer, so its errors block them.
+  const structureExportReason = exportDisabledReason(project !== null, dataProblems);
 
   /** Runs one export or install and reports the outcome. */
   const runPackExport = async (
@@ -516,6 +521,40 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     }
   };
 
+  /** Runs a plugin exporter (structure files) into a folder and reports the outcome. */
+  const runFolderExport = async (exporterId: string, what: string): Promise<void> => {
+    setExporting(true);
+    try {
+      const result = await session.runPluginExporter(exporterId);
+      setExportProblems(userFacingExportProblems(result.problems));
+      if (!result.ok) {
+        setRightDock('problems');
+        const errors = errorCount(result.problems);
+        setMessage({
+          kind: 'error',
+          text: `Export blocked by ${errors} error(s); nothing was written. See Problems.`,
+        });
+        return;
+      }
+      if (result.cancelled === true) return;
+      if (result.location === undefined) {
+        const note = result.problems.find((problem) => problem.severity === 'info');
+        setMessage({ kind: 'info', text: note?.message ?? `There were no ${what} to export.` });
+        return;
+      }
+      const warnings = result.problems.filter((problem) => problem.severity === 'warning').length;
+      const suffix = warnings > 0 ? ` ${warnings} warning(s), see Problems.` : '';
+      setMessage({
+        kind: 'info',
+        text: `Exported ${result.files.length} ${what} to ${result.location}.${suffix}`,
+      });
+    } catch (error) {
+      setMessage({ kind: 'error', text: `Export failed: ${messageOf(error)}` });
+    } finally {
+      setExporting(false);
+    }
+  };
+
   /** Runs `action` when `reason` is `null`; otherwise says why it is unavailable. */
   const guarded =
     (reason: string | null, action: Action): Action =>
@@ -542,6 +581,14 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     installReason,
     () =>
       void runPackExport('resource', 'install', () => session.exportPack('resource', 'install')),
+  );
+  const exportStructures = guarded(
+    structureExportReason,
+    () => void runFolderExport('structure-nbt', 'structure file(s)'),
+  );
+  const exportSchematics = guarded(
+    structureExportReason,
+    () => void runFolderExport('sponge-schematic', 'schematic(s)'),
   );
   const installData = guarded(dataInstallReason, () => {
     session.listWorlds().then(
@@ -581,6 +628,43 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       setMessage({
         kind: 'info',
         text: `Imported ${result.imported.length} file(s) into ${namespace}:${subfolder}.`,
+      });
+      return null;
+    } catch (error) {
+      return messageOf(error);
+    }
+  };
+
+  /** Picks files for the registered importers and imports them into `namespace`. */
+  const importFiles = async (namespace: string): Promise<string | null> => {
+    let files: Awaited<ReturnType<MsmBridge['dialogs']['pickFiles']>>;
+    try {
+      files = await bridge.dialogs.pickFiles({
+        title: 'Import structures',
+        filters: importerFileFilters(session.importers),
+      });
+    } catch (error) {
+      return messageOf(error);
+    }
+    if (files.length === 0) return null;
+    try {
+      const result = await session.importFiles(
+        files.map((file) => ({ name: file.name, data: file.data })),
+        namespace,
+      );
+      const count = result.imported.length;
+      const first = result.imported[0];
+      if (first !== undefined) select(first);
+      const notes = result.problems.filter((problem) => problem.severity !== 'info');
+      if (notes.length > 0) {
+        if (count > 0) setMessage({ kind: 'info', text: `Imported ${count} element(s).` });
+        return `${count > 0 ? 'Some files were not fully imported' : 'Nothing was imported'}:\n${notes.map((problem) => problem.message).join('\n')}`;
+      }
+      setDialog(null);
+      const infos = result.problems.map((problem) => ` ${problem.message}`).join('');
+      setMessage({
+        kind: 'info',
+        text: `Imported ${count} element(s) into ${namespace}.${infos}`,
       });
       return null;
     } catch (error) {
@@ -810,11 +894,14 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       else session.redo();
     },
     importAssets: needsNamespace(() => setDialog({ type: 'import' })),
+    importStructure: needsNamespace(() => setDialog({ type: 'import-files' })),
     exportResourcePack: exportResourceZip,
     exportDataPack: exportDataZip,
     exportCombined,
     installResourcePack: installResource,
     installDataPack: installData,
+    exportStructures,
+    exportSchematics,
     settings: () => {
       setDialog({ type: 'settings' });
       // Launchers may have gained instances since the last read; look again.
@@ -842,11 +929,15 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     newElement: canAddElement ? () => setDialog({ type: 'element' }) : null,
     addNamespace: project === null ? null : () => setDialog({ type: 'namespace' }),
     importAssets: canAddElement ? handlers.importAssets : null,
+    importStructure:
+      canAddElement && session.importers.length > 0 ? handlers.importStructure : null,
     exportResourcePack: exportReason === null ? exportResourceZip : null,
     exportDataPack: dataExportReason === null ? exportDataZip : null,
     exportCombined: combinedReason === null ? exportCombined : null,
     installResourcePack: installReason === null ? installResource : null,
     installDataPack: dataInstallReason === null ? installData : null,
+    exportStructures: structureExportReason === null ? exportStructures : null,
+    exportSchematics: structureExportReason === null ? exportSchematics : null,
     renameElement: selected === null ? null : renameSelected,
     goToDefinition: selected === null ? null : () => goToDefinition(),
     findUsages: selected === null ? null : findUsages,
@@ -1027,6 +1118,9 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               onExportZip={exportResourceZip}
               onExportDataZip={exportDataZip}
               onExportCombined={exportCombined}
+              structureExportDisabledReason={structureExportReason}
+              onExportStructures={exportStructures}
+              onExportSchematics={exportSchematics}
               onInstall={installResource}
               onInstallData={installData}
               onSettings={handlers.settings}
@@ -1149,6 +1243,15 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             namespaces={namespaces}
             initialNamespace={dialog.namespace}
             onImport={importAssets}
+            onCancel={() => setDialog(null)}
+          />
+        )}
+        {dialog?.type === 'import-files' && project !== null && (
+          <ImportFilesDialog
+            title="Import structure"
+            namespaces={namespaces}
+            importers={session.importers.map((entry) => entry.importer)}
+            onImport={importFiles}
             onCancel={() => setDialog(null)}
           />
         )}

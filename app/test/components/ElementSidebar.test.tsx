@@ -158,3 +158,42 @@ describe('ElementSidebar tags', () => {
     expect(rows[0]?.textContent).toBe('blockores');
   });
 });
+
+describe('ElementSidebar worldgen and structures', () => {
+  it('groups worldgen kinds and dimensions under Worldgen, structure templates under Structures', () => {
+    const project = sampleProject();
+    const demo = project.namespaces[0];
+    if (demo === undefined) throw new Error('no namespace');
+    demo.elements.push(
+      element('demo:plains_plus', 'minecraft:worldgen/biome'),
+      element('demo:village/start', 'minecraft:worldgen/template_pool'),
+      element('demo:sky', 'minecraft:dimension'),
+      element('demo:hut', 'minecraft:structure_template'),
+      element('demo:biomes', 'minecraft:tag/worldgen/biome'),
+    );
+    render(
+      <ElementSidebar project={project} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
+    );
+    const region = screen.getByRole('region', { name: 'Namespace demo' });
+    const headings = within(region)
+      .getAllByRole('heading', { level: 3 })
+      .map((heading) => heading.textContent);
+    expect(headings).toEqual(expect.arrayContaining(['Structures', 'Tags', 'Worldgen']));
+    expect(
+      headings.filter((text) => text?.includes('worldgen') || text?.includes('dimension')),
+    ).toEqual([]);
+    const worldgen = within(region).getByRole('region', { name: 'demo Worldgen' });
+    const rows = within(worldgen).getAllByRole('button', { name: /^demo:/ });
+    expect(rows.map((row) => row.textContent)).toEqual([
+      'dimensionsky',
+      'biomeplains_plus',
+      'template_poolvillage/start',
+    ]);
+    const structures = within(region).getByRole('region', { name: 'demo Structures' });
+    expect(within(structures).getByRole('button', { name: 'demo:hut' }).textContent).toBe('hut');
+    const tags = within(region).getByRole('region', { name: 'demo Tags' });
+    expect(within(tags).getByRole('button', { name: 'demo:biomes' }).textContent).toBe(
+      'worldgen/biomebiomes',
+    );
+  });
+});

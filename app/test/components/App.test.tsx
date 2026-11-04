@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { createMemoryFileSystem } from '@msm/core';
 import type { Plugin } from '@msm/plugin-api';
+import { structureTemplateToNbt, writeNbt } from '@msm/plugin-structures';
 import { builtInTargets, targetById } from '@msm/targets';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -147,6 +148,10 @@ interface Harness {
   openedRecent: string[];
   /** Sends "Open Recent" from the application menu. */
   menuOpenRecent(root: string): Promise<void>;
+  /** What the "pick files" dialog returns. */
+  pickedFiles: { name: string; path: string; data: Uint8Array }[];
+  /** The folder of every export folder write. */
+  writtenFolders: string[];
 }
 
 async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise<Harness> {
@@ -175,6 +180,8 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
     targetMissing: false,
     recent: [],
     openedRecent: [],
+    pickedFiles: [],
+    writtenFolders: [],
     menu: async (command) => {
       await act(async () => listener?.(command));
     },
@@ -190,7 +197,7 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
           ? harness.pickedDirectory
           : '/projects/demo',
       confirmDiscard: async () => true,
-      pickFiles: unavailable,
+      pickFiles: async () => harness.pickedFiles,
       saveFile: async ({ defaultName }) => {
         harness.saved.push({ defaultName });
         return `/exports/${defaultName}`;
@@ -275,6 +282,7 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
         return '/exports/both';
       },
       writeFiles: async (folder, files) => {
+        harness.writtenFolders.push(folder);
         harness.written.push(...files.map((file) => file.name));
         return { paths: files.map((file) => `${folder}/${file.name}`) };
       },
@@ -529,6 +537,55 @@ describe('App menu commands', () => {
     expect(
       harness.session.snapshot.project?.namespaces[0]?.elements.some((e) => e.id === 'demo:greet'),
     ).toBe(true);
+  });
+});
+
+describe('App structure import and exports', () => {
+  it('imports a structure through the dialog, then exports it as .nbt and .schem', async () => {
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    harness.pickedFiles = [
+      {
+        name: 'Hut.nbt',
+        path: '/picked/Hut.nbt',
+        data: writeNbt(
+          structureTemplateToNbt(
+            { size: [1, 1, 1], palette: ['minecraft:stone'], blocks: [[0, 0, 0, 0]] },
+            defaultTarget.dataVersion,
+          ),
+        ),
+      },
+    ];
+    await harness.menu('importStructure');
+    const dialog = await screen.findByTestId('import-files-dialog');
+    expect(within(dialog).getByTestId('import-files-importers').textContent).toContain(
+      'Sponge schematic (.schem)',
+    );
+    await user.click(within(dialog).getByRole('button', { name: 'Choose files…' }));
+    await toast('Imported 1 element(s) into demo.');
+    expect(screen.queryByTestId('import-files-dialog')).toBeNull();
+    expect(useUiStore.getState().selectedId).toBe('demo:hut');
+    expect(harness.session.snapshot.undoLabel).toBe('Import 1 file');
+
+    await act(() => harness.session.flushValidation());
+    await harness.menu('exportStructures');
+    await toast('Exported 1 structure file(s) to /exports/both.');
+    await harness.menu('exportSchematics');
+    await toast('Exported 1 schematic(s) to /exports/both.');
+    expect(harness.written).toEqual(['demo/hut.nbt', 'demo/hut.schem']);
+    expect(harness.writtenFolders).toEqual(['/exports/both', '/exports/both']);
+  });
+
+  it('says when there are no structures to export and offers the commands in the palette', async () => {
+    const harness = await renderApp();
+    await harness.menu('exportStructures');
+    await toast('The project has no structure templates to export.');
+    expect(harness.picks).toBe(0);
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    for (const id of ['importStructure', 'exportStructures', 'exportSchematics']) {
+      expect(within(palette).getByTestId(`command-${id}`)).toBeTruthy();
+    }
   });
 });
 

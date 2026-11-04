@@ -83,6 +83,15 @@ export interface ToolbarProps {
   onExportDataZip?(): void;
   /** Exports both packs into a folder. */
   onExportCombined?(): void;
+  /**
+   * Why the structure exports ("More exports") are disabled, or `null` when they are
+   * enabled.
+   */
+  structureExportDisabledReason?: string | null;
+  /** Exports every structure template as `.nbt` into a folder. */
+  onExportStructures?(): void;
+  /** Exports every structure template as a Sponge schematic (`.schem`) into a folder. */
+  onExportSchematics?(): void;
   /** Installs the resource pack into the resourcepacks folder. */
   onInstall?(): void;
   /** Installs the data pack into a world (the host shows the world picker). */
@@ -216,6 +225,8 @@ function ToolMenu(props: {
   /** Content shown above the entries (the Install menu's target). */
   header?: ReactNode;
   entries: readonly MenuEntry[];
+  /** A submenu after the entries (the Export menu's "More exports"). */
+  more?: { label: string; testId: string; entries: readonly MenuEntry[] };
 }) {
   return (
     <DropdownMenu.Root modal={false}>
@@ -254,6 +265,43 @@ function ToolMenu(props: {
               </DropdownMenu.Item>
             );
           })}
+          {props.more !== undefined && (
+            <>
+              <DropdownMenu.Separator className="my-0.5 h-px bg-border" />
+              <DropdownMenu.Sub>
+                <DropdownMenu.SubTrigger
+                  data-testid={props.more.testId}
+                  className={`${menuItemClass} flex-row items-center justify-between`}
+                >
+                  {props.more.label}
+                  <ChevronRight size={14} aria-hidden />
+                </DropdownMenu.SubTrigger>
+                <DropdownMenu.Portal>
+                  <DropdownMenu.SubContent sideOffset={4} className={menuContentClass}>
+                    {props.more.entries.map((entry) => (
+                      <DropdownMenu.Item
+                        key={entry.testId}
+                        data-testid={entry.testId}
+                        disabled={entry.reason !== null || entry.onSelect === undefined}
+                        className={menuItemClass}
+                        onSelect={() => entry.onSelect?.()}
+                      >
+                        <span>{entry.label}</span>
+                        {entry.reason !== null && (
+                          <span
+                            className="text-xs text-muted"
+                            data-testid={`${entry.testId}-reason`}
+                          >
+                            {entry.reason}
+                          </span>
+                        )}
+                      </DropdownMenu.Item>
+                    ))}
+                  </DropdownMenu.SubContent>
+                </DropdownMenu.Portal>
+              </DropdownMenu.Sub>
+            </>
+          )}
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
@@ -405,6 +453,7 @@ export function Toolbar(props: ToolbarProps) {
   const dataExportReason = props.dataExportDisabledReason ?? null;
   const combinedReason = props.combinedExportDisabledReason ?? dataExportReason;
   const dataInstallReason = props.dataInstallDisabledReason ?? null;
+  const structureReason = props.structureExportDisabledReason ?? null;
   const busy = props.exporting === true;
   const busyReason = busy ? 'An export is running.' : null;
   const primaryIsData = props.primaryExport === 'data';
@@ -566,6 +615,24 @@ export function Toolbar(props: ToolbarProps) {
             onSelect: props.onExportCombined,
           },
         ]}
+        more={{
+          label: 'More exports',
+          testId: 'export-more',
+          entries: [
+            {
+              label: 'Structures (.nbt) into a folder…',
+              testId: 'export-structures',
+              reason: busyReason ?? structureReason,
+              onSelect: props.onExportStructures,
+            },
+            {
+              label: 'Structures as Sponge schematics (.schem)…',
+              testId: 'export-schematics',
+              reason: busyReason ?? structureReason,
+              onSelect: props.onExportSchematics,
+            },
+          ],
+        }}
       />
       <ToolMenu
         label="Install"

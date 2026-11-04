@@ -29,20 +29,57 @@ const TAG_KIND_PREFIX = 'minecraft:tag/';
 /** The heading tag kinds are grouped under. */
 export const TAGS_GROUP = 'Tags';
 
+/** The heading worldgen kinds (`minecraft:worldgen/<registry>`, dimensions) are grouped under. */
+export const WORLDGEN_GROUP = 'Worldgen';
+
+/** The heading structure templates are grouped under. */
+export const STRUCTURES_GROUP = 'Structures';
+
+const WORLDGEN_KIND_PREFIX = 'minecraft:worldgen/';
+const DIMENSION_KIND = 'minecraft:dimension';
+const STRUCTURE_TEMPLATE_KIND = 'minecraft:structure_template';
+
 /** The registry of a tag kind (`item` for `minecraft:tag/item`), or `undefined`. */
 export function tagRegistryOf(kind: string): string | undefined {
   return kind.startsWith(TAG_KIND_PREFIX) ? kind.slice(TAG_KIND_PREFIX.length) : undefined;
 }
 
 /**
+ * The registry shown before the name in the {@link WORLDGEN_GROUP} group (`biome` for
+ * `minecraft:worldgen/biome`, `dimension` for `minecraft:dimension`), or `undefined` for other
+ * kinds.
+ */
+export function worldgenRegistryOf(kind: string): string | undefined {
+  if (kind.startsWith(WORLDGEN_KIND_PREFIX)) return kind.slice(WORLDGEN_KIND_PREFIX.length);
+  return kind === DIMENSION_KIND ? 'dimension' : undefined;
+}
+
+/** The sidebar group of a kind: a shared heading, or the kind id itself. */
+export function groupOf(kind: string): string {
+  if (tagRegistryOf(kind) !== undefined) return TAGS_GROUP;
+  if (worldgenRegistryOf(kind) !== undefined) return WORLDGEN_GROUP;
+  if (kind === STRUCTURE_TEMPLATE_KIND) return STRUCTURES_GROUP;
+  return kind;
+}
+
+/** The registry shown before an element's name in its group, or `undefined`. */
+function rowRegistry(group: string, kind: string): string | undefined {
+  if (group === TAGS_GROUP) return tagRegistryOf(kind);
+  if (group === WORLDGEN_GROUP) return worldgenRegistryOf(kind);
+  return undefined;
+}
+
+/**
  * Groups a namespace's elements by kind, kinds and elements in id order. Every tag kind
- * (`minecraft:tag/<registry>`) goes into one {@link TAGS_GROUP} group, ordered by registry
- * and then id.
+ * (`minecraft:tag/<registry>`) goes into one {@link TAGS_GROUP} group, every worldgen kind
+ * (`minecraft:worldgen/<registry>` and `minecraft:dimension`) into one
+ * {@link WORLDGEN_GROUP} group, and structure templates into {@link STRUCTURES_GROUP}; shared
+ * groups are ordered by kind and then id.
  */
 export function groupByKind(namespace: Namespace): [kind: string, elements: Element[]][] {
   const groups = new Map<string, Element[]>();
   for (const element of namespace.elements) {
-    const key = tagRegistryOf(element.kind) === undefined ? element.kind : TAGS_GROUP;
+    const key = groupOf(element.kind);
     const group = groups.get(key);
     if (group === undefined) groups.set(key, [element]);
     else group.push(element);
@@ -66,7 +103,7 @@ const emptyClass = 'px-1 py-0.5 text-muted';
 function ElementRow(props: {
   element: Element;
   selected: boolean;
-  /** The tag's registry, shown before the name in the "Tags" group. */
+  /** The registry shown before the name in the "Tags" and "Worldgen" groups. */
   tagRegistry?: string | undefined;
   onSelect(id: ResourceLocation): void;
   onRemove(id: ResourceLocation): void;
@@ -130,7 +167,7 @@ function NamespaceSection(props: {
                   key={element.id}
                   element={element}
                   selected={element.id === props.selectedId}
-                  tagRegistry={kind === TAGS_GROUP ? tagRegistryOf(element.kind) : undefined}
+                  tagRegistry={rowRegistry(kind, element.kind)}
                   onSelect={props.onSelect}
                   onRemove={props.onRemove}
                 />
