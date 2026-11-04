@@ -1,0 +1,91 @@
+/**
+ * Shared launcher for the Electron e2e tests. Every launch gets its own temporary `MSM_HOME`,
+ * user-data folder, project folder and export folder, so tests never share state with each
+ * other or with a running instance of the app.
+ *
+ * @packageDocumentation
+ */
+
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { _electron, type ElectronApplication, type Page } from 'playwright/test';
+
+/** The `app/` folder. */
+export const appDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+/** Where tests write screenshots (uploaded by CI on failure). */
+export const outputDir = join(appDir, 'e2e', 'output');
+
+/** A running app plus the temporary folders it uses. */
+export interface LaunchedApp {
+  app: ElectronApplication;
+  window: Page;
+  /** `MSM_E2E_PROJECT_DIR`: returned by every "pick directory" dialog. */
+  projectDir: string;
+  /** `MSM_E2E_OUT_DIR`: "save file" dialogs write here. */
+  outDir: string;
+  /** `MSM_HOME`: settings and the asset cache. */
+  msmHome: string;
+  /** Closes the app (killing it if it does not exit) and removes the temporary folders. */
+  close(): Promise<void>;
+}
+
+export interface LaunchOptions {
+  /** Files returned by "pick files" dialogs (`MSM_E2E_PICK_FILES`). */
+  pickFiles?: readonly string[];
+  /** Reuse folders from an earlier launch (for reopen tests); they are then not removed. */
+  reuse?: Pick<LaunchedApp, 'projectDir' | 'outDir' | 'msmHome'>;
+}
+
+const CLOSE_TIMEOUT_MS = 10_000;
+
+/** Launches the built app (`out/main/index.js`) in e2e mode. */
+export async function launchApp(options: LaunchOptions = {}): Promise<LaunchedApp> {
+  const temp = mkdtempSync(join(tmpdir(), 'msm-e2e-'));
+  const projectDir = options.reuse?.projectDir ?? join(temp, 'project');
+  const outDir = options.reuse?.outDir ?? join(temp, 'out');
+  const msmHome = options.reuse?.msmHome ?? join(temp, 'msm-home');
+  const userData = join(temp, 'user-data');
+  for (const dir of [projectDir, outDir, msmHome, userData]) mkdirSync(dir, { recursive: true });
+
+  const env: Record<string, string> = {};
+  for (const [key, value] of Object.entries(process.env)) {
+    if (value !== undefined && key !== 'MSM_SMOKE' && key !== 'ELECTRON_RENDERER_URL') {
+      env[key] = value;
+    }
+  }
+  env.MSM_E2E_PROJECT_DIR = projectDir;
+  env.MSM_E2E_OUT_DIR = outDir;
+  env.MSM_HOME = msmHome;
+  const delimiter = process.platform === 'win32' ? ';' : ':';
+  if (options.pickFiles !== undefined) env.MSM_E2E_PICK_FILES = options.pickFiles.join(delimiter);
+
+  const app = await _electron.launch({
+    args: [appDir, '--no-sandbox', `--user-data-dir=${userData}`],
+    cwd: appDir,
+    env,
+    timeout: 30_000,
+  });
+  const window = await app.firstWindow({ timeout: 30_000 });
+
+  return {
+    app,
+    window,
+    projectDir,
+    outDir,
+    msmHome,
+    async close() {
+      const child = app.process();
+      let timer: NodeJS.Timeout | undefined;
+      const timedOut = new Promise<'timeout'>((settle) => {
+        timer = setTimeout(() => settle('timeout'), CLOSE_TIMEOUT_MS);
+      });
+      const result = await Promise.race([app.close().then(() => 'closed' as const), timedOut]);
+      clearTimeout(timer);
+      if (result === 'timeout' && child.exitCode === null) child.kill('SIGKILL');
+      rmSync(temp, { recursive: true, force: true });
+    },
+  };
+}

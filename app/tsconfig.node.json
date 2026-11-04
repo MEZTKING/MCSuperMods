@@ -11,9 +11,13 @@
     "src/preload",
     "src/shared",
     "src/renderer/src/session/project-session.ts",
+    "src/renderer/src/session/asset-files.ts",
+    "src/renderer/src/session/element-defaults.ts",
+    "src/renderer/src/session/schema-context.ts",
     "src/renderer/src/plugins",
     "electron.vite.config.ts",
     "vitest.config.ts",
+    "e2e",
     "test"
   ],
   "exclude": ["test/components"],

@@ -1,0 +1,47 @@
+# Release builds (ADR 0013). Windows only for now (user decision, 2026-11-04): an unsigned
+# NSIS x64 installer. The Linux `dir` build is a verification target for CI, not a release
+# artefact, and macOS is out of scope.
+#
+# Runs on `v*` tags and manually. No tag is pushed until the licence is decided
+# (DESIGN Open Question 10). Action versions: verify at implementation.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    env:
+      CI: true
+      # Unsigned until the user supplies signing credentials.
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm --filter @msm/app dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MCSuperMods-windows
+          path: |
+            app/dist/*.exe
+            app/dist/*.blockmap
+          if-no-files-found: error
+      - if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            app/dist/*.exe
+            app/dist/*.blockmap

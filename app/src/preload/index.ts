@@ -87,6 +87,8 @@ const bridge: MsmBridge = {
   smokeReady() {
     ipcRenderer.send(EventChannels.smokeReady);
   },
+  // The sandboxed preload sees the environment the main process was started with.
+  isSmoke: process.env.MSM_SMOKE === '1',
 };
 
 contextBridge.exposeInMainWorld('msm', bridge);

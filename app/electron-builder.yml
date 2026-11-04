@@ -1,0 +1,47 @@
+# electron-builder configuration (ADR 0013, plan D8).
+# electron-vite bundles main, preload and renderer into `out/`, so every app dependency is a
+# devDependency and the packaged app collects no node_modules.
+appId: dev.mcsupermods.app
+productName: MCSuperMods
+executableName: mcsupermods
+asar: true
+npmRebuild: false
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**
+  - package.json
+artifactName: ${productName}-${version}-${os}-${arch}.${ext}
+
+# Release target: Windows installer, unsigned until the user supplies signing credentials.
+win:
+  icon: build/icon.png
+  target:
+    - target: nsis
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+
+# Linux `dir` is the local and CI verification build only (packaged smoke runs on Linux).
+# It is not published.
+linux:
+  icon: build/icon.png
+  category: Development
+  target:
+    - dir
+
+# macOS is out of scope for now (user decision, 2026-11-04).
+
+# Publishing is done by .github/workflows/release.yml, not by electron-builder.
+publish: null
+# Auto-update is deferred (DESIGN Open Question 4). When it is adopted, the natural option is
+# electron-updater with the GitHub provider, replacing `publish: null` above with:
+# publish:
+#   provider: github
+#   owner: MEZTKING
+#   repo: MCSuperMods
+#   releaseType: draft

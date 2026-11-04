@@ -126,4 +126,9 @@ export interface MsmBridge extends PlatformAdapter {
   setDirty(dirty: boolean): void;
   /** Tells the main process the renderer has rendered (smoke mode). */
   smokeReady(): void;
+  /**
+   * `true` when the app runs in smoke mode (`MSM_SMOKE=1`). The renderer then sets
+   * `window.msmNoMonaco` so headless smoke runs skip Monaco. Optional so test doubles may omit it.
+   */
+  readonly isSmoke?: boolean;
 }

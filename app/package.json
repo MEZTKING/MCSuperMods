@@ -13,7 +13,8 @@
     "dist": "electron-builder --publish never",
     "dist:dir": "electron-builder --dir --publish never",
     "e2e": "playwright test -c e2e/playwright.config.ts",
-    "smoke:packaged": "node scripts/smoke-packaged.mjs"
+    "smoke:packaged": "node scripts/smoke-packaged.mjs",
+    "make-icon": "node scripts/make-icon.mjs"
   },
   "devDependencies": {
     "@msm/core": "workspace:*",
