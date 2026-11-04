@@ -56,17 +56,20 @@ More in [Users and Personas](docs/DESIGN.md#2-users-and-personas).
 
 ## Development
 
-Coming in Phase 0. Planned commands (not yet wired):
+Requires Node 22.18 or later (see `.nvmrc`) and pnpm 10.28.0 via corepack.
 
 ```sh
+corepack enable                     # use the pinned pnpm
 pnpm i                              # install dependencies
 pnpm dev                            # run the desktop app
+pnpm lint                           # Biome check plus the dependency-direction check
+pnpm typecheck                      # tsc -b over all project references
 pnpm test                           # unit tests (Vitest)
-pnpm lint                           # Biome lint and format check
-pnpm build                          # build all packages and the app
-cd engine-mod && ./gradlew build    # build the msm_runtime Fabric mod
-./gradlew runClient                 # launch a dev Minecraft client
+pnpm build                          # build the app
+pnpm --filter @msm/core test        # tests for one package
 ```
+
+Vendored Minecraft data is refreshed only by `tools/sync-mcdoc` and `tools/sync-mcmeta`; each has a README with its arguments. The `msm_runtime` engine mod (`cd engine-mod && ./gradlew build`) arrives in Phase 4.
 
 Planned stack: Electron + TypeScript + React for the app; Fabric + Java 25 for the runtime mod. See [Tech Stack](docs/DESIGN.md#14-tech-stack) and [Repository Layout](docs/DESIGN.md#15-repository-layout).
 

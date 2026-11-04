@@ -1,46 +1,43 @@
 # packages/schemas — Schema system (mcdoc)
 
-No code yet; this directory is planned for Phase 0. This file describes intent and conventions.
+Phase 0 code exists: symbol-export parsing, version gating, `SchemaNode` normalisation.
 
 ## Purpose
 
-`@msm/schemas` is the only package that talks to Spyglass. It wraps `@spyglassmc/core`, `@spyglassmc/mcdoc` and `@spyglassmc/java-edition`, loads the pinned `vanilla-mcdoc` for each target, adds the MSM mcdoc extensions, loads mcmeta registries for autocomplete, and normalises schemas into a form model that editors consume.
+`@msm/schemas` turns vanilla-mcdoc (and later MSM mcdoc extensions) into MSM's own `SchemaNode` model that editors consume. It is the only package that will talk to Spyglass. In Phase 0 it has no Spyglass runtime dependency: it consumes the mcdoc-cli symbol export that the target package vendors and the caller injects (ADR 0005). Phase 1 adds `@spyglassmc/core`, `mcdoc` and `java-edition` for validation.
 
-## Contents (planned)
+## Contents
 
-- `src/spyglass/`: adapter over `@spyglassmc/*` (versions pinned).
-- `src/vanilla/`: resolves the `vanilla-mcdoc` git ref declared by each target.
-- `mcdoc/msm/`: MSM mcdoc extensions (components, events, actions, MSM kinds).
-- `src/registries/`: mcmeta registry loader and cache in `~/.msm/cache/`.
-- `src/form/`: schema → `SchemaNode` form-model normaliser.
-- `test/`: conformance tests, one per MSM mcdoc file.
+- `src/symbols/`: raw export types and `parseVanillaMcdocSymbols` (shape validation).
+- `src/version/`: game-version comparison and `since`/`until` range checks.
+- `src/form/schema-node.ts`: the `SchemaNode` model (struct, list, string, number, boolean, enum, literal, union, reference, dispatcher, any, unsupported).
+- `src/form/normalise.ts`, `src/form/index-builder.ts`: `createSchemaIndex(symbols, { mcVersion })`, lazy and memoised.
+- Later: `mcdoc/msm/` (MSM extensions), registry loading, Spyglass adapter.
 
 ## Conventions
 
-- Spyglass types never leak past this package; export our own `SchemaNode` model.
-- One `vanilla-mcdoc` git ref per target, declared in `packages/targets` and resolved here.
-- `tools/sync-mcdoc` updates vendored copies; never edit vendored files by hand.
-- MSM mcdoc files are the single source of truth for components and events. The app editors and the `engine-mod` codegen (Phase 4) both consume them.
-- Depends only on `@msm/plugin-api`.
+- Spyglass types never leak past this package; export only our own model.
+- Never read files or name a Minecraft version; data and `mcVersion` come from the target by injection.
+- Version gating is mandatory: one vanilla-mcdoc tree spans many versions; filter types, fields, members and dispatcher entries by `since`/`until`.
+- A map-like struct (`[string]: T`) is a field with key `'*'`, always optional.
+- Dispatcher keys are unprefixed; `dispatch()` also accepts `minecraft:`-prefixed keys. Static keywords are stored as `%unknown` / `%fallback`.
+- `template` and `concrete` (generics) normalise to `unsupported` in Phase 0; modelling them is Phase 1 work.
+- Depends only on `@msm/plugin-api`. JSDoc examples stay version-neutral (check-deps).
 
 ## Do / Don't
 
-- Do write a conformance test for every MSM mcdoc file.
+- Do write a conformance test for every MSM mcdoc file once they exist.
 - Do keep the Spyglass surface small so a fallback mcdoc reader stays possible.
 - Don't hand-write JSON Schema duplicates of mcdoc definitions.
-- Don't hardcode a Minecraft version; take it from the target.
-- Append an entry to `docs/DEVLOG.md` each session.
+- Don't edit vendored data; `tools/sync-mcdoc` regenerates it in `packages/targets`.
 
-## Commands (planned)
-
-Not yet wired (Phase 0).
+## Commands
 
 - `pnpm --filter @msm/schemas test`
-- `pnpm --filter @msm/schemas build`
-- `tools/sync-mcdoc` (refresh vendored `vanilla-mcdoc`)
+- `pnpm --filter @msm/target-mc-26.3 test` (loads the real 26.3 export through this package)
 
 ## Read next
 
 - [DESIGN §6 Schema System (mcdoc)](../../docs/DESIGN.md#6-schema-system-mcdoc)
 - [DESIGN §11 Behaviour Model (Components and Events)](../../docs/DESIGN.md#11-behaviour-model-components-and-events)
-- [ROADMAP, Phase 0](../../docs/ROADMAP.md)
+- [ADR 0005](../../docs/adr/0005-vanilla-mcdoc-pinning-and-loading.md), [ROADMAP](../../docs/ROADMAP.md)

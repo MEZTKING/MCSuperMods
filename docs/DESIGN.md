@@ -208,6 +208,7 @@ The kind-folder is declared by the element kind: `recipe/` for `minecraft:recipe
 - Two-space indentation, keys sorted on save, trailing newline. Sorted keys give stable diffs regardless of edit order.
 - Binary assets are never inlined into JSON.
 - `.msm/` is a disposable cache; deleting it never loses work.
+- Format version 1 is closed: unknown fields in `msm.project.json` and in element files are dropped on load. Elements whose kind no plugin registers are kept and round-trip losslessly; they are saved under `content/<namespace>/_unknown/<kind namespace>/<kind path>/`.
 
 ### Migrations
 
@@ -215,15 +216,15 @@ The project and each element carry `formatVersion`; `@msm/core` runs append-only
 
 ## 6. Schema System (mcdoc)
 
-We do not hand-write schemas. Vanilla file formats are described by **mcdoc**, the schema language maintained by the Spyglass project, and `SpyglassMC/vanilla-mcdoc` tracks every Minecraft release and snapshot (a `26.3.0` tag exists).
+We do not hand-write schemas. Vanilla file formats are described by **mcdoc**, the schema language maintained by the Spyglass project, and `SpyglassMC/vanilla-mcdoc` tracks every Minecraft release and snapshot. It is pinned by commit sha; the repository has no release tags. One tree describes many game versions through `#[since]` and `#[until]` attributes, so `@msm/schemas` filters every schema by the target's `mcVersion` ([ADR 0005](adr/0005-vanilla-mcdoc-pinning-and-loading.md)).
 
 ### Libraries
 
-`@msm/schemas` wraps `@spyglassmc/core`, `@spyglassmc/mcdoc` and `@spyglassmc/java-edition`, used as libraries. Spyglass types never leak past `@msm/schemas`; it exports our own `SchemaNode` model. This insulates the rest of the codebase from Spyglass internal API changes (section 17).
+`@msm/schemas` wraps `@spyglassmc/core`, `@spyglassmc/mcdoc` and `@spyglassmc/java-edition`, used as libraries. Spyglass types never leak past `@msm/schemas`; it exports our own `SchemaNode` model. This insulates the rest of the codebase from Spyglass internal API changes (section 17). Phase 0 consumes the mcdoc-cli symbol export, vendored in the target package and injected into `@msm/schemas`; Phase 1 adds the Spyglass `Service` for validation ([ADR 0005](adr/0005-vanilla-mcdoc-pinning-and-loading.md)).
 
 ### Pins and extensions
 
-- Each target declares one `vanilla-mcdoc` git ref. `@msm/schemas` resolves it; `tools/sync-mcdoc` updates the vendored copy.
+- Each target declares one `vanilla-mcdoc` commit sha (`mcdocRef`). `tools/sync-mcdoc` regenerates the vendored symbol export in the target package; `@msm/schemas` receives it by injection.
 - MSM's own kinds, components, events and actions are described in **MSM mcdoc files** under `packages/schemas/mcdoc/msm/`. These are the single source of truth: the app uses them for forms and validation, and the engine mod's definition parsing is generated from or aligned with them (Phase 4).
 
 ### Schema to form generation
@@ -246,7 +247,7 @@ Anything the generator cannot render falls back to an inline JSON editor for tha
 
 ### Registries and autocomplete
 
-`misode/mcmeta` publishes per-version registries, block states and summaries. Each target pins an mcmeta ref (branch names: verify at implementation). `@msm/schemas` loads registries for the active target and merges them with ids defined in the project, feeding autocomplete and reference validation.
+`misode/mcmeta` publishes per-version registries, block states and summaries. Each target pins an mcmeta version prefix, resolved to the tags `<version>-summary` and `<version>-registries`; `tools/sync-mcmeta` vendors the summary data in the target package ([ADR 0006](adr/0006-mcmeta-refs.md)). `@msm/schemas` loads registries for the active target and merges them with ids defined in the project, feeding autocomplete and reference validation.
 
 ### Caching
 
@@ -344,14 +345,19 @@ interface Target {
   id: string;                 // "mc-26.3"
   mcVersion: string;          // "26.3"
   java: number;               // 25
-  packFormats: { resource: number; data: number };   // (verify at implementation)
-  mcdocTag: string;           // vanilla-mcdoc ref, e.g. "26.3.0"
-  mcmetaRef: string;          // misode/mcmeta ref (verify at implementation)
-  fabric: { loader: string; api: string; loom: string };   // (verify at implementation)
-  geckolib?: string;          // 5.5+ line; 26.3 build (verify at implementation)
+  packFormats: { resource: PackFormat; data: PackFormat };
+  // 26.3: resource 97.1, data 121.0 (verified 2026-11-04)
+  mcdocRef: string;           // vanilla-mcdoc commit sha
+  mcmetaRef: string;          // misode/mcmeta version prefix, e.g. "26.3"
+  fabric?: { loader: string; api: string; loom: string };   // required from Phase 4 (verify at implementation)
+  geckolib?: string;          // required from Phase 5; 5.5+ line (verify at implementation)
   migrateFrom?(previous: Target, project: Project): MigrationReport;
 }
+
+type PackFormat = { major: number; minor: number };
 ```
+
+The `Target` interface and the shared IR types it refers to live in `@msm/plugin-api` ([ADR 0008](adr/0008-ir-types-in-plugin-api.md)).
 
 Support policy: the current release (26.3) and the previous one (26.2) at launch; snapshots are best-effort.
 
@@ -551,7 +557,7 @@ We use **Electron**, not Tauri.
 
 | Choice | Why |
 |---|---|
-| Electron (current stable; verify at implementation) | One language end to end; Chromium guarantees WebGL2 for the 3D preview (Tauri on Linux uses WebKitGTK, where WebGL is unreliable); Blockbench is Electron. |
+| Electron 45 line (verified 2026-11-04; [ADR 0001](adr/0001-electron-over-tauri.md), [ADR 0004](adr/0004-phase0-toolchain.md)) | One language end to end; Chromium guarantees WebGL2 for the 3D preview (Tauri on Linux uses WebKitGTK, where WebGL is unreliable); Blockbench is Electron. |
 | electron-vite, electron-builder | Build/HMR; Win/macOS/Linux packaging with asar. Auto-update deferred. |
 | React 19 + TypeScript (strict), Zustand | Mainstream and typed; Zustand for UI-only state. |
 | Immer + RFC 6902 patches | Command stack and undo/redo in `@msm/core`. |
@@ -565,9 +571,9 @@ We use **Electron**, not Tauri.
 | Choice | Why |
 |---|---|
 | pnpm workspaces + Turborepo | Fast installs, task caching. |
-| TypeScript project references, tsup | Enforce dependency direction; build library packages. |
+| TypeScript project references; tsup only when publishing `@msm/plugin-api` | Enforce dependency direction; internal packages are consumed from source ([ADR 0004](adr/0004-phase0-toolchain.md)). |
 | Vitest, Biome | Fast tests with golden snapshots; lint and format in one tool. |
-| Node current LTS (verify at implementation) | Tooling runtime; Electron bundles its own. |
+| Node 22 (maintenance LTS) in Phase 0, moving to the active LTS in Phase 1 ([ADR 0004](adr/0004-phase0-toolchain.md)) | Tooling runtime; Electron bundles its own. |
 
 No Changesets: one developer, one version.
 
@@ -585,7 +591,7 @@ No Changesets: one developer, one version.
 
 ### PlatformAdapter boundary
 
-All OS access (filesystem, processes, zip, dialogs, Minecraft discovery and launch) goes through a single `PlatformAdapter` interface implemented in `app/main/`. Renderer code and packages never call Node or Electron APIs directly. This keeps `@msm/core` testable and leaves a Tauri port possible.
+All OS access (filesystem, processes, zip, dialogs, Minecraft discovery and launch) goes through a single `PlatformAdapter` interface implemented in `app/main/`. Renderer code and packages never call Node or Electron APIs directly. This keeps `@msm/core` testable and leaves a Tauri port possible. `@msm/core` runs in the renderer; the main process implements the adapter and exposes it through a preload bridge with validated, versioned IPC channels ([ADR 0007](adr/0007-renderer-hosted-core-and-platform-adapter.md)).
 
 ### Bundle budget
 
@@ -615,7 +621,7 @@ MCSuperMods/
 │   └── interop/     CLAUDE.md    # @msm/interop
 ├── engine-mod/                   # msm_runtime (Fabric, Java 25)
 │   └── CLAUDE.md
-└── tools/                        # sync-mcdoc, sync-mcmeta, new-plugin
+└── tools/                        # check-deps, sync-mcdoc, sync-mcmeta, new-plugin
 ```
 
 Built-in plugins under `packages/plugins/`: `resourcepack/`, `datapack/`, `structures/`, `worldgen/`, `blocks-items/`, `entities/`, `models-anim/`, `scripting/`. Each is its own npm package `@msm/plugin-<name>` and depends only on `@msm/plugin-api` and `@msm/schemas`.
@@ -626,7 +632,7 @@ Built-in plugins under `packages/plugins/`: `resourcepack/`, `datapack/`, `struc
 plugin-api  <-  schemas  <-  core  <-  plugins / exporters / targets / interop  <-  app
 ```
 
-`@msm/plugin-api` depends on nothing internal. The direction is enforced by TypeScript project references and Biome import rules; a reverse import fails CI.
+`@msm/plugin-api` depends on nothing internal. The direction is enforced by TypeScript project references, Biome import rules and `tools/check-deps`, which checks every workspace `package.json` against a layer map and flags version literals outside `packages/targets`; it runs in `pnpm lint`, so a reverse import fails CI.
 
 ### Naming
 
@@ -671,8 +677,11 @@ CI runs from Phase 0: Biome, type checks and unit tests on every push.
 4. **Auto-update provider:** which update channel electron-builder publishes to (GitHub Releases or other).
 5. **Plugin sandbox mechanism:** `isolated-vm` versus an Electron utility process for third-party plugins.
 6. **NeoForge:** whether to add a NeoForge target in 1.x.
-7. **mcmeta branch naming:** which `misode/mcmeta` branches or refs to pin per target (verify at implementation).
-8. **Electron version:** which stable Electron line to start on (verify at implementation).
+7. **mcmeta branch naming:** which `misode/mcmeta` branches or refs to pin per target. Resolved: see [ADR 0006](adr/0006-mcmeta-refs.md).
+8. **Electron version:** which stable Electron line to start on. Resolved: see [ADR 0001](adr/0001-electron-over-tauri.md) and [ADR 0004](adr/0004-phase0-toolchain.md).
+9. **Save-time data loss:** load skips element files that fail to parse or validate, and save deletes `content/**/*.json` files it did not write, so saving after a failed load can delete the skipped files. Phase 0 mitigation: the app refuses to save while error-severity problems exist. The permanent fix is decided in Phase 1.
+10. **Licence:** MIT is proposed for the app and `@msm/plugin-api`; awaiting the user's decision. No `LICENSE` file exists yet.
+11. **Toolchain upgrades:** when to move from pnpm 10 to pnpm 12 and `.nvmrc` from Node 22 to Node 24 (Phase 1 at the latest; [ADR 0004](adr/0004-phase0-toolchain.md)).
 
 Resolved questions become ADRs in `docs/adr/` and update this document.
 

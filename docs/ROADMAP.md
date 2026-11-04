@@ -34,18 +34,18 @@ Stand up the monorepo and the three foundation packages, prove that a project ca
 
 ### Deliverables
 
-- [ ] Root tooling: `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `biome.json`, `tsconfig.base.json` with strict TypeScript and project references.
-- [ ] Dependency-direction check (`plugin-api` ← `schemas` ← `core` ← everything else) enforced in CI.
-- [ ] `@msm/plugin-api`: first cut of `Plugin`, `definePlugin`, `ElementKind`, `Target`, `Exporter`, `OutputFile` interfaces with `apiVersion` 0.x.
-- [ ] `@msm/core`: `Project` / `Namespace` / `Element` / `Asset` types, element kind registry, deterministic JSON serialiser (sorted keys, 2 spaces, trailing newline).
-- [ ] `@msm/core`: project load/save with `formatVersion` and an empty migrator chain; filesystem injected via an interface.
-- [ ] `@msm/core`: Immer-based command stack producing RFC 6902 patches, with undo/redo tests.
-- [ ] `@msm/schemas`: Spyglass adapter loading `vanilla-mcdoc` for 26.3 and exposing our own `SchemaNode` model.
-- [ ] `@msm/target-mc-26.3`: first target package with pack formats, mcdoc ref and mcmeta ref (verify at implementation).
-- [ ] `tools/sync-mcdoc` and `tools/sync-mcmeta` scripts.
+- [x] Root tooling: `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `biome.json`, `tsconfig.base.json` with strict TypeScript and project references.
+- [x] Dependency-direction check (`plugin-api` ← `schemas` ← `core` ← everything else) enforced in CI.
+- [x] `@msm/plugin-api`: first cut of `Plugin`, `definePlugin`, `ElementKind`, `Target`, `Exporter`, `OutputFile` interfaces with `apiVersion` 0.x.
+- [x] `@msm/core`: `Project` / `Namespace` / `Element` / `Asset` types, element kind registry, deterministic JSON serialiser (sorted keys, 2 spaces, trailing newline).
+- [x] `@msm/core`: project load/save with `formatVersion` and an empty migrator chain; filesystem injected via an interface.
+- [x] `@msm/core`: Immer-based command stack producing RFC 6902 patches, with undo/redo tests.
+- [x] `@msm/schemas`: Spyglass adapter loading `vanilla-mcdoc` for 26.3 and exposing our own `SchemaNode` model.
+- [x] `@msm/target-mc-26.3`: first target package with pack formats, mcdoc ref and mcmeta ref (verify at implementation).
+- [x] `tools/sync-mcdoc` and `tools/sync-mcmeta` scripts.
 - [ ] `@msm/app`: Electron shell (electron-vite, React 19) that creates, opens and saves a project through `PlatformAdapter`.
-- [ ] CI: install, Biome, typecheck, Vitest on every push.
-- [ ] First ADRs in `docs/adr/` (Electron over Tauri, hybrid architecture, Rhino for scripting).
+- [x] CI: install, Biome, typecheck, Vitest on every push.
+- [x] First ADRs in `docs/adr/` (Electron over Tauri, hybrid architecture, Rhino for scripting).
 
 ### Exit criteria
 
