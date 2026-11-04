@@ -67,6 +67,10 @@ export function installMenu(): void {
       label: 'View',
       submenu: [{ role: 'reload' }, { role: 'toggleDevTools' }],
     },
+    {
+      label: 'Help',
+      submenu: [{ label: 'Check for Updates…', click: () => send('checkForUpdates') }],
+    },
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }

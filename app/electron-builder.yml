@@ -21,7 +21,20 @@ win:
     - target: nsis
       arch:
         - x64
+  # Auto-update (ADR 0018): electron-updater with the GitHub provider. `pnpm dist` passes
+  # `--publish never`; the release workflow passes `--publish always`, which uploads the
+  # installer, its `.blockmap` and `latest.yml` to a draft release that the maintainer
+  # publishes by hand. The updater only sees published releases. The packaged app reads this
+  # configuration as `resources/app-update.yml`.
+  publish:
+    provider: github
+    owner: MEZTKING
+    repo: MCSuperMods
+    releaseType: draft
+# NSIS writes `latest.yml` and a differential `.blockmap` next to the installer whenever a
+# publish provider is configured.
 nsis:
+  differentialPackage: true
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
@@ -33,15 +46,7 @@ linux:
   category: Development
   target:
     - dir
+  # Never published, and the updater is inactive off Windows.
+  publish: null
 
 # macOS is out of scope for now (user decision, 2026-11-04).
-
-# Publishing is done by .github/workflows/release.yml, not by electron-builder.
-publish: null
-# Auto-update is deferred (DESIGN Open Question 4). When it is adopted, the natural option is
-# electron-updater with the GitHub provider, replacing `publish: null` above with:
-# publish:
-#   provider: github
-#   owner: MEZTKING
-#   repo: MCSuperMods
-#   releaseType: draft

@@ -13,7 +13,7 @@ import type { McfunctionChecker } from '../../src/renderer/src/session/mcfunctio
 import { ProjectSession } from '../../src/renderer/src/session/project-session';
 import { useUiStore } from '../../src/renderer/src/store/ui-store';
 import { NO_DATA_PACK_CONTENT } from '../../src/renderer/src/studios/export-state';
-import type { MenuCommand } from '../../src/shared/ipc-channels';
+import type { MenuCommand, UpdateStatus } from '../../src/shared/ipc-channels';
 import type { MsmBridge, PlatformAdapter, WorldInfo } from '../../src/shared/platform';
 
 /** Reports line 1 of any source containing `bogus` as a parse error. */
@@ -55,6 +55,10 @@ const unavailable = async (): Promise<never> => {
 
 interface Harness {
   menu(command: MenuCommand): Promise<void>;
+  /** What `updates.check()` resolves to. */
+  updateCheck: UpdateStatus;
+  /** Sends an update status to the renderer's subscribers. */
+  pushUpdate(status: UpdateStatus): void;
   session: ProjectSession;
   saved: { defaultName: string }[];
   worlds: WorldInfo[] | Error;
@@ -65,7 +69,14 @@ interface Harness {
 
 async function renderApp(): Promise<Harness> {
   let listener: ((command: MenuCommand) => void) | null = null;
+  const updateListeners = new Set<(status: UpdateStatus) => void>();
   const harness = {
+    updateCheck: { state: 'not-available' },
+    pushUpdate: (status: UpdateStatus) => {
+      act(() => {
+        for (const listener of updateListeners) listener(status);
+      });
+    },
     saved: [],
     worlds: [{ dir: 'Survival', name: 'Survival', lastModified: '2026-01-01T00:00:00.000Z' }],
     installs: [],
@@ -96,7 +107,11 @@ async function renderApp(): Promise<Harness> {
       },
     },
     settings: {
-      get: async () => ({ minecraftDir: null, detectedMinecraftDir: null }) as never,
+      get: async () => ({
+        minecraftDir: null,
+        updates: { autoCheck: true },
+        detectedMinecraftDir: null,
+      }),
       set: unavailable,
     },
     minecraft: {
@@ -131,6 +146,16 @@ async function renderApp(): Promise<Harness> {
       },
     },
     thumbnails: { get: unavailable },
+    updates: {
+      check: async () => harness.updateCheck,
+      install: async () => {
+        harness.installs.push('update');
+      },
+      onStatus: (listener) => {
+        updateListeners.add(listener);
+        return () => updateListeners.delete(listener);
+      },
+    },
     project: {
       openRoot: async () => ({ ok: true }),
       createRoot: async () => ({ ok: true }),
@@ -202,6 +227,22 @@ describe('App menu commands', () => {
     await waitFor(() => expect(screen.queryByTestId('command-palette')).toBeNull());
     await harness.menu('importAssets');
     expect(await screen.findByTestId('import-assets-dialog')).toBeTruthy();
+  });
+
+  it('checks for updates from the menu and the palette, and shows the update banner', async () => {
+    const harness = await renderApp();
+    await harness.menu('checkForUpdates');
+    await toast('MCSuperMods is up to date.');
+    harness.updateCheck = { state: 'error', message: 'offline' };
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    await userEvent.setup().click(within(palette).getByTestId('command-checkForUpdates'));
+    await toast('Could not check for updates: offline');
+    expect(screen.queryByTestId('update-banner')).toBeNull();
+    harness.pushUpdate({ state: 'downloaded', version: '9.9.9' });
+    expect(await screen.findByText('Version 9.9.9 is ready to install.')).toBeTruthy();
+    await userEvent.setup().click(screen.getByTestId('update-install'));
+    expect(harness.installs).toEqual(['update']);
   });
 
   it('exports the resource pack and refuses an empty data pack with the reason', async () => {

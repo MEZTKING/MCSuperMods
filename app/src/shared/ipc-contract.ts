@@ -7,12 +7,19 @@
  */
 
 import { z } from 'zod';
-import { type InvokeChannel, InvokeChannels, VENDORED_KEYS } from './ipc-channels';
+import {
+  type InvokeChannel,
+  InvokeChannels,
+  UPDATE_DISABLED_REASONS,
+  VENDORED_KEYS,
+} from './ipc-channels';
 
 export type {
   InvokeChannel,
   MenuCommand,
   MinecraftProgress,
+  UpdateDisabledReason,
+  UpdateStatus,
   VendoredKeyName,
 } from './ipc-channels';
 export {
@@ -21,8 +28,10 @@ export {
   IPC_VERSION,
   isMenuCommand,
   isMinecraftProgress,
+  isUpdateStatus,
   MENU_COMMANDS,
   MINECRAFT_PROGRESS_PHASES,
+  UPDATE_DISABLED_REASONS,
   VENDORED_KEYS,
 } from './ipc-channels';
 
@@ -62,7 +71,7 @@ const assetCacheInfo = z
     jarSha1: z.string(),
     fileCount: z.number().int().nonnegative(),
     extractedAt: z.string(),
-    schemaVersion: z.literal(1),
+    schemaVersion: z.literal(2),
   })
   .strict();
 /** A pack zip file name, as written by installs and combined exports. */
@@ -126,6 +135,19 @@ const mcfunctionCompletion = z
 const worldInfo = z
   .object({ dir: z.string().min(1), name: z.string(), lastModified: z.string() })
   .strict();
+
+const updateSettings = z.object({ autoCheck: z.boolean() }).strict();
+/** {@link UpdateStatus} as a schema. */
+export const updateStatusSchema = z.discriminatedUnion('state', [
+  z.object({ state: z.literal('idle') }).strict(),
+  z.object({ state: z.literal('checking') }).strict(),
+  z.object({ state: z.literal('available'), version: z.string().max(256) }).strict(),
+  z.object({ state: z.literal('not-available') }).strict(),
+  z.object({ state: z.literal('downloading'), percent: z.number().min(0).max(100) }).strict(),
+  z.object({ state: z.literal('downloaded'), version: z.string().max(256) }).strict(),
+  z.object({ state: z.literal('error'), message: z.string() }).strict(),
+  z.object({ state: z.literal('disabled'), reason: z.enum(UPDATE_DISABLED_REASONS) }).strict(),
+]);
 
 const rootResult = z.union([
   z.object({ ok: z.literal(true) }).strict(),
@@ -194,12 +216,19 @@ export const ipcContract = {
     response: z
       .object({
         minecraftDir: absolutePath.nullable(),
+        updates: updateSettings,
         detectedMinecraftDir: absolutePath.nullable(),
       })
       .strict(),
   },
   [InvokeChannels.settingsSet]: {
-    request: z.object({ minecraftDir: absolutePath.nullable() }).strict(),
+    // A partial update: fields left out keep their stored value.
+    request: z
+      .object({
+        minecraftDir: absolutePath.nullable().optional(),
+        updates: updateSettings.optional(),
+      })
+      .strict(),
     response: voidResponse,
   },
   [InvokeChannels.minecraftStatus]: {
@@ -294,6 +323,8 @@ export const ipcContract = {
       .strict(),
     response: bytes,
   },
+  [InvokeChannels.updatesCheck]: { request: noRequest, response: updateStatusSchema },
+  [InvokeChannels.updatesInstall]: { request: noRequest, response: voidResponse },
 } as const satisfies Record<InvokeChannel, { request: z.ZodType; response: z.ZodType }>;
 
 /** The contract as a whole. */

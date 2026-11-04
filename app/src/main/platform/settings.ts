@@ -7,7 +7,7 @@
 import { mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
 import { isAbsolute, join, normalize } from 'node:path';
 import { defaultMinecraftDir, type InstallEnv } from '@msm/interop';
-import type { AppSettings, AppSettingsView } from '../../shared/platform';
+import type { AppSettings, AppSettingsPatch, AppSettingsView } from '../../shared/platform';
 
 /** The settings file name below the MSM home directory. */
 export const SETTINGS_FILE = 'settings.json';
@@ -28,12 +28,30 @@ export function resolveMsmHome(
 /** Reads and writes {@link AppSettings}. */
 export interface SettingsStore {
   get(): Promise<AppSettingsView>;
-  set(settings: AppSettings): Promise<void>;
+  /** Merges `settings` into the stored settings and writes them. */
+  set(settings: AppSettingsPatch): Promise<void>;
   /** The Minecraft directory in use: the setting, else the detected default, else `null`. */
   minecraftDir(): Promise<string | null>;
+  /** Whether the app checks for updates after start-up (`updates.autoCheck`, default `true`). */
+  autoCheckUpdates(): Promise<boolean>;
 }
 
-const DEFAULTS: AppSettings = { minecraftDir: null };
+const defaults = (): AppSettings => ({ minecraftDir: null, updates: { autoCheck: true } });
+
+/** JSON with sorted keys at every level, 2-space indent and a final newline. */
+function sortedJson(value: unknown): string {
+  const sort = (node: unknown): unknown => {
+    if (Array.isArray(node)) return node.map(sort);
+    if (typeof node !== 'object' || node === null) return node;
+    const record = node as Record<string, unknown>;
+    return Object.fromEntries(
+      Object.keys(record)
+        .sort()
+        .map((key) => [key, sort(record[key])]),
+    );
+  };
+  return `${JSON.stringify(sort(value), null, 2)}\n`;
+}
 
 async function isDirectory(path: string): Promise<boolean> {
   try {
@@ -60,14 +78,22 @@ export function createSettingsStore(deps: {
     try {
       parsed = JSON.parse(await readFile(file, 'utf8'));
     } catch {
-      return { ...DEFAULTS };
+      return defaults();
     }
     if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-      return { ...DEFAULTS };
+      return defaults();
     }
-    const dir = (parsed as Record<string, unknown>).minecraftDir;
+    const record = parsed as Record<string, unknown>;
+    const dir = record.minecraftDir;
+    const updates = record.updates;
+    const autoCheck =
+      typeof updates === 'object' && updates !== null
+        ? (updates as Record<string, unknown>).autoCheck
+        : undefined;
     return {
       minecraftDir: typeof dir === 'string' && dir !== '' && isAbsolute(dir) ? dir : null,
+      // Anything but an explicit `false` keeps the default (on).
+      updates: { autoCheck: autoCheck !== false },
     };
   };
 
@@ -83,19 +109,30 @@ export function createSettingsStore(deps: {
     },
     async set(settings) {
       const dir = settings.minecraftDir;
-      if (dir !== null && !isAbsolute(dir)) {
+      if (dir !== undefined && dir !== null && !isAbsolute(dir)) {
         throw new Error('The Minecraft folder must be an absolute path.');
       }
-      const next: AppSettings = { minecraftDir: dir === null ? null : normalize(dir) };
+      const current = await read();
+      const next: AppSettings = {
+        minecraftDir:
+          dir === undefined ? current.minecraftDir : dir === null ? null : normalize(dir),
+        updates:
+          settings.updates === undefined
+            ? current.updates
+            : { autoCheck: settings.updates.autoCheck },
+      };
       await mkdir(deps.msmHome, { recursive: true });
       // Sorted keys, 2-space indent; written to a temporary file and renamed into place.
-      const text = `${JSON.stringify(next, Object.keys(next).sort(), 2)}\n`;
+      const text = sortedJson(next);
       const temp = `${file}.tmp`;
       await writeFile(temp, text, 'utf8');
       await rename(temp, file);
     },
     async minecraftDir() {
       return (await read()).minecraftDir ?? (await detected());
+    },
+    async autoCheckUpdates() {
+      return (await read()).updates.autoCheck;
     },
   };
 }

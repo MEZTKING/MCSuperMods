@@ -1,5 +1,6 @@
 export {
   ASSET_CACHE_INFO_FILE,
+  ASSET_CACHE_SCHEMA_VERSION,
   type AssetCacheInfo,
   assetCacheDir,
   readAssetCacheInfo,

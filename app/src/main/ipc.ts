@@ -18,6 +18,10 @@ import {
   type MinecraftProgress,
 } from '../shared/ipc-contract';
 import type { MainPlatform } from './platform/node-platform';
+import type { Updater } from './updater';
+
+/** The updater operations the IPC layer serves. */
+export type IpcUpdates = Pick<Updater, 'check' | 'install'>;
 
 /** Per-call services a handler may use. */
 export interface HandlerContext {
@@ -34,7 +38,7 @@ export type MainHandlers = {
 };
 
 /** Maps every channel to the platform method that serves it. */
-export function createIpcHandlers(platform: MainPlatform): MainHandlers {
+export function createIpcHandlers(platform: MainPlatform, updates: IpcUpdates): MainHandlers {
   return {
     [InvokeChannels.projectPickDirectory]: (req) =>
       platform.dialogs.pickDirectory(
@@ -87,6 +91,8 @@ export function createIpcHandlers(platform: MainPlatform): MainHandlers {
     [InvokeChannels.exportsPickFolder]: (req) => platform.exports.pickFolder(req.title),
     [InvokeChannels.exportsWriteFiles]: (req) => platform.exports.writeFiles(req.folder, req.files),
     [InvokeChannels.thumbnailsGet]: (req) => platform.thumbnails.get(req.assetPath, req.size),
+    [InvokeChannels.updatesCheck]: () => updates.check(),
+    [InvokeChannels.updatesInstall]: () => updates.install(),
   };
 }
 
@@ -96,8 +102,8 @@ function isTrustedSender(event: IpcMainInvokeEvent): boolean {
 }
 
 /** Registers every handler. Call once, after `app.whenReady()`. */
-export function registerIpc(platform: MainPlatform): void {
-  const handlers = createIpcHandlers(platform);
+export function registerIpc(platform: MainPlatform, updates: IpcUpdates): void {
+  const handlers = createIpcHandlers(platform, updates);
   for (const channel of Object.values(InvokeChannels) as InvokeChannel[]) {
     const { request } = ipcContract[channel];
     const handler = handlers[channel] as (

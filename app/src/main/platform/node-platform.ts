@@ -64,8 +64,11 @@ export interface NodePlatformDeps {
   now?(): string;
 }
 
-/** The main-process platform: the adapter plus main-only extras. */
-export interface MainPlatform extends PlatformAdapter {
+/**
+ * The main-process platform: the adapter plus main-only extras. `updates` is served by the
+ * updater (`../updater.ts`), not by the Node platform.
+ */
+export interface MainPlatform extends Omit<PlatformAdapter, 'updates'> {
   minecraft: MinecraftService;
   settings: SettingsStore;
 }

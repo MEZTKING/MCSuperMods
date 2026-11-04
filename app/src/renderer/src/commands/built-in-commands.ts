@@ -31,6 +31,7 @@ export const BUILT_IN_COMMAND_IDS = [
   'findUsages',
   'toggleRawJson',
   'settings',
+  'checkForUpdates',
 ] as const;
 
 /** A built-in command id. */
@@ -58,6 +59,7 @@ export const BUILT_IN_COMMANDS: Readonly<
   findUsages: { title: 'Find usages of the selected element' },
   toggleRawJson: { title: 'Toggle Raw JSON' },
   settings: { title: 'Settings…' },
+  checkForUpdates: { title: 'Check for updates' },
 };
 
 /** Handlers of the available built-in commands; a missing or `null` one is unavailable. */

@@ -15,6 +15,7 @@ import { registerIpc } from './ipc';
 import { installMenu } from './menu';
 import { createNodePlatform, type NativeDialogs } from './platform/node-platform';
 import { resolveMsmHome } from './platform/settings';
+import { type AutoUpdaterLike, createUpdater } from './updater';
 import { createMainWindow } from './window';
 
 const smoke = process.env.MSM_SMOKE === '1';
@@ -119,6 +120,31 @@ const platform = createNodePlatform({
   installEnv: nodeEnv(),
 });
 
+const updater = createUpdater({
+  gate: { isPackaged: app.isPackaged, platform: process.platform, env: process.env },
+  // Loaded on the first check only, so runs where the updater is inactive never load it.
+  async load() {
+    const { autoUpdater } = await import('electron-updater');
+    return autoUpdater as unknown as AutoUpdaterLike;
+  },
+  autoCheckEnabled: () => platform.settings.autoCheckUpdates(),
+  broadcast(status) {
+    for (const window of BrowserWindow.getAllWindows()) {
+      if (!window.webContents.isDestroyed()) {
+        window.webContents.send(EventChannels.updatesStatus, status);
+      }
+    }
+  },
+  // Each window's close handler shows the unsaved-changes prompt when needed (window.ts).
+  closeWindows() {
+    for (const window of BrowserWindow.getAllWindows()) window.close();
+  },
+  log(message, error) {
+    if (error === undefined) console.log(message);
+    else console.error(message, error);
+  },
+});
+
 function runSmoke(window: BrowserWindow): void {
   let loaded = false;
   let ready = false;
@@ -152,10 +178,11 @@ function runSmoke(window: BrowserWindow): void {
 }
 
 void app.whenReady().then(() => {
-  registerIpc(platform);
+  registerIpc(platform, updater);
   installMenu();
   const window = createMainWindow({ show: !smoke });
   if (smoke) runSmoke(window);
+  window.webContents.once('did-finish-load', () => updater.scheduleStartupCheck());
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
@@ -163,5 +190,7 @@ void app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
+  // After "Restart to update" every window has closed: run the installer, which quits.
+  if (updater.finishInstall()) return;
   if (process.platform !== 'darwin') app.quit();
 });

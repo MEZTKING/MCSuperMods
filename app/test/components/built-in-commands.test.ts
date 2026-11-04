@@ -17,7 +17,7 @@ describe('paletteCommands', () => {
   it('lists available built-in commands in order, then plugin commands', () => {
     const save = vi.fn();
     const commands = paletteCommands(
-      { save, undo: null, renameElement: vi.fn(), settings: vi.fn() },
+      { save, undo: null, renameElement: vi.fn(), settings: vi.fn(), checkForUpdates: vi.fn() },
       [{ id: 'msm.demo.hello', title: 'Say hello', run: vi.fn() }],
       { modKey: 'Ctrl', onError: vi.fn() },
     );
@@ -25,6 +25,7 @@ describe('paletteCommands', () => {
       'save',
       'renameElement',
       'settings',
+      'checkForUpdates',
       'msm.demo.hello',
     ]);
     expect(commands[0]?.shortcut).toBe('Ctrl+S');

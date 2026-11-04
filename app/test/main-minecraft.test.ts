@@ -75,7 +75,7 @@ describe('Minecraft service', () => {
       version: VERSION,
       fileCount: Object.keys(KEPT_ENTRIES).length,
       extractedAt: '2026-01-01T00:00:00.000Z',
-      schemaVersion: 1,
+      schemaVersion: 2,
     });
     expect(info.jarSha1).toMatch(/^[0-9a-f]{40}$/);
     expect(progress[0]).toEqual({ mcVersion: VERSION, phase: 'reading', done: 0, total: 1 });

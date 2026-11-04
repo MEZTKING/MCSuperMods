@@ -6,6 +6,9 @@ import {
   ipcContract,
   isMenuCommand,
   isMinecraftProgress,
+  isUpdateStatus,
+  type UpdateStatus,
+  updateStatusSchema,
 } from '../src/shared/ipc-contract';
 
 const bytes = new Uint8Array([1, 2, 3]);
@@ -101,8 +104,12 @@ const samples: Record<
   [InvokeChannels.settingsGet]: {
     request: [undefined, {}],
     response: [
-      { minecraftDir: null, detectedMinecraftDir: '/home/a/.minecraft' },
-      { minecraftDir: null },
+      {
+        minecraftDir: null,
+        updates: { autoCheck: true },
+        detectedMinecraftDir: '/home/a/.minecraft',
+      },
+      { minecraftDir: null, detectedMinecraftDir: null },
     ],
   },
   [InvokeChannels.settingsSet]: {
@@ -119,8 +126,8 @@ const samples: Record<
   [InvokeChannels.minecraftExtract]: {
     request: [{ mcVersion: '1.0' }, { mcVersion: '..' }],
     response: [
+      { version: '1.0', jarSha1: 'ab', fileCount: 3, extractedAt: 'now', schemaVersion: 2 },
       { version: '1.0', jarSha1: 'ab', fileCount: 3, extractedAt: 'now', schemaVersion: 1 },
-      { version: '1.0', jarSha1: 'ab', fileCount: -1, extractedAt: 'now', schemaVersion: 1 },
     ],
   },
   [InvokeChannels.minecraftReadAsset]: {
@@ -220,6 +227,17 @@ const samples: Record<
     ],
     response: [bytes, null],
   },
+  [InvokeChannels.updatesCheck]: {
+    request: [undefined, { force: true }],
+    response: [
+      { state: 'downloaded', version: '0.2.0' },
+      { state: 'downloading', percent: 140 },
+    ],
+  },
+  [InvokeChannels.updatesInstall]: {
+    request: [undefined, {}],
+    response: [undefined, 'yes'],
+  },
 };
 
 describe('IPC contract', () => {
@@ -279,7 +297,49 @@ describe('IPC contract', () => {
     expect(isMinecraftProgress(null)).toBe(false);
   });
 
+  it('validates settings patches', () => {
+    const { request } = ipcContract[InvokeChannels.settingsSet];
+    expect(request.safeParse({}).success).toBe(true);
+    expect(request.safeParse({ updates: { autoCheck: false } }).success).toBe(true);
+    expect(request.safeParse({ minecraftDir: null, updates: { autoCheck: true } }).success).toBe(
+      true,
+    );
+    expect(request.safeParse({ updates: { autoCheck: 'no' } }).success).toBe(false);
+    expect(request.safeParse({ updates: { autoCheck: true, channel: 'beta' } }).success).toBe(
+      false,
+    );
+  });
+
+  it('validates update status payloads', () => {
+    const valid: UpdateStatus[] = [
+      { state: 'idle' },
+      { state: 'checking' },
+      { state: 'available', version: '1.2.3' },
+      { state: 'not-available' },
+      { state: 'downloading', percent: 42 },
+      { state: 'downloaded', version: '1.2.3' },
+      { state: 'error', message: 'offline' },
+      { state: 'disabled', reason: 'unsupported-platform' },
+    ];
+    for (const status of valid) {
+      expect(isUpdateStatus(status)).toBe(true);
+      expect(updateStatusSchema.safeParse(status).success).toBe(true);
+    }
+    const invalid: unknown[] = [
+      null,
+      { state: 'installing' },
+      { state: 'available' },
+      { state: 'downloading', percent: Number.NaN },
+      { state: 'disabled', reason: 'tuesday' },
+    ];
+    for (const status of invalid) {
+      expect(isUpdateStatus(status)).toBe(false);
+      expect(updateStatusSchema.safeParse(status).success).toBe(false);
+    }
+  });
+
   it('recognises menu commands', () => {
+    expect(isMenuCommand('checkForUpdates')).toBe(true);
     expect(isMenuCommand('save')).toBe(true);
     expect(isMenuCommand('format-disk')).toBe(false);
     expect(isMenuCommand(1)).toBe(false);

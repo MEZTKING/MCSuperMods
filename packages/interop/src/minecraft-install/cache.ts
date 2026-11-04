@@ -20,8 +20,15 @@ export interface AssetCacheInfo {
   fileCount: number;
   /** ISO 8601 timestamp supplied by the caller. */
   extractedAt: string;
-  schemaVersion: 1;
+  /**
+   * Cache layout version. 2 added `.png.mcmeta` sidecars (B43); a cache with any other value
+   * is invalid, so it is extracted again.
+   */
+  schemaVersion: typeof ASSET_CACHE_SCHEMA_VERSION;
 }
+
+/** The current {@link AssetCacheInfo.schemaVersion}. */
+export const ASSET_CACHE_SCHEMA_VERSION = 2;
 
 /** `<msmHome>/cache/assets/<version>`. */
 export function assetCacheDir(msmHome: string, version: string): string {
@@ -83,7 +90,7 @@ export async function writeAssetCache(
     extractedAt: info.extractedAt,
     fileCount: files.length,
     jarSha1: info.jarSha1,
-    schemaVersion: 1,
+    schemaVersion: ASSET_CACHE_SCHEMA_VERSION,
     version: info.version,
   };
   await fs.writeFile(
@@ -103,6 +110,6 @@ function isAssetCacheInfo(value: unknown): value is AssetCacheInfo {
     typeof record.fileCount === 'number' &&
     Number.isInteger(record.fileCount) &&
     record.fileCount >= 0 &&
-    record.schemaVersion === 1
+    record.schemaVersion === ASSET_CACHE_SCHEMA_VERSION
   );
 }

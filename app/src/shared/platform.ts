@@ -9,7 +9,7 @@
 import type { ProjectFileSystem } from '@msm/core';
 // Type-only: the service itself runs in main (ADR 0014); these are plain MSM shapes.
 import type { McfunctionCompletion, McfunctionProblem } from '@msm/schemas/mcfunction';
-import type { MenuCommand, MinecraftProgress, VendoredKeyName } from './ipc-channels';
+import type { MenuCommand, MinecraftProgress, UpdateStatus, VendoredKeyName } from './ipc-channels';
 
 /** The outcome of opening or creating a project root. */
 export type RootResult = { ok: true } | { ok: false; reason: string };
@@ -29,10 +29,23 @@ export interface PickedFile {
   data: Uint8Array;
 }
 
+/** Auto-update settings (ADR 0018). */
+export interface UpdateSettings {
+  /** Whether the installed app checks for updates shortly after start-up. Default `true`. */
+  autoCheck: boolean;
+}
+
 /** Application settings, persisted in `<msmHome>/settings.json`. */
 export interface AppSettings {
   /** The user's chosen Minecraft game directory, or `null` to use the detected one. */
   minecraftDir: string | null;
+  updates: UpdateSettings;
+}
+
+/** A partial settings update: fields left out keep their stored value. */
+export interface AppSettingsPatch {
+  minecraftDir?: string | null | undefined;
+  updates?: UpdateSettings | undefined;
 }
 
 /** {@link AppSettings} plus what main detected. */
@@ -47,7 +60,7 @@ export interface AssetCacheInfoView {
   jarSha1: string;
   fileCount: number;
   extractedAt: string;
-  schemaVersion: 1;
+  schemaVersion: 2;
 }
 
 /** What main knows about the Minecraft installation for one version. */
@@ -104,7 +117,8 @@ export interface PlatformAdapter {
   };
   settings: {
     get(): Promise<AppSettingsView>;
-    set(settings: AppSettings): Promise<void>;
+    /** Merges `settings` into the stored settings. */
+    set(settings: AppSettingsPatch): Promise<void>;
   };
   minecraft: {
     status(mcVersion: string): Promise<MinecraftStatus>;
@@ -155,6 +169,21 @@ export interface PlatformAdapter {
   thumbnails: {
     /** A PNG thumbnail of a project texture (`assets/...png`), at most `size` pixels square. */
     get(assetPath: string, size: number): Promise<Uint8Array>;
+  };
+  /**
+   * The auto-updater (ADR 0018). Active only in the installed Windows app; elsewhere every
+   * status is `disabled`.
+   */
+  updates: {
+    /** Checks for an update now; resolves to the status once the check has finished. */
+    check(): Promise<UpdateStatus>;
+    /**
+     * Quits and installs a downloaded update. Unsaved changes go through the usual close
+     * prompt first; nothing happens when no update has been downloaded.
+     */
+    install(): Promise<void>;
+    /** Subscribes to status changes; returns an unsubscribe function. */
+    onStatus(listener: (status: UpdateStatus) => void): () => void;
   };
   project: {
     openRoot(path: string): Promise<RootResult>;

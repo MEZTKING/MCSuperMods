@@ -41,11 +41,13 @@ export const InvokeChannels = {
   exportsPickFolder: 'msm:v1:exports:pickFolder',
   exportsWriteFiles: 'msm:v1:exports:writeFiles',
   thumbnailsGet: 'msm:v1:thumbnails:get',
+  updatesCheck: 'msm:v1:updates:check',
+  updatesInstall: 'msm:v1:updates:install',
 } as const;
 
 /**
- * One-way channels: main to renderer (`menu`, `minecraftProgress`) and renderer to main (the
- * others).
+ * One-way channels: main to renderer (`menu`, `minecraftProgress`, `updatesStatus`) and
+ * renderer to main (the others).
  */
 export const EventChannels = {
   /** Main to renderer: a menu command, payload {@link MenuCommand}. */
@@ -56,6 +58,8 @@ export const EventChannels = {
   smokeReady: 'msm:v1:app:smokeReady',
   /** Renderer to main: whether the open project has unsaved changes, payload `boolean`. */
   setDirty: 'msm:v1:app:setDirty',
+  /** Main to renderer: the auto-updater's state changed, payload {@link UpdateStatus}. */
+  updatesStatus: 'msm:v1:updates:status',
 } as const;
 
 /** The name of an invoke channel. */
@@ -77,6 +81,7 @@ export const MENU_COMMANDS = [
   'settings',
   'renameElement',
   'commandPalette',
+  'checkForUpdates',
 ] as const;
 
 /** A command the application menu sends to the renderer. */
@@ -124,4 +129,54 @@ export function isMinecraftProgress(value: unknown): value is MinecraftProgress 
     typeof record.done === 'number' &&
     typeof record.total === 'number'
   );
+}
+
+/** Why the auto-updater is inactive in this run. */
+export const UPDATE_DISABLED_REASONS = [
+  /** Running from source (`app.isPackaged` is false). */
+  'not-packaged',
+  /** Only the Windows installer updates itself (releases are Windows only, ADR 0013). */
+  'unsupported-platform',
+  /** Smoke and end-to-end runs (`MSM_SMOKE`, `MSM_E2E_*`). */
+  'test-run',
+] as const;
+
+/** Why the auto-updater is inactive. */
+export type UpdateDisabledReason = (typeof UPDATE_DISABLED_REASONS)[number];
+
+/** The auto-updater's state (ADR 0018), sent on {@link EventChannels.updatesStatus}. */
+export type UpdateStatus =
+  | { state: 'idle' }
+  | { state: 'checking' }
+  | { state: 'available'; version: string }
+  | { state: 'not-available' }
+  | { state: 'downloading'; percent: number }
+  | { state: 'downloaded'; version: string }
+  | { state: 'error'; message: string }
+  | { state: 'disabled'; reason: UpdateDisabledReason };
+
+/** Whether a value is a well-formed {@link UpdateStatus} payload. */
+export function isUpdateStatus(value: unknown): value is UpdateStatus {
+  if (typeof value !== 'object' || value === null) return false;
+  const record = value as Record<string, unknown>;
+  switch (record.state) {
+    case 'idle':
+    case 'checking':
+    case 'not-available':
+      return true;
+    case 'available':
+    case 'downloaded':
+      return typeof record.version === 'string';
+    case 'downloading':
+      return typeof record.percent === 'number' && Number.isFinite(record.percent);
+    case 'error':
+      return typeof record.message === 'string';
+    case 'disabled':
+      return (
+        typeof record.reason === 'string' &&
+        (UPDATE_DISABLED_REASONS as readonly string[]).includes(record.reason)
+      );
+    default:
+      return false;
+  }
 }

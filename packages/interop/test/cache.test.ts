@@ -29,7 +29,7 @@ describe('asset cache', () => {
     const dir = assetCacheDir('/msm', '9.1');
     const files = extractPreviewAssets(buildSyntheticJar());
     const info = await writeAssetCache(fs, dir, files, INFO);
-    expect(info).toEqual({ ...INFO, fileCount: 7, schemaVersion: 1 });
+    expect(info).toEqual({ ...INFO, fileCount: 7, schemaVersion: 2 });
     expect(await readAssetCacheInfo(fs, dir)).toEqual(info);
     for (const [path, data] of Object.entries(KEPT_ENTRIES)) {
       expect(await fs.readFile(`${dir}/${path}`)).toEqual(data);
@@ -51,8 +51,13 @@ describe('asset cache', () => {
     const fs = new MemoryInstallFileSystem();
     fs.seed('/c/cache.json', 'not json');
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
-    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 2 }));
+    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 3 }));
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
+    // A Phase 1 cache (schema 1) has no `.png.mcmeta` sidecars, so it is extracted again.
+    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 1 }));
+    expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
+    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 2 }));
+    expect(await readAssetCacheInfo(fs, '/c')).toEqual({ ...INFO, fileCount: 1, schemaVersion: 2 });
     fs.seed('/c/cache.json', '[]');
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
   });

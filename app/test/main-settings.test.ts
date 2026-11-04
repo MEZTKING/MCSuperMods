@@ -32,14 +32,23 @@ describe('settings store', () => {
     });
 
   it('defaults to nothing when no file and no launcher folder exist', async () => {
-    expect(await store().get()).toEqual({ minecraftDir: null, detectedMinecraftDir: null });
+    expect(await store().get()).toEqual({
+      minecraftDir: null,
+      updates: { autoCheck: true },
+      detectedMinecraftDir: null,
+    });
     expect(await store().minecraftDir()).toBeNull();
+    expect(await store().autoCheckUpdates()).toBe(true);
   });
 
   it('detects the default launcher folder', async () => {
     await mkdir(join(temp, 'home', '.minecraft'), { recursive: true });
     const detected = join(temp, 'home', '.minecraft');
-    expect(await store().get()).toEqual({ minecraftDir: null, detectedMinecraftDir: detected });
+    expect(await store().get()).toEqual({
+      minecraftDir: null,
+      updates: { autoCheck: true },
+      detectedMinecraftDir: detected,
+    });
     expect(await store().minecraftDir()).toBe(detected);
   });
 
@@ -48,12 +57,37 @@ describe('settings store', () => {
     const chosen = join(temp, 'games', 'mc');
     await store().set({ minecraftDir: chosen });
     expect(await readFile(join(temp, 'msm', 'settings.json'), 'utf8')).toBe(
-      `{\n  "minecraftDir": ${JSON.stringify(chosen)}\n}\n`,
+      `{\n  "minecraftDir": ${JSON.stringify(chosen)},\n  "updates": {\n    "autoCheck": true\n  }\n}\n`,
     );
     expect((await store().get()).minecraftDir).toBe(chosen);
     expect(await store().minecraftDir()).toBe(chosen);
     await store().set({ minecraftDir: null });
     expect(await store().minecraftDir()).toBe(join(temp, 'home', '.minecraft'));
+  });
+
+  it('merges partial updates and keeps the update setting', async () => {
+    const chosen = join(temp, 'games', 'mc');
+    await store().set({ minecraftDir: chosen });
+    await store().set({ updates: { autoCheck: false } });
+    expect(await store().autoCheckUpdates()).toBe(false);
+    expect((await store().get()).minecraftDir).toBe(chosen);
+    await store().set({ minecraftDir: null });
+    expect(await store().autoCheckUpdates()).toBe(false);
+    expect(await readFile(join(temp, 'msm', 'settings.json'), 'utf8')).toBe(
+      '{\n  "minecraftDir": null,\n  "updates": {\n    "autoCheck": false\n  }\n}\n',
+    );
+    await store().set({});
+    expect(await store().autoCheckUpdates()).toBe(false);
+  });
+
+  it('treats anything but an explicit false as auto-check on', async () => {
+    await mkdir(join(temp, 'msm'), { recursive: true });
+    await writeFile(join(temp, 'msm', 'settings.json'), '{"updates":{"autoCheck":"no"}}');
+    expect(await store().autoCheckUpdates()).toBe(true);
+    await writeFile(join(temp, 'msm', 'settings.json'), '{"updates":null}');
+    expect(await store().autoCheckUpdates()).toBe(true);
+    await writeFile(join(temp, 'msm', 'settings.json'), '{"updates":{"autoCheck":false}}');
+    expect(await store().autoCheckUpdates()).toBe(false);
   });
 
   it('rejects relative folders and ignores a corrupt file', async () => {

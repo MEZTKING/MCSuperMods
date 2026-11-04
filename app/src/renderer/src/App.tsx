@@ -3,7 +3,7 @@ import type { Target } from '@msm/plugin-api';
 import { Toast, Tooltip } from 'radix-ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MenuCommand } from '../../shared/ipc-channels';
-import type { AppSettings, MsmBridge, WorldInfo } from '../../shared/platform';
+import type { AppSettingsPatch, MsmBridge, WorldInfo } from '../../shared/platform';
 import {
   type BuiltInCommandId,
   type CommandHandlers,
@@ -25,6 +25,7 @@ import { SettingsDialog } from './components/SettingsDialog';
 import { StatusBar } from './components/StatusBar';
 import { StatusToast } from './components/StatusToast';
 import { modKey, Toolbar } from './components/Toolbar';
+import { UpdateBanner, updateCheckMessage } from './components/UpdateBanner';
 import { UsagesDialog } from './components/UsagesDialog';
 import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
@@ -429,12 +430,23 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
 
   const loadSettings = useCallback(() => session.getSettings(), [session]);
   const saveSettings = useCallback(
-    async (settings: AppSettings) => {
-      await session.setSettings(settings);
-      refreshMinecraftStatus();
+    async (settings: AppSettingsPatch) => {
+      await bridge.settings.set(settings);
+      if (settings.minecraftDir !== undefined) refreshMinecraftStatus();
     },
-    [session, refreshMinecraftStatus],
+    [bridge, refreshMinecraftStatus],
   );
+
+  // Updates (ADR 0018) --------------------------------------------------------------------
+
+  const checkForUpdates = (): void => {
+    setMessage({ kind: 'info', text: 'Checking for updates…' });
+    bridge.updates.check().then(
+      (status) => setMessage(updateCheckMessage(status)),
+      (error: unknown) =>
+        setMessage({ kind: 'error', text: `Could not check for updates: ${messageOf(error)}` }),
+    );
+  };
   const browseMinecraft = useCallback(
     () => bridge.dialogs.pickDirectory({ title: 'Choose your Minecraft folder' }),
     [bridge],
@@ -536,6 +548,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     settings: () => setDialog({ type: 'settings' }),
     renameElement: renameSelected,
     commandPalette: openPalette,
+    checkForUpdates,
   };
 
   const commandHandlers: CommandHandlers = {
@@ -558,6 +571,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     toggleRawJson:
       selected === null ? null : () => setActiveTab(activeTab === 'json' ? 'form' : 'json'),
     settings: handlers.settings,
+    checkForUpdates,
   } satisfies Record<BuiltInCommandId, Action | null>;
 
   const palette = paletteCommands(commandHandlers, session.pluginCommands, {
@@ -677,36 +691,39 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     <Tooltip.Provider delayDuration={400}>
       <Toast.Provider swipeDirection="right" label="Notification">
         <div className="grid h-full grid-rows-[auto_minmax(0,1fr)_auto]">
-          <Toolbar
-            hasProject={project !== null}
-            canUndo={snapshot.canUndo}
-            canRedo={snapshot.canRedo}
-            undoLabel={snapshot.undoLabel}
-            redoLabel={snapshot.redoLabel}
-            saveDisabledReason={saveDisabledReason}
-            canAddElement={canAddElement}
-            exportDisabledReason={exportReason}
-            installDisabledReason={installReason}
-            dataExportDisabledReason={dataExportReason}
-            combinedExportDisabledReason={dataExportReason}
-            dataInstallDisabledReason={dataInstallReason}
-            primaryExport={hasDataPack && !hasResourcePack ? 'data' : 'resource'}
-            exporting={exporting}
-            onNew={handlers.new}
-            onOpen={handlers.open}
-            onSave={handlers.save}
-            onUndo={() => session.undo()}
-            onRedo={() => session.redo()}
-            onAddNamespace={() => setDialog({ type: 'namespace' })}
-            onAddElement={() => setDialog({ type: 'element' })}
-            onImportAssets={handlers.importAssets}
-            onExportZip={exportResourceZip}
-            onExportDataZip={exportDataZip}
-            onExportCombined={exportCombined}
-            onInstall={installResource}
-            onInstallData={installData}
-            onSettings={handlers.settings}
-          />
+          <div>
+            <UpdateBanner updates={bridge.updates} />
+            <Toolbar
+              hasProject={project !== null}
+              canUndo={snapshot.canUndo}
+              canRedo={snapshot.canRedo}
+              undoLabel={snapshot.undoLabel}
+              redoLabel={snapshot.redoLabel}
+              saveDisabledReason={saveDisabledReason}
+              canAddElement={canAddElement}
+              exportDisabledReason={exportReason}
+              installDisabledReason={installReason}
+              dataExportDisabledReason={dataExportReason}
+              combinedExportDisabledReason={dataExportReason}
+              dataInstallDisabledReason={dataInstallReason}
+              primaryExport={hasDataPack && !hasResourcePack ? 'data' : 'resource'}
+              exporting={exporting}
+              onNew={handlers.new}
+              onOpen={handlers.open}
+              onSave={handlers.save}
+              onUndo={() => session.undo()}
+              onRedo={() => session.redo()}
+              onAddNamespace={() => setDialog({ type: 'namespace' })}
+              onAddElement={() => setDialog({ type: 'element' })}
+              onImportAssets={handlers.importAssets}
+              onExportZip={exportResourceZip}
+              onExportDataZip={exportDataZip}
+              onExportCombined={exportCombined}
+              onInstall={installResource}
+              onInstallData={installData}
+              onSettings={handlers.settings}
+            />
+          </div>
           <main className="grid min-h-0 grid-cols-[minmax(200px,280px)_minmax(0,1fr)_minmax(260px,360px)]">
             <ElementSidebar
               project={project}

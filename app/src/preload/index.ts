@@ -12,6 +12,7 @@ import {
   InvokeChannels,
   isMenuCommand,
   isMinecraftProgress,
+  isUpdateStatus,
 } from '../shared/ipc-channels';
 import type { MsmBridge } from '../shared/platform';
 
@@ -34,7 +35,12 @@ const bridge: MsmBridge = {
   settings: {
     get: () => ipcRenderer.invoke(InvokeChannels.settingsGet),
     set: (settings) =>
-      ipcRenderer.invoke(InvokeChannels.settingsSet, { minecraftDir: settings.minecraftDir }),
+      ipcRenderer.invoke(InvokeChannels.settingsSet, {
+        ...(settings.minecraftDir === undefined ? {} : { minecraftDir: settings.minecraftDir }),
+        ...(settings.updates === undefined
+          ? {}
+          : { updates: { autoCheck: settings.updates.autoCheck } }),
+      }),
   },
   minecraft: {
     status: (mcVersion) => ipcRenderer.invoke(InvokeChannels.minecraftStatus, { mcVersion }),
@@ -77,6 +83,19 @@ const bridge: MsmBridge = {
   },
   thumbnails: {
     get: (assetPath, size) => ipcRenderer.invoke(InvokeChannels.thumbnailsGet, { assetPath, size }),
+  },
+  updates: {
+    check: () => ipcRenderer.invoke(InvokeChannels.updatesCheck),
+    install: () => ipcRenderer.invoke(InvokeChannels.updatesInstall),
+    onStatus(listener) {
+      const handler = (_event: IpcRendererEvent, status: unknown): void => {
+        if (isUpdateStatus(status)) listener(status);
+      };
+      ipcRenderer.on(EventChannels.updatesStatus, handler);
+      return () => {
+        ipcRenderer.removeListener(EventChannels.updatesStatus, handler);
+      };
+    },
   },
   project: {
     openRoot: (path) => ipcRenderer.invoke(InvokeChannels.projectOpenRoot, { path }),

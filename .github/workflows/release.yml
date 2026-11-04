@@ -2,8 +2,12 @@
 # NSIS x64 installer. The Linux `dir` build is a verification target for CI, not a release
 # artefact, and macOS is out of scope.
 #
-# Runs on `v*` tags and manually. No tag is pushed until the licence is decided
-# (DESIGN Open Question 10). Action versions: verify at implementation.
+# Runs on `v*` tags and manually. electron-builder publishes (ADR 0018): on a tag it uploads
+# the installer, its `.blockmap` and `latest.yml` to a DRAFT GitHub Release of
+# MEZTKING/MCSuperMods named after the version in app/package.json. The maintainer reviews and
+# publishes the draft by hand; the in-app updater only sees published releases. Manual runs
+# build without publishing and keep the files as a workflow artefact.
+# Action versions: verify at implementation.
 name: Release
 
 on:
@@ -30,7 +34,16 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm --filter @msm/app dist
+      - name: Build the installer (and upload it to a draft release on tags)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            pnpm --filter @msm/app exec electron-builder --publish always
+          else
+            pnpm --filter @msm/app exec electron-builder --publish never
+          fi
       # Installer budget (tools/check-size/README.md): the NSIS installer is at most 150 MB.
       - name: Check installer size
         shell: bash
@@ -49,11 +62,5 @@ jobs:
           path: |
             app/dist/*.exe
             app/dist/*.blockmap
+            app/dist/latest.yml
           if-no-files-found: error
-      - if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          draft: true
-          files: |
-            app/dist/*.exe
-            app/dist/*.blockmap

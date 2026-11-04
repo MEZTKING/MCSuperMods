@@ -1,7 +1,7 @@
 import { Dialog } from 'radix-ui';
 import { useEffect, useId, useState } from 'react';
 import type { MinecraftProgress } from '../../../shared/ipc-channels';
-import type { AppSettings, AppSettingsView, MinecraftStatus } from '../../../shared/platform';
+import type { AppSettingsPatch, AppSettingsView, MinecraftStatus } from '../../../shared/platform';
 import { fieldClass } from './NewElementDialog';
 import { Button } from './ui/Button';
 
@@ -12,7 +12,8 @@ export interface SettingsDialogProps {
   status: MinecraftStatus | null;
   progress: MinecraftProgress | null;
   load(): Promise<AppSettingsView>;
-  save(settings: AppSettings): Promise<void>;
+  /** Merges a settings change into the stored settings. */
+  save(settings: AppSettingsPatch): Promise<void>;
   /** Shows a folder picker; resolves to the chosen folder or `null`. */
   browse(): Promise<string | null>;
   /** Extracts vanilla assets; resolves to an error message, or `null` on success. */
@@ -40,7 +41,10 @@ export function minecraftSummary(mcVersion: string, status: MinecraftStatus | nu
   return `Minecraft ${mcVersion} is installed; its vanilla assets are not extracted yet.`;
 }
 
-/** Settings: the Minecraft folder and vanilla asset extraction (ADR 0011). */
+/**
+ * Settings: the Minecraft folder, vanilla asset extraction (ADR 0011) and automatic update
+ * checks (ADR 0018).
+ */
 export function SettingsDialog(props: SettingsDialogProps) {
   const { load } = props;
   const [view, setView] = useState<AppSettingsView | null>(null);
@@ -48,8 +52,10 @@ export function SettingsDialog(props: SettingsDialogProps) {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [autoCheck, setAutoCheck] = useState(true);
   const folderId = useId();
   const progressId = useId();
+  const autoCheckId = useId();
 
   useEffect(() => {
     let live = true;
@@ -58,6 +64,7 @@ export function SettingsDialog(props: SettingsDialogProps) {
         if (!live) return;
         setView(settings);
         setFolder(settings.minecraftDir ?? '');
+        setAutoCheck(settings.updates.autoCheck);
       },
       (problem: unknown) => {
         if (live) setError(problem instanceof Error ? problem.message : String(problem));
@@ -80,6 +87,18 @@ export function SettingsDialog(props: SettingsDialogProps) {
       setError(problem instanceof Error ? problem.message : String(problem));
     } finally {
       setBusy(false);
+    }
+  };
+
+  const saveAutoCheck = async (next: boolean): Promise<void> => {
+    setAutoCheck(next);
+    setError(null);
+    setNotice(null);
+    try {
+      await props.save({ updates: { autoCheck: next } });
+    } catch (problem) {
+      setAutoCheck(!next);
+      setError(problem instanceof Error ? problem.message : String(problem));
     }
   };
 
@@ -186,6 +205,24 @@ export function SettingsDialog(props: SettingsDialogProps) {
                 {props.status?.cache != null ? 'Extract again' : 'Extract vanilla assets'}
               </Button>
             </div>
+
+            <h3 className="mt-3 font-semibold">Updates</h3>
+            <div className="flex items-center gap-1.5">
+              <input
+                id={autoCheckId}
+                type="checkbox"
+                data-testid="settings-auto-update"
+                checked={autoCheck}
+                disabled={view === null}
+                onChange={(event) => void saveAutoCheck(event.target.checked)}
+              />
+              <label htmlFor={autoCheckId}>Check for updates automatically</label>
+            </div>
+            <p className="text-xs text-muted">
+              The installed Windows app looks for a new release shortly after it starts and
+              downloads it in the background. It installs only when you choose Restart to update.
+              Help, Check for Updates works either way.
+            </p>
 
             {error !== null && (
               <p role="alert" className="whitespace-pre-line text-error">
