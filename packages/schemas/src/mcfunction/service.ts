@@ -8,7 +8,9 @@
 
 import * as core from '@spyglassmc/core';
 import * as je from '@spyglassmc/java-edition';
+import * as json from '@spyglassmc/json';
 import * as mcdoc from '@spyglassmc/mcdoc';
+import * as nbt from '@spyglassmc/nbt';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { checkBlockStates } from './block-states';
 import { loadMcdocSymbols, readMcdocSymbolExport } from './mcdoc-symbols';
@@ -145,12 +147,17 @@ export async function createMcfunctionService(
   } as unknown as McmetaSummary;
   je.dependency.symbolRegistrar(summary, release)(symbols, {});
 
-  if (options.mcdocSymbols !== undefined) {
+  const typed = options.mcdocSymbols !== undefined;
+  if (typed) {
     // What `je.initialize` does with the downloaded `@vanilla-mcdoc`, offline: declare the bound
     // type definitions, register mcdoc's built-in attributes (`id`, `color`, ...) and the
     // version-gating ones (`since`, `until`, `deprecated`) for this release.
     const exported = readMcdocSymbolExport(options.mcdocSymbols);
     mcdoc.initialize({ meta } as Parameters<typeof mcdoc.initialize>[0]);
+    // The JSON and SNBT completers (and nbt's mcdoc attributes), as `je.initialize` registers
+    // them; without these, completion inside `tellraw @a {"` or `summon ... {No` is empty.
+    json.getInitializer()({ meta } as Parameters<ReturnType<typeof json.getInitializer>>[0]);
+    nbt.initialize({ meta } as Parameters<typeof nbt.initialize>[0]);
     je.registerMcdocAttributes(meta, data.commands as McmetaCommands, release);
     loadMcdocSymbols(symbols, exported);
   }
@@ -263,6 +270,27 @@ export async function createMcfunctionService(
     return out;
   }
 
+  /**
+   * Binds and checks `node`, as Spyglass does before linting or completing. The checker also
+   * attaches mcdoc `typeDef`s to JSON and SNBT nodes, which their completers read. The caller
+   * clears `uri`'s symbols afterwards.
+   */
+  async function bindAndCheck(
+    node: core.AstNode,
+    doc: TextDocument,
+    uri: string,
+  ): Promise<{ bctx: core.BinderContext; cctx: core.CheckerContext }> {
+    // Drop what an earlier check of this document bound, then bind afresh.
+    symbols.clear({ uri });
+    const bctx = core.BinderContext.create(project, { doc });
+    const binder = meta.getBinder(node.type);
+    await symbols.contributeAsAsync('binder', async () => binder(node, bctx));
+    const cctx = core.CheckerContext.create(project, { doc });
+    const checker = meta.getChecker(node.type);
+    await symbols.contributeAsAsync('checker', async () => checker(node, cctx));
+    return { bctx, cctx };
+  }
+
   async function runCheck(
     source: string,
     options: McfunctionCheckOptions,
@@ -294,16 +322,8 @@ export async function createMcfunctionService(
     core.AstNode.setParents(node);
     for (const e of pctx.err.dump()) problems.push(toProblem(doc, e, 'mcfunction.parse'));
 
-    // Drop what an earlier check of this document bound, then bind afresh.
-    symbols.clear({ uri });
-    const bctx = core.BinderContext.create(project, { doc });
-    const binder = meta.getBinder(node.type);
-    await symbols.contributeAsAsync('binder', async () => binder(node, bctx));
+    const { bctx, cctx } = await bindAndCheck(node, doc, uri);
     for (const e of bctx.err.dump()) problems.push(toProblem(doc, e, 'mcfunction.check'));
-
-    const cctx = core.CheckerContext.create(project, { doc });
-    const checker = meta.getChecker(node.type);
-    await symbols.contributeAsAsync('checker', async () => checker(node, cctx));
     for (const e of cctx.err.dump()) problems.push(toProblem(doc, e, 'mcfunction.check'));
     for (const { message, range } of checkBlockStates(node, cctx)) {
       problems.push(toProblem(doc, { message, range, severity: 3 }, 'mcfunction.check'));
@@ -331,7 +351,18 @@ export async function createMcfunctionService(
     const node = parse(new core.Source(source), core.ParserContext.create(project, { doc }));
     if (node === core.Failure) return [];
     core.AstNode.setParents(node);
-    let items = completer(node, core.CompleterContext.create(project, { doc, offset: at }));
+    let items: readonly core.CompletionItem[];
+    if (typed) {
+      // JSON and SNBT completers need the `typeDef`s the checker attaches.
+      await bindAndCheck(node, doc, uri);
+      try {
+        items = completer(node, core.CompleterContext.create(project, { doc, offset: at }));
+      } finally {
+        symbols.clear({ uri });
+      }
+    } else {
+      items = completer(node, core.CompleterContext.create(project, { doc, offset: at }));
+    }
     if (items.length === 0 && /^[ \t]*$/.test(linePrefix(source, at))) {
       // Spyglass offers nothing on a blank line; propose the root command literals there.
       items = rootLiterals.map((name) =>

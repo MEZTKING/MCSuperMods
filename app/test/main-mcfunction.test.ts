@@ -49,8 +49,24 @@ for (const bundle of builtInTargets) {
       expect(ipcContract[InvokeChannels.mcfunctionComplete].response.parse(completions)).toEqual(
         completions,
       );
-      // One read each of commands, blocks and registries across every call above.
-      expect(reads).toBe(3);
+      // One read each of commands, blocks, registries and mcdoc symbols across every call above.
+      expect(reads).toBe(4);
+    }, 20_000);
+
+    it('types text components with the vendored mcdoc symbols', async () => {
+      const wrong = await broker.check(targetId, 'tellraw @a {"text":1}', { uri, projectIds: {} });
+      expect(wrong.some((p) => p.severity === 'error' && p.code === 'mcfunction.check')).toBe(true);
+      expect(ipcContract[InvokeChannels.mcfunctionCheck].response.parse(wrong)).toEqual(wrong);
+      expect(
+        await broker.check(targetId, 'tellraw @a {"text":"hi"}', { uri, projectIds: {} }),
+      ).toEqual([]);
+      const source = 'summon minecraft:zombie ~ ~ ~ {No';
+      const keys = await broker.complete(targetId, source, source.length, {
+        uri,
+        projectIds: {},
+      });
+      expect(keys.map((k) => k.label)).toContain('NoAI');
+      expect(reads).toBe(4);
     }, 20_000);
   });
 }

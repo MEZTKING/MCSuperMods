@@ -119,14 +119,15 @@ export function nodeMcfunctionChecker(): Promise<McfunctionChecker> {
     if (bundle === undefined) throw new Error(`Unknown target ${defaultTarget.id}`);
     const read = async (url: URL): Promise<unknown> =>
       JSON.parse(await readFile(fileURLToPath(url), 'utf8')) as unknown;
-    const [commands, blocks, registries] = await Promise.all([
+    const [commands, blocks, registries, mcdocSymbols] = await Promise.all([
       read(bundle.vendored.mcmetaCommands),
       read(bundle.vendored.mcmetaBlocks),
       read(bundle.vendored.mcmetaRegistries),
+      read(bundle.vendored.vanillaMcdocSymbols),
     ]);
     const service = await createMcfunctionService(
       { commands, blocks, registries: registries as Record<string, string[]> },
-      { mcVersion: defaultTarget.mcVersion },
+      { mcVersion: defaultTarget.mcVersion, mcdocSymbols },
     );
     return { check: (source, options) => service.check(source, options) };
   })();

@@ -1,8 +1,9 @@
 /**
  * The mcfunction broker (ADR 0014): one offline Spyglass `McfunctionService` per target,
  * created on first use. The service module is loaded with `import()` so that start-up does
- * not pay for Spyglass; its data (command tree, block states, registries) is read through the
- * targets service, which serves the vendored files of each built-in target.
+ * not pay for Spyglass; its data (command tree, block states, registries and the vanilla-mcdoc
+ * symbol export, which types text components, item components and NBT inside commands) is read
+ * through the targets service, which serves the vendored files of each built-in target.
  *
  * @packageDocumentation
  */
@@ -24,7 +25,7 @@ export type McfunctionBroker = PlatformAdapter['mcfunction'];
 export interface McfunctionModule {
   createMcfunctionService(
     data: McfunctionData,
-    options: { mcVersion: string },
+    options: { mcVersion: string; mcdocSymbols?: unknown },
   ): Promise<McfunctionService>;
 }
 
@@ -55,21 +56,22 @@ export function createMcfunctionBroker(deps: McfunctionBrokerDeps): McfunctionBr
 
   const readJson = async (
     targetId: string,
-    key: 'mcmetaCommands' | 'mcmetaBlocks' | 'mcmetaRegistries',
+    key: 'mcmetaCommands' | 'mcmetaBlocks' | 'mcmetaRegistries' | 'vanillaMcdocSymbols',
   ): Promise<unknown> => JSON.parse(decoder.decode(await deps.readVendored(targetId, key)));
 
   const create = async (targetId: string): Promise<McfunctionService> => {
     const mcVersion = mcVersionOf(targetId);
     if (mcVersion === undefined) throw new Error(`Unknown target ${JSON.stringify(targetId)}.`);
-    const [module, commands, blocks, registries] = await Promise.all([
+    const [module, commands, blocks, registries, mcdocSymbols] = await Promise.all([
       load(),
       readJson(targetId, 'mcmetaCommands'),
       readJson(targetId, 'mcmetaBlocks'),
       readJson(targetId, 'mcmetaRegistries'),
+      readJson(targetId, 'vanillaMcdocSymbols'),
     ]);
     return module.createMcfunctionService(
       { commands, blocks, registries: registries as Record<string, string[]> },
-      { mcVersion },
+      { mcVersion, mcdocSymbols },
     );
   };
 

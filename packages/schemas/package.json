@@ -21,8 +21,10 @@
     "@msm/plugin-api": "workspace:*",
     "@spyglassmc/core": "catalog:",
     "@spyglassmc/java-edition": "catalog:",
+    "@spyglassmc/json": "catalog:",
     "@spyglassmc/mcdoc": "catalog:",
     "@spyglassmc/mcfunction": "catalog:",
+    "@spyglassmc/nbt": "catalog:",
     "vscode-languageserver-textdocument": "catalog:"
   },
   "devDependencies": {

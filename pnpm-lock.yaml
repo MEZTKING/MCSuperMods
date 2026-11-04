@@ -173,6 +173,9 @@ catalogs:
     '@spyglassmc/java-edition':
       specifier: 0.3.70
       version: 0.3.70
+    '@spyglassmc/json':
+      specifier: 0.3.61
+      version: 0.3.61
     '@spyglassmc/mcdoc':
       specifier: 0.3.61
       version: 0.3.61
@@ -182,6 +185,9 @@ catalogs:
     '@spyglassmc/mcfunction':
       specifier: 0.2.60
       version: 0.2.60
+    '@spyglassmc/nbt':
+      specifier: 0.3.63
+      version: 0.3.63
     '@tailwindcss/vite':
       specifier: 4.3.4
       version: 4.3.4
@@ -543,12 +549,18 @@ importers:
       '@spyglassmc/java-edition':
         specifier: 'catalog:'
         version: 0.3.70(debug@4.4.3(supports-color@7.2.0))
+      '@spyglassmc/json':
+        specifier: 'catalog:'
+        version: 0.3.61(debug@4.4.3(supports-color@7.2.0))
       '@spyglassmc/mcdoc':
         specifier: 'catalog:'
         version: 0.3.61(debug@4.4.3(supports-color@7.2.0))
       '@spyglassmc/mcfunction':
         specifier: 'catalog:'
         version: 0.2.60(debug@4.4.3(supports-color@7.2.0))
+      '@spyglassmc/nbt':
+        specifier: 'catalog:'
+        version: 0.3.63(debug@4.4.3(supports-color@7.2.0))
       vscode-languageserver-textdocument:
         specifier: 'catalog:'
         version: 1.0.16

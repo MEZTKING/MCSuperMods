@@ -180,6 +180,17 @@ for (const bundle of bundles) {
       expect(nbt.some((p) => p.severity === 'error')).toBe(true);
     });
 
+    it('completes keys inside JSON text components and SNBT', async () => {
+      const text = 'tellraw @a {"';
+      const textKeys = (await service.complete(text, text.length, { uri })).map((i) => i.label);
+      expect(textKeys).toEqual(expect.arrayContaining(['text', 'color', 'bold']));
+      const snbt = 'summon minecraft:zombie ~ ~ ~ {No';
+      const snbtKeys = (await service.complete(snbt, snbt.length, { uri })).map((i) => i.label);
+      expect(snbtKeys).toContain('NoAI');
+      // Without the symbol export there is no type to complete from.
+      expect(await bare.complete(snbt, snbt.length, { uri })).toEqual([]);
+    });
+
     it('checks block-state properties', async () => {
       const ok = [
         'setblock ~ ~ ~ minecraft:oak_stairs[facing=north]',
