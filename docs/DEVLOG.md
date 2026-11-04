@@ -846,3 +846,36 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Decisions**
 - **Process change:** verification now runs `pnpm turbo run test --force`, which bypasses the cache, in the clean worktree. Executors' briefs should do the same. `main` is still fast-forwarded only on green GitHub CI.
+
+---
+
+## 2026-11-04 — main session — Phase 3 wave 2 close; recent projects; v0.2.4 prepared
+
+**What**
+- **B73 `@msm/plugin-structures`:**
+  - Codec: deepslate's binary NBT and SNBT parser, plus **our own SNBT printer**. deepslate 0.27.2's printer breaks long arrays (`[I;1L]`), drops type suffixes on large doubles and prints bytes unsigned.
+  - `.nbt` and Sponge `.schem` (v2 read, v3 read/write) importers and exporters.
+  - Five kinds, five validators and nine templates, with 56 tests including a byte-exact golden `.nbt`.
+- **B74 `@msm/plugin-worldgen`:** 14 kinds, 21 templates (the plan said 17; D9's list adds to 21) and 5 validators, including feature-order cycle detection per step. **26.3 schema changes found:**
+  - mob spawns are now the attribute `minecraft:gameplay/natural_mob_spawns`, and sky and fog colours are `minecraft:visual/*` attributes;
+  - feature configs are flat (no `config` object);
+  - `random_patch` is gone;
+  - block states are a string or `{id, properties}`.
+
+  89 tests.
+- **Recent projects** (user request):
+  - stored in `settings.json`, at most 10, de-duplicated by normalised path;
+  - File > Open Recent, the toolbar Open arrow, a "Recent projects" list when no project is open, and a palette picker;
+  - Windows jump list;
+  - `openRecent` only opens roots already in the list;
+  - new e2e `recent-path`.
+- The two app tests that listed default plugins now derive the list from kind-contributing plugins. New projects list `msm.structures` and `msm.worldgen` too.
+- Version 0.2.4.
+
+**Decisions**
+- `newer-data-version` cannot come from contributed importers, because `Importer.import` gets no target. The host calls `importStructureFile` with `targetDataVersion` (B77).
+- The ore vein template uses `block_match` until `@msm/schemas` supports `#[id(tags="implicit")]` (follow-up).
+
+**Next**
+- The user tags `v0.2.3` (the auto-update fix) when ready. 0.2.4 is the first release that should auto-update.
+- Phase 3 wave 3: B76 library content and the sample-worldgen fixture, B77 host importers and validators, B78 structure and climate-map preview.
