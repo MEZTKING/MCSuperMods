@@ -21,7 +21,33 @@ const RESOURCE_FOLDER_KEYS = [
   'textures',
 ];
 
-const VENDORED_KEYS: VendoredKey[] = ['vanillaMcdocSymbols', 'mcmetaVersion', 'mcmetaRegistries'];
+const DATA_FOLDER_KEYS = [
+  'advancement',
+  'banner_pattern',
+  'chat_type',
+  'damage_type',
+  'dialog',
+  'dimension_type',
+  'enchantment',
+  'function',
+  'item_modifier',
+  'jukebox_song',
+  'loot_table',
+  'painting_variant',
+  'predicate',
+  'recipe',
+  'tags',
+  'trim_material',
+  'trim_pattern',
+];
+
+const VENDORED_KEYS: VendoredKey[] = [
+  'vanillaMcdocSymbols',
+  'mcmetaVersion',
+  'mcmetaRegistries',
+  'mcmetaCommands',
+  'mcmetaBlocks',
+];
 
 const nodeReadFile = async (url: URL): Promise<Uint8Array> => readFile(url);
 
@@ -68,12 +94,41 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       }
     });
 
+    it('names every data pack folder as a single path segment', () => {
+      expect(Object.keys(target.folders.data).sort()).toEqual(DATA_FOLDER_KEYS);
+      for (const name of Object.values(target.folders.data)) {
+        expect(name).toMatch(/^[a-z_]+$/);
+      }
+    });
+
     it('has vendored files that exist and parse', async () => {
       for (const key of VENDORED_KEYS) {
         const value = await readVendoredJson(bundle, key, nodeReadFile);
         expect(value, key).toBeTypeOf('object');
         expect(value, key).not.toBeNull();
       }
+    });
+
+    it('lists exactly the vendored keys', () => {
+      expect(Object.keys(bundle.vendored).sort()).toEqual([...VENDORED_KEYS].sort());
+    });
+
+    it('has a vendored command tree and block states', async () => {
+      const commands = (await readVendoredJson(bundle, 'mcmetaCommands', nodeReadFile)) as Record<
+        string,
+        unknown
+      >;
+      expect(commands.type).toBe('root');
+      const children = commands.children as Record<string, unknown>;
+      for (const name of ['execute', 'function', 'give', 'say']) {
+        expect(children, name).toHaveProperty(name);
+      }
+      const blocks = (await readVendoredJson(bundle, 'mcmetaBlocks', nodeReadFile)) as Record<
+        string,
+        unknown
+      >;
+      expect(Array.isArray(blocks.stone)).toBe(true);
+      expect(blocks.oak_stairs).toHaveLength(2);
     });
 
     it('has a vendored mcmeta version matching the target', async () => {

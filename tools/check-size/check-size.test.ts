@@ -22,6 +22,7 @@ const passing: Measurements = {
     { path: 'assets/index.js', bytes: 500_000 },
     { path: 'index.html', bytes: 900 },
   ],
+  mainFiles: [{ path: 'index.js', bytes: 4 * MB }],
   unpackedBytes: 280 * MB,
 };
 
@@ -65,6 +66,7 @@ describe('checkBudgets', () => {
           { path: 'a.js', bytes: BUDGETS.rendererBytes - BUDGETS.rendererJsonBytes },
           { path: 'data.json', bytes: BUDGETS.rendererJsonBytes },
         ],
+        mainFiles: null,
         unpackedBytes: null,
       }),
     ).toEqual([]);
@@ -93,10 +95,14 @@ describe('checkBudgets', () => {
   });
 
   it('reports missing inputs', () => {
-    expect(checkBudgets({ asarBytes: null, rendererFiles: null, unpackedBytes: null })).toEqual([
-      expect.stringContaining('dist:dir'),
-      expect.stringContaining('pnpm build'),
-    ]);
+    expect(
+      checkBudgets({
+        asarBytes: null,
+        rendererFiles: null,
+        mainFiles: null,
+        unpackedBytes: null,
+      }),
+    ).toEqual([expect.stringContaining('dist:dir'), expect.stringContaining('pnpm build')]);
   });
 });
 
@@ -116,6 +122,10 @@ describe('measure and report', () => {
     writeFileSync(join(renderer, 'index.js'), 'x'.repeat(300));
     writeFileSync(join(renderer, '..', 'index.html'), 'x'.repeat(20));
     writeFileSync(join(resources, 'app.asar'), 'x'.repeat(1000));
+    const main = join(root, 'app', 'out', 'main');
+    mkdirSync(join(main, 'chunks'), { recursive: true });
+    writeFileSync(join(main, 'index.js'), 'x'.repeat(2048));
+    writeFileSync(join(main, 'chunks', 'lazy.js'), 'x'.repeat(1024));
     writeFileSync(join(root, 'app', 'dist', 'linux-unpacked', 'mcsupermods'), 'x'.repeat(5000));
 
     const measured = measure(root);
@@ -125,6 +135,10 @@ describe('measure and report', () => {
         { path: 'assets/index.js', bytes: 300 },
         { path: 'index.html', bytes: 20 },
       ],
+      mainFiles: [
+        { path: 'chunks/lazy.js', bytes: 1024 },
+        { path: 'index.js', bytes: 2048 },
+      ],
       unpackedBytes: 6000,
     });
     expect(listFiles(join(root, 'app', 'out', 'renderer'))).toEqual(measured.rendererFiles);
@@ -133,11 +147,17 @@ describe('measure and report', () => {
     const lines = report(measured);
     expect(lines[0]).toBe('Renderer output: 320 B (budget 8.0 MB), largest files:');
     expect(lines).toContain('app.asar: 1000 B (budget 25.0 MB)');
+    expect(lines).toContain('Main output: index.js 2.0 kB, 3.0 kB in total (reported only)');
     expect(lines.at(-1)).toMatch(/^Unpacked app: 5\.9 kB/);
   });
 
   it('reports nothing measurable for an empty tree', () => {
     root = mkdtempSync(join(tmpdir(), 'msm-check-size-'));
-    expect(measure(root)).toEqual({ asarBytes: null, rendererFiles: null, unpackedBytes: null });
+    expect(measure(root)).toEqual({
+      asarBytes: null,
+      rendererFiles: null,
+      mainFiles: null,
+      unpackedBytes: null,
+    });
   });
 });

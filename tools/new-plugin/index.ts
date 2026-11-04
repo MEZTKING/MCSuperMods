@@ -64,6 +64,7 @@ export function pluginFiles(name: string): Record<string, string> {
     name: packageName,
     version: '0.0.0',
     private: true,
+    license: 'MIT',
     type: 'module',
     exports: { '.': { types: './src/index.ts', default: './src/index.ts' } },
     scripts: { test: 'vitest run' },

@@ -14,7 +14,13 @@ import * as mc_26_3 from '@msm/target-mc-26.3';
 /** A target together with the locations of its vendored data files. */
 export interface TargetBundle {
   target: Target;
-  vendored: { vanillaMcdocSymbols: URL; mcmetaVersion: URL; mcmetaRegistries: URL };
+  vendored: {
+    vanillaMcdocSymbols: URL;
+    mcmetaVersion: URL;
+    mcmetaRegistries: URL;
+    mcmetaCommands: URL;
+    mcmetaBlocks: URL;
+  };
 }
 
 /** The keys of `TargetBundle.vendored`. */

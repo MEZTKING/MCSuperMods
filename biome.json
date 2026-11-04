@@ -111,7 +111,27 @@
                   },
                   {
                     "group": ["@msm/plugin-*", "!@msm/plugin-api"],
-                    "message": "exporters consume OutputFile[], never plugins; @msm/plugin-resourcepack is for tests"
+                    "message": "exporters consume OutputFile[], never plugins; @msm/plugin-resourcepack and @msm/plugin-datapack are for tests"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["app/src/renderer/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@spyglassmc/*", "@msm/schemas/mcfunction"],
+                    "message": "Spyglass runs in the main process only (ADR 0014); call the mcfunction IPC instead"
                   }
                 ]
               }

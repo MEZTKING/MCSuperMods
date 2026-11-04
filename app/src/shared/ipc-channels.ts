@@ -67,7 +67,13 @@ export function isMenuCommand(value: unknown): value is MenuCommand {
 }
 
 /** The vendored data files of a target that the renderer may read. */
-export const VENDORED_KEYS = ['vanillaMcdocSymbols', 'mcmetaRegistries', 'mcmetaVersion'] as const;
+export const VENDORED_KEYS = [
+  'vanillaMcdocSymbols',
+  'mcmetaRegistries',
+  'mcmetaVersion',
+  'mcmetaCommands',
+  'mcmetaBlocks',
+] as const;
 
 /** A vendored data file key. */
 export type VendoredKeyName = (typeof VENDORED_KEYS)[number];

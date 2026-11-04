@@ -1,6 +1,7 @@
 {
   "name": "@msm/core",
   "version": "0.0.0",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "exports": {
@@ -14,6 +15,7 @@
   },
   "dependencies": {
     "@msm/plugin-api": "workspace:*",
+    "@msm/schemas": "workspace:*",
     "immer": "catalog:",
     "semver": "catalog:"
   },

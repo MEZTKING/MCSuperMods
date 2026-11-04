@@ -6,6 +6,7 @@
     "@msm/schemas",
     "@msm/core",
     "@msm/targets",
+    "@msm/plugin-datapack",
     "@msm/plugin-resourcepack"
   ],
   "@msm/interop": ["@msm/plugin-api", "@msm/schemas", "@msm/core", "@msm/targets"],

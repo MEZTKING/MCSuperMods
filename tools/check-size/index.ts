@@ -12,8 +12,9 @@
  * 3. No `*.json` file in the renderer output is larger than 100 kB (vendored data belongs in
  *    main, not in the renderer bundle).
  *
- * Reported only: the largest renderer chunks and the unpacked app total (dominated by the
- * Electron binary, which MSM does not control). The 150 MB installer budget is checked on the
+ * Reported only: the largest renderer chunks, the main-process bundle (`app/out/main/index.js`
+ * and the `app/out/main` total) and the unpacked app total (dominated by the Electron binary,
+ * which MSM does not control). The 150 MB installer budget is checked on the
  * Windows installer in `.github/workflows/release.yml`.
  */
 import { existsSync, readdirSync, statSync } from 'node:fs';
@@ -42,6 +43,8 @@ export interface FileSize {
 export interface Measurements {
   asarBytes: number | null;
   rendererFiles: FileSize[] | null;
+  /** Files of the main-process build output (`app/out/main`). Reported, never budgeted. */
+  mainFiles: FileSize[] | null;
   unpackedBytes: number | null;
 }
 
@@ -127,6 +130,7 @@ function unpackedDir(appDir: string): string | null {
 export function measure(root: string): Measurements {
   const appDir = join(root, 'app');
   const rendererDir = join(appDir, 'out', 'renderer');
+  const mainDir = join(appDir, 'out', 'main');
   const unpacked = unpackedDir(appDir);
   let asarBytes: number | null = null;
   let unpackedBytes: number | null = null;
@@ -140,6 +144,7 @@ export function measure(root: string): Measurements {
   return {
     asarBytes,
     rendererFiles: existsSync(rendererDir) ? listFiles(rendererDir) : null,
+    mainFiles: existsSync(mainDir) ? listFiles(mainDir) : null,
     unpackedBytes,
   };
 }
@@ -155,6 +160,13 @@ export function report(measured: Measurements, budgets: Budgets = BUDGETS): stri
     for (const file of summary.largest) {
       lines.push(`  ${formatBytes(file.bytes).padStart(9)}  ${file.path}`);
     }
+  }
+  if (measured.mainFiles !== null) {
+    const entry = measured.mainFiles.find((file) => file.path === 'index.js');
+    const total = summarise(measured.mainFiles, 0).totalBytes;
+    lines.push(
+      `Main output: index.js ${entry === undefined ? 'missing' : formatBytes(entry.bytes)}, ${formatBytes(total)} in total (reported only)`,
+    );
   }
   if (measured.asarBytes !== null) {
     lines.push(

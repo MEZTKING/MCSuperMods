@@ -1,19 +1,29 @@
 {
   "name": "@msm/schemas",
   "version": "0.0.0",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "exports": {
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./mcfunction": {
+      "types": "./src/mcfunction/index.ts",
+      "default": "./src/mcfunction/index.ts"
     }
   },
   "scripts": {
     "test": "vitest run"
   },
   "dependencies": {
-    "@msm/plugin-api": "workspace:*"
+    "@msm/plugin-api": "workspace:*",
+    "@spyglassmc/core": "catalog:",
+    "@spyglassmc/java-edition": "catalog:",
+    "@spyglassmc/mcdoc": "catalog:",
+    "@spyglassmc/mcfunction": "catalog:",
+    "vscode-languageserver-textdocument": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

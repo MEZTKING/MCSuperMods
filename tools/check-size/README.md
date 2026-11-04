@@ -6,7 +6,7 @@ Size budgets for the desktop app. Run after `pnpm build` and `pnpm --filter @msm
 node tools/check-size/index.ts [--root <repo-root>]
 ```
 
-It prints the renderer output total with its largest files, the size of `app.asar` and the total of the unpacked app, then fails (exit 1) when a budget is broken or an input is missing. CI runs it on Linux after the packaged smoke test.
+It prints the renderer output total with its largest files, the main-process output, the size of `app.asar` and the total of the unpacked app, then fails (exit 1) when a budget is broken or an input is missing. CI runs it on Linux after the packaged smoke test.
 
 ## Budgets
 
@@ -22,6 +22,7 @@ Thresholds are the `BUDGETS` constant in `index.ts` (binary units: 1 MB = 1024 Ã
 
 - **Unpacked app total.** About 284 MB on Linux at Phase 1, of which the Electron binary is about 224 MB. MSM does not control that, so the Phase 1 plan's "unpacked app < 150 MB" cannot pass and is not enforced.
 - **Largest renderer files**, to spot regressions before they hit the budget.
+- **Main-process output**: the size of `app/out/main/index.js` and the `app/out/main` total. From Phase 2 the main process bundles the Spyglass mcfunction service (ADR 0014), so this is watched, but it counts against the asar budget only.
 
 ## Installer budget
 
