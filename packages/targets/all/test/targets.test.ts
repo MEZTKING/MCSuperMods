@@ -27,6 +27,7 @@ const DATA_FOLDER_KEYS = [
   'chat_type',
   'damage_type',
   'dialog',
+  'dimension',
   'dimension_type',
   'enchantment',
   'function',
@@ -36,9 +37,11 @@ const DATA_FOLDER_KEYS = [
   'painting_variant',
   'predicate',
   'recipe',
+  'structure',
   'tags',
   'trim_material',
   'trim_pattern',
+  'worldgen',
 ];
 
 const VENDORED_KEYS: VendoredKey[] = [

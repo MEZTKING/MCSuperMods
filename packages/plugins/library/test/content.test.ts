@@ -50,6 +50,9 @@ const KIND_IDS = [
   'minecraft:tag/function',
   'minecraft:tag/damage_type',
   'minecraft:tag/enchantment',
+  'minecraft:tag/worldgen/biome',
+  'minecraft:tag/worldgen/structure',
+  'minecraft:tag/worldgen/world_preset',
   'minecraft:enchantment',
   'minecraft:damage_type',
   'minecraft:dimension_type',
@@ -158,14 +161,14 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 30 per-kind examples, one per built-in kind, and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(30);
+  it('has 33 per-kind examples, one per built-in kind, and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(33);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
     );
     expect(starterExamples.every((example) => example.category === STARTERS_CATEGORY)).toBe(true);
-    expect(libraryExamples).toHaveLength(34);
+    expect(libraryExamples).toHaveLength(37);
   });
 
   it('reuses the starter builders for the starter projects', () => {

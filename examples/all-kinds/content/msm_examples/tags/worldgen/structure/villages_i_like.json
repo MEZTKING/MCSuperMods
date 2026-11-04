@@ -1,0 +1,19 @@
+{
+  "data": {
+    "values": [
+      "minecraft:village_plains",
+      "minecraft:village_taiga"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:villages_i_like",
+  "kind": "minecraft:tag/worldgen/structure",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A worldgen/structure tag gives one name to several worldgen/structure ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. Find the nearest one with /locate structure #msm_examples:villages_i_like.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

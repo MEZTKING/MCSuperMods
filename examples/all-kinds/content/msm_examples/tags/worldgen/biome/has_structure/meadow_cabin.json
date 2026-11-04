@@ -1,0 +1,19 @@
+{
+  "data": {
+    "values": [
+      "minecraft:meadow",
+      "minecraft:cherry_grove"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:has_structure/meadow_cabin",
+  "kind": "minecraft:tag/worldgen/biome",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A worldgen/biome tag gives one name to several worldgen/biome ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. A structure lists a biome tag in its biomes field, so pointing a structure at #msm_examples:has_structure/meadow_cabin lets it generate in exactly these biomes.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

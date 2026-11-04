@@ -1,0 +1,19 @@
+{
+  "data": {
+    "values": [
+      "minecraft:normal",
+      "minecraft:large_biomes"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:my_presets",
+  "kind": "minecraft:tag/worldgen/world_preset",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A worldgen/world_preset tag gives one name to several worldgen/world_preset ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. Only presets in the vanilla tag #minecraft:normal appear on the World Type button; a tag of your own such as #msm_examples:my_presets is for grouping and reuse.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

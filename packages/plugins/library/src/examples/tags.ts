@@ -95,6 +95,35 @@ const TAGS: readonly TagExample[] = [
     usage: (id) =>
       `Enchantments refer to tags like #${id} in exclusive_set, and loot functions such as enchant_randomly take one in options.`,
   },
+  {
+    registry: 'worldgen/biome',
+    kind: KINDS.tagWorldgenBiome,
+    title: 'Biome tag',
+    description: 'A group of biomes, used to decide where structures generate.',
+    path: 'has_structure/meadow_cabin',
+    values: ['minecraft:meadow', 'minecraft:cherry_grove'],
+    usage: (id) =>
+      `A structure lists a biome tag in its biomes field, so pointing a structure at #${id} lets it generate in exactly these biomes.`,
+  },
+  {
+    registry: 'worldgen/structure',
+    kind: KINDS.tagWorldgenStructure,
+    title: 'Structure tag',
+    description: 'A group of structures, used by /locate, maps and explorer trades.',
+    path: 'villages_i_like',
+    values: ['minecraft:village_plains', 'minecraft:village_taiga'],
+    usage: (id) => `Find the nearest one with /locate structure #${id}.`,
+  },
+  {
+    registry: 'worldgen/world_preset',
+    kind: KINDS.tagWorldgenWorldPreset,
+    title: 'World preset tag',
+    description: 'A group of world presets; minecraft:normal lists the World Type choices.',
+    path: 'my_presets',
+    values: ['minecraft:normal', 'minecraft:large_biomes'],
+    usage: (id) =>
+      `Only presets in the vanilla tag #minecraft:normal appear on the World Type button; a tag of your own such as #${id} is for grouping and reuse.`,
+  },
 ];
 
 function notes(id: string, tag: TagExample): string {
@@ -103,12 +132,12 @@ function notes(id: string, tag: TagExample): string {
 
 export const tagExamples: readonly ExampleProject[] = TAGS.map((tag) =>
   defineExample({
-    id: `example_tag_${tag.registry}`,
+    id: `example_tag_${tag.registry.replaceAll('/', '_')}`,
     title: tag.title,
     description: tag.description,
     kind: tag.kind,
     category: 'Tags',
-    tags: ['tag', tag.registry],
+    tags: ['tag', tag.registry.replaceAll('/', '_')],
     build: ({ namespace }) => {
       const id = rl(namespace, tag.path);
       if (tag.registry !== 'function') {
