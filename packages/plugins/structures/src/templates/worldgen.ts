@@ -1,8 +1,9 @@
 /**
  * Templates for template pools, jigsaw structures, structure sets and processor lists. Each
- * refers to the element with its own id in the neighbouring registry (the pool uses the
- * structure template of the same id, the structure starts from the pool of the same id, the
- * set places the structure of the same id), so one name chains them together.
+ * link to the neighbouring registry starts as the new element's own id (the pool's piece
+ * `location`, the structure's `start_pool`, the set's `structure`). Element ids are unique
+ * across kinds in a project, so the user points each link at the real element's id; the
+ * descriptions say which field to change.
  */
 import type { ElementTemplate } from '@msm/plugin-api';
 
@@ -24,7 +25,8 @@ export const worldgenTemplates: readonly ElementTemplate[] = [
     id: 'template_pool',
     kind: 'minecraft:worldgen/template_pool',
     title: 'Template pool',
-    description: 'A pool with one piece: the structure template with the same id, kept rigid.',
+    description:
+      "A pool with one rigid piece. Its Location starts as the new pool's own id: change it to your structure template's id.",
     category: CATEGORY,
     data: ({ id }) => ({
       fallback: 'minecraft:empty',
@@ -46,7 +48,7 @@ export const worldgenTemplates: readonly ElementTemplate[] = [
     kind: 'minecraft:worldgen/template_pool',
     title: 'Template pool: terminators',
     description:
-      'A pool that ends jigsaw chains: the structure template with the same id, following the terrain, or nothing at all.',
+      "A pool that ends jigsaw chains: one piece that follows the terrain, or nothing at all. The piece's Location starts as the new pool's own id: change it to your structure template's id.",
     category: CATEGORY,
     data: ({ id }) => ({
       fallback: 'minecraft:empty',
@@ -69,7 +71,7 @@ export const worldgenTemplates: readonly ElementTemplate[] = [
     kind: 'minecraft:worldgen/structure',
     title: 'Jigsaw structure',
     description:
-      'A jigsaw structure in forests that starts from the pool with the same id and blends into the terrain.',
+      "A jigsaw structure in forests that blends into the terrain. Its start pool starts as the new structure's own id: change it to your template pool's id.",
     category: CATEGORY,
     data: ({ id }) => ({
       type: 'minecraft:jigsaw',
@@ -90,7 +92,7 @@ export const worldgenTemplates: readonly ElementTemplate[] = [
     kind: 'minecraft:worldgen/structure_set',
     title: 'Structure set (random spread)',
     description:
-      'Places the structure with the same id about once in every 34×34 chunk cell, at least 8 chunks apart.',
+      "Places one structure about once in every 34×34 chunk cell, at least 8 chunks apart. Its structure entry starts as the new set's own id: change it to your structure's id.",
     category: CATEGORY,
     data: ({ id }) => ({
       structures: [{ structure: id, weight: 1 }],

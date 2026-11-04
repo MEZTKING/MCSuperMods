@@ -1,7 +1,8 @@
 /**
  * Structure template templates: a plain platform, a hut piece and a path piece with jigsaw
- * blocks. Jigsaws point at the template pool with the same id as the new element, so a pool,
- * structure and structure set made from this plugin's templates under one name connect.
+ * blocks. The jigsaws' `pool` starts as the new template's own id and their names and targets
+ * are `<id>_entrance` and `<id>_path`; element ids are unique across kinds, so the user points
+ * `pool` at the real template pool's id.
  */
 import type { ElementTemplate, Json } from '@msm/plugin-api';
 import { PieceBuilder } from './pieces';
@@ -29,7 +30,7 @@ export const structureTemplateTemplates: readonly ElementTemplate[] = [
     kind: KIND,
     title: 'Structure template: jigsaw hut piece',
     description:
-      'A 5×5×5 plank hut with a doorway and a jigsaw block in front of it that attaches pieces from the pool with the same id.',
+      "A 5×5×5 plank hut with a doorway and a jigsaw block in front of it, named <id>_entrance and targeting <id>_path. The jigsaw's pool starts as the new template's own id: change it to your template pool's id.",
     category: CATEGORY,
     data: ({ id }) =>
       json(
@@ -54,7 +55,7 @@ export const structureTemplateTemplates: readonly ElementTemplate[] = [
     kind: KIND,
     title: 'Structure template: path piece',
     description:
-      'A 3×1×5 dirt path with a jigsaw block at each end, both connecting to further paths from the pool with the same id.',
+      "A 3×1×5 dirt path with a jigsaw block at each end, both named and targeting <id>_path. Their pool starts as the new template's own id: change it to your template pool's id.",
     category: CATEGORY,
     data: ({ id }) =>
       json(

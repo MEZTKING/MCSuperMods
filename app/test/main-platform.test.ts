@@ -1,9 +1,13 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { builtInTargets } from '@msm/targets';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createNodePlatform, type NativeDialogs } from '../src/main/platform/node-platform';
+import {
+  createNodePlatform,
+  type NativeDialogs,
+  writeFileAtomic,
+} from '../src/main/platform/node-platform';
 import { makeMmcRoot } from './helpers/fake-launchers';
 
 let temp: string;
@@ -59,6 +63,21 @@ describe('main platform dialogs', () => {
     expect(new Uint8Array(await readFile(join(temp, 'out', 'pack.zip')))).toEqual(
       new Uint8Array([7]),
     );
+    // Written through a temporary file that is renamed into place: nothing is left over.
+    expect(await readdir(join(temp, 'out'))).toEqual(['pack.zip']);
+  });
+
+  it('replaces a saved file atomically and cleans up after a failed write', async () => {
+    const out = join(temp, 'atomic');
+    const file = join(out, 'pack.zip');
+    await writeFileAtomic(file, new Uint8Array([1, 2, 3]));
+    await writeFileAtomic(file, new Uint8Array([4]));
+    expect(new Uint8Array(await readFile(file))).toEqual(new Uint8Array([4]));
+    expect(await readdir(out)).toEqual(['pack.zip']);
+    // Renaming onto a folder fails; the temporary file must not stay behind.
+    await mkdir(join(out, 'taken.zip'));
+    await expect(writeFileAtomic(join(out, 'taken.zip'), new Uint8Array([5]))).rejects.toThrow();
+    expect((await readdir(out)).sort()).toEqual(['pack.zip', 'taken.zip']);
   });
 });
 

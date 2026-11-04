@@ -82,6 +82,7 @@ import {
   userFacingExportProblems,
 } from './studios/export-state';
 import type { CompleteFunction } from './studios/FunctionEditor';
+import { type StructureStudioHost, StructureStudioHostContext } from './studios/structures/host';
 import { templatesFor } from './studios/templates';
 import { useSchemaContext } from './studios/use-schema-context';
 
@@ -672,6 +673,36 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     }
   };
 
+  /** Picks one file for the registered importers and replaces element `id` with it. */
+  const replaceFromFile = async (id: ResourceLocation): Promise<void> => {
+    let files: Awaited<ReturnType<MsmBridge['dialogs']['pickFiles']>>;
+    try {
+      files = await bridge.dialogs.pickFiles({
+        title: `Replace ${id} from a file`,
+        filters: importerFileFilters(session.importers),
+      });
+    } catch (error) {
+      setMessage({ kind: 'error', text: messageOf(error) });
+      return;
+    }
+    const file = files[0];
+    if (file === undefined) return;
+    try {
+      const result = await session.replaceElementFromFile(id, {
+        name: file.name,
+        data: file.data,
+      });
+      const notes = result.problems.map((problem) => ` ${problem.message}`).join('');
+      setMessage(
+        result.replaced
+          ? { kind: 'info', text: `Replaced ${id} from ${file.name}.${notes}` }
+          : { kind: 'error', text: `${id} was not replaced.${notes}` },
+      );
+    } catch (error) {
+      setMessage({ kind: 'error', text: `Replace failed: ${messageOf(error)}` });
+    }
+  };
+
   const reveal = (relative: string): void => {
     const root = snapshot.root;
     if (root === null) return;
@@ -828,7 +859,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       setMessage({ kind: 'error', text: 'Select an element to rename.' });
       return;
     }
-    const registry = kindRegistry(selected.kind);
+    const registry = kindRegistry(selected.kind, session.registry);
     const references = session.references
       .to(selected.id)
       .filter((reference) => reference.registry === '' || reference.registry === registry).length;
@@ -1050,20 +1081,28 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       });
   }, [bridge, functionId, functionProjectIds, target]);
 
+  const structureHost: StructureStudioHost = {
+    replaceFromFile: (id) => void replaceFromFile(id),
+    exportStructures: (format) => (format === 'nbt' ? exportStructures() : exportSchematics()),
+    openElement: (id) => select(id),
+  };
+
   const form =
     project !== null && selected !== null ? (
-      <ElementForm
-        complete={completeFunction}
-        project={project}
-        element={selected}
-        kind={selectedKind}
-        problems={selectedProblems}
-        schema={schema}
-        onChange={editValue}
-        focusPointer={selectedPointer}
-        {...(selectedRange === null ? {} : { focusColumn: selectedRange.start })}
-        onFocused={clearPointer}
-      />
+      <StructureStudioHostContext.Provider value={structureHost}>
+        <ElementForm
+          complete={completeFunction}
+          project={project}
+          element={selected}
+          kind={selectedKind}
+          problems={selectedProblems}
+          schema={schema}
+          onChange={editValue}
+          focusPointer={selectedPointer}
+          {...(selectedRange === null ? {} : { focusColumn: selectedRange.start })}
+          onFocused={clearPointer}
+        />
+      </StructureStudioHostContext.Provider>
     ) : undefined;
 
   const preview =

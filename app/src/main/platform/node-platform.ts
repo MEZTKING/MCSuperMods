@@ -7,7 +7,8 @@
  * @packageDocumentation
  */
 
-import { mkdir, readdir, readFile, realpath, stat, writeFile } from 'node:fs/promises';
+import { randomBytes } from 'node:crypto';
+import { mkdir, readdir, readFile, realpath, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, normalize } from 'node:path';
 import type { ProjectFileSystem } from '@msm/core';
 import type { InstallEnv, InstallFileSystem } from '@msm/interop';
@@ -27,6 +28,24 @@ import { createScopedFileSystem, isWithin, type ScopedFileSystem } from './scope
 import { createSettingsStore, type SettingsStore } from './settings';
 import { createTargetsService } from './targets';
 import { createThumbnailService } from './thumbnails';
+
+/**
+ * Writes `data` to `path` through a temporary file in the same folder, then renames it into
+ * place, so a reader never sees a partly written file (the e2e specs read exported zips as
+ * soon as the save resolves). The temporary file is removed when the write fails.
+ */
+export async function writeFileAtomic(path: string, data: Uint8Array): Promise<void> {
+  const dir = dirname(path);
+  await mkdir(dir, { recursive: true });
+  const temp = join(dir, `.${basename(path)}.${randomBytes(6).toString('hex')}.tmp`);
+  try {
+    await writeFile(temp, data, { flag: 'wx' });
+    await rename(temp, path);
+  } catch (error) {
+    await rm(temp, { force: true });
+    throw error;
+  }
+}
 
 /** The project file name; mirrors `PROJECT_FILE` in `@msm/core`. */
 export const PROJECT_FILE = 'msm.project.json';
@@ -244,8 +263,7 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
         const path = await deps.dialogs.saveFilePath(opts);
         if (path === null) return null;
         if (!isAbsolute(path)) throw new Error('The save path must be absolute.');
-        await mkdir(dirname(path), { recursive: true });
-        await writeFile(path, data);
+        await writeFileAtomic(path, data);
         lastSavePath = path;
         return path;
       },

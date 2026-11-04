@@ -3,7 +3,7 @@
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { createMemoryFileSystem } from '@msm/core';
-import type { Plugin } from '@msm/plugin-api';
+import { definePlugin, type ElementKind, type Plugin } from '@msm/plugin-api';
 import { structureTemplateToNbt, writeNbt } from '@msm/plugin-structures';
 import { builtInTargets, targetById } from '@msm/targets';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
@@ -502,6 +502,37 @@ describe('App menu commands', () => {
     expect(screen.getByText(/No Minecraft folder is configured/)).toBeTruthy();
     await userEvent.setup().click(confirm);
     expect(await screen.findByRole('dialog', { name: /Settings/ })).toBeTruthy();
+  });
+
+  it('counts rename references with the session registry of a plugin kind', async () => {
+    // A kind whose registry (`function`) differs from its id: only the session's registry
+    // knows it, so the default (built-in) lookup would count no references.
+    const scriptKind: ElementKind = {
+      id: 'test:script',
+      schema: 'msm:function',
+      folder: 'test_script',
+      registry: 'function',
+      lower: () => [],
+    };
+    const plugin = definePlugin({
+      id: 'test.scripts',
+      apiVersion: '^0.5.0',
+      contributes: { elementKinds: [scriptKind] },
+    });
+    const harness = await renderApp({ plugins: [...builtInPlugins, plugin] });
+    act(() => {
+      harness.session.addElement({ id: 'demo:helper', kind: 'test:script', data: {} });
+      harness.session.addElement({
+        id: 'demo:all',
+        kind: 'minecraft:tag/function',
+        data: { values: ['demo:helper'] },
+      });
+      useUiStore.getState().select('demo:helper');
+    });
+    await act(() => harness.session.flushValidation());
+    await harness.menu('renameElement');
+    const dialog = await screen.findByTestId('rename-dialog');
+    expect(within(dialog).getByText(/1 reference to demo:helper will be rewritten/)).toBeTruthy();
   });
 
   it('renames the selected element and reports the rewritten references', async () => {

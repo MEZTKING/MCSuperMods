@@ -227,6 +227,17 @@ export interface ImportFilesResult {
   problems: Problem[];
 }
 
+/** The result of {@link ProjectSession.replaceElementFromFile}. */
+export interface ReplaceFromFileResult {
+  /** Whether the element's data was replaced. */
+  replaced: boolean;
+  /**
+   * The importer's own problems, plus `import.unsupported-file`, `import.failed` or
+   * `import.kind-mismatch` when nothing was replaced.
+   */
+  problems: Problem[];
+}
+
 /**
  * Anything that builds a {@link ContentBundle}: a {@link ProjectStarter}, an
  * {@link ExampleProject}, or a host-made source.
@@ -411,6 +422,8 @@ export const SessionProblemCodes = {
   importUnsupported: 'import.unsupported-file',
   /** An importer threw, or produced something the project cannot hold. */
   importFailed: 'import.failed',
+  /** A replacement file imported no element of the replaced element's kind. */
+  importKindMismatch: 'import.kind-mismatch',
   /** The named plugin exporter is not registered. */
   unknownExporter: 'export.unknown-exporter',
 } as const;
@@ -1112,6 +1125,83 @@ export class ProjectSession {
       stack.execute({ ...bundleCommand(current, label), id: 'app.import-files' });
     }
     return { imported: current.elements.map((element) => element.id), problems };
+  }
+
+  /**
+   * Replaces an element's data with the data a file imports to ("Replace from file…" in the
+   * Structure Studio): the file goes to the importer that accepts its extension, run for the
+   * current target like {@link importFiles}, and the first imported element of the same kind
+   * replaces the data of `id`, which keeps its id and metadata. One undoable command,
+   * "Replace <id> from <file>". Assets the importer returns are not added. Never throws for a
+   * bad file: an unsupported extension, a throwing importer or a result without an element of
+   * the element's kind is an error problem and changes nothing.
+   *
+   * @param id - The element to replace.
+   * @param file - The file's name and bytes.
+   * @throws Error If no project is open or the project has no element `id`.
+   */
+  async replaceElementFromFile(
+    id: ResourceLocation,
+    file: { name: string; data: Uint8Array },
+  ): Promise<ReplaceFromFileResult> {
+    const stack = this.#requireStack();
+    const element = elementsById(stack.state).get(id);
+    if (element === undefined) throw new Error(`There is no element ${id} to replace.`);
+    const entry = importerFor(this.#importers, file.name);
+    if (entry === undefined) {
+      return {
+        replaced: false,
+        problems: [
+          {
+            severity: 'error',
+            code: SessionProblemCodes.importUnsupported,
+            file: file.name,
+            elementId: id,
+            message: `${file.name} was not imported: no importer accepts this kind of file.`,
+          },
+        ],
+      };
+    }
+    const namespace = id.slice(0, id.indexOf(':'));
+    let result: ImportResult;
+    try {
+      result = await entry.run({ name: file.name, bytes: file.data }, namespace, this.target);
+    } catch (error) {
+      return {
+        replaced: false,
+        problems: [
+          {
+            severity: 'error',
+            code: SessionProblemCodes.importFailed,
+            file: file.name,
+            elementId: id,
+            message: `${file.name} could not be imported by ${entry.importer.displayName}: ${messageOf(error)}`,
+          },
+        ],
+      };
+    }
+    const problems: Problem[] = [...result.problems];
+    const imported = result.elements.find((candidate) => candidate.kind === element.kind);
+    if (imported === undefined) {
+      problems.push({
+        severity: 'error',
+        code: SessionProblemCodes.importKindMismatch,
+        file: file.name,
+        elementId: id,
+        message: `${file.name} holds no ${element.kind} element, so ${id} was not replaced.`,
+      });
+      return { replaced: false, problems };
+    }
+    // The project may have changed, or the element gone, while the file was imported.
+    if (this.#requireStack() !== stack || !elementsById(stack.state).has(id)) {
+      throw new Error(`There is no element ${id} to replace.`);
+    }
+    stack.execute({
+      ...commands.setElementData(id, imported.data),
+      id: 'app.replace-from-file',
+      label: `Replace ${id} from ${file.name}`,
+    });
+    return { replaced: true, problems };
   }
 
   /**
