@@ -27,3 +27,5 @@ Previews need vanilla models, blockstates, item definitions, textures and lang s
 ## Status
 
 Accepted (2026-11-04). Implemented in Phase 1 as written.
+
+Updated in Phase 2 (2026-11-04): extraction now also inflates the `.png.mcmeta` animation sidecars beside block and item textures, so the preview animates vanilla textures ([ADR 0010](0010-preview-with-deepslate.md)). The cache schema version (`AssetCacheInfo.schemaVersion`) is 2; a Phase 1 cache (version 1, without sidecars) is re-extracted on next use. Project-authored sidecars are exported and pass the validation gate as `resource:texture_meta`.

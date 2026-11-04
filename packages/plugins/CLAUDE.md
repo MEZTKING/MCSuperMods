@@ -1,6 +1,6 @@
 # packages/plugins — Built-in plugins
 
-Phase 1 code complete: `@msm/plugin-resourcepack` (model, block definition, item definition, lang, sounds and `pack.mcmeta` kinds, golden lowering tests per target). The others follow in Phases 2–6.
+Phase 2 code complete: `@msm/plugin-resourcepack` (model, block definition, item definition, lang, sounds and dual-layer `pack.mcmeta`) and `@msm/plugin-datapack` (plugin id `msm.datapack`: recipe, loot table, advancement, predicate, item modifier, function, eight `minecraft:tag/<registry>` kinds, and ten schema-form kinds such as enchantment and dialog; ADR 0015). Both declare `apiVersion: '^0.3.0'`. The others follow in Phases 3–6.
 
 ## Purpose
 
@@ -19,14 +19,16 @@ Built-in plugins contribute element kinds, lowering and commands (editors and St
 | `models-anim/` | `@msm/plugin-models-anim` | 5 |
 | `scripting/` | `@msm/plugin-scripting` | 6 |
 
-Layout per plugin (from `tools/new-plugin`): `src/index.ts` (`definePlugin`, `apiVersion: '^0.2.0'`), `src/kinds/`, `src/lowering/`, `test/plugin.test.ts`, goldens under `test/fixtures/<target id>/expected/<kind folder>/`.
+Layout per plugin (from `tools/new-plugin`): `src/index.ts` (`definePlugin`, `apiVersion: '^0.3.0'`), `src/kinds/`, `src/lowering/`, `test/plugin.test.ts`, goldens under `test/fixtures/<target id>/expected/<kind folder>/`.
 
 ## Conventions
 
 - Each plugin imports only `@msm/plugin-api` and `@msm/schemas`. Tests may also import `@msm/targets` (Biome forbids it, `@msm/target-*` and `@msm/core` in `src/`; ADR 0013).
 - Kinds set `defaultData`, `hiddenPaths` and `previewKind`; outputs set `OutputFile.schema` for the validation gate (ADR 0009).
 - Vanilla kinds get no custom editor unless a Studio view is justified; the mcdoc-driven form is the default.
-- Lowering functions are pure (`lower(element, target) -> OutputFile[]`), take folder names from `target.folders.resource`, and are golden-tested per target.
+- Lowering functions are pure (`lower(element, target) -> OutputFile[]`), take folder names from `target.folders.resource` or `target.folders.data` (datapack: `lowering/paths.ts`, `lowerJsonData`), and are golden-tested per target.
+- Functions are stored as `{ lines }` (schema `msm:function`) and lower to `.mcfunction` with `language: 'mcfunction'` and no `schema`; tag kinds use schema `tag:<registry>` and folder `tags/<registry>`.
+- New-element templates live in the app (`studios/templates.ts`), in the current target's JSON shapes.
 - Create a new plugin with `tools/new-plugin`, never by hand.
 
 ## Do / Don't

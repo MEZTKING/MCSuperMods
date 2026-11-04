@@ -24,4 +24,6 @@ Previews also need vanilla parent models (`block/cube_all`, `item/generated`) an
 
 ## Status
 
-Accepted (2026-11-04). Implemented in Phase 1 as written: the seven fallback parents are from-scratch geometry. The fallback-parent policy is pending the user's confirmation (DESIGN Q12).
+Accepted (2026-11-04). Implemented in Phase 1 as written: the seven fallback parents are from-scratch geometry. The fallback-parent policy is still pending the user's confirmation at Phase 2 close (DESIGN Q12).
+
+Updated in Phase 2 (2026-11-04): animated textures are previewed frame by frame from their `.png.mcmeta` ([ADR 0011](0011-client-jar-asset-extraction.md)), with a frame scrubber (play, pause, previous, next, slider) and no interpolation between frames. The atlas still crops each texture to a 16×16 tile, so textures larger than 16×16 (HD packs) preview cropped; this is a Phase 2 follow-up in the [ROADMAP](../ROADMAP.md).

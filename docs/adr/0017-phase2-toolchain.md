@@ -49,4 +49,4 @@ Verified on 2026-11-04 from the npm registry and the Node.js release schedule:
 
 ## Status
 
-Accepted (2026-11-04).
+Accepted (2026-11-04). Implemented in Phase 2: Node 24.22.2 and pnpm 12.16.1 (`allowBuilds` replaces `onlyBuiltDependencies`; `pnpm/action-setup@v6`), plugin-api 0.3.0, the Spyglass pins plus `@spyglassmc/json` 0.3.61 and `@spyglassmc/nbt` 0.3.63 as direct dependencies ([ADR 0014](0014-mcfunction-diagnostics-with-spyglass.md)), and the vendored command tree and block states. Spyglass bundled into main without the stub fallback, and `app.asar` was 12.7 MB at Phase 2 close rather than the 14 MB expected. Three just-published packages are listed in `minimumReleaseAgeExclude`; removing them is a Phase 2 follow-up. Auto-update was later approved and implemented ([ADR 0018](0018-auto-update.md)), and `MENU_COMMANDS` also gained `renameElement` and `checkForUpdates`.

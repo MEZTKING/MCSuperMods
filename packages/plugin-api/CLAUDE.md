@@ -1,6 +1,6 @@
 # packages/plugin-api — Public plugin API
 
-Phase 1 code complete: `API_VERSION` 0.2.0 (additive over 0.1.0 plus required `Target.folders`; ADR 0013), IR types, `definePlugin` and shared path validation.
+Phase 2 code complete: `API_VERSION` 0.3.0 (`OutputFile.language`, `Problem.range`, required `Target.folders.data` with `DataFolderKey`; ADR 0017), IR types, `definePlugin` and shared path validation. Plugins declaring `^0.2.0` no longer load.
 
 ## Purpose
 
@@ -9,8 +9,8 @@ Phase 1 code complete: `API_VERSION` 0.2.0 (additive over 0.1.0 plus required `T
 ## Contents
 
 - `src/json.ts`, `src/model.ts`: JSON and IR types.
-- `src/output.ts`, `src/problems.ts`: `OutputFile` (with optional `schema` for the validation gate), `OutputSink`, `Problem` (with optional `file`), `ProblemReporter`.
-- `src/target.ts`: `Target` (incl. `folders.resource: Record<ResourceFolderKey, string>`), `PackFormat` (`{ major, minor }`), `MigrationReport`.
+- `src/output.ts`, `src/problems.ts`: `OutputFile` (optional `schema` for the validation gate, `language` for text checks such as `mcfunction`), `OutputSink`, `Problem` (optional `file`, and `range` in UTF-16 offsets within `path`'s string or `file`), `ProblemReporter`.
+- `src/target.ts`: `Target` (incl. `folders.resource: Record<ResourceFolderKey, string>` and `folders.data: Record<DataFolderKey, string>`), `PackFormat` (`{ major, minor }`), `MigrationReport`.
 - `src/contributions.ts`: `ElementKind` (`defaultData`, `hiddenPaths`, `previewKind`), `EditorContribution`, `Exporter` (`ExporterInput.meta`), `Importer`, `Command`.
 - `src/paths.ts`: `isProjectRelativePath`, `assertProjectRelativePath` (shared by core and app main).
 - `src/plugin.ts`, `src/version.ts`: `Plugin`, `definePlugin`, `API_VERSION`.
@@ -42,4 +42,4 @@ Phase 1 code complete: `API_VERSION` 0.2.0 (additive over 0.1.0 plus required `T
 
 - [DESIGN §7 Plugin System](../../docs/DESIGN.md#7-plugin-system)
 - [DESIGN §9 Targets and Exporters](../../docs/DESIGN.md#9-targets-and-exporters)
-- [ADR 0008](../../docs/adr/0008-ir-types-in-plugin-api.md), [ADR 0013](../../docs/adr/0013-phase1-toolchain-and-packaging.md), [ROADMAP, Phases 1 and 7](../../docs/ROADMAP.md)
+- [ADR 0008](../../docs/adr/0008-ir-types-in-plugin-api.md), [ADR 0013](../../docs/adr/0013-phase1-toolchain-and-packaging.md), [ADR 0017](../../docs/adr/0017-phase2-toolchain.md), [ROADMAP, Phases 1 and 7](../../docs/ROADMAP.md)

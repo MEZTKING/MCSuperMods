@@ -475,3 +475,37 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - B47: docs sync, ROADMAP ticks, Milestone Log, and CLAUDE.md status lines. It must also record: ADR 0010/0011 updates for animated textures; ADR 0014 for checking with symbols and JSON/NBT completion; the stale DESIGN §14 auto-update line; the schemas and plugins CLAUDE.md files; and the known gaps listed in the wave 4 entry.
+
+---
+
+## 2026-11-04 — main session — Phase 2 review and close
+
+**What**
+- B47 docs sync landed:
+  - ADR Status lines 0009–0018 record the outcomes.
+  - DESIGN §4/§6/§9/§14/§16/§18 now match the implementation.
+  - ROADMAP: Phase 2 ticked, a "Phase 2 follow-ups" list under Phase 3, and a Milestone Log row.
+  - README: "Releasing" (first-release steps) and "Known limitations".
+  - All CLAUDE.md files refreshed.
+- Ran the Phase 2 exit criteria on the working tree, and all passed:
+  - `pnpm install --frozen-lockfile` (pnpm 12.16.1, Node 24.22.2)
+  - lint (Biome and check-deps), typecheck, `pnpm test` (11/11 tasks, 1,037 tests), build
+  - xvfb smoke
+  - e2e: 3/3 specs (smoke, resource-pack golden path, data-pack golden path) in 9.7 s
+  - `dist:dir`, then the packaged smoke test; the updater correctly logs "inactive (unsupported-platform)" on Linux
+  - `check-size` within budget (asar 12.7 MB)
+  - 18 ADRs; DESIGN still has 19 H2 headings
+  - no tracked jars; no `26.<n>` literals outside `packages/targets`
+
+**Decisions**
+- None new. B47's follow-up is added to the Phase 3 follow-ups: `renameElement` ignores `CollectedReference.written`, so renaming the target of an idPath reference would write the full id. Low risk, but it needs a test.
+
+**Needs the user**
+- In-game checks on Windows with Minecraft 26.3:
+  - the stick test (`fixtures/sample-resourcepack`);
+  - the data pack check (`fixtures/sample-datapack`: `/reload`, `/function msm_sample_data:greet`, craft the ruby block, advancement toast, clean `latest.log`).
+- First release: README "Releasing". Make the repository public, then set the version, tag `v0.1.0`, and publish the draft.
+- Q12: the fallback-parent policy (veto or accept).
+
+**Next**
+- Phase 3, Structures & Worldgen: the orchestrator plans it when the user says go, including the Phase 2 follow-ups list.

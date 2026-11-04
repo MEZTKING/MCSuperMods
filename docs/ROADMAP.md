@@ -22,7 +22,7 @@ This is the phased delivery plan for MCSuperMods (MSM). The orchestrator updates
 | 4 | Engine Mod + Blocks/Items (v0.4) | `msm_runtime` mod, `msm/` definition loader, components/events v1, Block & Item Studios, Fabric content-jar exporter, managed test instance launch from app | A custom block with custom behaviour works in-game from one exported jar | 8–10 wk |
 | 5 | Entities, Models, Animation (v0.5) | `msm:entity` + AI goal components, GeckoLib integration, Blockbench `.bbmodel` + animation import, spawn rules/eggs | A Blockbench-animated custom mob spawns, moves, attacks | 8–10 wk |
 | 6 | Scripting & Eject (v0.6) | Rhino scripting, TS typings, Monaco script editor, export-as-Java-project | Script-driven behaviour runs; ejected project builds with Gradle and matches runtime behaviour | 6–8 wk |
-| 7 | 1.0 | Third-party plugin loading, templates/wizards, second target (26.4 or whatever is current), docs site, auto-update | Two targets supported; external plugin works; release | 6–8 wk |
+| 7 | 1.0 | Third-party plugin loading, templates/wizards, second target (26.4 or whatever is current), docs site (auto-update moved to Phase 2) | Two targets supported; external plugin works; release | 6–8 wk |
 
 Total: roughly 43–58 focused weeks.
 
@@ -87,14 +87,14 @@ The first public release. A beginner imports textures, edits block and item mode
 - [x] Size budgets tracked in CI (`tools/check-size`; installer budget in the release workflow).
 - [x] Release workflow for Windows only: unsigned NSIS x64 installer via electron-builder, attached to a draft GitHub Release on `v*` tags (macOS not planned; Linux `dir` build for verification only; [ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
 - [ ] In-game verification by the user: install the sample pack in Minecraft Java 26.3 and confirm a held stick shows the ruby.
-- [ ] First tagged release `v0.1.0` (blocked on the licence, DESIGN [Open Question 10](DESIGN.md#18-open-questions)).
+- [ ] First tagged release `v0.1.0`. The licence is settled (MIT, DESIGN [Open Question 10](DESIGN.md#18-open-questions)); it waits on the user's publishing steps in the README "Releasing" section.
 - [ ] Signed Windows release (needs signing credentials from the user).
 
 ### Exit criteria
 
 A user makes and installs a working texture plus custom model pack without touching JSON.
 
-Status: code complete on 2026-11-04. The automated proxy passes (the golden-path e2e never opens the Raw JSON tab and the exported zip passes the schema gate); the in-game check and the first tagged release are pending.
+Status: code complete on 2026-11-04. The automated proxy passes (the golden-path e2e never opens the Raw JSON tab and the exported zip passes the schema gate); the in-game check and the first tagged release are pending with the user.
 
 ### Estimate
 
@@ -112,28 +112,33 @@ Bring every common data pack file into the editor with validation and autocomple
 
 ### Deliverables
 
-- [ ] `@msm/plugin-datapack`: element kinds for recipes, loot tables, advancements, tags, predicates, item modifiers and functions ([ADR 0015](adr/0015-data-pack-element-model.md)).
-- [ ] Generic schema-form kinds: enchantment, damage type, dimension type, chat type, jukebox song, banner pattern, painting variant, trim material, trim pattern and dialog.
-- [ ] Loot tables and advancements: schema form plus templates (a bespoke Loot Table Studio is deferred to a later phase).
-- [ ] Recipe Studio: curated crafting-grid view over the recipe element.
-- [ ] Registry-backed autocomplete from mcmeta data held in `@msm/schemas`.
-- [ ] mcfunction editor in Monaco with Spyglass diagnostics and completion, offline in the main process ([ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)).
-- [ ] Reference index in `@msm/core` with rename refactor across elements and function text ([ADR 0016](adr/0016-reference-index-and-rename.md)).
-- [ ] Command palette.
-- [ ] `vanilla-packs` exporter: data pack `.zip` and combined export (both zips into a folder the user picks).
-- [ ] "Install to world datapacks folder" action with a world picker.
-- [ ] Golden tests for every new kind.
-- [ ] Sample data pack (`fixtures/sample-datapack/`) with SHA-256 exporter goldens and a documented in-game check.
-- [ ] Data pack golden-path e2e (recipe grid, function editor, data export, reopen).
-- [ ] Spyglass mcdoc symbols for JSON and NBT inside commands, best effort ([ADR 0009](adr/0009-phase1-validation-gate.md) research note, narrowed by [ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)); `validateJson` stays the JSON gate and adopting the Spyglass JSON checker is DESIGN [Open Question 13](DESIGN.md#18-open-questions).
-- [ ] Animated textures: extract and export `.png.mcmeta` animation metadata, and animate the preview ([ADR 0011](adr/0011-client-jar-asset-extraction.md)).
-- [ ] Application menu commands for export, install, asset import and settings.
-- [ ] Toolchain move to Node 24 and pnpm 12, moved into the first Phase 2 wave (DESIGN [Open Question 11](DESIGN.md#18-open-questions), resolved by [ADR 0017](adr/0017-phase2-toolchain.md)).
-- [ ] Auto-update with `electron-updater` and the GitHub provider, if the user approves (DESIGN [Open Question 4](DESIGN.md#18-open-questions)). Excluded from Phase 2 work: waits on the user's licence and repository-visibility answers, as does release tagging; releases stay Windows only.
+- [x] `@msm/plugin-datapack`: element kinds for recipes, loot tables, advancements, tags, predicates, item modifiers and functions ([ADR 0015](adr/0015-data-pack-element-model.md)).
+- [x] Generic schema-form kinds: enchantment, damage type, dimension type, chat type, jukebox song, banner pattern, painting variant, trim material, trim pattern and dialog.
+- [x] Loot tables and advancements: schema form plus templates (a bespoke Loot Table Studio is deferred to a later phase).
+- [x] Recipe Studio: curated crafting-grid view over the recipe element.
+- [x] Registry-backed autocomplete from mcmeta data held in `@msm/schemas`.
+- [x] mcfunction editor in Monaco with Spyglass diagnostics and completion, offline in the main process ([ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)).
+- [x] Reference index in `@msm/core` with rename refactor across elements and function text ([ADR 0016](adr/0016-reference-index-and-rename.md)).
+- [x] Command palette.
+- [x] `vanilla-packs` exporter: data pack `.zip` and combined export (both zips into a folder the user picks).
+- [x] "Install to world datapacks folder" action with a world picker.
+- [x] Golden tests for every new kind.
+- [x] Sample data pack (`fixtures/sample-datapack/`) with SHA-256 exporter goldens and a documented in-game check.
+- [x] Data pack golden-path e2e (recipe grid, function editor, data export, reopen).
+- [x] Spyglass mcdoc symbols for JSON and NBT inside commands, best effort ([ADR 0009](adr/0009-phase1-validation-gate.md) research note, narrowed by [ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)); `validateJson` stays the JSON gate and adopting the Spyglass JSON checker is DESIGN [Open Question 13](DESIGN.md#18-open-questions).
+- [x] Animated textures: extract and export `.png.mcmeta` animation metadata, and animate the preview ([ADR 0011](adr/0011-client-jar-asset-extraction.md)).
+- [x] Application menu commands for export, install, asset import and settings.
+- [x] Toolchain move to Node 24 and pnpm 12, moved into the first Phase 2 wave (DESIGN [Open Question 11](DESIGN.md#18-open-questions), resolved by [ADR 0017](adr/0017-phase2-toolchain.md)).
+- [x] Auto-update with `electron-updater` and the GitHub provider ([ADR 0018](adr/0018-auto-update.md)): start-up check (setting "Check for updates automatically"), Help > Check for Updates, background download, "Restart to update" through the close guard; the release workflow uploads to a draft release. Active once the first release is published.
+- [ ] In-game verification by the user: install `fixtures/sample-datapack` into a 26.3 world and run the checks in README "Try the data pack" (no `Failed to load` or `Couldn't parse` lines in `latest.log`).
+- [ ] First tagged release (`v0.1.0` or later), waiting on the user's publishing steps in the README "Releasing" section; releases stay Windows only.
+- [ ] Signed Windows release (needs signing credentials from the user).
 
 ### Exit criteria
 
 Parity with the Misode generators for the listed kinds; a data pack containing functions loads in 26.3 without errors.
+
+Status: code complete on 2026-11-04. The automated proxy passes (the data pack e2e writes a function, a load tag and a grid recipe, renames through the command palette, exports and installs into a fake world, and every function in the sample data pack has zero mcfunction problems); the in-game check and the first tagged release are pending with the user. Remaining work is listed under [Phase 2 follow-ups](#phase-2-follow-ups).
 
 ### Estimate
 
@@ -158,6 +163,19 @@ Import and preview structures, then author the worldgen chain that places them: 
 - [ ] Biome Studio: curated form with colour pickers and spawn lists.
 - [ ] Jigsaw pool editor showing connections between pieces.
 - [ ] Sample project with a custom biome and jigsaw structure used as a golden fixture.
+
+### Phase 2 follow-ups
+
+Carried over from Phase 2 (known gaps recorded in DEVLOG); none blocks the v0.2 exit criteria.
+
+- [ ] Go to definition from the caret inside the Monaco function editor (works today from form fields and the textarea editor).
+- [ ] Problem navigation to the column within a function line (today it lands at the start of the line).
+- [ ] Per-layer export gating: an error in one pack should not disable exporting the other (today any error disables every export).
+- [ ] Check on Windows whether F2 inside Monaco also fires Monaco's own rename alongside the Rename Element menu command.
+- [ ] HD textures in the deepslate preview: the atlas crops every texture to its first 16×16 tile.
+- [ ] Bespoke Loot Table Studio (v0.2 ships the schema form plus templates; [ADR 0015](adr/0015-data-pack-element-model.md)).
+- [ ] World names from `level.dat` in the world picker (today it shows folder names; [ADR 0015](adr/0015-data-pack-element-model.md)).
+- [ ] Remove the pnpm `minimumReleaseAgeExclude` entries in `pnpm-workspace.yaml` (`electron-to-chromium`, `electron`, `lucide-react`) once those versions are older than the release-age rule.
 
 ### Exit criteria
 
@@ -276,8 +294,8 @@ Open the platform and harden it for release: third-party plugins, a second Minec
 - [ ] Second target package (26.4 or whatever is current) with migration hooks and an "upgrade project target" command.
 - [ ] Templates and wizards (custom ore, custom sword, custom mob).
 - [ ] Documentation site (user guide under `docs/guide/`).
-- [ ] Auto-update (planned: `electron-updater` with the GitHub provider; moves to Phase 2 if the user approves, DESIGN [Open Question 4](DESIGN.md#18-open-questions)).
-- [ ] Licence finalised and contribution guidelines published.
+- [x] Auto-update: delivered in Phase 2 with `electron-updater` and the GitHub provider ([ADR 0018](adr/0018-auto-update.md)).
+- [ ] Contribution guidelines published (the licence was settled as MIT on 2026-11-04).
 
 ### Exit criteria
 
@@ -307,3 +325,4 @@ Not committed; each needs an ADR before work starts.
 |---|---|---|
 | 2026-11-04 | Phase 0 — Foundations complete | Monorepo, plugin-api 0.1.0, schemas, core, target mc-26.3, Electron shell, ADRs 0001–0008. 203 tests; headless smoke passes. Untagged: licence pending. |
 | 2026-11-04 | Phase 1 code complete — pending in-game check and licence | plugin-api 0.2.0, `@msm/plugin-resourcepack` (six kinds), `validateJson`, `@msm/exporters` `vanilla-packs`, `@msm/interop` client-jar extraction, `@msm/targets`, Resource Pack Studio with forms, Monaco, deepslate preview, export and install; golden-path e2e and packaged smoke in CI; ADRs 0009–0013. Sizes: `app.asar` 10.2 MB, renderer 5.6 MB, Windows installer about 122 MB. Releases are Windows only. Untagged: licence pending. Manual in-game verification pending. |
+| 2026-11-04 | Phase 2 code complete — pending in-game checks and first release | plugin-api 0.3.0, Node 24 and pnpm 12, `@msm/plugin-datapack` (14 kinds including eight tag kinds, plus ten schema-form kinds), `@msm/schemas/mcfunction` (offline Spyglass in main, with mcdoc symbols for JSON and NBT inside commands), reference index and one-step rename, data pack and combined export, install into a world, Recipe Studio, Tag editor, Function editor, command palette, animated texture preview, in-app auto-update; data pack golden-path e2e; ADRs 0014–0018. 1,037 tests (app 397, core 152, schemas 142, exporters 73, tools 60, datapack 57, plugin-api 44, mc-26.3 40, interop 32, resourcepack 28, targets aggregator 12). Sizes: `app.asar` 12.7 MB, renderer 5.7 MB, main `index.js` 266.2 kB (7.0 MB under `out/main`). Untagged: waiting on the user's first-release steps. Manual in-game checks (Phase 1 and Phase 2) pending. |

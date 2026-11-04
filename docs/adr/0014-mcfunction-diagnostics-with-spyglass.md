@@ -53,4 +53,14 @@ The size rules out the renderer: its budget is 8 MB and it was 5.7 MB at plannin
 
 ## Status
 
-Accepted (2026-11-04). The mcdoc symbol loading for JSON and NBT inside commands is best effort; its outcome is recorded here at Phase 2 close. Narrows ADR 0009's Phase 2 deliverable (Spyglass JSON checker) to mcfunction only.
+Accepted (2026-11-04). Narrows ADR 0009's Phase 2 deliverable (Spyglass JSON checker) to mcfunction only.
+
+Outcome at Phase 2 close (2026-11-04):
+
+- The mcdoc symbols load in the app: the main-process broker passes the vendored export, so text components, item components and entity NBT inside commands are type-checked.
+- Completion inside JSON and SNBT arguments uses `@spyglassmc/json` 0.3.61 and `@spyglassmc/nbt` 0.3.63 (the versions `java-edition` 0.3.70 pins), added as direct dependencies of `@msm/schemas`. With symbols loaded, the service checks the document before completing, because the typed completers need its type information.
+- MSM checks block-state properties inside commands itself against the vendored block states, because Spyglass parses them but never checks them.
+- The service calls `setParents` on the parsed tree; without it every parent-walking completer, including block-state completion, returned nothing.
+- Spike recipe corrections: `ctx` must be `{ loadedVersion, errorSource }` (without `loadedVersion` item components are flagged falsely), and `core.BrowserExternals` is not exported, so the service uses a local offline externals object.
+- Measured size: the main-process broker grew `app.asar` by about 1.1 MB, the symbol support by about 40 kB and the JSON/NBT completers by about 20 kB, far below the 3.5 MB estimated above; `app.asar` was 12.7 MB at Phase 2 close. Initialisation measured about 0.4 s (1.0 s under load).
+- `validateJson` remains the JSON gate; DESIGN Open Question 13 stays open.

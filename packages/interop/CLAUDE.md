@@ -1,6 +1,6 @@
 # packages/interop — Blockbench, NBT and Minecraft installation
 
-Phase 1 code complete: `minecraft-install/` locates `.minecraft`, lists versions and extracts preview assets with fflate into `~/.msm/cache/assets/<version>/` (ADR 0011), tested with a synthetic jar; `readPngHeader` reads PNG sizes. NBT and Blockbench follow in Phases 3 and 5.
+Phase 2 code complete: `minecraft-install/` locates `.minecraft`, lists versions and extracts preview assets, including `.png.mcmeta` animation sidecars, with fflate into `~/.msm/cache/assets/<version>/` (ADR 0011; cache `schemaVersion` 2, older caches are re-extracted), tested with a synthetic jar; `readPngHeader` reads PNG sizes. World listing and data pack install live in the app's main process. NBT and Blockbench follow in Phases 3 and 5.
 
 ## Purpose
 
@@ -10,7 +10,7 @@ Phase 1 code complete: `minecraft-install/` locates `.minecraft`, lists versions
 
 | Subfolder | Phase | Role |
 |---|---|---|
-| `minecraft-install/` | 1 | `locate.ts` (default dir, versions, jar pick), `extract.ts` (filtered `unzipSync`, including block and item `.png.mcmeta` sidecars), `cache.ts`, injected `InstallFileSystem`; launch helpers in Phase 4 |
+| `minecraft-install/` | 1 | `locate.ts` (default dir, versions, jar pick), `extract.ts` (filtered `unzipSync`, including block and item `.png.mcmeta` sidecars), `cache.ts` (`ASSET_CACHE_SCHEMA_VERSION`; bump it whenever the extracted set changes), injected `InstallFileSystem`; launch helpers in Phase 4 |
 | `png.ts` | 1 | `readPngHeader` (width, height) for imported textures |
 | `node.ts` | 1 | Subpath `@msm/interop/node`: Node `InstallFileSystem`, `nodeEnv`, `sha1Hex` (main process only) |
 | `nbt/` | 3 | Structure `.nbt` and Sponge `.schem` read/write via `prismarine-nbt` |

@@ -40,4 +40,4 @@ Schema coverage of the Phase 2 kinds in the vendored export, counted through `cr
 
 ## Status
 
-Accepted (2026-11-04).
+Accepted (2026-11-04). Implemented in Phase 2 as written: 14 tier-A kinds (including eight tag kinds), ten tier-B kinds, the dual-layer `pack.mcmeta`, `resourcePackExporter` and `dataPackExporter`, combined export as two zips named by `combinedFileNames`, and world install. When either pack has errors, every export is disabled; gating each pack separately is a Phase 2 follow-up in the [ROADMAP](../ROADMAP.md), as is a bespoke Loot Table Studio.

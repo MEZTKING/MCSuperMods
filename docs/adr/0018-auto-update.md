@@ -32,4 +32,4 @@ DESIGN [Open Question 4](../DESIGN.md#18-open-questions) was decided on 2026-11-
 
 ## Status
 
-Accepted (2026-11-04). Resolves the implementation part of DESIGN Open Question 4.
+Accepted (2026-11-04). Resolves the implementation part of DESIGN Open Question 4. Implemented in Phase 2 as written (`app/src/main/updater.ts`; electron-updater as a 527 kB lazy main chunk). It becomes active for users once the maintainer publishes the first release (README "Releasing").

@@ -10,13 +10,14 @@ A desktop mod maker for Minecraft Java Edition that takes you from a simple text
 
 ## Status
 
-- Pre-alpha: the Phase 1 code (Resource Pack Studio) is complete and awaits an in-game check. There are no releases yet: the first one waits for the licence decision. Phase 2 (Data Pack Studio) is next.
+- Pre-alpha: the Phase 1 (Resource Pack Studio) and Phase 2 (Data Pack Studio) code is complete and awaits the two in-game checks below. There are no releases yet: the first one waits on the maintainer's publishing steps (see [Releasing](#releasing)). Phase 3 (Structures & Worldgen) is next.
+- Installed releases update themselves: the app checks for a new version shortly after start-up and offers "Restart to update" once it has downloaded.
 - Releases will be for Windows only to begin with; Linux builds are made in CI for testing, and macOS builds are not planned for now.
 - Current Minecraft target: **Java 26.3** (with 26.2 as the previous supported release at launch).
 
 ## Try it
 
-There is no installer yet, so you run the app from source. On Windows you need [Git](https://git-scm.com/), [Node.js](https://nodejs.org/) 24 or later and Minecraft Java Edition 26.3. In a terminal (PowerShell or Command Prompt):
+There is no published installer yet, so you run the app from source. On Windows you need [Git](https://git-scm.com/), [Node.js](https://nodejs.org/) 24 or later and Minecraft Java Edition 26.3. In a terminal (PowerShell or Command Prompt):
 
 ```sh
 git clone https://github.com/MEZTKING/MCSuperMods.git
@@ -50,6 +51,18 @@ The data pack sample works the same way, with the app running from source as abo
 6. Open `.minecraft/logs/latest.log` (on Windows, `%APPDATA%\.minecraft\logs\latest.log`) and check that it has no `Failed to load`, `Couldn't parse` or other errors mentioning `msm_sample_data`.
 
 More checks (loot table, item modifier, smelting) are listed in `fixtures/sample-datapack/README.md`.
+
+## Known limitations
+
+- Go to definition does not yet work from the caret inside the Monaco function editor; use it from form fields or the plain text editor.
+- Clicking a function problem jumps to the start of its line, not to the exact column.
+- If either pack has errors, every export and install action is disabled, including the one for the pack without errors.
+- The 3D preview crops each texture to 16×16 pixels, so HD textures preview cropped (exports are unaffected). Animated textures preview frame by frame.
+- Rename also rewrites a matching id inside function comments and quoted text; the change is one undo step.
+- The world picker shows world folder names, not the names shown in Minecraft.
+- Loot tables and advancements use the general form plus templates; there is no dedicated studio for them yet.
+- F2 inside the function editor has not been checked on Windows; it may also trigger the editor's own rename.
+- Releases are unsigned, so Windows SmartScreen warns on first install.
 
 ## How it works
 
@@ -113,6 +126,21 @@ node tools/check-size/index.ts      # size budgets, after build and dist:dir
 Vendored Minecraft data is refreshed only by `tools/sync-mcdoc` and `tools/sync-mcmeta`; each has a README with its arguments. The `msm_runtime` engine mod (`cd engine-mod && ./gradlew build`) arrives in Phase 4.
 
 Planned stack: Electron + TypeScript + React for the app; Fabric + Java 25 for the runtime mod. See [Tech Stack](docs/DESIGN.md#14-tech-stack) and [Repository Layout](docs/DESIGN.md#15-repository-layout).
+
+## Releasing
+
+Releases are built by the GitHub Actions release workflow and published by hand. Do both in-game checks first ([Try it](#try-it) and [Try the data pack](#try-the-data-pack)), so the first release is known to work in Minecraft.
+
+First release:
+
+1. Make the `MEZTKING/MCSuperMods` repository public (Settings > General > Danger Zone > Change visibility). The in-app updater can only read releases of a public repository.
+2. In Settings > Actions > General > Workflow permissions, choose **Read and write permissions** and save.
+3. Set `"version"` in `app/package.json` to the release version (it is `0.0.0` today), for example `0.1.0`, and commit and push the change.
+4. Push a matching tag: `git tag v0.1.0` then `git push origin v0.1.0`. The release workflow builds the Windows installer and uploads it to a draft release.
+5. When the workflow has finished, open the draft under Releases and check that it has the installer `.exe`, its `.exe.blockmap` and `latest.yml`. Then press **Publish release**.
+6. Install on Windows from the published release. The build is unsigned, so SmartScreen warns on first run: choose **More info**, then **Run anyway**.
+
+Later releases repeat steps 3 to 5 with a higher version each time (for example `0.1.1`, then tag `v0.1.1`). The version in `app/package.json` must match the tag. Installed copies check for the new release a few seconds after start-up (unless "Check for updates automatically" is off in Settings), download it in the background and install it when the user chooses **Restart to update**. Only published releases are offered; drafts are not.
 
 ## Contributing
 

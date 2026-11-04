@@ -27,4 +27,9 @@ DESIGN [References and renames](../DESIGN.md#4-core-project-model-ir) promises a
 
 ## Status
 
-Accepted (2026-11-04).
+Accepted (2026-11-04). Implemented in Phase 2, with these details settled during implementation:
+
+- `Reference.key`: a map entry whose key is an id (a map-like struct keyed by `#[id]`) is a reference with `key: true` at the entry's path; rename renames the key and keeps the key order.
+- Text references from function lines have the empty registry (`registry: ''`), because a token match in command text is not typed; `referencesTo(id)` without a registry includes them.
+- `collectReferences` reports `id` with any `#[id(path=...)]` prefix applied (`minecraft:entity/banner/creeper` for `creeper`) and adds `written`, the string as written, only when it differs.
+- The app offers Find usages, Go to definition and F2 rename with a reference count.

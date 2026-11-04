@@ -1,21 +1,21 @@
 # MCSuperMods
 
-MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 1 code complete; awaiting in-game check and licence; Phase 2 (Data Pack Studio) next. Releases: Windows only.
+MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 2 code complete; awaiting in-game checks and first release; Phase 3 (Structures & Worldgen) next. Releases: Windows only (MIT; README "Releasing"). Toolchain: Node 24, pnpm 12.
 
 ## Directory map
 
 - `docs/` — DESIGN.md (authoritative), ROADMAP.md, DEVLOG.md, `adr/`
 - `app/` — `@msm/app`, Electron shell (`main/`, `preload/`, `renderer/`)
 - `packages/core/` — `@msm/core`, IR, project load/save, command stack, lowering driver
-- `packages/schemas/` — `@msm/schemas`, Spyglass/mcdoc adapter, MSM mcdoc extensions
+- `packages/schemas/` — `@msm/schemas`, mcdoc adapter, `validateJson`; `@msm/schemas/mcfunction` (offline Spyglass)
 - `packages/plugin-api/` — `@msm/plugin-api`, public interfaces only
-- `packages/plugins/` — `@msm/plugin-<name>`, eight built-in plugins
-- `packages/exporters/` — `@msm/exporters`, vanilla-packs, fabric-content-jar, java-project
+- `packages/plugins/` — `@msm/plugin-<name>`, eight planned built-ins (`resourcepack`, `datapack` exist)
+- `packages/exporters/` — `@msm/exporters`, vanilla-packs (resource, data, combined); later content jar, java-project
 - `packages/targets/` — `@msm/target-*`, one folder per MC version (`mc-26.3/`), plus the `@msm/targets` aggregator (`all/`)
 - `packages/interop/` — `@msm/interop`, Blockbench, NBT/schem, Minecraft installation
 - `engine-mod/` — `msm_runtime` Fabric mod (Gradle, Java 25)
 - `tools/` — dev scripts: check-deps, check-size, sync-mcdoc, sync-mcmeta, new-plugin
-- `fixtures/sample-resourcepack/` — sample project for the in-game check
+- `fixtures/sample-resourcepack/`, `fixtures/sample-datapack/` — sample projects for the in-game checks
 - `.claude/agents/` — `orchestrator.md`, `executor.md`
 
 ## Scoped guides
