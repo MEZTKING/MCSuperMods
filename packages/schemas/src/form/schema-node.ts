@@ -15,6 +15,12 @@ export interface NumericRange {
 export interface NodeBase {
   desc?: string;
   deprecated?: boolean;
+  /**
+   * Sorted, de-duplicated names of the mcdoc attributes on this type other than `since`,
+   * `until`, `deprecated` and `id`, e.g. `texture_slot`, `translation_key`, `color`.
+   * Editors use them as hints; attribute arguments are not modelled.
+   */
+  tags?: string[];
 }
 
 /**
@@ -24,6 +30,8 @@ export interface NodeBase {
 export interface SchemaField {
   key: string;
   type: SchemaNode;
+  /** For a `'*'` field: the normalised key type, e.g. a string tagged `texture_slot`. */
+  keyType?: SchemaNode;
   optional: boolean;
   desc?: string;
   deprecated?: boolean;
@@ -42,7 +50,14 @@ export type SchemaNode =
       /** Spreads that could not be inlined (dispatchers, cycles, unsupported kinds). */
       spreads: SchemaNode[];
     })
-  | (NodeBase & { kind: 'list'; item: SchemaNode; lengthRange?: NumericRange })
+  | (NodeBase & {
+      kind: 'list';
+      item: SchemaNode;
+      lengthRange?: NumericRange;
+      /** Set when the list came from an mcdoc `byte[]`, `int[]` or `long[]`. */
+      primitiveArray?: 'byte' | 'int' | 'long';
+    })
+  | (NodeBase & { kind: 'tuple'; items: SchemaNode[] })
   | (NodeBase & {
       kind: 'string';
       /** From `#[id=...]` (string form, or the tree form's `registry`). */
@@ -59,6 +74,10 @@ export type SchemaNode =
   | (NodeBase & { kind: 'union'; members: SchemaNode[] })
   | (NodeBase & {
       kind: 'reference';
+      /**
+       * The referenced type path. A reference that breaks a cycle of generic instantiations
+       * carries the template's path; use `resolve()`, not `SchemaIndex.resolve(path)`, for it.
+       */
       path: string;
       /** Lazy, memoised and cycle-safe; throws `SchemaNotFoundError` for an unknown path. */
       resolve(): SchemaNode;

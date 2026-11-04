@@ -165,16 +165,7 @@ describe('normalisation rules', () => {
   });
 
   it('maps unsupported kinds to "unsupported" with the raw kind', () => {
-    const rawKinds = [
-      'template',
-      'concrete',
-      'indexed',
-      'mapped',
-      'tuple',
-      'unsafe',
-      'int_array',
-      'brand_new',
-    ];
+    const rawKinds = ['template', 'indexed', 'mapped', 'unsafe', 'brand_new'];
     const index = indexOf(Object.fromEntries(rawKinds.map((kind) => [`::t::${kind}`, { kind }])));
     for (const kind of rawKinds) {
       const node = expectKind(index.resolve(`::t::${kind}`), 'unsupported');
@@ -259,5 +250,81 @@ describe('normalisation rules', () => {
       optional: false,
     });
     expect(node.fields[1]?.deprecated).toBe(true);
+  });
+
+  it('normalises tuples item by item', () => {
+    const index = indexOf({
+      '::t::Pair': {
+        kind: 'tuple',
+        items: [{ kind: 'int' }, { kind: 'int', valueRange: { kind: 0, min: 0 } }],
+      },
+    });
+    const tuple = expectKind(index.resolve('::t::Pair'), 'tuple');
+    expect(tuple.items.map((item) => item.kind)).toEqual(['number', 'number']);
+    expect(expectKind(tuple.items[1], 'number').range).toEqual({ min: 0 });
+  });
+
+  it('normalises primitive arrays to lists of numbers', () => {
+    const index = indexOf({
+      '::t::Ints': {
+        kind: 'int_array',
+        lengthRange: { kind: 0, min: 4, max: 4 },
+        valueRange: { kind: 0, min: 0, max: 255 },
+      },
+      '::t::Bytes': { kind: 'byte_array' },
+      '::t::Longs': { kind: 'long_array' },
+    });
+    const ints = expectKind(index.resolve('::t::Ints'), 'list');
+    expect(ints.primitiveArray).toBe('int');
+    expect(ints.lengthRange).toEqual({ min: 4, max: 4 });
+    expect(ints.item).toEqual({ kind: 'number', numberKind: 'int', range: { min: 0, max: 255 } });
+    const bytes = expectKind(index.resolve('::t::Bytes'), 'list');
+    expect(bytes.primitiveArray).toBe('byte');
+    expect(expectKind(bytes.item, 'number').numberKind).toBe('byte');
+    expect(expectKind(index.resolve('::t::Longs'), 'list').primitiveArray).toBe('long');
+  });
+
+  it('collects attribute names other than since, until, deprecated and id as sorted tags', () => {
+    const named = (name: string) => ({ name });
+    const index = indexOf({
+      '::t::Tagged': {
+        kind: 'string',
+        attributes: [
+          named('translation_key'),
+          since('1.0'),
+          named('color'),
+          { name: 'id', value: { kind: 'literal', value: { kind: 'string', value: 'item' } } },
+          named('deprecated'),
+          named('color'),
+        ],
+      },
+      '::t::Plain': { kind: 'string', attributes: [since('1.0')] },
+    });
+    const tagged = expectKind(index.resolve('::t::Tagged'), 'string');
+    expect(tagged.tags).toEqual(['color', 'translation_key']);
+    expect(tagged.deprecated).toBe(true);
+    expect(tagged.idRegistry).toBe('item');
+    expect(index.resolve('::t::Plain').tags).toBeUndefined();
+  });
+
+  it('records the normalised key type of map-like fields', () => {
+    const index = indexOf({
+      '::t::Lang': {
+        kind: 'struct',
+        fields: [
+          {
+            kind: 'pair',
+            key: { kind: 'string', attributes: [{ name: 'translation_key' }] },
+            type: { kind: 'string', attributes: [{ name: 'translation_value' }] },
+          },
+          { kind: 'pair', key: 'named', type: { kind: 'int' } },
+        ],
+      },
+    });
+    const lang = expectKind(index.resolve('::t::Lang'), 'struct');
+    const keyType = expectKind(lang.fields[0]?.keyType, 'string');
+    expect(keyType.tags).toEqual(['translation_key']);
+    expect(lang.fields[0]?.type.tags).toEqual(['translation_value']);
+    expect(lang.fields[1]?.keyType).toBeUndefined();
   });
 });

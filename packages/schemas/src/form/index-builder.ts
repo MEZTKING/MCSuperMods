@@ -1,5 +1,6 @@
 import type { VanillaMcdocSymbols } from '../symbols/parse';
-import { isAvailable, type NormaliseContext, normaliseType } from './normalise';
+import type { RawMcdocType } from '../symbols/raw-types';
+import { isAvailable, type NormaliseContext, normaliseType, type TypeBindings } from './normalise';
 import type { SchemaNode } from './schema-node';
 
 /** Options for `createSchemaIndex`. `mcVersion` comes from the target, never from this package. */
@@ -7,7 +8,10 @@ export interface SchemaIndexOptions {
   mcVersion: string;
 }
 
-/** Thrown by `SchemaIndex.resolve` (and lazy references) for a type path the export lacks. */
+/**
+ * Thrown by `SchemaIndex.resolve`, `resolveSchemaRef` (and lazy references) for a type path
+ * or schema reference the export lacks.
+ */
 export class SchemaNotFoundError extends Error {
   readonly typePath: string;
 
@@ -35,6 +39,38 @@ export interface SchemaIndex {
   dispatch(registry: string, key: string): SchemaNode | undefined;
   /** Keys of a registry available in `mcVersion`, sorted; `[]` for an unknown registry. */
   dispatcherKeys(registry: string): string[];
+  /**
+   * Resolves a schema reference as used by `OutputFile.schema` and element kinds: an mcdoc
+   * type path (`::java::...`) or `resource:<category>`, which names a member of the
+   * `minecraft:resource` dispatcher. Throws `SchemaNotFoundError` when either is absent.
+   */
+  resolveSchemaRef(ref: string): SchemaNode;
+}
+
+/** Nesting limit for generic instantiations whose arguments keep growing. */
+const MAX_INSTANTIATION_DEPTH = 32;
+
+const RESOURCE_REF_PREFIX = 'resource:';
+
+/** Every type path that appears as a template parameter anywhere in `types`. */
+function collectTypeParams(types: Iterable<unknown>): Set<string> {
+  const params = new Set<string>();
+  const visit = (value: unknown): void => {
+    if (Array.isArray(value)) {
+      for (const entry of value) visit(entry);
+      return;
+    }
+    if (typeof value !== 'object' || value === null) return;
+    const node = value as Record<string, unknown>;
+    if (node.kind === 'template' && Array.isArray(node.typeParams)) {
+      for (const param of node.typeParams as { path?: unknown }[]) {
+        if (typeof param.path === 'string') params.add(param.path);
+      }
+    }
+    for (const entry of Object.values(node)) visit(entry);
+  };
+  for (const type of types) visit(type);
+  return params;
 }
 
 const hasOwn = (record: object, key: string): boolean => Object.hasOwn(record, key);
@@ -115,12 +151,132 @@ export function createSchemaIndex(
     return node;
   };
 
+  // Generics ---------------------------------------------------------------------------
+
+  const typeParams = collectTypeParams([
+    ...Object.values(symbols.mcdoc),
+    ...Object.values(symbols.dispatchers).flatMap((members) => Object.values(members)),
+  ]);
+  const freeParamCache = new Map<string, ReadonlySet<string>>();
+  const freeParamPending = new Set<string>();
+  const EMPTY: ReadonlySet<string> = new Set();
+
+  /**
+   * Parameters mentioned by the raw type at `path`, following non-template references.
+   * A reference cycle contributes nothing from the path already being visited.
+   */
+  const freeTypeParams = (typePath: string): ReadonlySet<string> => {
+    const cached = freeParamCache.get(typePath);
+    if (cached !== undefined) return cached;
+    if (typeParams.size === 0 || !hasOwn(symbols.mcdoc, typePath)) return EMPTY;
+    const raw = symbols.mcdoc[typePath];
+    if (raw === undefined || raw.kind === 'template' || freeParamPending.has(typePath)) {
+      return EMPTY;
+    }
+    freeParamPending.add(typePath);
+    const found = new Set<string>();
+    const visit = (value: unknown, shadowed: ReadonlySet<string>): void => {
+      if (Array.isArray(value)) {
+        for (const entry of value) visit(entry, shadowed);
+        return;
+      }
+      if (typeof value !== 'object' || value === null) return;
+      const node = value as Record<string, unknown>;
+      if (node.kind === 'reference' && typeof node.path === 'string') {
+        const path = node.path;
+        if (typeParams.has(path)) {
+          if (!shadowed.has(path)) found.add(path);
+        } else {
+          for (const param of freeTypeParams(path)) if (!shadowed.has(param)) found.add(param);
+        }
+        return;
+      }
+      if (node.kind === 'template' && Array.isArray(node.typeParams)) {
+        const inner = new Set(shadowed);
+        for (const param of node.typeParams as { path: string }[]) inner.add(param.path);
+        visit(node.child, inner);
+        return;
+      }
+      for (const entry of Object.values(node)) visit(entry, shadowed);
+    };
+    try {
+      visit(raw, EMPTY);
+    } finally {
+      freeParamPending.delete(typePath);
+    }
+    const result: ReadonlySet<string> = found.size === 0 ? EMPTY : found;
+    freeParamCache.set(typePath, result);
+    return result;
+  };
+
+  const instances = new Map<string, SchemaNode>();
+  const instancesPending = new Set<string>();
+  const instantiating = new Map<string, number>();
+  let instantiationDepth = 0;
+
+  const instantiate = (typePath: string, bindings: TypeBindings): SchemaNode => {
+    const args = [...bindings].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    const key = `${typePath}\u0000${JSON.stringify(args)}`;
+    const cached = instances.get(key);
+    if (cached !== undefined) return cached;
+    if (instancesPending.has(key)) {
+      return {
+        kind: 'reference',
+        path: typePath,
+        resolve: () => {
+          const node = instances.get(key);
+          if (node === undefined) throw new SchemaNotFoundError(typePath);
+          return node;
+        },
+      };
+    }
+    if (!hasOwn(symbols.mcdoc, typePath)) throw new SchemaNotFoundError(typePath);
+    const raw = symbols.mcdoc[typePath];
+    if (raw === undefined) throw new SchemaNotFoundError(typePath);
+    if (instantiationDepth >= MAX_INSTANTIATION_DEPTH) {
+      return {
+        kind: 'unsupported',
+        reason: 'generic instantiation nested too deeply',
+        rawKind: 'concrete',
+      };
+    }
+    const body: RawMcdocType = raw.kind === 'template' ? raw.child : raw;
+    instancesPending.add(key);
+    instantiating.set(typePath, (instantiating.get(typePath) ?? 0) + 1);
+    instantiationDepth += 1;
+    try {
+      const node = normaliseType(body, ctx, bindings);
+      instances.set(key, node);
+      return node;
+    } finally {
+      instantiationDepth -= 1;
+      const count = (instantiating.get(typePath) ?? 1) - 1;
+      if (count === 0) instantiating.delete(typePath);
+      else instantiating.set(typePath, count);
+      instancesPending.delete(key);
+    }
+  };
+
   const ctx: NormaliseContext = {
     mcVersion,
     resolvePath,
-    isResolving: (typePath) => resolving.has(typePath),
+    isResolving: (typePath) => resolving.has(typePath) || instantiating.has(typePath),
     dispatcherKeys,
     dispatch,
+    rawType: (typePath) => (hasOwn(symbols.mcdoc, typePath) ? symbols.mcdoc[typePath] : undefined),
+    isTypeParam: (typePath) => typeParams.has(typePath),
+    freeTypeParams,
+    instantiate,
+  };
+
+  const resolveSchemaRef = (ref: string): SchemaNode => {
+    if (ref.startsWith(RESOURCE_REF_PREFIX)) {
+      const category = ref.slice(RESOURCE_REF_PREFIX.length);
+      const node = category === '' ? undefined : dispatch('minecraft:resource', category);
+      if (node === undefined) throw new SchemaNotFoundError(ref);
+      return node;
+    }
+    return resolvePath(ref);
   };
 
   return {
@@ -131,5 +287,6 @@ export function createSchemaIndex(
     resolve: resolvePath,
     dispatch,
     dispatcherKeys,
+    resolveSchemaRef,
   };
 }

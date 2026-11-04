@@ -1,7 +1,7 @@
 /**
  * `@msm/schemas`: MSM's schema model over vanilla-mcdoc.
  *
- * Phase 0 reads the Spyglass symbol export (ADR 0005); the export itself is vendored in the
+ * It reads the Spyglass symbol export (ADR 0005); the export itself is vendored in the
  * target package and injected here. Nothing in this package names a Minecraft version.
  */
 
@@ -17,6 +17,7 @@ export {
   type NormaliseContext,
   normaliseRange,
   normaliseType,
+  type TypeBindings,
 } from './form/normalise';
 export type {
   DiscriminatorStep,

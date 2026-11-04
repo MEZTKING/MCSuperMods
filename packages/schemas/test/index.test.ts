@@ -25,11 +25,17 @@ function collectKinds(node: SchemaNode, seen: Set<SchemaNode>, counts: Map<strin
   counts.set(node.kind, (counts.get(node.kind) ?? 0) + 1);
   switch (node.kind) {
     case 'struct':
-      for (const f of node.fields) collectKinds(f.type, seen, counts);
+      for (const f of node.fields) {
+        collectKinds(f.type, seen, counts);
+        if (f.keyType !== undefined) collectKinds(f.keyType, seen, counts);
+      }
       for (const s of node.spreads) collectKinds(s, seen, counts);
       break;
     case 'list':
       collectKinds(node.item, seen, counts);
+      break;
+    case 'tuple':
+      for (const item of node.items) collectKinds(item, seen, counts);
       break;
     case 'union':
       for (const m of node.members) collectKinds(m, seen, counts);
@@ -103,6 +109,56 @@ describe('createSchemaIndex over the fixture subset', () => {
     expect(textures && field(textures, '*')?.optional).toBe(true);
   });
 
+  it('gives Model.textures a texture_slot key type and tags its values', () => {
+    const textures = field(index.resolve('::java::assets::model::Model'), 'textures')?.type;
+    const slot = textures && field(textures, '*');
+    expect(slot?.keyType?.kind).toBe('string');
+    expect(slot?.keyType?.tags).toEqual(['texture_slot']);
+    const value = slot?.type;
+    if (value?.kind !== 'union') throw new Error('expected a union of texture values');
+    expect(value.members[0]?.kind).toBe('string');
+    expect(value.members[0]?.tags).toEqual(['texture_slot']);
+  });
+
+  it('instantiates ItemStack and MinMaxBounds<int> from the fixture', () => {
+    const stack = struct(index.resolve('::java::world::item::ItemStack'));
+    expect(field(stack, 'id')).toBeDefined();
+    const count = field(stack, 'count')?.type;
+    expect(count?.kind === 'number' && count.numberKind).toBe('int');
+    const amplifier = field(
+      index.resolve('::java::data::advancement::predicate::MobEffectPredicate'),
+      'amplifier',
+    )?.type;
+    if (amplifier?.kind !== 'union') throw new Error('expected MinMaxBounds<int> to be a union');
+    expect(amplifier.members[0]?.kind === 'number' && amplifier.members[0].numberKind).toBe('int');
+    const bounds = struct(amplifier.members[1] as SchemaNode);
+    expect(bounds.fields.map((f) => [f.key, f.type.kind])).toEqual([
+      ['min', 'number'],
+      ['max', 'number'],
+    ]);
+    // Identical instantiations share one node.
+    const duration = field(
+      index.resolve('::java::data::advancement::predicate::MobEffectPredicate'),
+      'duration',
+    )?.type;
+    expect(duration).toBe(amplifier);
+  });
+
+  it('resolves schema references by type path or resource category', () => {
+    expect(index.resolveSchemaRef('::java::assets::model::Model')).toBe(
+      index.resolve('::java::assets::model::Model'),
+    );
+    expect(index.resolveSchemaRef('resource:model')).toBe(
+      index.resolve('::java::assets::model::Model'),
+    );
+    expect(index.resolveSchemaRef('resource:minecraft:recipe')).toBe(
+      index.resolve('::java::data::recipe::Recipe'),
+    );
+    expect(() => index.resolveSchemaRef('resource:nope')).toThrow(SchemaNotFoundError);
+    expect(() => index.resolveSchemaRef('resource:')).toThrow(SchemaNotFoundError);
+    expect(() => index.resolveSchemaRef('::java::nope::Nope')).toThrow(SchemaNotFoundError);
+  });
+
   it('throws SchemaNotFoundError for an unknown path', () => {
     expect(() => index.resolve('::java::nope::Nope')).toThrow(SchemaNotFoundError);
   });
@@ -130,9 +186,12 @@ describe('createSchemaIndex over the fixture subset', () => {
     const seen = new Set<SchemaNode>();
     for (const path of index.typePaths()) collectKinds(index.resolve(path), seen, counts);
     expect(counts.get('struct')).toBeGreaterThan(0);
-    // Generic templates and their instantiations (ItemStack, MinMaxBounds, ...) are
-    // unsupported in Phase 0; Phase 1 lowers this count.
-    expect(counts.get('unsupported')).toBeGreaterThan(0);
-    expect(counts.get('unsupported')).toBeLessThan(30);
+    // Generics are instantiated where they are used; the only unsupported nodes left are
+    // the template declarations themselves, resolved here by path without arguments.
+    const templates = index
+      .typePaths()
+      .filter((path) => symbols.mcdoc[path]?.kind === 'template').length;
+    expect(templates).toBeGreaterThan(0);
+    expect(counts.get('unsupported')).toBe(templates);
   });
 });

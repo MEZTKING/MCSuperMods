@@ -173,6 +173,31 @@ function checkType(value: unknown, path: string): void {
       });
       break;
     }
+    case 'template': {
+      checkType(node.child, at(path, 'child'));
+      expectArray(node.typeParams, at(path, 'typeParams')).forEach((raw, i) => {
+        const paramPath = at(at(path, 'typeParams'), i);
+        expectString(expectObject(raw, paramPath).path, at(paramPath, 'path'));
+      });
+      break;
+    }
+    case 'concrete':
+      checkType(node.child, at(path, 'child'));
+      expectArray(node.typeArgs, at(path, 'typeArgs')).forEach((arg, i) => {
+        checkType(arg, at(at(path, 'typeArgs'), i));
+      });
+      break;
+    case 'tuple':
+      expectArray(node.items, at(path, 'items')).forEach((item, i) => {
+        checkType(item, at(at(path, 'items'), i));
+      });
+      break;
+    case 'byte_array':
+    case 'int_array':
+    case 'long_array':
+      checkRange(node.lengthRange, at(path, 'lengthRange'));
+      checkRange(node.valueRange, at(path, 'valueRange'));
+      break;
     default:
       // boolean, any, unsafe and kinds MSM does not model need no further checks.
       break;

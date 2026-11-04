@@ -130,16 +130,36 @@ export interface RawDispatcherType extends RawBase {
   parallelIndices: RawIndex[];
 }
 
-/** Kinds MSM does not model in Phase 0; they normalise to `unsupported`. */
-export type RawUnsupportedKind =
-  | 'template'
-  | 'concrete'
-  | 'indexed'
-  | 'mapped'
-  | 'tuple'
-  | 'byte_array'
-  | 'int_array'
-  | 'long_array';
+/** A generic type declaration, e.g. `type InclusiveRange<T> = ...`. */
+export interface RawTemplateType extends RawBase {
+  kind: 'template';
+  child: RawMcdocType;
+  /** Each parameter is named by a type path (e.g. `::java::util::T`) that `child` references. */
+  typeParams: { path: string }[];
+}
+
+/** A generic instantiation, e.g. `InclusiveRange<int>`. */
+export interface RawConcreteType extends RawBase {
+  kind: 'concrete';
+  child: RawMcdocType;
+  typeArgs: RawMcdocType[];
+}
+
+/** A fixed-length heterogeneous list, e.g. `[int, int]` written as a tuple. */
+export interface RawTupleType extends RawBase {
+  kind: 'tuple';
+  items: RawMcdocType[];
+}
+
+/** `byte[]`, `int[]` or `long[]`, with optional length and element value ranges. */
+export interface RawPrimitiveArrayType extends RawBase {
+  kind: 'byte_array' | 'int_array' | 'long_array';
+  lengthRange?: RawNumericRange;
+  valueRange?: RawNumericRange;
+}
+
+/** Kinds MSM does not model; they normalise to `unsupported`. */
+export type RawUnsupportedKind = 'indexed' | 'mapped';
 
 export interface RawUnsupportedType extends RawBase {
   kind: RawUnsupportedKind;
@@ -158,4 +178,8 @@ export type RawMcdocType =
   | RawUnionType
   | RawReferenceType
   | RawDispatcherType
+  | RawTemplateType
+  | RawConcreteType
+  | RawTupleType
+  | RawPrimitiveArrayType
   | RawUnsupportedType;

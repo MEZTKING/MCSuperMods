@@ -46,4 +46,29 @@ describe('parseVanillaMcdocSymbols', () => {
     });
     expect(symbols.mcdoc['::a::B']?.kind).toBe('something_new');
   });
+
+  it('checks the shape of generics, tuples and primitive arrays', () => {
+    const parse = (type: unknown) =>
+      parseVanillaMcdocSymbols({ ref: 'x', mcdoc: { '::a::B': type }, 'mcdoc/dispatcher': {} });
+    expect(() =>
+      parse({ kind: 'template', typeParams: [{ path: '::a::T' }], child: { kind: 'int' } }),
+    ).not.toThrow();
+    expect(() => parse({ kind: 'template', typeParams: [{}], child: { kind: 'int' } })).toThrow(
+      '/mcdoc/::a::B/typeParams/0/path',
+    );
+    expect(() => parse({ kind: 'template', typeParams: [] })).toThrow('/mcdoc/::a::B/child');
+    expect(() =>
+      parse({ kind: 'concrete', child: { kind: 'reference', path: '::a::C' }, typeArgs: [{}] }),
+    ).toThrow('/mcdoc/::a::B/typeArgs/0/kind');
+    expect(() => parse({ kind: 'concrete', child: { kind: 'int' } })).toThrow(
+      '/mcdoc/::a::B/typeArgs',
+    );
+    expect(() => parse({ kind: 'tuple', items: [{ kind: 'int' }, 3] })).toThrow(
+      '/mcdoc/::a::B/items/1',
+    );
+    expect(() => parse({ kind: 'int_array', valueRange: { kind: 'x' } })).toThrow(
+      '/mcdoc/::a::B/valueRange/kind',
+    );
+    expect(() => parse({ kind: 'long_array', lengthRange: { kind: 0, min: 1 } })).not.toThrow();
+  });
 });
