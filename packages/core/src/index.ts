@@ -47,6 +47,10 @@ export {
   normaliseReferenceId,
 } from './refs/reference-index';
 export { collectTextReferences } from './refs/text-references';
-export { DuplicateKindError, ElementKindRegistry } from './registry/element-kind-registry';
+export {
+  DuplicateKindError,
+  defaultKindRegistry,
+  ElementKindRegistry,
+} from './registry/element-kind-registry';
 export { PluginCompatibilityError, registerPlugin } from './registry/register-plugin';
 export { parseJson, stableStringify, utf8 } from './serialise/index';

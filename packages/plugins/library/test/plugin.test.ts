@@ -4,7 +4,7 @@ import plugin, { libraryExamples, libraryStarters } from '../src/index';
 describe('@msm/plugin-library', () => {
   it('declares its id and API range', () => {
     expect(plugin.id).toBe('msm.library');
-    expect(plugin.apiVersion).toBe('^0.4.0');
+    expect(plugin.apiVersion).toBe('^0.5.0');
     expect(Object.isFrozen(plugin)).toBe(true);
   });
 

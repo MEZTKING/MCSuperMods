@@ -19,6 +19,18 @@ export class DuplicateKindError extends Error {
   }
 }
 
+const MINECRAFT_PREFIX = 'minecraft:';
+
+/**
+ * The default registry of a kind's element ids: the kind id without a `minecraft:` prefix,
+ * for example `recipe` for `minecraft:recipe` or `tag/item` for `minecraft:tag/item`.
+ *
+ * @param kindId - An element kind id.
+ */
+export function defaultKindRegistry(kindId: string): string {
+  return kindId.startsWith(MINECRAFT_PREFIX) ? kindId.slice(MINECRAFT_PREFIX.length) : kindId;
+}
+
 /**
  * Holds every registered {@link ElementKind}, keyed by id and by folder.
  */
@@ -56,6 +68,17 @@ export class ElementKindRegistry {
   /** Every registered kind, in registration order. */
   all(): readonly ElementKind[] {
     return [...this.#byId.values()];
+  }
+
+  /**
+   * The registry the ids of a registered kind's elements belong to: its
+   * {@link ElementKind.registry}, or the kind id without a `minecraft:` prefix. `undefined`
+   * for an unregistered kind.
+   */
+  registryFor(kindId: string): string | undefined {
+    const kind = this.#byId.get(kindId);
+    if (kind === undefined) return undefined;
+    return kind.registry ?? defaultKindRegistry(kind.id);
   }
 
   /** The kind-folder of a registered kind. */

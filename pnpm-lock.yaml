@@ -334,6 +334,12 @@ importers:
       '@msm/plugin-resourcepack':
         specifier: workspace:*
         version: link:../packages/plugins/resourcepack
+      '@msm/plugin-structures':
+        specifier: workspace:*
+        version: link:../packages/plugins/structures
+      '@msm/plugin-worldgen':
+        specifier: workspace:*
+        version: link:../packages/plugins/worldgen
       '@msm/schemas':
         specifier: workspace:*
         version: link:../packages/schemas
@@ -471,6 +477,12 @@ importers:
       '@msm/plugin-resourcepack':
         specifier: workspace:*
         version: link:../plugins/resourcepack
+      '@msm/plugin-structures':
+        specifier: workspace:*
+        version: link:../plugins/structures
+      '@msm/plugin-worldgen':
+        specifier: workspace:*
+        version: link:../plugins/worldgen
       '@msm/targets':
         specifier: workspace:*
         version: link:../targets/all
@@ -486,6 +498,9 @@ importers:
       '@msm/plugin-api':
         specifier: workspace:*
         version: link:../plugin-api
+      deepslate:
+        specifier: 'catalog:'
+        version: 0.27.2
       fflate:
         specifier: 'catalog:'
         version: 0.8.3
@@ -545,6 +560,47 @@ importers:
         version: 5.1.0(@types/node@24.19.2)(happy-dom@21.0.4)(vite@8.3.5(@types/node@24.19.2)(jiti@2.7.0))
 
   packages/plugins/resourcepack:
+    dependencies:
+      '@msm/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+      '@msm/schemas':
+        specifier: workspace:*
+        version: link:../../schemas
+    devDependencies:
+      '@msm/targets':
+        specifier: workspace:*
+        version: link:../../targets/all
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.1.0(@types/node@24.19.2)(happy-dom@21.0.4)(vite@8.3.5(@types/node@24.19.2)(jiti@2.7.0))
+
+  packages/plugins/structures:
+    dependencies:
+      '@msm/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+      '@msm/schemas':
+        specifier: workspace:*
+        version: link:../../schemas
+      deepslate:
+        specifier: 'catalog:'
+        version: 0.27.2
+    devDependencies:
+      '@msm/targets':
+        specifier: workspace:*
+        version: link:../../targets/all
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.1.0(@types/node@24.19.2)(happy-dom@21.0.4)(vite@8.3.5(@types/node@24.19.2)(jiti@2.7.0))
+
+  packages/plugins/worldgen:
     dependencies:
       '@msm/plugin-api':
         specifier: workspace:*

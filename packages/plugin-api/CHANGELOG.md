@@ -2,6 +2,23 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 0.5.0 — 2026-11-04
+
+Structures and worldgen surface (ADR 0022). `API_VERSION` is `0.5.0`. Built-in plugins declare `^0.5.0`.
+
+- `ElementKind.registry?: string`: the registry the ids of a kind's elements belong to (without `minecraft:`), for example `structure` for structure templates. Defaults to the kind id without `minecraft:`; set it only when the two differ.
+- `ProjectValidator`, `ValidationInput` and `ValidationRegistry`: cross-element checks a plugin runs over the whole project (`id`, `kinds`, pure `validate(input)` returning `Problem[]`). The input holds every element, the target and a registry lookup (`has`, `ids`) over vanilla and project ids; no Node or DOM types.
+- `PluginContributions.validators?: ProjectValidator[]`: host-run; their problems join the project's problems, so errors block export.
+- `DataFolderKey` gains `structure` (structure template `.nbt` files), `dimension` and `worldgen` (the parent of the world generation registry folders, to which worldgen kinds append `/<registry>`, as tag kinds do with `tags`).
+- `Target.dataVersion: number`: the game's data version, written as `DataVersion` into structure and schematic files.
+- `Target.worldgen: WorldgenFacts` with `featureSteps`: the biome feature decoration step names in game order.
+
+### Migration from 0.4.0
+
+- `Target.dataVersion` and `Target.worldgen` are required, and `Target.folders.data` must supply the three new keys. Every target must add them; MSM's own targets do. There are no third-party targets yet.
+- `ElementKind.registry` and `PluginContributions.validators` are optional; existing plugins need no change for them.
+- Plugins declaring `^0.4.0` no longer load, because `0.5.0` is outside a `^0.4.0` range (0.x minors are breaking under semver); declare `^0.5.0`.
+
 ## 0.4.0 — 2026-11-04
 
 Templates and samples library surface (ADR 0020). `API_VERSION` is `0.4.0`. Built-in plugins declare `^0.4.0`.

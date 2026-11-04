@@ -10,6 +10,8 @@
     { "path": "packages/plugins/datapack" },
     { "path": "packages/plugins/library" },
     { "path": "packages/plugins/resourcepack" },
+    { "path": "packages/plugins/structures" },
+    { "path": "packages/plugins/worldgen" },
     { "path": "packages/schemas" },
     { "path": "packages/targets/all" },
     { "path": "packages/targets/mc-26.3" },

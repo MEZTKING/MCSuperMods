@@ -5,8 +5,8 @@
  * @packageDocumentation
  */
 
-import type { Project } from '@msm/core';
-import type { Target } from '@msm/plugin-api';
+import { defaultKindRegistry, type Project } from '@msm/core';
+import type { Plugin, Target } from '@msm/plugin-api';
 import {
   BUILT_IN_EXTENSIONS,
   createRegistryIndex,
@@ -16,6 +16,7 @@ import {
   type SchemaIndex,
 } from '@msm/schemas';
 import type { PlatformAdapter } from '../../../shared/platform';
+import { builtInPlugins } from '../plugins/built-in';
 
 /** Everything validation and the forms need for one target. */
 export interface SchemaContext {
@@ -68,7 +69,7 @@ function between(path: string, prefix: string, suffix: string): string | undefin
 /**
  * Data pack kinds whose element ids form a registry of the same name (ADR 0015): the tier-A
  * kinds plus the tier-B generic kinds. Matched by kind id string, never by importing the
- * plugin.
+ * plugin; they count even when no plugin registers them (tests, unknown kinds on load).
  */
 export const DATA_REGISTRY_KINDS: readonly string[] = Object.freeze([
   'advancement',
@@ -94,13 +95,53 @@ const MINECRAFT_PREFIX = 'minecraft:';
 const TAG_PREFIX = 'tag/';
 
 /**
- * The registry the ids of `kind`'s elements belong to: the kind id without `minecraft:`, for
- * example `recipe`, `model` or `tag/item`.
+ * Resource pack kinds whose ids `projectRegistryIds` derives itself (models), or whose element
+ * ids are not registry ids at all (the sounds file, `pack.mcmeta`).
+ */
+const NON_DATA_KINDS: ReadonlySet<string> = new Set([
+  'minecraft:block_definition',
+  'minecraft:item_definition',
+  'minecraft:lang',
+  'minecraft:model',
+  'minecraft:pack_mcmeta',
+  'minecraft:sounds',
+]);
+
+/**
+ * Looks up the registry of a registered kind; `@msm/core`'s `ElementKindRegistry` is one.
+ */
+export interface KindRegistryLookup {
+  /** The registry of `kindId`'s element ids, or `undefined` when the kind is not registered. */
+  registryFor(kindId: string): string | undefined;
+}
+
+/** A {@link KindRegistryLookup} over the kinds of `plugins` (`ElementKind.registry` first). */
+export function kindLookupFor(plugins: readonly Plugin[]): KindRegistryLookup {
+  const registries = new Map<string, string>();
+  for (const plugin of plugins) {
+    for (const kind of plugin.contributes.elementKinds ?? []) {
+      registries.set(kind.id, kind.registry ?? defaultKindRegistry(kind.id));
+    }
+  }
+  return { registryFor: (kindId) => registries.get(kindId) };
+}
+
+/** The kinds of the built-in plugins: the default lookup of the functions below. */
+export const BUILT_IN_KIND_LOOKUP: KindRegistryLookup = kindLookupFor(builtInPlugins);
+
+/**
+ * The registry the ids of `kind`'s elements belong to: the registered kind's
+ * `ElementKind.registry` (for example `structure` for `minecraft:structure_template`), else
+ * the kind id without `minecraft:`, for example `recipe`, `model` or `tag/item`.
  *
  * @param kind - An element kind id.
+ * @param kinds - The registered kinds; defaults to the built-in plugins' kinds.
  */
-export function kindRegistry(kind: string): string {
-  return kind.startsWith(MINECRAFT_PREFIX) ? kind.slice(MINECRAFT_PREFIX.length) : kind;
+export function kindRegistry(
+  kind: string,
+  kinds: KindRegistryLookup = BUILT_IN_KIND_LOOKUP,
+): string {
+  return kinds.registryFor(kind) ?? defaultKindRegistry(kind);
 }
 
 function sortedRecord(map: Map<string, string[]>): Record<string, string[]> {
@@ -111,18 +152,29 @@ function sortedRecord(map: Map<string, string[]>): Record<string, string[]> {
 
 /**
  * The data pack ids a project defines, per registry: `function`, `recipe`, `loot_table`,
- * `advancement`, `predicate`, `item_modifier`, the tier-B registries and `tag/<registry>`
- * (tag ids without `#`). Only registries with at least one id appear. Sorted, namespaced.
+ * `advancement`, `predicate`, `item_modifier`, the tier-B registries, `tag/<registry>` (tag
+ * ids without `#`) and the registry of every other registered `minecraft:` kind outside the
+ * resource pack (for example `structure`, `worldgen/biome`, `dimension`). Only registries with
+ * at least one id appear. Sorted, namespaced.
  *
  * @param project - The project.
+ * @param kinds - The registered kinds; defaults to the built-in plugins' kinds.
  */
-export function dataRegistryIds(project: Project): Record<string, string[]> {
+export function dataRegistryIds(
+  project: Project,
+  kinds: KindRegistryLookup = BUILT_IN_KIND_LOOKUP,
+): Record<string, string[]> {
   const map = new Map<string, string[]>();
   for (const namespace of project.namespaces) {
     for (const element of namespace.elements) {
       if (!element.kind.startsWith(MINECRAFT_PREFIX)) continue;
-      const registry = kindRegistry(element.kind);
-      if (!DATA_REGISTRIES.has(registry) && !registry.startsWith(TAG_PREFIX)) continue;
+      const registered = kinds.registryFor(element.kind);
+      const registry = registered ?? defaultKindRegistry(element.kind);
+      const isData =
+        DATA_REGISTRIES.has(registry) ||
+        registry.startsWith(TAG_PREFIX) ||
+        (registered !== undefined && !NON_DATA_KINDS.has(element.kind));
+      if (!isData) continue;
       const ids = map.get(registry);
       if (ids === undefined) map.set(registry, [element.id]);
       else ids.push(element.id);
@@ -144,8 +196,12 @@ function soundEventKeys(data: unknown): string[] {
  * pack registries of {@link dataRegistryIds}. Sorted, namespaced, without duplicates.
  *
  * @param project - The project.
+ * @param kinds - The registered kinds; defaults to the built-in plugins' kinds.
  */
-export function projectRegistryIds(project: Project): Record<string, string[]> {
+export function projectRegistryIds(
+  project: Project,
+  kinds: KindRegistryLookup = BUILT_IN_KIND_LOOKUP,
+): Record<string, string[]> {
   const model: string[] = [];
   const texture: string[] = [];
   const sound: string[] = [];
@@ -165,7 +221,7 @@ export function projectRegistryIds(project: Project): Record<string, string[]> {
     }
   }
   return {
-    ...dataRegistryIds(project),
+    ...dataRegistryIds(project, kinds),
     model: model.sort(),
     sound: sound.sort(),
     sound_event: [...soundEvent].sort(),
@@ -196,10 +252,13 @@ function withSeeds(
  *
  * @param platform - Supplies `targets.readVendored`.
  * @param target - The target to load.
+ * @param kinds - The registered kinds, whose registries receive the project's element ids;
+ *   defaults to the built-in plugins' kinds.
  */
 export async function loadSchemaContext(
   platform: Pick<PlatformAdapter, 'targets'>,
   target: Target,
+  kinds: KindRegistryLookup = BUILT_IN_KIND_LOOKUP,
 ): Promise<SchemaContext> {
   const [symbolBytes, registryBytes] = await Promise.all([
     platform.targets.readVendored(target.id, 'vanillaMcdocSymbols'),
@@ -219,7 +278,7 @@ export async function loadSchemaContext(
     schemaIndex,
     vanillaRegistries,
     registries(project) {
-      const ids = projectRegistryIds(project);
+      const ids = projectRegistryIds(project, kinds);
       const key = JSON.stringify(ids);
       if (cached === null || key !== cachedKey) {
         cached = createRegistryIndex({ vanilla: vanillaRegistries, project: ids });

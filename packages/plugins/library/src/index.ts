@@ -41,7 +41,7 @@ export { libraryStarters } from './starters/index';
 
 const plugin: Readonly<Plugin> = definePlugin({
   id: 'msm.library',
-  apiVersion: '^0.4.0',
+  apiVersion: '^0.5.0',
   contributes: {
     projectStarters: [...libraryStarters],
     examples: [...libraryExamples],

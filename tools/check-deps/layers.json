@@ -8,7 +8,9 @@
     "@msm/targets",
     "@msm/plugin-datapack",
     "@msm/plugin-library",
-    "@msm/plugin-resourcepack"
+    "@msm/plugin-resourcepack",
+    "@msm/plugin-structures",
+    "@msm/plugin-worldgen"
   ],
   "@msm/interop": ["@msm/plugin-api", "@msm/schemas", "@msm/core", "@msm/targets"],
   "@msm/plugin-*": ["@msm/plugin-api", "@msm/schemas", "@msm/targets"],

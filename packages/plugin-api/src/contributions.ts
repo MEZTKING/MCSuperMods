@@ -29,6 +29,13 @@ export interface ElementKind<D extends Json = Json> {
   /** kind-folder under content/<ns>/ */
   folder: string;
   /**
+   * The registry the ids of elements of this kind belong to, without a `minecraft:` prefix,
+   * for example `structure` or `worldgen/template_pool`: the name schema `#[id]` attributes
+   * use, so that references to project elements resolve. Defaults to the kind id without
+   * `minecraft:`; set it only when the two differ. Since 0.5.0.
+   */
+  registry?: string;
+  /**
    * Data for a newly created element of this kind. The host deep-copies it for every new
    * element. When omitted, new elements start with an empty object.
    */
@@ -164,6 +171,73 @@ export interface Command {
 }
 
 /**
+ * The registry ids a {@link ProjectValidator} may look up: vanilla ids of the target plus the
+ * project's own ids, as the host's registry index sees them.
+ */
+export interface ValidationRegistry {
+  /**
+   * True when `id` is known in `registry`.
+   *
+   * @param registry - Registry name without a `minecraft:` prefix, e.g. `worldgen/biome`.
+   * @param id - A namespaced id such as `minecraft:plains`.
+   */
+  has(registry: string, id: string): boolean;
+  /**
+   * Every known id of `registry`, namespaced and sorted; empty for an unknown registry.
+   *
+   * @param registry - Registry name without a `minecraft:` prefix.
+   */
+  ids(registry: string): readonly string[];
+}
+
+/**
+ * Everything a {@link ProjectValidator} receives. Carries no Node or DOM types.
+ */
+export interface ValidationInput {
+  /** Every element of the project (all kinds), in a stable order. */
+  elements: readonly Element[];
+  /** The target being validated for. */
+  target: Target;
+  /** Vanilla plus project ids, as the host's registry index sees them. */
+  registry: ValidationRegistry;
+}
+
+/**
+ * Cross-element checks a plugin runs over the whole project, such as the order of features in
+ * biomes. The host runs validators after schema checks and merges their problems into the
+ * project's problems, so an error blocks export like any other. Since 0.5.0.
+ *
+ * @example
+ * ```ts
+ * const validator: ProjectValidator = {
+ *   id: 'msm.example.non-empty',
+ *   kinds: ['minecraft:recipe'],
+ *   validate: ({ elements }) =>
+ *     elements.length === 0
+ *       ? [{ severity: 'info', code: 'example.empty', message: 'The project has no elements.' }]
+ *       : [],
+ * };
+ * ```
+ */
+export interface ProjectValidator {
+  /** Unique id, for example `msm.worldgen.feature-order`. */
+  id: string;
+  /**
+   * Kind ids whose elements this validator reads; the host re-runs it when an element of any
+   * of them changes.
+   */
+  kinds: readonly string[];
+  /**
+   * Checks the project. Must be pure and deterministic. Problems carry `elementId` and an
+   * RFC 6901 `path` where possible; codes are `<area>.<check>`.
+   *
+   * @param input - The project's elements, the target and the registry ids.
+   * @returns The problems found; empty when there are none.
+   */
+  validate(input: ValidationInput): Problem[];
+}
+
+/**
  * Everything one plugin contributes. Every field is optional; omit the ones a plugin does not
  * use.
  */
@@ -191,4 +265,6 @@ export interface PluginContributions {
   projectStarters?: ProjectStarter[];
   /** Examples gallery entries; see {@link ExampleProject}. Since 0.4.0. */
   examples?: ExampleProject[];
+  /** Cross-element project checks; see {@link ProjectValidator}. Since 0.5.0. */
+  validators?: ProjectValidator[];
 }

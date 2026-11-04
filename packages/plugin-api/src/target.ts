@@ -86,6 +86,11 @@ export type ResourceFolderKey =
  * - `trim_material`: armour trim materials.
  * - `trim_pattern`: armour trim patterns.
  * - `dialog`: dialogs.
+ * - `structure`: structure templates (`.nbt` files). Since 0.5.0.
+ * - `dimension`: dimensions. Since 0.5.0.
+ * - `worldgen`: the parent folder of every world generation registry folder; worldgen kinds
+ *   append `/<registry>`, for example `<worldgen>/biome`, exactly as tag kinds append to
+ *   `tags`. Since 0.5.0.
  */
 export type DataFolderKey =
   | 'recipe'
@@ -104,7 +109,23 @@ export type DataFolderKey =
   | 'painting_variant'
   | 'trim_material'
   | 'trim_pattern'
-  | 'dialog';
+  | 'dialog'
+  | 'structure'
+  | 'dimension'
+  | 'worldgen';
+
+/**
+ * World generation facts of a target. Since 0.5.0.
+ */
+export interface WorldgenFacts {
+  /**
+   * The biome feature decoration step names, in the order the game runs them (the game's
+   * decoration step enum). A biome's `features` list holds one list of placed features per
+   * step, at the same index. Used to label steps and to bound step indices; never hard-code
+   * them.
+   */
+  featureSteps: readonly string[];
+}
 
 /**
  * One Minecraft version's facts, contributed by a `@msm/target-mc-<version>` package.
@@ -144,10 +165,18 @@ export interface Target {
     resource: Readonly<Record<ResourceFolderKey, string>>;
     /**
      * Folder names under `data/<namespace>/`, keyed by {@link DataFolderKey}. Every value is
-     * a single path segment; `tags` is the parent of the per-registry tag folders.
+     * a single path segment; `tags` is the parent of the per-registry tag folders and
+     * `worldgen` the parent of the world generation registry folders.
      */
     data: Readonly<Record<DataFolderKey, string>>;
   };
+  /**
+   * The game's data version (the world and NBT format version), written as `DataVersion`
+   * into structure template and schematic files. Required since 0.5.0.
+   */
+  dataVersion: number;
+  /** World generation facts. Required since 0.5.0. */
+  worldgen: WorldgenFacts;
   /** Fabric toolchain versions. Required from Phase 4. */
   fabric?: {
     /** Fabric Loader version. */

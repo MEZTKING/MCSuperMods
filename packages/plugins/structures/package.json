@@ -1,0 +1,26 @@
+{
+  "name": "@msm/plugin-structures",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@msm/plugin-api": "workspace:*",
+    "@msm/schemas": "workspace:*",
+    "deepslate": "catalog:"
+  },
+  "devDependencies": {
+    "@msm/targets": "workspace:*",
+    "@types/node": "catalog:",
+    "vitest": "catalog:"
+  }
+}

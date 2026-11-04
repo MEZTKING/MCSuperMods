@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@msm/plugin-api": "workspace:*",
+    "deepslate": "catalog:",
     "fflate": "catalog:"
   },
   "devDependencies": {

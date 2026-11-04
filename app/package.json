@@ -27,6 +27,8 @@
     "@msm/plugin-datapack": "workspace:*",
     "@msm/plugin-library": "workspace:*",
     "@msm/plugin-resourcepack": "workspace:*",
+    "@msm/plugin-structures": "workspace:*",
+    "@msm/plugin-worldgen": "workspace:*",
     "@msm/schemas": "workspace:*",
     "@msm/targets": "workspace:*",
     "@tailwindcss/vite": "catalog:",

@@ -6,10 +6,15 @@ import type {
   ExporterInput,
   Json,
   OutputFile,
+  PluginContributions,
   Problem,
   Project,
+  ProjectValidator,
   ResourceFolderKey,
   Target,
+  ValidationInput,
+  ValidationRegistry,
+  WorldgenFacts,
 } from '../src/index';
 
 describe('IR and output types', () => {
@@ -167,6 +172,9 @@ describe('0.3.0 additions', () => {
       | 'trim_material'
       | 'trim_pattern'
       | 'dialog'
+      | 'structure'
+      | 'dimension'
+      | 'worldgen'
     >();
     expectTypeOf<Target['folders']['data']>().toEqualTypeOf<
       Readonly<Record<DataFolderKey, string>>
@@ -175,5 +183,47 @@ describe('0.3.0 additions', () => {
       resource: Readonly<Record<ResourceFolderKey, string>>;
       data: Readonly<Record<DataFolderKey, string>>;
     }>();
+  });
+});
+
+describe('0.5.0 additions', () => {
+  it('adds an optional registry to ElementKind', () => {
+    expectTypeOf<ElementKind['registry']>().toEqualTypeOf<string | undefined>();
+    const kind: ElementKind = {
+      id: 'minecraft:structure_template',
+      schema: 'msm:structure_template',
+      folder: 'structure',
+      registry: 'structure',
+      lower: () => [],
+    };
+    expectTypeOf(kind).toEqualTypeOf<ElementKind>();
+  });
+
+  it('types project validators', () => {
+    expectTypeOf<ProjectValidator['kinds']>().toEqualTypeOf<readonly string[]>();
+    expectTypeOf<ProjectValidator['validate']>().parameter(0).toEqualTypeOf<ValidationInput>();
+    expectTypeOf<ProjectValidator['validate']>().returns.toEqualTypeOf<Problem[]>();
+    expectTypeOf<ValidationInput['elements']>().toEqualTypeOf<readonly Element[]>();
+    expectTypeOf<ValidationInput['target']>().toEqualTypeOf<Target>();
+    expectTypeOf<ValidationInput['registry']>().toEqualTypeOf<ValidationRegistry>();
+    expectTypeOf<ValidationRegistry['ids']>().returns.toEqualTypeOf<readonly string[]>();
+    expectTypeOf<PluginContributions['validators']>().toEqualTypeOf<
+      ProjectValidator[] | undefined
+    >();
+    const validator: ProjectValidator = {
+      id: 'msm.example.empty',
+      kinds: ['minecraft:recipe'],
+      validate: ({ elements, registry }) =>
+        elements.length === 0 && !registry.has('recipe', 'example:a')
+          ? [{ severity: 'info', code: 'example.empty', message: 'Nothing to check.' }]
+          : [],
+    };
+    expectTypeOf(validator).toEqualTypeOf<ProjectValidator>();
+  });
+
+  it('requires a data version and worldgen facts on Target', () => {
+    expectTypeOf<Target['dataVersion']>().toEqualTypeOf<number>();
+    expectTypeOf<Target['worldgen']>().toEqualTypeOf<WorldgenFacts>();
+    expectTypeOf<WorldgenFacts['featureSteps']>().toEqualTypeOf<readonly string[]>();
   });
 });

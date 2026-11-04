@@ -65,6 +65,9 @@ describe('target mc-26.3', () => {
       trim_material: 'trim_material',
       trim_pattern: 'trim_pattern',
       dialog: 'dialog',
+      structure: 'structure',
+      dimension: 'dimension',
+      worldgen: 'worldgen',
     });
     for (const name of Object.values(target.folders.data)) {
       expect(name).not.toBe('');
@@ -73,5 +76,21 @@ describe('target mc-26.3', () => {
       expect(name).not.toMatch(/^\.\.?$/);
       expect(name).toMatch(/^[a-z0-9_.-]+$/);
     }
+  });
+
+  it('matches the vendored mcmeta data version', async () => {
+    const version = await readJson('../vendor/mcmeta/version.json');
+    expect(target.dataVersion).toBe(version.data_version);
+    expect(Number.isInteger(target.dataVersion)).toBe(true);
+  });
+
+  it('lists the feature decoration steps in the vendored mcdoc order', async () => {
+    const symbols = (await readJson('../vendor/vanilla-mcdoc/symbols.json')) as {
+      mcdoc: Record<string, { kind: string; values?: { value: unknown }[] }>;
+    };
+    const step = symbols.mcdoc['::java::data::worldgen::DecorationStep'];
+    expect(step?.kind).toBe('enum');
+    expect(target.worldgen.featureSteps).toEqual(step?.values?.map((entry) => entry.value));
+    expect(target.worldgen.featureSteps).toHaveLength(11);
   });
 });

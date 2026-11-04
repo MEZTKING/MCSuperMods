@@ -46,8 +46,13 @@ const target: Target = {
       trim_material: 'trim_material',
       trim_pattern: 'trim_pattern',
       dialog: 'dialog',
+      structure: 'structure',
+      dimension: 'dimension',
+      worldgen: 'worldgen',
     },
   },
+  dataVersion: 1,
+  worldgen: { featureSteps: ['raw_generation'] },
 };
 
 const modelKind: ElementKind = {

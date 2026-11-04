@@ -15,6 +15,9 @@ export type {
   Importer,
   ImportResult,
   PluginContributions,
+  ProjectValidator,
+  ValidationInput,
+  ValidationRegistry,
 } from './contributions';
 export type { Json, JsonObject, ResourceLocation } from './json';
 export type {
@@ -40,5 +43,6 @@ export type {
   PackFormat,
   ResourceFolderKey,
   Target,
+  WorldgenFacts,
 } from './target';
 export { API_VERSION } from './version';

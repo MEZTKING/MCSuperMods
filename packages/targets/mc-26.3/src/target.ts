@@ -43,7 +43,26 @@ export const target: Target = {
       trim_material: 'trim_material',
       trim_pattern: 'trim_pattern',
       dialog: 'dialog',
+      structure: 'structure',
+      dimension: 'dimension',
+      worldgen: 'worldgen',
     },
+  },
+  dataVersion: 5023,
+  worldgen: {
+    featureSteps: [
+      'raw_generation',
+      'lakes',
+      'local_modifications',
+      'underground_structures',
+      'surface_structures',
+      'strongholds',
+      'underground_ores',
+      'underground_decoration',
+      'fluid_springs',
+      'vegetal_decoration',
+      'top_layer_modification',
+    ],
   },
   // fabric and geckolib are not set until Phase 4/5 (verify at implementation then).
 };
