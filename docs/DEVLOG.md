@@ -544,3 +544,14 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - The user retries in a fresh terminal. Consider moving `.nvmrc` and CI to Node 26 LTS in Phase 3 (Q11 follow-up), since winget now installs 26.
+
+---
+
+## 2026-11-04 — main session — First release build (v0.1.0, draft)
+
+**What**
+- The user asked for an easy `.exe` installer instead of running from source, and chose to let GitHub build it.
+- Set `app/package.json` version to `0.1.0` and pushed the tag `v0.1.0` on `ccr-d077e76e-4gnbx2`. This triggers `.github/workflows/release.yml` on `windows-latest`, the first ever Windows run: it builds the NSIS installer and uploads the `.exe`, `.blockmap` and `latest.yml` to a DRAFT release.
+
+**Decisions**
+- The draft stays unpublished until the user publishes it. The in-game checks are still recommended first; auto-update starts only after publishing with the repository public.
