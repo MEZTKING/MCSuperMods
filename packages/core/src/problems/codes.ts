@@ -4,7 +4,7 @@
  * @packageDocumentation
  */
 
-/** Problem codes reported while loading and lowering a project. */
+/** Problem codes reported while loading, lowering and refactoring a project. */
 export const ProblemCodes = {
   /** `msm.project.json` has a field of the wrong type; a default was used. */
   projectInvalidShape: 'project.invalid-shape',
@@ -28,6 +28,8 @@ export const ProblemCodes = {
   loweringFailed: 'lowering.failed',
   /** Two output files share a layer and path. The first element's file is kept. */
   loweringConflict: 'lowering.conflict',
+  /** A rename's new id is already used by another element. Nothing is renamed. */
+  refsRenameConflict: 'refs.rename-conflict',
 } as const;
 
 /** Any problem code reported by `@msm/core`. */

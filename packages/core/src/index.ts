@@ -1,8 +1,8 @@
 /**
  * `@msm/core`: the MCSuperMods project model. IR types (re-exported from
  * `@msm/plugin-api`, ADR 0008), deterministic serialisation, project load/save with an
- * injected file system, the element kind registry, the undoable command stack and the
- * lowering driver.
+ * injected file system, the element kind registry, the undoable command stack, the
+ * lowering driver and the reference index.
  *
  * @packageDocumentation
  */
@@ -40,6 +40,13 @@ export { lowerProject } from './lowering/lower-project';
 export * from './model/index';
 export type { ProblemCode } from './problems/codes';
 export { ProblemCodes } from './problems/codes';
+export type { Reference, ReferenceIndex } from './refs/reference-index';
+export {
+  buildReferenceIndex,
+  compareReferences,
+  normaliseReferenceId,
+} from './refs/reference-index';
+export { collectTextReferences } from './refs/text-references';
 export { DuplicateKindError, ElementKindRegistry } from './registry/element-kind-registry';
 export { PluginCompatibilityError, registerPlugin } from './registry/register-plugin';
 export { parseJson, stableStringify, utf8 } from './serialise/index';

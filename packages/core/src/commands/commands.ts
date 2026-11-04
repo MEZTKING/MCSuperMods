@@ -16,6 +16,7 @@ import type {
 import type { Draft } from 'immer';
 import { assertProjectRelativePath } from '../fs/paths';
 import { isValidNamespace, parseResourceLocation } from '../model/resource-location';
+import { normaliseReferenceId, type Reference } from '../refs/reference-index';
 import type { ProjectCommand } from './command-stack';
 import { parseJsonPointer } from './json-pointer';
 
@@ -165,6 +166,103 @@ function sortedIndex<T>(items: readonly T[], key: (item: T) => string, value: st
   let index = 0;
   while (index < items.length && key(items[index] as T) < value) index++;
   return index;
+}
+
+/** The value at `segments` inside `root`, or `undefined` when the path does not exist. */
+function getAt(root: Json, segments: readonly string[]): Json | undefined {
+  let current: Json | undefined = root;
+  for (const segment of segments) {
+    if (Array.isArray(current)) {
+      if (!ARRAY_INDEX.test(segment)) return undefined;
+      current = current[Number(segment)];
+    } else if (isContainer(current)) {
+      current = Object.hasOwn(current, segment) ? current[segment] : undefined;
+    } else {
+      return undefined;
+    }
+  }
+  return current;
+}
+
+/**
+ * The string that replaces `written` (a reference to the renamed id) when the id becomes
+ * `newId`: a `#` prefix is kept, and an omitted namespace stays omitted only when `newId` is
+ * in `minecraft`.
+ */
+function rewrittenReference(written: string, newId: string): string {
+  const tag = written.startsWith('#') ? '#' : '';
+  const bare = tag === '' ? written : written.slice(1);
+  const omitted = !bare.includes(':');
+  const MINECRAFT = 'minecraft:';
+  const id = omitted && newId.startsWith(MINECRAFT) ? newId.slice(MINECRAFT.length) : newId;
+  return `${tag}${id}`;
+}
+
+/** Renames the key `oldKey` of `object` to `newKey`, keeping the key order. */
+function renameKey(object: JsonObject, oldKey: string, newKey: string, where: string): void {
+  if (Object.hasOwn(object, newKey)) {
+    throw new Error(`${where} already has a key ${JSON.stringify(newKey)}.`);
+  }
+  const entries = Object.entries(object);
+  for (const [key] of entries) delete object[key];
+  for (const [key, value] of entries) object[key === oldKey ? newKey : key] = value;
+}
+
+/**
+ * Rewrites the references of one element in place. Value references go first (their paths
+ * may pass through a renamed key), then key references deepest first, and text references
+ * from the end of each line backwards so earlier ranges stay valid. A reference whose
+ * current text no longer names `oldId` is skipped.
+ */
+function rewriteReferences(
+  element: Draft<Element>,
+  references: readonly Reference[],
+  oldId: string,
+  newId: string,
+): number {
+  const order = (reference: Reference): number =>
+    reference.range !== undefined ? 0 : reference.key === true ? 2 : 1;
+  const sorted = [...references].sort(
+    (a, b) =>
+      order(a) - order(b) ||
+      (order(a) === 2 ? b.path.length - a.path.length : 0) ||
+      (b.range?.start ?? 0) - (a.range?.start ?? 0),
+  );
+  let rewritten = 0;
+  for (const reference of sorted) {
+    const segments = parseJsonPointer(reference.path);
+    if (reference.range !== undefined) {
+      const line = getAt(element.data as Json, segments);
+      if (typeof line !== 'string') continue;
+      const { start, end } = reference.range;
+      const token = line.slice(start, end);
+      if (!token.includes(':') || normaliseReferenceId(token) !== oldId) continue;
+      const next = `${line.slice(0, start)}${newId}${line.slice(end)}`;
+      element.data = setAt(element.data as Json, segments, next) as Draft<Json>;
+    } else if (reference.key === true) {
+      if (segments.length === 0) continue;
+      const parent = getAt(element.data as Json, segments.slice(0, -1));
+      const key = segments[segments.length - 1] as string;
+      if (!isContainer(parent) || Array.isArray(parent) || !Object.hasOwn(parent, key)) continue;
+      if (normaliseReferenceId(key) !== oldId) continue;
+      renameKey(
+        parent,
+        key,
+        rewrittenReference(key, newId),
+        `${element.id} ${describe(segments, segments.length - 1)}`,
+      );
+    } else {
+      const value = getAt(element.data as Json, segments);
+      if (typeof value !== 'string' || normaliseReferenceId(value) !== oldId) continue;
+      element.data = setAt(
+        element.data as Json,
+        segments,
+        rewrittenReference(value, newId),
+      ) as Draft<Json>;
+    }
+    rewritten++;
+  }
+  return rewritten;
 }
 
 /** Factories for the built-in commands. Each returns a fresh {@link ProjectCommand}. */
@@ -349,6 +447,74 @@ export const commands = {
         const index = target.assets.findIndex((existing) => existing.path === path);
         if (index < 0) throw new Error(`Namespace "${namespace}" has no asset at "${path}".`);
         target.assets.splice(index, 1);
+      },
+    };
+  },
+
+  /**
+   * Renames an element and rewrites the references to it, as one undoable step (ADR 0016).
+   *
+   * The element keeps its kind, data and `meta`; it moves to the namespace of `newId` when
+   * that differs (save then moves its file through the manifest). Each reference whose
+   * `to` is `oldId` is rewritten in the element named by its `from` (the renamed element
+   * itself included): string values and map keys keep a `#` prefix and keep an omitted
+   * namespace only when `newId` is in `minecraft`; text references replace the token at
+   * their `range` with `newId`. References whose current text no longer names `oldId`, or
+   * whose element or path no longer exists, are skipped. Build `references` from a
+   * `ReferenceIndex` of the state the command runs on, for example
+   * `index.referencesTo(oldId)`.
+   *
+   * @param oldId - The element to rename.
+   * @param newId - Its new id.
+   * @param references - The references to rewrite.
+   * @throws `InvalidResourceLocationError` If `newId` is malformed (immediately).
+   * @throws {@link ElementNotFoundError} On execute, if `oldId` does not exist.
+   * @throws {@link DuplicateElementError} On execute, if `newId` is already used; the
+   *   session reports this as `refs.rename-conflict`.
+   * @throws Error On execute, if the namespace of `newId` does not exist, or a renamed map
+   *   key would collide with an existing key.
+   */
+  renameElement(
+    oldId: ResourceLocation,
+    newId: ResourceLocation,
+    references: readonly Reference[],
+  ): ProjectCommand {
+    const { namespace: newName } = parseResourceLocation(newId);
+    const relevant = references
+      .filter((reference) => reference.to === oldId)
+      .map((reference) => structuredClone(reference));
+    return {
+      id: 'core.rename-element',
+      label: `Rename ${oldId} to ${newId}`,
+      apply(draft) {
+        const { namespace, index } = locate(draft, oldId);
+        for (const other of draft.namespaces) {
+          if (other.elements.some((existing) => existing.id === newId)) {
+            throw new DuplicateElementError(newId);
+          }
+        }
+        const target = findNamespace(draft, newName);
+        if (target === undefined) throw new Error(`Namespace "${newName}" does not exist.`);
+
+        const bySource = new Map<string, Reference[]>();
+        for (const reference of relevant) {
+          const list = bySource.get(reference.from);
+          if (list === undefined) bySource.set(reference.from, [reference]);
+          else list.push(reference);
+        }
+        for (const [from, list] of bySource) {
+          let source: Draft<Element> | undefined;
+          for (const candidate of draft.namespaces) {
+            source = candidate.elements.find((existing) => existing.id === from);
+            if (source !== undefined) break;
+          }
+          if (source !== undefined) rewriteReferences(source, list, oldId, newId);
+        }
+
+        const [element] = namespace.elements.splice(index, 1) as [Draft<Element>];
+        element.id = newId;
+        const position = sortedIndex(target.elements, (existing) => existing.id, newId);
+        target.elements.splice(position, 0, element);
       },
     };
   },
