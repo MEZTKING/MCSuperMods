@@ -596,3 +596,30 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - Prism and CurseForge waves once the plan lands. The AI assistant stays unscheduled until the user asks to bring it forward.
+
+---
+
+## 2026-11-04 — main session — Launcher add-on (Prism, CurseForge, MultiMC) close; v0.2.0 prepared
+
+**What** (each brief verified and committed)
+- **B50:** `@msm/interop` `launchers/` reads the official launcher, Prism/MultiMC/PolyMC (`prismlauncher.cfg`, `instance.cfg`, `mmc-pack.json`, custom and additional instance dirs, portable, Flatpak, XDG, `PRISMLAUNCHER_DATA_DIR`) and CurseForge (`minecraftinstance.json`). `findClientJar` searches the selected launcher's store first, then every other store. 61 interop tests.
+- **B51:** IPC contract and settings: `launchers` (manual roots, at most 16 each), `installTarget`, `minecraft:listLocations`, and the extended status.
+- **B52:** Settings "Game locations" list with launcher, version and loader badges and add/remove folders; Toolbar "Install to: …" with a "Change target" submenu; world picker shows the location name.
+- **B53:** ADR 0019 and DESIGN §13. **B57:** README "Using Prism Launcher or the CurseForge app" and the CLAUDE.md files.
+- **B54:** main-process location resolver.
+  - Installs go into the selected `gameDir`; extraction comes from any launcher's jar store, with the cache still keyed by version.
+  - Real-path containment, a stale-target fallback, a missing game folder blocks installs, and a version mismatch only warns.
+  - 14 tests on real temporary folders.
+- **B55:** renderer wiring, the `chooseInstallTarget` palette command, warnings in the install toast.
+- **B56:** e2e `launchers-path` covers fake Prism and CurseForge, extraction from the Prism store, resource pack and data pack installs, target switching and a version-mismatch instance. It found a **bug: the Settings dialog overflowed the window with no scrolling**. The main session fixed it (`max-h-[90vh] overflow-y-auto`), and the spec now uses a real click. e2e: 4/4 specs passed three times in a row, about 12.5 s per run.
+
+**Decisions**
+- Symlinked `resourcepacks`, `saves` or `datapacks` folders outside the selected game folder are refused (safety first); recorded in README "Known limitations" and the ADR 0019 Status.
+- `status.minecraftDir` mirrors the selected location's game folder.
+- Non-installable targets stay selectable; Install is disabled with the reason shown.
+- `app/package.json` version set to 0.2.0 for the next release.
+
+**Needs the user**
+- Push the tag `v0.2.0` from their clone, because the cloud session cannot push tags.
+- Confirm the CurseForge jar path and `baseModLoader` on a real machine.
+- Decide whether the template and samples library comes next.

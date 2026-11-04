@@ -97,6 +97,7 @@ So one installed copy of a version, in any launcher, is enough. **Settings → V
 
 ## Known limitations
 
+- A `resourcepacks`, `saves` or `datapacks` folder that is a symlink pointing outside the selected game folder (for example one resource pack folder shared across instances) is refused; install into each instance's own folder instead.
 - Go to definition does not yet work from the caret inside the Monaco function editor; use it from form fields or the plain text editor.
 - Clicking a function problem jumps to the start of its line, not to the exact column.
 - If either pack has errors, every export and install action is disabled, including the one for the pack without errors.

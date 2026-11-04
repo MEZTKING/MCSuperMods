@@ -65,4 +65,4 @@ Facts were read from the Prism Launcher source (`develop` branch, 2026-11-04), t
 
 ## Status
 
-Proposed (2026-11-04); implemented in the launcher add-on.
+Accepted and implemented (2026-11-04, launcher add-on B50–B57, released in v0.2.0). Implementation notes: `status.minecraftDir` now mirrors the selected location's game folder; resource-pack, save and data-pack folders symlinked outside the selected game folder are refused (shared symlinked folders across instances are not supported); with no official folder and no stored target nothing is selected until the user picks one; the CurseForge `Install/versions` jar path and vanilla `baseModLoader: null` remain to be confirmed on a real machine, with the all-store jar fallback in place.

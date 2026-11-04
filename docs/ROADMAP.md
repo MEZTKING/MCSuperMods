@@ -185,10 +185,10 @@ Requested on 2026-11-04: preview-asset extraction and pack install for users who
 - [x] B51: shared IPC contract, preload and settings store (`launchers`, `installTarget`, `minecraft:listLocations`).
 - [x] B52: renderer components: Settings "Game locations", toolbar install target and submenu, world picker location name.
 - [x] B53: ADR 0019 and DESIGN Minecraft installation.
-- [ ] B54: main process: location resolver, installs into the selected instance, extraction from launcher stores.
-- [ ] B55: renderer wiring and session (`listLocations`, `setInstallTarget`, warnings, command palette entry).
-- [ ] B56: end-to-end test installing and extracting through fake Prism and CurseForge instances.
-- [ ] B57: README "Using Prism Launcher or the CurseForge app", scoped guides, ROADMAP ticks and ADR status.
+- [x] B54: main process: location resolver, installs into the selected instance, extraction from launcher stores.
+- [x] B55: renderer wiring and session (`listLocations`, `setInstallTarget`, warnings, command palette entry).
+- [x] B56: end-to-end test installing and extracting through fake Prism and CurseForge instances.
+- [x] B57: README "Using Prism Launcher or the CurseForge app", scoped guides, ROADMAP ticks and ADR status.
 - [ ] User check: confirm the CurseForge `Install/versions/` jar path, `baseModLoader: null` for vanilla instances and the Prism jar path on a real Windows machine, then run the in-game checks through the chosen instance.
 
 ### Exit criteria

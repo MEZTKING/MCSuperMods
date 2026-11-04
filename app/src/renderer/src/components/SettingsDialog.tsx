@@ -299,7 +299,7 @@ export function SettingsDialog(props: SettingsDialogProps) {
         <Dialog.Content
           aria-describedby={undefined}
           data-testid="settings-dialog"
-          className="fixed top-1/2 left-1/2 z-50 w-[min(94vw,520px)] -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-panel p-4 text-text shadow-lg"
+          className="fixed top-1/2 left-1/2 z-50 max-h-[90vh] w-[min(94vw,520px)] overflow-y-auto -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-panel p-4 text-text shadow-lg"
         >
           <Dialog.Title className="mb-2 text-base font-semibold">Settings</Dialog.Title>
           <form
