@@ -24,7 +24,7 @@ After installing Node.js, **close every terminal and open a new one** so Node is
 In PowerShell:
 
 ```powershell
-git clone -b ccr-d077e76e-4gnbx2 https://github.com/MEZTKING/MCSuperMods.git   # development branch until merged into main
+git clone https://github.com/MEZTKING/MCSuperMods.git
 cd MCSuperMods
 npm install -g pnpm@12.16.1        # Node 25+ no longer bundles corepack; on Node 24 `corepack enable` (admin) also works
 pnpm install
