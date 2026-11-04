@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { createMemoryFileSystem } from '@msm/core';
 import { builtInTargets, targetById } from '@msm/targets';
-import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { App } from '../../src/renderer/src/App';
@@ -14,7 +14,14 @@ import { ProjectSession } from '../../src/renderer/src/session/project-session';
 import { useUiStore } from '../../src/renderer/src/store/ui-store';
 import { NO_DATA_PACK_CONTENT } from '../../src/renderer/src/studios/export-state';
 import type { MenuCommand, UpdateStatus } from '../../src/shared/ipc-channels';
-import type { MsmBridge, PlatformAdapter, WorldInfo } from '../../src/shared/platform';
+import type {
+  AppSettingsPatch,
+  GameLocationView,
+  LauncherSettings,
+  MsmBridge,
+  PlatformAdapter,
+  WorldInfo,
+} from '../../src/shared/platform';
 
 /** Reports line 1 of any source containing `bogus` as a parse error. */
 const stubChecker: McfunctionChecker = {
@@ -53,6 +60,55 @@ const unavailable = async (): Promise<never> => {
   throw new Error('Not available in this test.');
 };
 
+/** A neutral Minecraft version that never matches a built-in target. */
+const OTHER_VERSION = '9.9-msm-test';
+
+const officialLocation: GameLocationView = {
+  ref: { launcher: 'official', root: '/home/me/.minecraft' },
+  id: 'official:default',
+  displayName: 'Official launcher',
+  mcVersion: null,
+  loader: null,
+  gameDir: '/home/me/.minecraft',
+  modsDir: null,
+  problems: [],
+  warnings: [],
+};
+
+const mismatchWarning = {
+  code: 'location.version-mismatch',
+  message: `This instance runs Minecraft ${OTHER_VERSION}; the project targets ${defaultTarget.mcVersion}.`,
+};
+
+const prismLocation: GameLocationView = {
+  ref: { launcher: 'prism', root: '/home/me/prism', instance: 'My-Instance' },
+  id: 'prism:My-Instance',
+  displayName: 'My Instance',
+  mcVersion: OTHER_VERSION,
+  loader: { kind: 'fabric', version: '0.16.0' },
+  gameDir: '/home/me/prism/instances/My-Instance/minecraft',
+  modsDir: '/home/me/prism/instances/My-Instance/minecraft/mods',
+  problems: [],
+  warnings: [mismatchWarning],
+};
+
+const unstartedLocation: GameLocationView = {
+  ref: { launcher: 'prism', root: '/home/me/prism', instance: 'Fresh' },
+  id: 'prism:Fresh',
+  displayName: 'Fresh',
+  mcVersion: defaultTarget.mcVersion,
+  loader: null,
+  gameDir: '/home/me/prism/instances/Fresh/minecraft',
+  modsDir: null,
+  problems: [
+    {
+      code: 'location.game-dir-missing',
+      message: 'Start the instance once so its game folder exists.',
+    },
+  ],
+  warnings: [],
+};
+
 interface Harness {
   menu(command: MenuCommand): Promise<void>;
   /** What `updates.check()` resolves to. */
@@ -65,6 +121,22 @@ interface Harness {
   installs: string[];
   picks: number;
   written: string[];
+  /** Every location `listLocations` reports. */
+  locations: GameLocationView[];
+  /** The id of the install target; `null` makes status report no target at all. */
+  selectedId: string | null;
+  /** Every `settings.set` patch, in order. */
+  settingsSets: AppSettingsPatch[];
+  /** How often `minecraft.status` was read. */
+  statusReads: number;
+  /** The stored launcher folders. */
+  launchers: LauncherSettings;
+  /** What the folder picker returns. */
+  pickedDirectory: string | null;
+  /** Resource pack installs, by file name. */
+  resourceInstalls: string[];
+  /** Whether status reports that the stored target was not found. */
+  targetMissing: boolean;
 }
 
 async function renderApp(): Promise<Harness> {
@@ -82,6 +154,14 @@ async function renderApp(): Promise<Harness> {
     installs: [],
     picks: 0,
     written: [],
+    locations: [officialLocation, prismLocation, unstartedLocation],
+    selectedId: 'official:default',
+    settingsSets: [],
+    statusReads: 0,
+    launchers: { prismDataDirs: [], multimcRoots: [], curseForgeRoots: [] },
+    pickedDirectory: '/home/me/prism',
+    resourceInstalls: [],
+    targetMissing: false,
     menu: async (command) => {
       await act(async () => listener?.(command));
     },
@@ -89,7 +169,10 @@ async function renderApp(): Promise<Harness> {
   const platform: PlatformAdapter = {
     app: { info: async () => ({ version: '0.1.0-test', electron: '0', platform: 'test' }) },
     dialogs: {
-      pickDirectory: async () => '/projects/demo',
+      pickDirectory: async ({ title }) =>
+        title.includes('folder') && !title.includes('project')
+          ? harness.pickedDirectory
+          : '/projects/demo',
       confirmDiscard: async () => true,
       pickFiles: unavailable,
       saveFile: async ({ defaultName }) => {
@@ -111,21 +194,55 @@ async function renderApp(): Promise<Harness> {
         minecraftDir: null,
         updates: { autoCheck: true },
         detectedMinecraftDir: null,
+        launchers: harness.launchers,
+        installTarget: null,
       }),
-      set: unavailable,
+      set: async (patch) => {
+        harness.settingsSets.push(patch);
+        if (patch.installTarget !== undefined) {
+          const ref = patch.installTarget;
+          harness.selectedId =
+            ref === null
+              ? 'official:default'
+              : (harness.locations.find(
+                  (location) =>
+                    location.ref.launcher === ref.launcher &&
+                    location.ref.root === ref.root &&
+                    location.ref.instance === ref.instance,
+                )?.id ?? null);
+        }
+        if (patch.launchers !== undefined) harness.launchers = patch.launchers;
+      },
     },
     minecraft: {
-      status: async () => ({
-        minecraftDir: '/home/me/.minecraft',
-        installed: [],
-        chosen: null,
-        cache: null,
+      status: async () => {
+        harness.statusReads += 1;
+        const target = harness.locations.find((location) => location.id === harness.selectedId);
+        // `test/helpers/minecraft-status.ts` is outside the web tsconfig; spell it out here.
+        return {
+          minecraftDir: '/home/me/.minecraft',
+          installed: [],
+          chosen: null,
+          cache: null,
+          target: target ?? null,
+          targetMissing: harness.targetMissing,
+          jar: { versionId: defaultTarget.mcVersion, launcher: 'official' },
+          warnings: target?.warnings ?? [],
+        };
+      },
+      listLocations: async () => ({
+        locations: harness.locations,
+        selected: harness.locations.some((location) => location.id === harness.selectedId)
+          ? harness.selectedId
+          : null,
       }),
-      listLocations: unavailable,
       extract: unavailable,
       readAsset: unavailable,
       listAssets: unavailable,
-      installResourcePack: unavailable,
+      installResourcePack: async (fileName) => {
+        harness.resourceInstalls.push(fileName);
+        return { path: `/resourcepacks/${fileName}` };
+      },
       listWorlds: async () => {
         if (harness.worlds instanceof Error) throw harness.worlds;
         return harness.worlds;
@@ -205,7 +322,7 @@ beforeEach(() => {
     rightDock: 'problems',
     message: null,
     exportProblems: [],
-    minecraft: { status: null, progress: null },
+    minecraft: { status: null, progress: null, locations: null, launchers: null },
   });
 });
 
@@ -282,6 +399,9 @@ describe('App menu commands', () => {
     await act(() => harness.session.flushValidation());
     await harness.menu('installDataPack');
     const picker = await screen.findByTestId('world-picker');
+    expect(
+      within(picker).getByText('Install data pack to a world — Official launcher'),
+    ).toBeTruthy();
     expect(within(picker).getByTestId('world-row-Survival')).toBeTruthy();
     await userEvent.setup().click(within(picker).getByTestId('world-picker-submit'));
     await toast(/^Installed to \/saves\/Survival\/datapacks\//);
@@ -351,5 +471,116 @@ describe('App function problems', () => {
     // The menu's export reports the blocking error instead of exporting.
     await harness.menu('exportDataPack');
     await toast('Fix 1 error first (see Problems).');
+  });
+});
+
+describe('App install targets', () => {
+  const openInstallMenu = async () => {
+    await userEvent.setup().click(screen.getByTestId('toolbar-install-menu'));
+    return screen.findByTestId('install-target');
+  };
+
+  it('switches the install target through the Toolbar submenu and reads the status again', async () => {
+    const harness = await renderApp();
+    await waitFor(() => expect(useUiStore.getState().minecraft.locations).not.toBeNull());
+    expect((await openInstallMenu()).textContent).toBe('Install to: Official launcher');
+    await userEvent.setup().click(screen.getByTestId('install-target-change'));
+    const item = await screen.findByTestId('install-target-prism:My-Instance');
+    const reads = harness.statusReads;
+    // happy-dom has no layout; click the item without a pointer move (see Toolbar.test).
+    fireEvent.click(item);
+    await waitFor(() =>
+      expect(useUiStore.getState().minecraft.status?.target?.id).toBe('prism:My-Instance'),
+    );
+    expect(harness.settingsSets).toEqual([{ installTarget: prismLocation.ref }]);
+    expect(harness.statusReads).toBeGreaterThan(reads);
+    expect(useUiStore.getState().minecraft.locations?.selected).toBe('prism:My-Instance');
+    await toast(`Packs now install to Prism Launcher — My Instance (MC ${OTHER_VERSION}).`);
+    const sentence = await openInstallMenu();
+    expect(sentence.textContent).toContain(
+      `Install to: Prism Launcher — My Instance (MC ${OTHER_VERSION})`,
+    );
+    // A version mismatch is only a warning: installs stay enabled.
+    expect(sentence.textContent).toContain(mismatchWarning.message);
+    expect(screen.getByTestId('install-resource').getAttribute('aria-disabled')).toBeNull();
+  });
+
+  it('repeats the version-mismatch warning after an install', async () => {
+    const harness = await renderApp();
+    harness.selectedId = 'prism:My-Instance';
+    await act(async () => {
+      useUiStore.getState().setMinecraftStatus(await harness.session.minecraftStatus());
+    });
+    await harness.menu('installResourcePack');
+    const message = await toast(/^Installed to \/resourcepacks\//);
+    expect(message.textContent).toContain(mismatchWarning.message);
+    expect(harness.resourceInstalls).toHaveLength(1);
+  });
+
+  it('disables installs with a reason when there is no target or it cannot take packs', async () => {
+    const harness = await renderApp();
+    harness.selectedId = null;
+    await act(async () => {
+      useUiStore.getState().setMinecraftStatus(await harness.session.minecraftStatus());
+    });
+    await harness.menu('installResourcePack');
+    await toast('No Minecraft folder or launcher instance was found. Choose one in Settings.');
+    expect(harness.resourceInstalls).toEqual([]);
+    expect((await openInstallMenu()).textContent).toBe('No install target: choose one in Settings');
+    expect(screen.getByTestId('install-resource-reason').textContent).toMatch(/launcher instance/);
+    await userEvent.setup().keyboard('{Escape}');
+
+    harness.selectedId = 'prism:Fresh';
+    await act(async () => {
+      useUiStore.getState().setMinecraftStatus(await harness.session.minecraftStatus());
+    });
+    await harness.menu('installResourcePack');
+    await toast('Start the instance once so its game folder exists.');
+    expect(harness.resourceInstalls).toEqual([]);
+  });
+
+  it('lists locations and added launcher folders in Settings and adds one', async () => {
+    const harness = await renderApp();
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    await userEvent.setup().click(within(palette).getByTestId('command-chooseInstallTarget'));
+    const dialog = await screen.findByTestId('settings-dialog');
+    const list = await within(dialog).findByTestId('settings-locations');
+    expect(
+      (within(list).getByTestId('location-select-official:default') as HTMLInputElement).checked,
+    ).toBe(true);
+    expect(within(list).getByTestId('location-row-prism:Fresh').textContent).toContain(
+      'Start the instance once',
+    );
+    expect(within(dialog).getByTestId('settings-status').textContent).toContain(
+      `Official launcher — ${defaultTarget.mcVersion}`,
+    );
+    await userEvent.setup().click(within(dialog).getByTestId('settings-add-prism'));
+    await waitFor(() =>
+      expect(harness.settingsSets).toContainEqual({
+        launchers: { prismDataDirs: ['/home/me/prism'], multimcRoots: [], curseForgeRoots: [] },
+      }),
+    );
+    const root = await within(dialog).findByTestId('settings-root-0');
+    expect(root.textContent).toContain('/home/me/prism');
+    // Two Prism locations live under that folder, so no "No instances found" note.
+    expect(root.textContent).not.toContain('No instances found');
+    await userEvent.setup().click(within(dialog).getByTestId('location-select-prism:My-Instance'));
+    await waitFor(() =>
+      expect(harness.settingsSets).toContainEqual({ installTarget: prismLocation.ref }),
+    );
+    await userEvent.setup().click(within(dialog).getByTestId('settings-remove-root-0'));
+    await waitFor(() => expect(harness.launchers.prismDataDirs).toEqual([]));
+    await waitFor(() => expect(within(dialog).queryByTestId('settings-root-0')).toBeNull());
+  });
+
+  it('shows the missing-target line in Settings', async () => {
+    const harness = await renderApp();
+    harness.targetMissing = true;
+    // Opening Settings reads the status (and the locations) again.
+    await harness.menu('settings');
+    expect((await screen.findByTestId('settings-target-missing')).textContent).toContain(
+      'The chosen instance was not found',
+    );
   });
 });

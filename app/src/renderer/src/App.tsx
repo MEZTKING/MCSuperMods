@@ -3,7 +3,13 @@ import type { Target } from '@msm/plugin-api';
 import { Toast, Tooltip } from 'radix-ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MenuCommand } from '../../shared/ipc-channels';
-import type { AppSettingsPatch, MsmBridge, WorldInfo } from '../../shared/platform';
+import type {
+  AppSettingsPatch,
+  LauncherSettings,
+  MinecraftStatus,
+  MsmBridge,
+  WorldInfo,
+} from '../../shared/platform';
 import {
   type BuiltInCommandId,
   type CommandHandlers,
@@ -18,6 +24,13 @@ import { EditorArea } from './components/EditorArea';
 import { ElementSidebar } from './components/ElementSidebar';
 import { lineOffset } from './components/function-editor/source-text';
 import { ImportAssetsDialog, importFileFilters } from './components/ImportAssetsDialog';
+import {
+  describeJarSource,
+  type InstallTargetOption,
+  installTargetName,
+  type ManualLauncher,
+  type ManualLauncherRoot,
+} from './components/install-target';
 import { NewElementDialog, NewNamespaceDialog } from './components/NewElementDialog';
 import { RenameElementDialog } from './components/RenameElementDialog';
 import { RightDock } from './components/RightDock';
@@ -53,6 +66,7 @@ import {
   exportDisabledReason,
   hasLayerOutput,
   installDisabledReason,
+  installTargetOption,
 } from './studios/export-state';
 import type { CompleteFunction } from './studios/FunctionEditor';
 import { templatesFor } from './studios/templates';
@@ -123,6 +137,63 @@ export function focusedLocation(active: Element | null): FocusedLocation | null 
 
 const NO_WORLDS: readonly WorldInfo[] = [];
 
+const NO_LAUNCHERS: LauncherSettings = { prismDataDirs: [], multimcRoots: [], curseForgeRoots: [] };
+
+/** The settings list holding the manually added folders of each launcher. */
+const LAUNCHER_LISTS = {
+  prism: 'prismDataDirs',
+  multimc: 'multimcRoots',
+  curseforge: 'curseForgeRoots',
+} as const satisfies Record<ManualLauncher, keyof LauncherSettings>;
+
+const FOLDER_PICKER_TITLES: Record<ManualLauncher, string> = {
+  prism: 'Choose your Prism Launcher folder',
+  multimc: 'Choose your MultiMC or PolyMC folder',
+  curseforge: 'Choose your CurseForge Minecraft folder',
+};
+
+/**
+ * A path as a comparison key: forward slashes, no trailing separator, and case-folded for
+ * Windows drive paths (which are case-insensitive).
+ */
+export function launcherPathKey(path: string): string {
+  let key = path.replaceAll('\\', '/');
+  while (key.length > 1 && key.endsWith('/') && !/^[A-Za-z]:\/$/.test(key)) {
+    key = key.slice(0, -1);
+  }
+  return /^[A-Za-z]:/.test(key) ? key.toLowerCase() : key;
+}
+
+/** The launcher folders the user added, with how many locations were found under each. */
+export function manualLauncherRoots(
+  launchers: LauncherSettings | null,
+  locations: readonly { ref: { launcher: string; root: string } }[] | null,
+): ManualLauncherRoot[] {
+  if (launchers === null) return [];
+  const roots: ManualLauncherRoot[] = [];
+  for (const kind of Object.keys(LAUNCHER_LISTS) as ManualLauncher[]) {
+    for (const path of launchers[LAUNCHER_LISTS[kind]]) {
+      const root: ManualLauncherRoot = { kind, path };
+      if (locations !== null) {
+        const key = launcherPathKey(path);
+        root.found = locations.filter(
+          (location) =>
+            location.ref.launcher === kind && launcherPathKey(location.ref.root) === key,
+        ).length;
+      }
+      roots.push(root);
+    }
+  }
+  return roots;
+}
+
+/** The selected target's warnings (such as a version mismatch), repeated after an install. */
+function targetWarnings(status: MinecraftStatus | null): string[] {
+  if (status === null) return [];
+  const warnings = status.warnings ?? status.target?.warnings ?? [];
+  return warnings.map((warning) => warning.message);
+}
+
 /** A zero-argument action that also reports its own errors. */
 type Action = () => void;
 
@@ -170,15 +241,36 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     [bridge],
   );
 
-  // Reads the Minecraft installation status for the open project's target into the store.
-  const refreshMinecraftStatus = useCallback(() => {
-    session.minecraftStatus().then(
-      (status) => useUiStore.getState().setMinecraftStatus(status),
-      () => useUiStore.getState().setMinecraftStatus(null),
-    );
+  /**
+   * Reads the Minecraft status and the game locations (ADR 0019) for the open project's
+   * target into the store. Resolves once both have been read, successfully or not.
+   */
+  const refreshMinecraftStatus = useCallback(async (): Promise<void> => {
+    const store = useUiStore.getState();
+    await Promise.all([
+      session.minecraftStatus().then(
+        (status) => store.setMinecraftStatus(status),
+        () => store.setMinecraftStatus(null),
+      ),
+      session.listLocations().then(
+        (locations) => store.setMinecraftLocations(locations),
+        () => store.setMinecraftLocations(null),
+      ),
+    ]);
   }, [session]);
 
-  useEffect(() => refreshMinecraftStatus(), [refreshMinecraftStatus]);
+  /** Reads the manually added launcher folders into the store. */
+  const refreshLaunchers = useCallback(async (): Promise<LauncherSettings> => {
+    const settings = await session.getSettings();
+    const launchers = settings.launchers ?? NO_LAUNCHERS;
+    useUiStore.getState().setLauncherSettings(launchers);
+    return launchers;
+  }, [session]);
+
+  useEffect(() => {
+    void refreshMinecraftStatus();
+    refreshLaunchers().catch(() => useUiStore.getState().setLauncherSettings(null));
+  }, [refreshMinecraftStatus, refreshLaunchers]);
 
   const run = useCallback(
     (label: string, action: () => void) => {
@@ -208,7 +300,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 }
               : { kind: 'info', text: `${label}: ${session.snapshot.root ?? ''}` },
           );
-          refreshMinecraftStatus();
+          void refreshMinecraftStatus();
         } else if ('reason' in outcome) {
           setMessage({ kind: 'error', text: `${label} failed: ${outcome.reason}` });
         }
@@ -333,7 +425,14 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       } else {
         text = `Exported to ${result.location ?? 'the chosen file'}.`;
       }
-      setMessage({ kind: 'info', text: `${text}${suffix}` });
+      // Version mismatches never block an install (ADR 0019), so say it again afterwards.
+      const notes =
+        mode === 'install'
+          ? targetWarnings(useUiStore.getState().minecraft.status)
+              .map((warning) => ` ${warning}`)
+              .join('')
+          : '';
+      setMessage({ kind: 'info', text: `${text}${notes}${suffix}` });
     } catch (error) {
       setMessage({ kind: 'error', text: `${verb} failed: ${messageOf(error)}` });
     } finally {
@@ -432,9 +531,87 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   const saveSettings = useCallback(
     async (settings: AppSettingsPatch) => {
       await bridge.settings.set(settings);
-      if (settings.minecraftDir !== undefined) refreshMinecraftStatus();
+      if (settings.minecraftDir !== undefined) void refreshMinecraftStatus();
     },
     [bridge, refreshMinecraftStatus],
+  );
+
+  // Install targets (ADR 0019) -------------------------------------------------------------
+
+  const locationList = minecraft.locations ?? null;
+  const installTargets = useMemo<InstallTargetOption[]>(
+    () => locationList?.locations.map(installTargetOption) ?? [],
+    [locationList],
+  );
+  const statusTarget = minecraft.status?.target ?? null;
+  const installTarget = useMemo<InstallTargetOption | null>(
+    () => (statusTarget === null ? null : installTargetOption(statusTarget)),
+    [statusTarget],
+  );
+  const selectedTargetId = locationList?.selected ?? statusTarget?.id ?? null;
+  const launchers = minecraft.launchers ?? null;
+  const manualRoots = useMemo(
+    () => manualLauncherRoots(launchers, locationList?.locations ?? null),
+    [launchers, locationList],
+  );
+  const statusJar = minecraft.status?.jar ?? null;
+  const jarSource =
+    statusJar === null ? null : describeJarSource(statusJar.launcher, statusJar.versionId);
+
+  /** Makes the location with `id` the install target, then reads the status again. */
+  const chooseInstallTarget = useCallback(
+    async (id: string): Promise<void> => {
+      const location = useUiStore
+        .getState()
+        .minecraft.locations?.locations.find((entry) => entry.id === id);
+      if (location === undefined) {
+        setMessage({ kind: 'error', text: 'That install target is no longer available.' });
+        return;
+      }
+      try {
+        await session.setInstallTarget(location.ref);
+      } catch (error) {
+        setMessage({ kind: 'error', text: `Choose install target: ${messageOf(error)}` });
+        return;
+      }
+      await refreshMinecraftStatus();
+      setMessage({
+        kind: 'info',
+        text: `Packs now install to ${installTargetName(installTargetOption(location))}.`,
+      });
+    },
+    [session, setMessage, refreshMinecraftStatus],
+  );
+
+  /** Replaces one launcher's list of added folders; errors reach the Settings dialog. */
+  const updateLauncherRoots = useCallback(
+    async (kind: ManualLauncher, change: (paths: readonly string[]) => string[]) => {
+      const current = await refreshLaunchers();
+      const list = LAUNCHER_LISTS[kind];
+      const next: LauncherSettings = { ...current, [list]: change(current[list]) };
+      await session.setSettings({ launchers: next });
+      useUiStore.getState().setLauncherSettings(next);
+      await refreshMinecraftStatus();
+    },
+    [session, refreshLaunchers, refreshMinecraftStatus],
+  );
+
+  const addLauncherRoot = useCallback(
+    async (kind: ManualLauncher): Promise<void> => {
+      const path = await bridge.dialogs.pickDirectory({ title: FOLDER_PICKER_TITLES[kind] });
+      if (path === null) return;
+      const key = launcherPathKey(path);
+      await updateLauncherRoots(kind, (paths) =>
+        paths.some((entry) => launcherPathKey(entry) === key) ? [...paths] : [...paths, path],
+      );
+    },
+    [bridge, updateLauncherRoots],
+  );
+
+  const removeLauncherRoot = useCallback(
+    (kind: ManualLauncher, path: string): Promise<void> =>
+      updateLauncherRoots(kind, (paths) => paths.filter((entry) => entry !== path)),
+    [updateLauncherRoots],
   );
 
   // Updates (ADR 0018) --------------------------------------------------------------------
@@ -459,7 +636,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       return messageOf(error);
     } finally {
       useUiStore.getState().setMinecraftProgress(null);
-      refreshMinecraftStatus();
+      void refreshMinecraftStatus();
     }
   }, [session, refreshMinecraftStatus]);
 
@@ -545,7 +722,12 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     exportCombined,
     installResourcePack: installResource,
     installDataPack: installData,
-    settings: () => setDialog({ type: 'settings' }),
+    settings: () => {
+      setDialog({ type: 'settings' });
+      // Launchers may have gained instances since the last read; look again.
+      void refreshMinecraftStatus();
+      refreshLaunchers().catch(() => useUiStore.getState().setLauncherSettings(null));
+    },
     renameElement: renameSelected,
     commandPalette: openPalette,
     checkForUpdates,
@@ -571,6 +753,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     toggleRawJson:
       selected === null ? null : () => setActiveTab(activeTab === 'json' ? 'form' : 'json'),
     settings: handlers.settings,
+    // Settings opens with the Game locations list first; it holds the install target.
+    chooseInstallTarget: handlers.settings,
     checkForUpdates,
   } satisfies Record<BuiltInCommandId, Action | null>;
 
@@ -722,6 +906,9 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               onInstall={installResource}
               onInstallData={installData}
               onSettings={handlers.settings}
+              installTarget={installTarget}
+              installTargets={installTargets}
+              onChooseInstallTarget={(id) => void chooseInstallTarget(id)}
             />
           </div>
           <main className="grid min-h-0 grid-cols-[minmax(200px,280px)_minmax(0,1fr)_minmax(260px,360px)]">
@@ -850,6 +1037,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         <WorldPickerDialog
           open={dialog?.type === 'worlds'}
           worlds={dialog?.type === 'worlds' ? dialog.worlds : NO_WORLDS}
+          {...(installTarget === null ? {} : { locationName: installTargetName(installTarget) })}
           onClose={() => setDialog(null)}
           onPick={(world) => {
             setDialog(null);
@@ -859,7 +1047,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         {dialog?.type === 'no-minecraft' && (
           <ConfirmDialog
             title="Install data pack"
-            message={`${dialog.message} Choose your Minecraft folder in Settings.`}
+            message={`${dialog.message} In Settings, choose your Minecraft folder or a Prism Launcher, MultiMC or CurseForge instance.`}
             confirmLabel="Open Settings"
             // The alert dialog also reports "closed" after a confirm; keep Settings open then.
             onCancel={() =>
@@ -883,6 +1071,14 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             browse={browseMinecraft}
             extract={extractAssets}
             onClose={() => setDialog(null)}
+            locations={locationList === null ? null : installTargets}
+            selectedId={selectedTargetId}
+            onSelectTarget={(id) => void chooseInstallTarget(id)}
+            targetMissing={minecraft.status?.targetMissing ?? false}
+            jarSource={jarSource}
+            manualRoots={manualRoots}
+            onAddLauncherRoot={addLauncherRoot}
+            onRemoveLauncherRoot={removeLauncherRoot}
           />
         )}
       </Toast.Provider>

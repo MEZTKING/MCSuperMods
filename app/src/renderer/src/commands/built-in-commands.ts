@@ -31,6 +31,7 @@ export const BUILT_IN_COMMAND_IDS = [
   'findUsages',
   'toggleRawJson',
   'settings',
+  'chooseInstallTarget',
   'checkForUpdates',
 ] as const;
 
@@ -59,6 +60,7 @@ export const BUILT_IN_COMMANDS: Readonly<
   findUsages: { title: 'Find usages of the selected element' },
   toggleRawJson: { title: 'Toggle Raw JSON' },
   settings: { title: 'Settings…' },
+  chooseInstallTarget: { title: 'Choose install target…' },
   checkForUpdates: { title: 'Check for updates' },
 };
 

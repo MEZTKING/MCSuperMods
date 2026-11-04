@@ -405,3 +405,44 @@ describe('ProjectSession: install and combined delivery', () => {
     });
   });
 });
+
+describe('ProjectSession: game locations (ADR 0019)', () => {
+  const prism = { launcher: 'prism', root: '/home/me/prism', instance: 'My-Instance' } as const;
+
+  it('lists locations for the current target', async () => {
+    const locations = {
+      locations: [
+        {
+          ref: prism,
+          id: 'prism:My-Instance',
+          displayName: 'My Instance',
+          mcVersion: '9.9-msm-test',
+          loader: null,
+          gameDir: '/home/me/prism/instances/My-Instance/minecraft',
+          modsDir: null,
+          problems: [],
+          warnings: [{ code: 'location.version-mismatch', message: 'Mismatch.' }],
+        },
+      ],
+      selected: 'prism:My-Instance',
+    };
+    const { session, calls } = newSession(createMemoryFileSystem(), { locations });
+    expect(await session.newProject()).toEqual({ ok: true });
+    expect(await session.listLocations()).toEqual(locations);
+    expect(calls.locationReads).toEqual([defaultTarget.mcVersion]);
+  });
+
+  it('stores the install target through settings and clears it with null', async () => {
+    const { session, calls } = newSession(createMemoryFileSystem());
+    await session.setInstallTarget(prism);
+    await session.setInstallTarget(null);
+    expect(calls.settingsSets).toEqual([{ installTarget: prism }, { installTarget: null }]);
+  });
+
+  it('merges launcher folders into the settings', async () => {
+    const { session, calls } = newSession(createMemoryFileSystem());
+    const launchers = { prismDataDirs: ['/opt/prism'], multimcRoots: [], curseForgeRoots: [] };
+    await session.setSettings({ launchers });
+    expect(calls.settingsSets).toEqual([{ launchers }]);
+  });
+});

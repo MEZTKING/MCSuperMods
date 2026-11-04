@@ -8,7 +8,7 @@
 import type { Problem, ResourceLocation } from '@msm/core';
 import { create } from 'zustand';
 import type { MinecraftProgress } from '../../../shared/ipc-channels';
-import type { MinecraftStatus } from '../../../shared/platform';
+import type { GameLocationList, LauncherSettings, MinecraftStatus } from '../../../shared/platform';
 import type { SessionSnapshot } from '../session/project-session';
 
 /** A transient message shown in the status bar. */
@@ -29,6 +29,13 @@ export interface MinecraftUiState {
   status: MinecraftStatus | null;
   /** Progress of a running extraction, or `null` when none is running. */
   progress: MinecraftProgress | null;
+  /**
+   * The game locations main found (ADR 0019), or `null` before the first read or when they
+   * could not be read. Refreshed with the status.
+   */
+  locations?: GameLocationList | null;
+  /** The launcher folders the user added in Settings, or `null` before they are read. */
+  launchers?: LauncherSettings | null;
 }
 
 /** The UI store's shape. */
@@ -57,6 +64,8 @@ export interface UiState {
   setRightDock(tab: RightDockTab): void;
   setMinecraftStatus(status: MinecraftStatus | null): void;
   setMinecraftProgress(progress: MinecraftProgress | null): void;
+  setMinecraftLocations(locations: GameLocationList | null): void;
+  setLauncherSettings(launchers: LauncherSettings | null): void;
   setMessage(message: StatusMessage | null): void;
   setLastNamespace(namespace: string | null): void;
 }
@@ -68,7 +77,7 @@ export const useUiStore = create<UiState>()((set) => ({
   selectedPointer: null,
   activeTab: 'form',
   rightDock: 'problems',
-  minecraft: { status: null, progress: null },
+  minecraft: { status: null, progress: null, locations: null, launchers: null },
   message: null,
   exportProblems: [],
   lastNamespace: null,
@@ -91,6 +100,10 @@ export const useUiStore = create<UiState>()((set) => ({
   setMinecraftStatus: (status) => set((state) => ({ minecraft: { ...state.minecraft, status } })),
   setMinecraftProgress: (progress) =>
     set((state) => ({ minecraft: { ...state.minecraft, progress } })),
+  setMinecraftLocations: (locations) =>
+    set((state) => ({ minecraft: { ...state.minecraft, locations } })),
+  setLauncherSettings: (launchers) =>
+    set((state) => ({ minecraft: { ...state.minecraft, launchers } })),
   setMessage: (message) => set({ message }),
   setLastNamespace: (lastNamespace) => set({ lastNamespace }),
 }));

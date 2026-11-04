@@ -17,7 +17,14 @@ describe('paletteCommands', () => {
   it('lists available built-in commands in order, then plugin commands', () => {
     const save = vi.fn();
     const commands = paletteCommands(
-      { save, undo: null, renameElement: vi.fn(), settings: vi.fn(), checkForUpdates: vi.fn() },
+      {
+        save,
+        undo: null,
+        renameElement: vi.fn(),
+        settings: vi.fn(),
+        chooseInstallTarget: vi.fn(),
+        checkForUpdates: vi.fn(),
+      },
       [{ id: 'msm.demo.hello', title: 'Say hello', run: vi.fn() }],
       { modKey: 'Ctrl', onError: vi.fn() },
     );
@@ -25,6 +32,7 @@ describe('paletteCommands', () => {
       'save',
       'renameElement',
       'settings',
+      'chooseInstallTarget',
       'checkForUpdates',
       'msm.demo.hello',
     ]);
@@ -33,6 +41,9 @@ describe('paletteCommands', () => {
     commands[0]?.run();
     expect(save).toHaveBeenCalledOnce();
     expect(new Set(BUILT_IN_COMMAND_IDS).size).toBe(BUILT_IN_COMMAND_IDS.length);
+    expect(commands.find((command) => command.id === 'chooseInstallTarget')?.title).toBe(
+      'Choose install target…',
+    );
   });
 
   it('reports plugin command failures', async () => {

@@ -13,7 +13,7 @@ import {
   ProjectSession,
   type ProjectSessionOptions,
 } from '../src/renderer/src/session/project-session';
-import type { PlatformAdapter } from '../src/shared/platform';
+import type { AppSettingsPatch, GameLocationList, PlatformAdapter } from '../src/shared/platform';
 import { stubPlatformServices } from './helpers/stub-platform';
 
 /** What the fake platform recorded. */
@@ -22,6 +22,10 @@ export interface PlatformCalls {
   saved: { defaultName: string; data: Uint8Array }[];
   installed: { fileName: string; data: Uint8Array }[];
   vendoredReads: string[];
+  /** Every `settings.set` patch, in order. */
+  settingsSets: AppSettingsPatch[];
+  /** The Minecraft version of every `minecraft.listLocations` call. */
+  locationReads: string[];
 }
 
 /** Options for {@link fakePlatform}. */
@@ -31,11 +35,20 @@ export interface FakePlatformOptions {
   directory?: string;
   /** What the save dialog returns; defaults to `/exports/<defaultName>`. */
   savePath?: string | null;
+  /** What `minecraft.listLocations` resolves to; defaults to no locations. */
+  locations?: GameLocationList;
 }
 
 /** Builds the fake platform over `fs`. */
 export function fakePlatform(fs: MemoryFileSystem, options: FakePlatformOptions = {}) {
-  const calls: PlatformCalls = { confirms: [], saved: [], installed: [], vendoredReads: [] };
+  const calls: PlatformCalls = {
+    confirms: [],
+    saved: [],
+    installed: [],
+    vendoredReads: [],
+    settingsSets: [],
+    locationReads: [],
+  };
   const stubs = stubPlatformServices();
   const directory = options.directory ?? '/projects/demo';
   const platform: PlatformAdapter = {
@@ -62,8 +75,18 @@ export function fakePlatform(fs: MemoryFileSystem, options: FakePlatformOptions 
         return new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
       },
     },
+    settings: {
+      ...stubs.settings,
+      set: async (patch) => {
+        calls.settingsSets.push(patch);
+      },
+    },
     minecraft: {
       ...stubs.minecraft,
+      listLocations: async (mcVersion) => {
+        calls.locationReads.push(mcVersion);
+        return options.locations ?? { locations: [], selected: null };
+      },
       installResourcePack: async (fileName, data) => {
         calls.installed.push({ fileName, data });
         return { path: `/minecraft/resourcepacks/${fileName}` };

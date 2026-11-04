@@ -47,9 +47,11 @@ import {
 import type { Command, Plugin, Target } from '@msm/plugin-api';
 import { type SchemaNode, validateJson } from '@msm/schemas';
 import type {
-  AppSettings,
+  AppSettingsPatch,
   AppSettingsView,
   AssetCacheInfoView,
+  GameLocationList,
+  GameLocationRef,
   MinecraftStatus,
   PlatformAdapter,
   WorldInfo,
@@ -719,7 +721,7 @@ export class ProjectSession {
     return this.exportPack('data', 'install', { worldDir });
   }
 
-  /** The worlds of the configured Minecraft folder (rejects when none is configured). */
+  /** The worlds of the selected install target (rejects when there is none). */
   listWorlds(): Promise<WorldInfo[]> {
     return this.#platform.minecraft.listWorlds();
   }
@@ -803,9 +805,25 @@ export class ProjectSession {
     return this.#platform.settings.get();
   }
 
-  /** Writes the application settings. */
-  setSettings(settings: AppSettings): Promise<void> {
+  /** Merges a change into the application settings; fields left out keep their value. */
+  setSettings(settings: AppSettingsPatch): Promise<void> {
     return this.#platform.settings.set(settings);
+  }
+
+  /**
+   * Every game location main found (official launcher, Prism, MultiMC, CurseForge), with
+   * warnings such as a version mismatch computed against the current target (ADR 0019).
+   */
+  listLocations(): Promise<GameLocationList> {
+    return this.#platform.minecraft.listLocations(this.target.mcVersion);
+  }
+
+  /**
+   * Makes `ref` the install target for resource and data pack installs; `null` goes back to
+   * the official launcher folder. Read the status again afterwards.
+   */
+  setInstallTarget(ref: GameLocationRef | null): Promise<void> {
+    return this.#platform.settings.set({ installTarget: ref });
   }
 
   // Validation ---------------------------------------------------------------------------
