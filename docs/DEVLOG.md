@@ -582,3 +582,17 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 **What**
 - The user installed `MCSuperMods-0.1.0-win-x64.exe` from the draft release and the app opens. This is the first real Windows run of the packaged app.
 - The user asked for Prism Launcher support. The orchestrator is planning it as a small Phase 2 add-on, before Phase 3.
+
+---
+
+## 2026-11-04 — main session — Future AI assistant recorded; Prism scope widened to CurseForge
+
+**What**
+- The user clarified the Prism request: "for extracting through curseforge or prismlauncher users". The orchestrator's plan now covers the CurseForge app and Prism/MultiMC instances. The main goal is preview-asset extraction and pack installs for players who do not use the official launcher.
+- The user wants AI help in the future, for example through the Claude API. Recorded as ROADMAP "Post-1.0 Ideas: AI assistant" and DESIGN open question 14, with these constraints:
+  - bring-your-own key stored with `safeStorage`, and calls made in the main process;
+  - every change goes through the undoable command stack and the validators, after the user reviews a diff;
+  - off by default; an ADR is needed before work starts.
+
+**Next**
+- Prism and CurseForge waves once the plan lands. The AI assistant stays unscheduled until the user asks to bring it forward.

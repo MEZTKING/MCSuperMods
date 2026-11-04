@@ -318,6 +318,7 @@ Not committed; each needs an ADR before work starts.
 - **Collaboration**: shared projects beyond git, such as live co-editing.
 - **Marketplace**: discovery and install for third-party plugins and templates.
 - **Pre-26.1 vanilla export**: 1.21.x pack export via a target plugin, using existing mcdoc schemas.
+- **AI assistant (user request, 2026-11-04)**: optional help from a large language model, starting with the Claude API using the user's own API key. Candidate uses: drafting elements from a description ("a ruby ore that drops 1–3 rubies"), explaining and fixing validation or mcfunction problems, writing and commenting functions, and suggesting recipes, loot tables and advancements. Design constraints: every change goes through the command stack as one undoable step and passes `validateJson` and the mcfunction checker before it is applied; the user reviews a diff first; the key is stored with Electron `safeStorage` and calls run in the main process; the feature is off by default and the app stays fully usable without it; the model id is chosen at implementation from the then-current Claude models (verify at implementation). Needs an ADR (privacy, cost display, offline behaviour, tool-use design) before work starts; may be pulled ahead of 1.0 if the user asks.
 
 ## Milestone Log
 
