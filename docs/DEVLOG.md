@@ -1059,3 +1059,40 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 - `docs/guide/templates-and-examples.md` still lists 66 templates, 8 starters and 34 examples. It needs the 33 new templates, the three starters and the 22 examples; it was not in this brief's paths.
 - `docs/CLAUDE.md`'s guide list does not name the two new pages yet (B83).
 - B82 e2e; B83 close.
+
+---
+
+## 2026-11-04 — executor — B83 Phase 3 close: ROADMAP, ADR statuses, version 0.3.0, guide counts
+
+**What**
+- Counts checked from the plugin sources (a throwaway Vitest dump, removed): 52 kinds, 99 templates (resourcepack 14, datapack 55, structures 9, worldgen 21), 11 starters, 56 examples (52 per-kind plus 4 starter examples), 10 project validators.
+- `app/package.json` 0.3.0.
+- ADRs 0021–0023: Status "Accepted and implemented" with implementation notes:
+  - 0021: our own SNBT printer, no `nbt_json` fallback needed, the host-side `importStructureFile` with `target.dataVersion`, and the `exports:writeFiles` widening for namespaced `.nbt`/`.schem` paths;
+  - 0022: 21 worldgen templates instead of 17, the 26.3 attribute facts in `WorldgenFacts.biomeAttributes`, `preset-missing-overworld` needing only the overworld, ids unique across kinds;
+  - 0023: climate map only, the colour order, seven colour pickers, no full-cube culling.
+- DESIGN (headings still 19): element ids unique across kinds; template owners and the 99 total; per-layer export gating; `Target.worldgen.biomeAttributes`; the SNBT printer.
+- ROADMAP:
+  - B70–B83 ticked, with B74's 21 templates;
+  - Phase 2 follow-ups closed by B72 and B75 ticked;
+  - Phase 3 follow-ups gain go-to-definition from Studio id lists ("Used in"), gallery entries for the worldgen starters, full-cube culling and `#[id(tags="implicit")]`;
+  - Milestone Log row "Phase 3 code complete — pending in-game check", with tests and sizes left as "(filled at close)".
+- `pnpm-workspace.yaml`: `electron@45.2.2` dropped from `minimumReleaseAgeExclude`. It was published on 2026-11-03 at 21:43 UTC, more than a day ago; removing it keeps `pnpm install --frozen-lockfile` green, and the lockfile is unchanged.
+- `docs/guide/templates-and-examples.md` now has:
+  - the 99, 11 and 56 counts;
+  - the three worldgen tag templates, plus new Structures, Biomes, Features, Dimensions and Worldgen (advanced) tables;
+  - a paragraph on links that start as the element's own id;
+  - the three worldgen starters and their explanation;
+  - the 22 new examples, and the three new `examples/starters/` folders.
+
+  Its row in `docs/guide/README.md` is updated. `docs/CLAUDE.md` lists `structures.md` and `worldgen.md`, and its status is updated. The root `CLAUDE.md` status reads "Phase 3 code complete, awaiting in-game checks; Phase 4 next" (68 lines).
+
+**Decisions**
+- Kept `electron-to-chromium@1.5.475` and `lucide-react@1.68.0`. The release-age rule is one day, and the cutoff in pnpm's error confirms it. Removing either now fails the frozen install with `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`. They become eligible after 2026-11-04 23:03 UTC and 2026-11-05 06:11 UTC; the ROADMAP item stays open with those times.
+- No new ADR: every change was already recorded, or is an implementation note in 0021–0023.
+
+**Next**
+- The orchestrator fills the Milestone Log tests and sizes from the final clean run.
+- `pnpm lint` currently fails only on B82's in-progress `app/e2e/worldgen-path.spec.ts`, which needs Biome formatting. That is B82's file.
+- A later session removes the last two `minimumReleaseAgeExclude` entries.
+- The user tags `v0.3.0` and runs the in-game checks.

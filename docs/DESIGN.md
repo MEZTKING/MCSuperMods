@@ -97,7 +97,7 @@ The IR lives in `@msm/core`. It knows nothing about Minecraft versions or specif
 
 A `Project` contains `Namespace`s; each namespace contains `Element`s and `Asset`s.
 
-- An **element** is a typed JSON document: `{ id, kind, data, meta }`. `id` is a `ResourceLocation` (`namespace:path`), `kind` names a registered element kind, `data` is JSON typed by the kind's schema, and `meta` holds `createdAt`, `notes` and `tags`.
+- An **element** is a typed JSON document: `{ id, kind, data, meta }`. `id` is a `ResourceLocation` (`namespace:path`), unique across all kinds of a project (so linked worldgen elements such as a configured and a placed feature carry distinct ids), `kind` names a registered element kind, `data` is JSON typed by the kind's schema, and `meta` holds `createdAt`, `notes` and `tags`.
 - An **asset** is an opaque file (`.png`, `.ogg`, `.bbmodel`) referenced by project-relative path. Importers produce elements and assets, never a parallel model. Asset byte operations (import, delete) happen immediately on disk and are not undoable; changes to the `Asset` record go through undoable commands.
 
 ### Element kinds
@@ -292,7 +292,7 @@ export default definePlugin({
 | `examples` | Examples gallery entries: the kind taught, category, tags, `requiresKinds` and a commented content bundle | "Loot table: block drops" |
 | `validators` | Cross-element checks over the whole project: an id, the kinds read and a pure `validate(input)` returning problems; the host re-runs them when those kinds change and merges the problems ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)) | Feature order across biomes, structure set spacing |
 
-Templates, starters and examples live in plugins; the app is only the picker. A template creates one element of a kind its own plugin registers and references only vanilla ids, ids derived from its own id, or the project root advancement. A starter or example builds a self-contained content bundle (elements with optional `meta.notes`, plus generated assets, never Mojang assets) that may span any registered kinds; the host adds a `pack` element when the bundle has none and inserts the elements as one undo step. The resource-pack and data-pack plugins carry the templates for their kinds; the built-in `@msm/plugin-library` (`msm.library`) carries the starters, the examples and the placeholder-texture generator ([ADR 0020](adr/0020-templates-starters-examples.md)).
+Templates, starters and examples live in plugins; the app is only the picker. A template creates one element of a kind its own plugin registers and references only vanilla ids, ids derived from its own id, or the project root advancement. A starter or example builds a self-contained content bundle (elements with optional `meta.notes`, plus generated assets, never Mojang assets) that may span any registered kinds; the host adds a `pack` element when the bundle has none and inserts the elements as one undo step. The resource-pack, data-pack, structures and worldgen plugins carry the templates for their kinds (99 in total after Phase 3); the built-in `@msm/plugin-library` (`msm.library`) carries the starters, the examples and the placeholder-texture generator ([ADR 0020](adr/0020-templates-starters-examples.md)).
 
 Phase 3 adds two built-ins ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)): `@msm/plugin-structures` (`msm.structures`: structure templates, template pools, structures, structure sets and processor lists, with the `.nbt` and `.schem` importers and exporters of [ADR 0021](adr/0021-structure-templates-and-nbt.md)) and `@msm/plugin-worldgen` (`msm.worldgen`: biomes, configured and placed features, dimensions, world presets and nine schema-form worldgen kinds). Both contribute validators; `@msm/plugin-datapack` adds the worldgen tag kinds and keeps `minecraft:dimension_type`.
 
@@ -355,7 +355,7 @@ From Phase 3 ([ADR 0023](adr/0023-structure-and-climate-previews.md)) the panel 
 
 ### Error surfacing
 
-A Problems panel lists schema violations, dangling references and lowering errors, each linked to its element and field (`elementId` plus an RFC 6901 path, or a `file` for load and export problems); function problems add a `range` within `/lines/<n>`. Schema problems are recomputed live as elements change. From Phase 3, plugin project validators ([Plugin System](#7-plugin-system)) run after the schema checks, debounced, and their problems (codes `<area>.<check>`, such as `worldgen.feature-order`) join the same list with the same severity rules. Schema violations are errors; unknown registry ids are warnings. Errors block export, never save; warnings block neither. Files that fail to load stay on disk as error problems until the user fixes or deletes them ([ADR 0012](adr/0012-save-deletes-only-loaded-files.md)).
+A Problems panel lists schema violations, dangling references and lowering errors, each linked to its element and field (`elementId` plus an RFC 6901 path, or a `file` for load and export problems); function problems add a `range` within `/lines/<n>`. Schema problems are recomputed live as elements change. From Phase 3, plugin project validators ([Plugin System](#7-plugin-system)) run after the schema checks, debounced, and their problems (codes `<area>.<check>`, such as `worldgen.feature-order`) join the same list with the same severity rules. Schema violations are errors; unknown registry ids are warnings. Errors block export of the layers their elements lower to (an error in a resource-pack element leaves the data pack exportable), never save; warnings block neither. Files that fail to load stay on disk as error problems until the user fixes or deletes them ([ADR 0012](adr/0012-save-deletes-only-loaded-files.md)).
 
 ## 9. Targets and Exporters
 
@@ -378,7 +378,10 @@ interface Target {
     data: Record<DataFolderKey, string>;          // vanilla folder names under data/<ns>/ (ADR 0017);
                                                   // Phase 3 adds structure, dimension and worldgen (parent of worldgen/<registry>)
   };
-  worldgen: { featureSteps: readonly string[] };  // decoration steps in order (ADR 0022)
+  worldgen: {
+    featureSteps: readonly string[];              // decoration steps in order (ADR 0022)
+    biomeAttributes?: BiomeAttributeFacts;       // biome attribute ids: colours, sky colour, natural mob spawns (26.3)
+  };
   fabric?: { loader: string; api: string; loom: string };   // required from Phase 4 (verify at implementation)
   geckolib?: string;          // required from Phase 5; 5.5+ line (verify at implementation)
   migrateFrom?(previous: Target, project: Project): MigrationReport;
@@ -569,7 +572,7 @@ We import only documented `.bbmodel` fields and warn on unknown format versions.
 
 ### Structures
 
-Structure `.nbt` (vanilla structure template) and Sponge `.schem` (Version 2 and 3) are read and written with deepslate's `nbt` module, not `prismarine-nbt` ([ADR 0021](adr/0021-structure-templates-and-nbt.md)). The codec lives in `@msm/plugin-structures`, which contributes the importers (`.nbt`, `.schem`) and two exporters (structure `.nbt` files, Sponge `.schem` Version 3) through the public plugin API. An imported file becomes a `minecraft:structure_template` element stored as JSON (the original file is not kept), shown in the 3D preview, usable in jigsaw pools and lowered back to gzip `.nbt` with the target's `dataVersion`. File > Import Structure… runs the importers; the Export menu offers both structure exports.
+Structure `.nbt` (vanilla structure template) and Sponge `.schem` (Version 2 and 3) are read and written with deepslate's `nbt` module, not `prismarine-nbt`; SNBT is printed by our own printer, because deepslate 0.27.2's loses tag types ([ADR 0021](adr/0021-structure-templates-and-nbt.md)). The codec lives in `@msm/plugin-structures`, which contributes the importers (`.nbt`, `.schem`) and two exporters (structure `.nbt` files, Sponge `.schem` Version 3) through the public plugin API. An imported file becomes a `minecraft:structure_template` element stored as JSON (the original file is not kept), shown in the 3D preview, usable in jigsaw pools and lowered back to gzip `.nbt` with the target's `dataVersion`. File > Import Structure… runs the importers; the Export menu offers both structure exports.
 
 `@msm/interop` `nbt/` reads only the world name (`Data.LevelName`) from `level.dat` for the world picker, with deepslate's NBT reader; an unreadable file falls back to the folder name.
 

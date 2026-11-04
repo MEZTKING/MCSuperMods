@@ -1,6 +1,6 @@
 # MCSuperMods
 
-MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 2 code complete plus two add-ons: launcher support (Prism, CurseForge, MultiMC; ADR 0019) and the templates and samples library (ADR 0020). Phase 3 (Structures & Worldgen; ADRs 0021–0023; plugin-api 0.5.0) code in progress: structures and worldgen plugins (52 kinds in all), Studios, previews and guides done; e2e and close (B82, B83) next. Library: 99 templates (resourcepack 14, datapack 55, structures 9, worldgen 21), 11 starters, 56 examples. Awaiting in-game checks. Releases: Windows only (MIT; README "Releasing"). Toolchain: Node 24, pnpm 12.
+MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 3 code complete, awaiting in-game checks; Phase 4 next. Done so far: Phases 0–2, two add-ons (launcher support, ADR 0019; templates and samples library, ADR 0020) and Phase 3 (Structures & Worldgen; ADRs 0021–0023; plugin-api 0.5.0; 52 kinds in all; v0.3.0). Library: 99 templates (resourcepack 14, datapack 55, structures 9, worldgen 21), 11 starters, 56 examples. Releases: Windows only (MIT; README "Releasing"). Toolchain: Node 24, pnpm 12.
 
 ## Directory map
 

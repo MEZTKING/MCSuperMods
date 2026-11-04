@@ -54,5 +54,4 @@ allowBuilds:
 
 minimumReleaseAgeExclude:
   - electron-to-chromium@1.5.475
-  - electron@45.2.2
   - lucide-react@1.68.0

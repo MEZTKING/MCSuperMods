@@ -4,11 +4,11 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (66) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (8) | **New from starter…** | A new project, already filled |
-| **Examples** (34) | **Help → Examples…** | A commented project or element to open or copy |
+| **Element templates** (99) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (11) | **New from starter…** | A new project, already filled |
+| **Examples** (56) | **Help → Examples…** | A commented project or element to open or copy |
 
-Templates come from the resource pack and data pack plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](../adr/0020-templates-starters-examples.md)).
+Templates come from the resource pack, data pack, structures and worldgen plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](../adr/0020-templates-starters-examples.md)).
 
 No starter or example contains Mojang files. Textures are small placeholder images that MCSuperMods draws itself; the music disc plays a track from your own copy of the game.
 
@@ -22,6 +22,8 @@ Open a project, then choose **Add element** on the toolbar (or press Ctrl+N, or 
 4. Type a name and choose **Create**. The line under the name shows the id that will be created.
 
 Templates that refer to other project content say so in their description. The child advancements, for example, point at `<namespace>:root`: create the **Root advancement** first. Model templates point at a texture with the same name as the model (`<namespace>:block/<name>`), so import a texture with that name (see [Replacing the placeholders](#replacing-the-placeholders)).
+
+Structure and worldgen templates that point at another element (a pool's piece, a structure's start pool, a placed feature's configured feature, a dimension's biome) start that link as the new element's own id, because two elements of a project never share an id. Their description says which field to change: point it at the real element, for example `amber_tree` from `amber_tree_placed`. The [Structures](structures.md) and [Worldgen](worldgen.md) guides explain the naming.
 
 A kind from a third-party plugin that brings no templates still appears, as one entry that starts from the kind's default content.
 
@@ -151,6 +153,9 @@ The id is the template's identifier (the app uses it as `template-<id>` in tests
 | Game event tag | `tag_game_event` | `minecraft:tag/game_event` | A named group of game events, used as `#<namespace>:<name>`. |
 | Damage type tag | `tag_damage_type` | `minecraft:tag/damage_type` | A named group of damage types, used as `#<namespace>:<name>`. |
 | Enchantment tag | `tag_enchantment` | `minecraft:tag/enchantment` | A named group of enchantments, used as `#<namespace>:<name>`. |
+| Biome tag (has_structure) | `tag_worldgen_biome` | `minecraft:tag/worldgen/biome` | A named group of biomes, used as `#<namespace>:has_structure/<name>` in a structure's `biomes`. (name starts with `has_structure/`) |
+| Structure tag | `tag_worldgen_structure` | `minecraft:tag/worldgen/structure` | A named group of structures, used as `#<namespace>:<name>`. |
+| World preset tag: normal | `tag_worldgen_world_preset_normal` | `minecraft:tag/worldgen/world_preset` | Adds world presets to the create-world screen (`minecraft:normal`); add preset ids to `values`. (default name `normal`; namespace `minecraft`) |
 
 #### Enchantments
 
@@ -174,6 +179,61 @@ The id is the template's identifier (the app uses it as `template-<id>` in tests
 | Notice dialog | `dialog_notice` | `minecraft:dialog` | A message screen with one button, shown with /dialog show. |
 | Confirmation dialog | `dialog_confirmation` | `minecraft:dialog` | A yes or no question; each button can run a command. |
 
+#### Structures
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Structure template: 5×5 platform | `structure_template_platform` | `minecraft:structure_template` | A flat 5×5 stone brick platform, one block high. |
+| Structure template: jigsaw hut piece | `structure_template_jigsaw_hut` | `minecraft:structure_template` | A 5×5×5 plank hut with a doorway and a jigsaw block in front of it, named `<id>_entrance` and targeting `<id>_path`. The jigsaw's pool starts as the new template's own id: change it to your template pool's id. |
+| Structure template: path piece | `structure_template_path` | `minecraft:structure_template` | A 3×1×5 dirt path with a jigsaw block at each end, both named and targeting `<id>_path`. Their pool starts as the new template's own id: change it to your template pool's id. |
+| Template pool | `template_pool` | `minecraft:worldgen/template_pool` | A pool with one rigid piece. Its Location starts as the new pool's own id: change it to your structure template's id. |
+| Template pool: terminators | `template_pool_terminators` | `minecraft:worldgen/template_pool` | A pool that ends jigsaw chains: one piece that follows the terrain, or nothing at all. The piece's Location starts as the new pool's own id: change it to your structure template's id. |
+| Jigsaw structure | `structure_jigsaw` | `minecraft:worldgen/structure` | A jigsaw structure in forests that blends into the terrain. Its start pool starts as the new structure's own id: change it to your template pool's id. |
+| Structure set (random spread) | `structure_set_random_spread` | `minecraft:worldgen/structure_set` | Places one structure about once in every 34×34 chunk cell, at least 8 chunks apart. Its structure entry starts as the new set's own id: change it to your structure's id. |
+| Processor list: mossify and rot | `processor_list_mossify_rot` | `minecraft:worldgen/processor_list` | Turns a fifth of the cobblestone mossy and leaves out a tenth of all blocks, for a weathered look. |
+| Processor list: block ignore | `processor_list_block_ignore` | `minecraft:worldgen/processor_list` | Leaves air out of placed pieces, so the terrain they overlap is kept. |
+
+#### Biomes
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Temperate forest biome | `biome_temperate_forest` | `minecraft:worldgen/biome` | A mild, rainy forest of oak and birch with flowers, grass and the usual ores. |
+| Desert biome | `biome_desert` | `minecraft:worldgen/biome` | A hot, dry biome without rain: dead bushes, cacti and desert wells. |
+
+#### Features
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Ore vein | `feature_ore_vein` | `minecraft:worldgen/feature` | A blob of ore that replaces stone and deepslate; place it with Ore placement. |
+| Tree (oak-like) | `feature_tree` | `minecraft:worldgen/feature` | A small straight tree with a round crown of leaves; place it with Tree placement. |
+| Flower patch | `feature_flower_patch` | `minecraft:worldgen/feature` | One flower picked by weight; Patch placement scatters it into a patch. |
+| Single block | `feature_single_block` | `minecraft:worldgen/feature` | Places one block, such as a boulder or a marker, wherever it is placed. |
+| Ore placement | `placed_feature_ore` | `minecraft:worldgen/placed_feature` | Places a configured feature ten times per chunk, spread evenly from the bottom of the world to y 64. Its feature starts as this element's own id: set it to your configured feature, such as `ruby_ore` for `ruby_ore_placed`. |
+| Tree placement | `placed_feature_tree` | `minecraft:worldgen/placed_feature` | Places a configured feature a few times per chunk on the surface, where an oak sapling would survive. Its feature starts as this element's own id: set it to your configured feature, such as `amber_tree` for `amber_tree_placed`. |
+| Patch placement | `placed_feature_patch` | `minecraft:worldgen/placed_feature` | Scatters a configured feature into a patch on the surface, in about one chunk in four. Its feature starts as this element's own id: set it to your configured feature, such as `flowers` for `flowers_placed`. |
+
+#### Dimensions
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Multi-noise overworld | `dimension_multi_noise` | `minecraft:dimension` | Overworld terrain with one biome at a mild, humid climate point and vanilla biomes around it. That entry starts as this element's own id: set it to your biome, such as `amber_grove` for `amber_world`. |
+| Single-biome dimension | `dimension_single_biome` | `minecraft:dimension` | Overworld terrain where every column is one biome. The biome starts as this element's own id: set it to your biome, such as `amber_grove` for `amber_world`. |
+| World preset | `world_preset` | `minecraft:worldgen/world_preset` | A World Type with the vanilla overworld, nether and end; change the overworld biome source to add your biomes. |
+
+#### Worldgen (advanced)
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Noise settings: gentle hills | `noise_settings` | `minecraft:worldgen/noise_settings` | Terrain from a height gradient plus one noise, with water at sea level and a simple grass, dirt and bedrock surface. |
+| Density function: noise | `density_function` | `minecraft:worldgen/density_function` | Samples a vanilla noise, scaled horizontally; reference it from noise settings. |
+| Noise | `noise` | `minecraft:worldgen/noise` | Noise parameters with three octaves starting at a large scale. |
+| Carver: caves | `carver` | `minecraft:worldgen/carver` | Cave tunnels between the bottom of the world and y 180; list it in a biome. |
+| Superflat preset | `flat_level_generator_preset` | `minecraft:worldgen/flat_level_generator_preset` | A superflat preset of bedrock, stone, dirt and grass in the plains biome. |
+| Multi-noise parameter list | `multi_noise_biome_source_parameter_list` | `minecraft:worldgen/multi_noise_biome_source_parameter_list` | A named parameter list using the vanilla overworld biome layout. |
+| Block state provider: stone mix | `block_state_provider` | `minecraft:worldgen/block_state_provider` | Picks stone, andesite or cobblestone by weight; reference it from features. |
+| Material condition: above sea level | `material_condition` | `minecraft:worldgen/material_condition` | True at and above y 63; use it in surface rules. |
+| Material rule: grass and dirt | `material_rule` | `minecraft:worldgen/material_rule` | A surface rule that places bedrock at the bottom and grass over dirt on top. |
+
 ## Project starters
 
 A starter creates a whole project in an empty folder. Open the list in any of these ways:
@@ -196,13 +256,17 @@ The **New project** dialog groups the starters (Blank, Packs, Themed content) an
 | Recipe pack | `recipe_pack` | data | Shaped, shapeless, smelting, blasting and stonecutting recipes, an item tag used as an ingredient, a crafting advancement and a load message. |
 | Custom music disc | `music_disc` | resource, data | A jukebox song, its sound event, a disc model and texture, and a `give_disc` function. |
 | Functions | `function_starter` | data | `load` and `tick` functions wired to `#minecraft:load` and `#minecraft:tick`, a jump scoreboard, a `greet` function and a function tag of your own. |
+| Custom biome | `custom_biome` | resource, data | The Amber Woods biome with its own tree and copper ore, and a World Type of its own that lists it beside a few vanilla biomes (**More → World Type** when creating a world). |
+| Jigsaw village-style structure | `jigsaw_structure` | data | A small hamlet built by jigsaw blocks: a centre hut, streets that follow the terrain and lamp posts, with four template pools, a structure set and a biome tag that places it in forests. |
+| Custom biome with a jigsaw structure | `worldgen_pack` | resource, data | Both worldgen starters in one project: Amber Woods and its World Type, and hamlets that generate in Amber Woods and in every vanilla forest. |
 
-Two starters need a word of explanation:
+Three starters need a word of explanation:
 
 - **Custom ore is a reskin.** A resource or data pack cannot add new blocks or items, so until real blocks arrive in Phase 4 the starter changes how emerald ore and the emerald look, what they are called and what the ore drops. In any world where the packs are enabled, emerald ore *is* ruby ore. Phase 4 adds a starter with a real new ore block.
 - **The music disc plays a vanilla track.** MCSuperMods bundles no audio, so the sound event points at the game's own `records/cat` file. The disc itself is the vanilla `music_disc_13` item carrying the new song and a name, drawn with the starter's own disc model; the `give_disc` function gives it to you (`/function <namespace>:give_disc`), because a pack cannot add a new item to the creative inventory.
+- **A custom biome needs its own World Type.** A data pack cannot add a biome to the normal overworld, so the Custom biome starters add a World Type that lists the new biome. Choose it when creating a new world; existing worlds keep their biomes, although the hamlets of the jigsaw starters do appear in new chunks of an existing world.
 
-The [Getting started](getting-started.md) guide walks through the Custom ore and Functions starters in Minecraft.
+The [Getting started](getting-started.md) guide walks through the Custom ore and Functions starters in Minecraft; the [Worldgen](worldgen.md) guide walks through the worldgen starters.
 
 ## Examples gallery
 
@@ -226,7 +290,7 @@ Copying needs an open project with a namespace of its own (the button explains w
 
 ### All examples
 
-There is one example for each of the 30 element kinds, plus the four themed starters listed again under **Starters**.
+There is one example for each of the 52 element kinds, plus four themed starters listed again under **Starters**. The three worldgen starters have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -250,6 +314,9 @@ There is one example for each of the 30 element kinds, plus the four themed star
 | Function tag | `example_tag_function` | Tags | `minecraft:tag/function` | A group of functions run together with /function `#<tag>`. |
 | Damage type tag | `example_tag_damage_type` | Tags | `minecraft:tag/damage_type` | A group of damage types, used in damage predicates and enchantments. |
 | Enchantment tag | `example_tag_enchantment` | Tags | `minecraft:tag/enchantment` | A group of enchantments, used for exclusivity and enchanting tables. |
+| Biome tag | `example_tag_worldgen_biome` | Tags | `minecraft:tag/worldgen/biome` | A group of biomes, used to decide where structures generate. |
+| Structure tag | `example_tag_worldgen_structure` | Tags | `minecraft:tag/worldgen/structure` | A group of structures, used by /locate, maps and explorer trades. |
+| World preset tag | `example_tag_worldgen_world_preset` | Tags | `minecraft:tag/worldgen/world_preset` | A group of world presets; `minecraft:normal` lists the World Type choices. |
 | Damage enchantment | `example_enchantment` | Enchantments | `minecraft:enchantment` | A sword enchantment that adds damage per level. |
 | Damage type | `example_damage_type` | Damage types | `minecraft:damage_type` | A new kind of damage with its own death message key. |
 | Dimension type | `example_dimension_type` | Dimensions | `minecraft:dimension_type` | The settings of a bright, short world: sky, light and height. |
@@ -260,6 +327,25 @@ There is one example for each of the 30 element kinds, plus the four themed star
 | Trim material | `example_trim_material` | Armour trims | `minecraft:trim_material` | An armour trim material that reuses the quartz colour palette. |
 | Trim pattern | `example_trim_pattern` | Armour trims | `minecraft:trim_pattern` | An armour trim pattern that reuses the coast design. |
 | Notice dialog | `example_dialog` | Dialogs | `minecraft:dialog` | A welcome screen with a message and an OK button, opened from a function. |
+| Structure template | `example_structure_template` | Structures | `minecraft:structure_template` | A small stone well, stored as JSON and exported as a structure `.nbt` file. |
+| Template pool | `example_template_pool` | Structures | `minecraft:worldgen/template_pool` | A pool that picks a flower bed or nothing, as jigsaw blocks do. |
+| Jigsaw structure | `example_structure` | Structures | `minecraft:worldgen/structure` | A lone tower in mountains and hills, built from one template. |
+| Structure set | `example_structure_set` | Structures | `minecraft:worldgen/structure_set` | Places a small ruin across taiga biomes, spread out with `random_spread`. |
+| Processor list | `example_processor_list` | Structures | `minecraft:worldgen/processor_list` | Cracks and moss stone bricks and leaves a few blocks out, for an old look. |
+| Biome | `example_biome` | Worldgen | `minecraft:worldgen/biome` | A quiet meadow: no trees, flowers and grass, the usual ores and caves. |
+| Configured feature | `example_feature` | Worldgen | `minecraft:worldgen/feature` | Clay pockets in dirt: an ore feature that replaces dirt with clay. |
+| Placed feature | `example_placed_feature` | Worldgen | `minecraft:worldgen/placed_feature` | Scatters poppies in patches on the surface. |
+| Dimension | `example_dimension` | Worldgen | `minecraft:dimension` | A new dimension where the whole world is a cherry grove. |
+| World preset | `example_world_preset` | Worldgen | `minecraft:worldgen/world_preset` | A World Type with amplified terrain covered in cherry groves. |
+| Noise settings | `example_noise_settings` | Worldgen (advanced) | `minecraft:worldgen/noise_settings` | Gentle hills from a height gradient plus one noise, with a simple surface. |
+| Density function | `example_density_function` | Worldgen (advanced) | `minecraft:worldgen/density_function` | A reusable density function: one vanilla noise, stretched horizontally. |
+| Noise | `example_noise` | Worldgen (advanced) | `minecraft:worldgen/noise` | Noise parameters: three octaves starting at a large scale. |
+| Carver | `example_carver` | Worldgen (advanced) | `minecraft:worldgen/carver` | Wide cave tunnels between the bottom of the world and y 180. |
+| Superflat preset | `example_flat_level_generator_preset` | Worldgen (advanced) | `minecraft:worldgen/flat_level_generator_preset` | A superflat preset: bedrock, stone, dirt and grass in the plains biome. |
+| Multi-noise parameter list | `example_multi_noise_biome_source_parameter_list` | Worldgen (advanced) | `minecraft:worldgen/multi_noise_biome_source_parameter_list` | A named biome layout using the vanilla overworld parameters. |
+| Block state provider | `example_block_state_provider` | Worldgen (advanced) | `minecraft:worldgen/block_state_provider` | Picks stone, andesite or cobblestone by weight. |
+| Material condition | `example_material_condition` | Worldgen (advanced) | `minecraft:worldgen/material_condition` | True at and above y 63; a building block of surface rules. |
+| Material rule | `example_material_rule` | Worldgen (advanced) | `minecraft:worldgen/material_rule` | A surface rule: bedrock at the bottom, grass over dirt on top. |
 | Custom ore project | `starter_custom_ore` | Starters | `minecraft:block_definition` | The Custom ore starter: emerald ore reskinned as ruby ore, with loot, a recipe, a tag and advancements. |
 | Recipe pack project | `starter_recipe_pack` | Starters | `minecraft:recipe` | The Recipe pack starter: one recipe of each common type and an advancement. |
 | Custom music disc project | `starter_music_disc` | Starters | `minecraft:jukebox_song` | The Custom music disc starter: a jukebox song, its disc model and texture. |
@@ -271,11 +357,14 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 
 | Folder | Namespace | Contents |
 |---|---|---|
-| `examples/all-kinds/` | `msm_examples` | The 30 per-kind examples in one project |
+| `examples/all-kinds/` | `msm_examples` | The 52 per-kind examples in one project |
 | `examples/starters/custom_ore/` | `msm_starter` | The Custom ore starter |
 | `examples/starters/recipe_pack/` | `msm_starter` | The Recipe pack starter |
 | `examples/starters/music_disc/` | `msm_starter` | The Custom music disc starter |
 | `examples/starters/function_starter/` | `msm_starter` | The Functions starter |
+| `examples/starters/custom_biome/` | `msm_starter` | The Custom biome starter |
+| `examples/starters/jigsaw_structure/` | `msm_starter` | The Jigsaw village-style structure starter |
+| `examples/starters/worldgen_pack/` | `msm_starter` | The Custom biome with a jigsaw structure starter (also saved as `fixtures/sample-worldgen/`) |
 
 Copy a folder somewhere else before opening it, so your edits do not change the repository. See [examples/README.md](../../examples/README.md).
 
@@ -297,4 +386,4 @@ The `examples/` folder is generated from `packages/plugins/library/src/`; do not
 UPDATE_GOLDENS=1 pnpm --filter @msm/exporters exec vitest run test/library.test.ts
 ```
 
-`packages/exporters/test/library.test.ts` fails in CI when the folder drifts from the library. It also builds every starter and example for each supported version, saves and reloads it, validates every element and function, and exports both packs with zero problems. Template tests live with each plugin (`packages/plugins/resourcepack/test/templates.test.ts`, `packages/plugins/datapack/test/templates.test.ts`).
+`packages/exporters/test/library.test.ts` fails in CI when the folder drifts from the library. It also builds every starter and example for each supported version, saves and reloads it, validates every element and function, and exports both packs with zero problems. Template tests live with each plugin (`packages/plugins/<plugin>/test/templates.test.ts` for `resourcepack`, `datapack`, `structures` and `worldgen`).

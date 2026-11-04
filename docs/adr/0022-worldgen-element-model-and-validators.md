@@ -87,4 +87,13 @@ The manual check (the user, Windows, 26.3) lives in `fixtures/sample-worldgen/RE
 
 ## Status
 
-Proposed (2026-11-04); implementation in B70 (plugin-api 0.5.0, target facts, scaffolds), B73 and B74 (kinds, lowering, validators, templates), B75 (tag kinds), B76 (starters, examples, fixture, chain walk), B77 (host validators, importers, sidebar), B79 and B80 (studios) and B82 (e2e), within B70–B82. The two defaults above stand unless the user vetoes them.
+Accepted and implemented (2026-11-04, B70 and B72–B82; released in v0.3.0). Implementation notes:
+
+- **Kinds and content.** 22 new kinds (52 built-in in all). `@msm/plugin-worldgen` ships 21 templates, not 17 (the D9 list adds up to 21), so Phase 3 adds 33 templates (99 in total: resource pack 14, data pack 55, structures 9, worldgen 21), three starters (11) and 22 examples (56).
+- **26.3 schema facts found during B74:** natural mob spawns are the biome attribute `minecraft:gameplay/natural_mob_spawns` and sky and fog colours are `minecraft:visual/*` attributes; feature configs are flat (no `config` object); `random_patch` is gone; block states are a string or `{id, properties}`. These facts live in the target as the optional `Target.worldgen.biomeAttributes` (colour attributes, sky colour, natural mob spawns; additive within plugin-api 0.5.0, no version bump), read by the Biome Studio and the climate map.
+- **Feature steps.** `featureSteps` is checked against the vendored `DecorationStep` enum (eleven steps).
+- **Validators (D8).** As listed, except `structures.newer-data-version` (reported by the importers) and `structures.template-too-large` (a validator, warning). `worldgen.preset-missing-overworld` requires only `minecraft:overworld`; the game accepts presets without the nether and the end. The host runs validators whose kinds changed in the debounced pass after the schema checks; a throwing validator becomes `validator.failed`; errors block only the exports of the layers their elements lower to.
+- **Ids.** Element ids are unique across kinds in a project (core load and add-element), so chained elements get distinct ids: configured and placed features (`amber_tree` / `amber_tree_placed`), a structure and its set (`hamlet` / `hamlets`). Templates start such a link as the new element's own id and their descriptions say which field to change.
+- **Exit proxy.** `fixtures/sample-worldgen/` with its SHA-256 golden (pinned in two time zones), `.nbt` block counts, the chain walk (which also fails on a copy with a pool removed) and the feature-order mutation are in `@msm/exporters`; e2e `worldgen-path` drives the UI (B82). The ore vein template uses `block_match` until `@msm/schemas` supports `#[id(tags="implicit")]`.
+
+The two defaults recorded above stand unless the user vetoes them. The exit criterion is met only by the user's in-game check in `fixtures/sample-worldgen/README.md`, still pending.

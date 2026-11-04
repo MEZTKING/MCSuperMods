@@ -28,4 +28,11 @@ deepslate 0.27.2 (already bundled) offers `Structure` and `StructureRenderer` in
 
 ## Status
 
-Proposed (2026-11-04); implementation in B78 (structure mode and climate map) and B80 (biome colour pickers), within B73–B82. The noise-sampled map is reserve brief B84 and DESIGN Open Question 15. The deferral stands unless the user vetoes it.
+Accepted and implemented (2026-11-04, B78 and B80; released in v0.3.0). Implementation notes:
+
+- **Structure mode.** `preview/structure.ts` is the app's own reader of `minecraft:structure_template` data; bad palette entries and tuples are counted, skipped and listed in the panel notes, and air-like blocks are left out. A block without a definition or model is drawn as a checker cube, so no block is dropped. Full-cube culling between neighbouring blocks is not done (follow-up).
+- **Climate map.** Only the climate map ships. Cell colours come, in order, from `effects.grass_color`, the sky colour attribute named by the target's `WorldgenFacts.biomeAttributes` (26.3 moved sky colour to `minecraft:visual/sky_color`), `effects.sky_color`, then a stable hash of the id. `ClimateMap.tsx` is lazy-loaded, with axis selects, four sliders, a hover readout and a legend.
+- **Biome colours.** The Biome Studio has seven colour pickers: the `effects` colours the schema declares (water, grass, foliage, dry foliage) and the target's colour attributes (sky, fog, water fog).
+- Renderer cost: about 11 kB of lazy preview chunks; deepslate sits in a chunk shared by `PreviewCanvas` and `ClimateMap`.
+
+The noise-sampled map stays deferred to reserve brief B84 and DESIGN Open Question 15; the deferral stands unless the user vetoes it.

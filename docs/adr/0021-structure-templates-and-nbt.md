@@ -62,4 +62,13 @@ We store templates as JSON because the project stays JSON only, lowering stays p
 
 ## Status
 
-Proposed (2026-11-04); implementation in B73 (codec, kinds, importers, exporters), B75 (`level.dat`), B77 (host import and export plumbing) and B79 (Structure Studio), within B73–B82. The two defaults above stand unless the user vetoes them.
+Accepted and implemented (2026-11-04, B73, B75, B77, B79 and B82; released in v0.3.0). Implementation notes:
+
+- **Codec (D2).** deepslate's binary NBT reader and writer and its SNBT parser are used as decided, but SNBT is printed by our own printer in `@msm/plugin-structures` `src/nbt/binary.ts`: deepslate 0.27.2's printer breaks long arrays (`[I;1L]`), drops type suffixes on large doubles and prints bytes unsigned. With our printer every tag type round-trips through SNBT, so the `nbt_json` fallback was not needed. A byte-exact golden pins a lowered `.nbt`.
+- **Importers and target.** `Importer.import` receives no target, so the host calls the plugin's public `importStructureFile` with `target.dataVersion` (B77); that is how `structures.newer-data-version` reaches the user. `structures.template-too-large` is a project validator (warning), not an import problem.
+- **Host (D3).** `session.importFiles` is one undo step ("Import <n> files"); File > Import Structure… lists every registered importer. The Structure Studio's "Replace from file…" uses the same importer path (`import.kind-mismatch` when the file gives another kind).
+- **Folder export.** Export Structures (.nbt)… and Export Structures as Sponge Schematics (.schem)… reuse the existing `exports:writeFiles` channel, widened to accept namespaced `<ns>/<path>.nbt` and `.schem` paths (lower case, no `.` or `..` segments, real-path containment, up to 4096 files). No new IPC channel.
+- **Ids.** Element ids are unique across kinds within a project, so a structure and the template, pool or set that refers to it carry distinct ids; templates start such links as the new element's own id and say which field to point at the real element.
+- `@msm/interop` `nbt/level-dat.ts` reads world names for the world picker (B75).
+
+The two defaults recorded above stand unless the user vetoes them. The in-game check (`fixtures/sample-worldgen/README.md`) is pending.

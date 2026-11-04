@@ -1,6 +1,6 @@
 # docs/ — design docs, roadmap, devlog, ADRs
 
-Active since Phase 0; Phase 2 code complete, awaiting the in-game checks; launcher and templates and samples library add-ons done; Phase 3 (Structures & Worldgen) planned as briefs B70–B83 (ADRs 0001–0023; 0021–0023 proposed); user guide in `guide/`. This file describes conventions.
+Active since Phase 0; Phases 2 and 3 code complete, awaiting the in-game checks; launcher and templates and samples library add-ons done; Phase 3 (Structures & Worldgen) delivered as briefs B70–B83 (ADRs 0001–0023, all accepted; B84 in reserve); Phase 4 next; user guide in `guide/`. This file describes conventions.
 
 ## Purpose
 
@@ -12,7 +12,7 @@ Holds the project's design record: the authoritative design, the delivery plan, 
 - `ROADMAP.md`: phased plan with checklists and the milestone log.
 - `DEVLOG.md`: append-only session log, newest entry at the bottom.
 - `adr/NNNN-title.md`: one file per architecture decision, sections Context / Decision / Consequences / Status.
-- `guide/`: the user guide (`README.md` index, `getting-started.md`, `templates-and-examples.md`); task-oriented, matches shipped UI labels.
+- `guide/`: the user guide (`README.md` index, `getting-started.md`, `structures.md`, `worldgen.md`, `templates-and-examples.md`); task-oriented, matches shipped UI labels.
 
 ## Conventions
 
