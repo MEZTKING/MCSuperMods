@@ -12,6 +12,7 @@
 - `src/output.ts`, `src/problems.ts`: `OutputFile` (optional `schema` for the validation gate, `language` for text checks such as `mcfunction`), `OutputSink`, `Problem` (optional `file`, and `range` in UTF-16 offsets within `path`'s string or `file`), `ProblemReporter`.
 - `src/target.ts`: `Target` (incl. `folders.resource: Record<ResourceFolderKey, string>` and `folders.data: Record<DataFolderKey, string>`), `PackFormat` (`{ major, minor }`), `MigrationReport`.
 - `src/contributions.ts`: `ElementKind` (`defaultData`, `hiddenPaths`, `previewKind`), `EditorContribution`, `Exporter` (`ExporterInput.meta`), `Importer`, `Command`.
+- `src/library.ts`: `TemplateContext`, `ElementTemplate`, `ContentBundle`, `BundleContext`, `ProjectStarter`, `ExampleProject` (host-interpreted; `Uint8Array` for asset bytes).
 - `src/paths.ts`: `isProjectRelativePath`, `assertProjectRelativePath` (shared by core and app main).
 - `src/plugin.ts`, `src/version.ts`: `Plugin`, `definePlugin`, `API_VERSION`.
 - `CHANGELOG.md`: every API change, with migration notes for breaking ones.

@@ -195,12 +195,12 @@ Requested on 2026-11-04: preview-asset extraction and pack install for users who
 
 Requested on 2026-11-04, ahead of Phase 3: a template for every element kind, New Project starters and an examples gallery, all validated and exported per target in CI. Design in [Plugin System](DESIGN.md#7-plugin-system), [Editors and UX](DESIGN.md#8-editors-and-ux) and [ADR 0020](adr/0020-templates-starters-examples.md): `@msm/plugin-api` 0.4.0 adds `elementTemplates`, `projectStarters` and `examples`; templates move into the resource-pack and data-pack plugins (66 in total); a new built-in `@msm/plugin-library` carries 8 starters and 34 examples, mirrored under `examples/`. Does not block Phase 3.
 
-- [ ] B60: library contract and host plumbing: plugin-api 0.4.0 (`library.ts`), built-in ranges `^0.4.0`, `@msm/plugin-library` scaffold with the placeholder PNG generator, session `library`, `newProject({ starter })` and `addBundle`.
-- [ ] B61: ADR 0020 and the design record (DESIGN Plugin System, Editors and UX, Repository Layout, Testing Strategy; this section).
-- [ ] B62: resource pack templates (14) in `@msm/plugin-resourcepack`, validated per target.
-- [ ] B63: data pack templates (52) in `@msm/plugin-datapack`, validated per target, functions through the mcfunction checker.
-- [ ] B64: library content: 8 starters, 34 examples, the `examples/` mirror golden and the cross-plugin CI test in `@msm/exporters`.
-- [ ] B65: app UI: New project dialog, Examples gallery, grouped and filterable template picker, Notes callout, menu and palette entries.
+- [x] B60: library contract and host plumbing: plugin-api 0.4.0 (`library.ts`), built-in ranges `^0.4.0`, `@msm/plugin-library` scaffold with the placeholder PNG generator, session `library`, `newProject({ starter })` and `addBundle`.
+- [x] B61: ADR 0020 and the design record (DESIGN Plugin System, Editors and UX, Repository Layout, Testing Strategy; this section).
+- [x] B62: resource pack templates (14) in `@msm/plugin-resourcepack`, validated per target.
+- [x] B63: data pack templates (52) in `@msm/plugin-datapack`, validated per target, functions through the mcfunction checker.
+- [x] B64: library content: 8 starters, 34 examples, the `examples/` mirror golden and the cross-plugin CI test in `@msm/exporters`.
+- [x] B65: app UI: New project dialog, Examples gallery, grouped and filterable template picker, Notes callout, menu and palette entries.
 - [ ] B66: end-to-end test of the library path (Custom ore starter, export both packs, copy an example, open an example as a new project).
 - [ ] B67: user guide (`docs/guide/`), README "Templates and examples", scoped guides, ROADMAP ticks and ADR status.
 - [ ] User decisions (defaults stand unless vetoed): Custom ore is an emerald-ore reskin ("Ruby Ore") until Phase 4; the music disc uses the vanilla `minecraft:records/cat` sound until the user imports their own `.ogg`; examples are mirrored on disk under `examples/`.

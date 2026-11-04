@@ -10,14 +10,14 @@ A desktop mod maker for Minecraft Java Edition that takes you from a simple text
 
 ## Status
 
-- Pre-alpha: the Phase 1 (Resource Pack Studio) and Phase 2 (Data Pack Studio) code is complete and awaits the two in-game checks below. There are no releases yet: the first one waits on the maintainer's publishing steps (see [Releasing](#releasing)). Phase 3 (Structures & Worldgen) is next.
+- Pre-alpha: Phase 1 (Resource Pack Studio), Phase 2 (Data Pack Studio), launcher support (Prism Launcher, CurseForge, MultiMC) and the templates and examples library are done; the in-game checks below are still to be confirmed. Windows installers are published on the [Releases page](https://github.com/MEZTKING/MCSuperMods/releases) and update themselves. Phase 3 (Structures & Worldgen) is next.
 - Installed releases update themselves: the app checks for a new version shortly after start-up and offers "Restart to update" once it has downloaded.
 - Releases will be for Windows only to begin with; Linux builds are made in CI for testing, and macOS builds are not planned for now.
 - Current Minecraft target: **Java 26.3** (with 26.2 as the previous supported release at launch).
 
 ## Try it
 
-There is no published installer yet, so you run the app from source. On Windows you need [Git](https://git-scm.com/), [Node.js](https://nodejs.org/) 24, 25 or 26 (the current LTS from `winget install OpenJS.NodeJS.LTS` works) and Minecraft Java Edition 26.3.
+The easiest way is the Windows installer from the [Releases page](https://github.com/MEZTKING/MCSuperMods/releases) (Windows SmartScreen warns because it is unsigned: More info, then Run anyway); see the [getting started guide](docs/guide/getting-started.md). To run from source instead, on Windows you need [Git](https://git-scm.com/), [Node.js](https://nodejs.org/) 24, 25 or 26 (the current LTS from `winget install OpenJS.NodeJS.LTS` works) and Minecraft Java Edition 26.3.
 
 After installing Node.js, **close every terminal and open a new one** so Node is on your PATH; `node -v` and `npm -v` should both print a version. If they are "not recognized", the terminal predates the install: open a new one, restart Windows, or reload the PATH in the current window with `$env:Path = [Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [Environment]::GetEnvironmentVariable("Path","User")`.
 
@@ -42,6 +42,8 @@ Then:
 
 The sample contains no Mojang files; its two textures are drawn by `fixtures/sample-resourcepack/tools/make-textures.mjs`.
 
+To start a project of your own instead, click the arrow next to **New** on the toolbar and choose **New from starter…** (see [Templates and examples](#templates-and-examples)). The [user guide](docs/guide/README.md) walks through a whole first project, from Settings to Minecraft.
+
 ## Try the data pack
 
 The data pack sample works the same way, with the app running from source as above. It uses vanilla items only, so it needs no resource pack.
@@ -57,6 +59,21 @@ The data pack sample works the same way, with the app running from source as abo
 6. Open `.minecraft/logs/latest.log` (on Windows, `%APPDATA%\.minecraft\logs\latest.log`) and check that it has no `Failed to load`, `Couldn't parse` or other errors mentioning `msm_sample_data`.
 
 More checks (loot table, item modifier, smelting) are listed in `fixtures/sample-datapack/README.md`.
+
+## Templates and examples
+
+MCSuperMods comes with ready-made content, all validated and exported in CI for every supported Minecraft version. The full lists are in [Templates, starters and examples](docs/guide/templates-and-examples.md).
+
+- **Project starters (8).** Click the arrow next to **New** and choose **New from starter…**, or use **File → New Project from Starter…**. Pick a starter, choose **Choose folder and create** and an empty folder; the folder name becomes the namespace. There are a blank project, minimal resource, data and combined packs, and four themed projects: **Custom ore**, **Recipe pack**, **Custom music disc** and **Functions**. **New** on its own still creates a blank project.
+- **Element templates (66).** **Add element** (Ctrl+N) lists a template for every element kind, grouped by category (models, blockstates, recipes, loot tables, advancements, tags, enchantments, dialogs and more) with a filter box.
+- **Examples gallery (34).** **Help → Examples…** shows one commented example for each element kind plus the four themed starters. Search by title, kind, category or tag and read each element's notes. **Open as new project…** creates a new project from an example; **Copy into my project** adds it to the open project in one undoable step, skipping ids that already exist. The notes stay with each element and show above the editor.
+
+Two things to know:
+
+- **Custom ore reskins emerald ore.** A resource or data pack cannot add new blocks or items, so until Phase 4 the Custom ore starter turns emerald ore into "Ruby Ore" and the emerald into "Ruby" in any world with the packs enabled.
+- **No bundled media.** Textures are placeholders that MCSuperMods draws itself. The music disc plays the vanilla `cat` track from your own game and has its own disc model and name, attached to a vanilla disc that the `give_disc` function gives you (`/function <namespace>:give_disc`). Import your own textures and `.ogg` to replace them.
+
+The examples are also in the repository as ordinary projects under [`examples/`](examples/README.md), for browsing on GitHub or opening with **File → Open Project…** (copy the folder elsewhere first).
 
 ## Using Prism Launcher or the CurseForge app
 
@@ -138,6 +155,7 @@ Full plan with checklists: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Documentation
 
+- [User guide](docs/guide/README.md): [getting started](docs/guide/getting-started.md) and [templates, starters and examples](docs/guide/templates-and-examples.md).
 - [docs/DESIGN.md](docs/DESIGN.md): the authoritative design document.
 - [docs/ROADMAP.md](docs/ROADMAP.md): phased delivery plan and milestone log.
 - [docs/DEVLOG.md](docs/DEVLOG.md): session-by-session development log.

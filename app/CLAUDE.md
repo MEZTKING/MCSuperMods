@@ -1,6 +1,6 @@
 # app/ — Electron desktop shell
 
-Phase 2 code complete: Resource Pack Studio plus Data Pack Studio (Recipe Studio, Tag editor, Function editor with live Spyglass problems and completion, command palette, references and F2 rename, data/combined export, world install), animated texture preview and in-app auto-update (ADR 0018). Launcher add-on (ADR 0019): packs install into the selected game location (official folder, Prism/MultiMC/PolyMC or CurseForge instance) and preview assets come from any launcher's jar store. Save is never blocked (ADR 0012); errors block export only.
+Phase 2 code complete: Resource Pack Studio plus Data Pack Studio (Recipe Studio, Tag editor, Function editor with live Spyglass problems and completion, command palette, references and F2 rename, data/combined export, world install), animated texture preview and in-app auto-update (ADR 0018). Launcher add-on (ADR 0019): packs install into the selected game location (official folder, Prism/MultiMC/PolyMC or CurseForge instance) and preview assets come from any launcher's jar store. Library add-on (ADR 0020): New project dialog with starters, Help > Examples gallery (open as new project or copy in one undo step), grouped template picker with filter, read-only Notes callout from `meta.notes`. Save is never blocked (ADR 0012); errors block export only.
 
 ## Purpose
 
@@ -10,8 +10,8 @@ Phase 2 code complete: Resource Pack Studio plus Data Pack Studio (Recipe Studio
 
 - `src/main/` — Node side: `PlatformAdapter` implementation (`platform/`: scoped fs with symlink containment, settings incl. `updates.autoCheck`, `launchers` (manual Prism/MultiMC/CurseForge roots) and `installTarget` (`GameLocationRef` or `null` = official), `locations.ts` resolver (discovery via `@msm/interop`, selected location, `targetMissing` fallback, version-mismatch warnings), Minecraft assets, worlds and pack install into the selected `gameDir`, export folder writes, thumbnails, targets, `mcfunction.ts` broker over `@msm/schemas/mcfunction` with mcdoc symbols, loaded lazily), zod-validated IPC (`ipc.ts`), menu, `updater.ts` (electron-updater behind `AutoUpdaterLike`, lazy chunk), e2e hooks.
 - `src/preload/` — typed IPC bridge; `src/shared/` — IPC contract, channel names (`msm:v1:<domain>:<op>`, incl. `minecraft:listLocations`), `MENU_COMMANDS`, `VENDORED_KEYS`.
-- `src/renderer/src/` — React 19: `session/` (core-hosted project session, mcfunction problems, references), `forms/`, `studios/` (RecipeStudio, TagStudio, FunctionEditor, templates), `components/` (CommandPalette, SettingsDialog "Game locations", Toolbar install target and "Change target" submenu, `install-target.ts`, WorldPickerDialog, RenameElementDialog, UsagesDialog, UpdateBanner, `function-editor/`, `json-editor/`), `commands/`, `preview/` (deepslate, lazy), `store/` (Zustand).
-- `test/` — Vitest (happy-dom); `e2e/` — Playwright specs `smoke`, `golden-path`, `datapack-path`, `launchers-path`; `scripts/` — smoke runners; `electron-builder.yml` — packaging and GitHub publish (draft).
+- `src/renderer/src/` — React 19: `session/` (core-hosted project session: `library` from plugin contributions, `newProject({ starter | bundle })`, `addBundle`; mcfunction problems, references), `forms/`, `studios/` (RecipeStudio, TagStudio, FunctionEditor, `templates.ts`: host logic only, merging plugin templates and the generic `kind:<id>` fallback), `components/` (NewProjectDialog, ExamplesDialog, NewElementDialog, CommandPalette, SettingsDialog "Game locations", Toolbar install target and "Change target" submenu, `install-target.ts`, WorldPickerDialog, RenameElementDialog, UsagesDialog, UpdateBanner, `function-editor/`, `json-editor/`), `commands/`, `preview/` (deepslate, lazy), `store/` (Zustand).
+- `test/` — Vitest (happy-dom); `e2e/` — Playwright specs `smoke`, `golden-path`, `datapack-path`, `launchers-path`, `library-path`; `scripts/` — smoke runners; `electron-builder.yml` — packaging and GitHub publish (draft).
 
 ## Conventions
 
@@ -31,6 +31,7 @@ Phase 2 code complete: Resource Pack Studio plus Data Pack Studio (Recipe Studio
 
 - Do keep Studio views thin over the IR; Raw JSON and Studio edit the same element.
 - Don't import from `packages/plugins/*` internals; go only through the plugin registry.
+- Don't add template, starter or example content here: it belongs in the plugins (ADR 0020).
 - Don't hard-code version facts (recipe categories, ids); read them from the schema.
 - Don't touch Minecraft assets outside the extraction cache (`~/.msm/cache/assets/<version>/`, ADR 0011).
 - Known gaps (ROADMAP Phase 2 follow-ups): go to definition from the Monaco caret, column-level problem navigation, per-pack export gating, F2 in Monaco on Windows.
@@ -45,5 +46,5 @@ Phase 2 code complete: Resource Pack Studio plus Data Pack Studio (Recipe Studio
 ## Read next
 
 - [8. Editors and UX](../docs/DESIGN.md#8-editors-and-ux), [13. Interop](../docs/DESIGN.md#13-interop-blockbench-nbt-minecraft-installation)
-- [14. Tech Stack](../docs/DESIGN.md#14-tech-stack), [ADR 0014](../docs/adr/0014-mcfunction-diagnostics-with-spyglass.md), [ADR 0018](../docs/adr/0018-auto-update.md), [ADR 0019](../docs/adr/0019-game-locations-launcher-instances.md)
+- [14. Tech Stack](../docs/DESIGN.md#14-tech-stack), [ADR 0014](../docs/adr/0014-mcfunction-diagnostics-with-spyglass.md), [ADR 0018](../docs/adr/0018-auto-update.md), [ADR 0019](../docs/adr/0019-game-locations-launcher-instances.md), [ADR 0020](../docs/adr/0020-templates-starters-examples.md)
 - ROADMAP: Phase 2 — Data Pack Studio and its follow-ups (`../docs/ROADMAP.md`)

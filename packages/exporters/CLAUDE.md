@@ -18,9 +18,10 @@ Shared modules in `src/`: `run-export.ts`, `zip.ts`, `sinks.ts`, `assets.ts` (as
 
 ## Conventions
 
-- Exporters consume `OutputFile[]` from the lowering pipeline, never elements directly. Source may not import `@msm/targets`, `@msm/target-*` or any `@msm/plugin-*` but `@msm/plugin-api` (Biome); tests may use `@msm/targets`, `@msm/plugin-resourcepack` and `@msm/plugin-datapack` (ADRs 0013, 0017).
+- Exporters consume `OutputFile[]` from the lowering pipeline, never elements directly. Source may not import `@msm/targets`, `@msm/target-*` or any `@msm/plugin-*` but `@msm/plugin-api` (Biome); tests may use `@msm/targets`, `@msm/plugin-resourcepack`, `@msm/plugin-datapack` and `@msm/plugin-library` (dev dependency only; ADRs 0013, 0017, 0020).
 - Output is deterministic (stable file ordering, fixed zip timestamps) so builds are reproducible and diffable.
 - Every exporter has a golden test on a sample project (`vanilla-packs`: SHA-256 of the `fixtures/sample-resourcepack` and `fixtures/sample-datapack` zips, identical across timezones).
+- `test/library.test.ts` builds every library starter and example per target, reloads, validates and exports both packs with zero problems, and pins the `examples/` mirror (`UPDATE_GOLDENS=1` rewrites it).
 - The validation gate runs before anything is written: `validateJson` for outputs with `schema` (ADR 0009), the injected `validateText` for outputs with `language` (`mcfunction`; ADR 0014). Errors block; warnings pass; no validator gives `export.language-unchecked` info.
 - The data exporter synthesises `pack.mcmeta` from `packFormats.data` when absent; a combined export is two runs into two sinks, not a third exporter.
 - Zips: entries sorted by path, level 6, `os: 0`, timestamp `new Date(2000, 0, 1)` (local-time constructor, ADR 0013).
@@ -37,7 +38,7 @@ Shared modules in `src/`: `run-export.ts`, `zip.ts`, `sinks.ts`, `assets.ts` (as
 
 ## Commands
 
-- `pnpm --filter @msm/exporters test` (includes both sample-project zip SHA-256 goldens)
+- `pnpm --filter @msm/exporters test` (includes both sample-project zip SHA-256 goldens and the library test)
 - `pnpm typecheck` and `pnpm lint` from the repository root
 
 ## Read next

@@ -1,6 +1,6 @@
 # docs/ — design docs, roadmap, devlog, ADRs
 
-Active since Phase 0; Phase 2 code complete, awaiting the in-game checks and first release; templates and samples library add-on in progress before Phase 3 (ADRs 0001–0020; Phase 2 follow-ups and add-ons listed in ROADMAP under Phase 3). This file describes conventions.
+Active since Phase 0; Phase 2 code complete, awaiting the in-game checks; launcher and templates and samples library add-ons done before Phase 3 (ADRs 0001–0020; Phase 2 follow-ups and add-ons listed in ROADMAP under Phase 3); user guide in `guide/`. This file describes conventions.
 
 ## Purpose
 
@@ -12,6 +12,7 @@ Holds the project's design record: the authoritative design, the delivery plan, 
 - `ROADMAP.md`: phased plan with checklists and the milestone log.
 - `DEVLOG.md`: append-only session log, newest entry at the bottom.
 - `adr/NNNN-title.md`: one file per architecture decision, sections Context / Decision / Consequences / Status.
+- `guide/`: the user guide (`README.md` index, `getting-started.md`, `templates-and-examples.md`); task-oriented, matches shipped UI labels.
 
 ## Conventions
 
@@ -28,7 +29,7 @@ Holds the project's design record: the authoritative design, the delivery plan, 
 - Do update DESIGN.md (and ROADMAP.md if scope moves) when an ADR is accepted.
 - Do tick ROADMAP checkboxes and add a Milestone Log row when a phase milestone lands.
 - Don't put version numbers in DESIGN.md without "(verify at implementation)" unless verified.
-- Don't write tutorials or user guides here; they belong in a future `docs/guide/`.
+- Don't put tutorials in DESIGN or ADRs; they belong in `guide/`. Update the guide when a UI label, menu entry or template list changes.
 - Don't edit past DEVLOG entries; correct them in a new entry.
 
 ## Commands

@@ -1,10 +1,10 @@
 # packages/plugins — Built-in plugins
 
-Phase 2 code complete: `@msm/plugin-resourcepack` (model, block definition, item definition, lang, sounds and dual-layer `pack.mcmeta`) and `@msm/plugin-datapack` (plugin id `msm.datapack`: recipe, loot table, advancement, predicate, item modifier, function, eight `minecraft:tag/<registry>` kinds, and ten schema-form kinds such as enchantment and dialog; ADR 0015). Both declare `apiVersion: '^0.3.0'`. The others follow in Phases 3–6.
+Phase 2 code complete: `@msm/plugin-resourcepack` (model, block definition, item definition, lang, sounds and dual-layer `pack.mcmeta`) and `@msm/plugin-datapack` (plugin id `msm.datapack`: recipe, loot table, advancement, predicate, item modifier, function, eight `minecraft:tag/<registry>` kinds, and ten schema-form kinds such as enchantment and dialog; ADR 0015), each with its element templates (14 and 52), and `@msm/plugin-library` (plugin id `msm.library`: 8 project starters, 34 examples, placeholder PNGs; no kinds; ADR 0020). All declare `apiVersion: '^0.4.0'`. The others follow in Phases 3–6.
 
 ## Purpose
 
-Built-in plugins contribute element kinds, lowering and commands (editors and Studio views live in the app). Each subfolder is its own npm package `@msm/plugin-<name>` and uses exactly the same public API as a third-party plugin.
+Built-in plugins contribute element kinds, lowering, commands and library content (templates, starters, examples); editors, Studio views and the pickers live in the app. Each subfolder is its own npm package `@msm/plugin-<name>` and uses exactly the same public API as a third-party plugin.
 
 ## Contents
 
@@ -12,6 +12,7 @@ Built-in plugins contribute element kinds, lowering and commands (editors and St
 |---|---|---|
 | `resourcepack/` | `@msm/plugin-resourcepack` | 1 |
 | `datapack/` | `@msm/plugin-datapack` | 2 |
+| `library/` | `@msm/plugin-library` | 2 add-on |
 | `structures/` | `@msm/plugin-structures` | 3 |
 | `worldgen/` | `@msm/plugin-worldgen` | 3 |
 | `blocks-items/` | `@msm/plugin-blocks-items` | 4 |
@@ -19,7 +20,7 @@ Built-in plugins contribute element kinds, lowering and commands (editors and St
 | `models-anim/` | `@msm/plugin-models-anim` | 5 |
 | `scripting/` | `@msm/plugin-scripting` | 6 |
 
-Layout per plugin (from `tools/new-plugin`): `src/index.ts` (`definePlugin`, `apiVersion: '^0.3.0'`), `src/kinds/`, `src/lowering/`, `test/plugin.test.ts`, goldens under `test/fixtures/<target id>/expected/<kind folder>/`.
+Layout per plugin (from `tools/new-plugin`): `src/index.ts` (`definePlugin`, `apiVersion: '^0.4.0'`), `src/kinds/`, `src/lowering/`, `src/templates/` (one module per category), `test/plugin.test.ts`, goldens under `test/fixtures/<target id>/expected/<kind folder>/`.
 
 ## Conventions
 
@@ -28,7 +29,7 @@ Layout per plugin (from `tools/new-plugin`): `src/index.ts` (`definePlugin`, `ap
 - Vanilla kinds get no custom editor unless a Studio view is justified; the mcdoc-driven form is the default.
 - Lowering functions are pure (`lower(element, target) -> OutputFile[]`), take folder names from `target.folders.resource` or `target.folders.data` (datapack: `lowering/paths.ts`, `lowerJsonData`), and are golden-tested per target.
 - Functions are stored as `{ lines }` (schema `msm:function`) and lower to `.mcfunction` with `language: 'mcfunction'` and no `schema`; tag kinds use schema `tag:<registry>` and folder `tags/<registry>`.
-- New-element templates live in the app (`studios/templates.ts`), in the current target's JSON shapes.
+- Templates live in the plugin that owns the kind (`src/templates/`, `contributes.elementTemplates`), use only vanilla ids, ids derived from their own id or `<projectNamespace>:root`, and are validated per target in `test/templates.test.ts`. Starters and examples live in `library/` (self-contained bundles, PNGs only from `src/assets/png.ts`); their cross-plugin test is `packages/exporters/test/library.test.ts`, which also pins the `examples/` mirror.
 - Create a new plugin with `tools/new-plugin`, never by hand.
 
 ## Do / Don't

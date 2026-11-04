@@ -1,21 +1,22 @@
 # MCSuperMods
 
-MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 2 code complete plus launcher support add-on (Prism, CurseForge, MultiMC; ADR 0019); awaiting in-game checks and first release; Phase 3 (Structures & Worldgen) next. Releases: Windows only (MIT; README "Releasing"). Toolchain: Node 24, pnpm 12.
+MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 2 code complete plus two add-ons: launcher support (Prism, CurseForge, MultiMC; ADR 0019) and the templates and samples library (66 templates, 8 starters, 34 examples; plugin-api 0.4.0; ADR 0020); awaiting in-game checks; Phase 3 (Structures & Worldgen) next. Releases: Windows only (MIT; README "Releasing"). Toolchain: Node 24, pnpm 12.
 
 ## Directory map
 
-- `docs/` — DESIGN.md (authoritative), ROADMAP.md, DEVLOG.md, `adr/`
+- `docs/` — DESIGN.md (authoritative), ROADMAP.md, DEVLOG.md, `adr/`, `guide/` (user guide)
 - `app/` — `@msm/app`, Electron shell (`main/`, `preload/`, `renderer/`)
 - `packages/core/` — `@msm/core`, IR, project load/save, command stack, lowering driver
 - `packages/schemas/` — `@msm/schemas`, mcdoc adapter, `validateJson`; `@msm/schemas/mcfunction` (offline Spyglass)
 - `packages/plugin-api/` — `@msm/plugin-api`, public interfaces only
-- `packages/plugins/` — `@msm/plugin-<name>`, eight planned built-ins (`resourcepack`, `datapack` exist)
+- `packages/plugins/` — `@msm/plugin-<name>`: `resourcepack`, `datapack` (kinds and their templates), `library` (starters, examples); six more planned
 - `packages/exporters/` — `@msm/exporters`, vanilla-packs (resource, data, combined); later content jar, java-project
 - `packages/targets/` — `@msm/target-*`, one folder per MC version (`mc-26.3/`), plus the `@msm/targets` aggregator (`all/`)
 - `packages/interop/` — `@msm/interop`, Blockbench, NBT/schem, Minecraft installation and launcher instances
 - `engine-mod/` — `msm_runtime` Fabric mod (Gradle, Java 25)
 - `tools/` — dev scripts: check-deps, check-size, sync-mcdoc, sync-mcmeta, new-plugin
 - `fixtures/sample-resourcepack/`, `fixtures/sample-datapack/` — sample projects for the in-game checks
+- `examples/` — generated mirror of the library's starters and examples (golden; `UPDATE_GOLDENS=1`)
 - `.claude/agents/` — `orchestrator.md`, `executor.md`
 
 ## Scoped guides
