@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist-types",
+    "types": ["node"],
+    "allowImportingTsExtensions": true
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist-types"],
+  "references": [
+    { "path": "../packages/plugin-api" },
+    { "path": "../packages/schemas" },
+    { "path": "../packages/core" },
+    { "path": "../packages/targets/mc-26.3" }
+  ]
+}

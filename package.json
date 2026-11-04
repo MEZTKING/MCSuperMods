@@ -1,0 +1,26 @@
+{
+  "name": "mcsupermods",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22.18.0 <27"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @msm/app dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "biome ci . && node tools/check-deps/index.ts",
+    "lint:fix": "biome check --write .",
+    "typecheck": "tsc -b --pretty false",
+    "clean": "git clean -fdX -e '!node_modules' -e '!node_modules/**'"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@types/node": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}

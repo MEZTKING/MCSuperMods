@@ -1,0 +1,11 @@
+{
+  "@msm/app": ["*"],
+  "@msm/core": ["@msm/plugin-api", "@msm/schemas"],
+  "@msm/exporters": ["@msm/plugin-api", "@msm/schemas", "@msm/core"],
+  "@msm/interop": ["@msm/plugin-api", "@msm/schemas", "@msm/core"],
+  "@msm/plugin-*": ["@msm/plugin-api", "@msm/schemas"],
+  "@msm/plugin-api": [],
+  "@msm/schemas": ["@msm/plugin-api"],
+  "@msm/target-*": ["@msm/plugin-api", "@msm/schemas", "@msm/core"],
+  "@msm/tools": ["*"]
+}
