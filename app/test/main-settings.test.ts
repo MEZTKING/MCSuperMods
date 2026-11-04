@@ -24,6 +24,8 @@ describe('resolveMsmHome', () => {
   });
 });
 
+const noLaunchers = { prismDataDirs: [], multimcRoots: [], curseForgeRoots: [] };
+
 describe('settings store', () => {
   const store = () =>
     createSettingsStore({
@@ -35,9 +37,13 @@ describe('settings store', () => {
     expect(await store().get()).toEqual({
       minecraftDir: null,
       updates: { autoCheck: true },
+      launchers: noLaunchers,
+      installTarget: null,
       detectedMinecraftDir: null,
     });
     expect(await store().minecraftDir()).toBeNull();
+    expect(await store().installTarget()).toBeNull();
+    expect(await store().launcherSettings()).toEqual(noLaunchers);
     expect(await store().autoCheckUpdates()).toBe(true);
   });
 
@@ -47,6 +53,8 @@ describe('settings store', () => {
     expect(await store().get()).toEqual({
       minecraftDir: null,
       updates: { autoCheck: true },
+      launchers: noLaunchers,
+      installTarget: null,
       detectedMinecraftDir: detected,
     });
     expect(await store().minecraftDir()).toBe(detected);
@@ -97,5 +105,123 @@ describe('settings store', () => {
     expect((await store().get()).minecraftDir).toBeNull();
     await writeFile(join(temp, 'msm', 'settings.json'), '{"minecraftDir":"relative"}');
     expect((await store().get()).minecraftDir).toBeNull();
+  });
+
+  it('round-trips launcher folders and the install target as sorted JSON', async () => {
+    const prism = join(temp, 'prism');
+    const cf = join(temp, 'cf', 'minecraft');
+    const target = { launcher: 'prism' as const, root: prism, instance: 'My Pack' };
+    await store().set({
+      launchers: { prismDataDirs: [prism], multimcRoots: [], curseForgeRoots: [cf] },
+      installTarget: target,
+    });
+    expect(await store().launcherSettings()).toEqual({
+      prismDataDirs: [prism],
+      multimcRoots: [],
+      curseForgeRoots: [cf],
+    });
+    expect(await store().installTarget()).toEqual(target);
+    const view = await store().get();
+    expect(view.installTarget).toEqual(target);
+    expect(view.launchers?.curseForgeRoots).toEqual([cf]);
+    expect(await readFile(join(temp, 'msm', 'settings.json'), 'utf8')).toBe(
+      `${JSON.stringify(
+        {
+          installTarget: { instance: 'My Pack', launcher: 'prism', root: prism },
+          launchers: { curseForgeRoots: [cf], multimcRoots: [], prismDataDirs: [prism] },
+          minecraftDir: null,
+          updates: { autoCheck: true },
+        },
+        null,
+        2,
+      )}\n`,
+    );
+  });
+
+  it('keeps other fields on partial updates and clears the target with null', async () => {
+    const chosen = join(temp, 'games', 'mc');
+    const prism = join(temp, 'prism');
+    const official = { launcher: 'official' as const, root: chosen };
+    await store().set({ minecraftDir: chosen, updates: { autoCheck: false } });
+    await store().set({ installTarget: official });
+    await store().set({
+      launchers: { prismDataDirs: [prism], multimcRoots: [], curseForgeRoots: [] },
+    });
+    const view = await store().get();
+    expect(view.minecraftDir).toBe(chosen);
+    expect(view.updates.autoCheck).toBe(false);
+    expect(view.installTarget).toEqual(official);
+    expect(view.launchers?.prismDataDirs).toEqual([prism]);
+    await store().set({ minecraftDir: null });
+    expect(await store().installTarget()).toEqual(official);
+    await store().set({ installTarget: null });
+    expect(await store().installTarget()).toBeNull();
+    expect((await store().launcherSettings()).prismDataDirs).toEqual([prism]);
+    // Back to defaults: the file looks exactly as it did before launcher support.
+    await store().set({
+      launchers: { prismDataDirs: [], multimcRoots: [], curseForgeRoots: [] },
+    });
+    expect(await readFile(join(temp, 'msm', 'settings.json'), 'utf8')).toBe(
+      '{\n  "minecraftDir": null,\n  "updates": {\n    "autoCheck": false\n  }\n}\n',
+    );
+  });
+
+  it('normalises, deduplicates and caps launcher folders', async () => {
+    const prism = join(temp, 'prism');
+    const many = Array.from({ length: 20 }, (_, i) => join(temp, 'mmc', String(i)));
+    await store().set({
+      launchers: {
+        prismDataDirs: [prism, `${prism}/`, join(temp, 'x', '..', 'prism')],
+        multimcRoots: many,
+        curseForgeRoots: [],
+      },
+    });
+    const launchers = await store().launcherSettings();
+    expect(launchers.prismDataDirs).toEqual([prism]);
+    expect(launchers.multimcRoots).toEqual(many.slice(0, 16));
+  });
+
+  it('rejects relative launcher folders and invalid install targets', async () => {
+    const lists = { prismDataDirs: [], multimcRoots: [], curseForgeRoots: [] };
+    await expect(
+      store().set({ launchers: { ...lists, curseForgeRoots: ['curseforge/minecraft'] } }),
+    ).rejects.toThrow(/absolute/);
+    await expect(
+      store().set({ installTarget: { launcher: 'prism', root: 'relative', instance: 'a' } }),
+    ).rejects.toThrow(/install target/);
+    await expect(
+      store().set({ installTarget: { launcher: 'prism', root: join(temp, 'p'), instance: '..' } }),
+    ).rejects.toThrow(/install target/);
+    await expect(
+      store().set({
+        installTarget: { launcher: 'official', root: join(temp, 'm'), instance: 'a' },
+      }),
+    ).rejects.toThrow(/install target/);
+    expect(await store().installTarget()).toBeNull();
+  });
+
+  it('falls back to defaults for malformed launcher fields', async () => {
+    await mkdir(join(temp, 'msm'), { recursive: true });
+    const file = join(temp, 'msm', 'settings.json');
+    const prism = join(temp, 'prism');
+    await writeFile(file, JSON.stringify({ launchers: 'everywhere', installTarget: 'prism' }));
+    expect(await store().launcherSettings()).toEqual(noLaunchers);
+    expect(await store().installTarget()).toBeNull();
+    await writeFile(
+      file,
+      JSON.stringify({
+        launchers: { prismDataDirs: [prism, 'relative', 7, null], multimcRoots: 'x' },
+        installTarget: { launcher: 'prism', root: prism, instance: '../escape' },
+      }),
+    );
+    expect(await store().launcherSettings()).toEqual({ ...noLaunchers, prismDataDirs: [prism] });
+    expect(await store().installTarget()).toBeNull();
+    await writeFile(
+      file,
+      JSON.stringify({ installTarget: { launcher: 'prism', root: prism, instance: 'A', x: 1 } }),
+    );
+    expect(await store().installTarget()).toBeNull();
+    await writeFile(file, JSON.stringify({ installTarget: { launcher: 'official', root: 'rel' } }));
+    expect(await store().installTarget()).toBeNull();
   });
 });

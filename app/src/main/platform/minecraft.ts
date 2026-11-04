@@ -24,7 +24,7 @@ import {
 import { sha1Hex } from '@msm/interop/node';
 import { assertProjectRelativePath, isProjectRelativePath } from '@msm/plugin-api';
 import type { MinecraftProgress } from '../../shared/ipc-channels';
-import type { MinecraftStatus, WorldInfo } from '../../shared/platform';
+import type { GameLocationList, MinecraftStatus, WorldInfo } from '../../shared/platform';
 
 /** Resource pack file names accepted by {@link MinecraftService.installResourcePack}. */
 export const RESOURCE_PACK_FILE_NAME = /^[A-Za-z0-9._ -]+\.zip$/;
@@ -55,6 +55,8 @@ function isInside(parent: string, child: string): boolean {
 /** The main-process Minecraft service. */
 export interface MinecraftService {
   status(mcVersion: string): Promise<MinecraftStatus>;
+  /** Discovered game locations and the selected one (ADR 0019). */
+  listLocations(mcVersion: string): Promise<GameLocationList>;
   /**
    * Extracts preview assets for `mcVersion` unless the cache already holds this jar's
    * assets (same installed version and SHA-1). Concurrent calls for one version share work.
@@ -209,6 +211,11 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
         chosen: chosen === undefined ? null : { id: chosen.id },
         cache: cache?.info ?? null,
       };
+    },
+
+    // Placeholder until location discovery is wired in main (brief B54).
+    async listLocations() {
+      throw new Error('Listing game locations is not available yet.');
     },
 
     extract(mcVersion, onProgress = () => {}) {

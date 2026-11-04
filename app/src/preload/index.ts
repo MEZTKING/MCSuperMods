@@ -40,10 +40,35 @@ const bridge: MsmBridge = {
         ...(settings.updates === undefined
           ? {}
           : { updates: { autoCheck: settings.updates.autoCheck } }),
+        ...(settings.launchers === undefined
+          ? {}
+          : {
+              launchers: {
+                prismDataDirs: [...settings.launchers.prismDataDirs],
+                multimcRoots: [...settings.launchers.multimcRoots],
+                curseForgeRoots: [...settings.launchers.curseForgeRoots],
+              },
+            }),
+        ...(settings.installTarget === undefined
+          ? {}
+          : {
+              installTarget:
+                settings.installTarget === null
+                  ? null
+                  : {
+                      launcher: settings.installTarget.launcher,
+                      root: settings.installTarget.root,
+                      ...(settings.installTarget.instance === undefined
+                        ? {}
+                        : { instance: settings.installTarget.instance }),
+                    },
+            }),
       }),
   },
   minecraft: {
     status: (mcVersion) => ipcRenderer.invoke(InvokeChannels.minecraftStatus, { mcVersion }),
+    listLocations: (mcVersion) =>
+      ipcRenderer.invoke(InvokeChannels.minecraftListLocations, { mcVersion }),
     extract: (mcVersion) => ipcRenderer.invoke(InvokeChannels.minecraftExtract, { mcVersion }),
     readAsset: (mcVersion, path) =>
       ipcRenderer.invoke(InvokeChannels.minecraftReadAsset, { mcVersion, path }),

@@ -30,6 +30,7 @@ export const InvokeChannels = {
   settingsGet: 'msm:v1:settings:get',
   settingsSet: 'msm:v1:settings:set',
   minecraftStatus: 'msm:v1:minecraft:status',
+  minecraftListLocations: 'msm:v1:minecraft:listLocations',
   minecraftExtract: 'msm:v1:minecraft:extract',
   minecraftReadAsset: 'msm:v1:minecraft:readAsset',
   minecraftListAssets: 'msm:v1:minecraft:listAssets',

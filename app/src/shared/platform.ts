@@ -35,17 +35,99 @@ export interface UpdateSettings {
   autoCheck: boolean;
 }
 
+/** The launchers MSM knows how to read (ADR 0019). */
+export type LauncherKind = 'official' | 'prism' | 'multimc' | 'curseforge';
+
+/** Mod loaders recognised in launcher instances (ADR 0019). */
+export type LoaderKind = 'fabric' | 'quilt' | 'forge' | 'neoforge' | 'liteloader' | 'unknown';
+
+/**
+ * Mirrors `GameLocationRef` in `@msm/interop`: the serialisable identity of a game location,
+ * stored in settings as the install target.
+ */
+export interface GameLocationRef {
+  launcher: LauncherKind;
+  /**
+   * Launcher root: the `.minecraft` folder (official), the Prism/MultiMC data folder, or the
+   * CurseForge modding folder. Absolute.
+   */
+  root: string;
+  /** Instance folder name under the launcher's instances folder; absent for `official`. */
+  instance?: string | undefined;
+}
+
+/** Mirrors `GameLocationProblem` in `@msm/interop`: a problem found reading a location. */
+export interface GameLocationProblemView {
+  code:
+    | 'location.no-minecraft-component'
+    | 'location.unreadable-metadata'
+    | 'location.game-dir-missing'
+    | 'location.unsupported-instance-type';
+  message: string;
+}
+
+/** A warning about a location for the open project, such as `location.version-mismatch`. */
+export interface GameLocationWarningView {
+  code: string;
+  message: string;
+}
+
+/**
+ * Mirrors `GameLocation` in `@msm/interop` as plain JSON, plus the warnings main computed
+ * against the project's Minecraft version.
+ */
+export interface GameLocationView {
+  ref: GameLocationRef;
+  /** DOM-safe id: `<launcher>:<instance|default>`, suffixed `-2`, `-3` on collision. */
+  id: string;
+  /** "Official launcher", or the instance's name, falling back to its folder name. */
+  displayName: string;
+  /** The instance's Minecraft version; `null` for the official launcher or when unknown. */
+  mcVersion: string | null;
+  loader: { kind: LoaderKind; version: string | null } | null;
+  /** Where `resourcepacks/` and `saves/` live. Absolute. */
+  gameDir: string;
+  /** `<gameDir>/mods` for instances with a loader (Phase 4), otherwise `null`. */
+  modsDir: string | null;
+  problems: GameLocationProblemView[];
+  warnings: GameLocationWarningView[];
+}
+
+/** Launcher folders the user added by hand in Settings (absolute, deduplicated, at most 16 each). */
+export interface LauncherSettings {
+  /** Prism Launcher data folders. */
+  prismDataDirs: string[];
+  /** MultiMC and PolyMC root folders. */
+  multimcRoots: string[];
+  /** CurseForge app modding folders (`.../curseforge/minecraft`). */
+  curseForgeRoots: string[];
+}
+
 /** Application settings, persisted in `<msmHome>/settings.json`. */
 export interface AppSettings {
   /** The user's chosen Minecraft game directory, or `null` to use the detected one. */
   minecraftDir: string | null;
   updates: UpdateSettings;
+  /**
+   * Manually added launcher folders. Main always fills it in (empty lists by default); optional
+   * so that callers written before launcher support still compile.
+   */
+  launchers?: LauncherSettings;
+  /**
+   * The chosen install target; `null` means the official launcher (setting or detected). Main
+   * always fills it in; optional for the same reason as {@link launchers}.
+   */
+  installTarget?: GameLocationRef | null;
 }
 
 /** A partial settings update: fields left out keep their stored value. */
 export interface AppSettingsPatch {
   minecraftDir?: string | null | undefined;
   updates?: UpdateSettings | undefined;
+  /** Replaces all three lists of manually added launcher folders. */
+  launchers?: LauncherSettings | undefined;
+  /** The new install target; `null` clears it (back to the official launcher). */
+  installTarget?: GameLocationRef | null | undefined;
 }
 
 /** {@link AppSettings} plus what main detected. */
@@ -67,12 +149,32 @@ export interface AssetCacheInfoView {
 export interface MinecraftStatus {
   /** The game directory in use (setting, else detected default), or `null` when none exists. */
   minecraftDir: string | null;
-  /** Installed versions with a client jar. */
+  /** Installed versions with a client jar in the selected location's launcher store. */
   installed: { id: string }[];
-  /** The installed version whose jar serves `mcVersion`, if any. */
+  /** The version in the selected location's store whose jar serves `mcVersion`, if any. */
   chosen: { id: string } | null;
   /** The extracted-asset cache for `mcVersion`, if complete. */
   cache: AssetCacheInfoView | null;
+  /*
+   * Launcher fields (ADR 0019). Main always sets them; they are optional so that status values
+   * written before launcher support still type-check. Read a missing field as `null`, `false`
+   * or `[]`.
+   */
+  /** The selected install target, or `null` when no location exists. */
+  target?: GameLocationView | null;
+  /** `true` when the stored install target was not found and main fell back to the official one. */
+  targetMissing?: boolean;
+  /** The client jar that serves `mcVersion` and the launcher whose store holds it, if any. */
+  jar?: { versionId: string; launcher: LauncherKind } | null;
+  /** Warnings for the selected target, such as `location.version-mismatch`; never blocking. */
+  warnings?: GameLocationWarningView[];
+}
+
+/** Game locations main discovered, with the selected one. */
+export interface GameLocationList {
+  locations: GameLocationView[];
+  /** The id of the selected location, or `null` when there is none. */
+  selected: string | null;
 }
 
 /** A world folder under `<minecraftDir>/saves/` that contains `level.dat`. */
@@ -122,17 +224,22 @@ export interface PlatformAdapter {
   };
   minecraft: {
     status(mcVersion: string): Promise<MinecraftStatus>;
+    /**
+     * Lists every game location found (official launcher, Prism, MultiMC, CurseForge), with
+     * warnings computed against `mcVersion` (ADR 0019).
+     */
+    listLocations(mcVersion: string): Promise<GameLocationList>;
     /** Extracts preview assets from the client jar into the cache (ADR 0011). */
     extract(mcVersion: string): Promise<AssetCacheInfoView>;
     /** Reads a cached vanilla asset by jar path, or `null` when it is not cached. */
     readAsset(mcVersion: string, path: string): Promise<Uint8Array | null>;
     /** Lists cached jar paths starting with `prefix`, sorted. */
     listAssets(mcVersion: string, prefix: string): Promise<string[]>;
-    /** Writes a resource pack zip into `<minecraftDir>/resourcepacks/`. */
+    /** Writes a resource pack zip into `<gameDir>/resourcepacks/` of the selected location. */
     installResourcePack(fileName: string, data: Uint8Array): Promise<{ path: string }>;
-    /** Lists worlds in `<minecraftDir>/saves/`, most recently played first. */
+    /** Lists worlds in `<gameDir>/saves/` of the selected location, most recently played first. */
     listWorlds(): Promise<WorldInfo[]>;
-    /** Writes a data pack zip into `<minecraftDir>/saves/<worldDir>/datapacks/`. */
+    /** Writes a data pack zip into `<gameDir>/saves/<worldDir>/datapacks/` of the selected location. */
     installDataPack(
       worldDir: string,
       fileName: string,

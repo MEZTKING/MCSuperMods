@@ -121,6 +121,7 @@ async function renderApp(): Promise<Harness> {
         chosen: null,
         cache: null,
       }),
+      listLocations: unavailable,
       extract: unavailable,
       readAsset: unavailable,
       listAssets: unavailable,

@@ -28,6 +28,7 @@ export function stubPlatformServices(): Pick<
     settings: { get: unavailable, set: unavailable },
     minecraft: {
       status: unavailable,
+      listLocations: unavailable,
       extract: unavailable,
       readAsset: unavailable,
       listAssets: unavailable,

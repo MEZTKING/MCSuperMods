@@ -66,6 +66,8 @@ export function createIpcHandlers(platform: MainPlatform, updates: IpcUpdates): 
     [InvokeChannels.settingsGet]: () => platform.settings.get(),
     [InvokeChannels.settingsSet]: (req) => platform.settings.set(req),
     [InvokeChannels.minecraftStatus]: (req) => platform.minecraft.status(req.mcVersion),
+    [InvokeChannels.minecraftListLocations]: (req) =>
+      platform.minecraft.listLocations(req.mcVersion),
     [InvokeChannels.minecraftExtract]: (req, context) =>
       platform.minecraft.extract(req.mcVersion, context.sendProgress),
     [InvokeChannels.minecraftReadAsset]: (req) =>

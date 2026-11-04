@@ -13,6 +13,44 @@ import {
 
 const bytes = new Uint8Array([1, 2, 3]);
 
+const prismRef = {
+  launcher: 'prism',
+  root: '/home/a/.local/share/PrismLauncher',
+  instance: 'My Pack',
+};
+const prismLocation = {
+  ref: prismRef,
+  id: 'prism:My_Pack',
+  displayName: 'My Pack',
+  mcVersion: '1.0-test',
+  loader: { kind: 'fabric', version: '0.1' },
+  gameDir: '/home/a/.local/share/PrismLauncher/instances/My Pack/minecraft',
+  modsDir: '/home/a/.local/share/PrismLauncher/instances/My Pack/minecraft/mods',
+  problems: [],
+  warnings: [
+    {
+      code: 'location.version-mismatch',
+      message: 'This instance runs Minecraft 1.0-test; the project targets 2.0-test.',
+    },
+  ],
+};
+const officialLocation = {
+  ref: { launcher: 'official', root: 'C:\\Users\\a\\AppData\\Roaming\\.minecraft' },
+  id: 'official:default',
+  displayName: 'Official launcher',
+  mcVersion: null,
+  loader: null,
+  gameDir: 'C:\\Users\\a\\AppData\\Roaming\\.minecraft',
+  modsDir: null,
+  problems: [{ code: 'location.game-dir-missing', message: 'Start the game once.' }],
+  warnings: [],
+};
+const launchers = {
+  prismDataDirs: ['/home/a/.local/share/PrismLauncher'],
+  multimcRoots: [],
+  curseForgeRoots: ['C:\\Users\\a\\curseforge\\minecraft'],
+};
+
 /** One valid and one invalid request and response per channel. */
 const samples: Record<
   InvokeChannel,
@@ -107,20 +145,41 @@ const samples: Record<
       {
         minecraftDir: null,
         updates: { autoCheck: true },
+        launchers,
+        installTarget: prismRef,
         detectedMinecraftDir: '/home/a/.minecraft',
       },
       { minecraftDir: null, detectedMinecraftDir: null },
     ],
   },
   [InvokeChannels.settingsSet]: {
-    request: [{ minecraftDir: '/games/minecraft' }, { minecraftDir: 3 }],
+    request: [
+      { minecraftDir: '/games/minecraft', launchers, installTarget: prismRef },
+      { minecraftDir: 3 },
+    ],
     response: [undefined, false],
   },
   [InvokeChannels.minecraftStatus]: {
     request: [{ mcVersion: '1.0-test' }, { mcVersion: '../x' }],
     response: [
-      { minecraftDir: null, installed: [], chosen: null, cache: null },
+      {
+        minecraftDir: null,
+        installed: [{ id: '1.0-test' }],
+        chosen: { id: '1.0-test' },
+        cache: null,
+        target: prismLocation,
+        targetMissing: false,
+        jar: { versionId: '1.0-test', launcher: 'prism' },
+        warnings: prismLocation.warnings,
+      },
       { minecraftDir: null, installed: [], chosen: null },
+    ],
+  },
+  [InvokeChannels.minecraftListLocations]: {
+    request: [{ mcVersion: '1.0-test' }, { mcVersion: '1.0-test', root: '/x' }],
+    response: [
+      { locations: [officialLocation, prismLocation], selected: 'prism:My_Pack' },
+      { locations: [{ ...prismLocation, extra: true }], selected: null },
     ],
   },
   [InvokeChannels.minecraftExtract]: {
@@ -308,6 +367,61 @@ describe('IPC contract', () => {
     expect(request.safeParse({ updates: { autoCheck: true, channel: 'beta' } }).success).toBe(
       false,
     );
+  });
+
+  it('validates launcher settings and install targets', () => {
+    const { request } = ipcContract[InvokeChannels.settingsSet];
+    const ok = (patch: unknown) => request.safeParse(patch).success;
+    expect(ok({ installTarget: null })).toBe(true);
+    expect(ok({ installTarget: { launcher: 'official', root: '/home/a/.minecraft' } })).toBe(true);
+    expect(
+      ok({ installTarget: { launcher: 'curseforge', root: 'D:/cf/minecraft', instance: 'A' } }),
+    ).toBe(true);
+    expect(
+      ok({ installTarget: { launcher: 'prism', root: '\\\\server\\prism', instance: 'x' } }),
+    ).toBe(true);
+    // Strict objects, absolute roots, safe instance folders.
+    expect(ok({ installTarget: { ...prismRef, extra: 1 } })).toBe(false);
+    expect(ok({ installTarget: { ...prismRef, root: 'relative/prism' } })).toBe(false);
+    expect(ok({ installTarget: { ...prismRef, root: '' } })).toBe(false);
+    for (const instance of ['..', '.', 'a/b', 'a\\b', 'C:x', '']) {
+      expect(ok({ installTarget: { ...prismRef, instance } })).toBe(false);
+    }
+    expect(ok({ installTarget: { ...prismRef, launcher: 'tlauncher' } })).toBe(false);
+    // The official launcher has no instance; launcher instances need one.
+    expect(ok({ installTarget: { launcher: 'official', root: '/m', instance: 'x' } })).toBe(false);
+    expect(ok({ installTarget: { launcher: 'prism', root: '/p' } })).toBe(false);
+    // Launcher lists: all three keys, absolute paths, at most 16 each.
+    const roots = (n: number) => Array.from({ length: n }, (_, i) => `/roots/${i}`);
+    expect(ok({ launchers: { ...launchers, multimcRoots: roots(16) } })).toBe(true);
+    expect(ok({ launchers: { ...launchers, multimcRoots: roots(17) } })).toBe(false);
+    expect(ok({ launchers: { ...launchers, prismDataDirs: ['PrismLauncher'] } })).toBe(false);
+    expect(ok({ launchers: { prismDataDirs: [], multimcRoots: [] } })).toBe(false);
+    expect(ok({ launchers: { ...launchers, polymcRoots: [] } })).toBe(false);
+  });
+
+  it('validates game location views and launcher status fields', () => {
+    const { response } = ipcContract[InvokeChannels.minecraftListLocations];
+    const ok = (location: unknown) =>
+      response.safeParse({ locations: [location], selected: null }).success;
+    expect(ok(prismLocation)).toBe(true);
+    expect(ok({ ...prismLocation, id: 'prism:My Pack' })).toBe(false);
+    expect(ok({ ...prismLocation, loader: { kind: 'rift', version: null } })).toBe(false);
+    expect(ok({ ...prismLocation, problems: [{ code: 'location.on-fire', message: '' }] })).toBe(
+      false,
+    );
+    expect(ok({ ...prismLocation, ref: { ...prismRef, instance: '..' } })).toBe(false);
+    const { response: status } = ipcContract[InvokeChannels.minecraftStatus];
+    const base = { minecraftDir: null, installed: [], chosen: null, cache: null };
+    expect(status.safeParse(base).success).toBe(true);
+    expect(
+      status.safeParse({ ...base, target: null, targetMissing: true, jar: null, warnings: [] })
+        .success,
+    ).toBe(true);
+    expect(
+      status.safeParse({ ...base, jar: { versionId: '1.0', launcher: 'steam' } }).success,
+    ).toBe(false);
+    expect(status.safeParse({ ...base, targetMissing: 'yes' }).success).toBe(false);
   });
 
   it('validates update status payloads', () => {

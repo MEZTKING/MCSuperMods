@@ -137,6 +137,89 @@ const worldInfo = z
   .strict();
 
 const updateSettings = z.object({ autoCheck: z.boolean() }).strict();
+
+/** The most manually added folders per launcher list in settings. */
+export const LAUNCHER_ROOTS_MAX = 16;
+/** The launchers MSM reads (ADR 0019); mirrors `LauncherKind`. */
+export const LAUNCHER_KINDS = ['official', 'prism', 'multimc', 'curseforge'] as const;
+/** Mod loaders recognised in instances; mirrors `LoaderKind`. */
+export const LOADER_KINDS = [
+  'fabric',
+  'quilt',
+  'forge',
+  'neoforge',
+  'liteloader',
+  'unknown',
+] as const;
+/** Problem codes a game location may carry; mirrors `GameLocationProblemView['code']`. */
+export const GAME_LOCATION_PROBLEM_CODES = [
+  'location.no-minecraft-component',
+  'location.unreadable-metadata',
+  'location.game-dir-missing',
+  'location.unsupported-instance-type',
+] as const;
+/** An absolute path on any host: POSIX `/...`, Windows `C:\...` or `C:/...`, or UNC `\\server\...`. */
+const ABSOLUTE_PATH = /^(?:\/|[A-Za-z]:[\\/]|\\\\)/;
+/** An absolute path that main will store (settings); main also checks it with `node:path`. */
+const absoluteHostPath = absolutePath
+  .regex(ABSOLUTE_PATH, { message: 'Expected an absolute path' })
+  .refine((value) => !value.includes('\0'), { message: 'Not a path' });
+/** An instance folder name: one path segment, not `.` or `..`. */
+const instanceFolder = z
+  .string()
+  .min(1)
+  .max(255)
+  .regex(/^[^/\\\0:]+$/)
+  .refine((value) => value !== '.' && value !== '..', { message: 'Not a folder name' });
+/**
+ * {@link GameLocationRef} as a schema: `instance` is required for launcher instances and
+ * absent for the official launcher.
+ */
+export const gameLocationRefSchema = z
+  .object({
+    launcher: z.enum(LAUNCHER_KINDS),
+    root: absoluteHostPath,
+    instance: instanceFolder.optional(),
+  })
+  .strict()
+  .refine((ref) => (ref.launcher === 'official') === (ref.instance === undefined), {
+    message: 'Only launcher instances name an instance folder',
+  });
+const launcherRoots = z.array(absoluteHostPath).max(LAUNCHER_ROOTS_MAX);
+/** {@link LauncherSettings} as a schema. */
+export const launcherSettingsSchema = z
+  .object({
+    prismDataDirs: launcherRoots,
+    multimcRoots: launcherRoots,
+    curseForgeRoots: launcherRoots,
+  })
+  .strict();
+const locationWarning = z
+  .object({ code: z.string().min(1).max(128), message: z.string() })
+  .strict();
+/** {@link GameLocationView} as a schema. */
+const gameLocationView = z
+  .object({
+    ref: gameLocationRefSchema,
+    id: z
+      .string()
+      .min(1)
+      .max(512)
+      .regex(/^[A-Za-z0-9_.:-]+$/),
+    displayName: z.string(),
+    mcVersion: z.string().nullable(),
+    loader: z
+      .object({ kind: z.enum(LOADER_KINDS), version: z.string().nullable() })
+      .strict()
+      .nullable(),
+    gameDir: absolutePath,
+    modsDir: absolutePath.nullable(),
+    problems: z.array(
+      z.object({ code: z.enum(GAME_LOCATION_PROBLEM_CODES), message: z.string() }).strict(),
+    ),
+    warnings: z.array(locationWarning),
+  })
+  .strict();
 /** {@link UpdateStatus} as a schema. */
 export const updateStatusSchema = z.discriminatedUnion('state', [
   z.object({ state: z.literal('idle') }).strict(),
@@ -217,6 +300,8 @@ export const ipcContract = {
       .object({
         minecraftDir: absolutePath.nullable(),
         updates: updateSettings,
+        launchers: launcherSettingsSchema.optional(),
+        installTarget: gameLocationRefSchema.nullable().optional(),
         detectedMinecraftDir: absolutePath.nullable(),
       })
       .strict(),
@@ -227,6 +312,8 @@ export const ipcContract = {
       .object({
         minecraftDir: absolutePath.nullable().optional(),
         updates: updateSettings.optional(),
+        launchers: launcherSettingsSchema.optional(),
+        installTarget: gameLocationRefSchema.nullable().optional(),
       })
       .strict(),
     response: voidResponse,
@@ -239,6 +326,24 @@ export const ipcContract = {
         installed: z.array(z.object({ id: z.string() }).strict()),
         chosen: z.object({ id: z.string() }).strict().nullable(),
         cache: assetCacheInfo.nullable(),
+        // Launcher fields (ADR 0019): main always sends them; optional like `MinecraftStatus`.
+        target: gameLocationView.nullable().optional(),
+        targetMissing: z.boolean().optional(),
+        jar: z
+          .object({ versionId: z.string(), launcher: z.enum(LAUNCHER_KINDS) })
+          .strict()
+          .nullable()
+          .optional(),
+        warnings: z.array(locationWarning).optional(),
+      })
+      .strict(),
+  },
+  [InvokeChannels.minecraftListLocations]: {
+    request: z.object({ mcVersion }).strict(),
+    response: z
+      .object({
+        locations: z.array(gameLocationView),
+        selected: z.string().nullable(),
       })
       .strict(),
   },
