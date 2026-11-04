@@ -1,6 +1,6 @@
 # docs/ — design docs, roadmap, devlog, ADRs
 
-Active since Phase 0; Phase 2 code complete, awaiting the in-game checks and first release (ADRs 0001–0019; Phase 2 follow-ups listed in ROADMAP under Phase 3). This file describes conventions.
+Active since Phase 0; Phase 2 code complete, awaiting the in-game checks and first release; templates and samples library add-on in progress before Phase 3 (ADRs 0001–0020; Phase 2 follow-ups and add-ons listed in ROADMAP under Phase 3). This file describes conventions.
 
 ## Purpose
 

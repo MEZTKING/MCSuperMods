@@ -191,6 +191,21 @@ Requested on 2026-11-04: preview-asset extraction and pack install for users who
 - [x] B57: README "Using Prism Launcher or the CurseForge app", scoped guides, ROADMAP ticks and ADR status.
 - [ ] User check: confirm the CurseForge `Install/versions/` jar path, `baseModLoader: null` for vanilla instances and the Prism jar path on a real Windows machine, then run the in-game checks through the chosen instance.
 
+### Phase 2 add-on — Templates and samples library
+
+Requested on 2026-11-04, ahead of Phase 3: a template for every element kind, New Project starters and an examples gallery, all validated and exported per target in CI. Design in [Plugin System](DESIGN.md#7-plugin-system), [Editors and UX](DESIGN.md#8-editors-and-ux) and [ADR 0020](adr/0020-templates-starters-examples.md): `@msm/plugin-api` 0.4.0 adds `elementTemplates`, `projectStarters` and `examples`; templates move into the resource-pack and data-pack plugins (66 in total); a new built-in `@msm/plugin-library` carries 8 starters and 34 examples, mirrored under `examples/`. Does not block Phase 3.
+
+- [ ] B60: library contract and host plumbing: plugin-api 0.4.0 (`library.ts`), built-in ranges `^0.4.0`, `@msm/plugin-library` scaffold with the placeholder PNG generator, session `library`, `newProject({ starter })` and `addBundle`.
+- [ ] B61: ADR 0020 and the design record (DESIGN Plugin System, Editors and UX, Repository Layout, Testing Strategy; this section).
+- [ ] B62: resource pack templates (14) in `@msm/plugin-resourcepack`, validated per target.
+- [ ] B63: data pack templates (52) in `@msm/plugin-datapack`, validated per target, functions through the mcfunction checker.
+- [ ] B64: library content: 8 starters, 34 examples, the `examples/` mirror golden and the cross-plugin CI test in `@msm/exporters`.
+- [ ] B65: app UI: New project dialog, Examples gallery, grouped and filterable template picker, Notes callout, menu and palette entries.
+- [ ] B66: end-to-end test of the library path (Custom ore starter, export both packs, copy an example, open an example as a new project).
+- [ ] B67: user guide (`docs/guide/`), README "Templates and examples", scoped guides, ROADMAP ticks and ADR status.
+- [ ] User decisions (defaults stand unless vetoed): Custom ore is an emerald-ore reskin ("Ruby Ore") until Phase 4; the music disc uses the vanilla `minecraft:records/cat` sound until the user imports their own `.ogg`; examples are mirrored on disk under `examples/`.
+- [ ] User check: in-game on Windows with the current target, the Custom ore starter (emerald ore shows as ruby ore, "Ruby" item name, ruby block recipe, advancement toast) and the music disc (`/function <namespace>:give_disc`, the disc plays in a jukebox).
+
 ### Exit criteria
 
 A custom biome containing a custom jigsaw structure generates in a 26.3 world.
@@ -219,6 +234,7 @@ Introduce the `msm_runtime` Fabric mod and the content jar, so projects can add 
 - [ ] Actions v1: `run_function`, `spawn_particle`, `set_block_state`, `give_item`, `play_sound`, `trigger_event`.
 - [ ] `@msm/plugin-blocks-items`: `msm:block` and `msm:item` kinds lowering to vanilla files plus `msm/` definitions.
 - [ ] Block Studio and Item Studio views.
+- [ ] Real Custom ore starter on `msm:block` and `msm:item`, replacing the emerald-ore reskin in `@msm/plugin-library` ([ADR 0020](adr/0020-templates-starters-examples.md)).
 - [ ] `@msm/exporters` `fabric-content-jar`: `assets/`, `data/`, `msm/`, `fabric.mod.json`, with `msm_runtime` nested by default and a "separate runtime" option.
 - [ ] Managed Fabric test instance launched from the app ("Test in Minecraft").
 - [ ] JUnit tests for definition parsing; Fabric GameTest for behaviour; kitchen-sink sample exported and loaded on a headless server in CI.
@@ -306,7 +322,7 @@ Open the platform and harden it for release: third-party plugins, a second Minec
 - [ ] `@msm/plugin-api` 1.0 with `apiVersion` compatibility checks.
 - [ ] `tools/new-plugin` scaffold and a sample external plugin.
 - [ ] Second target package (26.4 or whatever is current) with migration hooks and an "upgrade project target" command.
-- [ ] Templates and wizards (custom ore, custom sword, custom mob).
+- [ ] Templates and wizards (custom ore, custom sword, custom mob). The Phase 2 add-on delivered the template, starter and examples library ([ADR 0020](adr/0020-templates-starters-examples.md)); what remains is the wizards, the real `msm:block` ore starter replacing the emerald-ore reskin (Phase 4), and the custom sword and custom mob starters once Phases 4 and 5 provide their kinds.
 - [ ] Documentation site (user guide under `docs/guide/`).
 - [x] Auto-update: delivered in Phase 2 with `electron-updater` and the GitHub provider ([ADR 0018](adr/0018-auto-update.md)).
 - [ ] Contribution guidelines published (the licence was settled as MIT on 2026-11-04).

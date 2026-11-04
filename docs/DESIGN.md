@@ -285,6 +285,11 @@ export default definePlugin({
 | `importers` | File type to elements/assets | `.bbmodel`, `.schem` |
 | `commands` | Palette entries and refactors | "New block from template" |
 | `schemas` | Extra mcdoc files | MSM component definitions |
+| `elementTemplates` | Entries of the New element picker for the plugin's own kinds: id, kind, category, name hints and a pure `data(context)` | "Shaped recipe", "Block model (cube all)" |
+| `projectStarters` | New project starters: a category, layer badges, `requiresKinds` and `build(context)` returning a content bundle | "Custom ore", "Recipe pack" |
+| `examples` | Examples gallery entries: the kind taught, category, tags, `requiresKinds` and a commented content bundle | "Loot table: block drops" |
+
+Templates, starters and examples live in plugins; the app is only the picker. A template creates one element of a kind its own plugin registers and references only vanilla ids, ids derived from its own id, or the project root advancement. A starter or example builds a self-contained content bundle (elements with optional `meta.notes`, plus generated assets, never Mojang assets) that may span any registered kinds; the host adds a `pack` element when the bundle has none and inserts the elements as one undo step. The resource-pack and data-pack plugins carry the templates for their kinds; the built-in `@msm/plugin-library` (`msm.library`) carries the starters, the examples and the placeholder-texture generator ([ADR 0020](adr/0020-templates-starters-examples.md)).
 
 ### Loading model
 
@@ -312,11 +317,20 @@ Both paths edit the same element through the same command stack, so switching be
 | Phase | Studios |
 |---|---|
 | 1 | Texture Studio, Model Studio (block/item models, blockstates), Sound Studio, Lang editor, Pack settings |
-| 2 | Recipe Studio, Tag editor, Function editor (Monaco + Spyglass); Loot Table and Advancement Studios are the schema form plus templates in v0.2 ([ADR 0015](adr/0015-data-pack-element-model.md)) |
+| 2 | Recipe Studio, Tag editor, Function editor (Monaco + Spyglass); Loot Table and Advancement Studios are the schema form plus templates in v0.2 ([ADR 0015](adr/0015-data-pack-element-model.md)); New project starters and the Examples gallery (add-on, [ADR 0020](adr/0020-templates-starters-examples.md)) |
 | 3 | Structure Studio (import, preview, jigsaw pools), Biome Studio, Feature Studio |
 | 4 | Block Studio, Item Studio |
 | 5 | Entity Studio, Animation preview |
 | 6 | Script editor |
+
+### Templates, starters and examples
+
+Content comes from plugins ([Plugin System](#7-plugin-system)); the app only presents it ([ADR 0020](adr/0020-templates-starters-examples.md)).
+
+- **New element.** The picker groups templates under category headings (Models, Blockstates, Recipes, Loot tables, Tags and so on) and has a filter box. Every built-in kind has at least one template with starting content that validates against the current target; a third-party kind without templates gets a generic entry built from its `defaultData`.
+- **New project.** Toolbar "New" and File > New Project… still create a blank project directly. The split arrow on "New", File > New Project from Starter… and the palette open the New project dialog, which lists starters grouped as blank, pack and content, with layer badges; submitting asks for an empty folder and builds the starter there with the namespace derived from the folder name. Before Phase 4 the Custom ore starter reskins emerald ore as "Ruby Ore", because a vanilla pack cannot add blocks; Phase 4 replaces it with a real `msm:block` ore.
+- **Examples gallery.** Help > Examples… and the palette open a gallery of one commented example per built-in kind plus the content starters, with search over title, kind, category and tags, a kind filter and a detail pane showing the notes. "Open as new project" builds the example into a new folder; "Copy into my project" adds it to the open project under a chosen namespace as one undo step, reporting ids that already exist.
+- **Notes callout.** An element with `meta.notes` (every copied example) shows them in a collapsible, read-only Notes callout above its editor.
 
 ### Command palette
 
@@ -626,6 +640,7 @@ MCSuperMods/
 │   ├── CLAUDE.md
 │   ├── DESIGN.md  ROADMAP.md  DEVLOG.md
 │   └── adr/
+├── examples/                     # generated mirror of the library examples (all-kinds/, starters/<id>/)
 ├── app/                          # @msm/app (Electron)
 │   └── CLAUDE.md
 ├── packages/
@@ -641,7 +656,7 @@ MCSuperMods/
 └── tools/                        # check-deps, sync-mcdoc, sync-mcmeta, new-plugin
 ```
 
-Built-in plugins under `packages/plugins/`: `resourcepack/`, `datapack/`, `structures/`, `worldgen/`, `blocks-items/`, `entities/`, `models-anim/`, `scripting/`. Each is its own npm package `@msm/plugin-<name>` and depends only on `@msm/plugin-api` and `@msm/schemas`.
+Built-in plugins under `packages/plugins/`: `resourcepack/`, `datapack/`, `library/`, `structures/`, `worldgen/`, `blocks-items/`, `entities/`, `models-anim/`, `scripting/`. `library/` contributes no element kinds, only project starters, examples and placeholder-asset generators ([ADR 0020](adr/0020-templates-starters-examples.md)). Each is its own npm package `@msm/plugin-<name>` and depends only on `@msm/plugin-api` and `@msm/schemas`.
 
 ### Dependency direction
 
@@ -649,7 +664,7 @@ Built-in plugins under `packages/plugins/`: `resourcepack/`, `datapack/`, `struc
 plugin-api  <-  schemas  <-  core  <-  plugins / exporters / targets / interop  <-  app
 ```
 
-`@msm/plugin-api` depends on nothing internal. The `@msm/targets` aggregator sits beside the target packages and depends on them. Plugins, exporters and interop may depend on `@msm/targets` for tests only: a Biome `noRestrictedImports` override forbids it (and `@msm/target-*`) in shipped plugin and exporter source, so shipped plugins still use only `@msm/plugin-api` and `@msm/schemas` ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)). `@msm/exporters` may also use `@msm/plugin-resourcepack` and `@msm/plugin-datapack` in tests (the sample-project goldens; [ADR 0017](adr/0017-phase2-toolchain.md)); Biome forbids every `@msm/plugin-*` except `@msm/plugin-api` in exporter source, because exporters consume `OutputFile[]`, never plugins. The direction is enforced by TypeScript project references, Biome import rules and `tools/check-deps`, which checks every workspace `package.json` against a layer map and flags version literals outside `packages/targets`; it runs in `pnpm lint`, so a reverse import fails CI.
+`@msm/plugin-api` depends on nothing internal. The `@msm/targets` aggregator sits beside the target packages and depends on them. Plugins, exporters and interop may depend on `@msm/targets` for tests only: a Biome `noRestrictedImports` override forbids it (and `@msm/target-*`) in shipped plugin and exporter source, so shipped plugins still use only `@msm/plugin-api` and `@msm/schemas` ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)). `@msm/exporters` may also use `@msm/plugin-resourcepack`, `@msm/plugin-datapack` and `@msm/plugin-library` in tests (the sample-project goldens, [ADR 0017](adr/0017-phase2-toolchain.md); the library bundles and the `examples/` mirror, [ADR 0020](adr/0020-templates-starters-examples.md)); Biome forbids every `@msm/plugin-*` except `@msm/plugin-api` in exporter source, because exporters consume `OutputFile[]`, never plugins. The direction is enforced by TypeScript project references, Biome import rules and `tools/check-deps`, which checks every workspace `package.json` against a layer map and flags version literals outside `packages/targets`; it runs in `pnpm lint`, so a reverse import fails CI.
 
 ### Naming
 
@@ -665,6 +680,7 @@ plugin-api  <-  schemas  <-  core  <-  plugins / exporters / targets / interop  
 | Lowering | Vitest golden files | Each lowering function per target, under the plugin's `test/fixtures/<target id>/expected/`; exporters add a SHA-256 golden over the sample project's zip. |
 | Schema conformance | `validateJson` in CI (the Spyglass JSON checker only if section 18, question 13 adopts it) | Every lowered output, including golden fixtures, validated against the schema model derived from vanilla-mcdoc and MSM mcdoc. A failure is a bug. |
 | mcfunction conformance | `@msm/schemas/mcfunction` over the vendored command data, in the target packages | Parse, check and lint results for known-good and known-bad commands; every exported `.mcfunction`, including the sample data pack, has zero errors ([ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)). |
+| Library | Vitest in the owning plugins and `@msm/exporters` | Every element template validates with zero errors and zero unknown ids for each target, as does its lowered file; every starter and example bundle is built into a memory project with the real plugins, reloaded, exported as resource and data packs with zero problems (functions through the mcfunction checker) for each target; the `examples/` mirror equals the generated projects (`UPDATE_GOLDENS=1` rewrites it) ([ADR 0020](adr/0020-templates-starters-examples.md)). |
 | Engine mod logic | JUnit 5 | Definition parsing, component graph construction. |
 | Engine mod behaviour | Fabric GameTest | Components and events in a running server. |
 | End to end (mod) | CI headless server | From Phase 4, a "kitchen-sink" sample project is exported and loaded; load errors fail CI. |
