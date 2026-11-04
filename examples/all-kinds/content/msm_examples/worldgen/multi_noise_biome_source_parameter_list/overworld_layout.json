@@ -1,0 +1,16 @@
+{
+  "data": {
+    "preset": "minecraft:overworld"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:overworld_layout",
+  "kind": "minecraft:worldgen/multi_noise_biome_source_parameter_list",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A parameter list names a set of biomes and climate points for a multi_noise biome source. preset reuses the built-in overworld layout; vanilla's own overworld refers to such a list instead of listing every biome. Use it in a biome source as { type: minecraft:multi_noise, preset: msm_examples:overworld_layout }.",
+    "tags": [
+      "example",
+      "worldgen-advanced-"
+    ]
+  }
+}

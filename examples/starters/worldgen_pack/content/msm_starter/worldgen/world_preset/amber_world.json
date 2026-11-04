@@ -1,0 +1,142 @@
+{
+  "data": {
+    "dimensions": {
+      "minecraft:overworld": {
+        "generator": {
+          "biome_source": {
+            "biomes": [
+              {
+                "biome": "msm_starter:amber_woods",
+                "parameters": {
+                  "continentalness": 0.3,
+                  "depth": 0,
+                  "erosion": 0.3,
+                  "humidity": 0.2,
+                  "offset": 0,
+                  "temperature": 0.2,
+                  "weirdness": 0
+                }
+              },
+              {
+                "biome": "minecraft:ocean",
+                "parameters": {
+                  "continentalness": -0.6,
+                  "depth": 0,
+                  "erosion": 0,
+                  "humidity": 0,
+                  "offset": 0,
+                  "temperature": 0,
+                  "weirdness": 0
+                }
+              },
+              {
+                "biome": "minecraft:plains",
+                "parameters": {
+                  "continentalness": 0.3,
+                  "depth": 0,
+                  "erosion": 0.3,
+                  "humidity": -0.3,
+                  "offset": 0,
+                  "temperature": 0,
+                  "weirdness": 0
+                }
+              },
+              {
+                "biome": "minecraft:forest",
+                "parameters": {
+                  "continentalness": 0.3,
+                  "depth": 0,
+                  "erosion": 0.3,
+                  "humidity": 0.3,
+                  "offset": 0,
+                  "temperature": 0,
+                  "weirdness": 0
+                }
+              },
+              {
+                "biome": "minecraft:desert",
+                "parameters": {
+                  "continentalness": 0.3,
+                  "depth": 0,
+                  "erosion": 0.3,
+                  "humidity": -0.6,
+                  "offset": 0,
+                  "temperature": 0.8,
+                  "weirdness": 0
+                }
+              },
+              {
+                "biome": "minecraft:snowy_plains",
+                "parameters": {
+                  "continentalness": 0.3,
+                  "depth": 0,
+                  "erosion": 0.3,
+                  "humidity": 0,
+                  "offset": 0,
+                  "temperature": -0.8,
+                  "weirdness": 0
+                }
+              },
+              {
+                "biome": "minecraft:jungle",
+                "parameters": {
+                  "continentalness": 0.3,
+                  "depth": 0,
+                  "erosion": 0.3,
+                  "humidity": 0.6,
+                  "offset": 0,
+                  "temperature": 0.6,
+                  "weirdness": 0
+                }
+              },
+              {
+                "biome": "minecraft:windswept_hills",
+                "parameters": {
+                  "continentalness": 0.6,
+                  "depth": 0,
+                  "erosion": -0.6,
+                  "humidity": 0,
+                  "offset": 0,
+                  "temperature": -0.3,
+                  "weirdness": 0.6
+                }
+              }
+            ],
+            "type": "minecraft:multi_noise"
+          },
+          "settings": "minecraft:overworld",
+          "type": "minecraft:noise"
+        },
+        "type": "minecraft:overworld"
+      },
+      "minecraft:the_end": {
+        "generator": {
+          "biome_source": {
+            "type": "minecraft:the_end"
+          },
+          "settings": "minecraft:end",
+          "type": "minecraft:noise"
+        },
+        "type": "minecraft:the_end"
+      },
+      "minecraft:the_nether": {
+        "generator": {
+          "biome_source": {
+            "preset": "minecraft:nether",
+            "type": "minecraft:multi_noise"
+          },
+          "settings": "minecraft:nether",
+          "type": "minecraft:noise"
+        },
+        "type": "minecraft:the_nether"
+      }
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:amber_world",
+  "kind": "minecraft:worldgen/world_preset",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A World Type: the vanilla overworld terrain, but its biomes come from this list. Each biome sits at a climate point and every column takes the nearest one, so msm_starter:amber_woods fills the mild, humid areas and seven vanilla biomes the rest. The nether and the end are the vanilla ones, using the vanilla dimension types. Choose it under More > World Type when creating a world."
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "data": {
+    "amplitude_modifiers": [
+      1,
+      1,
+      0.5
+    ],
+    "base_octave": -7,
+    "octave_count": 3
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:wide_noise",
+  "kind": "minecraft:worldgen/noise",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A noise is the random pattern density functions sample. base_octave sets the scale of the first octave, and lower numbers make larger features. amplitude_modifiers holds one weight per octave, so the third octave counts half as much. Sample it with a density function of type minecraft:noise and noise: msm_examples:wide_noise.",
+    "tags": [
+      "example",
+      "worldgen-advanced-"
+    ]
+  }
+}

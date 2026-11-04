@@ -1,0 +1,66 @@
+{
+  "data": {
+    "attributes": {
+      "minecraft:visual/fog_color": 12638463,
+      "minecraft:visual/sky_color": 7972607,
+      "minecraft:visual/water_fog_color": 329011
+    },
+    "carvers": [
+      "minecraft:cave",
+      "minecraft:cave_extra_underground",
+      "minecraft:canyon"
+    ],
+    "downfall": 0.6,
+    "effects": {
+      "grass_color": 8573004,
+      "water_color": 4159204
+    },
+    "features": [
+      [],
+      [
+        "minecraft:lake_lava_underground",
+        "minecraft:lake_lava_surface"
+      ],
+      [],
+      [
+        "minecraft:monster_room"
+      ],
+      [],
+      [],
+      [
+        "minecraft:ore_dirt",
+        "minecraft:ore_gravel",
+        "minecraft:ore_coal_upper",
+        "minecraft:ore_coal_lower",
+        "minecraft:ore_iron_upper",
+        "minecraft:ore_iron_middle",
+        "minecraft:ore_copper"
+      ],
+      [],
+      [
+        "minecraft:spring_water"
+      ],
+      [
+        "minecraft:forest_flowers",
+        "minecraft:flower_default",
+        "minecraft:patch_grass_forest"
+      ],
+      [
+        "minecraft:freeze_top_layer"
+      ]
+    ],
+    "has_precipitation": true,
+    "temperature": 0.5
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:quiet_meadow",
+  "kind": "minecraft:worldgen/biome",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "temperature and downfall drive snow, rain and the default grass colour; attributes hold the sky and fog colours and, if you add it, minecraft:gameplay/natural_mob_spawns. features has one list of placed features per decoration step in the game's order, and carvers cut caves and canyons. Keep vanilla features in vanilla's order across biomes, or the game stops with a \"Feature order cycle\" error. A biome appears only where a dimension or world preset lists it, for example a dimension whose biome source is fixed to msm_examples:quiet_meadow.",
+    "tags": [
+      "example",
+      "worldgen"
+    ]
+  }
+}

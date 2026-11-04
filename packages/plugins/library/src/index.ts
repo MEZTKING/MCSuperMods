@@ -2,8 +2,8 @@
  * `@msm/plugin-library`: the built-in templates and samples library (ADR 0020). It
  * contributes project starters and Examples gallery entries, and the deterministic
  * placeholder textures they use. It registers no element kinds: its bundles use the kinds of
- * the resource pack and data pack plugins, named in each entry's `requiresKinds`, and the
- * host hides entries whose kinds are not registered.
+ * the resource pack, data pack, structures and worldgen plugins, named in each entry's
+ * `requiresKinds`, and the host hides entries whose kinds are not registered.
  *
  * Content decisions recorded in ADR 0020:
  * - The Custom ore starter reskins emerald ore as ruby ore until Phase 4 adds real blocks.

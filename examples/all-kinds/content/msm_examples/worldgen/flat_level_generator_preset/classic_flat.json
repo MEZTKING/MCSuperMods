@@ -1,0 +1,39 @@
+{
+  "data": {
+    "display": "minecraft:grass_block",
+    "settings": {
+      "biome": "minecraft:plains",
+      "features": false,
+      "lakes": false,
+      "layers": [
+        {
+          "block": "minecraft:bedrock",
+          "height": 1
+        },
+        {
+          "block": "minecraft:stone",
+          "height": 3
+        },
+        {
+          "block": "minecraft:dirt",
+          "height": 2
+        },
+        {
+          "block": "minecraft:grass_block",
+          "height": 1
+        }
+      ]
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:classic_flat",
+  "kind": "minecraft:worldgen/flat_level_generator_preset",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A superflat preset appears under Customize > Presets when the World Type is Superflat. layers are listed from the bottom up, each with a block and a height. display is the item shown beside the name, and features turns trees and ores on or off.",
+    "tags": [
+      "example",
+      "worldgen-advanced-"
+    ]
+  }
+}

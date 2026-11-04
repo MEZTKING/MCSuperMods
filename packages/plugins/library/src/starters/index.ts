@@ -3,17 +3,23 @@
  */
 import type { BundleContext, ContentBundle, OutputLayer, ProjectStarter } from '@msm/plugin-api';
 import { kindsOf } from '../content/bundle';
+import { customBiomeBundle } from './custom-biome';
 import { customOreBundle } from './custom-ore';
 import { functionStarterBundle } from './function-starter';
+import { jigsawStructureBundle } from './jigsaw-structure';
 import { musicDiscBundle } from './music-disc';
 import { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
 import { recipePackBundle } from './recipe-pack';
+import { worldgenPackBundle } from './worldgen-pack';
 
+export { customBiomeBundle, customBiomeContent, customBiomeIds } from './custom-biome';
 export { customOreBundle } from './custom-ore';
 export { functionStarterBundle } from './function-starter';
+export { hamletIds, jigsawStructureBundle, jigsawStructureContent } from './jigsaw-structure';
 export { musicDiscBundle, SONG } from './music-disc';
 export { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
 export { recipePackBundle } from './recipe-pack';
+export { worldgenPackBundle } from './worldgen-pack';
 
 /** The namespace used to work out a bundle's kinds; any valid namespace gives the same set. */
 const PROBE: BundleContext = { namespace: 'probe', projectName: 'Probe' };
@@ -104,5 +110,29 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     'content',
     ['datapack'],
     functionStarterBundle,
+  ),
+  starter(
+    'custom_biome',
+    'Custom biome',
+    'A new biome, Amber Woods, with its own tree and copper ore, reached through a World Type of its own: choose it under More > World Type when creating a world. A data pack cannot add a biome to the normal overworld, so the World Type lists the new biome beside a few vanilla ones.',
+    'content',
+    BOTH,
+    customBiomeBundle,
+  ),
+  starter(
+    'jigsaw_structure',
+    'Jigsaw village-style structure',
+    'A small hamlet built by jigsaw blocks: a centre hut, streets that follow the terrain and lamp posts, with four template pools, a structure set and a biome tag that places it in forests.',
+    'content',
+    ['datapack'],
+    jigsawStructureBundle,
+  ),
+  starter(
+    'worldgen_pack',
+    'Custom biome with a jigsaw structure',
+    'Both worldgen starters in one project: the Amber Woods biome and World Type, and jigsaw hamlets that generate in Amber Woods and in every vanilla forest.',
+    'content',
+    BOTH,
+    worldgenPackBundle,
   ),
 ]);

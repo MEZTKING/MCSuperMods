@@ -1,0 +1,27 @@
+{
+  "data": {
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "msm_examples:ruin/stump",
+          "processors": "minecraft:empty",
+          "projection": "rigid"
+        },
+        "weight": 1
+      }
+    ],
+    "fallback": "minecraft:empty"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ruin/start",
+  "kind": "minecraft:worldgen/template_pool",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The start pool: always the ruined stump.",
+    "tags": [
+      "example",
+      "structures"
+    ]
+  }
+}

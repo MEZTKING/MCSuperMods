@@ -1,0 +1,33 @@
+{
+  "data": {
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "msm_examples:garden/flower_bed",
+          "processors": "minecraft:empty",
+          "projection": "rigid"
+        },
+        "weight": 2
+      },
+      {
+        "element": {
+          "element_type": "minecraft:empty_pool_element"
+        },
+        "weight": 1
+      }
+    ],
+    "fallback": "minecraft:empty"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:garden_pieces",
+  "kind": "minecraft:worldgen/template_pool",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A jigsaw block names a template pool, and the game picks one of its elements by weight: here the flower bed two times in three and nothing (empty_pool_element) otherwise. rigid keeps a piece's shape; terrain_matching bends it to the ground, which suits paths. fallback is the pool used when a piece does not fit or the structure is at its size limit. Point a jigsaw block's pool at msm_examples:garden_pieces to use it.",
+    "tags": [
+      "example",
+      "structures"
+    ]
+  }
+}

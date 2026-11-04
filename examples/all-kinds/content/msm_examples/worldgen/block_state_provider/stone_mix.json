@@ -1,0 +1,30 @@
+{
+  "data": {
+    "entries": [
+      {
+        "data": "minecraft:stone",
+        "weight": 3
+      },
+      {
+        "data": "minecraft:andesite",
+        "weight": 1
+      },
+      {
+        "data": "minecraft:cobblestone",
+        "weight": 1
+      }
+    ],
+    "type": "minecraft:weighted"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:stone_mix",
+  "kind": "minecraft:worldgen/block_state_provider",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A block state provider chooses a block each time a feature asks for one. weighted picks an entry by weight, so stone comes up three times in five. Features such as trees and simple blocks take a provider, and naming msm_examples:stone_mix reuses this one instead of repeating it inline.",
+    "tags": [
+      "example",
+      "worldgen-advanced-"
+    ]
+  }
+}

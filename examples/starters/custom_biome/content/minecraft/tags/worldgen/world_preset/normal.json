@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "msm_starter:amber_world"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:normal",
+  "kind": "minecraft:tag/worldgen/world_preset",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The Create New World screen offers the presets in this vanilla tag. Adding ours here (replace stays false) keeps every vanilla World Type."
+  }
+}

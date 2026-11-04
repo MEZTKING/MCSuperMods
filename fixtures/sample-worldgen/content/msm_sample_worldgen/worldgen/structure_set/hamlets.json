@@ -1,0 +1,23 @@
+{
+  "data": {
+    "placement": {
+      "salt": 1555717104,
+      "separation": 8,
+      "spacing": 24,
+      "type": "minecraft:random_spread"
+    },
+    "structures": [
+      {
+        "structure": "msm_sample_worldgen:hamlet",
+        "weight": 1
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_worldgen:hamlets",
+  "kind": "minecraft:worldgen/structure_set",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Without a structure set a structure never generates. random_spread tries one hamlet in each 24×24 chunk cell, at least 8 chunks from its neighbours, and the salt keeps its positions apart from other structures. Structure sets load when a world opens, so new chunks of an existing world get hamlets after the pack is enabled and the world reopened."
+  }
+}

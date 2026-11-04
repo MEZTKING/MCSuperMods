@@ -1,0 +1,18 @@
+{
+  "data": {
+    "values": [
+      "msm_examples:amplified_cherries"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:normal",
+  "kind": "minecraft:tag/worldgen/world_preset",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds the preset to the World Type list; replace stays false, so the vanilla types remain.",
+    "tags": [
+      "example",
+      "worldgen"
+    ]
+  }
+}

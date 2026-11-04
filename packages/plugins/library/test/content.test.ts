@@ -26,9 +26,15 @@ const STARTER_IDS = [
   'recipe_pack',
   'music_disc',
   'function_starter',
+  'custom_biome',
+  'jigsaw_structure',
+  'worldgen_pack',
 ];
 
-/** The 30 kinds of the built-in resource pack and data pack plugins. */
+/**
+ * The 52 kinds of the built-in resource pack, data pack, structures and worldgen plugins, in
+ * per-kind example order.
+ */
 const KIND_IDS = [
   'minecraft:model',
   'minecraft:block_definition',
@@ -63,6 +69,25 @@ const KIND_IDS = [
   'minecraft:trim_material',
   'minecraft:trim_pattern',
   'minecraft:dialog',
+  'minecraft:structure_template',
+  'minecraft:worldgen/template_pool',
+  'minecraft:worldgen/structure',
+  'minecraft:worldgen/structure_set',
+  'minecraft:worldgen/processor_list',
+  'minecraft:worldgen/biome',
+  'minecraft:worldgen/feature',
+  'minecraft:worldgen/placed_feature',
+  'minecraft:dimension',
+  'minecraft:worldgen/world_preset',
+  'minecraft:worldgen/noise_settings',
+  'minecraft:worldgen/density_function',
+  'minecraft:worldgen/noise',
+  'minecraft:worldgen/carver',
+  'minecraft:worldgen/flat_level_generator_preset',
+  'minecraft:worldgen/multi_noise_biome_source_parameter_list',
+  'minecraft:worldgen/block_state_provider',
+  'minecraft:worldgen/material_condition',
+  'minecraft:worldgen/material_rule',
 ];
 
 const entries: readonly (ProjectStarter | ExampleProject)[] = [
@@ -83,7 +108,7 @@ const PLACEHOLDERS = new Set(
 );
 
 describe('project starters', () => {
-  it('lists the eight starters in order', () => {
+  it('lists the eleven starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -93,6 +118,9 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
+      'content',
+      'content',
+      'content',
       'content',
       'content',
       'content',
@@ -161,14 +189,14 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 33 per-kind examples, one per built-in kind, and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(33);
+  it('has 52 per-kind examples, one per built-in kind, and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(52);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
     );
     expect(starterExamples.every((example) => example.category === STARTERS_CATEGORY)).toBe(true);
-    expect(libraryExamples).toHaveLength(37);
+    expect(libraryExamples).toHaveLength(56);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -267,5 +295,148 @@ describe('every starter and example', () => {
         expect(text.includes(`"${id}"`) || text.includes(`"${paintingId}"`), id).toBe(true);
       }
     }
+  });
+});
+
+const WORLDGEN_KINDS = new Set(KIND_IDS.slice(KIND_IDS.indexOf('minecraft:structure_template')));
+
+/** Every string in `value` with its object key, depth first. */
+function strings(value: unknown, key = ''): { key: string; text: string }[] {
+  if (typeof value === 'string') return [{ key, text: value }];
+  if (Array.isArray(value)) return value.flatMap((item) => strings(item, key));
+  if (typeof value === 'object' && value !== null) {
+    return Object.entries(value).flatMap(([name, item]) => strings(item, name));
+  }
+  return [];
+}
+
+type Obj = Record<string, unknown>;
+const asObj = (value: unknown): Obj =>
+  typeof value === 'object' && value !== null ? (value as Obj) : {};
+const asArr = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
+
+/** The jigsaw names the pieces of `poolId` and its fallbacks offer, within one bundle. */
+function poolNames(bundle: ContentBundle, poolId: string, seen = new Set<string>()): Set<string> {
+  const names = new Set<string>();
+  if (seen.has(poolId)) return names;
+  seen.add(poolId);
+  const pool = bundle.elements.find(
+    (entry) => entry.id === poolId && entry.kind === 'minecraft:worldgen/template_pool',
+  );
+  if (pool === undefined) return names;
+  for (const item of asArr(asObj(pool.data).elements)) {
+    const location = asObj(asObj(item).element).location;
+    const template = bundle.elements.find(
+      (entry) => entry.id === location && entry.kind === 'minecraft:structure_template',
+    );
+    for (const jigsaw of asArr(asObj(template?.data).jigsaws)) {
+      names.add(String(asObj(jigsaw).name));
+    }
+  }
+  const fallback = asObj(pool.data).fallback;
+  if (typeof fallback === 'string') {
+    for (const name of poolNames(bundle, fallback, seen)) names.add(name);
+  }
+  return names;
+}
+
+describe('structure and worldgen content', () => {
+  const worldgenEntries = entries.filter((entry) =>
+    entry.requiresKinds.some((kind) => WORLDGEN_KINDS.has(kind)),
+  );
+
+  it('covers the three worldgen starters and the 19 structure and worldgen examples', () => {
+    expect(worldgenEntries.map((entry) => entry.id)).toEqual([
+      'custom_biome',
+      'jigsaw_structure',
+      'worldgen_pack',
+      ...KIND_IDS.slice(KIND_IDS.indexOf('minecraft:structure_template')).map((kind) => {
+        const example = kindExamples.find((entry) => entry.kind === kind);
+        return example?.id;
+      }),
+    ]);
+  });
+
+  it('is self-contained: every project id it names is an element of the same bundle', () => {
+    for (const entry of worldgenEntries) {
+      const bundle = build(entry, 'other_ns');
+      const ids = new Set<string>(bundle.elements.map((element) => element.id));
+      for (const element of bundle.elements) {
+        if (element.kind === 'minecraft:lang' || element.kind === 'minecraft:pack_mcmeta') continue;
+        for (const { key, text } of strings(element.data)) {
+          if (
+            element.kind === 'minecraft:structure_template' &&
+            (key === 'name' || key === 'target')
+          )
+            continue;
+          if (!/^#?other_ns:/.test(text)) continue;
+          expect(ids.has(text.replace(/^#/, '')), `${entry.id} ${element.id} ${key} ${text}`).toBe(
+            true,
+          );
+        }
+      }
+    }
+  });
+
+  it('matches every jigsaw target with a jigsaw name in the target pool or its fallbacks', () => {
+    let checked = 0;
+    for (const entry of worldgenEntries) {
+      const bundle = build(entry);
+      for (const template of bundle.elements) {
+        if (template.kind !== 'minecraft:structure_template') continue;
+        for (const jigsaw of asArr(asObj(template.data).jigsaws)) {
+          const { pool, target } = asObj(jigsaw) as { pool: string; target: string };
+          if (pool === 'minecraft:empty') {
+            expect(target, `${entry.id} ${template.id}`).toBe('minecraft:empty');
+            continue;
+          }
+          checked += 1;
+          expect(
+            [...poolNames(bundle, pool)],
+            `${entry.id} ${template.id} ${pool} -> ${target}`,
+          ).toContain(target);
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it('keeps configured and placed features apart: element ids are unique across kinds', () => {
+    for (const entry of worldgenEntries) {
+      const ids = build(entry).elements.map((element) => element.id);
+      expect(new Set(ids).size, entry.id).toBe(ids.length);
+    }
+  });
+
+  it('wires the worldgen pack: preset in #minecraft:normal, hamlet biome tag with the biome', () => {
+    const pack = libraryStarters.find((starter) => starter.id === 'worldgen_pack');
+    const bundle = build(pack as ProjectStarter);
+    const byId = (id: string, kind: string) =>
+      bundle.elements.find((entry) => entry.id === id && entry.kind === kind)?.data;
+    expect(byId('minecraft:normal', 'minecraft:tag/worldgen/world_preset')).toEqual({
+      values: ['demo:amber_world'],
+    });
+    expect(byId('demo:has_structure/hamlet', 'minecraft:tag/worldgen/biome')).toEqual({
+      values: ['demo:amber_woods', '#minecraft:is_forest'],
+    });
+    expect(byId('demo:hamlet', 'minecraft:worldgen/structure')).toMatchObject({
+      type: 'minecraft:jigsaw',
+      biomes: '#demo:has_structure/hamlet',
+      start_pool: 'demo:hamlet/centre',
+      step: 'surface_structures',
+      project_start_to_heightmap: 'WORLD_SURFACE_WG',
+      terrain_adaptation: 'beard_thin',
+    });
+    expect(byId('demo:hamlets', 'minecraft:worldgen/structure_set')).toMatchObject({
+      structures: [{ structure: 'demo:hamlet', weight: 1 }],
+      placement: { type: 'minecraft:random_spread' },
+    });
+    const ids = bundle.elements.map((entry) => entry.id);
+    const biomeStarter = libraryStarters.find((starter) => starter.id === 'custom_biome');
+    const structureStarter = libraryStarters.find((starter) => starter.id === 'jigsaw_structure');
+    const parts = [biomeStarter, structureStarter].flatMap((starter) =>
+      build(starter as ProjectStarter).elements.map((entry) => entry.id),
+    );
+    expect([...ids].sort()).toEqual([...new Set(parts)].sort());
   });
 });

@@ -1,0 +1,18 @@
+{
+  "formatVersion": 1,
+  "name": "Custom biome",
+  "namespaces": [
+    "minecraft",
+    "msm_starter"
+  ],
+  "plugins": [
+    "msm.resourcepack",
+    "msm.datapack",
+    "msm.structures",
+    "msm.worldgen"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

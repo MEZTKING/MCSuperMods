@@ -1,0 +1,185 @@
+{
+  "data": {
+    "blocks": [
+      [
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        1
+      ],
+      [
+        2,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0
+      ],
+      [
+        1,
+        0,
+        1,
+        0
+      ],
+      [
+        2,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        2,
+        0
+      ],
+      [
+        1,
+        0,
+        2,
+        0
+      ],
+      [
+        2,
+        0,
+        2,
+        0
+      ],
+      [
+        0,
+        0,
+        3,
+        3
+      ],
+      [
+        1,
+        0,
+        3,
+        0
+      ],
+      [
+        2,
+        0,
+        3,
+        0
+      ],
+      [
+        0,
+        0,
+        4,
+        0
+      ],
+      [
+        1,
+        0,
+        4,
+        0
+      ],
+      [
+        2,
+        0,
+        4,
+        0
+      ],
+      [
+        0,
+        0,
+        5,
+        0
+      ],
+      [
+        1,
+        0,
+        5,
+        0
+      ],
+      [
+        2,
+        0,
+        5,
+        0
+      ],
+      [
+        0,
+        0,
+        6,
+        0
+      ],
+      [
+        1,
+        0,
+        6,
+        2
+      ],
+      [
+        2,
+        0,
+        6,
+        0
+      ]
+    ],
+    "jigsaws": [
+      {
+        "final_state": "minecraft:dirt_path",
+        "name": "msm_starter:street",
+        "pool": "minecraft:empty",
+        "pos": [
+          1,
+          0,
+          0
+        ],
+        "target": "minecraft:empty"
+      },
+      {
+        "final_state": "minecraft:dirt_path",
+        "name": "msm_starter:street_side",
+        "pool": "msm_starter:hamlet/decorations",
+        "pos": [
+          0,
+          0,
+          3
+        ],
+        "target": "msm_starter:street"
+      },
+      {
+        "final_state": "minecraft:dirt_path",
+        "name": "msm_starter:street_end",
+        "pool": "msm_starter:hamlet/streets",
+        "pos": [
+          1,
+          0,
+          6
+        ],
+        "target": "msm_starter:street"
+      }
+    ],
+    "palette": [
+      "minecraft:dirt_path",
+      "minecraft:jigsaw[orientation=north_up]",
+      "minecraft:jigsaw[orientation=south_up]",
+      "minecraft:jigsaw[orientation=west_up]"
+    ],
+    "size": [
+      3,
+      1,
+      7
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:hamlet/street",
+  "kind": "minecraft:structure_template",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A 3×1×7 dirt path. Its jigsaw at the near end is named msm_starter:street, so it plugs into any opening that targets that name. The far end continues the street from msm_starter:hamlet/streets and the side asks msm_starter:hamlet/decorations for a lamp."
+  }
+}

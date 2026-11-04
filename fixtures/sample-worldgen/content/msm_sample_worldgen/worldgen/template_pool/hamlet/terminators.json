@@ -1,0 +1,23 @@
+{
+  "data": {
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "msm_sample_worldgen:hamlet/lamp",
+          "processors": "minecraft:empty",
+          "projection": "rigid"
+        },
+        "weight": 1
+      }
+    ],
+    "fallback": "minecraft:empty"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_worldgen:hamlet/terminators",
+  "kind": "minecraft:worldgen/template_pool",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Ends a street with a lamp. A terminator pool should hold small pieces that open no further jigsaws."
+  }
+}

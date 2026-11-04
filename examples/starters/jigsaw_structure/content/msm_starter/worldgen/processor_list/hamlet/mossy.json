@@ -1,0 +1,29 @@
+{
+  "data": {
+    "processors": [
+      {
+        "processor_type": "minecraft:rule",
+        "rules": [
+          {
+            "input_predicate": {
+              "block": "minecraft:cobblestone",
+              "predicate_type": "minecraft:random_block_match",
+              "probability": 0.3
+            },
+            "location_predicate": {
+              "predicate_type": "minecraft:always_true"
+            },
+            "output_state": "minecraft:mossy_cobblestone"
+          }
+        ]
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:hamlet/mossy",
+  "kind": "minecraft:worldgen/processor_list",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Turns about a third of the cobblestone mossy each time a piece is placed, so no two huts look the same. The centre pool applies it to the hut."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "msm_starter:amber_woods"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:is_overworld",
+  "kind": "minecraft:tag/worldgen/biome",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Marks the new biome as an overworld biome for vanilla checks that use #minecraft:is_overworld."
+  }
+}

@@ -7,7 +7,9 @@
   ],
   "plugins": [
     "msm.resourcepack",
-    "msm.datapack"
+    "msm.datapack",
+    "msm.structures",
+    "msm.worldgen"
   ],
   "settings": {},
   "targets": [

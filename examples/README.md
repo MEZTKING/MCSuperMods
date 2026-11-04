@@ -4,11 +4,14 @@ Ordinary MSM projects generated from the built-in templates and samples library 
 
 | Folder | Namespace | What it holds |
 |---|---|---|
-| `all-kinds/` | `msm_examples` | One commented example for every element kind of the resource pack and data pack plugins (30 examples in one project) |
+| `all-kinds/` | `msm_examples` | One commented example for every element kind of the resource pack, data pack, structures and worldgen plugins (52 examples in one project) |
 | `starters/custom_ore/` | `msm_starter` | The Custom ore starter: emerald ore reskinned as "Ruby Ore", with textures, models, a loot table, a recipe, an item tag and advancements |
 | `starters/recipe_pack/` | `msm_starter` | The Recipe pack starter: shaped, shapeless, smelting, blasting and stonecutting recipes, an item tag and an advancement |
 | `starters/music_disc/` | `msm_starter` | The Custom music disc starter: a jukebox song, its sound event, disc model and texture, and a function that gives the disc |
 | `starters/function_starter/` | `msm_starter` | The Functions starter: load and tick functions, the vanilla function tags and a function tag of its own |
+| `starters/custom_biome/` | `msm_starter` | The Custom biome starter: the Amber Woods biome with its own tree and ore, and a World Type that uses it |
+| `starters/jigsaw_structure/` | `msm_starter` | The Jigsaw village-style structure starter: a hamlet of a hut, streets and lamp posts built from three structure templates and four template pools, with its structure set and biome tag |
+| `starters/worldgen_pack/` | `msm_starter` | The Custom biome with a jigsaw structure starter: both of the above, with hamlets generating in Amber Woods too (also saved as `fixtures/sample-worldgen/`) |
 
 Every element carries notes (`meta.notes`) explaining its fields; the app shows them above the editor.
 
@@ -16,7 +19,7 @@ Every element carries notes (`meta.notes`) explaining its fields; the app shows 
 
 1. Copy the folder somewhere outside this repository, so your edits do not change the mirror.
 2. In MCSuperMods choose File > Open Project… and pick the copied folder.
-3. Export the resource pack and data pack as usual and try them in game.
+3. Export the resource pack and data pack as usual and try them in game. Structure templates export as `.nbt` files in the data pack; a World Type appears on the Create New World screen only when the data pack is enabled there.
 
 The textures are generated placeholders, not Mojang assets. The music disc plays the vanilla `records/cat` track until you import your own `.ogg` and point the sound event at it.
 

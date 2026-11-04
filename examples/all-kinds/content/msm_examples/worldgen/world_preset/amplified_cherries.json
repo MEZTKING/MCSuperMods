@@ -1,0 +1,49 @@
+{
+  "data": {
+    "dimensions": {
+      "minecraft:overworld": {
+        "generator": {
+          "biome_source": {
+            "biome": "minecraft:cherry_grove",
+            "type": "minecraft:fixed"
+          },
+          "settings": "minecraft:amplified",
+          "type": "minecraft:noise"
+        },
+        "type": "minecraft:overworld"
+      },
+      "minecraft:the_end": {
+        "generator": {
+          "biome_source": {
+            "type": "minecraft:the_end"
+          },
+          "settings": "minecraft:end",
+          "type": "minecraft:noise"
+        },
+        "type": "minecraft:the_end"
+      },
+      "minecraft:the_nether": {
+        "generator": {
+          "biome_source": {
+            "preset": "minecraft:nether",
+            "type": "minecraft:multi_noise"
+          },
+          "settings": "minecraft:nether",
+          "type": "minecraft:noise"
+        },
+        "type": "minecraft:the_nether"
+      }
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:amplified_cherries",
+  "kind": "minecraft:worldgen/world_preset",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A world preset is a World Type on the Create New World screen: one entry per dimension of the new world. The overworld here uses the amplified noise settings with a fixed cherry grove biome; the nether and the end are the vanilla ones. It is offered only because the minecraft:normal tag lists it. The button shows the language key generator.msm_examples.amplified_cherries until a resource pack names it.",
+    "tags": [
+      "example",
+      "worldgen"
+    ]
+  }
+}

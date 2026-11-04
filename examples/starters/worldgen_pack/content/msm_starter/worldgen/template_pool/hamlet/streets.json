@@ -1,0 +1,23 @@
+{
+  "data": {
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "msm_starter:hamlet/street",
+          "processors": "minecraft:empty",
+          "projection": "terrain_matching"
+        },
+        "weight": 1
+      }
+    ],
+    "fallback": "msm_starter:hamlet/terminators"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:hamlet/streets",
+  "kind": "minecraft:worldgen/template_pool",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Streets follow the terrain (terrain_matching). When the structure reaches its size limit, or a street does not fit, the game takes a piece from the fallback pool msm_starter:hamlet/terminators instead."
+  }
+}

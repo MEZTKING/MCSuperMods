@@ -1,0 +1,13 @@
+{
+  "data": {
+    "biome.msm_sample_worldgen.amber_woods": "Amber Woods",
+    "generator.msm_sample_worldgen.amber_world": "Amber Woods"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_worldgen:en_us",
+  "kind": "minecraft:lang",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "English names for the biome (shown in F3 and /locate) and the World Type button. Install the resource pack too, or the screen shows the raw keys."
+  }
+}

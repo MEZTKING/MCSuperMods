@@ -1,0 +1,21 @@
+{
+  "data": {
+    "add_stone_depth": false,
+    "anchor": {
+      "absolute": 63
+    },
+    "surface_depth_multiplier": 0,
+    "type": "minecraft:y_above"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:above_sea_level",
+  "kind": "minecraft:worldgen/material_condition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A material condition is the test of a surface rule: here, whether the block is at or above y 63. Surface rules use conditions in their if_true fields. Naming msm_examples:above_sea_level there lets several rules share it.",
+    "tags": [
+      "example",
+      "worldgen-advanced-"
+    ]
+  }
+}

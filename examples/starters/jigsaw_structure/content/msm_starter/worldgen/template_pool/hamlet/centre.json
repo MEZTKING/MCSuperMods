@@ -1,0 +1,23 @@
+{
+  "data": {
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "msm_starter:hamlet/centre_hut",
+          "processors": "msm_starter:hamlet/mossy",
+          "projection": "rigid"
+        },
+        "weight": 1
+      }
+    ],
+    "fallback": "minecraft:empty"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:hamlet/centre",
+  "kind": "minecraft:worldgen/template_pool",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The start pool of the structure: always the hut, kept rigid so its floor stays flat, weathered by the mossy processor list."
+  }
+}

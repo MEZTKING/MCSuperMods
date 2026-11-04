@@ -1,0 +1,61 @@
+{
+  "data": {
+    "feature": "msm_examples:poppy",
+    "placement": [
+      {
+        "chance": 4,
+        "type": "minecraft:rarity_filter"
+      },
+      {
+        "type": "minecraft:in_square"
+      },
+      {
+        "heightmap": "MOTION_BLOCKING",
+        "type": "minecraft:heightmap"
+      },
+      {
+        "count": 32,
+        "type": "minecraft:count"
+      },
+      {
+        "type": "minecraft:offset",
+        "x": {
+          "max_inclusive": 7,
+          "min_inclusive": -7,
+          "type": "minecraft:uniform"
+        },
+        "y": {
+          "max_inclusive": 3,
+          "min_inclusive": -3,
+          "type": "minecraft:uniform"
+        },
+        "z": {
+          "max_inclusive": 7,
+          "min_inclusive": -7,
+          "type": "minecraft:uniform"
+        }
+      },
+      {
+        "predicate": {
+          "blocks": "minecraft:air",
+          "type": "minecraft:matching_blocks"
+        },
+        "type": "minecraft:block_predicate_filter"
+      },
+      {
+        "type": "minecraft:biome"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:poppy_patch",
+  "kind": "minecraft:worldgen/placed_feature",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "placement is a pipeline that turns one position per chunk into the positions where msm_examples:poppy runs. rarity_filter keeps one chunk in four, in_square moves to a random spot, heightmap lifts it to the surface, then count and offset spread 32 tries around it. block_predicate_filter keeps tries in air and biome keeps those inside biomes that list msm_examples:poppy_patch. Add it to a biome's vegetal decoration list to use it.",
+    "tags": [
+      "example",
+      "worldgen"
+    ]
+  }
+}

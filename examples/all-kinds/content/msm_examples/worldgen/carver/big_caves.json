@@ -1,0 +1,40 @@
+{
+  "data": {
+    "count": {
+      "max_inclusive": 3,
+      "min_inclusive": 1,
+      "type": "minecraft:uniform"
+    },
+    "floor_level": -0.7,
+    "horizontal_radius_multiplier": 1.5,
+    "probability": 0.15,
+    "room_vertical_radius_multiplier": 1,
+    "thickness": {
+      "max_exclusive": 0.9,
+      "min_inclusive": 0.1,
+      "type": "minecraft:uniform"
+    },
+    "type": "minecraft:cave",
+    "vertical_radius_multiplier": 1,
+    "y": {
+      "max_inclusive": {
+        "absolute": 180
+      },
+      "min_inclusive": {
+        "above_bottom": 8
+      },
+      "type": "minecraft:uniform"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:big_caves",
+  "kind": "minecraft:worldgen/carver",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A carver cuts caves or canyons out of the terrain after it is shaped. probability is the chance a chunk starts a cave system, y and count where and how many tunnels, and the radius multipliers make them wider or taller. List msm_examples:big_caves in a biome's carvers to use it.",
+    "tags": [
+      "example",
+      "worldgen-advanced-"
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "data": {
+    "placement": {
+      "salt": 523549412,
+      "separation": 12,
+      "spacing": 40,
+      "type": "minecraft:random_spread"
+    },
+    "structures": [
+      {
+        "structure": "msm_examples:ruin",
+        "weight": 1
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ruins",
+  "kind": "minecraft:worldgen/structure_set",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A structure set decides where its structures may start. random_spread divides the world into cells of spacing chunks and tries one start per cell, at least separation chunks apart (separation must be less than spacing). salt is any number; different salts keep sets from lining up. Sets load when a world opens, so reopen the world after enabling the pack, then try /locate structure msm_examples:ruin.",
+    "tags": [
+      "example",
+      "structures"
+    ]
+  }
+}

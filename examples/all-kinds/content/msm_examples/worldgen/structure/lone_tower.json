@@ -1,0 +1,28 @@
+{
+  "data": {
+    "biomes": "#minecraft:is_mountain",
+    "max_distance_from_center": 80,
+    "project_start_to_heightmap": "WORLD_SURFACE_WG",
+    "size": 1,
+    "spawn_overrides": {},
+    "start_height": {
+      "absolute": 0
+    },
+    "start_pool": "msm_examples:lone_tower/start",
+    "step": "surface_structures",
+    "terrain_adaptation": "beard_thin",
+    "type": "minecraft:jigsaw",
+    "use_expansion_hack": false
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:lone_tower",
+  "kind": "minecraft:worldgen/structure",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A jigsaw structure starts with a piece from start_pool and attaches more pieces up to size jigsaw steps away (1 here: just the tower). biomes is a biome or biome tag where it may start, and step is the generation step it is placed in. It generates only once a structure set lists it; add one to see it in new chunks. With a set in place, /locate structure msm_examples:lone_tower finds it.",
+    "tags": [
+      "example",
+      "structures"
+    ]
+  }
+}

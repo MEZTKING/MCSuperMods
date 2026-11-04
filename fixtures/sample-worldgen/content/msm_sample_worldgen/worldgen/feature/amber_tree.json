@@ -1,0 +1,44 @@
+{
+  "data": {
+    "below_trunk_provider": {
+      "state": "minecraft:dirt",
+      "type": "minecraft:simple"
+    },
+    "decorators": [],
+    "foliage_placer": {
+      "height": 3,
+      "offset": 0,
+      "radius": 2,
+      "type": "minecraft:blob_foliage_placer"
+    },
+    "foliage_provider": {
+      "state": "minecraft:acacia_leaves",
+      "type": "minecraft:simple"
+    },
+    "ignore_vines": true,
+    "minimum_size": {
+      "limit": 1,
+      "lower_size": 0,
+      "type": "minecraft:two_layers_feature_size",
+      "upper_size": 1
+    },
+    "trunk_placer": {
+      "base_height": 5,
+      "height_rand_a": 2,
+      "height_rand_b": 0,
+      "type": "minecraft:straight_trunk_placer"
+    },
+    "trunk_provider": {
+      "state": "minecraft:birch_log",
+      "type": "minecraft:simple"
+    },
+    "type": "minecraft:tree"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_worldgen:amber_tree",
+  "kind": "minecraft:worldgen/feature",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The configured feature says what a tree looks like: a birch trunk five to seven blocks high under a round crown of acacia leaves. The placed feature msm_sample_worldgen:amber_tree_placed says where and how often it grows. Element ids are unique in a project, so the placed feature has its own name."
+  }
+}

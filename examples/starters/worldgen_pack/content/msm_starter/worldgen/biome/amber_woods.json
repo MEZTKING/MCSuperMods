@@ -1,0 +1,171 @@
+{
+  "data": {
+    "attributes": {
+      "minecraft:gameplay/natural_mob_spawns": {
+        "spawn_costs": {},
+        "spawns_by_category": {
+          "creature": [
+            {
+              "count": {
+                "max_inclusive": 4,
+                "min_inclusive": 4,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:sheep",
+              "weight": 12
+            },
+            {
+              "count": {
+                "max_inclusive": 4,
+                "min_inclusive": 4,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:pig",
+              "weight": 10
+            },
+            {
+              "count": {
+                "max_inclusive": 4,
+                "min_inclusive": 4,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:chicken",
+              "weight": 10
+            },
+            {
+              "count": {
+                "max_inclusive": 4,
+                "min_inclusive": 2,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:fox",
+              "weight": 8
+            }
+          ],
+          "monster": [
+            {
+              "count": {
+                "max_inclusive": 4,
+                "min_inclusive": 4,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:zombie",
+              "weight": 95
+            },
+            {
+              "count": {
+                "max_inclusive": 4,
+                "min_inclusive": 4,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:skeleton",
+              "weight": 100
+            },
+            {
+              "count": {
+                "max_inclusive": 4,
+                "min_inclusive": 4,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:spider",
+              "weight": 100
+            },
+            {
+              "count": {
+                "max_inclusive": 4,
+                "min_inclusive": 4,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:creeper",
+              "weight": 100
+            }
+          ]
+        }
+      },
+      "minecraft:visual/fog_color": 12638463,
+      "minecraft:visual/sky_color": 7972607,
+      "minecraft:visual/water_fog_color": 329011
+    },
+    "carvers": [
+      "minecraft:cave",
+      "minecraft:cave_extra_underground",
+      "minecraft:canyon"
+    ],
+    "downfall": 0.7,
+    "effects": {
+      "foliage_color": 13666864,
+      "grass_color": 13148224,
+      "water_color": 4159204
+    },
+    "features": [
+      [],
+      [
+        "minecraft:lake_lava_underground",
+        "minecraft:lake_lava_surface"
+      ],
+      [
+        "minecraft:amethyst_geode"
+      ],
+      [
+        "minecraft:monster_room",
+        "minecraft:monster_room_deep"
+      ],
+      [],
+      [],
+      [
+        "minecraft:ore_dirt",
+        "minecraft:ore_gravel",
+        "minecraft:ore_granite_upper",
+        "minecraft:ore_granite_lower",
+        "minecraft:ore_diorite_upper",
+        "minecraft:ore_diorite_lower",
+        "minecraft:ore_andesite_upper",
+        "minecraft:ore_andesite_lower",
+        "minecraft:ore_tuff",
+        "minecraft:ore_coal_upper",
+        "minecraft:ore_coal_lower",
+        "minecraft:ore_iron_upper",
+        "minecraft:ore_iron_middle",
+        "minecraft:ore_iron_small",
+        "minecraft:ore_gold",
+        "minecraft:ore_gold_lower",
+        "minecraft:ore_redstone",
+        "minecraft:ore_redstone_lower",
+        "minecraft:ore_diamond",
+        "minecraft:ore_diamond_medium",
+        "minecraft:ore_diamond_large",
+        "minecraft:ore_diamond_buried",
+        "minecraft:ore_lapis",
+        "minecraft:ore_lapis_buried",
+        "minecraft:ore_copper",
+        "msm_starter:rich_copper_ore_placed"
+      ],
+      [],
+      [
+        "minecraft:spring_water",
+        "minecraft:spring_lava"
+      ],
+      [
+        "minecraft:forest_flowers",
+        "msm_starter:amber_tree_placed",
+        "minecraft:flower_default",
+        "minecraft:patch_grass_forest",
+        "minecraft:brown_mushroom_normal",
+        "minecraft:red_mushroom_normal",
+        "minecraft:patch_pumpkin"
+      ],
+      [
+        "minecraft:freeze_top_layer"
+      ]
+    ],
+    "has_precipitation": true,
+    "temperature": 0.6
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:amber_woods",
+  "kind": "minecraft:worldgen/biome",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A mild forest with orange grass and leaves, birch-trunked amber trees and extra copper. features holds one list of placed features per decoration step, in the game's step order; msm_starter:amber_tree_placed is in the vegetal decoration step and msm_starter:rich_copper_ore_placed in the underground ores step. The vanilla features are kept in vanilla's order, which avoids the \"Feature order cycle\" crash. The biome appears in worlds made with the World Type of msm_starter:amber_world."
+  }
+}

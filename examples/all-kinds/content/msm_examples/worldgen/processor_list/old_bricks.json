@@ -1,0 +1,48 @@
+{
+  "data": {
+    "processors": [
+      {
+        "processor_type": "minecraft:rule",
+        "rules": [
+          {
+            "input_predicate": {
+              "block": "minecraft:stone_bricks",
+              "predicate_type": "minecraft:random_block_match",
+              "probability": 0.2
+            },
+            "location_predicate": {
+              "predicate_type": "minecraft:always_true"
+            },
+            "output_state": "minecraft:cracked_stone_bricks"
+          },
+          {
+            "input_predicate": {
+              "block": "minecraft:stone_bricks",
+              "predicate_type": "minecraft:random_block_match",
+              "probability": 0.2
+            },
+            "location_predicate": {
+              "predicate_type": "minecraft:always_true"
+            },
+            "output_state": "minecraft:mossy_stone_bricks"
+          }
+        ]
+      },
+      {
+        "integrity": 0.95,
+        "processor_type": "minecraft:block_rot"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:old_bricks",
+  "kind": "minecraft:worldgen/processor_list",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Processors change blocks as a structure piece is placed, so one template gives many variations. The rule processor swaps stone bricks for cracked or mossy ones a fifth of the time each, and block_rot keeps only 95 percent of the blocks. Point a pool element's processors at msm_examples:old_bricks to use it.",
+    "tags": [
+      "example",
+      "structures"
+    ]
+  }
+}

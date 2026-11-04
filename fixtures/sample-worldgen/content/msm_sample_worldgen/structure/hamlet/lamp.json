@@ -1,0 +1,60 @@
+{
+  "data": {
+    "blocks": [
+      [
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        0,
+        2,
+        0,
+        1
+      ],
+      [
+        0,
+        3,
+        0,
+        2
+      ]
+    ],
+    "jigsaws": [
+      {
+        "final_state": "minecraft:cobblestone",
+        "name": "msm_sample_worldgen:street",
+        "pool": "minecraft:empty",
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "target": "minecraft:empty"
+      }
+    ],
+    "palette": [
+      "minecraft:jigsaw[orientation=north_up]",
+      "minecraft:stripped_spruce_log[axis=y]",
+      "minecraft:glowstone"
+    ],
+    "size": [
+      1,
+      4,
+      1
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_worldgen:hamlet/lamp",
+  "kind": "minecraft:structure_template",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A lamp post with a glowstone top. Its foot is a jigsaw named msm_sample_worldgen:street, so it fits the same openings as a street: beside a street as a decoration, or at the end of one as a terminator."
+  }
+}

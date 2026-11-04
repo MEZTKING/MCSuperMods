@@ -1,0 +1,19 @@
+{
+  "data": {
+    "noise": "minecraft:surface",
+    "type": "minecraft:noise",
+    "xz_scale": 0.5,
+    "y_scale": 0
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:rolling_noise",
+  "kind": "minecraft:worldgen/density_function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A density function returns a number for every block position; noise settings combine them into terrain. This one samples the vanilla surface noise, with xz_scale stretching it sideways and y_scale 0 keeping it the same at every height. Refer to it by id (msm_examples:rolling_noise) wherever a density function is expected, for example inside final_density.",
+    "tags": [
+      "example",
+      "worldgen-advanced-"
+    ]
+  }
+}

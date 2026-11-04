@@ -14,16 +14,23 @@ import { dataPackExamples } from './data-pack';
 import { defineExample } from './define';
 import { registryExamples } from './registries';
 import { resourcePackExamples } from './resource-pack';
+import { structureExamples } from './structures';
 import { tagExamples } from './tags';
+import { worldgenExamples } from './worldgen';
 
 export { categoryTag, defineExample, type ExampleInput } from './define';
 
-/** The per-kind examples, in gallery order: resource pack, data pack, tags, registries. */
+/**
+ * The per-kind examples, in gallery order: resource pack, data pack, tags, registries,
+ * structures, worldgen.
+ */
 export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...resourcePackExamples,
   ...dataPackExamples,
   ...tagExamples,
   ...registryExamples,
+  ...structureExamples,
+  ...worldgenExamples,
 ]);
 
 /** The category of the starter projects in the gallery. */

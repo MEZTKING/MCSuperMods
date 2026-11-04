@@ -1,0 +1,27 @@
+{
+  "data": {
+    "discard_chance_on_air_exposure": 0,
+    "size": 20,
+    "targets": [
+      {
+        "state": "minecraft:clay",
+        "target": {
+          "block": "minecraft:dirt",
+          "predicate_type": "minecraft:block_match"
+        }
+      }
+    ],
+    "type": "minecraft:ore"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:clay_pocket",
+  "kind": "minecraft:worldgen/feature",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A configured feature says what to place: type picks the generator, and the other fields are its settings. The ore generator replaces each block that matches a target with that target's state, here dirt with clay, in a blob of about size blocks. It does nothing on its own; a placed feature decides where and how often, and a biome lists that placed feature. Try /place feature msm_examples:clay_pocket near some dirt.",
+    "tags": [
+      "example",
+      "worldgen"
+    ]
+  }
+}

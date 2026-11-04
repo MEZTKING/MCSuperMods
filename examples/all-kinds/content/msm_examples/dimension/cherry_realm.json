@@ -1,0 +1,24 @@
+{
+  "data": {
+    "generator": {
+      "biome_source": {
+        "biome": "minecraft:cherry_grove",
+        "type": "minecraft:fixed"
+      },
+      "settings": "minecraft:overworld",
+      "type": "minecraft:noise"
+    },
+    "type": "minecraft:overworld"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:cherry_realm",
+  "kind": "minecraft:dimension",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A dimension pairs a dimension type (sky, light, height) with a generator. This one uses the overworld type and terrain, but a fixed biome source makes every column a cherry grove. The game loads new dimensions when a world opens. Visit it with /execute in msm_examples:cherry_realm run tp @s ~ 150 ~.",
+    "tags": [
+      "example",
+      "worldgen"
+    ]
+  }
+}

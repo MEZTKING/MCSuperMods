@@ -40,6 +40,8 @@ import type {
 import dataPackPlugin from '@msm/plugin-datapack';
 import libraryPlugin, { kindExamples, libraryExamples, libraryStarters } from '@msm/plugin-library';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
+import structuresPlugin from '@msm/plugin-structures';
+import worldgenPlugin from '@msm/plugin-worldgen';
 import {
   createRegistryIndex,
   createSchemaIndex,
@@ -63,13 +65,27 @@ const here = dirname(fileURLToPath(import.meta.url));
 const examplesRoot = join(here, '..', '..', '..', 'examples');
 
 /** The app's built-in plugins, in its registration order. */
-const PLUGINS: readonly Plugin[] = [resourcePackPlugin, dataPackPlugin, libraryPlugin];
+const PLUGINS: readonly Plugin[] = [
+  resourcePackPlugin,
+  dataPackPlugin,
+  structuresPlugin,
+  worldgenPlugin,
+  libraryPlugin,
+];
 const PACK_KIND = 'minecraft:pack_mcmeta';
 const NOW = '2026-11-04T00:00:00.000Z';
 const DEFAULT_TARGET = builtInTargets[0]?.target.id as string;
 
 /** The content starters mirrored under `examples/starters/`. */
-const MIRRORED_STARTERS = ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'];
+const MIRRORED_STARTERS = [
+  'custom_ore',
+  'recipe_pack',
+  'music_disc',
+  'function_starter',
+  'custom_biome',
+  'jigsaw_structure',
+  'worldgen_pack',
+];
 
 function kindRegistry(): ElementKindRegistry {
   const registry = new ElementKindRegistry();
@@ -189,23 +205,43 @@ function between(path: string, prefix: string, suffix: string): string | undefin
   return middle === '' ? undefined : middle;
 }
 
-/** A copy of the app's `projectRegistryIds` (the app cannot be imported here). */
+/** Resource pack kinds whose element ids are not data registry ids (as in the app). */
+const NON_DATA_KINDS = new Set([
+  'minecraft:block_definition',
+  'minecraft:item_definition',
+  'minecraft:lang',
+  'minecraft:model',
+  'minecraft:pack_mcmeta',
+  'minecraft:sounds',
+]);
+
+/**
+ * A copy of the app's `projectRegistryIds` (the app cannot be imported here): a registered
+ * kind's ids go to `ElementKind.registry`, else to the kind id without `minecraft:`.
+ */
 function projectRegistryIds(project: Project): Record<string, string[]> {
   const ids: Record<string, string[]> = { model: [], sound: [], sound_event: [], texture: [] };
-  const add = (registry: string, id: string): void => {
-    const list = ids[registry] ?? [];
+  const add = (name: string, id: string): void => {
+    const list = ids[name] ?? [];
     list.push(id);
-    ids[registry] = list;
+    ids[name] = list;
   };
   for (const namespace of project.namespaces) {
     for (const element of namespace.elements) {
-      const name = element.kind.replace(/^minecraft:/, '');
+      const kind = registry.get(element.kind);
+      const name = kind?.registry ?? element.kind.replace(/^minecraft:/, '');
       if (name === 'model') add('model', element.id);
       else if (name === 'sounds' && typeof element.data === 'object' && element.data !== null) {
         for (const key of Object.keys(element.data)) {
           if (key !== '') add('sound_event', `${namespace.name}:${key}`);
         }
-      } else if (DATA_REGISTRY_KINDS.has(name) || name.startsWith('tag/')) add(name, element.id);
+      } else if (
+        DATA_REGISTRY_KINDS.has(name) ||
+        name.startsWith('tag/') ||
+        (kind !== undefined && !NON_DATA_KINDS.has(element.kind))
+      ) {
+        add(name, element.id);
+      }
     }
     for (const asset of namespace.assets) {
       const texture = between(asset.path, 'textures/', '.png');
@@ -307,6 +343,21 @@ function elementProblems(
   return out;
 }
 
+/** Every built-in plugin's project validators, as the app's session runs them. */
+const VALIDATORS = PLUGINS.flatMap((plugin) => plugin.contributes.validators ?? []);
+
+/** The problems of every validator over the project's elements. */
+function validatorProblems(
+  project: Project,
+  target: TargetBundle['target'],
+  registries: RegistryIndex,
+): Problem[] {
+  const elements = project.namespaces.flatMap((namespace) => namespace.elements);
+  return VALIDATORS.flatMap((validator) =>
+    validator.validate({ elements, target, registry: registries }),
+  );
+}
+
 const meta = { msmVersion: '0.2.1', plugins: ['msm.resourcepack', 'msm.datapack'] };
 
 async function exportProblems(
@@ -359,6 +410,8 @@ async function checkProject(
   const ids = projectRegistryIds(project);
   const registries = createRegistryIndex({ vanilla: context.vanilla, project: ids });
   expect(elementProblems(project, context.schemaIndex, registries)).toEqual([]);
+  const validated = validatorProblems(project, bundle.target, registries);
+  expect(validated.filter((problem) => problem.severity === 'error')).toEqual([]);
   const results: string[][] = [];
   for (const exporter of [resourcePackExporter, dataPackExporter]) {
     const report = await exportProblems(

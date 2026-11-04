@@ -1,0 +1,30 @@
+{
+  "data": {
+    "discard_chance_on_air_exposure": 0,
+    "size": 14,
+    "targets": [
+      {
+        "state": "minecraft:copper_ore",
+        "target": {
+          "block": "minecraft:stone",
+          "predicate_type": "minecraft:block_match"
+        }
+      },
+      {
+        "state": "minecraft:deepslate_copper_ore",
+        "target": {
+          "block": "minecraft:deepslate",
+          "predicate_type": "minecraft:block_match"
+        }
+      }
+    ],
+    "type": "minecraft:ore"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_worldgen:rich_copper_ore",
+  "kind": "minecraft:worldgen/feature",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A large copper ore blob: copper ore where it replaces stone, deepslate copper ore where it replaces deepslate. size is roughly how many blocks one blob holds."
+  }
+}
