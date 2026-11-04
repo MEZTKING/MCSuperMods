@@ -65,6 +65,48 @@ export type ResourceFolderKey =
   | 'font';
 
 /**
+ * Keys of {@link Target.folders}`.data`: the data pack folders whose names a target supplies.
+ * Each value is a single folder name directly under `data/<namespace>/`.
+ *
+ * - `recipe`: recipes.
+ * - `loot_table`: loot tables.
+ * - `advancement`: advancements.
+ * - `predicate`: predicates.
+ * - `item_modifier`: item modifiers.
+ * - `function`: functions (`.mcfunction` files).
+ * - `tags`: the parent folder of every tag folder; tag kinds append `/<registry>`, for
+ *   example `<tags>/item`.
+ * - `enchantment`: enchantments.
+ * - `damage_type`: damage types.
+ * - `dimension_type`: dimension types.
+ * - `chat_type`: chat types.
+ * - `jukebox_song`: jukebox songs.
+ * - `banner_pattern`: banner patterns.
+ * - `painting_variant`: painting variants.
+ * - `trim_material`: armour trim materials.
+ * - `trim_pattern`: armour trim patterns.
+ * - `dialog`: dialogs.
+ */
+export type DataFolderKey =
+  | 'recipe'
+  | 'loot_table'
+  | 'advancement'
+  | 'predicate'
+  | 'item_modifier'
+  | 'function'
+  | 'tags'
+  | 'enchantment'
+  | 'damage_type'
+  | 'dimension_type'
+  | 'chat_type'
+  | 'jukebox_song'
+  | 'banner_pattern'
+  | 'painting_variant'
+  | 'trim_material'
+  | 'trim_pattern'
+  | 'dialog';
+
+/**
  * One Minecraft version's facts, contributed by a `@msm/target-mc-<version>` package.
  *
  * This interface is the documented home of every target field.
@@ -91,9 +133,8 @@ export interface Target {
    */
   mcmetaRef: string;
   /**
-   * Vanilla folder names, so lowering never hard-codes them.
-   *
-   * Data pack folders arrive in Phase 2.
+   * Vanilla folder names for resource packs and data packs, so lowering never hard-codes
+   * them.
    */
   folders: {
     /**
@@ -101,6 +142,11 @@ export interface Target {
      * `sounds_file` is a file name (directly under `assets/<namespace>/`), not a folder.
      */
     resource: Readonly<Record<ResourceFolderKey, string>>;
+    /**
+     * Folder names under `data/<namespace>/`, keyed by {@link DataFolderKey}. Every value is
+     * a single path segment; `tags` is the parent of the per-registry tag folders.
+     */
+    data: Readonly<Record<DataFolderKey, string>>;
   };
   /** Fabric toolchain versions. Required from Phase 4. */
   fabric?: {

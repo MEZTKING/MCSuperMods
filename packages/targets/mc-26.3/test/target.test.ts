@@ -45,4 +45,33 @@ describe('target mc-26.3', () => {
       expect(name).toMatch(/^[a-z_]+(\.json)?$/);
     }
   });
+
+  it('names every data pack folder as a single path segment', () => {
+    expect(target.folders.data).toEqual({
+      recipe: 'recipe',
+      loot_table: 'loot_table',
+      advancement: 'advancement',
+      predicate: 'predicate',
+      item_modifier: 'item_modifier',
+      function: 'function',
+      tags: 'tags',
+      enchantment: 'enchantment',
+      damage_type: 'damage_type',
+      dimension_type: 'dimension_type',
+      chat_type: 'chat_type',
+      jukebox_song: 'jukebox_song',
+      banner_pattern: 'banner_pattern',
+      painting_variant: 'painting_variant',
+      trim_material: 'trim_material',
+      trim_pattern: 'trim_pattern',
+      dialog: 'dialog',
+    });
+    for (const name of Object.values(target.folders.data)) {
+      expect(name).not.toBe('');
+      expect(name).not.toContain('/');
+      expect(name).not.toContain('\\');
+      expect(name).not.toMatch(/^\.\.?$/);
+      expect(name).toMatch(/^[a-z0-9_.-]+$/);
+    }
+  });
 });

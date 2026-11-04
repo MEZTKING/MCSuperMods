@@ -39,6 +39,13 @@ export interface OutputFile {
    * Omitted for binary files and for files that are not validated.
    */
   schema?: string;
+  /**
+   * A text language id the export validation gate may check, such as `mcfunction`; omitted
+   * for JSON and binary files.
+   *
+   * A file with a `language` carries its text as UTF-8 bytes in {@link OutputFile.contents}.
+   */
+  language?: string;
 }
 
 /**

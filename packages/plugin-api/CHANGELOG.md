@@ -2,6 +2,20 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 0.3.0 — 2026-11-04
+
+Phase 2 (Data Pack Studio) surface. `API_VERSION` is `0.3.0`. Built-in plugins declare `^0.3.0`.
+
+- `OutputFile.language?: string`: a text language id the export validation gate may check, such as `mcfunction`; omitted for JSON and binary files. Text files carry their contents as UTF-8 bytes.
+- `Problem.range?: { start: number; end: number }`: UTF-16 code unit offsets (start inclusive, end exclusive) within the string at `path`, or within `file` for problems in text output files.
+- `DataFolderKey` and `Target.folders.data`: vanilla folder names under `data/<namespace>/` for `recipe`, `loot_table`, `advancement`, `predicate`, `item_modifier`, `function`, `tags` (the parent of the per-registry tag folders, to which tag kinds append `/<registry>`), `enchantment`, `damage_type`, `dimension_type`, `chat_type`, `jukebox_song`, `banner_pattern`, `painting_variant`, `trim_material`, `trim_pattern` and `dialog`. Every value is a single path segment.
+
+### Migration from 0.2.0
+
+- `Target.folders.data` is required. Every target must supply all seventeen `DataFolderKey` entries alongside `folders.resource`.
+- Plugins declaring `^0.2.0` no longer load, because `0.3.0` is outside a `^0.2.0` range; declare `^0.3.0`.
+- `OutputFile.language` and `Problem.range` are optional; existing plugins and hosts need no change for them.
+
 ## 0.2.0 — 2026-11-04
 
 Phase 1 (Resource Pack Studio) surface. `API_VERSION` is `0.2.0`. Built-in plugins declare `^0.2.0`.

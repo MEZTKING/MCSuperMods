@@ -62,7 +62,7 @@ describe('pluginFiles', () => {
     expect(Object.keys(pkg.dependencies)).toEqual(['@msm/plugin-api', '@msm/schemas']);
     expect(Object.keys(pkg.devDependencies)).toEqual(['@msm/targets', '@types/node', 'vitest']);
     expect(files['src/index.ts']).toContain("id: 'msm.demo'");
-    expect(files['src/index.ts']).toContain("apiVersion: '^0.2.0'");
+    expect(files['src/index.ts']).toContain("apiVersion: '^0.3.0'");
     expect(files['src/index.ts']).toContain('contributes: {}');
   });
 });

@@ -15,7 +15,7 @@ export const nestedKind: ElementKind = {
   lower: () => [],
 };
 
-export function testPlugin(apiVersion = '^0.2.0'): Plugin {
+export function testPlugin(apiVersion = '^0.3.0'): Plugin {
   return definePlugin({
     id: 'test.things',
     apiVersion,

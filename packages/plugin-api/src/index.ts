@@ -24,6 +24,7 @@ export type { Plugin } from './plugin';
 export { definePlugin, PluginDefinitionError } from './plugin';
 export type { Problem, ProblemReporter, ProblemSeverity } from './problems';
 export type {
+  DataFolderKey,
   MigrationChange,
   MigrationReport,
   PackFormat,

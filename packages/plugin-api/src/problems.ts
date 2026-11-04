@@ -31,6 +31,12 @@ export interface Problem {
    * export problems, for example `assets/my_mod/models/ruby.json`).
    */
   file?: string;
+  /**
+   * A span within the string at {@link Problem.path} (or, for problems in text output files,
+   * within {@link Problem.file}), as UTF-16 code unit offsets: `start` is inclusive and `end`
+   * is exclusive. Omitted when the problem concerns the whole value or file.
+   */
+  range?: { start: number; end: number };
 }
 
 /**

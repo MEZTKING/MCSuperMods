@@ -1,5 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest';
 import type {
+  DataFolderKey,
   Element,
   ElementKind,
   ExporterInput,
@@ -119,5 +120,60 @@ describe('0.2.0 additions', () => {
       Readonly<Record<ResourceFolderKey, string>>
     >();
     expectTypeOf<Target>().toHaveProperty('folders');
+  });
+});
+
+describe('0.3.0 additions', () => {
+  it('adds an optional language to OutputFile', () => {
+    expectTypeOf<OutputFile['language']>().toEqualTypeOf<string | undefined>();
+    const file: OutputFile = {
+      path: 'data/example/function/greet.mcfunction',
+      contents: new TextEncoder().encode('say hello\n'),
+      layer: 'datapack',
+      language: 'mcfunction',
+    };
+    expectTypeOf(file).toEqualTypeOf<OutputFile>();
+  });
+
+  it('adds an optional range to Problem', () => {
+    expectTypeOf<Problem['range']>().toEqualTypeOf<{ start: number; end: number } | undefined>();
+    const problem: Problem = {
+      severity: 'error',
+      code: 'example.parse',
+      message: 'Expected a float.',
+      elementId: 'example:greet',
+      path: '/lines/0',
+      range: { start: 4, end: 9 },
+    };
+    expectTypeOf(problem).toEqualTypeOf<Problem>();
+  });
+
+  it('requires data folder names on Target', () => {
+    expectTypeOf<DataFolderKey>().toEqualTypeOf<
+      | 'recipe'
+      | 'loot_table'
+      | 'advancement'
+      | 'predicate'
+      | 'item_modifier'
+      | 'function'
+      | 'tags'
+      | 'enchantment'
+      | 'damage_type'
+      | 'dimension_type'
+      | 'chat_type'
+      | 'jukebox_song'
+      | 'banner_pattern'
+      | 'painting_variant'
+      | 'trim_material'
+      | 'trim_pattern'
+      | 'dialog'
+    >();
+    expectTypeOf<Target['folders']['data']>().toEqualTypeOf<
+      Readonly<Record<DataFolderKey, string>>
+    >();
+    expectTypeOf<Target['folders']>().toEqualTypeOf<{
+      resource: Readonly<Record<ResourceFolderKey, string>>;
+      data: Readonly<Record<DataFolderKey, string>>;
+    }>();
   });
 });
