@@ -665,3 +665,21 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 **Next**
 - The user publishes the v0.2.0 draft, installs 0.2.0 over 0.1.0, and checks Help > Check for Updates ("You have the latest version (v0.2.0)."). Auto-update works for every later published release.
 - Still open with the user: the CurseForge folder listing, the in-game checks, and whether the template and samples library comes before Phase 3.
+
+---
+
+## 2026-11-04 — main session — v0.2.0 verified on the user's Windows PC
+
+**What**
+- The user published v0.2.0, installed it over 0.1.0 and sent screenshots:
+  - **Prism detection works** on a real install: instances `1.16.1` (Speedrun) and `1.18.2` (Fabric badges) and a `26.3` instance, with version-mismatch warnings.
+  - **Extraction from Prism's jar store works:** "Vanilla assets for Minecraft 26.3 are extracted (9375 files). Client jar: Prism Launcher — 26.3."
+  - **Update check works:** "You have the latest version (v0.2.0)."
+- Found in the screenshots:
+  - The Game locations list overlaps the "Official launcher folder" section, hiding the 4th row.
+  - The dialog scrolls sideways because of long paths.
+  - The user's official-folder override (set in 0.1.0) points at a Prism instance folder, so the "Official launcher" row shows a Prism path.
+- A fix brief is running: layout, wrapping, and an "override is inside instance X; select it instead" hint.
+
+**Next**
+- Release v0.2.1 with the fix. It is the first end-to-end test of auto-update: 0.2.0 should download it and offer "Restart to update".
