@@ -16,7 +16,10 @@ export interface ProblemsPanelProps {
   problems: readonly Problem[];
   /** Problems of the last export or install. Their `file` is an output path. */
   exportProblems?: readonly Problem[];
-  /** Called for a problem that belongs to an element: select it and focus the field. */
+  /**
+   * Called for a problem that belongs to an element: select it and focus the field (for a
+   * function line, the caret goes to the start of the problem's `range` within the line).
+   */
   onNavigate?(problem: Problem & { elementId: NonNullable<Problem['elementId']> }): void;
   /** Reveals a project file (`file` is project-relative) in the OS file manager. */
   onReveal?(file: string): void;

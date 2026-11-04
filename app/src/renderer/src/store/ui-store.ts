@@ -44,6 +44,11 @@ export interface UiState {
   selectedId: ResourceLocation | null;
   /** RFC 6901 pointer of the focused field in the selected element, or `null`. */
   selectedPointer: string | null;
+  /**
+   * The span within the value at {@link UiState.selectedPointer} to put the caret at (a
+   * function problem's `range`), or `null`. Cleared whenever the pointer changes.
+   */
+  selectedRange: { start: number; end: number } | null;
   activeTab: EditorTab;
   rightDock: RightDockTab;
   minecraft: MinecraftUiState;
@@ -57,8 +62,15 @@ export interface UiState {
   /** Selects an element (and optionally a field in it); clears the field otherwise. */
   select(id: ResourceLocation | null, pointer?: string | null): void;
   selectPointer(pointer: string | null): void;
-  /** Selects an element, switches to the Form tab and focuses `pointer` there. */
-  navigateTo(id: ResourceLocation, pointer: string | null): void;
+  /**
+   * Selects an element, switches to the Form tab and focuses `pointer` there; `range` puts
+   * the caret at its start within that value (a function line's column).
+   */
+  navigateTo(
+    id: ResourceLocation,
+    pointer: string | null,
+    range?: { start: number; end: number } | null,
+  ): void;
   setExportProblems(problems: readonly Problem[]): void;
   setActiveTab(tab: EditorTab): void;
   setRightDock(tab: RightDockTab): void;
@@ -75,6 +87,7 @@ export const useUiStore = create<UiState>()((set) => ({
   snapshot: null,
   selectedId: null,
   selectedPointer: null,
+  selectedRange: null,
   activeTab: 'form',
   rightDock: 'problems',
   minecraft: { status: null, progress: null, locations: null, launchers: null },
@@ -88,12 +101,15 @@ export const useUiStore = create<UiState>()((set) => ({
         snapshot.project?.namespaces.some((namespace) =>
           namespace.elements.some((element) => element.id === state.selectedId),
         ) === true;
-      return stillExists ? { snapshot } : { snapshot, selectedId: null, selectedPointer: null };
+      return stillExists
+        ? { snapshot }
+        : { snapshot, selectedId: null, selectedPointer: null, selectedRange: null };
     }),
-  select: (selectedId, pointer = null) => set({ selectedId, selectedPointer: pointer }),
-  selectPointer: (selectedPointer) => set({ selectedPointer }),
-  navigateTo: (selectedId, selectedPointer) =>
-    set({ selectedId, selectedPointer, activeTab: 'form' }),
+  select: (selectedId, pointer = null) =>
+    set({ selectedId, selectedPointer: pointer, selectedRange: null }),
+  selectPointer: (selectedPointer) => set({ selectedPointer, selectedRange: null }),
+  navigateTo: (selectedId, selectedPointer, range = null) =>
+    set({ selectedId, selectedPointer, selectedRange: range, activeTab: 'form' }),
   setExportProblems: (exportProblems) => set({ exportProblems }),
   setActiveTab: (activeTab) => set({ activeTab }),
   setRightDock: (rightDock) => set({ rightDock }),

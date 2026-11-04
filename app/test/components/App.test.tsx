@@ -8,7 +8,8 @@ import { builtInTargets, targetById } from '@msm/targets';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { App } from '../../src/renderer/src/App';
+import { App, focusedLocation } from '../../src/renderer/src/App';
+import { registerCaretReader } from '../../src/renderer/src/components/function-editor/caret';
 import { builtInPlugins } from '../../src/renderer/src/plugins/built-in';
 import type { McfunctionChecker } from '../../src/renderer/src/session/mcfunction-problems';
 import { ProjectSession } from '../../src/renderer/src/session/project-session';
@@ -548,6 +549,19 @@ describe('App library (starters and examples)', () => {
 });
 
 describe('App function problems', () => {
+  it('puts the caret at the problem column within the line', async () => {
+    const harness = await renderApp();
+    addFunction(harness, ['say hi', 'say bogus']);
+    await act(() => harness.session.flushValidation());
+    const panel = screen.getByTestId('problems-panel');
+    const row = await within(panel).findByRole('button', { name: /Expected a command/ });
+    expect(row.textContent).toContain('line 2:5');
+    await userEvent.setup().click(row);
+    const editor = (await screen.findByTestId('function-editor-fallback')) as HTMLTextAreaElement;
+    await waitFor(() => expect(document.activeElement).toBe(editor));
+    expect(editor.selectionStart).toBe('say hi\nsay '.length);
+  });
+
   it('navigates from a function problem to its line in the editor', async () => {
     const harness = await renderApp();
     addFunction(harness, ['say hi', 'bogus here']);
@@ -562,6 +576,91 @@ describe('App function problems', () => {
     // The menu's export reports the blocking error instead of exporting.
     await harness.menu('exportDataPack');
     await toast('Fix 1 error first (see Problems).');
+  });
+});
+
+describe('App per-pack export gating', () => {
+  it('exports the resource pack while a function has an error, but not the data pack', async () => {
+    const harness = await renderApp();
+    addFunction(harness, ['bogus here']);
+    await act(() => harness.session.flushValidation());
+    await harness.menu('exportResourcePack');
+    await toast(/^Exported to \/exports\/demo-/);
+    expect(harness.saved.map((entry) => entry.defaultName)).toEqual([
+      `demo-${defaultTarget.id}.zip`,
+    ]);
+    await harness.menu('exportDataPack');
+    await toast('Fix 1 error first (see Problems).');
+    await harness.menu('exportCombined');
+    expect(harness.picks).toBe(0);
+    expect(harness.saved).toHaveLength(1);
+  });
+
+  it('exports the data pack while a model has an error, but not the resource pack', async () => {
+    const harness = await renderApp();
+    addFunction(harness, ['say hi']);
+    act(() => {
+      harness.session.addElement({
+        id: 'demo:broken',
+        kind: 'minecraft:model',
+        data: { parent: 5 },
+      });
+    });
+    await act(() => harness.session.flushValidation());
+    expect(
+      harness.session.snapshot.problems.some(
+        (problem) => problem.severity === 'error' && problem.elementId === 'demo:broken',
+      ),
+    ).toBe(true);
+    await harness.menu('exportDataPack');
+    await toast(/^Exported to \/exports\/demo-/);
+    expect(harness.saved.map((entry) => entry.defaultName)).toEqual([
+      `demo-${defaultTarget.id}-data.zip`,
+    ]);
+    // A data-only export leaves the resource pack files out without a Problems row.
+    expect(
+      useUiStore
+        .getState()
+        .exportProblems.some((problem) => problem.code === 'export.layer-skipped'),
+    ).toBe(false);
+    await harness.menu('exportResourcePack');
+    await toast(/^Fix \d+ errors? first/);
+    expect(harness.saved).toHaveLength(1);
+  });
+});
+
+describe('App go to definition', () => {
+  it('opens the element under the function editor caret on F12', async () => {
+    const harness = await renderApp();
+    addFunction(harness, ['say hi']);
+    act(() => {
+      harness.session.addElement({
+        id: 'demo:main',
+        kind: 'minecraft:function',
+        data: { lines: ['say first', 'function demo:greet'] },
+      });
+      useUiStore.getState().select('demo:main');
+    });
+    await act(() => harness.session.flushValidation());
+    const editor = (await screen.findByTestId('function-editor-fallback')) as HTMLTextAreaElement;
+    editor.focus();
+    const caret = 'say first\nfunction demo:gr'.length;
+    editor.setSelectionRange(caret, caret);
+    fireEvent.keyDown(editor, { key: 'F12' });
+    await waitFor(() => expect(useUiStore.getState().selectedId).toBe('demo:greet'));
+  });
+
+  it('reads the Monaco caret through the editor instance', () => {
+    const host = document.createElement('div');
+    host.dataset.testid = 'monaco-host';
+    const input = document.createElement('div');
+    host.append(input);
+    document.body.append(host);
+    const unregister = registerCaretReader(host, () => ({ line: 1, column: 12 }));
+    expect(focusedLocation(input)).toEqual({ pointer: '/lines/1', column: 12 });
+    unregister();
+    expect(focusedLocation(input)).toBeNull();
+    host.remove();
   });
 });
 

@@ -1,7 +1,8 @@
 /**
  * The Custom music disc starter (ADR 0020, D3). No sound file is bundled: the sound event
  * plays the vanilla file `minecraft:records/cat` until the user imports their own `.ogg`
- * under `sounds/` and points the event at it. A vanilla pack cannot add an item, so the
+ * (Import assets, Sounds: stored as `sounds/<name>.ogg`) and points the event at
+ * `<namespace>:<name>`. A vanilla pack cannot add an item, so the
  * disc is music disc 13 carrying a `jukebox_playable` component for the new song. The
  * starter overrides music disc 13's item definition with a `select` on that component, so a
  * disc playing the new song gets its own model and every other music disc 13 keeps its look.
@@ -27,7 +28,7 @@ export function musicDiscBundle({ namespace, projectName }: BundleContext): Cont
             sounds: [{ name: 'minecraft:records/cat', stream: true }],
           },
         },
-        `Defines the sound event ${namespace}:${event}. It plays the vanilla file records/cat for now: import your own .ogg (for example sounds/records/${SONG}.ogg), then change name to ${namespace}:records/${SONG}. stream: true plays long music without loading it all at once.`,
+        `Defines the sound event ${namespace}:${event}. It plays the vanilla file records/cat for now: choose Import assets, then Sounds, and pick your own .ogg (for example ${SONG}.ogg; it is stored as sounds/${SONG}.ogg in this namespace), then change name to ${namespace}:${SONG} (the path under sounds/ without .ogg). stream: true plays long music without loading it all at once.`,
       ),
       element(
         song,

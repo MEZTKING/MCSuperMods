@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { bindControlledModel, type ControlledModelBinding } from '../json-editor/controlled-model';
 import { monaco } from '../json-editor/monaco-setup';
+import { registerCaretReader, requestGoToDefinition } from './caret';
 import {
   MCFUNCTION_LANGUAGE_ID,
   registerMcfunction,
@@ -71,11 +72,40 @@ export default function MonacoFunctionEditor({
     host.querySelector('.native-edit-context, textarea')?.setAttribute('id', id);
     const binding = bindControlledModel(model, (text) => onChangeRef.current(text));
     bindingRef.current = binding;
+    // "Go to definition" reads the caret from here (the palette command) or is raised by F12
+    // and Ctrl/Cmd+Click (the host resolves it like the form fields' references).
+    const caret = () => {
+      const position = editor.getPosition();
+      return position === null
+        ? null
+        : { line: position.lineNumber - 1, column: position.column - 1 };
+    };
+    const unregisterCaret = registerCaretReader(host, caret);
+    const goToDefinition = () => {
+      const at = caret();
+      if (at !== null) requestGoToDefinition(host, at);
+    };
+    const action = editor.addAction({
+      id: 'msm.goToDefinition',
+      label: 'Go to Definition',
+      keybindings: [monaco.KeyCode.F12],
+      run: goToDefinition,
+    });
+    const mouse = editor.onMouseDown((event) => {
+      const position = event.target.position;
+      if (position === null || !(event.event.ctrlKey || event.event.metaKey)) return;
+      event.event.preventDefault();
+      editor.setPosition(position);
+      goToDefinition();
+    });
     const onScheme = (event: MediaQueryListEvent): void =>
       monaco.editor.setTheme(themeFor(event.matches));
     media.addEventListener('change', onScheme);
     return () => {
       media.removeEventListener('change', onScheme);
+      mouse.dispose();
+      action.dispose();
+      unregisterCaret();
       binding.dispose();
       bindingRef.current = null;
       setModelCompleter(model, undefined);

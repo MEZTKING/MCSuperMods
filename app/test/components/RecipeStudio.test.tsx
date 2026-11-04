@@ -173,6 +173,21 @@ describe('RecipeStudio', () => {
     });
   });
 
+  it('gives the cooking result item field a fixed width', () => {
+    renderStudio({
+      type: 'minecraft:blasting',
+      ingredient: 'minecraft:raw_iron',
+      result: { id: 'minecraft:iron_ingot' },
+    });
+    const field = screen.getByTestId('recipe-result');
+    // The input fills its wrapper (`w-full`), so the wrapper must carry the width; without
+    // it the wrapper shrinks to its content in the flex row.
+    expect(field.className).toContain('w-full');
+    expect(field.className).not.toContain('w-72');
+    const wrapper = field.parentElement as HTMLElement;
+    expect(wrapper.className.split(' ')).toEqual(expect.arrayContaining(['w-72', 'max-w-full']));
+  });
+
   it('shows only a notice for other recipe types', () => {
     renderStudio({ type: 'minecraft:stonecutting' }, { children: <p>Schema form</p> });
     expect(screen.getByRole('status').textContent).toContain('minecraft:stonecutting');

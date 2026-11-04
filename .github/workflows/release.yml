@@ -2,12 +2,13 @@
 # NSIS x64 installer. The Linux `dir` build is a verification target for CI, not a release
 # artefact, and macOS is out of scope.
 #
-# Runs on `v*` tags and manually. electron-builder publishes (ADR 0018): on a tag it uploads
-# the installer, its `.blockmap` and `latest.yml` to a DRAFT GitHub Release of
-# MEZTKING/MCSuperMods named after the version in app/package.json. The maintainer reviews and
+# Runs on `v*` tags and manually. On a tag the workflow creates one DRAFT GitHub Release of
+# MEZTKING/MCSuperMods named after the version in app/package.json, then electron-builder
+# publishes into it (ADR 0018): the installer, its `.blockmap` and `latest.yml`, which a last
+# step checks. The maintainer reviews and
 # publishes the draft by hand; the in-app updater only sees published releases. Manual runs
 # build without publishing and keep the files as a workflow artefact.
-# Action versions: verify at implementation.
+# Action versions: checkout, setup-node and upload-artifact v7 (Node 24; checked 2026-11-04).
 name: Release
 
 on:
@@ -26,9 +27,9 @@ jobs:
       # Unsigned until the user supplies signing credentials.
       CSC_IDENTITY_AUTO_DISCOVERY: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -46,7 +47,26 @@ jobs:
           fi
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - name: Build the installer (and upload it to a draft release on tags)
+      # electron-builder uploads the installer and its `.blockmap` in parallel; when no release
+      # exists for the tag, both uploads create one and the assets end up split across two
+      # drafts (seen on v0.2.2). Creating the draft once first means it only ever finds it.
+      - name: Create the draft release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          version=$(node -p "require('./app/package.json').version")
+          count=$(gh release list --limit 100 --json tagName --jq "[.[] | select(.tagName == \"${GITHUB_REF_NAME}\")] | length")
+          if [ "$count" -gt 1 ]; then
+            echo "::error::$count releases already exist for ${GITHUB_REF_NAME}; delete the extra drafts and re-run."
+            exit 1
+          fi
+          if [ "$count" -eq 0 ]; then
+            gh release create "${GITHUB_REF_NAME}" --draft --title "${version}" --notes "MCSuperMods ${version}" --verify-tag
+          fi
+      - name: Build the installer (and upload it to the draft release on tags)
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -56,6 +76,35 @@ jobs:
           else
             pnpm --filter @msm/app exec electron-builder --publish never
           fi
+      # The updater needs all three files on one release: the installer, its `.blockmap` and
+      # `latest.yml`. Upload `latest.yml` again if it is missing; fail on anything else.
+      - name: Check the draft release assets
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          version=$(node -p "require('./app/package.json').version")
+          count=$(gh release list --limit 100 --json tagName --jq "[.[] | select(.tagName == \"${GITHUB_REF_NAME}\")] | length")
+          if [ "$count" -ne 1 ]; then
+            echo "::error::Expected exactly one release for ${GITHUB_REF_NAME}, found $count."
+            exit 1
+          fi
+          assets() { gh release view "${GITHUB_REF_NAME}" --json assets --jq '.assets[].name'; }
+          if ! assets | grep -qx "latest.yml"; then
+            gh release upload "${GITHUB_REF_NAME}" app/dist/latest.yml --clobber
+          fi
+          names=$(assets)
+          echo "$names"
+          missing=0
+          for name in "MCSuperMods-${version}-win-x64.exe" "MCSuperMods-${version}-win-x64.exe.blockmap" "latest.yml"; do
+            if ! grep -qx "$name" <<< "$names"; then
+              echo "::error::The draft release ${GITHUB_REF_NAME} is missing $name."
+              missing=1
+            fi
+          done
+          exit $missing
       # Installer budget (tools/check-size/README.md): the NSIS installer is at most 150 MB.
       - name: Check installer size
         shell: bash
@@ -68,7 +117,7 @@ jobs:
               exit 1
             fi
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: MCSuperMods-windows
           path: |

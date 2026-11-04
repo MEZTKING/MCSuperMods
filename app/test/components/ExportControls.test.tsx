@@ -8,10 +8,13 @@ import { Toolbar, type ToolbarProps } from '../../src/renderer/src/components/To
 import {
   dataExportDisabledReason,
   dataInstallDisabledReason,
+  elementLayers,
   exportDisabledReason,
   hasLayerOutput,
   installDisabledReason,
+  layerProblems,
   NO_DATA_PACK_CONTENT,
+  userFacingExportProblems,
 } from '../../src/renderer/src/studios/export-state';
 import type { MinecraftStatus } from '../../src/shared/platform';
 
@@ -122,6 +125,77 @@ describe('export availability', () => {
         throw new Error('broken');
       }),
     ).toBe(true);
+  });
+});
+
+describe('per-pack export gating', () => {
+  const element = (id: string, kind: string) => ({
+    id: id as `${string}:${string}`,
+    kind,
+    data: {},
+    created: '',
+    modified: '',
+  });
+  const project = {
+    name: 'demo',
+    namespaces: [
+      {
+        name: 'demo',
+        elements: [
+          element('demo:pack', 'minecraft:pack_mcmeta'),
+          element('demo:model', 'minecraft:model'),
+          element('demo:fn', 'minecraft:function'),
+          element('demo:broken', 'minecraft:recipe'),
+          element('demo:empty', 'minecraft:lang'),
+        ],
+        assets: [],
+      },
+    ],
+  } as unknown as Parameters<typeof elementLayers>[0];
+  const layers = elementLayers(project, (entry) => {
+    if (entry.kind === 'minecraft:pack_mcmeta') {
+      return [{ layer: 'resourcepack' }, { layer: 'datapack' }];
+    }
+    if (entry.kind === 'minecraft:model') return [{ layer: 'resourcepack' }];
+    if (entry.kind === 'minecraft:function') return [{ layer: 'datapack' }];
+    if (entry.kind === 'minecraft:lang') return [];
+    throw new Error('broken');
+  });
+  const errorOf = (elementId: string): Problem => ({ ...error, elementId: elementId as never });
+  const reasons = (problems: readonly Problem[]) => ({
+    resource: exportDisabledReason(true, layerProblems(problems, layers, 'resourcepack')),
+    data: dataExportDisabledReason(true, layerProblems(problems, layers, 'datapack'), true),
+  });
+
+  it('a data pack error leaves the resource pack export enabled', () => {
+    expect(reasons([errorOf('demo:fn')])).toEqual({
+      resource: null,
+      data: 'Fix 1 error first (see Problems).',
+    });
+  });
+
+  it('a resource pack error leaves the data pack export enabled', () => {
+    expect(reasons([errorOf('demo:model')])).toEqual({
+      resource: 'Fix 1 error first (see Problems).',
+      data: null,
+    });
+  });
+
+  it('errors of elements that fail to lower, lower to nothing or are not tied to one block both', () => {
+    const blocked = 'Fix 1 error first (see Problems).';
+    for (const problem of [errorOf('demo:broken'), errorOf('demo:empty'), error]) {
+      expect(reasons([problem])).toEqual({ resource: blocked, data: blocked });
+    }
+    expect(layers.get('demo:pack')).toEqual(new Set(['resourcepack', 'datapack']));
+  });
+
+  it('hides the layer-skipped info of single-pack exports from the user', () => {
+    const skipped: Problem = {
+      severity: 'info',
+      code: 'export.layer-skipped',
+      message: '3 resourcepack file(s) are not packaged by Vanilla data pack and were left out.',
+    };
+    expect(userFacingExportProblems([skipped, warning])).toEqual([warning]);
   });
 });
 

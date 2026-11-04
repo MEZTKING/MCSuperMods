@@ -23,6 +23,11 @@ import { ConfirmDialog } from './components/ConfirmDialog';
 import { EditorArea } from './components/EditorArea';
 import { ElementSidebar } from './components/ElementSidebar';
 import { ExamplesDialog } from './components/ExamplesDialog';
+import {
+  type FunctionCaret,
+  GO_TO_DEFINITION_EVENT,
+  monacoCaret,
+} from './components/function-editor/caret';
 import { lineOffset } from './components/function-editor/source-text';
 import { ImportAssetsDialog, importFileFilters } from './components/ImportAssetsDialog';
 import {
@@ -64,11 +69,14 @@ import { ElementForm } from './studios/ElementForm';
 import {
   dataExportDisabledReason,
   dataInstallDisabledReason,
+  elementLayers,
   errorCount,
   exportDisabledReason,
   hasLayerOutput,
   installDisabledReason,
   installTargetOption,
+  layerProblems,
+  userFacingExportProblems,
 } from './studios/export-state';
 import type { CompleteFunction } from './studios/FunctionEditor';
 import { templatesFor } from './studios/templates';
@@ -121,10 +129,12 @@ type DialogState =
 
 /**
  * Where the caret is: the `data-pointer` of the focused form field, or `/lines/<n>` and the
- * column in the function editor's text area. `null` elsewhere (Monaco keeps its caret to
- * itself).
+ * column in the function editor (its text area, or Monaco's caret read through the editor
+ * instance). `null` elsewhere.
  */
 export function focusedLocation(active: Element | null): FocusedLocation | null {
+  const caret = monacoCaret(active);
+  if (caret !== null) return { pointer: `/lines/${caret.line}`, column: caret.column };
   if (
     active instanceof HTMLTextAreaElement &&
     active.dataset.testid === 'function-editor-fallback'
@@ -206,6 +216,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   const snapshot = useUiStore((state) => state.snapshot) ?? session.snapshot;
   const selectedId = useUiStore((state) => state.selectedId);
   const selectedPointer = useUiStore((state) => state.selectedPointer);
+  const selectedRange = useUiStore((state) => state.selectedRange);
   const activeTab = useUiStore((state) => state.activeTab);
   const rightDock = useUiStore((state) => state.rightDock);
   const minecraft = useUiStore((state) => state.minecraft);
@@ -366,6 +377,10 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     },
     [session, target],
   );
+  const layers = useMemo(
+    () => (project === null ? null : elementLayers(project, lowerForTarget)),
+    [project, lowerForTarget],
+  );
   const hasDataPack = useMemo(
     () => project !== null && hasLayerOutput(project, 'datapack', lowerForTarget),
     [project, lowerForTarget],
@@ -377,21 +392,32 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         hasLayerOutput(project, 'resourcepack', lowerForTarget)),
     [project, lowerForTarget],
   );
+  // Errors block per pack: an error in an element that lowers only to the data pack leaves
+  // the resource pack exportable, and the other way round.
+  const resourceProblems = useMemo(
+    () =>
+      layers === null
+        ? snapshot.problems
+        : layerProblems(snapshot.problems, layers, 'resourcepack'),
+    [snapshot.problems, layers],
+  );
+  const dataProblems = useMemo(
+    () =>
+      layers === null ? snapshot.problems : layerProblems(snapshot.problems, layers, 'datapack'),
+    [snapshot.problems, layers],
+  );
+  const combinedProblems = useMemo(
+    () => [...new Set([...resourceProblems, ...dataProblems])],
+    [resourceProblems, dataProblems],
+  );
 
-  const exportReason = exportDisabledReason(project !== null, snapshot.problems);
-  const installReason = installDisabledReason(
-    project !== null,
-    snapshot.problems,
-    minecraft.status,
-  );
-  const dataExportReason = dataExportDisabledReason(
-    project !== null,
-    snapshot.problems,
-    hasDataPack,
-  );
+  const exportReason = exportDisabledReason(project !== null, resourceProblems);
+  const installReason = installDisabledReason(project !== null, resourceProblems, minecraft.status);
+  const dataExportReason = dataExportDisabledReason(project !== null, dataProblems, hasDataPack);
+  const combinedReason = dataExportDisabledReason(project !== null, combinedProblems, hasDataPack);
   const dataInstallReason = dataInstallDisabledReason(
     project !== null,
-    snapshot.problems,
+    dataProblems,
     minecraft.status,
     hasDataPack,
   );
@@ -406,7 +432,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     const verb = mode === 'install' ? 'Install' : 'Export';
     try {
       const result = await action();
-      setExportProblems(result.problems);
+      setExportProblems(userFacingExportProblems(result.problems));
       if (!result.ok) {
         setRightDock('problems');
         const errors = errorCount(result.problems);
@@ -462,7 +488,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     () => void runPackExport('data', 'zip', () => session.exportPack('data', 'zip')),
   );
   const exportCombined = guarded(
-    dataExportReason,
+    combinedReason,
     () =>
       void runPackExport('resource', 'combined', () => session.exportPack('resource', 'combined')),
   );
@@ -687,8 +713,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     setDialog({ type: 'usages', id: selected.id, usages: session.references.to(selected.id) });
   };
 
-  const goToDefinition = (): void => {
-    const focus = paletteFocus.current ?? focusedLocation(document.activeElement);
+  const goToDefinition = (at?: FocusedLocation): void => {
+    const focus = at ?? paletteFocus.current ?? focusedLocation(document.activeElement);
     if (selected === null || project === null || focus === null) {
       setMessage({
         kind: 'error',
@@ -711,6 +737,17 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     }
     navigateTo(definition.id, null);
   };
+  const goToDefinitionRef = useRef(goToDefinition);
+  goToDefinitionRef.current = goToDefinition;
+  // F12 and Ctrl/Cmd+Click in the function editor ask for the definition at their caret.
+  useEffect(() => {
+    const onRequest = (event: Event): void => {
+      const caret = (event as CustomEvent<FunctionCaret>).detail;
+      goToDefinitionRef.current({ pointer: `/lines/${caret.line}`, column: caret.column });
+    };
+    document.addEventListener(GO_TO_DEFINITION_EVENT, onRequest);
+    return () => document.removeEventListener(GO_TO_DEFINITION_EVENT, onRequest);
+  }, []);
 
   const handlers: Record<MenuCommand, Action> = {
     new: () => void openWith('New project', () => session.newProject()),
@@ -756,11 +793,11 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     importAssets: canAddElement ? handlers.importAssets : null,
     exportResourcePack: exportReason === null ? exportResourceZip : null,
     exportDataPack: dataExportReason === null ? exportDataZip : null,
-    exportCombined: dataExportReason === null ? exportCombined : null,
+    exportCombined: combinedReason === null ? exportCombined : null,
     installResourcePack: installReason === null ? installResource : null,
     installDataPack: dataInstallReason === null ? installData : null,
     renameElement: selected === null ? null : renameSelected,
-    goToDefinition: selected === null ? null : goToDefinition,
+    goToDefinition: selected === null ? null : () => goToDefinition(),
     findUsages: selected === null ? null : findUsages,
     toggleRawJson:
       selected === null ? null : () => setActiveTab(activeTab === 'json' ? 'form' : 'json'),
@@ -870,6 +907,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         schema={schema}
         onChange={editValue}
         focusPointer={selectedPointer}
+        {...(selectedRange === null ? {} : { focusColumn: selectedRange.start })}
         onFocused={clearPointer}
       />
     ) : undefined;
@@ -904,7 +942,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               exportDisabledReason={exportReason}
               installDisabledReason={installReason}
               dataExportDisabledReason={dataExportReason}
-              combinedExportDisabledReason={dataExportReason}
+              combinedExportDisabledReason={combinedReason}
               dataInstallDisabledReason={dataInstallReason}
               primaryExport={hasDataPack && !hasResourcePack ? 'data' : 'resource'}
               exporting={exporting}
@@ -960,7 +998,9 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               tab={rightDock}
               onTabChange={setRightDock}
               preview={preview}
-              onNavigate={(problem) => navigateTo(problem.elementId, problem.path ?? null)}
+              onNavigate={(problem) =>
+                navigateTo(problem.elementId, problem.path ?? null, problem.range ?? null)
+              }
               onReveal={reveal}
             />
           </main>

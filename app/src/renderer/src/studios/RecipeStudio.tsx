@@ -359,7 +359,9 @@ function ResultFields({ recipe, onChange, suggest, problems }: SectionProps) {
     <fieldset className="m-0 flex flex-col gap-1.5 border-0 p-0">
       <legend className="mb-1 font-medium text-sm">Result</legend>
       <div className="flex flex-wrap items-end gap-2">
-        <div className="flex flex-col gap-0.5 text-sm">
+        {/* The wrapper sets the width: the input's own `w-full` would otherwise shrink it to
+            the wrapper's content width (too narrow in the cooking layout). */}
+        <div className="flex w-72 max-w-full flex-col gap-0.5 text-sm">
           <span aria-hidden>Item</span>
           <IdInput
             value={id}
@@ -367,7 +369,7 @@ function ResultFields({ recipe, onChange, suggest, problems }: SectionProps) {
             suggestions={(text) => suggest(text).filter((entry) => !entry.startsWith('#'))}
             label="Result item"
             testId="recipe-result"
-            className="w-72 font-mono"
+            className="font-mono"
           />
         </div>
         <NumberField

@@ -1,11 +1,13 @@
 /**
  * When Export and Install are available. Errors block export, never save (DESIGN §8, plan D5);
- * the data pack also needs data pack content (ADR 0015).
+ * the data pack also needs data pack content (ADR 0015). Errors block per pack: an error of an
+ * element that lowers only to one layer leaves the other pack's export and install enabled.
  *
  * @packageDocumentation
  */
 
 import type { Element, Problem, Project } from '@msm/core';
+import { ExportProblemCodes } from '@msm/exporters';
 import type { OutputFile, OutputLayer } from '@msm/plugin-api';
 import type { GameLocationView, MinecraftStatus } from '../../../shared/platform';
 import type { InstallTargetOption } from '../components/install-target';
@@ -81,6 +83,57 @@ export type LowerElement = (element: Element) => readonly Pick<OutputFile, 'laye
 /** The kind every project has, which writes `pack.mcmeta` into both packs. */
 const PACK_MCMETA_KIND = 'minecraft:pack_mcmeta';
 
+/** Every output layer; an element whose layers are unknown counts as all of them. */
+const ALL_LAYERS: ReadonlySet<OutputLayer> = new Set<OutputLayer>(['resourcepack', 'datapack']);
+
+/**
+ * The layers each element of `project` lowers to, by element id. An element that fails to
+ * lower (or lowers to nothing) maps to every layer, so its errors block both packs.
+ *
+ * @param project - The open project.
+ * @param lower - Lowers one element through its kind.
+ */
+export function elementLayers(
+  project: Project,
+  lower: LowerElement,
+): ReadonlyMap<string, ReadonlySet<OutputLayer>> {
+  const layers = new Map<string, ReadonlySet<OutputLayer>>();
+  for (const namespace of project.namespaces) {
+    for (const element of namespace.elements) {
+      let produced: ReadonlySet<OutputLayer>;
+      try {
+        produced = new Set(lower(element).map((file) => file.layer));
+      } catch {
+        produced = ALL_LAYERS;
+      }
+      const known = layers.get(element.id);
+      const merged = new Set([...(known ?? []), ...(produced.size === 0 ? ALL_LAYERS : produced)]);
+      layers.set(element.id, merged);
+    }
+  }
+  return layers;
+}
+
+/**
+ * The problems that concern the `layer` pack: problems of elements that lower to it, plus
+ * every problem not tied to a known element (load and project problems block both packs).
+ *
+ * @param problems - The project's live problems.
+ * @param layers - {@link elementLayers} of the project.
+ * @param layer - `resourcepack` or `datapack`.
+ */
+export function layerProblems(
+  problems: readonly Problem[],
+  layers: ReadonlyMap<string, ReadonlySet<OutputLayer>>,
+  layer: OutputLayer,
+): Problem[] {
+  return problems.filter((problem) => {
+    if (problem.elementId === undefined) return true;
+    const produced = layers.get(problem.elementId);
+    return produced === undefined || produced.has(layer);
+  });
+}
+
 /**
  * Whether any element of `project` (other than `pack.mcmeta`, which every pack gets) lowers
  * to a file of `layer`. An element that fails to lower counts as content, so its errors
@@ -102,6 +155,15 @@ export function hasLayerOutput(project: Project, layer: OutputLayer, lower: Lowe
     }
   }
   return false;
+}
+
+/**
+ * The export problems shown to the user. Each single-pack export leaves out the other
+ * pack's files with an `export.layer-skipped` info; that is expected (the other export or
+ * "Both packs" packages them), so it stays in the report but not in the Problems panel.
+ */
+export function userFacingExportProblems(problems: readonly Problem[]): Problem[] {
+  return problems.filter((problem) => problem.code !== ExportProblemCodes.layerSkipped);
 }
 
 /** Shown when a data pack export or install has nothing to package. */

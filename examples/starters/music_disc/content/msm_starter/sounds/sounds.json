@@ -14,6 +14,6 @@
   "kind": "minecraft:sounds",
   "meta": {
     "createdAt": "2026-11-04T00:00:00.000Z",
-    "notes": "Defines the sound event msm_starter:music_disc.my_song. It plays the vanilla file records/cat for now: import your own .ogg (for example sounds/records/my_song.ogg), then change name to msm_starter:records/my_song. stream: true plays long music without loading it all at once."
+    "notes": "Defines the sound event msm_starter:music_disc.my_song. It plays the vanilla file records/cat for now: choose Import assets, then Sounds, and pick your own .ogg (for example my_song.ogg; it is stored as sounds/my_song.ogg in this namespace), then change name to msm_starter:my_song (the path under sounds/ without .ogg). stream: true plays long music without loading it all at once."
   }
 }

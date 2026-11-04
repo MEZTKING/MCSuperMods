@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { requestGoToDefinition } from './caret';
 import { lineOffset, problemLine, snippetToText, tokenStart } from './source-text';
 import type { FunctionCompletion, FunctionSourceEditorProps } from './types';
 
@@ -8,7 +9,8 @@ const MAX_SHOWN = 30;
 /**
  * Plain `<textarea>` function editor: used when Monaco is disabled (`window.msmNoMonaco`)
  * and while Monaco loads. Ctrl+Space lists completions (Enter or Tab inserts, Escape
- * closes); line problems are listed under the editor.
+ * closes); F12 asks the host for "Go to definition"; line problems are listed under the
+ * editor.
  */
 export function TextareaFunctionEditor({
   id,
@@ -100,6 +102,15 @@ export function TextareaFunctionEditor({
           if (shown) close();
         }}
         onKeyDown={(event) => {
+          if (event.key === 'F12') {
+            event.preventDefault();
+            const area = event.currentTarget;
+            const caret = area.selectionStart;
+            const lineStart = area.value.lastIndexOf('\n', caret - 1) + 1;
+            const line = area.value.slice(0, lineStart).split('\n').length - 1;
+            requestGoToDefinition(area, { line, column: caret - lineStart });
+            return;
+          }
           if (event.key === ' ' && event.ctrlKey) {
             event.preventDefault();
             void open();

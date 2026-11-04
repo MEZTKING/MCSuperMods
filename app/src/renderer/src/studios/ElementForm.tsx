@@ -45,6 +45,8 @@ export interface ElementFormProps {
   onChange(pointer: string, value: Json | undefined, options?: ChangeOptions): void;
   /** The field the UI asked to focus (from the Problems panel), or `null`. */
   focusPointer: string | null;
+  /** UTF-16 offset within the function line at {@link focusPointer} to put the caret at. */
+  focusColumn?: number | undefined;
   /** Called once the form has handled {@link focusPointer}. */
   onFocused(): void;
   /** Completions for the function editor (the source and the caret offset). */
@@ -182,9 +184,12 @@ export function ElementForm(props: ElementFormProps) {
     if (isFunction && focusPointer !== null && lineFocus === null) onFocused();
   }, [isFunction, focusPointer, lineFocus, onFocused]);
   const [functionFocus, setFunctionFocus] = useState<FunctionFocus | null>(null);
-  const focusKey = lineFocus === null ? null : lineFocus.line;
+  const focusColumn = props.focusColumn;
+  const focusKey = lineFocus === null ? null : `${lineFocus.line}:${focusColumn ?? 0}`;
   useEffect(() => {
-    if (focusKey !== null) setFunctionFocus({ line: focusKey });
+    if (focusKey === null) return;
+    const [line = 0, column = 0] = focusKey.split(':').map(Number);
+    setFunctionFocus(column === 0 ? { line } : { line, column });
   }, [focusKey]);
   const functionFocused = useCallback(() => {
     setFunctionFocus(null);
