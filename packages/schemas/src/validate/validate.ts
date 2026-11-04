@@ -78,6 +78,13 @@ interface State {
    * enum also accepts it with a `minecraft:` prefix, as the game does.
    */
   dispatchKey?: boolean;
+  /**
+   * Discriminator fields of the containing struct whose value is a valid member of a closed
+   * (enum or literal) field type. A dispatcher reading one of them treats a missing member as
+   * "no extra fields" instead of an unknown key: the enum is the authority on valid values
+   * (e.g. `minecraft:empty` item models, which have no dispatcher member).
+   */
+  acceptedKeys?: ReadonlySet<string>;
 }
 
 interface Context {
@@ -499,9 +506,63 @@ function validateStruct(
 
   // Spreads that could not be inlined (dispatchers, mostly) apply to the whole object; their
   // own keys are checked there, and keys they do not know are allowed.
+  const acceptedKeys = acceptedDiscriminators(value, info, state, ctx);
   for (const spread of node.spreads) {
-    validate(value, spread, { ...hop(state), siblings, open: true }, ctx, out);
+    const spreadState: State = { ...hop(state), siblings, open: true };
+    if (acceptedKeys.size > 0) spreadState.acceptedKeys = acceptedKeys;
+    validate(value, spread, spreadState, ctx, out);
   }
+}
+
+const MAX_CLOSED_DEPTH = 8;
+
+/** True when `node` only admits a fixed set of values (enum, literal, or a union of them). */
+function isClosedType(node: SchemaNode, depth = 0): boolean {
+  if (depth > MAX_CLOSED_DEPTH) return false;
+  switch (node.kind) {
+    case 'enum':
+    case 'literal':
+      return true;
+    case 'union':
+      return node.members.length > 0 && node.members.every((m) => isClosedType(m, depth + 1));
+    case 'reference':
+      try {
+        return isClosedType(node.resolve(), depth + 1);
+      } catch {
+        return false;
+      }
+    default:
+      return false;
+  }
+}
+
+/**
+ * The struct's discriminator fields whose value is valid for a closed field type. Those keys
+ * are known to the game even when the dispatcher has no member for them.
+ */
+function acceptedDiscriminators(
+  value: JsonObject,
+  info: StructInfo,
+  state: State,
+  ctx: Context,
+): ReadonlySet<string> {
+  const accepted = new Set<string>();
+  for (const key of info.discriminators) {
+    const field = info.byKey.get(key);
+    if (field === undefined || !Object.hasOwn(value, key) || !isClosedType(field.type)) continue;
+    const problems: SchemaProblem[] = [];
+    const fieldState: State = {
+      path: child(state.path, key),
+      depth: state.depth + 1,
+      hops: 0,
+      parentKey: key,
+      open: false,
+      dispatchKey: true,
+    };
+    validate(value[key] as Json, field.type, fieldState, ctx, problems);
+    if (!hasError(problems)) accepted.add(key);
+  }
+  return accepted;
 }
 
 /**
@@ -661,6 +722,9 @@ function validateDispatcher(
     validate(value, unknown, next, ctx, out);
     return;
   }
+  // The struct's own closed field type accepted the key: the member simply adds no fields.
+  const only = node.discriminator.length === 1 ? node.discriminator[0] : undefined;
+  if (only !== undefined && state.acceptedKeys?.has(only) === true) return;
   const listed = keys.filter((entry) => !entry.startsWith('%'));
   const shown = listed.slice(0, MAX_LISTED_KEYS).join(', ');
   out.push({

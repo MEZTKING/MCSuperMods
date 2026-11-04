@@ -1,0 +1,15 @@
+{
+  "data": {
+    "variants": {
+      "": {
+        "model": "msm_sample:block/ruby_block"
+      }
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample:ruby_block",
+  "kind": "minecraft:block_definition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z"
+  }
+}

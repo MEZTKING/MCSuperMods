@@ -1,0 +1,15 @@
+{
+  "formatVersion": 1,
+  "name": "MSM Sample Resource Pack",
+  "namespaces": [
+    "minecraft",
+    "msm_sample"
+  ],
+  "plugins": [
+    "msm.resourcepack"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

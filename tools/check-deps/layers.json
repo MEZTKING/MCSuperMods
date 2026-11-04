@@ -1,7 +1,13 @@
 {
   "@msm/app": ["*"],
   "@msm/core": ["@msm/plugin-api", "@msm/schemas"],
-  "@msm/exporters": ["@msm/plugin-api", "@msm/schemas", "@msm/core", "@msm/targets"],
+  "@msm/exporters": [
+    "@msm/plugin-api",
+    "@msm/schemas",
+    "@msm/core",
+    "@msm/targets",
+    "@msm/plugin-resourcepack"
+  ],
   "@msm/interop": ["@msm/plugin-api", "@msm/schemas", "@msm/core", "@msm/targets"],
   "@msm/plugin-*": ["@msm/plugin-api", "@msm/schemas", "@msm/targets"],
   "@msm/plugin-api": [],

@@ -457,6 +457,62 @@ describe('validateJson: dispatchers', () => {
     ]);
   });
 
+  it('accepts an enum discriminator value that has no dispatcher member', () => {
+    // Like `minecraft:item_model`: the `type` enum lists `empty`, the dispatcher does not.
+    const typeEnum: SchemaNode = {
+      kind: 'enum',
+      values: [
+        { identifier: 'Circle', value: 'circle' },
+        { identifier: 'Empty', value: 'empty' },
+        { identifier: 'Square', value: 'square' },
+      ],
+    };
+    const node = struct(
+      [
+        field(
+          'type',
+          ref('test:Type', () => typeEnum),
+        ),
+      ],
+      [shapes],
+    );
+    ok({ type: 'empty' }, node);
+    ok({ type: 'minecraft:empty' }, node);
+    // Extra fields stay allowed, as for any struct with spreads.
+    ok({ type: 'empty', note: 1 }, node);
+    // Known members are still checked.
+    expect(codes(validateJson({ type: 'minecraft:circle' }, node))).toEqual([
+      ['/radius', 'schema.missing-field'],
+    ]);
+    // Keys outside the enum are still reported by both checks.
+    expect(codes(validateJson({ type: 'minecraft:hexagon' }, node))).toEqual([
+      ['/type', 'schema.invalid-enum'],
+      ['/type', 'schema.unknown-dispatch-key'],
+    ]);
+    expect(codes(validateJson({ type: 'other:empty' }, node))).toEqual([
+      ['/type', 'schema.invalid-enum'],
+      ['/type', 'schema.unknown-dispatch-key'],
+    ]);
+  });
+
+  it('accepts a literal discriminator that has no dispatcher member', () => {
+    const node = struct([field('type', union(lit('empty'), lit('circle')))], [shapes]);
+    ok({ type: 'empty' }, node);
+    expect(codes(validateJson({ type: 'hexagon' }, node))).toEqual([
+      ['/type', 'schema.no-union-match'],
+      ['/type', 'schema.unknown-dispatch-key'],
+    ]);
+  });
+
+  it('keeps reporting unknown keys when the discriminator field is an open string', () => {
+    expect(codes(validateJson({ type: 'empty' }, shape))).toEqual([
+      ['/type', 'schema.unknown-dispatch-key'],
+    ]);
+    expect(codes(validateJson({ type: 'minecraft:empty' }, shape))).toEqual([
+      ['/type', 'schema.unknown-dispatch-key'],
+    ]);
+  });
+
   it('keeps rejecting a minecraft: prefix on enums that are not discriminators', () => {
     const facing: SchemaNode = {
       kind: 'enum',

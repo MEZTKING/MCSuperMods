@@ -13,6 +13,7 @@
       "!**/out",
       "!**/vendor",
       "!**/test/fixtures",
+      "!fixtures/**/*.json",
       "!pnpm-lock.yaml",
       "!**/*.md"
     ]
@@ -107,6 +108,10 @@
                   {
                     "group": ["@msm/targets", "@msm/target-*"],
                     "message": "exporters take the target from their input; @msm/targets is for tests"
+                  },
+                  {
+                    "group": ["@msm/plugin-*", "!@msm/plugin-api"],
+                    "message": "exporters consume OutputFile[], never plugins; @msm/plugin-resourcepack is for tests"
                   }
                 ]
               }

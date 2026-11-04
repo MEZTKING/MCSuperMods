@@ -1,0 +1,13 @@
+{
+  "data": {
+    "pack": {
+      "description": "MCSuperMods sample: a held stick shows a ruby"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample:pack",
+  "kind": "minecraft:pack_mcmeta",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z"
+  }
+}

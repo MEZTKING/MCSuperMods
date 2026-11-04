@@ -10,14 +10,36 @@ A desktop mod maker for Minecraft Java Edition that takes you from a simple text
 
 ## Status
 
-- Pre-alpha: Phase 0 (Foundations) is complete — monorepo, core project model, 26.3 schemas and a minimal Electron shell. There are no releases yet.
+- Pre-alpha: Phase 0 (Foundations) is complete; Phase 1 (Resource Pack Studio) is in progress. There are no releases yet.
+- Releases will be for Windows only to begin with; Linux builds are made in CI for testing, and macOS builds are not planned for now.
 - Current Minecraft target: **Java 26.3** (with 26.2 as the previous supported release at launch).
+
+## Try it
+
+There is no installer yet, so you run the app from source. On Windows you need [Git](https://git-scm.com/), [Node.js](https://nodejs.org/) 22.18 or later and Minecraft Java Edition 26.3. In a terminal (PowerShell or Command Prompt):
+
+```sh
+git clone https://github.com/MEZTKING/MCSuperMods.git
+cd MCSuperMods
+corepack enable        # provides the pinned pnpm; may need an administrator terminal
+pnpm install
+pnpm dev               # opens the MCSuperMods window
+```
+
+Then:
+
+1. Open the folder `fixtures/sample-resourcepack` from the repository. It is a small sample project: a ruby block, a ruby item and their textures, all made for MCSuperMods.
+2. Choose **Install to resourcepacks folder** from the export menu. MCSuperMods writes the pack into your Minecraft `resourcepacks` folder (set the Minecraft folder in Settings if it was not found).
+3. Start Minecraft Java 26.3, open **Options → Resource Packs** and move the pack named `msm-sample-resource-pack-mc-26.3.zip` (described as "MCSuperMods sample: a held stick shows a ruby") to the selected side.
+4. In a world, hold a stick: the sample pack replaces the stick's look with the ruby, so you can see that the pack is active.
+
+The sample contains no Mojang files; its two textures are drawn by `fixtures/sample-resourcepack/tools/make-textures.mjs`.
 
 ## How it works
 
 1. Your project is a git-friendly folder of JSON elements: a version-agnostic intermediate representation (IR).
 2. Plugins define element kinds; each kind **lowers** to plain files for a specific Minecraft version (a **target**).
-3. Lowered output is validated against the official mcdoc schemas via Spyglass before anything is written.
+3. Lowered output is validated against a schema model derived from the official vanilla-mcdoc schemas before anything is written.
 4. Exporters then produce vanilla packs, or a Fabric **content jar** that bundles the generic `msm_runtime` mod, or an ejected standalone Fabric Java project.
 5. Version churn stays inside target packages, so moving a project to a new Minecraft release does not mean rewriting it.
 

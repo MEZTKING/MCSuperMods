@@ -1,0 +1,14 @@
+{
+  "data": {
+    "parent": "minecraft:item/generated",
+    "textures": {
+      "layer0": "msm_sample:item/ruby"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample:item/ruby",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z"
+  }
+}

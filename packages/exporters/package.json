@@ -19,6 +19,7 @@
     "fflate": "catalog:"
   },
   "devDependencies": {
+    "@msm/plugin-resourcepack": "workspace:*",
     "@msm/targets": "workspace:*",
     "@types/node": "catalog:",
     "vitest": "catalog:"
