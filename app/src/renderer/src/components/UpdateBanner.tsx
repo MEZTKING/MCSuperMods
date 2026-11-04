@@ -18,6 +18,12 @@ export function updateCheckMessage(
     case 'checking':
       return { kind: 'info', text: 'Checking for updates…' };
     case 'not-available':
+      if (status.reason === 'no-published-release') {
+        return {
+          kind: 'info',
+          text: 'No published release found on GitHub yet. Releases must be published (not drafts) before installed copies can update.',
+        };
+      }
       return {
         kind: 'info',
         text:

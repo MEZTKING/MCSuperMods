@@ -158,11 +158,17 @@ export type UpdateStatus =
   | { state: 'idle' }
   | { state: 'checking' }
   | { state: 'available'; version: string }
-  | { state: 'not-available' }
+  | { state: 'not-available'; reason?: UpdateNotAvailableReason }
   | { state: 'downloading'; percent: number }
   | { state: 'downloaded'; version: string }
   | { state: 'error'; message: string }
   | { state: 'disabled'; reason: UpdateDisabledReason };
+
+/**
+ * Why a check found nothing newer, when it is not simply "up to date":
+ * `no-published-release` means the update feed has no published (non-draft) release at all.
+ */
+export type UpdateNotAvailableReason = 'no-published-release';
 
 /** Whether a value is a well-formed {@link UpdateStatus} payload. */
 export function isUpdateStatus(value: unknown): value is UpdateStatus {
@@ -171,8 +177,9 @@ export function isUpdateStatus(value: unknown): value is UpdateStatus {
   switch (record.state) {
     case 'idle':
     case 'checking':
-    case 'not-available':
       return true;
+    case 'not-available':
+      return record.reason === undefined || record.reason === 'no-published-release';
     case 'available':
     case 'downloaded':
       return typeof record.version === 'string';

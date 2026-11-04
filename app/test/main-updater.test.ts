@@ -96,6 +96,7 @@ describe('statusForEvent', () => {
       version: '1.2.0',
     });
     expect(statusForEvent('update-not-available', {})).toEqual({ state: 'not-available' });
+    expect(statusForEvent('update-not-available', {})).not.toHaveProperty('reason');
     expect(statusForEvent('download-progress', { percent: 41.6 })).toEqual({
       state: 'downloading',
       percent: 42,
@@ -283,7 +284,10 @@ describe('classifyUpdateError', () => {
       'ERR_UPDATER_LATEST_VERSION_NOT_FOUND',
     );
     expect(classifyUpdateError(latest)).toEqual({ kind: 'no-release' });
-    expect(statusForEvent('error', latest)).toEqual({ state: 'not-available' });
+    expect(statusForEvent('error', latest)).toEqual({
+      state: 'not-available',
+      reason: 'no-published-release',
+    });
     for (const error of [
       updaterError('No published versions on GitHub', 'ERR_UPDATER_NO_PUBLISHED_VERSIONS'),
       updaterError('No published versions on GitHub', 'ERR_XML_MISSED_ELEMENT'),
@@ -299,6 +303,10 @@ describe('classifyUpdateError', () => {
       ),
     ]) {
       expect(classifyUpdateError(error)).toEqual({ kind: 'no-release' });
+      expect(statusForEvent('error', error)).toEqual({
+        state: 'not-available',
+        reason: 'no-published-release',
+      });
     }
   });
 
@@ -375,13 +383,16 @@ describe('classifyUpdateError', () => {
     expect(JSON.stringify(sent)).not.toMatch(/set-cookie|_gh_sess|<\?xml/);
   });
 
-  it('reports a draft-only repository as up to date', async () => {
+  it('reports a draft-only repository as having no published release', async () => {
     const { fake, updater, sent } = setup();
     fake.failWith = updaterError(
       `Unable to find latest version on GitHub (https://github.com/MEZTKING/MCSuperMods/releases/latest), please ensure a production release exists: HttpError: 406 Not Acceptable\n${HEADERS}\n${FEED}`,
       'ERR_UPDATER_LATEST_VERSION_NOT_FOUND',
     );
-    expect(await updater.check()).toEqual({ state: 'not-available' });
+    expect(await updater.check()).toEqual({
+      state: 'not-available',
+      reason: 'no-published-release',
+    });
     expect(sent.some((status) => status.state === 'error')).toBe(false);
   });
 });

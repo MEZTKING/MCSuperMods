@@ -86,6 +86,12 @@ describe('updateCheckMessage', () => {
     expect(updateCheckMessage({ state: 'not-available' }).text).toBe(
       'You have the latest version.',
     );
+    expect(
+      updateCheckMessage({ state: 'not-available', reason: 'no-published-release' }, '0.1.0'),
+    ).toEqual({
+      kind: 'info',
+      text: 'No published release found on GitHub yet. Releases must be published (not drafts) before installed copies can update.',
+    });
     expect(updateCheckMessage({ state: 'available', version: '2.0.0' }).text).toMatch(/2\.0\.0/);
     expect(updateCheckMessage({ state: 'error', message: 'Could not check for updates.' })).toEqual(
       { kind: 'error', text: 'Could not check for updates.' },

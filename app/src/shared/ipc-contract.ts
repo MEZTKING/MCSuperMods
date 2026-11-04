@@ -226,7 +226,12 @@ export const updateStatusSchema = z.discriminatedUnion('state', [
   z.object({ state: z.literal('idle') }).strict(),
   z.object({ state: z.literal('checking') }).strict(),
   z.object({ state: z.literal('available'), version: z.string().max(256) }).strict(),
-  z.object({ state: z.literal('not-available') }).strict(),
+  z
+    .object({
+      state: z.literal('not-available'),
+      reason: z.literal('no-published-release').optional(),
+    })
+    .strict(),
   z.object({ state: z.literal('downloading'), percent: z.number().min(0).max(100) }).strict(),
   z.object({ state: z.literal('downloaded'), version: z.string().max(256) }).strict(),
   z

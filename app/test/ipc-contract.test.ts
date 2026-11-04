@@ -430,6 +430,7 @@ describe('IPC contract', () => {
       { state: 'checking' },
       { state: 'available', version: '1.2.3' },
       { state: 'not-available' },
+      { state: 'not-available', reason: 'no-published-release' },
       { state: 'downloading', percent: 42 },
       { state: 'downloaded', version: '1.2.3' },
       { state: 'error', message: 'offline' },
@@ -445,6 +446,7 @@ describe('IPC contract', () => {
       { state: 'available' },
       { state: 'downloading', percent: Number.NaN },
       { state: 'disabled', reason: 'tuesday' },
+      { state: 'not-available', reason: 'tuesday' },
     ];
     for (const status of invalid) {
       expect(isUpdateStatus(status)).toBe(false);

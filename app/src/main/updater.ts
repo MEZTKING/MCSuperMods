@@ -12,7 +12,8 @@
  *   ({@link Updater.install}), after every window has closed through the unsaved-changes
  *   prompt. Nothing installs on an ordinary quit.
  * - Errors never throw out of the updater. Each is classified ({@link classifyUpdateError}):
- *   "no published release" (for example only a draft exists) becomes `not-available`, network
+ *   "no published release" (for example only a draft exists) becomes `not-available` with
+ *   reason `no-published-release` (so the UI does not claim the app is up to date), network
  *   failures and everything else become an `error` status with a short, sanitised message.
  *   The full error (which can carry HTTP headers, cookies and feed XML) goes only to the log.
  *
@@ -231,7 +232,7 @@ function failureMessage(lead: string, raw: string): string {
 export function statusForError(error: unknown): UpdateStatus {
   const classified = classifyUpdateError(error);
   return classified.kind === 'no-release'
-    ? { state: 'not-available' }
+    ? { state: 'not-available', reason: 'no-published-release' }
     : { state: 'error', message: classified.message };
 }
 
