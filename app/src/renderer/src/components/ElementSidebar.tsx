@@ -1,6 +1,7 @@
 import type { Element, Namespace, Project, ResourceLocation } from '@msm/core';
-import { FileImage, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { ScrollArea } from 'radix-ui';
+import { type AssetActions, AssetList } from './AssetList';
 import { iconButtonClass } from './ui/Button';
 
 /** Props of {@link ElementSidebar}. */
@@ -9,7 +10,11 @@ export interface ElementSidebarProps {
   selectedId: ResourceLocation | null;
   onSelect(id: ResourceLocation): void;
   onRemove(id: ResourceLocation): void;
+  /** Asset import, thumbnails, reveal and remove; read-only list without it. */
+  assetActions?: AssetActions;
 }
+
+const NO_ASSET_ACTIONS: AssetActions = {};
 
 /** Groups a namespace's elements by kind, kinds and elements in id order. */
 export function groupByKind(namespace: Namespace): [kind: string, elements: Element[]][] {
@@ -46,6 +51,7 @@ function ElementRow(props: {
         aria-label={element.id}
         aria-current={props.selected ? 'true' : undefined}
         title={element.id}
+        data-testid={`element-row-${element.id}`}
         className={
           'flex-1 truncate rounded border px-2 py-0.5 text-left cursor-pointer ' +
           (props.selected
@@ -74,10 +80,10 @@ function NamespaceSection(props: {
   selectedId: ResourceLocation | null;
   onSelect(id: ResourceLocation): void;
   onRemove(id: ResourceLocation): void;
+  assetActions: AssetActions;
 }) {
   const { namespace } = props;
   const groups = groupByKind(namespace);
-  const assets = [...namespace.assets].sort((a, b) => a.path.localeCompare(b.path));
   return (
     <section aria-label={`Namespace ${namespace.name}`} className="mb-3">
       <h2 className="mt-2 mb-1 font-semibold">{namespace.name}</h2>
@@ -101,31 +107,23 @@ function NamespaceSection(props: {
           </section>
         ))
       )}
-      <section aria-label={`${namespace.name} assets`} className="ml-1">
-        <h3 className={headingClass}>Assets</h3>
-        {assets.length === 0 ? (
-          <p className={emptyClass}>No assets.</p>
-        ) : (
-          <ul className="flex flex-col gap-0.5">
-            {assets.map((asset) => (
-              <li
-                key={asset.path}
-                className="flex items-center gap-1.5 truncate px-2 py-0.5"
-                title={`${asset.path} (${asset.mediaType})`}
-              >
-                <FileImage size={14} aria-hidden className="shrink-0 text-muted" />
-                <span className="truncate">{asset.path}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <AssetList
+        namespace={namespace.name}
+        assets={namespace.assets}
+        actions={props.assetActions}
+      />
     </section>
   );
 }
 
 /** The left sidebar: namespaces, then kinds, then elements, plus each namespace's assets. */
-export function ElementSidebar({ project, selectedId, onSelect, onRemove }: ElementSidebarProps) {
+export function ElementSidebar({
+  project,
+  selectedId,
+  onSelect,
+  onRemove,
+  assetActions = NO_ASSET_ACTIONS,
+}: ElementSidebarProps) {
   return (
     <ScrollArea.Root className="min-h-0 overflow-hidden border-r border-border">
       <ScrollArea.Viewport className="size-full">
@@ -142,6 +140,7 @@ export function ElementSidebar({ project, selectedId, onSelect, onRemove }: Elem
                 selectedId={selectedId}
                 onSelect={onSelect}
                 onRemove={onRemove}
+                assetActions={assetActions}
               />
             ))
           )}

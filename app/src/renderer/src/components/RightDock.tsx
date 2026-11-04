@@ -1,47 +1,72 @@
-import type { Problem } from '@msm/core';
 import { Box, ListChecks } from 'lucide-react';
 import { ScrollArea, Tabs } from 'radix-ui';
-import { useState } from 'react';
-import { ProblemsPanel } from './ProblemsPanel';
+import { type ReactNode, useState } from 'react';
+import { ProblemsPanel, type ProblemsPanelProps } from './ProblemsPanel';
 import { tabTriggerClass } from './ui/Button';
 
 /** The right dock's tabs. */
 export type DockTab = 'preview' | 'problems';
 
-/** The right dock: Preview (placeholder until the 3D preview lands) and Problems. */
-export function RightDock({ problems }: { problems: readonly Problem[] }) {
-  const [tab, setTab] = useState<DockTab>('problems');
+/** Props of {@link RightDock}. */
+export interface RightDockProps extends ProblemsPanelProps {
+  /** The Preview tab's content; a placeholder without it. */
+  preview?: ReactNode;
+  /** The selected tab when controlled. */
+  tab?: DockTab;
+  onTabChange?(tab: DockTab): void;
+}
+
+function Scrolling({ children }: { children: ReactNode }) {
+  return (
+    <ScrollArea.Root className="size-full overflow-hidden">
+      <ScrollArea.Viewport className="size-full">{children}</ScrollArea.Viewport>
+      <ScrollArea.Scrollbar
+        orientation="vertical"
+        className="flex w-2 touch-none p-0.5 select-none"
+      >
+        <ScrollArea.Thumb className="relative flex-1 rounded-full bg-border" />
+      </ScrollArea.Scrollbar>
+    </ScrollArea.Root>
+  );
+}
+
+/** The right dock: Preview and Problems. */
+export function RightDock(props: RightDockProps) {
+  const { preview, onTabChange, tab: controlled, ...problems } = props;
+  const [ownTab, setOwnTab] = useState<DockTab>('problems');
+  const tab = controlled ?? ownTab;
+  const count = props.problems.length + (props.exportProblems?.length ?? 0);
   return (
     <Tabs.Root
       value={tab}
-      onValueChange={(value) => setTab(value === 'preview' ? 'preview' : 'problems')}
+      onValueChange={(value) => {
+        const next: DockTab = value === 'preview' ? 'preview' : 'problems';
+        setOwnTab(next);
+        onTabChange?.(next);
+      }}
       className="flex min-h-0 min-w-0 flex-col border-l border-border"
     >
       <Tabs.List aria-label="Dock" className="flex border-b border-border px-2">
-        <Tabs.Trigger value="preview" className={tabTriggerClass}>
+        <Tabs.Trigger value="preview" className={tabTriggerClass} data-testid="dock-tab-preview">
           <Box size={14} aria-hidden />
           Preview
         </Tabs.Trigger>
-        <Tabs.Trigger value="problems" className={tabTriggerClass}>
+        <Tabs.Trigger value="problems" className={tabTriggerClass} data-testid="dock-tab-problems">
           <ListChecks size={14} aria-hidden />
-          Problems ({problems.length})
+          Problems ({count})
         </Tabs.Trigger>
       </Tabs.List>
-      <Tabs.Content value="preview" className="min-h-0 flex-1 p-4">
-        <p className="text-muted">The 3D preview arrives in a later update.</p>
+      <Tabs.Content value="preview" className="min-h-0 flex-1" data-testid="preview-panel">
+        <Scrolling>
+          <div className="p-3">
+            {preview ?? <p className="text-muted">Open a project to preview its models.</p>}
+          </div>
+        </Scrolling>
       </Tabs.Content>
       <Tabs.Content value="problems" className="min-h-0 flex-1">
-        <ScrollArea.Root className="size-full overflow-hidden">
-          <ScrollArea.Viewport className="size-full">
-            <ProblemsPanel problems={problems} />
-          </ScrollArea.Viewport>
-          <ScrollArea.Scrollbar
-            orientation="vertical"
-            className="flex w-2 touch-none p-0.5 select-none"
-          >
-            <ScrollArea.Thumb className="relative flex-1 rounded-full bg-border" />
-          </ScrollArea.Scrollbar>
-        </ScrollArea.Root>
+        <Scrolling>
+          <ProblemsPanel {...problems} />
+        </Scrolling>
       </Tabs.Content>
     </Tabs.Root>
   );

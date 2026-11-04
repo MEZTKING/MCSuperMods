@@ -19,7 +19,8 @@ export function installMenu(): void {
     {
       label: 'File',
       submenu: [
-        { label: 'New Project…', accelerator: 'CmdOrCtrl+N', click: () => send('new') },
+        // Ctrl/Cmd+N is left to the renderer, where it adds a new element.
+        { label: 'New Project…', accelerator: 'CmdOrCtrl+Shift+N', click: () => send('new') },
         { label: 'Open Project…', accelerator: 'CmdOrCtrl+O', click: () => send('open') },
         { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => send('save') },
         { type: 'separator' },

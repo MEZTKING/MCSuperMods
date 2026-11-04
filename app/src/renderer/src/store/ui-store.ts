@@ -5,7 +5,7 @@
  * @packageDocumentation
  */
 
-import type { ResourceLocation } from '@msm/core';
+import type { Problem, ResourceLocation } from '@msm/core';
 import { create } from 'zustand';
 import type { MinecraftProgress } from '../../../shared/ipc-channels';
 import type { MinecraftStatus } from '../../../shared/platform';
@@ -41,10 +41,16 @@ export interface UiState {
   rightDock: RightDockTab;
   minecraft: MinecraftUiState;
   message: StatusMessage | null;
+  /** Problems reported by the last export or install (cleared by the next one). */
+  exportProblems: readonly Problem[];
+
   setSnapshot(snapshot: SessionSnapshot): void;
   /** Selects an element (and optionally a field in it); clears the field otherwise. */
   select(id: ResourceLocation | null, pointer?: string | null): void;
   selectPointer(pointer: string | null): void;
+  /** Selects an element, switches to the Form tab and focuses `pointer` there. */
+  navigateTo(id: ResourceLocation, pointer: string | null): void;
+  setExportProblems(problems: readonly Problem[]): void;
   setActiveTab(tab: EditorTab): void;
   setRightDock(tab: RightDockTab): void;
   setMinecraftStatus(status: MinecraftStatus | null): void;
@@ -61,6 +67,7 @@ export const useUiStore = create<UiState>()((set) => ({
   rightDock: 'problems',
   minecraft: { status: null, progress: null },
   message: null,
+  exportProblems: [],
   setSnapshot: (snapshot) =>
     set((state) => {
       const stillExists =
@@ -72,6 +79,9 @@ export const useUiStore = create<UiState>()((set) => ({
     }),
   select: (selectedId, pointer = null) => set({ selectedId, selectedPointer: pointer }),
   selectPointer: (selectedPointer) => set({ selectedPointer }),
+  navigateTo: (selectedId, selectedPointer) =>
+    set({ selectedId, selectedPointer, activeTab: 'form' }),
+  setExportProblems: (exportProblems) => set({ exportProblems }),
   setActiveTab: (activeTab) => set({ activeTab }),
   setRightDock: (rightDock) => set({ rightDock }),
   setMinecraftStatus: (status) => set((state) => ({ minecraft: { ...state.minecraft, status } })),

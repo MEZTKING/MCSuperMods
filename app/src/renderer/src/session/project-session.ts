@@ -88,7 +88,7 @@ export type OpenOutcome =
   | { ok: false; cancelled: true };
 
 /** Where {@link ProjectSession.exportResourcePack} delivers the pack. */
-export type ExportMode = 'zip' | 'folder' | 'install';
+export type ExportMode = 'zip' | 'install';
 
 /** The result of an export: the pipeline report plus where the pack went. */
 export type ExportResult = ExportReport & {
@@ -128,7 +128,25 @@ export const SessionProblemCodes = {
   unknownTarget: 'project.unknown-target',
   overwritesSkippedFile: 'project.overwrites-skipped-file',
   schemasUnavailable: 'schema.unavailable',
+  assetTrashFailed: 'assets.trash-failed',
 } as const;
+
+/**
+ * Where removed assets' bytes wait so that undo can restore them (project-relative). The
+ * folder is emptied when a project is opened or created: the undo history starts empty then,
+ * so nothing in it can be restored any more. It is not emptied on save, because the undo
+ * history survives a save.
+ */
+export const ASSET_TRASH_DIR = '.msm/trash';
+
+/** `namespace` + asset `path` pairs of a project, keyed `<ns>\u0000<path>`. */
+function assetKeys(project: Project | null): Set<string> {
+  const keys = new Set<string>();
+  for (const namespace of project?.namespaces ?? []) {
+    for (const asset of namespace.assets) keys.add(`${namespace.name}\u0000${asset.path}`);
+  }
+  return keys;
+}
 
 function baseName(path: string): string {
   const parts = path.split(/[\\/]/).filter((part) => part !== '');
@@ -175,6 +193,8 @@ export class ProjectSession {
   #lastState: Project | null = null;
   #timer: ReturnType<typeof setTimeout> | null = null;
   #validation: Promise<void> = Promise.resolve();
+  #assetOps: Promise<void> = Promise.resolve();
+  #assetProblems: Problem[] = [];
   #generation = 0;
   #snapshot: SessionSnapshot = EMPTY;
 
@@ -280,6 +300,7 @@ export class ProjectSession {
     project.namespaces.push({ name: namespace, elements, assets: [] });
     const saved = await saveProject(this.#fs, project, this.registry);
     this.#adopt(path, project, [], saved.manifest);
+    await this.#emptyTrash();
     return { ok: true };
   }
 
@@ -295,6 +316,7 @@ export class ProjectSession {
     try {
       const { project, problems, manifest } = await loadProject(this.#fs, this.registry);
       this.#adopt(path, project, problems, manifest);
+      await this.#emptyTrash();
       return { ok: true };
     } catch (error) {
       await this.#platform.project.closeRoot();
@@ -447,15 +469,24 @@ export class ProjectSession {
   }
 
   /**
-   * Removes an asset: the record (undoable) and then its bytes (not undoable).
+   * Removes an asset. The record goes through an undoable command; its bytes move to
+   * {@link ASSET_TRASH_DIR} so that undo (which restores the record) can move them back.
+   * Resolves when the bytes have moved.
    *
    * @param namespace - The asset's namespace.
    * @param path - The asset path relative to `assets/<namespace>/`.
    */
   async removeAsset(namespace: string, path: string): Promise<void> {
     this.#requireStack().execute(commands.removeAsset(namespace, path));
-    const file = `assets/${namespace}/${path}`;
-    if (await this.#fs.exists(file)) await this.#fs.remove(file);
+    await this.flushAssetFiles();
+  }
+
+  /**
+   * Resolves when every pending asset byte move (to or from the trash after a remove, undo or
+   * redo) has finished.
+   */
+  flushAssetFiles(): Promise<void> {
+    return this.#assetOps;
   }
 
   /** Reads a project asset's bytes. */
@@ -471,17 +502,13 @@ export class ProjectSession {
    *
    * - `zip`: asks where to save the zip (`platform.dialogs.saveFile`).
    * - `install`: writes the zip into the game's `resourcepacks/` folder.
-   * - `folder`: not available yet (TODO(B26): needs a main-process channel that writes a
-   *   folder outside the project).
    *
-   * @throws Error If no project is open or the mode is `folder`.
+   * @throws Error If no project is open.
    */
   async exportResourcePack(mode: ExportMode): Promise<ExportResult> {
     const stack = this.#requireStack();
-    if (mode === 'folder') {
-      throw new Error('Exporting to a folder is not available yet; export a zip instead.');
-    }
     await this.flushValidation();
+    await this.flushAssetFiles();
     const project = stack.state;
     const context = await this.schemas();
     const info = await this.#platform.app.info();
@@ -665,9 +692,77 @@ export class ProjectSession {
         this.#pending.delete(id);
       }
     }
+    this.#syncAssetFiles(this.#lastState, event.state);
     this.#lastState = event.state;
     if (this.#pending.size > 0) this.#scheduleValidation(this.#validationDelay);
     this.#publish();
+  }
+
+  // Asset trash --------------------------------------------------------------------------
+
+  /**
+   * Moves the bytes of assets whose records disappeared into the trash, and moves trashed
+   * bytes back for records that reappeared (undo of a remove, redo of an import). Runs after
+   * every command, in order, without blocking the command itself.
+   */
+  #syncAssetFiles(before: Project | null, after: Project): void {
+    const old = assetKeys(before);
+    const now = assetKeys(after);
+    const removed = [...old].filter((key) => !now.has(key));
+    const added = [...now].filter((key) => !old.has(key));
+    if (removed.length === 0 && added.length === 0) return;
+    const generation = this.#generation;
+    const split = (key: string): [string, string] => {
+      const at = key.indexOf('\u0000');
+      return [key.slice(0, at), key.slice(at + 1)];
+    };
+    this.#assetOps = this.#assetOps.then(async () => {
+      if (generation !== this.#generation) return;
+      for (const key of removed) {
+        const [namespace, path] = split(key);
+        await this.#moveAssetFile(
+          `assets/${namespace}/${path}`,
+          `${ASSET_TRASH_DIR}/${namespace}/${path}`,
+          'move to the trash',
+        );
+      }
+      for (const key of added) {
+        const [namespace, path] = split(key);
+        const live = `assets/${namespace}/${path}`;
+        const trashed = `${ASSET_TRASH_DIR}/${namespace}/${path}`;
+        if (await this.#fs.exists(live)) {
+          // Freshly imported bytes win; an older trashed copy is stale.
+          await this.#fs.remove(trashed).catch(() => {});
+        } else {
+          await this.#moveAssetFile(trashed, live, 'restore');
+        }
+      }
+    });
+  }
+
+  async #moveAssetFile(from: string, to: string, what: string): Promise<void> {
+    try {
+      if (!(await this.#fs.exists(from))) return;
+      const data = await this.#fs.readFile(from);
+      await this.#fs.writeFile(to, data);
+      await this.#fs.remove(from);
+    } catch (error) {
+      this.#assetProblems.push({
+        severity: 'warning',
+        code: SessionProblemCodes.assetTrashFailed,
+        file: from,
+        message: `Could not ${what} ${from}: ${messageOf(error)}`,
+      });
+      this.#publish();
+    }
+  }
+
+  async #emptyTrash(): Promise<void> {
+    try {
+      await this.#fs.remove(ASSET_TRASH_DIR);
+    } catch {
+      // Leftover trash is harmless: load never reads `.msm/`.
+    }
   }
 
   // Internals ----------------------------------------------------------------------------
@@ -772,6 +867,7 @@ export class ProjectSession {
     this.#schemaProblems = new Map();
     this.#pending.clear();
     this.#lastState = null;
+    this.#assetProblems = [];
   }
 
   #close(): void {
@@ -801,6 +897,7 @@ export class ProjectSession {
           ...this.#loadProblems,
           ...this.#targetProblems,
           ...this.#schemaLoadProblems,
+          ...this.#assetProblems,
           ...this.#overwriteProblems(project),
           ...schemaProblems,
         ],

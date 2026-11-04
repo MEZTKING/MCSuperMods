@@ -39,6 +39,30 @@ function bundleVendoredData(): Plugin {
   };
 }
 
+/**
+ * Renderer-only: neutralises the `new URL('../vendor/…', import.meta.url)` expressions in each
+ * target's `vendored.ts`. The renderer imports `@msm/targets` for the target facts but reads the
+ * vendored data through main (`platform.targets.readVendored`, plan D10), so without this Vite
+ * would copy several megabytes of JSON into `out/renderer/assets` that nothing loads. The URLs
+ * become inert `msm-vendored:` URLs that are never fetched.
+ */
+function dropVendoredDataFromRenderer(): Plugin {
+  return {
+    name: 'msm:drop-vendored-data-from-renderer',
+    enforce: 'pre',
+    transform(code, id) {
+      const match = /[\\/]packages[\\/]targets[\\/]([^\\/]+)[\\/]src[\\/]vendored\.ts$/.exec(id);
+      if (match === null) return null;
+      const folder = match[1] as string;
+      return code.replace(
+        /new URL\((['"])\.\.\/vendor\/([^'"]+)\1, import\.meta\.url\)/g,
+        (_whole, _quote, file: string) =>
+          `new URL(${JSON.stringify(`msm-vendored:${folder}/${file}`)})`,
+      );
+    },
+  };
+}
+
 export default defineConfig({
   // Main is ESM and bundles every dependency (ADR 0013: the packaged app collects no
   // node_modules). electron-vite still externalises `electron` and Node built-ins when
@@ -63,7 +87,7 @@ export default defineConfig({
   },
   renderer: {
     build: { minify: true },
-    plugins: [react(), tailwindcss()],
+    plugins: [dropVendoredDataFromRenderer(), react(), tailwindcss()],
     // Monaco's language workers are loaded with Vite `?worker` imports as ES module workers.
     worker: { format: 'es' },
   },

@@ -130,9 +130,4 @@ describe('ProjectSession: export and install', () => {
     expect(result.location).toBe(`/minecraft/resourcepacks/demo-${defaultTarget.id}.zip`);
     expect(Object.keys(unzipSync(calls.installed[0]?.data as Uint8Array))).toContain('pack.mcmeta');
   });
-
-  it('does not offer folder export yet', async () => {
-    const { session } = await rubyProject();
-    await expect(session.exportResourcePack('folder')).rejects.toThrow(/folder/);
-  });
 });

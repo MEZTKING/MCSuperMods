@@ -1,16 +1,24 @@
-import type { ResourceLocation } from '@msm/core';
+import type { Json, ResourceLocation } from '@msm/core';
 import { Dialog } from 'radix-ui';
 import { type FormEvent, type ReactNode, useId, useState } from 'react';
+import { type ElementTemplate, templateElementId } from '../studios/templates';
 import { Button } from './ui/Button';
 
-const fieldClass = 'rounded border border-border bg-bg px-2 py-1';
+export const fieldClass = 'rounded border border-border bg-bg px-2 py-1';
 
-function Modal(props: {
+export function Modal(props: {
   title: string;
   error: string | null;
   onCancel(): void;
   onSubmit(): void;
   children: ReactNode;
+  /** The submit button's text; default "Add". */
+  submitLabel?: string;
+  /** Disables the submit button. */
+  busy?: boolean;
+  testId?: string;
+  /** Wider content for pickers. */
+  wide?: boolean;
 }) {
   const submit = (event: FormEvent): void => {
     event.preventDefault();
@@ -28,7 +36,8 @@ function Modal(props: {
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
         <Dialog.Content
           aria-describedby={undefined}
-          className="fixed top-1/2 left-1/2 z-50 w-[min(90vw,380px)] -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-panel p-4 text-text shadow-lg"
+          data-testid={props.testId}
+          className={`fixed top-1/2 left-1/2 z-50 max-h-[90vh] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-md border border-border bg-panel p-4 text-text shadow-lg ${props.wide === true ? 'w-[min(94vw,560px)]' : 'w-[min(90vw,380px)]'}`}
         >
           <form onSubmit={submit} className="flex flex-col gap-1.5">
             <Dialog.Title className="mb-1.5 text-base font-semibold">{props.title}</Dialog.Title>
@@ -39,7 +48,13 @@ function Modal(props: {
               </p>
             )}
             <div className="mt-2 flex gap-1.5">
-              <Button type="submit">Add</Button>
+              <Button
+                type="submit"
+                disabled={props.busy === true}
+                data-testid={props.testId === undefined ? undefined : `${props.testId}-submit`}
+              >
+                {props.submitLabel ?? 'Add'}
+              </Button>
               <Dialog.Close asChild>
                 <Button>Cancel</Button>
               </Dialog.Close>
@@ -51,7 +66,7 @@ function Modal(props: {
   );
 }
 
-function attempt(action: () => void, setError: (error: string | null) => void): void {
+export function attempt(action: () => void, setError: (error: string | null) => void): void {
   try {
     action();
   } catch (error) {
@@ -83,67 +98,134 @@ export function NewNamespaceDialog(props: { onCancel(): void; onSubmit(name: str
   );
 }
 
-/** Asks for a new element's namespace, path and kind. */
+/** What {@link NewElementDialog} submits. */
+export interface NewElementInput {
+  id: ResourceLocation;
+  kind: string;
+  data: Json;
+}
+
+/**
+ * The "New element" template picker: a template (Block model, Item model, Blockstate, …), a
+ * namespace and a name. The template sets the id prefix or default name and the starting data.
+ */
 export function NewElementDialog(props: {
   namespaces: readonly string[];
-  kinds: readonly string[];
+  templates: readonly ElementTemplate[];
+  /** The `defaultData` of a kind, for templates that start from it. */
+  kindDefault(kind: string): Json | undefined;
   onCancel(): void;
-  onSubmit(input: { id: ResourceLocation; kind: string }): void;
+  onSubmit(input: NewElementInput): void;
 }) {
   const [namespace, setNamespace] = useState(props.namespaces[0] ?? '');
-  const [path, setPath] = useState('');
-  const [kind, setKind] = useState(props.kinds[0] ?? '');
+  const [templateId, setTemplateId] = useState(props.templates[0]?.id ?? '');
+  const template = props.templates.find((entry) => entry.id === templateId);
+  const [name, setName] = useState(template?.defaultName ?? '');
   const [error, setError] = useState<string | null>(null);
   const namespaceId = useId();
-  const pathId = useId();
-  const kindId = useId();
+  const nameId = useId();
+  const nameHintId = useId();
+
+  const choose = (next: ElementTemplate): void => {
+    if (next.defaultName !== undefined) setName(next.defaultName);
+    else if (template?.defaultName !== undefined && name === template.defaultName) setName('');
+    setTemplateId(next.id);
+    setError(null);
+  };
+
+  let preview = '';
+  if (template !== undefined) {
+    try {
+      preview = templateElementId(template, namespace, name);
+    } catch {
+      preview = '';
+    }
+  }
+
   return (
     <Modal
-      title="Add element"
+      title="New element"
       error={error}
+      wide
+      testId="new-element-dialog"
+      submitLabel="Create"
       onCancel={props.onCancel}
       onSubmit={() =>
         attempt(() => {
-          const trimmed = path.trim();
-          if (trimmed === '') throw new Error('Enter a path, for example "iron_block".');
-          props.onSubmit({ id: `${namespace}:${trimmed}`, kind });
+          if (template === undefined) throw new Error('Choose what to create.');
+          const id = templateElementId(template, namespace, name);
+          props.onSubmit({
+            id,
+            kind: template.kind,
+            data: template.data(id, props.kindDefault(template.kind)),
+          });
         }, setError)
       }
     >
+      <fieldset className="m-0 flex flex-col gap-1 border-0 p-0" data-testid="kind-picker">
+        <legend className="mb-1">Template</legend>
+        <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+          {props.templates.map((entry) => (
+            <label
+              key={entry.id}
+              className={
+                'flex cursor-pointer items-start gap-2 rounded border px-2 py-1.5 ' +
+                (entry.id === templateId ? 'border-accent bg-bg' : 'border-border')
+              }
+            >
+              <input
+                type="radio"
+                name="template"
+                value={entry.id}
+                className="mt-1"
+                data-testid={`template-${entry.id}`}
+                checked={entry.id === templateId}
+                onChange={() => choose(entry)}
+              />
+              <span className="flex flex-col">
+                <span className="font-medium">{entry.label}</span>
+                <span className="text-xs text-muted">{entry.description}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
       <label htmlFor={namespaceId}>Namespace</label>
       <select
         id={namespaceId}
+        data-testid="new-element-namespace"
         className={fieldClass}
         value={namespace}
         onChange={(event) => setNamespace(event.target.value)}
       >
-        {props.namespaces.map((name) => (
-          <option key={name} value={name}>
-            {name}
+        {props.namespaces.map((entry) => (
+          <option key={entry} value={entry}>
+            {entry}
           </option>
         ))}
       </select>
-      <label htmlFor={pathId}>Path</label>
-      <input
-        id={pathId}
-        className={fieldClass}
-        value={path}
-        placeholder="iron_block"
-        onChange={(event) => setPath(event.target.value)}
-      />
-      <label htmlFor={kindId}>Kind</label>
-      <select
-        id={kindId}
-        className={fieldClass}
-        value={kind}
-        onChange={(event) => setKind(event.target.value)}
-      >
-        {props.kinds.map((id) => (
-          <option key={id} value={id}>
-            {id}
-          </option>
-        ))}
-      </select>
+      <label htmlFor={nameId}>Name</label>
+      <div className="flex items-center gap-1">
+        {template !== undefined && template.prefix !== '' && (
+          <code className="font-mono text-muted">{template.prefix}</code>
+        )}
+        <input
+          id={nameId}
+          data-testid="new-element-name"
+          aria-describedby={nameHintId}
+          className={`${fieldClass} flex-1`}
+          value={template?.fixedName === true ? (template.defaultName ?? '') : name}
+          disabled={template?.fixedName === true}
+          placeholder="ruby_block"
+          spellCheck={false}
+          onChange={(event) => setName(event.target.value)}
+        />
+      </div>
+      <p id={nameHintId} className="text-xs text-muted">
+        {preview === ''
+          ? 'Lower-case letters, digits, "_", "-", "." and "/".'
+          : `Creates ${preview}`}
+      </p>
     </Modal>
   );
 }
