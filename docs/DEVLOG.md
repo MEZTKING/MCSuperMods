@@ -755,3 +755,15 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 **Next**
 - The user tags `v0.2.1` (the auto-update test) and `v0.2.2` from `main` once it is fast-forwarded.
 - Then Phase 3, Structures & Worldgen.
+
+---
+
+## 2026-11-04 — main session — v0.2.2 release builds; tag/version guard
+
+**What**
+- The user pushed both `v0.2.1` and `v0.2.2`, both at `e273a89`, whose `app/package.json` version is 0.2.2.
+- Release run #3 (tag `v0.2.1`) succeeded. Because electron-builder names releases after the package version, it built `MCSuperMods-0.2.2-win-x64.exe` (123,070,987 bytes) and created the DRAFT release `v0.2.2`. Run #4 (tag `v0.2.2`) targets the same draft.
+- Added a release-workflow step that fails a tag build when the tag differs from `v<app version>`, so a mismatched tag can no longer publish under another version. It is a check only; nothing is tagged automatically.
+
+**Next**
+- The user may delete the stray `v0.2.1` tag (`git push origin :refs/tags/v0.2.1`, then `git tag -d v0.2.1`). Then publish the v0.2.2 draft and confirm that the installed 0.2.0 auto-updates.

@@ -32,6 +32,18 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      # A tag must match the version in app/package.json: electron-builder names the release
+      # after the package version, so a mismatched tag (for example v0.2.1 on 0.2.2 code)
+      # would silently publish under a different version.
+      - name: Check the tag matches the app version
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          version=$(node -p "require('./app/package.json').version")
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match app/package.json version ${version}. Tag v${version} instead."
+            exit 1
+          fi
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - name: Build the installer (and upload it to a draft release on tags)
