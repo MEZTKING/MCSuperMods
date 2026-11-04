@@ -22,7 +22,7 @@ describe('ProjectSession: projects', () => {
     const project = session.snapshot.project;
     expect(project?.name).toBe('demo');
     expect(project?.targets).toEqual([defaultTarget.id]);
-    expect(project?.plugins).toEqual(['msm.resourcepack']);
+    expect(project?.plugins).toEqual(['msm.resourcepack', 'msm.datapack']);
     expect(project?.namespaces.map((namespace) => namespace.name)).toEqual(['demo']);
     const pack = project?.namespaces[0]?.elements[0];
     expect(pack?.id).toBe('demo:pack');

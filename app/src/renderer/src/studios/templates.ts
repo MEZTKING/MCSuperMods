@@ -1,13 +1,23 @@
 /**
- * "New element" templates (Resource Pack Studio). Each template picks a kind, an id prefix or
- * a default name, and starting data with the user's namespace substituted. Kinds without a
- * template are offered generically, with the kind's own `defaultData`.
+ * "New element" templates (Resource Pack Studio and Data Pack Studio). Each template picks a
+ * kind, an id prefix or a default name (and optionally a default namespace), and starting
+ * data with the user's namespace substituted. Kinds without a template are offered
+ * generically, with the kind's own `defaultData`.
+ *
+ * Data pack templates use the current target's JSON shapes (verified against the vendored
+ * schemas in `app/test/session-templates.test.ts`).
  *
  * @packageDocumentation
  */
 
 import type { Json, ResourceLocation } from '@msm/core';
 import { defaultElementData } from '../session/element-defaults';
+
+/** What a template may know about the open project when it builds its data. */
+export interface TemplateContext {
+  /** The project's namespace names. */
+  namespaces: readonly string[];
+}
 
 /** One entry of the template picker. */
 export interface ElementTemplate {
@@ -24,9 +34,16 @@ export interface ElementTemplate {
   /** The name cannot be changed (one `sounds` file per namespace). */
   fixedName?: boolean;
   /**
-   * Starting data for the element `id`. `kindDefault` is the kind's `defaultData`.
+   * The namespace preselected when the template is chosen (`minecraft` for the `tick` and
+   * `load` function tags); otherwise the user's current namespace.
    */
-  data(id: ResourceLocation, kindDefault: Json | undefined): Json;
+  defaultNamespace?: string;
+  /**
+   * Starting data for the element `id`. `kindDefault` is the kind's `defaultData`; `context`
+   * names the project's namespaces (templates that refer to the project's own ids use the
+   * first namespace other than `minecraft`).
+   */
+  data(id: ResourceLocation, kindDefault: Json | undefined, context?: TemplateContext): Json;
 }
 
 function pathOf(id: ResourceLocation): { namespace: string; path: string } {
@@ -43,6 +60,18 @@ const fromKind =
   (kind: string) =>
   (id: ResourceLocation, kindDefault: Json | undefined): Json =>
     defaultElementData(kind, id, kindDefault);
+
+/**
+ * The project's own namespace for a template's references: the first project namespace other
+ * than `minecraft`, else the element's namespace when it is not `minecraft`, else
+ * `my_project`.
+ */
+export function projectNamespace(id: ResourceLocation, context?: TemplateContext): string {
+  const own = context?.namespaces.find((name) => name !== 'minecraft');
+  if (own !== undefined) return own;
+  const { namespace } = pathOf(id);
+  return namespace === 'minecraft' ? 'my_project' : namespace;
+}
 
 /** The Resource Pack Studio templates, in picker order. */
 export const RESOURCE_PACK_TEMPLATES: readonly ElementTemplate[] = [
@@ -120,6 +149,152 @@ export const RESOURCE_PACK_TEMPLATES: readonly ElementTemplate[] = [
   },
 ];
 
+const RECIPE = 'minecraft:recipe';
+const FUNCTION = 'minecraft:function';
+const FUNCTION_TAG = 'minecraft:tag/function';
+
+/** A `minecraft` function tag (`tick` or `load`) running `<project ns>:<name>`. */
+function functionTagTemplate(name: 'tick' | 'load', description: string): ElementTemplate {
+  return {
+    id: `function_${name}`,
+    label: name === 'tick' ? 'Tick function tag' : 'Load function tag',
+    description,
+    kind: FUNCTION_TAG,
+    prefix: '',
+    defaultName: name,
+    defaultNamespace: 'minecraft',
+    data: (id, _kindDefault, context) => ({ values: [`${projectNamespace(id, context)}:${name}`] }),
+  };
+}
+
+/** The Data Pack Studio templates, in picker order. */
+export const DATA_PACK_TEMPLATES: readonly ElementTemplate[] = [
+  {
+    id: 'recipe_shaped',
+    label: 'Shaped recipe',
+    description: 'A crafting recipe with a fixed pattern.',
+    kind: RECIPE,
+    prefix: '',
+    data: () => ({
+      type: 'minecraft:crafting_shaped',
+      category: 'building',
+      pattern: ['##', '##'],
+      key: { '#': 'minecraft:stone' },
+      result: { id: 'minecraft:stone_bricks', count: 4 },
+    }),
+  },
+  {
+    id: 'recipe_shapeless',
+    label: 'Shapeless recipe',
+    description: 'A crafting recipe whose ingredients go anywhere in the grid.',
+    kind: RECIPE,
+    prefix: '',
+    data: () => ({
+      type: 'minecraft:crafting_shapeless',
+      category: 'misc',
+      ingredients: ['minecraft:gravel', 'minecraft:flint'],
+      result: { id: 'minecraft:flint', count: 2 },
+    }),
+  },
+  {
+    id: 'recipe_smelting',
+    label: 'Smelting recipe',
+    description: 'A furnace recipe: one ingredient, one result.',
+    kind: RECIPE,
+    prefix: '',
+    data: () => ({
+      type: 'minecraft:smelting',
+      category: 'blocks',
+      ingredient: 'minecraft:cobblestone',
+      result: { id: 'minecraft:stone' },
+      experience: 0.1,
+      cookingtime: 200,
+    }),
+  },
+  {
+    id: 'loot_table_block',
+    label: 'Block loot table',
+    description: 'What a block drops when broken.',
+    kind: 'minecraft:loot_table',
+    prefix: 'blocks/',
+    data: () => ({
+      type: 'minecraft:block',
+      pools: [
+        {
+          rolls: 1,
+          entries: [{ type: 'minecraft:item', name: 'minecraft:stone' }],
+          condition: { type: 'minecraft:survives_explosion' },
+        },
+      ],
+    }),
+  },
+  {
+    id: 'advancement',
+    label: 'Advancement',
+    description: 'A root advancement with its own tab, granted on the first tick.',
+    kind: 'minecraft:advancement',
+    prefix: '',
+    data: () => ({
+      display: {
+        icon: { id: 'minecraft:diamond' },
+        title: 'My advancement',
+        description: 'Describe what to do here',
+        background: 'minecraft:gui/advancements/backgrounds/stone',
+        frame: 'task',
+      },
+      criteria: { requirement: { trigger: 'minecraft:tick' } },
+    }),
+  },
+  {
+    id: 'predicate',
+    label: 'Predicate',
+    description: 'A reusable condition, for example a random chance.',
+    kind: 'minecraft:predicate',
+    prefix: '',
+    data: fromKind('minecraft:predicate'),
+  },
+  {
+    id: 'item_modifier',
+    label: 'Item modifier',
+    description: 'Changes an item stack, for example its count.',
+    kind: 'minecraft:item_modifier',
+    prefix: '',
+    data: fromKind('minecraft:item_modifier'),
+  },
+  {
+    id: 'function',
+    label: 'Function',
+    description: 'A list of commands, run with /function.',
+    kind: FUNCTION,
+    prefix: '',
+    data: (id) => ({ lines: [`# Run with /function ${id}`, 'say Hello'] }),
+  },
+  functionTagTemplate('tick', 'Runs <namespace>:tick every game tick (#minecraft:tick).'),
+  functionTagTemplate('load', 'Runs <namespace>:load when the data pack loads (#minecraft:load).'),
+  {
+    id: 'tag_item',
+    label: 'Item tag',
+    description: 'A named group of items, used as #<namespace>:<name>.',
+    kind: 'minecraft:tag/item',
+    prefix: '',
+    data: fromKind('minecraft:tag/item'),
+  },
+  {
+    id: 'tag_block',
+    label: 'Block tag',
+    description: 'A named group of blocks, used as #<namespace>:<name>.',
+    kind: 'minecraft:tag/block',
+    prefix: '',
+    data: fromKind('minecraft:tag/block'),
+  },
+];
+
+/** Every built-in template, in picker order. */
+export const BUILT_IN_TEMPLATES: readonly ElementTemplate[] = [
+  ...RESOURCE_PACK_TEMPLATES,
+  ...DATA_PACK_TEMPLATES,
+];
+
 /**
  * The templates for the registered kinds: every built-in template whose kind is registered,
  * then one generic entry per registered kind no template covers.
@@ -128,7 +303,7 @@ export const RESOURCE_PACK_TEMPLATES: readonly ElementTemplate[] = [
  */
 export function templatesFor(kinds: readonly string[]): ElementTemplate[] {
   const registered = new Set(kinds);
-  const out = RESOURCE_PACK_TEMPLATES.filter((template) => registered.has(template.kind));
+  const out = BUILT_IN_TEMPLATES.filter((template) => registered.has(template.kind));
   const covered = new Set(out.map((template) => template.kind));
   for (const kind of kinds) {
     if (covered.has(kind)) continue;

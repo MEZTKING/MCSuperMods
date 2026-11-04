@@ -8,6 +8,7 @@
 import type { Project } from '@msm/core';
 import type { Target } from '@msm/plugin-api';
 import {
+  BUILT_IN_EXTENSIONS,
   createRegistryIndex,
   createSchemaIndex,
   parseVanillaMcdocSymbols,
@@ -22,11 +23,14 @@ export interface SchemaContext {
   target: Target;
   /** Version-gated schema index over the target's vanilla-mcdoc export. */
   schemaIndex: SchemaIndex;
-  /** Vanilla registry ids (mcmeta `registries.json`, ids without a namespace). */
+  /**
+   * Vanilla registry ids (mcmeta `registries.json`, ids without a namespace) plus
+   * {@link SEEDED_VANILLA_IDS}.
+   */
   vanillaRegistries: Readonly<Record<string, readonly string[]>>;
   /**
-   * The registry index for `project`: vanilla ids plus the project's own models, textures and
-   * sounds. Memoised on the set of project ids.
+   * The registry index for `project`: vanilla ids plus the project's own models, textures,
+   * sounds and data pack ids. Memoised on the set of project ids.
    */
   registries(project: Project): RegistryIndex;
 }
@@ -62,8 +66,75 @@ function between(path: string, prefix: string, suffix: string): string | undefin
 }
 
 /**
+ * Data pack kinds whose element ids form a registry of the same name (ADR 0015): the tier-A
+ * kinds plus the tier-B generic kinds. Matched by kind id string, never by importing the
+ * plugin.
+ */
+export const DATA_REGISTRY_KINDS: readonly string[] = Object.freeze([
+  'advancement',
+  'banner_pattern',
+  'chat_type',
+  'damage_type',
+  'dialog',
+  'dimension_type',
+  'enchantment',
+  'function',
+  'item_modifier',
+  'jukebox_song',
+  'loot_table',
+  'painting_variant',
+  'predicate',
+  'recipe',
+  'trim_material',
+  'trim_pattern',
+]);
+
+const DATA_REGISTRIES = new Set(DATA_REGISTRY_KINDS);
+const MINECRAFT_PREFIX = 'minecraft:';
+const TAG_PREFIX = 'tag/';
+
+/**
+ * The registry the ids of `kind`'s elements belong to: the kind id without `minecraft:`, for
+ * example `recipe`, `model` or `tag/item`.
+ *
+ * @param kind - An element kind id.
+ */
+export function kindRegistry(kind: string): string {
+  return kind.startsWith(MINECRAFT_PREFIX) ? kind.slice(MINECRAFT_PREFIX.length) : kind;
+}
+
+function sortedRecord(map: Map<string, string[]>): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const name of [...map.keys()].sort()) out[name] = (map.get(name) ?? []).sort();
+  return out;
+}
+
+/**
+ * The data pack ids a project defines, per registry: `function`, `recipe`, `loot_table`,
+ * `advancement`, `predicate`, `item_modifier`, the tier-B registries and `tag/<registry>`
+ * (tag ids without `#`). Only registries with at least one id appear. Sorted, namespaced.
+ *
+ * @param project - The project.
+ */
+export function dataRegistryIds(project: Project): Record<string, string[]> {
+  const map = new Map<string, string[]>();
+  for (const namespace of project.namespaces) {
+    for (const element of namespace.elements) {
+      if (!element.kind.startsWith(MINECRAFT_PREFIX)) continue;
+      const registry = kindRegistry(element.kind);
+      if (!DATA_REGISTRIES.has(registry) && !registry.startsWith(TAG_PREFIX)) continue;
+      const ids = map.get(registry);
+      if (ids === undefined) map.set(registry, [element.id]);
+      else ids.push(element.id);
+    }
+  }
+  return sortedRecord(map);
+}
+
+/**
  * The ids a project defines, per registry: `model` (model elements), `texture` (PNG assets
- * under `textures/`) and `sound` (Ogg assets under `sounds/`). Sorted, namespaced.
+ * under `textures/`), `sound` (Ogg assets under `sounds/`) and the data pack registries of
+ * {@link dataRegistryIds}. Sorted, namespaced.
  *
  * @param project - The project.
  */
@@ -82,7 +153,30 @@ export function projectRegistryIds(project: Project): Record<string, string[]> {
       if (soundId !== undefined) sound.push(`${namespace.name}:${soundId}`);
     }
   }
-  return { model: model.sort(), sound: sound.sort(), texture: texture.sort() };
+  return {
+    ...dataRegistryIds(project),
+    model: model.sort(),
+    sound: sound.sort(),
+    texture: texture.sort(),
+  };
+}
+
+/**
+ * Vanilla ids MSM adds to the vendored registries: mcmeta lists no `tag/function` ids, but
+ * the game always defines `#minecraft:tick` and `#minecraft:load`.
+ */
+export const SEEDED_VANILLA_IDS: Readonly<Record<string, readonly string[]>> = Object.freeze({
+  'tag/function': Object.freeze(['load', 'tick']),
+});
+
+function withSeeds(
+  vanilla: Readonly<Record<string, readonly string[]>>,
+): Record<string, readonly string[]> {
+  const out: Record<string, readonly string[]> = { ...vanilla };
+  for (const [registry, ids] of Object.entries(SEEDED_VANILLA_IDS)) {
+    out[registry] = [...new Set([...(vanilla[registry] ?? []), ...ids])];
+  }
+  return out;
 }
 
 /**
@@ -100,8 +194,11 @@ export async function loadSchemaContext(
     platform.targets.readVendored(target.id, 'mcmetaRegistries'),
   ]);
   const symbols = parseVanillaMcdocSymbols(parseJsonBytes(symbolBytes, 'vanilla-mcdoc symbols'));
-  const vanillaRegistries = parseRegistries(parseJsonBytes(registryBytes, 'registries'));
-  const schemaIndex = createSchemaIndex(symbols, { mcVersion: target.mcVersion });
+  const vanillaRegistries = withSeeds(parseRegistries(parseJsonBytes(registryBytes, 'registries')));
+  const schemaIndex = createSchemaIndex(symbols, {
+    mcVersion: target.mcVersion,
+    extensions: BUILT_IN_EXTENSIONS,
+  });
 
   let cachedKey: string | null = null;
   let cached: RegistryIndex | null = null;

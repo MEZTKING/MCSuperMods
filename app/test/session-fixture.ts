@@ -8,7 +8,11 @@ import { fileURLToPath } from 'node:url';
 import type { MemoryFileSystem } from '@msm/core';
 import { builtInTargets, targetById } from '@msm/targets';
 import { builtInPlugins } from '../src/renderer/src/plugins/built-in';
-import { ProjectSession } from '../src/renderer/src/session/project-session';
+import type { McfunctionChecker } from '../src/renderer/src/session/mcfunction-problems';
+import {
+  ProjectSession,
+  type ProjectSessionOptions,
+} from '../src/renderer/src/session/project-session';
 import type { PlatformAdapter } from '../src/shared/platform';
 import { stubPlatformServices } from './helpers/stub-platform';
 
@@ -79,16 +83,52 @@ export function fakePlatform(fs: MemoryFileSystem, options: FakePlatformOptions 
 /** A fixed clock for element timestamps. */
 export const now = (): string => '2026-01-01T00:00:00.000Z';
 
-/** A session with the built-in plugins and targets over a fake platform. */
-export function newSession(fs: MemoryFileSystem, options: FakePlatformOptions = {}) {
+/**
+ * A session with the built-in plugins and targets over a fake platform. `sessionOptions` adds
+ * to (or replaces) the session options, for example an mcfunction checker.
+ */
+export function newSession(
+  fs: MemoryFileSystem,
+  options: FakePlatformOptions = {},
+  sessionOptions: ProjectSessionOptions = {},
+) {
   const { platform, calls } = fakePlatform(fs, options);
   const session = new ProjectSession(platform, {
     plugins: builtInPlugins,
     targets: builtInTargets,
     now,
+    ...sessionOptions,
   });
   return { session, calls, platform };
 }
 
 /** The id of the default (newest) built-in target. */
 export const defaultTarget = (builtInTargets[0] as (typeof builtInTargets)[number]).target;
+
+let nodeChecker: Promise<McfunctionChecker> | null = null;
+
+/**
+ * The real offline mcfunction service (Node) for {@link defaultTarget}, as the session's
+ * injected checker. Built once per test file; Spyglass is imported lazily so other tests do
+ * not load it.
+ */
+export function nodeMcfunctionChecker(): Promise<McfunctionChecker> {
+  nodeChecker ??= (async () => {
+    const { createMcfunctionService } = await import('@msm/schemas/mcfunction');
+    const bundle = targetById(defaultTarget.id);
+    if (bundle === undefined) throw new Error(`Unknown target ${defaultTarget.id}`);
+    const read = async (url: URL): Promise<unknown> =>
+      JSON.parse(await readFile(fileURLToPath(url), 'utf8')) as unknown;
+    const [commands, blocks, registries] = await Promise.all([
+      read(bundle.vendored.mcmetaCommands),
+      read(bundle.vendored.mcmetaBlocks),
+      read(bundle.vendored.mcmetaRegistries),
+    ]);
+    const service = await createMcfunctionService(
+      { commands, blocks, registries: registries as Record<string, string[]> },
+      { mcVersion: defaultTarget.mcVersion },
+    );
+    return { check: (source, options) => service.check(source, options) };
+  })();
+  return nodeChecker;
+}

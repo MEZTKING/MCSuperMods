@@ -1,14 +1,15 @@
 /**
  * The form's `CompletionSource` for a project: translation keys from the project's language
- * files, registry ids from the target's registry index (vanilla plus project ids), and the
- * project's own textures, models and elements.
+ * files, registry ids from the target's registry index (vanilla plus project ids, tag
+ * references with a `#` prefix), and the project's own textures, models, elements and data
+ * pack ids.
  *
  * @packageDocumentation
  */
 
 import type { Project } from '@msm/core';
 import type { RegistryIndex } from '@msm/schemas';
-import type { CompletionSource } from '../forms';
+import { kindRegistry, projectRegistryIds } from '../session/schema-context';
 
 /** At most this many suggestions per call; the form shows fewer. */
 const LIMIT = 200;
@@ -59,7 +60,29 @@ export function textureIds(project: Project): string[] {
 }
 
 /**
+ * The form's `CompletionSource` (structurally; declared here so this module does not import
+ * the React form package), whose `projectIds` also accepts any registered kind id (for
+ * example `minecraft:recipe`) and project registry names (`function`, `recipe`,
+ * `loot_table`, `advancement`, `predicate`, `item_modifier`, `tag/<registry>`, …).
+ */
+export interface ProjectCompletionSource {
+  /** Registry ids starting with `prefix`; a `#` prefix suggests tags. */
+  suggest(registry: string, prefix: string): string[];
+  /** Project ids of a kind, kind id or registry name starting with `prefix`. */
+  projectIds(kind: string, prefix: string): string[];
+}
+
+const TAG_PREFIX = 'tag/';
+
+/**
  * Builds a completion source over `project`.
+ *
+ * - `suggest(registry, prefix)`: ids of `registry` from the registry index. A prefix starting
+ *   with `#` suggests tags instead (`#` + ids of `tag/<registry>`, or of `registry` itself
+ *   when it already is a `tag/` registry).
+ * - `projectIds(kind, prefix)`: `texture` (project textures), `model` (model elements),
+ *   `element` (every element), a kind id (elements of that kind) or a registry name (the
+ *   project's ids in that registry).
  *
  * @param project - The open project.
  * @param registries - The registry index for the project, or `null` while schemas load.
@@ -67,28 +90,48 @@ export function textureIds(project: Project): string[] {
 export function createCompletionSource(
   project: Project,
   registries: RegistryIndex | null,
-): CompletionSource {
+): ProjectCompletionSource {
   let lang: string[] | null = null;
   let textures: string[] | null = null;
+  let registryIds: Record<string, string[]> | null = null;
+  const elements = () => project.namespaces.flatMap((namespace) => namespace.elements);
   return {
     suggest(registry, prefix) {
       if (registry === 'translation_key') {
         lang ??= translationKeys(project);
         return pick(lang, prefix);
       }
-      return registries === null ? [] : pick(registries.ids(registry), prefix);
+      if (registries === null) return [];
+      if (prefix.startsWith('#')) {
+        const tags = registry.startsWith(TAG_PREFIX)
+          ? registry
+          : `${TAG_PREFIX}${kindRegistry(registry)}`;
+        return pick(registries.ids(tags), prefix.slice(1)).map((id) => `#${id}`);
+      }
+      return pick(registries.ids(registry), prefix);
     },
     projectIds(kind, prefix) {
       if (kind === 'texture') {
         textures ??= textureIds(project);
         return pick(textures, prefix);
       }
-      const ids = project.namespaces
-        .flatMap((namespace) => namespace.elements)
-        .filter((element) => kind === 'element' || element.kind === 'minecraft:model')
-        .map((element) => element.id)
-        .sort();
-      return pick(ids, prefix);
+      if (kind === 'element')
+        return pick(
+          elements()
+            .map((element) => element.id)
+            .sort(),
+          prefix,
+        );
+      if (kind === 'model' || kind.includes(':')) {
+        const kindId = kind === 'model' ? 'minecraft:model' : kind;
+        const ids = elements()
+          .filter((element) => element.kind === kindId)
+          .map((element) => element.id)
+          .sort();
+        return pick(ids, prefix);
+      }
+      registryIds ??= projectRegistryIds(project);
+      return pick(registryIds[kind] ?? [], prefix);
     },
   };
 }

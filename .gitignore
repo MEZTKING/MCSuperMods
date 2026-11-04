@@ -8,3 +8,4 @@ out/
 .msm/
 coverage/
 .DS_Store
+test-results/

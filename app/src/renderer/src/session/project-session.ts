@@ -1,8 +1,10 @@
 /**
  * The renderer-hosted project session (ADR 0007): one element-kind registry, one command
  * stack, load/save through the platform's file system with a save manifest (ADR 0012), live
- * schema problems (plan D5), project assets, and export and install of the resource pack. No
- * DOM access, so it is testable with an in-memory platform.
+ * schema problems (plan D5), live mcfunction problems through an injected checker (ADR 0014),
+ * project assets, the reference index and rename refactor (ADR 0016), and export of the
+ * resource and data packs and install of the resource pack. No DOM access, so it is testable
+ * with an in-memory platform.
  *
  * @packageDocumentation
  */
@@ -13,6 +15,7 @@ import {
   commands,
   createElement,
   createEmptyProject,
+  DuplicateElementError,
   type Element,
   ElementKindRegistry,
   elementFilePath,
@@ -20,8 +23,12 @@ import {
   loadProject,
   mediaTypeForPath,
   type Problem,
+  ProblemCodes,
   type Project,
+  type ProjectCommand,
   type ProjectFileSystem,
+  type Reference,
+  type ReferenceIndex,
   type ResourceLocation,
   registerPlugin,
   type SaveManifest,
@@ -29,10 +36,11 @@ import {
 } from '@msm/core';
 import {
   createZipSink,
+  dataPackExporter,
   type ExportReport,
   packFileName,
+  resourcePackExporter,
   runExport,
-  vanillaPacksExporter,
 } from '@msm/exporters';
 import type { Plugin, Target } from '@msm/plugin-api';
 import { type SchemaNode, validateJson } from '@msm/schemas';
@@ -50,7 +58,20 @@ import {
   namespaceFromFolderName,
   PACK_MCMETA_KIND,
 } from './element-defaults';
-import { loadSchemaContext, type SchemaContext } from './schema-context';
+import {
+  checkFunctionElement,
+  FUNCTION_KIND,
+  functionLines,
+  type McfunctionChecker,
+  mcfunctionProjectIds,
+  mcfunctionTextValidator,
+} from './mcfunction-problems';
+import {
+  buildSessionReferenceIndex,
+  referencesForRename,
+  type SessionReferences,
+} from './references';
+import { loadSchemaContext, projectRegistryIds, type SchemaContext } from './schema-context';
 
 /** Everything the UI renders from the session. Replaced, never mutated. */
 export interface SessionSnapshot {
@@ -90,6 +111,12 @@ export type OpenOutcome =
 /** Where {@link ProjectSession.exportResourcePack} delivers the pack. */
 export type ExportMode = 'zip' | 'install';
 
+/** Which pack {@link ProjectSession.exportPack} builds. */
+export type PackKind = 'resource' | 'data';
+
+/** How {@link ProjectSession.exportPack} delivers the pack (`install` and `combined`: B42). */
+export type PackDelivery = 'zip';
+
 /** The result of an export: the pipeline report plus where the pack went. */
 export type ExportResult = ExportReport & {
   /** The written zip or installed pack path; absent when blocked or cancelled. */
@@ -121,6 +148,12 @@ export interface ProjectSessionOptions {
   targets?: readonly SessionTarget[];
   /** Debounce for live validation in milliseconds (default 150). */
   validationDelay?: number;
+  /**
+   * Checks function sources (ADR 0014): live problems for `minecraft:function` elements and
+   * the export gate's `validateText`. Without it functions get only schema problems and the
+   * export reports them as unchecked.
+   */
+  mcfunction?: McfunctionChecker;
 }
 
 /** Problem codes the session itself reports. */
@@ -129,6 +162,10 @@ export const SessionProblemCodes = {
   overwritesSkippedFile: 'project.overwrites-skipped-file',
   schemasUnavailable: 'schema.unavailable',
   assetTrashFailed: 'assets.trash-failed',
+  /** The injected mcfunction checker failed; the function is not checked. */
+  mcfunctionUnavailable: 'mcfunction.unavailable',
+  /** A rename onto an id that already exists (from `@msm/core`). */
+  renameConflict: ProblemCodes.refsRenameConflict,
 } as const;
 
 /**
@@ -179,6 +216,14 @@ export class ProjectSession {
   readonly #plugins: readonly Plugin[];
   readonly #targets: readonly SessionTarget[];
   readonly #validationDelay: number;
+  readonly #mcfunction: McfunctionChecker | undefined;
+  readonly #loadedSchemas = new Map<string, SchemaContext>();
+  #referenceCache: {
+    state: Project;
+    context: SchemaContext | null;
+    index: ReferenceIndex;
+  } | null = null;
+  #renameProblems: Problem[] = [];
   readonly #listeners = new Set<(snapshot: SessionSnapshot) => void>();
   readonly #schemaCache = new Map<string, Promise<SchemaContext>>();
   #stack: CommandStack | null = null;
@@ -209,6 +254,7 @@ export class ProjectSession {
     this.#plugins = options.plugins ?? [];
     this.#targets = options.targets ?? [];
     this.#validationDelay = options.validationDelay ?? 150;
+    this.#mcfunction = options.mcfunction;
     for (const plugin of this.#plugins) registerPlugin(this.registry, plugin);
   }
 
@@ -259,7 +305,10 @@ export class ProjectSession {
     if (cached === undefined) {
       cached = loadSchemaContext(this.#platform, target);
       this.#schemaCache.set(target.id, cached);
-      cached.catch(() => this.#schemaCache.delete(target.id));
+      cached.then(
+        (context) => this.#loadedSchemas.set(target.id, context),
+        () => this.#schemaCache.delete(target.id),
+      );
     }
     return cached;
   }
@@ -379,7 +428,25 @@ export class ProjectSession {
       data: input.data ?? defaultElementData(input.kind, input.id, kind.defaultData),
       ...(this.#now === undefined ? {} : { now: this.#now }),
     });
-    this.#requireStack().execute(commands.addElement(element));
+    const stack = this.#requireStack();
+    const add = commands.addElement(element);
+    const namespace = input.id.slice(0, input.id.indexOf(':'));
+    if (stack.state.namespaces.some((entry) => entry.name === namespace)) {
+      stack.execute(add);
+      return;
+    }
+    // A template may target a namespace the project lacks (for example `minecraft:tick`):
+    // create it in the same undo step.
+    const addNamespace = commands.addNamespace(namespace);
+    const command: ProjectCommand = {
+      id: 'app.add-element-in-new-namespace',
+      label: add.label,
+      apply(draft) {
+        addNamespace.apply(draft);
+        add.apply(draft);
+      },
+    };
+    stack.execute(command);
   }
 
   /** Removes an element. */
@@ -410,6 +477,66 @@ export class ProjectSession {
         options.coalesce === undefined ? {} : { coalesce: options.coalesce },
       ),
     );
+  }
+
+  // References ---------------------------------------------------------------------------
+
+  /**
+   * Lookups over the current project's references (ADR 0016). The index is rebuilt lazily
+   * from the command stack's state, memoised on the state object and the loaded schemas;
+   * before schemas have loaded only function-line references are found.
+   */
+  readonly references: SessionReferences = {
+    to: (id, registry) => this.#referenceIndex()?.referencesTo(id, registry) ?? [],
+    from: (elementId) => this.#referenceIndex()?.referencesFrom(elementId) ?? [],
+  };
+
+  /**
+   * Renames an element and rewrites every reference to it (schema references of its kind's
+   * registry and function-line references) as one undoable command. A rename onto an existing
+   * id does not throw: it is reported as the problem `refs.rename-conflict`, which clears on
+   * the next command.
+   *
+   * @throws Error If no project is open, `oldId` does not exist, the new namespace does not
+   *   exist or the new id breaks a kind rule.
+   */
+  renameElement(oldId: ResourceLocation, newId: ResourceLocation): void {
+    const stack = this.#requireStack();
+    const element = elementsById(stack.state).get(oldId);
+    if (element !== undefined) assertElementIdAllowed(element.kind, newId);
+    const index = this.#referenceIndex();
+    const references: Reference[] =
+      element === undefined || index === null ? [] : referencesForRename(index, element);
+    try {
+      stack.execute(commands.renameElement(oldId, newId, references));
+    } catch (error) {
+      if (!(error instanceof DuplicateElementError)) throw error;
+      this.#renameProblems = [
+        {
+          severity: 'error',
+          code: SessionProblemCodes.renameConflict,
+          elementId: oldId,
+          message: `Cannot rename ${oldId} to ${newId}: an element with that id already exists.`,
+        },
+      ];
+      this.#publish();
+    }
+  }
+
+  #referenceIndex(): ReferenceIndex | null {
+    const stack = this.#stack;
+    if (stack === null) return null;
+    const state = stack.state;
+    const targetId = this.#targets.length === 0 ? undefined : this.target.id;
+    const context =
+      (targetId === undefined ? undefined : this.#loadedSchemas.get(targetId)) ?? null;
+    const cached = this.#referenceCache;
+    if (cached !== null && cached.state === state && cached.context === context) {
+      return cached.index;
+    }
+    const index = buildSessionReferenceIndex(state, this.registry, context);
+    this.#referenceCache = { state, context, index };
+    return index;
   }
 
   /** Undoes the last command; returns `false` if there was none. */
@@ -500,12 +627,46 @@ export class ProjectSession {
    * Exports the resource pack with `runExport` and the `vanilla-packs` exporter. Schema
    * errors (and every other error problem) block the export; nothing is written then.
    *
-   * - `zip`: asks where to save the zip (`platform.dialogs.saveFile`).
+   * - `zip`: asks where to save the zip (`platform.dialogs.saveFile`), as
+   *   {@link exportPack}`('resource', 'zip')`.
    * - `install`: writes the zip into the game's `resourcepacks/` folder.
    *
    * @throws Error If no project is open.
    */
   async exportResourcePack(mode: ExportMode): Promise<ExportResult> {
+    if (mode === 'zip') return this.exportPack('resource', 'zip');
+    const built = await this.#buildPack('resource');
+    if (built.data === undefined) return built.report;
+    const { path } = await this.#platform.minecraft.installResourcePack(built.fileName, built.data);
+    return { ...built.report, location: path };
+  }
+
+  /**
+   * Exports the resource pack (`vanilla-packs`) or the data pack (`vanilla-packs-data`) as a
+   * zip the user saves. Every error problem blocks the export, including mcfunction errors
+   * from the injected checker (`validateText`); warnings pass.
+   *
+   * @param pack - Which pack to build.
+   * @param mode - `zip`: asks where to save it (`platform.dialogs.saveFile`).
+   * @throws Error If no project is open.
+   */
+  async exportPack(pack: PackKind, mode: PackDelivery): Promise<ExportResult> {
+    const built = await this.#buildPack(pack);
+    if (built.data === undefined || mode !== 'zip') return built.report;
+    const label = pack === 'data' ? 'Data pack' : 'Resource pack';
+    const location = await this.#platform.dialogs.saveFile({
+      title: `Export ${label.toLowerCase()}`,
+      defaultName: built.fileName,
+      filters: [{ name: label, extensions: ['zip'] }],
+      data: built.data,
+    });
+    return location === null ? { ...built.report, cancelled: true } : { ...built.report, location };
+  }
+
+  /** Runs the export pipeline for one pack into a zip; `data` is absent when blocked. */
+  async #buildPack(
+    pack: PackKind,
+  ): Promise<{ report: ExportReport; fileName: string; data?: Uint8Array }> {
     const stack = this.#requireStack();
     await this.flushValidation();
     await this.flushAssetFiles();
@@ -513,31 +674,24 @@ export class ProjectSession {
     const context = await this.schemas();
     const info = await this.#platform.app.info();
     const sink = createZipSink();
+    const checker = this.#mcfunction;
     const report = await runExport({
       project,
       registry: this.registry,
       target: context.target,
       schemaIndex: context.schemaIndex,
       registries: context.registries(project),
-      exporter: vanillaPacksExporter,
+      exporter: pack === 'data' ? dataPackExporter : resourcePackExporter,
       sink,
       readAsset: (namespace, path) => this.readAsset(namespace, path),
       meta: { msmVersion: info.version, plugins: [...project.plugins] },
+      ...(checker === undefined
+        ? {}
+        : { validateText: mcfunctionTextValidator(checker, project, context.target) }),
     });
-    if (!report.ok) return report;
-    const data = sink.finish();
-    const fileName = packFileName(project.name, context.target);
-    if (mode === 'install') {
-      const { path } = await this.#platform.minecraft.installResourcePack(fileName, data);
-      return { ...report, location: path };
-    }
-    const location = await this.#platform.dialogs.saveFile({
-      title: 'Export resource pack',
-      defaultName: fileName,
-      filters: [{ name: 'Resource pack', extensions: ['zip'] }],
-      data,
-    });
-    return location === null ? { ...report, cancelled: true } : { ...report, location };
+    const fileName = packFileName(project.name, context.target, pack);
+    if (!report.ok) return { report, fileName };
+    return { report, fileName, data: sink.finish() };
   }
 
   // Minecraft and settings ----------------------------------------------------------------
@@ -618,15 +772,63 @@ export class ProjectSession {
     const registries = context.registries(project);
     const pending = [...this.#pending];
     this.#pending.clear();
+    const functions: { element: Element; problems: Problem[] }[] = [];
     for (const id of pending) {
       const element = elements.get(id);
       if (element === undefined) {
         this.#schemaProblems.delete(id);
         continue;
       }
-      this.#schemaProblems.set(id, this.#validateElement(element, context, registries));
+      const problems = this.#validateElement(element, context, registries);
+      if (
+        element.kind === FUNCTION_KIND &&
+        this.#mcfunction !== undefined &&
+        !problems.some((problem) => problem.severity === 'error')
+      ) {
+        // Published together with the checker's problems, so they do not flicker.
+        functions.push({ element, problems });
+      } else {
+        this.#schemaProblems.set(id, problems);
+      }
     }
     this.#publish();
+    if (functions.length > 0) await this.#checkFunctions(functions, context, project, generation);
+  }
+
+  /**
+   * Runs the injected mcfunction checker over function elements after their schema check and
+   * publishes its problems after theirs. An element that changed meanwhile is already queued
+   * for another pass, which replaces these problems.
+   */
+  async #checkFunctions(
+    functions: readonly { element: Element; problems: Problem[] }[],
+    context: SchemaContext,
+    project: Project,
+    generation: number,
+  ): Promise<void> {
+    const checker = this.#mcfunction;
+    if (checker === undefined) return;
+    const projectIds = mcfunctionProjectIds(project);
+    for (const { element, problems: schemaProblems } of functions) {
+      const lines = functionLines(element) ?? [];
+      let problems: Problem[];
+      try {
+        problems = await checkFunctionElement(checker, element, lines, context.target, projectIds);
+      } catch (error) {
+        problems = [
+          {
+            severity: 'warning',
+            code: SessionProblemCodes.mcfunctionUnavailable,
+            elementId: element.id,
+            message: `The function could not be checked: ${messageOf(error)}`,
+          },
+        ];
+      }
+      if (generation !== this.#generation || this.#stack === null) return;
+      if (!elementsById(this.#stack.state).has(element.id)) continue;
+      this.#schemaProblems.set(element.id, [...schemaProblems, ...problems]);
+      this.#publish();
+    }
   }
 
   #validateElement(
@@ -669,15 +871,8 @@ export class ProjectSession {
     const before = elementsById(this.#lastState);
     const after = elementsById(event.state);
     const idsKey = (project: Project | null) =>
-      project === null
-        ? ''
-        : JSON.stringify(
-            project.namespaces.map((namespace) => [
-              namespace.name,
-              namespace.assets.map((asset) => asset.path),
-              namespace.elements.filter((e) => e.kind === 'minecraft:model').map((e) => e.id),
-            ]),
-          );
+      project === null ? '' : JSON.stringify(projectRegistryIds(project));
+    this.#renameProblems = [];
     if (idsKey(this.#lastState) !== idsKey(event.state)) {
       // Project-defined ids changed, so `#[id]` warnings anywhere may change.
       for (const id of after.keys()) this.#pending.add(id);
@@ -868,6 +1063,8 @@ export class ProjectSession {
     this.#pending.clear();
     this.#lastState = null;
     this.#assetProblems = [];
+    this.#renameProblems = [];
+    this.#referenceCache = null;
   }
 
   #close(): void {
@@ -898,6 +1095,7 @@ export class ProjectSession {
           ...this.#targetProblems,
           ...this.#schemaLoadProblems,
           ...this.#assetProblems,
+          ...this.#renameProblems,
           ...this.#overwriteProblems(project),
           ...schemaProblems,
         ],
