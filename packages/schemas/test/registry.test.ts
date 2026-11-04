@@ -43,3 +43,27 @@ describe('createRegistryIndex', () => {
     expect(index.registries()).toEqual(['block', 'item', 'sound_event']);
   });
 });
+
+describe('createRegistryIndex tag references', () => {
+  const index = createRegistryIndex({
+    vanilla: { item: ['stone'], 'tag/item': ['logs'] },
+    project: { 'tag/item': ['demo:gems'], 'tag/function': ['demo:tick'] },
+  });
+
+  it('checks #ids against tag/<registry> when it is known', () => {
+    expect(index.has('item', '#minecraft:logs')).toBe(true);
+    expect(index.has('item', '#logs')).toBe(true);
+    expect(index.has('minecraft:item', '#demo:gems')).toBe(true);
+    expect(index.has('item', '#demo:nope')).toBe(false);
+    expect(index.has('function', '#demo:tick')).toBe(true);
+    expect(index.has('function', '#demo:load')).toBe(false);
+  });
+
+  it('accepts #ids when the tag registry is unknown', () => {
+    expect(index.has('block', '#minecraft:anything')).toBe(true);
+  });
+
+  it('never treats a plain id as a tag', () => {
+    expect(index.has('item', 'logs')).toBe(false);
+  });
+});

@@ -77,6 +77,29 @@ function checkAttributes(node: Obj, path: string): void {
   });
 }
 
+/** Checks the `parallelIndices` of a dispatcher or indexed type at `path`. */
+function checkIndices(value: unknown, path: string): void {
+  const indices = expectArray(value, at(path, 'parallelIndices'));
+  indices.forEach((raw, i) => {
+    const indexPath = at(at(path, 'parallelIndices'), i);
+    const index = expectObject(raw, indexPath);
+    if (index.kind === 'static') {
+      expectString(index.value, at(indexPath, 'value'));
+    } else if (index.kind === 'dynamic') {
+      expectArray(index.accessor, at(indexPath, 'accessor')).forEach((step, j) => {
+        const stepPath = at(at(indexPath, 'accessor'), j);
+        if (typeof step === 'string') return;
+        const keyword = expectObject(step, stepPath).keyword;
+        if (keyword !== 'key' && keyword !== 'parent') {
+          throw new SymbolsFormatError(at(stepPath, 'keyword'), 'expected "key" or "parent"');
+        }
+      });
+    } else {
+      throw new SymbolsFormatError(at(indexPath, 'kind'), 'expected "static" or "dynamic"');
+    }
+  });
+}
+
 /**
  * Checks one raw type recursively. Known kinds must carry their required properties;
  * unknown kinds are accepted (they normalise to `unsupported`) so a newer export still loads.
@@ -150,29 +173,14 @@ function checkType(value: unknown, path: string): void {
     case 'reference':
       if (node.path !== undefined) expectString(node.path, at(path, 'path'));
       break;
-    case 'dispatcher': {
+    case 'dispatcher':
       expectString(node.registry, at(path, 'registry'));
-      const indices = expectArray(node.parallelIndices, at(path, 'parallelIndices'));
-      indices.forEach((raw, i) => {
-        const indexPath = at(at(path, 'parallelIndices'), i);
-        const index = expectObject(raw, indexPath);
-        if (index.kind === 'static') {
-          expectString(index.value, at(indexPath, 'value'));
-        } else if (index.kind === 'dynamic') {
-          expectArray(index.accessor, at(indexPath, 'accessor')).forEach((step, j) => {
-            const stepPath = at(at(indexPath, 'accessor'), j);
-            if (typeof step === 'string') return;
-            const keyword = expectObject(step, stepPath).keyword;
-            if (keyword !== 'key' && keyword !== 'parent') {
-              throw new SymbolsFormatError(at(stepPath, 'keyword'), 'expected "key" or "parent"');
-            }
-          });
-        } else {
-          throw new SymbolsFormatError(at(indexPath, 'kind'), 'expected "static" or "dynamic"');
-        }
-      });
+      checkIndices(node.parallelIndices, path);
       break;
-    }
+    case 'indexed':
+      checkType(node.child, at(path, 'child'));
+      checkIndices(node.parallelIndices, path);
+      break;
     case 'template': {
       checkType(node.child, at(path, 'child'));
       expectArray(node.typeParams, at(path, 'typeParams')).forEach((raw, i) => {

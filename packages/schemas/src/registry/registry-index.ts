@@ -8,8 +8,9 @@
 export interface RegistryIndex {
   /**
    * Whether `id` is in `registry`. `id` may be `x` (read as `minecraft:x`), `minecraft:x` or
-   * `ns:x`; a tag reference (`#...`) is always accepted. `registry` may carry a `minecraft:`
-   * prefix. An unknown registry has no ids.
+   * `ns:x`. A tag reference `#x` is checked against registry `tag/<registry>` (vanilla tags
+   * from mcmeta plus project tags) when the index knows that registry, and is accepted
+   * otherwise. `registry` may carry a `minecraft:` prefix. An unknown registry has no ids.
    */
   has(registry: string, id: string): boolean;
   /** Every id of `registry`, namespaced and sorted; `[]` for an unknown registry. */
@@ -22,12 +23,17 @@ export interface RegistryIndex {
 export interface RegistryIndexInput {
   /** The mcmeta `registries.json`: registry name to ids without a namespace. */
   vanilla: Readonly<Record<string, readonly string[]>>;
-  /** Namespaced ids the project defines, per registry. */
+  /**
+   * Namespaced ids the project defines, per registry. Tags go under `tag/<registry>`, without
+   * the `#`.
+   */
   project?: Readonly<Record<string, readonly string[]>>;
 }
 
 const DEFAULT_NAMESPACE = 'minecraft';
 const MINECRAFT_PREFIX = 'minecraft:';
+/** Registry name prefix under which tag ids of a registry are stored, e.g. `tag/item`. */
+const TAG_REGISTRY_PREFIX = 'tag/';
 
 /** `x` becomes `minecraft:x`; a namespaced id is returned unchanged. */
 function namespaced(id: string): string {
@@ -65,8 +71,12 @@ export function createRegistryIndex(input: RegistryIndexInput): RegistryIndex {
 
   return {
     has: (registry, id) => {
-      if (id.startsWith('#')) return true;
-      return sets.get(registryName(registry))?.has(namespaced(id)) ?? false;
+      const name = registryName(registry);
+      if (id.startsWith('#')) {
+        const tags = sets.get(`${TAG_REGISTRY_PREFIX}${name}`);
+        return tags === undefined || tags.has(namespaced(id.slice(1)));
+      }
+      return sets.get(name)?.has(namespaced(id)) ?? false;
     },
     ids: (registry) => sorted.get(registryName(registry)) ?? EMPTY,
     registries: () => names,

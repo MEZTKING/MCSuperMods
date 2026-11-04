@@ -158,8 +158,18 @@ export interface RawPrimitiveArrayType extends RawBase {
   valueRange?: RawNumericRange;
 }
 
+/**
+ * An indexed access, e.g. `minecraft:environment_attribute[[attribute]][value]`: the member
+ * that `child` (normally a dispatcher) selects, then that member's field named by the index.
+ */
+export interface RawIndexedType extends RawBase {
+  kind: 'indexed';
+  child: RawMcdocType;
+  parallelIndices: RawIndex[];
+}
+
 /** Kinds MSM does not model; they normalise to `unsupported`. */
-export type RawUnsupportedKind = 'indexed' | 'mapped';
+export type RawUnsupportedKind = 'mapped';
 
 export interface RawUnsupportedType extends RawBase {
   kind: RawUnsupportedKind;
@@ -182,4 +192,5 @@ export type RawMcdocType =
   | RawConcreteType
   | RawTupleType
   | RawPrimitiveArrayType
+  | RawIndexedType
   | RawUnsupportedType;

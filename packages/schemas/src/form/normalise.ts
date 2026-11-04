@@ -2,6 +2,7 @@ import type {
   RawAttribute,
   RawConcreteType,
   RawDispatcherType,
+  RawIndexedType,
   RawMcdocType,
   RawNumericRange,
   RawReferenceType,
@@ -44,6 +45,16 @@ export interface NormaliseContext {
    * instantiation returns a lazy `reference` instead of looping.
    */
   instantiate(path: string, bindings: ReadonlyMap<string, RawMcdocType>): SchemaNode;
+  /**
+   * A dispatcher member instantiated with type arguments, for a generic dispatcher such as
+   * `minecraft:int_provider[[type]]<int>` whose members are templates. Memoised; a member that
+   * is not generic is the plain `dispatch` result. When absent, arguments are ignored.
+   */
+  dispatchInstance?(
+    registry: string,
+    key: string,
+    args: readonly RawMcdocType[],
+  ): SchemaNode | undefined;
 }
 
 /** Type parameter path -> raw type argument. Values are closed (no free parameters). */
@@ -52,7 +63,6 @@ export type TypeBindings = ReadonlyMap<string, RawMcdocType>;
 const NO_BINDINGS: TypeBindings = new Map();
 
 const UNSUPPORTED_REASONS: Readonly<Record<string, string>> = {
-  indexed: 'indexed types are not modelled',
   mapped: 'mapped types are not modelled',
   unsafe: 'unsafe types carry no schema',
 };
@@ -245,6 +255,8 @@ export function normaliseType(
       return withBase(normaliseDispatcher(raw, ctx), raw);
     case 'concrete':
       return normaliseConcrete(raw, ctx, bindings);
+    case 'indexed':
+      return decorate(normaliseIndexed(raw, ctx, bindings), raw);
     case 'template':
       return withBase(
         { kind: 'unsupported', reason: 'uninstantiated template', rawKind: 'template' },
@@ -293,6 +305,9 @@ function normaliseConcrete(
 ): SchemaNode {
   const args = raw.typeArgs.map((arg) => substituteRaw(arg, bindings, ctx));
   const child = raw.child;
+  if (child.kind === 'dispatcher' && args.length > 0 && ctx.dispatchInstance !== undefined) {
+    return decorate(withBase(normaliseDispatcher(child, ctx, args), child), raw);
+  }
   if (child.kind === 'template') {
     return decorate(normaliseType(child.child, ctx, bindParams(child, args)), raw);
   }
@@ -307,7 +322,7 @@ function normaliseConcrete(
 }
 
 /** Binds a template's parameters to `args` by position; missing arguments stay unbound. */
-function bindParams(template: RawTemplateType, args: readonly RawMcdocType[]): TypeBindings {
+export function bindParams(template: RawTemplateType, args: readonly RawMcdocType[]): TypeBindings {
   const bindings = new Map<string, RawMcdocType>();
   template.typeParams.forEach((param, i) => {
     const arg = args[i];
@@ -377,8 +392,20 @@ function substituteValue(
   return copy;
 }
 
-function normaliseDispatcher(raw: RawDispatcherType, ctx: NormaliseContext): SchemaNode {
+/**
+ * A dispatcher node. With `args` (a generic dispatcher), members are instantiated with them
+ * through `ctx.dispatchInstance`.
+ */
+function normaliseDispatcher(
+  raw: RawDispatcherType,
+  ctx: NormaliseContext,
+  args?: readonly RawMcdocType[],
+): SchemaNode {
   const registry = raw.registry;
+  const member = (key: string): SchemaNode | undefined =>
+    args !== undefined && ctx.dispatchInstance !== undefined
+      ? ctx.dispatchInstance(registry, key, args)
+      : ctx.dispatch(registry, key);
   // Only the first parallel index is modelled; vanilla-mcdoc uses one almost everywhere.
   const index = raw.parallelIndices[0];
   if (index?.kind === 'static') {
@@ -400,7 +427,7 @@ function normaliseDispatcher(raw: RawDispatcherType, ctx: NormaliseContext): Sch
       },
       dispatch: () => {
         const key = lookup();
-        return key === undefined ? undefined : ctx.dispatch(registry, key);
+        return key === undefined ? undefined : member(key);
       },
     };
   }
@@ -415,8 +442,91 @@ function normaliseDispatcher(raw: RawDispatcherType, ctx: NormaliseContext): Sch
     registry,
     discriminator,
     keys: () => ctx.dispatcherKeys(registry),
-    dispatch: (key) => ctx.dispatch(registry, key),
+    dispatch: (key) => member(key),
   };
+}
+
+/**
+ * An mcdoc indexed access `child[index]`. The child is normally a dispatcher, so the result is
+ * a dispatcher over the same registry and discriminator whose members are the selected
+ * member's field named by the index (`minecraft:environment_attribute[[attribute]][value]`).
+ * A struct child yields its field directly. A dynamic index (`[%key]`) cannot be resolved
+ * statically: it selects the member's `'*'` field, or else a union of all its field types.
+ * Shared nodes are never mutated; references are followed with `resolve()`.
+ */
+function normaliseIndexed(
+  raw: RawIndexedType,
+  ctx: NormaliseContext,
+  bindings: TypeBindings,
+): SchemaNode {
+  const index = Array.isArray(raw.parallelIndices) ? raw.parallelIndices[0] : undefined;
+  if (raw.child === undefined || index === undefined) {
+    return {
+      kind: 'unsupported',
+      reason: 'indexed type without a child or index',
+      rawKind: 'indexed',
+    };
+  }
+  const child = derefForIndex(normaliseType(raw.child, ctx, bindings));
+  const fieldName = index.kind === 'static' ? index.value : undefined;
+  if (child.kind === 'struct') {
+    return (
+      selectField(child, fieldName) ?? {
+        kind: 'unsupported',
+        reason: `indexed field ${fieldName ?? '%key'} not found`,
+        rawKind: 'indexed',
+      }
+    );
+  }
+  if (child.kind !== 'dispatcher') {
+    return { kind: 'unsupported', reason: `cannot index a ${child.kind}`, rawKind: 'indexed' };
+  }
+  const members = new Map<string, SchemaNode | undefined>();
+  return {
+    kind: 'dispatcher',
+    registry: child.registry,
+    discriminator: child.discriminator,
+    keys: () => child.keys(),
+    dispatch: (key) => {
+      if (members.has(key)) return members.get(key);
+      const member = child.dispatch(key);
+      const target = member === undefined ? undefined : derefForIndex(member);
+      let selected: SchemaNode | undefined;
+      if (target?.kind === 'struct') selected = selectField(target, fieldName);
+      else if (target?.kind === 'any') selected = target;
+      members.set(key, selected);
+      return selected;
+    },
+  };
+}
+
+/** Follows references for an indexed access, stopping (and returning the reference) on a cycle. */
+function derefForIndex(node: SchemaNode): SchemaNode {
+  const visited = new Set<string>();
+  let current = node;
+  while (current.kind === 'reference') {
+    if (visited.has(current.path)) return current;
+    visited.add(current.path);
+    current = current.resolve();
+  }
+  return current;
+}
+
+/**
+ * The type of `struct`'s field `name`, falling back to its `'*'` field. Without a name (a
+ * dynamic index): the `'*'` field, or a union of every field type. `undefined` when empty.
+ */
+function selectField(
+  struct: SchemaNode & { kind: 'struct' },
+  name: string | undefined,
+): SchemaNode | undefined {
+  const named = name === undefined ? undefined : struct.fields.find((f) => f.key === name);
+  if (named !== undefined) return named.type;
+  const wildcard = struct.fields.find((f) => f.key === '*');
+  if (wildcard !== undefined) return wildcard.type;
+  if (name !== undefined || struct.fields.length === 0) return undefined;
+  if (struct.fields.length === 1) return struct.fields[0]?.type;
+  return { kind: 'union', members: struct.fields.map((f) => f.type) };
 }
 
 /**

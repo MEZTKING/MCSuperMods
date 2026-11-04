@@ -1,11 +1,24 @@
 import type { VanillaMcdocSymbols } from '../symbols/parse';
 import type { RawMcdocType } from '../symbols/raw-types';
-import { isAvailable, type NormaliseContext, normaliseType, type TypeBindings } from './normalise';
+import { BUILT_IN_EXTENSIONS } from './extensions';
+import {
+  bindParams,
+  isAvailable,
+  type NormaliseContext,
+  normaliseType,
+  type TypeBindings,
+} from './normalise';
 import type { SchemaNode } from './schema-node';
 
 /** Options for `createSchemaIndex`. `mcVersion` comes from the target, never from this package. */
 export interface SchemaIndexOptions {
   mcVersion: string;
+  /**
+   * Extra schema references resolved by `resolveSchemaRef` (refs that are neither `::` type
+   * paths, `resource:` nor `tag:`), added to `BUILT_IN_EXTENSIONS`; a key given here replaces
+   * a built-in one. Nodes are shared and must not be mutated.
+   */
+  extensions?: Readonly<Record<string, SchemaNode>>;
 }
 
 /**
@@ -40,9 +53,13 @@ export interface SchemaIndex {
   /** Keys of a registry available in `mcVersion`, sorted; `[]` for an unknown registry. */
   dispatcherKeys(registry: string): string[];
   /**
-   * Resolves a schema reference as used by `OutputFile.schema` and element kinds: an mcdoc
-   * type path (`::java::...`) or `resource:<category>`, which names a member of the
-   * `minecraft:resource` dispatcher. Throws `SchemaNotFoundError` when either is absent.
+   * Resolves a schema reference as used by `OutputFile.schema` and element kinds:
+   * - an mcdoc type path (`::java::...`);
+   * - `resource:<category>`, a member of the `minecraft:resource` dispatcher;
+   * - `tag:<registry>`, the tag file template `::java::data::tag::Tag` instantiated with
+   *   entries that are `<registry>` ids (`#` tag references included); memoised per registry;
+   * - any other key of `BUILT_IN_EXTENSIONS` or `options.extensions`, e.g. `msm:function`.
+   * Throws `SchemaNotFoundError` when the reference cannot be resolved.
    */
   resolveSchemaRef(ref: string): SchemaNode;
 }
@@ -51,6 +68,10 @@ export interface SchemaIndex {
 const MAX_INSTANTIATION_DEPTH = 32;
 
 const RESOURCE_REF_PREFIX = 'resource:';
+const TAG_REF_PREFIX = 'tag:';
+const TYPE_PATH_PREFIX = '::';
+/** The vanilla-mcdoc template every tag file instantiates with its entry id type. */
+const TAG_TEMPLATE_PATH = '::java::data::tag::Tag';
 
 /** Every type path that appears as a template parameter anywhere in `types`. */
 function collectTypeParams(types: Iterable<unknown>): Set<string> {
@@ -81,6 +102,10 @@ export function createSchemaIndex(
   options: SchemaIndexOptions,
 ): SchemaIndex {
   const { mcVersion } = options;
+  const extensions: Readonly<Record<string, SchemaNode>> = {
+    ...BUILT_IN_EXTENSIONS,
+    ...options.extensions,
+  };
   const sortedPaths = Object.freeze(Object.keys(symbols.mcdoc).sort());
   const resolved = new Map<string, SchemaNode>();
   const resolving = new Set<string>();
@@ -131,7 +156,11 @@ export function createSchemaIndex(
     return current;
   };
 
-  const dispatch = (registry: string, key: string): SchemaNode | undefined => {
+  /** The raw member of `registry` for `key` (a `minecraft:` prefix is accepted), if available. */
+  const rawMember = (
+    registry: string,
+    key: string,
+  ): { memberKey: string; raw: RawMcdocType } | undefined => {
     const members = hasOwn(symbols.dispatchers, registry)
       ? symbols.dispatchers[registry]
       : undefined;
@@ -143,6 +172,13 @@ export function createSchemaIndex(
     if (!hasOwn(members, memberKey)) return undefined;
     const raw = members[memberKey];
     if (raw === undefined || !isAvailable(raw.attributes, mcVersion)) return undefined;
+    return { memberKey, raw };
+  };
+
+  const dispatch = (registry: string, key: string): SchemaNode | undefined => {
+    const found = rawMember(registry, key);
+    if (found === undefined) return undefined;
+    const { memberKey, raw } = found;
     const cacheKey = `${registry}\u0000${memberKey}`;
     const cached = dispatched.get(cacheKey);
     if (cached !== undefined) return cached;
@@ -257,6 +293,59 @@ export function createSchemaIndex(
     }
   };
 
+  const memberInstances = new Map<string, SchemaNode | undefined>();
+  const memberInstancesPending = new Set<string>();
+
+  const dispatchInstance = (
+    registry: string,
+    key: string,
+    args: readonly RawMcdocType[],
+  ): SchemaNode | undefined => {
+    const found = rawMember(registry, key);
+    if (found === undefined) return undefined;
+    const { memberKey, raw } = found;
+    const target =
+      raw.kind === 'reference' && raw.path !== undefined ? ctx.rawType(raw.path) : undefined;
+    const template =
+      raw.kind === 'template' ? raw : target?.kind === 'template' ? target : undefined;
+    if (template === undefined) return dispatch(registry, key);
+    const cacheKey = `${registry}\u0000${memberKey}\u0000${JSON.stringify(args)}`;
+    if (memberInstances.has(cacheKey)) return memberInstances.get(cacheKey);
+    if (memberInstancesPending.has(cacheKey)) {
+      return {
+        kind: 'reference',
+        path: `${registry}[${memberKey}]`,
+        resolve: () => {
+          const node = memberInstances.get(cacheKey);
+          if (node === undefined) throw new SchemaNotFoundError(`${registry}[${memberKey}]`);
+          return node;
+        },
+      };
+    }
+    if (instantiationDepth >= MAX_INSTANTIATION_DEPTH) {
+      return {
+        kind: 'unsupported',
+        reason: 'generic instantiation nested too deeply',
+        rawKind: 'concrete',
+      };
+    }
+    const bindings = bindParams(template, args);
+    memberInstancesPending.add(cacheKey);
+    instantiationDepth += 1;
+    try {
+      const node = unwrap(
+        raw.kind === 'template'
+          ? normaliseType(raw.child, ctx, bindings)
+          : instantiate((raw as { path: string }).path, bindings),
+      );
+      memberInstances.set(cacheKey, node);
+      return node;
+    } finally {
+      instantiationDepth -= 1;
+      memberInstancesPending.delete(cacheKey);
+    }
+  };
+
   const ctx: NormaliseContext = {
     mcVersion,
     resolvePath,
@@ -267,15 +356,50 @@ export function createSchemaIndex(
     isTypeParam: (typePath) => typeParams.has(typePath),
     freeTypeParams,
     instantiate,
+    dispatchInstance,
+  };
+
+  const tagSchemas = new Map<string, SchemaNode>();
+
+  /** `Tag<E>` with `E` bound to a `#[id(registry=..., tags="allowed")] string`. */
+  const tagSchema = (ref: string, registry: string): SchemaNode => {
+    const cached = tagSchemas.get(registry);
+    if (cached !== undefined) return cached;
+    const template = hasOwn(symbols.mcdoc, TAG_TEMPLATE_PATH)
+      ? symbols.mcdoc[TAG_TEMPLATE_PATH]
+      : undefined;
+    const param = template?.kind === 'template' ? template.typeParams[0]?.path : undefined;
+    if (registry === '' || param === undefined) throw new SchemaNotFoundError(ref);
+    const literal = (value: string) => ({ kind: 'literal', value: { kind: 'string', value } });
+    const entry: RawMcdocType = {
+      kind: 'string',
+      attributes: [
+        {
+          name: 'id',
+          value: {
+            kind: 'tree',
+            values: { registry: literal(registry), tags: literal('allowed') },
+          },
+        },
+      ],
+    };
+    const node = unwrap(instantiate(TAG_TEMPLATE_PATH, new Map([[param, entry]])));
+    tagSchemas.set(registry, node);
+    return node;
   };
 
   const resolveSchemaRef = (ref: string): SchemaNode => {
+    if (ref.startsWith(TYPE_PATH_PREFIX)) return resolvePath(ref);
     if (ref.startsWith(RESOURCE_REF_PREFIX)) {
       const category = ref.slice(RESOURCE_REF_PREFIX.length);
       const node = category === '' ? undefined : dispatch('minecraft:resource', category);
       if (node === undefined) throw new SchemaNotFoundError(ref);
       return node;
     }
+    if (ref.startsWith(TAG_REF_PREFIX)) return tagSchema(ref, ref.slice(TAG_REF_PREFIX.length));
+    const extension = hasOwn(extensions, ref) ? extensions[ref] : undefined;
+    if (extension !== undefined) return extension;
+    // Kept for exports whose paths do not start with `::`.
     return resolvePath(ref);
   };
 

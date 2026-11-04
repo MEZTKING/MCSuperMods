@@ -85,11 +85,30 @@ interface State {
    * (e.g. `minecraft:empty` item models, which have no dispatcher member).
    */
   acceptedKeys?: ReadonlySet<string>;
+  /** The value is an object key checked against a `'*'` field's key type. */
+  isKey?: boolean;
+}
+
+/** One `#[id]` string found by `collectReferences`. */
+export interface CollectedReference {
+  /** RFC 6901 pointer to the string; for a map key, the pointer to its entry. */
+  path: string;
+  /** The `#[id]` registry, without a `minecraft:` prefix, e.g. `item`. */
+  registry: string;
+  /** The string as written; a tag reference keeps its `#`. */
+  id: string;
+  /** Set when the id is an object key (map-like struct) rather than a string value. */
+  key?: true;
 }
 
 interface Context {
   registries?: RegistryIndex;
   maxDepth: number;
+  /**
+   * When set, `#[id]` strings are appended here (`collectReferences`). Branches that are
+   * tried and discarded (union members, wildcard key types) collect into their own arrays.
+   */
+  refs?: CollectedReference[];
 }
 
 /**
@@ -106,6 +125,36 @@ export function validateJson(
   const out: SchemaProblem[] = [];
   validate(value, node, { path: '', depth: 0, hops: 0, open: false }, ctx, out);
   return sortProblems(dedupe(out));
+}
+
+/** Options for `collectReferences`. */
+export interface CollectReferencesOptions {
+  /** Nesting limit, default 64, with the same meaning as `ValidateOptions.maxDepth`. */
+  maxDepth?: number;
+}
+
+/**
+ * Every string in `value` whose schema node carries an `#[id]` registry, found by walking
+ * `value` with `node` exactly as `validateJson` does (dispatchers, unions, map keys). Values
+ * that do not match the schema are walked as far as the validator goes; in a union, the
+ * matching member (or else the closest one) supplies the references. Sorted by path; pure.
+ */
+export function collectReferences(
+  value: Json,
+  node: SchemaNode,
+  options: CollectReferencesOptions = {},
+): CollectedReference[] {
+  const refs: CollectedReference[] = [];
+  const ctx: Context = { maxDepth: options.maxDepth ?? DEFAULT_MAX_DEPTH, refs };
+  validate(value, node, { path: '', depth: 0, hops: 0, open: false }, ctx, []);
+  const seen = new Set<string>();
+  const unique = refs.filter((ref) => {
+    const id = `${ref.path}\u0000${ref.key === true ? 'k' : 'v'}\u0000${ref.registry}\u0000${ref.id}`;
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+  return unique.sort((a, b) => compare(a.path, b.path));
 }
 
 // Helpers -------------------------------------------------------------------------------
@@ -315,6 +364,14 @@ function validate(
         return;
       }
       checkLength(value.length, node.lengthRange, node, state, out, 'characters');
+      if (ctx.refs !== undefined && node.idRegistry !== undefined) {
+        const registry = node.idRegistry.startsWith(MC_PREFIX)
+          ? node.idRegistry.slice(MC_PREFIX.length)
+          : node.idRegistry;
+        const ref: CollectedReference = { path: state.path, registry, id: value };
+        if (state.isKey === true) ref.key = true;
+        ctx.refs.push(ref);
+      }
       const registries = ctx.registries;
       if (node.idRegistry !== undefined && registries !== undefined) {
         const registry = node.idRegistry;
@@ -559,7 +616,14 @@ function acceptedDiscriminators(
       open: false,
       dispatchKey: true,
     };
-    validate(value[key] as Json, field.type, fieldState, ctx, problems);
+    // The field itself was already walked; do not collect its references twice.
+    const refs = ctx.refs;
+    delete ctx.refs;
+    try {
+      validate(value[key] as Json, field.type, fieldState, ctx, problems);
+    } finally {
+      if (refs !== undefined) ctx.refs = refs;
+    }
     if (!hasError(problems)) accepted.add(key);
   }
   return accepted;
@@ -578,19 +642,30 @@ function matchWildcard(
 ): SchemaField | undefined {
   if (wildcards.length === 0) return undefined;
   let firstProblems: SchemaProblem[] | undefined;
-  for (const field of wildcards) {
-    if (field.keyType === undefined) return field;
-    const problems: SchemaProblem[] = [];
-    validate(key, field.keyType, { ...state, open: false }, ctx, problems);
-    if (!hasError(problems)) {
-      out.push(...problems);
-      return field;
+  const refs = ctx.refs;
+  let firstRefs: CollectedReference[] | undefined;
+  try {
+    for (const field of wildcards) {
+      if (field.keyType === undefined) return field;
+      const problems: SchemaProblem[] = [];
+      const fieldRefs: CollectedReference[] | undefined = refs === undefined ? undefined : [];
+      if (fieldRefs !== undefined) ctx.refs = fieldRefs;
+      validate(key, field.keyType, { ...state, open: false, isKey: true }, ctx, problems);
+      if (!hasError(problems)) {
+        out.push(...problems);
+        if (fieldRefs !== undefined) refs?.push(...fieldRefs);
+        return field;
+      }
+      firstProblems ??= problems;
+      firstRefs ??= fieldRefs;
     }
-    firstProblems ??= problems;
+  } finally {
+    if (refs !== undefined) ctx.refs = refs;
   }
   for (const problem of firstProblems ?? []) {
     out.push({ ...problem, message: `Invalid key "${key}": ${problem.message}` });
   }
+  if (firstRefs !== undefined) refs?.push(...firstRefs);
   return wildcards[0];
 }
 
@@ -613,24 +688,36 @@ function validateUnion(
   let best: SchemaProblem[] | undefined;
   let bestErrors = Number.POSITIVE_INFINITY;
   const memberState = hop(state);
-  for (const member of node.members) {
-    const problems: SchemaProblem[] = [];
-    validate(value, member, memberState, ctx, problems);
-    if (!hasError(problems)) {
-      out.push(...problems);
-      return;
+  // References are kept from the member that matched, or else from the closest one.
+  const refs = ctx.refs;
+  let bestRefs: CollectedReference[] | undefined;
+  try {
+    for (const member of node.members) {
+      const problems: SchemaProblem[] = [];
+      const memberRefs: CollectedReference[] | undefined = refs === undefined ? undefined : [];
+      if (memberRefs !== undefined) ctx.refs = memberRefs;
+      validate(value, member, memberState, ctx, problems);
+      if (!hasError(problems)) {
+        out.push(...problems);
+        if (memberRefs !== undefined) refs?.push(...memberRefs);
+        return;
+      }
+      // A member whose shape does not fit at all ranks below every member that does.
+      const shapeMiss = problems.some(
+        (problem) => problem.path === state.path && SHAPE_CODES.has(problem.code),
+      );
+      if (shapeMiss) continue;
+      const errors = errorCount(problems);
+      if (errors < bestErrors) {
+        best = problems;
+        bestErrors = errors;
+        bestRefs = memberRefs;
+      }
     }
-    // A member whose shape does not fit at all ranks below every member that does.
-    const shapeMiss = problems.some(
-      (problem) => problem.path === state.path && SHAPE_CODES.has(problem.code),
-    );
-    if (shapeMiss) continue;
-    const errors = errorCount(problems);
-    if (errors < bestErrors) {
-      best = problems;
-      bestErrors = errors;
-    }
+  } finally {
+    if (refs !== undefined) ctx.refs = refs;
   }
+  if (bestRefs !== undefined) refs?.push(...bestRefs);
   const expected = describeSchemaNode(node);
   if (best === undefined) {
     out.push({

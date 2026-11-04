@@ -5,6 +5,7 @@
  * target package and injected here. Nothing in this package names a Minecraft version.
  */
 
+export { BUILT_IN_EXTENSIONS } from './form/extensions';
 export {
   createSchemaIndex,
   type SchemaIndex,
@@ -40,6 +41,9 @@ export {
 } from './symbols/parse';
 export type * from './symbols/raw-types';
 export {
+  type CollectedReference,
+  type CollectReferencesOptions,
+  collectReferences,
   describeSchemaNode,
   type SchemaProblem,
   type SchemaProblemCode,
