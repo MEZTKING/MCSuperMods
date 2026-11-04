@@ -11,7 +11,7 @@ import { definePlugin } from '@msm/plugin-api';
 /** The Phase 0 sample plugin. */
 export const phase0SamplePlugin = definePlugin({
   id: 'msm.phase0-sample',
-  apiVersion: '^0.1.0',
+  apiVersion: '^0.2.0',
   contributes: {
     elementKinds: [
       {

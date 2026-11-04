@@ -14,5 +14,17 @@ export const target: Target = {
   },
   mcdocRef: '0ca060a4f1631f9d5eb7198cfe94c7b77a773d32',
   mcmetaRef: '26.3',
+  folders: {
+    resource: {
+      model: 'models',
+      block_definition: 'blockstates',
+      item_definition: 'items',
+      lang: 'lang',
+      sounds_file: 'sounds.json',
+      textures: 'textures',
+      atlases: 'atlases',
+      font: 'font',
+    },
+  },
   // fabric and geckolib are not set until Phase 4/5 (verify at implementation then).
 };

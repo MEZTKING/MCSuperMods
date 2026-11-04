@@ -14,7 +14,7 @@ import type { PluginContributions } from './contributions';
 export interface Plugin {
   /** /^[a-z][a-z0-9.-]*$/ */
   id: string;
-  /** semver range, e.g. "^0.1.0" */
+  /** semver range, e.g. "^0.2.0" */
   apiVersion: string;
   /** What the plugin adds; see {@link PluginContributions}. */
   contributes: PluginContributions;
@@ -46,7 +46,7 @@ const PLUGIN_ID_PATTERN = /^[a-z][a-z0-9.-]*$/;
  * ```ts
  * export default definePlugin({
  *   id: 'msm.blocks-items',
- *   apiVersion: '^0.1.0',
+ *   apiVersion: '^0.2.0',
  *   contributes: { elementKinds: [blockKind] },
  * });
  * ```
@@ -63,7 +63,7 @@ export function definePlugin(plugin: Plugin): Readonly<Plugin> {
   }
   if (typeof plugin.apiVersion !== 'string' || plugin.apiVersion.trim() === '') {
     throw new PluginDefinitionError(
-      `Plugin ${plugin.id} has an empty apiVersion: it must be a semver range such as "^0.1.0".`,
+      `Plugin ${plugin.id} has an empty apiVersion: it must be a semver range such as "^0.2.0".`,
     );
   }
   return Object.freeze(plugin);

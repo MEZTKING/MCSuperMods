@@ -25,6 +25,12 @@ export interface Problem {
   elementId?: ResourceLocation;
   /** RFC 6901 pointer into element data, for example `/ingredients/0`. */
   path?: string;
+  /**
+   * The file the problem concerns, if any: a POSIX path relative to the project root (for
+   * load problems, for example `content/my_mod/model/ruby.json`) or to the export root (for
+   * export problems, for example `assets/my_mod/models/ruby.json`).
+   */
+  file?: string;
 }
 
 /**

@@ -29,4 +29,20 @@ describe('target mc-26.3', () => {
     expect(refs.summary).toBe(`${target.mcmetaRef}-summary`);
     expect(refs.registries).toBe(`${target.mcmetaRef}-registries`);
   });
+
+  it('names every resource pack folder', () => {
+    expect(target.folders.resource).toEqual({
+      model: 'models',
+      block_definition: 'blockstates',
+      item_definition: 'items',
+      lang: 'lang',
+      sounds_file: 'sounds.json',
+      textures: 'textures',
+      atlases: 'atlases',
+      font: 'font',
+    });
+    for (const name of Object.values(target.folders.resource)) {
+      expect(name).toMatch(/^[a-z_]+(\.json)?$/);
+    }
+  });
 });

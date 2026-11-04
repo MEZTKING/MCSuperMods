@@ -19,8 +19,15 @@ export type {
 export type { Json, JsonObject, ResourceLocation } from './json';
 export type { Asset, Element, ElementMeta, Namespace, Project } from './model';
 export type { OutputFile, OutputLayer, OutputSink } from './output';
+export { assertProjectRelativePath, isProjectRelativePath } from './paths';
 export type { Plugin } from './plugin';
 export { definePlugin, PluginDefinitionError } from './plugin';
 export type { Problem, ProblemReporter, ProblemSeverity } from './problems';
-export type { MigrationChange, MigrationReport, PackFormat, Target } from './target';
+export type {
+  MigrationChange,
+  MigrationReport,
+  PackFormat,
+  ResourceFolderKey,
+  Target,
+} from './target';
 export { API_VERSION } from './version';

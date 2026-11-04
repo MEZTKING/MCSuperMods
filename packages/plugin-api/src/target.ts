@@ -42,6 +42,29 @@ export interface MigrationReport {
 }
 
 /**
+ * Keys of {@link Target.folders}`.resource`: the resource pack folders whose names a target
+ * supplies.
+ *
+ * - `model`: block and item models.
+ * - `block_definition`: block state definitions.
+ * - `item_definition`: item model definitions.
+ * - `lang`: language files.
+ * - `sounds_file`: the sound events file (a file name, not a folder).
+ * - `textures`: texture images.
+ * - `atlases`: texture atlas definitions.
+ * - `font`: font definitions.
+ */
+export type ResourceFolderKey =
+  | 'model'
+  | 'block_definition'
+  | 'item_definition'
+  | 'lang'
+  | 'sounds_file'
+  | 'textures'
+  | 'atlases'
+  | 'font';
+
+/**
  * One Minecraft version's facts, contributed by a `@msm/target-mc-<version>` package.
  *
  * This interface is the documented home of every target field.
@@ -67,6 +90,18 @@ export interface Target {
    * `${mcmetaRef}-registries`.
    */
   mcmetaRef: string;
+  /**
+   * Vanilla folder names, so lowering never hard-codes them.
+   *
+   * Data pack folders arrive in Phase 2.
+   */
+  folders: {
+    /**
+     * Folder names under `assets/<namespace>/`, keyed by {@link ResourceFolderKey}.
+     * `sounds_file` is a file name (directly under `assets/<namespace>/`), not a folder.
+     */
+    resource: Readonly<Record<ResourceFolderKey, string>>;
+  };
   /** Fabric toolchain versions. Required from Phase 4. */
   fabric?: {
     /** Fabric Loader version. */

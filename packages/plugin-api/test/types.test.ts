@@ -1,5 +1,15 @@
 import { describe, expectTypeOf, it } from 'vitest';
-import type { Element, Json, OutputFile, Project, Target } from '../src/index';
+import type {
+  Element,
+  ElementKind,
+  ExporterInput,
+  Json,
+  OutputFile,
+  Problem,
+  Project,
+  ResourceFolderKey,
+  Target,
+} from '../src/index';
 
 describe('IR and output types', () => {
   it('parameterises Element by its data', () => {
@@ -50,5 +60,64 @@ describe('IR and output types', () => {
       { loader: string; api: string; loom: string } | undefined
     >();
     expectTypeOf<Target['geckolib']>().toEqualTypeOf<string | undefined>();
+  });
+});
+
+describe('0.2.0 additions', () => {
+  it('adds an optional schema to OutputFile', () => {
+    expectTypeOf<OutputFile['schema']>().toEqualTypeOf<string | undefined>();
+    const file: OutputFile = {
+      path: 'assets/example/models/ruby.json',
+      contents: { parent: 'minecraft:block/cube_all' },
+      layer: 'resourcepack',
+      schema: '::java::assets::model::Model',
+    };
+    expectTypeOf(file).toEqualTypeOf<OutputFile>();
+  });
+
+  it('adds optional defaultData, hiddenPaths and previewKind to ElementKind', () => {
+    expectTypeOf<ElementKind<{ a: number }>['defaultData']>().toEqualTypeOf<
+      { a: number } | undefined
+    >();
+    expectTypeOf<ElementKind['defaultData']>().toEqualTypeOf<Json | undefined>();
+    expectTypeOf<ElementKind['hiddenPaths']>().toEqualTypeOf<string[] | undefined>();
+    expectTypeOf<ElementKind['previewKind']>().toEqualTypeOf<string | undefined>();
+    const kind: ElementKind = {
+      id: 'minecraft:pack_mcmeta',
+      schema: '::java::pack::Pack',
+      folder: 'pack',
+      defaultData: { pack: { description: '' } },
+      hiddenPaths: ['/pack/pack_format'],
+      lower: () => [],
+    };
+    expectTypeOf(kind).toEqualTypeOf<ElementKind>();
+  });
+
+  it('adds an optional file to Problem', () => {
+    expectTypeOf<Problem['file']>().toEqualTypeOf<string | undefined>();
+  });
+
+  it('requires export meta on ExporterInput', () => {
+    expectTypeOf<ExporterInput['meta']>().toEqualTypeOf<{
+      msmVersion: string;
+      plugins: string[];
+    }>();
+  });
+
+  it('requires resource folder names on Target', () => {
+    expectTypeOf<ResourceFolderKey>().toEqualTypeOf<
+      | 'model'
+      | 'block_definition'
+      | 'item_definition'
+      | 'lang'
+      | 'sounds_file'
+      | 'textures'
+      | 'atlases'
+      | 'font'
+    >();
+    expectTypeOf<Target['folders']['resource']>().toEqualTypeOf<
+      Readonly<Record<ResourceFolderKey, string>>
+    >();
+    expectTypeOf<Target>().toHaveProperty('folders');
   });
 });

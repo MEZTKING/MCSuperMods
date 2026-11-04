@@ -14,6 +14,7 @@ Checked on 2026-11-04.
 | Java | 25 | DESIGN §9 |
 | vanilla-mcdoc ref | commit `0ca060a4f1631f9d5eb7198cfe94c7b77a773d32` (vanilla-mcdoc has no tags; pins are commit shas) | `git ls-remote https://github.com/SpyglassMC/vanilla-mcdoc`; `vendor/vanilla-mcdoc/SOURCE.json` |
 | mcmeta ref | prefix `26.3`; tags `26.3-summary` and `26.3-registries` | `git ls-remote --tags https://github.com/misode/mcmeta`; `vendor/mcmeta/SOURCE.json` |
+| Resource folder names (`folders.resource`) | `model` → `models`, `block_definition` → `blockstates`, `item_definition` → `items`, `lang` → `lang`, `sounds_file` → `sounds.json`, `textures` → `textures`, `atlases` → `atlases`, `font` → `font` | `@spyglassmc/java-edition` 0.3.70 uri binder (`lib/binder/index.js`, the resource-pack `resource(...)` table that maps folders to the vanilla-mcdoc `minecraft:resource` categories; `sounds` is the file `sounds.json` directly under `assets/<namespace>/`), checked 2026-11-04 |
 | Fabric Loader, Fabric API, Loom | not set (Phase 4) | (verify at implementation) |
 | GeckoLib | not set (Phase 5) | (verify at implementation) |
 

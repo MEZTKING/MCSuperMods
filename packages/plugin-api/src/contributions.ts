@@ -28,6 +28,23 @@ export interface ElementKind<D extends Json = Json> {
   /** kind-folder under content/<ns>/ */
   folder: string;
   /**
+   * Data for a newly created element of this kind. The host deep-copies it for every new
+   * element. When omitted, new elements start with an empty object.
+   */
+  defaultData?: D;
+  /**
+   * RFC 6901 pointers into `data` that the schema-driven form hides because lowering owns
+   * them, for example `/pack/pack_format` when lowering writes the pack format from the
+   * target. The fields are still validated and still visible in the raw JSON editor.
+   */
+  hiddenPaths?: string[];
+  /**
+   * A hint telling the host which preview to show for elements of this kind, for example
+   * `model`, `block_definition` or `item_definition`. The host ignores values it does not
+   * recognise; omit it for kinds without a preview.
+   */
+  previewKind?: string;
+  /**
    * Turns one element into output files for a target.
    *
    * Must be pure and deterministic: the same element and target always produce the same files
@@ -64,6 +81,13 @@ export interface ExporterInput {
   sink: OutputSink;
   /** Where to report problems found while packaging. */
   problems: ProblemReporter;
+  /** Facts about the exporting host, written into export metadata such as `msm.export.json`. */
+  meta: {
+    /** The version of MSM performing the export. */
+    msmVersion: string;
+    /** Ids of the plugins the project requires. */
+    plugins: string[];
+  };
 }
 
 /**

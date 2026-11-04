@@ -31,6 +31,14 @@ export interface OutputFile {
   contents: Uint8Array | Json;
   /** The layer the file belongs to. */
   layer: OutputLayer;
+  /**
+   * The schema the file is validated against by the export validation gate: an mcdoc type
+   * path such as `::java::assets::model::Model`, or `resource:<category>` naming a member of
+   * the `minecraft:resource` dispatcher, such as `resource:model`.
+   *
+   * Omitted for binary files and for files that are not validated.
+   */
+  schema?: string;
 }
 
 /**
