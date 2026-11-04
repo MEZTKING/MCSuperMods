@@ -98,13 +98,14 @@ The IR lives in `@msm/core`. It knows nothing about Minecraft versions or specif
 A `Project` contains `Namespace`s; each namespace contains `Element`s and `Asset`s.
 
 - An **element** is a typed JSON document: `{ id, kind, data, meta }`. `id` is a `ResourceLocation` (`namespace:path`), `kind` names a registered element kind, `data` is JSON typed by the kind's schema, and `meta` holds `createdAt`, `notes` and `tags`.
-- An **asset** is an opaque file (`.png`, `.ogg`, `.bbmodel`, `.nbt`) referenced by project-relative path. Importers produce elements and assets, never a parallel model. Asset byte operations (import, delete) happen immediately on disk and are not undoable; changes to the `Asset` record go through undoable commands.
+- An **asset** is an opaque file (`.png`, `.ogg`, `.bbmodel`) referenced by project-relative path. Importers produce elements and assets, never a parallel model. Asset byte operations (import, delete) happen immediately on disk and are not undoable; changes to the `Asset` record go through undoable commands.
 
 ### Element kinds
 
 There are two classes of element kind:
 
-- **Vanilla kinds** map 1:1 to a data or resource pack file: `minecraft:recipe`, `minecraft:block_model`, `minecraft:biome`, and so on. Their schema comes straight from vanilla-mcdoc.
+- **Vanilla kinds** map 1:1 to a data or resource pack file: `minecraft:recipe`, `minecraft:block_model`, `minecraft:worldgen/biome`, and so on. Their schema comes straight from vanilla-mcdoc. Kind ids follow the registry names (`minecraft:worldgen/<registry>`, `minecraft:dimension`), and a kind may name its registry explicitly with `ElementKind.registry` ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)).
+- **Structure templates** (`minecraft:structure_template`) are vanilla kinds stored as JSON, not as opaque `.nbt` assets: size, a block-state palette, block tuples, SNBT block-entity and entity data, and the jigsaw blocks lifted into a typed list, so rename and validation reach their jigsaw pools. They lower to binary `.nbt` files ([ADR 0021](adr/0021-structure-templates-and-nbt.md)).
 - **MSM kinds** (`msm:block`, `msm:item`, `msm:entity`, `msm:script`, ...) are higher-level. They **lower** to a set of vanilla files plus `msm/` runtime definitions at export time.
 
 Lowering is a pure function: `lower(element, target) -> OutputFile[]`. Everything bottoms out in files, so all exporters share one pipeline: collect elements, lower against the target, validate the lowered output against the schema model, write.
@@ -226,6 +227,7 @@ We do not hand-write schemas. Vanilla file formats are described by **mcdoc**, t
 ### Pins and extensions
 
 - Each target declares one `vanilla-mcdoc` commit sha (`mcdocRef`). `tools/sync-mcdoc` regenerates the vendored symbol export in the target package; `@msm/schemas` receives it by injection.
+- Until MSM mcdoc arrives in Phase 4, MSM-owned shapes are TypeScript `SchemaNode` extensions in `@msm/schemas` behind built-in refs: `msm:function` (`{ lines: string[] }`, [ADR 0015](adr/0015-data-pack-element-model.md)) and `msm:structure_template` (the structure template JSON, with `jigsaws[*].pool` typed as a `worldgen/template_pool` id and block-entity NBT as SNBT strings, [ADR 0021](adr/0021-structure-templates-and-nbt.md)). Compiled MSM mcdoc later replaces them behind the same refs.
 - MSM's own kinds, components, events and actions are described in **MSM mcdoc files** under `packages/schemas/mcdoc/msm/`. These are the single source of truth: the app uses them for forms and validation, and the engine mod's definition parsing is generated from or aligned with them (Phase 4).
 
 ### Schema to form generation
@@ -280,16 +282,19 @@ export default definePlugin({
 |---|---|---|
 | `elementKinds` | Kind id, schema, kind-folder, `lower()` | `minecraft:recipe`, `msm:block` |
 | `editors` | React component for a kind, receiving `(element, schemaNode, commands)` | Block Studio |
-| `exporters` | Packaging of `OutputFile[]` | `vanilla-packs` |
+| `exporters` | Packaging of `OutputFile[]` | `vanilla-packs`; `structure-nbt`, `sponge-schematic` (`msm.structures`) |
 | `targets` | Version facts and migration hooks | `mc-26.3` |
-| `importers` | File type to elements/assets | `.bbmodel`, `.schem` |
+| `importers` | File type to elements/assets; the host picks one by file extension and inserts the result as one undo step | `.bbmodel`; `.nbt`, `.schem` (`msm.structures`) |
 | `commands` | Palette entries and refactors | "New block from template" |
 | `schemas` | Extra mcdoc files | MSM component definitions |
 | `elementTemplates` | Entries of the New element picker for the plugin's own kinds: id, kind, category, name hints and a pure `data(context)` | "Shaped recipe", "Block model (cube all)" |
 | `projectStarters` | New project starters: a category, layer badges, `requiresKinds` and `build(context)` returning a content bundle | "Custom ore", "Recipe pack" |
 | `examples` | Examples gallery entries: the kind taught, category, tags, `requiresKinds` and a commented content bundle | "Loot table: block drops" |
+| `validators` | Cross-element checks over the whole project: an id, the kinds read and a pure `validate(input)` returning problems; the host re-runs them when those kinds change and merges the problems ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)) | Feature order across biomes, structure set spacing |
 
 Templates, starters and examples live in plugins; the app is only the picker. A template creates one element of a kind its own plugin registers and references only vanilla ids, ids derived from its own id, or the project root advancement. A starter or example builds a self-contained content bundle (elements with optional `meta.notes`, plus generated assets, never Mojang assets) that may span any registered kinds; the host adds a `pack` element when the bundle has none and inserts the elements as one undo step. The resource-pack and data-pack plugins carry the templates for their kinds; the built-in `@msm/plugin-library` (`msm.library`) carries the starters, the examples and the placeholder-texture generator ([ADR 0020](adr/0020-templates-starters-examples.md)).
+
+Phase 3 adds two built-ins ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)): `@msm/plugin-structures` (`msm.structures`: structure templates, template pools, structures, structure sets and processor lists, with the `.nbt` and `.schem` importers and exporters of [ADR 0021](adr/0021-structure-templates-and-nbt.md)) and `@msm/plugin-worldgen` (`msm.worldgen`: biomes, configured and placed features, dimensions, world presets and nine schema-form worldgen kinds). Both contribute validators; `@msm/plugin-datapack` adds the worldgen tag kinds and keeps `minecraft:dimension_type`.
 
 ### Loading model
 
@@ -318,7 +323,7 @@ Both paths edit the same element through the same command stack, so switching be
 |---|---|
 | 1 | Texture Studio, Model Studio (block/item models, blockstates), Sound Studio, Lang editor, Pack settings |
 | 2 | Recipe Studio, Tag editor, Function editor (Monaco + Spyglass); Loot Table and Advancement Studios are the schema form plus templates in v0.2 ([ADR 0015](adr/0015-data-pack-element-model.md)); New project starters and the Examples gallery (add-on, [ADR 0020](adr/0020-templates-starters-examples.md)) |
-| 3 | Structure Studio (import, preview, jigsaw pools), Biome Studio, Feature Studio |
+| 3 | Structure Studio (size, palette, jigsaw table, "Replace from file…", structure exports), Template Pool Studio (pieces table, Connections panel with each jigsaw's target pool marked project, vanilla or missing, "Used by"), Biome Studio (climate, colour pickers, feature lists per decoration step named from the target, spawners), Feature Studio as the Placed Feature Studio (feature picker, ordered placement modifiers, "Used in"); configured features and the other worldgen kinds are the schema form plus templates. Studios register per area (`studios/<area>/studios.tsx`) instead of in one shared file ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)) |
 | 4 | Block Studio, Item Studio |
 | 5 | Entity Studio, Animation preview |
 | 6 | Script editor |
@@ -340,6 +345,8 @@ Every plugin command is reachable from a keyboard-driven palette (create, rename
 
 Misode's `deepslate` renders block and item models with its own WebGL renderer ([ADR 0010](adr/0010-preview-with-deepslate.md)); later phases extend the preview to structures, worldgen and imported Blockbench entities, adding three.js only if a phase needs it. Parent models resolve through project elements, then the extracted vanilla cache (section 13), then a small set of MSM-authored fallback parents (`msm:block/cube_all`, `msm:item/generated` and others) written from scratch for preview only and never exported. Without a client jar, missing textures render as deepslate's missing-texture checker and a banner links to the Minecraft folder setting; without WebGL, the panel shows a message and the rest of the app works.
 
+From Phase 3 ([ADR 0023](adr/0023-structure-and-climate-previews.md)) the panel has two more modes. **Structure mode** (`previewKind: 'structure'`) renders a structure template with deepslate's `StructureRenderer`, a grid and an orbit camera fitted to its size, preparing resources for every palette block through the same model chain; block entities, entities and biome tints are not drawn. The **climate map** (`previewKind: 'climate_map'`, for dimensions and world presets with an explicit `multi_noise` biome source) is a 2D canvas outside the WebGL gate: two of the six climate parameters on the axes, sliders for the rest, each cell coloured by the biome `Climate.Parameters.find` selects. A noise-sampled biome or terrain map is not built in v0.3 ([Open Question 15](#18-open-questions)).
+
 ### "Test in Minecraft"
 
 - **Phase 1:** export the resource pack and copy it into the user's `resourcepacks` folder; the user enables it in-game.
@@ -348,7 +355,7 @@ Misode's `deepslate` renders block and item models with its own WebGL renderer (
 
 ### Error surfacing
 
-A Problems panel lists schema violations, dangling references and lowering errors, each linked to its element and field (`elementId` plus an RFC 6901 path, or a `file` for load and export problems); function problems add a `range` within `/lines/<n>`. Schema problems are recomputed live as elements change. Schema violations are errors; unknown registry ids are warnings. Errors block export, never save; warnings block neither. Files that fail to load stay on disk as error problems until the user fixes or deletes them ([ADR 0012](adr/0012-save-deletes-only-loaded-files.md)).
+A Problems panel lists schema violations, dangling references and lowering errors, each linked to its element and field (`elementId` plus an RFC 6901 path, or a `file` for load and export problems); function problems add a `range` within `/lines/<n>`. Schema problems are recomputed live as elements change. From Phase 3, plugin project validators ([Plugin System](#7-plugin-system)) run after the schema checks, debounced, and their problems (codes `<area>.<check>`, such as `worldgen.feature-order`) join the same list with the same severity rules. Schema violations are errors; unknown registry ids are warnings. Errors block export, never save; warnings block neither. Files that fail to load stay on disk as error problems until the user fixes or deletes them ([ADR 0012](adr/0012-save-deletes-only-loaded-files.md)).
 
 ## 9. Targets and Exporters
 
@@ -365,10 +372,13 @@ interface Target {
   // 26.3: resource 97.1, data 121.0 (verified 2026-11-04)
   mcdocRef: string;           // vanilla-mcdoc commit sha
   mcmetaRef: string;          // misode/mcmeta version prefix, e.g. "26.3"
+  dataVersion: number;        // world data version written into structure .nbt files; 26.3: 5023 (from vendored mcmeta)
   folders: {
     resource: Record<ResourceFolderKey, string>;  // vanilla folder names under assets/<ns>/ (ADR 0013)
-    data: Record<DataFolderKey, string>;          // vanilla folder names under data/<ns>/ (ADR 0017)
+    data: Record<DataFolderKey, string>;          // vanilla folder names under data/<ns>/ (ADR 0017);
+                                                  // Phase 3 adds structure, dimension and worldgen (parent of worldgen/<registry>)
   };
+  worldgen: { featureSteps: readonly string[] };  // decoration steps in order (ADR 0022)
   fabric?: { loader: string; api: string; loom: string };   // required from Phase 4 (verify at implementation)
   geckolib?: string;          // required from Phase 5; 5.5+ line (verify at implementation)
   migrateFrom?(previous: Target, project: Project): MigrationReport;
@@ -377,7 +387,7 @@ interface Target {
 type PackFormat = { major: number; minor: number };
 ```
 
-The `Target` interface and the shared IR types it refers to live in `@msm/plugin-api` ([ADR 0008](adr/0008-ir-types-in-plugin-api.md)). The `@msm/targets` aggregator (`packages/targets/all/`) exports `builtInTargets` and `targetById(id)`, so code and tests outside `packages/targets` reach the real targets without naming a version ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
+`folders.data.worldgen` is the parent folder of `worldgen/<registry>`, as `tags` is of `tags/<registry>`; a kind passes the registry as the subfolder, so a future rename (26.3 renamed `worldgen/configured_feature` to `worldgen/feature` and `worldgen/configured_carver` to `worldgen/carver`) changes only the target ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)). The `Target` interface and the shared IR types it refers to live in `@msm/plugin-api` ([ADR 0008](adr/0008-ir-types-in-plugin-api.md)). The `@msm/targets` aggregator (`packages/targets/all/`) exports `builtInTargets` and `targetById(id)`, so code and tests outside `packages/targets` reach the real targets without naming a version ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
 
 Support policy: the current release (26.3) and the previous one (26.2) at launch; snapshots are best-effort.
 
@@ -399,7 +409,7 @@ Support policy: the current release (26.3) and the previous one (26.2) at launch
 
 ### Validation gate
 
-Step 4 is a hard gate: every lowered JSON file is validated against the schema model derived from vanilla-mcdoc, and every `.mcfunction` file with Spyglass; parse and check errors block, warnings pass. Invalid lowered output is a bug in a lowering function or target, not a user error; the export stops with a report. CI runs the same check on golden fixtures. A struct with dispatcher spreads accepts a key only when the struct or one of its resolved spreads declares it, and reports any other key as `schema.unknown-field`; when a spread cannot be resolved to fields (an `any` member, an unknown dispatch key), every key is allowed. Project texture animation sidecars (`.png.mcmeta`) pass the same gate as `resource:texture_meta`.
+Step 4 is a hard gate: every lowered JSON file is validated against the schema model derived from vanilla-mcdoc, and every `.mcfunction` file with Spyglass; parse and check errors block, warnings pass. Invalid lowered output is a bug in a lowering function or target, not a user error; the export stops with a report. CI runs the same check on golden fixtures. A struct with dispatcher spreads accepts a key only when the struct or one of its resolved spreads declares it, and reports any other key as `schema.unknown-field`; when a spread cannot be resolved to fields (an `any` member, an unknown dispatch key), every key is allowed. Project texture animation sidecars (`.png.mcmeta`) pass the same gate as `resource:texture_meta`. Binary outputs (structure `.nbt`) carry no schema; their element is validated before lowering. Project validators ([Plugin System](#7-plugin-system)) gate export through the problem list: an error from a validator blocks export like a schema error ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)).
 
 ## 10. Engine Mod (Runtime)
 
@@ -559,7 +569,9 @@ We import only documented `.bbmodel` fields and warn on unknown format versions.
 
 ### Structures
 
-Structure `.nbt` (vanilla structure template) and Sponge `.schem` are read and written via `prismarine-nbt`. Imported structures become structure elements with a 3D preview and can be used in jigsaw pools.
+Structure `.nbt` (vanilla structure template) and Sponge `.schem` (Version 2 and 3) are read and written with deepslate's `nbt` module, not `prismarine-nbt` ([ADR 0021](adr/0021-structure-templates-and-nbt.md)). The codec lives in `@msm/plugin-structures`, which contributes the importers (`.nbt`, `.schem`) and two exporters (structure `.nbt` files, Sponge `.schem` Version 3) through the public plugin API. An imported file becomes a `minecraft:structure_template` element stored as JSON (the original file is not kept), shown in the 3D preview, usable in jigsaw pools and lowered back to gzip `.nbt` with the target's `dataVersion`. File > Import Structure… runs the importers; the Export menu offers both structure exports.
+
+`@msm/interop` `nbt/` reads only the world name (`Data.LevelName`) from `level.dat` for the world picker, with deepslate's NBT reader; an unreadable file falls back to the folder name.
 
 ### Minecraft installation
 
@@ -572,7 +584,7 @@ Structure `.nbt` (vanilla structure template) and Sponge `.schem` are read and w
   - **Jar search for extraction:** the selected location's own store first (exact version, then the prefix rule), then every other known store in discovery order (official, Prism, MultiMC, CurseForge). The cache stays keyed by `mcVersion`.
   - **Phase 4:** each location records its loader and `mods/` folder so the content jar can be installed into a Fabric instance; nothing is written to `mods/` before then.
 - **Asset extraction:** the Electron main process reads vanilla models, blockstates, item definitions, block and item textures and `en_us` lang from the user's installed client jar (`versions/<v>/<v>.jar` for the official launcher; launcher stores as above) into `~/.msm/cache/assets/<version>/` for previews, and serves them to the renderer over IPC ([ADR 0011](adr/0011-client-jar-asset-extraction.md)). The cache is keyed by the project target's `mcVersion`. Animation metadata (`.png.mcmeta`) is extracted from Phase 2: project-authored sidecars are imported beside their texture and validated against `resource:texture_meta` at export, and the preview steps through frames without interpolation (in Phase 1 animated textures previewed as their first frame). **These assets are never redistributed** and never written into exports. Tests use a synthetic jar built at test time; the repository holds no Mojang bytes.
-- **Worlds:** from Phase 2 main lists worlds of the selected location as `<gameDir>/saves/<dir>/` folders containing `level.dat` and installs a data pack to `saves/<world>/datapacks/` ([ADR 0015](adr/0015-data-pack-element-model.md)).
+- **Worlds:** from Phase 2 main lists worlds of the selected location as `<gameDir>/saves/<dir>/` folders containing `level.dat` (from Phase 3 with the world name read from it) and installs a data pack to `saves/<world>/datapacks/` ([ADR 0015](adr/0015-data-pack-element-model.md)).
 - **Launching:** Phase 1 is manual (copy pack, user starts the game). Phase 4 adds a managed instance created with the Fabric installer and a vanilla launcher profile (verify at implementation).
 
 We are read-only on the user's game directories and launcher folders, except for copying packs into the selected location's `resourcepacks`/`datapacks` and managing our own instance folder.
@@ -591,9 +603,9 @@ We use **Electron**, not Tauri.
 | Immer + RFC 6902 patches | Command stack and undo/redo in `@msm/core`. |
 | Radix primitives + Tailwind CSS | Accessible primitives; copied shadcn-style components; no runtime UI-library dependency. Icons: Lucide. |
 | Monaco Editor (`monaco-editor` directly, lazy-loaded) | JSON editing with schema diagnostics in Phase 1; mcfunction and TypeScript later, with Spyglass diagnostics from Phase 2. |
-| deepslate (own WebGL renderer) | 3D preview of block and item models from Phase 1; structures and worldgen later. three.js only if a later phase needs it ([ADR 0010](adr/0010-preview-with-deepslate.md)). |
+| deepslate (own WebGL renderer) | 3D preview of block and item models from Phase 1; structure templates and the 2D climate map from Phase 3 ([ADR 0023](adr/0023-structure-and-climate-previews.md)). three.js only if a later phase needs it ([ADR 0010](adr/0010-preview-with-deepslate.md)). |
 | `@spyglassmc/*` (Phase 2; mcfunction, main process) | Offline mcfunction parsing, checking and completion behind `@msm/schemas/mcfunction`, loaded lazily in main, with mcdoc symbols for JSON and NBT inside commands; JSON files stay on `validateJson` ([ADR 0009](adr/0009-phase1-validation-gate.md), [ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md), [ADR 0017](adr/0017-phase2-toolchain.md)). |
-| prismarine-nbt, fflate, esbuild, zod | NBT; zip (fflate everywhere); script transpilation; IPC and config validation. |
+| deepslate `nbt`, fflate, esbuild, zod | NBT (structure `.nbt`, `.schem`, `level.dat`; [ADR 0021](adr/0021-structure-templates-and-nbt.md)); zip (fflate everywhere); script transpilation; IPC and config validation. |
 
 Build and security ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)): the main build bundles the vendored target data into `out/main/vendor/` (electron-vite plugin `msm:bundle-vendored-data`), and the renderer build drops the vendored-data URLs so no vendored JSON reaches the renderer bundle; main aliases `fflate` to `fflate/browser` to avoid a `require` clash in ESM bundles. The production Content Security Policy allows scripts from `'self'` only, `style-src 'self' 'unsafe-inline'` (Monaco and Radix inject runtime styles and support no nonce) and `img-src 'self' data:` (thumbnails arrive as `data:` URLs).
 
@@ -656,7 +668,7 @@ MCSuperMods/
 └── tools/                        # check-deps, sync-mcdoc, sync-mcmeta, new-plugin
 ```
 
-Built-in plugins under `packages/plugins/`: `resourcepack/`, `datapack/`, `library/`, `structures/`, `worldgen/`, `blocks-items/`, `entities/`, `models-anim/`, `scripting/`. `library/` contributes no element kinds, only project starters, examples and placeholder-asset generators ([ADR 0020](adr/0020-templates-starters-examples.md)). Each is its own npm package `@msm/plugin-<name>` and depends only on `@msm/plugin-api` and `@msm/schemas`.
+Built-in plugins under `packages/plugins/`: `resourcepack/`, `datapack/`, `library/`, `structures/`, `worldgen/`, `blocks-items/`, `entities/`, `models-anim/`, `scripting/`. `library/` contributes no element kinds, only project starters, examples and placeholder-asset generators ([ADR 0020](adr/0020-templates-starters-examples.md)). Each is its own npm package `@msm/plugin-<name>` and depends only on `@msm/plugin-api` and `@msm/schemas` among internal packages; `@msm/plugin-structures` also uses the third-party `deepslate` (its `nbt` module only, [ADR 0021](adr/0021-structure-templates-and-nbt.md)).
 
 ### Dependency direction
 
@@ -664,7 +676,7 @@ Built-in plugins under `packages/plugins/`: `resourcepack/`, `datapack/`, `libra
 plugin-api  <-  schemas  <-  core  <-  plugins / exporters / targets / interop  <-  app
 ```
 
-`@msm/plugin-api` depends on nothing internal. The `@msm/targets` aggregator sits beside the target packages and depends on them. Plugins, exporters and interop may depend on `@msm/targets` for tests only: a Biome `noRestrictedImports` override forbids it (and `@msm/target-*`) in shipped plugin and exporter source, so shipped plugins still use only `@msm/plugin-api` and `@msm/schemas` ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)). `@msm/exporters` may also use `@msm/plugin-resourcepack`, `@msm/plugin-datapack` and `@msm/plugin-library` in tests (the sample-project goldens, [ADR 0017](adr/0017-phase2-toolchain.md); the library bundles and the `examples/` mirror, [ADR 0020](adr/0020-templates-starters-examples.md)); Biome forbids every `@msm/plugin-*` except `@msm/plugin-api` in exporter source, because exporters consume `OutputFile[]`, never plugins. The direction is enforced by TypeScript project references, Biome import rules and `tools/check-deps`, which checks every workspace `package.json` against a layer map and flags version literals outside `packages/targets`; it runs in `pnpm lint`, so a reverse import fails CI.
+`@msm/plugin-api` depends on nothing internal. The `@msm/targets` aggregator sits beside the target packages and depends on them. Plugins, exporters and interop may depend on `@msm/targets` for tests only: a Biome `noRestrictedImports` override forbids it (and `@msm/target-*`) in shipped plugin and exporter source, so shipped plugins still use only `@msm/plugin-api` and `@msm/schemas` ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)). `@msm/exporters` may also use `@msm/plugin-resourcepack`, `@msm/plugin-datapack`, `@msm/plugin-library`, `@msm/plugin-structures` and `@msm/plugin-worldgen` in tests (the sample-project goldens, [ADR 0017](adr/0017-phase2-toolchain.md); the library bundles and the `examples/` mirror, [ADR 0020](adr/0020-templates-starters-examples.md); the sample-worldgen golden and chain walk, [ADR 0022](adr/0022-worldgen-element-model-and-validators.md)); Biome forbids every `@msm/plugin-*` except `@msm/plugin-api` in exporter source, because exporters consume `OutputFile[]`, never plugins. The direction is enforced by TypeScript project references, Biome import rules and `tools/check-deps`, which checks every workspace `package.json` against a layer map and flags version literals outside `packages/targets`; it runs in `pnpm lint`, so a reverse import fails CI.
 
 ### Naming
 
@@ -677,14 +689,15 @@ plugin-api  <-  schemas  <-  core  <-  plugins / exporters / targets / interop  
 | Level | Tooling | What it covers |
 |---|---|---|
 | Unit | Vitest | IR, serialisation, migrations, patches and undo/redo, renames. |
-| Lowering | Vitest golden files | Each lowering function per target, under the plugin's `test/fixtures/<target id>/expected/`; exporters add a SHA-256 golden over the sample project's zip. |
+| Lowering | Vitest golden files | Each lowering function per target, under the plugin's `test/fixtures/<target id>/expected/`; binary outputs (structure `.nbt`) are compared byte for byte and re-read to check `DataVersion`; exporters add a SHA-256 golden over the sample project's zip. |
+| Worldgen chain | Vitest in the owning plugins and `@msm/exporters` | Structure codec round trips (`.nbt` and `.schem`, every NBT tag type through SNBT); each project validator's codes; `fixtures/sample-worldgen/` exports with zero problems and a pinned SHA-256, its `.nbt` files parse back with the same block counts, and a chain walk over the zip resolves every link from world preset and structure set down to structure templates and jigsaw targets against the zip and the vendored registries; a mutated copy reports `worldgen.feature-order` ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)). |
 | Schema conformance | `validateJson` in CI (the Spyglass JSON checker only if section 18, question 13 adopts it) | Every lowered output, including golden fixtures, validated against the schema model derived from vanilla-mcdoc and MSM mcdoc. A failure is a bug. |
 | mcfunction conformance | `@msm/schemas/mcfunction` over the vendored command data, in the target packages | Parse, check and lint results for known-good and known-bad commands; every exported `.mcfunction`, including the sample data pack, has zero errors ([ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)). |
 | Library | Vitest in the owning plugins and `@msm/exporters` | Every element template validates with zero errors and zero unknown ids for each target, as does its lowered file; every starter and example bundle is built into a memory project with the real plugins, reloaded, exported as resource and data packs with zero problems (functions through the mcfunction checker) for each target; the `examples/` mirror equals the generated projects (`UPDATE_GOLDENS=1` rewrites it) ([ADR 0020](adr/0020-templates-starters-examples.md)). |
 | Engine mod logic | JUnit 5 | Definition parsing, component graph construction. |
 | Engine mod behaviour | Fabric GameTest | Components and events in a running server. |
 | End to end (mod) | CI headless server | From Phase 4, a "kitchen-sink" sample project is exported and loaded; load errors fail CI. |
-| App | Vitest + happy-dom; Playwright for Electron | Component tests; golden-path e2e (new project, block model, texture, export zip, reopen) and smoke runs of the built and packaged app under xvfb. |
+| App | Vitest + happy-dom; Playwright for Electron | Component tests; golden-path e2e (new project, block model, texture, export zip, reopen), data pack, launcher, library and worldgen e2e specs, and smoke runs of the built and packaged app under xvfb. |
 
 CI runs from Phase 0: Biome, type checks and unit tests on every push.
 
@@ -719,6 +732,8 @@ CI runs from Phase 0: Biome, type checks and unit tests on every push.
 12. **MSM-authored preview fallback parents:** seven parent models (`msm:block/cube`, `cube_all`, `cube_column`, `cube_bottom_top`, `cross`, `msm:item/generated`, `msm:item/handheld`) are written from scratch, used only for preview without a client jar and never exported. Decided: acceptable under "never bundle Mojang assets"; still awaiting the user's veto or acceptance at Phase 2 close ([ADR 0010](adr/0010-preview-with-deepslate.md)). If vetoed, they are removed and the preview without a client jar shows only models that declare their own `elements`.
 13. **Spyglass JSON checker adoption:** whether the Spyglass JSON checker replaces `validateJson` as the JSON gate. Open. Phase 2 uses Spyglass for mcfunction only ([ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)). Loading the vendored mcdoc symbols into Spyglass for JSON and NBT inside commands works in the app at Phase 2 close; whether that justifies replacing `validateJson` for JSON files is revisited when a later phase needs it.
 14. **AI assistant:** the user wants optional AI help in the future, for example through the Claude API with their own key. Open: scheduling (post-1.0 by default, see ROADMAP "Post-1.0 Ideas"), the plugin or core boundary (likely a built-in plugin contributing commands and a chat panel, operating only through `ProjectCommand`s and the validators), key storage (`safeStorage`), privacy (which project data is sent), and cost visibility. An ADR is required before work starts.
+
+15. **Noise-sampled worldgen preview:** whether to add a Misode-style biome or terrain map sampled from noise, and whether extracting vanilla `data/minecraft/worldgen/{noise_settings,density_function,noise,biome}` JSON from the user's own client jar (cached, never exported, read like textures) fits "never bundle Mojang assets". Open. v0.3 ships the climate map only ([ADR 0023](adr/0023-structure-and-climate-previews.md)); the work is described as reserve brief B84 and needs the user's agreement and an update to ADR 0023 before it starts.
 
 Resolved questions become ADRs in `docs/adr/` and update this document.
 

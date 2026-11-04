@@ -18,7 +18,7 @@ This is the phased delivery plan for MCSuperMods (MSM). The orchestrator updates
 | 0 | Foundations | Monorepo, `@msm/core` IR + project load/save + command stack, `@msm/schemas` loading vanilla-mcdoc for 26.3, `@msm/plugin-api`, Electron shell opens/saves a project, CI green | New empty project round-trips; schema loads; unit tests + Biome in CI | 2–3 wk |
 | 1 | **MVP: Resource Pack Studio** (v0.1) | Textures import, block/item models + blockstates via schema forms, lang files, sounds, pack.mcmeta; deepslate 3D preview; vanilla `.zip` export; "Install to resourcepacks folder" | A user makes and installs a working texture + custom model pack without touching JSON | 4–6 wk |
 | 2 | Data Pack Studio (v0.2) | Recipes, loot tables, advancements, tags, predicates, item modifiers, mcfunction editor with Spyglass diagnostics; data pack export; combined pack export | Misode-generator parity on those kinds; a datapack with functions loads in 26.3 without errors | 4–6 wk |
-| 3 | Structures & Worldgen (v0.3) | `.nbt`/`.schem` import + 3D preview, jigsaw pools, structure sets, configured/placed features, biomes, noise settings forms, dimension types | Custom biome with a custom jigsaw structure generates in a 26.3 world | 5–7 wk |
+| 3 | Structures & Worldgen (v0.3) | `.nbt`/`.schem` import and export, structure templates as JSON with 3D preview, jigsaw pools with connections, structures and structure sets, configured and placed features, biomes, dimensions, world presets, noise settings and the other worldgen kinds as forms, worldgen tags, project validators, climate map, plugin-api 0.5.0 | Custom biome with a custom jigsaw structure generates in a 26.3 world (CI proxy: sample-worldgen chain walk, validators and e2e) | 5–7 wk |
 | 4 | Engine Mod + Blocks/Items (v0.4) | `msm_runtime` mod, `msm/` definition loader, components/events v1, Block & Item Studios, Fabric content-jar exporter, managed test instance launch from app | A custom block with custom behaviour works in-game from one exported jar | 8–10 wk |
 | 5 | Entities, Models, Animation (v0.5) | `msm:entity` + AI goal components, GeckoLib integration, Blockbench `.bbmodel` + animation import, spawn rules/eggs | A Blockbench-animated custom mob spawns, moves, attacks | 8–10 wk |
 | 6 | Scripting & Eject (v0.6) | Rhino scripting, TS typings, Monaco script editor, export-as-Java-project | Script-driven behaviour runs; ejected project builds with Gradle and matches runtime behaviour | 6–8 wk |
@@ -152,30 +152,64 @@ Phase 1 (form generator, export pipeline, validation gate).
 
 ### Scope
 
-Import and preview structures, then author the worldgen chain that places them: jigsaw pools, structure sets, features, biomes, noise settings and dimension types. Design references: [Interop (Blockbench, NBT, Minecraft Installation)](DESIGN.md#13-interop-blockbench-nbt-minecraft-installation), [Editors and UX](DESIGN.md#8-editors-and-ux).
+Import, preview and export structures, then author the worldgen chain that places them: jigsaw pools, structures, structure sets, features, biomes, dimensions, world presets, noise settings and the other worldgen registries, with cross-element validators that catch what a single file cannot show. Design references: [Core Project Model (IR)](DESIGN.md#4-core-project-model-ir), [Plugin System](DESIGN.md#7-plugin-system), [Editors and UX](DESIGN.md#8-editors-and-ux), [Targets and Exporters](DESIGN.md#9-targets-and-exporters), [Interop (Blockbench, NBT, Minecraft Installation)](DESIGN.md#13-interop-blockbench-nbt-minecraft-installation); decisions in [ADR 0021](adr/0021-structure-templates-and-nbt.md) (structure templates as JSON, deepslate NBT codec), [ADR 0022](adr/0022-worldgen-element-model-and-validators.md) (worldgen kinds, plugin-api 0.5.0, validators, exit-criterion proxy) and [ADR 0023](adr/0023-structure-and-climate-previews.md) (structure and climate previews). Release version 0.3.0; the user pushes the tag.
 
 ### Deliverables
 
-- [ ] `@msm/interop` `nbt/`: read and write structure `.nbt` and Sponge `.schem` via prismarine-nbt.
-- [ ] `@msm/plugin-structures`: structure, template pool, structure set and processor list kinds.
-- [ ] 3D structure preview using deepslate.
-- [ ] `@msm/plugin-worldgen`: configured and placed features, biomes, noise settings and dimension type kinds.
-- [ ] Biome Studio: curated form with colour pickers and spawn lists.
-- [ ] Jigsaw pool editor showing connections between pieces.
-- [ ] Sample project with a custom biome and jigsaw structure used as a golden fixture.
+Wave 1 (contract, decisions, carry-overs):
+
+- [ ] B70: `@msm/plugin-api` 0.5.0 (`ProjectValidator`, `ElementKind.registry`, `Target.dataVersion`, `Target.worldgen.featureSteps`, data folders `structure`, `dimension`, `worldgen`); `mc-26.3` target facts; `msm:structure_template` schema extension; `@msm/plugin-structures` and `@msm/plugin-worldgen` scaffolds with `deepslate`; built-in ranges `^0.5.0`; the app's registry index reads `ElementKind.registry`.
+- [ ] B71: ADRs 0021–0023, DESIGN (sections 4, 6, 7, 8, 9, 13, 14, 15, 16, 18) and this Phase 3 plan.
+- [ ] B72: Phase 2 carry-overs: CI action majors, no "resourcepack files left out" row for data-only exports, per-pack export gating, the cooking recipe result field, the music disc notes path, problem navigation to the column and go to definition from the Monaco caret.
+
+Wave 2 (the two engines and the tags):
+
+- [ ] B73: `@msm/plugin-structures`: deepslate NBT codec, Sponge `.schem` Version 2 and 3 read and Version 3 write, five kinds (structure template, template pool, structure, structure set, processor list), lowering to gzip `.nbt` with binary goldens, `.nbt` and `.schem` importers and exporters, `structures.*` validators, 9 templates.
+- [ ] B74: `@msm/plugin-worldgen`: fourteen kinds (biome, configured feature, placed feature, dimension, world preset; noise settings, density function, noise, carver, flat level generator preset, multi-noise parameter list, block state provider, material condition, material rule), `worldgen.*` validators (feature order, biome reachability, preset selectable, preset overworld, unused placed features), 17 templates.
+- [ ] B75: worldgen tag kinds (`tag/worldgen/biome`, `structure`, `world_preset`) and 3 templates in `@msm/plugin-datapack`; `@msm/interop` `nbt/level-dat.ts`; world names in the world picker.
+
+Wave 3 (content, host plumbing, previews):
+
+- [ ] B76: library starters `custom_biome`, `jigsaw_structure` and `worldgen_pack` ("Custom biome with a jigsaw structure"), 22 examples, the `examples/` mirror, `fixtures/sample-worldgen/` with its in-game check, the SHA-256 golden and the chain walk.
+- [ ] B77: host plumbing: generic importer runner (`session.importFiles`, one undo step), project validators in the problem list, plugin exporters, File > Import Structure…, Export Structures (.nbt)… and Export Structures as Sponge Schematics (.schem)…, Worldgen and Structures groups in the sidebar, the per-area studio registry.
+- [ ] B78: previews: structure 3D mode and the 2D climate map ([ADR 0023](adr/0023-structure-and-climate-previews.md)).
+
+Wave 4 (studios and guide):
+
+- [ ] B79: Structure Studio and Template Pool Studio with the Connections panel.
+- [ ] B80: Biome Studio (colour pickers, feature steps, spawners) and Placed Feature Studio; the form editor honours `typeArgument` dispatchers.
+- [ ] B81: user guide pages `docs/guide/structures.md` and `docs/guide/worldgen.md`, README "Try the worldgen sample" and known limitations, scoped CLAUDE.md files.
+
+Wave 5 (end to end and close):
+
+- [ ] B82: e2e `worldgen-path.spec.ts` (starter, pool connections, `.nbt` import, export, feature-order error gating, undo, `.schem` export, reopen).
+- [ ] B83: close: ROADMAP ticks, Milestone Log, ADR statuses, version 0.3.0, `minimumReleaseAgeExclude` cleanup, full verification and the `main` fast-forward.
+- [ ] User check: in-game on Windows with 26.3, the steps in `fixtures/sample-worldgen/README.md` (see [Exit criteria](#exit-criteria-3)).
+- [ ] User decisions (defaults stand unless vetoed): deepslate's NBT module instead of `prismarine-nbt`; structure templates stored as JSON elements; the noise-sampled worldgen preview deferred to reserve brief B84 (DESIGN [Open Question 15](DESIGN.md#18-open-questions)); `minecraft:dimension_type` stays in the data pack plugin; the three registries new in 26.3 (`block_state_provider`, `material_condition`, `material_rule`) ship as schema-form kinds.
+
+Reserve, unscheduled: B84, a noise-sampled biome and terrain map from vanilla worldgen data extracted from the user's client jar, only if the user asks for it after the in-game check ([ADR 0023](adr/0023-structure-and-climate-previews.md)).
+
+### Phase 3 follow-ups
+
+Known gaps of the v0.3 design; none blocks the Phase 3 exit criterion.
+
+- [ ] Noise-sampled biome and terrain preview (reserve brief B84; DESIGN [Open Question 15](DESIGN.md#18-open-questions)).
+- [ ] Editing structure blocks inside the app (v0.3 edits size, palette entries and jigsaws; blocks are edited in-game with a structure block and re-imported).
+- [ ] Random palettes beyond the first (an imported template with several `palettes` keeps only the first).
+- [ ] Real ore starter: the Custom ore starter stays an emerald-ore reskin until Phase 4 adds `msm:block` ([ADR 0020](adr/0020-templates-starters-examples.md)).
 
 ### Phase 2 follow-ups
 
-Carried over from Phase 2 (known gaps recorded in DEVLOG); none blocks the v0.2 exit criteria.
+Carried over from Phase 2 (known gaps recorded in DEVLOG); none blocks the v0.2 exit criteria. Items are ticked when the brief that closes them lands; the Phase 3 plan places them as noted. Also placed: the GitHub Actions major bumps for the Node 20 runner deprecation (B72), the data-only export info row, the cooking recipe result field and the music disc notes path (B72; listed in the 2026-11-04 DEVLOG), and the form editor's `typeArgument` dispatchers (B80).
 
-- [ ] Go to definition from the caret inside the Monaco function editor (works today from form fields and the textarea editor).
-- [ ] Problem navigation to the column within a function line (today it lands at the start of the line).
-- [ ] Per-layer export gating: an error in one pack should not disable exporting the other (today any error disables every export).
-- [ ] Check on Windows whether F2 inside Monaco also fires Monaco's own rename alongside the Rename Element menu command.
-- [ ] HD textures in the deepslate preview: the atlas crops every texture to its first 16×16 tile.
-- [ ] Bespoke Loot Table Studio (v0.2 ships the schema form plus templates; [ADR 0015](adr/0015-data-pack-element-model.md)).
-- [ ] World names from `level.dat` in the world picker (today it shows folder names; [ADR 0015](adr/0015-data-pack-element-model.md)).
-- [ ] Remove the pnpm `minimumReleaseAgeExclude` entries in `pnpm-workspace.yaml` (`electron-to-chromium`, `electron`, `lucide-react`) once those versions are older than the release-age rule.
+- [ ] Go to definition from the caret inside the Monaco function editor (works today from form fields and the textarea editor). Scheduled in B72.
+- [ ] Problem navigation to the column within a function line (today it lands at the start of the line). Scheduled in B72.
+- [ ] Per-layer export gating: an error in one pack should not disable exporting the other (today any error disables every export). Scheduled in B72.
+- [ ] Check on Windows whether F2 inside Monaco also fires Monaco's own rename alongside the Rename Element menu command. Needs the user's Windows machine; stays open.
+- [ ] HD textures in the deepslate preview: the atlas crops every texture to its first 16×16 tile. Stays open.
+- [ ] Bespoke Loot Table Studio (v0.2 ships the schema form plus templates; [ADR 0015](adr/0015-data-pack-element-model.md)). Stays open.
+- [ ] World names from `level.dat` in the world picker (today it shows folder names; [ADR 0015](adr/0015-data-pack-element-model.md)). Scheduled in B75 ([ADR 0021](adr/0021-structure-templates-and-nbt.md)).
+- [ ] Remove the pnpm `minimumReleaseAgeExclude` entries in `pnpm-workspace.yaml` (`electron-to-chromium`, `electron`, `lucide-react`) once those versions are older than the release-age rule. Scheduled in B83.
 
 ### Phase 2 add-on — Launcher support
 
@@ -210,13 +244,22 @@ Requested on 2026-11-04, ahead of Phase 3: a template for every element kind, Ne
 
 A custom biome containing a custom jigsaw structure generates in a 26.3 world.
 
+CI cannot run the game, so an automated proxy proves the content first ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)):
+
+1. Every new template, starter and example validates per target with zero errors and zero unknown ids, and its lowered files validate; the `examples/` mirror stays a golden.
+2. `fixtures/sample-worldgen/` (the "Custom biome with a jigsaw structure" starter saved as a project) exports a data pack with zero problems and a pinned SHA-256; its structure `.nbt` files parse back with the same block counts; a chain walk over the zip resolves world preset → dimensions → dimension types and biomes → placed and configured features, and structure set → structure → biome tag → biomes, structure → start pool → pools and fallbacks → structure templates → jigsaw pools and targets, against the zip and the vendored vanilla registries.
+3. Both plugins' validators report zero errors, and no unplaced structure, unreachable biome or unselectable preset, on the fixture; a copy with one placed feature moved to another step reports `worldgen.feature-order`.
+4. The `worldgen-path` e2e spec drives the UI from the starter through import, export, a feature-order error that disables export, and undo.
+
+The user then checks in-game on Windows (steps in `fixtures/sample-worldgen/README.md`): the data pack installed into an existing world and the world reopened, `/locate structure` finds the structure in a forest; a new world with the pack and the custom World Type shows the custom biome in F3 and `/locate biome` succeeds; `latest.log` has no `Failed to load`, `Couldn't parse` or "Feature order cycle" lines.
+
 ### Estimate
 
 5–7 weeks.
 
 ### Depends on
 
-Phase 2 (data pack export, tags, reference index).
+Phase 2 (data pack export, tags, reference index) and the templates and samples library add-on (contribution points for templates, starters and examples).
 
 ## Phase 4 — Engine Mod + Blocks/Items (v0.4)
 
