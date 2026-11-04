@@ -798,3 +798,36 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - Wave 1 is running: B70 (foundations, lockfile owner), B71 (docs), B72 (carry-overs: CI action majors, per-pack export gating, export info noise, recipe field, music-disc notes, column navigation, Monaco go-to-definition).
+
+---
+
+## 2026-11-04 — main session — Auto-update root cause; Phase 3 wave 1 close; v0.2.3 prepared
+
+**What**
+- **The user reported that auto-update does not work. Root cause:**
+  1. **Nothing published:** every GitHub release is still a draft, and electron-updater only sees published releases.
+  2. **Two drafts per tag:** electron-builder's parallel `.exe` and `.blockmap` uploads each logged "creating GitHub release" and created their own draft, so assets were split.
+  3. **Misleading message:** the app said "You have the latest version" when no release existed.
+- **Fixes:**
+  - **Release workflow (B72):** creates the draft once with `gh release create --draft --verify-tag` before electron-builder, then checks that exactly one release exists for the tag and that it holds the `.exe`, the `.blockmap` and `latest.yml` (uploading `latest.yml` if it is missing). The tag/version guard is kept.
+  - **App:** a `not-available` status with `reason: 'no-published-release'` shows "No published release found on GitHub yet…".
+- **Phase 3 wave 1:**
+  - **B70:** plugin-api 0.5.0:
+    - `ProjectValidator`, `ElementKind.registry`, `Target.dataVersion` (5023) and `worldgen.featureSteps` (checked against the vendored `DecorationStep` enum);
+    - the new data folders, and the `msm:structure_template` schema extension;
+    - all 22 Phase 3 references covered with zero unsupported nodes;
+    - structures and worldgen plugin scaffolds, a registry-from-kind lookup, and plugins moved to `^0.5.0`.
+  - **B71:** ADRs 0021–0023 and DESIGN/ROADMAP updates.
+  - **B72** carry-overs:
+    - CI actions moved to the Node 24 majors (checkout, setup-node and upload-artifact v7);
+    - per-pack export gating, and the layer-skipped info row hidden from Problems;
+    - recipe result field widened, music-disc notes corrected;
+    - column-level problem navigation, and Monaco go-to-definition (F12, Ctrl+Click).
+- Version 0.2.3.
+
+**Next**
+- **The user:**
+  - deletes the duplicate drafts (two each for 0.1.0, 0.2.0 and 0.2.2);
+  - tags `v0.2.3` from `main` and checks the single draft has its three assets;
+  - **publishes** it; installed copies should then update.
+- Phase 3 wave 2: B73 structures plugin, B74 worldgen plugin, B75 worldgen tags and `level.dat` world names.
