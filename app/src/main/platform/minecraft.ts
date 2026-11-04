@@ -1,12 +1,14 @@
 /**
  * Minecraft installation access for the main process (ADR 0011): status, client-jar asset
  * extraction into `<msmHome>/cache/assets/<version>/`, cached asset reads for the renderer,
- * and installing resource packs into the game directory.
+ * installing resource packs into the game directory, listing worlds and installing data
+ * packs into a world's `datapacks/` folder.
  *
  * @packageDocumentation
  */
 
-import { normalize } from 'node:path';
+import { realpath, stat } from 'node:fs/promises';
+import { normalize, isAbsolute as pathIsAbsolute, relative } from 'node:path';
 import {
   type AssetCacheInfo,
   assetCacheDir,
@@ -22,10 +24,33 @@ import {
 import { sha1Hex } from '@msm/interop/node';
 import { assertProjectRelativePath, isProjectRelativePath } from '@msm/plugin-api';
 import type { MinecraftProgress } from '../../shared/ipc-channels';
-import type { MinecraftStatus } from '../../shared/platform';
+import type { MinecraftStatus, WorldInfo } from '../../shared/platform';
 
 /** Resource pack file names accepted by {@link MinecraftService.installResourcePack}. */
 export const RESOURCE_PACK_FILE_NAME = /^[A-Za-z0-9._ -]+\.zip$/;
+
+/** Pack zip names accepted by installs and combined exports (same rule as resource packs). */
+export const PACK_FILE_NAME = RESOURCE_PACK_FILE_NAME;
+
+/** Throws unless `fileName` is a valid pack zip name of at most 255 characters. */
+export function assertPackFileName(fileName: string, what = 'pack'): void {
+  if (!PACK_FILE_NAME.test(fileName) || fileName.length > 255) {
+    throw new Error(`${JSON.stringify(fileName)} is not a valid ${what} file name.`);
+  }
+}
+
+/** Whether `name` is one safe path segment: no separators, NUL or `:`, not `.` or `..`. */
+export function isSafeSegment(name: string): boolean {
+  return (
+    name.length > 0 && name.length <= 255 && !/[/\\\0:]/.test(name) && name !== '.' && name !== '..'
+  );
+}
+
+/** Whether `child` is `parent` or lies inside it (both absolute, already resolved). */
+function isInside(parent: string, child: string): boolean {
+  const rel = relative(parent, child);
+  return rel !== '' && !rel.startsWith('..') && !pathIsAbsolute(rel);
+}
 
 /** The main-process Minecraft service. */
 export interface MinecraftService {
@@ -41,6 +66,10 @@ export interface MinecraftService {
   readAsset(mcVersion: string, path: string): Promise<Uint8Array | null>;
   listAssets(mcVersion: string, prefix: string): Promise<string[]>;
   installResourcePack(fileName: string, data: Uint8Array): Promise<{ path: string }>;
+  /** Worlds in `<minecraftDir>/saves/` that contain `level.dat`, most recent first. */
+  listWorlds(): Promise<WorldInfo[]>;
+  /** Writes a data pack zip into `<minecraftDir>/saves/<worldDir>/datapacks/`. */
+  installDataPack(worldDir: string, fileName: string, data: Uint8Array): Promise<{ path: string }>;
 }
 
 /** What the service needs from its host. */
@@ -51,6 +80,22 @@ export interface MinecraftServiceDeps {
   minecraftDir(): Promise<string | null>;
   /** ISO 8601 timestamp for `extractedAt`. Defaults to the current time. */
   now?(): string;
+  /**
+   * The modification time of a file as ISO 8601, or `null` when it is not a file. Defaults to
+   * `fs.stat` (the install file system has no stat).
+   */
+  modifiedAt?(absPath: string): Promise<string | null>;
+  /** Resolves symlinks in an existing absolute path. Defaults to `fs.realpath`. */
+  realpath?(absPath: string): Promise<string>;
+}
+
+async function defaultModifiedAt(absPath: string): Promise<string | null> {
+  try {
+    const info = await stat(absPath);
+    return info.isFile() ? info.mtime.toISOString() : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Throws unless `path` is a jar path that previews may read. */
@@ -74,6 +119,8 @@ function assertListPrefix(prefix: string): void {
 export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftService {
   const { fs, msmHome } = deps;
   const now = deps.now ?? (() => new Date().toISOString());
+  const modifiedAt = deps.modifiedAt ?? defaultModifiedAt;
+  const resolveReal = deps.realpath ?? ((path: string) => realpath(path));
   const running = new Map<string, Promise<AssetCacheInfo>>();
 
   const requireDir = async (): Promise<string> => {
@@ -201,13 +248,57 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
     },
 
     async installResourcePack(fileName, data) {
-      if (!RESOURCE_PACK_FILE_NAME.test(fileName) || fileName.length > 255) {
-        throw new Error(`${JSON.stringify(fileName)} is not a valid resource pack file name.`);
-      }
+      assertPackFileName(fileName, 'resource pack');
       const minecraftDir = await requireDir();
       const packs = joinInstallPath(minecraftDir, 'resourcepacks');
       await fs.mkdirp(packs);
       const path = joinInstallPath(packs, fileName);
+      await fs.writeFile(path, data);
+      return { path: normalize(path) };
+    },
+
+    async listWorlds() {
+      const saves = joinInstallPath(await requireDir(), 'saves');
+      if (!(await fs.exists(saves))) return [];
+      const worlds: WorldInfo[] = [];
+      for (const entry of await fs.readDir(saves)) {
+        if (entry.kind !== 'directory' || !isSafeSegment(entry.name)) continue;
+        const lastModified = await modifiedAt(joinInstallPath(saves, entry.name, 'level.dat'));
+        if (lastModified === null) continue;
+        worlds.push({ dir: entry.name, name: entry.name, lastModified });
+      }
+      // Most recently played first; ties by folder name.
+      return worlds.sort((a, b) =>
+        a.lastModified !== b.lastModified
+          ? a.lastModified < b.lastModified
+            ? 1
+            : -1
+          : a.dir < b.dir
+            ? -1
+            : a.dir > b.dir
+              ? 1
+              : 0,
+      );
+    },
+
+    async installDataPack(worldDir, fileName, data) {
+      if (!isSafeSegment(worldDir)) {
+        throw new Error(`${JSON.stringify(worldDir)} is not a valid world folder name.`);
+      }
+      assertPackFileName(fileName, 'data pack');
+      const saves = joinInstallPath(await requireDir(), 'saves');
+      const world = joinInstallPath(saves, worldDir);
+      if (!(await fs.exists(world))) {
+        throw new Error(`The world ${JSON.stringify(worldDir)} does not exist.`);
+      }
+      // A symlinked world folder must still resolve inside `saves/`.
+      const [realSaves, realWorld] = await Promise.all([resolveReal(saves), resolveReal(world)]);
+      if (!isInside(realSaves, realWorld)) {
+        throw new Error(`The world ${JSON.stringify(worldDir)} is outside the saves folder.`);
+      }
+      const datapacks = joinInstallPath(world, 'datapacks');
+      await fs.mkdirp(datapacks);
+      const path = joinInstallPath(datapacks, fileName);
       await fs.writeFile(path, data);
       return { path: normalize(path) };
     },

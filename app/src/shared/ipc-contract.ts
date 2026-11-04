@@ -65,6 +65,68 @@ const assetCacheInfo = z
     schemaVersion: z.literal(1),
   })
   .strict();
+/** A pack zip file name, as written by installs and combined exports. */
+export const PACK_FILE_NAME = /^[A-Za-z0-9._ -]+\.zip$/;
+const packFileName = z.string().max(255).regex(PACK_FILE_NAME);
+/** A world folder name under `saves/`: one path segment, not `.` or `..`. */
+const worldDir = z
+  .string()
+  .min(1)
+  .max(255)
+  .regex(/^[^/\\\0:]+$/)
+  .refine((value) => value !== '.' && value !== '..', { message: 'Not a folder name' });
+
+/** The largest mcfunction source accepted over IPC (mirrors the service's 2 MB guard). */
+export const MCFUNCTION_MAX_SOURCE_LENGTH = 2 * 1024 * 1024;
+/** The most project ids, over all categories, one mcfunction request may declare. */
+export const MCFUNCTION_MAX_PROJECT_IDS = 50_000;
+/** The largest completion limit a request may ask for. */
+export const MCFUNCTION_MAX_COMPLETION_LIMIT = 10_000;
+/** The most files one combined export may write. */
+export const EXPORT_MAX_FILES = 16;
+
+const targetId = z.string().min(1).max(128);
+const mcfunctionSource = z.string().max(MCFUNCTION_MAX_SOURCE_LENGTH);
+const mcfunctionUri = z.string().min(1).max(4096);
+const projectIds = z
+  .record(
+    z
+      .string()
+      .min(1)
+      .max(128)
+      .regex(/^[a-z0-9_./-]+$/),
+    z.array(z.string().min(1).max(512)),
+  )
+  .refine(
+    (record) =>
+      Object.values(record).reduce((total, ids) => total + ids.length, 0) <=
+      MCFUNCTION_MAX_PROJECT_IDS,
+    { message: `At most ${MCFUNCTION_MAX_PROJECT_IDS} project ids` },
+  );
+const lineRange = z.number().int().nonnegative();
+const mcfunctionProblem = z
+  .object({
+    severity: z.enum(['error', 'warning', 'info']),
+    code: z.string().regex(/^mcfunction\.(parse|check|lint\..+)$/),
+    message: z.string(),
+    line: lineRange,
+    start: lineRange,
+    end: lineRange,
+    offset: z.object({ start: lineRange, end: lineRange }).strict(),
+  })
+  .strict();
+const mcfunctionCompletion = z
+  .object({
+    label: z.string(),
+    insertText: z.string(),
+    kind: z.string(),
+    detail: z.string().optional(),
+  })
+  .strict();
+const worldInfo = z
+  .object({ dir: z.string().min(1), name: z.string(), lastModified: z.string() })
+  .strict();
+
 const rootResult = z.union([
   z.object({ ok: z.literal(true) }).strict(),
   z.object({ ok: z.literal(false), reason: z.string() }).strict(),
@@ -166,14 +228,62 @@ export const ipcContract = {
   [InvokeChannels.minecraftInstallResourcePack]: {
     request: z
       .object({
-        fileName: z
-          .string()
-          .regex(/^[A-Za-z0-9._ -]+\.zip$/)
-          .max(255),
+        fileName: packFileName,
         data: bytes,
       })
       .strict(),
     response: z.object({ path: absolutePath }).strict(),
+  },
+  [InvokeChannels.minecraftListWorlds]: {
+    request: noRequest,
+    response: z.array(worldInfo),
+  },
+  [InvokeChannels.minecraftInstallDataPack]: {
+    request: z.object({ worldDir, fileName: packFileName, data: bytes }).strict(),
+    response: z.object({ path: absolutePath }).strict(),
+  },
+  [InvokeChannels.mcfunctionCheck]: {
+    request: z
+      .object({
+        targetId,
+        source: mcfunctionSource,
+        options: z.object({ uri: mcfunctionUri, projectIds }).strict(),
+      })
+      .strict(),
+    response: z.array(mcfunctionProblem),
+  },
+  [InvokeChannels.mcfunctionComplete]: {
+    request: z
+      .object({
+        targetId,
+        source: mcfunctionSource,
+        offset: z.number().int().nonnegative().max(MCFUNCTION_MAX_SOURCE_LENGTH),
+        options: z
+          .object({
+            uri: mcfunctionUri,
+            projectIds,
+            limit: z.number().int().min(1).max(MCFUNCTION_MAX_COMPLETION_LIMIT).optional(),
+          })
+          .strict(),
+      })
+      .strict(),
+    response: z.array(mcfunctionCompletion),
+  },
+  [InvokeChannels.exportsPickFolder]: {
+    request: z.object({ title: z.string().max(256) }).strict(),
+    response: absolutePath.nullable(),
+  },
+  [InvokeChannels.exportsWriteFiles]: {
+    request: z
+      .object({
+        folder: absolutePath,
+        files: z
+          .array(z.object({ name: packFileName, data: bytes }).strict())
+          .min(1)
+          .max(EXPORT_MAX_FILES),
+      })
+      .strict(),
+    response: z.object({ paths: z.array(absolutePath) }).strict(),
   },
   [InvokeChannels.thumbnailsGet]: {
     request: z

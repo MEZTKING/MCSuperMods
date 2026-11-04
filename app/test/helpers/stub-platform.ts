@@ -12,7 +12,7 @@ const unavailable = async (): Promise<never> => {
 /** Every adapter service except `app`, `project`, `fs` and the Phase 0 dialogs. */
 export function stubPlatformServices(): Pick<
   PlatformAdapter,
-  'shell' | 'targets' | 'settings' | 'minecraft' | 'thumbnails'
+  'shell' | 'targets' | 'settings' | 'minecraft' | 'thumbnails' | 'mcfunction' | 'exports'
 > & { dialogs: Pick<PlatformAdapter['dialogs'], 'pickFiles' | 'saveFile'> } {
   return {
     dialogs: { pickFiles: unavailable, saveFile: unavailable },
@@ -25,7 +25,11 @@ export function stubPlatformServices(): Pick<
       readAsset: unavailable,
       listAssets: unavailable,
       installResourcePack: unavailable,
+      listWorlds: unavailable,
+      installDataPack: unavailable,
     },
     thumbnails: { get: unavailable },
+    mcfunction: { check: unavailable, complete: unavailable },
+    exports: { pickFolder: unavailable, writeFiles: unavailable },
   };
 }

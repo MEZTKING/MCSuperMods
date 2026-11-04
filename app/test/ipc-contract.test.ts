@@ -144,6 +144,75 @@ const samples: Record<
     ],
     response: [{ path: '/home/a/.minecraft/resourcepacks/My Pack-1.0.zip' }, {}],
   },
+  [InvokeChannels.minecraftListWorlds]: {
+    request: [undefined, { dir: 'x' }],
+    response: [
+      [{ dir: 'New World', name: 'New World', lastModified: '2026-01-01T00:00:00.000Z' }],
+      [{ dir: 'New World' }],
+    ],
+  },
+  [InvokeChannels.minecraftInstallDataPack]: {
+    request: [
+      { worldDir: 'New World', fileName: 'pack-data.zip', data: bytes },
+      { worldDir: '../New World', fileName: 'pack-data.zip', data: bytes },
+    ],
+    response: [{ path: '/home/a/.minecraft/saves/New World/datapacks/pack-data.zip' }, {}],
+  },
+  [InvokeChannels.mcfunctionCheck]: {
+    request: [
+      {
+        targetId: 'some-target',
+        source: 'say hi',
+        options: { uri: 'file:///msm/data/a/function/b.mcfunction', projectIds: { function: [] } },
+      },
+      { targetId: 'some-target', source: 'say hi', options: { uri: 'x' } },
+    ],
+    response: [
+      [
+        {
+          severity: 'warning',
+          code: 'mcfunction.lint.undeclaredSymbol',
+          message: 'Cannot find item',
+          line: 0,
+          start: 8,
+          end: 29,
+          offset: { start: 8, end: 29 },
+        },
+      ],
+      [{ severity: 'fatal', code: 'mcfunction.parse', message: '', line: 0, start: 0, end: 0 }],
+    ],
+  },
+  [InvokeChannels.mcfunctionComplete]: {
+    request: [
+      {
+        targetId: 'some-target',
+        source: 'give @s ',
+        offset: 8,
+        options: { uri: 'file:///x.mcfunction', projectIds: {}, limit: 50 },
+      },
+      {
+        targetId: 'some-target',
+        source: 'give @s ',
+        offset: 1.5,
+        options: { uri: 'file:///x.mcfunction', projectIds: {} },
+      },
+    ],
+    response: [
+      [{ label: 'stone', insertText: 'minecraft:stone', kind: 'value' }],
+      [{ label: 'stone', kind: 'value' }],
+    ],
+  },
+  [InvokeChannels.exportsPickFolder]: {
+    request: [{ title: 'Export' }, {}],
+    response: ['/tmp/out', ''],
+  },
+  [InvokeChannels.exportsWriteFiles]: {
+    request: [
+      { folder: '/tmp/out', files: [{ name: 'pack-data.zip', data: bytes }] },
+      { folder: '/tmp/out', files: [{ name: 'nested/pack.zip', data: bytes }] },
+    ],
+    response: [{ paths: ['/tmp/out/pack-data.zip'] }, { paths: [''] }],
+  },
   [InvokeChannels.thumbnailsGet]: {
     request: [
       { assetPath: 'assets/demo/textures/block/ruby.png', size: 64 },
@@ -173,6 +242,31 @@ describe('IPC contract', () => {
 
   it('has a schema for every invoke channel and nothing else', () => {
     expect(Object.keys(ipcContract).sort()).toEqual(Object.values(InvokeChannels).sort());
+  });
+
+  it('bounds mcfunction requests', () => {
+    const { request } = ipcContract[InvokeChannels.mcfunctionCheck];
+    const base = { targetId: 't', options: { uri: 'file:///a.mcfunction', projectIds: {} } };
+    expect(request.safeParse({ ...base, source: 'x'.repeat(2 * 1024 * 1024) }).success).toBe(true);
+    expect(request.safeParse({ ...base, source: 'x'.repeat(2 * 1024 * 1024 + 1) }).success).toBe(
+      false,
+    );
+    const ids = (n: number) => Array.from({ length: n }, (_, i) => `ns:f${i}`);
+    const withIds = (projectIds: Record<string, string[]>) =>
+      request.safeParse({ ...base, source: '', options: { ...base.options, projectIds } });
+    expect(withIds({ function: ids(25_000), 'tag/item': ids(25_000) }).success).toBe(true);
+    expect(withIds({ function: ids(25_000), 'tag/item': ids(25_001) }).success).toBe(false);
+    expect(withIds({ 'Bad Category': [] }).success).toBe(false);
+  });
+
+  it('rejects unsafe world folders and pack names', () => {
+    const { request } = ipcContract[InvokeChannels.minecraftInstallDataPack];
+    for (const worldDir of ['..', '.', 'a/b', 'a\\b', 'C:x', '']) {
+      expect(request.safeParse({ worldDir, fileName: 'p.zip', data: bytes }).success).toBe(false);
+    }
+    for (const fileName of ['p.txt', '../p.zip', 'p/q.zip']) {
+      expect(request.safeParse({ worldDir: 'w', fileName, data: bytes }).success).toBe(false);
+    }
   });
 
   it('validates extraction progress payloads', () => {

@@ -7,6 +7,8 @@
  */
 
 import type { ProjectFileSystem } from '@msm/core';
+// Type-only: the service itself runs in main (ADR 0014); these are plain MSM shapes.
+import type { McfunctionCompletion, McfunctionProblem } from '@msm/schemas/mcfunction';
 import type { MenuCommand, MinecraftProgress, VendoredKeyName } from './ipc-channels';
 
 /** The outcome of opening or creating a project root. */
@@ -60,6 +62,19 @@ export interface MinecraftStatus {
   cache: AssetCacheInfoView | null;
 }
 
+/** A world folder under `<minecraftDir>/saves/` that contains `level.dat`. */
+export interface WorldInfo {
+  /** The world's folder name (one path segment). */
+  dir: string;
+  /** Display name: the folder name until `level.dat` is parsed (Phase 3). */
+  name: string;
+  /** ISO 8601 modification time of `level.dat`. */
+  lastModified: string;
+}
+
+/** Ids the project declares per Spyglass symbol category, for the mcfunction checker. */
+export type McfunctionProjectIds = Record<string, string[]>;
+
 /** Host services for the renderer. */
 export interface PlatformAdapter {
   app: { info(): Promise<{ version: string; electron: string; platform: string }> };
@@ -101,6 +116,41 @@ export interface PlatformAdapter {
     listAssets(mcVersion: string, prefix: string): Promise<string[]>;
     /** Writes a resource pack zip into `<minecraftDir>/resourcepacks/`. */
     installResourcePack(fileName: string, data: Uint8Array): Promise<{ path: string }>;
+    /** Lists worlds in `<minecraftDir>/saves/`, most recently played first. */
+    listWorlds(): Promise<WorldInfo[]>;
+    /** Writes a data pack zip into `<minecraftDir>/saves/<worldDir>/datapacks/`. */
+    installDataPack(
+      worldDir: string,
+      fileName: string,
+      data: Uint8Array,
+    ): Promise<{ path: string }>;
+  };
+  /** The offline mcfunction checker (ADR 0014), one service per target in main. */
+  mcfunction: {
+    check(
+      targetId: string,
+      source: string,
+      options: { uri: string; projectIds: McfunctionProjectIds },
+    ): Promise<McfunctionProblem[]>;
+    complete(
+      targetId: string,
+      source: string,
+      offset: number,
+      options: { uri: string; projectIds: McfunctionProjectIds; limit?: number },
+    ): Promise<McfunctionCompletion[]>;
+  };
+  /** Writing several export files into one folder the user picked (combined export). */
+  exports: {
+    /** Shows a folder picker; returns the chosen absolute folder, or `null` when cancelled. */
+    pickFolder(title: string): Promise<string | null>;
+    /**
+     * Writes pack files into a folder returned by {@link pickFolder} in this session. Names
+     * are single `.zip` file names; each file is replaced atomically.
+     */
+    writeFiles(
+      folder: string,
+      files: { name: string; data: Uint8Array }[],
+    ): Promise<{ paths: string[] }>;
   };
   thumbnails: {
     /** A PNG thumbnail of a project texture (`assets/...png`), at most `size` pixels square. */

@@ -36,6 +36,18 @@ const electronDialogs: NativeDialogs = {
         : await dialog.showOpenDialog(parent, options);
     return result.canceled ? null : (result.filePaths[0] ?? null);
   },
+  async pickExportFolder({ title }) {
+    const parent = focusedWindow();
+    const options: Electron.OpenDialogOptions = {
+      title,
+      properties: ['openDirectory', 'createDirectory', 'promptToCreate'],
+    };
+    const result =
+      parent === null
+        ? await dialog.showOpenDialog(options)
+        : await dialog.showOpenDialog(parent, options);
+    return result.canceled ? null : (result.filePaths[0] ?? null);
+  },
   async confirmDiscard(message) {
     const parent = focusedWindow();
     const options: Electron.MessageBoxOptions = {

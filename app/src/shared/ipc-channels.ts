@@ -34,6 +34,12 @@ export const InvokeChannels = {
   minecraftReadAsset: 'msm:v1:minecraft:readAsset',
   minecraftListAssets: 'msm:v1:minecraft:listAssets',
   minecraftInstallResourcePack: 'msm:v1:minecraft:installResourcePack',
+  minecraftListWorlds: 'msm:v1:minecraft:listWorlds',
+  minecraftInstallDataPack: 'msm:v1:minecraft:installDataPack',
+  mcfunctionCheck: 'msm:v1:mcfunction:check',
+  mcfunctionComplete: 'msm:v1:mcfunction:complete',
+  exportsPickFolder: 'msm:v1:exports:pickFolder',
+  exportsWriteFiles: 'msm:v1:exports:writeFiles',
   thumbnailsGet: 'msm:v1:thumbnails:get',
 } as const;
 

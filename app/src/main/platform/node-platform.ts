@@ -1,7 +1,7 @@
 /**
  * The main-process {@link PlatformAdapter}: holds the current project root and serves a file
- * system scoped to it, plus settings, Minecraft installation access, thumbnails, dialogs and
- * the shell. Electron-specific services (native dialogs, app information, revealing files,
+ * system scoped to it, plus settings, Minecraft installation access, thumbnails, dialogs, the
+ * shell, the mcfunction checker and export folder writes. Electron-specific services (native dialogs, app information, revealing files,
  * image resizing) are injected so this module stays testable under plain Node.
  *
  * @packageDocumentation
@@ -13,6 +13,8 @@ import type { ProjectFileSystem } from '@msm/core';
 import type { InstallEnv, InstallFileSystem } from '@msm/interop';
 import { createNodeInstallFileSystem } from '@msm/interop/node';
 import type { FileFilter, PlatformAdapter, RootResult } from '../../shared/platform';
+import { createExportsService } from './exports';
+import { createMcfunctionBroker } from './mcfunction';
 import { createMinecraftService, type MinecraftService } from './minecraft';
 import { createScopedFileSystem, isWithin, type ScopedFileSystem } from './scoped-fs';
 import { createSettingsStore, type SettingsStore } from './settings';
@@ -28,6 +30,11 @@ export const MAX_PICKED_FILE_BYTES = 32 * 1024 * 1024;
 /** Native dialogs supplied by Electron (or by the e2e hooks). */
 export interface NativeDialogs {
   pickDirectory(opts: { title: string; mustBeEmpty?: boolean }): Promise<string | null>;
+  /**
+   * Shows a folder picker for export output; returns the absolute folder, or `null`. When
+   * absent, `pickDirectory` is used.
+   */
+  pickExportFolder?(opts: { title: string }): Promise<string | null>;
   confirmDiscard(message: string): Promise<boolean>;
   /** Shows an open-files dialog; returns the chosen absolute paths, or `[]` when cancelled. */
   openFiles(opts: { title: string; filters?: FileFilter[] | undefined }): Promise<string[]>;
@@ -88,6 +95,7 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
   let currentRoot: string | null = null;
   let scoped: ScopedFileSystem | null = null;
   let lastSavePath: string | null = null;
+  let lastExportFolder: string | null = null;
 
   const settings = createSettingsStore({ msmHome: deps.msmHome, installEnv: deps.installEnv });
   const minecraft = createMinecraftService({
@@ -96,6 +104,8 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     minecraftDir: () => settings.minecraftDir(),
     ...(deps.now === undefined ? {} : { now: deps.now }),
   });
+
+  const targets = createTargetsService();
 
   const open = (path: string): RootResult => {
     currentRoot = path;
@@ -124,6 +134,7 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     const minecraftDir = await settings.minecraftDir();
     if (minecraftDir !== null) roots.push(minecraftDir);
     if (lastSavePath !== null) roots.push(dirname(lastSavePath));
+    if (lastExportFolder !== null) roots.push(lastExportFolder);
     return Promise.all(roots.map(realpathOrSelf));
   };
 
@@ -171,9 +182,19 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
         deps.showItemInFolder(real);
       },
     },
-    targets: createTargetsService(),
+    targets,
     settings,
     minecraft,
+    mcfunction: createMcfunctionBroker({ readVendored: targets.readVendored }),
+    exports: createExportsService({
+      pickFolder: (opts) =>
+        deps.dialogs.pickExportFolder === undefined
+          ? deps.dialogs.pickDirectory(opts)
+          : deps.dialogs.pickExportFolder(opts),
+      onWritten: (path) => {
+        lastExportFolder = dirname(path);
+      },
+    }),
     thumbnails: createThumbnailService({ projectFs: active, resizePng: deps.resizePng }),
     project: {
       async openRoot(path) {

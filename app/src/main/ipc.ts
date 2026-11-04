@@ -70,6 +70,22 @@ export function createIpcHandlers(platform: MainPlatform): MainHandlers {
       platform.minecraft.listAssets(req.mcVersion, req.prefix),
     [InvokeChannels.minecraftInstallResourcePack]: (req) =>
       platform.minecraft.installResourcePack(req.fileName, req.data),
+    [InvokeChannels.minecraftListWorlds]: () => platform.minecraft.listWorlds(),
+    [InvokeChannels.minecraftInstallDataPack]: (req) =>
+      platform.minecraft.installDataPack(req.worldDir, req.fileName, req.data),
+    [InvokeChannels.mcfunctionCheck]: (req) =>
+      platform.mcfunction.check(req.targetId, req.source, req.options),
+    [InvokeChannels.mcfunctionComplete]: (req) =>
+      platform.mcfunction.complete(
+        req.targetId,
+        req.source,
+        req.offset,
+        req.options.limit === undefined
+          ? { uri: req.options.uri, projectIds: req.options.projectIds }
+          : { uri: req.options.uri, projectIds: req.options.projectIds, limit: req.options.limit },
+      ),
+    [InvokeChannels.exportsPickFolder]: (req) => platform.exports.pickFolder(req.title),
+    [InvokeChannels.exportsWriteFiles]: (req) => platform.exports.writeFiles(req.folder, req.files),
     [InvokeChannels.thumbnailsGet]: (req) => platform.thumbnails.get(req.assetPath, req.size),
   };
 }

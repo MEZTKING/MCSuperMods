@@ -45,6 +45,35 @@ const bridge: MsmBridge = {
       ipcRenderer.invoke(InvokeChannels.minecraftListAssets, { mcVersion, prefix }),
     installResourcePack: (fileName, data) =>
       ipcRenderer.invoke(InvokeChannels.minecraftInstallResourcePack, { fileName, data }),
+    listWorlds: () => ipcRenderer.invoke(InvokeChannels.minecraftListWorlds),
+    installDataPack: (worldDir, fileName, data) =>
+      ipcRenderer.invoke(InvokeChannels.minecraftInstallDataPack, { worldDir, fileName, data }),
+  },
+  mcfunction: {
+    check: (targetId, source, options) =>
+      ipcRenderer.invoke(InvokeChannels.mcfunctionCheck, {
+        targetId,
+        source,
+        options: { uri: options.uri, projectIds: options.projectIds },
+      }),
+    complete: (targetId, source, offset, options) =>
+      ipcRenderer.invoke(InvokeChannels.mcfunctionComplete, {
+        targetId,
+        source,
+        offset,
+        options:
+          options.limit === undefined
+            ? { uri: options.uri, projectIds: options.projectIds }
+            : { uri: options.uri, projectIds: options.projectIds, limit: options.limit },
+      }),
+  },
+  exports: {
+    pickFolder: (title) => ipcRenderer.invoke(InvokeChannels.exportsPickFolder, { title }),
+    writeFiles: (folder, files) =>
+      ipcRenderer.invoke(InvokeChannels.exportsWriteFiles, {
+        folder,
+        files: files.map((file) => ({ name: file.name, data: file.data })),
+      }),
   },
   thumbnails: {
     get: (assetPath, size) => ipcRenderer.invoke(InvokeChannels.thumbnailsGet, { assetPath, size }),

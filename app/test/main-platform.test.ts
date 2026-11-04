@@ -89,6 +89,28 @@ describe('main platform shell', () => {
   });
 });
 
+describe('main platform exports', () => {
+  it('picks with the export dialog, falls back to pickDirectory, and reveals written files', async () => {
+    const out = join(temp, 'exports');
+    await mkdir(out);
+    dialogs.pickDirectory = async () => out;
+    const p = platform();
+    // Without `pickExportFolder` the directory picker is used.
+    expect(await p.exports.pickFolder('Export')).toBe(out);
+    const { paths } = await p.exports.writeFiles(out, [
+      { name: 'demo-data.zip', data: new Uint8Array([9]) },
+    ]);
+    expect(paths).toEqual([join(out, 'demo-data.zip')]);
+    await p.shell.showItemInFolder(join(out, 'demo-data.zip'));
+    expect(revealed).toHaveLength(1);
+
+    const other = join(temp, 'other');
+    await mkdir(other);
+    dialogs.pickExportFolder = async () => other;
+    expect(await platform().exports.pickFolder('Export')).toBe(other);
+  });
+});
+
 describe('main platform targets', () => {
   it('reads vendored files of built-in targets', async () => {
     const bundle = builtInTargets[0];

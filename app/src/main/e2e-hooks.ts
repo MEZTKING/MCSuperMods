@@ -4,7 +4,8 @@
  *
  * - `MSM_E2E_PROJECT_DIR` (absolute): `pickDirectory` returns this folder.
  * - `MSM_E2E_OUT_DIR` (absolute, optional): `saveFile` writes `<MSM_E2E_OUT_DIR>/<defaultName>`
- *   without a dialog. When unset, `saveFile` behaves as if the user cancelled.
+ *   without a dialog, and the export folder picker returns `MSM_E2E_OUT_DIR`. When unset, both
+ *   behave as if the user cancelled.
  * - `MSM_E2E_PICK_FILES` (optional): absolute paths separated by the platform's path-list
  *   delimiter (`:` on Linux and macOS, `;` on Windows); `pickFiles` returns these files.
  *   When unset, `pickFiles` returns nothing.
@@ -51,6 +52,7 @@ export function applyE2eHooks(dialogs: NativeDialogs, hooks: E2eHooks | null): N
   if (hooks === null) return dialogs;
   return {
     pickDirectory: async () => hooks.projectDir,
+    pickExportFolder: async () => hooks.outDir,
     confirmDiscard: async () => true,
     openFiles: async () => [...hooks.pickFiles],
     saveFilePath: async ({ defaultName }) =>
