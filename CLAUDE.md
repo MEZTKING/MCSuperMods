@@ -1,6 +1,6 @@
 # MCSuperMods
 
-MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 2 code complete; awaiting in-game checks and first release; Phase 3 (Structures & Worldgen) next. Releases: Windows only (MIT; README "Releasing"). Toolchain: Node 24, pnpm 12.
+MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 2 code complete plus launcher support add-on (Prism, CurseForge, MultiMC; ADR 0019); awaiting in-game checks and first release; Phase 3 (Structures & Worldgen) next. Releases: Windows only (MIT; README "Releasing"). Toolchain: Node 24, pnpm 12.
 
 ## Directory map
 
@@ -12,7 +12,7 @@ MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla p
 - `packages/plugins/` — `@msm/plugin-<name>`, eight planned built-ins (`resourcepack`, `datapack` exist)
 - `packages/exporters/` — `@msm/exporters`, vanilla-packs (resource, data, combined); later content jar, java-project
 - `packages/targets/` — `@msm/target-*`, one folder per MC version (`mc-26.3/`), plus the `@msm/targets` aggregator (`all/`)
-- `packages/interop/` — `@msm/interop`, Blockbench, NBT/schem, Minecraft installation
+- `packages/interop/` — `@msm/interop`, Blockbench, NBT/schem, Minecraft installation and launcher instances
 - `engine-mod/` — `msm_runtime` Fabric mod (Gradle, Java 25)
 - `tools/` — dev scripts: check-deps, check-size, sync-mcdoc, sync-mcmeta, new-plugin
 - `fixtures/sample-resourcepack/`, `fixtures/sample-datapack/` — sample projects for the in-game checks
@@ -30,7 +30,7 @@ Read only the one for the area you work in, plus docs/DESIGN.md sections it link
 - `packages/plugins/CLAUDE.md` — built-in plugins, kinds, lowering
 - `packages/exporters/CLAUDE.md` — packs, content jar, Java eject
 - `packages/targets/CLAUDE.md` — per-version Minecraft facts and migrations
-- `packages/interop/CLAUDE.md` — Blockbench, NBT, game install access
+- `packages/interop/CLAUDE.md` — Blockbench, NBT, game install and launcher instance access
 - `engine-mod/CLAUDE.md` — Fabric runtime mod, Java conventions
 
 ## Golden rules

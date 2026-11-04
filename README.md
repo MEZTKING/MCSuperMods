@@ -36,7 +36,7 @@ If PowerShell reports "running scripts is disabled on this system" when you run 
 Then:
 
 1. Open the folder `fixtures/sample-resourcepack` from the repository. It is a small sample project: a ruby block, a ruby item and their textures, all made for MCSuperMods.
-2. Choose **Install to resourcepacks folder** on the toolbar. MCSuperMods writes the pack into your Minecraft `resourcepacks` folder (set the Minecraft folder in Settings if it was not found).
+2. On the toolbar choose **Install → Resource pack to the resourcepacks folder**. MCSuperMods writes the pack into your Minecraft `resourcepacks` folder (set the Minecraft folder in Settings if it was not found; to use a Prism Launcher or CurseForge instance instead, see [Using Prism Launcher or the CurseForge app](#using-prism-launcher-or-the-curseforge-app)).
 3. Start Minecraft Java 26.3, open **Options → Resource Packs** and move the pack named `msm-sample-resource-pack-mc-26.3.zip` (described as "MCSuperMods sample: a held stick shows a ruby") to the selected side.
 4. In a world, hold a stick: the sample pack replaces the stick's look with the ruby, so you can see that the pack is active.
 
@@ -58,6 +58,43 @@ The data pack sample works the same way, with the app running from source as abo
 
 More checks (loot table, item modifier, smelting) are listed in `fixtures/sample-datapack/README.md`.
 
+## Using Prism Launcher or the CurseForge app
+
+If you play through Prism Launcher or the CurseForge app instead of the official launcher, MCSuperMods can install packs straight into one of their instances and read that launcher's copy of the game for the preview textures. MultiMC and PolyMC use the same instance format as Prism and work once you add their folder.
+
+**Where instances are found.** MCSuperMods looks in each launcher's default folder (Windows first):
+
+| Launcher | Found automatically in | Instances | Packs and worlds go into |
+|---|---|---|---|
+| Official launcher | `%APPDATA%\.minecraft` (or the folder set in Settings) | (one game folder) | `.minecraft\resourcepacks`, `.minecraft\saves\<world>\datapacks` |
+| Prism Launcher | `%APPDATA%\PrismLauncher`, the Scoop folder `%USERPROFILE%\scoop\persist\prismlauncher`, or `PRISMLAUNCHER_DATA_DIR` when set | `instances\<folder>` (or the instance folder set in Prism's settings) | `instances\<folder>\minecraft\resourcepacks`, `...\minecraft\saves\<world>\datapacks` (`.minecraft` in older instances) |
+| CurseForge app | `%USERPROFILE%\curseforge\minecraft` | `Instances\<name>` | `Instances\<name>\resourcepacks`, `Instances\<name>\saves\<world>\datapacks` |
+| MultiMC, PolyMC | not detected; add the folder by hand | `instances\<folder>` | as for Prism |
+
+On macOS MCSuperMods also checks `~/Library/Application Support/PrismLauncher` and `~/Documents/curseforge/minecraft`; on Linux `~/.local/share/PrismLauncher` and the Prism Flatpak folder (the CurseForge app has no Linux build).
+
+**Choosing the install target.** Open **Settings → Game locations** and pick a row under "Install packs into": each row shows the launcher, the instance name, its Minecraft version and its mod loader. The toolbar's **Install** menu names the current target ("Install to: Prism Launcher — My Instance (MC 26.3)") and its **Change target** submenu switches it without opening Settings. Both install actions, the resource pack and the data pack into a world, use the chosen target, and the world picker lists that instance's worlds. Your choice is remembered; if that instance is later deleted or renamed, MCSuperMods falls back to the official launcher folder and says so in Settings.
+
+**Adding a launcher folder by hand.** Use **Settings → Game locations → Other launchers**:
+
+- **Add Prism Launcher folder…** for a portable Prism (the folder holding `UserData` or `portable.txt` next to the program; pick the `UserData` folder when there is one) or a data folder in a custom place.
+- **Add MultiMC folder…** for MultiMC (the folder you unzipped it into) or PolyMC (`%APPDATA%\PolyMC`).
+- **Add CurseForge folder…** when you moved the CurseForge modding folder in the app's settings; pick the folder that contains `Instances`.
+
+Added folders can be removed from the same list.
+
+**Start the instance once.** A new instance has no game folder until it has run. If a location shows "Start the instance once so its game folder exists.", launch it once from its launcher, close it, then install again.
+
+**Version mismatch.** When an instance runs a different Minecraft version from your project, MCSuperMods warns "This instance runs Minecraft X; the project targets Y." The warning shows in Settings and the Install menu and is repeated after an install, but it does not block the install; the pack may not load correctly in that version.
+
+**Which jar the preview textures come from.** Preview textures are extracted from the game's client jar; MCSuperMods never bundles Mojang files. MCSuperMods looks first in the chosen target's own launcher store, then in every other launcher it knows, in this order: official launcher, Prism Launcher, MultiMC/PolyMC, CurseForge. The stores are:
+
+- official launcher: `.minecraft\versions\<version>\<version>.jar`;
+- Prism, MultiMC and PolyMC: `<launcher folder>\libraries\com\mojang\minecraft\<version>\minecraft-<version>-client.jar`;
+- CurseForge: `<modding folder>\Install\versions\<version>\<version>.jar`.
+
+So one installed copy of a version, in any launcher, is enough. **Settings → Vanilla assets** names the launcher whose jar was used. If no launcher has the project's version, start that version once in any launcher, then choose **Extract vanilla assets**.
+
 ## Known limitations
 
 - Go to definition does not yet work from the caret inside the Monaco function editor; use it from form fields or the plain text editor.
@@ -69,6 +106,9 @@ More checks (loot table, item modifier, smelting) are listed in `fixtures/sample
 - Loot tables and advancements use the general form plus templates; there is no dedicated studio for them yet.
 - F2 inside the function editor has not been checked on Windows; it may also trigger the editor's own rename.
 - Releases are unsigned, so Windows SmartScreen warns on first install.
+- The CurseForge client jar location (`Install\versions` inside the modding folder) and the way vanilla CurseForge instances are recognised come from older sources and still need confirming on a real Windows machine. If the jar is not found there, preview textures still work whenever another launcher (for example the official one) has the same version.
+- MultiMC and PolyMC are never detected automatically, nor is a portable Prism; add their folders in Settings.
+- Mods are not installed into instances yet: MCSuperMods installs resource and data packs only. Installing the Fabric content jar into an instance comes with Phase 4.
 
 ## How it works
 

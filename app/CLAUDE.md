@@ -1,6 +1,6 @@
 # app/ — Electron desktop shell
 
-Phase 2 code complete: Resource Pack Studio plus Data Pack Studio (Recipe Studio, Tag editor, Function editor with live Spyglass problems and completion, command palette, references and F2 rename, data/combined export, world install), animated texture preview and in-app auto-update (ADR 0018). Save is never blocked (ADR 0012); errors block export only.
+Phase 2 code complete: Resource Pack Studio plus Data Pack Studio (Recipe Studio, Tag editor, Function editor with live Spyglass problems and completion, command palette, references and F2 rename, data/combined export, world install), animated texture preview and in-app auto-update (ADR 0018). Launcher add-on (ADR 0019): packs install into the selected game location (official folder, Prism/MultiMC/PolyMC or CurseForge instance) and preview assets come from any launcher's jar store. Save is never blocked (ADR 0012); errors block export only.
 
 ## Purpose
 
@@ -8,9 +8,9 @@ Phase 2 code complete: Resource Pack Studio plus Data Pack Studio (Recipe Studio
 
 ## Contents
 
-- `src/main/` — Node side: `PlatformAdapter` implementation (`platform/`: scoped fs with symlink containment, settings incl. `updates.autoCheck`, Minecraft assets, worlds and data pack install, export folder writes, thumbnails, targets, `mcfunction.ts` broker over `@msm/schemas/mcfunction` with mcdoc symbols, loaded lazily), zod-validated IPC (`ipc.ts`), menu, `updater.ts` (electron-updater behind `AutoUpdaterLike`, lazy chunk), e2e hooks.
-- `src/preload/` — typed IPC bridge; `src/shared/` — IPC contract, channel names (`msm:v1:<domain>:<op>`), `MENU_COMMANDS`, `VENDORED_KEYS`.
-- `src/renderer/src/` — React 19: `session/` (core-hosted project session, mcfunction problems, references), `forms/`, `studios/` (RecipeStudio, TagStudio, FunctionEditor, templates), `components/` (CommandPalette, WorldPickerDialog, RenameElementDialog, UsagesDialog, UpdateBanner, `function-editor/`, `json-editor/`), `commands/`, `preview/` (deepslate, lazy), `store/` (Zustand).
+- `src/main/` — Node side: `PlatformAdapter` implementation (`platform/`: scoped fs with symlink containment, settings incl. `updates.autoCheck`, `launchers` (manual Prism/MultiMC/CurseForge roots) and `installTarget` (`GameLocationRef` or `null` = official), `locations.ts` resolver (discovery via `@msm/interop`, selected location, `targetMissing` fallback, version-mismatch warnings), Minecraft assets, worlds and pack install into the selected `gameDir`, export folder writes, thumbnails, targets, `mcfunction.ts` broker over `@msm/schemas/mcfunction` with mcdoc symbols, loaded lazily), zod-validated IPC (`ipc.ts`), menu, `updater.ts` (electron-updater behind `AutoUpdaterLike`, lazy chunk), e2e hooks.
+- `src/preload/` — typed IPC bridge; `src/shared/` — IPC contract, channel names (`msm:v1:<domain>:<op>`, incl. `minecraft:listLocations`), `MENU_COMMANDS`, `VENDORED_KEYS`.
+- `src/renderer/src/` — React 19: `session/` (core-hosted project session, mcfunction problems, references), `forms/`, `studios/` (RecipeStudio, TagStudio, FunctionEditor, templates), `components/` (CommandPalette, SettingsDialog "Game locations", Toolbar install target and "Change target" submenu, `install-target.ts`, WorldPickerDialog, RenameElementDialog, UsagesDialog, UpdateBanner, `function-editor/`, `json-editor/`), `commands/`, `preview/` (deepslate, lazy), `store/` (Zustand).
 - `test/` — Vitest (happy-dom); `e2e/` — Playwright specs `smoke`, `golden-path`, `datapack-path`; `scripts/` — smoke runners; `electron-builder.yml` — packaging and GitHub publish (draft).
 
 ## Conventions
@@ -22,6 +22,7 @@ Phase 2 code complete: Resource Pack Studio plus Data Pack Studio (Recipe Studio
 - Both Monaco editors bind through `bindControlledModel` (`json-editor/controlled-model.ts`): ignore the editor's own echoes, apply external changes with `pushEditOperations`.
 - Lazy-load Monaco and the 3D preview; budgets in `tools/check-size` (DESIGN §14).
 - CSP: scripts `'self'` only; `style-src 'unsafe-inline'` for Monaco/Radix; `img-src data:` for thumbnails.
+- Game locations: installs write only inside the selected `gameDir` (real-path containment: game dir in instance, instance in instances root); `location.game-dir-missing` blocks install, version mismatch only warns. Launcher path and file-format facts stay in `@msm/interop` `launchers/`.
 - Asset removal moves bytes to `.msm/trash/` so undo restores them; the trash empties on open/create.
 - Releases are Windows only (NSIS x64, unsigned); the updater is active only when packaged on Windows outside test runs.
 - British English in UI text and docs; no emojis. Accessibility: keyboard navigation, labelled controls.
@@ -44,5 +45,5 @@ Phase 2 code complete: Resource Pack Studio plus Data Pack Studio (Recipe Studio
 ## Read next
 
 - [8. Editors and UX](../docs/DESIGN.md#8-editors-and-ux), [13. Interop](../docs/DESIGN.md#13-interop-blockbench-nbt-minecraft-installation)
-- [14. Tech Stack](../docs/DESIGN.md#14-tech-stack), [ADR 0014](../docs/adr/0014-mcfunction-diagnostics-with-spyglass.md), [ADR 0018](../docs/adr/0018-auto-update.md)
+- [14. Tech Stack](../docs/DESIGN.md#14-tech-stack), [ADR 0014](../docs/adr/0014-mcfunction-diagnostics-with-spyglass.md), [ADR 0018](../docs/adr/0018-auto-update.md), [ADR 0019](../docs/adr/0019-game-locations-launcher-instances.md)
 - ROADMAP: Phase 2 — Data Pack Studio and its follow-ups (`../docs/ROADMAP.md`)
