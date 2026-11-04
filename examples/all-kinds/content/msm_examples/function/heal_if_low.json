@@ -1,0 +1,23 @@
+{
+  "data": {
+    "lines": [
+      "# Run with /function msm_examples:heal_if_low",
+      "scoreboard objectives add health health",
+      "execute store result score @s health run data get entity @s Health",
+      "execute if score @s health matches ..10 run effect give @s minecraft:regeneration 5 1",
+      "execute if score @s health matches ..10 run tellraw @s {\"text\":\"Healing you up!\",\"color\":\"green\"}",
+      "execute if score @s health matches 11.. run tellraw @s {\"text\":\"You look fine.\",\"color\":\"gray\"}"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:heal_if_low",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A function is a list of commands without the leading slash; lines starting with # are comments. This one stores your health in a scoreboard and uses execute if score to branch. @s is whoever runs the function. The editor checks every line as you type.",
+    "tags": [
+      "example",
+      "functions"
+    ]
+  }
+}

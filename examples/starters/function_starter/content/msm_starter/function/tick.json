@@ -1,0 +1,15 @@
+{
+  "data": {
+    "lines": [
+      "# Runs every game tick (20 times a second) through #minecraft:tick. Keep it cheap.",
+      "execute as @a at @s if block ~ ~-1 ~ minecraft:gold_block run effect give @s minecraft:speed 1 1 true"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:tick",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Runs every tick. The execute line finds every player standing on a gold block and gives them a short burst of speed."
+  }
+}

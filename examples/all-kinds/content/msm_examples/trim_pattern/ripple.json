@@ -1,0 +1,20 @@
+{
+  "data": {
+    "asset_id": "minecraft:coast",
+    "decal": false,
+    "description": {
+      "text": "Ripple Armour Trim"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ripple",
+  "kind": "minecraft:trim_pattern",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "asset_id names the trim textures (trims/entity/humanoid/<path> and friends); this one reuses the coast design. description is the tooltip line. decal true draws the trim only where the armour is not transparent. A smithing template item with a provides_trim_pattern component applies it.",
+    "tags": [
+      "example",
+      "armour-trims"
+    ]
+  }
+}

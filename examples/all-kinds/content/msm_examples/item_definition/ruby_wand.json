@@ -1,0 +1,32 @@
+{
+  "data": {
+    "model": {
+      "cases": [
+        {
+          "model": {
+            "model": "msm_examples:item/ruby_wand_icon",
+            "type": "minecraft:model"
+          },
+          "when": "gui"
+        }
+      ],
+      "fallback": {
+        "model": "msm_examples:item/ruby_wand",
+        "type": "minecraft:model"
+      },
+      "property": "minecraft:display_context",
+      "type": "minecraft:select"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ruby_wand",
+  "kind": "minecraft:item_definition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An item definition says which model an item uses. A select model picks one by a property, here the display context: gui (inventories) shows the icon, every other context the fallback. Item definitions in your own namespace are used by items whose item_model component names them; try /give @s minecraft:stick[minecraft:item_model=\"msm_examples:ruby_wand\"].",
+    "tags": [
+      "example",
+      "item-definitions"
+    ]
+  }
+}

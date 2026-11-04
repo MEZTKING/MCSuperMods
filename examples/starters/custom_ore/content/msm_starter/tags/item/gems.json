@@ -1,0 +1,16 @@
+{
+  "data": {
+    "values": [
+      "minecraft:emerald",
+      "minecraft:diamond",
+      "minecraft:amethyst_shard"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:gems",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An item tag: one name for several items. Recipes and advancements refer to it as #msm_starter:gems."
+  }
+}

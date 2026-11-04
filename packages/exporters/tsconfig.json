@@ -11,6 +11,8 @@
     { "path": "../schemas" },
     { "path": "../core" },
     { "path": "../targets/all" },
-    { "path": "../plugins/resourcepack" }
+    { "path": "../plugins/resourcepack" },
+    { "path": "../plugins/datapack" },
+    { "path": "../plugins/library" }
   ]
 }

@@ -1,0 +1,15 @@
+{
+  "data": {
+    "lines": [
+      "# Runs on every /reload through the #minecraft:load function tag.",
+      "tellraw @a {\"text\":\"msm_starter: new recipes loaded\",\"color\":\"gold\"}"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:load",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Announces the pack when it loads."
+  }
+}

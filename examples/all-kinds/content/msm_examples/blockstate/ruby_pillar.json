@@ -1,0 +1,29 @@
+{
+  "data": {
+    "variants": {
+      "axis=x": {
+        "model": "msm_examples:block/ruby_pillar",
+        "x": 90,
+        "y": 90
+      },
+      "axis=y": {
+        "model": "msm_examples:block/ruby_pillar"
+      },
+      "axis=z": {
+        "model": "msm_examples:block/ruby_pillar",
+        "x": 90
+      }
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ruby_pillar",
+  "kind": "minecraft:block_definition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Each key of variants is a combination of block properties, here the axis a pillar lies along. Every variant names a model and may rotate it in steps of 90 degrees around x and y. The game reads a blockstate only for a block that exists, so this one shows how the file works; to see it in game, give it the id of a vanilla pillar such as minecraft:quartz_pillar.",
+    "tags": [
+      "example",
+      "blockstates"
+    ]
+  }
+}

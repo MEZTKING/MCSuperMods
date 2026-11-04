@@ -1,0 +1,31 @@
+{
+  "data": {
+    "terms": [
+      {
+        "thundering": true,
+        "type": "minecraft:weather_check"
+      },
+      {
+        "clock": "minecraft:overworld",
+        "period": 24000,
+        "type": "minecraft:time_check",
+        "value": {
+          "max": 23000,
+          "min": 13000
+        }
+      }
+    ],
+    "type": "minecraft:any_of"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:stormy_or_night",
+  "kind": "minecraft:predicate",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A predicate is a named condition. any_of passes when one of its terms passes: weather_check tests rain or thunder, time_check tests the time of day (period 24000 makes it repeat daily; 13000 to 23000 is night). Use it in commands with execute if predicate msm_examples:stormy_or_night, or from loot tables and advancements.",
+    "tags": [
+      "example",
+      "predicates"
+    ]
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": {
+              "count": {
+                "max": 3,
+                "min": 1,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:gold_ingot",
+            "type": "minecraft:item",
+            "weight": 5
+          },
+          {
+            "name": "minecraft:emerald",
+            "type": "minecraft:item",
+            "weight": 3
+          },
+          {
+            "type": "minecraft:empty",
+            "weight": 2
+          }
+        ],
+        "rolls": {
+          "max": 4,
+          "min": 2,
+          "type": "minecraft:uniform"
+        }
+      },
+      {
+        "condition": {
+          "chance": 0.1,
+          "type": "minecraft:random_chance"
+        },
+        "entries": [
+          {
+            "name": "minecraft:diamond",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:chest"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:chests/treasure",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A loot table is a list of pools. Each pool rolls rolls times and picks one entry per roll, weighted by weight (an empty entry drops nothing). modifier changes the dropped stack, here a random count. The second pool runs only when its condition passes: a 10 % chance of a diamond. Try /loot give @s loot msm_examples:chests/treasure, or set it as a chest's LootTable.",
+    "tags": [
+      "example",
+      "loot-tables"
+    ]
+  }
+}

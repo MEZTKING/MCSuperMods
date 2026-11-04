@@ -1,0 +1,26 @@
+{
+  "data": {
+    "asset_id": "msm_examples:ruby_sunset",
+    "author": {
+      "color": "gray",
+      "text": "You"
+    },
+    "height": 1,
+    "title": {
+      "color": "yellow",
+      "text": "Ruby Sunset"
+    },
+    "width": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ruby_sunset",
+  "kind": "minecraft:painting_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "asset_id names the picture: textures/painting/ruby_sunset.png in this namespace (16 pixels per block). width and height are in blocks, up to 16. title and author are shown on the painting item. Place it with /give @s minecraft:painting[minecraft:painting/variant=\"msm_examples:ruby_sunset\"]; to have it appear at random, add it to #minecraft:placeable.",
+    "tags": [
+      "example",
+      "decorations"
+    ]
+  }
+}

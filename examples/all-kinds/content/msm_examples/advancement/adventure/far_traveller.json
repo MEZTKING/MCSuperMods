@@ -1,0 +1,49 @@
+{
+  "data": {
+    "criteria": {
+      "has_compass": {
+        "conditions": {
+          "items": [
+            {
+              "items": "minecraft:compass"
+            }
+          ]
+        },
+        "trigger": "minecraft:inventory_changed"
+      },
+      "has_map": {
+        "conditions": {
+          "items": [
+            {
+              "items": "minecraft:filled_map"
+            }
+          ]
+        },
+        "trigger": "minecraft:inventory_changed"
+      }
+    },
+    "display": {
+      "description": "Hold a compass and a map",
+      "frame": "goal",
+      "icon": {
+        "id": "minecraft:filled_map"
+      },
+      "title": "Far Traveller"
+    },
+    "parent": "msm_examples:adventure/root",
+    "rewards": {
+      "experience": 50
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:adventure/far_traveller",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "parent places it under the root. With two criteria the player needs both (requirements can change that). rewards grants 50 experience points.",
+    "tags": [
+      "example",
+      "advancements"
+    ]
+  }
+}

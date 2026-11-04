@@ -1,0 +1,19 @@
+{
+  "data": {
+    "lines": [
+      "execute if predicate msm_examples:stormy_or_night run say Spooky skies!",
+      "execute unless predicate msm_examples:stormy_or_night run say Calm skies."
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:check_sky",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Run with /function to test the predicate.",
+    "tags": [
+      "example",
+      "predicates"
+    ]
+  }
+}

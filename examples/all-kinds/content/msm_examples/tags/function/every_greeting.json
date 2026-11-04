@@ -1,0 +1,19 @@
+{
+  "data": {
+    "values": [
+      "msm_examples:greetings/hello",
+      "msm_examples:greetings/wave"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:every_greeting",
+  "kind": "minecraft:tag/function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A function tag gives one name to several function ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. /function #msm_examples:every_greeting runs every listed function in order.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

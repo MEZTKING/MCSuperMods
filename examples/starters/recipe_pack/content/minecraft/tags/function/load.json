@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "msm_starter:load"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:load",
+  "kind": "minecraft:tag/function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Runs the load function each time the data pack loads."
+  }
+}

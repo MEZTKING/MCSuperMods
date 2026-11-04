@@ -1,0 +1,21 @@
+{
+  "data": {
+    "values": [
+      "minecraft:in_fire",
+      "minecraft:on_fire",
+      "minecraft:lava",
+      "minecraft:hot_floor"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:hot",
+  "kind": "minecraft:tag/damage_type",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A damage_type tag gives one name to several damage_type ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. Use it in damage source predicates (tags: [{ id: \"msm_examples:hot\", expected: true }]) or in enchantment effects.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

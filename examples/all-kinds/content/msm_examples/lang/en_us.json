@@ -1,0 +1,19 @@
+{
+  "data": {
+    "block.msm_examples.ruby_block": "Block of Ruby",
+    "item.minecraft.emerald": "Shiny Emerald",
+    "item.msm_examples.ruby": "Ruby",
+    "msm_examples.message.welcome": "Welcome, %s!"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:en_us",
+  "kind": "minecraft:lang",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The element id names the language: en_us is English (US); add de_de, fr_fr and so on next to it. Keys are free text, but the game builds item.<namespace>.<name> and block.<namespace>.<name> keys itself. %s marks a value filled in by the text component that uses the key, for example tellraw @s {\"translate\":\"msm_examples.message.welcome\",\"with\":[\"Alex\"]}. Any language file may also override vanilla keys, here the emerald's name.",
+    "tags": [
+      "example",
+      "text"
+    ]
+  }
+}

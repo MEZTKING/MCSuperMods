@@ -1,0 +1,15 @@
+{
+  "data": {
+    "model": {
+      "model": "msm_starter:item/my_song_disc",
+      "type": "minecraft:model"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:my_song_disc",
+  "kind": "minecraft:item_definition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An item definition of your own. Items use it when their item_model component names it (msm_starter:my_song_disc), so the vanilla discs keep their look."
+  }
+}

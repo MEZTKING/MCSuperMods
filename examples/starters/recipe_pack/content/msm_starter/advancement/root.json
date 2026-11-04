@@ -1,0 +1,28 @@
+{
+  "data": {
+    "criteria": {
+      "crafted_lantern": {
+        "conditions": {
+          "recipes": "msm_starter:gem_lantern"
+        },
+        "trigger": "minecraft:recipe_crafted"
+      }
+    },
+    "display": {
+      "background": "minecraft:gui/advancements/backgrounds/stone",
+      "description": "Craft a lantern from a gem",
+      "frame": "task",
+      "icon": {
+        "id": "minecraft:lantern"
+      },
+      "title": "Bright Idea"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:root",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A root advancement granted by crafting the gem lantern recipe; recipe_crafted names the recipe id."
+  }
+}

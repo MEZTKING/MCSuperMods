@@ -1,0 +1,18 @@
+{
+  "data": {
+    "exhaustion": 0.1,
+    "message_id": "msm_examples.ruby_shard",
+    "scaling": "when_caused_by_living_non_player"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ruby_shard",
+  "kind": "minecraft:damage_type",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "message_id builds the death message key death.attack.msm_examples.ruby_shard; add it to your language file, for example \"%1$s was cut by a ruby shard\" (%1$s is the victim). scaling says when damage grows with difficulty and exhaustion how much hunger a hit costs. Try /damage @s 2 msm_examples:ruby_shard.",
+    "tags": [
+      "example",
+      "damage-types"
+    ]
+  }
+}

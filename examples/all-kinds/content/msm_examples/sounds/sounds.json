@@ -1,0 +1,26 @@
+{
+  "data": {
+    "ruby.chime": {
+      "sounds": [
+        "minecraft:block/amethyst/resonate1",
+        {
+          "name": "minecraft:block/amethyst/resonate2",
+          "pitch": 1.5,
+          "volume": 0.8
+        }
+      ],
+      "subtitle": "subtitles.msm_examples.ruby.chime"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sounds",
+  "kind": "minecraft:sounds",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "There is one sounds element per namespace, always named sounds. Each key is a sound event, here msm_examples:ruby.chime; the game picks one entry of sounds at random each time it plays. An entry is a sound file id (an .ogg under sounds/) or an object that also sets pitch, volume, weight or stream. Try /playsound msm_examples:ruby.chime master @s, and import your own .ogg files to replace the vanilla ones.",
+    "tags": [
+      "example",
+      "sounds"
+    ]
+  }
+}

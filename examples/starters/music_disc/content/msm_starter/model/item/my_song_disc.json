@@ -1,0 +1,15 @@
+{
+  "data": {
+    "parent": "minecraft:item/generated",
+    "textures": {
+      "layer0": "msm_starter:item/my_song_disc"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:item/my_song_disc",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The disc's item model, drawn from textures/item/my_song_disc.png."
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "data": {
+    "criteria": {
+      "has_compass": {
+        "conditions": {
+          "items": [
+            {
+              "items": "minecraft:compass"
+            }
+          ]
+        },
+        "trigger": "minecraft:inventory_changed"
+      }
+    },
+    "display": {
+      "announce_to_chat": false,
+      "background": "minecraft:gui/advancements/backgrounds/adventure",
+      "description": "Craft or find a compass",
+      "frame": "task",
+      "icon": {
+        "id": "minecraft:compass"
+      },
+      "show_toast": false,
+      "title": "Adventure"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:adventure/root",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An advancement without a parent is the root of a new tab; background is the tab texture. display sets the icon, title, description and frame (task, goal or challenge). criteria lists what must happen: here the inventory_changed trigger fires when a compass enters the inventory.",
+    "tags": [
+      "example",
+      "advancements"
+    ]
+  }
+}

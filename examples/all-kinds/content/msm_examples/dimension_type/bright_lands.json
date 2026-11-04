@@ -1,0 +1,26 @@
+{
+  "data": {
+    "ambient_light": 0.5,
+    "coordinate_scale": 1,
+    "has_ceiling": false,
+    "has_ender_dragon_fight": false,
+    "has_skylight": true,
+    "height": 256,
+    "infiniburn": "#minecraft:infiniburn_overworld",
+    "logical_height": 256,
+    "min_y": 0,
+    "monster_spawn_block_light_limit": 0,
+    "monster_spawn_light_level": 0
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:bright_lands",
+  "kind": "minecraft:dimension_type",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A dimension type holds the rules of a world: skylight, ceiling, light, height (min_y and height in multiples of 16) and when monsters spawn. ambient_light 0.5 makes it half lit everywhere, and a spawn light level of 0 keeps monsters to pitch darkness. A dimension (added in a later phase) refers to it; on its own it changes nothing.",
+    "tags": [
+      "example",
+      "dimensions"
+    ]
+  }
+}

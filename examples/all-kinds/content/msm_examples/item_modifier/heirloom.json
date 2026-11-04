@@ -1,0 +1,37 @@
+{
+  "data": {
+    "functions": [
+      {
+        "name": {
+          "color": "gold",
+          "text": "Family Heirloom"
+        },
+        "target": "item_name",
+        "type": "minecraft:set_name"
+      },
+      {
+        "lore": [
+          {
+            "color": "gray",
+            "italic": true,
+            "text": "Passed down for generations"
+          }
+        ],
+        "mode": "append",
+        "type": "minecraft:set_lore"
+      }
+    ],
+    "type": "minecraft:sequence"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:heirloom",
+  "kind": "minecraft:item_modifier",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An item modifier is one loot function; sequence runs several in order. set_name changes the item name (target item_name) or the custom name; set_lore adds lines under it. Text uses text components, so colour and style work. Try /item modify entity @s weapon.mainhand msm_examples:heirloom.",
+    "tags": [
+      "example",
+      "item-modifiers"
+    ]
+  }
+}

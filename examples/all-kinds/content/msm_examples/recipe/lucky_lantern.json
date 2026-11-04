@@ -1,0 +1,37 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "G": "minecraft:gold_nugget",
+      "T": "minecraft:torch"
+    },
+    "pattern": [
+      " G ",
+      "GTG",
+      " G "
+    ],
+    "result": {
+      "components": {
+        "minecraft:item_name": "Lucky Lantern",
+        "minecraft:lore": [
+          "Made from gold and a torch"
+        ],
+        "minecraft:rarity": "rare"
+      },
+      "count": 1,
+      "id": "minecraft:lantern"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:lucky_lantern",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "pattern is the crafting grid, one string per row; a space is an empty slot. key maps each letter to an item id (or #tag). result is the item stack crafted: id, count and optional components, here a name, a lore line and a rarity colour. category only sorts the recipe in the recipe book. The recipe works in any crafting table after /reload.",
+    "tags": [
+      "example",
+      "recipes"
+    ]
+  }
+}

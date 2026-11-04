@@ -1,0 +1,13 @@
+{
+  "data": {
+    "pack": {
+      "description": "Custom music disc: a new music disc"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:pack",
+  "kind": "minecraft:pack_mcmeta",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z"
+  }
+}

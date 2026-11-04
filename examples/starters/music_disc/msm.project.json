@@ -1,0 +1,15 @@
+{
+  "formatVersion": 1,
+  "name": "Custom music disc",
+  "namespaces": [
+    "msm_starter"
+  ],
+  "plugins": [
+    "msm.resourcepack",
+    "msm.datapack"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "data": {
+    "category": "misc",
+    "cookingtime": 900,
+    "experience": 6.3,
+    "ingredient": "minecraft:raw_iron_block",
+    "result": {
+      "id": "minecraft:iron_block"
+    },
+    "type": "minecraft:blasting"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:iron_from_raw_iron_block",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A blast furnace recipe. Blast furnaces usually cook twice as fast as furnaces, so their recipes use half the furnace time."
+  }
+}

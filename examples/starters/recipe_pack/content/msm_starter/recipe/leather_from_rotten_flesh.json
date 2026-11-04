@@ -1,0 +1,19 @@
+{
+  "data": {
+    "category": "misc",
+    "cookingtime": 200,
+    "experience": 0.1,
+    "ingredient": "minecraft:rotten_flesh",
+    "result": {
+      "id": "minecraft:leather"
+    },
+    "type": "minecraft:smelting"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:leather_from_rotten_flesh",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A furnace recipe. cookingtime is in ticks (200 is ten seconds); experience is what the player collects from the furnace."
+  }
+}

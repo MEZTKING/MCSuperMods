@@ -1,0 +1,41 @@
+{
+  "data": {
+    "pools": [
+      {
+        "condition": {
+          "type": "minecraft:survives_explosion"
+        },
+        "entries": [
+          {
+            "modifier": [
+              {
+                "count": {
+                  "max": 2,
+                  "min": 1,
+                  "type": "minecraft:uniform"
+                },
+                "type": "minecraft:set_count"
+              },
+              {
+                "enchantment": "minecraft:fortune",
+                "formula": "minecraft:ore_drops",
+                "type": "minecraft:apply_bonus"
+              }
+            ],
+            "name": "minecraft:emerald",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:block"
+  },
+  "formatVersion": 1,
+  "id": "minecraft:blocks/emerald_ore",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Replaces what emerald ore drops: one or two rubies, more with Fortune, nothing when blown up. This simple table has no Silk Touch branch, so the ore never drops itself."
+  }
+}

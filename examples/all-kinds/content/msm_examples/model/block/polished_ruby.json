@@ -1,0 +1,19 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_examples:block/polished_ruby"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:block/polished_ruby",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "parent borrows the shape of the vanilla model block/cube_all, a full cube. textures fills the texture variables the parent declares; cube_all has one, all, used on every face. The texture id names textures/block/polished_ruby.png in this namespace. A blockstate (or an item definition) has to point at the model before the game shows it.",
+    "tags": [
+      "example",
+      "models"
+    ]
+  }
+}

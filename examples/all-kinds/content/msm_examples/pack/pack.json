@@ -1,0 +1,18 @@
+{
+  "data": {
+    "pack": {
+      "description": "MSM Examples: made with MCSuperMods"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:pack",
+  "kind": "minecraft:pack_mcmeta",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Every pack needs a pack.mcmeta. MSM writes one into the resource pack and one into the data pack from this element, and fills in the pack format of the target version for you. Only the description is yours to edit; it is shown in the resource pack screen and in /datapack list. A project needs only one pack element.",
+    "tags": [
+      "example",
+      "pack"
+    ]
+  }
+}

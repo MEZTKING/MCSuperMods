@@ -1,0 +1,20 @@
+{
+  "data": {
+    "values": [
+      "minecraft:sharpness",
+      "minecraft:unbreaking",
+      "minecraft:mending"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:favourites",
+  "kind": "minecraft:tag/enchantment",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A enchantment tag gives one name to several enchantment ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. Enchantments refer to tags like #msm_examples:favourites in exclusive_set, and loot functions such as enchant_randomly take one in options.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

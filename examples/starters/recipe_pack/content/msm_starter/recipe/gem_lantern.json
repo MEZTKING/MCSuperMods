@@ -1,0 +1,26 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "G": "#msm_starter:gems",
+      "I": "minecraft:iron_nugget"
+    },
+    "pattern": [
+      "III",
+      "IGI",
+      "III"
+    ],
+    "result": {
+      "count": 2,
+      "id": "minecraft:lantern"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:gem_lantern",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A shaped recipe: the pattern is the crafting grid and key says which item each letter means. The centre takes any gem from the gems tag."
+  }
+}

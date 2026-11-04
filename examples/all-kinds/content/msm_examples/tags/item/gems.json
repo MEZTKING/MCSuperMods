@@ -1,0 +1,20 @@
+{
+  "data": {
+    "values": [
+      "minecraft:emerald",
+      "minecraft:diamond",
+      "minecraft:amethyst_shard"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:gems",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A item tag gives one name to several item ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. Use it as a recipe ingredient (#msm_examples:gems), in advancement item conditions or in clear @s #msm_examples:gems.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

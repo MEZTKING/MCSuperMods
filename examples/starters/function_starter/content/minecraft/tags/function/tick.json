@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "msm_starter:tick"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:tick",
+  "kind": "minecraft:tag/function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The game runs every function in #minecraft:tick once per tick."
+  }
+}

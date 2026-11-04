@@ -1,0 +1,15 @@
+{
+  "formatVersion": 1,
+  "name": "MSM Examples",
+  "namespaces": [
+    "msm_examples"
+  ],
+  "plugins": [
+    "msm.resourcepack",
+    "msm.datapack"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

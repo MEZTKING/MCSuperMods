@@ -1,0 +1,20 @@
+{
+  "data": {
+    "description": {
+      "color": "#C41C34",
+      "text": "Ruby Material"
+    },
+    "palette_id": "minecraft:trim/quartz"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ruby",
+  "kind": "minecraft:trim_material",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A trim material sets the colours a trim takes. palette_id names the colour palette used for the trim textures (a vanilla one here); description is the tooltip line, coloured like the material. The smithing table uses the material when an item with a provides_trim_material component goes in the material slot.",
+    "tags": [
+      "example",
+      "armour-trims"
+    ]
+  }
+}

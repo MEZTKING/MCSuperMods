@@ -1,0 +1,20 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_column",
+    "textures": {
+      "end": "msm_examples:block/ruby_pillar_top",
+      "side": "msm_examples:block/ruby_pillar"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:block/ruby_pillar",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "cube_column uses the end texture on the top and bottom and the side texture on the four sides.",
+    "tags": [
+      "example",
+      "blockstates"
+    ]
+  }
+}

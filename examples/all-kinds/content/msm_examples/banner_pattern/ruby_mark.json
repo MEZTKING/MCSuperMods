@@ -1,0 +1,17 @@
+{
+  "data": {
+    "asset_id": "minecraft:creeper",
+    "translation_key": "block.msm_examples.banner.ruby_mark"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ruby_mark",
+  "kind": "minecraft:banner_pattern",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "asset_id names the pattern texture (entity/banner/<path> and entity/shield/<path> in the resource pack); this one reuses the creeper face. translation_key is the pattern's name; add <key>.<colour> keys such as block.msm_examples.banner.ruby_mark.red to a language file. To offer it in the loom, add it to a banner pattern tag used by a banner pattern item.",
+    "tags": [
+      "example",
+      "decorations"
+    ]
+  }
+}

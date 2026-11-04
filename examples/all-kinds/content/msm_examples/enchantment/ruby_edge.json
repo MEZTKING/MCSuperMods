@@ -1,0 +1,48 @@
+{
+  "data": {
+    "anvil_cost": 2,
+    "description": {
+      "color": "red",
+      "text": "Ruby Edge"
+    },
+    "effects": {
+      "minecraft:damage": [
+        {
+          "effect": {
+            "type": "minecraft:add",
+            "value": {
+              "base": 1.5,
+              "per_level_above_first": 1,
+              "type": "minecraft:linear"
+            }
+          }
+        }
+      ]
+    },
+    "max_cost": {
+      "base": 25,
+      "per_level_above_first": 10
+    },
+    "max_level": 3,
+    "min_cost": {
+      "base": 5,
+      "per_level_above_first": 10
+    },
+    "slots": [
+      "mainhand"
+    ],
+    "supported_items": "#minecraft:enchantable/sharp_weapon",
+    "weight": 5
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ruby_edge",
+  "kind": "minecraft:enchantment",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "supported_items says which items can carry it, weight how often enchanting tables offer it and max_level its highest level. min_cost and max_cost set the enchanting levels it appears at. effects is where it does something: minecraft:damage adds 1.5 damage at level I and one more per level. Try /enchant @s msm_examples:ruby_edge 3 with a sword in hand.",
+    "tags": [
+      "example",
+      "enchantments"
+    ]
+  }
+}

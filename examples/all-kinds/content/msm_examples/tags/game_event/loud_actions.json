@@ -1,0 +1,20 @@
+{
+  "data": {
+    "values": [
+      "minecraft:block_place",
+      "minecraft:block_destroy",
+      "minecraft:explode"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:loud_actions",
+  "kind": "minecraft:tag/game_event",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A game_event tag gives one name to several game_event ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. Vanilla uses game event tags for vibrations (minecraft:vibrations); this one, #msm_examples:loud_actions, is ready for your own predicates and tags.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

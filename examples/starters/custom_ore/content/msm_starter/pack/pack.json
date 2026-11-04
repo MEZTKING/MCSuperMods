@@ -1,0 +1,14 @@
+{
+  "data": {
+    "pack": {
+      "description": "Custom ore: emerald ore becomes ruby ore"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:pack",
+  "kind": "minecraft:pack_mcmeta",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The pack description shown in the resource pack and data pack lists. Both packs are exported from this one element."
+  }
+}

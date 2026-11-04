@@ -1,0 +1,27 @@
+{
+  "data": {
+    "action": {
+      "label": "Let me play"
+    },
+    "body": {
+      "contents": "This server runs a data pack made with MCSuperMods.",
+      "type": "minecraft:plain_message"
+    },
+    "title": {
+      "color": "gold",
+      "text": "Welcome!"
+    },
+    "type": "minecraft:notice"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:welcome",
+  "kind": "minecraft:dialog",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A dialog is a screen the server can show. notice has a title, a body of plain messages or items and one button (action). Other types add more buttons or a list of dialogs. The function show_welcome opens it.",
+    "tags": [
+      "example",
+      "dialogs"
+    ]
+  }
+}

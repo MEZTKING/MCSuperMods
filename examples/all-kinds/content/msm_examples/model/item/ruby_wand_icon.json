@@ -1,0 +1,19 @@
+{
+  "data": {
+    "parent": "minecraft:item/generated",
+    "textures": {
+      "layer0": "msm_examples:item/ruby_wand_icon"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:item/ruby_wand_icon",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The inventory icon, a flat item model.",
+    "tags": [
+      "example",
+      "item-definitions"
+    ]
+  }
+}

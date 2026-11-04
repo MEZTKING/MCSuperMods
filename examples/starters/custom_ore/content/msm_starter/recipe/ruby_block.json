@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "B": "minecraft:redstone_block",
+      "R": "minecraft:emerald"
+    },
+    "pattern": [
+      "RRR",
+      "RBR",
+      "RRR"
+    ],
+    "result": {
+      "components": {
+        "minecraft:item_name": "Block of Ruby"
+      },
+      "count": 1,
+      "id": "minecraft:redstone_block"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_block",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Eight rubies around a block of redstone make a renamed redstone block, the \"Block of Ruby\". The result keeps the redstone block item with a custom name component."
+  }
+}

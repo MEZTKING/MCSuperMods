@@ -1,0 +1,20 @@
+{
+  "data": {
+    "values": [
+      "minecraft:ender_dragon",
+      "minecraft:wither",
+      "minecraft:elder_guardian"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:bosses",
+  "kind": "minecraft:tag/entity_type",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A entity_type tag gives one name to several entity_type ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. Use it in a selector: kill @e[type=#msm_examples:bosses].",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

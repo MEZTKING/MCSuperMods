@@ -1,0 +1,19 @@
+{
+  "data": {
+    "values": [
+      "minecraft:emerald_ore",
+      "minecraft:deepslate_emerald_ore"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:emerald_ores",
+  "kind": "minecraft:tag/block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A block tag gives one name to several block ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. Use it wherever a block or block tag is accepted, for example execute if block ~ ~-1 ~ #msm_examples:emerald_ores run say Standing on emerald ore.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}
