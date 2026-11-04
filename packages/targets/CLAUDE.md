@@ -1,6 +1,6 @@
 # packages/targets — Minecraft version targets
 
-Phase 0 code exists: `mc-26.3/`. A second target (`mc-26.2/`) arrives in Phase 7.
+Phase 0 code exists: `mc-26.3/`. Phase 1 adds `Target.folders` (plugin-api 0.2.0) and the `@msm/targets` aggregator in `all/` (`builtInTargets`, `targetById`; ADR 0013). A second target (`mc-26.2/`) arrives in Phase 7.
 
 ## Purpose
 

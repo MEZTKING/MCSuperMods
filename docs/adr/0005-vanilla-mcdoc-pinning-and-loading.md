@@ -28,4 +28,4 @@
 
 ## Status
 
-Accepted (2026-11-04).
+Accepted (2026-11-04). Amended by [ADR 0009](0009-phase1-validation-gate.md) (2026-11-04): the Spyglass `Service` is deferred to Phase 2; Phase 1 validates with MSM's own validator over `SchemaNode`. Generic constructs are modelled in Phase 1 as planned.

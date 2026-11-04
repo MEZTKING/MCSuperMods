@@ -1,6 +1,6 @@
 # MCSuperMods
 
-MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 0 complete; Phase 1 (Resource Pack Studio) next.
+MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 0 complete; Phase 1 (Resource Pack Studio) in progress.
 
 ## Directory map
 
@@ -59,9 +59,8 @@ Read only the one for the area you work in, plus docs/DESIGN.md sections it link
 - Read the latest `docs/DEVLOG.md` entry first.
 - Append an entry at the end: `## YYYY-MM-DD — <agent> — <topic>`, then What / Decisions / Next.
 
-## Commands (planned)
+## Commands
 
-Not yet wired — Phase 0.
-
-- `pnpm i` / `pnpm dev` (app) / `pnpm test` / `pnpm lint` / `pnpm build`
-- `cd engine-mod && ./gradlew build` / `./gradlew runClient`
+- `pnpm i` / `pnpm dev` (app) / `pnpm lint` (Biome + check-deps) / `pnpm typecheck` / `pnpm test` / `pnpm build`
+- `pnpm --filter @msm/app smoke` (headless: `xvfb-run -a`)
+- engine-mod Gradle build is not wired until Phase 4.

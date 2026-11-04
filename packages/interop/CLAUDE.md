@@ -1,6 +1,6 @@
 # packages/interop — Blockbench, NBT and Minecraft installation
 
-No code yet; this directory is planned for Phases 1, 3 and 5. This file describes intent and conventions.
+Phase 1 adds the package and `minecraft-install/`: locate `.minecraft`, list versions and extract preview assets with fflate into `~/.msm/cache/assets/<version>/` (ADR 0011), tested with a synthetic jar. NBT and Blockbench follow in Phases 3 and 5.
 
 ## Purpose
 
@@ -10,7 +10,7 @@ No code yet; this directory is planned for Phases 1, 3 and 5. This file describe
 
 | Subfolder | Phase | Role |
 |---|---|---|
-| `minecraft-install/` | 1 | Locate `.minecraft`, read `versions/<v>/<v>.jar` for preview assets into `~/.msm/cache/`, launch helpers |
+| `minecraft-install/` | 1 | Locate `.minecraft`, read `versions/<v>/<v>.jar` for preview assets into `~/.msm/cache/assets/<version>/`, launch helpers |
 | `nbt/` | 3 | Structure `.nbt` and Sponge `.schem` read/write via `prismarine-nbt` |
 | `blockbench/` | 5 | `.bbmodel` → Java block/item models, or GeckoLib geo + animation JSON |
 

@@ -1,6 +1,6 @@
 # packages/exporters — Exporters
 
-No code yet; this directory is planned for Phases 1, 4 and 6. This file describes intent and conventions.
+Phase 1 adds the package: `runExport` (collect, lower, merge assets, validate, write), deterministic fflate zips and the `vanilla-packs` exporter. `fabric-content-jar` and `java-project` follow in Phases 4 and 6.
 
 ## Purpose
 
@@ -19,7 +19,8 @@ No code yet; this directory is planned for Phases 1, 4 and 6. This file describe
 - Exporters consume `OutputFile[]` from the lowering pipeline, never elements directly.
 - Output is deterministic (stable file ordering, fixed zip timestamps) so builds are reproducible and diffable.
 - Every exporter has a golden test on the kitchen-sink sample project.
-- The Spyglass validation gate runs before anything is written; a failure blocks the export.
+- The schema validation gate (`validateJson`, ADR 0009) runs before anything is written; a failure blocks the export.
+- Zips: entries sorted by path, level 6, `os: 0`, timestamp `new Date(2000, 0, 1)` (local-time constructor, ADR 0013).
 - The runtime jar is nested by default; "separate runtime" is an option for modpack makers.
 - The `java-project` eject is one-way and includes a README in the generated project.
 

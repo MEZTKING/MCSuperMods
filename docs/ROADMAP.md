@@ -69,13 +69,18 @@ The first public release. A beginner imports textures, edits block and item mode
 
 - [ ] `@msm/plugin-resourcepack`: element kinds for block models, item models, blockstates, lang files, sounds and `pack.mcmeta`.
 - [ ] Schema-driven form generator in `@msm/app` covering string, enum, number, boolean, struct, list, union, reference and dispatcher nodes.
-- [ ] Raw JSON tab (Monaco + Spyglass diagnostics) on every element, editing the same IR as the form.
-- [ ] Problems panel fed by Spyglass validation.
+- [ ] Raw JSON tab (Monaco + schema diagnostics) on every element, editing the same IR as the form.
+- [ ] Schema validation in `@msm/schemas` (`validateJson` over the version-gated `SchemaNode` model; Spyglass checker deferred to Phase 2, [ADR 0009](adr/0009-phase1-validation-gate.md)).
+- [ ] Problems panel fed by live schema validation; errors block export, never save.
+- [ ] DESIGN Q9 fix: save deletes only files it loaded and is never blocked ([ADR 0012](adr/0012-save-deletes-only-loaded-files.md)).
 - [ ] Texture import (PNG) into `assets/<namespace>/` with thumbnails cached in `.msm/`.
-- [ ] `@msm/interop` `minecraft-install/`: locate `.minecraft`, extract preview assets from the user's client jar into `~/.msm/cache/` (never redistributed).
-- [ ] 3D preview panel using three.js + deepslate for block and item models.
-- [ ] `@msm/exporters` `vanilla-packs`: resource pack `.zip` and folder output, deterministic, with Spyglass validation gate and `msm.export.json` manifest.
+- [ ] `@msm/interop` `minecraft-install/`: locate `.minecraft`, extract preview assets from the user's client jar into `~/.msm/cache/assets/<version>/` (never redistributed; [ADR 0011](adr/0011-client-jar-asset-extraction.md)).
+- [ ] 3D preview panel using deepslate for block and item models ([ADR 0010](adr/0010-preview-with-deepslate.md)).
+- [ ] `@msm/exporters` `vanilla-packs`: resource pack `.zip` and folder output, deterministic, with schema validation gate and `msm.export.json` manifest.
 - [ ] "Install to resourcepacks folder" action.
+- [ ] `@msm/plugin-api` 0.2.0 ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
+- [ ] `@msm/targets` aggregator (`packages/targets/all/`), so tests use real targets without version literals ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)).
+- [ ] `tools/new-plugin` scaffold, used to create `@msm/plugin-resourcepack`.
 - [ ] Golden-file tests for every lowering function under `fixtures/mc-26.3/expected/`.
 - [ ] Playwright-for-Electron smoke test: new project → add model → export.
 - [ ] CI release builds for Windows, macOS and Linux via electron-builder, attached to tagged releases.

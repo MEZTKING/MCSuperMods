@@ -1,6 +1,6 @@
 # packages/plugins — Built-in plugins
 
-No code yet; this directory is planned for Phases 1–6. This file describes intent and conventions.
+Phase 1 adds `@msm/plugin-resourcepack` (vanilla model, block and item definition, lang, sounds and `pack.mcmeta` kinds, with golden lowering tests); the others follow in Phases 2–6.
 
 ## Purpose
 
@@ -23,7 +23,7 @@ Layout per plugin: `src/index.ts` (`definePlugin`), `src/kinds/`, `src/editors/`
 
 ## Conventions
 
-- Each plugin imports only `@msm/plugin-api` and `@msm/schemas`.
+- Each plugin imports only `@msm/plugin-api` and `@msm/schemas`. Tests may also import `@msm/targets` (Biome forbids it in `src/`; ADR 0013).
 - Vanilla kinds get no custom editor unless a Studio view is justified; the mcdoc-driven form is the default.
 - Lowering functions are pure (`lower(element, target) -> OutputFile[]`) and golden-tested per target.
 - Create a new plugin with `tools/new-plugin`, never by hand.

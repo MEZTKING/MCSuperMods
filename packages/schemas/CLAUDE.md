@@ -1,10 +1,10 @@
 # packages/schemas — Schema system (mcdoc)
 
-Phase 0 code exists: symbol-export parsing, version gating, `SchemaNode` normalisation.
+Phase 0 code exists: symbol-export parsing, version gating, `SchemaNode` normalisation. Phase 1 adds generics, tuples, primitive arrays, map key types, `validateJson` and the registry index (ADR 0009).
 
 ## Purpose
 
-`@msm/schemas` turns vanilla-mcdoc (and later MSM mcdoc extensions) into MSM's own `SchemaNode` model that editors consume. It is the only package that will talk to Spyglass. In Phase 0 it has no Spyglass runtime dependency: it consumes the mcdoc-cli symbol export that the target package vendors and the caller injects (ADR 0005). Phase 1 adds `@spyglassmc/core`, `mcdoc` and `java-edition` for validation.
+`@msm/schemas` turns vanilla-mcdoc (and later MSM mcdoc extensions) into MSM's own `SchemaNode` model that editors consume. It is the only package that will talk to Spyglass. In Phase 0 it has no Spyglass runtime dependency: it consumes the mcdoc-cli symbol export that the target package vendors and the caller injects (ADR 0005). Phase 1 validates with our own `validateJson` over `SchemaNode`; Spyglass packages arrive in Phase 2 (ADR 0009).
 
 ## Contents
 
@@ -21,7 +21,7 @@ Phase 0 code exists: symbol-export parsing, version gating, `SchemaNode` normali
 - Version gating is mandatory: one vanilla-mcdoc tree spans many versions; filter types, fields, members and dispatcher entries by `since`/`until`.
 - A map-like struct (`[string]: T`) is a field with key `'*'`, always optional.
 - Dispatcher keys are unprefixed; `dispatch()` also accepts `minecraft:`-prefixed keys. Static keywords are stored as `%unknown` / `%fallback`.
-- `template` and `concrete` (generics) normalise to `unsupported` in Phase 0; modelling them is Phase 1 work.
+- `template` and `concrete` (generics) normalise to `unsupported` in Phase 0; Phase 1 models them.
 - Depends only on `@msm/plugin-api`. JSDoc examples stay version-neutral (check-deps).
 
 ## Do / Don't

@@ -1,6 +1,6 @@
 # packages/core — Core project model (IR)
 
-Phase 0 code exists: model, serialisation, load/save, migrations, kind registry, command stack.
+Phase 0 code exists: model, serialisation, load/save, migrations, kind registry, command stack. Phase 1 adds the `SaveManifest` (ADR 0012), asset commands, value-level edits with coalescing and the `lowerProject` driver.
 
 ## Purpose
 
@@ -23,7 +23,7 @@ Phase 0 code exists: model, serialisation, load/save, migrations, kind registry,
 - Pure TypeScript (strict). No DOM, no Node `fs`: file access is injected so core runs in tests and in the renderer (ADR 0007).
 - Deterministic serialisation: sorted keys, 2-space indent, trailing newline. JSON only.
 - Format v1 drops unknown fields on load; elements of unregistered kinds round-trip via `_unknown/<kind ns>/<kind path>`.
-- Load skips invalid element files and save deletes `content/**/*.json` it did not write; callers must not save after error-severity load problems (DESIGN Open Questions).
+- Load skips invalid element files. Until the Phase 1 `SaveManifest` lands, save deletes `content/**/*.json` it did not write; afterwards it deletes only files it loaded and is never blocked (ADR 0012).
 - Every public symbol is exported from `src/index.ts`.
 - Depends only on `@msm/plugin-api` today; the layer map also allows `@msm/schemas` when lowering needs it.
 
