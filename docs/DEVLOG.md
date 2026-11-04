@@ -653,3 +653,15 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 **Decisions**
 - Branch policy: work continues on `ccr-d077e76e-4gnbx2`. `main` is fast-forwarded to it only after local verification and green GitHub CI on that commit.
 - Releases: the user pushes `v<version>` tags from their clone, unless they opt into the auto-tagging workflow.
+
+---
+
+## 2026-11-04 — main session — v0.2.0 Windows installer built
+
+**What**
+- The user pushed `v0.2.0` from `main` (`72079c0`, which includes the launcher add-on and the update-check fix). **Release run #2 (41886613254) succeeded** in about 3 minutes. It built `MCSuperMods-0.2.0-win-x64.exe` and uploaded it with its `.blockmap` and `latest.yml` to a DRAFT release.
+- CI passed on the tag (run 74), on `main` (run 72) and on the development branch (run 73, the README clone fix). `main` was fast-forwarded to that commit under the branch policy.
+
+**Next**
+- The user publishes the v0.2.0 draft, installs 0.2.0 over 0.1.0, and checks Help > Check for Updates ("You have the latest version (v0.2.0)."). Auto-update works for every later published release.
+- Still open with the user: the CurseForge folder listing, the in-game checks, and whether the template and samples library comes before Phase 3.
