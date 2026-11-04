@@ -12,7 +12,12 @@
  * @packageDocumentation
  */
 
-export { assetOutputFiles, EXPORTED_ASSET_FOLDERS } from './assets';
+export {
+  assetOutputFiles,
+  EXPORTED_ASSET_FOLDERS,
+  isTextureMetaPath,
+  TEXTURE_META_SCHEMA,
+} from './assets';
 export { outputFileBytes } from './contents';
 export { EXPORT_MANIFEST_FILE, EXPORT_MANIFEST_FORMAT_VERSION, exportManifest } from './manifest';
 export { type ExportProblemCode, ExportProblemCodes } from './problem-codes';

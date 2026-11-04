@@ -6,6 +6,10 @@
  * A block model or blockstate renders as a one-block structure that the user can orbit (drag or
  * arrow keys) and zoom (wheel or +/-). An item definition, or a model whose parents end at
  * `builtin/generated`, renders in the fixed GUI item view.
+ *
+ * When a texture is animated (a `.png.mcmeta` sidecar), a frame scrubber steps through the
+ * first animated texture's frames; every animated texture shows the frame of its own loop at
+ * that step's start tick. Only the atlas is re-uploaded per step; the scene is kept.
  */
 
 import { Structure } from 'deepslate/core';
@@ -21,11 +25,14 @@ import {
   useState,
 } from 'react';
 import { iconButtonClass } from '../components/ui/Button';
+import { stepStartTick } from './animation';
 import {
+  type AnimatedTexture,
   createPreviewResources,
   type PreviewResources,
   type PreviewResourcesOptions,
 } from './asset-source';
+import { FrameScrubber } from './FrameScrubber';
 
 /** Props: the same inputs as {@link createPreviewResources}. */
 export type PreviewCanvasProps = PreviewResourcesOptions & {
@@ -49,7 +56,10 @@ type Status =
   | { state: 'loading' }
   | {
       state: 'ready';
-      info: Pick<PreviewResources, 'missingModels' | 'missingTextures' | 'usedFallback' | 'mode'>;
+      info: Pick<
+        PreviewResources,
+        'missingModels' | 'missingTextures' | 'usedFallback' | 'mode' | 'animations'
+      >;
     }
   | { state: 'error'; message: string };
 
@@ -61,6 +71,24 @@ interface Scene {
   canvas: HTMLCanvasElement;
   gl: WebGLRenderingContext;
   draw(view: View): void;
+  /** Re-uploads the atlas image after an animation step; `false` when it cannot. */
+  updateAtlas(image: ImageData): boolean;
+}
+
+/**
+ * Replaces the pixels of a deepslate renderer's atlas texture in place. deepslate keeps the
+ * texture in a private `atlasTexture` field and offers no setter, so the field is read
+ * defensively; without it the animation stays on its current frame.
+ */
+function atlasUpdater(gl: WebGLRenderingContext, renderer: object): (image: ImageData) => boolean {
+  return (image) => {
+    const texture = (renderer as { atlasTexture?: unknown }).atlasTexture;
+    if (!(texture instanceof WebGLTexture)) return false;
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    return true;
+  };
 }
 
 function createScene(prepared: PreviewResources): Scene | null {
@@ -88,6 +116,7 @@ function createScene(prepared: PreviewResources): Scene | null {
     return {
       canvas,
       gl,
+      updateAtlas: atlasUpdater(gl, renderer),
       draw: () => {
         resize();
         renderer.setViewport(0, 0, canvas.width, canvas.height);
@@ -108,6 +137,7 @@ function createScene(prepared: PreviewResources): Scene | null {
   return {
     canvas,
     gl,
+    updateAtlas: atlasUpdater(gl, renderer),
     draw: (view) => {
       resize();
       renderer.setViewport(0, 0, canvas.width, canvas.height);
@@ -139,6 +169,29 @@ export default function PreviewCanvas(props: PreviewCanvasProps) {
   const callbacksRef = useRef(props);
   callbacksRef.current = props;
   const [status, setStatus] = useState<Status>({ state: 'loading' });
+  const preparedRef = useRef<PreviewResources | null>(null);
+  const [step, setStep] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const primary: AnimatedTexture | undefined =
+    status.state === 'ready' ? status.info.animations[0] : undefined;
+  const frameCount = primary?.animation.frames.length ?? 0;
+  const shownStep = frameCount === 0 ? 0 : step % frameCount;
+  const tick = primary === undefined ? 0 : stepStartTick(primary.animation, shownStep);
+  const tickRef = useRef(tick);
+  tickRef.current = tick;
+
+  const showTick = useCallback(async (prepared: PreviewResources, at: number): Promise<void> => {
+    try {
+      const changed = await prepared.showTick(at);
+      const scene = sceneRef.current;
+      if (!changed || preparedRef.current !== prepared || scene === null) return;
+      scene.updateAtlas(prepared.resources.getTextureAtlas());
+      requestDrawRef.current();
+    } catch {
+      // The frame could not be built; the previous frame stays.
+    }
+  }, []);
+  const requestDrawRef = useRef<() => void>(() => {});
 
   const requestDraw = useCallback(() => {
     if (frameRef.current !== null) return;
@@ -154,6 +207,8 @@ export default function PreviewCanvas(props: PreviewCanvasProps) {
       }
     });
   }, []);
+
+  requestDrawRef.current = requestDraw;
 
   useEffect(() => {
     let cancelled = false;
@@ -174,6 +229,7 @@ export default function PreviewCanvas(props: PreviewCanvasProps) {
           const scene = createScene(prepared);
           disposeScene(sceneRef.current);
           sceneRef.current = scene;
+          preparedRef.current = prepared;
           if (scene === null) {
             onWebGLUnavailable?.();
             setStatus({ state: 'error', message: 'Preview unavailable: WebGL is disabled.' });
@@ -187,9 +243,12 @@ export default function PreviewCanvas(props: PreviewCanvasProps) {
               missingTextures: prepared.missingTextures,
               usedFallback: prepared.usedFallback,
               mode: prepared.mode,
+              animations: prepared.animations,
             },
           });
           requestDraw();
+          // The atlas starts at tick 0; catch up with the step the scrubber shows.
+          if (tickRef.current !== 0) void showTick(prepared, tickRef.current);
         })
         .catch((error: unknown) => {
           if (cancelled) return;
@@ -203,7 +262,22 @@ export default function PreviewCanvas(props: PreviewCanvasProps) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [project, folders, subject, vanilla, vanillaJson, fallbackModels, requestDraw]);
+  }, [project, folders, subject, vanilla, vanillaJson, fallbackModels, requestDraw, showTick]);
+
+  // A different animated texture starts from its first frame, paused.
+  const primaryId = primary?.id;
+  useEffect(() => {
+    if (primaryId === undefined) return;
+    setStep(0);
+    setPlaying(false);
+  }, [primaryId]);
+
+  // Step the animation: rebuild the atlas for the tick and re-upload it.
+  useEffect(() => {
+    const prepared = preparedRef.current;
+    if (prepared === null || prepared.animations.length === 0) return;
+    void showTick(prepared, tick);
+  }, [tick, showTick]);
 
   // Dispose the last scene on unmount; redraw when the host resizes.
   useEffect(() => {
@@ -218,6 +292,7 @@ export default function PreviewCanvas(props: PreviewCanvasProps) {
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
       disposeScene(sceneRef.current);
       sceneRef.current = null;
+      preparedRef.current = null;
     };
   }, [requestDraw]);
 
@@ -335,6 +410,16 @@ export default function PreviewCanvas(props: PreviewCanvasProps) {
         <p role="alert" className="text-sm text-error">
           {status.message}
         </p>
+      ) : null}
+      {primary !== undefined ? (
+        <FrameScrubber
+          textureId={primary.id}
+          frames={primary.animation.frames}
+          step={shownStep}
+          playing={playing}
+          onStepChange={setStep}
+          onPlayingChange={setPlaying}
+        />
       ) : null}
       {status.state === 'ready' ? <PreviewNotes info={status.info} /> : null}
     </div>

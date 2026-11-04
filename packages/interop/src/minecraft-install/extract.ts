@@ -8,11 +8,12 @@ import { unzipSync } from 'fflate';
 
 /**
  * The jar entries previews need: vanilla models, block and item definitions, block and item
- * textures, and the English lang file.
+ * textures with their animation sidecars (`.png.mcmeta`), and the English lang file.
  */
 export const PREVIEW_ASSET_PATTERNS: readonly RegExp[] = Object.freeze([
   /^assets\/minecraft\/(?:models|blockstates|items)\/.+\.json$/,
   /^assets\/minecraft\/textures\/(?:block|item)\/.+\.png$/,
+  /^assets\/minecraft\/textures\/(?:block|item)\/.+\.png\.mcmeta$/,
   /^assets\/minecraft\/lang\/en_us\.json$/,
 ]);
 

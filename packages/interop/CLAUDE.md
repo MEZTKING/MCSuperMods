@@ -10,7 +10,7 @@ Phase 1 code complete: `minecraft-install/` locates `.minecraft`, lists versions
 
 | Subfolder | Phase | Role |
 |---|---|---|
-| `minecraft-install/` | 1 | `locate.ts` (default dir, versions, jar pick), `extract.ts` (filtered `unzipSync`; no `.png.mcmeta` yet), `cache.ts`, injected `InstallFileSystem`; launch helpers in Phase 4 |
+| `minecraft-install/` | 1 | `locate.ts` (default dir, versions, jar pick), `extract.ts` (filtered `unzipSync`, including block and item `.png.mcmeta` sidecars), `cache.ts`, injected `InstallFileSystem`; launch helpers in Phase 4 |
 | `png.ts` | 1 | `readPngHeader` (width, height) for imported textures |
 | `node.ts` | 1 | Subpath `@msm/interop/node`: Node `InstallFileSystem`, `nodeEnv`, `sha1Hex` (main process only) |
 | `nbt/` | 3 | Structure `.nbt` and Sponge `.schem` read/write via `prismarine-nbt` |

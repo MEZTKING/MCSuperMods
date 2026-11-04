@@ -29,7 +29,7 @@ describe('asset cache', () => {
     const dir = assetCacheDir('/msm', '9.1');
     const files = extractPreviewAssets(buildSyntheticJar());
     const info = await writeAssetCache(fs, dir, files, INFO);
-    expect(info).toEqual({ ...INFO, fileCount: 5, schemaVersion: 1 });
+    expect(info).toEqual({ ...INFO, fileCount: 7, schemaVersion: 1 });
     expect(await readAssetCacheInfo(fs, dir)).toEqual(info);
     for (const [path, data] of Object.entries(KEPT_ENTRIES)) {
       expect(await fs.readFile(`${dir}/${path}`)).toEqual(data);

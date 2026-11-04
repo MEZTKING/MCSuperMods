@@ -21,6 +21,30 @@ export function importSubfolder(choice: ImportFolderChoice, custom: string): str
   return `textures/${trimmed}`;
 }
 
+/** A file picker filter, as `platform.dialogs.pickFiles` takes it. */
+export interface ImportFileFilter {
+  name: string;
+  extensions: string[];
+}
+
+/**
+ * The file picker filters for importing into `subfolder`. Textures accept PNG images and
+ * their `.png.mcmeta` animation sidecars, which are imported into the same folder as the
+ * image. The picker matches the last extension only, so sidecars are offered as `mcmeta`;
+ * the import check (`assetImportError`) still rejects any `.mcmeta` not ending in
+ * `.png.mcmeta`.
+ */
+export function importFileFilters(subfolder: string): ImportFileFilter[] {
+  if (subfolder === 'sounds' || subfolder.startsWith('sounds/')) {
+    return [{ name: 'Ogg Vorbis sound', extensions: ['ogg'] }];
+  }
+  return [
+    { name: 'PNG image or animation metadata', extensions: ['png', 'mcmeta'] },
+    { name: 'PNG image', extensions: ['png'] },
+    { name: 'Animation metadata (.png.mcmeta)', extensions: ['mcmeta'] },
+  ];
+}
+
 const CHOICES: { id: ImportFolderChoice; label: string }[] = [
   { id: 'block', label: 'Block textures (textures/block)' },
   { id: 'item', label: 'Item textures (textures/item)' },
@@ -117,7 +141,8 @@ export function ImportAssetsDialog(props: {
         </>
       )}
       <p className="text-xs text-muted">
-        Files with the same name replace the existing ones. Textures must be PNG files.
+        Files with the same name replace the existing ones. Textures must be PNG files; pick an
+        animated texture together with its <code>.png.mcmeta</code> file to keep them side by side.
       </p>
     </Modal>
   );

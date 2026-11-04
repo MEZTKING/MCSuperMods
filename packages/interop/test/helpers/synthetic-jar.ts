@@ -93,13 +93,18 @@ export const KEPT_ENTRIES: Readonly<Record<string, Uint8Array>> = {
     textures: { all: 'minecraft:block/msm_test' },
   }),
   'assets/minecraft/textures/block/msm_test.png': makePng(2, 2),
+  'assets/minecraft/textures/block/msm_test_anim.png': makePng(2, 4),
+  'assets/minecraft/textures/block/msm_test_anim.png.mcmeta': json({
+    animation: { frametime: 3, frames: [1, { index: 0, time: 5 }] },
+  }),
 };
 
 /** Entries extraction must skip. */
 export const SKIPPED_ENTRIES: Readonly<Record<string, Uint8Array>> = {
   'assets/minecraft/lang/de_de.json': json({ 'block.minecraft.msm_test': 'MSM-Testblock' }),
   'assets/minecraft/textures/entity/ignored.png': makePng(1, 1),
-  'assets/minecraft/textures/block/msm_test.png.mcmeta': json({ animation: {} }),
+  'assets/minecraft/textures/entity/ignored.png.mcmeta': json({ animation: {} }),
+  'assets/minecraft/textures/block/msm_test.mcmeta': json({ animation: {} }),
   'data/minecraft/recipe/msm_test.json': json({ type: 'minecraft:crafting_shaped' }),
   'net/minecraft/Foo.class': noise(512, 1),
   'net/minecraft/client/Bar.class': noise(2048, 2),

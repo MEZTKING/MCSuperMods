@@ -12,8 +12,21 @@ describe('extractPreviewAssets', () => {
       'assets/minecraft/lang/en_us.json',
       'assets/minecraft/models/block/msm_test_cube.json',
       'assets/minecraft/textures/block/msm_test.png',
+      'assets/minecraft/textures/block/msm_test_anim.png',
+      'assets/minecraft/textures/block/msm_test_anim.png.mcmeta',
     ]);
     for (const file of files) expect(file.data).toEqual(KEPT_ENTRIES[file.path]);
+  });
+
+  it('keeps animation sidecars next to their textures', () => {
+    const files = extractPreviewAssets(buildSyntheticJar());
+    const sidecar = files.find(
+      (file) => file.path === 'assets/minecraft/textures/block/msm_test_anim.png.mcmeta',
+    );
+    expect(sidecar).toBeDefined();
+    expect(JSON.parse(new TextDecoder().decode(sidecar?.data))).toEqual({
+      animation: { frametime: 3, frames: [1, { index: 0, time: 5 }] },
+    });
   });
 
   it('accepts custom patterns', () => {
@@ -46,6 +59,10 @@ describe('extractPreviewAssets', () => {
     expect(matches('assets/minecraft/lang/en_us.json')).toBe(true);
     expect(matches('assets/minecraft/lang/en_gb.json')).toBe(false);
     expect(matches('assets/minecraft/textures/gui/widgets.png')).toBe(false);
+    expect(matches('assets/minecraft/textures/block/water_still.png.mcmeta')).toBe(true);
+    expect(matches('assets/minecraft/textures/item/compass.png.mcmeta')).toBe(true);
+    expect(matches('assets/minecraft/textures/entity/x.png.mcmeta')).toBe(false);
+    expect(matches('assets/minecraft/textures/block/x.mcmeta')).toBe(false);
     expect(matches('assets/other/models/block/x.json')).toBe(false);
   });
 });

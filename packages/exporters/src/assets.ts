@@ -25,8 +25,21 @@ export const EXPORTED_ASSET_FOLDERS: readonly string[] = Object.freeze([
 ]);
 
 /**
+ * The schema reference given to texture animation sidecars (`*.png.mcmeta`), so the export
+ * gate validates them like lowered JSON.
+ */
+export const TEXTURE_META_SCHEMA = 'resource:texture_meta';
+
+/** True for a texture animation sidecar such as `textures/block/lava.png.mcmeta`. */
+export function isTextureMetaPath(path: string): boolean {
+  return path.startsWith('textures/') && path.endsWith('.png.mcmeta');
+}
+
+/**
  * Reads every exportable project asset and returns it as a `resourcepack` output file at
- * `assets/<namespace>/<asset path>`, in namespace and then path order.
+ * `assets/<namespace>/<asset path>`, in namespace and then path order. Texture animation
+ * sidecars (`.png.mcmeta` files under `textures/`) carry `schema: 'resource:texture_meta'`,
+ * so the validation gate checks them; only project-authored sidecars are exported.
  *
  * Assets outside {@link EXPORTED_ASSET_FOLDERS} yield an `export.asset-skipped` info; an
  * unsafe asset path yields an `export.unsafe-path` error and a failed read an
@@ -78,7 +91,9 @@ export async function assetOutputFiles(
         });
         continue;
       }
-      files.push({ path: outputPath, contents, layer: 'resourcepack' });
+      const file: OutputFile = { path: outputPath, contents, layer: 'resourcepack' };
+      if (isTextureMetaPath(asset.path)) file.schema = TEXTURE_META_SCHEMA;
+      files.push(file);
     }
   }
   return { files, problems };

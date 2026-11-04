@@ -6,8 +6,13 @@
  * model its parent chains reach (project, vanilla cache, MSM fallback parents — ADR 0010) and
  * every texture those models name. Textures that cannot be found are left out of the atlas, so
  * deepslate draws its missing-texture checker for them.
+ *
+ * A texture with a `.png.mcmeta` sidecar from the same source (project or vanilla cache) that
+ * describes an `animation` is animated by stepping: the atlas is rebuilt through `createAtlas`
+ * from the frame that shows at a given tick, cropped out of the strip. No interpolation.
  */
 
+import { readPngHeader } from '@msm/interop';
 import type { JsonObject, Project } from '@msm/plugin-api';
 import { Identifier, ItemStack } from 'deepslate/core';
 import { NbtString } from 'deepslate/nbt';
@@ -22,6 +27,12 @@ import {
   type TextureAtlasProvider,
 } from 'deepslate/render';
 import {
+  type FrameRect,
+  frameRectAtTick,
+  parseTextureAnimation,
+  type TextureAnimation,
+} from './animation';
+import {
   collectBlockDefinitionModelRefs,
   collectItemModelRefs,
   collectTextureIds,
@@ -29,6 +40,7 @@ import {
   createVanillaJsonCache,
   defaultVariantProperties,
   normaliseId,
+  parseJsonObject,
   type ResolvedModel,
   type ResourceFolders,
   resolveModelChain,
@@ -65,6 +77,18 @@ export interface PreviewResourcesOptions {
   fallbackModels?: Readonly<Record<string, JsonObject>>;
   /** Builds the texture atlas (default `TextureAtlas.fromBlobs`); injectable for tests. */
   createAtlas?: (textures: Record<string, Blob>) => Promise<TextureAtlasProvider>;
+  /**
+   * Crops one frame out of an animated texture's strip (default: `createImageBitmap` and a
+   * canvas); injectable for tests.
+   */
+  cropTexture?: (texture: Blob, rect: FrameRect) => Promise<Blob>;
+}
+
+/** An animated texture of the preview subject. */
+export interface AnimatedTexture {
+  /** The texture id, for example `minecraft:block/lava_still`. */
+  id: string;
+  animation: TextureAnimation;
 }
 
 /** Everything a preview renderer needs. */
@@ -82,6 +106,15 @@ export interface PreviewResources {
   missingTextures: string[];
   /** True when at least one MSM fallback parent was used. */
   usedFallback: boolean;
+  /** Animated textures, sorted by id; empty when every texture is static. */
+  animations: AnimatedTexture[];
+  /**
+   * Rebuilds the atlas for game tick `tick` (each animated texture shows the frame of its own
+   * loop at that tick) and swaps it into `resources`. Resolves to `true` when the atlas
+   * changed, so the caller re-uploads `resources.getTextureAtlas()`; to `false` when every
+   * animated texture already showed the right frame.
+   */
+  showTick(tick: number): Promise<boolean>;
 }
 
 const isObject = (value: unknown): value is JsonObject =>
@@ -102,6 +135,33 @@ async function decodableOnly(textures: Record<string, Blob>): Promise<Record<str
     }),
   );
   return out;
+}
+
+/** Crops `rect` out of `texture` with `createImageBitmap` and a 2D canvas. */
+async function defaultCropTexture(texture: Blob, rect: FrameRect): Promise<Blob> {
+  const bitmap = await createImageBitmap(texture, rect.x, rect.y, rect.width, rect.height);
+  const canvas = document.createElement('canvas');
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  const context = canvas.getContext('2d');
+  if (context === null) {
+    bitmap.close();
+    throw new Error('No 2D canvas context.');
+  }
+  context.drawImage(bitmap, 0, 0);
+  bitmap.close();
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob === null ? reject(new Error('Could not encode the frame.')) : resolve(blob)),
+      'image/png',
+    );
+  });
+}
+
+/** An animated texture with what is needed to crop its frames. */
+interface AnimatedSource extends AnimatedTexture {
+  blob: Blob;
+  imageWidth: number;
 }
 
 const defaultCreateAtlas = async (textures: Record<string, Blob>): Promise<TextureAtlasProvider> =>
@@ -190,16 +250,79 @@ export async function createPreviewResources(
   }
   const blobs: Record<string, Blob> = {};
   const missingTextures: string[] = [];
+  const animated: AnimatedSource[] = [];
+  const vanilla = options.vanilla;
   for (const id of [...textureIds].sort()) {
     const { namespace, projectPath, vanillaPath } = textureLocations(id, folders);
     let bytes = await options.readProjectAsset(namespace, projectPath).catch(() => null);
-    if (bytes === null && options.vanilla !== null) {
-      bytes = await options.vanilla.readAsset(vanillaPath).catch(() => null);
+    // The sidecar comes from the same source as the image, as in the game.
+    let readSidecar = (): Promise<Uint8Array | null> =>
+      options.readProjectAsset(namespace, `${projectPath}.mcmeta`);
+    if (bytes === null && vanilla !== null) {
+      bytes = await vanilla.readAsset(vanillaPath).catch(() => null);
+      readSidecar = () => vanilla.readAsset(`${vanillaPath}.mcmeta`);
     }
-    if (bytes === null) missingTextures.push(id);
-    else blobs[id] = new Blob([bytes.slice()], { type: 'image/png' });
+    if (bytes === null) {
+      missingTextures.push(id);
+      continue;
+    }
+    const blob = new Blob([bytes.slice()], { type: 'image/png' });
+    blobs[id] = blob;
+    const sidecar = parseJsonObject(await readSidecar().catch(() => null));
+    if (sidecar === null) continue;
+    let size: { width: number; height: number };
+    try {
+      size = readPngHeader(bytes);
+    } catch {
+      continue; // Not a PNG: left to the atlas, which skips it.
+    }
+    const animation = parseTextureAnimation(sidecar, size.width, size.height);
+    if (animation !== null) animated.push({ id, animation, blob, imageWidth: size.width });
   }
-  const atlas = await (options.createAtlas ?? defaultCreateAtlas)(blobs);
+
+  // 4b. The atlas for a tick: animated textures are replaced by their current frame.
+  const createAtlas = options.createAtlas ?? defaultCreateAtlas;
+  const cropTexture = options.cropTexture ?? defaultCropTexture;
+  const frames = new Map<string, Promise<Blob>>();
+  const frameBlob = (source: AnimatedSource, rect: FrameRect): Promise<Blob> => {
+    const key = `${source.id}\u0000${rect.x},${rect.y}`;
+    let frame = frames.get(key);
+    if (frame === undefined) {
+      frame = cropTexture(source.blob, rect).catch(() => source.blob);
+      frames.set(key, frame);
+    }
+    return frame;
+  };
+  const rectsAt = (tick: number): FrameRect[] =>
+    animated.map((source) => frameRectAtTick(source.animation, tick, source.imageWidth));
+  const atlasFor = async (rects: readonly FrameRect[]): Promise<TextureAtlasProvider> => {
+    if (animated.length === 0) return createAtlas(blobs);
+    const current: Record<string, Blob> = { ...blobs };
+    await Promise.all(
+      animated.map(async (source, i) => {
+        current[source.id] = await frameBlob(source, rects[i] as FrameRect);
+      }),
+    );
+    return createAtlas(current);
+  };
+  const rectsKey = (rects: readonly FrameRect[]): string =>
+    rects.map((rect) => `${rect.x},${rect.y}`).join(';');
+  let shownKey = rectsKey(rectsAt(0));
+  let atlas = await atlasFor(rectsAt(0));
+  let latestRequest = 0;
+  const showTick = async (tick: number): Promise<boolean> => {
+    latestRequest += 1;
+    const request = latestRequest;
+    const rects = rectsAt(tick);
+    const key = rectsKey(rects);
+    if (key === shownKey) return false;
+    const next = await atlasFor(rects);
+    // A later request superseded this one while the atlas was built.
+    if (request !== latestRequest) return false;
+    atlas = next;
+    shownKey = key;
+    return true;
+  };
 
   // 5. The synchronous providers deepslate calls while meshing.
   const flags: BlockFlags = { opaque: false };
@@ -235,5 +358,7 @@ export async function createPreviewResources(
     missingModels: [...missingModels].sort(),
     missingTextures,
     usedFallback: [...resolved.values()].some((model) => model.source === 'fallback'),
+    animations: animated.map(({ id, animation }) => ({ id, animation })),
+    showTick,
   };
 }
