@@ -4,6 +4,19 @@
  */
 import type { FunctionProblem } from './types';
 
+/** The offset in `source` of `column` on 0-based `line`, clamped to the text. */
+export function lineOffset(source: string, line: number, column = 0): number {
+  let offset = 0;
+  for (let index = 0; index < line; index++) {
+    const next = source.indexOf('\n', offset);
+    if (next === -1) return source.length;
+    offset = next + 1;
+  }
+  const end = source.indexOf('\n', offset);
+  const lineEnd = end === -1 ? source.length : end;
+  return Math.min(offset + Math.max(0, column), lineEnd);
+}
+
 /** Splits source text into the element's `lines` (CRLF and LF both end a line). */
 export function splitLines(source: string): string[] {
   return source.split(/\r?\n/);

@@ -3,7 +3,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ElementSidebar } from '../../src/renderer/src/components/ElementSidebar';
-import { sampleProject } from './fixtures';
+import { element, sampleProject } from './fixtures';
 
 afterEach(cleanup);
 
@@ -68,5 +68,35 @@ describe('ElementSidebar', () => {
     expect(onSelect).toHaveBeenCalledWith('demo:ruby_block');
     await user.click(screen.getByRole('button', { name: 'Remove demo:item/ruby' }));
     expect(onRemove).toHaveBeenCalledWith('demo:item/ruby');
+  });
+});
+
+describe('ElementSidebar tags', () => {
+  it('groups every tag kind under one Tags heading, by registry then id', () => {
+    const project = sampleProject();
+    const demo = project.namespaces[0];
+    if (demo === undefined) throw new Error('no namespace');
+    demo.elements.push(
+      element('demo:stones', 'minecraft:tag/item'),
+      element('demo:gems', 'minecraft:tag/item'),
+      element('demo:ores', 'minecraft:tag/block'),
+    );
+    render(
+      <ElementSidebar project={project} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
+    );
+    const region = screen.getByRole('region', { name: 'Namespace demo' });
+    const headings = within(region)
+      .getAllByRole('heading', { level: 3 })
+      .map((heading) => heading.textContent);
+    expect(headings.filter((text) => text?.includes('tag'))).toEqual([]);
+    expect(headings).toContain('Tags');
+    const tags = within(region).getByRole('region', { name: 'demo Tags' });
+    const rows = within(tags).getAllByRole('button', { name: /^demo:/ });
+    expect(rows.map((row) => row.getAttribute('aria-label'))).toEqual([
+      'demo:ores',
+      'demo:gems',
+      'demo:stones',
+    ]);
+    expect(rows[0]?.textContent).toBe('blockores');
   });
 });

@@ -29,6 +29,7 @@ describe('data pack templates', () => {
       'function',
       'function_tick',
       'function_load',
+      'tag_function',
       'tag_item',
       'tag_block',
     ]);

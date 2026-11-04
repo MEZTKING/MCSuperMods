@@ -13,6 +13,7 @@ import { joinLines, problemLine, splitLines } from '../components/function-edito
 import { TextareaFunctionEditor } from '../components/function-editor/TextareaFunctionEditor';
 import type {
   CompleteFunction,
+  FunctionFocus,
   FunctionProblem,
   FunctionSourceEditorProps,
 } from '../components/function-editor/types';
@@ -22,6 +23,7 @@ import type { ChangeOptions } from '../forms';
 export type {
   CompleteFunction,
   FunctionCompletion,
+  FunctionFocus,
   FunctionProblem,
 } from '../components/function-editor/types';
 
@@ -43,6 +45,10 @@ export interface FunctionEditorProps {
   complete?: CompleteFunction;
   /** Accessible name of the editor; default "Function source". */
   label?: string;
+  /** A line to move the caret to and focus (Problems navigation), or `null`. */
+  focusLine?: FunctionFocus | null;
+  /** Called once {@link focusLine} has been handled. */
+  onFocused?: () => void;
 }
 
 const NO_PROBLEMS: readonly FunctionProblem[] = [];
@@ -62,6 +68,8 @@ export function FunctionEditor({
   problems = NO_PROBLEMS,
   complete,
   label = 'Function source',
+  focusLine = null,
+  onFocused,
 }: FunctionEditorProps) {
   const source = joinLines(lines);
   const [draft, setDraft] = useState(source);
@@ -120,6 +128,8 @@ export function FunctionEditor({
         problems={problems}
         complete={complete}
         label={label}
+        focus={focusLine}
+        onFocused={onFocused}
       />
       {other.length > 0 && (
         <ul className="flex flex-col gap-0.5 text-xs" aria-label="Other function problems">

@@ -16,17 +16,36 @@ export interface ElementSidebarProps {
 
 const NO_ASSET_ACTIONS: AssetActions = {};
 
-/** Groups a namespace's elements by kind, kinds and elements in id order. */
+/** The prefix of tag kinds (`minecraft:tag/<registry>`), which share one "Tags" group. */
+const TAG_KIND_PREFIX = 'minecraft:tag/';
+
+/** The heading tag kinds are grouped under. */
+export const TAGS_GROUP = 'Tags';
+
+/** The registry of a tag kind (`item` for `minecraft:tag/item`), or `undefined`. */
+export function tagRegistryOf(kind: string): string | undefined {
+  return kind.startsWith(TAG_KIND_PREFIX) ? kind.slice(TAG_KIND_PREFIX.length) : undefined;
+}
+
+/**
+ * Groups a namespace's elements by kind, kinds and elements in id order. Every tag kind
+ * (`minecraft:tag/<registry>`) goes into one {@link TAGS_GROUP} group, ordered by registry
+ * and then id.
+ */
 export function groupByKind(namespace: Namespace): [kind: string, elements: Element[]][] {
   const groups = new Map<string, Element[]>();
   for (const element of namespace.elements) {
-    const group = groups.get(element.kind);
-    if (group === undefined) groups.set(element.kind, [element]);
+    const key = tagRegistryOf(element.kind) === undefined ? element.kind : TAGS_GROUP;
+    const group = groups.get(key);
+    if (group === undefined) groups.set(key, [element]);
     else group.push(element);
   }
   return [...groups.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([kind, elements]) => [kind, [...elements].sort((a, b) => a.id.localeCompare(b.id))]);
+    .map(([kind, elements]) => [
+      kind,
+      [...elements].sort((a, b) => a.kind.localeCompare(b.kind) || a.id.localeCompare(b.id)),
+    ]);
 }
 
 function pathOf(id: ResourceLocation): string {
@@ -40,6 +59,8 @@ const emptyClass = 'px-1 py-0.5 text-muted';
 function ElementRow(props: {
   element: Element;
   selected: boolean;
+  /** The tag's registry, shown before the name in the "Tags" group. */
+  tagRegistry?: string | undefined;
   onSelect(id: ResourceLocation): void;
   onRemove(id: ResourceLocation): void;
 }) {
@@ -60,6 +81,9 @@ function ElementRow(props: {
         }
         onClick={() => props.onSelect(element.id)}
       >
+        {props.tagRegistry !== undefined && (
+          <span className="mr-1 text-muted text-xs">{props.tagRegistry}</span>
+        )}
         {pathOf(element.id)}
       </button>
       <button
@@ -99,6 +123,7 @@ function NamespaceSection(props: {
                   key={element.id}
                   element={element}
                   selected={element.id === props.selectedId}
+                  tagRegistry={kind === TAGS_GROUP ? tagRegistryOf(element.kind) : undefined}
                   onSelect={props.onSelect}
                   onRemove={props.onRemove}
                 />

@@ -107,7 +107,10 @@ export interface NewElementInput {
 
 /**
  * The "New element" template picker: a template (Block model, Item model, Blockstate, …), a
- * namespace and a name. The template sets the id prefix or default name and the starting data.
+ * namespace and a name. The template sets the id prefix or default name, the starting data
+ * and optionally a default namespace (`minecraft` for the tick and load function tags). A
+ * namespace the project does not have yet is offered too; the dialog says that creating the
+ * element adds it (the session adds it in the same undo step).
  */
 export function NewElementDialog(props: {
   namespaces: readonly string[];
@@ -117,9 +120,15 @@ export function NewElementDialog(props: {
   onCancel(): void;
   onSubmit(input: NewElementInput): void;
 }) {
-  const [namespace, setNamespace] = useState(props.namespaces[0] ?? '');
+  const firstNamespace = props.namespaces[0] ?? '';
+  const [namespace, setNamespace] = useState(
+    props.templates[0]?.defaultNamespace ?? firstNamespace,
+  );
   const [templateId, setTemplateId] = useState(props.templates[0]?.id ?? '');
   const template = props.templates.find((entry) => entry.id === templateId);
+  const isNewNamespace = namespace !== '' && !props.namespaces.includes(namespace);
+  const namespaceOptions = isNewNamespace ? [...props.namespaces, namespace] : props.namespaces;
+  const newNamespaceId = useId();
   const [name, setName] = useState(template?.defaultName ?? '');
   const [error, setError] = useState<string | null>(null);
   const namespaceId = useId();
@@ -129,6 +138,11 @@ export function NewElementDialog(props: {
   const choose = (next: ElementTemplate): void => {
     if (next.defaultName !== undefined) setName(next.defaultName);
     else if (template?.defaultName !== undefined && name === template.defaultName) setName('');
+    if (next.defaultNamespace !== undefined) setNamespace(next.defaultNamespace);
+    else if (template?.defaultNamespace !== undefined && namespace === template.defaultNamespace) {
+      // Leave the template's namespace again unless the user picked it themselves.
+      setNamespace(props.namespaces.includes(namespace) ? namespace : firstNamespace);
+    }
     setTemplateId(next.id);
     setError(null);
   };
@@ -148,7 +162,7 @@ export function NewElementDialog(props: {
       error={error}
       wide
       testId="new-element-dialog"
-      submitLabel="Create"
+      submitLabel={isNewNamespace ? 'Add namespace and create' : 'Create'}
       onCancel={props.onCancel}
       onSubmit={() =>
         attempt(() => {
@@ -157,7 +171,9 @@ export function NewElementDialog(props: {
           props.onSubmit({
             id,
             kind: template.kind,
-            data: template.data(id, props.kindDefault(template.kind)),
+            data: template.data(id, props.kindDefault(template.kind), {
+              namespaces: props.namespaces,
+            }),
           });
         }, setError)
       }
@@ -194,16 +210,26 @@ export function NewElementDialog(props: {
       <select
         id={namespaceId}
         data-testid="new-element-namespace"
+        aria-describedby={isNewNamespace ? newNamespaceId : undefined}
         className={fieldClass}
         value={namespace}
         onChange={(event) => setNamespace(event.target.value)}
       >
-        {props.namespaces.map((entry) => (
+        {namespaceOptions.map((entry) => (
           <option key={entry} value={entry}>
-            {entry}
+            {props.namespaces.includes(entry) ? entry : `${entry} (new)`}
           </option>
         ))}
       </select>
+      {isNewNamespace && (
+        <p
+          id={newNamespaceId}
+          className="text-xs text-warning"
+          data-testid="new-element-new-namespace"
+        >
+          The project has no namespace "{namespace}" yet; creating this element adds it.
+        </p>
+      )}
       <label htmlFor={nameId}>Name</label>
       <div className="flex items-center gap-1">
         {template !== undefined && template.prefix !== '' && (

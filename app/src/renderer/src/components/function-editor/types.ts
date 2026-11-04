@@ -27,6 +27,14 @@ export interface FunctionCompletion {
 /** Completion callback: the whole source and the caret's UTF-16 offset. */
 export type CompleteFunction = (source: string, offset: number) => Promise<FunctionCompletion[]>;
 
+/** A source position the host asks the editor to move the caret to and reveal. */
+export interface FunctionFocus {
+  /** 0-based line. */
+  line: number;
+  /** UTF-16 offset within the line; the line start when absent. */
+  column?: number | undefined;
+}
+
 /** Props shared by the Monaco editor and its `<textarea>` fallback. */
 export interface FunctionSourceEditorProps {
   /** DOM id of the editable control. */
@@ -37,4 +45,8 @@ export interface FunctionSourceEditorProps {
   complete?: CompleteFunction | undefined;
   /** Accessible label of the editor. */
   label: string;
+  /** Moves the caret there, reveals it and focuses the editor (Problems navigation). */
+  focus?: FunctionFocus | null | undefined;
+  /** Called once {@link focus} has been handled. */
+  onFocused?: (() => void) | undefined;
 }

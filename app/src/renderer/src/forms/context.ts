@@ -7,10 +7,13 @@ import { createContext, useContext } from 'react';
 
 /** Suggestions for id-like strings. Implemented by the host (registries, project ids). */
 export interface CompletionSource {
-  /** Registry ids (e.g. `item`, `model`, `translation_key`) starting with `prefix`. */
-  suggest(registry: string, prefix: string): string[];
+  /**
+   * Registry ids (e.g. `item`, `model`, `translation_key`) starting with `prefix`. `idPath`
+   * is the field's `#[id(path=...)]`: only ids under it are offered, written without it.
+   */
+  suggest(registry: string, prefix: string, idPath?: string): string[];
   /** Ids defined in the project (textures, models, elements) starting with `prefix`. */
-  projectIds(kind: 'texture' | 'model' | 'element', prefix: string): string[];
+  projectIds(kind: 'texture' | 'model' | 'element', prefix: string, idPath?: string): string[];
 }
 
 /** One problem shown by the form, addressed by an RFC 6901 pointer into the value. */

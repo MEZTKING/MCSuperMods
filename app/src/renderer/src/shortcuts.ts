@@ -7,7 +7,13 @@
  */
 
 /** A command a shortcut can trigger. */
-export type ShortcutCommand = 'save' | 'undo' | 'redo' | 'newElement';
+export type ShortcutCommand =
+  | 'save'
+  | 'undo'
+  | 'redo'
+  | 'newElement'
+  | 'renameElement'
+  | 'commandPalette';
 
 /** How long a command from one path suppresses the same command from the other path. */
 export const DEDUPE_WINDOW_MS = 300;
@@ -24,13 +30,18 @@ export interface ShortcutKeyEvent {
 
 /**
  * Maps a key press to a command: Ctrl/Cmd+S save, Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z and
- * Ctrl+Y redo, Ctrl/Cmd+N new element. Events another handler already consumed (Monaco's
- * own undo, for example) are ignored.
+ * Ctrl+Y redo, Ctrl/Cmd+N new element, Ctrl/Cmd+Shift+P command palette and F2 rename
+ * element. Events another handler already consumed (Monaco's own undo, for example) are
+ * ignored.
  */
 export function shortcutFor(event: ShortcutKeyEvent): ShortcutCommand | null {
   if (event.defaultPrevented || event.altKey) return null;
+  if (event.key === 'F2' && !(event.ctrlKey || event.metaKey || event.shiftKey)) {
+    return 'renameElement';
+  }
   if (!(event.ctrlKey || event.metaKey)) return null;
   const key = event.key.toLowerCase();
+  if (key === 'p' && event.shiftKey) return 'commandPalette';
   if (key === 's' && !event.shiftKey) return 'save';
   if (key === 'z') return event.shiftKey ? 'redo' : 'undo';
   if (key === 'y' && event.ctrlKey && !event.shiftKey) return 'redo';

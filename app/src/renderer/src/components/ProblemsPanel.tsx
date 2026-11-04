@@ -22,7 +22,23 @@ export interface ProblemsPanelProps {
   onReveal?(file: string): void;
 }
 
+const LINE_PATH = /^\/lines\/(\d+)$/;
+
+/**
+ * A problem's location as shown: `line <n>` (1-based, with the column of `range` when
+ * present) for a function line (`/lines/<n>`), else the pointer itself.
+ */
+export function problemLocation(problem: Problem): string | undefined {
+  const path = problem.path;
+  if (path === undefined) return undefined;
+  const match = LINE_PATH.exec(path);
+  if (match === null) return path;
+  const line = `line ${Number(match[1]) + 1}`;
+  return problem.range === undefined ? line : `${line}:${problem.range.start + 1}`;
+}
+
 function ProblemText({ problem }: { problem: Problem }) {
+  const location = problemLocation(problem);
   return (
     <>
       <span className="sr-only">{problem.severity}: </span>
@@ -30,8 +46,8 @@ function ProblemText({ problem }: { problem: Problem }) {
         <code className="mr-1 font-mono text-xs">{problem.elementId}</code>
       )}
       {problem.file !== undefined && <code className="mr-1 font-mono text-xs">{problem.file}</code>}
-      {problem.path !== undefined && (
-        <code className="mr-1 font-mono text-xs text-muted">{problem.path}</code>
+      {location !== undefined && (
+        <code className="mr-1 font-mono text-xs text-muted">{location}</code>
       )}
       {problem.message}
     </>
@@ -60,7 +76,11 @@ function ProblemRow(props: {
         <button
           type="button"
           className="flex-1 cursor-pointer rounded text-left hover:bg-bg"
-          title="Go to the field"
+          title={
+            problem.path !== undefined && LINE_PATH.test(problem.path)
+              ? 'Go to the line'
+              : 'Go to the field'
+          }
           onClick={() => onNavigate({ ...problem, elementId })}
         >
           <ProblemText problem={problem} />

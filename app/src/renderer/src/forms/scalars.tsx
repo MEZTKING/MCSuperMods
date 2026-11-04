@@ -29,14 +29,15 @@ export function suggestionsFor(
   const tags = node.tags ?? [];
   const out = new Set<string>();
   const registry = node.idRegistry;
+  const idPath = node.idPath;
   if (tags.includes('texture_slot') || registry === 'texture') {
-    for (const id of completions.projectIds('texture', prefix)) out.add(id);
+    for (const id of completions.projectIds('texture', prefix, idPath)) out.add(id);
   }
   if (registry === 'model') {
     for (const id of completions.projectIds('model', prefix)) out.add(id);
   }
   if (registry !== undefined && registry !== '') {
-    for (const id of completions.suggest(registry, prefix)) out.add(id);
+    for (const id of completions.suggest(registry, prefix, idPath)) out.add(id);
   }
   if (tags.includes('translation_key')) {
     for (const id of completions.suggest('translation_key', prefix)) out.add(id);

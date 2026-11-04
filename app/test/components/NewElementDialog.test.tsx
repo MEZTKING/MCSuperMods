@@ -117,3 +117,49 @@ describe('templates', () => {
     expect(() => templateElementId(block, 'demo', 'Bad Name')).toThrow(/not a valid name/);
   });
 });
+
+describe('NewElementDialog default namespace', () => {
+  it('preselects a template namespace the project lacks and says it will be added', async () => {
+    const onSubmit = vi.fn<(input: NewElementInput) => void>();
+    const dataKinds = ['minecraft:tag/function', 'minecraft:function'];
+    render(
+      <NewElementDialog
+        namespaces={['demo']}
+        templates={templatesFor(dataKinds)}
+        kindDefault={() => ({ values: [] })}
+        onCancel={vi.fn()}
+        onSubmit={onSubmit}
+      />,
+    );
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('template-function_tick'));
+    const select = screen.getByTestId('new-element-namespace') as HTMLSelectElement;
+    expect(select.value).toBe('minecraft');
+    expect(screen.getByTestId('new-element-new-namespace').textContent).toMatch(/minecraft/);
+    const submit = screen.getByTestId('new-element-dialog-submit');
+    expect(submit.textContent).toBe('Add namespace and create');
+    await user.click(submit);
+    expect(onSubmit.mock.calls[0]?.[0]).toEqual({
+      id: 'minecraft:tick',
+      kind: 'minecraft:tag/function',
+      data: { values: ['demo:tick'] },
+    });
+  });
+
+  it('returns to the project namespace for templates without a default', async () => {
+    render(
+      <NewElementDialog
+        namespaces={['demo']}
+        templates={templatesFor(['minecraft:tag/function', 'minecraft:function'])}
+        kindDefault={() => undefined}
+        onCancel={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('template-function_load'));
+    await user.click(screen.getByTestId('template-function'));
+    expect((screen.getByTestId('new-element-namespace') as HTMLSelectElement).value).toBe('demo');
+    expect(screen.queryByTestId('new-element-new-namespace')).toBeNull();
+  });
+});

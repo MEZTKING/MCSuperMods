@@ -272,6 +272,14 @@ export const DATA_PACK_TEMPLATES: readonly ElementTemplate[] = [
   functionTagTemplate('tick', 'Runs <namespace>:tick every game tick (#minecraft:tick).'),
   functionTagTemplate('load', 'Runs <namespace>:load when the data pack loads (#minecraft:load).'),
   {
+    id: 'tag_function',
+    label: 'Function tag',
+    description: 'A named group of functions, run with /function #<namespace>:<name>.',
+    kind: FUNCTION_TAG,
+    prefix: '',
+    data: fromKind(FUNCTION_TAG),
+  },
+  {
     id: 'tag_item',
     label: 'Item tag',
     description: 'A named group of items, used as #<namespace>:<name>.',

@@ -35,14 +35,16 @@ import {
   saveProject,
 } from '@msm/core';
 import {
+  combinedFileNames,
   createZipSink,
   dataPackExporter,
+  ExportProblemCodes,
   type ExportReport,
   packFileName,
   resourcePackExporter,
   runExport,
 } from '@msm/exporters';
-import type { Plugin, Target } from '@msm/plugin-api';
+import type { Command, Plugin, Target } from '@msm/plugin-api';
 import { type SchemaNode, validateJson } from '@msm/schemas';
 import type {
   AppSettings,
@@ -50,6 +52,7 @@ import type {
   AssetCacheInfoView,
   MinecraftStatus,
   PlatformAdapter,
+  WorldInfo,
 } from '../../../shared/platform';
 import { assetImportError } from './asset-files';
 import {
@@ -114,8 +117,26 @@ export type ExportMode = 'zip' | 'install';
 /** Which pack {@link ProjectSession.exportPack} builds. */
 export type PackKind = 'resource' | 'data';
 
-/** How {@link ProjectSession.exportPack} delivers the pack (`install` and `combined`: B42). */
-export type PackDelivery = 'zip';
+/**
+ * How {@link ProjectSession.exportPack} delivers the pack: `zip` asks where to save it,
+ * `install` writes it into the game (resource packs into `resourcepacks/`, data packs into a
+ * world's `datapacks/`), and `combined` writes both packs into one folder the user picks.
+ */
+export type PackDelivery = 'zip' | 'install' | 'combined';
+
+/** Options of {@link ProjectSession.exportPack}. */
+export interface ExportPackOptions {
+  /** The world folder under `saves/` for a data pack `install`. */
+  worldDir?: string;
+}
+
+/** The result of {@link ProjectSession.renameElement}. */
+export interface RenameResult {
+  /** `false` when the rename was refused as `refs.rename-conflict`. */
+  renamed: boolean;
+  /** How many references were rewritten. */
+  references: number;
+}
 
 /** The result of an export: the pipeline report plus where the pack went. */
 export type ExportResult = ExportReport & {
@@ -269,6 +290,11 @@ export class ProjectSession {
     return () => {
       this.#listeners.delete(listener);
     };
+  }
+
+  /** Command palette entries the registered plugins contribute, in plugin order. */
+  get pluginCommands(): readonly Command[] {
+    return this.#plugins.flatMap((plugin) => plugin.contributes.commands ?? []);
   }
 
   /** The live problems of one element. */
@@ -497,10 +523,11 @@ export class ProjectSession {
    * id does not throw: it is reported as the problem `refs.rename-conflict`, which clears on
    * the next command.
    *
+   * @returns Whether the element was renamed and how many references were rewritten.
    * @throws Error If no project is open, `oldId` does not exist, the new namespace does not
    *   exist or the new id breaks a kind rule.
    */
-  renameElement(oldId: ResourceLocation, newId: ResourceLocation): void {
+  renameElement(oldId: ResourceLocation, newId: ResourceLocation): RenameResult {
     const stack = this.#requireStack();
     const element = elementsById(stack.state).get(oldId);
     if (element !== undefined) assertElementIdAllowed(element.kind, newId);
@@ -509,6 +536,7 @@ export class ProjectSession {
       element === undefined || index === null ? [] : referencesForRename(index, element);
     try {
       stack.execute(commands.renameElement(oldId, newId, references));
+      return { renamed: true, references: references.length };
     } catch (error) {
       if (!(error instanceof DuplicateElementError)) throw error;
       this.#renameProblems = [
@@ -520,6 +548,7 @@ export class ProjectSession {
         },
       ];
       this.#publish();
+      return { renamed: false, references: 0 };
     }
   }
 
@@ -646,13 +675,35 @@ export class ProjectSession {
    * zip the user saves. Every error problem blocks the export, including mcfunction errors
    * from the injected checker (`validateText`); warnings pass.
    *
-   * @param pack - Which pack to build.
-   * @param mode - `zip`: asks where to save it (`platform.dialogs.saveFile`).
-   * @throws Error If no project is open.
+   * @param pack - Which pack to build (ignored for `combined`, which builds both).
+   * @param mode - `zip`: asks where to save it (`platform.dialogs.saveFile`); `install`: the
+   *   game's `resourcepacks/` folder, or `saves/<options.worldDir>/datapacks/` for a data
+   *   pack; `combined`: both packs into a folder the user picks (`platform.exports`).
+   * @param options - `worldDir` for a data pack install.
+   * @throws Error If no project is open, or a data pack install names no world.
    */
-  async exportPack(pack: PackKind, mode: PackDelivery): Promise<ExportResult> {
+  async exportPack(
+    pack: PackKind,
+    mode: PackDelivery,
+    options: ExportPackOptions = {},
+  ): Promise<ExportResult> {
+    if (mode === 'combined') return this.#exportCombined();
+    if (pack === 'data' && mode === 'install' && options.worldDir === undefined) {
+      throw new Error('Choose a world to install the data pack into.');
+    }
     const built = await this.#buildPack(pack);
-    if (built.data === undefined || mode !== 'zip') return built.report;
+    if (built.data === undefined) return built.report;
+    if (mode === 'install') {
+      const { path } =
+        pack === 'data'
+          ? await this.#platform.minecraft.installDataPack(
+              options.worldDir ?? '',
+              built.fileName,
+              built.data,
+            )
+          : await this.#platform.minecraft.installResourcePack(built.fileName, built.data);
+      return { ...built.report, location: path };
+    }
     const label = pack === 'data' ? 'Data pack' : 'Resource pack';
     const location = await this.#platform.dialogs.saveFile({
       title: `Export ${label.toLowerCase()}`,
@@ -661,6 +712,44 @@ export class ProjectSession {
       data: built.data,
     });
     return location === null ? { ...built.report, cancelled: true } : { ...built.report, location };
+  }
+
+  /** Installs the data pack into the world folder `worldDir` under `saves/`. */
+  installDataPack(worldDir: string): Promise<ExportResult> {
+    return this.exportPack('data', 'install', { worldDir });
+  }
+
+  /** The worlds of the configured Minecraft folder (rejects when none is configured). */
+  listWorlds(): Promise<WorldInfo[]> {
+    return this.#platform.minecraft.listWorlds();
+  }
+
+  /**
+   * Builds both packs, then asks for a folder and writes them there as
+   * `combinedFileNames`. Nothing is asked or written when either pack is blocked; the
+   * report merges both packs' problems.
+   */
+  async #exportCombined(): Promise<ExportResult> {
+    const resources = await this.#buildPack('resource');
+    const data = await this.#buildPack('data');
+    // Each pack leaves out the other's layer; that note is noise when both are written.
+    const relevant = (problems: readonly Problem[]) =>
+      problems.filter((problem) => problem.code !== ExportProblemCodes.layerSkipped);
+    const report: ExportReport = {
+      ok: resources.report.ok && data.report.ok,
+      problems: [...relevant(resources.report.problems), ...relevant(data.report.problems)],
+      files: [...resources.report.files, ...data.report.files],
+    };
+    if (resources.data === undefined || data.data === undefined) return report;
+    const folder = await this.#platform.exports.pickFolder('Export both packs into a folder');
+    if (folder === null) return { ...report, cancelled: true };
+    const project = this.#requireStack().state;
+    const names = combinedFileNames(project.name, this.target);
+    await this.#platform.exports.writeFiles(folder, [
+      { name: names.resources, data: resources.data },
+      { name: names.data, data: data.data },
+    ]);
+    return { ...report, location: folder };
   }
 
   /** Runs the export pipeline for one pack into a zip; `data` is absent when blocked. */

@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { problemLine, snippetToText, tokenStart } from './source-text';
+import { lineOffset, problemLine, snippetToText, tokenStart } from './source-text';
 import type { FunctionCompletion, FunctionSourceEditorProps } from './types';
 
 /** At most this many proposals are listed. */
@@ -17,6 +17,8 @@ export function TextareaFunctionEditor({
   problems,
   complete,
   label,
+  focus,
+  onFocused,
 }: FunctionSourceEditorProps) {
   const areaRef = useRef<HTMLTextAreaElement>(null);
   const [items, setItems] = useState<FunctionCompletion[]>([]);
@@ -25,6 +27,15 @@ export function TextareaFunctionEditor({
   const request = useRef(0);
   const listId = useId();
   const problemsId = useId();
+
+  useEffect(() => {
+    const area = areaRef.current;
+    if (focus === null || focus === undefined || area === null) return;
+    const offset = lineOffset(area.value, focus.line, focus.column);
+    area.focus();
+    area.setSelectionRange(offset, offset);
+    onFocused?.();
+  }, [focus, onFocused]);
 
   useEffect(() => {
     if (caretAfter === null) return;

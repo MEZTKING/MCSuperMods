@@ -62,7 +62,22 @@ export const EventChannels = {
 export type InvokeChannel = (typeof InvokeChannels)[keyof typeof InvokeChannels];
 
 /** Commands the application menu sends to the renderer. */
-export const MENU_COMMANDS = ['new', 'open', 'save', 'undo', 'redo'] as const;
+export const MENU_COMMANDS = [
+  'new',
+  'open',
+  'save',
+  'undo',
+  'redo',
+  'importAssets',
+  'exportResourcePack',
+  'exportDataPack',
+  'exportCombined',
+  'installResourcePack',
+  'installDataPack',
+  'settings',
+  'renameElement',
+  'commandPalette',
+] as const;
 
 /** A command the application menu sends to the renderer. */
 export type MenuCommand = (typeof MENU_COMMANDS)[number];

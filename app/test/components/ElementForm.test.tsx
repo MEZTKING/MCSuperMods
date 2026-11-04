@@ -1,12 +1,19 @@
 // @vitest-environment happy-dom
 import type { Element, Problem } from '@msm/core';
+import { dataPackKinds } from '@msm/plugin-datapack';
 import { langKind, modelKind, packMcmetaKind } from '@msm/plugin-resourcepack';
 import { createRegistryIndex } from '@msm/schemas';
 import { builtInTargets } from '@msm/targets';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { ElementForm, type ElementFormProps } from '../../src/renderer/src/studios/ElementForm';
+import {
+  ElementForm,
+  type ElementFormProps,
+  focusedLine,
+  functionProblems,
+  recipeCategories,
+} from '../../src/renderer/src/studios/ElementForm';
 import type { SchemaContextState } from '../../src/renderer/src/studios/use-schema-context';
 import { element, sampleProject } from './fixtures';
 import { schemaIndex } from './forms/schemas';
@@ -110,5 +117,106 @@ describe('ElementForm', () => {
     expect(screen.getByTestId('pack-target').textContent).toContain(target.id);
     expect(document.querySelector('[data-pointer="/pack/description"]')).not.toBeNull();
     expect(document.querySelector('[data-pointer="/pack/pack_format"]')).toBeNull();
+  });
+});
+
+describe('ElementForm Studio routing', () => {
+  const kindOf = (id: string) => dataPackKinds.find((kind) => kind.id === id);
+  const shaped = element('demo:ruby_block', 'minecraft:recipe', {
+    type: 'minecraft:crafting_shaped',
+    pattern: ['#'],
+    key: { '#': 'minecraft:emerald' },
+    result: { id: 'minecraft:emerald_block', count: 1 },
+  });
+
+  it('shows the Recipe Studio for shaped recipes, with the schema form behind Advanced', async () => {
+    renderForm(shaped, { kind: kindOf('minecraft:recipe') });
+    expect(screen.getByTestId('recipe-studio')).toBeTruthy();
+    expect(screen.queryByTestId('schema-form')).toBeNull();
+    await userEvent.setup().click(screen.getByTestId('recipe-advanced-toggle'));
+    expect(screen.getByTestId('schema-form')).toBeTruthy();
+  });
+
+  it('keeps the schema form for recipe types the Studio does not edit', () => {
+    const other = element('demo:trim', 'minecraft:recipe', {
+      type: 'minecraft:smithing_trim',
+    });
+    renderForm(other, { kind: kindOf('minecraft:recipe') });
+    expect(screen.queryByTestId('recipe-studio')).toBeNull();
+    expect(screen.getByTestId('schema-form')).toBeTruthy();
+  });
+
+  it('makes each grid edit its own undo step (per-gesture coalescing keys)', async () => {
+    const props = renderForm(shaped, { kind: kindOf('minecraft:recipe') });
+    const user = userEvent.setup();
+    for (const cell of ['recipe-cell-0-1', 'recipe-cell-0-2']) {
+      const input = screen.getByTestId(cell);
+      await user.click(input);
+      await user.type(input, 'minecraft:emerald{Enter}');
+    }
+    const keys = vi
+      .mocked(props.onChange)
+      .mock.calls.map((call) => call[2]?.coalesce)
+      .filter((key): key is string => key?.startsWith('recipe-grid') === true);
+    expect(keys.length).toBeGreaterThanOrEqual(4);
+    // `pattern` and `key` of one edit share a key; the next edit gets another.
+    expect(keys[0]).toBe(keys[1]);
+    expect(new Set(keys).size).toBeGreaterThanOrEqual(2);
+  });
+
+  it('derives the recipe categories from the schema', async () => {
+    const node = (await schemaIndex()).resolveSchemaRef('resource:recipe');
+    const categories = recipeCategories(node, shaped.data);
+    expect(categories.length).toBeGreaterThan(0);
+    expect(categories).toContain('misc');
+  });
+
+  it('shows the Tag Studio for tag kinds', () => {
+    const tag = element('demo:gems', 'minecraft:tag/item', { values: ['minecraft:emerald'] });
+    renderForm(tag, { kind: kindOf('minecraft:tag/item') });
+    expect(screen.getByTestId('tag-studio')).toBeTruthy();
+    expect(screen.getByTestId('tag-entry-0')).toBeTruthy();
+  });
+
+  it('shows the function editor with line problems and focuses a navigated line', async () => {
+    window.msmNoMonaco = true;
+    const fn = element('demo:greet', 'minecraft:function', { lines: ['say hi', 'bogus'] });
+    const problem: Problem = {
+      severity: 'error',
+      code: 'mcfunction.parse',
+      message: 'Expected a command.',
+      elementId: 'demo:greet',
+      path: '/lines/1',
+      range: { start: 0, end: 5 },
+    };
+    const props = renderForm(fn, {
+      kind: kindOf('minecraft:function'),
+      problems: [problem],
+      focusPointer: '/lines/1',
+    });
+    const editor = (await screen.findByTestId('function-editor-fallback')) as HTMLTextAreaElement;
+    expect(screen.getByText(/Line 2: Expected a command/)).toBeTruthy();
+    await waitFor(() => expect(props.onFocused).toHaveBeenCalled());
+    expect(document.activeElement).toBe(editor);
+    expect(editor.selectionStart).toBe('say hi\n'.length);
+  });
+
+  it('maps pointers and problems for the function editor', () => {
+    expect(focusedLine('/lines/3')).toEqual({ line: 3 });
+    expect(focusedLine('/lines')).toBeNull();
+    expect(focusedLine(null)).toBeNull();
+    expect(
+      functionProblems([
+        {
+          severity: 'warning',
+          code: 'x',
+          message: 'm',
+          path: '/lines/0',
+          range: { start: 1, end: 2 },
+        },
+      ]),
+    ).toEqual([
+      { path: '/lines/0', message: 'm', severity: 'warning', range: { start: 1, end: 2 } },
+    ]);
   });
 });

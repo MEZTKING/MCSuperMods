@@ -1,26 +1,59 @@
-import type { Json, ResourceLocation } from '@msm/core';
+import type { Json, Element as ProjectElement, Reference, ResourceLocation } from '@msm/core';
 import type { Target } from '@msm/plugin-api';
 import { Toast, Tooltip } from 'radix-ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MenuCommand } from '../../shared/ipc-channels';
-import type { AppSettings, MsmBridge } from '../../shared/platform';
+import type { AppSettings, MsmBridge, WorldInfo } from '../../shared/platform';
+import {
+  type BuiltInCommandId,
+  type CommandHandlers,
+  definitionOf,
+  type FocusedLocation,
+  paletteCommands,
+  referenceAt,
+} from './commands/built-in-commands';
+import { CommandPalette } from './components/CommandPalette';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { EditorArea } from './components/EditorArea';
 import { ElementSidebar } from './components/ElementSidebar';
-import { ImportAssetsDialog } from './components/ImportAssetsDialog';
+import { lineOffset } from './components/function-editor/source-text';
+import { ImportAssetsDialog, importFileFilters } from './components/ImportAssetsDialog';
 import { NewElementDialog, NewNamespaceDialog } from './components/NewElementDialog';
+import { RenameElementDialog } from './components/RenameElementDialog';
 import { RightDock } from './components/RightDock';
 import { SettingsDialog } from './components/SettingsDialog';
 import { StatusBar } from './components/StatusBar';
 import { StatusToast } from './components/StatusToast';
-import { Toolbar } from './components/Toolbar';
+import { modKey, Toolbar } from './components/Toolbar';
+import { UsagesDialog } from './components/UsagesDialog';
+import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
-import type { ExportMode, OpenOutcome, ProjectSession } from './session/project-session';
+import {
+  FUNCTION_KIND,
+  functionElementUri,
+  mcfunctionProjectIds,
+} from './session/mcfunction-problems';
+import type {
+  ExportResult,
+  OpenOutcome,
+  PackDelivery,
+  PackKind,
+  ProjectSession,
+} from './session/project-session';
+import { kindRegistry } from './session/schema-context';
 import { type CommandSource, createCommandDeduper, shortcutFor } from './shortcuts';
 import { useUiStore } from './store/ui-store';
 import { ElementForm } from './studios/ElementForm';
-import { errorCount, exportDisabledReason, installDisabledReason } from './studios/export-state';
+import {
+  dataExportDisabledReason,
+  dataInstallDisabledReason,
+  errorCount,
+  exportDisabledReason,
+  hasLayerOutput,
+  installDisabledReason,
+} from './studios/export-state';
+import type { CompleteFunction } from './studios/FunctionEditor';
 import { templatesFor } from './studios/templates';
 import { useSchemaContext } from './studios/use-schema-context';
 
@@ -47,7 +80,13 @@ export function joinProjectPath(root: string, relative: string): string {
 }
 
 /** The menu command bound to the same accelerator as each keyboard shortcut. */
-const menuEquivalent = { save: 'save', undo: 'undo', redo: 'redo' } as const;
+const menuEquivalent = {
+  save: 'save',
+  undo: 'undo',
+  redo: 'redo',
+  renameElement: 'renameElement',
+  commandPalette: 'commandPalette',
+} as const satisfies Record<string, MenuCommand>;
 
 /** The dialog currently open, if any. */
 type DialogState =
@@ -55,7 +94,36 @@ type DialogState =
   | { type: 'element' }
   | { type: 'import'; namespace?: string }
   | { type: 'settings' }
-  | { type: 'remove-asset'; namespace: string; path: string };
+  | { type: 'remove-asset'; namespace: string; path: string }
+  | { type: 'rename'; id: ResourceLocation; references: number }
+  | { type: 'usages'; id: ResourceLocation; usages: readonly Reference[] }
+  | { type: 'worlds'; worlds: readonly WorldInfo[] }
+  | { type: 'no-minecraft'; message: string };
+
+/**
+ * Where the caret is: the `data-pointer` of the focused form field, or `/lines/<n>` and the
+ * column in the function editor's text area. `null` elsewhere (Monaco keeps its caret to
+ * itself).
+ */
+export function focusedLocation(active: Element | null): FocusedLocation | null {
+  if (
+    active instanceof HTMLTextAreaElement &&
+    active.dataset.testid === 'function-editor-fallback'
+  ) {
+    const before = active.value.slice(0, active.selectionStart);
+    const line = before.split('\n').length - 1;
+    const column = active.selectionStart - lineOffset(active.value, line);
+    return { pointer: `/lines/${line}`, column };
+  }
+  const holder = active?.closest('[data-pointer]');
+  const pointer = holder?.getAttribute('data-pointer');
+  return pointer === null || pointer === undefined ? null : { pointer };
+}
+
+const NO_WORLDS: readonly WorldInfo[] = [];
+
+/** A zero-argument action that also reports its own errors. */
+type Action = () => void;
 
 /** The application shell: toolbar, sidebar, editor (Form and Raw JSON), Preview and Problems. */
 export function App({ session, bridge }: { session: ProjectSession; bridge: MsmBridge }) {
@@ -176,7 +244,42 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   }
   const schema = useSchemaContext(session, project === null || target === null ? null : target.id);
 
+  // Selection ---------------------------------------------------------------------------
+
+  const selected =
+    project?.namespaces
+      .flatMap((namespace) => namespace.elements)
+      .find((e) => e.id === selectedId) ?? null;
+  const selectedKind = selected === null ? undefined : session.registry.get(selected.kind);
+  const selectedProblems = useMemo(
+    () =>
+      selected === null
+        ? []
+        : snapshot.problems.filter((problem) => problem.elementId === selected.id),
+    [snapshot.problems, selected],
+  );
+
   // Export and install --------------------------------------------------------------------
+
+  const lowerForTarget = useCallback(
+    (element: ProjectElement) => {
+      const kind = session.registry.get(element.kind);
+      if (kind === undefined || target === null) return [];
+      return kind.lower(element, target);
+    },
+    [session, target],
+  );
+  const hasDataPack = useMemo(
+    () => project !== null && hasLayerOutput(project, 'datapack', lowerForTarget),
+    [project, lowerForTarget],
+  );
+  const hasResourcePack = useMemo(
+    () =>
+      project !== null &&
+      (project.namespaces.some((namespace) => namespace.assets.length > 0) ||
+        hasLayerOutput(project, 'resourcepack', lowerForTarget)),
+    [project, lowerForTarget],
+  );
 
   const exportReason = exportDisabledReason(project !== null, snapshot.problems);
   const installReason = installDisabledReason(
@@ -184,40 +287,92 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     snapshot.problems,
     minecraft.status,
   );
+  const dataExportReason = dataExportDisabledReason(
+    project !== null,
+    snapshot.problems,
+    hasDataPack,
+  );
+  const dataInstallReason = dataInstallDisabledReason(
+    project !== null,
+    snapshot.problems,
+    minecraft.status,
+    hasDataPack,
+  );
 
-  const exportPack = async (mode: ExportMode): Promise<void> => {
+  /** Runs one export or install and reports the outcome. */
+  const runPackExport = async (
+    pack: PackKind,
+    mode: PackDelivery,
+    action: () => Promise<ExportResult>,
+  ): Promise<void> => {
     setExporting(true);
+    const verb = mode === 'install' ? 'Install' : 'Export';
     try {
-      const result = await session.exportResourcePack(mode);
+      const result = await action();
       setExportProblems(result.problems);
       if (!result.ok) {
         setRightDock('problems');
         const errors = errorCount(result.problems);
         setMessage({
           kind: 'error',
-          text: `Export blocked by ${errors} error(s); nothing was written. See Problems.`,
+          text: `${verb} blocked by ${errors} error(s); nothing was written. See Problems.`,
         });
         return;
       }
       if (result.cancelled === true) return;
-      const warnings = result.problems.length;
+      const warnings = result.problems.filter((problem) => problem.severity === 'warning').length;
       const suffix = warnings > 0 ? ` ${warnings} warning(s), see Problems.` : '';
-      setMessage({
-        kind: 'info',
-        text:
-          mode === 'install'
-            ? `Installed to ${result.location ?? 'the resourcepacks folder'}. In Minecraft, open Options, then Resource Packs, and move the pack to the selected side.${suffix}`
-            : `Exported to ${result.location ?? 'the chosen file'}.${suffix}`,
-      });
+      let text: string;
+      if (mode === 'combined') {
+        text = `Exported the resource pack and the data pack to ${result.location ?? 'the chosen folder'}.`;
+      } else if (mode === 'install' && pack === 'data') {
+        text = `Installed to ${result.location ?? 'the world'}. In Minecraft, open the world (or run /reload in it), then check /datapack list.`;
+      } else if (mode === 'install') {
+        text = `Installed to ${result.location ?? 'the resourcepacks folder'}. In Minecraft, open Options, then Resource Packs, and move the pack to the selected side.`;
+      } else {
+        text = `Exported to ${result.location ?? 'the chosen file'}.`;
+      }
+      setMessage({ kind: 'info', text: `${text}${suffix}` });
     } catch (error) {
-      setMessage({
-        kind: 'error',
-        text: `${mode === 'install' ? 'Install' : 'Export'} failed: ${messageOf(error)}`,
-      });
+      setMessage({ kind: 'error', text: `${verb} failed: ${messageOf(error)}` });
     } finally {
       setExporting(false);
     }
   };
+
+  /** Runs `action` when `reason` is `null`; otherwise says why it is unavailable. */
+  const guarded =
+    (reason: string | null, action: Action): Action =>
+    () => {
+      if (exporting) return;
+      if (reason === null) action();
+      else setMessage({ kind: 'error', text: reason });
+    };
+
+  const exportResourceZip = guarded(
+    exportReason,
+    () => void runPackExport('resource', 'zip', () => session.exportPack('resource', 'zip')),
+  );
+  const exportDataZip = guarded(
+    dataExportReason,
+    () => void runPackExport('data', 'zip', () => session.exportPack('data', 'zip')),
+  );
+  const exportCombined = guarded(
+    dataExportReason,
+    () =>
+      void runPackExport('resource', 'combined', () => session.exportPack('resource', 'combined')),
+  );
+  const installResource = guarded(
+    installReason,
+    () =>
+      void runPackExport('resource', 'install', () => session.exportPack('resource', 'install')),
+  );
+  const installData = guarded(dataInstallReason, () => {
+    session.listWorlds().then(
+      (worlds) => setDialog({ type: 'worlds', worlds }),
+      (error: unknown) => setDialog({ type: 'no-minecraft', message: messageOf(error) }),
+    );
+  });
 
   // Assets --------------------------------------------------------------------------------
 
@@ -227,11 +382,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     try {
       files = await bridge.dialogs.pickFiles({
         title: sounds ? 'Import sounds' : 'Import textures',
-        filters: [
-          sounds
-            ? { name: 'Ogg Vorbis sound', extensions: ['ogg'] }
-            : { name: 'PNG image', extensions: ['png'] },
-        ],
+        filters: importFileFilters(subfolder),
       });
     } catch (error) {
       return messageOf(error);
@@ -302,7 +453,69 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
 
   // Commands and shortcuts ----------------------------------------------------------------
 
-  const handlers: Record<MenuCommand, () => void> = {
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  /** The caret's location when the palette opened (for "Go to definition"). */
+  const paletteFocus = useRef<FocusedLocation | null>(null);
+
+  const openPalette = (): void => {
+    if (paletteOpen) return;
+    paletteFocus.current = focusedLocation(document.activeElement);
+    setPaletteOpen(true);
+  };
+
+  const needsNamespace =
+    (action: Action): Action =>
+    () => {
+      if (canAddElement) action();
+      else setMessage({ kind: 'error', text: 'Open a project with a namespace first.' });
+    };
+
+  const renameSelected = (): void => {
+    if (selected === null) {
+      setMessage({ kind: 'error', text: 'Select an element to rename.' });
+      return;
+    }
+    const registry = kindRegistry(selected.kind);
+    const references = session.references
+      .to(selected.id)
+      .filter((reference) => reference.registry === '' || reference.registry === registry).length;
+    setDialog({ type: 'rename', id: selected.id, references });
+  };
+
+  const findUsages = (): void => {
+    if (selected === null) {
+      setMessage({ kind: 'error', text: 'Select an element to find its usages.' });
+      return;
+    }
+    setDialog({ type: 'usages', id: selected.id, usages: session.references.to(selected.id) });
+  };
+
+  const goToDefinition = (): void => {
+    const focus = paletteFocus.current ?? focusedLocation(document.activeElement);
+    if (selected === null || project === null || focus === null) {
+      setMessage({
+        kind: 'error',
+        text: 'Place the cursor in a field that refers to another element first.',
+      });
+      return;
+    }
+    const reference = referenceAt(session.references.from(selected.id), focus);
+    if (reference === undefined) {
+      setMessage({ kind: 'error', text: 'The focused field does not refer to an element.' });
+      return;
+    }
+    const definition = definitionOf(project, reference);
+    if (definition === undefined) {
+      setMessage({
+        kind: 'info',
+        text: `${reference.to} is not defined in this project (it may be a vanilla id).`,
+      });
+      return;
+    }
+    navigateTo(definition.id, null);
+  };
+
+  const handlers: Record<MenuCommand, Action> = {
     new: () => void openWith('New project', () => session.newProject()),
     open: () => void openWith('Open project', () => session.openProject()),
     save: () => void save(),
@@ -314,7 +527,43 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       if (isEditableTarget(document.activeElement)) document.execCommand('redo');
       else session.redo();
     },
+    importAssets: needsNamespace(() => setDialog({ type: 'import' })),
+    exportResourcePack: exportResourceZip,
+    exportDataPack: exportDataZip,
+    exportCombined,
+    installResourcePack: installResource,
+    installDataPack: installData,
+    settings: () => setDialog({ type: 'settings' }),
+    renameElement: renameSelected,
+    commandPalette: openPalette,
   };
+
+  const commandHandlers: CommandHandlers = {
+    newProject: handlers.new,
+    openProject: handlers.open,
+    save: saveDisabledReason === null ? handlers.save : null,
+    undo: snapshot.canUndo ? () => session.undo() : null,
+    redo: snapshot.canRedo ? () => session.redo() : null,
+    newElement: canAddElement ? () => setDialog({ type: 'element' }) : null,
+    addNamespace: project === null ? null : () => setDialog({ type: 'namespace' }),
+    importAssets: canAddElement ? handlers.importAssets : null,
+    exportResourcePack: exportReason === null ? exportResourceZip : null,
+    exportDataPack: dataExportReason === null ? exportDataZip : null,
+    exportCombined: dataExportReason === null ? exportCombined : null,
+    installResourcePack: installReason === null ? installResource : null,
+    installDataPack: dataInstallReason === null ? installData : null,
+    renameElement: selected === null ? null : renameSelected,
+    goToDefinition: selected === null ? null : goToDefinition,
+    findUsages: selected === null ? null : findUsages,
+    toggleRawJson:
+      selected === null ? null : () => setActiveTab(activeTab === 'json' ? 'form' : 'json'),
+    settings: handlers.settings,
+  } satisfies Record<BuiltInCommandId, Action | null>;
+
+  const palette = paletteCommands(commandHandlers, session.pluginCommands, {
+    modKey,
+    onError: (title, error) => setMessage({ kind: 'error', text: `${title}: ${messageOf(error)}` }),
+  });
 
   const dispatch = (command: MenuCommand, source: CommandSource): void => {
     if (deduper.shouldRun(command, source)) handlers[command]();
@@ -325,7 +574,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
       const command = shortcutFor(event);
-      if (command === null || dialog !== null) return;
+      if (command === null || dialog !== null || paletteOpen) return;
       // Text fields keep their native undo/redo.
       if ((command === 'undo' || command === 'redo') && isEditableTarget(document.activeElement)) {
         return;
@@ -344,20 +593,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     return () => window.removeEventListener('keydown', onKeyDown);
   });
 
-  // Selection, form and preview -----------------------------------------------------------
-
-  const selected =
-    project?.namespaces
-      .flatMap((namespace) => namespace.elements)
-      .find((e) => e.id === selectedId) ?? null;
-  const selectedKind = selected === null ? undefined : session.registry.get(selected.kind);
-  const selectedProblems = useMemo(
-    () =>
-      selected === null
-        ? []
-        : snapshot.problems.filter((problem) => problem.elementId === selected.id),
-    [snapshot.problems, selected],
-  );
+  // Form and preview -----------------------------------------------------------
 
   const selectedIdForEdit = selected?.id ?? null;
   const editValue = useCallback(
@@ -392,9 +628,27 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     [session],
   );
 
+  const functionId = selected?.kind === FUNCTION_KIND ? selected.id : null;
+  const functionProjectIds = useMemo(
+    () => (project === null || functionId === null ? null : mcfunctionProjectIds(project)),
+    [project, functionId],
+  );
+  const completeFunction = useMemo<CompleteFunction | undefined>(() => {
+    if (functionId === null || functionProjectIds === null || target === null) return undefined;
+    const targetId = target.id;
+    const uri = functionElementUri(functionId, target);
+    return (source, offset) =>
+      bridge.mcfunction.complete(targetId, source, offset, {
+        uri,
+        projectIds: functionProjectIds,
+        limit: 200,
+      });
+  }, [bridge, functionId, functionProjectIds, target]);
+
   const form =
     project !== null && selected !== null ? (
       <ElementForm
+        complete={completeFunction}
         project={project}
         element={selected}
         kind={selectedKind}
@@ -433,6 +687,10 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             canAddElement={canAddElement}
             exportDisabledReason={exportReason}
             installDisabledReason={installReason}
+            dataExportDisabledReason={dataExportReason}
+            combinedExportDisabledReason={dataExportReason}
+            dataInstallDisabledReason={dataInstallReason}
+            primaryExport={hasDataPack && !hasResourcePack ? 'data' : 'resource'}
             exporting={exporting}
             onNew={handlers.new}
             onOpen={handlers.open}
@@ -441,10 +699,13 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             onRedo={() => session.redo()}
             onAddNamespace={() => setDialog({ type: 'namespace' })}
             onAddElement={() => setDialog({ type: 'element' })}
-            onImportAssets={() => setDialog({ type: 'import' })}
-            onExportZip={() => void exportPack('zip')}
-            onInstall={() => void exportPack('install')}
-            onSettings={() => setDialog({ type: 'settings' })}
+            onImportAssets={handlers.importAssets}
+            onExportZip={exportResourceZip}
+            onExportDataZip={exportDataZip}
+            onExportCombined={exportCombined}
+            onInstall={installResource}
+            onInstallData={installData}
+            onSettings={handlers.settings}
           />
           <main className="grid min-h-0 grid-cols-[minmax(200px,280px)_minmax(0,1fr)_minmax(260px,360px)]">
             <ElementSidebar
@@ -532,6 +793,69 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             }}
           />
         )}
+        {dialog?.type === 'rename' && (
+          <RenameElementDialog
+            id={dialog.id}
+            references={dialog.references}
+            onCancel={() => setDialog(null)}
+            onSubmit={(newId) => {
+              // Throws on kind rules and a missing namespace; the dialog shows it.
+              const result = session.renameElement(dialog.id, newId);
+              setDialog(null);
+              if (!result.renamed) {
+                setRightDock('problems');
+                setMessage({
+                  kind: 'error',
+                  text: `Cannot rename ${dialog.id} to ${newId}: that id is taken (see Problems).`,
+                });
+                return;
+              }
+              select(newId);
+              const count = result.references;
+              setMessage({
+                kind: 'info',
+                text: `Renamed ${dialog.id} to ${newId}; ${count} reference${count === 1 ? '' : 's'} rewritten.`,
+              });
+            }}
+          />
+        )}
+        {dialog?.type === 'usages' && (
+          <UsagesDialog
+            id={dialog.id}
+            usages={dialog.usages}
+            onClose={() => setDialog(null)}
+            onNavigate={(reference) => {
+              setDialog(null);
+              navigateTo(reference.from, reference.path === '' ? null : reference.path);
+            }}
+          />
+        )}
+        <WorldPickerDialog
+          open={dialog?.type === 'worlds'}
+          worlds={dialog?.type === 'worlds' ? dialog.worlds : NO_WORLDS}
+          onClose={() => setDialog(null)}
+          onPick={(world) => {
+            setDialog(null);
+            void runPackExport('data', 'install', () => session.installDataPack(world.dir));
+          }}
+        />
+        {dialog?.type === 'no-minecraft' && (
+          <ConfirmDialog
+            title="Install data pack"
+            message={`${dialog.message} Choose your Minecraft folder in Settings.`}
+            confirmLabel="Open Settings"
+            // The alert dialog also reports "closed" after a confirm; keep Settings open then.
+            onCancel={() =>
+              setDialog((current) => (current?.type === 'no-minecraft' ? null : current))
+            }
+            onConfirm={() => setDialog({ type: 'settings' })}
+          />
+        )}
+        <CommandPalette
+          open={paletteOpen}
+          commands={palette}
+          onClose={() => setPaletteOpen(false)}
+        />
         {dialog?.type === 'settings' && (
           <SettingsDialog
             mcVersion={mcVersion ?? 'unknown'}

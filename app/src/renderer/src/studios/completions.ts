@@ -66,10 +66,37 @@ export function textureIds(project: Project): string[] {
  * `loot_table`, `advancement`, `predicate`, `item_modifier`, `tag/<registry>`, …).
  */
 export interface ProjectCompletionSource {
-  /** Registry ids starting with `prefix`; a `#` prefix suggests tags. */
-  suggest(registry: string, prefix: string): string[];
-  /** Project ids of a kind, kind id or registry name starting with `prefix`. */
-  projectIds(kind: string, prefix: string): string[];
+  /**
+   * Registry ids starting with `prefix`; a `#` prefix suggests tags. With `idPath` (a
+   * field's `#[id(path=...)]`, for example `entity/banner/`) only ids under that path are
+   * offered, written without it (`ns:entity/banner/x` is offered as `ns:x`).
+   */
+  suggest(registry: string, prefix: string, idPath?: string): string[];
+  /** Project ids of a kind, kind id or registry name starting with `prefix` (and `idPath`). */
+  projectIds(kind: string, prefix: string, idPath?: string): string[];
+}
+
+/**
+ * The ids under `idPath`, written as a field with that path takes them: `ns:<idPath>x`
+ * becomes `ns:x` (tag ids, starting with `#`, are kept as they are). Without `idPath` the ids
+ * are returned unchanged.
+ */
+export function stripIdPath(ids: Iterable<string>, idPath: string | undefined): Iterable<string> {
+  if (idPath === undefined || idPath === '') return ids;
+  const out: string[] = [];
+  for (const id of ids) {
+    if (id.startsWith('#')) {
+      out.push(id);
+      continue;
+    }
+    const colon = id.indexOf(':');
+    const namespace = colon === -1 ? 'minecraft' : id.slice(0, colon);
+    const path = colon === -1 ? id : id.slice(colon + 1);
+    if (path.startsWith(idPath) && path.length > idPath.length) {
+      out.push(`${namespace}:${path.slice(idPath.length)}`);
+    }
+  }
+  return out;
 }
 
 const TAG_PREFIX = 'tag/';
@@ -77,9 +104,11 @@ const TAG_PREFIX = 'tag/';
 /**
  * Builds a completion source over `project`.
  *
- * - `suggest(registry, prefix)`: ids of `registry` from the registry index. A prefix starting
- *   with `#` suggests tags instead (`#` + ids of `tag/<registry>`, or of `registry` itself
- *   when it already is a `tag/` registry).
+ * - `suggest(registry, prefix, idPath?)`: ids of `registry` from the registry index. A
+ *   prefix starting with `#` suggests tags instead (`#` + ids of `tag/<registry>`, or of
+ *   `registry` itself when it already is a `tag/` registry). `suggest('tag/<registry>', p)`
+ *   without `#` returns the tag ids without `#` (the Tag Studio adds it). `idPath` keeps
+ *   only ids under that path and strips it (see {@link stripIdPath}).
  * - `projectIds(kind, prefix)`: `texture` (project textures), `model` (model elements),
  *   `element` (every element), a kind id (elements of that kind) or a registry name (the
  *   project's ids in that registry).
@@ -96,7 +125,7 @@ export function createCompletionSource(
   let registryIds: Record<string, string[]> | null = null;
   const elements = () => project.namespaces.flatMap((namespace) => namespace.elements);
   return {
-    suggest(registry, prefix) {
+    suggest(registry, prefix, idPath) {
       if (registry === 'translation_key') {
         lang ??= translationKeys(project);
         return pick(lang, prefix);
@@ -108,12 +137,12 @@ export function createCompletionSource(
           : `${TAG_PREFIX}${kindRegistry(registry)}`;
         return pick(registries.ids(tags), prefix.slice(1)).map((id) => `#${id}`);
       }
-      return pick(registries.ids(registry), prefix);
+      return pick(stripIdPath(registries.ids(registry), idPath), prefix);
     },
-    projectIds(kind, prefix) {
+    projectIds(kind, prefix, idPath) {
       if (kind === 'texture') {
         textures ??= textureIds(project);
-        return pick(textures, prefix);
+        return pick(stripIdPath(textures, idPath), prefix);
       }
       if (kind === 'element')
         return pick(

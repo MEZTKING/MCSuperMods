@@ -29,6 +29,8 @@ export default function MonacoFunctionEditor({
   problems,
   complete,
   label,
+  focus,
+  onFocused,
 }: FunctionSourceEditorProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
@@ -80,6 +82,16 @@ export default function MonacoFunctionEditor({
     const model = editorRef.current?.getModel();
     if (model !== null && model !== undefined && model.getValue() !== value) model.setValue(value);
   }, [value]);
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (focus === null || focus === undefined || editor === null) return;
+    const lineNumber = focus.line + 1;
+    editor.setPosition({ lineNumber, column: (focus.column ?? 0) + 1 });
+    editor.revealLineInCenter(lineNumber);
+    editor.focus();
+    onFocused?.();
+  }, [focus, onFocused]);
 
   useEffect(() => {
     const model = editorRef.current?.getModel();

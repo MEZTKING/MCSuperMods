@@ -1,4 +1,5 @@
 import { createMemoryFileSystem, type MemoryFileSystem, utf8 } from '@msm/core';
+import { unzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import {
   defaultElementData,
@@ -296,5 +297,111 @@ describe('ProjectSession: save with files that failed to load (ADR 0012)', () =>
     // The file is now the session's own; its load problem and the warning are gone.
     expect(session.snapshot.problems.filter((problem) => problem.file !== undefined)).toEqual([]);
     expect(session.skippedFileCount).toBe(0);
+  });
+});
+
+describe('ProjectSession: install and combined delivery', () => {
+  async function dataProject() {
+    const fs = createMemoryFileSystem();
+    const { session, platform } = newSession(fs);
+    expect(await session.newProject()).toEqual({ ok: true });
+    session.addElement({
+      id: 'demo:greet',
+      kind: 'minecraft:function',
+      data: { lines: ['say hello'] },
+    });
+    return { session, platform };
+  }
+
+  it('installs the data pack into the chosen world', async () => {
+    const { session, platform } = await dataProject();
+    const installs: { worldDir: string; fileName: string; data: Uint8Array }[] = [];
+    platform.minecraft.installDataPack = async (worldDir, fileName, data) => {
+      installs.push({ worldDir, fileName, data });
+      return { path: `/minecraft/saves/${worldDir}/datapacks/${fileName}` };
+    };
+    const result = await session.installDataPack('My World');
+    expect(result.ok).toBe(true);
+    const fileName = `demo-${defaultTarget.id}-data.zip`;
+    expect(installs.map((entry) => [entry.worldDir, entry.fileName])).toEqual([
+      ['My World', fileName],
+    ]);
+    expect(result.location).toBe(`/minecraft/saves/My World/datapacks/${fileName}`);
+    const zip = unzipSync(installs[0]?.data ?? new Uint8Array());
+    expect(Object.keys(zip)).toContain(
+      `data/demo/${defaultTarget.folders.data.function}/greet.mcfunction`,
+    );
+  });
+
+  it('refuses a data pack install without a world', async () => {
+    const { session } = await dataProject();
+    await expect(session.exportPack('data', 'install')).rejects.toThrow(/world/);
+  });
+
+  it('writes both packs into the picked folder with the combined names', async () => {
+    const { session, platform } = await dataProject();
+    const calls: string[] = [];
+    const written: { folder: string; names: string[]; files: Record<string, Uint8Array> } = {
+      folder: '',
+      names: [],
+      files: {},
+    };
+    platform.exports.pickFolder = async () => {
+      calls.push('pick');
+      return '/exports/both';
+    };
+    platform.exports.writeFiles = async (folder, files) => {
+      calls.push('write');
+      written.folder = folder;
+      written.names = files.map((file) => file.name);
+      for (const file of files) written.files[file.name] = file.data;
+      return { paths: files.map((file) => `${folder}/${file.name}`) };
+    };
+    const result = await session.exportPack('resource', 'combined');
+    expect(result.ok).toBe(true);
+    expect(result.location).toBe('/exports/both');
+    expect(calls).toEqual(['pick', 'write']);
+    const base = `demo-${defaultTarget.id}`;
+    expect(written.names).toEqual([`${base}-resources.zip`, `${base}-data.zip`]);
+    const data = Object.keys(unzipSync(written.files[`${base}-data.zip`] ?? new Uint8Array()));
+    const resources = Object.keys(
+      unzipSync(written.files[`${base}-resources.zip`] ?? new Uint8Array()),
+    );
+    expect(data.some((path) => path.endsWith('greet.mcfunction'))).toBe(true);
+    expect(resources.some((path) => path.startsWith('data/'))).toBe(false);
+    expect(result.problems.some((problem) => problem.code === 'export.layer-skipped')).toBe(false);
+  });
+
+  it('asks for no folder when a pack is blocked, and reports a cancelled pick', async () => {
+    const { session, platform } = await dataProject();
+    let picks = 0;
+    platform.exports.pickFolder = async () => {
+      picks += 1;
+      return null;
+    };
+    const cancelled = await session.exportPack('data', 'combined');
+    expect(cancelled.cancelled).toBe(true);
+    expect(picks).toBe(1);
+    session.setElementData('demo:greet', { lines: 3 });
+    const blocked = await session.exportPack('data', 'combined');
+    expect(blocked.ok).toBe(false);
+    expect(picks).toBe(1);
+  });
+
+  it('returns the number of rewritten references from a rename', async () => {
+    const { session } = await dataProject();
+    session.addElement({
+      id: 'demo:main',
+      kind: 'minecraft:function',
+      data: { lines: ['function demo:greet', 'say demo:greet'] },
+    });
+    expect(session.renameElement('demo:greet', 'demo:hello')).toEqual({
+      renamed: true,
+      references: 2,
+    });
+    expect(session.renameElement('demo:hello', 'demo:main')).toEqual({
+      renamed: false,
+      references: 0,
+    });
   });
 });

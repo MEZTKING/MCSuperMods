@@ -28,6 +28,16 @@ describe('shortcutFor', () => {
     expect(shortcutFor(key('n', { metaKey: true }))).toBe('newElement');
   });
 
+  it('maps the command palette and rename shortcuts', () => {
+    expect(shortcutFor(key('P', { ctrlKey: true, shiftKey: true }))).toBe('commandPalette');
+    expect(shortcutFor(key('p', { metaKey: true, shiftKey: true }))).toBe('commandPalette');
+    expect(shortcutFor(key('p', { ctrlKey: true }))).toBeNull();
+    expect(shortcutFor(key('F2'))).toBe('renameElement');
+    expect(shortcutFor(key('F2', { ctrlKey: true }))).toBeNull();
+    // New project stays with the menu's Ctrl/Cmd+Shift+N.
+    expect(shortcutFor(key('N', { ctrlKey: true, shiftKey: true }))).toBeNull();
+  });
+
   it('ignores plain keys, Alt combinations and consumed events', () => {
     expect(shortcutFor(key('s'))).toBeNull();
     expect(shortcutFor(key('s', { ctrlKey: true, altKey: true }))).toBeNull();

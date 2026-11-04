@@ -390,3 +390,48 @@ Append-only record of every working session. Newest entry at the bottom. Format:
 **Next**
 - Wave 4: B42 Studio wiring, B43 animated textures, B44 Spyglass symbols for JSON/NBT inside commands, B45 sample data pack.
 - Auto-update brief (B48) runs alongside wave 4.
+
+---
+
+## 2026-11-04 — main session — Phase 2 wave 4 close
+
+**What** (each brief verified and committed)
+- **B45 sample data pack** (`fixtures/sample-datapack`), the input for the user's in-game check:
+  - a `greet` function and a `#minecraft:load` message;
+  - shaped, shapeless and smelting recipes;
+  - an advancement granted by `recipe_crafted` (26.3 uses `recipes`, not `recipe_id`), a loot table, a predicate and an item modifier;
+  - every function has zero mcfunction problems;
+  - data and resource zip SHA-256 goldens, identical in Kiritimati and Los Angeles time;
+  - README "Try the data pack".
+- **B44 mcdoc symbols inside commands:**
+  - Text components, item components and entity NBT are type-checked when the service gets the vanilla-mcdoc export.
+  - MSM checks block-state properties itself, because Spyglass parses but never checks them.
+  - Fixed missing `setParents`, which had broken every parent-walking completer, including block-state completion.
+  - Main chunk grew by 40 kB. Init assertion relaxed to 5 s (measured about 0.4 s, 1.0 s under load).
+- **B43 animated textures:**
+  - `.png.mcmeta` is extracted from the client jar.
+  - Project sidecars pass the export gate as `resource:texture_meta`.
+  - The preview steps through frames with a scrubber (play, pause, previous, next, slider).
+- **B42 Data Pack Studio wiring:**
+  - Routing: recipes open in RecipeStudio, tags in TagStudio, functions in FunctionEditor.
+  - Export: a split Export button and Export/Install menus with disabled reasons; resource or data zip; both packs into a folder the user picks; data pack install into a world through the world picker.
+  - File and Edit menu commands, plus F2 rename with a reference count and Ctrl/Cmd+Shift+P command palette.
+  - Find usages, go to definition, problem navigation to a line, `idPath`-aware completions, and per-gesture undo for recipe-grid edits.
+- **Verification on the combined tree:**
+  - lint, typecheck and test (11 packages, app 359 tests), build
+  - e2e 2/2, `dist:dir` and the packaged smoke test
+  - `check-size`: asar 12.2 MB of 25 MB, renderer within 8 MB
+
+**Decisions**
+- When either pack has errors, every export is disabled. Gating each export separately is a later refinement.
+- App wiring for the mcdoc symbols, and adding the `@spyglassmc/json` and `nbt` packages for completions inside JSON and NBT, go in a wave 5 brief (B49).
+- Old asset caches made before sidecar extraction won't contain sidecars. Bumping `AssetCacheInfo.schemaVersion` is folded into B49.
+
+**Known gaps** (to document in B47)
+- Go to definition inside Monaco cannot read the caret yet; it works from form fields and the textarea editor.
+- Problem navigation lands at the start of the line, not the column.
+- F2 inside Monaco may also fire Monaco's own rename; to check on Windows.
+- The deepslate atlas crops textures to 16×16; true since Phase 1.
+
+**Next**
+- Wave 5: B46 data pack e2e, B48 auto-update, B49 mcdoc symbols in the app with JSON/NBT completion and the cache schema bump, then B47 docs sync.

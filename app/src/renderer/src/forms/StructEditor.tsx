@@ -285,7 +285,7 @@ function keySuggestions(
     return (literalChoices(target) ?? []).map((entry) => String(entry));
   }
   if (target.kind === 'string' && target.idRegistry !== undefined && completions !== undefined) {
-    return completions.suggest(target.idRegistry, prefix).slice(0, 50);
+    return completions.suggest(target.idRegistry, prefix, target.idPath).slice(0, 50);
   }
   return [];
 }
