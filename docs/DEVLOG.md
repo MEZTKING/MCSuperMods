@@ -1113,3 +1113,19 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - `app/CLAUDE.md` still lists six e2e specs; add `worldgen-path` (outside B82 ownership).
+
+---
+
+## 2026-11-04 — main session — Phase 3 closed (code complete), v0.3.0
+
+**What**
+- Reviewed and committed B82 (e2e `worldgen-path`) and B83 (close). `app/CLAUDE.md` lists seven e2e specs.
+- Full acceptance in a clean worktree: frozen install, Biome, check-deps, `tsc -b`, `pnpm turbo run test --force` (14/14, 1,719 tests), build, smoke, e2e 7/7 (26.9 s), `dist:dir`, packaged smoke, check-size within budget (app.asar 13.2 MB of 25 MB). Milestone Log row filled.
+
+**Decisions**
+- Phase 3 is code complete; the exit criterion still needs the user's in-game check (`fixtures/sample-worldgen/README.md`).
+
+**Next**
+- User: tag `v0.2.3`, publish; tag `v0.2.4`; then `v0.3.0` (each from `main`), and run the in-game checks.
+- Remove the last two `minimumReleaseAgeExclude` entries after 2026-11-05 06:11 UTC.
+- Phase 4 (custom blocks and items, content jar, `msm_runtime`): plan next.
