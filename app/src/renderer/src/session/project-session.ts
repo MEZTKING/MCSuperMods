@@ -1,28 +1,56 @@
 /**
  * The renderer-hosted project session (ADR 0007): one element-kind registry, one command
- * stack and load/save through the platform's file system. No DOM access, so it is testable
- * with an in-memory platform.
+ * stack, load/save through the platform's file system with a save manifest (ADR 0012), live
+ * schema problems (plan D5), project assets, and export and install of the resource pack. No
+ * DOM access, so it is testable with an in-memory platform.
  *
  * @packageDocumentation
  */
 
 import {
+  type CommandEvent,
   CommandStack,
   commands,
   createElement,
   createEmptyProject,
+  type Element,
   ElementKindRegistry,
+  elementFilePath,
   type Json,
   loadProject,
+  mediaTypeForPath,
   type Problem,
   type Project,
   type ProjectFileSystem,
   type ResourceLocation,
   registerPlugin,
+  type SaveManifest,
   saveProject,
 } from '@msm/core';
-import type { Plugin } from '@msm/plugin-api';
-import type { PlatformAdapter } from '../../../shared/platform';
+import {
+  createZipSink,
+  type ExportReport,
+  packFileName,
+  runExport,
+  vanillaPacksExporter,
+} from '@msm/exporters';
+import type { Plugin, Target } from '@msm/plugin-api';
+import { type SchemaNode, validateJson } from '@msm/schemas';
+import type {
+  AppSettings,
+  AppSettingsView,
+  AssetCacheInfoView,
+  MinecraftStatus,
+  PlatformAdapter,
+} from '../../../shared/platform';
+import { assetImportError } from './asset-files';
+import {
+  assertElementIdAllowed,
+  defaultElementData,
+  namespaceFromFolderName,
+  PACK_MCMETA_KIND,
+} from './element-defaults';
+import { loadSchemaContext, type SchemaContext } from './schema-context';
 
 /** Everything the UI renders from the session. Replaced, never mutated. */
 export interface SessionSnapshot {
@@ -35,7 +63,10 @@ export interface SessionSnapshot {
   canRedo: boolean;
   undoLabel: string | undefined;
   redoLabel: string | undefined;
-  /** Problems found when the project was loaded. */
+  /**
+   * Every live problem: load problems (with `file`), session warnings, then schema problems
+   * (with `elementId` and an RFC 6901 `path`) in element order.
+   */
   problems: readonly Problem[];
 }
 
@@ -50,39 +81,75 @@ const EMPTY: SessionSnapshot = {
   problems: [],
 };
 
-/**
- * The load problems that block saving. `loadProject` skips element files with error-severity
- * problems and `saveProject` deletes element files it did not write, so saving such a project
- * would destroy the skipped files. Phase 0 therefore refuses to save.
- */
-export function saveBlockers(problems: readonly Problem[]): Problem[] {
-  return problems.filter((problem) => problem.severity === 'error');
-}
-
-/** Thrown by {@link ProjectSession.save} when {@link saveBlockers} is not empty. */
-export class SaveBlockedError extends Error {
-  readonly problems: readonly Problem[];
-
-  constructor(problems: readonly Problem[]) {
-    super(
-      `Saving is disabled: the project loaded with ${problems.length} error(s). Fix these files on disk and reopen the project:\n${problems
-        .map((problem) => `- ${problem.path ?? problem.elementId ?? ''} ${problem.message}`.trim())
-        .join('\n')}`,
-    );
-    this.name = 'SaveBlockedError';
-    this.problems = problems;
-  }
-}
-
 /** The outcome of a new/open request. */
 export type OpenOutcome =
   | { ok: true }
   | { ok: false; reason: string }
   | { ok: false; cancelled: true };
 
+/** Where {@link ProjectSession.exportResourcePack} delivers the pack. */
+export type ExportMode = 'zip' | 'folder' | 'install';
+
+/** The result of an export: the pipeline report plus where the pack went. */
+export type ExportResult = ExportReport & {
+  /** The written zip or installed pack path; absent when blocked or cancelled. */
+  location?: string;
+  /** `true` when the user cancelled the save dialog. */
+  cancelled?: boolean;
+};
+
+/** The result of {@link ProjectSession.importAssets}. */
+export interface ImportAssetsResult {
+  /** Asset paths (relative to `assets/<ns>/`) written, in input order. */
+  imported: string[];
+  /** Files that were not imported, with the reason. */
+  rejected: { name: string; reason: string }[];
+}
+
+/** A target as the session needs it (a `TargetBundle` from `@msm/targets` satisfies this). */
+export interface SessionTarget {
+  target: Target;
+}
+
+/** Options for {@link ProjectSession}. */
+export interface ProjectSessionOptions {
+  /** Plugins to register. */
+  plugins?: readonly Plugin[];
+  /** Clock for element timestamps. */
+  now?: () => string;
+  /** Built-in targets, newest first; the first is the default for new projects. */
+  targets?: readonly SessionTarget[];
+  /** Debounce for live validation in milliseconds (default 150). */
+  validationDelay?: number;
+}
+
+/** Problem codes the session itself reports. */
+export const SessionProblemCodes = {
+  unknownTarget: 'project.unknown-target',
+  overwritesSkippedFile: 'project.overwrites-skipped-file',
+  schemasUnavailable: 'schema.unavailable',
+} as const;
+
 function baseName(path: string): string {
   const parts = path.split(/[\\/]/).filter((part) => part !== '');
   return parts[parts.length - 1] ?? 'Untitled';
+}
+
+function messageOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+/** Whether pointer `path` is `hidden` or inside it. */
+function isUnder(path: string, hidden: string): boolean {
+  return path === hidden || path.startsWith(`${hidden}/`);
+}
+
+function elementsById(project: Project | null): Map<ResourceLocation, Element> {
+  const map = new Map<ResourceLocation, Element>();
+  for (const namespace of project?.namespaces ?? []) {
+    for (const element of namespace.elements) map.set(element.id, element);
+  }
+  return map;
 }
 
 /** A project session over a {@link PlatformAdapter}. */
@@ -91,25 +158,38 @@ export class ProjectSession {
   readonly #platform: PlatformAdapter;
   readonly #fs: ProjectFileSystem;
   readonly #now: (() => string) | undefined;
+  readonly #plugins: readonly Plugin[];
+  readonly #targets: readonly SessionTarget[];
+  readonly #validationDelay: number;
   readonly #listeners = new Set<(snapshot: SessionSnapshot) => void>();
+  readonly #schemaCache = new Map<string, Promise<SchemaContext>>();
   #stack: CommandStack | null = null;
   #unsubscribeStack: (() => void) | null = null;
   #root: string | null = null;
-  #problems: readonly Problem[] = [];
+  #manifest: SaveManifest | undefined;
+  #loadProblems: readonly Problem[] = [];
+  #targetProblems: readonly Problem[] = [];
+  #schemaLoadProblems: readonly Problem[] = [];
+  #schemaProblems = new Map<ResourceLocation, Problem[]>();
+  #pending = new Set<ResourceLocation>();
+  #lastState: Project | null = null;
+  #timer: ReturnType<typeof setTimeout> | null = null;
+  #validation: Promise<void> = Promise.resolve();
+  #generation = 0;
   #snapshot: SessionSnapshot = EMPTY;
 
   /**
    * @param platform - Host services; `platform.fs` is scoped to the open root.
-   * @param options - Plugins to register and an optional clock for element timestamps.
+   * @param options - Plugins, targets, clock and validation debounce.
    */
-  constructor(
-    platform: PlatformAdapter,
-    options: { plugins?: readonly Plugin[]; now?: () => string } = {},
-  ) {
+  constructor(platform: PlatformAdapter, options: ProjectSessionOptions = {}) {
     this.#platform = platform;
     this.#fs = platform.fs;
     this.#now = options.now;
-    for (const plugin of options.plugins ?? []) registerPlugin(this.registry, plugin);
+    this.#plugins = options.plugins ?? [];
+    this.#targets = options.targets ?? [];
+    this.#validationDelay = options.validationDelay ?? 150;
+    for (const plugin of this.#plugins) registerPlugin(this.registry, plugin);
   }
 
   /** The current snapshot. */
@@ -125,13 +205,48 @@ export class ProjectSession {
     };
   }
 
-  /** Whether saving is currently blocked by load errors. */
-  get saveBlocked(): boolean {
-    return saveBlockers(this.#problems).length > 0;
+  /** The live problems of one element. */
+  problemsFor(elementId: ResourceLocation): Problem[] {
+    return this.#snapshot.problems.filter((problem) => problem.elementId === elementId);
+  }
+
+  /** The id of the default target for new projects, or `undefined` with no targets. */
+  get defaultTargetId(): string | undefined {
+    return this.#targets[0]?.target.id;
   }
 
   /**
-   * Asks for an empty directory, creates an empty project there and saves it.
+   * The target the open project exports for: its first listed target when built in, else
+   * the default target (the session then reports `project.unknown-target`).
+   *
+   * @throws Error If no built-in target is configured.
+   */
+  get target(): Target {
+    const wanted = this.#stack?.state.targets[0];
+    const found = this.#targets.find((entry) => entry.target.id === wanted);
+    const target = found?.target ?? this.#targets[0]?.target;
+    if (target === undefined) throw new Error('No Minecraft target is available.');
+    return target;
+  }
+
+  /**
+   * The schema model and registries for the current {@link target}, loaded through
+   * `platform.targets.readVendored` on first use and memoised per target.
+   */
+  async schemas(): Promise<SchemaContext> {
+    const target = this.target;
+    let cached = this.#schemaCache.get(target.id);
+    if (cached === undefined) {
+      cached = loadSchemaContext(this.#platform, target);
+      this.#schemaCache.set(target.id, cached);
+      cached.catch(() => this.#schemaCache.delete(target.id));
+    }
+    return cached;
+  }
+
+  /**
+   * Asks for an empty directory and creates a project there: the default target, the
+   * registered plugins, a namespace named after the folder and its `pack.mcmeta` element.
    */
   async newProject(): Promise<OpenOutcome> {
     if (!(await this.#confirmDiscard())) return { ok: false, cancelled: true };
@@ -142,9 +257,29 @@ export class ProjectSession {
     if (path === null) return { ok: false, cancelled: true };
     const created = await this.#platform.project.createRoot(path);
     if (!created.ok) return created;
-    const project = createEmptyProject(baseName(path));
-    await saveProject(this.#fs, project, this.registry);
-    this.#adopt(path, project, []);
+    const name = baseName(path);
+    const targetId = this.defaultTargetId;
+    const project = createEmptyProject(name, {
+      targets: targetId === undefined ? [] : [targetId],
+      plugins: this.#plugins.map((plugin) => plugin.id),
+    });
+    const namespace = namespaceFromFolderName(name);
+    const elements: Element[] = [];
+    const packKind = this.registry.get(PACK_MCMETA_KIND);
+    if (packKind !== undefined) {
+      const id: ResourceLocation = `${namespace}:pack`;
+      elements.push(
+        createElement({
+          id,
+          kind: PACK_MCMETA_KIND,
+          data: defaultElementData(PACK_MCMETA_KIND, id, packKind.defaultData),
+          ...(this.#now === undefined ? {} : { now: this.#now }),
+        }),
+      );
+    }
+    project.namespaces.push({ name: namespace, elements, assets: [] });
+    const saved = await saveProject(this.#fs, project, this.registry);
+    this.#adopt(path, project, [], saved.manifest);
     return { ok: true };
   }
 
@@ -158,27 +293,43 @@ export class ProjectSession {
     const opened = await this.#platform.project.openRoot(path);
     if (!opened.ok) return opened;
     try {
-      const { project, problems } = await loadProject(this.#fs, this.registry);
-      this.#adopt(path, project, problems);
+      const { project, problems, manifest } = await loadProject(this.#fs, this.registry);
+      this.#adopt(path, project, problems, manifest);
       return { ok: true };
     } catch (error) {
       await this.#platform.project.closeRoot();
       this.#close();
-      return { ok: false, reason: error instanceof Error ? error.message : String(error) };
+      return { ok: false, reason: messageOf(error) };
     }
   }
 
   /**
-   * Saves the project.
+   * The number of element files the last open could not load and left untouched on disk.
+   */
+  get skippedFileCount(): number {
+    return this.#skippedFiles().size;
+  }
+
+  /**
+   * Saves the project. Saving is never blocked (ADR 0012): it deletes only element files
+   * the last load or save owned, so files that failed to load stay on disk.
    *
-   * @throws {@link SaveBlockedError} If the project loaded with error-severity problems.
-   * @throws Error If no project is open.
+   * @throws Error If no project is open, or two elements map to the same file.
    */
   async save(): Promise<void> {
     const stack = this.#requireStack();
-    const blockers = saveBlockers(this.#problems);
-    if (blockers.length > 0) throw new SaveBlockedError(blockers);
-    await saveProject(this.#fs, stack.state, this.registry);
+    const result = await saveProject(
+      this.#fs,
+      stack.state,
+      this.registry,
+      this.#manifest === undefined ? {} : { manifest: this.#manifest },
+    );
+    this.#manifest = result.manifest;
+    // A skipped file that this save overwrote is now the session's own file.
+    const written = new Set(result.written);
+    this.#loadProblems = this.#loadProblems.filter(
+      (problem) => problem.file === undefined || !written.has(problem.file),
+    );
     stack.markSaved();
     this.#publish();
   }
@@ -188,15 +339,22 @@ export class ProjectSession {
     this.#requireStack().execute(commands.addNamespace(name));
   }
 
-  /** Adds an element of a registered kind. */
+  /**
+   * Adds an element of a registered kind. Without `data`, the kind's `defaultData` is used
+   * with its placeholders replaced by ids in the element's namespace.
+   *
+   * @throws Error If the kind is unknown or the id breaks a kind rule (`<ns>:sounds`).
+   */
   addElement(input: { id: ResourceLocation; kind: string; data?: Json }): void {
-    if (this.registry.get(input.kind) === undefined) {
+    const kind = this.registry.get(input.kind);
+    if (kind === undefined) {
       throw new Error(`Unknown element kind ${JSON.stringify(input.kind)}.`);
     }
+    assertElementIdAllowed(input.kind, input.id);
     const element = createElement({
       id: input.id,
       kind: input.kind,
-      data: input.data ?? {},
+      data: input.data ?? defaultElementData(input.kind, input.id, kind.defaultData),
       ...(this.#now === undefined ? {} : { now: this.#now }),
     });
     this.#requireStack().execute(commands.addElement(element));
@@ -212,6 +370,26 @@ export class ProjectSession {
     this.#requireStack().execute(commands.setElementData(id, data));
   }
 
+  /**
+   * Sets one value inside an element's data (RFC 6901 pointer; `undefined` deletes). Pass a
+   * `coalesce` key such as `typing:<pointer>` so typing merges into one undo step.
+   */
+  setElementValue(
+    id: ResourceLocation,
+    pointer: string,
+    value: Json | undefined,
+    options: { coalesce?: string } = {},
+  ): void {
+    this.#requireStack().execute(
+      commands.setElementValue(
+        id,
+        pointer,
+        value,
+        options.coalesce === undefined ? {} : { coalesce: options.coalesce },
+      ),
+    );
+  }
+
   /** Undoes the last command; returns `false` if there was none. */
   undo(): boolean {
     return this.#stack?.undo() ?? false;
@@ -221,6 +399,278 @@ export class ProjectSession {
   redo(): boolean {
     return this.#stack?.redo() ?? false;
   }
+
+  // Assets ------------------------------------------------------------------------------
+
+  /**
+   * Imports files into `assets/<namespace>/<subfolder>/`. Each file is checked (safe name,
+   * PNG header for textures, Ogg signature for sounds), written immediately (not undoable)
+   * and then recorded with an undoable `addAsset` command. Re-importing an existing path
+   * replaces its bytes and keeps the record.
+   *
+   * @param namespace - An existing namespace.
+   * @param files - The files' names and bytes.
+   * @param subfolder - For example `textures/block`, `textures/item` or `sounds`.
+   * @throws Error If no project is open or the namespace does not exist.
+   */
+  async importAssets(
+    namespace: string,
+    files: readonly { name: string; data: Uint8Array }[],
+    subfolder: 'textures/block' | 'textures/item' | 'sounds' | (string & {}),
+  ): Promise<ImportAssetsResult> {
+    const stack = this.#requireStack();
+    const target = stack.state.namespaces.find((entry) => entry.name === namespace);
+    if (target === undefined) throw new Error(`Namespace "${namespace}" does not exist.`);
+    const result: ImportAssetsResult = { imported: [], rejected: [] };
+    for (const file of files) {
+      const reason = assetImportError(subfolder, file.name, file.data);
+      if (reason !== undefined) {
+        result.rejected.push({ name: file.name, reason });
+        continue;
+      }
+      const path = `${subfolder}/${file.name}`;
+      const dir = `assets/${namespace}/${subfolder}`;
+      try {
+        await this.#fs.mkdirp(dir);
+        await this.#fs.writeFile(`${dir}/${file.name}`, file.data);
+      } catch (error) {
+        result.rejected.push({ name: file.name, reason: messageOf(error) });
+        continue;
+      }
+      const current = stack.state.namespaces.find((entry) => entry.name === namespace);
+      if (current?.assets.some((asset) => asset.path === path) !== true) {
+        stack.execute(commands.addAsset(namespace, { path, mediaType: mediaTypeForPath(path) }));
+      }
+      result.imported.push(path);
+    }
+    return result;
+  }
+
+  /**
+   * Removes an asset: the record (undoable) and then its bytes (not undoable).
+   *
+   * @param namespace - The asset's namespace.
+   * @param path - The asset path relative to `assets/<namespace>/`.
+   */
+  async removeAsset(namespace: string, path: string): Promise<void> {
+    this.#requireStack().execute(commands.removeAsset(namespace, path));
+    const file = `assets/${namespace}/${path}`;
+    if (await this.#fs.exists(file)) await this.#fs.remove(file);
+  }
+
+  /** Reads a project asset's bytes. */
+  readAsset(namespace: string, path: string): Promise<Uint8Array> {
+    return this.#fs.readFile(`assets/${namespace}/${path}`);
+  }
+
+  // Export -------------------------------------------------------------------------------
+
+  /**
+   * Exports the resource pack with `runExport` and the `vanilla-packs` exporter. Schema
+   * errors (and every other error problem) block the export; nothing is written then.
+   *
+   * - `zip`: asks where to save the zip (`platform.dialogs.saveFile`).
+   * - `install`: writes the zip into the game's `resourcepacks/` folder.
+   * - `folder`: not available yet (TODO(B26): needs a main-process channel that writes a
+   *   folder outside the project).
+   *
+   * @throws Error If no project is open or the mode is `folder`.
+   */
+  async exportResourcePack(mode: ExportMode): Promise<ExportResult> {
+    const stack = this.#requireStack();
+    if (mode === 'folder') {
+      throw new Error('Exporting to a folder is not available yet; export a zip instead.');
+    }
+    await this.flushValidation();
+    const project = stack.state;
+    const context = await this.schemas();
+    const info = await this.#platform.app.info();
+    const sink = createZipSink();
+    const report = await runExport({
+      project,
+      registry: this.registry,
+      target: context.target,
+      schemaIndex: context.schemaIndex,
+      registries: context.registries(project),
+      exporter: vanillaPacksExporter,
+      sink,
+      readAsset: (namespace, path) => this.readAsset(namespace, path),
+      meta: { msmVersion: info.version, plugins: [...project.plugins] },
+    });
+    if (!report.ok) return report;
+    const data = sink.finish();
+    const fileName = packFileName(project.name, context.target);
+    if (mode === 'install') {
+      const { path } = await this.#platform.minecraft.installResourcePack(fileName, data);
+      return { ...report, location: path };
+    }
+    const location = await this.#platform.dialogs.saveFile({
+      title: 'Export resource pack',
+      defaultName: fileName,
+      filters: [{ name: 'Resource pack', extensions: ['zip'] }],
+      data,
+    });
+    return location === null ? { ...report, cancelled: true } : { ...report, location };
+  }
+
+  // Minecraft and settings ----------------------------------------------------------------
+
+  /** The Minecraft installation and asset cache status for the current target. */
+  async minecraftStatus(): Promise<MinecraftStatus> {
+    return this.#platform.minecraft.status(this.target.mcVersion);
+  }
+
+  /**
+   * Extracts preview assets from the client jar for the current target (ADR 0011). Progress
+   * arrives on the bridge's `onMinecraftProgress`.
+   */
+  async extractVanillaAssets(): Promise<AssetCacheInfoView> {
+    return this.#platform.minecraft.extract(this.target.mcVersion);
+  }
+
+  /** Reads the application settings. */
+  getSettings(): Promise<AppSettingsView> {
+    return this.#platform.settings.get();
+  }
+
+  /** Writes the application settings. */
+  setSettings(settings: AppSettings): Promise<void> {
+    return this.#platform.settings.set(settings);
+  }
+
+  // Validation ---------------------------------------------------------------------------
+
+  /**
+   * Runs any pending validation now instead of after the debounce, and resolves when the
+   * snapshot's problems are up to date.
+   */
+  flushValidation(): Promise<void> {
+    if (this.#timer !== null) {
+      clearTimeout(this.#timer);
+      this.#timer = null;
+    }
+    return this.#runValidation();
+  }
+
+  #scheduleValidation(delay: number): void {
+    if (this.#timer !== null) clearTimeout(this.#timer);
+    this.#timer = setTimeout(() => {
+      this.#timer = null;
+      void this.#runValidation();
+    }, delay);
+  }
+
+  #runValidation(): Promise<void> {
+    this.#validation = this.#validation.then(() => this.#validatePending());
+    return this.#validation;
+  }
+
+  async #validatePending(): Promise<void> {
+    const generation = this.#generation;
+    if (this.#stack === null || this.#pending.size === 0) return;
+    let context: SchemaContext;
+    try {
+      context = await this.schemas();
+    } catch (error) {
+      if (generation !== this.#generation) return;
+      this.#schemaLoadProblems = [
+        {
+          severity: 'warning',
+          code: SessionProblemCodes.schemasUnavailable,
+          message: `Schemas could not be loaded, so elements are not validated: ${messageOf(error)}`,
+        },
+      ];
+      this.#pending.clear();
+      this.#publish();
+      return;
+    }
+    if (generation !== this.#generation || this.#stack === null) return;
+    this.#schemaLoadProblems = [];
+    const project = this.#stack.state;
+    const elements = elementsById(project);
+    const registries = context.registries(project);
+    const pending = [...this.#pending];
+    this.#pending.clear();
+    for (const id of pending) {
+      const element = elements.get(id);
+      if (element === undefined) {
+        this.#schemaProblems.delete(id);
+        continue;
+      }
+      this.#schemaProblems.set(id, this.#validateElement(element, context, registries));
+    }
+    this.#publish();
+  }
+
+  #validateElement(
+    element: Element,
+    context: SchemaContext,
+    registries: ReturnType<SchemaContext['registries']>,
+  ): Problem[] {
+    const kind = this.registry.get(element.kind);
+    if (kind === undefined) return [];
+    let node: SchemaNode;
+    try {
+      node = context.schemaIndex.resolveSchemaRef(kind.schema);
+    } catch {
+      return [
+        {
+          severity: 'warning',
+          code: SessionProblemCodes.schemasUnavailable,
+          elementId: element.id,
+          message: `The schema ${kind.schema} of kind ${kind.id} is not available for ${context.target.id}; the element is not validated.`,
+        },
+      ];
+    }
+    const hidden = kind.hiddenPaths ?? [];
+    return validateJson(element.data, node, { registries })
+      .filter((problem) => !hidden.some((path) => isUnder(problem.path, path)))
+      .map((schemaProblem) => {
+        const problem: Problem = {
+          severity: schemaProblem.severity,
+          code: schemaProblem.code,
+          elementId: element.id,
+          message: schemaProblem.message,
+        };
+        if (schemaProblem.path !== '') problem.path = schemaProblem.path;
+        return problem;
+      });
+  }
+
+  /** Marks elements whose data changed (by structural identity) for validation. */
+  #onCommand(event: CommandEvent): void {
+    const before = elementsById(this.#lastState);
+    const after = elementsById(event.state);
+    const idsKey = (project: Project | null) =>
+      project === null
+        ? ''
+        : JSON.stringify(
+            project.namespaces.map((namespace) => [
+              namespace.name,
+              namespace.assets.map((asset) => asset.path),
+              namespace.elements.filter((e) => e.kind === 'minecraft:model').map((e) => e.id),
+            ]),
+          );
+    if (idsKey(this.#lastState) !== idsKey(event.state)) {
+      // Project-defined ids changed, so `#[id]` warnings anywhere may change.
+      for (const id of after.keys()) this.#pending.add(id);
+    } else {
+      for (const [id, element] of after) {
+        if (before.get(id) !== element) this.#pending.add(id);
+      }
+    }
+    for (const id of before.keys()) {
+      if (!after.has(id)) {
+        this.#schemaProblems.delete(id);
+        this.#pending.delete(id);
+      }
+    }
+    this.#lastState = event.state;
+    if (this.#pending.size > 0) this.#scheduleValidation(this.#validationDelay);
+    this.#publish();
+  }
+
+  // Internals ----------------------------------------------------------------------------
 
   async #confirmDiscard(): Promise<boolean> {
     if (!this.#snapshot.dirty) return true;
@@ -234,39 +684,128 @@ export class ProjectSession {
     return this.#stack;
   }
 
-  #adopt(root: string, project: Project, problems: readonly Problem[]): void {
-    this.#unsubscribeStack?.();
-    this.#stack = new CommandStack(project);
-    this.#unsubscribeStack = this.#stack.subscribe(() => this.#publish());
-    this.#root = root;
-    this.#problems = problems;
-    this.#publish();
+  /** Element files that failed to load (error problems with `file`) and are not owned. */
+  #skippedFiles(): Set<string> {
+    const owned = new Set(this.#manifest?.elementFiles ?? []);
+    const skipped = new Set<string>();
+    for (const problem of this.#loadProblems) {
+      if (problem.severity === 'error' && problem.file !== undefined && !owned.has(problem.file)) {
+        skipped.add(problem.file);
+      }
+    }
+    return skipped;
   }
 
-  #close(): void {
+  /** Warnings for elements that a save would write over a file that failed to load. */
+  #overwriteProblems(project: Project): Problem[] {
+    const skipped = this.#skippedFiles();
+    if (skipped.size === 0) return [];
+    const out: Problem[] = [];
+    for (const namespace of project.namespaces) {
+      for (const element of namespace.elements) {
+        const folder = this.registry.folderFor(element.kind);
+        if (folder === undefined) continue;
+        const file = elementFilePath(element, folder);
+        if (!skipped.has(file)) continue;
+        out.push({
+          severity: 'warning',
+          code: SessionProblemCodes.overwritesSkippedFile,
+          elementId: element.id,
+          file,
+          message: `Saving will replace ${file}, which could not be loaded. Rename ${element.id} to keep that file.`,
+        });
+      }
+    }
+    return out;
+  }
+
+  #targetProblemsFor(project: Project): Problem[] {
+    const wanted = project.targets[0];
+    if (wanted === undefined || this.#targets.some((entry) => entry.target.id === wanted)) {
+      return [];
+    }
+    const fallback = this.#targets[0]?.target.id;
+    return [
+      {
+        severity: 'warning',
+        code: SessionProblemCodes.unknownTarget,
+        message:
+          fallback === undefined
+            ? `Target "${wanted}" is not supported by this version of MSM.`
+            : `Target "${wanted}" is not supported by this version of MSM; using ${fallback} instead.`,
+      },
+    ];
+  }
+
+  #adopt(
+    root: string,
+    project: Project,
+    problems: readonly Problem[],
+    manifest: SaveManifest,
+  ): void {
+    this.#reset();
+    this.#stack = new CommandStack(project);
+    this.#unsubscribeStack = this.#stack.subscribe((event) => this.#onCommand(event));
+    this.#root = root;
+    this.#manifest = manifest;
+    this.#loadProblems = problems;
+    this.#targetProblems = this.#targetProblemsFor(project);
+    this.#lastState = project;
+    for (const id of elementsById(project).keys()) this.#pending.add(id);
+    this.#publish();
+    // Full pass on open, without the debounce.
+    if (this.#pending.size > 0) this.#scheduleValidation(0);
+  }
+
+  #reset(): void {
+    this.#generation += 1;
+    if (this.#timer !== null) clearTimeout(this.#timer);
+    this.#timer = null;
     this.#unsubscribeStack?.();
     this.#unsubscribeStack = null;
     this.#stack = null;
     this.#root = null;
-    this.#problems = [];
+    this.#manifest = undefined;
+    this.#loadProblems = [];
+    this.#targetProblems = [];
+    this.#schemaLoadProblems = [];
+    this.#schemaProblems = new Map();
+    this.#pending.clear();
+    this.#lastState = null;
+  }
+
+  #close(): void {
+    this.#reset();
     this.#publish();
   }
 
   #publish(): void {
     const stack = this.#stack;
-    this.#snapshot =
-      stack === null
-        ? EMPTY
-        : {
-            root: this.#root,
-            project: stack.state,
-            dirty: stack.isDirty,
-            canUndo: stack.canUndo,
-            canRedo: stack.canRedo,
-            undoLabel: stack.undoLabel(),
-            redoLabel: stack.redoLabel(),
-            problems: this.#problems,
-          };
+    if (stack === null) {
+      this.#snapshot = EMPTY;
+    } else {
+      const project = stack.state;
+      const schemaProblems: Problem[] = [];
+      for (const id of elementsById(project).keys()) {
+        schemaProblems.push(...(this.#schemaProblems.get(id) ?? []));
+      }
+      this.#snapshot = {
+        root: this.#root,
+        project,
+        dirty: stack.isDirty,
+        canUndo: stack.canUndo,
+        canRedo: stack.canRedo,
+        undoLabel: stack.undoLabel(),
+        redoLabel: stack.redoLabel(),
+        problems: [
+          ...this.#loadProblems,
+          ...this.#targetProblems,
+          ...this.#schemaLoadProblems,
+          ...this.#overwriteProblems(project),
+          ...schemaProblems,
+        ],
+      };
+    }
     for (const listener of [...this.#listeners]) listener(this.#snapshot);
   }
 }

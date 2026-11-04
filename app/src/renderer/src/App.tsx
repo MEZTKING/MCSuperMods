@@ -11,7 +11,6 @@ import { StatusBar } from './components/StatusBar';
 import { StatusToast } from './components/StatusToast';
 import { Toolbar } from './components/Toolbar';
 import type { OpenOutcome, ProjectSession } from './session/project-session';
-import { saveBlockers } from './session/project-session';
 import { type CommandSource, createCommandDeduper, shortcutFor } from './shortcuts';
 import { useUiStore } from './store/ui-store';
 
@@ -57,6 +56,23 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     return () => cancelAnimationFrame(frame);
   }, [bridge]);
 
+  // Asset extraction progress from main (plan D3); the preview and settings read it.
+  useEffect(
+    () =>
+      bridge.onMinecraftProgress((progress) => {
+        useUiStore.getState().setMinecraftProgress(progress.phase === 'done' ? null : progress);
+      }),
+    [bridge],
+  );
+
+  // Reads the Minecraft installation status for the open project's target into the store.
+  const refreshMinecraftStatus = useCallback(() => {
+    session.minecraftStatus().then(
+      (status) => useUiStore.getState().setMinecraftStatus(status),
+      () => useUiStore.getState().setMinecraftStatus(null),
+    );
+  }, [session]);
+
   const run = useCallback(
     (label: string, action: () => void) => {
       try {
@@ -75,15 +91,16 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         const outcome = await action();
         if (outcome.ok) {
           select(null);
-          const blocked = saveBlockers(session.snapshot.problems).length;
+          const skipped = session.skippedFileCount;
           setMessage(
-            blocked > 0
+            skipped > 0
               ? {
                   kind: 'error',
-                  text: `Saving is disabled: the project loaded with ${blocked} error(s). See Problems.`,
+                  text: `${skipped} file(s) could not be loaded and were left untouched (see Problems).`,
                 }
               : { kind: 'info', text: `${label}: ${session.snapshot.root ?? ''}` },
           );
+          refreshMinecraftStatus();
         } else if ('reason' in outcome) {
           setMessage({ kind: 'error', text: `${label} failed: ${outcome.reason}` });
         }
@@ -91,7 +108,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         setMessage({ kind: 'error', text: `${label} failed: ${messageOf(error)}` });
       }
     },
-    [select, session, setMessage],
+    [select, session, setMessage, refreshMinecraftStatus],
   );
 
   const save = useCallback(async () => {
@@ -105,12 +122,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
 
   const project = snapshot.project;
   const canAddElement = (project?.namespaces.length ?? 0) > 0;
-  const saveDisabledReason =
-    project === null
-      ? 'No project is open.'
-      : saveBlockers(snapshot.problems).length > 0
-        ? 'Saving is disabled because the project loaded with errors.'
-        : null;
+  // Saving is never blocked by problems (ADR 0012); errors block export only.
+  const saveDisabledReason = project === null ? 'No project is open.' : null;
 
   const handlers: Record<MenuCommand, () => void> = {
     new: () => void openWith('New project', () => session.newProject()),
@@ -214,6 +227,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             kinds={session.registry.all().map((kind) => kind.id)}
             onCancel={() => setDialog(null)}
             onSubmit={(input) => {
+              // Throws on kind rules (e.g. `<ns>:sounds`); the dialog shows the error.
               session.addElement(input);
               select(input.id);
               setDialog(null);
