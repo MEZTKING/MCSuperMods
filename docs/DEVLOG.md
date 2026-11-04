@@ -295,3 +295,74 @@ Append-only record of every working session. Newest entry at the bottom. Format:
   - In-game check on Windows with Minecraft 26.3: install the sample pack and hold a stick.
   - The Q12 fallback-parent policy (veto or accept).
 - **Next:** the orchestrator plans Phase 2, Data Pack Studio, including the Phase 2 carry-overs listed in ROADMAP.
+
+---
+
+## 2026-11-04 — main session — User decisions: licence, visibility, auto-update, Windows only
+
+**Decisions (user)**
+- **Licence:** MIT for the whole repository, "free to use but must be credited". Credit comes through the retained copyright notice. `LICENSE` is at the root with "Copyright (c) 2026 MEZTKING and MCSuperMods contributors", and every `package.json` has `"license": "MIT"`. Packs made with MCSuperMods belong to their authors.
+- **Repository:** will be made public. The user does this in GitHub settings; it cannot be done from this session.
+- **Auto-update:** `electron-updater` with the GitHub provider on public Releases. The dependency is pinned (6.8.11) and implementation is scheduled in Phase 2. DESIGN Q4 and Q10 are resolved.
+- **Platforms:** Windows-only releases (decided earlier); macOS is not planned for now.
+
+**What**
+- The user asked what the "stick test" is. It is the manual Phase 1 in-game check: install `fixtures/sample-resourcepack`, enable it in Minecraft 26.3, and hold a stick, which should render as a ruby. It is documented in README "Try it" and is still pending with the user.
+
+---
+
+## 2026-11-04 — orchestrator (Fable) + main session — Phase 2 plan and environment
+
+**What**
+- The orchestrator planned Phase 2, Data Pack Studio: 5 waves, 18 briefs (B30–B47).
+- An offline Spyglass spike proved mcfunction parse, check, lint and completion work without network access.
+- Main session installed Node 24.22.2 at `/opt/node24`, after checking its SHA-256 against nodejs.org, with shims in `/root/.local/bin` placed first on PATH. Corepack is enabled. The repository was green on Node 24 before any change.
+
+**Decisions** (ADRs 0014–0017)
+- **ADR 0014:** Spyglass runs mcfunction checking only, in the main process, behind IPC. JSON validation stays `validateJson`. Spyglass's JSON checker is not adopted (Q13).
+- **ADR 0015, data pack model:**
+  - functions are stored as `{ lines }` and lowered to `.mcfunction` with `OutputFile.language`;
+  - tags are kinds named `minecraft:tag/<registry>`;
+  - `pack.mcmeta` lowers to both layers;
+  - combined export is two zips in a folder the user picks;
+  - world install goes to `saves/<world>/datapacks/`.
+- **ADR 0016:** a reference index, plus a rename that rewrites references in JSON and in function lines as one undo step.
+- **ADR 0017:** Node 24 and pnpm 12 now, plugin-api 0.3.0, Spyglass version pins.
+- **Main session defaults the user may overrule:**
+  - Loot Table and Advancement use the schema form plus templates; a bespoke studio is deferred.
+  - Two-zip combined export.
+
+---
+
+## 2026-11-04 — executors (Opus, medium effort) — Phase 2 waves 1–3
+
+**What** (each brief verified and committed by the main session)
+- **Wave 1:**
+  - **B30:** Node 24 and pnpm 12.16.1 (`allowBuilds` replaces `onlyBuiltDependencies`); three just-published packages exempted from the release-age rule; `pnpm/action-setup@v6`; Spyglass and `electron-updater` dependencies; datapack scaffold; vendored mcmeta command tree (583 kB, kept readable) and block states; MIT fields in every package.
+  - **B31:** plugin-api 0.3.0, adding `OutputFile.language`, `Problem.range` and `Target.folders.data` (17 keys, checked against the Spyglass binder).
+  - **B32:** `tag:<registry>` refs, the `msm:function` extension, modelled `indexed` types and generic dispatchers, and `collectReferences`. All 77 vanilla resource kinds now normalise with zero unsupported nodes.
+  - **B33:** ADRs 0014–0017 and the matching DESIGN and ROADMAP updates.
+- **Wave 2:**
+  - **B34:** the offline Spyglass mcfunction service. Init about 380 ms, a typical check 3–10 ms. Two fixes to the spike recipe: `ctx` must carry `loadedVersion` (otherwise item components are flagged falsely), and `BrowserExternals` is not exported, so a local offline externals object is used.
+  - **B35:** 14 data pack kinds (recipe, loot table, advancement, predicate, item modifier, function, 8 tag registries) and a dual-layer `pack.mcmeta`. 26.3 shapes are used: loot conditions and functions use `type`, and pools use `condition`/`modifier`.
+  - **B36:** the core reference index, text references and `renameElement`.
+  - **B37:** the data pack exporter, combined file names, and the `validateText` hook on export.
+- **Wave 3** (so far):
+  - **B38:** main-process mcfunction broker (asar +1.1 MB rather than the estimated 3.5 MB), `listWorlds`, `installDataPack`, and `exports.pickFolder`/`writeFiles` restricted to folders the user picked.
+  - **B39:** session support — datapack plugin registration, live mcfunction problems, references and rename, data pack export, 12 templates in 26.3 shapes, and `#minecraft:tick`/`#minecraft:load` seeded as known.
+  - **B41:** ten tier-B kinds (enchantment, damage type, dimension type, chat type, jukebox song, banner pattern, painting variant, trim material, trim pattern, dialog).
+  - **B40** (studio components) is still running.
+- **Validator fixes found against real 26.3 data** (main-session follow-up briefs):
+  - `minecraft:`-prefixed ids are accepted on `#[id]` enums (for example a loot table's `type`).
+  - Registered ids with no dispatcher member (for example `survives_explosion`) count as having no extra fields.
+  - `#[id(path=…)]` prefixes are kept (`idPath`), so banner, painting and trim texture ids validate.
+  - Unknown fields under dispatcher spreads are now reported; the dialog type previously accepted anything.
+
+**Decisions**
+- `commands.json` stays pretty-printed (583 kB) for readable diffs.
+- Mid-wave coordination is done by main-session messages. One stale instruction to B41 was applied before it could be cancelled; the result was correct and committed.
+
+**Next**
+- Wave 4: B42 Studio wiring, B43 animated textures, B44 Spyglass symbols inside commands, B45 sample data pack.
+- Wave 5: B46 data pack e2e, B47 docs sync.
+- Auto-update brief: add to wave 4 or 5.
