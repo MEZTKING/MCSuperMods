@@ -509,3 +509,20 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - Phase 3, Structures & Worldgen: the orchestrator plans it when the user says go, including the Phase 2 follow-ups list.
+
+---
+
+## 2026-11-04 — main session — First run on the user's Windows machine
+
+**What**
+- The user cloned the repository on Windows and ran the README "Try it" steps. Two problems:
+  - `corepack` and `pnpm` were "not recognized" because Node.js was not installed.
+  - The clone checked out `main`, which only holds the initial commit; all work is on `ccr-d077e76e-4gnbx2`.
+- README "Try it" now gives Windows prerequisites:
+  - install Node.js 24 LTS (installer or `winget install OpenJS.NodeJS.LTS`), then open a new terminal;
+  - `git checkout ccr-d077e76e-4gnbx2` until the work is merged;
+  - `npm install -g pnpm@12.16.1` as the non-admin alternative to `corepack enable`;
+  - the PowerShell execution-policy fix.
+
+**Next**
+- The user retries the setup. Consider merging the development branch into `main` with a pull request, so that cloning gives the current code.

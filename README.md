@@ -17,15 +17,23 @@ A desktop mod maker for Minecraft Java Edition that takes you from a simple text
 
 ## Try it
 
-There is no published installer yet, so you run the app from source. On Windows you need [Git](https://git-scm.com/), [Node.js](https://nodejs.org/) 24 or later and Minecraft Java Edition 26.3. In a terminal (PowerShell or Command Prompt):
+There is no published installer yet, so you run the app from source. On Windows you need [Git](https://git-scm.com/), [Node.js](https://nodejs.org/) 24 LTS (24.x up to, but not including, 27) and Minecraft Java Edition 26.3.
 
-```sh
+Install Node.js first, either from the nodejs.org installer or with `winget install OpenJS.NodeJS.LTS`, then **open a new terminal** so it is on your PATH (`node -v` should print `v24.x`). `pnpm` and `corepack` come with Node.js; if PowerShell says they are "not recognized", Node.js is not installed or the terminal is older than the install.
+
+In PowerShell:
+
+```powershell
 git clone https://github.com/MEZTKING/MCSuperMods.git
 cd MCSuperMods
-corepack enable        # provides the pinned pnpm; may need an administrator terminal
+git checkout ccr-d077e76e-4gnbx2   # development branch; skip once the work is merged into main
+corepack enable                    # provides the pinned pnpm; needs an Administrator PowerShell
+# without admin rights, use instead:  npm install -g pnpm@12.16.1
 pnpm install
-pnpm dev               # opens the MCSuperMods window
+pnpm dev                           # opens the MCSuperMods window
 ```
+
+If PowerShell reports "running scripts is disabled on this system" when you run `pnpm`, allow local scripts once with `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` and try again.
 
 Then:
 
