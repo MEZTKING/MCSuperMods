@@ -5,16 +5,8 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'electron-vite';
 import type { Plugin } from 'vite';
 
-/** Drops `'unsafe-inline'` from the CSP in production builds; dev needs it for injected styles. */
-function strictCspInBuild(): Plugin {
-  return {
-    name: 'msm:strict-csp-in-build',
-    apply: 'build',
-    transformIndexHtml(html) {
-      return html.replace(" style-src 'self' 'unsafe-inline'", " style-src 'self'");
-    },
-  };
-}
+// The renderer CSP keeps style-src 'unsafe-inline' in production: Monaco and Radix inject
+// runtime <style> elements without nonce support. Scripts stay 'self' only (DEVLOG 2026-11-04).
 
 /**
  * Copies each built-in target's vendored data into `out/main/vendor/<package folder>/` and
@@ -71,7 +63,7 @@ export default defineConfig({
   },
   renderer: {
     build: { minify: true },
-    plugins: [react(), tailwindcss(), strictCspInBuild()],
+    plugins: [react(), tailwindcss()],
     // Monaco's language workers are loaded with Vite `?worker` imports as ES module workers.
     worker: { format: 'es' },
   },

@@ -5,28 +5,55 @@ import {
   type ResourceLocation,
   stableStringify,
 } from '@msm/core';
-import { useId, useState } from 'react';
+import { lazy, Suspense, useId, useState } from 'react';
+import { type JsonErrorLocation, locateJsonError } from './json-editor/json-error';
+import { TextareaJsonEditor } from './json-editor/TextareaJsonEditor';
+import type { JsonEditorProps } from './json-editor/types';
+import { Button } from './ui/Button';
 
-/** Props of {@link RawJsonPanel}. Remount (via `key`) when the element's data changes. */
+/** Monaco is loaded on demand, so first paint never pays for it. */
+const MonacoJsonEditor = lazy(() => import('./json-editor/MonacoJsonEditor'));
+
+/** Whether Monaco is disabled (`window.msmNoMonaco`, set by tests and smoke runs). */
+export function monacoDisabled(): boolean {
+  return typeof window !== 'undefined' && window.msmNoMonaco === true;
+}
+
+function JsonEditor(props: JsonEditorProps) {
+  if (monacoDisabled()) return <TextareaJsonEditor {...props} />;
+  return (
+    <Suspense fallback={<TextareaJsonEditor {...props} />}>
+      <MonacoJsonEditor {...props} />
+    </Suspense>
+  );
+}
+
+/** Props of {@link RawJsonPanel}. */
 export interface RawJsonPanelProps {
   element: Element | null;
   onApply(id: ResourceLocation, data: Json): void;
 }
 
-/** Raw JSON editor for one element's `data`. */
+/**
+ * Raw JSON editor for one element's `data`, with Apply and Revert. When the element's data
+ * changes from outside (undo, another editor), the draft is reset to it, as in Phase 0.
+ */
 export function RawJsonPanel({ element, onApply }: RawJsonPanelProps) {
   const source = element === null ? '' : stableStringify(element.data);
   const [draft, setDraft] = useState(source);
-  const [error, setError] = useState<string | null>(null);
-  const textareaId = useId();
+  const [shownSource, setShownSource] = useState(source);
+  const [error, setError] = useState<JsonErrorLocation | null>(null);
+  const editorId = useId();
   const errorId = useId();
 
+  if (source !== shownSource) {
+    setShownSource(source);
+    setDraft(source);
+    setError(null);
+  }
+
   if (element === null) {
-    return (
-      <section className="raw-json" aria-label="Raw JSON">
-        <p className="empty">Select an element to edit its JSON.</p>
-      </section>
-    );
+    return <p className="p-2 text-muted">Select an element to edit its JSON.</p>;
   }
 
   const apply = (): void => {
@@ -34,7 +61,8 @@ export function RawJsonPanel({ element, onApply }: RawJsonPanelProps) {
     try {
       data = parseJson(draft);
     } catch (parseError) {
-      setError(parseError instanceof Error ? parseError.message : String(parseError));
+      const message = parseError instanceof Error ? parseError.message : String(parseError);
+      setError(locateJsonError(draft, message));
       return;
     }
     setError(null);
@@ -42,29 +70,33 @@ export function RawJsonPanel({ element, onApply }: RawJsonPanelProps) {
   };
 
   return (
-    <section className="raw-json" aria-label="Raw JSON">
-      <label htmlFor={textareaId}>
-        Data of <code>{element.id}</code>
+    <section aria-label="Raw JSON" className="flex h-full min-h-0 flex-col gap-1.5 p-2">
+      <label htmlFor={editorId}>
+        Data of <code className="font-mono">{element.id}</code>
       </label>
-      <textarea
-        id={textareaId}
-        value={draft}
-        spellCheck={false}
-        aria-invalid={error !== null}
-        aria-describedby={error === null ? undefined : errorId}
-        onChange={(event) => setDraft(event.target.value)}
-      />
+      <div className="min-h-0 flex-1">
+        <JsonEditor
+          id={editorId}
+          value={draft}
+          onChange={(value) => {
+            setDraft(value);
+            if (error !== null) setError(null);
+          }}
+          error={error}
+          errorId={errorId}
+          label={`Data of ${element.id}`}
+        />
+      </div>
       {error !== null && (
-        <p id={errorId} className="error" role="alert">
-          Invalid JSON: {error}
+        <p id={errorId} className="whitespace-pre-line text-error" role="alert">
+          Invalid JSON (line {error.line}, column {error.column}): {error.message}
         </p>
       )}
-      <div className="actions">
-        <button type="button" onClick={apply} disabled={draft === source}>
+      <div className="flex gap-1.5">
+        <Button onClick={apply} disabled={draft === source}>
           Apply
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
           onClick={() => {
             setDraft(source);
             setError(null);
@@ -72,7 +104,7 @@ export function RawJsonPanel({ element, onApply }: RawJsonPanelProps) {
           disabled={draft === source}
         >
           Revert
-        </button>
+        </Button>
       </div>
     </section>
   );

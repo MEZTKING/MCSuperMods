@@ -1,21 +1,18 @@
 import type { SessionSnapshot } from '../session/project-session';
-import { useUiStore } from '../store/ui-store';
 
-/** Project root, dirty marker, undo/redo labels and the latest message. */
+/** Project root, dirty marker, undo/redo labels and problem counts. Messages go to toasts. */
 export function StatusBar({ snapshot }: { snapshot: SessionSnapshot }) {
-  const message = useUiStore((state) => state.message);
+  const errors = snapshot.problems.filter((problem) => problem.severity === 'error').length;
+  const warnings = snapshot.problems.filter((problem) => problem.severity === 'warning').length;
   return (
-    <footer className="status-bar">
-      <span>{snapshot.root ?? 'No project open'}</span>
+    <footer className="flex gap-4 border-t border-border bg-panel px-2 py-1 text-xs text-muted">
+      <span className="truncate">{snapshot.root ?? 'No project open'}</span>
       {snapshot.project !== null && <span>{snapshot.dirty ? 'Unsaved changes' : 'Saved'}</span>}
       {snapshot.undoLabel !== undefined && <span>Undo: {snapshot.undoLabel}</span>}
       {snapshot.redoLabel !== undefined && <span>Redo: {snapshot.redoLabel}</span>}
-      <output
-        className={message?.kind === 'error' ? 'message error' : 'message'}
-        aria-live="polite"
-      >
-        {message?.text ?? ''}
-      </output>
+      <span className="ml-auto">
+        {errors} error(s), {warnings} warning(s)
+      </span>
     </footer>
   );
 }

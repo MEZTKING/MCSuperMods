@@ -1,5 +1,9 @@
 import type { ResourceLocation } from '@msm/core';
-import { type FormEvent, type ReactNode, useEffect, useId, useRef, useState } from 'react';
+import { Dialog } from 'radix-ui';
+import { type FormEvent, type ReactNode, useId, useState } from 'react';
+import { Button } from './ui/Button';
+
+const fieldClass = 'rounded border border-border bg-bg px-2 py-1';
 
 function Modal(props: {
   title: string;
@@ -8,46 +12,42 @@ function Modal(props: {
   onSubmit(): void;
   children: ReactNode;
 }) {
-  const ref = useRef<HTMLDialogElement>(null);
-  const titleId = useId();
-
-  useEffect(() => {
-    const dialog = ref.current;
-    if (dialog !== null && !dialog.open) dialog.showModal();
-  }, []);
-
   const submit = (event: FormEvent): void => {
     event.preventDefault();
     props.onSubmit();
   };
 
   return (
-    <dialog
-      ref={ref}
-      aria-labelledby={titleId}
-      onCancel={(event) => {
-        event.preventDefault();
-        props.onCancel();
+    <Dialog.Root
+      open
+      onOpenChange={(open) => {
+        if (!open) props.onCancel();
       }}
     >
-      <form onSubmit={submit}>
-        <h2 id={titleId} className="dialog-title">
-          {props.title}
-        </h2>
-        {props.children}
-        {props.error !== null && (
-          <p className="error" role="alert">
-            {props.error}
-          </p>
-        )}
-        <div className="actions">
-          <button type="submit">Add</button>
-          <button type="button" onClick={props.onCancel}>
-            Cancel
-          </button>
-        </div>
-      </form>
-    </dialog>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
+        <Dialog.Content
+          aria-describedby={undefined}
+          className="fixed top-1/2 left-1/2 z-50 w-[min(90vw,380px)] -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-panel p-4 text-text shadow-lg"
+        >
+          <form onSubmit={submit} className="flex flex-col gap-1.5">
+            <Dialog.Title className="mb-1.5 text-base font-semibold">{props.title}</Dialog.Title>
+            {props.children}
+            {props.error !== null && (
+              <p className="whitespace-pre-line text-error" role="alert">
+                {props.error}
+              </p>
+            )}
+            <div className="mt-2 flex gap-1.5">
+              <Button type="submit">Add</Button>
+              <Dialog.Close asChild>
+                <Button>Cancel</Button>
+              </Dialog.Close>
+            </div>
+          </form>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
@@ -74,6 +74,7 @@ export function NewNamespaceDialog(props: { onCancel(): void; onSubmit(name: str
       <label htmlFor={inputId}>Name</label>
       <input
         id={inputId}
+        className={fieldClass}
         value={name}
         placeholder="my_mod"
         onChange={(event) => setName(event.target.value)}
@@ -112,6 +113,7 @@ export function NewElementDialog(props: {
       <label htmlFor={namespaceId}>Namespace</label>
       <select
         id={namespaceId}
+        className={fieldClass}
         value={namespace}
         onChange={(event) => setNamespace(event.target.value)}
       >
@@ -124,12 +126,18 @@ export function NewElementDialog(props: {
       <label htmlFor={pathId}>Path</label>
       <input
         id={pathId}
+        className={fieldClass}
         value={path}
         placeholder="iron_block"
         onChange={(event) => setPath(event.target.value)}
       />
       <label htmlFor={kindId}>Kind</label>
-      <select id={kindId} value={kind} onChange={(event) => setKind(event.target.value)}>
+      <select
+        id={kindId}
+        className={fieldClass}
+        value={kind}
+        onChange={(event) => setKind(event.target.value)}
+      >
         {props.kinds.map((id) => (
           <option key={id} value={id}>
             {id}
