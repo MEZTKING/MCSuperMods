@@ -79,6 +79,11 @@ interface State {
    */
   dispatchKey?: boolean;
   /**
+   * The value sits under an `#[id]` type that is not a plain string (`#[id] SomeEnum`), so its
+   * enum values are resource locations and also accepted with a `minecraft:` prefix.
+   */
+  resourceId?: boolean;
+  /**
    * Discriminator fields of the containing struct whose value is a valid member of a closed
    * (enum or literal) field type. A dispatcher reading one of them treats a missing member as
    * "no extra fields" instead of an unknown key: the enum is the authority on valid values
@@ -426,8 +431,9 @@ function validate(
         mismatch(value, node, state, out);
         return;
       }
-      const prefixed =
-        state.dispatchKey === true && typeof value === 'string' && value.startsWith(MC_PREFIX);
+      const namespaced =
+        state.dispatchKey === true || state.resourceId === true || node.resourceId === true;
+      const prefixed = namespaced && typeof value === 'string' && value.startsWith(MC_PREFIX);
       const bare = prefixed ? value.slice(MC_PREFIX.length) : value;
       if (!node.values.some((entry) => entry.value === value || entry.value === bare)) {
         out.push({
@@ -467,7 +473,9 @@ function validate(
         // An unknown path (e.g. a dangling reference in the export) cannot be checked.
         return;
       }
-      validate(value, target, hop(state), ctx, out);
+      const next = hop(state);
+      if (node.resourceId === true) next.resourceId = true;
+      validate(value, target, next, ctx, out);
       return;
     }
     case 'dispatcher':
@@ -594,8 +602,39 @@ function isClosedType(node: SchemaNode, depth = 0): boolean {
 }
 
 /**
- * The struct's discriminator fields whose value is valid for a closed field type. Those keys
- * are known to the game even when the dispatcher has no member for them.
+ * True when `value` is an id the registry index knows in a registry named by an `#[id]` string
+ * in `node` (looking through references and unions), e.g. `minecraft:survives_explosion` for
+ * `#[id="loot_condition_type"] string`. False without a registry index.
+ */
+function isRegisteredId(value: Json, node: SchemaNode, ctx: Context, depth = 0): boolean {
+  const registries = ctx.registries;
+  if (registries === undefined || typeof value !== 'string' || value.startsWith('#')) return false;
+  if (depth > MAX_CLOSED_DEPTH) return false;
+  switch (node.kind) {
+    case 'string': {
+      if (node.idRegistry === undefined) return false;
+      const name = node.idRegistry.startsWith(MC_PREFIX)
+        ? node.idRegistry.slice(MC_PREFIX.length)
+        : node.idRegistry;
+      return registries.registries().includes(name) && registries.has(name, value);
+    }
+    case 'union':
+      return node.members.some((member) => isRegisteredId(value, member, ctx, depth + 1));
+    case 'reference':
+      try {
+        return isRegisteredId(value, node.resolve(), ctx, depth + 1);
+      } catch {
+        return false;
+      }
+    default:
+      return false;
+  }
+}
+
+/**
+ * The struct's discriminator fields whose value is valid for a closed field type, or is an id
+ * the registry index knows for an `#[id]` string field. Those keys are known to the game even
+ * when the dispatcher has no member for them (it then adds no fields).
  */
 function acceptedDiscriminators(
   value: JsonObject,
@@ -606,7 +645,13 @@ function acceptedDiscriminators(
   const accepted = new Set<string>();
   for (const key of info.discriminators) {
     const field = info.byKey.get(key);
-    if (field === undefined || !Object.hasOwn(value, key) || !isClosedType(field.type)) continue;
+    if (field === undefined || !Object.hasOwn(value, key)) continue;
+    const entry = value[key] as Json;
+    if (isRegisteredId(entry, field.type, ctx)) {
+      accepted.add(key);
+      continue;
+    }
+    if (!isClosedType(field.type)) continue;
     const problems: SchemaProblem[] = [];
     const fieldState: State = {
       path: child(state.path, key),
@@ -620,7 +665,7 @@ function acceptedDiscriminators(
     const refs = ctx.refs;
     delete ctx.refs;
     try {
-      validate(value[key] as Json, field.type, fieldState, ctx, problems);
+      validate(entry, field.type, fieldState, ctx, problems);
     } finally {
       if (refs !== undefined) ctx.refs = refs;
     }
@@ -809,7 +854,8 @@ function validateDispatcher(
     validate(value, unknown, next, ctx, out);
     return;
   }
-  // The struct's own closed field type accepted the key: the member simply adds no fields.
+  // The struct's own field accepted the key (a closed type, or an id the registry index knows):
+  // the member simply adds no fields.
   const only = node.discriminator.length === 1 ? node.discriminator[0] : undefined;
   if (only !== undefined && state.acceptedKeys?.has(only) === true) return;
   const listed = keys.filter((entry) => !entry.startsWith('%'));

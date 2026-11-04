@@ -21,6 +21,12 @@ export interface NodeBase {
    * Editors use them as hints; attribute arguments are not modelled.
    */
   tags?: string[];
+  /**
+   * Set when a type other than a plain string carries `#[id]`, e.g. a field typed
+   * `#[id] SomeEnum`: its string values are resource locations, so validators also accept
+   * them with a `minecraft:` prefix.
+   */
+  resourceId?: true;
 }
 
 /**

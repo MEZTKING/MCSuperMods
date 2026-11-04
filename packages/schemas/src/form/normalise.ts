@@ -146,8 +146,13 @@ function tagsOf(attributes: readonly RawAttribute[] | undefined): string[] {
   return [...names].sort();
 }
 
+/** `#[id]` on a type that is not a plain string (a string records it as `idRegistry`). */
+const marksResourceId = (node: SchemaNode, raw: RawMcdocType): boolean =>
+  node.kind !== 'string' && hasAttribute(raw.attributes, 'id');
+
 function withBase<N extends SchemaNode>(node: N, raw: RawMcdocType): N {
   if (hasAttribute(raw.attributes, 'deprecated')) node.deprecated = true;
+  if (marksResourceId(node, raw)) node.resourceId = true;
   const tags = tagsOf(raw.attributes);
   if (tags.length > 0) node.tags = [...new Set([...(node.tags ?? []), ...tags])].sort();
   return node;
@@ -158,7 +163,10 @@ function withBase<N extends SchemaNode>(node: N, raw: RawMcdocType): N {
  * copying it first when there is anything to add.
  */
 function decorate(node: SchemaNode, raw: RawMcdocType): SchemaNode {
-  const adds = hasAttribute(raw.attributes, 'deprecated') || tagsOf(raw.attributes).length > 0;
+  const adds =
+    hasAttribute(raw.attributes, 'deprecated') ||
+    marksResourceId(node, raw) ||
+    tagsOf(raw.attributes).length > 0;
   return adds ? withBase({ ...node }, raw) : node;
 }
 
