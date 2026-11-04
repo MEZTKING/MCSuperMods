@@ -7,6 +7,9 @@ import { describe, expect, it } from 'vitest';
 import {
   advancementKind,
   functionKind,
+  GENERIC_DATA_REGISTRIES,
+  type GenericDataRegistry,
+  genericKinds,
   itemModifierKind,
   lootTableKind,
   predicateKind,
@@ -52,6 +55,105 @@ const tagSamples: Sample[] = tagKinds.map((kind, index) => {
   };
 });
 
+/**
+ * One sample per generic kind, using optional fields where the schema has them and project
+ * ids where a sample references its own assets (textures, sounds, tags, functions).
+ */
+const GENERIC_SAMPLES: Record<GenericDataRegistry, Json> = {
+  enchantment: {
+    description: { text: 'Ruby Edge', color: 'red' },
+    exclusive_set: '#example:others',
+    supported_items: '#minecraft:enchantable/sharp_weapon',
+    primary_items: '#minecraft:swords',
+    weight: 2,
+    max_level: 3,
+    min_cost: { base: 10, per_level_above_first: 10 },
+    max_cost: { base: 60, per_level_above_first: 10 },
+    anvil_cost: 4,
+    slots: ['mainhand'],
+    effects: {
+      'minecraft:damage': [
+        {
+          effect: {
+            type: 'minecraft:add',
+            value: { type: 'minecraft:linear', base: 1.5, per_level_above_first: 0.5 },
+          },
+        },
+      ],
+    },
+  },
+  damage_type: {
+    message_id: 'example.ruby',
+    scaling: 'never',
+    exhaustion: 0,
+    effects: 'burning',
+    death_message_type: 'default',
+  },
+  dimension_type: {
+    has_skylight: false,
+    has_ceiling: true,
+    has_ender_dragon_fight: false,
+    coordinate_scale: 8,
+    ambient_light: 0.1,
+    logical_height: 128,
+    infiniburn: '#minecraft:infiniburn_nether',
+    min_y: 0,
+    height: 256,
+    monster_spawn_light_level: 7,
+    monster_spawn_block_light_limit: 15,
+    has_fixed_time: true,
+  },
+  chat_type: {
+    chat: {
+      translation_key: 'chat.type.announcement',
+      parameters: ['sender', 'content'],
+      style: { color: 'gold' },
+    },
+    narration: { translation_key: 'chat.type.text.narrate', parameters: ['sender', 'content'] },
+  },
+  jukebox_song: {
+    sound_event: 'example:music_disc.ruby',
+    description: { text: 'Ruby Waltz' },
+    length_in_seconds: 92.5,
+    comparator_output: 7,
+  },
+  banner_pattern: { asset_id: 'example:ruby', translation_key: 'block.example.banner.ruby' },
+  painting_variant: {
+    asset_id: 'example:ruby',
+    width: 2,
+    height: 1,
+    title: { text: 'Ruby Landscape', color: 'yellow' },
+    author: { text: 'Example', color: 'gray' },
+  },
+  trim_material: {
+    palette_id: 'example:trim/ruby',
+    description: { text: 'Ruby Material', color: '#9B111E' },
+  },
+  trim_pattern: {
+    asset_id: 'example:ruby',
+    description: { text: 'Ruby Armour Trim' },
+    decal: true,
+  },
+  dialog: {
+    type: 'minecraft:multi_action',
+    title: 'Choose a gem',
+    body: { type: 'minecraft:plain_message', contents: 'Pick one.' },
+    actions: [
+      {
+        label: 'Ruby',
+        action: { type: 'minecraft:run_command', command: 'function example:greet' },
+      },
+    ],
+    columns: 2,
+    can_close_with_escape: true,
+  },
+};
+
+const genericSamples: Sample[] = genericKinds.map((kind, index) => {
+  const registry = GENERIC_DATA_REGISTRIES[index] as GenericDataRegistry;
+  return { kind, name: 'ruby', id: 'example:ruby', data: GENERIC_SAMPLES[registry] };
+});
+
 const SAMPLES: Sample[] = [
   {
     kind: recipeKind,
@@ -94,7 +196,7 @@ const SAMPLES: Sample[] = [
     name: 'block',
     id: 'example:blocks/ruby_ore',
     data: {
-      type: 'block',
+      type: 'minecraft:block',
       pools: [
         {
           rolls: 1,
@@ -105,7 +207,7 @@ const SAMPLES: Sample[] = [
               modifier: { type: 'minecraft:set_count', count: 2 },
             },
           ],
-          condition: { type: 'minecraft:random_chance', chance: 0.9 },
+          condition: { type: 'minecraft:survives_explosion' },
         },
       ],
     },
@@ -170,6 +272,7 @@ const SAMPLES: Sample[] = [
     },
   },
   ...tagSamples,
+  ...genericSamples,
 ];
 
 const fixturesRoot = new URL('./fixtures/', import.meta.url);
@@ -214,6 +317,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           itemModifierKind,
           functionKind,
           ...tagKinds,
+          ...genericKinds,
         ]
           .map((kind) => kind.id)
           .sort(),

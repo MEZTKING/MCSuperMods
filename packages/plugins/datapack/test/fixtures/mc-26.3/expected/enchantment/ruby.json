@@ -1,0 +1,42 @@
+{
+  "contents": {
+    "anvil_cost": 4,
+    "description": {
+      "color": "red",
+      "text": "Ruby Edge"
+    },
+    "effects": {
+      "minecraft:damage": [
+        {
+          "effect": {
+            "type": "minecraft:add",
+            "value": {
+              "base": 1.5,
+              "per_level_above_first": 0.5,
+              "type": "minecraft:linear"
+            }
+          }
+        }
+      ]
+    },
+    "exclusive_set": "#example:others",
+    "max_cost": {
+      "base": 60,
+      "per_level_above_first": 10
+    },
+    "max_level": 3,
+    "min_cost": {
+      "base": 10,
+      "per_level_above_first": 10
+    },
+    "primary_items": "#minecraft:swords",
+    "slots": [
+      "mainhand"
+    ],
+    "supported_items": "#minecraft:enchantable/sharp_weapon",
+    "weight": 2
+  },
+  "layer": "datapack",
+  "path": "data/example/enchantment/ruby.json",
+  "schema": "resource:enchantment"
+}

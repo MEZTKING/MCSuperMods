@@ -6,6 +6,9 @@ import plugin, {
   dataPackKinds,
   dataPath,
   functionKind,
+  GENERIC_DATA_REGISTRIES,
+  genericKind,
+  genericKinds,
   lowerJsonData,
   MCFUNCTION_LANGUAGE,
   recipeKind,
@@ -43,7 +46,7 @@ describe('@msm/plugin-datapack', () => {
     expect(Object.isFrozen(plugin)).toBe(true);
   });
 
-  it('contributes the tier-A kinds, then one tag kind per registry, in a stable order', () => {
+  it('contributes the tier-A kinds, the tag kinds, then the generic kinds, in a stable order', () => {
     const expected = [
       ...TIER_A.map(([id, schema, folder]) => ({ id, schema, folder })),
       ...TAG_REGISTRIES.map((registry) => ({
@@ -51,11 +54,17 @@ describe('@msm/plugin-datapack', () => {
         schema: `tag:${registry}`,
         folder: `tags/${registry}`,
       })),
+      ...GENERIC_DATA_REGISTRIES.map((registry) => ({
+        id: `minecraft:${registry}`,
+        schema: `resource:${registry}`,
+        folder: registry,
+      })),
     ];
     const actual = kinds().map(({ id, schema, folder }) => ({ id, schema, folder }));
     expect(actual).toEqual(expected);
     expect(dataPackKinds.map((kind) => kind.id)).toEqual(expected.map((kind) => kind.id));
     expect(tagKinds).toHaveLength(8);
+    expect(genericKinds).toHaveLength(10);
     expect(new Set(kinds().map((kind) => kind.id)).size).toBe(kinds().length);
     expect(new Set(kinds().map((kind) => kind.folder)).size).toBe(kinds().length);
     for (const kind of kinds()) {
@@ -76,6 +85,25 @@ describe('@msm/plugin-datapack', () => {
     expect(file?.path).toBe(
       `data/example/${firstTarget.folders.data.tags}/worldgen/biome/hot.json`,
     );
+  });
+
+  it('lowers generic kinds into the target folder of their registry', () => {
+    for (const registry of GENERIC_DATA_REGISTRIES) {
+      const kind = genericKind(registry);
+      const [file] = kind.lower(element(kind.id, 'example:dir/thing', {}), firstTarget);
+      expect(file, registry).toEqual({
+        path: `data/example/${firstTarget.folders.data[registry]}/dir/thing.json`,
+        contents: {},
+        layer: 'datapack',
+        schema: `resource:${registry}`,
+      });
+    }
+  });
+
+  it('gives each generic kind its own copy of the default data', () => {
+    const [first] = GENERIC_DATA_REGISTRIES;
+    expect(genericKind(first).defaultData).not.toBe(genericKind(first).defaultData);
+    expect(genericKind(first).defaultData).toEqual(genericKind(first).defaultData);
   });
 
   it('keeps defaults free of any user namespace', () => {
@@ -128,6 +156,20 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(blockingProblems(indexes, 'tag:item', { values: ['#example:missing'] })).not.toEqual(
         [],
       );
+      // A texture id is accepted only when it exists after its mcdoc path prefix is applied.
+      expect(
+        blockingProblems(indexes, 'resource:painting_variant', {
+          asset_id: 'minecraft:not_a_painting',
+          width: 1,
+          height: 1,
+        }),
+      ).not.toEqual([]);
+      expect(
+        blockingProblems(indexes, 'resource:dimension_type', {
+          ...(genericKind('dimension_type').defaultData as Record<string, Json>),
+          infiniburn: '#minecraft:not_a_tag',
+        }),
+      ).not.toEqual([]);
     });
   },
 );

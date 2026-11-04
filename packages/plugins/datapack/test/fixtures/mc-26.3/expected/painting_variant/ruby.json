@@ -1,0 +1,18 @@
+{
+  "contents": {
+    "asset_id": "example:ruby",
+    "author": {
+      "color": "gray",
+      "text": "Example"
+    },
+    "height": 1,
+    "title": {
+      "color": "yellow",
+      "text": "Ruby Landscape"
+    },
+    "width": 2
+  },
+  "layer": "datapack",
+  "path": "data/example/painting_variant/ruby.json",
+  "schema": "resource:painting_variant"
+}

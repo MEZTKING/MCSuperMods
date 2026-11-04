@@ -1,6 +1,7 @@
 /**
  * `@msm/plugin-datapack`: built-in MSM plugin contributing the vanilla data pack kinds
- * (recipes, loot tables, advancements, predicates, item modifiers, functions and tags).
+ * (recipes, loot tables, advancements, predicates, item modifiers, functions, tags and the
+ * tier-B generic registries such as enchantments, damage types and dialogs).
  */
 import { definePlugin } from '@msm/plugin-api';
 import { dataPackKinds } from './kinds';

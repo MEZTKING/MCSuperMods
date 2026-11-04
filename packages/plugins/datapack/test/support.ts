@@ -28,6 +28,7 @@ export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
   loot_table: ['example:blocks/ruby_ore'],
   predicate: ['example:sneaking'],
   recipe: ['example:diamond_sword', 'example:emerald_from_logs', 'example:iron_from_raw'],
+  sound_event: ['example:music_disc.ruby'],
   'tag/block': ['example:others'],
   'tag/damage_type': ['example:others'],
   'tag/enchantment': ['example:others'],
@@ -36,6 +37,22 @@ export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
   'tag/function': ['example:others'],
   'tag/game_event': ['example:others'],
   'tag/item': ['example:others'],
+  // Full texture paths, as a project's own `textures/` files would declare them.
+  texture: ['example:entity/banner/ruby', 'example:painting/ruby', 'example:palettes/trim/ruby'],
+};
+
+/**
+ * Texture ids whose mcdoc type carries `#[id(registry="texture", path="<prefix>")]`, per schema
+ * ref and JSON pointer. The game resolves `ns:x` to the texture `ns:<prefix>x`, but the
+ * `@msm/schemas` validator does not apply the `path` prefix yet, so it reports correct values
+ * as `schema.unknown-id`. {@link blockingProblems} accepts such a warning only when the
+ * prefixed id exists, which keeps the check meaningful and stays correct once the validator
+ * applies the prefix itself.
+ */
+export const TEXTURE_PATH_PREFIXES: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  'resource:banner_pattern': { '/asset_id': 'entity/banner/' },
+  'resource:painting_variant': { '/asset_id': 'painting/' },
+  'resource:trim_material': { '/palette_id': 'palettes/' },
 };
 
 export interface TargetIndexes {
@@ -78,8 +95,28 @@ export function blockingProblems(
 ): SchemaProblem[] {
   const node = indexes.schemaIndex.resolveSchemaRef(schemaRef);
   return validateJson(value, node, { registries: indexes.registries }).filter(
-    (problem) => problem.severity === 'error' || problem.code === 'schema.unknown-id',
+    (problem) =>
+      problem.severity === 'error' ||
+      (problem.code === 'schema.unknown-id' &&
+        !isPrefixedTexture(indexes, schemaRef, problem.path, value)),
   );
+}
+
+/** Whether `value` at `path` is a texture id that exists once its mcdoc path prefix is applied. */
+function isPrefixedTexture(
+  indexes: TargetIndexes,
+  schemaRef: string,
+  path: string,
+  value: Json,
+): boolean {
+  const prefix = TEXTURE_PATH_PREFIXES[schemaRef]?.[path];
+  if (prefix === undefined || typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+  const id = value[path.slice(1)];
+  if (typeof id !== 'string') return false;
+  const [namespace, name] = id.includes(':') ? id.split(':', 2) : ['minecraft', id];
+  return indexes.registries.has('texture', `${namespace}:${prefix}${name}`);
 }
 
 /** JSON text with sorted keys, 2-space indent and a trailing newline (project file style). */

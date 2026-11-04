@@ -3,8 +3,7 @@
     "pools": [
       {
         "condition": {
-          "chance": 0.9,
-          "type": "minecraft:random_chance"
+          "type": "minecraft:survives_explosion"
         },
         "entries": [
           {
@@ -19,7 +18,7 @@
         "rolls": 1
       }
     ],
-    "type": "block"
+    "type": "minecraft:block"
   },
   "layer": "datapack",
   "path": "data/example/loot_table/blocks/ruby_ore.json",
