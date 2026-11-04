@@ -1,8 +1,12 @@
 // @vitest-environment happy-dom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Tooltip } from 'radix-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  describeInstallTarget,
+  type InstallTargetOption,
+} from '../../src/renderer/src/components/install-target';
 import { Toolbar, type ToolbarProps } from '../../src/renderer/src/components/Toolbar';
 
 afterEach(cleanup);
@@ -66,5 +70,108 @@ describe('Toolbar', () => {
   it('is a labelled toolbar', () => {
     renderToolbar(props());
     expect(screen.getByRole('toolbar', { name: 'Project' })).toBeTruthy();
+  });
+});
+
+const TARGETS: InstallTargetOption[] = [
+  {
+    id: 'official:default',
+    launcher: 'official',
+    displayName: 'Official launcher',
+    mcVersion: null,
+    loader: null,
+    gameDir: '/home/me/.minecraft',
+    warnings: [],
+    problems: [],
+    installable: true,
+  },
+  {
+    id: 'prism:My-Instance',
+    launcher: 'prism',
+    displayName: 'My Instance',
+    mcVersion: '9.9-msm-test',
+    loader: { kind: 'neoforge', version: '1.2.3' },
+    gameDir: '/data/prism/instances/My-Instance/minecraft',
+    warnings: [],
+    problems: [],
+    installable: true,
+  },
+];
+
+describe('describeInstallTarget', () => {
+  it('names the launcher, instance and version', () => {
+    expect(describeInstallTarget(TARGETS[1] ?? null)).toBe(
+      'Install to: Prism Launcher — My Instance (MC 9.9-msm-test)',
+    );
+    expect(describeInstallTarget(TARGETS[0] ?? null)).toBe('Install to: Official launcher');
+    expect(describeInstallTarget(null)).toBe('No install target: choose one in Settings');
+  });
+});
+
+describe('Toolbar install target', () => {
+  it('shows the target sentence and switches targets through the submenu', async () => {
+    const onChooseInstallTarget = vi.fn();
+    const p = props({
+      installTarget: TARGETS[0] ?? null,
+      installTargets: TARGETS,
+      onChooseInstallTarget,
+      onInstall: vi.fn(),
+      onInstallData: vi.fn(),
+    });
+    renderToolbar(p);
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('toolbar-install-menu'));
+    const target = screen.getByTestId('install-target');
+    expect(target.textContent).toBe('Install to: Official launcher');
+    expect(target.getAttribute('aria-live')).toBe('polite');
+    expect(screen.getByTestId('install-resource')).toBeTruthy();
+    expect(screen.getByTestId('install-data')).toBeTruthy();
+    await user.click(screen.getByTestId('install-target-change'));
+    const item = await screen.findByTestId('install-target-prism:My-Instance');
+    expect(item.getAttribute('aria-label')).toBe(
+      'Install to Prism Launcher — My Instance (MC 9.9-msm-test), NeoForge 1.2.3',
+    );
+    expect(screen.getByTestId('install-target-official:default').getAttribute('aria-checked')).toBe(
+      'true',
+    );
+    // happy-dom has no layout, so moving the pointer off the sub trigger closes the submenu
+    // (Radix's pointer grace area is empty); click the item without a pointer move.
+    fireEvent.click(item);
+    expect(onChooseInstallTarget).toHaveBeenCalledExactlyOnceWith('prism:My-Instance');
+  });
+
+  it('reaches the submenu and its targets with the keyboard', async () => {
+    const onChooseInstallTarget = vi.fn();
+    renderToolbar(
+      props({
+        installTarget: null,
+        installTargets: TARGETS,
+        onChooseInstallTarget,
+        onInstall: vi.fn(),
+      }),
+    );
+    const user = userEvent.setup();
+    screen.getByTestId('toolbar-install-menu').focus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByTestId('install-target').textContent).toBe(
+      'No install target: choose one in Settings',
+    );
+    const change = screen.getByTestId('install-target-change');
+    change.focus();
+    await user.keyboard('{ArrowRight}');
+    const first = await screen.findByTestId('install-target-official:default');
+    await waitFor(() => expect(document.activeElement).toBe(first));
+    await user.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(screen.getByTestId('install-target-prism:My-Instance'));
+    await user.keyboard('{Enter}');
+    expect(onChooseInstallTarget).toHaveBeenCalledExactlyOnceWith('prism:My-Instance');
+  });
+
+  it('keeps the Install menu unchanged without a target', async () => {
+    renderToolbar(props({ onInstall: vi.fn() }));
+    await userEvent.setup().click(screen.getByTestId('toolbar-install-menu'));
+    expect(screen.queryByTestId('install-target')).toBeNull();
+    expect(screen.queryByTestId('install-target-change')).toBeNull();
+    expect(screen.getByTestId('install-resource')).toBeTruthy();
   });
 });

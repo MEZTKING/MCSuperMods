@@ -1,5 +1,7 @@
 import {
+  Check,
   ChevronDown,
+  ChevronRight,
   FilePlus,
   FolderOpen,
   FolderPlus,
@@ -14,6 +16,13 @@ import {
 } from 'lucide-react';
 import { DropdownMenu, Toolbar as RadixToolbar } from 'radix-ui';
 import type { ReactNode } from 'react';
+import {
+  describeInstallTarget,
+  type InstallTargetOption,
+  installTargetName,
+  launcherLabel,
+  loaderLabel,
+} from './install-target';
 import { buttonClass } from './ui/Button';
 import { Tip } from './ui/Tip';
 
@@ -63,6 +72,15 @@ export interface ToolbarProps {
   /** Installs the data pack into a world (the host shows the world picker). */
   onInstallData?(): void;
   onSettings?(): void;
+  /**
+   * Where installs go. When given (also as `null`), the Install menu opens with a sentence
+   * naming the target; `null` means none is chosen or found.
+   */
+  installTarget?: InstallTargetOption | null;
+  /** Every known install target, offered in the Install menu's "Change target" submenu. */
+  installTargets?: readonly InstallTargetOption[];
+  /** Makes the target with this id the install target. */
+  onChooseInstallTarget?(id: string): void;
 }
 
 /** One entry of a toolbar menu. */
@@ -79,6 +97,95 @@ const menuItemClass =
   'data-[highlighted]:bg-bg data-[highlighted]:text-accent ' +
   'data-[disabled]:cursor-default data-[disabled]:text-muted';
 
+const menuContentClass =
+  'z-50 flex min-w-56 flex-col gap-0.5 rounded-md border border-border bg-panel p-1 text-text shadow-lg';
+
+/**
+ * The top of the Install menu: a sentence naming the install target, then a "Change target"
+ * submenu with every known location as a radio item.
+ */
+function InstallTargetSection(props: {
+  target: InstallTargetOption | null;
+  targets: readonly InstallTargetOption[];
+  onChoose: ((id: string) => void) | undefined;
+}) {
+  const sentence = describeInstallTarget(props.target);
+  const canChoose = props.targets.length > 0 && props.onChoose !== undefined;
+  return (
+    <>
+      <DropdownMenu.Label
+        data-testid="install-target"
+        aria-live="polite"
+        className="flex flex-col px-2 py-1 text-sm text-muted"
+      >
+        <span>{sentence}</span>
+        {props.target?.warnings.map((warning) => (
+          <span key={warning} className="text-xs">
+            {warning}
+          </span>
+        ))}
+      </DropdownMenu.Label>
+      {canChoose && (
+        <DropdownMenu.Sub>
+          <DropdownMenu.SubTrigger
+            data-testid="install-target-change"
+            className={`${menuItemClass} flex-row items-center justify-between gap-2`}
+          >
+            <span>Change target</span>
+            <ChevronRight size={14} aria-hidden />
+          </DropdownMenu.SubTrigger>
+          <DropdownMenu.Portal>
+            <DropdownMenu.SubContent
+              sideOffset={4}
+              aria-label="Install target"
+              className={`${menuContentClass} max-w-[min(90vw,28rem)]`}
+            >
+              <DropdownMenu.RadioGroup
+                value={props.target?.id ?? ''}
+                onValueChange={(id) => props.onChoose?.(id)}
+              >
+                {props.targets.map((option) => {
+                  const loader = loaderLabel(option.loader);
+                  const note = option.problems[0] ?? option.warnings[0];
+                  return (
+                    <DropdownMenu.RadioItem
+                      key={option.id}
+                      value={option.id}
+                      data-testid={`install-target-${option.id}`}
+                      aria-label={`Install to ${installTargetName(option)}${loader === null ? '' : `, ${loader}`}${option.installable ? '' : ', cannot install here'}`}
+                      className={`${menuItemClass} relative pl-6`}
+                    >
+                      <DropdownMenu.ItemIndicator className="absolute top-1.5 left-1.5">
+                        <Check size={14} aria-hidden />
+                      </DropdownMenu.ItemIndicator>
+                      <span>
+                        {option.displayName === ''
+                          ? launcherLabel(option.launcher)
+                          : option.displayName}
+                      </span>
+                      <span className="text-xs text-muted">
+                        {[
+                          launcherLabel(option.launcher),
+                          option.mcVersion === null ? null : `MC ${option.mcVersion}`,
+                          loader,
+                        ]
+                          .filter((part) => part !== null)
+                          .join(' · ')}
+                      </span>
+                      {note !== undefined && <span className="text-xs text-muted">{note}</span>}
+                    </DropdownMenu.RadioItem>
+                  );
+                })}
+              </DropdownMenu.RadioGroup>
+            </DropdownMenu.SubContent>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Sub>
+      )}
+      <DropdownMenu.Separator className="my-0.5 h-px bg-border" />
+    </>
+  );
+}
+
 /**
  * A toolbar button that opens a menu. Disabled entries stay listed with the reason under
  * their label, so the menu always says why something is unavailable.
@@ -90,6 +197,8 @@ function ToolMenu(props: {
   icon: ReactNode;
   testId: string;
   disabled?: boolean;
+  /** Content shown above the entries (the Install menu's target). */
+  header?: ReactNode;
   entries: readonly MenuEntry[];
 }) {
   return (
@@ -108,11 +217,8 @@ function ToolMenu(props: {
         </DropdownMenu.Trigger>
       </Tip>
       <DropdownMenu.Portal>
-        <DropdownMenu.Content
-          align="start"
-          sideOffset={4}
-          className="z-50 flex min-w-56 flex-col gap-0.5 rounded-md border border-border bg-panel p-1 text-text shadow-lg"
-        >
+        <DropdownMenu.Content align="start" sideOffset={4} className={menuContentClass}>
+          {props.header}
           {props.entries.map((entry) => {
             const disabled = entry.reason !== null || entry.onSelect === undefined;
             return (
@@ -318,10 +424,19 @@ export function Toolbar(props: ToolbarProps) {
       />
       <ToolMenu
         label="Install"
-        tip="Install into your Minecraft folder"
+        tip="Install into your Minecraft folder or launcher instance"
         testId="toolbar-install-menu"
         icon={<Gamepad2 size={iconSize} aria-hidden />}
         disabled={!props.hasProject || busy}
+        header={
+          props.installTarget === undefined ? undefined : (
+            <InstallTargetSection
+              target={props.installTarget}
+              targets={props.installTargets ?? []}
+              onChoose={props.onChooseInstallTarget}
+            />
+          )
+        }
         entries={[
           {
             label: 'Resource pack to the resourcepacks folder',
@@ -340,7 +455,7 @@ export function Toolbar(props: ToolbarProps) {
       {separator}
       <ToolButton
         label="Settings"
-        tip="Minecraft folder and vanilla assets"
+        tip="Game locations, vanilla assets and updates"
         testId="toolbar-settings"
         icon={<Settings size={iconSize} aria-hidden />}
         onClick={props.onSettings}

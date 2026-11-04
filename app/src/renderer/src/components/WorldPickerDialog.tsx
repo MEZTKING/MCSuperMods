@@ -22,6 +22,8 @@ export interface WorldPickerDialogProps {
   worlds: readonly WorldOption[];
   onPick(world: WorldOption): void;
   onClose(): void;
+  /** The game location the worlds belong to, such as "Prism Launcher — My Instance". */
+  locationName?: string;
 }
 
 /** Worlds newest first, then by name. */
@@ -38,7 +40,13 @@ function formatTime(iso: string): string {
   return Number.isNaN(time) ? iso : new Date(time).toLocaleString('en-GB');
 }
 
-export function WorldPickerDialog({ open, worlds, onPick, onClose }: WorldPickerDialogProps) {
+export function WorldPickerDialog({
+  open,
+  worlds,
+  onPick,
+  onClose,
+  locationName,
+}: WorldPickerDialogProps) {
   const sorted = sortWorlds(worlds);
   const [selected, setSelected] = useState<string | null>(sorted[0]?.dir ?? null);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +64,11 @@ export function WorldPickerDialog({ open, worlds, onPick, onClose }: WorldPicker
 
   return (
     <Modal
-      title="Install data pack to world"
+      title={
+        locationName === undefined
+          ? 'Install data pack to world'
+          : `Install data pack to a world — ${locationName}`
+      }
       error={error}
       wide
       testId="world-picker"
@@ -73,8 +85,10 @@ export function WorldPickerDialog({ open, worlds, onPick, onClose }: WorldPicker
       }}
     >
       {sorted.length === 0 ? (
-        <p className="text-muted text-sm">
-          No worlds found. Create a singleplayer world in Minecraft first.
+        <p className="text-muted text-sm" data-testid="world-picker-empty">
+          {locationName === undefined
+            ? 'No worlds found. Create a singleplayer world in Minecraft first.'
+            : `No worlds found in ${locationName}. Create a singleplayer world there first.`}
         </p>
       ) : (
         <fieldset className="m-0 flex max-h-80 flex-col gap-1 overflow-auto border-0 p-0">

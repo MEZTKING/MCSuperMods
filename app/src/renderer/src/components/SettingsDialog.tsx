@@ -2,6 +2,14 @@ import { Dialog } from 'radix-ui';
 import { useEffect, useId, useState } from 'react';
 import type { MinecraftProgress } from '../../../shared/ipc-channels';
 import type { AppSettingsPatch, AppSettingsView, MinecraftStatus } from '../../../shared/platform';
+import {
+  type InstallTargetOption,
+  installTargetName,
+  launcherLabel,
+  loaderLabel,
+  type ManualLauncher,
+  type ManualLauncherRoot,
+} from './install-target';
 import { fieldClass } from './NewElementDialog';
 import { Button } from './ui/Button';
 
@@ -19,6 +27,130 @@ export interface SettingsDialogProps {
   /** Extracts vanilla assets; resolves to an error message, or `null` on success. */
   extract(): Promise<string | null>;
   onClose(): void;
+  /**
+   * Every detected game location (ADR 0019), or `null` while they load. When omitted, the
+   * Game locations section shows only the official folder override.
+   */
+  locations?: readonly InstallTargetOption[] | null;
+  /** The id of the location installs go to, or `null` when none is chosen. */
+  selectedId?: string | null;
+  /** Makes the location with this id the install target. */
+  onSelectTarget?(id: string): void;
+  /** `true` when the stored target no longer exists and the official folder is used instead. */
+  targetMissing?: boolean;
+  /** Lets the user add a launcher folder (the host shows the folder picker and saves it). */
+  onAddLauncherRoot?(kind: ManualLauncher): Promise<void>;
+  /** Launcher folders the user added by hand. */
+  manualRoots?: readonly ManualLauncherRoot[];
+  /** Removes a launcher folder the user added. */
+  onRemoveLauncherRoot?(kind: ManualLauncher, path: string): void | Promise<void>;
+  /** Which launcher's client jar extraction reads, such as "Prism Launcher — x.y", or `null`. */
+  jarSource?: string | null;
+}
+
+const ADD_ROOT_BUTTONS: readonly { kind: ManualLauncher; label: string }[] = [
+  { kind: 'prism', label: 'Add Prism Launcher folder…' },
+  { kind: 'multimc', label: 'Add MultiMC folder…' },
+  { kind: 'curseforge', label: 'Add CurseForge folder…' },
+];
+
+const badgeClass =
+  'inline-flex items-center rounded border border-border bg-bg px-1.5 py-px text-xs leading-4';
+
+const errorText = (problem: unknown): string =>
+  problem instanceof Error ? problem.message : String(problem);
+
+/** The radio list of game locations; the checked one is the install target. */
+function LocationList(props: {
+  locations: readonly InstallTargetOption[] | null;
+  selectedId: string | null;
+  onSelect: ((id: string) => void) | undefined;
+}) {
+  const baseId = useId();
+  if (props.locations === null) {
+    return (
+      <p className="text-sm text-muted" data-testid="settings-locations-loading">
+        Looking for game locations…
+      </p>
+    );
+  }
+  if (props.locations.length === 0) {
+    return (
+      <p className="text-sm text-muted" data-testid="settings-locations-empty">
+        No game locations found. Start Minecraft once in your launcher, choose your Minecraft folder
+        below, or add a Prism Launcher, MultiMC or CurseForge folder.
+      </p>
+    );
+  }
+  return (
+    <fieldset
+      data-testid="settings-locations"
+      className="m-0 flex max-h-64 flex-col gap-1 overflow-auto border-0 p-0"
+    >
+      <legend className="mb-1 text-sm">Install packs into</legend>
+      {props.locations.map((location, index) => {
+        const detailsId = `${baseId}-${index}`;
+        const loader = loaderLabel(location.loader);
+        const checked = location.id === props.selectedId;
+        return (
+          <label
+            key={location.id}
+            data-testid={`location-row-${location.id}`}
+            className={
+              'flex cursor-pointer items-start gap-2 rounded border px-2 py-1.5 ' +
+              (checked ? 'border-accent bg-bg' : 'border-border')
+            }
+          >
+            <input
+              type="radio"
+              name="install-target"
+              className="mt-1"
+              data-testid={`location-select-${location.id}`}
+              value={location.id}
+              checked={checked}
+              disabled={props.onSelect === undefined}
+              aria-label={installTargetName(location)}
+              aria-describedby={detailsId}
+              onChange={() => props.onSelect?.(location.id)}
+            />
+            <span className="flex min-w-0 flex-col gap-0.5">
+              <span className="flex flex-wrap items-center gap-1">
+                <span className={badgeClass} data-testid={`location-launcher-${location.id}`}>
+                  {launcherLabel(location.launcher)}
+                </span>
+                <span className="font-medium">{location.displayName}</span>
+                {location.mcVersion !== null && (
+                  <span className={badgeClass} data-testid={`location-version-${location.id}`}>
+                    MC {location.mcVersion}
+                  </span>
+                )}
+                {loader !== null && (
+                  <span className={badgeClass} data-testid={`location-loader-${location.id}`}>
+                    {loader}
+                  </span>
+                )}
+              </span>
+              <span id={detailsId} className="flex flex-col gap-0.5">
+                <span className="truncate font-mono text-xs text-muted" title={location.gameDir}>
+                  {location.gameDir}
+                </span>
+                {location.problems.map((problem) => (
+                  <span key={problem} className="text-xs text-error">
+                    {problem}
+                  </span>
+                ))}
+                {location.warnings.map((warning) => (
+                  <span key={warning} className="text-xs">
+                    {warning}
+                  </span>
+                ))}
+              </span>
+            </span>
+          </label>
+        );
+      })}
+    </fieldset>
+  );
 }
 
 const PHASE_LABELS: Record<MinecraftProgress['phase'], string> = {
@@ -28,21 +160,32 @@ const PHASE_LABELS: Record<MinecraftProgress['phase'], string> = {
   done: 'Done',
 };
 
-/** One line describing the asset cache and the installed game version. */
-export function minecraftSummary(mcVersion: string, status: MinecraftStatus | null): string {
+/**
+ * One line describing the asset cache and the installed game version, plus which launcher's
+ * client jar extraction reads when the host knows it (`jarSource`).
+ */
+export function minecraftSummary(
+  mcVersion: string,
+  status: MinecraftStatus | null,
+  jarSource: string | null = null,
+): string {
   if (status === null) return 'Checking the Minecraft installation…';
-  if (status.minecraftDir === null) return 'No Minecraft folder found.';
+  const jar = jarSource === null ? '' : ` Client jar: ${jarSource}.`;
   if (status.cache !== null) {
-    return `Vanilla assets for Minecraft ${mcVersion} are extracted (${status.cache.fileCount} files).`;
+    return `Vanilla assets for Minecraft ${mcVersion} are extracted (${status.cache.fileCount} files).${jar}`;
   }
-  if (status.chosen === null) {
-    return `Minecraft ${mcVersion} is not installed in this folder. Start it once in the launcher, then extract.`;
+  if (jarSource === null) {
+    if (status.minecraftDir === null) return 'No Minecraft folder found.';
+    if (status.chosen === null) {
+      return `Minecraft ${mcVersion} is not installed in this folder. Start it once in the launcher, then extract.`;
+    }
   }
-  return `Minecraft ${mcVersion} is installed; its vanilla assets are not extracted yet.`;
+  return `Minecraft ${mcVersion} is installed; its vanilla assets are not extracted yet.${jar}`;
 }
 
 /**
- * Settings: the Minecraft folder, vanilla asset extraction (ADR 0011) and automatic update
+ * Settings: game locations (the install target, the official folder override and launcher
+ * folders added by hand, ADR 0019), vanilla asset extraction (ADR 0011) and automatic update
  * checks (ADR 0018).
  */
 export function SettingsDialog(props: SettingsDialogProps) {
@@ -56,6 +199,8 @@ export function SettingsDialog(props: SettingsDialogProps) {
   const folderId = useId();
   const progressId = useId();
   const autoCheckId = useId();
+  const jarSource = props.jarSource ?? null;
+  const manualRoots = props.manualRoots ?? [];
 
   useEffect(() => {
     let live = true;
@@ -102,6 +247,31 @@ export function SettingsDialog(props: SettingsDialogProps) {
     }
   };
 
+  const addRoot = async (kind: ManualLauncher): Promise<void> => {
+    if (props.onAddLauncherRoot === undefined) return;
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      await props.onAddLauncherRoot(kind);
+    } catch (problem) {
+      setError(errorText(problem));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeRoot = async (root: ManualLauncherRoot): Promise<void> => {
+    if (props.onRemoveLauncherRoot === undefined) return;
+    setError(null);
+    setNotice(null);
+    try {
+      await props.onRemoveLauncherRoot(root.kind, root.path);
+    } catch (problem) {
+      setError(errorText(problem));
+    }
+  };
+
   const extract = async (): Promise<void> => {
     setError(null);
     setNotice(null);
@@ -111,8 +281,11 @@ export function SettingsDialog(props: SettingsDialogProps) {
   };
 
   const progress = props.progress;
+  const status = props.status;
   const canExtract =
-    progress === null && props.status?.chosen != null && props.status.minecraftDir !== null;
+    progress === null &&
+    status !== null &&
+    ((status.chosen !== null && status.minecraftDir !== null) || jarSource !== null);
 
   return (
     <Dialog.Root
@@ -136,7 +309,20 @@ export function SettingsDialog(props: SettingsDialogProps) {
               void save();
             }}
           >
-            <h3 className="font-semibold">Minecraft folder</h3>
+            <h3 className="font-semibold">Game locations</h3>
+            {props.targetMissing === true && (
+              <p className="text-sm text-error" role="alert" data-testid="settings-target-missing">
+                The chosen instance was not found; using the official launcher folder.
+              </p>
+            )}
+            {props.locations !== undefined && (
+              <LocationList
+                locations={props.locations}
+                selectedId={props.selectedId ?? null}
+                onSelect={props.onSelectTarget}
+              />
+            )}
+            <h4 className="mt-1 text-sm font-semibold">Official launcher folder</h4>
             <p className="text-sm text-muted" data-testid="settings-detected">
               Detected:{' '}
               {view === null ? '…' : (view.detectedMinecraftDir ?? 'no launcher folder found')}
@@ -172,10 +358,65 @@ export function SettingsDialog(props: SettingsDialogProps) {
                 Save folder
               </Button>
             </div>
+            {props.onAddLauncherRoot !== undefined && (
+              <>
+                <h4 className="mt-1 text-sm font-semibold">Other launchers</h4>
+                <p className="text-xs text-muted">
+                  Prism Launcher and the CurseForge app are found in their usual folders. Add a
+                  folder here if yours lives somewhere else, or for MultiMC and PolyMC.
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {ADD_ROOT_BUTTONS.map((entry) => (
+                    <Button
+                      key={entry.kind}
+                      data-testid={`settings-add-${entry.kind}`}
+                      disabled={busy}
+                      onClick={() => void addRoot(entry.kind)}
+                    >
+                      {entry.label}
+                    </Button>
+                  ))}
+                </div>
+              </>
+            )}
+            {manualRoots.length > 0 && (
+              <ul
+                className="m-0 flex list-none flex-col gap-1 p-0"
+                aria-label="Added launcher folders"
+              >
+                {manualRoots.map((root, index) => (
+                  <li
+                    key={`${root.kind}:${root.path}`}
+                    data-testid={`settings-root-${index}`}
+                    className="flex items-center gap-1.5"
+                  >
+                    <span className={badgeClass}>{launcherLabel(root.kind)}</span>
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate font-mono text-xs" title={root.path}>
+                        {root.path}
+                      </span>
+                      {root.found === 0 && (
+                        <span className="text-xs text-muted">
+                          No instances found in this folder.
+                        </span>
+                      )}
+                    </span>
+                    <Button
+                      data-testid={`settings-remove-root-${index}`}
+                      aria-label={`Remove ${launcherLabel(root.kind)} folder ${root.path}`}
+                      disabled={props.onRemoveLauncherRoot === undefined}
+                      onClick={() => void removeRoot(root)}
+                    >
+                      Remove
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
 
             <h3 className="mt-3 font-semibold">Vanilla assets</h3>
             <p className="text-sm" role="status" data-testid="settings-status">
-              {minecraftSummary(props.mcVersion, props.status)}
+              {minecraftSummary(props.mcVersion, status, jarSource)}
             </p>
             <p className="text-xs text-muted">
               The preview uses models and textures from your own Minecraft client. MSM copies them
@@ -202,7 +443,7 @@ export function SettingsDialog(props: SettingsDialogProps) {
                 disabled={!canExtract}
                 onClick={() => void extract()}
               >
-                {props.status?.cache != null ? 'Extract again' : 'Extract vanilla assets'}
+                {status?.cache != null ? 'Extract again' : 'Extract vanilla assets'}
               </Button>
             </div>
 

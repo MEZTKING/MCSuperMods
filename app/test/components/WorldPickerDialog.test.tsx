@@ -53,4 +53,26 @@ describe('WorldPickerDialog', () => {
     expect(screen.getByText(/No worlds found/)).toBeTruthy();
     expect((screen.getByTestId('world-picker-submit') as HTMLButtonElement).disabled).toBe(true);
   });
+
+  it('names the game location in the title and the empty state', () => {
+    const name = 'Prism Launcher — My Instance';
+    const { rerender } = render(
+      <WorldPickerDialog
+        open
+        worlds={worlds}
+        onPick={vi.fn()}
+        onClose={vi.fn()}
+        locationName={name}
+      />,
+    );
+    expect(
+      screen.getByRole('dialog', { name: `Install data pack to a world — ${name}` }),
+    ).toBeTruthy();
+    rerender(
+      <WorldPickerDialog open worlds={[]} onPick={vi.fn()} onClose={vi.fn()} locationName={name} />,
+    );
+    expect(screen.getByTestId('world-picker-empty').textContent).toBe(
+      `No worlds found in ${name}. Create a singleplayer world there first.`,
+    );
+  });
 });
