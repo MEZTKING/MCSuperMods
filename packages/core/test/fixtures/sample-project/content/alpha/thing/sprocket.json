@@ -1,0 +1,11 @@
+{
+  "data": {
+    "teeth": 12
+  },
+  "formatVersion": 1,
+  "id": "alpha:sprocket",
+  "kind": "test:thing",
+  "meta": {
+    "createdAt": "2026-11-04T12:00:00.000Z"
+  }
+}

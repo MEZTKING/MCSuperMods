@@ -1,0 +1,20 @@
+{
+  "data": {
+    "colour": "red",
+    "parts": [
+      "a",
+      "b"
+    ],
+    "size": 3
+  },
+  "formatVersion": 1,
+  "id": "alpha:gadgets/widget",
+  "kind": "test:thing",
+  "meta": {
+    "createdAt": "2026-11-04T12:00:00.000Z",
+    "notes": "Nested path.",
+    "tags": [
+      "demo"
+    ]
+  }
+}

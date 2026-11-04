@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "name": "Sample",
+  "namespaces": [
+    "alpha",
+    "beta"
+  ],
+  "plugins": [
+    "test.things"
+  ],
+  "settings": {
+    "export.zip": true
+  },
+  "targets": [
+    "mc-1.0"
+  ]
+}

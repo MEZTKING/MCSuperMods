@@ -14,10 +14,13 @@
   },
   "dependencies": {
     "@msm/plugin-api": "workspace:*",
-    "@msm/schemas": "workspace:*"
+    "immer": "catalog:",
+    "semver": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "@types/semver": "catalog:",
+    "typescript": "catalog:",
     "vitest": "catalog:"
   }
 }
