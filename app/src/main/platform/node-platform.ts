@@ -38,14 +38,22 @@ import { createThumbnailService } from './thumbnails';
 /**
  * Writes `data` to `path` through a temporary file in the same folder, then renames it into
  * place, so a reader never sees a partly written file (the e2e specs read exported zips as
- * soon as the save resolves). The temporary file is removed when the write fails.
+ * soon as the save resolves). The temporary file is removed when the write fails. `mode` sets
+ * the new file's permissions (for example `0o600` for the AI helper's key file).
  */
-export async function writeFileAtomic(path: string, data: Uint8Array): Promise<void> {
+export async function writeFileAtomic(
+  path: string,
+  data: Uint8Array,
+  options: { mode?: number } = {},
+): Promise<void> {
   const dir = dirname(path);
   await mkdir(dir, { recursive: true });
   const temp = join(dir, `.${basename(path)}.${randomBytes(6).toString('hex')}.tmp`);
   try {
-    await writeFile(temp, data, { flag: 'wx' });
+    await writeFile(temp, data, {
+      flag: 'wx',
+      ...(options.mode === undefined ? {} : { mode: options.mode }),
+    });
     await rename(temp, path);
   } catch (error) {
     await rm(temp, { force: true });
@@ -151,9 +159,10 @@ export interface NodePlatformDeps {
 
 /**
  * The main-process platform: the adapter plus main-only extras. `updates` is served by the
- * updater (`../updater.ts`), not by the Node platform.
+ * updater (`../updater.ts`) and `ai` by the AI service (`../ai/ai-service.ts`), not by the Node
+ * platform.
  */
-export interface MainPlatform extends Omit<PlatformAdapter, 'updates'> {
+export interface MainPlatform extends Omit<PlatformAdapter, 'updates' | 'ai'> {
   minecraft: MinecraftService;
   settings: SettingsStore;
 }

@@ -8,12 +8,12 @@ Armour facts and the Creator (ADRs 0042, 0043). `API_VERSION` is `1.1.0`. Additi
 
 - `TargetFacts.items?: ItemFacts` with `armorMaterials: readonly string[]`: the vanilla armour material names of the target (ADR 0042 D4). A target without it skips the checks that need it.
 - `ProjectStarter.creator?: StarterCreatorInfo` (`group: CreatorGroup`, `blurb: string`; `CreatorGroup` is `'gear' | 'blocks' | 'food' | 'mobs' | 'scripts'`): lists the starter in the host's Creator as a guided flow (ADR 0043 D1).
-- `SetStarterParameter` (`type: 'set'`, `choices`, `default: string[]`, `min?`): a parameter whose value is a subset of a fixed list, passed to `build` as a `string[]` in `BundleContext.values` (already a `Json`, so the `values` type is unchanged). Declared ahead of hosts: it joins the `StarterParameter` union once the host's wizard renders it, so starters cannot declare it yet.
+- `SetStarterParameter` (`type: 'set'`, `choices`, `default: string[]`, `min?`): a parameter whose value is a subset of a fixed list, passed to `build` as a `string[]` in `BundleContext.values` (already a `Json`, so the `values` type is unchanged). It is a member of the `StarterParameter` union; the host's wizard renders it as a list of checkboxes.
 - `ElementMeta.creator?: ElementCreatorMeta` (`flowId`, `setId`, `values`, `generatedId`): written by the host on elements the Creator made, kept through load and save by `@msm/core` (ADR 0043 D4).
 
 ### Migration from 1.0.0
 
-None. Hosts that switch over `CreatorGroup` must handle every group.
+None. Hosts that switch over `CreatorGroup` or over `StarterParameter['type']` must handle every member (`'set'` is new).
 
 ## 1.0.0 — unreleased
 

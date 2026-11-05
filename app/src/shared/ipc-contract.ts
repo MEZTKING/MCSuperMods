@@ -6,6 +6,7 @@
  * @packageDocumentation
  */
 
+import { aiModeSchema, aiRunLimitsSchema, aiSettingsSchema } from '@msm/ai';
 import { isProjectRelativePath } from '@msm/plugin-api';
 import { z } from 'zod';
 import {
@@ -23,6 +24,7 @@ import {
 } from './ipc-channels';
 
 export type {
+  AiEventPayload,
   InvokeChannel,
   MenuCommand,
   MenuOpenRecent,
@@ -34,9 +36,11 @@ export type {
   VendoredKeyName,
 } from './ipc-channels';
 export {
+  AI_EVENT_TYPES,
   EventChannels,
   InvokeChannels,
   IPC_VERSION,
+  isAiEventPayload,
   isMenuCommand,
   isMenuOpenRecent,
   isMinecraftProgress,
@@ -463,6 +467,44 @@ const externalPluginEntry = z
   })
   .strict();
 
+/** The longest user message of one AI helper run (characters). */
+export const AI_TEXT_MAX = 64 * 1024;
+/** The most context blocks of one AI helper run. */
+export const AI_CONTEXT_BLOCKS_MAX = 8;
+/** The longest context block (characters). */
+export const AI_CONTEXT_BLOCK_MAX = 64 * 1024;
+/** The longest API key `setKey` accepts (characters). */
+export const AI_KEY_MAX = 512;
+/** The longest tool result content (characters). */
+export const AI_TOOL_RESULT_MAX = 2 * 1024 * 1024;
+/** The longest run, request and conversation id. */
+const AI_ID_MAX = 200;
+
+const aiId = z.string().min(1).max(AI_ID_MAX);
+/** `AiStartRequest` with the IPC size bounds (ADR 0041 D3). */
+const aiStartRequest = z
+  .object({
+    runId: aiId,
+    conversationId: aiId,
+    mode: aiModeSchema,
+    text: z.string().max(AI_TEXT_MAX),
+    contextBlocks: z.array(z.string().max(AI_CONTEXT_BLOCK_MAX)).max(AI_CONTEXT_BLOCKS_MAX),
+    limits: aiRunLimitsSchema.strict().optional(),
+  })
+  .strict();
+/** `AppSettings.ai` as sent by the renderer. */
+const aiSettings = aiSettingsSchema.strict();
+const aiKeyTestResult = z.discriminatedUnion('ok', [
+  z.object({ ok: z.literal(true), model: z.string().max(200) }).strict(),
+  z
+    .object({
+      ok: z.literal(false),
+      error: z.string().max(2000),
+      errorClass: z.string().max(200),
+    })
+    .strict(),
+]);
+
 export const ipcContract = {
   [InvokeChannels.projectPickDirectory]: {
     request: z
@@ -540,6 +582,7 @@ export const ipcContract = {
         updates: updateSettings,
         launchers: launcherSettingsSchema.optional(),
         installTarget: gameLocationRefSchema.nullable().optional(),
+        ai: aiSettings.optional(),
         detectedMinecraftDir: absolutePath.nullable(),
       })
       .strict(),
@@ -552,6 +595,7 @@ export const ipcContract = {
         updates: updateSettings.optional(),
         launchers: launcherSettingsSchema.optional(),
         installTarget: gameLocationRefSchema.nullable().optional(),
+        ai: aiSettings.optional(),
       })
       .strict(),
     response: voidResponse,
@@ -767,6 +811,46 @@ export const ipcContract = {
       .strict(),
   },
   [InvokeChannels.pluginsOpenFolder]: { request: noRequest, response: voidResponse },
+  [InvokeChannels.aiKeyStatus]: {
+    request: noRequest,
+    response: z
+      .object({
+        set: z.boolean(),
+        tail: z.string().max(4).nullable(),
+        encryptionAvailable: z.boolean(),
+      })
+      .strict(),
+  },
+  [InvokeChannels.aiSetKey]: {
+    request: z.object({ key: z.string().trim().min(1).max(AI_KEY_MAX) }).strict(),
+    response: voidResponse,
+  },
+  [InvokeChannels.aiClearKey]: { request: noRequest, response: voidResponse },
+  [InvokeChannels.aiTestKey]: { request: noRequest, response: aiKeyTestResult },
+  [InvokeChannels.aiStart]: { request: aiStartRequest, response: voidResponse },
+  [InvokeChannels.aiCancel]: {
+    request: z.object({ runId: aiId }).strict(),
+    response: voidResponse,
+  },
+  [InvokeChannels.aiToolResult]: {
+    request: z
+      .object({
+        runId: aiId,
+        requestId: aiId,
+        content: z.string().max(AI_TOOL_RESULT_MAX),
+        isError: z.boolean(),
+      })
+      .strict(),
+    response: voidResponse,
+  },
+  [InvokeChannels.aiNewConversation]: {
+    request: z.object({ conversationId: aiId }).strict(),
+    response: voidResponse,
+  },
+  [InvokeChannels.aiDropConversation]: {
+    request: z.object({ conversationId: aiId }).strict(),
+    response: voidResponse,
+  },
 } as const satisfies Record<InvokeChannel, { request: z.ZodType; response: z.ZodType }>;
 
 /** The contract as a whole. */

@@ -11,13 +11,20 @@
  *   When unset, `pickFiles` returns nothing.
  * - `confirmDiscard` answers "discard" without a dialog.
  *
+ * Independently of those, `MSM_E2E_AI_SCRIPT` (absolute path to an `AiModelScript` JSON file,
+ * ADR 0041 D9) makes the AI helper use `ScriptedModelClient` with that script for every
+ * conversation (one client, so the script's turns run in order across the app session) and
+ * report the key as set (tail `e2e!`). No key and no SDK are used then.
+ *
  * Combine with `MSM_HOME` (see `platform/settings.ts`) so settings and the asset cache live
  * in a temporary folder. The hooks are inert unless `MSM_E2E_PROJECT_DIR` is set.
  *
  * @packageDocumentation
  */
 
+import { readFileSync } from 'node:fs';
 import { delimiter, isAbsolute, join } from 'node:path';
+import { type AiModelScript, aiModelScriptSchema } from '@msm/ai';
 import type { NativeDialogs } from './platform/node-platform';
 
 /** The parsed e2e settings. */
@@ -58,4 +65,22 @@ export function applyE2eHooks(dialogs: NativeDialogs, hooks: E2eHooks | null): N
     saveFilePath: async ({ defaultName }) =>
       hooks.outDir === null ? null : join(hooks.outDir, defaultName),
   };
+}
+
+/**
+ * Reads the AI helper's model script named by `MSM_E2E_AI_SCRIPT`, or `null` when it is unset.
+ * Throws when the path is relative or the file is not a valid `AiModelScript`.
+ */
+export function readE2eAiScript(
+  env: Readonly<Record<string, string | undefined>>,
+  readText: (path: string) => string = (path) => readFileSync(path, 'utf8'),
+): AiModelScript | null {
+  const path = env.MSM_E2E_AI_SCRIPT;
+  if (path === undefined || path === '') return null;
+  if (!isAbsolute(path)) throw new Error('MSM_E2E_AI_SCRIPT must be an absolute path.');
+  const parsed = aiModelScriptSchema.safeParse(JSON.parse(readText(path)));
+  if (!parsed.success) {
+    throw new Error(`MSM_E2E_AI_SCRIPT is not a valid model script: ${parsed.error.message}`);
+  }
+  return parsed.data as AiModelScript;
 }

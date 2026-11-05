@@ -63,6 +63,15 @@ export const InvokeChannels = {
   pluginsList: 'msm:v1:plugins:list',
   pluginsRead: 'msm:v1:plugins:read',
   pluginsOpenFolder: 'msm:v1:plugins:openFolder',
+  aiKeyStatus: 'msm:v1:ai:keyStatus',
+  aiSetKey: 'msm:v1:ai:setKey',
+  aiClearKey: 'msm:v1:ai:clearKey',
+  aiTestKey: 'msm:v1:ai:testKey',
+  aiStart: 'msm:v1:ai:start',
+  aiCancel: 'msm:v1:ai:cancel',
+  aiToolResult: 'msm:v1:ai:toolResult',
+  aiNewConversation: 'msm:v1:ai:newConversation',
+  aiDropConversation: 'msm:v1:ai:dropConversation',
 } as const;
 
 /**
@@ -82,6 +91,8 @@ export const EventChannels = {
   setDirty: 'msm:v1:app:setDirty',
   /** Main to renderer: the auto-updater's state changed, payload {@link UpdateStatus}. */
   updatesStatus: 'msm:v1:updates:status',
+  /** Main to renderer: an event of an AI helper run, payload {@link AiEventPayload}. */
+  aiEvent: 'msm:v1:ai:event',
 } as const;
 
 /** The name of an invoke channel. */
@@ -116,6 +127,10 @@ export const MENU_COMMANDS = [
   'examples',
   'clearRecentProjects',
   'upgradeTarget',
+  // ADR 0041 D8: View > "AI Helper".
+  'toggleAiHelper',
+  // Reserved for the Creator (CREATOR-PLAN B184): File > "Create…"; ignored until then.
+  'creator',
 ] as const;
 
 /** A command the application menu sends to the renderer. */
@@ -136,6 +151,41 @@ export function isMenuOpenRecent(value: unknown): value is MenuOpenRecent {
   if (typeof value !== 'object' || value === null) return false;
   const root = (value as Record<string, unknown>).root;
   return typeof root === 'string' && root.length > 0 && root.length <= 4096;
+}
+
+/** The `type` of every AI helper run event (`AiEvent` in `@msm/ai`, ADR 0041 D3). */
+export const AI_EVENT_TYPES = [
+  'turn_start',
+  'text_delta',
+  'thinking_delta',
+  'tool_request',
+  'tool_done',
+  'usage',
+  'fallback',
+  'done',
+] as const;
+
+/**
+ * The payload of {@link EventChannels.aiEvent}: one event of the run `runId`. `event` is an
+ * `AiEvent` of `@msm/ai`; this file stays free of that dependency for the preload.
+ */
+export interface AiEventPayload<E extends { type: string } = { type: string }> {
+  runId: string;
+  event: E;
+}
+
+/**
+ * A cheap shape check of an {@link AiEventPayload} for the preload: a run id and an event
+ * whose `type` is known. Main builds the events itself, so the full schema is not repeated.
+ */
+export function isAiEventPayload(value: unknown): value is AiEventPayload {
+  if (typeof value !== 'object' || value === null) return false;
+  const record = value as Record<string, unknown>;
+  if (typeof record.runId !== 'string' || record.runId === '') return false;
+  const event = record.event;
+  if (typeof event !== 'object' || event === null) return false;
+  const type = (event as Record<string, unknown>).type;
+  return typeof type === 'string' && (AI_EVENT_TYPES as readonly string[]).includes(type);
 }
 
 /** The vendored data files of a target that the renderer may read. */

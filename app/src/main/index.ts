@@ -8,11 +8,23 @@
  */
 
 import { join } from 'node:path';
+import { type ModelClient, ScriptedModelClient } from '@msm/ai';
 import { nodeEnv } from '@msm/interop/node';
-import { app, BrowserWindow, dialog, ipcMain, Notification, nativeImage, shell } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  Notification,
+  nativeImage,
+  safeStorage,
+  shell,
+} from 'electron';
 import { EventChannels } from '../shared/ipc-channels';
+import { createAiKeyStore } from './ai/ai-key-store';
+import { createAiService } from './ai/ai-service';
 import { registerAppSchemePrivileges } from './app-scheme';
-import { applyE2eHooks, readE2eHooks } from './e2e-hooks';
+import { applyE2eHooks, readE2eAiScript, readE2eHooks } from './e2e-hooks';
 import { registerIpc } from './ipc';
 import { installMenu } from './menu';
 import { createNodePlatform, type NativeDialogs } from './platform/node-platform';
@@ -175,6 +187,19 @@ const platform = createNodePlatform({
   },
 });
 
+// ADR 0041: the AI helper. The key is encrypted with `safeStorage` in `<msmHome>/ai-key.bin`;
+// the Claude SDK is a lazy chunk (`ai-client-*.js`) loaded on the first run or key test.
+const e2eAiScript = readE2eAiScript(process.env);
+const aiService = createAiService({
+  keyStore: createAiKeyStore({ msmHome, safeStorage }),
+  settings: () => platform.settings.aiSettings(),
+  async loadClient(apiKey): Promise<ModelClient> {
+    const { createAnthropicModelClient } = await import('@msm/ai/sdk');
+    return createAnthropicModelClient({ apiKey });
+  },
+  ...(e2eAiScript === null ? {} : { scriptedClient: new ScriptedModelClient(e2eAiScript) }),
+});
+
 // `<userData>/logs/updater.log`, created on the first logged error.
 let updateLog: { path: string; write: ReturnType<typeof createUpdateLog> } | null = null;
 const updateLogFile = () => {
@@ -272,7 +297,7 @@ function runSmoke(window: BrowserWindow): void {
 }
 
 void app.whenReady().then(() => {
-  registerIpc(platform, updater, plugins);
+  registerIpc(platform, updater, plugins, aiService);
   installMenu();
   platform.settings.recentProjects().then(
     (recent) => installMenu(recent),

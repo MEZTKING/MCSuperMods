@@ -256,6 +256,10 @@ describe('1.1.0 additions', () => {
     };
     const values: BundleContext['values'] = { pieces: pieces.default };
     expect(values.pieces).toEqual(['sword', 'helmet']);
+    // A member of the union, so a starter can declare it.
+    expectTypeOf<SetStarterParameter>().toExtend<StarterParameter>();
+    const declared: StarterParameter[] = [pieces];
+    expect(declared[0]?.type).toBe('set');
   });
 
   it('records where a Creator-made element came from', () => {

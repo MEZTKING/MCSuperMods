@@ -50,22 +50,43 @@ export function hasParameters(starter: ProjectStarter | null | undefined): boole
 }
 
 /**
- * What the form holds while the user edits: text for string, number, colour and choice
- * parameters (a number field may hold text that is not a number yet), a boolean for
- * boolean parameters.
+ * The editing value of one parameter: text for string, number, colour and choice parameters
+ * (a number field may hold text that is not a number yet), a boolean for boolean parameters
+ * and the ticked values for set parameters.
  */
-export type RawValues = Readonly<Record<string, string | boolean>>;
+export type RawValue = string | boolean | readonly string[];
+
+/** What the form holds while the user edits, keyed by parameter id. */
+export type RawValues = Readonly<Record<string, RawValue>>;
 
 /** The editing value of a parameter's default. */
-export function defaultRawValue(parameter: StarterParameter): string | boolean {
+export function defaultRawValue(parameter: StarterParameter): RawValue {
   switch (parameter.type) {
     case 'boolean':
       return parameter.default;
     case 'number':
       return String(parameter.default);
+    case 'set':
+      return [...parameter.default];
     default:
       return parameter.default;
   }
+}
+
+/**
+ * The ticked values of a set parameter after ticking (`checked`) or unticking `value`, in the
+ * order of the parameter's choices.
+ */
+export function toggleSetValue(
+  parameter: StarterParameter & { type: 'set' },
+  raw: RawValue | undefined,
+  value: string,
+  checked: boolean,
+): string[] {
+  const current = Array.isArray(raw) ? raw : [];
+  return parameter.choices
+    .map((choice) => choice.value)
+    .filter((choice) => (choice === value ? checked : current.includes(choice)));
 }
 
 /** The editing values of every parameter's default. */
@@ -79,8 +100,10 @@ export function defaultRawValues(parameters: readonly StarterParameter[] | undef
  * The value `build` receives for one parameter: numbers parsed, colours in lower case. Falls
  * back to the default for a value that does not validate.
  */
-export function toValue(parameter: StarterParameter, raw: string | boolean | undefined): Json {
-  if (raw === undefined || validateParameter(parameter, raw) !== null) return parameter.default;
+export function toValue(parameter: StarterParameter, raw: RawValue | undefined): Json {
+  if (raw === undefined || validateParameter(parameter, raw) !== null) {
+    return parameter.type === 'set' ? [...parameter.default] : parameter.default;
+  }
   switch (parameter.type) {
     case 'boolean':
       return raw === true;
@@ -92,6 +115,12 @@ export function toValue(parameter: StarterParameter, raw: string | boolean | und
       return String(raw);
     case 'choice':
       return String(raw);
+    case 'set': {
+      const chosen = Array.isArray(raw) ? raw : [];
+      return parameter.choices
+        .map((choice) => choice.value)
+        .filter((choice) => chosen.includes(choice));
+    }
   }
 }
 
@@ -113,14 +142,15 @@ const show = (value: number): string => String(value);
 
 /**
  * Checks one value against its parameter's declaration (ADR 0040 D1: pattern, length, range,
- * step, choices, non-empty).
+ * step, choices, non-empty; for a set, known values and at least `min` of them, ADR 0043 D1).
  *
  * @returns An error message in British English, or `null` when the value is valid.
  */
 export function validateParameter(
   parameter: StarterParameter,
-  raw: string | boolean | undefined,
+  raw: RawValue | undefined,
 ): string | null {
+  if (Array.isArray(raw) && parameter.type !== 'set') return 'Enter a value.';
   switch (parameter.type) {
     case 'boolean':
       return typeof raw === 'boolean' ? null : 'Choose yes or no.';
@@ -164,6 +194,17 @@ export function validateParameter(
       return typeof raw === 'string' && parameter.choices.some((choice) => choice.value === raw)
         ? null
         : 'Choose one of the options.';
+    case 'set': {
+      if (!Array.isArray(raw)) return 'Choose from the options.';
+      const values: readonly string[] = raw;
+      if (values.some((value) => !parameter.choices.some((choice) => choice.value === value))) {
+        return 'Choose from the options.';
+      }
+      const min = parameter.min ?? 0;
+      const chosen = new Set(values).size;
+      if (chosen < min) return min === 1 ? 'Choose at least one.' : `Choose at least ${min}.`;
+      return null;
+    }
   }
 }
 

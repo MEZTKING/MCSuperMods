@@ -1155,6 +1155,9 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       }
       setDialog({ type: 'upgrade-target' });
     },
+    // ADR 0041: the AI helper panel arrives with B173; the Creator (B184) after it.
+    toggleAiHelper: () => {},
+    creator: () => {},
   };
 
   const commandHandlers: CommandHandlers = {

@@ -64,19 +64,23 @@ function dropVendoredDataFromRenderer(): Plugin {
 }
 
 /**
- * Minifies the lazy scripting chunk only (`scripting-engine-*.js`, ADR 0031 D2): it bundles
- * `typescript` (about 8 MB as written, about 3.5 MB minified), which would otherwise push
- * `app.asar` over its budget. The rest of main stays unminified for readable stack traces.
+ * Lazy main chunks that are minified: `scripting-engine-*.js` (ADR 0031 D2) bundles `typescript`
+ * (about 8 MB as written, about 3.5 MB minified), and `ai-client-*.js` (ADR 0041 D2) bundles the
+ * Claude SDK. Unminified they would push `app.asar` over its budget. The rest of main stays
+ * unminified for readable stack traces.
  */
-function minifyScriptingChunk(): Plugin {
+const MINIFIED_CHUNK_PREFIXES = ['scripting-engine', 'ai-client'] as const;
+
+function minifyLazyChunks(prefixes: readonly string[] = MINIFIED_CHUNK_PREFIXES): Plugin {
   return {
-    name: 'msm:minify-scripting-chunk',
+    name: 'msm:minify-lazy-chunks',
     apply: 'build',
     enforce: 'post',
     // On the final bundle, after every other plugin has rendered the chunk.
     async generateBundle(_options, bundle) {
       for (const output of Object.values(bundle)) {
-        if (output.type !== 'chunk' || !output.fileName.startsWith('scripting-engine')) continue;
+        if (output.type !== 'chunk') continue;
+        if (!prefixes.some((prefix) => output.fileName.startsWith(prefix))) continue;
         const result = await minify(output.fileName, output.code, {
           compress: true,
           mangle: true,
@@ -88,6 +92,32 @@ function minifyScriptingChunk(): Plugin {
   };
 }
 
+/** `@msm/ai/sdk` (`packages/ai/src/sdk/index.ts`), loaded with `import()` by main. */
+const AI_SDK_ENTRY = /[\\/]packages[\\/]ai[\\/]src[\\/]sdk[\\/]index\.ts$/;
+
+/** Modules of the Claude SDK package. */
+const AI_SDK_MODULE =
+  /[\\/]node_modules[\\/](?:\.pnpm[\\/][^\\/]+[\\/]node_modules[\\/])?@anthropic-ai[\\/]sdk[\\/]/;
+
+/**
+ * Main chunk file names: the dynamic import of `@msm/ai/sdk` would be named after its file
+ * (`index-*.js`); it is named `ai-client-*.js` so the minifier and the size check find it. The
+ * SDK's own lazy chunks (its Node helpers) become `ai-client-<name>-*.js` for the same reason.
+ */
+function mainChunkFileName(chunk: {
+  name: string;
+  facadeModuleId: string | null;
+  moduleIds: readonly string[];
+}): string {
+  if (chunk.facadeModuleId !== null && AI_SDK_ENTRY.test(chunk.facadeModuleId)) {
+    return 'ai-client-[hash].js';
+  }
+  if (chunk.moduleIds.length > 0 && chunk.moduleIds.every((id) => AI_SDK_MODULE.test(id))) {
+    return 'ai-client-[name]-[hash].js';
+  }
+  return '[name]-[hash].js';
+}
+
 export default defineConfig({
   // Main is ESM and bundles every dependency (ADR 0013: the packaged app collects no
   // node_modules). electron-vite still externalises `electron` and Node built-ins when
@@ -97,9 +127,12 @@ export default defineConfig({
       externalizeDeps: false,
       // TypeScript only requires `source-map-support` from `tryEnableSourceMapsForHost`, which
       // MSM never calls; left external, the guarded `require` simply fails if ever reached.
-      rolldownOptions: { external: ['source-map-support'] },
+      rolldownOptions: {
+        external: ['source-map-support'],
+        output: { chunkFileNames: mainChunkFileName },
+      },
     },
-    plugins: [bundleVendoredData(), minifyScriptingChunk()],
+    plugins: [bundleVendoredData(), minifyLazyChunks()],
     // fflate's Node build declares `var require = createRequire(...)`, which collides with the
     // `require` shim electron-vite adds to ESM main bundles. MSM uses only fflate's synchronous
     // API, which the browser build provides without workers.

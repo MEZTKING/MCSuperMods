@@ -79,6 +79,7 @@ import { MSM_RUNTIME_TYPINGS } from '@msm/plugin-scripting';
 import { type SchemaNode, type VanillaMcdocSymbols, validateJson } from '@msm/schemas';
 import { targetFacts } from '@msm/targets';
 import { PluginProblemCodes } from '../../../shared/ipc-channels';
+import { type ChangeAsset, type ChangeItem, planChangeItems } from '../changeset/changeset';
 import type {
   AppSettingsPatch,
   AppSettingsView,
@@ -367,6 +368,17 @@ export interface AddBundleResult {
   skippedAssets: string[];
 }
 
+/** The result of {@link ProjectSession.applyChangeset}. */
+export interface ApplyChangesetResult {
+  /** Item ids applied, in order. */
+  applied: string[];
+  /** Accepted item ids left out because they no longer fit the project. */
+  skipped: string[];
+}
+
+/** The undo label of {@link ProjectSession.applyChangeset} (ADR 0041 D5). */
+export const APPLY_CHANGESET_LABEL = 'Apply AI helper changes';
+
 /**
  * The library contributions of the registered plugins (ADR 0020), filtered to what the
  * registered kinds support.
@@ -597,6 +609,7 @@ export class ProjectSession {
   readonly #exporters: readonly Exporter[];
   readonly #contentJarExporter: Exporter;
   readonly #javaProjectExporter: Exporter;
+  readonly #kindPlugins: ReadonlyMap<string, string>;
   #scriptingProblem: Problem | null = null;
   #validatorProblems = new Map<string, Problem[]>();
   #pendingValidators = new Set<string>();
@@ -660,6 +673,13 @@ export class ProjectSession {
     this.#scripting = options.scripting;
     this.#scriptTypings = options.scriptTypings ?? MSM_RUNTIME_TYPINGS;
     this.#library = this.#collectLibrary();
+    const kindPlugins = new Map<string, string>();
+    for (const plugin of this.#plugins) {
+      for (const kind of plugin.contributes.elementKinds ?? []) {
+        if (!kindPlugins.has(kind.id)) kindPlugins.set(kind.id, plugin.id);
+      }
+    }
+    this.#kindPlugins = kindPlugins;
     this.#importers = Object.freeze(collectImporters(this.#plugins, options.targetImporters));
     this.#validators = Object.freeze(collectValidators(this.#plugins));
     this.#exporters = Object.freeze(
@@ -693,6 +713,11 @@ export class ProjectSession {
    */
   get scriptTypings(): string {
     return this.#scriptTypings;
+  }
+
+  /** The id of the plugin that contributes each registered kind, by kind id. */
+  get kindPlugins(): ReadonlyMap<string, string> {
+    return this.#kindPlugins;
   }
 
   /** The options the Fabric mod jar export declares, shown in its dialog (ADR 0027 D2). */
@@ -1347,6 +1372,178 @@ export class ProjectSession {
     const index = buildSessionReferenceIndex(state, this.registry, context);
     this.#referenceCache = { state, context, index };
     return index;
+  }
+
+  /**
+   * The references a rename of `oldId` would rewrite in `project` (the F2 rename's choice:
+   * text references and schema references in the registry of the element's kind). Uses the
+   * live index for the live project and builds one for any other state; before schemas have
+   * loaded only function-line references are found. Empty when `oldId` is not in `project`.
+   */
+  referencesForRename(project: Project, oldId: ResourceLocation): Reference[] {
+    const element = elementsById(project).get(oldId);
+    if (element === undefined) return [];
+    const live = this.#stack !== null && this.#stack.state === project;
+    const index = live ? this.#referenceIndex() : this.#indexFor(project);
+    return index === null ? [] : referencesForRename(index, element, this.registry);
+  }
+
+  /** A fresh reference index of `project` with the loaded schemas of the current target. */
+  #indexFor(project: Project): ReferenceIndex {
+    const targetId = this.#targets.length === 0 ? undefined : this.target.id;
+    const context =
+      (targetId === undefined ? undefined : this.#loadedSchemas.get(targetId)) ?? null;
+    return buildSessionReferenceIndex(project, this.registry, context);
+  }
+
+  // AI helper and Creator (ADR 0041 D4-D5, ADR 0043) ----------------------------------------
+
+  /**
+   * The schema problems of `data` as an element `id` of `kind` inside `project` (registries
+   * from `project`, the kind's hidden paths left out). Changes no state.
+   *
+   * @throws Error If the kind is unknown or the schemas cannot be loaded.
+   */
+  async validateElementData(
+    kind: string,
+    id: ResourceLocation,
+    data: Json,
+    project: Project,
+  ): Promise<Problem[]> {
+    if (this.registry.get(kind) === undefined) {
+      throw new Error(`Unknown element kind ${JSON.stringify(kind)}.`);
+    }
+    const context = await this.schemas();
+    const element = createElement({ id, kind, data, now: () => '' });
+    return this.#validateElement(element, context, context.registries(project));
+  }
+
+  /**
+   * The full check of an arbitrary project, as the live pass runs it over the open one: the
+   * schema pass per element (with the registries and dangling `#[id]` references of
+   * `project`), the mcfunction checker and the TypeScript check for elements without schema
+   * errors, then every plugin validator. Problems are in element order, then validator order.
+   * Changes no session state and publishes nothing. A failing schema load is returned as one
+   * `schema.unavailable` warning.
+   */
+  async checkProject(project: Project): Promise<Problem[]> {
+    let context: SchemaContext;
+    try {
+      context = await this.schemas();
+    } catch (error) {
+      return [
+        {
+          severity: 'warning',
+          code: SessionProblemCodes.schemasUnavailable,
+          message: `Schemas could not be loaded, so elements are not validated: ${messageOf(error)}`,
+        },
+      ];
+    }
+    const registries = context.registries(project);
+    const projectIds = mcfunctionProjectIds(project);
+    const elementProblems: Problem[] = [];
+    let scriptFailure: unknown;
+    for (const element of elementsById(project).values()) {
+      const problems = this.#validateElement(element, context, registries);
+      const clean = !problems.some((problem) => problem.severity === 'error');
+      if (clean && element.kind === FUNCTION_KIND && this.#mcfunction !== undefined) {
+        problems.push(
+          ...(await this.#functionProblems(this.#mcfunction, element, context, projectIds)),
+        );
+      } else if (clean && element.kind === SCRIPT_KIND && this.#scripting !== undefined) {
+        try {
+          problems.push(
+            ...(await checkScriptElement(
+              this.#scripting,
+              element,
+              scriptLines(element) ?? [],
+              this.#scriptTypings,
+            )),
+          );
+        } catch (error) {
+          scriptFailure ??= error;
+        }
+      }
+      elementProblems.push(...problems);
+    }
+    const input = this.#validatorInput(context, project);
+    const results = await Promise.all(
+      this.#validators.map((entry) => runValidator(entry, input)),
+    );
+    return [
+      ...(scriptFailure === undefined
+        ? []
+        : [
+            {
+              severity: 'warning' as const,
+              code: SessionProblemCodes.scriptingUnavailable,
+              message: `Scripts could not be checked: ${messageOf(scriptFailure)}`,
+            },
+          ]),
+      ...elementProblems,
+      ...results.flat(),
+    ];
+  }
+
+  /**
+   * Applies the accepted items of a changeset as one undo step (ADR 0041 D5). Items are
+   * checked again against the live project, in order (`planChangeItems`): a `create` whose id
+   * exists, an `update`, `delete` or `rename` whose element is missing or no longer has the
+   * captured `before`, a rename onto a taken id and an `asset` whose path is recorded or
+   * whose file exists are skipped. Asset bytes are written first (as {@link addBundle} does),
+   * then one command `ai.apply-changeset` adds missing namespaces, creates, updates, deletes,
+   * renames (rewriting references as the F2 rename does) and records the assets. The normal
+   * validation pass follows; Undo reverts everything and moves the asset bytes to the trash.
+   *
+   * @param items - The changeset's items; rejected ones (`accepted: false`) are left out.
+   * @param label - The undo label; default "Apply AI helper changes".
+   * @throws Error If no project is open.
+   */
+  async applyChangeset(
+    items: readonly ChangeItem[],
+    label: string = APPLY_CHANGESET_LABEL,
+  ): Promise<ApplyChangesetResult> {
+    const stack = this.#requireStack();
+    const accepted = items.filter((item) => item.accepted);
+    const existing = new Set<string>();
+    for (const item of accepted) {
+      if (item.op !== 'asset' || item.asset === undefined) continue;
+      const { namespace, path } = item.asset;
+      if (await this.#fs.exists(`assets/${namespace}/${path}`)) {
+        existing.add(`${namespace}\u0000${path}`);
+      }
+    }
+    const plan = (state: Project) =>
+      planChangeItems(state, accepted, {
+        ...(this.#now === undefined ? {} : { now: this.#now }),
+        renameReferences: (scratch, from) => this.referencesForRename(scratch, from),
+        assetExists: (namespace, path) => existing.has(`${namespace}\u0000${path}`),
+      });
+    const first = plan(stack.state);
+    const applied = new Set(first.applied);
+    await this.#writeBundleAssets({
+      elements: [],
+      duplicates: [],
+      skippedAssets: [],
+      assets: accepted.flatMap((item): ChangeAsset[] =>
+        item.op === 'asset' && item.asset !== undefined && applied.has(item.itemId)
+          ? [item.asset]
+          : [],
+      ),
+    });
+    // The state may have moved on while the bytes were written: plan again.
+    const current = plan(stack.state);
+    if (current.commands.length > 0) {
+      const parts = current.commands;
+      stack.execute({
+        id: 'ai.apply-changeset',
+        label,
+        apply(draft) {
+          for (const part of parts) part.apply(draft);
+        },
+      });
+    }
+    return { applied: current.applied, skipped: current.skipped.map((entry) => entry.itemId) };
   }
 
   /** Undoes the last command; returns `false` if there was none. */
@@ -2145,25 +2342,51 @@ export class ProjectSession {
     if (checker === undefined) return;
     const projectIds = mcfunctionProjectIds(project);
     for (const { element, problems: schemaProblems } of functions) {
-      const lines = functionLines(element) ?? [];
-      let problems: Problem[];
-      try {
-        problems = await checkFunctionElement(checker, element, lines, context.target, projectIds);
-      } catch (error) {
-        problems = [
-          {
-            severity: 'warning',
-            code: SessionProblemCodes.mcfunctionUnavailable,
-            elementId: element.id,
-            message: `The function could not be checked: ${messageOf(error)}`,
-          },
-        ];
-      }
+      const problems = await this.#functionProblems(checker, element, context, projectIds);
       if (generation !== this.#generation || this.#stack === null) return;
       if (!elementsById(this.#stack.state).has(element.id)) continue;
       this.#schemaProblems.set(element.id, [...schemaProblems, ...problems]);
       this.#publish();
     }
+  }
+
+  /**
+   * The mcfunction checker's problems for one function element, or one
+   * `mcfunction.unavailable` warning when the checker fails.
+   */
+  async #functionProblems(
+    checker: McfunctionChecker,
+    element: Element,
+    context: SchemaContext,
+    projectIds: ReturnType<typeof mcfunctionProjectIds>,
+  ): Promise<Problem[]> {
+    try {
+      return await checkFunctionElement(
+        checker,
+        element,
+        functionLines(element) ?? [],
+        context.target,
+        projectIds,
+      );
+    } catch (error) {
+      return [
+        {
+          severity: 'warning',
+          code: SessionProblemCodes.mcfunctionUnavailable,
+          elementId: element.id,
+          message: `The function could not be checked: ${messageOf(error)}`,
+        },
+      ];
+    }
+  }
+
+  /** What the plugin validators read for `project`. */
+  #validatorInput(context: SchemaContext, project: Project) {
+    return {
+      elements: projectElements(project),
+      target: context.target,
+      registry: context.registries(project),
+    };
   }
 
   /**
@@ -2174,11 +2397,7 @@ export class ProjectSession {
     if (this.#pendingValidators.size === 0) return;
     const pending = this.#pendingValidators;
     this.#pendingValidators = new Set();
-    const input = {
-      elements: projectElements(project),
-      target: context.target,
-      registry: context.registries(project),
-    };
+    const input = this.#validatorInput(context, project);
     const generation = this.#generation;
     // Validators of third-party plugins resolve through their workers (ADR 0035 D3); all run
     // at once and their problems are kept in validator order.

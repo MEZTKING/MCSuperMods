@@ -6,6 +6,7 @@ import type {
   ContentBundle,
   OutputLayer,
   ProjectStarter,
+  StarterCreatorInfo,
   StarterParameter,
   TargetFacts,
 } from '@msm/plugin-api';
@@ -16,24 +17,36 @@ import { customBiomeBundle } from './custom-biome';
 import { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
 import { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
 import { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
+import { FOOD_PARAMETERS, foodBundle } from './food';
 import { functionStarterBundle } from './function-starter';
+import { GEAR_SET_PARAMETERS, gearSetBundle } from './gear-set';
 import { jigsawStructureBundle } from './jigsaw-structure';
 import { musicDiscBundle } from './music-disc';
 import { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
 import { recipePackBundle } from './recipe-pack';
+import { SCRIPTED_ITEM_PARAMETERS, scriptedItemBundle } from './scripted-item';
 import { scriptedOreBundle } from './scripted-ore';
+import { SIMPLE_BLOCK_PARAMETERS, simpleBlockBundle } from './simple-block';
 import { worldgenPackBundle } from './worldgen-pack';
 
 export { customBiomeBundle, customBiomeContent, customBiomeIds } from './custom-biome';
 export { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
 export { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
 export { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
+export { FOOD_PARAMETERS, foodBundle } from './food';
 export { functionStarterBundle } from './function-starter';
+export { GEAR_SET_PARAMETERS, gearSetBundle, gearSetIds } from './gear-set';
 export { hamletIds, jigsawStructureBundle, jigsawStructureContent } from './jigsaw-structure';
 export { musicDiscBundle, SONG } from './music-disc';
 export { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
 export { recipePackBundle } from './recipe-pack';
+export {
+  SCRIPTED_ITEM_PARAMETERS,
+  scriptedItemBundle,
+  scriptedItemIds,
+} from './scripted-item';
 export { scriptedOreBundle, scriptedOreIds } from './scripted-ore';
+export { SIMPLE_BLOCK_PARAMETERS, simpleBlockBundle } from './simple-block';
 export { worldgenPackBundle } from './worldgen-pack';
 
 function starter(
@@ -48,6 +61,8 @@ function starter(
     supports?: (target: TargetFacts) => boolean;
     /** The wizard's questions (ADR 0040); omitted means no wizard. */
     parameters?: readonly StarterParameter[];
+    /** Lists the starter in the Creator (ADR 0043 D1); omitted means New project only. */
+    creator?: StarterCreatorInfo;
   } = {},
 ): ProjectStarter {
   const entry: ProjectStarter = {
@@ -62,6 +77,7 @@ function starter(
   if (options.parameters !== undefined) {
     entry.parameters = options.parameters.map((parameter) => structuredClone(parameter));
   }
+  if (options.creator !== undefined) entry.creator = { ...options.creator };
   if (options.supports !== undefined) entry.supports = options.supports;
   return Object.freeze(entry);
 }
@@ -109,7 +125,13 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     'content',
     ['resourcepack', 'datapack', 'msm'],
     customOreBundle,
-    { parameters: CUSTOM_ORE_PARAMETERS },
+    {
+      parameters: CUSTOM_ORE_PARAMETERS,
+      creator: {
+        group: 'blocks',
+        blurb: 'An ore that drops gems, the gem item and a storage block, with recipes.',
+      },
+    },
   ),
   starter(
     'custom-sword',
@@ -119,6 +141,48 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     ['resourcepack', 'datapack', 'msm'],
     customSwordBundle,
     { parameters: CUSTOM_SWORD_PARAMETERS },
+  ),
+  starter(
+    'gear-set',
+    'Gear set',
+    'Tools and armour of one new material: a sword, pickaxe, axe, shovel and hoe, a helmet, chestplate, leggings and boots, the material (from a new ore or as an ingot), recipes or smithing upgrades, the worn armour look and the vanilla tags. New items need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    gearSetBundle,
+    {
+      parameters: GEAR_SET_PARAMETERS,
+      creator: {
+        group: 'gear',
+        blurb: 'Tools and armour of one material, with recipes and the worn armour look.',
+      },
+    },
+  ),
+  starter(
+    'simple-block',
+    'Simple block',
+    'One new block with its own name, colour, hardness, tool, light level and drops, a texture and model, and an optional recipe. New blocks need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    simpleBlockBundle,
+    {
+      parameters: SIMPLE_BLOCK_PARAMETERS,
+      creator: {
+        group: 'blocks',
+        blurb: 'One block: how hard it is, what mines it, whether it glows and what it drops.',
+      },
+    },
+  ),
+  starter(
+    'food',
+    'Food',
+    'A new food with its own name, colour, hunger and saturation, a texture and model, and an optional recipe. New items need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    foodBundle,
+    {
+      parameters: FOOD_PARAMETERS,
+      creator: { group: 'food', blurb: 'Something to eat: how much it fills and how it is made.' },
+    },
   ),
   starter(
     'recipe_pack',
@@ -175,7 +239,14 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     'content',
     ['resourcepack', 'datapack', 'msm'],
     customMobBundle,
-    { supports: hasGeckolib, parameters: CUSTOM_MOB_PARAMETERS },
+    {
+      supports: hasGeckolib,
+      parameters: CUSTOM_MOB_PARAMETERS,
+      creator: {
+        group: 'mobs',
+        blurb: 'An animated mob with its behaviour, spawning, spawn egg and drops.',
+      },
+    },
   ),
   starter(
     'scripted_ore',
@@ -184,5 +255,20 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     'content',
     ['resourcepack', 'datapack', 'msm'],
     scriptedOreBundle,
+  ),
+  starter(
+    'scripted-item',
+    'Scripted behaviour',
+    'An item that runs a script when used: it heals you, launches you upward, strikes lightning where you look or gives you an effect. The script opens in the Script Studio for editing. Scripts need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    scriptedItemBundle,
+    {
+      parameters: SCRIPTED_ITEM_PARAMETERS,
+      creator: {
+        group: 'scripts',
+        blurb: 'An item whose use runs a script you can open and change.',
+      },
+    },
   ),
 ]);

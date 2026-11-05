@@ -17,6 +17,7 @@ import {
   ipcContract,
   type MinecraftProgress,
 } from '../shared/ipc-contract';
+import type { AiSender, AiService } from './ai/ai-service';
 import type { MainPlatform } from './platform/node-platform';
 import type { PluginsService } from './platform/plugins';
 import type { Updater } from './updater';
@@ -27,10 +28,26 @@ export type IpcUpdates = Pick<Updater, 'check' | 'install' | 'status'>;
 /** The third-party plugin operations the IPC layer serves (ADR 0035). */
 export type IpcPlugins = Pick<PluginsService, 'list' | 'read' | 'openFolder'>;
 
+/** The AI helper operations the IPC layer serves (ADR 0041 D3). */
+export type IpcAi = Pick<
+  AiService,
+  | 'keyStatus'
+  | 'setKey'
+  | 'clearKey'
+  | 'testKey'
+  | 'start'
+  | 'cancel'
+  | 'toolResult'
+  | 'newConversation'
+  | 'dropConversation'
+>;
+
 /** Per-call services a handler may use. */
 export interface HandlerContext {
   /** Sends extraction progress to the calling renderer. */
   sendProgress(progress: MinecraftProgress): void;
+  /** The calling renderer, for AI helper run events. */
+  sender: AiSender;
 }
 
 /** One handler per channel, taking the validated request. */
@@ -46,6 +63,7 @@ export function createIpcHandlers(
   platform: MainPlatform,
   updates: IpcUpdates,
   plugins: IpcPlugins,
+  ai: IpcAi,
 ): MainHandlers {
   return {
     [InvokeChannels.projectPickDirectory]: (req) =>
@@ -127,6 +145,31 @@ export function createIpcHandlers(
     [InvokeChannels.pluginsList]: () => plugins.list(),
     [InvokeChannels.pluginsRead]: (req) => plugins.read(req.id),
     [InvokeChannels.pluginsOpenFolder]: () => plugins.openFolder(),
+    [InvokeChannels.aiKeyStatus]: () => ai.keyStatus(),
+    [InvokeChannels.aiSetKey]: (req) => ai.setKey(req.key),
+    [InvokeChannels.aiClearKey]: () => ai.clearKey(),
+    [InvokeChannels.aiTestKey]: () => ai.testKey(),
+    [InvokeChannels.aiStart]: (req, context) =>
+      ai.start(
+        {
+          runId: req.runId,
+          conversationId: req.conversationId,
+          mode: req.mode,
+          text: req.text,
+          contextBlocks: req.contextBlocks,
+          ...(req.limits === undefined ? {} : { limits: req.limits }),
+        },
+        context.sender,
+      ),
+    [InvokeChannels.aiCancel]: (req) => ai.cancel(req.runId),
+    [InvokeChannels.aiToolResult]: (req) =>
+      ai.toolResult(req.runId, {
+        requestId: req.requestId,
+        content: req.content,
+        isError: req.isError,
+      }),
+    [InvokeChannels.aiNewConversation]: (req) => ai.newConversation(req.conversationId),
+    [InvokeChannels.aiDropConversation]: (req) => ai.dropConversation(req.conversationId),
   };
 }
 
@@ -140,8 +183,9 @@ export function registerIpc(
   platform: MainPlatform,
   updates: IpcUpdates,
   plugins: IpcPlugins,
+  ai: IpcAi,
 ): void {
-  const handlers = createIpcHandlers(platform, updates, plugins);
+  const handlers = createIpcHandlers(platform, updates, plugins, ai);
   for (const channel of Object.values(InvokeChannels) as InvokeChannel[]) {
     const { request } = ipcContract[channel];
     const handler = handlers[channel] as (
@@ -155,6 +199,7 @@ export function registerIpc(
           if (!event.sender.isDestroyed())
             event.sender.send(EventChannels.minecraftProgress, progress);
         },
+        sender: event.sender,
       };
       return handler(request.parse(raw), context);
     });

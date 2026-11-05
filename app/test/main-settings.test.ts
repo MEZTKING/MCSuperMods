@@ -1,6 +1,7 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { DEFAULT_AI_SETTINGS } from '@msm/ai';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createSettingsStore, resolveMsmHome } from '../src/main/platform/settings';
 
@@ -39,6 +40,7 @@ describe('settings store', () => {
       updates: { autoCheck: true },
       launchers: noLaunchers,
       installTarget: null,
+      ai: DEFAULT_AI_SETTINGS,
       detectedMinecraftDir: null,
     });
     expect(await store().minecraftDir()).toBeNull();
@@ -55,6 +57,7 @@ describe('settings store', () => {
       updates: { autoCheck: true },
       launchers: noLaunchers,
       installTarget: null,
+      ai: DEFAULT_AI_SETTINGS,
       detectedMinecraftDir: detected,
     });
     expect(await store().minecraftDir()).toBe(detected);
@@ -311,5 +314,79 @@ describe('settings store: recent projects', () => {
       }),
     );
     expect(await store.recentProjects()).toEqual([entry('/p/ok')]);
+  });
+});
+
+describe('AI helper settings', () => {
+  const store = () =>
+    createSettingsStore({
+      msmHome: join(temp, 'msm'),
+      installEnv: { platform: 'linux', home: join(temp, 'home') },
+    });
+  const file = () => join(temp, 'msm', 'settings.json');
+
+  it('defaults to DEFAULT_AI_SETTINGS and leaves defaults out of the file', async () => {
+    expect(await store().aiSettings()).toEqual(DEFAULT_AI_SETTINGS);
+    await store().set({ updates: { autoCheck: false } });
+    expect(await readFile(file(), 'utf8')).not.toContain('"ai"');
+    await store().set({ ai: structuredClone(DEFAULT_AI_SETTINGS) as typeof DEFAULT_AI_SETTINGS });
+    expect(await readFile(file(), 'utf8')).not.toContain('"ai"');
+  });
+
+  it('round-trips changed settings as sorted JSON and shows them in the view', async () => {
+    const ai = {
+      model: 'claude-sonnet-5-5' as const,
+      effort: { chat: 'low' as const, build: 'xhigh' as const },
+      fallbacks: false,
+      limits: {
+        chat: { maxToolTurns: 5, maxOutputTokens: 30_000, taskBudget: false },
+        build: { maxToolTurns: 200, maxOutputTokens: 800_000, taskBudget: true },
+      },
+    };
+    await store().set({ ai });
+    expect(await store().aiSettings()).toEqual(ai);
+    expect((await store().get()).ai).toEqual(ai);
+    const text = await readFile(file(), 'utf8');
+    expect(text).toContain('"ai": {\n    "effort": {\n      "build": "xhigh",');
+    // Other updates keep the AI settings.
+    await store().set({ minecraftDir: null });
+    expect(await store().aiSettings()).toEqual(ai);
+  });
+
+  it('cleans stored values: unknown model and effort fall back, limits are clamped', async () => {
+    await mkdir(join(temp, 'msm'), { recursive: true });
+    await writeFile(
+      file(),
+      JSON.stringify({
+        ai: {
+          model: 'claude-unknown-9',
+          effort: { chat: 'extreme', build: 'low' },
+          fallbacks: 'yes',
+          limits: {
+            chat: { maxToolTurns: 0, maxOutputTokens: 10, taskBudget: false },
+            build: { maxToolTurns: 5000, maxOutputTokens: 99_000_000, taskBudget: 1 },
+          },
+        },
+      }),
+    );
+    expect(await store().aiSettings()).toEqual({
+      model: DEFAULT_AI_SETTINGS.model,
+      effort: { chat: DEFAULT_AI_SETTINGS.effort.chat, build: 'low' },
+      fallbacks: DEFAULT_AI_SETTINGS.fallbacks,
+      limits: {
+        chat: { maxToolTurns: 1, maxOutputTokens: 1000, taskBudget: false },
+        build: { maxToolTurns: 1000, maxOutputTokens: 5_000_000, taskBudget: true },
+      },
+    });
+  });
+
+  it('treats a malformed block as the defaults and clamps a sent patch', async () => {
+    await mkdir(join(temp, 'msm'), { recursive: true });
+    await writeFile(file(), JSON.stringify({ ai: ['nope'] }));
+    expect(await store().aiSettings()).toEqual(DEFAULT_AI_SETTINGS);
+    const ai = structuredClone(DEFAULT_AI_SETTINGS) as typeof DEFAULT_AI_SETTINGS;
+    ai.limits.build.maxOutputTokens = 9_000_000;
+    await store().set({ ai });
+    expect((await store().aiSettings()).limits.build.maxOutputTokens).toBe(5_000_000);
   });
 });

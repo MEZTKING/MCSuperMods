@@ -13,6 +13,8 @@
  *   the Fabric mod jar export with GeckoLib).
  * - The Custom ore, Custom sword and Custom mob starters are wizards: their `parameters`
  *   (ADR 0040) name, colour and tune the content; the defaults build the ruby content.
+ * - Creator flows (ADR 0043) are starters with `creator`: Gear set, Simple block, Food,
+ *   Scripted behaviour, Custom ore and Custom mob.
  * - The Scripted ore starter adds three runtime scripts to the Custom ore starter's content
  *   (Phase 6, ADRs 0031 and 0032; scripts need the Fabric mod jar export and are not part of
  *   the Java project export).
@@ -27,6 +29,8 @@ import { libraryExamples } from './examples/index';
 import { libraryStarters } from './starters/index';
 
 export {
+  ARMOR_LAYER_SIZE,
+  armorLayerPng,
   DEFAULT_COLOUR,
   encodePng,
   PLACEHOLDER_PATTERNS,
@@ -36,6 +40,7 @@ export {
   type PlaceholderPattern,
   placeholderPixels,
   placeholderPng,
+  placeholderSize,
   placeholderSkinPixels,
   placeholderSkinPng,
   type Rgb,
@@ -56,7 +61,13 @@ export {
   CUSTOM_MOB_PARAMETERS,
   CUSTOM_ORE_PARAMETERS,
   CUSTOM_SWORD_PARAMETERS,
+  FOOD_PARAMETERS,
+  GEAR_SET_PARAMETERS,
+  gearSetIds,
   libraryStarters,
+  SCRIPTED_ITEM_PARAMETERS,
+  SIMPLE_BLOCK_PARAMETERS,
+  scriptedItemIds,
   scriptedOreIds,
 } from './starters/index';
 

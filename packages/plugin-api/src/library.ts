@@ -253,9 +253,6 @@ export interface ChoiceStarterParameter extends StarterParameterBase {
  * {@link BundleContext.values} is a `string[]` of the chosen {@link choices}' values, in the
  * order of {@link choices}. Since 1.1.0 (ADR 0043 D1).
  *
- * Declared ahead of hosts: it joins the {@link StarterParameter} union once the host's wizard
- * renders it (the next 1.x minor), so a starter cannot declare it yet.
- *
  * @example
  * ```ts
  * const pieces: SetStarterParameter = {
@@ -301,7 +298,8 @@ export type StarterParameter =
   | NumberStarterParameter
   | BooleanStarterParameter
   | ColourStarterParameter
-  | ChoiceStarterParameter;
+  | ChoiceStarterParameter
+  | SetStarterParameter;
 
 /**
  * The Creator group a {@link ProjectStarter} is listed under (ADR 0043 D1): `gear` (tools and

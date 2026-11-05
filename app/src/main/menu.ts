@@ -82,6 +82,8 @@ export function installMenu(recent: readonly RecentProject[] = []): void {
         // Ctrl/Cmd+N is left to the renderer, where it adds a new element.
         { label: 'New Project…', accelerator: 'CmdOrCtrl+Shift+N', click: () => send('new') },
         { label: 'New Project from Starter…', click: () => send('newProjectFromStarter') },
+        // Reserved for the Creator (CREATOR-PLAN B184); the renderer ignores it until then.
+        { label: 'Create…', click: () => send('creator') },
         { label: 'Open Project…', accelerator: 'CmdOrCtrl+O', click: () => send('open') },
         {
           label: 'Open Recent',
@@ -147,7 +149,17 @@ export function installMenu(recent: readonly RecentProject[] = []): void {
     },
     {
       label: 'View',
-      submenu: [{ role: 'reload' }, { role: 'toggleDevTools' }],
+      submenu: [
+        // ADR 0041 D8: the right dock's "AI helper" tab.
+        {
+          label: 'AI Helper',
+          accelerator: 'CmdOrCtrl+Shift+A',
+          click: () => send('toggleAiHelper'),
+        },
+        { type: 'separator' },
+        { role: 'reload' },
+        { role: 'toggleDevTools' },
+      ],
     },
     {
       label: 'Help',

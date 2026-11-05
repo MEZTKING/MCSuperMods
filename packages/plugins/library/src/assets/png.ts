@@ -1,6 +1,7 @@
 /**
  * Deterministic placeholder textures for starters and examples (ADR 0020, D3): 16x16 block
- * and item patterns, and a 64x64 two-tone checker for entity models.
+ * and item patterns, 64x32 humanoid armour layers (ADR 0043 D2) and a 64x64 two-tone checker
+ * for entity models.
  *
  * Every pixel comes from integer maths: no randomness, no Minecraft texture is read or
  * copied, and the work is original (CC0). The PNG encoder is self-contained and writes
@@ -19,16 +20,40 @@ export const PLACEHOLDER_SIZE = 16;
 export type Rgb = readonly [number, number, number];
 
 /**
- * The placeholder patterns:
- * - `plain`: a flat colour with a one-pixel bevel;
+ * The placeholder patterns. 16x16 unless noted; every item pattern has a transparent
+ * background.
+ * - `plain`: a flat colour with a one-pixel bevel (block texture);
  * - `ore`: coloured specks on grey stone (block texture);
- * - `gem`: a cut gem on a transparent background (item texture);
+ * - `gem`: a cut gem (item texture);
  * - `disc`: a music disc with a coloured label (item texture);
- * - `egg`: a speckled spawn egg on a transparent background (item texture);
- * - `sword`: a diagonal sword with a coloured blade and a wooden grip on a transparent
- *   background (handheld item texture).
+ * - `egg`: a speckled spawn egg (item texture);
+ * - `sword`, `pickaxe`, `axe`, `shovel`, `hoe`: a diagonal tool with a coloured head and a
+ *   wooden grip (handheld item textures);
+ * - `helmet`, `chestplate`, `leggings`, `boots`: an armour piece seen from the front (item
+ *   textures);
+ * - `ingot`: a metal bar (item texture);
+ * - `armor_layer_1`, `armor_layer_2`: 64x32 worn armour in the vanilla humanoid layout,
+ *   layer 1 the helmet, chestplate and boots, layer 2 the leggings (equipment textures under
+ *   `entity/equipment/humanoid/` and `humanoid_leggings/`; see {@link armorLayerPng}).
  */
-export type PlaceholderPattern = 'plain' | 'ore' | 'gem' | 'disc' | 'egg' | 'sword';
+export type PlaceholderPattern =
+  | 'plain'
+  | 'ore'
+  | 'gem'
+  | 'disc'
+  | 'egg'
+  | 'sword'
+  | 'pickaxe'
+  | 'axe'
+  | 'shovel'
+  | 'hoe'
+  | 'helmet'
+  | 'chestplate'
+  | 'leggings'
+  | 'boots'
+  | 'ingot'
+  | 'armor_layer_1'
+  | 'armor_layer_2';
 
 /** Every pattern, in documentation order. */
 export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze([
@@ -38,7 +63,31 @@ export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze
   'disc',
   'egg',
   'sword',
+  'pickaxe',
+  'axe',
+  'shovel',
+  'hoe',
+  'helmet',
+  'chestplate',
+  'leggings',
+  'boots',
+  'ingot',
+  'armor_layer_1',
+  'armor_layer_2',
 ]);
+
+/** Width and height of the armour layer patterns, the vanilla humanoid armour texture size. */
+export const ARMOR_LAYER_SIZE = Object.freeze({ width: 64, height: 32 });
+
+/**
+ * The size of a pattern's image in pixels: {@link ARMOR_LAYER_SIZE} for the armour layers,
+ * {@link PLACEHOLDER_SIZE} square for every other pattern.
+ */
+export function placeholderSize(pattern: PlaceholderPattern): { width: number; height: number } {
+  return pattern === 'armor_layer_1' || pattern === 'armor_layer_2'
+    ? { width: ARMOR_LAYER_SIZE.width, height: ARMOR_LAYER_SIZE.height }
+    : { width: PLACEHOLDER_SIZE, height: PLACEHOLDER_SIZE };
+}
 
 /** Options for {@link placeholderPng}. */
 export interface PlaceholderOptions {
@@ -227,6 +276,297 @@ function sword(palette: Palette): Pixel {
   };
 }
 
+// Hand-drawn masks ------------------------------------------------------------------------
+
+/**
+ * A pixel mask: one string per row, one character per pixel. `.` is transparent; `x` is the
+ * colour, shaded by {@link maskPattern}'s bevel rule; `d`, `m`, `l` and `s` are the dark, mid,
+ * light and shine shades of the colour drawn as they are; `h` and `g` are the wooden grip and
+ * its dark end.
+ */
+type Mask = readonly string[];
+
+const PICKAXE: Mask = [
+  '................',
+  '.....xxxxxx.....',
+  '....xxxxxxxx....',
+  '...xx......xx...',
+  '..xx.......xxx..',
+  '..........h..xx.',
+  '.........h...xx.',
+  '........h....xx.',
+  '.......h.....xx.',
+  '......h......xx.',
+  '.....h.......xx.',
+  '....h.......xx..',
+  '...h.......xx...',
+  '..h........x....',
+  '.g..............',
+  '................',
+];
+
+const AXE: Mask = [
+  '................',
+  '.......xxx......',
+  '......xxxxx.....',
+  '.....xxxxxxxh...',
+  '....xxxxxxxh....',
+  '.....xxxxxh.....',
+  '......xxxh......',
+  '.......xh.......',
+  '.......h........',
+  '......h.........',
+  '.....h..........',
+  '....h...........',
+  '...h............',
+  '..h.............',
+  '.g..............',
+  '................',
+];
+
+const SHOVEL: Mask = [
+  '................',
+  '............xx..',
+  '...........xxxx.',
+  '..........xxxxx.',
+  '..........xxxx..',
+  '..........xxx...',
+  '.........h......',
+  '........h.......',
+  '.......h........',
+  '......h.........',
+  '.....h..........',
+  '....h...........',
+  '...h............',
+  '..h.............',
+  '.g..............',
+  '................',
+];
+
+const HOE: Mask = [
+  '................',
+  '................',
+  '.......xxxxxx...',
+  '.......xxxxxx...',
+  '.......x...h....',
+  '..........h.....',
+  '.........h......',
+  '........h.......',
+  '.......h........',
+  '......h.........',
+  '.....h..........',
+  '....h...........',
+  '...h............',
+  '..h.............',
+  '.g..............',
+  '................',
+];
+
+const HELMET: Mask = [
+  '................',
+  '................',
+  '................',
+  '.....xxxxxx.....',
+  '....xxxxxxxx....',
+  '...xxxxsxxxxx...',
+  '...xxxxxxxxxx...',
+  '...xxxxxxxxxx...',
+  '...xxx....xxx...',
+  '...xx......xx...',
+  '...xx......xx...',
+  '...xx......xx...',
+  '................',
+  '................',
+  '................',
+  '................',
+];
+
+const CHESTPLATE: Mask = [
+  '................',
+  '..xxx......xxx..',
+  '.xxxxx....xxxxx.',
+  '.xxxxxxxxxxxxxx.',
+  '.xxsxxxxxxxxxxx.',
+  '.xxxxxxxxxxxxxx.',
+  '.xxx.xxxxxx.xxx.',
+  '.xxx.xxxxxx.xxx.',
+  '.....xxxxxx.....',
+  '.....xxxxxx.....',
+  '.....xxxxxx.....',
+  '.....xxxxxx.....',
+  '.....xxxxxx.....',
+  '................',
+  '................',
+  '................',
+];
+
+const LEGGINGS: Mask = [
+  '................',
+  '................',
+  '....dddddddd....',
+  '....xxxxxxxx....',
+  '....xsxxxxxx....',
+  '....xxxxxxxx....',
+  '....xxx..xxx....',
+  '....xxx..xxx....',
+  '....xxx..xxx....',
+  '....xxx..xxx....',
+  '....xxx..xxx....',
+  '....xxx..xxx....',
+  '....xxx..xxx....',
+  '....xxx..xxx....',
+  '................',
+  '................',
+];
+
+const BOOTS: Mask = [
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '...xxx....xxx...',
+  '...xsx....xsx...',
+  '...xxx....xxx...',
+  '...xxx....xxx...',
+  '...xxx....xxx...',
+  '..xxxx....xxxx..',
+  '.xxxxx....xxxxx.',
+  '.xxxxx....xxxxx.',
+  '................',
+  '................',
+  '................',
+];
+
+const INGOT: Mask = [
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '.....xxxxxxx....',
+  '....xssxxxxxx...',
+  '...xxxxxxxxxxx..',
+  '..xxxxxxxxxxxxx.',
+  '..xxxxxxxxxxxxx.',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+];
+
+/**
+ * Worn armour, layer 1, in the vanilla humanoid layout: the head box (helmet, with an opening
+ * for the face), the body and arm boxes (chestplate) and the lower legs (boots). Each box face
+ * has a dark rim and a light top row.
+ */
+const ARMOR_LAYER_1: Mask = [
+  '........dddddddd................................................',
+  '........dlllllld................................................',
+  '........dmmmmmmd................................................',
+  '........dmmmmmmd................................................',
+  '........dmmmmmmd................................................',
+  '........dmmmmmmd................................................',
+  '........dmmmmmmd................................................',
+  '........dddddddd................................................',
+  'dddddddddddddddddddddddddddddddd................................',
+  'dllllllddllllllddllllllddlllllld................................',
+  'dmmmmmmddddddddddmmmmmmddmmmmmmd................................',
+  'dmmmmmmddm....mddmmmmmmddmmmmmmd................................',
+  'dmmmmmmddm....mddmmmmmmddmmmmmmd................................',
+  'dmmmmmmddm....mddmmmmmmddmmmmmmd................................',
+  'dmmmmmmddm....mddmmmmmmddmmmmmmd................................',
+  'dddddddddd....dddddddddddddddddd................................',
+  '........dddd........dddddddddddddddd........dddd................',
+  '........dlld........dllllllddlllllld........dlld................',
+  '........dmmd........dmmmmmmddmmmmmmd........dmmd................',
+  '........dddd........dddddddddddddddd........dddd................',
+  '................dddddddddddddddddddddddddddddddddddddddd........',
+  '................dllddllllllddllddllllllddllddllddllddlld........',
+  '................dmmddmmmmmmddmmddmmmmmmddmmddmmddmmddmmd........',
+  '................dmmddmmmmmmddmmddmmmmmmddmmddmmddmmddmmd........',
+  '................dmmddmmmmmmddmmddmmmmmmddmmddmmddmmddmmd........',
+  '................dmmddmmmmmmddmmddmmmmmmddmmddmmddmmddmmd........',
+  '................dmmddmmmmmmddmmddmmmmmmddmmddmmddmmddmmd........',
+  'dddddddddddddddddmmddmmmmmmddmmddmmmmmmddddddddddddddddd........',
+  'dllddllddllddllddmmddmmmmmmddmmddmmmmmmd........................',
+  'dmmddmmddmmddmmddmmddmmmmmmddmmddmmmmmmd........................',
+  'dmmddmmddmmddmmddmmddmmmmmmddmmddmmmmmmd........................',
+  'dddddddddddddddddddddddddddddddddddddddd........................',
+];
+
+/** Worn armour, layer 2: the waist of the body box and the upper legs (leggings). */
+const ARMOR_LAYER_2: Mask = [
+  '................................................................',
+  '................................................................',
+  '................................................................',
+  '................................................................',
+  '................................................................',
+  '................................................................',
+  '................................................................',
+  '................................................................',
+  '................................................................',
+  '................................................................',
+  '................................................................',
+  '................................................................',
+  '................................................................',
+  '................................................................',
+  '................................................................',
+  '................................................................',
+  '....dddd....................dddddddd............................',
+  '....dlld....................dlllllld............................',
+  '....dmmd....................dmmmmmmd............................',
+  '....dddd....................dddddddd............................',
+  'dddddddddddddddd................................................',
+  'dllddllddllddlld................................................',
+  'dmmddmmddmmddmmd................................................',
+  'dmmddmmddmmddmmd................................................',
+  'dmmddmmddmmddmmd................................................',
+  'dmmddmmddmmddmmd................................................',
+  'dmmddmmddmmddmmd................................................',
+  'dmmddmmddmmddmmddddddddddddddddddddddddd........................',
+  'dmmddmmddmmddmmddllddllllllddllddlllllld........................',
+  'dddddddddddddddddmmddmmmmmmddmmddmmmmmmd........................',
+  '................dmmddmmmmmmddmmddmmmmmmd........................',
+  '................dddddddddddddddddddddddd........................',
+];
+
+/**
+ * A pattern from a {@link Mask}. An `x` pixel is light where the pixel above or to the left is
+ * transparent, dark where the pixel below or to the right is, and the colour itself inside,
+ * so every shape gets a bevel from its base colour (as the `sword` pattern's edges do).
+ */
+function maskPattern(mask: Mask): (palette: Palette) => Pixel {
+  const opaque = (x: number, y: number): boolean => {
+    const row = mask[y];
+    return row !== undefined && x >= 0 && x < row.length && row[x] !== '.';
+  };
+  return (palette) => (x, y) => {
+    switch (mask[y]?.[x]) {
+      case 'x':
+        if (!opaque(x + 1, y) || !opaque(x, y + 1)) return palette.dark;
+        if (!opaque(x - 1, y) || !opaque(x, y - 1)) return palette.light;
+        return palette.mid;
+      case 'd':
+        return palette.dark;
+      case 'm':
+        return palette.mid;
+      case 'l':
+        return palette.light;
+      case 's':
+        return palette.shine;
+      case 'h':
+        return GRIP;
+      case 'g':
+        return GRIP_DARK;
+      default:
+        return CLEAR;
+    }
+  };
+}
+
 const PATTERNS: Readonly<Record<PlaceholderPattern, (palette: Palette) => Pixel>> = {
   plain,
   ore,
@@ -234,10 +574,22 @@ const PATTERNS: Readonly<Record<PlaceholderPattern, (palette: Palette) => Pixel>
   disc,
   egg,
   sword,
+  pickaxe: maskPattern(PICKAXE),
+  axe: maskPattern(AXE),
+  shovel: maskPattern(SHOVEL),
+  hoe: maskPattern(HOE),
+  helmet: maskPattern(HELMET),
+  chestplate: maskPattern(CHESTPLATE),
+  leggings: maskPattern(LEGGINGS),
+  boots: maskPattern(BOOTS),
+  ingot: maskPattern(INGOT),
+  armor_layer_1: maskPattern(ARMOR_LAYER_1),
+  armor_layer_2: maskPattern(ARMOR_LAYER_2),
 };
 
 /**
- * The RGBA pixels (row-major, 4 bytes each) of a placeholder pattern.
+ * The RGBA pixels (row-major, 4 bytes each) of a placeholder pattern, of the size
+ * {@link placeholderSize} gives.
  *
  * @param pattern - The pattern to draw.
  * @param options - The main colour and, for `egg`, the spot colour.
@@ -249,17 +601,18 @@ export function placeholderPixels(
   const draw = PATTERNS[pattern];
   if (draw === undefined) throw new Error(`Unknown placeholder pattern ${String(pattern)}.`);
   const pixel = draw(paletteOf(options.colour ?? DEFAULT_COLOUR, options.accent));
-  const rgba = new Uint8Array(PLACEHOLDER_SIZE * PLACEHOLDER_SIZE * 4);
-  for (let y = 0; y < PLACEHOLDER_SIZE; y += 1) {
-    for (let x = 0; x < PLACEHOLDER_SIZE; x += 1) {
-      rgba.set(pixel(x, y), (y * PLACEHOLDER_SIZE + x) * 4);
+  const { width, height } = placeholderSize(pattern);
+  const rgba = new Uint8Array(width * height * 4);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      rgba.set(pixel(x, y), (y * width + x) * 4);
     }
   }
   return rgba;
 }
 
 /**
- * A byte-stable 16x16 RGBA PNG of a placeholder pattern.
+ * A byte-stable RGBA PNG of a placeholder pattern: 16x16, or 64x32 for the armour layers.
  *
  * @param pattern - The pattern to draw.
  * @param options - The main colour.
@@ -268,7 +621,20 @@ export function placeholderPng(
   pattern: PlaceholderPattern,
   options: PlaceholderOptions = {},
 ): Uint8Array {
-  return encodePng(placeholderPixels(pattern, options), PLACEHOLDER_SIZE, PLACEHOLDER_SIZE);
+  const { width, height } = placeholderSize(pattern);
+  return encodePng(placeholderPixels(pattern, options), width, height);
+}
+
+/**
+ * A byte-stable 64x32 PNG of worn armour in one colour (ADR 0043 D2): layer 1 (helmet,
+ * chestplate and boots) goes under `textures/entity/equipment/humanoid/`, layer 2 (leggings)
+ * under `textures/entity/equipment/humanoid_leggings/`, both named after the equipment asset.
+ *
+ * @param layer - 1 or 2.
+ * @param colour - The armour colour; defaults to {@link DEFAULT_COLOUR}.
+ */
+export function armorLayerPng(layer: 1 | 2, colour: Rgb = DEFAULT_COLOUR): Uint8Array {
+  return placeholderPng(layer === 1 ? 'armor_layer_1' : 'armor_layer_2', { colour });
 }
 
 // Entity skins ----------------------------------------------------------------------------

@@ -1,7 +1,12 @@
 import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { inflateSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import {
+  ARMOR_LAYER_SIZE,
+  armorLayerPng,
   encodePng,
   PLACEHOLDER_PATTERNS,
   PLACEHOLDER_SIZE,
@@ -9,6 +14,7 @@ import {
   type PlaceholderPattern,
   placeholderPixels,
   placeholderPng,
+  placeholderSize,
   placeholderSkinPixels,
   placeholderSkinPng,
 } from '../src/index';
@@ -50,8 +56,14 @@ function decode(png: Uint8Array): { width: number; height: number; rgba: Uint8Ar
   return { width, height, rgba };
 }
 
-/** SHA-256 of each pattern in the default colour. Change only with intent: goldens pin them. */
-const PINNED: Record<PlaceholderPattern, string> = {
+const update = process.env.UPDATE_GOLDENS === '1';
+const fixtures = join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'patterns');
+
+/**
+ * SHA-256 of the first six patterns in the default colour, older than the golden PNGs under
+ * `test/fixtures/patterns/` that pin every pattern. Change only with intent.
+ */
+const PINNED: Partial<Record<PlaceholderPattern, string>> = {
   plain: 'e2563b46f1e0fdeb9573b858679df99709fbc72c7b85af99151d55ea6cf1a9aa',
   ore: '1ac06b1c99f1e7dc187b47b4851ad9700f5fc8711417bf63ff07d47b14a89215',
   gem: '875d1b156d354c2310f5167f3fa6803eea063b38adc7b35d501a1882e5482c28',
@@ -64,8 +76,61 @@ const PINNED: Record<PlaceholderPattern, string> = {
 const PINNED_SKIN = '224f2f4715ddc13cad76f34fd7555f720a9149052645c23f4c28c102c2ff4fd5';
 
 describe('placeholder textures', () => {
-  it('has six patterns', () => {
-    expect(PLACEHOLDER_PATTERNS).toEqual(['plain', 'ore', 'gem', 'disc', 'egg', 'sword']);
+  it('has seventeen patterns', () => {
+    expect(PLACEHOLDER_PATTERNS).toEqual([
+      'plain',
+      'ore',
+      'gem',
+      'disc',
+      'egg',
+      'sword',
+      'pickaxe',
+      'axe',
+      'shovel',
+      'hoe',
+      'helmet',
+      'chestplate',
+      'leggings',
+      'boots',
+      'ingot',
+      'armor_layer_1',
+      'armor_layer_2',
+    ]);
+  });
+
+  it.each(PLACEHOLDER_PATTERNS)('equals the golden PNG of %s', (pattern) => {
+    const png = placeholderPng(pattern);
+    const file = join(fixtures, `${pattern}.png`);
+    if (update) {
+      mkdirSync(fixtures, { recursive: true });
+      writeFileSync(file, png);
+    }
+    expect(Buffer.from(readFileSync(file)).equals(Buffer.from(png))).toBe(true);
+  });
+
+  it('draws the armour layers at 64x32 and every other pattern at 16x16', () => {
+    for (const pattern of PLACEHOLDER_PATTERNS) {
+      const { width, height } = decode(placeholderPng(pattern));
+      expect({ width, height }, pattern).toEqual(placeholderSize(pattern));
+      const layer = pattern.startsWith('armor_layer_');
+      expect(width, pattern).toBe(layer ? ARMOR_LAYER_SIZE.width : PLACEHOLDER_SIZE);
+      expect(height, pattern).toBe(layer ? ARMOR_LAYER_SIZE.height : PLACEHOLDER_SIZE);
+    }
+  });
+
+  it('tints the armour layers and draws layer 2 apart from layer 1', () => {
+    const colour: [number, number, number] = [36, 84, 196];
+    expect(armorLayerPng(1, colour)).toEqual(placeholderPng('armor_layer_1', { colour }));
+    expect(armorLayerPng(2, colour)).toEqual(placeholderPng('armor_layer_2', { colour }));
+    expect(armorLayerPng(1)).toEqual(placeholderPng('armor_layer_1'));
+    expect(sha256(armorLayerPng(1, colour))).not.toBe(sha256(armorLayerPng(1)));
+    expect(sha256(armorLayerPng(2))).not.toBe(sha256(armorLayerPng(1)));
+    // The helmet's face opening and the unused corner stay transparent; the helmet top is opaque.
+    const pixels = placeholderPixels('armor_layer_1');
+    const alphaAt = (x: number, y: number) => pixels[(y * ARMOR_LAYER_SIZE.width + x) * 4 + 3];
+    expect(alphaAt(10, 12)).toBe(0);
+    expect(alphaAt(63, 0)).toBe(0);
+    expect(alphaAt(10, 3)).toBe(255);
   });
 
   it('draws the egg spots in the accent colour, by default a darker shade of the colour', () => {
@@ -84,17 +149,22 @@ describe('placeholder textures', () => {
     );
   });
 
-  it.each(PLACEHOLDER_PATTERNS)('encodes %s as a valid 16x16 RGBA PNG', (pattern) => {
+  it.each(PLACEHOLDER_PATTERNS)('encodes %s as a valid RGBA PNG', (pattern) => {
     const png = placeholderPng(pattern);
     const decoded = decode(png);
-    expect(decoded.width).toBe(PLACEHOLDER_SIZE);
-    expect(decoded.height).toBe(PLACEHOLDER_SIZE);
+    expect({ width: decoded.width, height: decoded.height }).toEqual(placeholderSize(pattern));
     expect(decoded.rgba).toEqual(placeholderPixels(pattern));
   });
 
-  it.each(PLACEHOLDER_PATTERNS)('pins the bytes of %s', (pattern) => {
-    expect(sha256(placeholderPng(pattern))).toBe(PINNED[pattern]);
+  it.each(Object.entries(PINNED))('pins the bytes of %s', (pattern, pinned) => {
+    expect(sha256(placeholderPng(pattern as PlaceholderPattern))).toBe(pinned);
+  });
+
+  it.each(PLACEHOLDER_PATTERNS)('is byte-stable and has transparent and opaque pixels: %s', (pattern) => {
     expect(sha256(placeholderPng(pattern))).toBe(sha256(placeholderPng(pattern)));
+    const alpha = [...placeholderPixels(pattern)].filter((_, index) => index % 4 === 3);
+    expect(alpha).toContain(255);
+    if (pattern !== 'plain' && pattern !== 'ore') expect(alpha).toContain(0);
   });
 
   it('draws opaque block patterns and transparent item backgrounds', () => {

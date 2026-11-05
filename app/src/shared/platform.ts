@@ -6,6 +6,8 @@
  * @packageDocumentation
  */
 
+// Type-only: the AI helper's protocol (ADR 0041); the SDK itself runs only in main.
+import type { AiEvent, AiKeyTestResult, AiSettings, AiStartRequest, AiToolResult } from '@msm/ai';
 import type { ProjectFileSystem } from '@msm/core';
 // Type-only: the service itself runs in main (ADR 0014); these are plain MSM shapes.
 import type { Problem } from '@msm/plugin-api';
@@ -125,6 +127,12 @@ export interface AppSettings {
    * always fills it in; optional for the same reason as {@link launchers}.
    */
   installTarget?: GameLocationRef | null;
+  /**
+   * The AI helper's model, effort per mode, fallback switch and default run limits (ADR 0041
+   * D7). Main always fills it in (`DEFAULT_AI_SETTINGS` when unset); optional for the same
+   * reason as {@link launchers}. The API key is never part of the settings (D1).
+   */
+  ai?: AiSettings;
 }
 
 /**
@@ -154,6 +162,8 @@ export interface AppSettingsPatch {
   launchers?: LauncherSettings | undefined;
   /** The new install target; `null` clears it (back to the official launcher). */
   installTarget?: GameLocationRef | null | undefined;
+  /** Replaces the AI helper settings (main cleans and clamps them). */
+  ai?: AiSettings | undefined;
 }
 
 /** {@link AppSettings} plus what main detected. */
@@ -351,6 +361,49 @@ export interface ExternalPluginBundle {
   main: string;
   /** Each `schemas` file's text, in manifest order. */
   schemas: string[];
+}
+
+/**
+ * Whether an Anthropic API key is stored (ADR 0041 D1). The renderer sees only the last four
+ * characters of the key, never the key.
+ */
+export interface AiKeyStatus {
+  set: boolean;
+  /** The key's last four characters, or `null` when no key is stored. */
+  tail: string | null;
+  /** Whether `safeStorage` can encrypt on this system; saving a key needs it. */
+  encryptionAvailable: boolean;
+}
+
+/** The AI helper's main-process services (ADR 0041 D1, D3). */
+export interface AiPlatform {
+  /** Whether a key is stored, its tail and whether encryption is available. */
+  keyStatus(): Promise<AiKeyStatus>;
+  /**
+   * Encrypts and stores the key (at most 512 characters). Rejects with "Encrypted storage is
+   * not available on this system, so the key cannot be saved." when `safeStorage` cannot encrypt.
+   */
+  setKey(key: string): Promise<void>;
+  /** Deletes the stored key. */
+  clearKey(): Promise<void>;
+  /** Makes one tiny request with the stored key; failures carry the SDK error class. */
+  testKey(): Promise<AiKeyTestResult>;
+  /**
+   * Starts a run. Resolves once the run has started; its events arrive through
+   * {@link onEvent}, ending with `done` (`no_key` when no key is stored). Rejects when the
+   * conversation already has a run or the run id is in use.
+   */
+  start(request: AiStartRequest): Promise<void>;
+  /** Cancels a run; it ends with `done { reason: 'cancelled' }`. Unknown ids are ignored. */
+  cancel(runId: string): Promise<void>;
+  /** Answers a `tool_request` event of run `runId`. Unknown run or request ids are ignored. */
+  toolResult(runId: string, result: AiToolResult): Promise<void>;
+  /** Starts the conversation afresh with the current settings model (cancels its run). */
+  newConversation(conversationId: string): Promise<void>;
+  /** Forgets the conversation (cancels its run). */
+  dropConversation(conversationId: string): Promise<void>;
+  /** Subscribes to run events; returns an unsubscribe function. */
+  onEvent(listener: (runId: string, event: AiEvent) => void): () => void;
 }
 
 /** Host services for the renderer. */
@@ -573,6 +626,11 @@ export interface PlatformAdapter {
     /** Creates `<msmHome>/plugins/` when missing and opens it in the OS file manager. */
     openFolder(): Promise<void>;
   };
+  /**
+   * The AI helper (ADR 0041). The preload always provides it; optional so that test doubles
+   * written before the helper may omit it.
+   */
+  ai?: AiPlatform;
 }
 
 /** What the preload exposes as `window.msm`: the adapter plus window-level events. */

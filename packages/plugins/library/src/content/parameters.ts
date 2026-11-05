@@ -20,8 +20,11 @@ export const NAME_PATTERN = '^[A-Za-z][A-Za-z0-9]*( [A-Za-z0-9]+)*$';
 /** The longest name a wizard accepts. */
 export const NAME_MAX_LENGTH = 32;
 
-/** The value of every declared parameter: the context's value when valid, else the default. */
-export type ParameterValues = Readonly<Record<string, string | number | boolean>>;
+/**
+ * The value of every declared parameter: the context's value when valid, else the default. A
+ * `set` parameter's value is a `string[]` of chosen values in the order of its choices.
+ */
+export type ParameterValues = Readonly<Record<string, string | number | boolean | readonly string[]>>;
 
 /**
  * Every declared parameter's value from `context.values`, falling back to the default when a
@@ -35,9 +38,17 @@ export function readValues(
   parameters: readonly StarterParameter[],
   context: Pick<BundleContext, 'values'>,
 ): ParameterValues {
-  const out: Record<string, string | number | boolean> = {};
+  const out: Record<string, string | number | boolean | readonly string[]> = {};
   for (const parameter of parameters) {
     const value: Json | undefined = context.values?.[parameter.id];
+    if (parameter.type === 'set') {
+      out[parameter.id] = Array.isArray(value)
+        ? parameter.choices
+            .map((choice) => choice.value)
+            .filter((choice) => value.includes(choice))
+        : [...parameter.default];
+      continue;
+    }
     const wanted =
       parameter.type === 'number' ? 'number' : parameter.type === 'boolean' ? 'boolean' : 'string';
     out[parameter.id] =
@@ -54,6 +65,12 @@ export function stringValue(values: ParameterValues, id: string): string {
 /** The value of a number parameter. */
 export function numberValue(values: ParameterValues, id: string): number {
   return Number(values[id]);
+}
+
+/** The value of a `set` parameter: the chosen values in the order of the parameter's choices. */
+export function setValue(values: ParameterValues, id: string): readonly string[] {
+  const value = values[id];
+  return Array.isArray(value) ? value : [];
 }
 
 /** The value of a boolean parameter. */

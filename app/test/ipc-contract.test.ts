@@ -1,10 +1,16 @@
+import { DEFAULT_AI_SETTINGS } from '@msm/ai';
 import { describe, expect, it } from 'vitest';
 import {
+  AI_CONTEXT_BLOCK_MAX,
+  AI_KEY_MAX,
+  AI_TEXT_MAX,
+  AI_TOOL_RESULT_MAX,
   EventChannels,
   EXPORT_TREE_MAX_FILES,
   type InvokeChannel,
   InvokeChannels,
   ipcContract,
+  isAiEventPayload,
   isExportFileName,
   isExportTreePath,
   isMenuCommand,
@@ -80,6 +86,15 @@ const pluginManifest = {
   main: 'main.js',
   schemas: ['symbols.json'],
   capabilities: ['elementKinds', 'validators'],
+};
+
+const aiStart = {
+  runId: 'run-1',
+  conversationId: 'conv-1',
+  mode: 'build',
+  text: 'Make a ruby tools mod.',
+  contextBlocks: ['Problem: schema.missing at demo:ruby'],
+  limits: { maxToolTurns: 10, maxOutputTokens: 50_000, taskBudget: true },
 };
 
 /** One valid and one invalid request and response per channel. */
@@ -478,6 +493,51 @@ const samples: Record<
     request: [undefined, 'path'],
     response: [undefined, 'opened'],
   },
+  [InvokeChannels.aiKeyStatus]: {
+    request: [undefined, { reveal: true }],
+    response: [
+      { set: true, tail: 'abcd', encryptionAvailable: true },
+      { set: true, tail: 'sk-ant-api03-whole-key', encryptionAvailable: true },
+    ],
+  },
+  [InvokeChannels.aiSetKey]: {
+    request: [{ key: 'sk-ant-test-1234' }, { key: '   ' }],
+    response: [undefined, true],
+  },
+  [InvokeChannels.aiClearKey]: {
+    request: [undefined, { key: 'x' }],
+    response: [undefined, 'cleared'],
+  },
+  [InvokeChannels.aiTestKey]: {
+    request: [undefined, { model: 'claude-haiku-5-5' }],
+    response: [
+      { ok: false, error: 'The API key was rejected', errorClass: 'AuthenticationError' },
+      { ok: true },
+    ],
+  },
+  [InvokeChannels.aiStart]: {
+    request: [aiStart, { ...aiStart, mode: 'agent' }],
+    response: [undefined, 'started'],
+  },
+  [InvokeChannels.aiCancel]: {
+    request: [{ runId: 'run-1' }, { runId: '' }],
+    response: [undefined, false],
+  },
+  [InvokeChannels.aiToolResult]: {
+    request: [
+      { runId: 'run-1', requestId: 'run-1:1', content: '{"items":[]}', isError: false },
+      { runId: 'run-1', requestId: 'run-1:1', content: '{}' },
+    ],
+    response: [undefined, 1],
+  },
+  [InvokeChannels.aiNewConversation]: {
+    request: [{ conversationId: 'conv-2' }, { id: 'conv-2' }],
+    response: [undefined, null],
+  },
+  [InvokeChannels.aiDropConversation]: {
+    request: [{ conversationId: 'conv-2' }, { conversationId: 'x'.repeat(201) }],
+    response: [undefined, {}],
+  },
 };
 
 describe('IPC contract', () => {
@@ -641,7 +701,60 @@ describe('IPC contract', () => {
     }
   });
 
+  it('bounds AI helper payloads', () => {
+    const start = ipcContract[InvokeChannels.aiStart].request;
+    const ok = (patch: object) => start.safeParse({ ...aiStart, ...patch }).success;
+    expect(ok({ text: 'x'.repeat(AI_TEXT_MAX) })).toBe(true);
+    expect(ok({ text: 'x'.repeat(AI_TEXT_MAX + 1) })).toBe(false);
+    const block = 'b'.repeat(AI_CONTEXT_BLOCK_MAX);
+    expect(ok({ contextBlocks: Array(8).fill(block) })).toBe(true);
+    expect(ok({ contextBlocks: Array(9).fill('b') })).toBe(false);
+    expect(ok({ contextBlocks: [`${block}b`] })).toBe(false);
+    expect(ok({ limits: { maxToolTurns: 0, maxOutputTokens: 50_000, taskBudget: true } })).toBe(
+      false,
+    );
+    expect(ok({ extra: true })).toBe(false);
+    const { limits: _limits, ...withoutLimits } = aiStart;
+    expect(start.safeParse(withoutLimits).success).toBe(true);
+
+    const key = ipcContract[InvokeChannels.aiSetKey].request;
+    expect(key.safeParse({ key: 'k'.repeat(AI_KEY_MAX) }).success).toBe(true);
+    expect(key.safeParse({ key: 'k'.repeat(AI_KEY_MAX + 1) }).success).toBe(false);
+
+    const result = ipcContract[InvokeChannels.aiToolResult].request;
+    const answer = { runId: 'r', requestId: 'r:1', isError: false };
+    expect(result.safeParse({ ...answer, content: 'c'.repeat(AI_TOOL_RESULT_MAX) }).success).toBe(
+      true,
+    );
+    expect(
+      result.safeParse({ ...answer, content: 'c'.repeat(AI_TOOL_RESULT_MAX + 1) }).success,
+    ).toBe(false);
+  });
+
+  it('takes AI helper settings in settings patches and views', () => {
+    const set = ipcContract[InvokeChannels.settingsSet].request;
+    expect(set.safeParse({ ai: DEFAULT_AI_SETTINGS }).success).toBe(true);
+    expect(set.safeParse({ ai: { ...DEFAULT_AI_SETTINGS, model: 'gpt' } }).success).toBe(false);
+    expect(set.safeParse({ ai: { ...DEFAULT_AI_SETTINGS, apiKey: 'sk' } }).success).toBe(false);
+    const view = ipcContract[InvokeChannels.settingsGet].response;
+    const base = { minecraftDir: null, updates: { autoCheck: true }, detectedMinecraftDir: null };
+    expect(view.safeParse({ ...base, ai: DEFAULT_AI_SETTINGS }).success).toBe(true);
+  });
+
+  it('checks AI event payloads without zod', () => {
+    expect(isAiEventPayload({ runId: 'r', event: { type: 'text_delta', text: 'Hi' } })).toBe(true);
+    expect(isAiEventPayload({ runId: 'r', event: { type: 'done', reason: 'end_turn' } })).toBe(
+      true,
+    );
+    expect(isAiEventPayload({ runId: '', event: { type: 'done' } })).toBe(false);
+    expect(isAiEventPayload({ runId: 'r', event: { type: 'shell' } })).toBe(false);
+    expect(isAiEventPayload({ runId: 'r' })).toBe(false);
+    expect(isAiEventPayload(null)).toBe(false);
+  });
+
   it('recognises menu commands', () => {
+    expect(isMenuCommand('toggleAiHelper')).toBe(true);
+    expect(isMenuCommand('creator')).toBe(true);
     expect(isMenuCommand('checkForUpdates')).toBe(true);
     expect(isMenuCommand('save')).toBe(true);
     expect(isMenuCommand('newProjectFromStarter')).toBe(true);

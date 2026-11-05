@@ -11,7 +11,7 @@
  * @packageDocumentation
  */
 
-import type { ProjectStarter, TargetFacts } from '@msm/plugin-api';
+import type { Json, ProjectStarter, StarterParameter, TargetFacts } from '@msm/plugin-api';
 import { type FormEvent, useId, useState } from 'react';
 import { fieldClass } from '../NewElementDialog';
 import { Button } from '../ui/Button';
@@ -19,6 +19,7 @@ import { ParameterField } from './ParameterField';
 import {
   CREATE_STEP_TITLE,
   pickTargetId,
+  type RawValue,
   type RawValues,
   stepErrors,
   targetLabel,
@@ -80,6 +81,15 @@ export function TargetSelect({ targets, targetId, onChange }: TargetSelectProps)
   );
 }
 
+/** The labels of a set parameter's chosen values, joined with commas, or "None". */
+export function setSummary(parameter: StarterParameter, value: Json): string {
+  if (parameter.type !== 'set' || !Array.isArray(value)) return String(value);
+  const labels = parameter.choices
+    .filter((choice) => value.includes(choice.value))
+    .map((choice) => choice.label);
+  return labels.length === 0 ? 'None' : labels.join(', ');
+}
+
 /** Props of {@link StarterWizard}. */
 export interface StarterWizardProps {
   /** A starter with parameters. */
@@ -113,7 +123,7 @@ export function StarterWizard(props: StarterWizardProps) {
   const offered = targetsFor(props.starter, props.targets);
   const total = firstStep - 1 + steps.length + 1;
 
-  const change = (id: string, value: string | boolean): void => {
+  const change = (id: string, value: RawValue): void => {
     const next = { ...props.values, [id]: value };
     props.onValuesChange(next);
     if (errors[id] !== undefined && current !== undefined) {
@@ -201,7 +211,9 @@ export function StarterWizard(props: StarterWizardProps) {
                     : parameter.type === 'choice'
                       ? (parameter.choices.find((choice) => choice.value === value)?.label ??
                         String(value))
-                      : String(value);
+                      : parameter.type === 'set'
+                        ? setSummary(parameter, value)
+                        : String(value);
                 return [
                   <dt key={`${parameter.id}-label`} className="text-muted">
                     {parameter.label}

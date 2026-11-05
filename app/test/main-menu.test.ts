@@ -52,6 +52,37 @@ describe('File menu', () => {
   });
 });
 
+type MenuEntry = {
+  label?: string;
+  accelerator?: string;
+  submenu?: MenuEntry[];
+  click?: () => void;
+};
+
+describe('AI helper and Creator menu items', () => {
+  it('offers View > "AI Helper" with CmdOrCtrl+Shift+A (ADR 0041 D8)', () => {
+    installMenu();
+    const template = templates.at(-1) as MenuEntry[];
+    const view = template.find((entry) => entry.label === 'View')?.submenu ?? [];
+    const item = view.find((entry) => entry.label === 'AI Helper');
+    expect(item?.accelerator).toBe('CmdOrCtrl+Shift+A');
+    item?.click?.();
+    expect(sent.at(-1)).toBe('toggleAiHelper');
+  });
+
+  it('reserves File > "Create…" after "New Project from Starter…" for the Creator', () => {
+    installMenu();
+    const template = templates.at(-1) as MenuEntry[];
+    const file = template.find((entry) => entry.label === 'File')?.submenu ?? [];
+    const labels = file.map((item) => item.label);
+    const starter = labels.indexOf('New Project from Starter…');
+    expect(starter).toBeGreaterThan(-1);
+    expect(labels[starter + 1]).toBe('Create…');
+    file[starter + 1]?.click?.();
+    expect(sent.at(-1)).toBe('creator');
+  });
+});
+
 describe('Open Recent menu', () => {
   it('shortens long paths in the middle and keeps short ones', () => {
     expect(shortenPath('/home/a/ruby')).toBe('/home/a/ruby');

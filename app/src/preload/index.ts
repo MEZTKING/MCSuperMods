@@ -10,12 +10,13 @@ import { contextBridge, type IpcRendererEvent, ipcRenderer } from 'electron';
 import {
   EventChannels,
   InvokeChannels,
+  isAiEventPayload,
   isMenuCommand,
   isMenuOpenRecent,
   isMinecraftProgress,
   isUpdateStatus,
 } from '../shared/ipc-channels';
-import type { MsmBridge } from '../shared/platform';
+import type { AiPlatform, MsmBridge } from '../shared/platform';
 
 const bridge: MsmBridge = {
   app: {
@@ -51,6 +52,27 @@ const bridge: MsmBridge = {
                 prismDataDirs: [...settings.launchers.prismDataDirs],
                 multimcRoots: [...settings.launchers.multimcRoots],
                 curseForgeRoots: [...settings.launchers.curseForgeRoots],
+              },
+            }),
+        ...(settings.ai === undefined
+          ? {}
+          : {
+              ai: {
+                model: settings.ai.model,
+                effort: { chat: settings.ai.effort.chat, build: settings.ai.effort.build },
+                fallbacks: settings.ai.fallbacks,
+                limits: {
+                  chat: {
+                    maxToolTurns: settings.ai.limits.chat.maxToolTurns,
+                    maxOutputTokens: settings.ai.limits.chat.maxOutputTokens,
+                    taskBudget: settings.ai.limits.chat.taskBudget,
+                  },
+                  build: {
+                    maxToolTurns: settings.ai.limits.build.maxToolTurns,
+                    maxOutputTokens: settings.ai.limits.build.maxOutputTokens,
+                    taskBudget: settings.ai.limits.build.taskBudget,
+                  },
+                },
               },
             }),
         ...(settings.installTarget === undefined
@@ -165,6 +187,53 @@ const bridge: MsmBridge = {
     read: (id) => ipcRenderer.invoke(InvokeChannels.pluginsRead, { id }),
     openFolder: () => ipcRenderer.invoke(InvokeChannels.pluginsOpenFolder),
   },
+  ai: {
+    keyStatus: () => ipcRenderer.invoke(InvokeChannels.aiKeyStatus),
+    setKey: (key) => ipcRenderer.invoke(InvokeChannels.aiSetKey, { key }),
+    clearKey: () => ipcRenderer.invoke(InvokeChannels.aiClearKey),
+    testKey: () => ipcRenderer.invoke(InvokeChannels.aiTestKey),
+    start: (request) =>
+      ipcRenderer.invoke(InvokeChannels.aiStart, {
+        runId: request.runId,
+        conversationId: request.conversationId,
+        mode: request.mode,
+        text: request.text,
+        contextBlocks: [...request.contextBlocks],
+        ...(request.limits === undefined
+          ? {}
+          : {
+              limits: {
+                maxToolTurns: request.limits.maxToolTurns,
+                maxOutputTokens: request.limits.maxOutputTokens,
+                taskBudget: request.limits.taskBudget,
+              },
+            }),
+      }),
+    cancel: (runId) => ipcRenderer.invoke(InvokeChannels.aiCancel, { runId }),
+    toolResult: (runId, result) =>
+      ipcRenderer.invoke(InvokeChannels.aiToolResult, {
+        runId,
+        requestId: result.requestId,
+        content: result.content,
+        isError: result.isError,
+      }),
+    newConversation: (conversationId) =>
+      ipcRenderer.invoke(InvokeChannels.aiNewConversation, { conversationId }),
+    dropConversation: (conversationId) =>
+      ipcRenderer.invoke(InvokeChannels.aiDropConversation, { conversationId }),
+    onEvent(listener) {
+      const handler = (_event: IpcRendererEvent, payload: unknown): void => {
+        // Main builds the events; the check only guards the shape.
+        if (isAiEventPayload(payload)) {
+          listener(payload.runId, payload.event as Parameters<typeof listener>[1]);
+        }
+      };
+      ipcRenderer.on(EventChannels.aiEvent, handler);
+      return () => {
+        ipcRenderer.removeListener(EventChannels.aiEvent, handler);
+      };
+    },
+  } satisfies AiPlatform,
   fs: {
     readFile: (path) => ipcRenderer.invoke(InvokeChannels.fsReadFile, { path }),
     writeFile: (path, data) => ipcRenderer.invoke(InvokeChannels.fsWriteFile, { path, data }),

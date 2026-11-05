@@ -1,7 +1,8 @@
 /**
  * One wizard question (ADR 0040): a labelled control for a {@link StarterParameter}, its
  * description, the id preview of a name field and the validation error under it. The control
- * carries `data-testid="param-<id>"`.
+ * carries `data-testid="param-<id>"`; a `set` parameter is a group of checkboxes
+ * (`param-<id>` on the group, `param-<id>-<value>` on each box, ADR 0043 D1).
  *
  * @packageDocumentation
  */
@@ -9,18 +10,18 @@
 import type { StarterParameter } from '@msm/plugin-api';
 import { type ReactNode, useId } from 'react';
 import { fieldClass } from '../NewElementDialog';
-import { derivedId, showsIdPreview } from './wizard-model';
+import { derivedId, type RawValue, showsIdPreview, toggleSetValue } from './wizard-model';
 
 /** Props of {@link ParameterField}. */
 export interface ParameterFieldProps {
   parameter: StarterParameter;
-  /** The editing value (text, or a boolean for a boolean parameter). */
-  value: string | boolean;
+  /** The editing value (text, a boolean for a boolean parameter, the ticked values for a set). */
+  value: RawValue;
   /** The error shown under the control, or `null`. */
   error: string | null;
   /** Focuses the control when it mounts (the first field of a step). */
   autoFocus?: boolean;
-  onChange(value: string | boolean): void;
+  onChange(value: RawValue): void;
 }
 
 /** A labelled control for one starter parameter. */
@@ -107,6 +108,36 @@ export function ParameterField({
         </select>
       );
       break;
+    case 'set': {
+      const ticked: readonly string[] = Array.isArray(value) ? value : [];
+      control = (
+        <div
+          id={inputId}
+          role="group"
+          aria-labelledby={`${inputId}-label`}
+          aria-describedby={describedBy}
+          aria-invalid={error !== null}
+          data-testid={testId}
+          className="flex flex-wrap gap-x-3 gap-y-0.5"
+        >
+          {parameter.choices.map((choice, position) => (
+            <label key={choice.value} className="flex items-center gap-1">
+              <input
+                type="checkbox"
+                data-testid={`${testId}-${choice.value}`}
+                checked={ticked.includes(choice.value)}
+                autoFocus={autoFocus === true && position === 0}
+                onChange={(event) =>
+                  onChange(toggleSetValue(parameter, value, choice.value, event.target.checked))
+                }
+              />
+              <span>{choice.label}</span>
+            </label>
+          ))}
+        </div>
+      );
+      break;
+    }
     case 'string':
       control = (
         <input
@@ -130,6 +161,11 @@ export function ParameterField({
           {control}
           <span>{parameter.label}</span>
         </label>
+      ) : parameter.type === 'set' ? (
+        <>
+          <span id={`${inputId}-label`}>{parameter.label}</span>
+          {control}
+        </>
       ) : (
         <>
           <label htmlFor={inputId}>{parameter.label}</label>

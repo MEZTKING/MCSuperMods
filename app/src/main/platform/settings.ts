@@ -6,6 +6,15 @@
 
 import { mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
 import { isAbsolute, join, normalize, sep } from 'node:path';
+import {
+  AI_MODEL_IDS,
+  type AiEffort,
+  type AiMode,
+  type AiModelId,
+  type AiRunLimits,
+  type AiSettings,
+  DEFAULT_AI_SETTINGS,
+} from '@msm/ai';
 import { defaultMinecraftDir, type InstallEnv } from '@msm/interop';
 import {
   gameLocationRefSchema,
@@ -46,6 +55,8 @@ export interface SettingsStore {
   minecraftDir(): Promise<string | null>;
   /** Whether the app checks for updates after start-up (`updates.autoCheck`, default `true`). */
   autoCheckUpdates(): Promise<boolean>;
+  /** The AI helper settings, cleaned (ADR 0041 D7; `DEFAULT_AI_SETTINGS` when unset). */
+  aiSettings(): Promise<AiSettings>;
   /** The stored install target, or `null` for the official launcher (ADR 0019). */
   installTarget(): Promise<GameLocationRef | null>;
   /** The manually added launcher folders (empty lists by default). */
@@ -122,9 +133,85 @@ const emptyLaunchers = (): LauncherSettings => ({
   curseForgeRoots: [],
 });
 
+/** The fewest and most tool turns a stored run limit may have. */
+export const AI_TOOL_TURNS_RANGE = [1, 1000] as const;
+/** The fewest and most output tokens a stored run limit may have. */
+export const AI_OUTPUT_TOKENS_RANGE = [1000, 5_000_000] as const;
+
+const AI_EFFORTS: readonly AiEffort[] = ['low', 'medium', 'high', 'xhigh'];
+const AI_MODES: readonly AiMode[] = ['chat', 'build'];
+
+/** A fresh copy of {@link DEFAULT_AI_SETTINGS}. */
+export function defaultAiSettings(): AiSettings {
+  return {
+    model: DEFAULT_AI_SETTINGS.model,
+    effort: { ...DEFAULT_AI_SETTINGS.effort },
+    fallbacks: DEFAULT_AI_SETTINGS.fallbacks,
+    limits: {
+      chat: { ...DEFAULT_AI_SETTINGS.limits.chat },
+      build: { ...DEFAULT_AI_SETTINGS.limits.build },
+    },
+  };
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function clampInt(value: unknown, [min, max]: readonly [number, number], fallback: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;
+  return Math.min(max, Math.max(min, Math.round(value)));
+}
+
+function cleanLimits(value: unknown, fallback: AiRunLimits): AiRunLimits {
+  const record = asRecord(value);
+  if (record === null) return { ...fallback };
+  return {
+    maxToolTurns: clampInt(record.maxToolTurns, AI_TOOL_TURNS_RANGE, fallback.maxToolTurns),
+    maxOutputTokens: clampInt(
+      record.maxOutputTokens,
+      AI_OUTPUT_TOKENS_RANGE,
+      fallback.maxOutputTokens,
+    ),
+    taskBudget: typeof record.taskBudget === 'boolean' ? record.taskBudget : fallback.taskBudget,
+  };
+}
+
+/**
+ * Cleans stored or sent AI helper settings field by field: an unknown model or effort falls
+ * back to the default, limits are clamped to {@link AI_TOOL_TURNS_RANGE} and
+ * {@link AI_OUTPUT_TOKENS_RANGE}, anything malformed takes the default.
+ */
+export function cleanAiSettings(value: unknown): AiSettings {
+  const result = defaultAiSettings();
+  const record = asRecord(value);
+  if (record === null) return result;
+  if ((AI_MODEL_IDS as readonly unknown[]).includes(record.model)) {
+    result.model = record.model as AiModelId;
+  }
+  const effort = asRecord(record.effort);
+  const limits = asRecord(record.limits);
+  for (const mode of AI_MODES) {
+    const chosen = effort?.[mode];
+    if ((AI_EFFORTS as readonly unknown[]).includes(chosen))
+      result.effort[mode] = chosen as AiEffort;
+    result.limits[mode] = cleanLimits(limits?.[mode], result.limits[mode]);
+  }
+  if (typeof record.fallbacks === 'boolean') result.fallbacks = record.fallbacks;
+  return result;
+}
+
+/** Whether two AI helper settings are the same (both cleaned). */
+function sameAiSettings(a: AiSettings, b: AiSettings): boolean {
+  return sortedJson(a) === sortedJson(b);
+}
+
 const defaults = (): StoredSettings => ({
   minecraftDir: null,
   updates: { autoCheck: true },
+  ai: defaultAiSettings(),
   launchers: emptyLaunchers(),
   installTarget: null,
   recentProjects: [],
@@ -293,6 +380,7 @@ export function createSettingsStore(deps: {
       updates: { autoCheck: autoCheck !== false },
       launchers: cleanLaunchers(record.launchers, caseInsensitive, false),
       installTarget: parseInstallTarget(record.installTarget),
+      ai: cleanAiSettings(record.ai),
       recentProjects: cleanRecent(record.recentProjects, caseInsensitive),
       launcherPrograms: cleanPrograms(record.launcherPrograms),
       lastProjectParent: cleanProgram(record.lastProjectParent),
@@ -302,7 +390,7 @@ export function createSettingsStore(deps: {
 
   const write = async (next: StoredSettings): Promise<void> => {
     await mkdir(deps.msmHome, { recursive: true });
-    // Default launcher, target and recent fields are left out, so files without them stay
+    // Default launcher, target, AI helper and recent fields are left out, so files without them stay
     // byte-for-byte the same.
     const {
       launchers: nextLaunchers,
@@ -311,6 +399,7 @@ export function createSettingsStore(deps: {
       launcherPrograms: nextPrograms,
       lastProjectParent: nextParent,
       lastSeenVersion: nextSeen,
+      ai: nextAi,
       ...base
     } = next;
     const programs = Object.fromEntries(
@@ -325,6 +414,7 @@ export function createSettingsStore(deps: {
       ...base,
       ...(hasManualRoots(nextLaunchers) ? { launchers: nextLaunchers } : {}),
       ...(nextTarget === null ? {} : { installTarget: nextTarget }),
+      ...(sameAiSettings(nextAi, defaultAiSettings()) ? {} : { ai: nextAi }),
       ...(nextRecent.length === 0 ? {} : { recentProjects: nextRecent }),
       ...(Object.keys(programs).length === 0 ? {} : { launcherPrograms: programs }),
       ...(nextParent === null ? {} : { lastProjectParent: nextParent }),
@@ -379,6 +469,7 @@ export function createSettingsStore(deps: {
             : { autoCheck: settings.updates.autoCheck },
         launchers: launchers ?? current.launchers,
         installTarget: installTarget === undefined ? current.installTarget : installTarget,
+        ai: settings.ai === undefined ? current.ai : cleanAiSettings(settings.ai),
         recentProjects: current.recentProjects,
         launcherPrograms: current.launcherPrograms,
         lastProjectParent: current.lastProjectParent,
@@ -391,6 +482,9 @@ export function createSettingsStore(deps: {
     },
     async autoCheckUpdates() {
       return (await read()).updates.autoCheck;
+    },
+    async aiSettings() {
+      return (await read()).ai;
     },
     async installTarget() {
       return (await read()).installTarget;
