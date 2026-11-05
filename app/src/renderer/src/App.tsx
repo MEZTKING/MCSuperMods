@@ -1669,7 +1669,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 result.skipped > 0 ? ` ${result.skipped} no longer fitted and were skipped.` : '';
               setMessage({
                 kind: 'info',
-                text: `${result.label}: ${result.applied + result.written} change(s) applied. Undo reverts them in one step.${skipped}`,
+                text: `${result.label}: ${result.changed} element(s) and file(s) changed. Undo reverts them in one step.${skipped}`,
               });
               const first = result.created[0];
               if (first !== undefined) select(first);

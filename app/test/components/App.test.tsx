@@ -1616,7 +1616,9 @@ describe('App Creator (ADR 0043 D3)', () => {
       expect((screen.getByTestId('creator-create') as HTMLButtonElement).disabled).toBe(false),
     );
     await user.click(screen.getByTestId('creator-create'));
-    await toast(/^Create Food: \d+ change\(s\) applied\. Undo reverts them in one step\.$/);
+    await toast(
+      /^Create Food: \d+ element\(s\) and file\(s\) changed\. Undo reverts them in one step\.$/,
+    );
     expect(harness.session.snapshot.undoLabel).toBe('Create Food');
     const selected = useUiStore.getState().selectedId;
     expect(selected).not.toBeNull();

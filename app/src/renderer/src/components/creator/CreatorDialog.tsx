@@ -84,6 +84,8 @@ export interface CreatorEditRequest {
 /** What {@link CreatorDialogProps.onCreated} receives. */
 export interface CreatorCreated extends CreatorApplyResult {
   label: string;
+  /** Elements and files that change (creates, replacements, merges, removals and writes). */
+  changed: number;
   /** The element ids the plan created, in order. */
   created: ResourceLocation[];
 }
@@ -316,7 +318,12 @@ export function CreatorDialog(props: CreatorDialogProps) {
       const created = changes.items.flatMap((item) =>
         item.op === 'create' && item.elementId !== undefined ? [item.elementId] : [],
       );
-      props.onCreated({ ...result, label, created });
+      const changed = plan.entries.filter((entry) =>
+        overwrite.has(entry.key) && entry.overwrite !== undefined
+          ? true
+          : entry.change !== undefined && entry.status !== 'unchanged',
+      ).length;
+      props.onCreated({ ...result, label, created, changed });
     } catch (error) {
       setCreateError(messageOf(error));
       setCreating(false);

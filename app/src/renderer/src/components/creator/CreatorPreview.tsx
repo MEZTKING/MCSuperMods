@@ -148,7 +148,7 @@ function PieceGallery(props: {
           3D preview unavailable: WebGL is disabled.
         </p>
       ) : (
-        <div className="h-56" data-testid={`creator-${type}-canvas`}>
+        <div className="w-56 max-w-full" data-testid={`creator-${type}-canvas`}>
           <Suspense fallback={<Empty>Loading preview…</Empty>}>
             <PreviewCanvas
               key={`${model.id}-${props.revision}`}
@@ -224,7 +224,7 @@ function ArmourTab(props: {
           3D preview unavailable: WebGL is disabled.
         </p>
       ) : (
-        <div className="h-64" data-testid="creator-armour-canvas">
+        <div className="w-72 max-w-full" data-testid="creator-armour-canvas">
           <Suspense fallback={<Empty>Loading preview…</Empty>}>
             <GeoCanvas
               scene={scene}
@@ -259,7 +259,7 @@ export function CreatorPreview(props: CreatorPreviewProps) {
     <Tabs.Root
       value={props.tab}
       onValueChange={(value) => props.onTabChange(value as CreatorTab)}
-      className="flex min-h-0 min-w-0 flex-col"
+      className="flex min-h-0 min-w-0 flex-1 flex-col"
     >
       <Tabs.List aria-label="Preview" className="flex flex-wrap border-b border-border">
         {CREATOR_TABS.map((tab) => (
