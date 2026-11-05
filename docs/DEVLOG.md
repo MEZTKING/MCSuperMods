@@ -1504,3 +1504,24 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 **Next**
 - User: install 0.4.0 (auto-update from 0.3.0), in-game checks for Phases 1–4.
 - Next main session: plan Phase 5 (Entities, Models, Animation), following HANDOFF "How to run a phase".
+
+---
+
+## 2026-11-05 — orchestrator — Phase 5 plan
+
+**What**
+- Wrote `docs/PHASE5-PLAN.md`: a facts table verified against live sources (Modrinth API and CDN, raw GitHub for Blockbench 4.12.4 and 5.0.0 sources and the 5.2.2 web bundle, `javap` over the Loom-cached 26.3 jar and the Fabric API 0.165.2+26.3 modules, the downloaded GeckoLib 5.5.7 jar), three ADR drafts, five waves of briefs B110–B122 (plus reserve B123–B124) with owned paths, scope, acceptance, out of scope and dependencies, one lockfile owner per wave, and the risks.
+- ADR drafts: 0028 (entity definition format v1: `msm/<ns>/entity/`, components `msm:health`, `msm:movement`, `msm:attack`, `msm:ai_goals` with `wander`, `look_at_player`, `look_around`, `melee_attack`, `flee`, `follow`, `msm:animated_model` required, `msm:on_hurt`, `msm:on_death`, `msm:on_interact`, `spawn`, `spawn_egg`, action `play_animation`; runtime `MsmEntity`, GeckoLib bridge behind `isModLoaded`, a `client` entrypoint, the unchanged Phase 4 log line plus an entity line), 0029 (GeckoLib 5.5.7 as the backend, `msm:geo_model` and `msm:animation` kinds in `@msm/plugin-models-anim`, Blockbench import in `@msm/interop` `blockbench/` as a host importer, GeckoLib nested only with entities and downloaded once by the app with a SHA-512 check, own raw-WebGL preview with playback), 0030 (plugin API 0.7.0: `Target.geckolib: GeckolibFacts`).
+- HANDOFF points at the plan; no code written, nothing committed.
+
+**Decisions**
+- GeckoLib has Fabric builds for 26.3 (5.5.6 "Port to 26.3", 5.5.7 of 2026-09-22; MIT; `environment` `*`; Modrinth version id `kSxHvs99`), so the own-renderer fallback stays unbuilt. The official GeckoLib Maven is blocked by the session proxy; the Modrinth Maven (`maven.modrinth:geckolib:kSxHvs99` at `https://api.modrinth.com/maven`) is the build-time source and the Modrinth CDN the app's download source; coordinates on the official repository are "(verify at implementation)".
+- Every `msm:entity` has `msm:animated_model` (GeckoLib renders static models too), so "GeckoLib only when used" means "when the project has entities".
+- Vanilla's `SpawnPlacements.register` is private on 26.3; registration goes through Fabric's `FabricEntityType.Builder.createMob` (spawn placement and default attributes). Spawn eggs are `SpawnEggItem(Item.Properties.spawnEgg(type))` with per-egg item textures (no tints), so the element carries an egg texture id.
+- `follow` needs the runtime's own goal (`FollowMobGoal` cannot select entity types); `melee_attack` targets use a predicate over entity type ids.
+- The Phase 4 log line stays unchanged for CI's regex; a second line reports entity types; spawn eggs count as items.
+- Wave 0 runs the spike (B110) in parallel with the API bump (B111, lockfile owner, also scaffolds both plugins so Wave 1 needs no lockfile change) and the mcdoc (B112), because the format is decided here and the spike only verifies the game API.
+
+**Next**
+- Main session: launch Wave 0 (B110, B111, B112), paste B110's findings into the ADR 0028 and 0029 Status sections and into the Wave 1 briefs before B113 starts; settle the `BiomeModifications.addSpawn` question at B110 review (fallback in the plan's risks).
+- User: nothing new; the Phase 1–4 in-game checks are still pending.

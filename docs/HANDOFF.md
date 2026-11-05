@@ -7,7 +7,7 @@ Rewritten 2026-11-05 at Phase 4 close (B102), for the next main session. Read th
 - **Phase 4 (Engine Mod + Blocks/Items) is code complete** (briefs B90–B102; ADRs 0024–0027 accepted). App version **0.4.0**, `engine-mod` `mod_version` 0.4.0 (kept equal by `app/test/runtime-version.test.ts`). **v0.4.0 is published** (2026-11-05, release run built the runtime with JDK 25 and bundled it).
 - Phases 0–4 are code complete; every phase still awaits the user's in-game checks.
 - 15 packages; plugin-api 0.6.0; 55 kinds, 106 templates, 11 starters, 61 examples; eight e2e specs; `engine-mod/` `./gradlew build` runs 46 JUnit tests and 18 GameTests; CI job `engine-mod` also starts a headless 26.3 Fabric server with `fixtures/sample-mod/`.
-- **Next: Phase 5 (Entities, Models, Animation; v0.5).** Write the plan first (see "How to run a phase"): verify GeckoLib and Blockbench facts, ADR drafts, waves of briefs. A working plan may live in `docs/PHASE5-PLAN.md` while the phase runs and is deleted at close.
+- **Next: Phase 5 (Entities, Models, Animation; v0.5).** The plan is written: `docs/PHASE5-PLAN.md` (verified facts with sources, the waves B110–B122 with owned paths and acceptance lists, reserve B123–B124) and the ADR drafts 0028 (entity definition format v1), 0029 (model and animation pipeline: GeckoLib 5.5.7 is available for Fabric 26.3, Blockbench import in `@msm/interop`, own WebGL preview) and 0030 (plugin API 0.7.0). Run it as "How to run a phase" says, starting with Wave 0 (B110 spike, B111 API and scaffolds, B112 mcdoc) in parallel; the plan is deleted at close.
 
 ## Waiting on the user
 
@@ -76,7 +76,7 @@ Rewritten 2026-11-05 at Phase 4 close (B102), for the next main session. Read th
 
 ## Environment notes
 
-- Containers differ between sessions. On 2026-11-05 the default `node` was 22; Node 24 was installed by hand at `/opt/node24` from nodejs.org (put `/opt/node24/bin` first on PATH; `corepack enable --install-directory /opt/node24/bin pnpm`). `pnpm turbo ...` failed there with "Exec format error"; run `node_modules/.bin/turbo` directly. JDK 25 (Temurin 25.0.5) was installed by hand at `/root/jdk/jdk-25.0.5+8` (system Java is 21); a new container needs it again (`api.adoptium.net/v3/binary/latest/25/ga/linux/x64/jdk/hotspot/normal/eclipse`).
+- Containers differ between sessions. On 2026-11-05 the default `node` was 22 (again in the planning session: `/opt/node24/bin` and `/root/jdk/jdk-25.0.5+8` were present, the Loom cache held the 26.3 jar, and `maven.geckolib.com` was blocked by the proxy while the Modrinth API, CDN and Maven worked); Node 24 was installed by hand at `/opt/node24` from nodejs.org (put `/opt/node24/bin` first on PATH; `corepack enable --install-directory /opt/node24/bin pnpm`). `pnpm turbo ...` failed there with "Exec format error"; run `node_modules/.bin/turbo` directly. JDK 25 (Temurin 25.0.5) was installed by hand at `/root/jdk/jdk-25.0.5+8` (system Java is 21); a new container needs it again (`api.adoptium.net/v3/binary/latest/25/ga/linux/x64/jdk/hotspot/normal/eclipse`).
 - Playwright: use the pre-installed Chromium; headless app runs need `xvfb-run -a`. Native Electron menus cannot be clicked in e2e: drive commands through the palette or the toolbar.
 - `dist:dir` and the packaged smoke need a built runtime: `cd engine-mod && ./gradlew build`, then `node app/scripts/stage-runtime.mjs --require`.
 - The user is on Windows with Node 26 (engines `>=24 <27`), PowerShell; README "Try it" covers their setup.
