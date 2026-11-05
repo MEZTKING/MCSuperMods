@@ -1819,3 +1819,36 @@ Next:
 - B133: `ScriptApiContractTest` reads the JSON (inheritance through `extends`, `GameEvent` included); event `source` fields name the Fabric API callbacks.
 - B134: the kind and validators in this package; B137a writes `MSM_RUNTIME_TYPINGS` to `.msm/`.
 - B141: plugin-api, plugins and targets `CLAUDE.md` status lines (0.8.0, `^0.8.0`, `gradle`).
+
+## 2026-11-05 — executor — B130 scripting spike (engine-mod)
+
+What:
+- `engine-mod`: `rhino_version=1.9.2`; `implementation` + `include` of `org.mozilla:rhino` (nested as `META-INF/jars/rhino-1.9.2.jar`, generated id `org_mozilla_rhino`); `META-INF/licenses/rhino-LICENSE.txt` (MPL 2.0, from the `Rhino1_9_2_Release` tag).
+- New `scripting/` package (spike quality, B133 replaces it): `MsmContextFactory` (ES6, interpreted, threshold 10,000, depth 1000, deny-all `ClassShutter`, 2000 ms per top-level call), `ScriptTimeout`, `ScriptScanner`/`ScriptSource` (`msm/<ns>/script/**.js`, id `<ns>:<path>`), `ScriptHost` (one per server, per-script scope with `msm`, `require("msm:runtime")`, `module`, `exports`; `msm.log`, `msm.events.on` for `block.interact`/`block.break`/`server.tick`, `msm.schedule`; rate-limited handler errors; diagnostics and a benchmark accessor for GameTests), `ScriptBridges` (`SERVER_STARTING`/`SERVER_STOPPED`, `UseBlockCallback` FAIL on cancel, `PlayerBlockBreakEvents.BEFORE`, `END_SERVER_TICK`), `ScriptWorld`, `ScriptPlayer`, `Pos`. `MsmRuntime` registers the bridges; the registration log lines are unchanged.
+- GameTest mod: `msm/msm_spike/script/glow.js` (hand-written ES5 CommonJS), `broken.js`, `loop.js`; `MsmScriptSpikeGameTest` with nine tests. `./gradlew clean build` three times and with `-PwithoutGeckolib`: 78 JUnit, 47 GameTests (38 + 9) green. Production check with `tools/run-fabric-server` (scratch content jar, runtime as `--extra`): PASS, nested Rhino listed, named regex groups and `Promise` work.
+
+Decisions:
+- Findings appended to ADR 0031 Status: Loom nests Rhino as a plain library (no Shadow); ServiceLoader works from the nested jar; `FAIL` is the result that stops both hands, but only the client's prediction decides that, so B133 should suppress the off hand after a cancelled main-hand interaction; trivial handler cost about 1 to 11 microseconds per call, so `server.tick` stays in API v1.
+- `loaded S script(s)` counts every script file found (3 with one broken), errors are scan plus load errors.
+- GameTests use `ServerPlayerGameMode.useItemOn`/`destroyBlock`, since `GameTestHelper.useBlock` bypasses `UseBlockCallback`.
+
+Next:
+- B133: full API v1, reload on `END_DATA_PACK_RELOAD`, relative `require`, off-hand suppression, `run_script`; update `engine-mod/CLAUDE.md` contents (`scripting/`) and counts.
+- README credit for Rhino (ADR 0031 D1) is outside this brief (B140 or B141).
+
+## 2026-11-05 — executor — B131 eject and parity spike
+
+What:
+- Hand-built minimal ejected project in the scratchpad (not committed): Loom 1.19.3, Minecraft 26.3, Loader 0.20.1, Fabric API 0.165.2+26.3, `implementation` + `include` of `maven.modrinth:geckolib:kSxHvs99`, one block, one `PathfinderMob implements GeoEntity`, a `GeoEntityRenderer` on the client. Builds in 20 s first time, about 12.5 s with the project's `.gradle/` cleared (warm `~/.gradle`); nests `META-INF/jars/geckolib-kSxHvs99.jar` unchanged; starts a server to `Done (` with `run-fabric-server --no-runtime`.
+- `engine-mod/parity/`: separate Loom build `msm_parity_tests` (own `settings.gradle.kts`, `gradle.properties`, `build.gradle.kts`), a black-box GameTest mod with `SampleModParityTest.rubyOreIsRegistered`; `cd engine-mod && ./gradlew -p parity build` gives `parity/build/libs/msm_parity_tests-0.0.0.jar`.
+- `tools/run-fabric-server`: `--gametest <jar>` (adds the test jar and Fabric API's `fabric-gametest-api-v1`, version read from Fabric API's POM; JVM properties `fabric-api.gametest` and `.report-file`; no `Done (` and no `stop`; passes on exit 0 with a report listing a test of the jar and no failure; prints each test), `--report <file>`, `--no-runtime` (registration checks skipped, any `[msm_runtime]` line fails), `expectScripts` in facts and `--expect-scripts` (accepted only), `Game test server crashed` as a failure, and the runtime-frame rule now matches `at knot//dev.mcsupermods...` (it never matched real server frames before) while ignoring `dev.mcsupermods.parity`. 20 new unit tests (92 in `@msm/tools`). README and the `tools/README.md` row updated.
+- Runs: parity on the sample-mod content jar with the real runtime PASS (2 GameTests, 25 s); parity on the minimal ejected jar with `--no-runtime` FAIL naming `msm_parity_tests:sample_mod_parity_test_ruby_ore_is_registered` (exit 1, 28 s); the existing sample-mod and sample-mob checks still PASS.
+- ADR 0033 Status: findings appended.
+
+Decisions:
+- The GameTest module is fetched by the tool, not nested in the parity jar: the tool stays usable with any GameTest jar and its version follows the facts' Fabric API.
+- A GameTest run must list at least one test outside `minecraft:`, so a test jar whose entrypoint registered nothing cannot pass on `minecraft:always_pass` alone.
+
+Next:
+- B139: the full parity set, four runs in CI sharing one `--work` folder, `expectScripts` in the pass rule.
+- B136: name the nested GeckoLib by coordinates (file is `geckolib-<modrinth id>.jar`); mention Loom's harmless "not valid semver" line in the generated README.
