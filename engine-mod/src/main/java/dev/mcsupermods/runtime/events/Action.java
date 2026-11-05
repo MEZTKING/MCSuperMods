@@ -26,7 +26,8 @@ public sealed interface Action {
         SET_BLOCK_STATE("set_block_state", SetBlockState.CODEC),
         GIVE_ITEM("give_item", GiveItem.CODEC),
         PLAY_SOUND("play_sound", PlaySound.CODEC),
-        TRIGGER_EVENT("trigger_event", TriggerEvent.CODEC);
+        TRIGGER_EVENT("trigger_event", TriggerEvent.CODEC),
+        PLAY_ANIMATION("play_animation", PlayAnimation.CODEC);
 
         public final String serialName;
         final MapCodec<? extends Action> codec;
@@ -117,6 +118,21 @@ public sealed interface Action {
         @Override
         public Type type() {
             return Type.TRIGGER_EVENT;
+        }
+    }
+
+    /**
+     * Triggers a GeckoLib animation on the event's entity (ADR 0028 D4). Only entity definitions keep
+     * it: in a block or item definition it is dropped at load with a warning.
+     */
+    record PlayAnimation(String animation, String controller) implements Action {
+        static final MapCodec<PlayAnimation> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+                required("animation", Codec.STRING).forGetter(PlayAnimation::animation),
+                optional("controller", Codec.STRING, "msm_triggered").forGetter(PlayAnimation::controller)).apply(i, PlayAnimation::new));
+
+        @Override
+        public Type type() {
+            return Type.PLAY_ANIMATION;
         }
     }
 }

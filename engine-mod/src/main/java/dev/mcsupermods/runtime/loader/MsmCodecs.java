@@ -52,6 +52,13 @@ public final class MsmCodecs {
                 : DataResult.error(() -> "out of range: " + f + " (expected " + min + "..)"));
     }
 
+    /** mcdoc {@code float @ min..max}. */
+    public static Codec<Float> floatRange(float min, float max) {
+        return Codec.FLOAT.validate(f -> f >= min && f <= max && Float.isFinite(f)
+                ? DataResult.success(f)
+                : DataResult.error(() -> "out of range: " + f + " (expected " + min + ".." + max + ")"));
+    }
+
     /** An mcdoc {@code enum(string)} mapped onto a Java enum by name. */
     public static <E extends Enum<E>> Codec<E> named(String what, E[] values, Function<E, String> name) {
         Map<String, E> byName = new LinkedHashMap<>();

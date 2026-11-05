@@ -94,12 +94,12 @@ public final class MsmRegistrar {
             }
         }
         // Entities last: their spawn eggs count as items and must not collide with item definitions.
-        MsmEntityRegistrar.registerAll(scanned.definitions(), items, errors);
+        List<Identifier> entities = MsmEntityRegistrar.registerAll(scanned.definitions(), items, errors, warnings);
         return new LoadReport(scanned.filesRead(), scanned.definitions(), List.copyOf(blocks), List.copyOf(items),
-                List.copyOf(errors), List.copyOf(warnings));
+                List.copyOf(entities), List.copyOf(errors), List.copyOf(warnings));
     }
 
-    private static void report(RawDefinition raw, ParseResult<?> parsed, List<String> errors, List<String> warnings) {
+    static void report(RawDefinition raw, ParseResult<?> parsed, List<String> errors, List<String> warnings) {
         for (String e : parsed.errors()) {
             String message = raw.describe() + ": " + e;
             errors.add(message);
@@ -112,7 +112,7 @@ public final class MsmRegistrar {
         }
     }
 
-    private static void fail(List<String> errors, RawDefinition raw, Exception e) {
+    static void fail(List<String> errors, RawDefinition raw, Exception e) {
         String message = raw.describe() + ": " + e.getMessage();
         errors.add(message);
         MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, message, e instanceof DefinitionException ? null : e);
@@ -123,7 +123,7 @@ public final class MsmRegistrar {
      * (items, block states, functions) for {@link #checkAfterStart}: they may name content of mods
      * registered later, or data pack files.
      */
-    private static void checkEvents(RawDefinition raw, Events events, List<String> errors) {
+    static void checkEvents(RawDefinition raw, Events events, List<String> errors) {
         events.byId().forEach((eventId, event) -> {
             for (Action action : event.actions()) {
                 String where = raw.describe() + ": events: " + eventId + ": ";
@@ -302,7 +302,7 @@ public final class MsmRegistrar {
 
     private static final List<LateCheck> TABS = new ArrayList<>();
 
-    private static void addToTab(RawDefinition raw, Identifier tab, Item item) {
+    static void addToTab(RawDefinition raw, Identifier tab, Item item) {
         TABS.add(new LateCheck(raw.describe(), "creative_tab", tab));
         // Tabs are resolved by key when the tab is built; an unknown key never fires (checked after start-up).
         CreativeModeTabEvents.modifyOutputEvent(ResourceKey.create(Registries.CREATIVE_MODE_TAB, tab))
@@ -337,6 +337,7 @@ public final class MsmRegistrar {
                 }
             }
         });
+        warnings.addAll(MsmEntityRegistrar.checkAfterStart(server));
         for (String w : warnings) {
             MsmRuntime.LOGGER.warn("[{}] {}", MsmRuntime.MOD_ID, w);
         }

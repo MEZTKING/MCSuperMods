@@ -6,6 +6,7 @@ import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import dev.mcsupermods.runtime.components.BlockComponents;
+import dev.mcsupermods.runtime.components.EntityComponents;
 import dev.mcsupermods.runtime.components.ItemComponents;
 import dev.mcsupermods.runtime.events.Action;
 import dev.mcsupermods.runtime.events.EventDefinition;
@@ -28,6 +29,8 @@ import net.minecraft.resources.Identifier;
  *   <li>The Codec decodes the file; an error there means the file is not registered.</li>
  *   <li>Events that failed on their own are errors; the definition registers without them.</li>
  *   <li>Event ids named by components or {@code trigger_event} must be declared.</li>
+ *   <li>Entities: goals that failed on their own are errors; the entity registers without them.</li>
+ *   <li>Blocks and items: {@code play_animation} actions are dropped with a warning (ADR 0028 D4).</li>
  * </ol>
  */
 public final class DefinitionParser {
@@ -37,16 +40,38 @@ public final class DefinitionParser {
     private DefinitionParser() {}
 
     public static ParseResult<BlockDefinition> parseBlock(JsonElement json) {
-        return parse(json, BlockDefinition.KEYS, BlockComponents.KEYS, BlockDefinition.CODEC,
-                def -> new Refs(def.events(), def.components().eventReferences()));
+        ParseResult<BlockDefinition> result = parse(json, BlockDefinition.KEYS, BlockComponents.KEYS, BlockDefinition.CODEC,
+                def -> new Refs(def.events(), def.components().eventReferences(), List.of()));
+        return dropPlayAnimation(result, BlockDefinition::events, BlockDefinition::withEvents);
     }
 
     public static ParseResult<ItemDefinition> parseItem(JsonElement json) {
-        return parse(json, ItemDefinition.KEYS, ItemComponents.KEYS, ItemDefinition.CODEC,
-                def -> new Refs(def.events(), def.components().eventReferences()));
+        ParseResult<ItemDefinition> result = parse(json, ItemDefinition.KEYS, ItemComponents.KEYS, ItemDefinition.CODEC,
+                def -> new Refs(def.events(), def.components().eventReferences(), List.of()));
+        return dropPlayAnimation(result, ItemDefinition::events, ItemDefinition::withEvents);
     }
 
-    private record Refs(Events events, Stream<String[]> componentRefs) {}
+    public static ParseResult<EntityDefinition> parseEntity(JsonElement json) {
+        return parse(json, EntityDefinition.KEYS, EntityComponents.KEYS, EntityDefinition.CODEC,
+                def -> new Refs(def.events(), def.components().eventReferences(), def.components().goalErrors()));
+    }
+
+    private record Refs(Events events, Stream<String[]> componentRefs, List<String> otherErrors) {}
+
+    private static <T> ParseResult<T> dropPlayAnimation(ParseResult<T> result, Function<T, Events> events,
+            java.util.function.BiFunction<T, Events, T> withEvents) {
+        if (result.definition().isEmpty()) {
+            return result;
+        }
+        List<String> warnings = new ArrayList<>(result.warnings());
+        T def = result.definition().get();
+        int before = warnings.size();
+        Events kept = events.apply(def).withoutPlayAnimation(warnings);
+        if (warnings.size() == before) {
+            return result;
+        }
+        return new ParseResult<>(Optional.of(withEvents.apply(def, kept)), result.errors(), List.copyOf(warnings));
+    }
 
     private static <T> ParseResult<T> parse(JsonElement json, List<String> keys, List<String> componentKeys, Codec<T> codec,
             Function<T, Refs> refs) {
@@ -78,6 +103,7 @@ public final class DefinitionParser {
         }
         T definition = result.getOrThrow();
         Refs r = refs.apply(definition);
+        errors.addAll(r.otherErrors());
         errors.addAll(r.events().errors());
         r.componentRefs().forEach(ref -> {
             Identifier id = Identifier.tryParse(ref[1]);

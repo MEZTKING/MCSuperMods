@@ -31,4 +31,9 @@ public record ItemDefinition(
             optional("creative_tab", ID).forGetter(ItemDefinition::creativeTab),
             optional("components", ItemComponents.CODEC, ItemComponents.NONE).forGetter(ItemDefinition::components),
             optional("events", Events.CODEC, Events.NONE).forGetter(ItemDefinition::events)).apply(i, ItemDefinition::new));
+
+    /** This definition with other events. */
+    public ItemDefinition withEvents(Events other) {
+        return new ItemDefinition(format, maxStackSize, rarity, creativeTab, components, other);
+    }
 }

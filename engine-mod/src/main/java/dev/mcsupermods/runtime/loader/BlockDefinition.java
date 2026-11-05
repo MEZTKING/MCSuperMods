@@ -53,4 +53,9 @@ public record BlockDefinition(
             optional("item", ITEM, Optional.of(ItemSettings.DEFAULT)).forGetter(BlockDefinition::item),
             optional("components", BlockComponents.CODEC, BlockComponents.NONE).forGetter(BlockDefinition::components),
             optional("events", Events.CODEC, Events.NONE).forGetter(BlockDefinition::events)).apply(i, BlockDefinition::new));
+
+    /** This definition with other events. */
+    public BlockDefinition withEvents(Events other) {
+        return new BlockDefinition(format, soundType, lootTable, item, components, other);
+    }
 }

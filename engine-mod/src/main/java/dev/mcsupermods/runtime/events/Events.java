@@ -34,6 +34,27 @@ public record Events(Map<Identifier, EventDefinition> byId, List<String> errors)
         return byId.containsKey(id);
     }
 
+    /**
+     * These events without their {@code play_animation} actions, for definitions that have no
+     * animated entity (blocks and items, ADR 0028 D4); one warning per dropped action.
+     */
+    public Events withoutPlayAnimation(List<String> warnings) {
+        Map<Identifier, EventDefinition> out = new LinkedHashMap<>();
+        byId.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(entry -> {
+            List<Action> kept = new ArrayList<>();
+            for (Action action : entry.getValue().actions()) {
+                if (action instanceof Action.PlayAnimation p) {
+                    warnings.add("events: " + entry.getKey() + ": play_animation '" + p.animation()
+                            + "' only works on entities with GeckoLib; action dropped");
+                } else {
+                    kept.add(action);
+                }
+            }
+            out.put(entry.getKey(), new EventDefinition(List.copyOf(kept)));
+        });
+        return new Events(Map.copyOf(out), errors);
+    }
+
     private static Events decodeEach(Map<String, Dynamic<?>> raw) {
         Map<Identifier, EventDefinition> out = new LinkedHashMap<>();
         List<String> errors = new ArrayList<>();

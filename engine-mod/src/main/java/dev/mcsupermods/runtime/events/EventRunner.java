@@ -2,9 +2,11 @@ package dev.mcsupermods.runtime.events;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.mcsupermods.runtime.MsmRuntime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.commands.functions.CommandFunction;
@@ -30,12 +32,25 @@ public final class EventRunner {
 
     private static final Map<String, Optional<BlockState>> STATES = new ConcurrentHashMap<>();
     private static volatile EventListener listener;
+    private static final List<EventListener> LISTENERS = new CopyOnWriteArrayList<>();
 
     private EventRunner() {}
 
     /** Installs an observer (GameTests, diagnostics); null removes it. */
     public static void setListener(EventListener l) {
         listener = l;
+    }
+
+    /**
+     * Adds an observer next to the one of {@link #setListener}, for observers that live across ticks
+     * (entity GameTests) while other code sets and clears the single listener.
+     */
+    public static void addListener(EventListener l) {
+        LISTENERS.add(l);
+    }
+
+    public static void removeListener(EventListener l) {
+        LISTENERS.remove(l);
     }
 
     /** Fires {@code eventId} of a definition. */
@@ -57,9 +72,15 @@ public final class EventRunner {
         if (l != null) {
             l.onEvent(owner, eventId, depth, ctx);
         }
+        for (EventListener extra : LISTENERS) {
+            extra.onEvent(owner, eventId, depth, ctx);
+        }
         for (Action action : event.get().actions()) {
             if (l != null) {
                 l.onAction(owner, eventId, action, ctx);
+            }
+            for (EventListener extra : LISTENERS) {
+                extra.onAction(owner, eventId, action, ctx);
             }
             switch (action) {
                 case Action.RunFunction a -> runFunction(owner, a, ctx);
@@ -68,6 +89,12 @@ public final class EventRunner {
                 case Action.GiveItem a -> giveItem(owner, a, ctx);
                 case Action.PlaySound a -> playSound(owner, a, ctx);
                 case Action.TriggerEvent a -> run(owner, events, a.event(), ctx, depth + 1);
+                case Action.PlayAnimation a -> {
+                    // Only entity definitions keep play_animation (dropped at load elsewhere).
+                    if (ctx.entity() instanceof AnimationTarget target) {
+                        target.playAnimation(a.controller(), a.animation());
+                    }
+                }
             }
         }
     }
@@ -148,6 +175,7 @@ public final class EventRunner {
             return;
         }
         Vec3 o = ctx.origin();
-        ctx.level().playSound(null, o.x, o.y, o.z, sound.get(), SoundSource.BLOCKS, a.volume(), a.pitch());
+        SoundSource source = ctx.entity() != null ? SoundSource.NEUTRAL : SoundSource.BLOCKS;
+        ctx.level().playSound(null, o.x, o.y, o.z, sound.get(), source, a.volume(), a.pitch());
     }
 }
