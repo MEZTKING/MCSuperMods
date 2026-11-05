@@ -172,7 +172,15 @@ function render(
         if (budget.full) break;
         const member = resolved.dispatch(key);
         if (member === undefined) continue;
-        child(`${indent}  case ${key}: `, member, depth + 1, `${indent}    `, budget, options, nextSeen);
+        child(
+          `${indent}  case ${key}: `,
+          member,
+          depth + 1,
+          `${indent}    `,
+          budget,
+          options,
+          nextSeen,
+        );
       }
       if (keys.length > MAX_CASES) budget.push(`${indent}  (other cases not shown)`);
       return head;

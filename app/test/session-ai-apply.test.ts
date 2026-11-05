@@ -91,7 +91,10 @@ describe('ProjectSession.applyChangeset (ADR 0041 D5)', () => {
       },
       { op: 'create', elementId: 'demo:fresh', kind: 'minecraft:function', after: { lines: [] } },
       { op: 'create', elementId: 'demo:greet', kind: 'minecraft:function', after: { lines: [] } },
-      { op: 'asset', asset: { namespace: 'demo', path: 'textures/item/x.png', bytes: placeholderPng('gem') } },
+      {
+        op: 'asset',
+        asset: { namespace: 'demo', path: 'textures/item/x.png', bytes: placeholderPng('gem') },
+      },
     );
     // The user edits the element by hand after the proposal, and a file appears at the path.
     session.setElementData('demo:greet', { lines: ['say edited'] });
@@ -131,7 +134,9 @@ describe('ProjectSession.applyChangeset (ADR 0041 D5)', () => {
       },
       { op: 'delete', elementId: 'demo:pack', kind: 'minecraft:pack_mcmeta' },
     );
-    expect(session.referencesForRename(session.snapshot.project as Project, 'demo:greet')).toHaveLength(1);
+    expect(
+      session.referencesForRename(session.snapshot.project as Project, 'demo:greet'),
+    ).toHaveLength(1);
     const result = await session.applyChangeset(changeset.items);
     expect(result.skipped).toEqual([]);
     const project = session.snapshot.project as Project;

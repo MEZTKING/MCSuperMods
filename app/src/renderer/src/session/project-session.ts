@@ -79,7 +79,6 @@ import { MSM_RUNTIME_TYPINGS } from '@msm/plugin-scripting';
 import { type SchemaNode, type VanillaMcdocSymbols, validateJson } from '@msm/schemas';
 import { targetFacts } from '@msm/targets';
 import { PluginProblemCodes } from '../../../shared/ipc-channels';
-import { type ChangeAsset, type ChangeItem, planChangeItems } from '../changeset/changeset';
 import type {
   AppSettingsPatch,
   AppSettingsView,
@@ -93,6 +92,7 @@ import type {
   TestInMinecraftStatus,
   WorldInfo,
 } from '../../../shared/platform';
+import { type ChangeAsset, type ChangeItem, planChangeItems } from '../changeset/changeset';
 import type { ExternalPluginState, ExternalPluginStatus } from '../plugins/external-plugins';
 import { assetImportError } from './asset-files';
 import {
@@ -1467,9 +1467,7 @@ export class ProjectSession {
       elementProblems.push(...problems);
     }
     const input = this.#validatorInput(context, project);
-    const results = await Promise.all(
-      this.#validators.map((entry) => runValidator(entry, input)),
-    );
+    const results = await Promise.all(this.#validators.map((entry) => runValidator(entry, input)));
     return [
       ...(scriptFailure === undefined
         ? []

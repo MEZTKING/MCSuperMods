@@ -8,7 +8,12 @@ import { newSession } from './session-fixture';
 interface Fixture {
   session: Awaited<ReturnType<typeof setup>>['session'];
   changeset: PendingChangeset;
-  call(name: string, input?: unknown, signal?: AbortSignal): Promise<{ result: AiToolResult; value: any }>;
+  call(
+    name: string,
+    input?: unknown,
+    signal?: AbortSignal,
+    // biome-ignore lint/suspicious/noExplicitAny: tool results are parsed JSON, read loosely in tests
+  ): Promise<{ result: AiToolResult; value: any }>;
   plans: ProposePlanInput[];
   checkpoints: CheckpointInput[];
 }
@@ -58,6 +63,7 @@ async function expectError(
   name: string,
   input: unknown,
   code: string,
+  // biome-ignore lint/suspicious/noExplicitAny: tool results are parsed JSON, read loosely in tests
 ): Promise<any> {
   const { result, value } = await fixture.call(name, input);
   expect(result.isError, result.content).toBe(true);
@@ -90,9 +96,17 @@ describe('createToolExecutor: read tools', () => {
     const fixture = await setup();
     const { value } = await fixture.call('list_kinds');
     const block = value.items.find((item: { id: string }) => item.id === 'msm:block');
-    expect(block).toMatchObject({ category: 'blocks-items', fabricJar: true, exportsTo: 'fabric-mod-jar' });
+    expect(block).toMatchObject({
+      category: 'blocks-items',
+      fabricJar: true,
+      exportsTo: 'fabric-mod-jar',
+    });
     const model = value.items.find((item: { id: string }) => item.id === 'minecraft:model');
-    expect(model).toMatchObject({ category: 'resourcepack', fabricJar: false, exportsTo: 'resource-pack' });
+    expect(model).toMatchObject({
+      category: 'resourcepack',
+      fabricJar: false,
+      exportsTo: 'resource-pack',
+    });
     expect(value.items.length).toBe(fixture.session.registry.all().length);
   });
 
@@ -147,7 +161,11 @@ describe('createToolExecutor: read tools', () => {
   it('read_element returns data and problems, marks pending elements and truncates large data', async () => {
     const fixture = await setup();
     let { value } = await fixture.call('read_element', { id: 'demo:greet' });
-    expect(value).toMatchObject({ id: 'demo:greet', kind: 'minecraft:function', data: { lines: ['say hi'] } });
+    expect(value).toMatchObject({
+      id: 'demo:greet',
+      kind: 'minecraft:function',
+      data: { lines: ['say hi'] },
+    });
     expect(value.problems).toEqual([]);
     await expectError(fixture, 'read_element', { id: 'demo:none' }, 'not_found');
     await fixture.call('update_element', { id: 'demo:greet', data: { lines: ['say updated'] } });
@@ -166,7 +184,11 @@ describe('createToolExecutor: read tools', () => {
 
   it('list_problems reports the live problems with filters', async () => {
     const fixture = await setup();
-    fixture.session.addElement({ id: 'demo:bad', kind: 'minecraft:function', data: { lines: 5 } as Json });
+    fixture.session.addElement({
+      id: 'demo:bad',
+      kind: 'minecraft:function',
+      data: { lines: 5 } as Json,
+    });
     await fixture.session.flushValidation();
     let { value } = await fixture.call('list_problems', { elementId: 'demo:bad' });
     expect(value.items.length).toBeGreaterThan(0);
@@ -179,16 +201,26 @@ describe('createToolExecutor: read tools', () => {
     const fixture = await setup();
     let { value } = await fixture.call('list_templates', { kind: 'minecraft:recipe' });
     expect(value.items.length).toBeGreaterThan(0);
-    expect(value.items.every((item: { kind: string }) => item.kind === 'minecraft:recipe')).toBe(true);
+    expect(value.items.every((item: { kind: string }) => item.kind === 'minecraft:recipe')).toBe(
+      true,
+    );
     const template = value.items[0];
-    ({ value } = await fixture.call('template_data', { templateId: template.id, id: 'demo:my_recipe' }));
+    ({ value } = await fixture.call('template_data', {
+      templateId: template.id,
+      id: 'demo:my_recipe',
+    }));
     expect(value.kind).toBe('minecraft:recipe');
     expect(typeof value.data).toBe('object');
     const created = await fixture.call('create_elements', {
       elements: [{ id: 'demo:my_recipe', kind: 'minecraft:recipe', data: value.data }],
     });
     expect(created.result.isError, created.result.content).toBe(false);
-    await expectError(fixture, 'template_data', { templateId: 'nope', id: 'demo:x' }, 'unknown_template');
+    await expectError(
+      fixture,
+      'template_data',
+      { templateId: 'nope', id: 'demo:x' },
+      'unknown_template',
+    );
   });
 
   it('list_starters lists parameters, defaults and support on the target', async () => {
@@ -198,9 +230,9 @@ describe('createToolExecutor: read tools', () => {
     expect(ore.supported).toBe(true);
     expect(ore.requiresKinds).toContain('msm:block');
     expect(ore.parameters.map((parameter: { id: string }) => parameter.id)).toContain('ore_name');
-    expect(ore.parameters.find((parameter: { id: string }) => parameter.id === 'ore_name').default).toBe(
-      'Ruby',
-    );
+    expect(
+      ore.parameters.find((parameter: { id: string }) => parameter.id === 'ore_name').default,
+    ).toBe('Ruby');
   });
 
   it('target_facts, script_api_typings and pending_changes', async () => {
@@ -245,8 +277,9 @@ describe('createToolExecutor: proposals', () => {
     });
     expect(result.isError).toBe(true);
     expect(value.error.code).toBe('rejected');
-    const codes = value.results.map((entry: { added?: boolean; error?: { code: string } }) =>
-      entry.error?.code ?? (entry.added ? 'added' : '?'),
+    const codes = value.results.map(
+      (entry: { added?: boolean; error?: { code: string } }) =>
+        entry.error?.code ?? (entry.added ? 'added' : '?'),
     );
     expect(codes).toEqual([
       'added',
@@ -268,9 +301,11 @@ describe('createToolExecutor: proposals', () => {
       'demo:twice',
     ]);
     // A second call with the same id now collides with the pending change.
-    await fixture.call('create_elements', {
-      elements: [{ id: 'demo:ruby_ore', kind: 'msm:block', data: blockData(fixture.session) }],
-    }).then(({ value: again }) => expect(again.results[0].error.code).toBe('duplicate_id'));
+    await fixture
+      .call('create_elements', {
+        elements: [{ id: 'demo:ruby_ore', kind: 'msm:block', data: blockData(fixture.session) }],
+      })
+      .then(({ value: again }) => expect(again.results[0].error.code).toBe('duplicate_id'));
   });
 
   it('create_elements resolves references between elements of one batch', async () => {
@@ -299,13 +334,21 @@ describe('createToolExecutor: proposals', () => {
       after: { lines: ['say new'] },
     });
     await expectError(fixture, 'update_element', { id: 'demo:none', data: {} }, 'not_found');
-    value = await expectError(fixture, 'update_element', { id: 'demo:greet', data: { lines: 5 } }, 'schema_errors');
+    value = await expectError(
+      fixture,
+      'update_element',
+      { id: 'demo:greet', data: { lines: 5 } },
+      'schema_errors',
+    );
     expect(value.error.problems.length).toBeGreaterThan(0);
 
     await fixture.call('create_elements', {
       elements: [{ id: 'demo:fresh', kind: 'minecraft:function', data: { lines: [] } }],
     });
-    ({ result, value } = await fixture.call('update_element', { id: 'demo:fresh', data: { lines: ['say x'] } }));
+    ({ result, value } = await fixture.call('update_element', {
+      id: 'demo:fresh',
+      data: { lines: ['say x'] },
+    }));
     expect(value.op).toBe('create');
     expect(fixture.changeset.items).toHaveLength(2);
   });
@@ -314,7 +357,10 @@ describe('createToolExecutor: proposals', () => {
     const fixture = await setup();
     const { value } = await fixture.call('delete_element', { id: 'demo:greet' });
     expect(value.referencedBy).toEqual(['minecraft:load']);
-    expect(fixture.changeset.items[0]).toMatchObject({ op: 'delete', before: { lines: ['say hi'] } });
+    expect(fixture.changeset.items[0]).toMatchObject({
+      op: 'delete',
+      before: { lines: ['say hi'] },
+    });
     await expectError(fixture, 'delete_element', { id: 'demo:greet' }, 'not_found');
     await fixture.call('create_elements', {
       elements: [{ id: 'demo:temp', kind: 'minecraft:function', data: { lines: [] } }],
@@ -326,7 +372,10 @@ describe('createToolExecutor: proposals', () => {
 
   it('rename_element records the ids and lists the references that would change', async () => {
     const fixture = await setup();
-    const { value } = await fixture.call('rename_element', { from: 'demo:greet', to: 'demo:hello' });
+    const { value } = await fixture.call('rename_element', {
+      from: 'demo:greet',
+      to: 'demo:hello',
+    });
     expect(value.references).toEqual([{ elementId: 'minecraft:load', path: '/values/0' }]);
     expect(fixture.changeset.items[0]).toMatchObject({
       op: 'rename',
@@ -338,8 +387,18 @@ describe('createToolExecutor: proposals', () => {
     const load = await fixture.call('read_element', { id: 'minecraft:load' });
     expect(load.value.data).toEqual({ values: ['demo:hello'] });
     await expectError(fixture, 'rename_element', { from: 'demo:greet', to: 'demo:x' }, 'not_found');
-    await expectError(fixture, 'rename_element', { from: 'demo:hello', to: 'demo:pack' }, 'duplicate_id');
-    await expectError(fixture, 'rename_element', { from: 'demo:hello', to: 'msm:hello' }, 'reserved_namespace');
+    await expectError(
+      fixture,
+      'rename_element',
+      { from: 'demo:hello', to: 'demo:pack' },
+      'duplicate_id',
+    );
+    await expectError(
+      fixture,
+      'rename_element',
+      { from: 'demo:hello', to: 'msm:hello' },
+      'reserved_namespace',
+    );
   });
 
   it('create_texture proposes a placeholder PNG under textures/', async () => {
@@ -406,15 +465,22 @@ describe('createToolExecutor: proposals', () => {
     const invalid = await expectError(
       fixture,
       'add_starter',
-      { starterId: 'custom_ore', namespace: 'demo', values: { drop_min: 99, nope: 1, make_block: 'yes' } },
+      {
+        starterId: 'custom_ore',
+        namespace: 'demo',
+        values: { drop_min: 99, nope: 1, make_block: 'yes' },
+      },
       'invalid_values',
     );
-    expect(invalid.error.values.map((entry: { parameter: string }) => entry.parameter).sort()).toEqual([
-      'drop_min',
-      'make_block',
-      'nope',
-    ]);
-    await expectError(fixture, 'add_starter', { starterId: 'nope', namespace: 'demo' }, 'unknown_starter');
+    expect(
+      invalid.error.values.map((entry: { parameter: string }) => entry.parameter).sort(),
+    ).toEqual(['drop_min', 'make_block', 'nope']);
+    await expectError(
+      fixture,
+      'add_starter',
+      { starterId: 'nope', namespace: 'demo' },
+      'unknown_starter',
+    );
     await expectError(
       fixture,
       'add_starter',
@@ -475,13 +541,22 @@ describe('createToolExecutor: checks and decisions', () => {
       title: 'Ruby tools',
       items: [
         { itemId: 'ore', kind: 'msm:block', elementId: 'demo:ruby_ore', summary: 'The ore.' },
-        { itemId: 'gem', kind: 'msm:item', elementId: 'demo:ruby', summary: 'The gem.', dependsOn: ['ore'] },
+        {
+          itemId: 'gem',
+          kind: 'msm:item',
+          elementId: 'demo:ruby',
+          summary: 'The gem.',
+          dependsOn: ['ore'],
+        },
       ],
     };
     let { result, value } = await fixture.call('propose_plan', plan);
     expect(result.isError).toBe(false);
     expect(value).toEqual({ decision: 'step', items: [plan.items[0]], comments: 'only the ore' });
-    ({ value } = await fixture.call('checkpoint', { completedItemIds: ['ore'], summary: 'Built the ore.' }));
+    ({ value } = await fixture.call('checkpoint', {
+      completedItemIds: ['ore'],
+      summary: 'Built the ore.',
+    }));
     expect(value).toEqual({ decision: 'stop' });
   });
 
@@ -505,7 +580,10 @@ describe('createToolExecutor: checks and decisions', () => {
     const controller = new AbortController();
     const pending = fixture.call(
       'propose_plan',
-      { title: 'T', items: [{ itemId: 'a', kind: 'msm:block', elementId: 'demo:a', summary: 'A.' }] },
+      {
+        title: 'T',
+        items: [{ itemId: 'a', kind: 'msm:block', elementId: 'demo:a', summary: 'A.' }],
+      },
       controller.signal,
     );
     await waiting;
@@ -518,7 +596,12 @@ describe('createToolExecutor: checks and decisions', () => {
   it('answers unknown tools, invalid input and a missing project as errors', async () => {
     const fixture = await setup();
     await expectError(fixture, 'make_coffee', {}, 'unknown_tool');
-    const invalid = await expectError(fixture, 'read_element', { id: 'Not An Id' }, 'invalid_input');
+    const invalid = await expectError(
+      fixture,
+      'read_element',
+      { id: 'Not An Id' },
+      'invalid_input',
+    );
     expect(invalid.error.issues[0].path).toBe('id');
 
     const empty = newSession(createMemoryFileSystem());

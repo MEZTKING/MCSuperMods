@@ -6,8 +6,8 @@
  * @packageDocumentation
  */
 
-import type { Element, Problem } from '@msm/core';
 import { READ_ELEMENT_MAX_BYTES } from '@msm/ai';
+import type { Element, Problem } from '@msm/core';
 
 /** Element data as pretty JSON, cut at the `read_element` limit with a note. */
 function dataBlock(element: Element): string {

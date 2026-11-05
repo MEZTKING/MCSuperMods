@@ -98,7 +98,9 @@ describe('PendingChangeset', () => {
     expect(plan.skipped).toEqual([]);
     const ids = plan.state.namespaces[0]?.elements.map((entry) => entry.id);
     expect(ids).toEqual(['demo:item/gem', 'demo:ruby_block']);
-    expect(plan.state.namespaces[0]?.elements[0]?.data).toEqual({ parent: 'minecraft:item/handheld' });
+    expect(plan.state.namespaces[0]?.elements[0]?.data).toEqual({
+      parent: 'minecraft:item/handheld',
+    });
     // Replaying the commands on the input gives the same state.
     const replay = new CommandStack(project);
     replay.execute({
@@ -191,7 +193,12 @@ describe('PendingChangeset', () => {
       kind: 'minecraft:model',
       after: { parent: 'a' },
     });
-    const merged = changeset.proposeUpdate('demo:new', 'minecraft:model', { parent: 'a' }, { parent: 'b' });
+    const merged = changeset.proposeUpdate(
+      'demo:new',
+      'minecraft:model',
+      { parent: 'a' },
+      { parent: 'b' },
+    );
     expect(merged.itemId).toBe(create?.itemId);
     expect(merged.op).toBe('create');
     expect(changeset.items).toHaveLength(1);
@@ -202,7 +209,12 @@ describe('PendingChangeset', () => {
       { type: 'minecraft:crafting_shapeless' },
       { type: 'one' },
     );
-    const again = changeset.proposeUpdate('demo:ruby_block', 'minecraft:recipe', { type: 'one' }, { type: 'two' });
+    const again = changeset.proposeUpdate(
+      'demo:ruby_block',
+      'minecraft:recipe',
+      { type: 'one' },
+      { type: 'two' },
+    );
     expect(again.itemId).toBe(update.itemId);
     expect(again.before).toEqual({ type: 'minecraft:crafting_shapeless' });
     expect(again.after).toEqual({ type: 'two' });
@@ -247,7 +259,13 @@ describe('PendingChangeset', () => {
       {
         elements: [
           { id: 'demo:item/ruby', kind: 'minecraft:model', data: {} },
-          { id: 'demo:new', kind: 'minecraft:model', data: { parent: 'a' }, notes: 'Hi', tags: ['x'] },
+          {
+            id: 'demo:new',
+            kind: 'minecraft:model',
+            data: { parent: 'a' },
+            notes: 'Hi',
+            tags: ['x'],
+          },
         ],
         assets: [{ namespace: 'demo', path: 'textures/item/new.png', bytes: png }],
       },
@@ -262,12 +280,20 @@ describe('PendingChangeset', () => {
         elementId: 'demo:new',
         kind: 'minecraft:model',
         after: { parent: 'a' },
-        meta: { creator: { flowId: 'flow', setId: 'set', values: {}, generatedId: 'demo:new' }, notes: 'Hi', tags: ['x'] },
+        meta: {
+          creator: { flowId: 'flow', setId: 'set', values: {}, generatedId: 'demo:new' },
+          notes: 'Hi',
+          tags: ['x'],
+        },
       },
       { op: 'asset', asset: { namespace: 'demo', path: 'textures/item/new.png', bytes: png } },
     ]);
     expect(() =>
-      bundleToNewItems({ elements: [{ id: 'demo:x', kind: 'nope:kind', data: {} }], assets: [] }, project, () => false),
+      bundleToNewItems(
+        { elements: [{ id: 'demo:x', kind: 'nope:kind', data: {} }], assets: [] },
+        project,
+        () => false,
+      ),
     ).toThrow(/Unknown element kind/);
   });
 

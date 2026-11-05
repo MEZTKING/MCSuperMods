@@ -39,9 +39,9 @@ import {
 import type { StarterParameter } from '@msm/plugin-api';
 import { PLACEHOLDER_PATTERNS, type PlaceholderPattern, placeholderPng } from '@msm/plugin-library';
 import {
+  bundleToNewItems,
   type ChangeItem,
   type ChangesetPlanOptions,
-  bundleToNewItems,
   type PendingChangeset,
   planChangeItems,
 } from '../changeset/changeset';
@@ -178,11 +178,17 @@ function messageOf(error: unknown): string {
 }
 
 /** One page of `items` from `cursor` (an offset this tool returned). */
-function page<T>(items: readonly T[], cursor: string | undefined): { items: T[]; nextCursor?: string } {
+function page<T>(
+  items: readonly T[],
+  cursor: string | undefined,
+): { items: T[]; nextCursor?: string } {
   let start = 0;
   if (cursor !== undefined) {
     if (!/^\d+$/.test(cursor) || Number(cursor) > items.length) {
-      throw new ToolError(ToolErrorCodes.invalidInput, `The cursor ${JSON.stringify(cursor)} is not one this tool returned.`);
+      throw new ToolError(
+        ToolErrorCodes.invalidInput,
+        `The cursor ${JSON.stringify(cursor)} is not one this tool returned.`,
+      );
     }
     start = Number(cursor);
   }
@@ -341,9 +347,13 @@ export function createToolExecutor(
   };
 
   const errorsOf = (problems: readonly Problem[]) =>
-    problems.filter((problem) => problem.severity === 'error').map((problem) => problemView(problem));
+    problems
+      .filter((problem) => problem.severity === 'error')
+      .map((problem) => problemView(problem));
   const notesOf = (problems: readonly Problem[]) =>
-    problems.filter((problem) => problem.severity !== 'error').map((problem) => problemView(problem));
+    problems
+      .filter((problem) => problem.severity !== 'error')
+      .map((problem) => problemView(problem));
 
   const handlers: {
     [N in AiToolName]: (input: AiToolInputs[N], signal: AbortSignal) => Promise<ToolOutcome>;
@@ -377,7 +387,11 @@ export function createToolExecutor(
             id: kind.id,
             category: plugin.startsWith('msm.') ? plugin.slice('msm.'.length) : plugin,
             registry: session.registry.registryFor(kind.id) ?? null,
-            exportsTo: mod ? 'fabric-mod-jar' : plugin === 'msm.resourcepack' ? 'resource-pack' : 'data-pack',
+            exportsTo: mod
+              ? 'fabric-mod-jar'
+              : plugin === 'msm.resourcepack'
+                ? 'resource-pack'
+                : 'data-pack',
             fabricJar: mod,
             hasTemplates: templates.has(kind.id),
           };
@@ -425,7 +439,8 @@ export function createToolExecutor(
           return {
             id: element.id,
             kind: element.kind,
-            problems: item === undefined ? session.problemsFor(element.id).length : item.problems.length,
+            problems:
+              item === undefined ? session.problemsFor(element.id).length : item.problems.length,
             ...(item === undefined ? {} : { pending: item.op }),
           };
         });
@@ -438,8 +453,8 @@ export function createToolExecutor(
         throw new ToolError(ToolErrorCodes.notFound, `There is no element ${id}.`);
       }
       const item = pendingItems().get(id);
-      const problems = (item === undefined ? session.problemsFor(element.id) : item.problems).map((problem) =>
-        problemView(problem),
+      const problems = (item === undefined ? session.problemsFor(element.id) : item.problems).map(
+        (problem) => problemView(problem),
       );
       const json = JSON.stringify(element.data);
       const bytes = new TextEncoder().encode(json);
@@ -452,7 +467,9 @@ export function createToolExecutor(
       if (bytes.length <= READ_ELEMENT_MAX_BYTES) {
         return { value: { ...base, data: element.data } };
       }
-      const cut = new TextDecoder().decode(bytes.slice(0, READ_ELEMENT_MAX_BYTES)).replace(/�+$/, '');
+      const cut = new TextDecoder()
+        .decode(bytes.slice(0, READ_ELEMENT_MAX_BYTES))
+        .replace(/�+$/, '');
       return {
         value: {
           ...base,
@@ -484,7 +501,9 @@ export function createToolExecutor(
           title: template.title,
           description: template.description,
           ...(template.prefix === undefined ? {} : { pathPrefix: template.prefix }),
-          ...(template.defaultNamespace === undefined ? {} : { namespace: template.defaultNamespace }),
+          ...(template.defaultNamespace === undefined
+            ? {}
+            : { namespace: template.defaultNamespace }),
         }));
       return { value: page(all, cursor) };
     },
@@ -602,11 +621,20 @@ export function createToolExecutor(
             );
           }
           ids.add(entry.id);
-          candidates.push({ id: entry.id as ResourceLocation, kind: entry.kind, data: entry.data as Json, index });
+          candidates.push({
+            id: entry.id as ResourceLocation,
+            kind: entry.kind,
+            data: entry.data as Json,
+            index,
+          });
           results[index] = { id: entry.id };
         } catch (error) {
           if (!(error instanceof ToolError)) throw error;
-          results[index] = { id: entry.id, added: false, error: { code: error.code, message: error.message } };
+          results[index] = {
+            id: entry.id,
+            added: false,
+            error: { code: error.code, message: error.message },
+          };
         }
       });
       // Check every candidate against the project with all of them in it, so references
@@ -683,7 +711,10 @@ export function createToolExecutor(
       const state = scratch();
       const element = findElement(state, id);
       if (element === undefined) {
-        throw new ToolError(ToolErrorCodes.notFound, `There is no element ${id}. Use create_elements for new elements.`);
+        throw new ToolError(
+          ToolErrorCodes.notFound,
+          `There is no element ${id}. Use create_elements for new elements.`,
+        );
       }
       const problems = await validate(element.kind, id, data as Json, state);
       const errors = errorsOf(problems);
@@ -697,7 +728,12 @@ export function createToolExecutor(
       const item = changeset.proposeUpdate(element.id, element.kind, element.data, data as Json);
       const note = notesOf(problems);
       return {
-        value: { itemId: item.itemId, op: item.op, id, ...(note.length === 0 ? {} : { notes: note }) },
+        value: {
+          itemId: item.itemId,
+          op: item.op,
+          id,
+          ...(note.length === 0 ? {} : { notes: note }),
+        },
       };
     },
 
@@ -762,7 +798,10 @@ export function createToolExecutor(
     create_texture: async ({ namespace, path, pattern, colour }) => {
       const state = scratch();
       if (!isValidNamespace(namespace)) {
-        throw new ToolError(ToolErrorCodes.invalidId, `${JSON.stringify(namespace)} is not a valid namespace.`);
+        throw new ToolError(
+          ToolErrorCodes.invalidId,
+          `${JSON.stringify(namespace)} is not a valid namespace.`,
+        );
       }
       if (namespace === RESERVED_NAMESPACE || namespace === VANILLA_NAMESPACE) {
         throw new ToolError(
@@ -842,7 +881,10 @@ export function createToolExecutor(
       for (const [key, value] of Object.entries(values ?? {})) {
         const parameter = parameters.find((entry) => entry.id === key);
         if (parameter === undefined) {
-          problems.push({ parameter: key, message: `The starter has no parameter ${JSON.stringify(key)}.` });
+          problems.push({
+            parameter: key,
+            message: `The starter has no parameter ${JSON.stringify(key)}.`,
+          });
           continue;
         }
         const rawValue = rawParameterValue(parameter, value);
@@ -872,7 +914,11 @@ export function createToolExecutor(
           values: toValues(parameters, raw),
         });
         for (const entry of bundle.elements) assertElementIdAllowed(entry.kind, entry.id);
-        created = bundleToNewItems(bundle, state, (kind) => session.registry.get(kind) !== undefined);
+        created = bundleToNewItems(
+          bundle,
+          state,
+          (kind) => session.registry.get(kind) !== undefined,
+        );
       } catch (error) {
         throw new ToolError(
           ToolErrorCodes.starterFailed,
@@ -884,7 +930,9 @@ export function createToolExecutor(
         value: {
           starterId,
           namespace,
-          created: created.items.flatMap((item) => (item.elementId === undefined ? [] : [item.elementId])),
+          created: created.items.flatMap((item) =>
+            item.elementId === undefined ? [] : [item.elementId],
+          ),
           assets: created.items.flatMap((item) =>
             item.asset === undefined ? [] : [`assets/${item.asset.namespace}/${item.asset.path}`],
           ),
@@ -919,7 +967,8 @@ export function createToolExecutor(
         else list.push(problem);
       }
       const byItem = new Map<string, Problem[]>();
-      for (const [elementId, item] of pending) byItem.set(item.itemId, byElement.get(elementId) ?? []);
+      for (const [elementId, item] of pending)
+        byItem.set(item.itemId, byElement.get(elementId) ?? []);
       changeset.setProblems(byItem);
       const groups = [...byElement.entries()]
         .filter(([elementId]) => scope === 'all' || pending.has(elementId))
@@ -928,8 +977,12 @@ export function createToolExecutor(
           return {
             elementId,
             ...(item === undefined ? {} : { itemId: item.itemId }),
-            problems: list.slice(0, MAX_PROBLEMS_PER_ELEMENT).map((problem) => problemView(problem)),
-            ...(list.length > MAX_PROBLEMS_PER_ELEMENT ? { more: list.length - MAX_PROBLEMS_PER_ELEMENT } : {}),
+            problems: list
+              .slice(0, MAX_PROBLEMS_PER_ELEMENT)
+              .map((problem) => problemView(problem)),
+            ...(list.length > MAX_PROBLEMS_PER_ELEMENT
+              ? { more: list.length - MAX_PROBLEMS_PER_ELEMENT }
+              : {}),
           };
         });
       const counted = [
@@ -946,7 +999,9 @@ export function createToolExecutor(
           scope,
           counts,
           elements: groups.slice(0, LIST_PAGE_SIZE),
-          ...(groups.length > LIST_PAGE_SIZE ? { moreElements: groups.length - LIST_PAGE_SIZE } : {}),
+          ...(groups.length > LIST_PAGE_SIZE
+            ? { moreElements: groups.length - LIST_PAGE_SIZE }
+            : {}),
           ...(scope === 'all' && projectWide.length > 0
             ? { projectProblems: projectWide.map((problem) => problemView(problem)) }
             : {}),

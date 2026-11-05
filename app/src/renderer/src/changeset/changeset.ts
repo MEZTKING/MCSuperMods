@@ -532,7 +532,9 @@ export class PendingChangeset {
 
   /** Replaces every item's problems (items missing from `byItem` get none). */
   setProblems(byItem: ReadonlyMap<string, readonly Problem[]>): void {
-    this.#set(this.#items.map((item) => ({ ...item, problems: [...(byItem.get(item.itemId) ?? [])] })));
+    this.#set(
+      this.#items.map((item) => ({ ...item, problems: [...(byItem.get(item.itemId) ?? [])] })),
+    );
   }
 
   /** Removes every item. */

@@ -50,7 +50,11 @@ describe('ProjectSession.checkProject (ADR 0041 D4)', () => {
     const live = await session.checkProject(project);
     const stack = new CommandStack(project);
     stack.execute(
-      commands.setElementValue('msm_sample_mod:ruby_ore', '/components/msm:breakable/hardness', 'very hard'),
+      commands.setElementValue(
+        'msm_sample_mod:ruby_ore',
+        '/components/msm:breakable/hardness',
+        'very hard',
+      ),
     );
     const scratch = stack.state;
     const problems = await session.checkProject(scratch);
@@ -58,11 +62,13 @@ describe('ProjectSession.checkProject (ADR 0041 D4)', () => {
       (problem) => problem.elementId === 'msm_sample_mod:ruby_ore' && problem.severity === 'error',
     );
     expect(injected.length).toBeGreaterThan(0);
-    expect(injected.some((problem) => problem.path === '/components/msm:breakable/hardness')).toBe(true);
-    expect(live.filter((problem) => problem.severity === 'error')).toEqual([]);
-    expect(session.problemsFor('msm_sample_mod:ruby_ore').filter((p) => p.severity === 'error')).toEqual(
-      [],
+    expect(injected.some((problem) => problem.path === '/components/msm:breakable/hardness')).toBe(
+      true,
     );
+    expect(live.filter((problem) => problem.severity === 'error')).toEqual([]);
+    expect(
+      session.problemsFor('msm_sample_mod:ruby_ore').filter((p) => p.severity === 'error'),
+    ).toEqual([]);
   }, 60_000);
 
   it('validates element data against a given project (schema pass only)', async () => {

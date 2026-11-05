@@ -107,7 +107,11 @@ export interface AiConversation {
 /** A fresh conversation. */
 export function newConversation(
   id: string,
-  options: { mode?: AiMode; limits?: Record<AiMode, AiRunLimits>; changeset?: PendingChangeset } = {},
+  options: {
+    mode?: AiMode;
+    limits?: Record<AiMode, AiRunLimits>;
+    changeset?: PendingChangeset;
+  } = {},
 ): AiConversation {
   const changeset = options.changeset ?? new PendingChangeset();
   return {
@@ -121,7 +125,9 @@ export function newConversation(
     checkpoint: null,
     usage: emptyUsage(),
     usageBefore: emptyUsage(),
-    limits: structuredClone(options.limits ?? { chat: DEFAULT_LIMITS.chat, build: DEFAULT_LIMITS.build }),
+    limits: structuredClone(
+      options.limits ?? { chat: DEFAULT_LIMITS.chat, build: DEFAULT_LIMITS.build },
+    ),
     runLimits: null,
     nextSeq: 0,
   };
@@ -146,7 +152,10 @@ type NewMessage = AiDisplayMessage extends infer M
 function push(conversation: AiConversation, message: NewMessage): AiConversation {
   return {
     ...conversation,
-    messages: [...conversation.messages, { ...message, seq: conversation.nextSeq } as AiDisplayMessage],
+    messages: [
+      ...conversation.messages,
+      { ...message, seq: conversation.nextSeq } as AiDisplayMessage,
+    ],
     nextSeq: conversation.nextSeq + 1,
   };
 }
@@ -167,7 +176,12 @@ export function addNotice(
   text: string,
   runId?: string,
 ): AiConversation {
-  return push(conversation, { role: 'notice', kind, text, ...(runId === undefined ? {} : { runId }) });
+  return push(conversation, {
+    role: 'notice',
+    kind,
+    text,
+    ...(runId === undefined ? {} : { runId }),
+  });
 }
 
 /**
@@ -260,7 +274,9 @@ export function applyEvent(
       return {
         ...conversation,
         messages: conversation.messages.map((message) =>
-          message.role === 'tool' && message.runId === runId && message.requestId === event.requestId
+          message.role === 'tool' &&
+          message.runId === runId &&
+          message.requestId === event.requestId
             ? { ...message, status: event.isError ? 'error' : 'done' }
             : message,
         ),
@@ -399,7 +415,11 @@ export interface AiStoreState {
    * Records a checkpoint; resolves at once with `continue` unless the plan is in step mode,
    * then waits for {@link resolveCheckpoint}.
    */
-  checkpoint(root: string, input: CheckpointInput, runId: string | null): Promise<'continue' | 'stop'>;
+  checkpoint(
+    root: string,
+    input: CheckpointInput,
+    runId: string | null,
+  ): Promise<'continue' | 'stop'>;
   /** Answers the pending checkpoint. */
   resolveCheckpoint(root: string, decision: 'continue' | 'stop'): void;
 }
@@ -422,14 +442,17 @@ export const useAiStore = create<AiStoreState>((set, get) => {
     const current = get().conversations[root];
     if (current === undefined) return;
     const next = transition(current);
-    if (next !== current) set((state) => ({ conversations: { ...state.conversations, [root]: next } }));
+    if (next !== current)
+      set((state) => ({ conversations: { ...state.conversations, [root]: next } }));
   };
 
   const mirror = (root: string, changeset: PendingChangeset) => {
     changesetSubscriptions.get(root)?.();
     changesetSubscriptions.set(
       root,
-      changeset.subscribe((items) => update(root, (conversation) => ({ ...conversation, changesetItems: items }))),
+      changeset.subscribe((items) =>
+        update(root, (conversation) => ({ ...conversation, changesetItems: items })),
+      ),
     );
   };
 
@@ -470,7 +493,9 @@ export const useAiStore = create<AiStoreState>((set, get) => {
     update,
 
     setMode(root, mode) {
-      update(root, (conversation) => (conversation.mode === mode ? conversation : { ...conversation, mode }));
+      update(root, (conversation) =>
+        conversation.mode === mode ? conversation : { ...conversation, mode },
+      );
     },
 
     setLimits(root, limits) {
