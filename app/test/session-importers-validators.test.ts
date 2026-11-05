@@ -117,6 +117,7 @@ async function openSession(options: { plugins?: readonly Plugin[] } = {}) {
       return { paths: files.map((file) => `${folder}/${file.name}`) };
     },
     runtimeJar: async () => null,
+    geckolibJar: async () => null,
   };
   await session.newProject();
   return { session, fs, writes, picks: () => picks };

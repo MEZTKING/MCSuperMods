@@ -8,7 +8,7 @@
  *   modification time, then name), skipping the `-sources` and `-dev` jars Gradle also writes.
  *
  * A missing jar is `null`, never an error: the exporter then reports `export.runtime-missing`
- * and the user can still choose "Separate runtime (for modpacks)".
+ * and the user can still choose "Separate runtime and GeckoLib (for modpacks)".
  *
  * @packageDocumentation
  */

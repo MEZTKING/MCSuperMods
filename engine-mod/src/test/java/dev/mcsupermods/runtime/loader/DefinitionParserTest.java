@@ -24,6 +24,96 @@ class DefinitionParserTest {
         return DefinitionParser.parseItem(JsonParser.parseString(json));
     }
 
+    private static ParseResult<EntityDefinition> entity(String extraComponents, String extra) {
+        return DefinitionParser.parseEntity(JsonParser.parseString("{\"format\": 1, \"category\": \"creature\", "
+                + "\"size\": {\"width\": 0.9, \"height\": 1.6}, " + extra + "\"components\": {" + extraComponents
+                + "\"msm:animated_model\": {\"model\": \"t:entity/x\", \"texture\": \"t:entity/x\"}}}"));
+    }
+
+    @Test
+    void entityDefaults() {
+        ParseResult<EntityDefinition> result = entity("", "");
+        assertEquals(List.of(), result.errors());
+        assertEquals(List.of(), result.warnings());
+        EntityDefinition def = result.definition().orElseThrow();
+        assertEquals(EntityDefinition.Category.CREATURE, def.category());
+        assertEquals(Optional.of(EntityDefinition.SpawnEgg.DEFAULT), def.spawnEgg());
+        assertEquals(Optional.empty(), def.spawn());
+        assertEquals(Optional.empty(), def.eyeHeight());
+        assertEquals(20.0, def.components().maxHealth());
+        assertEquals(dev.mcsupermods.runtime.components.EntityComponents.Movement.DEFAULT, def.components().movementOrDefault());
+        assertEquals(List.of(), def.components().goals());
+        assertEquals(0, def.components().animatedModel().transitionTicks());
+        assertEquals(1.0f, def.components().animatedModel().scale());
+        assertEquals(Optional.empty(), def.components().animatedModel().idle());
+    }
+
+    @Test
+    void spawnDefaultsAndEggFalse() {
+        EntityDefinition def = entity("", "\"spawn_egg\": false, \"spawn\": {\"biomes\": [\"#minecraft:is_forest\"], "
+                + "\"weight\": 2, \"min_group\": 1, \"max_group\": 3}, ").definition().orElseThrow();
+        assertEquals(Optional.empty(), def.spawnEgg());
+        EntityDefinition.Spawn spawn = def.spawn().orElseThrow();
+        assertEquals(EntityDefinition.Placement.ON_GROUND, spawn.placement());
+        assertEquals(EntityDefinition.HeightmapType.MOTION_BLOCKING_NO_LEAVES, spawn.heightmap());
+        assertEquals(EntityDefinition.Rule.MOB, spawn.rule());
+        assertFalse(entity("", "\"spawn\": {\"biomes\": [\"#Bad Tag\"], \"weight\": 1, \"min_group\": 1, \"max_group\": 1}, ")
+                .clean());
+    }
+
+    @Test
+    void badGoalIsDroppedAndTheOthersStay() {
+        ParseResult<EntityDefinition> result = entity("\"msm:ai_goals\": {\"goals\": [{\"type\": \"fly\"}, "
+                + "{\"type\": \"wander\", \"priority\": 3}, {\"type\": \"flee\"}, {\"type\": \"look_around\"}]}, ", "");
+        assertEquals(2, result.errors().size(), "errors: " + result.errors());
+        assertTrue(result.errors().get(0).contains("goals[0]") && result.errors().get(0).contains("fly"), result.errors().get(0));
+        assertTrue(result.errors().get(1).contains("goals[2]") && result.errors().get(1).contains("from"), result.errors().get(1));
+        List<dev.mcsupermods.runtime.components.Goal> goals = result.definition().orElseThrow().components().goals();
+        assertEquals(2, goals.size());
+        assertEquals(new dev.mcsupermods.runtime.components.Goal.Wander(Optional.of(3), 1.0f, true), goals.get(0));
+    }
+
+    @Test
+    void entityEventReferencesMustBeDeclared() {
+        ParseResult<EntityDefinition> result = entity("\"msm:attack\": {\"damage\": 2, \"on_attack\": \"t:hit\"}, "
+                + "\"msm:on_hurt\": {\"event\": \"t:ouch\"}, ", "");
+        assertEquals(2, result.errors().size(), "errors: " + result.errors());
+        assertTrue(result.definition().isPresent());
+    }
+
+    @Test
+    void triggerableAnimationsCollectModelNamesAndPlayAnimationActions() {
+        EntityDefinition def = DefinitionParser.parseEntity(JsonParser.parseString("""
+                {"format": 1, "category": "monster", "size": {"width": 1, "height": 2},
+                 "components": {"msm:animated_model": {"model": "t:entity/x", "texture": "t:entity/x", "idle": "idle", "attack": "hit"},
+                                "msm:on_hurt": {"event": "t:ouch"}},
+                 "events": {"t:ouch": {"actions": [{"type": "play_animation", "animation": "flinch"},
+                                                   {"type": "play_animation", "animation": "spin", "controller": "extra"}]}}}
+                """)).definition().orElseThrow();
+        assertEquals(java.util.Map.of("msm_triggered", java.util.Set.of("idle", "hit", "flinch"), "extra", java.util.Set.of("spin")),
+                def.triggerableAnimations());
+    }
+
+    @Test
+    void playAnimationInBlocksAndItemsIsDroppedWithAWarning() {
+        ParseResult<BlockDefinition> result = block("""
+                {"format": 1, "components": {"msm:on_interact": {"event": "t:use"}},
+                 "events": {"t:use": {"actions": [{"type": "play_animation", "animation": "wave"},
+                                                  {"type": "give_item", "item": "minecraft:stick"}]}}}
+                """);
+        assertEquals(List.of(), result.errors());
+        assertEquals(1, result.warnings().size());
+        assertTrue(result.warnings().getFirst().contains("play_animation 'wave'"), result.warnings().getFirst());
+        List<Action> actions = result.definition().orElseThrow().events().get(Identifier.parse("t:use")).orElseThrow().actions();
+        assertEquals(List.of(new Action.GiveItem(Identifier.parse("minecraft:stick"), 1)), actions);
+        ParseResult<ItemDefinition> itemResult = item("""
+                {"format": 1, "components": {"msm:on_use": {"event": "t:use"}},
+                 "events": {"t:use": {"actions": [{"type": "play_animation", "animation": "wave", "controller": "c"}]}}}
+                """);
+        assertEquals(1, itemResult.warnings().size());
+        assertTrue(itemResult.definition().orElseThrow().events().get(Identifier.parse("t:use")).orElseThrow().actions().isEmpty());
+    }
+
     @Test
     void blockDefaults() {
         BlockDefinition def = block("{\"format\": 1}").definition().orElseThrow();

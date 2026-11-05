@@ -5,6 +5,7 @@ import {
   BUILT_IN_KIND_LOOKUP,
   blockHasItem,
   dataRegistryIds,
+  entityHasSpawnEgg,
   kindLookupFor,
   kindRegistry,
   projectRegistryIds,
@@ -152,6 +153,40 @@ describe('dataRegistryIds', () => {
     const ids = projectRegistryIds(msm);
     expect(ids.block).toEqual(['demo:ruby_block']);
     expect(ids.item).toEqual(['demo:ruby', 'demo:ruby_block']);
+  });
+
+  it('counts entities under entity_type and their spawn eggs under item', () => {
+    const msm = project([
+      { id: 'demo:gloom', kind: 'msm:entity', data: { spawn_egg: {} } },
+      { id: 'demo:moth', kind: 'msm:entity', data: { spawn_egg: false } },
+      { id: 'demo:shade', kind: 'msm:entity' },
+      { id: 'demo:entity/gloom', kind: 'msm:geo_model' },
+      { id: 'demo:entity/gloom_animations', kind: 'msm:animation' },
+    ]);
+    const ids = dataRegistryIds(msm);
+    expect(ids.entity_type).toEqual(['demo:gloom', 'demo:moth', 'demo:shade']);
+    expect(ids.item).toEqual(['demo:gloom_spawn_egg', 'demo:shade_spawn_egg']);
+    expect(Object.keys(ids)).not.toContain('model');
+  });
+
+  it('counts the generated spawn egg model when the egg has a texture', () => {
+    const msm = project([
+      {
+        id: 'demo:mobs/gloom',
+        kind: 'msm:entity',
+        data: { spawn_egg: { texture: 'demo:item/gloom_spawn_egg' } },
+      },
+      { id: 'demo:moth', kind: 'msm:entity', data: { spawn_egg: {} } },
+      { id: 'demo:wisp', kind: 'msm:entity', data: { spawn_egg: false } },
+    ]);
+    expect(projectRegistryIds(msm).model).toEqual(['demo:item/mobs/gloom_spawn_egg']);
+  });
+
+  it('entityHasSpawnEgg is true unless spawn_egg is false', () => {
+    expect(entityHasSpawnEgg({})).toBe(true);
+    expect(entityHasSpawnEgg({ spawn_egg: {} })).toBe(true);
+    expect(entityHasSpawnEgg({ spawn_egg: false })).toBe(false);
+    expect(entityHasSpawnEgg(null)).toBe(true);
   });
 
   it('blockHasItem is true unless item is false', () => {

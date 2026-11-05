@@ -1,9 +1,0 @@
-{
-  "category": "creature",
-  "components": {
-    "msm:movement": { "speed": 0.3 }
-  },
-  "format": 1,
-  "size": { "height": 0.9, "width": 0.6 },
-  "spawn_egg": false
-}

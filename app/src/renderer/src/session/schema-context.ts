@@ -158,7 +158,10 @@ function sortedRecord(map: Map<string, string[]>): Record<string, string[]> {
  * another namespace counts when it declares a plain `ElementKind.registry` (no `:`), for
  * example `msm:block` in `block` and `msm:item` in `item`. An element in the `block` registry
  * also registers its block item under the same id, so it is in `item` too unless its data has
- * `"item": false` ({@link blockHasItem}). Only registries with at least one id appear. Sorted,
+ * `"item": false` ({@link blockHasItem}). An `msm:entity` element (registry `entity_type`)
+ * also registers its spawn egg `<id>_spawn_egg` in `item` unless `spawn_egg` is `false`
+ * ({@link entityHasSpawnEgg}); `msm:geo_model` and `msm:animation` ids land in their own
+ * plain registries, which no vanilla schema reads. Only registries with at least one id appear. Sorted,
  * namespaced, without duplicates.
  *
  * @param project - The project.
@@ -184,6 +187,9 @@ export function dataRegistryIds(
         if (registered === BLOCK_REGISTRY && blockHasItem(element.data)) {
           add(ITEM_REGISTRY, element.id);
         }
+        if (element.kind === ENTITY_KIND && entityHasSpawnEgg(element.data)) {
+          add(ITEM_REGISTRY, spawnEggId(element.id));
+        }
         continue;
       }
       const registry = registered ?? defaultKindRegistry(element.kind);
@@ -201,6 +207,39 @@ export function dataRegistryIds(
 
 const BLOCK_REGISTRY = 'block';
 const ITEM_REGISTRY = 'item';
+const ENTITY_KIND = 'msm:entity';
+
+/** The spawn egg item id of an entity: `<id>_spawn_egg`. */
+export function spawnEggId(entityId: string): string {
+  return `${entityId}_spawn_egg`;
+}
+
+/**
+ * Whether an `msm:entity` element registers a spawn egg: `spawn_egg` absent or an object, as
+ * the entity lowering decides (so `false` means no egg).
+ *
+ * @param data - The entity element's data.
+ */
+export function entityHasSpawnEgg(data: unknown): boolean {
+  if (typeof data !== 'object' || data === null || Array.isArray(data)) return true;
+  const egg = (data as { spawn_egg?: unknown }).spawn_egg;
+  return egg === undefined || (typeof egg === 'object' && egg !== null && !Array.isArray(egg));
+}
+
+/**
+ * The item model the entity lowering generates for a spawn egg with a texture,
+ * `<ns>:item/<path>_spawn_egg`, or `undefined` when the egg has no texture (or no egg).
+ *
+ * @param entityId - The entity element's id.
+ * @param data - Its data.
+ */
+export function spawnEggModelId(entityId: string, data: unknown): string | undefined {
+  if (!entityHasSpawnEgg(data)) return undefined;
+  const egg = (data as { spawn_egg?: { texture?: unknown } } | null)?.spawn_egg;
+  if (typeof egg?.texture !== 'string' || egg.texture.trim() === '') return undefined;
+  const colon = entityId.indexOf(':');
+  return `${entityId.slice(0, colon)}:item/${spawnEggId(entityId.slice(colon + 1))}`;
+}
 
 /**
  * Whether a block element registers a block item under its own id: every block does, as in
@@ -220,7 +259,8 @@ function soundEventKeys(data: unknown): string[] {
 }
 
 /**
- * The ids a project defines, per registry: `model` (model elements), `texture` (PNG assets
+ * The ids a project defines, per registry: `model` (model elements and the item models of
+ * entity spawn eggs with a texture), `texture` (PNG assets
  * under `textures/`), `sound` (Ogg assets under `sounds/`), `sound_event` (every event key of
  * a `minecraft:sounds` element: key `foo.bar` in namespace `ns` is `ns:foo.bar`) and the data
  * pack registries of {@link dataRegistryIds}. Sorted, namespaced, without duplicates.
@@ -239,6 +279,10 @@ export function projectRegistryIds(
   for (const namespace of project.namespaces) {
     for (const element of namespace.elements) {
       if (element.kind === 'minecraft:model') model.push(element.id);
+      if (element.kind === ENTITY_KIND) {
+        const eggModel = spawnEggModelId(element.id, element.data);
+        if (eggModel !== undefined) model.push(eggModel);
+      }
       if (element.kind === 'minecraft:sounds') {
         for (const key of soundEventKeys(element.data)) soundEvent.add(`${namespace.name}:${key}`);
       }

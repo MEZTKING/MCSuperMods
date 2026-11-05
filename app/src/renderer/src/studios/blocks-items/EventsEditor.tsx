@@ -1,7 +1,8 @@
 /**
- * The events editor shared by the Block and Item Studios (B97): add, rename and remove
- * events, and edit each event's ordered action list (add, remove, reorder, change type, and
- * the fields of the six format v1 actions with their ADR 0025 D4 defaults).
+ * The events editor shared by the Block, Item and Entity Studios (B97, B118): add, rename and
+ * remove events, and edit each event's ordered action list (add, remove, reorder, change type,
+ * and the fields of the six format v1 actions with their ADR 0025 D4 defaults; entity events
+ * also offer `play_animation`, ADR 0028).
  *
  * Renaming rewrites the references in trigger components and `trigger_event` actions in one
  * edit (one undo step); removing an event leaves its references, which the
@@ -12,7 +13,7 @@
 
 import type { Element, Json } from '@msm/core';
 import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
-import { useId, useState } from 'react';
+import { type ReactNode, useId, useState } from 'react';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import {
   type ChangeOptions,
@@ -27,9 +28,10 @@ import { isJsonObject } from '../../forms/pointer';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import { Section } from '../worldgen/parts';
 import {
-  ACTIONS,
   type ActionField,
+  type ActionSpec,
   actionSpec,
+  actionsFor,
   asObject,
   eventActions,
   eventNames,
@@ -46,6 +48,10 @@ export interface EventsEditorProps {
   problems: readonly FormProblem[];
   suggest(registry: string, prefix: string): string[];
   onChange(pointer: string, value: Json | undefined, options?: ChangeOptions): void;
+  /** Animation names `play_animation` offers (the entity's animation set). */
+  animations?: readonly string[];
+  /** Trigger fields shown above the events (for example an entity's On hurt). */
+  triggers?: ReactNode;
 }
 
 const offsetAxes = ['X', 'Y', 'Z'] as const;
@@ -56,6 +62,7 @@ function ActionFieldEditor(props: {
   pointer: string;
   name: string;
   events: readonly string[];
+  animations: readonly string[];
   suggest(registry: string, prefix: string): string[];
   set(key: string, value: Json | undefined, coalesce?: string): void;
 }) {
@@ -139,6 +146,16 @@ function ActionFieldEditor(props: {
           onChange={(next) => set(field.key, next ?? '')}
         />
       );
+    case 'animation':
+      return (
+        <SelectField
+          label={label}
+          value={typeof value === 'string' && value !== '' ? value : undefined}
+          choices={props.animations}
+          emptyLabel="(choose an animation)"
+          onChange={(next) => set(field.key, next ?? '')}
+        />
+      );
   }
 }
 
@@ -147,13 +164,15 @@ function EventEditor(props: {
   data: Json;
   kind: string;
   events: readonly string[];
+  actions: readonly ActionSpec[];
+  animations: readonly string[];
   problems: readonly FormProblem[];
   suggest(registry: string, prefix: string): string[];
   onChange: EventsEditorProps['onChange'];
 }) {
   const { name, data, events, problems, onChange } = props;
   const [error, setError] = useState<string | null>(null);
-  const [addType, setAddType] = useState<string>(ACTIONS[0]?.type ?? 'play_sound');
+  const [addType, setAddType] = useState<string>(props.actions[0]?.type ?? 'play_sound');
   const eventPointer = pointerOf(['events', name]);
   const actionsPointer = pointerOf(['events', name, 'actions']);
   const actions = eventActions(data, name);
@@ -207,7 +226,7 @@ function EventEditor(props: {
           const action = asObject(raw);
           const pointer = `${actionsPointer}/${index}`;
           const actionName = `${name} action ${index + 1}`;
-          const spec = actionSpec(action.type);
+          const spec = actionSpec(action.type, props.actions);
           const set = (key: string, value: Json | undefined, coalesce?: string) => {
             const options = coalesce === undefined ? undefined : { coalesce };
             if (value === undefined) {
@@ -222,7 +241,7 @@ function EventEditor(props: {
                 <SelectField
                   label={`${actionName} type`}
                   value={typeof action.type === 'string' ? action.type : undefined}
-                  choices={ACTIONS.map((entry) => entry.type)}
+                  choices={props.actions.map((entry) => entry.type)}
                   onChange={(type) => {
                     if (type === undefined || type === action.type) return;
                     onChange(pointer, newAction(type, events, name));
@@ -236,6 +255,7 @@ function EventEditor(props: {
                     pointer={pointer}
                     name={actionName}
                     events={events}
+                    animations={props.animations}
                     suggest={props.suggest}
                     set={set}
                   />
@@ -285,7 +305,7 @@ function EventEditor(props: {
         <SelectField
           label={`New action type for ${name}`}
           value={addType}
-          choices={ACTIONS.map((entry) => entry.type)}
+          choices={props.actions.map((entry) => entry.type)}
           onChange={(type) => {
             if (type !== undefined) setAddType(type);
           }}
@@ -310,9 +330,17 @@ function EventEditor(props: {
   );
 }
 
-/** The events of a block or item and their actions. */
-export function EventsEditor({ element, problems, suggest, onChange }: EventsEditorProps) {
+/** The events of a block, item or entity and their actions. */
+export function EventsEditor({
+  element,
+  problems,
+  suggest,
+  onChange,
+  animations = [],
+  triggers,
+}: EventsEditorProps) {
   const events = eventNames(element.data);
+  const actions = actionsFor(element.kind);
   const [draft, setDraft] = useState('');
   const inputId = useId();
   const proposed = draft.trim();
@@ -333,6 +361,7 @@ export function EventsEditor({ element, problems, suggest, onChange }: EventsEdi
         Events run their actions in order on the server. Triggers and "Trigger event" actions pick
         events from this list.
       </p>
+      {triggers}
       {events.length === 0 && <p className="text-muted text-xs">No events.</p>}
       <ul className="flex flex-col gap-2">
         {events.map((name) => (
@@ -342,6 +371,8 @@ export function EventsEditor({ element, problems, suggest, onChange }: EventsEdi
             data={element.data}
             kind={element.kind}
             events={events}
+            actions={actions}
+            animations={animations}
             problems={problems}
             suggest={suggest}
             onChange={onChange}

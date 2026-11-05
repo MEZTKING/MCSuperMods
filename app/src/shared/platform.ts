@@ -342,6 +342,13 @@ export interface PlatformAdapter {
      * `engine-mod/build/libs/`. `null` when there is none.
      */
     runtimeJar(): Promise<Uint8Array | null>;
+    /**
+     * The GeckoLib jar the Fabric content jar nests for projects with entities (ADR 0029 D4),
+     * for the target named by `targetId`: the cached copy in the download cache, or downloaded
+     * once from the target's `geckolib.url` and checked against its SHA-512. `null` when it is
+     * not cached and cannot be downloaded (offline, bad hash, no GeckoLib facts).
+     */
+    geckolibJar(targetId: string): Promise<Uint8Array | null>;
   };
   /**
    * Test in Minecraft (ADR 0026 D5): installs the content jar and Fabric API into a Fabric game

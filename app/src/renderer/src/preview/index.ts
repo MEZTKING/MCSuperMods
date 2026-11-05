@@ -9,7 +9,18 @@ export {
   type TextureAnimation,
   TICK_MS,
 } from './animation';
-export type { AnimatedTexture, PreviewKind, PreviewSubject } from './asset-source';
+export type {
+  AnimatedTexture,
+  CanvasPreviewKind,
+  PreviewKind,
+  PreviewSubject,
+} from './asset-source';
 export { FALLBACK_MODELS, FALLBACK_NAMESPACE } from './fallback-models';
+export {
+  type GeoPreviewKind,
+  type GeoScene,
+  isGeoPreviewKind,
+  resolveGeoScene,
+} from './geo/subject';
 export type { ResourceFolders, VanillaAssetReader } from './model-chain';
 export { isPreviewKind, PreviewPanel, type PreviewPanelProps } from './PreviewPanel';

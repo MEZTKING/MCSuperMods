@@ -39,7 +39,12 @@ export function stubPlatformServices(): Pick<
     },
     thumbnails: { get: unavailable },
     mcfunction: { check: unavailable, complete: unavailable },
-    exports: { pickFolder: unavailable, writeFiles: unavailable, runtimeJar: unavailable },
+    exports: {
+      pickFolder: unavailable,
+      writeFiles: unavailable,
+      runtimeJar: unavailable,
+      geckolibJar: unavailable,
+    },
     testInMinecraft: {
       status: unavailable,
       createInstance: unavailable,

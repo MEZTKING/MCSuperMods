@@ -317,6 +317,10 @@ const samples: Record<
     request: [undefined, { path: '/tmp/msm_runtime.jar' }],
     response: [null, '/tmp/msm_runtime.jar'],
   },
+  [InvokeChannels.exportsGeckolibJar]: {
+    request: [{ targetId: 'mc-26.3' }, { targetId: '' }],
+    response: [bytes, '/tmp/geckolib.jar'],
+  },
   [InvokeChannels.testInMinecraftStatus]: {
     request: [{ targetId: 'mc-26.3' }, { targetId: '' }],
     response: [testStatus, { ...testStatus, mode: 'maybe' }],

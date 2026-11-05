@@ -28,7 +28,7 @@ public class MsmSpikeGameTest {
     @GameTest
     public void definitionsAreRegistered(GameTestHelper helper) {
         // msm_test/ ships two deliberately broken files (MsmRuntimeGameTest); nothing else may fail,
-        // except the missing-GeckoLib error of a run with -PwithoutGeckolib (MsmEntitySpikeGameTest).
+        // except the missing-GeckoLib errors of a run with -PwithoutGeckolib (MsmEntityGameTest).
         helper.assertTrue(MsmRuntime.report().errors().stream()
                 .allMatch(e -> e.contains("partly_broken.json") || e.contains("future_format.json")
                         || e.contains("needs the mod 'geckolib'")),

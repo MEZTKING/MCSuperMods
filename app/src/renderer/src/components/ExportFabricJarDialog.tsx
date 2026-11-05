@@ -65,6 +65,11 @@ export function ExporterOptionFields({ options, values, onChange }: ExporterOpti
 export interface ExportFabricJarDialogProps {
   /** The content-jar exporter's declared options. */
   options: readonly ExporterOption[];
+  /**
+   * Whether the project has entities: the jar then also nests GeckoLib, which needs a one-off
+   * download, and the dialog says so.
+   */
+  hasEntities?: boolean;
   /** Runs the export with the chosen values (every declared option is present). */
   onExport(values: Record<string, Json>): void;
   onClose(): void;
@@ -74,7 +79,27 @@ export interface ExportFabricJarDialogProps {
 export const FABRIC_JAR_DIALOG_NOTE =
   'The jar holds the project’s blocks, items, resources and data. Players need Fabric Loader and Fabric API.';
 
-export function ExportFabricJarDialog({ options, onExport, onClose }: ExportFabricJarDialogProps) {
+/** Shown when the project has entities (ADR 0029 D4). */
+export const FABRIC_JAR_GECKOLIB_NOTE =
+  'This project has entities, so the jar also nests GeckoLib, which draws their models and animations. MCSuperMods downloads GeckoLib once from Modrinth and keeps it for later exports.';
+
+/** The problem code of a GeckoLib jar that is neither cached nor downloadable. */
+export const GECKOLIB_MISSING_CODE = 'export.geckolib-missing';
+
+/** What the host says when an export is blocked by {@link GECKOLIB_MISSING_CODE}. */
+export const GECKOLIB_DOWNLOAD_MESSAGE =
+  'GeckoLib could not be downloaded. A mod with entities needs a one-off download of GeckoLib: connect to the internet and try again, or choose "Separate runtime and GeckoLib (for modpacks)".';
+
+/** What Test in Minecraft says when it is blocked by {@link GECKOLIB_MISSING_CODE}. */
+export const GECKOLIB_TEST_DOWNLOAD_MESSAGE =
+  'GeckoLib could not be downloaded. Testing a mod with entities needs a one-off download of GeckoLib: connect to the internet and try again.';
+
+export function ExportFabricJarDialog({
+  options,
+  hasEntities,
+  onExport,
+  onClose,
+}: ExportFabricJarDialogProps) {
   const [values, setValues] = useState<Record<string, Json>>(() => defaultOptionValues(options));
   return (
     <Modal
@@ -87,6 +112,11 @@ export function ExportFabricJarDialog({ options, onExport, onClose }: ExportFabr
       onSubmit={() => onExport({ ...defaultOptionValues(options), ...values })}
     >
       <p className="text-muted text-sm">{FABRIC_JAR_DIALOG_NOTE}</p>
+      {hasEntities === true && (
+        <p className="text-muted text-sm" data-testid="fabric-jar-geckolib-note">
+          {FABRIC_JAR_GECKOLIB_NOTE}
+        </p>
+      )}
       {options.length > 0 && (
         <ExporterOptionFields
           options={options}

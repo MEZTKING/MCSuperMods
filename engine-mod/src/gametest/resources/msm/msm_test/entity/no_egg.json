@@ -1,0 +1,15 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  },
+  "spawn_egg": false
+}

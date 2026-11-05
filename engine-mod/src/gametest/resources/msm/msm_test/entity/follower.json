@@ -1,0 +1,35 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "entities": [
+            "minecraft:player"
+          ],
+          "range": 16.0,
+          "speed": 1.2,
+          "stop_distance": 2.0,
+          "type": "follow"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "animations": "msm_test:entity/golem_animations",
+      "attack": "attack",
+      "idle": "idle",
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem",
+      "walk": "walk"
+    },
+    "msm:movement": {
+      "speed": 0.3
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  },
+  "spawn_egg": false
+}

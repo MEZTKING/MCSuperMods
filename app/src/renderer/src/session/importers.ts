@@ -3,11 +3,14 @@
  * plugins' importers, chosen by file extension, plus target-aware entry points for importers
  * whose result depends on the target. `Importer.import` receives no target, so for the
  * structure importers the host calls `@msm/plugin-structures`' public `importStructureFile`
- * with the target's data version (the `structures.newer-data-version` check).
+ * with the target's data version (the `structures.newer-data-version` check). Host importers
+ * (ADR 0029 D3: the Blockbench importer from `@msm/interop`, which plugins may not depend on)
+ * are listed after the plugins' importers under {@link HOST_IMPORTER_PLUGIN_ID}.
  *
  * @packageDocumentation
  */
 
+import { blockbenchImporter } from '@msm/interop';
 import type { ImportedFile, Importer, ImportResult, Plugin, Target } from '@msm/plugin-api';
 import {
   importStructureFile,
@@ -42,6 +45,15 @@ export const BUILT_IN_TARGET_IMPORTERS: TargetImporters = new Map<Importer, Targ
   ],
 ]);
 
+/** The `pluginId` of importers the host supplies itself rather than a plugin. */
+export const HOST_IMPORTER_PLUGIN_ID = 'host';
+
+/** The id of the Blockbench importer (`.bbmodel`, `.geo.json`, `.animation.json`). */
+export const BLOCKBENCH_IMPORTER_ID = blockbenchImporter.id;
+
+/** The built-in host importers: the Blockbench importer (ADR 0029 D3). */
+export const BUILT_IN_HOST_IMPORTERS: readonly Importer[] = Object.freeze([blockbenchImporter]);
+
 /** One registered importer, ready to run. */
 export interface RegisteredImporter {
   pluginId: string;
@@ -51,31 +63,41 @@ export interface RegisteredImporter {
 }
 
 /**
- * Every importer of `plugins`, in plugin order. The first importer with a given id wins.
+ * Every importer of `plugins`, in plugin order, then the host importers. The first importer
+ * with a given id wins.
  *
  * @param plugins - The registered plugins.
  * @param targetImporters - Target-aware replacements.
+ * @param hostImporters - Importers the host supplies (pluginId {@link HOST_IMPORTER_PLUGIN_ID}).
  */
 export function collectImporters(
   plugins: readonly Plugin[],
   targetImporters: TargetImporters = BUILT_IN_TARGET_IMPORTERS,
+  hostImporters: readonly Importer[] = BUILT_IN_HOST_IMPORTERS,
 ): RegisteredImporter[] {
   const seen = new Set<string>();
   const out: RegisteredImporter[] = [];
+  const add = (pluginId: string, importer: Importer): void => {
+    if (seen.has(importer.id)) return;
+    seen.add(importer.id);
+    const aware = targetImporters.get(importer);
+    out.push({
+      pluginId,
+      importer,
+      run: (file, namespace, target) =>
+        aware === undefined ? importer.import(file, namespace) : aware(file, namespace, target),
+    });
+  };
   for (const plugin of plugins) {
-    for (const importer of plugin.contributes.importers ?? []) {
-      if (seen.has(importer.id)) continue;
-      seen.add(importer.id);
-      const aware = targetImporters.get(importer);
-      out.push({
-        pluginId: plugin.id,
-        importer,
-        run: (file, namespace, target) =>
-          aware === undefined ? importer.import(file, namespace) : aware(file, namespace, target),
-      });
-    }
+    for (const importer of plugin.contributes.importers ?? []) add(plugin.id, importer);
   }
+  for (const importer of hostImporters) add(HOST_IMPORTER_PLUGIN_ID, importer);
   return out;
+}
+
+/** Whether `entry` is the Blockbench importer. */
+export function isBlockbenchImporter(entry: RegisteredImporter): boolean {
+  return entry.importer.id === BLOCKBENCH_IMPORTER_ID;
 }
 
 /** The lower-case extension of a file name without the dot, or `''`. */

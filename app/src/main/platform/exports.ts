@@ -22,7 +22,7 @@ function isInside(parent: string, child: string): boolean {
 }
 
 /** The main-process exports service. */
-export type ExportsService = Omit<PlatformAdapter['exports'], 'runtimeJar'>;
+export type ExportsService = Omit<PlatformAdapter['exports'], 'runtimeJar' | 'geckolibJar'>;
 
 /** What the service needs from its host. */
 export interface ExportsServiceDeps {

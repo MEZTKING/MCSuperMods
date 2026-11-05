@@ -132,6 +132,8 @@ interface Harness {
   written: string[];
   /** What `exports.runtimeJar()` resolves to (default `null`: no runtime jar). */
   runtimeJar: Uint8Array | null;
+  /** What `exports.geckolibJar()` resolves to (default `null`: not cached, offline). */
+  geckolibJar: Uint8Array | null;
   /** Every location `listLocations` reports. */
   locations: GameLocationView[];
   /** The id of the install target; `null` makes status report no target at all. */
@@ -192,6 +194,7 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
     },
     saved: [],
     runtimeJar: null,
+    geckolibJar: null,
     worlds: [{ dir: 'Survival', name: 'Survival', lastModified: '2026-01-01T00:00:00.000Z' }],
     installs: [],
     picks: 0,
@@ -316,6 +319,7 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
         return { paths: files.map((file) => `${folder}/${file.name}`) };
       },
       runtimeJar: async () => harness.runtimeJar,
+      geckolibJar: async () => harness.geckolibJar,
     },
     testInMinecraft: {
       status: async () => harness.testStatus,

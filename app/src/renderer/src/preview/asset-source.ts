@@ -32,6 +32,7 @@ import {
   parseTextureAnimation,
   type TextureAnimation,
 } from './animation';
+import type { GeoPreviewKind } from './geo/subject';
 import {
   collectBlockDefinitionModelRefs,
   collectItemModelRefs,
@@ -50,8 +51,14 @@ import {
 } from './model-chain';
 import { structureFromTemplate, type TemplateStructure } from './structure';
 
-/** The preview kinds the WebGL canvas renders. */
-export type CanvasPreviewKind = 'model' | 'block_definition' | 'item_definition' | 'structure';
+/** The preview kinds deepslate renders (`PreviewCanvas`). */
+export type DeepslatePreviewKind = 'model' | 'block_definition' | 'item_definition' | 'structure';
+
+/**
+ * The preview kinds the WebGL canvases render: deepslate's, and the geo kinds (`geo_model`,
+ * `animation`, `entity`) that the app's own renderer in `geo/` draws (ADR 0029 D5).
+ */
+export type CanvasPreviewKind = DeepslatePreviewKind | GeoPreviewKind;
 
 /**
  * The host hints on an element kind (`ElementKind.previewKind`) that the preview understands:
@@ -257,6 +264,13 @@ export async function createPreviewResources(
     ...(options.fallbackModels === undefined ? {} : { fallbackModels: options.fallbackModels }),
   };
   const lookup = createModelLookup(lookupOptions);
+  if (
+    subject.previewKind === 'geo_model' ||
+    subject.previewKind === 'animation' ||
+    subject.previewKind === 'entity'
+  ) {
+    throw new Error(`${subject.previewKind} subjects are drawn by the geo preview.`);
+  }
   const subjectId = normaliseId(subject.id);
   const data = isObject(subject.data) ? subject.data : {};
 

@@ -1,0 +1,18 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "animations": "msm_test:entity/golem_animations",
+      "attack": "attack",
+      "idle": "idle",
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem",
+      "walk": "walk"
+    }
+  },
+  "format": 2,
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  }
+}

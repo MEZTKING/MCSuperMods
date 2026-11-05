@@ -495,6 +495,10 @@ export const ipcContract = {
     response: z.object({ paths: z.array(absolutePath) }).strict(),
   },
   [InvokeChannels.exportsRuntimeJar]: { request: noRequest, response: bytes.nullable() },
+  [InvokeChannels.exportsGeckolibJar]: {
+    request: z.object({ targetId }).strict(),
+    response: bytes.nullable(),
+  },
   [InvokeChannels.testInMinecraftStatus]: {
     request: z.object({ targetId }).strict(),
     response: testInMinecraftStatus,

@@ -20,6 +20,8 @@ type JsonObject = { [key: string]: Json };
 /** The kind ids the Studios edit. */
 export const BLOCK_KIND = 'msm:block';
 export const ITEM_KIND = 'msm:item';
+/** The kind id of custom entities (the Entity Studio, ADR 0028), which share the events editor. */
+export const ENTITY_KIND = 'msm:entity';
 /** The kind id a model id may name in the project (go to definition). */
 export const MODEL_KIND = 'minecraft:model';
 
@@ -39,9 +41,10 @@ export interface ActionField {
   label: string;
   /**
    * `id`: a registry id (with {@link registry}); `text`: free text; `int`/`float`: a number;
-   * `offset`: three integers; `event`: an event of the same element.
+   * `offset`: three integers; `event`: an event of the same element; `animation`: an
+   * animation name offered by the host (the entity's animation set).
    */
-  type: 'id' | 'text' | 'int' | 'float' | 'offset' | 'event';
+  type: 'id' | 'text' | 'int' | 'float' | 'offset' | 'event' | 'animation';
   /** The registry suggestions come from, for `id` fields. */
   registry?: string;
   /** Whether the field must be set. */
@@ -114,9 +117,33 @@ export const ACTIONS: readonly ActionSpec[] = Object.freeze([
   },
 ] satisfies ActionSpec[]);
 
-/** The spec of action `type`, or `undefined` for an unknown type. */
-export function actionSpec(type: Json | undefined): ActionSpec | undefined {
-  return ACTIONS.find((spec) => spec.type === type);
+/** `play_animation` (ADR 0028), which only entity events may use. */
+export const PLAY_ANIMATION_ACTION: ActionSpec = Object.freeze({
+  type: 'play_animation',
+  label: 'Play animation',
+  fields: [
+    { key: 'animation', label: 'Animation', type: 'animation', required: true },
+    { key: 'controller', label: 'Controller', type: 'text', required: false },
+  ],
+} satisfies ActionSpec);
+
+/** The actions entity events offer: the six of format v1 plus `play_animation`. */
+export const ENTITY_ACTIONS: readonly ActionSpec[] = Object.freeze([
+  ...ACTIONS,
+  PLAY_ANIMATION_ACTION,
+]);
+
+/** The actions an element of `kind` offers. */
+export function actionsFor(kind: string): readonly ActionSpec[] {
+  return kind === ENTITY_KIND ? ENTITY_ACTIONS : ACTIONS;
+}
+
+/** The spec of action `type` among `actions`, or `undefined` for an unknown type. */
+export function actionSpec(
+  type: Json | undefined,
+  actions: readonly ActionSpec[] = ENTITY_ACTIONS,
+): ActionSpec | undefined {
+  return actions.find((spec) => spec.type === type);
 }
 
 /**
@@ -156,6 +183,12 @@ export const EVENT_FIELDS: Readonly<Record<string, readonly (readonly [string, s
       ['msm:redstone', 'on_unpowered'],
     ],
     [ITEM_KIND]: [['msm:on_use', 'event']],
+    [ENTITY_KIND]: [
+      ['msm:on_hurt', 'event'],
+      ['msm:on_death', 'event'],
+      ['msm:on_interact', 'event'],
+      ['msm:attack', 'on_attack'],
+    ],
   });
 
 /**

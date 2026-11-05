@@ -23,6 +23,7 @@ import type {
 import { createExportsService } from './exports';
 import { createLocationResolver } from './locations';
 import { createMcfunctionBroker } from './mcfunction';
+import { createGeckolibJarService } from './geckolib-jar';
 import { createMinecraftService, type MinecraftService } from './minecraft';
 import { type RuntimeJarLocation, readRuntimeJar } from './runtime-jar';
 import { createScopedFileSystem, isWithin, type ScopedFileSystem } from './scoped-fs';
@@ -117,7 +118,8 @@ export interface NodePlatformDeps {
   /**
    * Test in Minecraft (ADR 0026 D5): the download cache folder (default
    * `<msmHome>/cache/downloads`), extra host facts for finding launcher programs, and test
-   * doubles for the downloader and the process spawn.
+   * doubles for the downloader and the process spawn. The GeckoLib jar (ADR 0029 D4) uses the
+   * same cache folder and downloader.
    */
   testInMinecraft?: {
     cacheDir?: string;
@@ -191,12 +193,18 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
 
   const targets = createTargetsService();
   const testOptions = deps.testInMinecraft ?? {};
+  const downloadsDir = testOptions.cacheDir ?? join(deps.msmHome, 'cache', 'downloads');
+  const geckolib = createGeckolibJarService({
+    fs: installFs,
+    cacheDir: downloadsDir,
+    ...(testOptions.download === undefined ? {} : { download: testOptions.download }),
+  });
   const testInMinecraft = createTestInMinecraftService({
     fs: installFs,
     env: { ...deps.installEnv, ...testOptions.env },
     locations,
     settings,
-    cacheDir: testOptions.cacheDir ?? join(deps.msmHome, 'cache', 'downloads'),
+    cacheDir: downloadsDir,
     ...(testOptions.download === undefined ? {} : { download: testOptions.download }),
     ...(testOptions.spawnLauncher === undefined
       ? {}
@@ -341,6 +349,7 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
       }),
       runtimeJar: async () =>
         deps.runtimeJar === undefined ? null : readRuntimeJar(deps.runtimeJar),
+      geckolibJar: (targetId) => geckolib.jar(targetId),
     },
     testInMinecraft,
     thumbnails: createThumbnailService({ projectFs: active, resizePng: deps.resizePng }),

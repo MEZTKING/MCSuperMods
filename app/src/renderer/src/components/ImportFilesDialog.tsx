@@ -14,6 +14,14 @@ export function extensionList(extensions: readonly string[]): string {
   return extensions.map((extension) => `.${extension}`).join(', ');
 }
 
+/** The explanation the Blockbench import dialog shows. */
+export const BLOCKBENCH_IMPORT_NOTE =
+  'Only Blockbench projects (.bbmodel) and Blockbench’s own exports (.geo.json and .animation.json) are accepted; other .json files are refused. A .bbmodel becomes a geo model, an animation set when it has animations, and its embedded textures under textures/entity/. Elements that already exist are skipped; one undo removes the whole import.';
+
+/** The explanation shown when no {@link ImportFilesDialog} `note` is given. */
+export const DEFAULT_IMPORT_NOTE =
+  'Each file becomes a new element named after the file. Files whose element already exists are skipped; one undo removes the whole import.';
+
 /**
  * Asks which namespace imported files go into and lists the importers that will read them;
  * the host then shows the file picker (filters built from the importers) and imports.
@@ -24,6 +32,8 @@ export function ImportFilesDialog(props: {
   namespaces: readonly string[];
   initialNamespace?: string | undefined;
   importers: readonly ImportFilesDialogImporter[];
+  /** What the import does and which files it accepts; a generic explanation when absent. */
+  note?: string | undefined;
   /** Picks files and imports them; resolves to an error message, or `null` on success. */
   onImport(namespace: string): Promise<string | null>;
   onCancel(): void;
@@ -93,9 +103,8 @@ export function ImportFilesDialog(props: {
           ))}
         </ul>
       )}
-      <p className="text-xs text-muted">
-        Each file becomes a new element named after the file. Files whose element already exists are
-        skipped; one undo removes the whole import.
+      <p className="text-xs text-muted" data-testid="import-files-note">
+        {props.note ?? DEFAULT_IMPORT_NOTE}
       </p>
     </Modal>
   );

@@ -558,9 +558,13 @@ export class ProjectSession {
       dedupeById(this.#plugins.flatMap((plugin) => plugin.contributes.exporters ?? [])),
     );
     // The runtime version defaults to `meta.msmVersion`, the app's version (ADR 0026 D4);
-    // main finds the jar (packaged resources or `engine-mod/build/libs/`).
+    // main finds the jar (packaged resources or `engine-mod/build/libs/`). GeckoLib (ADR 0029
+    // D4) is asked for only when the project has entities and nesting is on; main serves it from
+    // its download cache or downloads it once for the open project's target.
     this.#contentJarExporter = createFabricContentJarExporter({
       loadRuntimeJar: async () => (await platform.exports.runtimeJar()) ?? undefined,
+      loadGeckolibJar: async () =>
+        (await platform.exports.geckolibJar(this.target.id)) ?? undefined,
     });
   }
 

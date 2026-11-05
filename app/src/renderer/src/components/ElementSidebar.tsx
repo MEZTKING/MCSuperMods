@@ -35,9 +35,22 @@ export const WORLDGEN_GROUP = 'Worldgen';
 /** The heading structure templates are grouped under. */
 export const STRUCTURES_GROUP = 'Structures';
 
+/** The heading custom entities (`msm:entity`) are grouped under. */
+export const ENTITIES_GROUP = 'Entities';
+
+/** The heading geo models and animation sets (`msm:geo_model`, `msm:animation`) are grouped under. */
+export const MODELS_ANIM_GROUP = 'Models and animations';
+
 const WORLDGEN_KIND_PREFIX = 'minecraft:worldgen/';
 const DIMENSION_KIND = 'minecraft:dimension';
 const STRUCTURE_TEMPLATE_KIND = 'minecraft:structure_template';
+const ENTITY_KIND = 'msm:entity';
+
+/** The label shown before the name in the {@link MODELS_ANIM_GROUP} group, per kind. */
+const MODELS_ANIM_LABELS: Readonly<Record<string, string>> = {
+  'msm:geo_model': 'model',
+  'msm:animation': 'animation',
+};
 
 /** The registry of a tag kind (`item` for `minecraft:tag/item`), or `undefined`. */
 export function tagRegistryOf(kind: string): string | undefined {
@@ -59,6 +72,8 @@ export function groupOf(kind: string): string {
   if (tagRegistryOf(kind) !== undefined) return TAGS_GROUP;
   if (worldgenRegistryOf(kind) !== undefined) return WORLDGEN_GROUP;
   if (kind === STRUCTURE_TEMPLATE_KIND) return STRUCTURES_GROUP;
+  if (kind === ENTITY_KIND) return ENTITIES_GROUP;
+  if (MODELS_ANIM_LABELS[kind] !== undefined) return MODELS_ANIM_GROUP;
   return kind;
 }
 
@@ -66,6 +81,7 @@ export function groupOf(kind: string): string {
 function rowRegistry(group: string, kind: string): string | undefined {
   if (group === TAGS_GROUP) return tagRegistryOf(kind);
   if (group === WORLDGEN_GROUP) return worldgenRegistryOf(kind);
+  if (group === MODELS_ANIM_GROUP) return MODELS_ANIM_LABELS[kind];
   return undefined;
 }
 
@@ -73,8 +89,9 @@ function rowRegistry(group: string, kind: string): string | undefined {
  * Groups a namespace's elements by kind, kinds and elements in id order. Every tag kind
  * (`minecraft:tag/<registry>`) goes into one {@link TAGS_GROUP} group, every worldgen kind
  * (`minecraft:worldgen/<registry>` and `minecraft:dimension`) into one
- * {@link WORLDGEN_GROUP} group, and structure templates into {@link STRUCTURES_GROUP}; shared
- * groups are ordered by kind and then id.
+ * {@link WORLDGEN_GROUP} group, structure templates into {@link STRUCTURES_GROUP}, custom
+ * entities into {@link ENTITIES_GROUP} and geo models and animation sets into
+ * {@link MODELS_ANIM_GROUP}; shared groups are ordered by kind and then id.
  */
 export function groupByKind(namespace: Namespace): [kind: string, elements: Element[]][] {
   const groups = new Map<string, Element[]>();
@@ -103,7 +120,7 @@ const emptyClass = 'px-1 py-0.5 text-muted';
 function ElementRow(props: {
   element: Element;
   selected: boolean;
-  /** The registry shown before the name in the "Tags" and "Worldgen" groups. */
+  /** The label shown before the name in the "Tags", "Worldgen" and "Models and animations" groups. */
   tagRegistry?: string | undefined;
   onSelect(id: ResourceLocation): void;
   onRemove(id: ResourceLocation): void;

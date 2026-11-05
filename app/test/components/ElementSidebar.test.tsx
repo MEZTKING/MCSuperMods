@@ -197,3 +197,33 @@ describe('ElementSidebar worldgen and structures', () => {
     );
   });
 });
+
+describe('ElementSidebar entities and models', () => {
+  it('groups entities under Entities, geo models and animations under Models and animations', () => {
+    const project = sampleProject();
+    const demo = project.namespaces[0];
+    if (demo === undefined) throw new Error('no namespace');
+    demo.elements.push(
+      element('demo:gloom', 'msm:entity'),
+      element('demo:entity/gloom', 'msm:geo_model'),
+      element('demo:entity/gloom_animations', 'msm:animation'),
+    );
+    render(
+      <ElementSidebar project={project} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
+    );
+    const region = screen.getByRole('region', { name: 'Namespace demo' });
+    const headings = within(region)
+      .getAllByRole('heading', { level: 3 })
+      .map((heading) => heading.textContent);
+    expect(headings).toEqual(expect.arrayContaining(['Entities', 'Models and animations']));
+    expect(headings.filter((text) => text?.startsWith('msm:'))).toEqual([]);
+    const entities = within(region).getByRole('region', { name: 'demo Entities' });
+    expect(within(entities).getByRole('button', { name: 'demo:gloom' }).textContent).toBe('gloom');
+    const models = within(region).getByRole('region', { name: 'demo Models and animations' });
+    expect(
+      within(models)
+        .getAllByRole('button', { name: /^demo:/ })
+        .map((row) => row.textContent),
+    ).toEqual(['animationentity/gloom_animations', 'modelentity/gloom']);
+  });
+});

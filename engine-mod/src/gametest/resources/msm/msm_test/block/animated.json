@@ -1,0 +1,23 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "msm_test:wave"
+    }
+  },
+  "events": {
+    "msm_test:wave": {
+      "actions": [
+        {
+          "animation": "wave",
+          "type": "play_animation"
+        },
+        {
+          "count": 1,
+          "item": "minecraft:stick",
+          "type": "give_item"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

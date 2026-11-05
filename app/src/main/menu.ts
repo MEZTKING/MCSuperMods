@@ -91,6 +91,7 @@ export function installMenu(recent: readonly RecentProject[] = []): void {
         { type: 'separator' },
         { label: 'Import Assets…', click: () => send('importAssets') },
         { label: 'Import Structure…', click: () => send('importStructure') },
+        { label: 'Import Blockbench Model…', click: () => send('importBlockbench') },
         { type: 'separator' },
         { label: 'Export Resource Pack…', click: () => send('exportResourcePack') },
         { label: 'Export Data Pack…', click: () => send('exportDataPack') },

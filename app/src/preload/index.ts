@@ -107,6 +107,7 @@ const bridge: MsmBridge = {
         files: files.map((file) => ({ name: file.name, data: file.data })),
       }),
     runtimeJar: () => ipcRenderer.invoke(InvokeChannels.exportsRuntimeJar),
+    geckolibJar: (targetId) => ipcRenderer.invoke(InvokeChannels.exportsGeckolibJar, { targetId }),
   },
   testInMinecraft: {
     status: (targetId) => ipcRenderer.invoke(InvokeChannels.testInMinecraftStatus, { targetId }),

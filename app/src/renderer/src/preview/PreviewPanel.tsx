@@ -6,12 +6,17 @@
  *
  * Structure templates render in the same WebGL canvas. Dimensions and world presets show the
  * climate map instead, a 2D canvas that needs neither WebGL nor vanilla assets (ADR 0023).
+ *
+ * Geo models, animation sets and entities render in the app's own WebGL renderer (`geo/`,
+ * ADR 0029 D5), a separate lazy chunk that needs no vanilla assets. The subject is resolved
+ * here (cheap, no gl-matrix), so a missing model reference shows a message without WebGL.
  */
 
 import type { Element, Project } from '@msm/plugin-api';
 import { lazy, Suspense, useMemo, useState } from 'react';
 import { Button } from '../components/ui/Button';
 import type { PreviewKind, PreviewSubject } from './asset-source';
+import { isGeoPreviewKind, resolveGeoScene } from './geo/subject';
 import {
   createVanillaJsonCache,
   type ResourceFolders,
@@ -21,6 +26,7 @@ import { hasWebGL } from './webgl';
 
 const PreviewCanvas = lazy(() => import('./PreviewCanvas'));
 const ClimateMap = lazy(() => import('./ClimateMap'));
+const GeoCanvas = lazy(() => import('./geo/GeoCanvas'));
 
 const PREVIEW_KINDS: readonly string[] = [
   'model',
@@ -28,6 +34,9 @@ const PREVIEW_KINDS: readonly string[] = [
   'item_definition',
   'structure',
   'climate_map',
+  'geo_model',
+  'animation',
+  'entity',
 ];
 
 /** True when the panel can preview an element whose kind declares `previewKind`. */
@@ -75,6 +84,37 @@ export function PreviewPanel(props: PreviewPanelProps) {
     [element, kind],
   );
 
+  if (subject !== null && isGeoPreviewKind(subject.previewKind)) {
+    const scene = resolveGeoScene(project, {
+      previewKind: subject.previewKind,
+      id: subject.id,
+      data: subject.data,
+    });
+    return (
+      <section aria-label="Preview" className="flex flex-col gap-3">
+        {!scene.ok ? (
+          <p role="status" data-testid="preview-geo-message" className="text-sm text-muted">
+            {scene.message}
+          </p>
+        ) : !webgl ? (
+          <p role="status" className="text-sm text-muted">
+            Preview unavailable: WebGL is disabled.
+          </p>
+        ) : (
+          <Suspense fallback={<p className="text-sm text-muted">Loading preview…</p>}>
+            <GeoCanvas
+              scene={scene}
+              subjectId={subject.id}
+              folders={folders}
+              readProjectAsset={props.readProjectAsset}
+              onWebGLUnavailable={() => setWebglLost(true)}
+            />
+          </Suspense>
+        )}
+      </section>
+    );
+  }
+
   if (element !== null && kind === 'climate_map') {
     return (
       <section aria-label="Preview" className="flex flex-col gap-3">
@@ -98,8 +138,8 @@ export function PreviewPanel(props: PreviewPanelProps) {
       ) : null}
       {subject === null ? (
         <p className="text-sm text-muted">
-          Select a model, blockstate, item definition, structure template or dimension to preview
-          it.
+          Select a model, blockstate, item definition, structure template, dimension, geo model,
+          animation set or entity to preview it.
         </p>
       ) : !webgl ? (
         <p role="status" className="text-sm text-muted">

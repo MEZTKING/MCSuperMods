@@ -25,7 +25,12 @@ import { ConfirmDialog } from './components/ConfirmDialog';
 import { EditorArea } from './components/EditorArea';
 import { ElementSidebar } from './components/ElementSidebar';
 import { ExamplesDialog } from './components/ExamplesDialog';
-import { ExportFabricJarDialog } from './components/ExportFabricJarDialog';
+import {
+  ExportFabricJarDialog,
+  GECKOLIB_DOWNLOAD_MESSAGE,
+  GECKOLIB_MISSING_CODE,
+  GECKOLIB_TEST_DOWNLOAD_MESSAGE,
+} from './components/ExportFabricJarDialog';
 import {
   type FunctionCaret,
   GO_TO_DEFINITION_EVENT,
@@ -33,7 +38,7 @@ import {
 } from './components/function-editor/caret';
 import { lineOffset } from './components/function-editor/source-text';
 import { ImportAssetsDialog, importFileFilters } from './components/ImportAssetsDialog';
-import { ImportFilesDialog } from './components/ImportFilesDialog';
+import { BLOCKBENCH_IMPORT_NOTE, ImportFilesDialog } from './components/ImportFilesDialog';
 import {
   describeJarSource,
   type InstallTargetOption,
@@ -55,7 +60,7 @@ import { UsagesDialog } from './components/UsagesDialog';
 import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
-import { importerFileFilters } from './session/importers';
+import { importerFileFilters, isBlockbenchImporter } from './session/importers';
 import {
   FUNCTION_KIND,
   functionElementUri,
@@ -123,6 +128,14 @@ const menuEquivalent = {
   commandPalette: 'commandPalette',
 } as const satisfies Record<string, MenuCommand>;
 
+/** Whether an export report was blocked because the GeckoLib jar could not be had. */
+function hasGeckolibMissing(problems: readonly { code: string }[]): boolean {
+  return problems.some((problem) => problem.code === GECKOLIB_MISSING_CODE);
+}
+
+/** Which importers the import dialog offers: structure files, or Blockbench models. */
+type ImportMode = 'structure' | 'blockbench';
+
 /** The dialog currently open, if any. */
 type DialogState =
   | { type: 'namespace' }
@@ -130,7 +143,7 @@ type DialogState =
   | { type: 'new-project' }
   | { type: 'examples' }
   | { type: 'import'; namespace?: string }
-  | { type: 'import-files' }
+  | { type: 'import-files'; mode: ImportMode }
   | { type: 'settings' }
   | { type: 'remove-asset'; namespace: string; path: string }
   | { type: 'rename'; id: ResourceLocation; references: number }
@@ -549,7 +562,9 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         const errors = errorCount(result.problems);
         setMessage({
           kind: 'error',
-          text: `Export blocked by ${errors} error(s); nothing was written. See Problems.`,
+          text: hasGeckolibMissing(result.problems)
+            ? GECKOLIB_DOWNLOAD_MESSAGE
+            : `Export blocked by ${errors} error(s); nothing was written. See Problems.`,
         });
         return;
       }
@@ -578,7 +593,9 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         const errors = errorCount(result.problems);
         setMessage({
           kind: 'error',
-          text: `Test in Minecraft blocked by ${errors} error(s); nothing was installed. See Problems.`,
+          text: hasGeckolibMissing(result.problems)
+            ? GECKOLIB_TEST_DOWNLOAD_MESSAGE
+            : `Test in Minecraft blocked by ${errors} error(s); nothing was installed. See Problems.`,
         });
         return;
       }
@@ -706,13 +723,19 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     }
   };
 
-  /** Picks files for the registered importers and imports them into `namespace`. */
-  const importFiles = async (namespace: string): Promise<string | null> => {
+  /** The registered importers the import dialog offers in `mode`. */
+  const importersFor = (mode: ImportMode) =>
+    session.importers.filter((entry) =>
+      mode === 'blockbench' ? isBlockbenchImporter(entry) : !isBlockbenchImporter(entry),
+    );
+
+  /** Picks files for the `mode` importers and imports them into `namespace`. */
+  const importFiles = async (namespace: string, mode: ImportMode): Promise<string | null> => {
     let files: Awaited<ReturnType<MsmBridge['dialogs']['pickFiles']>>;
     try {
       files = await bridge.dialogs.pickFiles({
-        title: 'Import structures',
-        filters: importerFileFilters(session.importers),
+        title: mode === 'blockbench' ? 'Import Blockbench models' : 'Import structures',
+        filters: importerFileFilters(importersFor(mode)),
       });
     } catch (error) {
       return messageOf(error);
@@ -1006,7 +1029,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       else session.redo();
     },
     importAssets: needsNamespace(() => setDialog({ type: 'import' })),
-    importStructure: needsNamespace(() => setDialog({ type: 'import-files' })),
+    importStructure: needsNamespace(() => setDialog({ type: 'import-files', mode: 'structure' })),
+    importBlockbench: needsNamespace(() => setDialog({ type: 'import-files', mode: 'blockbench' })),
     exportResourcePack: exportResourceZip,
     exportDataPack: exportDataZip,
     exportCombined,
@@ -1044,7 +1068,9 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     addNamespace: project === null ? null : () => setDialog({ type: 'namespace' }),
     importAssets: canAddElement ? handlers.importAssets : null,
     importStructure:
-      canAddElement && session.importers.length > 0 ? handlers.importStructure : null,
+      canAddElement && importersFor('structure').length > 0 ? handlers.importStructure : null,
+    importBlockbench:
+      canAddElement && importersFor('blockbench').length > 0 ? handlers.importBlockbench : null,
     exportResourcePack: exportReason === null ? exportResourceZip : null,
     exportDataPack: dataExportReason === null ? exportDataZip : null,
     exportCombined: combinedReason === null ? exportCombined : null,
@@ -1375,10 +1401,11 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         )}
         {dialog?.type === 'import-files' && project !== null && (
           <ImportFilesDialog
-            title="Import structure"
+            title={dialog.mode === 'blockbench' ? 'Import Blockbench model' : 'Import structure'}
             namespaces={namespaces}
-            importers={session.importers.map((entry) => entry.importer)}
-            onImport={importFiles}
+            importers={importersFor(dialog.mode).map((entry) => entry.importer)}
+            note={dialog.mode === 'blockbench' ? BLOCKBENCH_IMPORT_NOTE : undefined}
+            onImport={(namespace) => importFiles(namespace, dialog.mode)}
             onCancel={() => setDialog(null)}
           />
         )}
@@ -1449,6 +1476,11 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         {dialog?.type === 'fabric-jar' && (
           <ExportFabricJarDialog
             options={session.fabricJarOptions}
+            hasEntities={
+              project?.namespaces.some((namespace) =>
+                namespace.elements.some((element) => element.kind === 'msm:entity'),
+              ) === true
+            }
             onClose={() => setDialog(null)}
             onExport={(values) => {
               setDialog(null);
