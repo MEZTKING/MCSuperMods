@@ -345,6 +345,14 @@ interface World {
 /** The MSM runtime API, available to every script. */
 declare const msm: Msm;
 
+/**
+ * Loads another script of the same mod and namespace by a relative id and returns its module.exports (each script runs once; cycles see partial exports); require("msm:runtime") returns the msm module.
+ *
+ * @param id - A relative id such as "./util" or "../lib/shapes" (a script of the same mod and namespace), or "msm:runtime".
+ */
+// biome-ignore lint/suspicious/noExplicitAny: untyped by design
+declare function require(id: string): any;
+
 /** The runtime module; `require("msm:runtime")` returns the same objects. */
 declare module "msm:runtime" {
   /** The MSM runtime API, available to every script. */

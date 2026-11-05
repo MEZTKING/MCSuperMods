@@ -84,10 +84,11 @@ MSM is a **hybrid architecture**. Everything the user creates is stored as typed
 | Worldgen | Biomes, features, noise settings, dimension types | Vanilla data pack |
 | Custom blocks, items, entities | Ruby ore, ruby sword, custom mob | Content jar + `msm_runtime` |
 | Models and animations | Animated entity models from Blockbench | Content jar + `msm_runtime` (+ GeckoLib) |
+| Scripts | TypeScript handlers for game events and `run_script` actions | Content jar (transpiled to ES5) + `msm_runtime` (Rhino) |
 
 ### Why hybrid
 
-Vanilla packs are the most portable output, so we produce them whenever possible. New registry entries need a mod. Generating Java per project would make every export a compile step and lock users into generated code. A generic runtime reading data-driven definitions keeps exports fast, keeps the project the source of truth, and still allows a one-way eject to Java (section 12).
+Vanilla packs are the most portable output, so we produce them whenever possible. New registry entries need a mod. Generating Java per project would make every export a compile step and lock users into generated code. A generic runtime reading data-driven definitions keeps exports fast, keeps the project the source of truth, and still allows a one-way eject to Java (section 12; built in Phase 6 as the `java-project` exporter, [ADR 0033](adr/0033-java-project-eject-v1.md)).
 
 ## 4. Core Project Model (IR)
 
@@ -292,11 +293,13 @@ export default definePlugin({
 | `examples` | Examples gallery entries: the kind taught, category, tags, `requiresKinds` and a commented content bundle | "Loot table: block drops" |
 | `validators` | Cross-element checks over the whole project: an id, the kinds read and a pure `validate(input)` returning problems; the host re-runs them when those kinds change and merges the problems ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)) | Feature order across biomes, structure set spacing |
 
-Templates, starters and examples live in plugins; the app is only the picker. A template creates one element of a kind its own plugin registers and references only vanilla ids, ids derived from its own id, or the project root advancement. A starter or example builds a self-contained content bundle (elements with optional `meta.notes`, plus generated assets, never Mojang assets) that may span any registered kinds; the host adds a `pack` element when the bundle has none and inserts the elements as one undo step. The kind plugins carry the templates for their kinds (99 in total after Phase 3, 106 after Phase 4, 112 after Phase 5); the built-in `@msm/plugin-library` (`msm.library`) carries the starters, the examples and the placeholder-texture generator ([ADR 0020](adr/0020-templates-starters-examples.md)).
+Templates, starters and examples live in plugins; the app is only the picker. A template creates one element of a kind its own plugin registers and references only vanilla ids, ids derived from its own id, or the project root advancement. A starter or example builds a self-contained content bundle (elements with optional `meta.notes`, plus generated assets, never Mojang assets) that may span any registered kinds; the host adds a `pack` element when the bundle has none and inserts the elements as one undo step. The kind plugins carry the templates for their kinds (99 in total after Phase 3, 106 after Phase 4, 112 after Phase 5, 116 after Phase 6); the built-in `@msm/plugin-library` (`msm.library`) carries the starters, the examples and the placeholder-texture generator ([ADR 0020](adr/0020-templates-starters-examples.md)).
 
 Phase 3 adds two built-ins ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)): `@msm/plugin-structures` (`msm.structures`: structure templates, template pools, structures, structure sets and processor lists, with the `.nbt` and `.schem` importers and exporters of [ADR 0021](adr/0021-structure-templates-and-nbt.md)) and `@msm/plugin-worldgen` (`msm.worldgen`: biomes, configured and placed features, dimensions, world presets and nine schema-form worldgen kinds). Both contribute validators; `@msm/plugin-datapack` adds the worldgen tag kinds and keeps `minecraft:dimension_type`.
 
 Phase 4 adds `@msm/plugin-blocks-items` (`msm.blocks-items`: `msm:block`, `msm:item`, `msm:mod`; [ADR 0025](adr/0025-msm-definition-format-v1.md)). Phase 5 adds two more ([ADR 0028](adr/0028-entity-definition-format-v1.md), [ADR 0029](adr/0029-model-animation-pipeline.md)): `@msm/plugin-models-anim` (`msm.models-anim`: `msm:geo_model` and `msm:animation`, lowered to GeckoLib's `assets/<ns>/geckolib/` files, four validators with five `models-anim.*` codes) and `@msm/plugin-entities` (`msm.entities`: `msm:entity`, lowered to `msm/<ns>/entity/` plus language keys and the spawn egg's item files, eight validators with ten `entities.*` codes). Plugin API 0.7.0 turns `Target.geckolib` into `GeckolibFacts` ([ADR 0030](adr/0030-plugin-api-0.7.md)). The Blockbench importer lives in `@msm/interop` and is registered by the app as a host importer, because plugins may depend only on `@msm/plugin-api` and `@msm/schemas`.
+
+Phase 6 adds `@msm/plugin-scripting` (`msm.scripting`: `msm:script`, `{ lines }` lowered to `msm/<ns>/script/<path>.ts` with `language: 'typescript'`; four templates under "Scripts"; validators `scripting.unknown-handler`, `scripting.duplicate-handler` and `scripting.empty-script`; [ADR 0032](adr/0032-script-api-v1-and-typings.md)). The plugin also owns the script API description `api/script-api-v1.json` and exports the generated typings (`MSM_RUNTIME_TYPINGS`), which the app writes to `.msm/` and gives to the Script Studio. Plugin API 0.8.0 adds `FabricFacts.gradle`, `Target.javaProject` and the `typescript` output language ([ADR 0034](adr/0034-plugin-api-0.8.md)); every built-in plugin declares `^0.8.0`. The project then has 59 kinds.
 
 ### Loading model
 
@@ -387,10 +390,13 @@ interface Target {
     featureSteps: readonly string[];              // decoration steps in order (ADR 0022)
     biomeAttributes?: BiomeAttributeFacts;       // biome attribute ids: colours, sky colour, natural mob spawns (26.3)
   };
-  fabric?: { loader: string; api: string; loom: string; minecraftDependency: string };
-                              // Phase 4 (ADR 0027); 26.3: loader 0.20.1, API 0.165.2+26.3, Loom 1.19.3, "~26.3" (verified 2026-11-05)
+  fabric?: { loader: string; api: string; loom: string; minecraftDependency: string; gradle: string };
+                              // Phase 4 (ADR 0027); 26.3: loader 0.20.1, API 0.165.2+26.3, Loom 1.19.3, "~26.3" (verified 2026-11-05);
+                              // gradle from Phase 6 (ADR 0034): 9.8.2, the engine-mod wrapper, for the ejected project
   geckolib?: GeckolibFacts;   // Phase 5 (ADR 0030): version, modId, dependency, fileName, url, sha512, modrinthVersionId;
                               // 26.3: GeckoLib 5.5.7, ">=5.5.7", Modrinth CDN jar (verified 2026-11-05)
+  javaProject?: JavaProjectGenerator; // Phase 6 (ADR 0034): the Java sources of the eject, naming this version's
+                              // Mojang and Fabric classes (ADR 0033 D3)
   migrateFrom?(previous: Target, project: Project): MigrationReport;
 }
 
@@ -407,21 +413,21 @@ Support policy: the current release (26.3) and the previous one (26.2) at launch
 |---|---|---|
 | `vanilla-packs` | Resource pack `.zip` (Phase 1), data pack `.zip`, or both zips in a folder the user picks (Phase 2; [ADR 0015](adr/0015-data-pack-element-model.md)) | 1–2 |
 | `fabric-content-jar` | Jar with `assets/`, `data/`, `msm/`, `fabric.mod.json`; `msm_runtime` nested by default, or left out with the "Separate runtime and GeckoLib (for modpacks)" option ([ADR 0026](adr/0026-fabric-content-jar.md)); projects with entities also depend on GeckoLib and nest its jar unless that option is on ([ADR 0029](adr/0029-model-animation-pipeline.md) D4) | 4–5 (exists) |
-| `java-project` | Standalone Gradle project with generated Java (eject) | 6 |
+| `java-project` | Standalone Gradle project (Loom, wrapper, `fabric.mod.json` without `msm_runtime`, README, `LICENSE-NOTES.md`) with Java generated by `Target.javaProject`, written into `<picked folder>/<mod id>/`, which must be empty; scripts and `run_script` actions are left out with `export.scripts-not-ejected` ([ADR 0033](adr/0033-java-project-eject-v1.md)) | 6 (exists) |
 
-The content jar exporter lives in `@msm/exporters` (`src/fabric-content-jar/`), writes the same deterministic zip as the packs, takes its Fabric facts from `Target.fabric` and receives the runtime and GeckoLib jar bytes from its host (`createFabricContentJarExporter({ loadRuntimeJar, loadGeckolibJar })`), so it has no file access. GeckoLib is loaded only when the project has an `msm/<ns>/entity/` file; without it the export fails with `export.geckolib-missing`, and for a target without GeckoLib facts with `export.no-geckolib-target`. The app's main process caches GeckoLib under `<userData>/downloads/geckolib/`, downloading it once from `Target.geckolib.url` with a SHA-512 check. Exporters declare boolean options that the export dialog renders ([ADR 0027](adr/0027-plugin-api-0.6.md)). Files several elements contribute to (language files, tags) declare `OutputFile.merge` and are merged in step 3; other files meeting at one path are conflicts.
+The content jar exporter lives in `@msm/exporters` (`src/fabric-content-jar/`), writes the same deterministic zip as the packs, takes its Fabric facts from `Target.fabric` and receives the runtime and GeckoLib jar bytes from its host (`createFabricContentJarExporter({ loadRuntimeJar, loadGeckolibJar })`), so it has no file access. GeckoLib is loaded only when the project has an `msm/<ns>/entity/` file; without it the export fails with `export.geckolib-missing`, and for a target without GeckoLib facts with `export.no-geckolib-target`. The app's main process caches GeckoLib under `<userData>/downloads/geckolib/`, downloading it once from `Target.geckolib.url` with a SHA-512 check. Scripts (`msm`-layer files with `language: 'typescript'`) are transpiled by the host's `transpileScript` (TypeScript to ES5 CommonJS, [ADR 0031](adr/0031-rhino-runtime-and-typescript-es5-scripts.md) D2) and written as `.js`; a jar with scripts depends on `msm_runtime` at least 0.6.0 ([ADR 0032](adr/0032-script-api-v1-and-typings.md) D4). The `java-project` exporter (`createJavaProjectExporter({ loadGradleWrapper })`) owns the version-independent parts (definitions from the `msm` layer, Gradle files, README, resources, manifest) and calls the target's generator; the Gradle wrapper comes from the host (packaged `runtime/gradle-wrapper/`). Exporters declare boolean options that the export dialog renders ([ADR 0027](adr/0027-plugin-api-0.6.md)). Files several elements contribute to (language files, tags) declare `OutputFile.merge` and are merged in step 3; other files meeting at one path are conflicts.
 
 ### Pipeline
 
 1. **Collect** all elements in the enabled namespaces.
 2. **Lower** each element against the chosen target into `OutputFile[]`.
 3. **Merge** outputs: files that declare `merge` (`tag`, `object`) are combined; any other files on the same path are conflicts and errors ([ADR 0027](adr/0027-plugin-api-0.6.md)).
-4. **Validate** every JSON output that declares `OutputFile.schema` against the schema model derived from the target's vanilla-mcdoc and MSM mcdoc ([ADR 0009](adr/0009-phase1-validation-gate.md)), and every text output that declares `OutputFile.language` (`mcfunction`) with the injected text validator ([ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)).
+4. **Validate** every JSON output that declares `OutputFile.schema` against the schema model derived from the target's vanilla-mcdoc and MSM mcdoc ([ADR 0009](adr/0009-phase1-validation-gate.md)), and every text output that declares `OutputFile.language` (`mcfunction`, and `typescript` from Phase 6) with the injected text validator ([ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)).
 5. **Write** via the exporter: zip, folder, jar or Gradle project. Output is deterministic (entries sorted by path, fixed zip timestamps that are identical in every timezone; [ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)), and each output includes an `msm.export.json` manifest listing target, MSM version and plugins.
 
 ### Validation gate
 
-Step 4 is a hard gate: every lowered JSON file is validated against the schema model derived from vanilla-mcdoc, and every `.mcfunction` file with Spyglass; parse and check errors block, warnings pass. Invalid lowered output is a bug in a lowering function or target, not a user error; the export stops with a report. CI runs the same check on golden fixtures. A struct with dispatcher spreads accepts a key only when the struct or one of its resolved spreads declares it, and reports any other key as `schema.unknown-field`; when a spread cannot be resolved to fields (an `any` member, an unknown dispatch key), every key is allowed. Project texture animation sidecars (`.png.mcmeta`) pass the same gate as `resource:texture_meta`. Binary outputs (structure `.nbt`) carry no schema; their element is validated before lowering. Project validators ([Plugin System](#7-plugin-system)) gate export through the problem list: an error from a validator blocks export like a schema error ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)).
+Step 4 is a hard gate: every lowered JSON file is validated against the schema model derived from vanilla-mcdoc, and every `.mcfunction` file with Spyglass; parse and check errors block, warnings pass. Invalid lowered output is a bug in a lowering function or target, not a user error; the export stops with a report. CI runs the same check on golden fixtures. A struct with dispatcher spreads accepts a key only when the struct or one of its resolved spreads declares it, and reports any other key as `schema.unknown-field`; when a spread cannot be resolved to fields (an `any` member, an unknown dispatch key), every key is allowed. Project texture animation sidecars (`.png.mcmeta`) pass the same gate as `resource:texture_meta`. Binary outputs (structure `.nbt`) carry no schema; their element is validated before lowering. Scripts pass the gate through the TypeScript checker in the main process: syntax errors (`typescript.syntax`) block, semantic findings against the generated typings and the curated `lib` set (`typescript.semantic`) only warn, since Rhino is duck-typed ([ADR 0031](adr/0031-rhino-runtime-and-typescript-es5-scripts.md) D5). Project validators ([Plugin System](#7-plugin-system)) gate export through the problem list: an error from a validator blocks export like a schema error ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)).
 
 ## 10. Engine Mod (Runtime)
 
@@ -437,6 +443,7 @@ Verified on 2026-11-05 ([ADR 0024](adr/0024-runtime-registration-spike.md)):
 - **Fabric Loader 0.20.1 and Fabric API 0.165.2+26.3** for 26.3; the same facts live in the target's `fabric` block for the exporter.
 - **Mojang names only.** 26.1+ ships unobfuscated and Fabric no longer maintains Yarn for it; we use no Yarn and no Parchment.
 - **GeckoLib 5.5.7** (Phase 5, [ADR 0029](adr/0029-model-animation-pipeline.md) D6) from the Modrinth Maven (`maven.modrinth:geckolib:<version id>`, an `exclusiveContent` repository): `compileOnly` and `gametestCompileOnly` for compilation and `localRuntime` for the run tasks (`-PwithoutGeckolib` leaves it off); the built runtime jar contains no GeckoLib class and only `suggests` it.
+- **Rhino 1.9.2** (Phase 6, [ADR 0031](adr/0031-rhino-runtime-and-typescript-es5-scripts.md) D1): `implementation` plus Loom `include`, so the upstream jar is nested unmodified as `META-INF/jars/rhino-1.9.2.jar` (Loom generates its `fabric.mod.json`, id `org_mozilla_rhino`); the runtime carries `META-INF/licenses/rhino-LICENSE.txt` (MPL 2.0).
 - **Fabric API modules used:** creative tabs through `fabric-creative-tab-api-v1` (`CreativeModeTabEvents.modifyOutputEvent`, keys built with `ResourceKey.create(Registries.CREATIVE_MODE_TAB, id)`); GameTests through `fabric-gametest-api-v1` (annotation `net.fabricmc.fabric.api.gametest.v1.GameTest`, entry point `fabric-gametest`, Loom `fabricApi { configureTests {} }`, task `runGameTest`, which `./gradlew build` runs). `Block.Properties` and `Item.Properties` need `setId(ResourceKey)` before construction.
 
 ### The registry freeze
@@ -453,6 +460,10 @@ Each definition is registered through a generic **driver class**: `MsmBlock`, `M
 
 `MsmEntity extends PathfinderMob` ([ADR 0028](adr/0028-entity-definition-format-v1.md) D5) takes its attributes from the components and its goals from `msm:ai_goals`, and dispatches `doHurtTarget`, `hurtServer`, `die` and `mobInteract` to the trigger components. Entity types are built with Fabric's `FabricEntityType.Builder.createMob` (default attributes and spawn placement), spawn eggs are `SpawnEggItem`s counted as items, and natural spawns go through `BiomeModifications.addSpawn`, which reaches 26.3's `natural_mob_spawns` biome attribute. GeckoLib is bridged by a separate class group (`registry/MsmGeoEntity`, `registry/GeckolibEntities`, `client/MsmGeoModel`, `client/GeckolibRenderers`) touched only after `FabricLoader.isModLoaded("geckolib")`; without GeckoLib every entity definition logs one error and registers nothing, while blocks and items still load. The runtime's **`client` entrypoint** (`client/MsmRuntimeClient`) registers a `GeoEntityRenderer` per entity type through vanilla `EntityRenderers.register` (opened by Fabric API's transitive access wideners); `environment` stays `*`. The log keeps the Phase 4 line and adds `[msm_runtime] registered K entity type(s)`.
 
+### Scripts
+
+The `scripting/` package (Phase 6, [ADR 0031](adr/0031-rhino-runtime-and-typescript-es5-scripts.md), [ADR 0032](adr/0032-script-api-v1-and-typings.md)) runs the ES5 CommonJS scripts at `msm/<ns>/script/**.js` of every mod container (`ScriptScanner`; `DefinitionScanner` reads `.json` only, so older runtimes never see them). `ScriptHost` (one per server) loads them on `SERVER_STARTING`, reloads them on `END_DATA_PACK_RELOAD` and drops them on `SERVER_STOPPED`, and logs `[msm_runtime] loaded S script(s); E error(s)`. `MsmContextFactory` gives interpreted mode, the ES6 language level, stack depth 1000, a deny-all `ClassShutter` and a 2000 ms wall-clock budget per top-level call; every script has its own top-level scope over sealed shared standard objects, plus `msm`, `module`, `exports` and a `require` that resolves `msm:runtime` and relative ids within the same mod and namespace. `ScriptBridges` connects the nine events to Fabric API callbacks (`UseBlockCallback`, `PlayerBlockBreakEvents.BEFORE`, `UseItemCallback`, `UseEntityCallback`, `ServerLivingEntityEvents.ALLOW_DAMAGE` and `AFTER_DEATH`, `ServerPlayConnectionEvents.JOIN`, `SERVER_STARTED`, `END_SERVER_TICK`); `ScriptApi` is the `msm` tree, which `ScriptApiContractTest` compares with `script-api-v1.json`. The `run_script` action reaches `ScriptHost.runAction` through `EventRunner`. Script data is not persisted in v1.
+
 ### Frozen versus reloadable data
 
 | Data | Where it lives | Reloadable |
@@ -465,7 +476,7 @@ Anything that can be reloadable stays in the ordinary data pack inside the conte
 
 ### Distribution
 
-The exporter produces a **content jar** whose `fabric.mod.json` depends on `msm_runtime`. By default the runtime jar is **nested** in the content jar via the `"jars"` field, so users ship one file. A "separate runtime" checkbox omits nesting for modpack makers who want one shared runtime. The runtime carries the app's version (`engine-mod/gradle.properties` `mod_version` equals `app/package.json`, checked by a test), is built by `engine-mod/` Gradle and ships with the app as `runtime/msm_runtime.jar`; content jars depend on `msm_runtime >=<version>` ([ADR 0026](adr/0026-fabric-content-jar.md)). Projects with entities also depend on GeckoLib, nested by default and left out with the same option ([ADR 0029](adr/0029-model-animation-pipeline.md) D4). CI starts a headless Fabric dedicated server with the kitchen-sink sample (`tools/run-fabric-server`, `fixtures/sample-mod/`) and, from Phase 5, with `fixtures/sample-mob/` (runtime and GeckoLib nested), and fails on any runtime error or warning or any GeckoLib warning or error.
+The exporter produces a **content jar** whose `fabric.mod.json` depends on `msm_runtime`. By default the runtime jar is **nested** in the content jar via the `"jars"` field, so users ship one file. A "separate runtime" checkbox omits nesting for modpack makers who want one shared runtime. The runtime carries the app's version (`engine-mod/gradle.properties` `mod_version` equals `app/package.json`, checked by a test), is built by `engine-mod/` Gradle and ships with the app as `runtime/msm_runtime.jar`; content jars depend on `msm_runtime >=<version>` ([ADR 0026](adr/0026-fabric-content-jar.md)). Projects with entities also depend on GeckoLib, nested by default and left out with the same option ([ADR 0029](adr/0029-model-animation-pipeline.md) D4). CI starts a headless Fabric dedicated server with the kitchen-sink sample (`tools/run-fabric-server`, `fixtures/sample-mod/`) and, from Phase 5, with `fixtures/sample-mob/` (runtime and GeckoLib nested), and fails on any runtime error or warning or any GeckoLib warning or error. From Phase 6 it also loads `fixtures/sample-script/` (11 scripts, `loaded 11 script(s); 0 error(s)` required), builds the ejected Java projects of the two samples, and runs the parity GameTests (`engine-mod/parity/`, a black-box GameTest mod) on a production server four times: against each sample's content jar and against its ejected jar ([ADR 0033](adr/0033-java-project-eject-v1.md) D5).
 
 ### Mixin policy
 
@@ -528,19 +539,23 @@ There are three tiers.
 | Tier | Mechanism | Who it is for |
 |---|---|---|
 | 0 | Components + events + mcfunctions | Everyone |
-| 1 | Scripts: TypeScript in the app, JavaScript in-game on Rhino | Datapacker Dev, Modder Max |
+| 1 | Scripts: TypeScript in the app, transpiled to ES5 JavaScript run in game on Rhino | Datapacker Dev, Modder Max |
 | 2 | Eject: export as a standalone Fabric Java project | Modder Max, when the mod outgrows MSM |
 
 ### Tier 1: scripts
 
-Authors write TypeScript in `scripts/<namespace>/*.ts`. The app bundles `esbuild`, which transpiles to the ES2015 subset that **Mozilla Rhino** (ES6 mode) handles. `msm_runtime` embeds Rhino and runs the scripts in-game.
+Authors write TypeScript as `msm:script` elements (`{ lines }`, one per source line; plugin `msm.scripting`), edited in the Script Studio with Monaco's TypeScript worker. Scripts run in game on **Mozilla Rhino 1.9.2** nested in `msm_runtime` ([ADR 0031](adr/0031-rhino-runtime-and-typescript-es5-scripts.md)). Rhino 1.9.2 cannot parse classes, `for...of`, spread in calls, array rest patterns or `async`/`await`, and esbuild cannot lower those to ES5, so **the app transpiles each script with TypeScript's `transpileModule` to ES5 CommonJS** (`downlevelIteration`, in the Electron main process, a lazy chunk) instead of the esbuild design of [ADR 0003](adr/0003-rhino-for-scripting.md). The output runs at Rhino's ES6 language level, so the ES2015 built-ins the helpers use (`Promise`, `Map`, `Symbol`) exist. The content-jar exporter writes `msm/<ns>/script/<path>.js`; the vanilla exporters skip scripts and the eject leaves them out.
 
 | Engine | Size | Pros | Cons | Decision |
 |---|---|---|---|---|
-| Rhino | ~1.5 MB | Pure Java, small, proven in Minecraft (KubeJS) | Partial ES6+ coverage | **Chosen** |
-| GraalJS | ~50 MB | Modern JS, fast | Large, heavier runtime | Documented fallback |
+| Rhino 1.9.2 | 1.7 MB | Pure Java, small, proven in Minecraft (KubeJS); runs TypeScript's ES5 output | Parses only part of ES2015+ | **Chosen** |
+| GraalJS | ~50 MB | Modern JS, fast | Large, heavier runtime | Fallback, not needed |
 | LuaJ | Small | Simple, sandboxable | Lua is not what users or our editors speak | Rejected |
 | Kotlin script | Large | Typed, JVM-native | Compiler weight, slow start, adds Kotlin | Rejected |
+
+**Sandbox and lifecycle.** Safe standard objects only, a deny-all `ClassShutter` (no Java classes, packages or reflection), interpreted mode, stack depth 1000 and a 2000 ms wall-clock budget per top-level call; server thread only, no file, network or thread access. Scripts load on server start, reload on `/reload` and log `[msm_runtime] loaded S script(s); E error(s)`; a failing script or handler is logged with its id and line and the game continues (handler errors rate-limited).
+
+**Validation.** TypeScript syntax errors block export (`typescript.syntax`); semantic findings against the typings warn (`typescript.semantic`), because Rhino is duck-typed. The same checker in main feeds the Problems panel; Monaco's worker gives completion, hover and squiggles. Validators check `run_script` handlers against `msm.actions.define` calls textually (`scripting.unknown-handler`, `scripting.duplicate-handler`).
 
 ### Script API sketch
 
@@ -548,29 +563,32 @@ Authors write TypeScript in `scripts/<namespace>/*.ts`. The app bundles `esbuild
 import { msm } from "msm:runtime";
 
 msm.events.on("block.interact", (e) => {
-  if (e.block.id !== "mymod:ruby_ore") return;
-  if (e.player.isSneaking()) {
-    e.world.spawnParticle("minecraft:glow", e.pos, { count: 20 });
+  if (e.block.id !== "mymod:ruby_ore" || e.hand !== "main") return;
+  if (e.player.isSneaking) {
+    e.world.spawnParticle("minecraft:glow", e.block.pos, { count: 20 });
     e.player.give("mymod:ruby", 1);
     e.cancel();
   }
 });
 
+msm.actions.define("mymod:chime", (e) => e.world.playSound("minecraft:block.note_block.chime", e.pos));
 ```
 
-The API is a curated façade over game objects, not raw Minecraft classes.
+The API is a curated façade over game objects, not raw Minecraft classes. API v1 ([ADR 0032](adr/0032-script-api-v1-and-typings.md) D2): `msm.log`, `msm.events.on` over nine events (`block.interact`, `block.break`, `item.use`, `entity.interact`, `entity.hurt`, `entity.death`, `player.join`, `server.started`, `server.tick`; the first five cancellable), `msm.actions.define` (handlers for the `run_script` action of blocks, items and entities), `msm.schedule`, and the types `World`, `Entity`, `Player`, `Pos`, `BlockRef`, `ItemRef`; `require` loads another script of the same mod and namespace. The exact member names are in `packages/plugins/scripting/api/msm-runtime.d.ts`.
 
 ### Typings
 
-`.d.ts` typings are generated from the runtime API description, versioned with `msm_runtime`, and written into `.msm/` so Monaco offers completion and type checking.
+The API is described once, in `packages/plugins/scripting/api/script-api-v1.json` (types, globals, events and global free functions). `generateTypings` turns it into `msm-runtime.d.ts` (a golden test pins the checked-in copy), and the runtime's `ScriptApiContractTest` checks that the installed member tree matches it. The typings carry the runtime's version, are written to `<project>/.msm/msm-runtime.d.ts` when a project is opened or created, and feed both Monaco and the export gate.
 
 ### Tier 2: eject
 
-"Export as Fabric Java project" produces a full Gradle project with generated Java sources that mirror what the runtime would have done, with no dependency on `msm_runtime`. Eject is:
+"Export as Fabric Java project" (the `java-project` exporter, [ADR 0033](adr/0033-java-project-eject-v1.md)) produces a full Gradle project with generated Java sources that mirror what the runtime would have done, with no dependency on `msm_runtime`: blocks, items and entities (GeckoLib nested) with every component and action. Eject is:
 
 - **One-way.** Edits to the generated project do not flow back into MSM.
-- **Deterministic.** The same project and target produce the same sources.
-- **Documented.** The generated project includes a README explaining its structure, how to build it, and that it is no longer managed by MSM.
+- **Deterministic.** The same project and target produce the same sources (sorted, LF, no dates; the Java comes from the target's generator, `Target.javaProject`).
+- **Documented.** The generated project includes a README explaining its structure, how to build it (`./gradlew build`, JDK 25), and that it is no longer managed by MSM, plus `LICENSE-NOTES.md`.
+- **Checked.** CI builds the ejected `fixtures/sample-mod` and `fixtures/sample-mob` with Gradle and runs the same behaviour-parity GameTests against the content jar and the ejected jar.
+- **Without scripts in v0.6.** Scripts and `run_script` actions are left out with an `export.scripts-not-ejected` warning per script and a README section (reserve brief B142 would copy the runtime's `scripting/` sources and nest Rhino).
 
 ## 13. Interop (Blockbench, NBT, Minecraft Installation)
 
@@ -621,10 +639,11 @@ We use **Electron**, not Tauri.
 | React 19 + TypeScript (strict), Zustand | Mainstream and typed; Zustand for UI-only state. |
 | Immer + RFC 6902 patches | Command stack and undo/redo in `@msm/core`. |
 | Radix primitives + Tailwind CSS | Accessible primitives; copied shadcn-style components; no runtime UI-library dependency. Icons: Lucide. |
-| Monaco Editor (`monaco-editor` directly, lazy-loaded) | JSON editing with schema diagnostics in Phase 1; mcfunction and TypeScript later, with Spyglass diagnostics from Phase 2. |
+| Monaco Editor (`monaco-editor` directly, lazy-loaded) | JSON editing with schema diagnostics in Phase 1; mcfunction with Spyglass diagnostics from Phase 2; TypeScript for scripts from Phase 6 (Monaco's TypeScript worker as a separate lazy `ts.worker` chunk, typings as an extra lib; [ADR 0031](adr/0031-rhino-runtime-and-typescript-es5-scripts.md)). |
+| `typescript` 6.x (Phase 6; main process) | Script transpilation (`transpileModule` to ES5 CommonJS) and the export gate's check against the typings, in a lazy minified main chunk `scripting-engine-*.js`; pinned to 6.x because TypeScript 7 drops the ES5 target ([ADR 0031](adr/0031-rhino-runtime-and-typescript-es5-scripts.md) D2). |
 | deepslate (own WebGL renderer) | 3D preview of block and item models from Phase 1; structure templates and the 2D climate map from Phase 3 ([ADR 0023](adr/0023-structure-and-climate-previews.md)). three.js only if a later phase needs it ([ADR 0010](adr/0010-preview-with-deepslate.md)). |
 | `@spyglassmc/*` (Phase 2; mcfunction, main process) | Offline mcfunction parsing, checking and completion behind `@msm/schemas/mcfunction`, loaded lazily in main, with mcdoc symbols for JSON and NBT inside commands; JSON files stay on `validateJson` ([ADR 0009](adr/0009-phase1-validation-gate.md), [ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md), [ADR 0017](adr/0017-phase2-toolchain.md)). |
-| deepslate `nbt`, fflate, esbuild, zod | NBT (structure `.nbt`, `.schem`, `level.dat`; [ADR 0021](adr/0021-structure-templates-and-nbt.md)); zip (fflate everywhere); script transpilation; IPC and config validation. |
+| deepslate `nbt`, fflate, zod | NBT (structure `.nbt`, `.schem`, `level.dat`; [ADR 0021](adr/0021-structure-templates-and-nbt.md)); zip (fflate everywhere); IPC and config validation. esbuild is not used for scripts ([ADR 0031](adr/0031-rhino-runtime-and-typescript-es5-scripts.md)). |
 
 Build and security ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)): the main build bundles the vendored target data into `out/main/vendor/` (electron-vite plugin `msm:bundle-vendored-data`), and the renderer build drops the vendored-data URLs so no vendored JSON reaches the renderer bundle; main aliases `fflate` to `fflate/browser` to avoid a `require` clash in ESM bundles. The production Content Security Policy allows scripts from `'self'` only, `style-src 'self' 'unsafe-inline'` (Monaco and Radix inject runtime styles and support no nonce) and `img-src 'self' data:` (thumbnails arrive as `data:` URLs).
 
@@ -648,7 +667,7 @@ No Changesets: one developer, one version.
 | Fabric Loom (26.1+ non-remapping variant; verify at implementation) | Mojang names, no remapping. |
 | Fabric Loader + Fabric API | Events over Mixins; lightweight loader. |
 | GeckoLib 5.5+ (optional) | Animated entity models; base package `com.geckolib`. |
-| Mozilla Rhino | Embedded scripting (section 12). |
+| Mozilla Rhino 1.9.2 (nested with Loom `include`) | Embedded scripting (section 12, [ADR 0031](adr/0031-rhino-runtime-and-typescript-es5-scripts.md)). |
 | JUnit 5 + Fabric GameTest | Logic and in-game tests. |
 
 ### PlatformAdapter boundary
@@ -657,7 +676,7 @@ All OS access (filesystem, processes, zip, dialogs, Minecraft discovery and laun
 
 ### Bundle budget
 
-Installer under 150 MB. Monaco and the 3D preview are lazy-loaded; asar packaging and dependency pruning are on by default. Size is tracked in CI from Phase 1: `tools/check-size` enforces `app.asar` at most 25 MB, the renderer output at most 8 MB and no renderer JSON file over 100 kB, and the release workflow fails a Windows installer over 150 MB. The unpacked Linux build (about 284 MB, mostly the 224 MB Electron binary) is reported only. At Phase 1 close: `app.asar` 10.2 MB, renderer 5.6 MB, Windows installer about 122 MB ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)). Phase 2 keeps the budgets; Spyglass lives only in the main bundle, and `tools/check-size` also reports the main bundle size without a budget ([ADR 0017](adr/0017-phase2-toolchain.md)). At Phase 2 close: `app.asar` 12.7 MB (Spyglass and its mcdoc symbol support added about 1.2 MB, not the 3.5 MB estimated), renderer 5.7 MB, main `index.js` 266.2 kB with lazy chunks for Spyglass and `electron-updater`.
+Installer under 150 MB. Monaco and the 3D preview are lazy-loaded; asar packaging and dependency pruning are on by default. Size is tracked in CI from Phase 1: `tools/check-size` enforces `app.asar` at most 25 MB, the renderer output at most 8 MB and no renderer JSON file over 100 kB, and the release workflow fails a Windows installer over 150 MB. The unpacked Linux build (about 284 MB, mostly the 224 MB Electron binary) is reported only. At Phase 1 close: `app.asar` 10.2 MB, renderer 5.6 MB, Windows installer about 122 MB ([ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)). Phase 2 keeps the budgets; Spyglass lives only in the main bundle, and `tools/check-size` also reports the main bundle size without a budget ([ADR 0017](adr/0017-phase2-toolchain.md)). At Phase 2 close: `app.asar` 12.7 MB (Spyglass and its mcdoc symbol support added about 1.2 MB, not the 3.5 MB estimated), renderer 5.7 MB, main `index.js` 266.2 kB with lazy chunks for Spyglass and `electron-updater`. Phase 6 raises the renderer budget to 16 MB for the lazy Monaco TypeScript worker (`tools/check-size` requires a separate `*ts.worker*.js` chunk) and keeps `app.asar` at 25 MB with `typescript` minified into a lazy main chunk ([ADR 0031](adr/0031-rhino-runtime-and-typescript-es5-scripts.md) D6). At Phase 6 close: see the ROADMAP Milestone Log (renderer 12.9 MB, `app.asar` 23.9 MB; the asar budget is now the tight one).
 
 ## 15. Repository Layout
 
@@ -716,8 +735,10 @@ plugin-api  <-  schemas  <-  core  <-  plugins / exporters / targets / interop  
 | Engine mod logic | JUnit 5 | Definition parsing, component graph construction. |
 | Engine mod behaviour | Fabric GameTest | Components and events in a running server; from Phase 5 entity registration, attributes, spawn eggs, each AI goal (walk, look, melee attack, flee, follow), each trigger, `play_animation` and natural spawns, with and without GeckoLib (`-PwithoutGeckolib`). |
 | Entities and models | Vitest in the owning packages | Entity lowering and template goldens and every `entities.*` validator code; geo model and animation lowering and `models-anim.*` codes; Blockbench conversion goldens (a 5.0 fixture, its 4.10 rewrite converting identically) and pass-through checks; the MSM mcdoc corpus for entities, geometry and animations; the preview's baker, keyframe evaluator and subjects; `fixtures/sample-mob/` exports with zero problems, a pinned jar SHA-256 and schema-valid definitions, geometry and animations ([ADR 0028](adr/0028-entity-definition-format-v1.md), [ADR 0029](adr/0029-model-animation-pipeline.md)). |
-| End to end (mod) | CI headless server | From Phase 4, a "kitchen-sink" sample project is exported and loaded; load errors fail CI. From Phase 5 `fixtures/sample-mob/` is loaded too, with the real runtime and GeckoLib nested, and must log one entity type with no runtime or GeckoLib warning. |
-| App | Vitest + happy-dom; Playwright for Electron | Component tests; golden-path e2e (new project, block model, texture, export zip, reopen), data pack, launcher, library, worldgen, blocks-items and entities e2e specs (the entities spec mounts the WebGL preview under SwiftShader), and smoke runs of the built and packaged app under xvfb. |
+| Scripting | Vitest in `@msm/plugin-scripting`, `@msm/exporters` and the app; JUnit and GameTest in `engine-mod/` | The typings golden and type checks of scripts (with `msm:runtime` imports and `require`); every template, library and sample script type-checks; transpiled output is ES5 (no `class`, `=>`, `let`, `const`, template or `for...of` tokens by the TypeScript scanner); `fixtures/sample-script/` exports with zero problems and a pinned jar SHA-256; the main-process TypeScript service; `ScriptApiContractTest` (JSON against the installed API) and `MsmScriptGameTest` (sandbox, timeout, every event, cancel, `require`, `schedule`, `run_script`, reload) ([ADR 0031](adr/0031-rhino-runtime-and-typescript-es5-scripts.md), [ADR 0032](adr/0032-script-api-v1-and-typings.md)). |
+| Eject | Vitest in the 26.3 target and `@msm/exporters`; Gradle and GameTest in CI | Generator goldens per kind from the runtime's GameTest definitions; tree goldens of the ejected samples; CI builds both ejected projects and runs the parity GameTests (`engine-mod/parity/`: 11 sample-mod and 7 sample-mob tests) against each content jar and each ejected jar ([ADR 0033](adr/0033-java-project-eject-v1.md)). |
+| End to end (mod) | CI headless server | From Phase 4, a "kitchen-sink" sample project is exported and loaded; load errors fail CI. From Phase 5 `fixtures/sample-mob/` is loaded too, with the real runtime and GeckoLib nested, and must log one entity type with no runtime or GeckoLib warning. From Phase 6 `fixtures/sample-script/` must log `loaded 11 script(s); 0 error(s)`, and the four parity runs must pass. |
+| App | Vitest + happy-dom; Playwright for Electron | Component tests; golden-path e2e (new project, block model, texture, export zip, reopen), data pack (with a function completion), launcher, library, recent, worldgen, blocks-items, entities (the WebGL preview under SwiftShader), scripting (Monaco TypeScript completion and problems, the ES5 script in the jar) and eject (the Java project tree from `fixtures/sample-mod`) e2e specs, and smoke runs of the built and packaged app under xvfb. |
 
 CI runs from Phase 0: Biome, type checks and unit tests on every push.
 
@@ -735,11 +756,12 @@ CI runs from Phase 0: Biome, type checks and unit tests on every push.
 | 8 | Solo bus factor | High | High | Docs-first repo, DEVLOG per session, ADRs, CI from Phase 0. | Two sessions without a DEVLOG entry. |
 | 9 | Blockbench format drift | Medium | Low | Import only documented `.bbmodel` fields; version-check and warn. | Unknown format version seen in the wild. |
 | 10 | Competitor overlap (MCreator) | Medium | Medium | Differentiate: version-isolated targets, true vanilla export, open plugin API, Blockbench interop, code escape hatches. | A competitor ships equivalent vanilla export and eject. |
+| 11 | Script engine and transpiler limits (Rhino's partial ES2015+, TypeScript 7 dropping ES5) | Medium | Medium | TypeScript 6.x `transpileModule` to ES5 CommonJS for Rhino 1.9.2 at the ES6 language level; the curated `lib` set matches what Rhino implements; the sandbox's time budget protects the server thread; GraalJS stays the fallback ([ADR 0031](adr/0031-rhino-runtime-and-typescript-es5-scripts.md)). | The repository moves to TypeScript 7 (keep a 6.x copy for the transpiler, or a superseding ADR), Rhino 2.0 parses classes and `for...of` natively (re-probe), or realistic scripts need what neither can run. |
 
 ## 18. Open Questions
 
 1. **Fabric Loom for 26.3:** exact plugin id and version of the non-remapping variant (verify at implementation).
-2. **Rhino coverage:** whether Rhino's ES6 mode covers enough of what esbuild emits for realistic scripts, or whether we switch to GraalJS.
+2. **Rhino coverage:** whether Rhino's ES6 mode covers enough of what esbuild emits for realistic scripts, or whether we switch to GraalJS. Resolved at Phase 6: Rhino 1.9.2 stays; it cannot parse classes, `for...of`, call spread or `async`, and esbuild cannot lower them, so scripts are transpiled by TypeScript to ES5 CommonJS, which Rhino runs; see [ADR 0031](adr/0031-rhino-runtime-and-typescript-es5-scripts.md) (partly superseding [ADR 0003](adr/0003-rhino-for-scripting.md)).
 3. **GeckoLib versus own renderer:** whether GeckoLib remains the animated-model backend long term, given churn risk.
 4. **Auto-update provider:** resolved 2026-11-04: the user chose MIT and a public `MEZTKING/MCSuperMods` repository, so release builds publish to its GitHub Releases and the app updates itself with `electron-updater` using the GitHub provider. Unsigned Windows builds update fine (first install shows a SmartScreen warning). Implemented in Phase 2 ([ADR 0018](adr/0018-auto-update.md)): the installed Windows app checks a few seconds after start-up (setting "Check for updates automatically", on by default) and from Help, Check for Updates, downloads in the background and installs only when the user chooses Restart to update. The release workflow uploads the installer, its blockmap and `latest.yml` to a draft release, which the maintainer publishes by hand.
 5. **Plugin sandbox mechanism:** `isolated-vm` versus an Electron utility process for third-party plugins.

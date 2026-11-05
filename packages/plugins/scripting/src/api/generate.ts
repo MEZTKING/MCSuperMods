@@ -113,7 +113,8 @@ function memberLines(owner: string, name: string, member: ScriptApiMember): stri
 
 /**
  * Generates the text of `msm-runtime.d.ts` for a script API description: one global
- * `interface` per declared type, global and namespace, `declare const` for each global, and
+ * `interface` per declared type, global and namespace, `declare const` for each global,
+ * `declare function` for each global free function (`require`), and
  * `declare module "msm:runtime"` exporting the globals and an alias of every type, so scripts
  * work with or without the import.
  */
@@ -137,6 +138,18 @@ export function generateTypings(api: ScriptApi): string {
   const globals = sortedEntries(api.globals);
   for (const [name, global] of globals) {
     out.push('', ...jsdoc('', global.doc), `declare const ${name}: ${capitalise(name)};`);
+  }
+  for (const [name, fn] of sortedEntries(api.functions ?? {})) {
+    for (const signature of signatures(fn)) {
+      const params = paramList(signature.params);
+      const declaration = `declare function ${name}(${params}): ${signature.returns ?? 'void'};`;
+      out.push('', ...jsdoc('', signature.doc ?? fn.doc, signature));
+      // `require` returns untyped module exports on purpose; the golden is linted by Biome.
+      if (/\bany\b/.test(declaration)) {
+        out.push('// biome-ignore lint/suspicious/noExplicitAny: untyped by design');
+      }
+      out.push(declaration);
+    }
   }
   out.push('', '/** The runtime module; `require("msm:runtime")` returns the same objects. */');
   out.push('declare module "msm:runtime" {');

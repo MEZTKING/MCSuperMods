@@ -27,7 +27,8 @@ import org.junit.jupiter.api.Test;
  * generates the app's {@code msm-runtime.d.ts}. Compared: type names and {@code extends}, member names and kinds,
  * required and total parameter counts of methods (over all overloads), namespaces recursively, and per event its type,
  * {@code cancellable} and Fabric API {@code source}. Inherited members are resolved through {@code extends} on both
- * sides ({@code Player extends Entity}, every event type extends {@code GameEvent}).
+ * sides ({@code Player extends Entity}, every event type extends {@code GameEvent}). Global free functions
+ * ({@code functions}, only {@code require}) are compared by name and parameter counts.
  */
 class ScriptApiContractTest {
     private static final Path API = Path.of(System.getProperty("msm.script.api",
@@ -81,6 +82,13 @@ class ScriptApiContractTest {
             assertEquals(jsonMembers(globals.getAsJsonObject(name).getAsJsonObject("members")), javaMembers(java.globals().get(name)),
                     "global " + name);
         }
+    }
+
+    @Test
+    void functionsMatch() {
+        JsonObject functions = json.has("functions") ? json.getAsJsonObject("functions") : new JsonObject();
+        assertEquals(jsonMembers(functions), javaMembers(new ScriptApi.TypeDescription(null, java.functions())),
+                "global functions");
     }
 
     @Test

@@ -1,10 +1,11 @@
 /**
  * The Phase 2 data pack golden path, driven only through Studios and menus (the Raw JSON tab
  * is never opened): new project, a function typed into the function editor, a deliberate
- * command error that shows in Problems and disables data export, the `minecraft:load` tag
- * (which adds the `minecraft` namespace), a shaped recipe filled through the crafting grid,
- * a rename through the command palette that rewrites the tag, data and combined exports, an
- * install into a fake world, and a second launch that reopens the saved project.
+ * command error that shows in Problems and disables data export, a `give` completion, the
+ * `minecraft:load` tag (which adds the `minecraft` namespace), a shaped recipe filled through
+ * the crafting grid, a rename through the command palette that rewrites the tag, data and
+ * combined exports, an install into a fake world, and a second launch that reopens the saved
+ * project.
  *
  * Preview and WebGL are unavailable headless, so nothing here asserts a render.
  */
@@ -210,6 +211,21 @@ test('data pack: function, problem, load tag, recipe grid, rename, export, insta
   await typeSource(window, GOOD_LINES);
   await expect(errors).toHaveCount(0);
   await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+
+  // Completion: a new line starting `gi` offers `give` from Spyglass through main (the
+  // suggest controller has been registered since B140; before that no list ever showed).
+  await window.keyboard.press('ControlOrMeta+End');
+  await window.keyboard.press('Enter');
+  await window.keyboard.type('gi');
+  const suggest = window.getByTestId('function-editor').locator('.monaco-editor .suggest-widget');
+  await expect(suggest).toBeVisible({ timeout: 30_000 });
+  await expect(suggest.locator('.monaco-list-row', { hasText: 'give' }).first()).toBeVisible({
+    timeout: 30_000,
+  });
+  await window.keyboard.press('Escape');
+  await expect(suggest).toBeHidden();
+  await typeSource(window, GOOD_LINES);
+  await expect(errors).toHaveCount(0);
 
   // The load tag: the template adds the `minecraft` namespace.
   await window.getByTestId('toolbar-add-element').click();

@@ -46,6 +46,28 @@ const NESTED_JARS_FOLDER = 'META-INF/jars/';
 /** Entity definitions: `msm/<ns>/entity/...`. Their presence makes the jar need GeckoLib. */
 const ENTITY_DEFINITION_PATTERN = /^msm\/[^/]+\/entity\//;
 
+/**
+ * The first `msm_runtime` that runs scripts and the `run_script` action (ADR 0032 D4): a jar
+ * with scripts depends on at least this version, whatever the exporter's runtime version.
+ */
+export const SCRIPT_RUNTIME_MINIMUM = '0.6.0';
+
+/**
+ * The later of two `major.minor.patch` versions (numeric parts compared; a pre-release or
+ * build suffix is ignored for the comparison and kept on the version returned).
+ */
+export function laterVersion(a: string, b: string): string {
+  const parts = (v: string): number[] =>
+    (v.split(/[-+]/)[0] ?? '').split('.').map((n) => Number.parseInt(n, 10) || 0);
+  const x = parts(a);
+  const y = parts(b);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) {
+    const d = (x[i] ?? 0) - (y[i] ?? 0);
+    if (d !== 0) return d > 0 ? a : b;
+  }
+  return a;
+}
+
 /** The version written into a synthesised `fabric.mod.json`. */
 export const DEFAULT_MOD_VERSION = '1.0.0';
 
@@ -394,7 +416,7 @@ async function loadRuntime(
  * `transpileScript` and written as `.js` at the same path; the `.ts` is not written. Without
  * a transpiler: `export.transpiler-missing`; a failed transpile reports its problems with the
  * script's path; both write nothing. Jars with scripts depend on `msm_runtime` at
- * `runtimeVersion` (the app's version, 0.6.0 or later), which runs them.
+ * `runtimeVersion` or {@link SCRIPT_RUNTIME_MINIMUM}, whichever is later (ADR 0032 D4).
  *
  * @param options - Where the runtime and GeckoLib jars come from, and the runtime version.
  */
@@ -432,6 +454,11 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
       if (transpiled === undefined) return;
 
       const runtimeVersion = options.runtimeVersion ?? input.meta.msmVersion;
+      // The `msm_runtime` floor in `depends`: scripts need SCRIPT_RUNTIME_MINIMUM or later.
+      const dependsVersion =
+        transpiled.length > 0
+          ? laterVersion(runtimeVersion, SCRIPT_RUNTIME_MINIMUM)
+          : runtimeVersion;
       const nest = input.options[SEPARATE_RUNTIME_OPTION] !== true;
       const entities = needsGeckolib(input.files);
       const geckolib = entities ? input.target.geckolib : undefined;
@@ -511,7 +538,7 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
           projectName: input.projectName,
           files: input.files,
           fabric,
-          runtimeVersion,
+          runtimeVersion: dependsVersion,
         });
       } else {
         const parsed = modJsonContents(provided);
@@ -527,7 +554,7 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
         modJson = parsed;
       }
       const nestedPath = nest ? nestedRuntimePath(runtimeVersion) : undefined;
-      let finalModJson = withRuntime(modJson, runtimeVersion, nestedPath);
+      let finalModJson = withRuntime(modJson, dependsVersion, nestedPath);
       const geckolibPath =
         geckolib !== undefined && geckolibBytes !== undefined
           ? nestedGeckolibPath(geckolib)

@@ -1,6 +1,6 @@
 # packages/core — Core project model (IR)
 
-Phase 2 code complete: model, serialisation, load/save with the `SaveManifest` (ADR 0012), migrations, kind registry, command stack with asset commands and coalesced value-level edits, the `lowerProject` driver, and the reference index with one-step `renameElement` (ADR 0016). Phase 4 code complete: the shared merge of `OutputFile.merge` outputs (`tag`, `object`; conflicts per key as `lowering.merge-conflict`), used by both `lowerProject` and `runExport` (ADR 0027).
+Phase 2 code complete: model, serialisation, load/save with the `SaveManifest` (ADR 0012), migrations, kind registry, command stack with asset commands and coalesced value-level edits, the `lowerProject` driver, and the reference index with one-step `renameElement` (ADR 0016). Phase 4 code complete: the shared merge of `OutputFile.merge` outputs (`tag`, `object`; conflicts per key as `lowering.merge-conflict`), used by both `lowerProject` and `runExport` (ADR 0027). Phases 5 and 6 needed no core change (the `typescript` language is checked by the host).
 
 ## Purpose
 

@@ -57,4 +57,11 @@ Names not in the table are a load-time error for that `on` call (logged, the res
 
 ## Status
 
-Proposed (2026-11-05). Implemented by B132 (JSON, generator, typings), B133 (runtime), B134 (plugin) and B137 (app); accepted at Phase 6 close.
+Accepted (2026-11-05, Phase 6 close, B141). Implemented by B132 (JSON, generator, typings), B133 (runtime and `ScriptApiContractTest`), B134 (plugin, validators, templates), B135 (mcdoc `run_script`, `msm:script`), B137a and B137b (app) and B139 (`fixtures/sample-script`, one script per event, checked on a headless server in CI). Findings:
+
+- Every property in the typings is `readonly`; namespaces become interfaces named after their owner (`MsmLog`, `MsmEvents`, `MsmActions`); events share a `GameEvent` base; `declare module "msm:runtime"` re-exports each global interface as `export type X = globalThis.X;`.
+- `msm.log` writes `[msm_runtime] <script id>: <message>`; handler errors keep `[msm_runtime] script <id>: ...` (ADR 0031 D4).
+- `player.join` fires from `PlayerList` placement, so GameTests drive it with a mock server player; `UseEntityCallback` fires in the network handler, so its tests call the event's invoker.
+- The content-jar exporter's version rule (D4): a jar with scripts depends on `msm_runtime` at the later of the runtime version and `SCRIPT_RUNTIME_MINIMUM` (`0.6.0`); `app/test/runtime-version.test.ts` checks that the app version is at least that.
+
+**Amendment to D1 (2026-11-05, Phase 6 close): global free functions.** The JSON gains an optional top-level `functions` object of method members, emitted as `declare function`. It declares one function, `require(id: string): any`: relative ids (`./util`, `../lib/shapes`) load another script of the same mod and namespace, and `msm:runtime` returns the `msm` module. The return type is `any` on purpose (a required module's exports are not known to the typings; `unknown` would make every use an error), so a script using `require("./util")` type-checks without the TS2591 warning it had before. `ScriptApiContractTest` compares `functions` with the runtime's `ScriptApi.FUNCTIONS` by name and parameter counts.

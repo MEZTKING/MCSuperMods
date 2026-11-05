@@ -76,7 +76,7 @@ With **Has a spawn egg** (on by default) the mod adds the item `<namespace>:<nam
 
 Events work as for blocks and items ([Events and actions](blocks-and-items.md#events-and-actions)): a named list of actions run in order on the server. Entities have four triggers: **On hurt** (after the mob takes damage and survives it), **On death**, **On interact** (a player right-clicks it) and **On attack** in the **Attack** section (after each melee hit).
 
-Entities also have a seventh action, `play_animation`: it plays one animation of the animation set once, chosen in the action's animation field (a list of the names in the chosen **Animation set**). The controller field is optional; leave it empty unless two animations should play at the same time, each in its own controller. Example: an **On interact** event with `play_sound` and `play_animation` `wave` makes the mob wave and chime when right-clicked. Blocks and items cannot use `play_animation`.
+Entities also have an eighth action, `play_animation` (after the seven that blocks and items share, `run_script` among them): it plays one animation of the animation set once, chosen in the action's animation field (a list of the names in the chosen **Animation set**). The controller field is optional; leave it empty unless two animations should play at the same time, each in its own controller. Example: an **On interact** event with `play_sound` and `play_animation` `wave` makes the mob wave and chime when right-clicked. Blocks and items cannot use `play_animation`.
 
 ## The preview
 

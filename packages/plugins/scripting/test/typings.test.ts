@@ -49,6 +49,19 @@ describe('script API v1', () => {
     expect(() =>
       parseScriptApi({ ...raw, types: { Pos: { doc: 'x', members: { x: { kind: 'field' } } } } }),
     ).toThrow(/api\.types\.Pos\.members\.x/);
+    expect(() =>
+      parseScriptApi({
+        ...raw,
+        functions: { require: { kind: 'property', type: 'any', doc: 'x' } },
+      }),
+    ).toThrow(/api\.functions\.require\.kind/);
+  });
+
+  it('declares require as a global free function', () => {
+    expect(Object.keys(SCRIPT_API.functions ?? {})).toEqual(['require']);
+    expect(MSM_RUNTIME_TYPINGS).toContain('declare function require(id: string): any;');
+    const { functions: _omitted, ...withoutFunctions } = SCRIPT_API;
+    expect(generateTypings(withoutFunctions)).not.toContain('declare function');
   });
 
   it('reports inconsistencies', () => {
@@ -117,6 +130,16 @@ describe('msm-runtime.d.ts', () => {
       'export {};',
     ].join('\n');
     expect(typeCheck(imported)).toEqual([]);
+  });
+
+  it('type-checks relative and runtime requires (no TS2591)', () => {
+    const required = [
+      'const util = require("./util");',
+      'const runtime = require("msm:runtime");',
+      'msm.events.on("server.started", () => { util.greet(runtime.msm.version); });',
+    ].join('\n');
+    expect(typeCheck(required)).toEqual([]);
+    expect(typeCheck('require(42);')).not.toEqual([]);
   });
 
   it('rejects unknown events and wrong handlers', () => {

@@ -96,7 +96,7 @@ What that means in practice:
 - Arrow functions, `let` and `const`, template strings, destructuring, `for...of` and classes all work: the compiler rewrites them as ES5 (a `class` becomes a function with a prototype).
 - `async` and `await` compile, but the game does not wait for anything: there is no file or network access, and promises settle right after your handler returns. Use `msm.schedule` to wait.
 - The checker offers only what Rhino has: the ES2015 built-ins (`Map`, `Set`, `Promise`, `Symbol`), `Array.prototype.includes`, `Object.entries` and `Object.values`, string padding, and no browser or Node.js objects (`document`, `fetch`, `setTimeout`, `process`).
-- A script can load another script of the same mod with `require("./util")`, and that script's `exports` come back. The editor does not know `require` yet, so it shows a `typescript.semantic` warning ("Cannot find name 'require'") that you can ignore; the export still works.
+- A script can load another script of the same mod and namespace with `require("./util")`, and that script's `exports` come back; `require("msm:runtime")` returns the `msm` module. The editor knows `require`, but what it returns is untyped (`any`), so completions stop at the required module.
 
 ## Limits
 

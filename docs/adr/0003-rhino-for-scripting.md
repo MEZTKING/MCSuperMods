@@ -16,4 +16,4 @@ We embed Mozilla Rhino in ES6 language mode in `msm_runtime` and have esbuild do
 
 ## Status
 
-Accepted (2026-11-03, recorded 2026-11-04). Revisit under Open Question 2 in Phase 6.
+Accepted (2026-11-03, recorded 2026-11-04); partly superseded by [ADR 0031](0031-rhino-runtime-and-typescript-es5-scripts.md) (esbuild → TypeScript ES5) at Phase 6 close (2026-11-05). Rhino in `msm_runtime` stands (1.9.2, ES6 language level, nested); the transpiler is TypeScript `transpileModule` to ES5 CommonJS, because Rhino 1.9.2 cannot parse classes, `for...of`, call spread or `async` and esbuild cannot lower them to ES5. Open Question 2 is closed.

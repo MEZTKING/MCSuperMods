@@ -10,6 +10,8 @@
  *    or `app/src` (excluding `packages/targets/**`) may contain a Minecraft
  *    version literal such as `26.3`, unless the line contains
  *    `msm-allow-version`.
+ * 3. The Fabric version facts of `engine-mod/parity/gradle.properties` (a separate Gradle build
+ *    that reads only its own file) equal those of `engine-mod/gradle.properties`.
  */
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
@@ -34,7 +36,7 @@ export interface SourceFile {
 }
 
 export interface Violation {
-  kind: 'layer' | 'version-fact' | 'unknown-package';
+  kind: 'layer' | 'version-fact' | 'unknown-package' | 'gradle-facts';
   message: string;
 }
 
@@ -195,7 +197,46 @@ function collectSources(root: string, start: string, out: SourceFile[]): void {
   }
 }
 
-/** Runs both checks against a repository root. */
+/** The keys `engine-mod/parity/gradle.properties` must share with `engine-mod/gradle.properties`. */
+export const SHARED_GRADLE_KEYS = [
+  'minecraft_version',
+  'loader_version',
+  'loom_version',
+  'fabric_api_version',
+] as const;
+
+/** Parses `key=value` lines of a `.properties` file (comments and blank lines skipped). */
+export function parseProperties(text: string): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (line === '' || line.startsWith('#') || line.startsWith('!')) continue;
+    const at = line.search(/[=:]/);
+    if (at <= 0) continue;
+    out.set(line.slice(0, at).trim(), line.slice(at + 1).trim());
+  }
+  return out;
+}
+
+/** Reports every shared key that is missing from either file or differs between them. */
+export function compareGradleFacts(engine: string, parity: string): Violation[] {
+  const a = parseProperties(engine);
+  const b = parseProperties(parity);
+  const violations: Violation[] = [];
+  for (const key of SHARED_GRADLE_KEYS) {
+    const left = a.get(key);
+    const right = b.get(key);
+    if (left === undefined || right === undefined || left !== right) {
+      violations.push({
+        kind: 'gradle-facts',
+        message: `${key}: engine-mod/gradle.properties has ${left ?? '(missing)'}, engine-mod/parity/gradle.properties has ${right ?? '(missing)'}`,
+      });
+    }
+  }
+  return violations;
+}
+
+/** Runs every check against a repository root. */
 export function run(root: string): Violation[] {
   const layers = JSON.parse(
     readFileSync(join(root, 'tools', 'check-deps', 'layers.json'), 'utf8'),
@@ -203,7 +244,13 @@ export function run(root: string): Violation[] {
   const sources: SourceFile[] = [];
   collectSources(root, 'packages', sources);
   collectSources(root, 'app/src', sources);
-  return [...checkLayers(loadPackages(root), layers), ...findVersionFacts(sources)];
+  const engine = join(root, 'engine-mod', 'gradle.properties');
+  const parity = join(root, 'engine-mod', 'parity', 'gradle.properties');
+  const gradle =
+    existsSync(engine) && existsSync(parity)
+      ? compareGradleFacts(readFileSync(engine, 'utf8'), readFileSync(parity, 'utf8'))
+      : [];
+  return [...checkLayers(loadPackages(root), layers), ...findVersionFacts(sources), ...gradle];
 }
 
 function main(): void {
@@ -214,7 +261,7 @@ function main(): void {
     for (const violation of violations) console.error(`  [${violation.kind}] ${violation.message}`);
     process.exit(1);
   }
-  console.log('check-deps: dependency direction and version facts OK');
+  console.log('check-deps: dependency direction, version facts and Gradle facts OK');
 }
 
 const invokedPath = process.argv[1];

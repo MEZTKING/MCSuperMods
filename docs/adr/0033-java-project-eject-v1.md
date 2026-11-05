@@ -2,7 +2,7 @@
 
 ## Context
 
-Tier 2 ([Scripting and Escape Hatches](../DESIGN.md#12-scripting-and-escape-hatches)) is "Export as Fabric Java project": a one-way, deterministic, documented Gradle project with generated Java that mirrors what `msm_runtime` would have done, with no dependency on `msm_runtime` ([Targets and Exporters](../DESIGN.md#9-targets-and-exporters), exporter `java-project`). The ROADMAP asks for a CI check that the ejected kitchen-sink project builds with Gradle and for behaviour-parity GameTests against both the runtime jar and the ejected build. Facts (verified 2026-11-05, `docs/PHASE6-PLAN.md`): Gradle 9.8.2 is current and is the engine-mod wrapper (wrapper jar SHA-256 `3b8a2577…8e98`); Loom 1.19.3 is the latest 1.19 release (1.20 is alpha); Fabric Loader 0.20.1 and Fabric API 0.165.2+26.3 are the latest for 26.3; Loom 1.19.3 has the `include` configuration and `NestableJarGenerationTask`; Fabric API's gametest module runs tests on a production dedicated server when the JVM property `fabric-api.gametest` is set (`fabric-api.gametest.report-file`, `.filter`, `.verify` exist in 4.0.36). The generated Java names Mojang classes of one Minecraft version (`Identifier`, `BlockBehaviour.Properties.setId`, `FabricEntityType.Builder.createMob`), which are version facts.
+Tier 2 ([Scripting and Escape Hatches](../DESIGN.md#12-scripting-and-escape-hatches)) is "Export as Fabric Java project": a one-way, deterministic, documented Gradle project with generated Java that mirrors what `msm_runtime` would have done, with no dependency on `msm_runtime` ([Targets and Exporters](../DESIGN.md#9-targets-and-exporters), exporter `java-project`). The ROADMAP asks for a CI check that the ejected kitchen-sink project builds with Gradle and for behaviour-parity GameTests against both the runtime jar and the ejected build. Facts (verified 2026-11-05 in the phase plan, deleted at phase close; it survives in git history): Gradle 9.8.2 is current and is the engine-mod wrapper (wrapper jar SHA-256 `3b8a2577…8e98`); Loom 1.19.3 is the latest 1.19 release (1.20 is alpha); Fabric Loader 0.20.1 and Fabric API 0.165.2+26.3 are the latest for 26.3; Loom 1.19.3 has the `include` configuration and `NestableJarGenerationTask`; Fabric API's gametest module runs tests on a production dedicated server when the JVM property `fabric-api.gametest` is set (`fabric-api.gametest.report-file`, `.filter`, `.verify` exist in 4.0.36). The generated Java names Mojang classes of one Minecraft version (`Identifier`, `BlockBehaviour.Properties.setId`, `FabricEntityType.Builder.createMob`), which are version facts.
 
 ## Decision
 
@@ -42,7 +42,12 @@ Gradle facts come from the target: `Target.fabric` (`loom`, `loader`, `api`, `mi
 
 ## Status
 
-Proposed (2026-11-05). Findings of the eject and parity spike (B131) are appended here before Wave 1; accepted at Phase 6 close.
+Accepted (2026-11-05, Phase 6 close, B141). Implemented by B131 (spike, `engine-mod/parity/` skeleton, `run-fabric-server --gametest`), B136 (exporter and the 26.3 generator), B137a (`exports.writeTree`, the served wrapper, File > "Export Java Project…"), B137b (dialog), B139 (parity tests and CI) and B140 (e2e `eject-path`). Findings at close:
+
+- The mod class is the mod id in Pascal case plus `Mod` unless it already ends so (`MsmSampleMod`, `MsmSampleMobMod`); the client entrypoint and `client/` exist only with entities.
+- One parity jar holds both samples' tests (`SampleModParityTest`, 11 tests; `SampleMobParityTest`, 7 tests); each run selects its sample with `--gametest-filter`. The functions' effects are observed through `ServerMessageEvents.COMMAND_MESSAGE` (both sample functions `say` a line); sounds and particles stay unobserved.
+- CI runs the four parity runs (content and ejected jar of each sample) in one `fabric-server-parity` folder; locally, warm, the added steps took about 4.5 minutes.
+- `export.folder-not-empty` is a blocking problem built from `writeTree`'s `folder-not-empty` result, not a thrown error.
 
 Findings of B131 (2026-11-05, eject and parity spike; Loom 1.19.3, Gradle 9.8.2, Fabric API 0.165.2+26.3, JDK 25.0.5):
 

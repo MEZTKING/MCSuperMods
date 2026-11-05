@@ -1,9 +1,12 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   checkLayers,
+  compareGradleFacts,
   findVersionFacts,
   type LayerMap,
   matchesPattern,
+  parseProperties,
   parseWorkspaceGlobs,
   ruleFor,
 } from './index.ts';
@@ -167,5 +170,49 @@ describe('parseWorkspaceGlobs', () => {
   it('reads the packages block list only', () => {
     const yaml = 'packages:\n  - app\n  - \'packages/*\'\n  - "tools"\n\ncatalog:\n  vite: 1.0.0\n';
     expect(parseWorkspaceGlobs(yaml)).toEqual(['app', 'packages/*', 'tools']);
+  });
+});
+
+describe('Gradle facts of engine-mod and engine-mod/parity', () => {
+  const engine = [
+    '# Fabric',
+    'minecraft_version=1.0',
+    'loader_version=0.1.0',
+    'loom_version = 2.0.0',
+    'fabric_api_version=0.9.0+1.0',
+    'mod_version=0.6.0',
+  ].join('\n');
+
+  it('parses properties, skipping comments', () => {
+    const props = parseProperties(engine);
+    expect(props.get('loom_version')).toBe('2.0.0');
+    expect(props.has('# Fabric')).toBe(false);
+    expect(props.size).toBe(5);
+  });
+
+  it('passes when the shared keys agree, whatever else differs', () => {
+    expect(
+      compareGradleFacts(engine, engine.replace('mod_version=0.6.0', 'mod_version=0.0.0')),
+    ).toEqual([]);
+  });
+
+  it('reports a differing and a missing key', () => {
+    const parity = engine
+      .replace('loader_version=0.1.0', 'loader_version=0.2.0')
+      .replace('loom_version = 2.0.0', '');
+    const violations = compareGradleFacts(engine, parity);
+    expect(violations.map((v) => v.kind)).toEqual(['gradle-facts', 'gradle-facts']);
+    expect(violations[0]?.message).toContain(
+      'loader_version: engine-mod/gradle.properties has 0.1.0',
+    );
+    expect(violations[1]?.message).toContain('has (missing)');
+  });
+
+  it('holds for the repository', () => {
+    const read = (path: string): string =>
+      readFileSync(new URL(`../../engine-mod/${path}`, import.meta.url), 'utf8');
+    expect(compareGradleFacts(read('gradle.properties'), read('parity/gradle.properties'))).toEqual(
+      [],
+    );
   });
 });

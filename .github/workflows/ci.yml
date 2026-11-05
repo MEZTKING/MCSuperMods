@@ -56,7 +56,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('engine-mod/*.gradle.kts', 'engine-mod/gradle.properties', 'engine-mod/gradle/wrapper/gradle-wrapper.properties') }}
+          key: gradle-${{ runner.os }}-${{ hashFiles('engine-mod/*.gradle.kts', 'engine-mod/parity/*.gradle.kts', 'engine-mod/gradle.properties', 'engine-mod/parity/gradle.properties', 'engine-mod/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: gradle-${{ runner.os }}-
       - name: Build msm_runtime (JUnit and GameTests)
         working-directory: engine-mod

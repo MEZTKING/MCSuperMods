@@ -19,9 +19,11 @@ import {
   ExportProblemCodes,
   type FabricContentJarOptions,
   FabricContentJarProblemCodes,
+  laterVersion,
   nestedRuntimePath,
   RESERVED_MOD_IDS,
   runExport,
+  SCRIPT_RUNTIME_MINIMUM,
   type ScriptTranspileResult,
   sanitiseModId,
   transpiledScriptPath,
@@ -442,11 +444,37 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         const js = utf8.decode(entries['msm/ruby/script/glow.js'] as Uint8Array);
         expect(js).toContain('require("msm:runtime")');
         expect(js).not.toMatch(/class Glow|for \(const|=>/);
-        // Jars with scripts need a runtime that runs them: the dependency is the runtime version.
+        // Jars with scripts need a runtime that runs them: the floor is SCRIPT_RUNTIME_MINIMUM
+        // when the runtime version (here the test meta's 0.1.0) is older (ADR 0032 D4).
         expect(json(entries, 'fabric.mod.json').depends).toMatchObject({
+          msm_runtime: `>=${SCRIPT_RUNTIME_MINIMUM}`,
+        });
+        expect(paths).toContain(`META-INF/jars/msm_runtime-${meta.msmVersion}.jar`);
+        expect(transpiledScriptPath('msm/a/script/b.ts')).toBe('msm/a/script/b.js');
+      });
+
+      it('keeps a later runtime version as the floor and ignores it without scripts', async () => {
+        const transpileScript = async (source: string, name: string) =>
+          typescriptTranspile(source, name);
+        const later = await exportJar([scriptElement(scriptSource), definition], {
+          loadRuntimeJar: async () => runtimeJar,
+          transpileScript,
+          runtimeVersion: '0.7.1',
+        });
+        expect(json(later.entries, 'fabric.mod.json').depends).toMatchObject({
+          msm_runtime: '>=0.7.1',
+        });
+        const none = await exportJar([definition], {
+          loadRuntimeJar: async () => runtimeJar,
+          transpileScript,
+        });
+        expect(json(none.entries, 'fabric.mod.json').depends).toMatchObject({
           msm_runtime: `>=${meta.msmVersion}`,
         });
-        expect(transpiledScriptPath('msm/a/script/b.ts')).toBe('msm/a/script/b.js');
+        expect(laterVersion('0.5.0', '0.6.0')).toBe('0.6.0');
+        expect(laterVersion('0.10.0', '0.6.0')).toBe('0.10.0');
+        expect(laterVersion('0.6.0-beta.1', '0.6.0')).toBe('0.6.0-beta.1');
+        expect(laterVersion('1.0', '0.6.0')).toBe('1.0');
       });
 
       it('reports export.transpiler-missing without a transpiler and writes nothing', async () => {

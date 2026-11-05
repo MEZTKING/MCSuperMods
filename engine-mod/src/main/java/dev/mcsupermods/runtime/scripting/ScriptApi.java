@@ -110,9 +110,15 @@ public final class ScriptApi {
     /** An event: its object type, whether it has {@code cancel()} and the Fabric API callback behind it. */
     public record EventDescription(String type, boolean cancellable, String source) {}
 
-    /** The whole API: object types, globals ({@code msm}) and events. */
+    /**
+     * The whole API: object types, globals ({@code msm}), events and global free functions ({@code require}, installed
+     * per script by {@link ScriptHost}; ADR 0032 D1 amendment).
+     */
     public record Description(Map<String, TypeDescription> types, Map<String, TypeDescription> globals,
-            Map<String, EventDescription> events) {}
+            Map<String, EventDescription> events, Map<String, MemberDescription> functions) {}
+
+    /** The global free functions every script scope has: {@code require(id)} (relative ids or {@code msm:runtime}). */
+    static final Map<String, MemberDescription> FUNCTIONS = Map.of("require", new MemberDescription("method", 1, 1, null));
 
     /** The member tree the host installs; needs no running server. */
     public static Description describe() {
@@ -124,6 +130,6 @@ public final class ScriptApi {
         ScriptEvents.EVENTS.forEach((name, spec) ->
                 events.put(name, new EventDescription(spec.type().name(), spec.cancellable(), spec.source())));
         return new Description(Collections.unmodifiableMap(types), Map.of("msm", MSM.describe()),
-                Collections.unmodifiableMap(events));
+                Collections.unmodifiableMap(events), FUNCTIONS);
     }
 }

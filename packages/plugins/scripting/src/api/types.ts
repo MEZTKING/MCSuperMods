@@ -95,7 +95,10 @@ export interface ScriptApiEvent {
   doc: string;
 }
 
-/** The whole script API description. */
+/**
+ * The whole script API description. `functions` declares global free functions such as
+ * `require` (ADR 0032 D1 amendment); each is a method member, emitted as `declare function`.
+ */
 export interface ScriptApi {
   /** The API version (1 for `script-api-v1.json`). */
   version: number;
@@ -105,6 +108,8 @@ export interface ScriptApi {
   globals: Record<string, ScriptApiGlobal>;
   /** Game events, keyed by name (`block.interact`). */
   events: Record<string, ScriptApiEvent>;
+  /** Global free functions, keyed by name (`require`); omitted when there are none. */
+  functions?: Record<string, ScriptApiMethod>;
 }
 
 /** Thrown by {@link parseScriptApi} when the JSON does not have the expected shape. */
@@ -229,7 +234,7 @@ function parseMembers(value: unknown, where: string): Record<string, ScriptApiMe
  */
 export function parseScriptApi(json: unknown): ScriptApi {
   const root = obj(json, 'api');
-  onlyKeys(root, ['version', 'types', 'globals', 'events'], 'api');
+  onlyKeys(root, ['version', 'types', 'globals', 'events', 'functions'], 'api');
   if (typeof root.version !== 'number' || !Number.isInteger(root.version) || root.version < 1) {
     fail('api.version', 'expected a positive integer');
   }
@@ -268,5 +273,16 @@ export function parseScriptApi(json: unknown): ScriptApi {
       doc: str(raw.doc, `${at}.doc`),
     };
   }
-  return { version: root.version, types, globals, events };
+  const api: ScriptApi = { version: root.version, types, globals, events };
+  if (root.functions !== undefined) {
+    const functions: Record<string, ScriptApiMethod> = {};
+    for (const [name, value] of Object.entries(obj(root.functions, 'api.functions'))) {
+      const at = `api.functions.${name}`;
+      const member = parseMember(value, at);
+      if (member.kind !== 'method') fail(`${at}.kind`, 'expected "method"');
+      functions[name] = member;
+    }
+    api.functions = functions;
+  }
+  return api;
 }

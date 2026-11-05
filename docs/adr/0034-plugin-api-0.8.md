@@ -42,4 +42,4 @@ The generator may throw an `Error` whose message names the definition; the expor
 
 ## Status
 
-Proposed (2026-11-05). Implemented by B132; accepted at Phase 6 close.
+Accepted (2026-11-05, Phase 6 close, B141). Implemented by B132 (types, `API_VERSION`, every built-in plugin and `tools/new-plugin` at `^0.8.0`, `fabric.gradle` `9.8.2` checked against the engine-mod wrapper) and B136 (`Target.javaProject` in the 26.3 target). No change to the decisions.

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { laterVersion, SCRIPT_RUNTIME_MINIMUM } from '@msm/exporters';
 import { describe, expect, it } from 'vitest';
 
 // ADR 0026 D4: the msm_runtime jar carries the app's version, so content jars depend on
@@ -25,5 +26,9 @@ function runtimeModVersion(): string {
 describe('runtime version', () => {
   it('engine-mod mod_version equals the app version', () => {
     expect(runtimeModVersion()).toBe(appVersion());
+  });
+
+  it('is at least the first runtime that runs scripts (ADR 0032 D4)', () => {
+    expect(laterVersion(appVersion(), SCRIPT_RUNTIME_MINIMUM)).toBe(appVersion());
   });
 });

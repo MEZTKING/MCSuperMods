@@ -61,6 +61,7 @@ import {
   createZipSink,
   type FabricContentJarOptions,
   runExport,
+  SCRIPT_RUNTIME_MINIMUM,
   type ScriptTranspileResult,
 } from '../src/index';
 
@@ -90,8 +91,10 @@ const VALIDATORS = PLUGINS.flatMap((plugin) => plugin.contributes.validators ?? 
 const registry = new ElementKindRegistry();
 for (const plugin of PLUGINS) registerPlugin(registry, plugin);
 
+// 0.6.0: the first runtime that runs scripts (ADR 0032 D4), so `depends` and the nested
+// runtime's file name agree.
 const meta = {
-  msmVersion: '0.5.0',
+  msmVersion: '0.6.0',
   plugins: ['msm.blocks-items', 'msm.datapack', 'msm.scripting'],
 };
 const stubRuntimeJar = utf8.encode('PK stub msm_runtime jar for the sample-script golden');
@@ -729,6 +732,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       };
       expect(modJson.id).toBe(NAMESPACE);
       expect(modJson.depends.msm_runtime).toBe(`>=${meta.msmVersion}`);
+      expect(modJson.depends.msm_runtime).toBe(`>=${SCRIPT_RUNTIME_MINIMUM}`);
     });
 
     it('rejects an ES5 problem in the scanner check (self-test)', () => {

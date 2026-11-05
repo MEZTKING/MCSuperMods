@@ -2,7 +2,7 @@
 
 ## Context
 
-Tier 1 scripting ([Scripting and Escape Hatches](../DESIGN.md#12-scripting-and-escape-hatches), [ADR 0003](0003-rhino-for-scripting.md)) was designed as "TypeScript in the app, transpiled by esbuild to the ES2015 subset Rhino's ES6 mode handles, run in game by Rhino embedded in `msm_runtime`". Open Question 2 asked whether Rhino's coverage is enough. Phase 6 verified it (2026-11-05, in the session container, see `docs/PHASE6-PLAN.md`):
+Tier 1 scripting ([Scripting and Escape Hatches](../DESIGN.md#12-scripting-and-escape-hatches), [ADR 0003](0003-rhino-for-scripting.md)) was designed as "TypeScript in the app, transpiled by esbuild to the ES2015 subset Rhino's ES6 mode handles, run in game by Rhino embedded in `msm_runtime`". Open Question 2 asked whether Rhino's coverage is enough. Phase 6 verified it (2026-11-05, in the session container; the phase plan's facts table, deleted at phase close, survives in git history):
 
 - Rhino's current release is **1.9.2** (Maven Central `org.mozilla:rhino:1.9.2`, 2026-10-27, MPL 2.0, Java 17 or newer, the plain runtime jar of 1.68 MB with no dependencies; `rhino-tools`, `rhino-engine` and `rhino-xml` are separate artefacts we do not need). Its default language level is `Context.VERSION_ES6` (200); `VERSION_ECMASCRIPT` (250) exists.
 - Rhino 1.9.2 runs `let`/`const`, arrow functions, template literals, default parameters, object destructuring, array destructuring without rest, array spread, generators, `Promise` (with `Context.processMicrotasks()`), `Symbol`, `Map`/`Set`/`WeakMap`, `Object.entries`, `Array.prototype.includes`, `String.prototype.padStart`, regular expressions with named groups, optional chaining, `??` and `**`. It does **not** parse `class`, `for...of`, spread in calls, array rest patterns or `async`/`await`, under either language version.
@@ -33,7 +33,14 @@ Tier 1 scripting ([Scripting and Escape Hatches](../DESIGN.md#12-scripting-and-e
 
 ## Status
 
-Proposed (2026-11-05). Findings of the spike (B130) are appended here before Wave 1; accepted at Phase 6 close.
+Accepted (2026-11-05, Phase 6 close, B141). Implemented by B130 (spike), B133 (runtime v1 scripting), B136 (content-jar transpilation), B137a (TypeScript service in main, export gate, live problems) and B137b (Monaco TypeScript worker, renderer budget). The decisions stand as written above, with these findings:
+
+- **D1.** Loom nests Rhino as a plain library (no Shadow); the runtime jar carries `META-INF/licenses/rhino-LICENSE.txt` and the README credits Rhino and TypeScript.
+- **D2.** The transpiler runs in main as a lazy chunk `scripting-engine-*.js`, minified in the build (about 3.7 MB; 8.3 MB unminified), with `typescript` and the curated `lib` files as `?raw` imports; its ES5 output keeps a `/** @class */` marker comment, so token checks use the TypeScript scanner and skip comments.
+- **D3.** The shared standard objects come from `initSafeStandardObjects(null, true)` plus `sealObject()` on the global, so scripts cannot change `Array.prototype`, `Math` or `globalThis` and nothing leaks between scripts; each script has its own top-level scope. Relative `require` resolves within the same mod and namespace, evaluates each module once and returns partial exports on cycles.
+- **D4.** `S` in `loaded S script(s); E error(s)` counts every script file found; `E` counts scan errors, scripts that failed to load and unknown event names used while loading. `/reload` reloads scripts (deferred to the next tick when requested from inside a script call). After a script cancels a main-hand interaction, the off hand and the main-hand item use of the same click are refused in that tick.
+- **D5.** Syntax diagnostics are `typescript.syntax` errors, semantic ones `typescript.semantic` warnings, each message ending `(TS<n>)`; a failing service is one `session.scripting-unavailable` warning.
+- **D6.** Measured at close: renderer 12.9 MB of 16 MB (the `ts.worker` chunk 6.6 MB), `app.asar` 23.9 MB of 25 MB with `typescript` in main (more than the 17 MB first expected: the asar budget is the one to watch; see the Milestone Log).
 
 ### Spike findings (B130, 2026-11-05)
 

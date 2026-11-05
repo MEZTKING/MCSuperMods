@@ -905,5 +905,19 @@
       "source": "ServerTickEvents.END_SERVER_TICK",
       "doc": "Runs at the end of every server tick (20 times a second); keep the handler cheap."
     }
+  },
+  "functions": {
+    "require": {
+      "kind": "method",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "doc": "A relative id such as \"./util\" or \"../lib/shapes\" (a script of the same mod and namespace), or \"msm:runtime\"."
+        }
+      ],
+      "returns": "any",
+      "doc": "Loads another script of the same mod and namespace by a relative id and returns its module.exports (each script runs once; cycles see partial exports); require(\"msm:runtime\") returns the msm module."
+    }
   }
 }
