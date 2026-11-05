@@ -114,8 +114,8 @@ function memberLines(owner: string, name: string, member: ScriptApiMember): stri
 /**
  * Generates the text of `msm-runtime.d.ts` for a script API description: one global
  * `interface` per declared type, global and namespace, `declare const` for each global, and
- * `declare module "msm:runtime"` exporting the globals and every type, so scripts work with
- * or without the import.
+ * `declare module "msm:runtime"` exporting the globals and an alias of every type, so scripts
+ * work with or without the import.
  */
 export function generateTypings(api: ScriptApi): string {
   const decls = collectInterfaces(api);
@@ -141,9 +141,12 @@ export function generateTypings(api: ScriptApi): string {
   for (const [name, global] of globals) {
     out.push(...jsdoc(INDENT, global.doc), `${INDENT}export const ${name}: ${capitalise(name)};`);
   }
-  const typeNames = [...decls.keys()].sort(byName);
-  out.push(`${INDENT}export type {`, ...typeNames.map((n) => `${INDENT}${INDENT}${n},`));
-  out.push(`${INDENT}};`, '}', '');
+  // An ambient module may export only its own declarations, so each global interface is
+  // re-exported through an alias of the same name.
+  for (const name of [...decls.keys()].sort(byName)) {
+    out.push(`${INDENT}export type ${name} = globalThis.${name};`);
+  }
+  out.push('}', '');
   return out.join('\n');
 }
 
