@@ -6,11 +6,11 @@ All changes to the `@msm/plugin-api` surface. The package follows semver; every 
 
 Gear, weapons and consumables (ADR 0044). `API_VERSION` is `1.2.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
 
-- `ImageStarterParameter` (`type: 'image'`, `default: null`, `maxBytes?` (absent means 1 048 576 bytes), `maxSize?` (largest width and height in pixels)): a picture the user picks, passed to `build` as a PNG `data:` URL string or `null` in `BundleContext.values` (already a `Json`, so the `values` type is unchanged). The host checks the PNG signature, size and dimensions before passing it (ADR 0044 D7). It is exported but not yet a member of the `StarterParameter` union; it joins the union when the host's wizard and the built-in library render and read it (B189), so a 1.2.0 starter cannot declare it yet.
+- `ImageStarterParameter` (`type: 'image'`, `default: null`, `maxBytes?` (absent means 1 048 576 bytes), `maxSize?` (largest width and height in pixels)): a picture the user picks, passed to `build` as a PNG `data:` URL string or `null` in `BundleContext.values` (already a `Json`, so the `values` type is unchanged). The host checks the PNG signature, size and dimensions before passing it (ADR 0044 D7). It is a member of the `StarterParameter` union: the host's wizard renders it as a file picker (PNG only) with a thumbnail, and the built-in Painting flow reads it.
 
 ### Migration from 1.1.0
 
-None.
+None. Hosts that switch over `StarterParameter['type']` must handle `'image'`; a starter declaring an image parameter must build a placeholder for `null`.
 
 ## 1.1.0 — unreleased
 

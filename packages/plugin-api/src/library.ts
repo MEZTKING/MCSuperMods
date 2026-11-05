@@ -287,9 +287,9 @@ export interface SetStarterParameter extends StarterParameterBase {
  * passing a value, so `build` can trust both; like a colour, the image is a value, and a
  * flow never reads project content for it. Since 1.2.0 (ADR 0044 D7).
  *
- * Not yet a member of {@link StarterParameter}: it joins the union when the host's wizard and
- * the built-in library render and read it (brief B189), so no host meets a parameter type it
- * cannot show. Until then starters cannot declare it.
+ * A member of {@link StarterParameter} since 1.2.0 (it was declared outside the union until the
+ * host's wizard and the built-in library rendered and read it). A starter must accept `null`
+ * and draw a placeholder, since the user may pick no image.
  *
  * @example
  * ```ts
@@ -334,7 +334,8 @@ export type StarterParameter =
   | BooleanStarterParameter
   | ColourStarterParameter
   | ChoiceStarterParameter
-  | SetStarterParameter;
+  | SetStarterParameter
+  | ImageStarterParameter;
 
 /**
  * The Creator group a {@link ProjectStarter} is listed under (ADR 0043 D1): `gear` (tools and

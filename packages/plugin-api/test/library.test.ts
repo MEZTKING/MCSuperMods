@@ -210,6 +210,8 @@ describe('1.0.0 library additions', () => {
           return parameter.choices.map((choice) => choice.value).join(',');
         case 'set':
           return parameter.default.join('+');
+        case 'image':
+          return String(parameter.maxSize ?? 'any');
       }
     };
     expect(describe({ id: 'a', label: 'A', type: 'number', default: 2, min: 1 })).toBe('3');
@@ -312,7 +314,32 @@ describe('1.2.0 additions', () => {
     };
     expect(values.image).toBeNull();
     expect(String(values.other).startsWith('data:image/png;base64,')).toBe(true);
-    // Not yet in the union: B189 adds it with the wizard and the library.
-    expectTypeOf<ImageStarterParameter>().not.toExtend<StarterParameter>();
+    // A member of the union, so a starter can declare it.
+    expectTypeOf<ImageStarterParameter>().toExtend<StarterParameter>();
+    const declared: StarterParameter[] = [image];
+    expect(declared[0]?.type).toBe('image');
+  });
+
+  it('switches exhaustively over every parameter type', () => {
+    const describe = (parameter: StarterParameter): string => {
+      switch (parameter.type) {
+        case 'string':
+        case 'number':
+        case 'boolean':
+        case 'colour':
+        case 'choice':
+        case 'set':
+          return parameter.type;
+        case 'image':
+          return `image up to ${parameter.maxBytes ?? 1_048_576} bytes`;
+        default: {
+          const never: never = parameter;
+          return String(never);
+        }
+      }
+    };
+    expect(describe({ id: 'p', label: 'P', type: 'image', default: null })).toBe(
+      'image up to 1048576 bytes',
+    );
   });
 });
