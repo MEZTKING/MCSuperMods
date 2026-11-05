@@ -1587,3 +1587,22 @@ Next:
 **Decisions:** Template categories "Entity models" and "Entity animations". The animation lowering normalises `format_version` the same way as the geo model (the brief names it for the geo model only). No template goldens (the brief names only the kind folders); template tests assert schema validity, path and bone names instead. `packages/plugins/CLAUDE.md` unchanged: the `models-anim` row already exists, and the status paragraph is the orchestrator's.
 
 **Next:** B117 preview reads `previewKind` `geo_model` / `animation`; B118 registers the plugin and its sidebar group; the status paragraph and counts (2 kinds, 3 templates) at the close brief.
+
+## 2026-11-05 — executor — B115 `@msm/plugin-entities`
+
+What:
+- Kind `msm:entity` (folder `entity`, schema `msm:entity`, registry `entity_type`, `previewKind` `entity`, hidden `/format`) with the brief's default data (`msm:animated_model` `model`, `animations`, `texture` as empty strings for the user to fill).
+- Lowering `lowerEntity`: `msm/<ns>/entity/<path>.json` (layer `msm`, schema `msm:entity_definition`, `display_name`, `spawn_egg.texture`, `spawn_egg.display_name` stripped, `format` 1); `en_us` keys `entity.<ns>.<path>` and, with an egg, `item.<ns>.<path>_spawn_egg` (`merge: 'object'`); with an egg texture, `assets/<ns>/items/<path>_spawn_egg.json` and `assets/<ns>/models/item/<path>_spawn_egg.json` (`minecraft:item/generated`, `layer0`). No loot table.
+- Validators (`entities.*`, 9 codes in 7 validators): `unknown-event`, `event-cycle` (copied from blocks-items), `unknown-model`, `unknown-animations`, `unknown-animation-name`, `missing-texture`, `egg-texture-missing`, `group-range`, `goal-needs-targets`. `msm:geo_model` and `msm:animation` are read by kind string only.
+- Templates Creature, Monster, Ambient critter (category "Entities"); models, animation sets and textures derived from the template's own id, which the descriptions say are reported missing until added or imported.
+- Tests: plugin, lowering goldens (`test/fixtures/mc-26.3/expected/entity/`: default, ruby_golem, shade_egg_without_texture, moth_no_egg), template goldens (`expected/templates/`), a validator test per code; 36 tests.
+
+Decisions:
+- The egg's language key defaults to "<display name> Spawn Egg" when `spawn_egg.display_name` is absent (vanilla naming); no lang file when there is no name at all.
+- `unknown-event` covers trigger components (`msm:on_hurt`, `msm:on_death`, `msm:on_interact`, `msm:attack.on_attack`) and `trigger_event` actions; `play_animation` names an animation, so it is checked by `unknown-animation-name` (only when the referenced animation element exists).
+- `missing-texture` and the unknown-texture half of `egg-texture-missing` use the registry index's `texture` ids (project PNGs under `textures/` plus vanilla) and are skipped when the index has no textures, as the tool-tier check does for block tags. `ValidationInput` carries no assets.
+- The egg item definition uses the schema reference blocks-items uses (`::java::assets::item_definition::ItemDefinition`); the egg model uses `resource:model`.
+
+Next:
+- B118: `dataRegistryIds` should also count the generated egg item model `<ns>:item/<path>_spawn_egg` under `model` when the egg has a texture, or the gate warns `schema.unknown-id` on the lowered item definition (the tests add it to the project ids).
+- B122: the `packages/plugins/CLAUDE.md` status line (entities kinds, templates, validators).
