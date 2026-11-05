@@ -86,7 +86,10 @@ describe('blocks-items templates', () => {
   it('uses only vanilla ids or ids derived from the new element id', () => {
     for (const template of blocksItemsTemplates) {
       const context = { ...contextFor(template), id: 'zz:own' as const, projectNamespace: 'zz' };
-      const text = JSON.stringify(template.data(context)).replaceAll(/"zz:own(_[a-z]+)?"/g, '');
+      // Component keys (`"msm:breakable":`) are format names, not ids.
+      const text = JSON.stringify(template.data(context))
+        .replaceAll(/"msm:[a-z_]+":/g, '')
+        .replaceAll(/"zz:own(_[a-z]+)?"/g, '');
       expect(text, template.id).not.toMatch(/"(?!minecraft:)[a-z0-9_.-]+:[a-z0-9_./-]+"/);
     }
   });

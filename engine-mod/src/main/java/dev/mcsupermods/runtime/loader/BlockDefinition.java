@@ -1,66 +1,56 @@
 package dev.mcsupermods.runtime.loader;
 
-import com.google.gson.JsonObject;
-import dev.mcsupermods.runtime.events.EventDefinition;
-import java.util.Map;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.ID;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.intRange;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.optional;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.required;
+
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.mcsupermods.runtime.components.BlockComponents;
+import dev.mcsupermods.runtime.events.Events;
+import java.util.List;
+import java.util.Optional;
 import net.minecraft.resources.Identifier;
 
-/** Block definition v1 (ADR 0025 D2), spike subset. */
+/**
+ * Block definition v1 ({@code ::msm::definition::Block}, ADR 0025 D2).
+ *
+ * @param item the block item; empty when the file says {@code "item": false}
+ */
 public record BlockDefinition(
-        String soundType,
-        float hardness,
-        float resistance,
-        boolean requiresTool,
-        int lightLevel,
-        Identifier onInteract,
-        ItemSettings item,
-        Map<Identifier, EventDefinition> events) {
+        int format,
+        MsmSoundType soundType,
+        Optional<Identifier> lootTable,
+        Optional<ItemSettings> item,
+        BlockComponents components,
+        Events events) {
 
-    /** The block item; null in {@link BlockDefinition#item} means no block item. */
-    public record ItemSettings(int maxStackSize, String rarity, Identifier creativeTab) {}
+    public static final List<String> KEYS = List.of("format", "sound_type", "loot_table", "item", "components", "events");
 
-    public static BlockDefinition parse(JsonObject json) throws DefinitionException {
-        Json.requireFormat(json);
-        String sound = Json.string(json, "sound_type", "stone");
-        ItemSettings item = new ItemSettings(64, "common", null);
-        if (json.has("item")) {
-            JsonObject i = Json.object(json, "item");
-            item = i == null ? null : new ItemSettings(
-                    Json.integer(i, "max_stack_size", 64, 1, 99),
-                    Json.string(i, "rarity", "common"),
-                    tab(Json.string(i, "creative_tab", null)));
-        }
-        JsonObject components = Json.object(json, "components");
-        if (components == null) {
-            components = new JsonObject();
-        }
-        float hardness = 1.5f;
-        float resistance = 6.0f;
-        boolean requiresTool = false;
-        JsonObject breakable = Json.object(components, "msm:breakable");
-        if (breakable != null) {
-            hardness = (float) Json.number(breakable, "hardness", 1.5);
-            resistance = (float) Json.number(breakable, "resistance", 6.0);
-            requiresTool = Json.bool(breakable, "requires_tool", false);
-        }
-        int light = 0;
-        JsonObject emitter = Json.object(components, "msm:light_emitter");
-        if (emitter != null) {
-            light = Json.integer(emitter, "level", 15, 0, 15);
-        }
-        Map<Identifier, EventDefinition> events = EventParser.parse(json);
-        Identifier onInteract = null;
-        JsonObject interact = Json.object(components, "msm:on_interact");
-        if (interact != null) {
-            onInteract = EventParser.id(Json.requireString(interact, "event"), "event");
-            if (!events.containsKey(onInteract)) {
-                throw new DefinitionException("msm:on_interact names unknown event " + onInteract);
-            }
-        }
-        return new BlockDefinition(sound, hardness, resistance, requiresTool, light, onInteract, item, events);
+    /** The block item ({@code ::msm::definition::BlockItem}). */
+    public record ItemSettings(Optional<Identifier> creativeTab, int maxStackSize, MsmRarity rarity) {
+        public static final ItemSettings DEFAULT = new ItemSettings(Optional.empty(), 64, MsmRarity.COMMON);
+        public static final Codec<ItemSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
+                optional("creative_tab", ID).forGetter(ItemSettings::creativeTab),
+                optional("max_stack_size", intRange(1, 99), 64).forGetter(ItemSettings::maxStackSize),
+                optional("rarity", MsmRarity.CODEC, MsmRarity.COMMON).forGetter(ItemSettings::rarity)).apply(i, ItemSettings::new));
     }
 
-    static Identifier tab(String s) throws DefinitionException {
-        return s == null ? null : EventParser.id(s, "creative_tab");
-    }
+    /** {@code BlockItem | false}: {@code false} is no block item; {@code true} is an error. */
+    private static final Codec<Optional<ItemSettings>> ITEM = Codec.either(Codec.BOOL, ItemSettings.CODEC).comapFlatMap(
+            either -> either.map(
+                    b -> b ? DataResult.error(() -> "must be an object or false") : DataResult.success(Optional.<ItemSettings>empty()),
+                    s -> DataResult.success(Optional.of(s))),
+            opt -> opt.<Either<Boolean, ItemSettings>>map(Either::right).orElse(Either.left(false)));
+
+    public static final Codec<BlockDefinition> CODEC = RecordCodecBuilder.create(i -> i.group(
+            required("format", intRange(1, 1)).forGetter(BlockDefinition::format),
+            optional("sound_type", MsmSoundType.CODEC, MsmSoundType.STONE).forGetter(BlockDefinition::soundType),
+            optional("loot_table", ID).forGetter(BlockDefinition::lootTable),
+            optional("item", ITEM, Optional.of(ItemSettings.DEFAULT)).forGetter(BlockDefinition::item),
+            optional("components", BlockComponents.CODEC, BlockComponents.NONE).forGetter(BlockDefinition::components),
+            optional("events", Events.CODEC, Events.NONE).forGetter(BlockDefinition::events)).apply(i, BlockDefinition::new));
 }
