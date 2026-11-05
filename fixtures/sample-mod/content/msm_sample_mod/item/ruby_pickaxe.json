@@ -2,7 +2,15 @@
   "data": {
     "components": {
       "msm:tool": {
-        "tier": "diamond",
+        "attack_speed": -2.6,
+        "tier": {
+          "attack_damage_bonus": 3,
+          "durability": 1200,
+          "enchantment_value": 0,
+          "incorrect_blocks_for_drops": "#minecraft:incorrect_for_diamond_tool",
+          "repair_items": "#minecraft:diamond_tool_materials",
+          "speed": 9
+        },
         "type": "pickaxe"
       }
     },

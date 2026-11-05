@@ -136,6 +136,28 @@ describe('Java generator (mc-26.3)', () => {
     await golden('item', files);
   });
 
+  it('generates armour and custom tool materials (ADR 0042 D6)', async () => {
+    const paths = [
+      'ruby_helmet',
+      'iron_chestplate',
+      'sturdy_boots',
+      'ruby_pickaxe',
+      'flint_pickaxe',
+      'heavy_sword',
+    ];
+    const items = await Promise.all(paths.map((path) => definition('item', path)));
+    const { files } = generateJavaProject(input({ items }));
+    await golden('gear', files);
+    const modItems = files.find((file) => file.path.endsWith('/ModItems.java'))?.contents ?? '';
+    // enchantment_value 0 (sturdy_boots): built with 1, then the component is removed.
+    expect(modItems).toContain('.component(DataComponents.ENCHANTABLE, null)');
+    expect(modItems.match(/\.component\(DataComponents\.ENCHANTABLE, null\)/g)).toHaveLength(1);
+    // Without repair_items: the runtime's empty project-specific tag.
+    expect(modItems).toContain(
+      'Identifier.fromNamespaceAndPath("msm_test", "msm_repairs/flint_pickaxe")',
+    );
+  });
+
   it('generates the kitchen-sink entity with GeckoLib and the client entrypoint', async () => {
     const { files, entrypoints } = generateJavaProject(
       input({ entities: [await definition('entity', 'kitchen_sink')], geckolib: true }),
@@ -212,6 +234,57 @@ describe('Java generator (mc-26.3)', () => {
         /unknown top-level key 'colour'/,
       );
       expect(generate({ blocks: [block({ format: 2 })] })).toThrow(/format 2/);
+    });
+
+    it('rejects armour with a tool and malformed tag references', () => {
+      const item = (definition: JsonObject): DefinitionInput => ({
+        id: 'msm_test:bad',
+        path: 'msm/msm_test/item/bad.json',
+        definition,
+      });
+      expect(
+        generate({
+          items: [
+            item({
+              format: 1,
+              components: {
+                'msm:armor': { slot: 'helmet', material: 'iron' },
+                'msm:tool': { type: 'sword', tier: 'iron' },
+              },
+            }),
+          ],
+        }),
+      ).toThrow(/msm:armor and msm:tool on one item cannot be ejected/);
+      expect(
+        generate({
+          items: [
+            item({
+              format: 1,
+              components: {
+                'msm:tool': {
+                  type: 'pickaxe',
+                  tier: {
+                    durability: 1,
+                    speed: 1,
+                    attack_damage_bonus: 0,
+                    enchantment_value: 1,
+                    incorrect_blocks_for_drops: 'minecraft:incorrect_for_stone_tool',
+                  },
+                },
+              },
+            }),
+          ],
+        }),
+      ).toThrow(
+        /incorrect_blocks_for_drops 'minecraft:incorrect_for_stone_tool' is not a tag reference/,
+      );
+      expect(
+        generate({
+          items: [
+            item({ format: 1, components: { 'msm:armor': { slot: 'body', material: 'iron' } } }),
+          ],
+        }),
+      ).toThrow(/slot 'body' is not one of helmet, chestplate, leggings, boots/);
     });
 
     it('rejects undeclared events', () => {

@@ -1,0 +1,25 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": {
+        "defense": {
+          "boots": 1,
+          "chestplate": 3,
+          "helmet": 1,
+          "leggings": 2
+        },
+        "durability": 5,
+        "enchantment_value": 0,
+        "equip_sound": "msm_test:no_such_sound",
+        "equipment_asset": "msm_test:ruby",
+        "knockback_resistance": 0,
+        "toughness": 0
+      },
+      "slot": "boots"
+    },
+    "msm:durability": {
+      "max": 777
+    }
+  },
+  "format": 1
+}

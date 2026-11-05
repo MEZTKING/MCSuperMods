@@ -1,0 +1,35 @@
+{
+  "data": {
+    "components": {
+      "msm:armor": {
+        "material": {
+          "defense": {
+            "boots": 2,
+            "chestplate": 7,
+            "helmet": 3,
+            "leggings": 5
+          },
+          "durability": 25,
+          "enchantment_value": 12,
+          "equip_sound": "minecraft:item.armor.equip_diamond",
+          "equipment_asset": "msm_sample_mod:ruby_armor",
+          "knockback_resistance": 0.05,
+          "repair_items": "#minecraft:repairs_diamond_armor",
+          "toughness": 1
+        },
+        "slot": "helmet"
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Ruby Helmet",
+    "format": 1,
+    "model": "minecraft:item/diamond_helmet",
+    "rarity": "rare"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_helmet",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

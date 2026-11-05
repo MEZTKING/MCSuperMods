@@ -2360,3 +2360,21 @@ Next:
 - B161: e2e `targets-path` can use the ids above; the guide page `targets.md` should name File > "Upgrade Project Target…", the dialog title "Upgrade project target", the "Upgrade" button and the status bar badge.
 - B162 (or whoever owns `app/CLAUDE.md`): update its `runtime-jar.ts`, `stage-runtime.mjs`, `extraResources` and `newProject` lines (still describe the single `msm_runtime.jar`); the `exports:runtimeJar(targetId)` channel.
 - Run `cd engine-mod && ./gradlew build && ./gradlew build -Pmc=26.4` once B181 has landed, then `stage-runtime --require`.
+
+## 2026-11-05 — executor — B182: eject generator, sample mod, parity for armour and custom tool materials
+
+**What**
+- `packages/targets/mc-26.3/src/java-project/items.ts` (ADR 0042 D6): `msm:armor` as `.humanoidArmor(ArmorMaterials.X, ArmorType.Y)` or a `private static final ArmorMaterial <NAME>_ARMOR = new ArmorMaterial(...)` field declared before its item (`Map.of` defence with `BODY` = chestplate as the runtime, the equip sound from `BuiltInRegistries.SOUND_EVENT.get(id)` falling back to `SoundEvents.ARMOR_EQUIP_GENERIC`, the repair tag or the runtime's `<ns>:msm_repairs/<path>`, `ResourceKey.create(EquipmentAssets.ROOT_ID, ...)`); custom tool tiers as `<NAME>_MATERIAL` `ToolMaterial` fields; `attack_damage`/`attack_speed` overrides; `enchantment_value: 0` built with 1 and followed by `.component(DataComponents.ENCHANTABLE, null)` (main-session decision); `msm:durability` after both. `ITEM_COMPONENTS` and the `onlyKeys` lists updated; armour with a tool on one item, a tag without `#` and an unknown slot fail generation. `read.ts` gained `stringOrObject`, `tag`, `requiredTag`. Golden `expected/gear/` from B181's GameTest definitions (`ruby_helmet`, `iron_chestplate`, `sturdy_boots`, `ruby_pickaxe`, `flint_pickaxe`, `heavy_sword`, copied to `test/fixtures/java-project/input/`); existing goldens unchanged.
+- `fixtures/sample-mod/`: `ruby_pickaxe` now has a custom material (1200, speed 9, bonus 3, `#minecraft:incorrect_for_diamond_tool`, enchantment value 0, `attack_speed` -2.6); new `ruby_helmet` (`msm:armor`, custom material, equipment asset `msm_sample_mod:ruby_armor`), equipment element `ruby_armor`, textures `textures/entity/equipment/humanoid/ruby.png` and `humanoid_leggings/ruby.png` (64x32 placeholders drawn by the test with `encodePng`). README contents, in-game steps and the registration line (3 blocks, 7 items, 8 files) updated. Hashes regenerated with `UPDATE_GOLDENS=1`: content jar (26.3, 26.4), Java tree (26.3), `msm.export.json` golden (file count 42).
+- `engine-mod/parity`: `SampleModParityTest.rubyHelmetIsArmor`, `rubyPickaxeMaterial` (breaks obsidian through `ServerPlayerGameMode.destroyBlock` of a survival mock server player and checks the item entity; a stone pickaxe leaves none); the diamond-pickaxe checks left `itemProperties`.
+- Results: target 26.3 91 tests, 26.4 91, exporters 463 (32 skipped); `./gradlew build` "All 66 required tests passed"; `-p parity build` for 26.3 and 26.4; ejected `sample-mod` `./gradlew build` green; `run-fabric-server` server check PASS (3 blocks, 7 items, 8 files); parity 13/13 on the 26.3 content jar, the 26.3 ejected jar and the 26.4 content jar.
+
+**Decisions**
+- The equipment element is `ruby_armor`, not `ruby`: element ids are unique per namespace across kinds (`element.duplicate-id`) and `ruby` is the item. The layer textures keep the planned `ruby.png` names.
+- Placeholder layers are a local helper in `sample-mod.golden.test.ts`, not the library's `armorLayerPng` (B183, not landed); switching later changes the fixture PNGs and hashes.
+- One material field per item (no sharing between pieces of a set), so a field always sits next to the item it serves.
+- The sample-mod golden's project registry now includes texture ids from the namespace's PNG assets (as the sample-mob golden does), so the equipment layers validate.
+
+**Next**
+- B183: the Gear set flow cannot name its equipment element after the ingot item (same id); pick a suffix such as `<name>_armor`.
+- Orchestrator: CREATOR-PLAN facts table still says parity has 11 tests (now 13).

@@ -1,0 +1,22 @@
+{
+  "data": {
+    "layers": {
+      "humanoid": [
+        {
+          "texture": "msm_sample_mod:ruby"
+        }
+      ],
+      "humanoid_leggings": [
+        {
+          "texture": "msm_sample_mod:ruby"
+        }
+      ]
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_armor",
+  "kind": "minecraft:equipment",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

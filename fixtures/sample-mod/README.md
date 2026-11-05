@@ -1,17 +1,17 @@
 # Sample mod project
 
-A kitchen-sink MCSuperMods project for the Fabric content jar (ADR 0026 D6), namespace `msm_sample_mod`: an `msm:mod`, three custom blocks and four custom items that between them use every Phase 4 component and all six actions, plus one function and one loot table. Models are vanilla ones, so the project needs no textures.
+A kitchen-sink MCSuperMods project for the Fabric content jar (ADR 0026 D6), namespace `msm_sample_mod`: an `msm:mod`, three custom blocks and five custom items that between them use every block and item component and all six actions (armour and a custom tool material since ADR 0042), plus an equipment asset, one function and one loot table. Block and item models are vanilla ones; the only textures are the two placeholder armour layers of the ruby equipment asset (`assets/msm_sample_mod/textures/entity/equipment/humanoid/ruby.png` and `humanoid_leggings/ruby.png`, plain tinted 64x32 sheets drawn by the test).
 
 `packages/exporters/test/sample-mod.golden.test.ts` checks it on every run:
 
 - the folder equals the elements listed in the test saved as a project (it fails when the list changes and this folder is not regenerated);
 - every element validates with zero problems, the project validators report nothing, and the function passes the offline mcfunction checker;
 - the content jar exports with zero problems (with a stub runtime jar), and its SHA-256 is pinned per target, built in two time zones;
-- the jar holds the seven expected `msm/` definitions, and each validates against the MSM definition schema.
+- the jar holds the eight expected `msm/` definitions, the equipment asset and its two layer textures, and each definition validates against the MSM definition schema.
 
-CI's `engine-mod` job then builds `msm_runtime` with Gradle, exports this project with the real runtime nested, and starts a headless Fabric dedicated server with it (`tools/run-fabric-server`). The server must log `[msm_runtime] registered 3 block(s) and 6 item(s) from 7 definition file(s); 0 error(s), 0 warning(s)` and nothing else from the runtime at warning or error level. The jar is kept as the workflow artefact `msm-sample-mod`.
+CI's `engine-mod` job then builds `msm_runtime` with Gradle, exports this project with the real runtime nested, and starts a headless Fabric dedicated server with it (`tools/run-fabric-server`). The server must log `[msm_runtime] registered 3 block(s) and 7 item(s) from 8 definition file(s); 0 error(s), 0 warning(s)` and nothing else from the runtime at warning or error level. The jar is kept as the workflow artefact `msm-sample-mod`.
 
-The same job also exports this project as a Java project (ADR 0033; `sample-mod.java.golden.test.ts` with `MSM_SAMPLE_MOD_JAVA_OUT`), builds it with its own `./gradlew build`, and runs the behaviour-parity GameTests of `engine-mod/parity/` (`SampleModParityTest`: every block's light, hardness, resistance, tool requirement, sound type, loot table and block item; the items' food, tool, durability, rarity and stack size; the ruby ore's and ruby apple's function (its `say` line), the chime block's glowstone from stepping (with the per-entity cooldown) and from redstone, its zero signal, and the wand's rubies and cooldown) twice: on the content jar with `msm_runtime` and on the ejected jar without it (`tools/run-fabric-server --gametest ... --gametest-filter 'msm_parity_tests:sample_mod_*'`, `--no-runtime` for the ejected jar). The same tests passing on both is the parity check; the ejected jars and the GameTest reports are kept as the artefacts `msm-ejected-jars` and `parity-gametest-reports`.
+The same job also exports this project as a Java project (ADR 0033; `sample-mod.java.golden.test.ts` with `MSM_SAMPLE_MOD_JAVA_OUT`), builds it with its own `./gradlew build`, and runs the behaviour-parity GameTests of `engine-mod/parity/` (`SampleModParityTest`: every block's light, hardness, resistance, tool requirement, sound type, loot table and block item; the items' food, tool, durability, rarity and stack size; the ruby helmet's slot, equipment asset, defence, toughness, knockback resistance, durability, repair item and enchantability; the ruby pickaxe's custom material (durability, attack values, mining speed, not enchantable, and obsidian broken by a survival player drops obsidian while a stone pickaxe's does not); the ruby ore's and ruby apple's function (its `say` line), the chime block's glowstone from stepping (with the per-entity cooldown) and from redstone, its zero signal, and the wand's rubies and cooldown) twice: on the content jar with `msm_runtime` and on the ejected jar without it (`tools/run-fabric-server --gametest ... --gametest-filter 'msm_parity_tests:sample_mod_*'`, `--no-runtime` for the ejected jar). The same tests passing on both is the parity check; the ejected jars and the GameTest reports are kept as the artefacts `msm-ejected-jars` and `parity-gametest-reports`.
 
 The entity counterpart, an animated GeckoLib mob checked the same way, is `fixtures/sample-mob/` (see its README).
 
@@ -25,7 +25,9 @@ The entity counterpart, an animated GeckoLib mob checked the same way, is `fixtu
 | `msm_sample_mod:glow_stone` | block | no block item (`"item": false`), light 15, shovel, netherite tier, glass sounds |
 | `msm_sample_mod:ruby` | item | plain item, uncommon, Ingredients tab |
 | `msm_sample_mod:ruby_wand` | item | `msm:tool` (gold sword), `msm:durability` 32, `msm:on_use` with a 10-tick cooldown (`give_item`, `spawn_particle`, `trigger_event`), epic |
-| `msm_sample_mod:ruby_pickaxe` | item | `msm:tool` (diamond pickaxe), rare |
+| `msm_sample_mod:ruby_pickaxe` | item | `msm:tool` pickaxe with a custom material (durability 1200, speed 9, attack bonus 3, mines like diamond through `#minecraft:incorrect_for_diamond_tool`, repaired by diamonds, `enchantment_value` 0 so not enchantable) and `attack_speed` -2.6, rare |
+| `msm_sample_mod:ruby_helmet` | item | `msm:armor` helmet with a custom material (base durability 25, defence 3/7/5/2, toughness 1, knockback resistance 0.05, enchantment value 12, diamond equip sound, repaired by diamonds), equipment asset `msm_sample_mod:ruby_armor`, rare, Combat tab |
+| `msm_sample_mod:ruby_armor` | equipment | the humanoid and humanoid leggings layers, both `msm_sample_mod:ruby` (the element is not called `ruby` because the item has that id) |
 | `msm_sample_mod:ruby_apple` | item | `msm:food` (4 nutrition, can always eat) with `msm:on_use` (`spawn_particle`, `run_function`), stack of 16 |
 | `msm_sample_mod:ruby/shimmer` | function | `particle` and `say`, run by the ruby ore and the ruby apple |
 | `msm_sample_mod:blocks/ruby_ore_rich` | loot table | 1 to 3 rubies, survives explosions |
@@ -55,6 +57,10 @@ Create a new **Creative** world with cheats on, then check:
 | Creative tab **Redstone Blocks** | **Chime Block** (yellow name), looking like a note block; it stacks to 16 |
 | Creative tab **Ingredients** | **Ruby** (yellow name), looking like an emerald |
 | Creative tab **Tools & Utilities** | **Ruby Wand** (light purple name, blaze rod look) and **Ruby Pickaxe** (aqua name, diamond pickaxe look) |
+| Creative tab **Combat** | **Ruby Helmet** (aqua name, diamond helmet look) |
+| Put on the Ruby Helmet (F5 for the third-person view) | The helmet drawn on your head is the flat ruby-red placeholder layer, not diamond; the armour bar shows one and a half armour icons (3 points); a diamond armour equip sound plays |
+| Hover over the Ruby Pickaxe and the Ruby Helmet in the inventory | The pickaxe shows 5 attack damage and 1.4 attack speed; the helmet +3 armour, +1 armour toughness and +0.5 knockback resistance |
+| Put the Ruby Pickaxe into an enchanting table | It cannot be enchanted (no offers); the Ruby Helmet can |
 | Creative tab **Food & Drinks** | **Ruby Apple**, looking like an apple; it stacks to 16 |
 | Search for "Glow Stone" | Nothing: it has no item. `/setblock ~2 ~ ~ msm_sample_mod:glow_stone` places a glowstone-looking block with light level 15 (F3 shows block light 15 beside it) |
 | Place Ruby Ore at night or underground | It glows (light level 7) |
@@ -73,20 +79,22 @@ Then, in **Survival** (`/gamemode survival`):
 | Mine Ruby Ore with a stone pickaxe or by hand | It drops nothing |
 | Mine a Chime Block with an axe, and by hand | It drops itself both ways; the axe is faster |
 | Mine Glow Stone with a shovel | It breaks and drops nothing (it has no item) |
+| Mine obsidian with the Ruby Pickaxe, and with a stone pickaxe | The Ruby Pickaxe breaks it a little faster than a diamond pickaxe (speed 9 against 8) and it drops obsidian; the stone pickaxe takes very long and drops nothing |
+| Wear the Ruby Helmet and take damage until it breaks, or repair it with a diamond in an anvil | The durability bar starts at 275; a diamond repairs it |
 
 Finally open the game log (Prism: the instance's **Minecraft Log**; official launcher: `%APPDATA%\.minecraft\logs\latest.log`) and check that it has the line
 
 ```
-[msm_runtime] registered 3 block(s) and 6 item(s) from 7 definition file(s); 0 error(s), 0 warning(s)
+[msm_runtime] registered 3 block(s) and 7 item(s) from 8 definition file(s); 0 error(s), 0 warning(s)
 ```
 
 and no other line containing `[msm_runtime]` at WARN or ERROR, no `Failed to load` and no missing-model or missing-texture warning mentioning `msm_sample_mod`. Report any such line.
 
-Things only the game client can confirm, and worth reporting if they look wrong: the block and item models and names (the client loads `assets/` from a mod jar without a `pack.mcmeta`), the creative tab placement and name colours, the particle positions, and the tool speeds.
+Things only the game client can confirm, and worth reporting if they look wrong: the block and item models and names (the client loads `assets/` from a mod jar without a `pack.mcmeta`), the creative tab placement and name colours, the particle positions, the tool speeds, and the worn helmet's look (the equipment asset and its layer texture).
 
 ## Changing the sample
 
-Do not edit these files by hand. Change `SAMPLE_ELEMENTS` in `packages/exporters/test/sample-mod.golden.test.ts`, then regenerate this folder and the pinned hash, and commit the changes on purpose:
+Do not edit these files by hand. Change `SAMPLE_ELEMENTS` (and `SAMPLE_ASSETS` for the textures) in `packages/exporters/test/sample-mod.golden.test.ts`, then regenerate this folder and the pinned hash, and commit the changes on purpose:
 
 ```sh
 UPDATE_GOLDENS=1 pnpm --filter @msm/exporters test

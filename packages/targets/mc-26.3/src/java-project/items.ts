@@ -2,8 +2,12 @@
  * Items: `ModItems.java` (registration as the runtime's `MsmRegistrar.registerItem`:
  * `new Item.Properties().setId(key).rarity(r)`, `stacksTo(n)` unless damageable, food,
  * tool through the vanilla `pickaxe/axe/shovel/hoe/sword(ToolMaterial, damage, speed)`
- * helpers, durability after the tool; creative tabs) and one `item/<Name>Item.java` per item
- * with `msm:on_use`, mirroring `MsmItem.use`. Minecraft 26.3, Mojang names.
+ * helpers with a `ToolMaterial` constant or a `<NAME>_MATERIAL` field for a custom material,
+ * armour through `humanoidArmor(ArmorMaterial, ArmorType)` with an `ArmorMaterials` constant
+ * or a `<NAME>_ARMOR` field (ADR 0042 D6), `enchantment_value: 0` as the runtime does (built
+ * with 1, the `enchantable` component removed), durability after both; creative tabs) and one
+ * `item/<Name>Item.java` per item with `msm:on_use`, mirroring `MsmItem.use`. Minecraft 26.3,
+ * Mojang names.
  *
  * @packageDocumentation
  */
@@ -29,10 +33,10 @@ import {
   trimBlank,
 } from './java';
 import { className, constantName, NameTable, splitId } from './names';
-import { checkFormat, readDefinition } from './read';
+import { checkFormat, type Reader, readDefinition } from './read';
 
 const ITEM_KEYS = ['format', 'max_stack_size', 'rarity', 'creative_tab', 'components', 'events'];
-const ITEM_COMPONENTS = ['msm:food', 'msm:tool', 'msm:durability', 'msm:on_use'];
+const ITEM_COMPONENTS = ['msm:food', 'msm:tool', 'msm:armor', 'msm:durability', 'msm:on_use'];
 
 /** Tool types and the vanilla iron-tier base attack damage and speed of each (as the runtime). */
 const TOOL_TYPES: Readonly<Record<string, [string, string, string]>> = {
@@ -46,13 +50,67 @@ const TOOL_TYPES: Readonly<Record<string, [string, string, string]>> = {
 /** Tool tiers, each a `ToolMaterial` constant. */
 const TOOL_TIERS = ['wood', 'stone', 'copper', 'iron', 'diamond', 'gold', 'netherite'] as const;
 
+/** Armour slots, each an `ArmorType` constant. */
+const ARMOR_SLOTS = ['helmet', 'chestplate', 'leggings', 'boots'] as const;
+
+/** Vanilla armour materials, each an `ArmorMaterials` constant (as the runtime's names). */
+const ARMOR_MATERIALS = [
+  'leather',
+  'copper',
+  'chainmail',
+  'iron',
+  'gold',
+  'diamond',
+  'netherite',
+  'turtle_scute',
+  'armadillo_scute',
+] as const;
+
+/** A custom `ToolMaterial` (ADR 0042 D3); tags without the `#`. */
+interface CustomToolMaterial {
+  readonly incorrectBlocksForDrops: string;
+  readonly durability: number;
+  readonly speed: number;
+  readonly attackDamageBonus: number;
+  readonly enchantmentValue: number;
+  readonly repairItems: string | undefined;
+}
+
+/** A custom `ArmorMaterial` (ADR 0042 D1); the tag without the `#`. */
+interface CustomArmorMaterial {
+  readonly durability: number;
+  readonly defense: { helmet: number; chestplate: number; leggings: number; boots: number };
+  readonly enchantmentValue: number;
+  readonly toughness: number;
+  readonly knockbackResistance: number;
+  readonly equipSound: string | undefined;
+  readonly repairItems: string | undefined;
+  readonly equipmentAsset: string;
+}
+
+interface ToolSpec {
+  readonly type: string;
+  /** A `ToolMaterial` constant name, or a custom material. */
+  readonly tier: string | CustomToolMaterial;
+  readonly attackDamage: number | undefined;
+  readonly attackSpeed: number | undefined;
+}
+
+interface ArmorSpec {
+  /** The `ArmorType` constant name. */
+  readonly slot: string;
+  /** An `ArmorMaterials` constant name, or a custom material. */
+  readonly material: string | CustomArmorMaterial;
+}
+
 interface ItemSpec {
   readonly input: DefinitionInput;
   readonly maxStackSize: number;
   readonly rarity: string;
   readonly creativeTab: string | undefined;
   readonly food: { nutrition: number; saturation: number; canAlwaysEat: boolean } | undefined;
-  readonly tool: { type: string; tier: string } | undefined;
+  readonly tool: ToolSpec | undefined;
+  readonly armor: ArmorSpec | undefined;
   readonly durability: number | undefined;
   readonly onUse: { method: string; cooldown: number } | undefined;
   readonly events: Events;
@@ -68,7 +126,14 @@ function readItem(input: DefinitionInput): ItemSpec {
   const food = components?.object('msm:food');
   food?.onlyKeys(['nutrition', 'saturation', 'can_always_eat'], 'msm:food field');
   const tool = components?.object('msm:tool');
-  tool?.onlyKeys(['type', 'tier'], 'msm:tool field');
+  tool?.onlyKeys(['type', 'tier', 'attack_damage', 'attack_speed'], 'msm:tool field');
+  const armor = components?.object('msm:armor');
+  armor?.onlyKeys(['slot', 'material'], 'msm:armor field');
+  if (tool !== undefined && armor !== undefined) {
+    reader.fail(
+      'msm:armor and msm:tool on one item cannot be ejected (the runtime applies neither)',
+    );
+  }
   const durability = components?.object('msm:durability');
   durability?.onlyKeys(['max'], 'msm:durability field');
   const onUse = components?.object('msm:on_use');
@@ -86,13 +151,8 @@ function readItem(input: DefinitionInput): ItemSpec {
             saturation: food.requiredNumber('saturation'),
             canAlwaysEat: food.boolean('can_always_eat', false),
           },
-    tool:
-      tool === undefined
-        ? undefined
-        : {
-            type: tool.enumConstant('type', Object.keys(TOOL_TYPES), '').toLowerCase(),
-            tier: tool.enumConstant('tier', TOOL_TIERS, ''),
-          },
+    tool: tool === undefined ? undefined : readTool(tool),
+    armor: armor === undefined ? undefined : readArmor(armor),
     durability: durability?.requiredInteger('max'),
     onUse:
       onUse === undefined
@@ -103,6 +163,160 @@ function readItem(input: DefinitionInput): ItemSpec {
           },
     events,
   };
+}
+
+function readTool(tool: Reader): ToolSpec {
+  const tier = tool.stringOrObject('tier');
+  let spec: string | CustomToolMaterial;
+  if (tier === undefined || typeof tier === 'string') {
+    spec = tool.enumConstant('tier', TOOL_TIERS, '');
+  } else {
+    tier.onlyKeys(
+      [
+        'durability',
+        'speed',
+        'attack_damage_bonus',
+        'enchantment_value',
+        'incorrect_blocks_for_drops',
+        'repair_items',
+      ],
+      'msm:tool tier field',
+    );
+    spec = {
+      incorrectBlocksForDrops: tier.requiredTag('incorrect_blocks_for_drops'),
+      durability: tier.requiredInteger('durability'),
+      speed: tier.requiredNumber('speed'),
+      attackDamageBonus: tier.requiredNumber('attack_damage_bonus'),
+      enchantmentValue: tier.requiredInteger('enchantment_value'),
+      repairItems: tier.tag('repair_items'),
+    };
+  }
+  return {
+    type: tool.enumConstant('type', Object.keys(TOOL_TYPES), '').toLowerCase(),
+    tier: spec,
+    attackDamage: tool.optionalNumber('attack_damage'),
+    attackSpeed: tool.optionalNumber('attack_speed'),
+  };
+}
+
+function readArmor(armor: Reader): ArmorSpec {
+  const slot = armor.enumConstant('slot', ARMOR_SLOTS, '');
+  const material = armor.stringOrObject('material');
+  if (material === undefined || typeof material === 'string') {
+    return { slot, material: armor.enumConstant('material', ARMOR_MATERIALS, '') };
+  }
+  material.onlyKeys(
+    [
+      'durability',
+      'defense',
+      'enchantment_value',
+      'toughness',
+      'knockback_resistance',
+      'equip_sound',
+      'repair_items',
+      'equipment_asset',
+    ],
+    'msm:armor material field',
+  );
+  const defense = material.requiredObject('defense');
+  defense.onlyKeys(ARMOR_SLOTS, 'msm:armor defense field');
+  return {
+    slot,
+    material: {
+      durability: material.requiredInteger('durability'),
+      defense: {
+        helmet: defense.requiredInteger('helmet'),
+        chestplate: defense.requiredInteger('chestplate'),
+        leggings: defense.requiredInteger('leggings'),
+        boots: defense.requiredInteger('boots'),
+      },
+      enchantmentValue: material.requiredInteger('enchantment_value'),
+      toughness: material.requiredNumber('toughness'),
+      knockbackResistance: material.requiredNumber('knockback_resistance'),
+      equipSound: material.optionalString('equip_sound'),
+      repairItems: material.tag('repair_items'),
+      equipmentAsset: material.requiredString('equipment_asset'),
+    },
+  };
+}
+
+/** `TagKey.create(Registries.<registry>, Identifier...)` for a tag id without the `#`. */
+function tagExpression(file: JavaFile, registry: 'ITEM' | 'BLOCK', id: string): string {
+  const tagKey = file.use('net.minecraft.tags.TagKey');
+  const registries = file.use('net.minecraft.core.registries.Registries');
+  return `${tagKey}.create(${registries}.${registry}, ${identifierExpression(file, id)})`;
+}
+
+/**
+ * The repair tag of a custom material: `repair_items`, or the runtime's empty project-specific
+ * tag `<namespace>:msm_repairs/<item path>` (nothing repairs the item).
+ */
+function repairTag(file: JavaFile, repairItems: string | undefined, itemId: string): string {
+  if (repairItems !== undefined) return tagExpression(file, 'ITEM', repairItems);
+  const { namespace, path } = splitId(itemId);
+  return tagExpression(file, 'ITEM', `${namespace}:msm_repairs/${path}`);
+}
+
+/** The enchantment value argument: 0 ("not enchantable") is built as 1, as the runtime does. */
+function enchantmentArgument(value: number): string {
+  return value === 0
+    ? '1, // enchantment_value 0: built with 1 (vanilla rejects 0), the enchantable component is removed'
+    : `${javaInt(value)}, // enchantment value`;
+}
+
+/** The `private static final ToolMaterial <field>_MATERIAL` lines of a custom material. */
+function toolMaterialField(
+  file: JavaFile,
+  field: string,
+  material: CustomToolMaterial,
+  itemId: string,
+): string[] {
+  const toolMaterial = file.use('net.minecraft.world.item.ToolMaterial');
+  return [
+    `/** The custom tool material of {@code ${itemId}}. */`,
+    `private static final ${toolMaterial} ${field}_MATERIAL = new ${toolMaterial}(`,
+    `        ${tagExpression(file, 'BLOCK', material.incorrectBlocksForDrops)}, // incorrect blocks for drops`,
+    `        ${javaInt(material.durability)}, // durability`,
+    `        ${javaFloat(material.speed)}, // mining speed`,
+    `        ${javaFloat(material.attackDamageBonus)}, // attack damage bonus`,
+    `        ${enchantmentArgument(material.enchantmentValue)}`,
+    `        ${repairTag(file, material.repairItems, itemId)});`,
+  ];
+}
+
+/** The `private static final ArmorMaterial <field>_ARMOR` lines of a custom material. */
+function armorMaterialField(
+  file: JavaFile,
+  field: string,
+  material: CustomArmorMaterial,
+  itemId: string,
+): string[] {
+  const armorMaterial = file.use('net.minecraft.world.item.equipment.ArmorMaterial');
+  const armorType = file.use('net.minecraft.world.item.equipment.ArmorType');
+  const map = file.use('java.util.Map');
+  const soundEvents = file.use('net.minecraft.sounds.SoundEvents');
+  const resourceKey = file.use('net.minecraft.resources.ResourceKey');
+  const equipmentAssets = file.use('net.minecraft.world.item.equipment.EquipmentAssets');
+  const { defense } = material;
+  let sound = `${soundEvents}.ARMOR_EQUIP_GENERIC, // equip sound`;
+  if (material.equipSound !== undefined) {
+    const builtIn = file.use('net.minecraft.core.registries.BuiltInRegistries');
+    const holder = file.use('net.minecraft.core.Holder');
+    const soundEvent = file.use('net.minecraft.sounds.SoundEvent');
+    sound = `${builtIn}.SOUND_EVENT.get(${identifierExpression(file, material.equipSound)}).<${holder}<${soundEvent}>>map(sound -> sound).orElse(${soundEvents}.ARMOR_EQUIP_GENERIC), // equip sound (an unknown id falls back to the generic one, as the runtime)`;
+  }
+  return [
+    `/** The custom armour material of {@code ${itemId}}. */`,
+    `private static final ${armorMaterial} ${field}_ARMOR = new ${armorMaterial}(`,
+    `        ${javaInt(material.durability)}, // base durability; each slot multiplies it (helmet 11, chestplate 16, leggings 15, boots 13)`,
+    `        ${map}.of(${armorType}.HELMET, ${javaInt(defense.helmet)}, ${armorType}.CHESTPLATE, ${javaInt(defense.chestplate)}, ${armorType}.LEGGINGS, ${javaInt(defense.leggings)}, ${armorType}.BOOTS, ${javaInt(defense.boots)}, ${armorType}.BODY, ${javaInt(defense.chestplate)}), // defense (BODY as the chestplate, unused by humanoid armour)`,
+    `        ${enchantmentArgument(material.enchantmentValue)}`,
+    `        ${sound}`,
+    `        ${javaFloat(material.toughness)}, // toughness`,
+    `        ${javaFloat(material.knockbackResistance)}, // knockback resistance`,
+    `        ${repairTag(file, material.repairItems, itemId)}, // repair items`,
+    `        ${resourceKey}.create(${equipmentAssets}.ROOT_ID, ${identifierExpression(file, material.equipmentAsset)}));`,
+  ];
 }
 
 /**
@@ -133,7 +347,13 @@ export function generateItems(
   const tabs: string[] = [];
   for (const spec of specs) {
     const { path } = splitId(spec.input.id);
-    const field = fields.take(constantName(path), (name) => [name, `${name}_KEY`]);
+    const field = fields.take(constantName(path), (name) => [
+      name,
+      `${name}_KEY`,
+      `${name}_MATERIAL`,
+      `${name}_ARMOR`,
+    ]);
+    const materials: string[] = [];
     let type = itemType;
     if (spec.onUse !== undefined) {
       const name = classNames.take(className(path, 'Item'), (n) => [`item.${n}`], '');
@@ -141,11 +361,12 @@ export function generateItems(
       type = file.use(`${packageOf(context, 'item')}.${name}`);
     }
     const props = [`        .setId(${field}_KEY)`, `        .rarity(${rarity}.${spec.rarity})`];
-    const damageable = spec.tool !== undefined || spec.durability !== undefined;
+    const damageable =
+      spec.tool !== undefined || spec.armor !== undefined || spec.durability !== undefined;
     if (damageable) {
       if (spec.input.definition.max_stack_size !== undefined && spec.maxStackSize !== 1) {
         props.push(
-          `        // max_stack_size ${spec.maxStackSize} ignored: tools and items with durability stack to 1.`,
+          `        // max_stack_size ${spec.maxStackSize} ignored: tools, armour and items with durability stack to 1.`,
         );
       }
     } else {
@@ -161,20 +382,58 @@ export function generateItems(
       if (spec.food.canAlwaysEat) props.push('                .alwaysEdible()');
       props.push('                .build())');
     }
+    let notEnchantable = false;
     if (spec.tool !== undefined) {
-      const toolMaterial = file.use('net.minecraft.world.item.ToolMaterial');
-      const [method, damage, speed] = TOOL_TYPES[spec.tool.type] as [string, string, string];
-      props.push(`        .${method}(${toolMaterial}.${spec.tool.tier}, ${damage}, ${speed})`);
+      const { tool } = spec;
+      const [method, baseDamage, baseSpeed] = TOOL_TYPES[tool.type] as [string, string, string];
+      const damage = tool.attackDamage === undefined ? baseDamage : javaFloat(tool.attackDamage);
+      const speed = tool.attackSpeed === undefined ? baseSpeed : javaFloat(tool.attackSpeed);
+      let material: string;
+      if (typeof tool.tier === 'string') {
+        material = `${file.use('net.minecraft.world.item.ToolMaterial')}.${tool.tier}`;
+      } else {
+        materials.push(...toolMaterialField(file, field, tool.tier, spec.input.id), '');
+        material = `${field}_MATERIAL`;
+        notEnchantable = tool.tier.enchantmentValue === 0;
+      }
+      const overrides = [
+        tool.attackDamage === undefined ? undefined : 'attack_damage',
+        tool.attackSpeed === undefined ? undefined : 'attack_speed',
+      ].filter((name) => name !== undefined);
+      const note = overrides.length === 0 ? '' : ` // ${overrides.join(' and ')} overridden`;
+      props.push(`        .${method}(${material}, ${damage}, ${speed})${note}`);
+    }
+    if (spec.armor !== undefined) {
+      const { armor } = spec;
+      const armorType = file.use('net.minecraft.world.item.equipment.ArmorType');
+      let material: string;
+      if (typeof armor.material === 'string') {
+        material = `${file.use('net.minecraft.world.item.equipment.ArmorMaterials')}.${armor.material}`;
+      } else {
+        materials.push(...armorMaterialField(file, field, armor.material, spec.input.id), '');
+        material = `${field}_ARMOR`;
+        notEnchantable = armor.material.enchantmentValue === 0;
+      }
+      props.push(`        .humanoidArmor(${material}, ${armorType}.${armor.slot})`);
+    }
+    if (notEnchantable) {
+      const dataComponents = file.use('net.minecraft.core.component.DataComponents');
+      props.push(
+        `        .component(${dataComponents}.ENCHANTABLE, null) // enchantment_value 0: not enchantable`,
+      );
     }
     if (spec.durability !== undefined) {
-      props.push(
-        `        .durability(${javaInt(spec.durability)}) // after the tool: overrides the tier's durability`,
-      );
+      const note =
+        spec.armor === undefined
+          ? "after the tool: overrides the tier's durability"
+          : "after the armour: overrides the material's per-slot durability";
+      props.push(`        .durability(${javaInt(spec.durability)}) // ${note}`);
     }
     const last = props.length - 1;
     props[last] = closeLine(props[last] as string, '));');
     body.push(
       '',
+      ...materials,
       `/** {@code ${spec.input.id}} (${spec.input.path}). */`,
       `public static final ${resourceKey}<${itemType}> ${field}_KEY = ${resourceKey}.create(${registries}.ITEM, ${identifierExpression(file, spec.input.id)});`,
       `public static final ${type} ${field} = ${registry}.register(${builtIn}.ITEM, ${field}_KEY, new ${type}(new ${itemType}.Properties()`,

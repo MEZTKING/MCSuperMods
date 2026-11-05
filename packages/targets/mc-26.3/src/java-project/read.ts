@@ -60,6 +60,34 @@ export class Reader {
     return new Reader(this.definition, value, this.at(key));
   }
 
+  /**
+   * A value that is either a string or an object (an mcdoc union such as
+   * `(ToolTier | ToolMaterial)`), or `undefined` when absent.
+   */
+  stringOrObject(key: string): string | Reader | undefined {
+    const value = this.raw(key);
+    if (value === undefined || typeof value === 'string') return value;
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      this.fail(`${key} must be a string or an object`);
+    }
+    return new Reader(this.definition, value, this.at(key));
+  }
+
+  /** A required tag reference (`#namespace:path`), returned without the `#`. */
+  requiredTag(key: string): string {
+    return this.tag(key) ?? this.fail(`${key} is missing`);
+  }
+
+  /** An optional tag reference (`#namespace:path`), returned without the `#`. */
+  tag(key: string): string | undefined {
+    const value = this.optionalString(key);
+    if (value === undefined) return undefined;
+    if (!/^#[^#:\s]+(:[^#:\s]+)?$/.test(value)) {
+      this.fail(`${key} '${value}' is not a tag reference (#namespace:path)`);
+    }
+    return value.slice(1);
+  }
+
   /** A required nested object. */
   requiredObject(key: string): Reader {
     return this.object(key) ?? this.fail(`${key} is missing`);

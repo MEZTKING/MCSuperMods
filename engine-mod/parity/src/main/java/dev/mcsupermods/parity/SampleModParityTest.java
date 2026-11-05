@@ -1,15 +1,21 @@
 package dev.mcsupermods.parity;
 
 import java.util.List;
+import java.util.Optional;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
@@ -17,6 +23,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.enchantment.Enchantable;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -30,8 +38,10 @@ import net.minecraft.world.phys.Vec3;
  * {@code msm_runtime} nested) and against the ejected Java project's jar (ADR 0033 D5).
  *
  * <p>Expected values are the fixture's: blocks {@code ruby_ore}, {@code chime_block},
- * {@code glow_stone}; items {@code ruby}, {@code ruby_wand}, {@code ruby_pickaxe},
- * {@code ruby_apple}; function {@code ruby/shimmer} ({@code say The ruby shimmers.}). Events are
+ * {@code glow_stone}; items {@code ruby}, {@code ruby_wand}, {@code ruby_pickaxe} (a custom tool
+ * material, ADR 0042), {@code ruby_helmet} (custom armour material, equipment asset
+ * {@code ruby_armor}), {@code ruby_apple}; function {@code ruby/shimmer}
+ * ({@code say The ruby shimmers.}). Events are
  * observed through their vanilla effects: placed blocks, given items, item cooldowns and the
  * function's chat line. Sounds and particles have no server-side trace a GameTest can read.
  * Run with {@code --gametest-filter msm_parity_tests:sample_mod_*}.
@@ -68,6 +78,21 @@ public class SampleModParityTest {
             }
         }
         return n;
+    }
+
+    /** The summed amount of {@code attribute}'s modifiers on {@code stack} for {@code slot}. */
+    private static double modifier(ItemStack stack, EquipmentSlot slot, Holder<Attribute> attribute) {
+        double[] sum = {0};
+        stack.forEachModifier(slot, (a, m) -> {
+            if (a.equals(attribute)) {
+                sum[0] += m.amount();
+            }
+        });
+        return sum[0];
+    }
+
+    private static void assertClose(GameTestHelper helper, double actual, double expected, String what) {
+        helper.assertTrue(Math.abs(actual - expected) < 1.0e-4, what + ": expected " + expected + ", got " + actual);
     }
 
     /** Places {@code block} at {@link #AT} and checks the state's light, hardness and sound (an mcdoc sound_type id). */
@@ -164,16 +189,6 @@ public class SampleModParityTest {
                 "ruby_wand (gold sword) attack modifiers");
         helper.assertTrue(wand.getDestroySpeed(Blocks.COBWEB.defaultBlockState()) > 1.0f, "ruby_wand is a sword (fast on cobweb)");
 
-        ItemStack pickaxe = new ItemStack(item(helper, "ruby_pickaxe"));
-        ItemStack diamond = new ItemStack(Items.DIAMOND_PICKAXE);
-        helper.assertValueEqual(pickaxe.getMaxDamage(), diamond.getMaxDamage(), "ruby_pickaxe durability (diamond tier)");
-        helper.assertValueEqual(pickaxe.getRarity(), Rarity.RARE, "ruby_pickaxe rarity");
-        helper.assertValueEqual(pickaxe.get(DataComponents.ATTRIBUTE_MODIFIERS), diamond.get(DataComponents.ATTRIBUTE_MODIFIERS),
-                "ruby_pickaxe (diamond pickaxe) attack modifiers");
-        helper.assertTrue(pickaxe.isCorrectToolForDrops(Blocks.OBSIDIAN.defaultBlockState()), "ruby_pickaxe mines obsidian (diamond tier)");
-        helper.assertValueEqual(pickaxe.getDestroySpeed(Blocks.STONE.defaultBlockState()), diamond.getDestroySpeed(Blocks.STONE.defaultBlockState()),
-                "ruby_pickaxe speed on stone");
-
         ItemStack apple = new ItemStack(item(helper, "ruby_apple"));
         FoodProperties food = apple.get(DataComponents.FOOD);
         helper.assertTrue(food != null, "ruby_apple is food");
@@ -183,6 +198,66 @@ public class SampleModParityTest {
         helper.assertTrue(apple.has(DataComponents.CONSUMABLE), "ruby_apple is consumable");
         helper.assertValueEqual(apple.getMaxStackSize(), 16, "ruby_apple max stack size");
         helper.assertValueEqual(apple.getRarity(), Rarity.COMMON, "ruby_apple rarity");
+        helper.succeed();
+    }
+
+    @GameTest
+    public void rubyHelmetIsArmor(GameTestHelper helper) {
+        ItemStack helmet = new ItemStack(item(helper, "ruby_helmet"));
+        Equippable equippable = helmet.get(DataComponents.EQUIPPABLE);
+        helper.assertTrue(equippable != null, "ruby_helmet is equippable (msm:armor)");
+        helper.assertValueEqual(equippable.slot(), EquipmentSlot.HEAD, "ruby_helmet slot");
+        helper.assertValueEqual(equippable.assetId().map(k -> k.identifier()), Optional.of(id("ruby_armor")), "ruby_helmet equipment asset");
+        assertClose(helper, modifier(helmet, EquipmentSlot.HEAD, Attributes.ARMOR), 3, "ruby_helmet armor (helmet defense)");
+        assertClose(helper, modifier(helmet, EquipmentSlot.HEAD, Attributes.ARMOR_TOUGHNESS), 1, "ruby_helmet armor_toughness");
+        assertClose(helper, modifier(helmet, EquipmentSlot.HEAD, Attributes.KNOCKBACK_RESISTANCE), 0.05f, "ruby_helmet knockback_resistance");
+        assertClose(helper, modifier(helmet, EquipmentSlot.CHEST, Attributes.ARMOR), 0, "ruby_helmet armor in the chest slot");
+        helper.assertValueEqual(helmet.getMaxDamage(), 11 * 25, "ruby_helmet durability (helmet multiplier 11 times 25)");
+        helper.assertValueEqual(helmet.getMaxStackSize(), 1, "ruby_helmet stacks to 1");
+        helper.assertValueEqual(helmet.getRarity(), Rarity.RARE, "ruby_helmet rarity");
+        helper.assertTrue(helmet.isValidRepairItem(new ItemStack(Items.DIAMOND)), "diamonds repair ruby_helmet (#minecraft:repairs_diamond_armor)");
+        helper.assertFalse(helmet.isValidRepairItem(new ItemStack(Items.IRON_INGOT)), "iron repairs ruby_helmet");
+        Enchantable enchantable = helmet.get(DataComponents.ENCHANTABLE);
+        helper.assertTrue(enchantable != null && enchantable.value() == 12, "ruby_helmet enchantable 12: " + enchantable);
+        helper.succeed();
+    }
+
+    @GameTest
+    public void rubyPickaxeMaterial(GameTestHelper helper) {
+        Item item = item(helper, "ruby_pickaxe");
+        ItemStack pickaxe = new ItemStack(item);
+        helper.assertValueEqual(pickaxe.getMaxDamage(), 1200, "ruby_pickaxe durability (custom material)");
+        helper.assertValueEqual(pickaxe.getMaxStackSize(), 1, "ruby_pickaxe stacks to 1");
+        helper.assertValueEqual(pickaxe.getRarity(), Rarity.RARE, "ruby_pickaxe rarity");
+        helper.assertFalse(pickaxe.has(DataComponents.ENCHANTABLE), "ruby_pickaxe (enchantment_value 0) is enchantable");
+        helper.assertTrue(pickaxe.isValidRepairItem(new ItemStack(Items.DIAMOND)), "diamonds repair ruby_pickaxe");
+        assertClose(helper, modifier(pickaxe, EquipmentSlot.MAINHAND, Attributes.ATTACK_DAMAGE), 1.0 + 3.0, "ruby_pickaxe attack damage (pickaxe base 1 plus bonus 3)");
+        assertClose(helper, modifier(pickaxe, EquipmentSlot.MAINHAND, Attributes.ATTACK_SPEED), -2.6f, "ruby_pickaxe attack_speed override");
+
+        BlockState obsidian = Blocks.OBSIDIAN.defaultBlockState();
+        helper.assertTrue(pickaxe.isCorrectToolForDrops(obsidian), "ruby_pickaxe mines obsidian for drops (incorrect_for_diamond_tool)");
+        helper.assertValueEqual(pickaxe.getDestroySpeed(obsidian), 9.0f, "ruby_pickaxe speed on obsidian");
+        helper.assertValueEqual(pickaxe.getDestroySpeed(Blocks.STONE.defaultBlockState()), 9.0f, "ruby_pickaxe speed on stone");
+
+        // Progress through the player: speed / hardness / 30 with drops, / 100 without (stone: speed 4, no drops).
+        helper.setBlock(AT, Blocks.OBSIDIAN);
+        BlockPos abs = helper.absolutePos(AT);
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, pickaxe.copy());
+        float rubyProgress = obsidian.getDestroyProgress(player, helper.getLevel(), abs);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STONE_PICKAXE));
+        float stoneProgress = obsidian.getDestroyProgress(player, helper.getLevel(), abs);
+        assertClose(helper, rubyProgress / stoneProgress, (9.0 / 30.0) / (4.0 / 100.0), "ruby against stone pickaxe progress on obsidian");
+
+        // Black box: break obsidian as a survival player does and observe the drop.
+        BlockPos other = AT.east();
+        helper.setBlock(other, Blocks.OBSIDIAN);
+        helper.assertTrue(player.gameMode.destroyBlock(helper.absolutePos(other)), "a stone pickaxe breaks obsidian");
+        helper.assertItemEntityNotPresent(Items.OBSIDIAN, other, 2.0);
+        player.setItemInHand(InteractionHand.MAIN_HAND, pickaxe.copy());
+        helper.assertTrue(player.gameMode.destroyBlock(abs), "ruby_pickaxe breaks obsidian");
+        helper.assertBlockPresent(Blocks.AIR, AT);
+        helper.assertItemEntityPresent(Items.OBSIDIAN, AT, 2.0);
         helper.succeed();
     }
 

@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:tool": {
+      "attack_damage": 9,
+      "attack_speed": -3,
+      "tier": "iron",
+      "type": "sword"
+    }
+  },
+  "format": 1
+}

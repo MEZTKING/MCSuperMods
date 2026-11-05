@@ -1,10 +1,11 @@
 /**
  * Golden over the committed kitchen-sink mod project (`fixtures/sample-mod`, ADR 0026 D6):
- * an `msm:mod`, three `msm:block` and four `msm:item` elements covering every Phase 4
- * component and all six actions, a function and a loot table, namespace `msm_sample_mod`.
+ * an `msm:mod`, three `msm:block` and five `msm:item` elements covering every block and item
+ * component and all six actions, a `minecraft:equipment` element with its two armour layer
+ * textures (ADR 0042), a function and a loot table, namespace `msm_sample_mod`.
  *
- * - The fixture equals the project built from {@link SAMPLE_ELEMENTS} now; `UPDATE_GOLDENS=1`
- *   rewrites it (the README is hand-written).
+ * - The fixture equals the project built from {@link SAMPLE_ELEMENTS} and
+ *   {@link SAMPLE_ASSETS} now; `UPDATE_GOLDENS=1` rewrites it (the README is hand-written).
  * - Every element validates with zero problems, the plugins' project validators report
  *   nothing, and every function passes the offline mcfunction checker.
  * - The content jar exports with zero problems and a stub runtime jar; its SHA-256 is pinned
@@ -36,6 +37,7 @@ import {
 import type { Element, Json, Plugin, Problem, Project, Target } from '@msm/plugin-api';
 import blocksItemsPlugin from '@msm/plugin-blocks-items';
 import dataPackPlugin from '@msm/plugin-datapack';
+import { encodePng, type Rgb } from '@msm/plugin-library';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
 import {
   createRegistryIndex,
@@ -95,9 +97,12 @@ const ns = (path: string): string => `${NAMESPACE}:${path}`;
 /**
  * The kitchen sink. Between them the blocks and items use every component (`msm:breakable`,
  * `msm:light_emitter`, `msm:on_interact`, `msm:on_step`, `msm:redstone`, `msm:food`,
- * `msm:tool`, `msm:durability`, `msm:on_use`) and every action (`play_sound`,
- * `spawn_particle`, `run_function`, `set_block_state`, `give_item`, `trigger_event`). Models
- * are vanilla ones, so the fixture needs no textures.
+ * `msm:tool` with a vanilla tier and with a custom material and an attack speed override,
+ * `msm:armor` with a custom material, `msm:durability`, `msm:on_use`) and every action
+ * (`play_sound`, `spawn_particle`, `run_function`, `set_block_state`, `give_item`,
+ * `trigger_event`). Item and block models are vanilla ones; the only textures are the two
+ * armour layers of the ruby equipment asset ({@link SAMPLE_ASSETS}). The equipment element is
+ * `ruby_armor`, not `ruby`: element ids are unique per namespace and `ruby` is the item.
  */
 const SAMPLE_ELEMENTS: readonly SampleElement[] = [
   {
@@ -237,7 +242,57 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
       display_name: 'Ruby Pickaxe',
       rarity: 'rare',
       creative_tab: 'minecraft:tools_and_utilities',
-      components: { 'msm:tool': { type: 'pickaxe', tier: 'diamond' } },
+      components: {
+        'msm:tool': {
+          type: 'pickaxe',
+          // Mines like diamond (its incorrect-for-drops tag), faster, not enchantable.
+          tier: {
+            durability: 1200,
+            speed: 9,
+            attack_damage_bonus: 3,
+            enchantment_value: 0,
+            incorrect_blocks_for_drops: '#minecraft:incorrect_for_diamond_tool',
+            repair_items: '#minecraft:diamond_tool_materials',
+          },
+          attack_speed: -2.6,
+        },
+      },
+    },
+  },
+  {
+    id: ns('ruby_helmet'),
+    kind: 'msm:item',
+    data: {
+      format: 1,
+      model: 'minecraft:item/diamond_helmet',
+      display_name: 'Ruby Helmet',
+      rarity: 'rare',
+      creative_tab: 'minecraft:combat',
+      components: {
+        'msm:armor': {
+          slot: 'helmet',
+          material: {
+            durability: 25,
+            defense: { helmet: 3, chestplate: 7, leggings: 5, boots: 2 },
+            enchantment_value: 12,
+            toughness: 1,
+            knockback_resistance: 0.05,
+            equip_sound: 'minecraft:item.armor.equip_diamond',
+            repair_items: '#minecraft:repairs_diamond_armor',
+            equipment_asset: ns('ruby_armor'),
+          },
+        },
+      },
+    },
+  },
+  {
+    id: ns('ruby_armor'),
+    kind: 'minecraft:equipment',
+    data: {
+      layers: {
+        humanoid: [{ texture: ns('ruby') }],
+        humanoid_leggings: [{ texture: ns('ruby') }],
+      },
     },
   },
   {
@@ -301,6 +356,49 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
   },
 ];
 
+interface SampleAsset {
+  /** Path under the namespace's assets, such as `textures/entity/equipment/humanoid/x.png`. */
+  path: string;
+  bytes: Uint8Array;
+}
+
+/** The ruby colour of the armour layers. */
+const RUBY: Rgb = [196, 28, 52];
+
+/**
+ * A 64x32 placeholder armour layer: the whole sheet in `colour`, a darker lower half (body and
+ * legs) and a lighter one-pixel grid every eight pixels, so every humanoid UV box is filled.
+ * Original work; it stands in until the library's armour layer patterns exist.
+ */
+function armorLayerPlaceholder(colour: Rgb): Uint8Array {
+  const width = 64;
+  const height = 32;
+  const rgba = new Uint8Array(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const shade = x % 8 === 0 || y % 8 === 0 ? 1.2 : y >= 16 ? 0.8 : 1;
+      const offset = (y * width + x) * 4;
+      for (let channel = 0; channel < 3; channel++) {
+        rgba[offset + channel] = Math.min(255, Math.round((colour[channel] as number) * shade));
+      }
+      rgba[offset + 3] = 255;
+    }
+  }
+  return encodePng(rgba, width, height);
+}
+
+/** The two armour layers of `ruby_armor` (`humanoid` and `humanoid_leggings`). */
+const SAMPLE_ASSETS: readonly SampleAsset[] = [
+  {
+    path: 'textures/entity/equipment/humanoid/ruby.png',
+    bytes: armorLayerPlaceholder(RUBY),
+  },
+  {
+    path: 'textures/entity/equipment/humanoid_leggings/ruby.png',
+    bytes: armorLayerPlaceholder(RUBY),
+  },
+];
+
 /** Blocks registered by the runtime, and items (block items plus stand-alone items). */
 const EXPECTED_BLOCKS = SAMPLE_ELEMENTS.filter((entry) => entry.kind === 'msm:block');
 const EXPECTED_ITEM_COUNT =
@@ -315,7 +413,11 @@ async function buildSample(): Promise<MemoryFileSystem> {
       (plugin) => plugin.id,
     ),
   });
-  const namespace = { name: NAMESPACE, elements: [] as Element[], assets: [] };
+  const namespace = {
+    name: NAMESPACE,
+    elements: [] as Element[],
+    assets: [] as { path: string; mediaType: string }[],
+  };
   for (const entry of SAMPLE_ELEMENTS) {
     namespace.elements.push(
       createElement({
@@ -326,8 +428,14 @@ async function buildSample(): Promise<MemoryFileSystem> {
       }),
     );
   }
-  project.namespaces.push(namespace);
   const fs = createMemoryFileSystem();
+  for (const asset of SAMPLE_ASSETS) {
+    const file = `assets/${NAMESPACE}/${asset.path}`;
+    await fs.mkdirp(file.slice(0, file.lastIndexOf('/')));
+    await fs.writeFile(file, asset.bytes);
+    namespace.assets.push({ path: asset.path, mediaType: 'image/png' });
+  }
+  project.namespaces.push(namespace);
   await saveProject(fs, project, registry);
   return fs;
 }
@@ -393,7 +501,7 @@ const elementsOf = (project: Project): Element[] =>
 
 /**
  * The project's own ids per registry. A block's item shares the block's id, so block ids
- * (with a block item) are item ids too.
+ * (with a block item) are item ids too; the namespace's PNG assets are textures.
  */
 function projectIds(project: Project): Record<string, string[]> {
   const ids: Record<string, string[]> = {};
@@ -410,6 +518,12 @@ function projectIds(project: Project): Record<string, string[]> {
     add(name, element.id);
     if (element.kind === 'msm:block' && (element.data as { item?: Json }).item !== false) {
       add('item', element.id);
+    }
+  }
+  for (const namespace of project.namespaces) {
+    for (const asset of namespace.assets) {
+      const match = /^textures\/(.+)\.png$/.exec(asset.path);
+      if (match !== null) add('texture', `${namespace.name}:${match[1]}`);
     }
   }
   for (const [name, list] of Object.entries(ids)) ids[name] = [...new Set(list)].sort();
@@ -482,13 +596,14 @@ function jarModVersion(jar: Uint8Array): string {
 // Tests -------------------------------------------------------------------------------------
 
 describe('sample mod project', () => {
-  it('equals SAMPLE_ELEMENTS saved as a project', async () => {
+  it('equals SAMPLE_ELEMENTS and SAMPLE_ASSETS saved as a project', async () => {
     const generated = (await buildSample()).snapshot();
     if (update) {
       for (const path of await listFiles(sampleRoot)) {
         if (!HAND_WRITTEN.has(path)) await rm(join(sampleRoot, ...path.split('/')));
       }
       await rm(join(sampleRoot, 'content'), { recursive: true, force: true });
+      await rm(join(sampleRoot, 'assets'), { recursive: true, force: true });
       for (const [path, bytes] of Object.entries(generated)) {
         const file = join(sampleRoot, ...path.split('/'));
         await mkdir(dirname(file), { recursive: true });
@@ -515,6 +630,7 @@ describe('sample mod project', () => {
       'msm:redstone',
       'msm:food',
       'msm:tool',
+      'msm:armor',
       'msm:durability',
       'msm:on_use',
     ]) {
@@ -532,6 +648,7 @@ describe('sample mod project', () => {
     }
     const kinds = new Set(elementsOf(project).map((element) => element.kind));
     expect([...kinds].sort()).toEqual([
+      'minecraft:equipment',
       'minecraft:function',
       'minecraft:loot_table',
       'msm:block',
@@ -640,6 +757,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         `data/${NAMESPACE}/${target.folders.data.loot_table}/blocks/ruby_ore_rich.json`,
         `data/${NAMESPACE}/${target.folders.data.loot_table}/blocks/chime_block.json`,
         `assets/${NAMESPACE}/${target.folders.resource.lang}/en_us.json`,
+        `assets/${NAMESPACE}/equipment/ruby_armor.json`,
+        `assets/${NAMESPACE}/${target.folders.resource.textures}/entity/equipment/humanoid/ruby.png`,
+        `assets/${NAMESPACE}/${target.folders.resource.textures}/entity/equipment/humanoid_leggings/ruby.png`,
       ]) {
         expect(paths, path).toContain(path);
       }

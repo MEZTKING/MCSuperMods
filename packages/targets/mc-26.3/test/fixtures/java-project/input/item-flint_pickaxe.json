@@ -1,0 +1,15 @@
+{
+  "components": {
+    "msm:tool": {
+      "tier": {
+        "attack_damage_bonus": 1,
+        "durability": 100,
+        "enchantment_value": 5,
+        "incorrect_blocks_for_drops": "#minecraft:incorrect_for_stone_tool",
+        "speed": 4
+      },
+      "type": "pickaxe"
+    }
+  },
+  "format": 1
+}

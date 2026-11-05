@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": "iron",
+      "slot": "chestplate"
+    }
+  },
+  "format": 1
+}
