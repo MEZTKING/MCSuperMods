@@ -181,6 +181,8 @@ struct ToolMaterial {
 	speed: float @ 0..,
 	/// Added to each tool type's base attack damage (iron is 2).
 	attack_damage_bonus: float,
+	/// How well the tool takes enchantments (iron is 14); 0 means it cannot be enchanted (the
+	/// runtime then leaves out the `enchantable` component, since the game rejects 0).
 	enchantment_value: int @ 0..,
 	/// The block tag this material cannot mine for drops, such as `#minecraft:incorrect_for_iron_tool`.
 	incorrect_blocks_for_drops: #[id(registry="block", tags="required")] string,
@@ -231,6 +233,8 @@ struct ArmorMaterial {
 		leggings: int @ 0..,
 		boots: int @ 0..,
 	},
+	/// How well the piece takes enchantments (iron is 9); 0 means it cannot be enchanted (the
+	/// runtime then leaves out the `enchantable` component, since the game rejects 0).
 	enchantment_value: int @ 0..,
 	toughness: float @ 0..,
 	knockback_resistance: float @ 0..1,

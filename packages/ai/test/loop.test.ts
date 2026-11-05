@@ -416,7 +416,6 @@ describe('runAssistant', () => {
     const [a, b, c] = client.requests.map((r) => r.messages);
     expect(a).toHaveLength(1);
     expect(b?.slice(0, a?.length)).toEqual(a);
-    expect(c?.slice(0, b?.length)).toEqual(b?.concat(c?.slice(b.length, b.length + 2) ?? []).slice(0, b.length));
     expect(JSON.stringify(c?.slice(0, b?.length))).toBe(JSON.stringify(b));
     const assistant = b?.[1];
     expect(assistant?.content).toEqual([
