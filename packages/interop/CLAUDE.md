@@ -1,6 +1,6 @@
 # packages/interop — Blockbench, NBT and Minecraft installation
 
-Phase 2 code complete: `minecraft-install/` locates `.minecraft`, lists versions and extracts preview assets, including `.png.mcmeta` animation sidecars, with fflate into `~/.msm/cache/assets/<version>/` (ADR 0011; cache `schemaVersion` 2, older caches are re-extracted), tested with a synthetic jar; `readPngHeader` reads PNG sizes. Launcher add-on (ADR 0019): `launchers/` discovers official, Prism/MultiMC/PolyMC and CurseForge game locations and finds client jars across their stores. World listing, location resolution and pack installs live in the app's main process. Phase 3: `nbt/level-dat.ts` reads world names (`Data.LevelName`) for the world picker with deepslate's NBT module; structure `.nbt`/`.schem` I/O lives in `@msm/plugin-structures`, not here (ADR 0021). Blockbench follows in Phase 5.
+Phase 2 code complete: `minecraft-install/` locates `.minecraft`, lists versions and extracts preview assets, including `.png.mcmeta` animation sidecars, with fflate into `~/.msm/cache/assets/<version>/` (ADR 0011; cache `schemaVersion` 2, older caches are re-extracted), tested with a synthetic jar; `readPngHeader` reads PNG sizes. Launcher add-on (ADR 0019): `launchers/` discovers official, Prism/MultiMC/PolyMC and CurseForge game locations and finds client jars across their stores. World listing, location resolution and pack installs live in the app's main process. Phase 3: `nbt/level-dat.ts` reads world names (`Data.LevelName`) for the world picker with deepslate's NBT module; structure `.nbt`/`.schem` I/O lives in `@msm/plugin-structures`, not here (ADR 0021). Phase 4: `fabric/` backs Test in Minecraft (ADR 0026 D5): Fabric readiness of a location, the managed Prism instance, `mods/` installs recorded in `mods/.msm-installed.json`, the Fabric API download cache and launcher programs and arguments; the app's main process adds settings, containment and the spawn. Blockbench follows in Phase 5.
 
 ## Purpose
 
@@ -10,8 +10,9 @@ Phase 2 code complete: `minecraft-install/` locates `.minecraft`, lists versions
 
 | Subfolder | Phase | Role |
 |---|---|---|
-| `minecraft-install/` | 1 | `locate.ts` (default dir, versions, jar pick), `extract.ts` (filtered `unzipSync`, including block and item `.png.mcmeta` sidecars), `cache.ts` (`ASSET_CACHE_SCHEMA_VERSION`; bump it whenever the extracted set changes), injected `InstallFileSystem`; launch helpers in Phase 4 |
+| `minecraft-install/` | 1 | `locate.ts` (default dir, versions, jar pick), `extract.ts` (filtered `unzipSync`, including block and item `.png.mcmeta` sidecars), `cache.ts` (`ASSET_CACHE_SCHEMA_VERSION`; bump it whenever the extracted set changes), injected `InstallFileSystem`; launch helpers are in `fabric/` |
 | `launchers/` | 2 | ADR 0019: `discover.ts` (`discoverGameLocations`, default Prism and CurseForge roots, ids), `mmc.ts` (Prism/MultiMC/PolyMC `*.cfg`, `instance.cfg`, `mmc-pack.json`), `curseforge.ts` (`minecraftinstance.json`), `official.ts`, `client-jar.ts` (`findClientJar`: selected store first, then the rest in discovery order), `ini.ts`, `paths.ts` (containment, safe segments), `types.ts` |
+| `fabric/` | 4 | ADR 0026 D5: `instance.ts` (`fabricReadiness`: launch, install-only or blocked; `createManagedInstance` writes `MCSuperMods Test (<mc>)` with `instance.cfg`, `mmc-pack.json` (`net.minecraft`, `net.fabricmc.fabric-loader`) and the `.msm-managed.json` marker), `mods-install.ts` (`installContentJar` as `<mod_id>.jar`, `ensureFabricApi`; only files recorded in `.msm-installed.json` with matching SHA-512 are replaced or removed), `download.ts` (Fabric Maven URL, `cachedFabricApi` checked against the published `.sha512`, `fetchDownloader`, `webCryptoSha512`), `launch.ts` (`launcherProgramCandidates`, `findLauncherProgram`, `launchArguments`: `--dir <root>` unless a default Prism folder, `--launch <instance>`), `types.ts` (`FabricTestError` codes). No Node imports: downloader and hasher are injected or global |
 | `png.ts` | 1 | `readPngHeader` (width, height) for imported textures |
 | `node.ts` | 1 | Subpath `@msm/interop/node`: Node `InstallFileSystem`, `nodeEnv`, `sha1Hex` (main process only) |
 | `nbt/` | 3 | `level-dat.ts`: `readLevelName` (gzip, zlib or raw NBT; never throws). Structure files are read and written by `@msm/plugin-structures` importers and exporters (ADR 0021) |
@@ -20,7 +21,8 @@ Phase 2 code complete: `minecraft-install/` locates `.minecraft`, lists versions
 ## Conventions
 
 - Importers produce IR elements and assets through the `Importer` interface in `@msm/plugin-api`.
-- Read-only on the user's game directory, except copying into `resourcepacks/` or `datapacks/` and the managed instance folder.
+- Read-only on the user's game directory, except copying into `resourcepacks/` or `datapacks/`, files the app records in `mods/.msm-installed.json`, and the managed instance folder (marked by `.msm-managed.json`). A same-named file the app did not install stops the install (`fabric.foreign-file`).
+- Tests never reach the network: inject a `Downloader`.
 - Launcher readers are pure over `InstallFileSystem` and an injected env; missing roots are skipped silently, unreadable metadata becomes a `location.*` problem, never a throw. Instance folder names must be safe segments; symlinked instances escaping their root are skipped.
 - Facts marked "(verify at implementation)" in ADR 0019 (CurseForge `Install/versions/`, `baseModLoader` prefixes) stay marked until confirmed on a real machine.
 - Extracted Mojang assets stay in the local cache for previews only.
@@ -43,5 +45,5 @@ Phase 2 code complete: `minecraft-install/` locates `.minecraft`, lists versions
 ## Read next
 
 - [DESIGN §13 Interop (Blockbench, NBT, Minecraft Installation)](../../docs/DESIGN.md#13-interop-blockbench-nbt-minecraft-installation)
-- [ADR 0019](../../docs/adr/0019-game-locations-launcher-instances.md) (launcher game locations), [ADR 0021](../../docs/adr/0021-structure-templates-and-nbt.md) (structure I/O)
+- [ADR 0019](../../docs/adr/0019-game-locations-launcher-instances.md) (launcher game locations), [ADR 0026](../../docs/adr/0026-fabric-content-jar.md) D5 (Test in Minecraft), [ADR 0021](../../docs/adr/0021-structure-templates-and-nbt.md) (structure I/O)
 - [ROADMAP, Phases 1, 3 and 5](../../docs/ROADMAP.md)

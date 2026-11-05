@@ -1450,3 +1450,21 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 - `datapack-path.spec.ts` (and probably others) reads a zip as soon as it appears; one run failed with "invalid zip data". Poll until it parses, as the new spec does, or make export writes atomic in main.
 - Ticking "Has a block item" again drops the earlier stack size, rarity and creative tab (sets `item` absent); the guide says so. Keeping the old object would be friendlier.
 - Orchestrator: align the guide's "Test in Minecraft" labels with B100.
+
+---
+
+## 2026-11-05 — executor — B100 Test in Minecraft
+
+**What**
+- `@msm/interop` `fabric/` (ADR 0026 D5): `fabricReadiness` (Prism/MultiMC Fabric instance on the target's Minecraft with Fabric Loader at least the target's: launch; official and CurseForge Fabric: install only with a note; otherwise blocked with a reason), `createManagedInstance` (`MCSuperMods Test (<mc>)`: `instance.cfg`, `mmc-pack.json` with `net.minecraft` and `net.fabricmc.fabric-loader`, `minecraft/mods/`, `.msm-managed.json` marker; a same-named folder without the marker is never touched), `installContentJar` (`mods/<mod_id>.jar`) and `ensureFabricApi` with `mods/.msm-installed.json` (file, role, id, SHA-512; only recorded files with unchanged bytes are replaced or removed; a user's own Fabric API jar is left alone), `cachedFabricApi` (Fabric Maven, checked against the published `.sha512`, cached with its checksum so later runs work offline), `launcherProgramCandidates`/`findLauncherProgram`/`launchArguments`. No Node imports (global `fetch` and Web Crypto defaults, both injectable). 20 tests in `test/fabric.test.ts`.
+- App main: `platform/test-in-minecraft.ts` (status, create instance and select it as install target, run with game-folder containment, detached spawn), settings `launcherPrograms` (main only, not in the renderer's settings view), IPC `msm:v1:testInMinecraft:status|createInstance|run|pickLauncherProgram`, menu File > "Test in Minecraft…", cache in `<userData>/downloads`.
+- Renderer: `ProjectSession.testInMinecraft()` (content jar with the runtime nested, every error blocks), `testInMinecraftStatus()`, `createTestInstance()`; `components/TestInMinecraftDialog.tsx`; palette "Test in Minecraft…". Tests: `main-test-in-minecraft.test.ts` (temp dirs, fake Prism root, fake downloader and spawn), App tests, contract samples.
+
+**Decisions**
+- Verified against Prism source: `--launch`/`-l` and `--dir`/`-d` (also MultiMC), `mmc-pack.json` `formatVersion` 1, `InstanceType=OneSix`, installer path `%LOCALAPPDATA%\Programs\PrismLauncher\prismlauncher.exe`. Prism's meta for Fabric Loader 0.20.1 requires `net.fabricmc.intermediary` (26.3 is listed); Prism adds missing requirements itself, so the managed pack names only the two components (this answers ADR 0026's intermediary question: Prism still uses it, but MSM need not write it).
+- SHA-512 rather than SHA-1 (the Fabric Maven publishes both). `--dir` is passed unless the root is a default Prism data folder (Flatpak may not see host paths).
+- A user instance with an older Fabric Loader or another Minecraft version is blocked, not warned: the jar's `depends` would fail to load.
+
+**Next**
+- B101/guide: labels in the B100 report. ADR 0026 D5 "(verify at implementation)" items can be ticked at B102; macOS/Linux program paths and Prism picking up a just-created instance while running stay unverified on a real machine.
+- Toolbar Export menu has no Test in Minecraft entry (menu and palette only).

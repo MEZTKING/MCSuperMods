@@ -65,8 +65,8 @@ describe('versions and names', () => {
   });
 
   it('builds the Fabric Maven URL and rejects unsafe versions', () => {
-    expect(fabricApiUrl('0.165.2+26.3')).toBe(
-      'https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/0.165.2%2B26.3/fabric-api-0.165.2%2B26.3.jar',
+    expect(fabricApiUrl('0.1.0+9.9')).toBe(
+      'https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/0.1.0%2B9.9/fabric-api-0.1.0%2B9.9.jar',
     );
     expect(() => fabricApiUrl('../x')).toThrow(/not a valid/);
   });
@@ -77,14 +77,14 @@ describe('versions and names', () => {
   });
 
   it('names the managed instance and the content jar', () => {
-    expect(managedInstanceName('26.3')).toBe('MCSuperMods Test (26.3)');
+    expect(managedInstanceName('9.9')).toBe('MCSuperMods Test (9.9)');
     expect(contentJarModsFileName('ruby_mod')).toBe('ruby_mod.jar');
     expect(() => contentJarModsFileName('../evil')).toThrow(/not a valid Fabric mod id/);
     expect(() => contentJarModsFileName('A')).toThrow();
   });
 
   it('recognises Fabric API file names', () => {
-    expect(isFabricApiFileName('fabric-api-0.165.2+26.3.jar')).toBe(true);
+    expect(isFabricApiFileName('fabric-api-0.1.0+9.9.jar')).toBe(true);
     expect(isFabricApiFileName('Fabric-API.jar')).toBe(true);
     expect(isFabricApiFileName('fabric-api-base.jar.disabled')).toBe(false);
     expect(isFabricApiFileName('fabric-language-kotlin.jar')).toBe(false);
