@@ -40,6 +40,7 @@ import {
   combinedFileNames,
   contentJarFileName,
   createFabricContentJarExporter,
+  createJavaProjectExporter,
   createMemorySink,
   createZipBytes,
   createZipSink,
@@ -48,6 +49,7 @@ import {
   type ExportReport,
   FABRIC_MOD_ID_PATTERN,
   FABRIC_MOD_JSON_FILE,
+  JAVA_PROJECT_MOD_JSON,
   packFileName,
   resourcePackExporter,
   runExport,
@@ -62,11 +64,13 @@ import type {
   Exporter,
   ExporterOption,
   ImportResult,
+  OutputFile,
   OutputSink,
   Plugin,
   ProjectStarter,
   Target,
 } from '@msm/plugin-api';
+import { MSM_RUNTIME_TYPINGS } from '@msm/plugin-scripting';
 import { type SchemaNode, validateJson } from '@msm/schemas';
 import type {
   AppSettingsPatch,
@@ -108,6 +112,15 @@ import {
   type SessionReferences,
 } from './references';
 import { loadSchemaContext, projectRegistryIds, type SchemaContext } from './schema-context';
+import {
+  checkScriptElement,
+  SCRIPT_KIND,
+  SCRIPT_TYPINGS_FILE,
+  type ScriptingChecker,
+  scriptLines,
+  scriptTextValidator,
+  scriptTranspiler,
+} from './scripting-problems';
 import {
   blockingValidatorErrors,
   changedKinds,
@@ -224,6 +237,15 @@ export interface ProjectSessionOptions {
    * export reports them as unchecked.
    */
   mcfunction?: McfunctionChecker;
+  /**
+   * The TypeScript service for scripts (ADRs 0031 and 0032): live problems for `msm:script`
+   * elements, the export gate's `validateText` for `typescript` files and the content jar's
+   * transpiler. Without it scripts get only schema problems and a project with scripts
+   * cannot be exported as a mod jar (`export.transpiler-missing`).
+   */
+  scripting?: ScriptingChecker;
+  /** The script typings (`msm-runtime.d.ts`); default `MSM_RUNTIME_TYPINGS` of the plugin. */
+  scriptTypings?: string;
   /**
    * Target-aware replacements for registered importers (default: the structure importers,
    * which need the target's data version).
@@ -441,6 +463,10 @@ export const SessionProblemCodes = {
   importKindMismatch: 'import.kind-mismatch',
   /** The named plugin exporter is not registered. */
   unknownExporter: 'export.unknown-exporter',
+  /** The injected TypeScript service failed; scripts are not checked (reported once). */
+  scriptingUnavailable: 'session.scripting-unavailable',
+  /** The Java project's root folder already holds files (ADR 0033 D4); nothing is written. */
+  folderNotEmpty: 'export.folder-not-empty',
 } as const;
 
 /**
@@ -506,10 +532,14 @@ export class ProjectSession {
   readonly #targets: readonly SessionTarget[];
   readonly #validationDelay: number;
   readonly #mcfunction: McfunctionChecker | undefined;
+  readonly #scripting: ScriptingChecker | undefined;
+  readonly #scriptTypings: string;
   readonly #importers: readonly RegisteredImporter[];
   readonly #validators: readonly RegisteredValidator[];
   readonly #exporters: readonly Exporter[];
   readonly #contentJarExporter: Exporter;
+  readonly #javaProjectExporter: Exporter;
+  #scriptingProblem: Problem | null = null;
   #validatorProblems = new Map<string, Problem[]>();
   #pendingValidators = new Set<string>();
   readonly #loadedSchemas = new Map<string, SchemaContext>();
@@ -550,6 +580,8 @@ export class ProjectSession {
     this.#targets = options.targets ?? [];
     this.#validationDelay = options.validationDelay ?? 150;
     this.#mcfunction = options.mcfunction;
+    this.#scripting = options.scripting;
+    this.#scriptTypings = options.scriptTypings ?? MSM_RUNTIME_TYPINGS;
     for (const plugin of this.#plugins) registerPlugin(this.registry, plugin);
     this.#library = this.#collectLibrary();
     this.#importers = Object.freeze(collectImporters(this.#plugins, options.targetImporters));
@@ -565,7 +597,24 @@ export class ProjectSession {
       loadRuntimeJar: async () => (await platform.exports.runtimeJar()) ?? undefined,
       loadGeckolibJar: async () =>
         (await platform.exports.geckolibJar(this.target.id)) ?? undefined,
+      // Scripts are transpiled by TypeScript in main (ADR 0031 D2), for export and Test in
+      // Minecraft alike.
+      ...(options.scripting === undefined
+        ? {}
+        : { transpileScript: scriptTranspiler(options.scripting) }),
     });
+    // ADR 0033 D2: main serves the Gradle wrapper (packaged resources or `engine-mod/`).
+    this.#javaProjectExporter = createJavaProjectExporter({
+      loadGradleWrapper: async () => (await platform.exports.gradleWrapper()) ?? undefined,
+    });
+  }
+
+  /**
+   * The script typings (`msm-runtime.d.ts`, ADR 0032 D5) the Script Studio gives Monaco and
+   * the session writes to `.msm/msm-runtime.d.ts`.
+   */
+  get scriptTypings(): string {
+    return this.#scriptTypings;
   }
 
   /** The options the Fabric mod jar export declares, shown in its dialog (ADR 0027 D2). */
@@ -738,6 +787,7 @@ export class ProjectSession {
     const saved = await saveProject(this.#fs, state, this.registry);
     this.#adopt(path, state, [], saved.manifest);
     await this.#emptyTrash();
+    await this.#writeScriptTypings();
     return { ok: true };
   }
 
@@ -826,6 +876,7 @@ export class ProjectSession {
       const { project, problems, manifest } = await loadProject(this.#fs, this.registry);
       this.#adopt(path, project, problems, manifest);
       await this.#emptyTrash();
+      await this.#writeScriptTypings();
       return { ok: true };
     } catch (error) {
       await this.#platform.project.closeRoot();
@@ -1447,6 +1498,49 @@ export class ProjectSession {
   }
 
   /**
+   * Exports the project as a standalone Fabric Gradle project with generated Java
+   * (`java-project`, ADR 0033) into `<folder>/<mod id>/`. Every error problem blocks, as for
+   * the packs; nothing is asked or written then. `folder` is used when given (a folder picked
+   * in this session), else the user picks one. A root folder that already holds files is the
+   * blocking problem `export.folder-not-empty`. `location` is the written project folder.
+   *
+   * @param folder - A folder already picked in this session.
+   * @throws Error If no project is open, or main refuses the tree.
+   */
+  async exportJavaProject(folder?: string): Promise<ExportResult> {
+    const sink = createMemorySink();
+    const { report, project } = await this.#runPipeline(this.#javaProjectExporter, sink);
+    if (!report.ok) return report;
+    const written = sink.files();
+    if (written.size === 0) return report;
+    const modId =
+      modIdOf(written.get(JAVA_PROJECT_MOD_JSON)) ?? sanitiseModId(project.name) ?? 'msm_mod';
+    const chosen =
+      folder ?? (await this.#platform.exports.pickFolder('Export Java project: choose a folder'));
+    if (chosen === null) return { ...report, cancelled: true };
+    const result = await this.#platform.exports.writeTree(
+      chosen,
+      [...written].map(([path, data]) => ({ path: `${modId}/${path}`, data })),
+    );
+    if (!result.ok) {
+      return {
+        ...report,
+        ok: false,
+        problems: [
+          {
+            severity: 'error',
+            code: SessionProblemCodes.folderNotEmpty,
+            file: result.root,
+            message: `The folder ${result.root} already exists and is not empty.`,
+          },
+          ...report.problems,
+        ],
+      };
+    }
+    return { ...report, location: result.root };
+  }
+
+  /**
    * What Test in Minecraft would do for the open project's target with the selected game
    * location (ADR 0026 D5).
    *
@@ -1517,7 +1611,7 @@ export class ProjectSession {
     const project = stack.state;
     const context = await this.schemas();
     const info = await this.#platform.app.info();
-    const checker = this.#mcfunction;
+    const validateText = this.#textValidator(project, context.target);
     const report = await runExport({
       project,
       registry: this.registry,
@@ -1529,9 +1623,7 @@ export class ProjectSession {
       readAsset: (namespace, path) => this.readAsset(namespace, path),
       meta: { msmVersion: info.version, plugins: [...project.plugins] },
       ...(options === undefined ? {} : { options }),
-      ...(checker === undefined
-        ? {}
-        : { validateText: mcfunctionTextValidator(checker, project, context.target) }),
+      ...(validateText === undefined ? {} : { validateText }),
     });
     const blocking = blockingValidatorErrors(
       [...this.#validatorProblems.values()].flat(),
@@ -1544,6 +1636,30 @@ export class ProjectSession {
       report: { ok: false, problems: [...blocking, ...report.problems], files: [] },
       project,
       target: context.target,
+    };
+  }
+
+  /**
+   * The export gate's `validateText`: mcfunction files through the injected mcfunction
+   * checker, `typescript` files through the scripting checker (errors block, warnings pass).
+   * `undefined` when neither checker is injected.
+   */
+  #textValidator(
+    project: Project,
+    target: Target,
+  ): ((file: OutputFile) => Promise<Problem[]>) | undefined {
+    const mcfunction =
+      this.#mcfunction === undefined
+        ? undefined
+        : mcfunctionTextValidator(this.#mcfunction, project, target);
+    const scripts =
+      this.#scripting === undefined
+        ? undefined
+        : scriptTextValidator(this.#scripting, this.#scriptTypings);
+    if (mcfunction === undefined && scripts === undefined) return undefined;
+    return async (file) => {
+      if (file.language === 'typescript') return scripts === undefined ? [] : scripts(file);
+      return mcfunction === undefined ? [] : mcfunction(file);
     };
   }
 
@@ -1645,6 +1761,7 @@ export class ProjectSession {
     const pending = [...this.#pending];
     this.#pending.clear();
     const functions: { element: Element; problems: Problem[] }[] = [];
+    const scripts: { element: Element; problems: Problem[] }[] = [];
     for (const id of pending) {
       const element = elements.get(id);
       if (element === undefined) {
@@ -1659,6 +1776,12 @@ export class ProjectSession {
       ) {
         // Published together with the checker's problems, so they do not flicker.
         functions.push({ element, problems });
+      } else if (
+        element.kind === SCRIPT_KIND &&
+        this.#scripting !== undefined &&
+        !problems.some((problem) => problem.severity === 'error')
+      ) {
+        scripts.push({ element, problems });
       } else {
         this.#schemaProblems.set(id, problems);
       }
@@ -1666,6 +1789,43 @@ export class ProjectSession {
     this.#runValidators(context, project);
     this.#publish();
     if (functions.length > 0) await this.#checkFunctions(functions, context, project, generation);
+    if (scripts.length > 0) await this.#checkScripts(scripts, generation);
+  }
+
+  /**
+   * Runs the injected TypeScript checker over script elements after their schema check and
+   * publishes its problems after theirs. A failing checker is reported once, as
+   * `session.scripting-unavailable`, until a check succeeds again.
+   */
+  async #checkScripts(
+    scripts: readonly { element: Element; problems: Problem[] }[],
+    generation: number,
+  ): Promise<void> {
+    const checker = this.#scripting;
+    if (checker === undefined) return;
+    for (const { element, problems: schemaProblems } of scripts) {
+      const lines = scriptLines(element) ?? [];
+      let problems: Problem[] = [];
+      let failure: unknown;
+      try {
+        problems = await checkScriptElement(checker, element, lines, this.#scriptTypings);
+      } catch (error) {
+        failure = error;
+      }
+      if (generation !== this.#generation || this.#stack === null) return;
+      if (failure === undefined) {
+        this.#scriptingProblem = null;
+      } else if (this.#scriptingProblem === null) {
+        this.#scriptingProblem = {
+          severity: 'warning',
+          code: SessionProblemCodes.scriptingUnavailable,
+          message: `Scripts could not be checked: ${messageOf(failure)}`,
+        };
+      }
+      if (!elementsById(this.#stack.state).has(element.id)) continue;
+      this.#schemaProblems.set(element.id, [...schemaProblems, ...problems]);
+      this.#publish();
+    }
   }
 
   /**
@@ -1861,6 +2021,30 @@ export class ProjectSession {
     }
   }
 
+  /**
+   * Writes the script typings to `.msm/msm-runtime.d.ts` when the scripting kind is registered
+   * and the file differs (ADR 0032 D5). Never fails the open or create.
+   */
+  async #writeScriptTypings(): Promise<void> {
+    if (this.registry.get(SCRIPT_KIND) === undefined) return;
+    try {
+      const wanted = new TextEncoder().encode(this.#scriptTypings);
+      if (await this.#fs.exists(SCRIPT_TYPINGS_FILE)) {
+        const current = await this.#fs.readFile(SCRIPT_TYPINGS_FILE);
+        if (
+          current.length === wanted.length &&
+          current.every((byte, index) => byte === wanted[index])
+        ) {
+          return;
+        }
+      }
+      await this.#fs.mkdirp(SCRIPT_TYPINGS_FILE.slice(0, SCRIPT_TYPINGS_FILE.lastIndexOf('/')));
+      await this.#fs.writeFile(SCRIPT_TYPINGS_FILE, wanted);
+    } catch (error) {
+      console.warn(`MSM: could not write ${SCRIPT_TYPINGS_FILE}: ${messageOf(error)}`);
+    }
+  }
+
   async #emptyTrash(): Promise<void> {
     try {
       await this.#fs.remove(ASSET_TRASH_DIR);
@@ -1977,6 +2161,7 @@ export class ProjectSession {
     this.#assetProblems = [];
     this.#renameProblems = [];
     this.#referenceCache = null;
+    this.#scriptingProblem = null;
   }
 
   #close(): void {
@@ -2010,6 +2195,7 @@ export class ProjectSession {
           ...this.#targetProblems,
           ...this.#schemaLoadProblems,
           ...this.#assetProblems,
+          ...(this.#scriptingProblem === null ? [] : [this.#scriptingProblem]),
           ...this.#renameProblems,
           ...this.#overwriteProblems(project),
           ...schemaProblems,

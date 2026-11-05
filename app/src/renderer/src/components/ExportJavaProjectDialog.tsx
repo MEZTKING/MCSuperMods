@@ -7,7 +7,6 @@
  * @packageDocumentation
  */
 
-import type { ExportResult } from '../session/project-session';
 import { Modal } from './NewElementDialog';
 
 /** What the eject writes and that it is one-way. */
@@ -30,17 +29,6 @@ export const JAVA_PROJECT_REVEAL_LABEL = 'Reveal';
 
 /** The problem code of a target folder that already holds files (ADR 0033 D4). */
 export const FOLDER_NOT_EMPTY_CODE = 'export.folder-not-empty';
-
-/**
- * The session members the Java project export uses (the names fixed in the Phase 6 plan for
- * B137a): `exportJavaProject(folder?)` asks for a folder when none is given and writes
- * `<folder>/<mod_id>/`; `scriptTypings` is the `.d.ts` text from `@msm/plugin-scripting`. Both
- * are optional here so the renderer works against a session that does not have them yet.
- */
-export interface JavaProjectSessionMembers {
-  exportJavaProject?(folder?: string): Promise<ExportResult>;
-  scriptTypings?: string;
-}
 
 export interface ExportJavaProjectDialogProps {
   /** The ids of the project's scripts, which the Java project leaves out. */

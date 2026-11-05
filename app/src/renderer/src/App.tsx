@@ -35,7 +35,6 @@ import {
   ExportJavaProjectDialog,
   FOLDER_NOT_EMPTY_CODE,
   JAVA_PROJECT_REVEAL_LABEL,
-  type JavaProjectSessionMembers,
   javaProjectWrittenMessage,
 } from './components/ExportJavaProjectDialog';
 import {
@@ -100,7 +99,7 @@ import {
   userFacingExportProblems,
 } from './studios/export-state';
 import type { CompleteFunction } from './studios/FunctionEditor';
-import { DEFAULT_SCRIPT_STUDIO_HOST, ScriptStudioHostContext } from './studios/scripting/host';
+import { ScriptStudioHostContext } from './studios/scripting/host';
 import { projectScripts } from './studios/scripting/script-model';
 import { type StructureStudioHost, StructureStudioHostContext } from './studios/structures/host';
 import { templatesFor } from './studios/templates';
@@ -246,12 +245,6 @@ function targetWarnings(status: MinecraftStatus | null): string[] {
 
 /** A zero-argument action that also reports its own errors. */
 type Action = () => void;
-
-/**
- * The menu command of File > "Export Java Project…" (the Phase 6 plan's id). Listed here as
- * well as in `MENU_COMMANDS`, so the handler table holds it whether or not main sends it yet.
- */
-const EXPORT_JAVA_PROJECT_COMMAND = 'exportJavaProject';
 
 /** The application shell: toolbar, sidebar, editor (Form and Raw JSON), Preview and Problems. */
 export function App({ session, bridge }: { session: ProjectSession; bridge: MsmBridge }) {
@@ -600,14 +593,9 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
 
   /** Runs the Java project export (ADR 0033), which asks for the folder, and reports it. */
   const runJavaProjectExport = async (): Promise<void> => {
-    const javaSession: ProjectSession & JavaProjectSessionMembers = session;
-    if (javaSession.exportJavaProject === undefined) {
-      setMessage({ kind: 'error', text: 'Java project export is not available in this build.' });
-      return;
-    }
     setExporting(true);
     try {
-      const result = await javaSession.exportJavaProject();
+      const result = await session.exportJavaProject();
       setExportProblems(userFacingExportProblems(result.problems));
       if (!result.ok) {
         setRightDock('problems');
@@ -1078,7 +1066,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     return () => document.removeEventListener(GO_TO_DEFINITION_EVENT, onRequest);
   }, []);
 
-  const handlers: Record<MenuCommand | typeof EXPORT_JAVA_PROJECT_COMMAND, Action> = {
+  const handlers: Record<MenuCommand, Action> = {
     new: () => void openWith('New project', () => session.newProject()),
     newProjectFromStarter: () => setDialog({ type: 'new-project' }),
     examples: () => setDialog({ type: 'examples' }),
@@ -1103,7 +1091,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     exportStructures,
     exportSchematics,
     exportFabricJar,
-    [EXPORT_JAVA_PROJECT_COMMAND]: exportJavaProject,
+    exportJavaProject,
     testInMinecraft,
     settings: () => {
       setDialog({ type: 'settings' });
@@ -1264,11 +1252,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     openElement: (id) => select(id),
   };
 
-  const scriptTypings = (session as ProjectSession & JavaProjectSessionMembers).scriptTypings;
-  const scriptHost = useMemo(
-    () => (scriptTypings === undefined ? DEFAULT_SCRIPT_STUDIO_HOST : { typings: scriptTypings }),
-    [scriptTypings],
-  );
+  const scriptTypings = session.scriptTypings;
+  const scriptHost = useMemo(() => ({ typings: scriptTypings }), [scriptTypings]);
 
   const form =
     project !== null && selected !== null ? (

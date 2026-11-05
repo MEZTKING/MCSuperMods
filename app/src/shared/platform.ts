@@ -253,6 +253,53 @@ export interface TestInMinecraftResult {
   note: string | null;
 }
 
+/**
+ * One TypeScript diagnostic of a script (ADR 0031 D5): `line` is 0-based, `start` and `end`
+ * are UTF-16 columns within that line (a diagnostic spanning lines ends at the line's end),
+ * and `offset` is the range in UTF-16 offsets of the whole source.
+ */
+export interface ScriptDiagnostic {
+  /** Syntax diagnostics are errors; semantic diagnostics are warnings. */
+  severity: 'error' | 'warning';
+  /** `typescript.syntax` or `typescript.semantic`. */
+  code: 'typescript.syntax' | 'typescript.semantic';
+  /** TypeScript's own diagnostic number (`2339` for TS2339). */
+  tsCode: number;
+  message: string;
+  line: number;
+  start: number;
+  end: number;
+  offset: { start: number; end: number };
+}
+
+/** What {@link PlatformAdapter.scripting}`.transpile` returns. */
+export type ScriptTranspileOutcome = { js: string } | { problems: ScriptDiagnostic[] };
+
+/** The Gradle wrapper files a Java project export copies (ADR 0033 D2). */
+export interface GradleWrapperFiles {
+  /** `gradle/wrapper/gradle-wrapper.jar`. */
+  jar: Uint8Array;
+  /** The `gradlew` shell script. */
+  gradlew: string;
+  /** The `gradlew.bat` script. */
+  gradlewBat: string;
+}
+
+/** One file of an export tree: a `/`-separated relative path and its bytes. */
+export interface ExportTreeFile {
+  path: string;
+  data: Uint8Array;
+}
+
+/**
+ * The outcome of {@link PlatformAdapter.exports}`.writeTree`: the tree's root folder and the
+ * number of files written, or `folder-not-empty` when the root already holds files (nothing
+ * is written then).
+ */
+export type WriteTreeResult =
+  | { ok: true; root: string; count: number }
+  | { ok: false; reason: 'folder-not-empty'; root: string };
+
 /** Host services for the renderer. */
 export interface PlatformAdapter {
   app: { info(): Promise<{ version: string; electron: string; platform: string }> };
@@ -272,7 +319,8 @@ export interface PlatformAdapter {
   shell: {
     /**
      * Reveals a file in the OS file manager. Only paths under the project root, the Minecraft
-     * directory or the last save location are allowed.
+     * directory, the install target, the last save location or the last export folder (also a
+     * written Java project) are allowed.
      */
     showItemInFolder(path: string): Promise<void>;
   };
@@ -349,6 +397,33 @@ export interface PlatformAdapter {
      * not cached and cannot be downloaded (offline, bad hash, no GeckoLib facts).
      */
     geckolibJar(targetId: string): Promise<Uint8Array | null>;
+    /**
+     * Writes a file tree into a folder returned by {@link pickFolder} in this session (the
+     * Java project export, ADR 0033 D4). Every path starts with the same first segment, the
+     * tree's root folder (`<mod_id>`), which must not exist or must be empty; segments are
+     * `[A-Za-z0-9_.-]+` without `.` or `..`, at most 16 deep, at most 4096 files. Each file is
+     * written atomically; `gradlew` at the root is made executable.
+     */
+    writeTree(folder: string, files: ExportTreeFile[]): Promise<WriteTreeResult>;
+    /**
+     * The Gradle wrapper (ADR 0033 D2): the packaged app's
+     * `resources/runtime/gradle-wrapper/`, or in development `engine-mod/gradle/wrapper/` and
+     * `engine-mod/gradlew{,.bat}`. `null` when any file is missing.
+     */
+    gradleWrapper(): Promise<GradleWrapperFiles | null>;
+  };
+  /**
+   * The TypeScript service for scripts (ADRs 0031 D2 and D5), run in main and loaded on first
+   * use. Results are memoised per source.
+   */
+  scripting: {
+    /** Transpiles a script to ES5 CommonJS; returns the JavaScript or its syntax errors. */
+    transpile(source: string, name: string): Promise<ScriptTranspileOutcome>;
+    /**
+     * Checks a script against `typings` (the generated `msm-runtime.d.ts`) and the curated
+     * lib set of ADR 0032 D5: syntax diagnostics as errors, semantic ones as warnings.
+     */
+    check(source: string, name: string, typings: string): Promise<ScriptDiagnostic[]>;
   };
   /**
    * Test in Minecraft (ADR 0026 D5): installs the content jar and Fabric API into a Fabric game

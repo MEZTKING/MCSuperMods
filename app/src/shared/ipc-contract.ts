@@ -119,6 +119,55 @@ export function isExportFileName(name: string): boolean {
   );
 }
 
+/** The deepest path an export tree may hold, in segments (ADR 0033 D4). */
+export const EXPORT_TREE_MAX_DEPTH = 16;
+/** The most files one export tree may hold (ADR 0033 D4). */
+export const EXPORT_TREE_MAX_FILES = 4096;
+/** One segment of an export tree path. */
+export const EXPORT_TREE_SEGMENT = /^[A-Za-z0-9_.-]+$/;
+
+/**
+ * Whether `path` may be written by `exports.writeTree`: `/`-separated segments of
+ * {@link EXPORT_TREE_SEGMENT}, none `.` or `..`, at least two (root folder and file) and at
+ * most {@link EXPORT_TREE_MAX_DEPTH}, at most 1024 characters.
+ */
+export function isExportTreePath(path: string): boolean {
+  if (path.length === 0 || path.length > 1024) return false;
+  const segments = path.split('/');
+  return (
+    segments.length >= 2 &&
+    segments.length <= EXPORT_TREE_MAX_DEPTH &&
+    segments.every(
+      (segment) => EXPORT_TREE_SEGMENT.test(segment) && segment !== '.' && segment !== '..',
+    )
+  );
+}
+
+const exportTreePath = z.string().max(1024).refine(isExportTreePath, {
+  message: 'Not an export tree path',
+});
+
+/** The largest script source accepted over IPC (as mcfunction's). */
+export const SCRIPT_MAX_SOURCE_LENGTH = MCFUNCTION_MAX_SOURCE_LENGTH;
+/** The largest typings text accepted over IPC. */
+export const SCRIPT_MAX_TYPINGS_LENGTH = 1024 * 1024;
+/** A script's name: its output path (`msm/<ns>/script/<path>.ts`). */
+export const SCRIPT_NAME = /^[A-Za-z0-9_./-]+$/;
+const scriptColumn = z.number().int().nonnegative();
+const scriptName = z.string().min(1).max(512).regex(SCRIPT_NAME);
+const scriptDiagnostic = z
+  .object({
+    severity: z.enum(['error', 'warning']),
+    code: z.enum(['typescript.syntax', 'typescript.semantic']),
+    tsCode: z.number().int().nonnegative(),
+    message: z.string().max(8192),
+    line: scriptColumn,
+    start: scriptColumn,
+    end: scriptColumn,
+    offset: z.object({ start: scriptColumn, end: scriptColumn }).strict(),
+  })
+  .strict();
+
 const exportFileName = z.string().max(255).refine(isExportFileName, {
   message: 'Not an export file name',
 });
@@ -498,6 +547,55 @@ export const ipcContract = {
   [InvokeChannels.exportsGeckolibJar]: {
     request: z.object({ targetId }).strict(),
     response: bytes.nullable(),
+  },
+  [InvokeChannels.exportsWriteTree]: {
+    request: z
+      .object({
+        folder: absolutePath,
+        files: z
+          .array(z.object({ path: exportTreePath, data: bytes }).strict())
+          .min(1)
+          .max(EXPORT_TREE_MAX_FILES),
+      })
+      .strict(),
+    response: z.discriminatedUnion('ok', [
+      z
+        .object({ ok: z.literal(true), root: absolutePath, count: z.number().int().nonnegative() })
+        .strict(),
+      z
+        .object({ ok: z.literal(false), reason: z.literal('folder-not-empty'), root: absolutePath })
+        .strict(),
+    ]),
+  },
+  [InvokeChannels.exportsGradleWrapper]: {
+    request: noRequest,
+    response: z
+      .object({
+        jar: bytes,
+        gradlew: z.string().max(1024 * 1024),
+        gradlewBat: z.string().max(1024 * 1024),
+      })
+      .strict()
+      .nullable(),
+  },
+  [InvokeChannels.scriptingTranspile]: {
+    request: z
+      .object({ source: z.string().max(SCRIPT_MAX_SOURCE_LENGTH), name: scriptName })
+      .strict(),
+    response: z.union([
+      z.object({ js: z.string() }).strict(),
+      z.object({ problems: z.array(scriptDiagnostic) }).strict(),
+    ]),
+  },
+  [InvokeChannels.scriptingCheck]: {
+    request: z
+      .object({
+        source: z.string().max(SCRIPT_MAX_SOURCE_LENGTH),
+        name: scriptName,
+        typings: z.string().max(SCRIPT_MAX_TYPINGS_LENGTH),
+      })
+      .strict(),
+    response: z.array(scriptDiagnostic),
   },
   [InvokeChannels.testInMinecraftStatus]: {
     request: z.object({ targetId }).strict(),

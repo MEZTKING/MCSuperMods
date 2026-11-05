@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'electron-vite';
-import type { Plugin } from 'vite';
+import { minify, type Plugin } from 'vite';
 
 // The renderer CSP keeps style-src 'unsafe-inline' in production: Monaco and Radix inject
 // runtime <style> elements without nonce support. Scripts stay 'self' only (DEVLOG 2026-11-04).
@@ -63,13 +63,43 @@ function dropVendoredDataFromRenderer(): Plugin {
   };
 }
 
+/**
+ * Minifies the lazy scripting chunk only (`scripting-engine-*.js`, ADR 0031 D2): it bundles
+ * `typescript` (about 8 MB as written, about 3.5 MB minified), which would otherwise push
+ * `app.asar` over its budget. The rest of main stays unminified for readable stack traces.
+ */
+function minifyScriptingChunk(): Plugin {
+  return {
+    name: 'msm:minify-scripting-chunk',
+    apply: 'build',
+    enforce: 'post',
+    // On the final bundle, after every other plugin has rendered the chunk.
+    async generateBundle(_options, bundle) {
+      for (const output of Object.values(bundle)) {
+        if (output.type !== 'chunk' || !output.fileName.startsWith('scripting-engine')) continue;
+        const result = await minify(output.fileName, output.code, {
+          compress: true,
+          mangle: true,
+          sourcemap: false,
+        });
+        output.code = result.code;
+      }
+    },
+  };
+}
+
 export default defineConfig({
   // Main is ESM and bundles every dependency (ADR 0013: the packaged app collects no
   // node_modules). electron-vite still externalises `electron` and Node built-ins when
   // `externalizeDeps` is false. Main imports `@msm/core` only as types (ADR 0007).
   main: {
-    build: { externalizeDeps: false },
-    plugins: [bundleVendoredData()],
+    build: {
+      externalizeDeps: false,
+      // TypeScript only requires `source-map-support` from `tryEnableSourceMapsForHost`, which
+      // MSM never calls; left external, the guarded `require` simply fails if ever reached.
+      rolldownOptions: { external: ['source-map-support'] },
+    },
+    plugins: [bundleVendoredData(), minifyScriptingChunk()],
     // fflate's Node build declares `var require = createRequire(...)`, which collides with the
     // `require` shim electron-vite adds to ESM main bundles. MSM uses only fflate's synchronous
     // API, which the browser build provides without workers.

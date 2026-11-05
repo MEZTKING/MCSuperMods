@@ -20,6 +20,10 @@ artifactName: ${productName}-${version}-${os}-${arch}.${ext}
 extraResources:
   - from: build/runtime/msm_runtime.jar
     to: runtime/msm_runtime.jar
+  # The Gradle wrapper the Java project export copies (ADR 0033 D2), read from
+  # `resources/runtime/gradle-wrapper/`; staged by `scripts/stage-runtime.mjs` from `engine-mod/`.
+  - from: build/runtime/gradle-wrapper
+    to: runtime/gradle-wrapper
 
 # Release target: Windows installer, unsigned until the user supplies signing credentials.
 win:

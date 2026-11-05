@@ -20,6 +20,7 @@ export function stubPlatformServices(): Pick<
   | 'mcfunction'
   | 'exports'
   | 'testInMinecraft'
+  | 'scripting'
   | 'updates'
 > & { dialogs: Pick<PlatformAdapter['dialogs'], 'pickFiles' | 'saveFile'> } {
   return {
@@ -44,7 +45,10 @@ export function stubPlatformServices(): Pick<
       writeFiles: unavailable,
       runtimeJar: unavailable,
       geckolibJar: unavailable,
+      writeTree: unavailable,
+      gradleWrapper: unavailable,
     },
+    scripting: { transpile: unavailable, check: unavailable },
     testInMinecraft: {
       status: unavailable,
       createInstance: unavailable,

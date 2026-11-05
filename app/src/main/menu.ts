@@ -97,6 +97,7 @@ export function installMenu(recent: readonly RecentProject[] = []): void {
         { label: 'Export Data Pack…', click: () => send('exportDataPack') },
         { label: 'Export Both…', click: () => send('exportCombined') },
         { label: 'Export Fabric Mod Jar…', click: () => send('exportFabricJar') },
+        { label: 'Export Java Project…', click: () => send('exportJavaProject') },
         { label: 'Test in Minecraft…', click: () => send('testInMinecraft') },
         { label: 'Install Resource Pack', click: () => send('installResourcePack') },
         { label: 'Install Data Pack…', click: () => send('installDataPack') },

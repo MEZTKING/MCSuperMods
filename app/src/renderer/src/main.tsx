@@ -22,6 +22,8 @@ const session: ProjectSession = new ProjectSession(
     plugins: builtInPlugins,
     targets: builtInTargets,
     mcfunction: mcfunctionCheckerFromPlatform(msm.mcfunction, () => session.target.id),
+    // Scripts are transpiled and checked by TypeScript in main (ADRs 0031 and 0032).
+    scripting: msm.scripting,
   },
 );
 

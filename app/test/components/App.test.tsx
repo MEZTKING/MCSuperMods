@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { createMemoryFileSystem } from '@msm/core';
 import { definePlugin, type ElementKind, type Plugin } from '@msm/plugin-api';
-import scriptingPlugin, { SCRIPT_KIND } from '@msm/plugin-scripting';
+import { SCRIPT_KIND } from '@msm/plugin-scripting';
 import { structureTemplateToNbt, writeNbt } from '@msm/plugin-structures';
 import { builtInTargets, targetById } from '@msm/targets';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
@@ -18,7 +18,6 @@ import {
 import {
   FOLDER_NOT_EMPTY_CODE,
   JAVA_PROJECT_DIALOG_NOTE,
-  type JavaProjectSessionMembers,
 } from '../../src/renderer/src/components/ExportJavaProjectDialog';
 import { registerCaretReader } from '../../src/renderer/src/components/function-editor/caret';
 import { BLOCKBENCH_IMPORT_NOTE } from '../../src/renderer/src/components/ImportFilesDialog';
@@ -344,7 +343,10 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
       },
       runtimeJar: async () => harness.runtimeJar,
       geckolibJar: async () => harness.geckolibJar,
+      writeTree: unavailable,
+      gradleWrapper: async () => null,
     },
+    scripting: { transpile: unavailable, check: unavailable },
     testInMinecraft: {
       status: async () => harness.testStatus,
       createInstance: async () => {
@@ -893,18 +895,13 @@ describe('App Fabric mod jar export', () => {
 });
 
 describe('App Java project export', () => {
-  /** The built-in plugins with `@msm/plugin-scripting`, whether or not they list it yet. */
-  const withScripting: readonly Plugin[] = builtInPlugins.some(
-    (plugin) => plugin.id === scriptingPlugin.id,
-  )
-    ? builtInPlugins
-    : [...builtInPlugins, scriptingPlugin];
+  /** The built-in plugins, which include `@msm/plugin-scripting`. */
+  const withScripting: readonly Plugin[] = builtInPlugins;
 
   /** Replaces the session's Java project export with a stub returning `result`. */
   function stubJavaExport(harness: Harness, result: ExportResult) {
     const calls: (string | undefined)[] = [];
-    const members = harness.session as ProjectSession & JavaProjectSessionMembers;
-    members.exportJavaProject = async (folder?: string) => {
+    harness.session.exportJavaProject = async (folder?: string) => {
       calls.push(folder);
       return result;
     };
@@ -995,7 +992,7 @@ describe('App Java project export', () => {
     await userEvent.setup().keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByTestId('command-palette')).toBeNull());
     // File > "Export Java Project…" (main's menu command) reports the reason.
-    await harness.menu('exportJavaProject' as MenuCommand);
+    await harness.menu('exportJavaProject');
     await toast('Fix 1 error first (see Problems).');
     expect(screen.queryByTestId('java-project-dialog')).toBeNull();
     expect(calls).toEqual([]);

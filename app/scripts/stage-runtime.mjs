@@ -6,8 +6,14 @@
 // (with its own "file source doesn't exist" warning) and the packaged app reports
 // `export.runtime-missing` unless "Separate runtime (for modpacks)" is chosen.
 //
-// `--require` (for release builds) fails instead of warning when no jar is found.
-import { copyFileSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+// It also stages the Gradle wrapper the Java project export copies (ADR 0033 D2):
+// `engine-mod/gradle/wrapper/gradle-wrapper.jar`, `engine-mod/gradlew` and
+// `engine-mod/gradlew.bat` to `app/build/runtime/gradle-wrapper/`, shipped as
+// `runtime/gradle-wrapper/`. Without them the export writes projects without the wrapper.
+//
+// `--require` (for release builds) fails instead of warning when no jar (or wrapper file) is
+// found.
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { newestRuntimeJar } from '../src/main/platform/runtime-jar.ts';
@@ -16,6 +22,29 @@ const appDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const libsDir = join(appDir, '..', 'engine-mod', 'build', 'libs');
 const staged = join(appDir, 'build', 'runtime', 'msm_runtime.jar');
 const required = process.argv.includes('--require');
+
+// The Gradle wrapper first: it is checked in, so it is always there in a source checkout.
+const engineModDir = join(appDir, '..', 'engine-mod');
+const wrapperDir = join(appDir, 'build', 'runtime', 'gradle-wrapper');
+const wrapperFiles = [
+  [join(engineModDir, 'gradle', 'wrapper', 'gradle-wrapper.jar'), 'gradle-wrapper.jar'],
+  [join(engineModDir, 'gradlew'), 'gradlew'],
+  [join(engineModDir, 'gradlew.bat'), 'gradlew.bat'],
+];
+rmSync(wrapperDir, { recursive: true, force: true });
+const missingWrapper = wrapperFiles.filter(([from]) => !existsSync(from)).map(([from]) => from);
+if (missingWrapper.length > 0) {
+  const message = `MSM stage-runtime: Gradle wrapper file(s) missing: ${missingWrapper.join(', ')}; the app is packaged without the wrapper.`;
+  if (required) {
+    console.error(message);
+    process.exit(1);
+  }
+  console.warn(message);
+} else {
+  mkdirSync(wrapperDir, { recursive: true });
+  for (const [from, name] of wrapperFiles) copyFileSync(from, join(wrapperDir, name));
+  console.log(`MSM stage-runtime: staged the Gradle wrapper in ${wrapperDir}.`);
+}
 
 const source = await newestRuntimeJar(libsDir);
 if (source === null) {

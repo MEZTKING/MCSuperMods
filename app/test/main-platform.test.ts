@@ -130,6 +130,25 @@ describe('main platform shell', () => {
   });
 });
 
+describe('main platform Java project reveal', () => {
+  it('reveals a written Java project folder', async () => {
+    const parent = join(temp, 'java-exports');
+    await mkdir(parent);
+    dialogs.pickExportFolder = async () => parent;
+    const p = platform();
+    const root = join(parent, 'demo_mod');
+    await expect(p.shell.showItemInFolder(root)).rejects.toThrow(/outside/);
+    const folder = await p.exports.pickFolder('Export Java project: choose a folder');
+    expect(folder).toBe(parent);
+    const result = await p.exports.writeTree(parent, [
+      { path: 'demo_mod/build.gradle.kts', data: new TextEncoder().encode('plugins {}') },
+    ]);
+    expect(result).toEqual({ ok: true, root, count: 1 });
+    await p.shell.showItemInFolder(root);
+    expect(revealed).toEqual([root]);
+  });
+});
+
 describe('main platform install target', () => {
   it('reveals files in the selected launcher instance and installs there', async () => {
     const prism = await makeMmcRoot(join(temp, 'prism'), {

@@ -122,6 +122,10 @@ async function openSession(options: { plugins?: readonly Plugin[] } = {}) {
     },
     runtimeJar: async () => null,
     geckolibJar: async () => null,
+    writeTree: async () => {
+      throw new Error('Not available in this test.');
+    },
+    gradleWrapper: async () => null,
   };
   await session.newProject();
   return { session, fs, writes, picks: () => picks };

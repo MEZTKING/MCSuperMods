@@ -108,6 +108,18 @@ const bridge: MsmBridge = {
       }),
     runtimeJar: () => ipcRenderer.invoke(InvokeChannels.exportsRuntimeJar),
     geckolibJar: (targetId) => ipcRenderer.invoke(InvokeChannels.exportsGeckolibJar, { targetId }),
+    writeTree: (folder, files) =>
+      ipcRenderer.invoke(InvokeChannels.exportsWriteTree, {
+        folder,
+        files: files.map((file) => ({ path: file.path, data: file.data })),
+      }),
+    gradleWrapper: () => ipcRenderer.invoke(InvokeChannels.exportsGradleWrapper),
+  },
+  scripting: {
+    transpile: (source, name) =>
+      ipcRenderer.invoke(InvokeChannels.scriptingTranspile, { source, name }),
+    check: (source, name, typings) =>
+      ipcRenderer.invoke(InvokeChannels.scriptingCheck, { source, name, typings }),
   },
   testInMinecraft: {
     status: (targetId) => ipcRenderer.invoke(InvokeChannels.testInMinecraftStatus, { targetId }),

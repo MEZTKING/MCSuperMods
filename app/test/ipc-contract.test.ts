@@ -1,14 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
   EventChannels,
+  EXPORT_TREE_MAX_FILES,
   type InvokeChannel,
   InvokeChannels,
   ipcContract,
   isExportFileName,
+  isExportTreePath,
   isMenuCommand,
   isMenuOpenRecent,
   isMinecraftProgress,
   isUpdateStatus,
+  SCRIPT_MAX_SOURCE_LENGTH,
+  SCRIPT_MAX_TYPINGS_LENGTH,
   type UpdateStatus,
   updateStatusSchema,
 } from '../src/shared/ipc-contract';
@@ -321,6 +325,54 @@ const samples: Record<
     request: [{ targetId: 'mc-26.3' }, { targetId: '' }],
     response: [bytes, '/tmp/geckolib.jar'],
   },
+  [InvokeChannels.exportsWriteTree]: {
+    request: [
+      { folder: '/exports', files: [{ path: 'demo_mod/build.gradle.kts', data: bytes }] },
+      { folder: '/exports', files: [{ path: 'demo_mod/../escape.txt', data: bytes }] },
+    ],
+    response: [
+      { ok: false, reason: 'folder-not-empty', root: '/exports/demo_mod' },
+      { ok: true, root: '/exports/demo_mod' },
+    ],
+  },
+  [InvokeChannels.exportsGradleWrapper]: {
+    request: [undefined, {}],
+    response: [{ jar: bytes, gradlew: '#!/bin/sh', gradlewBat: '@echo off' }, { jar: bytes }],
+  },
+  [InvokeChannels.scriptingTranspile]: {
+    request: [
+      { source: 'let a = 1;', name: 'msm/demo/script/glow.ts' },
+      { source: 'let a = 1;', name: '' },
+    ],
+    response: [
+      {
+        problems: [
+          {
+            severity: 'error',
+            code: 'typescript.syntax',
+            tsCode: 1005,
+            message: "';' expected.",
+            line: 0,
+            start: 4,
+            end: 5,
+            offset: { start: 4, end: 5 },
+          },
+        ],
+      },
+      { js: 1 },
+    ],
+  },
+  [InvokeChannels.scriptingCheck]: {
+    request: [
+      {
+        source: 'msm.log.info("x");',
+        name: 'msm/demo/script/glow.ts',
+        typings: 'declare const msm: unknown;',
+      },
+      { source: 'msm.log.info("x");', name: 'msm/demo/script/glow.ts' },
+    ],
+    response: [[], [{ severity: 'info', code: 'typescript.semantic' }]],
+  },
   [InvokeChannels.testInMinecraftStatus]: {
     request: [{ targetId: 'mc-26.3' }, { targetId: '' }],
     response: [testStatus, { ...testStatus, mode: 'maybe' }],
@@ -540,9 +592,51 @@ describe('IPC contract', () => {
     expect(isMenuCommand('format-disk')).toBe(false);
     expect(isMenuCommand(1)).toBe(false);
     expect(isMenuCommand('clearRecentProjects')).toBe(true);
-    for (const command of ['importStructure', 'exportStructures', 'exportSchematics']) {
+    for (const command of [
+      'importStructure',
+      'exportStructures',
+      'exportSchematics',
+      'exportJavaProject',
+    ]) {
       expect(isMenuCommand(command)).toBe(true);
     }
+  });
+
+  it('accepts only checked export tree paths', () => {
+    expect(isExportTreePath('demo_mod/src/main/java/demo_mod/DemoMod.java')).toBe(true);
+    expect(isExportTreePath('demo_mod/gradlew')).toBe(true);
+    expect(isExportTreePath('gradlew')).toBe(false);
+    expect(isExportTreePath('/demo_mod/gradlew')).toBe(false);
+    expect(isExportTreePath('demo_mod/./gradlew')).toBe(false);
+    expect(isExportTreePath('demo_mod/../gradlew')).toBe(false);
+    expect(isExportTreePath('demo_mod\\gradlew')).toBe(false);
+    expect(isExportTreePath('demo mod/gradlew')).toBe(false);
+    expect(isExportTreePath(Array.from({ length: 17 }, () => 'a').join('/'))).toBe(false);
+    expect(isExportTreePath(Array.from({ length: 16 }, () => 'a').join('/'))).toBe(true);
+  });
+
+  it('bounds script sources, names and typings', () => {
+    const { request } = ipcContract[InvokeChannels.scriptingCheck];
+    const ok = { source: '', name: 'msm/demo/script/a.ts', typings: '' };
+    expect(request.safeParse(ok).success).toBe(true);
+    expect(
+      request.safeParse({ ...ok, source: 'x'.repeat(SCRIPT_MAX_SOURCE_LENGTH + 1) }).success,
+    ).toBe(false);
+    expect(
+      request.safeParse({ ...ok, typings: 'x'.repeat(SCRIPT_MAX_TYPINGS_LENGTH + 1) }).success,
+    ).toBe(false);
+    expect(request.safeParse({ ...ok, name: 'msm/demo/script/a b.ts' }).success).toBe(false);
+  });
+
+  it('bounds export trees', () => {
+    const { request } = ipcContract[InvokeChannels.exportsWriteTree];
+    const files = Array.from({ length: EXPORT_TREE_MAX_FILES + 1 }, (_, index) => ({
+      path: `demo_mod/f${index}.txt`,
+      data: bytes,
+    }));
+    expect(request.safeParse({ folder: '/exports', files: files.slice(1) }).success).toBe(true);
+    expect(request.safeParse({ folder: '/exports', files }).success).toBe(false);
+    expect(request.safeParse({ folder: '/exports', files: [] }).success).toBe(false);
   });
 
   it('accepts pack zips and namespaced structure paths as export file names', () => {

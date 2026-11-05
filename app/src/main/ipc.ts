@@ -98,6 +98,12 @@ export function createIpcHandlers(platform: MainPlatform, updates: IpcUpdates): 
     [InvokeChannels.exportsWriteFiles]: (req) => platform.exports.writeFiles(req.folder, req.files),
     [InvokeChannels.exportsRuntimeJar]: () => platform.exports.runtimeJar(),
     [InvokeChannels.exportsGeckolibJar]: (req) => platform.exports.geckolibJar(req.targetId),
+    [InvokeChannels.exportsWriteTree]: (req) => platform.exports.writeTree(req.folder, req.files),
+    [InvokeChannels.exportsGradleWrapper]: () => platform.exports.gradleWrapper(),
+    [InvokeChannels.scriptingTranspile]: (req) =>
+      platform.scripting.transpile(req.source, req.name),
+    [InvokeChannels.scriptingCheck]: (req) =>
+      platform.scripting.check(req.source, req.name, req.typings),
     [InvokeChannels.testInMinecraftStatus]: (req) => platform.testInMinecraft.status(req.targetId),
     [InvokeChannels.testInMinecraftCreateInstance]: (req) =>
       platform.testInMinecraft.createInstance(req.targetId),

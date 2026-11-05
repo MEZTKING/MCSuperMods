@@ -22,11 +22,13 @@ import type {
 } from '../../shared/platform';
 import { createExportsService } from './exports';
 import { createGeckolibJarService } from './geckolib-jar';
+import { type GradleWrapperLocation, readGradleWrapper } from './gradle-wrapper';
 import { createLocationResolver } from './locations';
 import { createMcfunctionBroker } from './mcfunction';
 import { createMinecraftService, type MinecraftService } from './minecraft';
 import { type RuntimeJarLocation, readRuntimeJar } from './runtime-jar';
 import { createScopedFileSystem, isWithin, type ScopedFileSystem } from './scoped-fs';
+import { createScriptingService, type ScriptingService } from './scripting';
 import { createSettingsStore, type SettingsStore } from './settings';
 import { createTargetsService } from './targets';
 import { createTestInMinecraftService } from './test-in-minecraft';
@@ -115,6 +117,13 @@ export interface NodePlatformDeps {
    * returns `null`.
    */
   runtimeJar?: RuntimeJarLocation;
+  /**
+   * Where the Gradle wrapper is (ADR 0033 D2). When absent, `exports.gradleWrapper()`
+   * returns `null`.
+   */
+  gradleWrapper?: GradleWrapperLocation;
+  /** The scripting service (ADR 0031); defaults to one that loads TypeScript lazily. */
+  scripting?: ScriptingService;
   /**
    * Test in Minecraft (ADR 0026 D5): the download cache folder (default
    * `<msmHome>/cache/downloads`), extra host facts for finding launcher programs, and test
@@ -350,7 +359,10 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
       runtimeJar: async () =>
         deps.runtimeJar === undefined ? null : readRuntimeJar(deps.runtimeJar),
       geckolibJar: (targetId) => geckolib.jar(targetId),
+      gradleWrapper: async () =>
+        deps.gradleWrapper === undefined ? null : readGradleWrapper(deps.gradleWrapper),
     },
+    scripting: deps.scripting ?? createScriptingService(),
     testInMinecraft,
     thumbnails: createThumbnailService({ projectFs: active, resizePng: deps.resizePng }),
     project: {

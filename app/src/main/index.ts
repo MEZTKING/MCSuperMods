@@ -138,6 +138,13 @@ const platform = createNodePlatform({
     resourcesPath: process.resourcesPath,
     devLibsDir: join(app.getAppPath(), '..', 'engine-mod', 'build', 'libs'),
   },
+  // ADR 0033 D2: packaged, `resources/runtime/gradle-wrapper/`; from source, `engine-mod/`'s
+  // own wrapper.
+  gradleWrapper: {
+    isPackaged: app.isPackaged,
+    resourcesPath: process.resourcesPath,
+    devEngineModDir: join(app.getAppPath(), '..', 'engine-mod'),
+  },
   // ADR 0026 D5: Fabric API downloads are cached in the app's user-data folder; so is the
   // GeckoLib jar (ADR 0029 D4), under `downloads/geckolib/`.
   testInMinecraft: {

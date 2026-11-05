@@ -1,11 +1,41 @@
 import { describe, expect, it, vi } from 'vitest';
 
+const sent: unknown[] = [];
+const templates: unknown[] = [];
 vi.mock('electron', () => ({
-  BrowserWindow: { getFocusedWindow: () => null, getAllWindows: () => [] },
-  Menu: { buildFromTemplate: () => ({}), setApplicationMenu: () => {} },
+  BrowserWindow: {
+    getFocusedWindow: () => null,
+    getAllWindows: () => [
+      { webContents: { send: (_channel: string, command: unknown) => sent.push(command) } },
+    ],
+  },
+  Menu: {
+    buildFromTemplate: (template: unknown) => {
+      templates.push(template);
+      return {};
+    },
+    setApplicationMenu: () => {},
+  },
 }));
 
-const { recentLabel, recentSubmenu, shortenPath } = await import('../src/main/menu');
+const { installMenu, recentLabel, recentSubmenu, shortenPath } = await import('../src/main/menu');
+
+describe('File menu', () => {
+  it('offers "Export Java Project…" after "Export Fabric Mod Jar…"', () => {
+    installMenu();
+    const template = templates.at(-1) as {
+      label?: string;
+      submenu?: { label?: string; click?: () => void }[];
+    }[];
+    const file = template.find((entry) => entry.label === 'File')?.submenu ?? [];
+    const labels = file.map((item) => item.label);
+    const jar = labels.indexOf('Export Fabric Mod Jar…');
+    expect(jar).toBeGreaterThan(-1);
+    expect(labels[jar + 1]).toBe('Export Java Project…');
+    file[jar + 1]?.click?.();
+    expect(sent.at(-1)).toBe('exportJavaProject');
+  });
+});
 
 describe('Open Recent menu', () => {
   it('shortens long paths in the middle and keeps short ones', () => {
