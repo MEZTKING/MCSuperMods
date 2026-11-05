@@ -161,7 +161,7 @@ export function ExamplesDialog(props: ExamplesDialogProps) {
     built instanceof Promise
       ? resolved !== null && resolved.from === built
         ? resolved.value
-        : 'Loading the example…'
+        : undefined
       : built;
 
   const searchId = useId();

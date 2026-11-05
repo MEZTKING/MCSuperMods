@@ -8,7 +8,10 @@ Status: Phases 4 to 6 code complete, awaiting the in-game checks (`fixtures/samp
 
 ## Contents
 
-- `build.gradle.kts`, `gradle.properties` (versions), `settings.gradle.kts` — Gradle, Kotlin DSL.
+- `build.gradle.kts`, `settings.gradle.kts` — Gradle, Kotlin DSL; `-Pmc=<mc>` (default `default_mc`) selects the Minecraft version (ADR 0038).
+- `gradle.properties` — shared facts: `default_mc`, `mod_version`, Rhino, JUnit, `geckolib_compile_fallback_version_id`; its `minecraft_version`, `loader_version`, `loom_version` and `fabric_api_version` only mirror `versions/<default_mc>.properties` for `tools/check-deps` (the build fails if they differ).
+- `versions/<mc>.properties` — per-version facts (ADR 0038 D1): `minecraft_version`, `loader_version`, `loom_version`, `fabric_api_version`, `geckolib_version` and `geckolib_modrinth_version_id` (both blank when no GeckoLib build exists: the bridge then compiles against the fallback jar and GeckoLib never runs), `minecraft_dependency` (the `fabric.mod.json` range; a snapshot needs the `-` form, such as `>=26.4- <26.5-`). The jar is `build/libs/msm_runtime-<mod_version>+mc<mc>.jar`.
+- `src/mc/<mc>/java`, `src/mc/<mc>/gametest` — version overlays (ADR 0038 D2), added to the main and gametest source sets for the selected version only. They hold only seams, one implementation per version with the same class name: `registry/BlockSounds` (26.3 `SoundType`, 26.4 `block_sound_set` keys), `client/EntityRendererRegistration` (26.4 passes `BuiltInClientRegistries.ENTITY_RENDERER`), GameTest `BlockSoundCheck`.
 - `src/main/java/dev/mcsupermods/runtime/`
   - `loader/` — `DefinitionScanner` (scan `msm/` in all mods), `DefinitionParser` (pure; format, warnings, Codecs), `MsmCodecs`, `StrictJsonOps`, `BlockDefinition`, `ItemDefinition`, `EntityDefinition`.
   - `components/` — component records and Codecs aligned with `packages/schemas/mcdoc/msm/`; `Goal` (dispatch on `type`, decoded one by one).
@@ -18,7 +21,8 @@ Status: Phases 4 to 6 code complete, awaiting the in-game checks (`fixtures/samp
   - `scripting/` (ADRs 0031, 0032) — `ScriptHost` (per server: load on `SERVER_STARTING`, reload on `END_DATA_PACK_RELOAD`; sealed shared standard objects, a scope per script, `require` of `msm:runtime` and relative ids, schedules, rate-limited errors, off-hand suppression), `ScriptBridges` (Fabric events), `ScriptApi` (the `msm` tree and `describe()`), `ScriptType`/`HostObject` (read-only wrappers), `ScriptWorld`, `ScriptEntity`, `ScriptPlayer`, `ScriptPos`, `BlockRef`, `ItemRef`, `ScriptEvents`, `MsmContextFactory` (sandbox, 2000 ms budget), `ScriptScanner`.
 - `src/test/` — JUnit 5 over `../packages/schemas/mcdoc/msm/conformance/definition/`; `ScriptApiContractTest` reads `../packages/plugins/scripting/api/script-api-v1.json` in place.
 - `src/gametest/` — Fabric GameTests; `resources/msm/msm_test/` holds the kitchen-sink definitions and hand-written ES5 scripts (`script/`), `assets/msm_test/geckolib/` a test model, `data/msm_runtime_gametest/gametest/structure/arena.snbt` the movement arena.
-- GeckoLib (ADR 0029 D6): Modrinth Maven `exclusiveContent`; `compileOnly` + `gametestCompileOnly` + `localRuntime`; never in the jar, only `suggests` in `fabric.mod.json`.
+- GeckoLib (ADR 0029 D6): Modrinth Maven `exclusiveContent`; `compileOnly` + `gametestCompileOnly` + `localRuntime`; never in the jar, only `suggests` in `fabric.mod.json` (left empty for a version without GeckoLib).
+- `parity/` — the parity GameTest build (ADR 0033 D5): same `-Pmc` handling over `../versions/` (default `../gradle.properties` `default_mc`), overlay `parity/src/mc/<mc>/java` (`ParitySounds`), jar `msm_parity_tests-<version>+mc<mc>.jar`; its `gradle.properties` Fabric keys only mirror this folder's.
 
 ## Conventions
 
@@ -29,6 +33,7 @@ Status: Phases 4 to 6 code complete, awaiting the in-game checks (`fixtures/samp
 - Registries are touched only during init; reloadable data stays in data packs.
 - The script API grows only through `script-api-v1.json` first; the contract test fails until `ScriptApi` matches.
 - Log with the mod-id prefix; no reflection on definitions.
+- Versions: shared code never names a class that exists in one Minecraft version only; a difference goes behind a seam in `src/mc/<mc>/` (every version implements every seam), and a call that compiles on every version (such as the six-argument `Block.getDrops`) needs no seam. Adding a version: `versions/<mc>.properties`, the overlay folders, a CI matrix entry.
 - Every session: append an entry to `docs/DEVLOG.md` (`## YYYY-MM-DD — <agent> — <topic>`, then What / Decisions / Next).
 
 ## Do / Don't
@@ -39,9 +44,11 @@ Status: Phases 4 to 6 code complete, awaiting the in-game checks (`fixtures/samp
 
 ## Commands
 
-- `JAVA_HOME=<jdk 25> ./gradlew build` (runs JUnit and the GameTests)
+- `JAVA_HOME=<jdk 25> ./gradlew build` (default version, runs JUnit and the GameTests); `./gradlew build -Pmc=26.4` for another version (the jars of both stay side by side in `build/libs/`)
 - `./gradlew test` (JUnit only; the corpus test reads the schemas package in place)
-- `./gradlew runGameTest` (headless GameTest server; `-PwithoutGeckolib` runs without GeckoLib) / `./gradlew runClient`
+- `./gradlew runGameTest` (headless GameTest server; `-PwithoutGeckolib` runs without GeckoLib) / `./gradlew runClient`; both take `-Pmc`
+- `./gradlew -p parity build [-Pmc=<mc>]` (the parity GameTest jar)
+- CI job `engine-mod` is a matrix over the versions (`.github/workflows/ci.yml`; keep it equal to `versions/`)
 
 ## Read next
 
