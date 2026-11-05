@@ -84,11 +84,11 @@ The resource and data pack exports still work for a project with blocks and item
 
 The mod id must be unique among the mods you install, and the ids `minecraft`, `java`, `fabricloader`, `fabric-api` and `msm_runtime` are reserved: **Problems** reports them, and a mod id made from the project name gets a `mod_` prefix instead.
 
-## Separate runtime (for modpacks)
+## Separate runtime and GeckoLib (for modpacks)
 
-Every exported jar needs the small `msm_runtime` mod, which registers the blocks and items and runs their behaviour. By default it is nested inside the jar (`META-INF/jars/`), so one file is all a player needs, and Fabric Loader uses the newest copy when several MCSuperMods mods carry one.
+Every exported jar needs the small `msm_runtime` mod, which registers the blocks and items and runs their behaviour. By default it is nested inside the jar (`META-INF/jars/`), so one file is all a player needs, and Fabric Loader uses the newest copy when several MCSuperMods mods carry one. A project with entities also nests GeckoLib (see [Entities and models](entities-and-models.md#export-the-mod-jar-and-geckolib)); for blocks and items alone it plays no part.
 
-Tick **Separate runtime (for modpacks)** in the export dialog to leave it out. The jar still depends on `msm_runtime`, so the game refuses to start unless something else provides it: for example another MCSuperMods mod in the same modpack exported with the runtime nested. Use it when you put several MCSuperMods mods into one modpack and want only one copy of the runtime. MCSuperMods does not publish `msm_runtime` as a download of its own yet.
+Tick **Separate runtime and GeckoLib (for modpacks)** in the export dialog to leave the runtime (and GeckoLib, when there are entities) out. The jar still depends on `msm_runtime`, so the game refuses to start unless something else provides it: for example another MCSuperMods mod in the same modpack exported with the runtime nested. Use it when you put several MCSuperMods mods into one modpack and want only one copy of the runtime. MCSuperMods does not publish `msm_runtime` as a download of its own yet.
 
 ## Install the mod in a Fabric game
 
@@ -127,7 +127,7 @@ Any other line with `[msm_runtime]` names the file and the problem.
 | Problem | What to do |
 |---|---|
 | The game refuses to start and asks for `fabric-api` | Put Fabric API for the same Minecraft version into `mods`. |
-| The game refuses to start and asks for `msm_runtime` | The jar was exported with **Separate runtime (for modpacks)**. Export it again without that option, or add another MCSuperMods mod that carries the runtime. |
+| The game refuses to start and asks for `msm_runtime` | The jar was exported with **Separate runtime and GeckoLib (for modpacks)**. Export it again without that option, or add another MCSuperMods mod that carries the runtime. |
 | The game refuses to start because of the Minecraft version | The jar targets another Minecraft version than the instance. Use an instance of the version shown in the toolbar's target. |
 | No `[msm_runtime]` line at all | The game did not start with Fabric, or the jar is not in this game's `mods` folder. |
 | A purple and black cube | The block or item has no model, or its model id is wrong. **Problems** reports a missing model. |

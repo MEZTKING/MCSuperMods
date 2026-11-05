@@ -37,6 +37,8 @@ export interface LaunchOptions {
   pickFiles?: readonly string[];
   /** Reuse folders from an earlier launch (for reopen tests); they are then not removed. */
   reuse?: Pick<LaunchedApp, 'projectDir' | 'outDir' | 'msmHome'>;
+  /** Extra Chromium or Electron switches, for example to enable software WebGL. */
+  args?: readonly string[];
 }
 
 const CLOSE_TIMEOUT_MS = 10_000;
@@ -63,7 +65,7 @@ export async function launchApp(options: LaunchOptions = {}): Promise<LaunchedAp
   if (options.pickFiles !== undefined) env.MSM_E2E_PICK_FILES = options.pickFiles.join(delimiter);
 
   const app = await _electron.launch({
-    args: [appDir, '--no-sandbox', `--user-data-dir=${userData}`],
+    args: [appDir, '--no-sandbox', `--user-data-dir=${userData}`, ...(options.args ?? [])],
     cwd: appDir,
     env,
     timeout: 30_000,

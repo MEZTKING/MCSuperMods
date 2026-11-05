@@ -10,7 +10,7 @@ A desktop mod maker for Minecraft Java Edition that takes you from a simple text
 
 ## Status
 
-- Pre-alpha: Phase 1 (Resource Pack Studio), Phase 2 (Data Pack Studio), launcher support (Prism Launcher, CurseForge, MultiMC) and the templates and examples library are done; the in-game checks below are still to be confirmed. Windows installers are published on the [Releases page](https://github.com/MEZTKING/MCSuperMods/releases) and update themselves. Phase 3 (Structures & Worldgen) is done in code: structure import and export, jigsaw pools, custom biomes, features and World Types are in the app, and their in-game check is still to be confirmed. Phase 4 (custom blocks and items with behaviour, exported as a Fabric mod jar, plus **Test in Minecraft**) is done in code in version 0.4.0; its in-game check ([`fixtures/sample-mod/README.md`](fixtures/sample-mod/README.md)) is still to be confirmed. See [Export a Fabric mod](#export-a-fabric-mod).
+- Pre-alpha: Phase 1 (Resource Pack Studio), Phase 2 (Data Pack Studio), launcher support (Prism Launcher, CurseForge, MultiMC) and the templates and examples library are done; the in-game checks below are still to be confirmed. Windows installers are published on the [Releases page](https://github.com/MEZTKING/MCSuperMods/releases) and update themselves. Phase 3 (Structures & Worldgen) is done in code: structure import and export, jigsaw pools, custom biomes, features and World Types are in the app, and their in-game check is still to be confirmed. Phase 4 (custom blocks and items with behaviour, exported as a Fabric mod jar, plus **Test in Minecraft**) is done in code in version 0.4.0; its in-game check ([`fixtures/sample-mod/README.md`](fixtures/sample-mod/README.md)) is still to be confirmed. Phase 5 (Blockbench-animated custom mobs: Blockbench import, the Entity Studio, an animated preview and GeckoLib in the Fabric mod jar) is done in code; its in-game check ([`fixtures/sample-mob/README.md`](fixtures/sample-mob/README.md)) is still to be confirmed. See [Export a Fabric mod](#export-a-fabric-mod) and [Animated mobs](#animated-mobs).
 - Installed releases update themselves: the app checks for a new version shortly after start-up and offers "Restart to update" once it has downloaded.
 - Releases will be for Windows only to begin with; Linux builds are made in CI for testing, and macOS builds are not planned for now.
 - Current Minecraft target: **Java 26.3** (with 26.2 as the previous supported release at launch).
@@ -74,22 +74,29 @@ The [Structures](docs/guide/structures.md) and [Worldgen](docs/guide/worldgen.md
 
 MCSuperMods comes with ready-made content, all validated and exported in CI for every supported Minecraft version. The full lists are in [Templates, starters and examples](docs/guide/templates-and-examples.md).
 
-- **Project starters (11).** Click the arrow next to **New** and choose **New from starter…**, or use **File → New Project from Starter…**. Pick a starter, choose **Choose folder and create** and an empty folder; the folder name becomes the namespace. There are a blank project, minimal resource, data and combined packs, and seven themed projects: **Custom ore**, **Recipe pack**, **Custom music disc**, **Functions**, **Custom biome**, **Jigsaw village-style structure** and **Custom biome with a jigsaw structure**. **New** on its own still creates a blank project.
-- **Element templates (106).** **Add element** (Ctrl+N) lists a template for every element kind, grouped by category (models, blockstates, recipes, loot tables, advancements, tags, enchantments, dialogs, structures, biomes, features, dimensions, blocks, items and more) with a filter box.
-- **Examples gallery (61).** **Help → Examples…** shows one commented example for each element kind, two blocks and items behaviour examples and four themed starter projects. Search by title, kind, category or tag and read each element's notes. **Open as new project…** creates a new project from an example; **Copy into my project** adds it to the open project in one undoable step, skipping ids that already exist. The notes stay with each element and show above the editor.
+- **Project starters (12).** Click the arrow next to **New** and choose **New from starter…**, or use **File → New Project from Starter…**. Pick a starter, choose **Choose folder and create** and an empty folder; the folder name becomes the namespace. There are a blank project, minimal resource, data and combined packs, and eight themed projects: **Custom ore**, **Custom mob**, **Recipe pack**, **Custom music disc**, **Functions**, **Custom biome**, **Jigsaw village-style structure** and **Custom biome with a jigsaw structure**. **New** on its own still creates a blank project.
+- **Element templates (112).** **Add element** (Ctrl+N) lists a template for every element kind, grouped by category (models, blockstates, recipes, loot tables, advancements, tags, enchantments, dialogs, structures, biomes, features, dimensions, blocks, items, entities, entity models and animations and more) with a filter box.
+- **Examples gallery (66).** **Help → Examples…** shows one commented example for each element kind, two blocks and items and two entity behaviour examples, and four themed starter projects. Search by title, kind, category or tag and read each element's notes. **Open as new project…** creates a new project from an example; **Copy into my project** adds it to the open project in one undoable step, skipping ids that already exist. The notes stay with each element and show above the editor.
 
 Two things to know:
 
 - **Custom ore adds a real block.** Its Ruby Ore, Ruby and Block of Ruby are new blocks and items, which a resource or data pack cannot add, so they reach the game only in the Fabric mod jar (see [Export a Fabric mod](#export-a-fabric-mod)). Emerald ore is left alone.
+- **Custom mob adds a real mob.** Its Ruby Golem is a new animated entity with a spawn egg, so it too reaches the game only in the Fabric mod jar, which also carries GeckoLib (see [Animated mobs](#animated-mobs)).
 - **No bundled media.** Textures are placeholders that MCSuperMods draws itself. The music disc plays the vanilla `cat` track from your own game and has its own disc model and name, attached to a vanilla disc that the `give_disc` function gives you (`/function <namespace>:give_disc`). Import your own textures and `.ogg` to replace them.
 
 The examples are also in the repository as ordinary projects under [`examples/`](examples/README.md), for browsing on GitHub or opening with **File → Open Project…** (copy the folder elsewhere first).
 
 ## Export a Fabric mod
 
-Projects with new blocks or items (the `msm:block` and `msm:item` kinds, for example the Custom ore starter) export as a Fabric mod: open the arrow next to **Export .zip** and choose **Fabric mod (.jar)…**, or **File → Export Fabric Mod Jar…**. The jar holds the blocks and items plus the project's resources and data, and carries the small `msm_runtime` mod inside it. Put it with **Fabric API** into the `mods` folder of an instance with **Fabric Loader** for the same Minecraft version. **Separate runtime (for modpacks)** leaves `msm_runtime` out for modpacks that already provide it. Details are in [Blocks and items](docs/guide/blocks-and-items.md); the in-game check of the mod jar is still to be confirmed.
+Projects with new blocks or items (the `msm:block` and `msm:item` kinds, for example the Custom ore starter) export as a Fabric mod: open the arrow next to **Export .zip** and choose **Fabric mod (.jar)…**, or **File → Export Fabric Mod Jar…**. The jar holds the blocks and items plus the project's resources and data, and carries the small `msm_runtime` mod inside it. Put it with **Fabric API** into the `mods` folder of an instance with **Fabric Loader** for the same Minecraft version. **Separate runtime and GeckoLib (for modpacks)** leaves `msm_runtime` (and GeckoLib, for projects with mobs) out for modpacks that already provide them. Details are in [Blocks and items](docs/guide/blocks-and-items.md); the in-game check of the mod jar is still to be confirmed.
 
 **Test in Minecraft…** (in the **File** menu and next to **Fabric mod (.jar)…** in the Export menu) does the install for you: it copies the jar into a Prism Launcher or MultiMC instance with Fabric, adds Fabric API when missing and starts the instance. With no suitable instance, **Create test instance** makes the Prism Launcher instance **MCSuperMods Test (<version>)**. Official launcher and CurseForge locations get the install only. Only files MCSuperMods installed are ever replaced in `mods`.
+
+## Animated mobs
+
+New mobs (the `msm:entity` kind, for example the **Custom mob** starter) are made from a Blockbench model: choose **File → Import Blockbench Model…** and pick a `.bbmodel` project (or Blockbench's own `.geo.json` and `.animation.json` exports). The model, its animations and texture appear under **Models and animations** in the sidebar. Add an entity from the **Creature**, **Monster** or **Ambient critter** template and set it up in the **Entity Studio**: model, texture and animations, health and speed, goals such as wander, melee attack, flee and follow, natural spawning in biomes, a spawn egg, and events (including `play_animation`). The **Preview** tab plays the model's animations.
+
+Mobs export in the same Fabric mod jar as blocks and items. They are drawn by the GeckoLib mod, which the jar nests next to `msm_runtime`; MCSuperMods downloads GeckoLib once from Modrinth on the first export with mobs and keeps it, so that export needs an internet connection. Details are in [Entities and models](docs/guide/entities-and-models.md).
 
 ## Using Prism Launcher or the CurseForge app
 
@@ -144,8 +151,10 @@ So one installed copy of a version, in any launcher, is enough. **Settings → V
 - Test in Minecraft has not yet been checked with a real Prism Launcher on Windows; the program paths for macOS and Linux (and Scoop on Windows) are unconfirmed. If the launcher is not found, use **Choose launcher program…** in the dialog; there is no Settings control for it yet.
 - Test in Minecraft launches only Prism Launcher and MultiMC; for the official launcher and CurseForge it installs the jar and you start the game yourself.
 - The Block Studio has no 3D preview of the block yet; use **Go to model** to preview the model.
-- `msm_runtime` is not published as a download of its own yet; with **Separate runtime (for modpacks)** the modpack must provide it.
-- Custom blocks and items need Fabric: the vanilla pack exports leave them out.
+- `msm_runtime` is not published as a download of its own yet; with **Separate runtime and GeckoLib (for modpacks)** the modpack must provide it.
+- The animated preview plays Molang expressions as 0 and smooth (catmullrom) keyframes as straight lines; the game plays them properly.
+- The first Fabric mod jar export of a project with mobs needs an internet connection to download GeckoLib once.
+- Custom blocks, items and mobs need Fabric: the vanilla pack exports leave them out.
 
 ## How it works
 
@@ -174,7 +183,7 @@ Full plan with checklists: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Documentation
 
-- [User guide](docs/guide/README.md): [getting started](docs/guide/getting-started.md), [structures](docs/guide/structures.md), [worldgen](docs/guide/worldgen.md), [blocks and items](docs/guide/blocks-and-items.md) and [templates, starters and examples](docs/guide/templates-and-examples.md).
+- [User guide](docs/guide/README.md): [getting started](docs/guide/getting-started.md), [structures](docs/guide/structures.md), [worldgen](docs/guide/worldgen.md), [blocks and items](docs/guide/blocks-and-items.md), [entities and models](docs/guide/entities-and-models.md) and [templates, starters and examples](docs/guide/templates-and-examples.md).
 - [docs/DESIGN.md](docs/DESIGN.md): the authoritative design document.
 - [docs/ROADMAP.md](docs/ROADMAP.md): phased delivery plan and milestone log.
 - [docs/DEVLOG.md](docs/DEVLOG.md): session-by-session development log.
@@ -235,3 +244,5 @@ Not open for contributions yet while the architecture settles. Issues with ideas
 ## Licence
 
 MCSuperMods is released under the [MIT Licence](LICENSE). You may use, modify and redistribute it freely, including commercially, provided the copyright notice and licence text are kept in all copies, which credits the project. The licence covers the MCSuperMods application and source code only: packs and mods you create with it are yours.
+
+Fabric mod jars exported with mobs nest [GeckoLib](https://modrinth.com/mod/geckolib) (MIT Licence), the animated-model library by its own authors, which MCSuperMods downloads from Modrinth at export time and does not ship in its installer. GeckoLib remains under its own licence.

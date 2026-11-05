@@ -91,7 +91,7 @@ Press **Save** on the toolbar or Ctrl+S. The project is a folder of small JSON f
 New blocks and items need the mod jar; the resource and data pack exports leave them out.
 
 1. Open the arrow next to **Export .zip** on the toolbar and choose **Fabric mod (.jar)…** (or **File → Export Fabric Mod Jar…**, or "Export Fabric mod jar…" in the command palette).
-2. The **Export Fabric mod jar** dialog has one option, **Separate runtime (for modpacks)**. Leave it off: the jar then carries the small `msm_runtime` mod inside it, which reads your blocks and items when the game starts. See [Export a Fabric mod jar](blocks-and-items.md#export-a-fabric-mod-jar).
+2. The **Export Fabric mod jar** dialog has one option, **Separate runtime and GeckoLib (for modpacks)**. Leave it off: the jar then carries the small `msm_runtime` mod inside it, which reads your blocks and items when the game starts (and, for a project with mobs, GeckoLib too). See [Export a Fabric mod jar](blocks-and-items.md#export-a-fabric-mod-jar).
 3. Choose **Export…** and save the file. It is named after the mod id: `ruby_ore.jar`.
 
 Any error in **Problems** blocks the export, as for packs.
@@ -132,7 +132,7 @@ Functions are lists of commands the game runs. This starter sets up the usual wi
    - stand on a gold block: you run faster;
    - `/function my_functions:greet` says hello; `/function #my_functions:all` runs every function in your tag.
 
-The [templates list](templates-and-examples.md#all-templates) has 66 element templates to start from: recipes, loot tables, advancements, predicates, enchantments, dialogs and more. The Recipe pack and Custom music disc starters, and the 34 commented examples under **Help → Examples…**, are described in [Templates, starters and examples](templates-and-examples.md).
+The [templates list](templates-and-examples.md#all-templates) has 112 element templates to start from: recipes, loot tables, advancements, predicates, enchantments, dialogs and more. The Recipe pack and Custom music disc starters, and the 66 commented examples under **Help → Examples…**, are described in [Templates, starters and examples](templates-and-examples.md).
 
 ## Command palette and shortcuts
 
@@ -155,4 +155,5 @@ Press **Ctrl+Shift+P** to open the command palette and type part of a command's 
 - [Known limitations](../../README.md#known-limitations) in the README.
 - [Structures](structures.md) and [Worldgen](worldgen.md): jigsaw structures, custom biomes and World Types.
 - [Blocks and items](blocks-and-items.md): exporting the Fabric mod jar and the separate runtime for modpacks.
-- The [roadmap](../ROADMAP.md): what comes after blocks and items.
+- [Entities and models](entities-and-models.md): animated mobs. Create a project from the **Custom mob** starter (a Ruby Golem with its model, animations and spawn egg), or import a model with **File → Import Blockbench Model…** and give it a body and behaviour in the Entity Studio; the Fabric mod jar then carries GeckoLib too.
+- The [roadmap](../ROADMAP.md): what comes after entities.

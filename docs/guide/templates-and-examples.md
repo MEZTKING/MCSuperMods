@@ -4,11 +4,11 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (106) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (11) | **New from starter…** | A new project, already filled |
-| **Examples** (61) | **Help → Examples…** | A commented project or element to open or copy |
+| **Element templates** (112) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (12) | **New from starter…** | A new project, already filled |
+| **Examples** (66) | **Help → Examples…** | A commented project or element to open or copy |
 
-Templates come from the resource pack, data pack, structures, worldgen and blocks and items plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](../adr/0020-templates-starters-examples.md)).
+Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities and models and animations plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](../adr/0020-templates-starters-examples.md)).
 
 No starter or example contains Mojang files. Textures are small placeholder images that MCSuperMods draws itself; the music disc plays a track from your own copy of the game.
 
@@ -258,6 +258,31 @@ New blocks, items and the mod metadata exist only in the **Fabric mod jar** expo
 |---|---|---|---|
 | Mod metadata | `msm_mod` | `msm:mod` | The name, version and licence of the Fabric mod; one per project. Its name is always `mod`, and the mod id comes from the namespace. |
 
+#### Entities
+
+New mobs, like new blocks and items, exist only in the **Fabric mod jar** export, which also carries GeckoLib (see [Entities and models](entities-and-models.md)). The entity templates point at a model `<namespace>:entity/<name>`, an animation set `<namespace>:entity/<name>_animations` and a texture of the same name; until you import or add them, **Problems** reports them.
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Creature | `msm_entity_creature` | `msm:entity` | A passive mob that wanders, looks at players and spawns in forests, with a spawn egg. |
+| Monster | `msm_entity_monster` | `msm:entity` | A hostile mob that chases and hits players, fights back when hurt and spawns in the dark, with a spawn egg. |
+| Ambient critter | `msm_entity_ambient` | `msm:entity` | A small ambient mob that runs away from players, without a spawn egg. |
+
+#### Entity models
+
+The model templates put `entity/` in front of the name you type.
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Cube creature model | `msm_geo_model_cube_creature` | `msm:geo_model` | A box-shaped creature with a body and a head bone over a 64x64 texture. |
+| Biped model | `msm_geo_model_biped` | `msm:geo_model` | A two-legged figure (body, head, two arms, two legs) on the player skin layout of a 64x64 texture. |
+
+#### Entity animations
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Idle and walk animations | `msm_animation_idle_walk` | `msm:animation` | An idle bob and a walk cycle swinging the arms and legs of the biped model; name it `<name>_animations` (the template adds `entity/`). |
+
 ## Project starters
 
 A starter creates a whole project in an empty folder. Open the list in any of these ways:
@@ -283,14 +308,16 @@ The **New project** dialog groups the starters (Blank, Packs, Themed content) an
 | Custom biome | `custom_biome` | resource, data | The Amber Woods biome with its own tree and copper ore, and a World Type of its own that lists it beside a few vanilla biomes (**More → World Type** when creating a world). |
 | Jigsaw village-style structure | `jigsaw_structure` | data | A small hamlet built by jigsaw blocks: a centre hut, streets that follow the terrain and lamp posts, with four template pools, a structure set and a biome tag that places it in forests. |
 | Custom biome with a jigsaw structure | `worldgen_pack` | resource, data | Both worldgen starters in one project: Amber Woods and its World Type, and hamlets that generate in Amber Woods and in every vanilla forest. |
+| Custom mob | `custom_mob` | resource, data, mod | An animated Ruby Golem that wanders forests, fights back when hit, drops emeralds and bursts into sparks when it dies: its GeckoLib model, idle, walk and attack animations, skin, spawn egg, loot table, a death function and the mod metadata. |
 
-Three starters need a word of explanation:
+Four starters need a word of explanation:
 
 - **Custom ore needs the Fabric mod jar.** Its ore, ruby and Block of Ruby are new blocks and items (`msm:block`, `msm:item`), which a resource or data pack cannot add. Export the **Fabric mod jar** and install it with Fabric Loader and Fabric API; the jar carries the `msm_runtime` mod inside unless you choose a separate runtime. The resource and data pack exports still work but hold only the models, textures, names, loot tables, tags, recipes and advancements, which do nothing without the blocks and items. Nothing in the `minecraft` namespace is changed: emerald ore stays emerald ore.
+- **Custom mob needs the Fabric mod jar with GeckoLib.** The Ruby Golem is a new mob (`msm:entity`), drawn by the GeckoLib mod from its model (`msm:geo_model`) and animations (`msm:animation`). Export the **Fabric mod jar**: it nests `msm_runtime` and GeckoLib, which MCSuperMods downloads once (see [Entities and models](entities-and-models.md#export-the-mod-jar-and-geckolib)). Replace the placeholder skin by importing a Blockbench model of your own and choosing it in the Entity Studio.
 - **The music disc plays a vanilla track.** MCSuperMods bundles no audio, so the sound event points at the game's own `records/cat` file. The disc itself is the vanilla `music_disc_13` item carrying the new song and a name, drawn with the starter's own disc model; the `give_disc` function gives it to you (`/function <namespace>:give_disc`), because a pack cannot add a new item to the creative inventory.
 - **A custom biome needs its own World Type.** A data pack cannot add a biome to the normal overworld, so the Custom biome starters add a World Type that lists the new biome. Choose it when creating a new world; existing worlds keep their biomes, although the hamlets of the jigsaw starters do appear in new chunks of an existing world.
 
-The [Getting started](getting-started.md) guide walks through the Custom ore starter (as a Fabric mod jar) and the Functions starter in Minecraft; the [Worldgen](worldgen.md) guide walks through the worldgen starters. [Blocks and items](blocks-and-items.md) explains the Fabric mod jar export and its separate runtime option.
+The [Getting started](getting-started.md) guide walks through the Custom ore starter (as a Fabric mod jar) and the Functions starter in Minecraft; the [Worldgen](worldgen.md) guide walks through the worldgen starters. [Blocks and items](blocks-and-items.md) explains the Fabric mod jar export and its separate runtime option, and [Entities and models](entities-and-models.md) the Custom mob starter's kinds.
 
 ## Examples gallery
 
@@ -323,9 +350,15 @@ The blocks and items examples and the Custom ore starter use the `msm:block`, `m
 
 Event ids are namespaced strings of your own (`<namespace>:lamp_turn_on`); each block or item declares its events under `events`, and its components name them.
 
+The entity examples and the Custom mob starter use `msm:entity`, `msm:geo_model` and `msm:animation`, which also need the Fabric mod jar (with GeckoLib). Each entity example is a complete mob with its model, animations, skin and, when it has one, spawn egg texture:
+
+- **Wandering creature** shows the basics: a peaceful mob with wander and look goals and a spawn egg.
+- **Hostile mob** shows `melee_attack` with `targets`, `msm:attack` whose `on_attack` event uses `play_animation`, and the spawn rule `monster`.
+- **Natural spawning** shows `spawn` with a biome tag (`#`) and a biome id together.
+
 ### All examples
 
-There is one example for each of the 55 element kinds, two more blocks and items examples (a tool and an event chain), plus four themed starters listed again under **Starters**. The three worldgen starters have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 58 element kinds, four more behaviour examples (blocks and items: a tool and an event chain; entities: a hostile mob and natural spawning), plus four themed starters listed again under **Starters**. The three worldgen starters and the Custom mob starter have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -386,6 +419,11 @@ There is one example for each of the 55 element kinds, two more blocks and items
 | Mod metadata | `example_msm_mod` | Mod | `msm:mod` | The name, version, authors and licence of the Fabric mod jar. |
 | Sturdy pickaxe | `example_msm_tool` | Items | `msm:item` | A custom iron-tier pickaxe with extra durability and a crafting recipe. |
 | Beacon stone | `example_msm_event_chain` | Blocks | `msm:block` | A block whose use event triggers a second event that spawns particles and runs a function. |
+| Wandering creature | `example_msm_entity` | Entities | `msm:entity` | A peaceful mob that strolls about, looks at players and has a spawn egg, with its model, animations and textures. |
+| Cube creature model | `example_msm_geo_model` | Entity models | `msm:geo_model` | A box-shaped GeckoLib model with a body and a head bone over a 64x64 texture, shown on a small mob. |
+| Idle and walk animations | `example_msm_animation` | Entity animations | `msm:animation` | An idle bob and a walk cycle that swings the arms and legs of a biped model, shown on a small mob. |
+| Hostile mob | `example_msm_hostile_mob` | Entities | `msm:entity` | A monster that chases and hits players, fights back when hurt and spawns in the dark. |
+| Natural spawning | `example_msm_natural_spawn` | Entities | `msm:entity` | A creature that spawns on its own in forests and plains, using a biome tag and a biome id. |
 | Custom ore project | `starter_custom_ore` | Starters | `msm:block` | The Custom ore starter: a real ruby ore block, the ruby item and a block of ruby, with loot, recipes, a tag, advancements and the mod metadata. |
 | Recipe pack project | `starter_recipe_pack` | Starters | `minecraft:recipe` | The Recipe pack starter: one recipe of each common type and an advancement. |
 | Custom music disc project | `starter_music_disc` | Starters | `minecraft:jukebox_song` | The Custom music disc starter: a jukebox song, its disc model and texture. |
@@ -397,8 +435,9 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 
 | Folder | Namespace | Contents |
 |---|---|---|
-| `examples/all-kinds/` | `msm_examples` | The 55 per-kind examples in one project |
+| `examples/all-kinds/` | `msm_examples` | The 58 per-kind examples in one project |
 | `examples/blocks-items/` | `msm_examples` | The two blocks and items behaviour examples (Sturdy pickaxe, Beacon stone) |
+| `examples/entities/` | `msm_examples` | The two entity behaviour examples (Hostile mob, Natural spawning), each with its model, animations and textures |
 | `examples/starters/custom_ore/` | `msm_starter` | The Custom ore starter |
 | `examples/starters/recipe_pack/` | `msm_starter` | The Recipe pack starter |
 | `examples/starters/music_disc/` | `msm_starter` | The Custom music disc starter |
@@ -406,6 +445,7 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 | `examples/starters/custom_biome/` | `msm_starter` | The Custom biome starter |
 | `examples/starters/jigsaw_structure/` | `msm_starter` | The Jigsaw village-style structure starter |
 | `examples/starters/worldgen_pack/` | `msm_starter` | The Custom biome with a jigsaw structure starter (also saved as `fixtures/sample-worldgen/`) |
+| `examples/starters/custom_mob/` | `msm_starter` | The Custom mob starter |
 
 Copy a folder somewhere else before opening it, so your edits do not change the repository. See [examples/README.md](../../examples/README.md).
 
@@ -427,4 +467,4 @@ The `examples/` folder is generated from `packages/plugins/library/src/`; do not
 UPDATE_GOLDENS=1 pnpm --filter @msm/exporters exec vitest run test/library.test.ts
 ```
 
-`packages/exporters/test/library.test.ts` fails in CI when the folder drifts from the library. It also builds every starter and example for each supported version, saves and reloads it, validates every element and function, and exports both packs with zero problems; projects with blocks, items or mod metadata are also exported as a Fabric mod jar with zero problems. Template tests live with each plugin (`packages/plugins/<plugin>/test/templates.test.ts` for `resourcepack`, `datapack`, `structures`, `worldgen` and `blocks-items`).
+`packages/exporters/test/library.test.ts` fails in CI when the folder drifts from the library. It also builds every starter and example for each supported version, saves and reloads it, validates every element and function, and exports both packs with zero problems; projects with blocks, items, entities or mod metadata are also exported as a Fabric mod jar with zero problems. Template tests live with each plugin (`packages/plugins/<plugin>/test/templates.test.ts` for `resourcepack`, `datapack`, `structures`, `worldgen`, `blocks-items`, `models-anim` and `entities`).
