@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "msm_starter:ruby_pickaxe"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:pickaxes",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds the ruby pickaxe to the vanilla tag #minecraft:pickaxes. The game uses it to decide which enchantments the piece takes (the enchantable tags list this one). Vanilla items stay in the tag: a tag file only adds unless it sets replace."
+  }
+}

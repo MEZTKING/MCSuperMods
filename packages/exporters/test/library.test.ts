@@ -165,11 +165,59 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     { mob_name: 'Cave Troll', behaviour: 'hostile', spawn_biomes: '#minecraft:is_taiga' },
     { mob_name: 'Moss Sheep', behaviour: 'peaceful', spawn_biomes: '#minecraft:is_badlands' },
   ],
+  'gear-set': [
+    {
+      material_name: 'Sapphire',
+      colour: '#2454c4',
+      material_source: 'item',
+      tier: 'iron',
+      armor_base: 'diamond',
+      upgrade_from: 'netherite',
+    },
+    {
+      material_name: 'Frost Steel',
+      tier: 'custom',
+      mines_like: 'wood',
+      armor_base: 'leather',
+      pieces: ['pickaxe', 'leggings'],
+      upgrade_from: 'iron',
+    },
+  ],
+  'simple-block': [
+    {
+      block_name: 'Mossy Lantern',
+      colour: '#28a060',
+      pattern: 'ore',
+      light_level: 15,
+      hardness: 3,
+      tool: 'axe',
+      min_tier: 'stone',
+      drops_itself: false,
+      ingredient: 'minecraft:oak_planks',
+    },
+  ],
+  food: [
+    {
+      food_name: 'Amber Pie',
+      colour: '#de9420',
+      nutrition: 8,
+      saturation: 0.8,
+      can_always_eat: true,
+      ingredient: 'minecraft:sweet_berries',
+    },
+  ],
+  'scripted-item': [
+    { item_name: 'Storm Rod', behaviour: 'lightning', lightning_distance: 16 },
+    { item_name: 'Cloud Feather', behaviour: 'launch', launch_height: 12, cooldown_seconds: 5 },
+  ],
 };
 
+/** Every behaviour of the Scripted behaviour flow, so each generated script is type-checked. */
+const SCRIPTED_BEHAVIOURS = ['heal', 'launch', 'lightning', 'effect'];
+
 /**
- * Every number at its minimum, every boolean flipped and every choice at its last entry; strings
- * and colours keep their defaults.
+ * Every number at its minimum, every boolean flipped, every choice at its last entry and every
+ * set at its first `min` choices (at least one); strings and colours keep their defaults.
  */
 function minimumValues(starter: ProjectStarter): Record<string, Json> {
   const values: Record<string, Json> = {};
@@ -178,6 +226,11 @@ function minimumValues(starter: ProjectStarter): Record<string, Json> {
     if (parameter.type === 'boolean') values[parameter.id] = !parameter.default;
     if (parameter.type === 'choice') {
       values[parameter.id] = parameter.choices.at(-1)?.value ?? parameter.default;
+    }
+    if (parameter.type === 'set') {
+      values[parameter.id] = parameter.choices
+        .slice(0, Math.max(parameter.min ?? 0, 1))
+        .map((choice) => choice.value);
     }
   }
   return values;
@@ -195,6 +248,10 @@ const MIRRORED_STARTERS = [
   'worldgen_pack',
   'custom_mob',
   'scripted_ore',
+  'gear-set',
+  'simple-block',
+  'food',
+  'scripted-item',
 ];
 
 function kindRegistry(): ElementKindRegistry {
@@ -740,12 +797,24 @@ function diskFs(root: string): ProjectFileSystem {
 /** Every `msm:script` of the library's starters and examples, as `[label, source]`. */
 function libraryScripts(): [string, string][] {
   const out: [string, string][] = [];
-  for (const entry of [...libraryStarters, ...libraryExamples]) {
-    for (const element of buildEntry(entry, 'demo', 'Demo').elements) {
+  const add = (label: string, bundle: ContentBundle): void => {
+    for (const element of bundle.elements) {
       if (element.kind !== 'msm:script') continue;
       const lines = (element.data as { lines: string[] }).lines;
-      out.push([`${entry.id} ${element.id}`, `${lines.join('\n')}\n`]);
+      out.push([`${label} ${element.id}`, `${lines.join('\n')}\n`]);
     }
+  };
+  for (const entry of [...libraryStarters, ...libraryExamples]) {
+    if (entry.id === 'scripted-item') {
+      for (const behaviour of SCRIPTED_BEHAVIOURS) {
+        add(
+          `${entry.id} (${behaviour})`,
+          buildEntry(entry, 'demo', 'Demo', undefined, { behaviour }),
+        );
+      }
+      continue;
+    }
+    add(entry.id, buildEntry(entry, 'demo', 'Demo'));
   }
   return out;
 }
@@ -810,11 +879,15 @@ describe('library bundles', () => {
     expect(kindExamples.map((example: ExampleProject) => example.kind).sort()).toEqual(kinds);
   });
 
-  it('has scripts in the Scripted ore starter and the three script examples', () => {
+  it('has scripts in the Scripted ore and Scripted behaviour starters and the three script examples', () => {
     expect(libraryScripts().map(([label]) => label)).toEqual([
       'scripted_ore demo:ore_glow',
       'scripted_ore demo:ruby_block_guard',
       'scripted_ore demo:welcome',
+      'scripted-item (heal) demo:ruby_wand_behaviour',
+      'scripted-item (launch) demo:ruby_wand_behaviour',
+      'scripted-item (lightning) demo:ruby_wand_behaviour',
+      'scripted-item (effect) demo:ruby_wand_behaviour',
       'example_msm_script demo:lodestone_compass',
       'example_msm_script_schedule demo:amethyst_spiral',
       'example_msm_script_action demo:chime_handler',
@@ -938,6 +1011,60 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(dataFiles).toContain(`data/demo/${data.recipe}/ruby_sword_from_emerald.json`);
       expect(jarFiles).toContain('msm/demo/item/ruby_sword.json');
       expect(jarFiles).toContain('fabric.mod.json');
+    });
+
+    it('the Gear set writes only vanilla item tags and block tags the target has (ADR 0043 D2)', () => {
+      const itemTags = new Set(context.vanilla['tag/item'] ?? []);
+      const blockTags = new Set(context.vanilla['tag/block'] ?? []);
+      const gearSet = starterById('gear-set');
+      const answers = [{}, ...(WIZARD_ALTERNATIVES['gear-set'] ?? []), minimumValues(gearSet)];
+      for (const values of answers) {
+        const gear = buildEntry(gearSet, 'demo', 'Gear', bundle.target, values);
+        for (const entry of gear.elements) {
+          if (entry.kind === 'minecraft:tag/item' && entry.id.startsWith('minecraft:')) {
+            expect(itemTags.has(entry.id.slice('minecraft:'.length)), entry.id).toBe(true);
+          }
+          const tier = (entry.data as { components?: { 'msm:tool'?: { tier?: unknown } } })
+            .components?.['msm:tool']?.tier;
+          if (typeof tier === 'object' && tier !== null) {
+            const tag = (tier as { incorrect_blocks_for_drops: string }).incorrect_blocks_for_drops;
+            expect(blockTags.has(tag.slice('#minecraft:'.length)), tag).toBe(true);
+          }
+        }
+      }
+    });
+
+    it('the Gear set exports tools, armour and the equipment asset in the Fabric mod jar (ADR 0043 D2)', async () => {
+      const built = await buildProject('Gear', 'demo', [
+        buildEntry(starterById('gear-set'), 'demo', 'Gear', bundle.target),
+      ]);
+      const { resourceFiles, dataFiles, jarFiles } = await checkProject(bundle, context, built);
+      const { resource, data } = bundle.target.folders;
+      expect(resourceFiles).toEqual(
+        expect.arrayContaining([
+          'assets/demo/equipment/ruby_armor.json',
+          `assets/demo/${resource.textures}/entity/equipment/humanoid/ruby.png`,
+          `assets/demo/${resource.textures}/entity/equipment/humanoid_leggings/ruby.png`,
+          `assets/demo/${resource.model}/item/ruby_pickaxe.json`,
+        ]),
+      );
+      expect(dataFiles).toEqual(
+        expect.arrayContaining([
+          `data/demo/${data.recipe}/ruby_helmet_from_ruby.json`,
+          `data/minecraft/${data.tags}/item/swords.json`,
+          `data/minecraft/${data.tags}/item/head_armor.json`,
+          `data/demo/${data.tags}/item/ruby_repair_materials.json`,
+        ]),
+      );
+      expect(jarFiles).toEqual(
+        expect.arrayContaining([
+          'msm/demo/item/ruby_sword.json',
+          'msm/demo/item/ruby_helmet.json',
+          'msm/demo/block/ruby_ore.json',
+          'assets/demo/equipment/ruby_armor.json',
+          'fabric.mod.json',
+        ]),
+      );
     });
 
     it('the Custom ore starter adds a real ruby ore, ruby and block of ruby (ADR 0025)', async () => {

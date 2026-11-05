@@ -1,0 +1,28 @@
+{
+  "data": {
+    "components": {
+      "msm:tool": {
+        "tier": {
+          "attack_damage_bonus": 2.5,
+          "durability": 1000,
+          "enchantment_value": 15,
+          "incorrect_blocks_for_drops": "#minecraft:incorrect_for_iron_tool",
+          "repair_items": "#msm_starter:ruby_repair_materials",
+          "speed": 7
+        },
+        "type": "hoe"
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_starter:item/ruby_hoe"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_hoe",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new hoe of a custom tool material: its durability, mining speed, damage bonus and enchantability are the set's own, and it mines for drops what a iron tool mines (the block tag incorrect_blocks_for_drops lists what it cannot)."
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "iron",
+        "resistance": 3,
+        "tool": "pickaxe"
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "msm_starter:blocks/ruby_ore",
+    "model": "msm_starter:block/ruby_ore",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_ore",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new ore block. It mines quickly with a pickaxe and drops rubies only when the pickaxe is iron or better. It does not generate in the world by itself: place it from the creative menu, or add a placed feature that spreads it underground."
+  }
+}

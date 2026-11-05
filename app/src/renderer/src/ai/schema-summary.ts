@@ -32,8 +32,11 @@ const TRUNCATED = '\n... (truncated; read a template with template_data for a fu
 
 class Budget {
   readonly lines: string[] = [];
+  readonly maxChars: number;
   #chars = 0;
-  constructor(readonly maxChars: number) {}
+  constructor(maxChars: number) {
+    this.maxChars = maxChars;
+  }
   get full(): boolean {
     return this.#chars >= this.maxChars;
   }

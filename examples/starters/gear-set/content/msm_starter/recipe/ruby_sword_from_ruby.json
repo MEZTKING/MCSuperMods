@@ -1,0 +1,26 @@
+{
+  "data": {
+    "category": "equipment",
+    "key": {
+      "#": "minecraft:stick",
+      "X": "msm_starter:ruby"
+    },
+    "pattern": [
+      "X",
+      "X",
+      "#"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_starter:ruby_sword"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_sword_from_ruby",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The vanilla sword recipe with rubies and sticks."
+  }
+}

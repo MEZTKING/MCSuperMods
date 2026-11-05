@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "msm_starter:ruby_boots"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:foot_armor",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds the ruby boots to the vanilla tag #minecraft:foot_armor. The game uses it to decide which enchantments the piece takes (the enchantable tags list this one) and that armour trims apply. Vanilla items stay in the tag: a tag file only adds unless it sets replace."
+  }
+}

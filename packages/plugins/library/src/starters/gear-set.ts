@@ -7,9 +7,10 @@
  * set's own `minecraft:equipment` asset and its two 64x32 layer textures), handheld and flat
  * item models with tinted placeholder textures, the crafting recipes (or a smithing template
  * and one `smithing_transform` recipe per piece), the vanilla item tags the pieces join, the
- * English names and the `msm:mod` metadata. Ids derive from `material_name`: `ruby_sword`,
- * `ruby_helmet`, the equipment asset `ruby`; the material item is `ruby_gem` or `ruby_ingot`,
- * since element ids are unique across kinds and the equipment asset holds `ruby`.
+ * English names and the `msm:mod` metadata. Ids derive from `material_name`: the material
+ * item `ruby`, `ruby_sword`, `ruby_helmet` and the equipment asset `ruby_armor` (element ids are
+ * unique across kinds, so the asset cannot share the material's id; its layer textures are
+ * still named `ruby.png`, as in the sample mod).
  *
  * Joining `minecraft:swords`, `pickaxes`, `axes`, `shovels`, `hoes`, `head_armor`,
  * `chest_armor`, `leg_armor` and `foot_armor` is enough for every `enchantable/*` tag: those
@@ -234,7 +235,7 @@ export const GEAR_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     id: 'material_name',
     label: 'Material name',
     description:
-      'The English name of the new material. Ids derive from it: Ruby gives ruby_sword, ruby_helmet and the equipment asset ruby.',
+      'The English name of the new material. Ids derive from it: Ruby gives ruby, ruby_sword, ruby_helmet and the equipment asset ruby_armor.',
     group: 'Material',
     type: 'string',
     default: 'Ruby',
@@ -462,7 +463,9 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
   const minesLike =
     MINES_LIKE.find((entry) => entry.value === stringValue(values, 'mines_like')) ??
     (MINES_LIKE[3] as (typeof MINES_LIKE)[number]);
-  const armourBase = ARMOUR_BASES.find((entry) => entry.value === stringValue(values, 'armor_base'));
+  const armourBase = ARMOUR_BASES.find(
+    (entry) => entry.value === stringValue(values, 'armor_base'),
+  );
   const armourStats: ArmourStats = armourBase?.stats ?? {
     durability: Math.round(numberValue(values, 'armor_durability')),
     defense: {
@@ -476,7 +479,7 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
     knockbackResistance: tidy(numberValue(values, 'knockback_resistance')),
   };
 
-  const ids = gearSetIds(namespace, name.id, fromOre);
+  const ids = gearSetIds(namespace, name.id);
   const material = ids.material;
   const materialName = fromOre ? name.display : `${name.display} Ingot`;
   const materialLower = materialName.toLowerCase();
@@ -543,7 +546,12 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
     ),
   );
   assets.push(
-    texture(namespace, materialModel.slice(namespace.length + 1), fromOre ? 'gem' : 'ingot', colour),
+    texture(
+      namespace,
+      materialModel.slice(namespace.length + 1),
+      fromOre ? 'gem' : 'ingot',
+      colour,
+    ),
   );
 
   if (fromOre) {
@@ -625,7 +633,7 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
         `A full cube drawn from textures/block/${name.id}_block.png on every side.`,
       ),
       element(
-        rl(namespace, `${name.id}_block_from_${name.id}_gem`),
+        rl(namespace, `${name.id}_block_from_${name.idPlural}`),
         KINDS.recipe,
         {
           type: 'minecraft:crafting_shaped',
@@ -637,7 +645,7 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
         `Nine ${name.plural} make a block of ${name.lower}.`,
       ),
       element(
-        rl(namespace, `${name.id}_gem_from_block`),
+        rl(namespace, `${name.id}_from_block`),
         KINDS.recipe,
         {
           type: 'minecraft:crafting_shapeless',
@@ -648,7 +656,7 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
         `A block of ${name.lower} gives nine ${name.plural} back.`,
       ),
       element(
-        rl(namespace, `${name.id}_gem_from_smelting`),
+        rl(namespace, `${name.id}_from_smelting`),
         KINDS.recipe,
         {
           type: 'minecraft:smelting',
@@ -703,7 +711,10 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
         `A flat item model drawn from textures/item/${name.id}_upgrade_smithing_template.png, a plain placeholder to paint over.`,
       ),
       element(
-        rl(namespace, `${name.id}_upgrade_smithing_template_from_${material.slice(namespace.length + 1)}`),
+        rl(
+          namespace,
+          `${name.id}_upgrade_smithing_template_from_${material.slice(namespace.length + 1)}`,
+        ),
         KINDS.recipe,
         {
           type: 'minecraft:crafting_shaped',
@@ -784,7 +795,8 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
           format: 1,
           model,
           max_stack_size: 1,
-          creative_tab: piece.value === 'sword' ? 'minecraft:combat' : 'minecraft:tools_and_utilities',
+          creative_tab:
+            piece.value === 'sword' ? 'minecraft:combat' : 'minecraft:tools_and_utilities',
           components: { 'msm:tool': { type: piece.value, tier: structuredClone(toolTier) } },
         },
         isCustomTier
@@ -800,7 +812,12 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
       recipeOf(id, piece, true),
     );
     assets.push(
-      texture(namespace, `item/${name.id}_${piece.value}`, piece.value as PlaceholderPattern, colour),
+      texture(
+        namespace,
+        `item/${name.id}_${piece.value}`,
+        piece.value as PlaceholderPattern,
+        colour,
+      ),
     );
   }
 
@@ -843,7 +860,12 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
       recipeOf(id, piece, false),
     );
     assets.push(
-      texture(namespace, `item/${name.id}_${piece.value}`, piece.value as PlaceholderPattern, colour),
+      texture(
+        namespace,
+        `item/${name.id}_${piece.value}`,
+        piece.value as PlaceholderPattern,
+        colour,
+      ),
     );
   }
   if (armour.length > 0) {
@@ -853,11 +875,11 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
         KINDS.equipment,
         {
           layers: {
-            humanoid: [{ texture: ids.equipment }],
-            humanoid_leggings: [{ texture: ids.equipment }],
+            humanoid: [{ texture: material }],
+            humanoid_leggings: [{ texture: material }],
           },
         },
-        `How the armour looks when worn. humanoid draws the helmet, chestplate and boots from textures/entity/equipment/humanoid/${name.id}.png; humanoid_leggings draws the leggings from textures/entity/equipment/humanoid_leggings/${name.id}.png. Both are 64 by 32 placeholders in the vanilla armour layout: paint over them, or replace them with textures from Blockbench.`,
+        `How the armour looks when worn; the armour pieces name it in equipment_asset. The texture id ${material} names one file in each layer folder: humanoid draws the helmet, chestplate and boots from textures/entity/equipment/humanoid/${name.id}.png; humanoid_leggings draws the leggings from textures/entity/equipment/humanoid_leggings/${name.id}.png. Both are 64 by 32 placeholders in the vanilla armour layout: paint over them, or replace them with textures from Blockbench.`,
       ),
     );
     assets.push(
@@ -898,13 +920,13 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
 }
 
 /** The ids of a gear set whose material id is `materialId`. */
-export function gearSetIds(namespace: string, materialId: string, fromOre = true) {
+export function gearSetIds(namespace: string, materialId: string) {
   return {
-    material: rl(namespace, fromOre ? `${materialId}_gem` : `${materialId}_ingot`),
+    material: rl(namespace, materialId),
     ore: rl(namespace, `${materialId}_ore`),
     block: rl(namespace, `${materialId}_block`),
     repairTag: rl(namespace, `${materialId}_repair_materials`),
     template: rl(namespace, `${materialId}_upgrade_smithing_template`),
-    equipment: rl(namespace, materialId),
+    equipment: rl(namespace, `${materialId}_armor`),
   };
 }

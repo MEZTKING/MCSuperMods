@@ -261,7 +261,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     'Scripted behaviour',
     'An item that runs a script when used: it heals you, launches you upward, strikes lightning where you look or gives you an effect. The script opens in the Script Studio for editing. Scripts need the Fabric mod jar export.',
     'content',
-    ['resourcepack', 'datapack', 'msm'],
+    ['resourcepack', 'msm'],
     scriptedItemBundle,
     {
       parameters: SCRIPTED_ITEM_PARAMETERS,

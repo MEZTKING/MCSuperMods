@@ -160,12 +160,15 @@ describe('placeholder textures', () => {
     expect(sha256(placeholderPng(pattern as PlaceholderPattern))).toBe(pinned);
   });
 
-  it.each(PLACEHOLDER_PATTERNS)('is byte-stable and has transparent and opaque pixels: %s', (pattern) => {
-    expect(sha256(placeholderPng(pattern))).toBe(sha256(placeholderPng(pattern)));
-    const alpha = [...placeholderPixels(pattern)].filter((_, index) => index % 4 === 3);
-    expect(alpha).toContain(255);
-    if (pattern !== 'plain' && pattern !== 'ore') expect(alpha).toContain(0);
-  });
+  it.each(PLACEHOLDER_PATTERNS)(
+    'is byte-stable and has transparent and opaque pixels: %s',
+    (pattern) => {
+      expect(sha256(placeholderPng(pattern))).toBe(sha256(placeholderPng(pattern)));
+      const alpha = [...placeholderPixels(pattern)].filter((_, index) => index % 4 === 3);
+      expect(alpha).toContain(255);
+      if (pattern !== 'plain' && pattern !== 'ore') expect(alpha).toContain(0);
+    },
+  );
 
   it('draws opaque block patterns and transparent item backgrounds', () => {
     const alpha = (pattern: PlaceholderPattern) =>

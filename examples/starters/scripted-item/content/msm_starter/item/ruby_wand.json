@@ -1,0 +1,31 @@
+{
+  "data": {
+    "components": {
+      "msm:on_use": {
+        "cooldown_ticks": 40,
+        "event": "msm_starter:ruby_wand_used"
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "events": {
+      "msm_starter:ruby_wand_used": {
+        "actions": [
+          {
+            "handler": "msm_starter:ruby_wand_power",
+            "type": "run_script"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_starter:item/ruby_wand"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_wand",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new item. msm:on_use fires the event msm_starter:ruby_wand_used when a player uses it, at most once every 40 ticks. The event's only action is run_script, which calls the handler msm_starter:ruby_wand_power that the script msm_starter:ruby_wand_behaviour defines: it heals the player."
+  }
+}

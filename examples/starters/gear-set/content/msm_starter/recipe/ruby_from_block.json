@@ -1,0 +1,20 @@
+{
+  "data": {
+    "category": "misc",
+    "ingredients": [
+      "msm_starter:ruby_block"
+    ],
+    "result": {
+      "count": 9,
+      "id": "msm_starter:ruby"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_from_block",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A block of ruby gives nine rubies back."
+  }
+}

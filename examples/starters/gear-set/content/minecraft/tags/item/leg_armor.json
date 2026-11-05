@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "msm_starter:ruby_leggings"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:leg_armor",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds the ruby leggings to the vanilla tag #minecraft:leg_armor. The game uses it to decide which enchantments the piece takes (the enchantable tags list this one) and that armour trims apply. Vanilla items stay in the tag: a tag file only adds unless it sets replace."
+  }
+}

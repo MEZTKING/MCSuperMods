@@ -207,6 +207,8 @@ describe('1.0.0 library additions', () => {
           return parameter.default;
         case 'choice':
           return parameter.choices.map((choice) => choice.value).join(',');
+        case 'set':
+          return parameter.default.join('+');
       }
     };
     expect(describe({ id: 'a', label: 'A', type: 'number', default: 2, min: 1 })).toBe('3');

@@ -1,0 +1,21 @@
+{
+  "data": {
+    "components": {
+      "msm:food": {
+        "nutrition": 4,
+        "saturation": 0.6
+      }
+    },
+    "creative_tab": "minecraft:food_and_drinks",
+    "format": 1,
+    "max_stack_size": 64,
+    "model": "msm_starter:item/ruby_apple"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_apple",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new food. msm:food restores 4 hunger (half drumsticks) with a saturation of 0.6. Its English name comes from the language file below."
+  }
+}

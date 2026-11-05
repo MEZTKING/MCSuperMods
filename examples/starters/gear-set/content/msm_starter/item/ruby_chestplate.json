@@ -1,0 +1,34 @@
+{
+  "data": {
+    "components": {
+      "msm:armor": {
+        "material": {
+          "defense": {
+            "boots": 2,
+            "chestplate": 7,
+            "helmet": 3,
+            "leggings": 5
+          },
+          "durability": 25,
+          "enchantment_value": 12,
+          "equipment_asset": "msm_starter:ruby_armor",
+          "knockback_resistance": 0,
+          "repair_items": "#msm_starter:ruby_repair_materials",
+          "toughness": 1
+        },
+        "slot": "chestplate"
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_starter:item/ruby_chestplate"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_chestplate",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new chestplate of a custom armour material: 7 armour points, durability 25 times the chestplate's multiplier. equipment_asset names msm_starter:ruby_armor, which draws it on the player."
+  }
+}

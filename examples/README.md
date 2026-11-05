@@ -18,8 +18,12 @@ Ordinary MSM projects generated from the built-in templates and samples library 
 | `starters/worldgen_pack/` | `msm_starter` | The Custom biome with a jigsaw structure starter: both of the above, with hamlets generating in Amber Woods too (also saved as `fixtures/sample-worldgen/`) |
 | `starters/custom_mob/` | `msm_starter` | The Custom mob starter: the animated Ruby Golem with its GeckoLib model, animations, skin and spawn egg texture, natural spawning in forests, a loot table dropping emeralds, a death function and the mod metadata |
 | `starters/scripted_ore/` | `msm_starter` | The Scripted ore starter: the Custom ore content plus three scripts: sneak-using ruby ore gives a bonus ruby, a `run_script` action on the Block of Ruby's step event calls a script handler that heals the player, and joining players are greeted |
+| `starters/gear-set/` | `msm_starter` | The Gear set starter with its default answers: Ruby Ore that drops rubies, a Block of Ruby, a custom-material sword, pickaxe, axe, shovel and hoe, a custom-material helmet, chestplate, leggings and boots drawn by the `ruby_armor` equipment asset and its two 64x32 layer textures, crafting recipes, the repair tag, the vanilla tool and armour tags, English names and the mod metadata |
+| `starters/simple-block/` | `msm_starter` | The Simple block starter with its default answers: Ruby Tiles (a pickaxe-mined block that drops itself), its model and texture, a recipe of four stone and its English name |
+| `starters/food/` | `msm_starter` | The Food starter with its default answers: the Ruby Apple (`msm:food`, 4 hunger, 0.6 saturation), its model and texture, a recipe of an apple and sugar and its English name |
+| `starters/scripted-item/` | `msm_starter` | The Scripted behaviour starter with its default answers: the Ruby Wand, whose use event calls a script through a `run_script` action, and the generated script that heals the player |
 
-The Custom ore, Custom sword and Custom mob starters are wizards in the app (New project asks for a name, colours and a few numbers); the folders here hold their default answers.
+The Custom ore, Custom sword, Gear set, Simple block, Food, Custom mob and Scripted behaviour starters are wizards in the app (New project asks for a name, colours and a few numbers), and all but Custom sword are also Creator flows; the folders here hold their default answers.
 
 Every element carries notes (`meta.notes`) explaining its fields; the app shows them above the editor.
 
@@ -27,9 +31,23 @@ Every element carries notes (`meta.notes`) explaining its fields; the app shows 
 
 1. Copy the folder somewhere outside this repository, so your edits do not change the mirror.
 2. In MCSuperMods choose File > Open Project… and pick the copied folder.
-3. Export the resource pack and data pack as usual and try them in game. Structure templates export as `.nbt` files in the data pack; a World Type appears on the Create New World screen only when the data pack is enabled there. New blocks and items (`msm:block`, `msm:item`, in `all-kinds/`, `blocks-items/`, `starters/custom_ore/` and `starters/custom-sword/`) and new mobs (`msm:entity`, in `all-kinds/`, `entities/` and `starters/custom_mob/`) work only from the Fabric mod jar export, installed with Fabric Loader and Fabric API; mobs also need GeckoLib, which the jar nests unless you keep it separate. Scripts (`msm:script`, in `all-kinds/`, `scripts/` and `starters/scripted_ore/`) run only from the Fabric mod jar export, through `msm_runtime`; the Java project export leaves them out.
+3. Export the resource pack and data pack as usual and try them in game. Structure templates export as `.nbt` files in the data pack; a World Type appears on the Create New World screen only when the data pack is enabled there. New blocks and items (`msm:block`, `msm:item`, in `all-kinds/`, `blocks-items/`, `starters/custom_ore/`, `starters/custom-sword/`, `starters/gear-set/`, `starters/simple-block/`, `starters/food/` and `starters/scripted-item/`) and new mobs (`msm:entity`, in `all-kinds/`, `entities/` and `starters/custom_mob/`) work only from the Fabric mod jar export, installed with Fabric Loader and Fabric API; mobs also need GeckoLib, which the jar nests unless you keep it separate. Scripts (`msm:script`, in `all-kinds/`, `scripts/`, `starters/scripted_ore/` and `starters/scripted-item/`) run only from the Fabric mod jar export, through `msm_runtime`; the Java project export leaves them out.
 
-The textures are generated placeholders, not Mojang assets. The music disc plays the vanilla `records/cat` track until you import your own `.ogg` and point the sound event at it.
+The textures are generated placeholders, not Mojang assets, drawn from these patterns (`packages/plugins/library/src/assets/png.ts`, tinted from one colour):
+
+| Pattern | Size | Used for |
+|---|---|---|
+| `plain` | 16x16 | Blocks (storage blocks, Simple block), smithing templates |
+| `ore` | 16x16 | Ore blocks |
+| `gem` | 16x16 | Gems, the Scripted behaviour item |
+| `disc` | 16x16 | Music discs |
+| `egg` | 16x16 | Spawn eggs, foods |
+| `sword`, `pickaxe`, `axe`, `shovel`, `hoe` | 16x16 | Handheld tools |
+| `helmet`, `chestplate`, `leggings`, `boots` | 16x16 | Armour item icons |
+| `ingot` | 16x16 | Ingots |
+| `armor_layer_1`, `armor_layer_2` | 64x32 | Worn armour (`entity/equipment/humanoid/` and `humanoid_leggings/`) |
+
+The music disc plays the vanilla `records/cat` track until you import your own `.ogg` and point the sound event at it.
 
 ## Regenerating
 

@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "msm_starter:ruby"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_repair_materials",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The items that repair the set's tools and armour on an anvil: its custom materials name this tag in repair_items. Add more items to let them repair too."
+  }
+}

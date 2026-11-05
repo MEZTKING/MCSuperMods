@@ -24,7 +24,9 @@ export const NAME_MAX_LENGTH = 32;
  * The value of every declared parameter: the context's value when valid, else the default. A
  * `set` parameter's value is a `string[]` of chosen values in the order of its choices.
  */
-export type ParameterValues = Readonly<Record<string, string | number | boolean | readonly string[]>>;
+export type ParameterValues = Readonly<
+  Record<string, string | number | boolean | readonly string[]>
+>;
 
 /**
  * Every declared parameter's value from `context.values`, falling back to the default when a
@@ -43,9 +45,7 @@ export function readValues(
     const value: Json | undefined = context.values?.[parameter.id];
     if (parameter.type === 'set') {
       out[parameter.id] = Array.isArray(value)
-        ? parameter.choices
-            .map((choice) => choice.value)
-            .filter((choice) => value.includes(choice))
+        ? parameter.choices.map((choice) => choice.value).filter((choice) => value.includes(choice))
         : [...parameter.default];
       continue;
     }

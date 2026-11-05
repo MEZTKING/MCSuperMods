@@ -1,0 +1,15 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_starter:block/ruby_ore"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:block/ruby_ore",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A full cube drawn from textures/block/ruby_ore.png on every side."
+  }
+}

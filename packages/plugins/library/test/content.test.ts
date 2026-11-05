@@ -29,6 +29,9 @@ const STARTER_IDS = [
   'combined',
   'custom_ore',
   'custom-sword',
+  'gear-set',
+  'simple-block',
+  'food',
   'recipe_pack',
   'music_disc',
   'function_starter',
@@ -37,6 +40,7 @@ const STARTER_IDS = [
   'worldgen_pack',
   'custom_mob',
   'scripted_ore',
+  'scripted-item',
 ];
 
 /**
@@ -135,7 +139,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the fourteen starters in order', () => {
+  it('lists the eighteen starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -145,16 +149,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      'content',
-      'content',
-      'content',
-      'content',
-      'content',
-      'content',
-      'content',
-      'content',
-      'content',
-      'content',
+      ...Array<string>(14).fill('content'),
     ]);
   });
 

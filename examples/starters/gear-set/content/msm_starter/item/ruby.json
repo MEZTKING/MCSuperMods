@@ -1,0 +1,15 @@
+{
+  "data": {
+    "creative_tab": "minecraft:ingredients",
+    "format": 1,
+    "max_stack_size": 64,
+    "model": "msm_starter:item/ruby"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The material: a gem the ruby ore drops. Every recipe of the set uses it, and it repairs the set's tools and armour on an anvil through the tag msm_starter:ruby_repair_materials."
+  }
+}

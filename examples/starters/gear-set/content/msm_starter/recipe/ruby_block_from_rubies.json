@@ -1,0 +1,25 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "X": "msm_starter:ruby"
+    },
+    "pattern": [
+      "XXX",
+      "XXX",
+      "XXX"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_starter:ruby_block"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_block_from_rubies",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Nine rubies make a block of ruby."
+  }
+}

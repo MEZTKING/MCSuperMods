@@ -1,0 +1,25 @@
+{
+  "data": {
+    "category": "equipment",
+    "key": {
+      "X": "msm_starter:ruby"
+    },
+    "pattern": [
+      "X X",
+      "XXX",
+      "XXX"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_starter:ruby_chestplate"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_chestplate_from_ruby",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The vanilla chestplate recipe with rubies."
+  }
+}

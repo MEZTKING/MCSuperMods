@@ -1,0 +1,22 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// Runs when a player uses the Ruby Wand: heals 6 half hearts.",
+      "msm.actions.define(\"msm_starter:ruby_wand_power\", (e) => {",
+      "  if (e.player === undefined) return;",
+      "  e.player.heal(6);",
+      "  e.world.spawnParticle(\"minecraft:heart\", e.player.pos.offset(0, 2, 0), { count: 5, spread: 0.5 });",
+      "  e.world.playSound(\"minecraft:entity.player.levelup\", e.player.pos, { pitch: 1.5 });",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_wand_behaviour",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The script behind the Ruby Wand: msm.actions.define registers the handler msm_starter:ruby_wand_power, which the item's run_script action calls with the player who used it. Open it in the Script Studio to change what the item does. Scripts run only in the Fabric mod jar export, with msm_runtime; the vanilla packs and the Java project export leave them out."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "data": {
+    "block.msm_starter.ruby_tiles": "Ruby Tiles"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:en_us",
+  "kind": "minecraft:lang",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The English name of the block: block.msm_starter.ruby_tiles is its translation key."
+  }
+}

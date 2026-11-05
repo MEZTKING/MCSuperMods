@@ -1,0 +1,23 @@
+{
+  "data": {
+    "block.msm_starter.ruby_block": "Block of Ruby",
+    "block.msm_starter.ruby_ore": "Ruby Ore",
+    "item.msm_starter.ruby": "Ruby",
+    "item.msm_starter.ruby_axe": "Ruby Axe",
+    "item.msm_starter.ruby_boots": "Ruby Boots",
+    "item.msm_starter.ruby_chestplate": "Ruby Chestplate",
+    "item.msm_starter.ruby_helmet": "Ruby Helmet",
+    "item.msm_starter.ruby_hoe": "Ruby Hoe",
+    "item.msm_starter.ruby_leggings": "Ruby Leggings",
+    "item.msm_starter.ruby_pickaxe": "Ruby Pickaxe",
+    "item.msm_starter.ruby_shovel": "Ruby Shovel",
+    "item.msm_starter.ruby_sword": "Ruby Sword"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:en_us",
+  "kind": "minecraft:lang",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The English names of everything the set adds. Another language file (for example de_de) can name them in that language."
+  }
+}

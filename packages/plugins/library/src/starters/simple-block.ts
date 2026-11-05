@@ -5,12 +5,7 @@
  * English name and the `msm:mod` metadata. Ids derive from `block_name`. New blocks need the
  * Fabric mod jar export (with `msm_runtime`).
  */
-import type {
-  BundleContext,
-  ContentBundle,
-  JsonObject,
-  StarterParameter,
-} from '@msm/plugin-api';
+import type { BundleContext, ContentBundle, JsonObject, StarterParameter } from '@msm/plugin-api';
 import type { PlaceholderPattern } from '../assets/png';
 import {
   COLOURS,

@@ -1,8 +1,8 @@
 /**
  * One wizard question (ADR 0040): a labelled control for a {@link StarterParameter}, its
  * description, the id preview of a name field and the validation error under it. The control
- * carries `data-testid="param-<id>"`; a `set` parameter is a group of checkboxes
- * (`param-<id>` on the group, `param-<id>-<value>` on each box, ADR 0043 D1).
+ * carries `data-testid="param-<id>"`; a `set` parameter is a fieldset of checkboxes
+ * (`param-<id>` on the fieldset, `param-<id>-<value>` on each box, ADR 0043 D1).
  *
  * @packageDocumentation
  */
@@ -111,22 +111,21 @@ export function ParameterField({
     case 'set': {
       const ticked: readonly string[] = Array.isArray(value) ? value : [];
       control = (
-        <div
+        <fieldset
           id={inputId}
-          role="group"
-          aria-labelledby={`${inputId}-label`}
           aria-describedby={describedBy}
           aria-invalid={error !== null}
           data-testid={testId}
-          className="flex flex-wrap gap-x-3 gap-y-0.5"
+          className="m-0 flex flex-wrap gap-x-3 gap-y-0.5 border-0 p-0"
         >
+          <legend className="mb-0.5 w-full p-0">{parameter.label}</legend>
           {parameter.choices.map((choice, position) => (
             <label key={choice.value} className="flex items-center gap-1">
               <input
                 type="checkbox"
                 data-testid={`${testId}-${choice.value}`}
                 checked={ticked.includes(choice.value)}
-                autoFocus={autoFocus === true && position === 0}
+                {...{ autoFocus: autoFocus === true && position === 0 }}
                 onChange={(event) =>
                   onChange(toggleSetValue(parameter, value, choice.value, event.target.checked))
                 }
@@ -134,7 +133,7 @@ export function ParameterField({
               <span>{choice.label}</span>
             </label>
           ))}
-        </div>
+        </fieldset>
       );
       break;
     }
@@ -162,10 +161,7 @@ export function ParameterField({
           <span>{parameter.label}</span>
         </label>
       ) : parameter.type === 'set' ? (
-        <>
-          <span id={`${inputId}-label`}>{parameter.label}</span>
-          {control}
-        </>
+        control
       ) : (
         <>
           <label htmlFor={inputId}>{parameter.label}</label>

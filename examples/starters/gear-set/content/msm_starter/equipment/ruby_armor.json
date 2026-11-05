@@ -1,0 +1,23 @@
+{
+  "data": {
+    "layers": {
+      "humanoid": [
+        {
+          "texture": "msm_starter:ruby"
+        }
+      ],
+      "humanoid_leggings": [
+        {
+          "texture": "msm_starter:ruby"
+        }
+      ]
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_armor",
+  "kind": "minecraft:equipment",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "How the armour looks when worn; the armour pieces name it in equipment_asset. The texture id msm_starter:ruby names one file in each layer folder: humanoid draws the helmet, chestplate and boots from textures/entity/equipment/humanoid/ruby.png; humanoid_leggings draws the leggings from textures/entity/equipment/humanoid_leggings/ruby.png. Both are 64 by 32 placeholders in the vanilla armour layout: paint over them, or replace them with textures from Blockbench."
+  }
+}
