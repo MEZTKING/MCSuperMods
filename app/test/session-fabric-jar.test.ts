@@ -173,9 +173,7 @@ describe('ProjectSession.exportFabricJar with entities (GeckoLib)', () => {
     const { session, calls } = await openEntitySession(null);
     const result = await session.exportFabricJar();
     expect(result.ok).toBe(false);
-    expect(result.problems.map((problem) => problem.code)).toContain(
-      'export.geckolib-missing',
-    );
+    expect(result.problems.map((problem) => problem.code)).toContain('export.geckolib-missing');
     expect(calls.saved).toHaveLength(0);
   });
 
@@ -195,8 +193,6 @@ describe('ProjectSession.exportFabricJar with entities (GeckoLib)', () => {
     const result = await session.testInMinecraft();
     expect(result.ok).toBe(false);
     expect(geckolibRequests).toEqual([session.target.id]);
-    expect(result.problems.map((problem) => problem.code)).toContain(
-      'export.geckolib-missing',
-    );
+    expect(result.problems.map((problem) => problem.code)).toContain('export.geckolib-missing');
   });
 });

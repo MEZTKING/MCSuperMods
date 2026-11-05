@@ -158,8 +158,7 @@ const lastEdit = (spy: { mock: { lastCall?: unknown[] | undefined } }): unknown[
 const dataOf = (stack: CommandStack, id: string): Json =>
   stack.state.namespaces[0]?.elements.find((entry) => entry.id === id)?.data ?? null;
 
-const componentsOf = (data: Json) =>
-  (data as { components: Record<string, Json> }).components;
+const componentsOf = (data: Json) => (data as { components: Record<string, Json> }).components;
 
 const options = (testId: string) =>
   [...(screen.getByTestId(testId) as HTMLSelectElement).options].map((option) => option.value);
@@ -279,7 +278,10 @@ describe('Entity Studio', () => {
     fireEvent.change(screen.getByTestId('entity-model'), {
       target: { value: 'demo:entity/moth' },
     });
-    expect(lastEdit(onChange)).toEqual(['/components/msm:animated_model/model', 'demo:entity/moth']);
+    expect(lastEdit(onChange)).toEqual([
+      '/components/msm:animated_model/model',
+      'demo:entity/moth',
+    ]);
     fireEvent.change(screen.getByTestId('entity-texture'), {
       target: { value: 'demo:entity/gloom' },
     });
@@ -413,7 +415,8 @@ describe('Entity Studio', () => {
   });
 
   it('turns natural spawning on with defaults, edits biomes and numbers, and off', () => {
-    const { data } = renderStack(templateData('msm_entity_creature'));
+    const { spawn: _spawn, ...base } = templateData('msm_entity_creature') as Record<string, Json>;
+    const { data } = renderStack(base);
     const spawnOf = () => (data() as { spawn?: Record<string, Json> }).spawn;
     expect(spawnOf()).toBeUndefined();
     fireEvent.click(screen.getByTestId('entity-spawns'));

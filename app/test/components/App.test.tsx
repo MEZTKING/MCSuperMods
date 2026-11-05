@@ -1200,7 +1200,11 @@ describe('App Blockbench import', () => {
 describe('App Fabric mod jar with entities', () => {
   function addEntity(harness: Harness) {
     act(() => {
-      harness.session.addElement({ id: 'demo:entity/gloom', kind: 'msm:geo_model', data: GLOOM_GEO });
+      harness.session.addElement({
+        id: 'demo:entity/gloom',
+        kind: 'msm:geo_model',
+        data: GLOOM_GEO,
+      });
       harness.session.addElement({
         id: 'demo:gloom',
         kind: 'msm:entity',
@@ -1238,4 +1242,3 @@ describe('App Fabric mod jar with entities', () => {
     expect(harness.saved).toHaveLength(1);
   });
 });
-

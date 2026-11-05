@@ -28,7 +28,9 @@ describe('ExporterOptionFields', () => {
     render(
       <ExporterOptionFields options={options} values={{ compact: true }} onChange={vi.fn()} />,
     );
-    const separate = screen.getByLabelText('Separate runtime and GeckoLib (for modpacks)') as HTMLInputElement;
+    const separate = screen.getByLabelText(
+      'Separate runtime and GeckoLib (for modpacks)',
+    ) as HTMLInputElement;
     expect(separate.type).toBe('checkbox');
     expect(separate.checked).toBe(false);
     expect(screen.getByText('Leave msm_runtime and GeckoLib out of the jar.').id).toBe(

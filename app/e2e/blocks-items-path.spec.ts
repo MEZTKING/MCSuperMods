@@ -6,9 +6,9 @@
  * adds an event with a play_sound action and picks it for "On interact", and turns the block
  * item off and on again. Removing the event leaves a dangling reference, a
  * `blocks-items.unknown-event` error that blocks the Fabric mod jar; undo clears it. The jar
- * is exported with "Separate runtime (for modpacks)" and checked file by file, the resource
- * pack holds no `msm/` files, and a second launch reopens the project with no problems and
- * the edits kept.
+ * is exported with "Separate runtime and GeckoLib (for modpacks)" and checked file by file,
+ * the resource pack holds no `msm/` files, and a second launch reopens the project with no
+ * problems and the edits kept.
  *
  * "Test in Minecraft" is not covered here. Preview and WebGL are unavailable headless.
  */
@@ -240,6 +240,7 @@ test('blocks and items: templates, Block Studio, unknown event, Fabric jar, reso
   await expect(palette).toBeHidden();
   const jarDialog = window.getByTestId('fabric-jar-dialog');
   await expect(jarDialog).toBeVisible();
+  await expect(jarDialog.getByText('Separate runtime and GeckoLib (for modpacks)')).toBeVisible();
   const separate = jarDialog.getByTestId('exporter-option-separateRuntime');
   await expect(separate).not.toBeChecked();
   await separate.check();
