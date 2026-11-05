@@ -164,7 +164,7 @@ interface Harness {
   /** What the "pick files" dialog returns. */
   pickedFiles: { name: string; path: string; data: Uint8Array }[];
   /** The options of every `dialogs.pickFiles` call. */
-  pickRequests: { title: string; filters?: { name: string; extensions: string[] }[] }[];
+  pickRequests: { title: string; filters?: { name: string; extensions: string[] }[] | undefined }[];
   /** The folder of every export folder write. */
   writtenFolders: string[];
   /** What `testInMinecraft.status` returns. */
