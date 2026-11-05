@@ -78,7 +78,7 @@ describe('checkBudgets', () => {
   it('fails an oversized app.asar', () => {
     const violations = checkBudgets({ ...passing, asarBytes: BUDGETS.asarBytes + 1 });
     expect(violations).toHaveLength(1);
-    expect(violations[0]).toMatch(/^app\.asar is 25\.0 MB, over the 25\.0 MB budget/);
+    expect(violations[0]).toMatch(/^app\.asar is 32\.0 MB, over the 32\.0 MB budget/);
   });
 
   it('fails an oversized renderer and each large JSON file', () => {
@@ -169,7 +169,7 @@ describe('measure and report', () => {
     const lines = report(measured);
     expect(lines[0]).toBe('Renderer output: 420 B (budget 16.0 MB), largest files:');
     expect(lines).toContain('TypeScript worker chunk: assets/ts.worker-1.js (100 B)');
-    expect(lines).toContain('app.asar: 1000 B (budget 25.0 MB)');
+    expect(lines).toContain('app.asar: 1000 B (budget 32.0 MB)');
     expect(lines).toContain(
       'Main output: index.js 2.0 kB, 3.0 kB in total (reported only), largest files:',
     );

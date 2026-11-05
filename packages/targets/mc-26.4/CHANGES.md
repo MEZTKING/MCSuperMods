@@ -1,38 +1,34 @@
-# Target mc-26.3 — changes and facts
+# Target mc-26.4 — changes and facts
 
-Minecraft Java 26.3, released 2026-09-15 (`data_version` 5023, protocol 777).
+Minecraft Java 26.4, pinned to the snapshot `26.4-snapshot-7` (2026-11-03) until the release lands (ADR 0037 D1; the re-pin is reserve brief B163). `channel: 'snapshot'`: offered in the app with a badge, never the default for new projects.
 
 ## Verified facts
 
-Checked on 2026-11-04.
+Checked on 2026-11-05.
 
 | Fact | Value | Source |
 |---|---|---|
-| `mcVersion` | `26.3` | misode/mcmeta tag `26.3-summary`, `version.json` |
-| Data pack format | `121.0` (`data_pack_version` 121, `data_pack_version_minor` 0) | mcmeta `version.json`; minecraft.wiki Pack format table |
-| Resource pack format | `97.1` (`resource_pack_version` 97, `resource_pack_version_minor` 1) | mcmeta `version.json`; minecraft.wiki Pack format table |
-| Java | 25 | DESIGN §9 |
-| vanilla-mcdoc ref | commit `0ca060a4f1631f9d5eb7198cfe94c7b77a773d32` (vanilla-mcdoc has no tags; pins are commit shas) | `git ls-remote https://github.com/SpyglassMC/vanilla-mcdoc`; `vendor/vanilla-mcdoc/SOURCE.json` |
-| mcmeta ref | prefix `26.3`; tags `26.3-summary` and `26.3-registries` | `git ls-remote --tags https://github.com/misode/mcmeta`; `vendor/mcmeta/SOURCE.json` |
-| Resource folder names (`folders.resource`) | `model` → `models`, `block_definition` → `blockstates`, `item_definition` → `items`, `lang` → `lang`, `sounds_file` → `sounds.json`, `textures` → `textures`, `atlases` → `atlases`, `font` → `font` | `@spyglassmc/java-edition` 0.3.70 uri binder (`lib/binder/index.js`, the resource-pack `resource(...)` table that maps folders to the vanilla-mcdoc `minecraft:resource` categories; `sounds` is the file `sounds.json` directly under `assets/<namespace>/`), checked 2026-11-04 |
-| Data folder names (`folders.data`) | every key maps to the folder of the same name: `recipe`, `loot_table`, `advancement`, `predicate`, `item_modifier`, `function`, `tags`, `enchantment`, `damage_type`, `dimension_type`, `chat_type`, `jukebox_song`, `banner_pattern`, `painting_variant`, `trim_material`, `trim_pattern`, `dialog` (singular since 1.21; `tags` is the parent of `tags/<registry>`, for example `tags/item`, `tags/block`, `tags/damage_type`) | `@spyglassmc/java-edition` 0.3.70 uri binder (`lib/binder/index.js`, the data-pack `resource(...)` table: `advancement`, `function`, `item_modifier`, `loot_table`, `predicate`, `recipe` and `tags/<block,entity_type,fluid,function,game_event,item>` `since: '1.21'`; `enchantment` and `jukebox_song` and `painting_variant` `since: '1.21'`; `banner_pattern` `since: '1.20.5'`; `chat_type` `since: '1.19'`; `damage_type`, `trim_material`, `trim_pattern` `since: '1.19.4'`; `dialog` `since: '1.21.6'`; `dimension_type` `since: '1.16'`; other taggable registries as `tags/<registry>` `since: '1.18'`; none has an `until` at or before 26.3), checked 2026-11-04 |
-| Data folder names, Phase 3 (`folders.data.structure`, `dimension`, `worldgen`) | `structure` → `structure` (`.nbt` files), `dimension` → `dimension`, `worldgen` → `worldgen` (the parent of `worldgen/<registry>`, for example `worldgen/biome`, `worldgen/feature`, `worldgen/template_pool`) | `@spyglassmc/java-edition` 0.3.70 uri binder (`lib/binder/index.js`): `resource('structure', { since: '1.21', ext: '.nbt' })` (`resource('structures', { category: 'structure', until: '1.21', ext: '.nbt' })` before); `resource('dimension', { since: '1.16' })`; `resource('worldgen/biome', { since: '1.16.2' })`, `resource('worldgen/feature', { since: '26.3' })` (replacing `resource('worldgen/configured_feature', { since: '1.16.2', until: '26.3' })`), `resource('worldgen/carver', { since: '26.3' })` (replacing `worldgen/configured_carver`, `until: '26.3'`), `resource('worldgen/block_state_provider', { since: '26.3' })`, `resource('worldgen/material_condition', { since: '26.3' })`, `resource('worldgen/material_rule', { since: '26.3' })`, and `worldgen/placed_feature`, `structure`, `structure_set`, `template_pool`, `processor_list`, `noise_settings`, `density_function`, `noise`, `world_preset`, `flat_level_generator_preset`, `multi_noise_biome_source_parameter_list` with no `until`; checked 2026-11-04 |
-| `dataVersion` | `5023` | mcmeta `version.json` (`data_version`), tag `26.3-summary`; asserted by `test/target.test.ts`; checked 2026-11-04 |
-| `worldgen.featureSteps` | `raw_generation`, `lakes`, `local_modifications`, `underground_structures`, `surface_structures`, `strongholds`, `underground_ores`, `underground_decoration`, `fluid_springs`, `vegetal_decoration`, `top_layer_modification` (11, in game order) | vendored vanilla-mcdoc `::java::data::worldgen::DecorationStep` enum (values in declaration order, which follows the game's decoration step enum); asserted by `test/target.test.ts`; checked 2026-11-04 |
-| `worldgen.biomeAttributes` | colours `minecraft:visual/sky_color`, `minecraft:visual/fog_color`, `minecraft:visual/water_fog_color` (sky first is `skyColour`); `naturalMobSpawns` `minecraft:gameplay/natural_mob_spawns`. The biome `effects.sky_color`, `fog_color` and `water_fog_color` fields are `until 1.21.11`; spawns moved from `spawners`/`spawn_costs` into the attribute in 26.3 | vendored vanilla-mcdoc: `minecraft:environment_attribute` dispatcher (colour members are `RGBColorAttribute`; `gameplay/natural_mob_spawns` is `MergeableAttribute<NaturalMobSpawns>`, `since 26.3`), `::java::data::worldgen::biome::BiomeEffects` field gates; mcmeta `registries.json` `environment_attribute`; asserted by `test/target.test.ts`; checked 2026-11-04 |
-| `fabric` (Loader, Fabric API, Loom) | loader `0.20.1`, API `0.165.2+26.3`, Loom `1.19.3` | meta.fabricmc.net `/v2/versions/loader/26.3`, maven.fabricmc.net `fabric-api` metadata and Loom plugin markers, FabricMC example mod branch `26.3`; checked 2026-11-05 (ADR 0027) |
-| `fabric.minecraftDependency` | `~26.3` | (verify at implementation) |
-| `geckolib` | version `5.5.7`, mod id `geckolib`, `>=5.5.7`, `geckolib-fabric-26.3-5.5.7.jar`, Modrinth version `kSxHvs99`, SHA-512 `c7c89bd6…8c158fc5` | Modrinth API `project/geckolib/version` (Fabric, 26.3) and CDN; jar downloaded, hashed and its `fabric.mod.json` read; checked 2026-11-05 (ADR 0030) |
-| GeckoLib | not set (Phase 5) | (verify at implementation) |
+| `mcVersion` | `26.4-snapshot-7` (the target id is `mc-26.4`: the version up to the first `-`) | `piston-meta.mojang.com` version manifest; misode/mcmeta tag `26.4-snapshot-7-summary`, `version.json` |
+| Data pack format | `126.0` | mcmeta `version.json`; asserted by `test/mcmeta.test.ts` |
+| Resource pack format | `102.0` | mcmeta `version.json`; asserted by `test/mcmeta.test.ts` |
+| `dataVersion` | `5127` | mcmeta `version.json` (`data_version`) |
+| Java | 25 | the snapshot's client manifest (`javaVersion.majorVersion`); asserted by `test/target.test.ts` |
+| vanilla-mcdoc ref | commit `1a674539af7150444db0e2fa8fc46318f91ed86b` (build mode) | `vendor/vanilla-mcdoc/SOURCE.json` |
+| mcmeta ref | `26.4-snapshot-7`; tags `26.4-snapshot-7-summary` and `26.4-snapshot-7-registries` | `vendor/mcmeta/SOURCE.json` |
+| Folders, `worldgen.featureSteps`, `worldgen.biomeAttributes` | as 26.3 | Spyglass uri binder (no folder of ours has `until: '26.4'`; `block_sound_set` is added since 26.4); the schema-load and coverage tests over the vendored mcdoc |
+| `fabric` | loader `0.20.1`, API `0.165.4+26.4`, Loom `1.19.3`, Gradle `9.8.2` | meta.fabricmc.net, maven.fabricmc.net; Loom 1.19.3 builds the runtime against the snapshot (B151) |
+| `fabric.minecraftDependency` | `>=26.4- <26.5-` | B151: Fabric Loader reports the game as `26.4-alpha.7`; the range loads on the snapshot server, `~26.4` does not; it also admits the release (ADR 0037 Status) |
+| `geckolib` | not set: Modrinth lists no GeckoLib build for any 26.4 snapshot | Modrinth API; the content jar export reports `export.no-geckolib-target`, and the library hides the Custom mob starter and the entity examples |
+| `javaProject` | not set: the 26.3 generator's Java does not compile against 26.4 | B151: `SoundType` is gone (block sounds are the data-driven `block_sound_set` registry), entity renderers register through the client registry; the java-project export reports `export.no-java-project-target` |
 
 ## Vendored data
 
 - `vendor/vanilla-mcdoc/symbols.json`: Spyglass symbol export, regenerated by `tools/sync-mcdoc`.
-- `vendor/mcmeta/version.json` and `vendor/mcmeta/registries.json`: regenerated by `tools/sync-mcmeta`. Registry ids are stored without the `minecraft:` namespace.
+- `vendor/mcmeta/`: `version.json`, `registries.json`, `commands.json`, `blocks.json`, regenerated by `tools/sync-mcmeta`. Registry ids are stored without the `minecraft:` namespace.
 
-## What changed from 26.2
+## What changed from 26.3
 
-- Pack formats: (verify at implementation)
-- Data-driven registries and JSON formats: (verify at implementation)
-- Model and asset formats: (verify at implementation)
-- Fabric toolchain: (verify at implementation)
+- Registries (190 → 192): `rule_test` became `rule_test_type` with the same members; `block_sound_set` and `tag/block_sound_set` are new.
+- Removed members (`src/removed-ids.ts`, tied to the diff of both vendored files by `test/removed-ids.test.ts`): `fluid` `flowing_water`, `flowing_lava`; `worldgen/feature_type` `large_dripstone` (the configured and placed features of that name remain); `worldgen/density_function_type` `interpolated`; `particle_type` `item_snowball`; `model` `block/cube_top`; `sound_event` `intentionally_empty`; `tag/entity_type` `freeze_immune_entity_types`, `ignores_poison_and_regen`; eight GUI sprite textures. `migrateFrom` reports each as `target.removed-id`.
+- Known rename: feature type `large_dripstone` → `large_speleothem`, whose config gained the required `base_block`, so the migration reports it with a hint instead of rewriting it.
+- Data formats: noise settings lost `default_block` (`until 26.4` in the vendored mcdoc), so the 26.3-shaped default data of `minecraft:worldgen/noise_settings` reports one unknown field on this target. `LargeSpeleothemConfig.base_block` is new. Everything else is additions (25 blocks, 28 items, biome `ice_caves`, entities `frostbite` and `ice_ball`, effect `freezing`).

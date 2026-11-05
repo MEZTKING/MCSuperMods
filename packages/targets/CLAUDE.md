@@ -1,10 +1,10 @@
 # packages/targets — Minecraft version targets
 
-Phase 2 code complete: `mc-26.3/` with `Target.folders.resource` and `folders.data` (plugin-api 0.3.0, ADR 0017), the vendored command tree and block states, and the `@msm/targets` aggregator in `all/` (ADR 0013). Phase 3 (plugin-api 0.5.0, ADR 0022): `dataVersion` 5023, data folders `structure`, `dimension`, `worldgen`, and `worldgen` facts: `featureSteps` (the eleven decoration steps) and `biomeAttributes` (`WorldgenFacts.biomeAttributes`: the `minecraft:visual/*` colour attributes, `skyColour`, `naturalMobSpawns` = `minecraft:gameplay/natural_mob_spawns`), verified against the vendored mcdoc and mcmeta. Phase 4 code complete (plugin-api 0.6.0, ADR 0027): `fabric` facts loader 0.20.1, Fabric API 0.165.2+26.3, Loom 1.19.3 (verified 2026-11-05) and `minecraftDependency` `~26.3`, the only source of these versions for the exporter and `tools/run-fabric-server`. Phase 5 code complete (plugin-api 0.7.0, ADR 0030): `geckolib` facts (GeckoLib 5.5.7, `>=5.5.7`, jar file name, Modrinth CDN URL, SHA-512, version id `kSxHvs99`; verified 2026-11-05), read by the exporter, the app's download and CI. Phase 6 code complete (plugin-api 0.8.0, ADR 0034): `fabric.gradle` 9.8.2 (equals the engine-mod wrapper, checked by a test) and `javaProject`, the 26.3 Java generator in `mc-26.3/src/java-project/` (ADR 0033 D3; goldens from the runtime's GameTest definitions). A second target (`mc-26.2/`) arrives in Phase 7.
+Phase 2 code complete: `mc-26.3/` with `Target.folders.resource` and `folders.data` (plugin-api 0.3.0, ADR 0017), the vendored command tree and block states, and the `@msm/targets` aggregator in `all/` (ADR 0013). Phase 3 (plugin-api 0.5.0, ADR 0022): `dataVersion` 5023, data folders `structure`, `dimension`, `worldgen`, and `worldgen` facts: `featureSteps` (the eleven decoration steps) and `biomeAttributes` (`WorldgenFacts.biomeAttributes`: the `minecraft:visual/*` colour attributes, `skyColour`, `naturalMobSpawns` = `minecraft:gameplay/natural_mob_spawns`), verified against the vendored mcdoc and mcmeta. Phase 4 code complete (plugin-api 0.6.0, ADR 0027): `fabric` facts loader 0.20.1, Fabric API 0.165.2+26.3, Loom 1.19.3 (verified 2026-11-05) and `minecraftDependency` `~26.3`, the only source of these versions for the exporter and `tools/run-fabric-server`. Phase 5 code complete (plugin-api 0.7.0, ADR 0030): `geckolib` facts (GeckoLib 5.5.7, `>=5.5.7`, jar file name, Modrinth CDN URL, SHA-512, version id `kSxHvs99`; verified 2026-11-05), read by the exporter, the app's download and CI. Phase 6 code complete (plugin-api 0.8.0, ADR 0034): `fabric.gradle` 9.8.2 (equals the engine-mod wrapper, checked by a test) and `javaProject`, the 26.3 Java generator in `mc-26.3/src/java-project/` (ADR 0033 D3; goldens from the runtime's GameTest definitions). Phase 7 (plugin-api 1.0.0, ADRs 0036, 0037): `channel` on every target and the second target `mc-26.4/` (snapshot `26.4-snapshot-7`, no `geckolib`, no `javaProject`, `migrateFrom` from 26.3).
 
 ## Purpose
 
-One package per Minecraft version, `@msm/target-mc-<version>`, holding every version-specific fact and its vendored schema and registry data. This is the only place in the repo where version facts live. Support policy: the current release plus the previous one (26.3 and 26.2 at launch).
+One package per Minecraft version, `@msm/target-mc-<version>`, holding every version-specific fact and its vendored schema and registry data. This is the only place in the repo where version facts live. Support policy (ADR 0037 D1): the current release and the next version's snapshots (release when it lands): `mc-26.3` (`channel: 'release'`) and `mc-26.4` (`channel: 'snapshot'`).
 
 ## Contents
 
@@ -13,8 +13,8 @@ One package per Minecraft version, `@msm/target-mc-<version>`, holding every ver
 - `mc-26.3/vendor/vanilla-mcdoc/`: Spyglass symbol export, `LICENSE`, `SOURCE.json` (ADR 0005).
 - `mc-26.3/vendor/mcmeta/`: `version.json`, `registries.json`, `commands.json` (pretty-printed, about 583 kB), `blocks.json`, `SOURCE.json` (ADR 0006).
 - `mc-26.3/CHANGES.md`: verified facts with sources, and what Mojang changed that affected us.
-- `all/src/index.ts` (`@msm/targets`): `builtInTargets`, `defaultTargetId`, `targetById`, `readVendoredJson`. The only way code outside this tree reaches a target; plugin and exporter `src/` may not import it (tests only). The app's main build bundles vendored data into `out/main/vendor/`.
-- Later: `migrateFrom(previousTarget)` hooks for breaking changes between versions.
+- `mc-26.4/`: same layout; `src/removed-ids.ts` (registry → ids removed since 26.3, moved registries, ids still registered elsewhere, known renames) and `src/migrate.ts` (`migrateFrom`: `target.removed-id` with element and RFC 6901 path, renames applied only when the mcdoc shape matches, `target.no-migration-path` from an unknown target).
+- `all/src/index.ts` (`@msm/targets`): `builtInTargets` (newest first by `mcVersion`, snapshots included), `releaseTargets`, `defaultTargetId` (the first `release` target, never a snapshot), `targetById`, `targetFacts` (hooks stripped, safe to `structuredClone`), `readVendoredJson`. The only way code outside this tree reaches a target; plugin and exporter `src/` may not import it (tests only). The app's main build bundles every target's vendored data into `out/main/vendor/`.
 
 ## Conventions
 
@@ -24,11 +24,14 @@ One package per Minecraft version, `@msm/target-mc-<version>`, holding every ver
 - vanilla-mcdoc has no tags: pin a commit sha. mcmeta refs are the tags `<version>-summary` / `<version>-registries`.
 - Registry ids in `registries.json` have no namespace; consumers add `minecraft:`.
 - Mark every unverified value "(verify at implementation)"; record verified ones with date and source in `CHANGES.md`.
-- Target changes are handled at lowering time, not by project file migrations.
+- Target changes are handled at lowering time; moving a project to another target goes through that target's `migrateFrom` (pure; the host applies the report as one undo step).
+- The target id is `mc-` plus `mcVersion` up to the first `-` (`26.4-snapshot-7` → `mc-26.4`); that key also names the runtime jar.
+- The removed-id table is data, never hand-guessed: `mc-26.4/test/removed-ids.test.ts` recomputes the diff of both vendored `registries.json` files and the mcdoc shape of each rename.
 
 ## Do / Don't
 
 - Do add a version by copying the previous folder, updating facts and pins, re-running both sync scripts, and running the tests.
+- Do re-pin a snapshot target (and at release: `mcVersion`, `channel: 'release'`, GeckoLib) with `sync-mcmeta` and `sync-mcdoc`, then both target test suites, the removed-id test (update `removed-ids.ts` to the new diff) and `UPDATE_GOLDENS=1` for the plugin and exporter goldens of that target.
 - Do keep the real-data tests: schema load and coverage (zero unsupported nodes in Phase 2 and Phase 3 kinds), loot validation and the mcfunction service over the vendored data.
 - Don't let version facts leak into any other package (`tools/check-deps` enforces this).
 - Don't add pre-26.1 targets in v1.

@@ -14,7 +14,7 @@ Thresholds are the `BUDGETS` constant in `index.ts` (binary units: 1 MB = 1024 �
 
 | Budget | Threshold | Why |
 |---|---|---|
-| `app.asar` in `app/dist/<platform>-unpacked/resources/` | ≤ 25 MB | Everything MSM ships besides Electron itself: main, preload, renderer and their bundled dependencies. About 10 MB at Phase 1. |
+| `app.asar` in `app/dist/<platform>-unpacked/resources/` | ≤ 32 MB | Everything MSM ships besides Electron itself: main (16.3 MB with two targets: about 5.7 MB of code, including the lazy 3.7 MB scripting engine, plus the vendored data of every built-in target, about 5.3 MB each, so about 11 MB for two: mcdoc symbols 3.4 MB, mcmeta 1.9 MB), preload, and the renderer (about 13 MB). Raised from 25 MB in Phase 7 for the second target (ADR 0037); 29.3 MB with two targets (B153). The next step, if it keeps growing, is moving the vendored data out of the asar into `extraResources` (reserve B166). |
 | Renderer output, `app/out/renderer/` in total | ≤ 16 MB | Keeps Monaco and the deepslate preview lazy and stops accidental bundling. About 5.6 MB at Phase 1, of which Monaco is most; raised from 8 MB in Phase 6 for the lazy Monaco TypeScript worker of the Script Studio, about 7 MB on its own (ADR 0031 D6). |
 | Monaco TypeScript worker | a separate chunk | A renderer file whose name contains `ts.worker` must exist: the worker loads only with the script editor, never with the main bundle. |
 | Any `*.json` in `app/out/renderer/` | ≤ 100 kB each | Vendored target data (mcdoc symbols, registries) is read by main, not bundled into the renderer. |

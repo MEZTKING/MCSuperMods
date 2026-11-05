@@ -106,7 +106,7 @@ export const NO_EXTERNAL_PLUGINS: ExternalPluginSet = Object.freeze({
   terminate: () => undefined,
 });
 
-const OUTPUT_LAYERS: ReadonlySet<string> = new Set(['resource', 'data', 'msm']);
+const OUTPUT_LAYERS: ReadonlySet<string> = new Set(['resourcepack', 'datapack', 'msm']);
 const SEVERITIES: ReadonlySet<string> = new Set(['error', 'warning', 'info']);
 
 const facts = new WeakMap<object, TargetFacts>();

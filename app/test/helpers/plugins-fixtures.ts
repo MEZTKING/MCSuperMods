@@ -49,7 +49,7 @@ export function vmWorkers(globals: Record<string, unknown> = {}): VmWorkers {
           for (const listener of listeners) listener({ data: structuredClone(data) });
         });
       };
-      context = createContext({
+      const own = createContext({
         TextEncoder,
         TextDecoder,
         Uint8Array,
@@ -65,9 +65,10 @@ export function vmWorkers(globals: Record<string, unknown> = {}): VmWorkers {
         },
         ...globals,
       }) as Record<string, unknown>;
+      context = own;
       queueMicrotask(() => {
         try {
-          runInContext(source, context);
+          runInContext(source, own);
         } catch (error) {
           if (terminated) return;
           for (const listener of hostListeners.error ?? []) listener({ message: String(error) });
@@ -113,7 +114,7 @@ defineMsmPlugin({
         if (element.data.message === 'hang') return new Promise(() => undefined);
         return [{
           path: 'data/' + ns + '/function/greet_' + path + '.mcfunction',
-          layer: 'data',
+          layer: 'datapack',
           language: 'mcfunction',
           contents: encoder.encode('tellraw @a {"text":"' + element.data.message + '"}\\n'),
           hasFns: typeof target.migrateFrom,
@@ -156,7 +157,7 @@ defineMsmPlugin({
     exporters: [{
       id: 'sample.notes',
       displayName: 'Greeting notes',
-      layers: ['data'],
+      layers: ['datapack'],
       async run(input) {
         await input.sink.writeFile('notes.txt', encoder.encode(input.files.map((f) => f.path).join('\\n')));
         input.problems.report({ severity: 'info', code: 'sample.exported', message: 'One file.' });
