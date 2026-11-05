@@ -1,7 +1,13 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CommandStack, commands, createMemoryFileSystem, type Project } from '@msm/core';
+import {
+  CommandStack,
+  commands,
+  createMemoryFileSystem,
+  type Element,
+  type Project,
+} from '@msm/core';
 import { describe, expect, it } from 'vitest';
 import { newSession, nodeMcfunctionChecker } from './session-fixture';
 
@@ -69,6 +75,30 @@ describe('ProjectSession.checkProject (ADR 0041 D4)', () => {
     expect(
       session.problemsFor('msm_sample_mod:ruby_ore').filter((p) => p.severity === 'error'),
     ).toEqual([]);
+  }, 60_000);
+
+  it('reports lowering conflicts: a second mod metadata element in another namespace (B192)', async () => {
+    const session = await openSampleMod();
+    const project = session.snapshot.project as Project;
+    const live = await session.checkProject(project);
+    expect(live.filter((problem) => problem.code.startsWith('lowering.'))).toEqual([]);
+    const mod = project.namespaces
+      .flatMap((namespace) => namespace.elements)
+      .find((element) => element.kind === 'msm:mod');
+    expect(mod).toBeDefined();
+    const stack = new CommandStack(project);
+    stack.execute(commands.addNamespace('zzz_extra'));
+    stack.execute(
+      commands.addElement({ ...structuredClone(mod as Element), id: 'zzz_extra:mod' }),
+    );
+    const problems = await session.checkProject(stack.state);
+    const conflicts = problems.filter((problem) => problem.code === 'lowering.conflict');
+    expect(conflicts.length).toBeGreaterThan(0);
+    expect(conflicts.every((problem) => problem.severity === 'error')).toBe(true);
+    expect(conflicts.some((problem) => problem.elementId === 'zzz_extra:mod')).toBe(true);
+    expect(conflicts.some((problem) => problem.message.includes('fabric.mod.json'))).toBe(true);
+    // The live project is untouched.
+    expect(session.problemsFor('zzz_extra:mod')).toEqual([]);
   }, 60_000);
 
   it('validates element data against a given project (schema pass only)', async () => {

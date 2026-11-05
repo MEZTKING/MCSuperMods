@@ -2,6 +2,7 @@
   "formatVersion": 1,
   "name": "Painting",
   "namespaces": [
+    "minecraft",
     "msm_starter"
   ],
   "plugins": [

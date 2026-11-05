@@ -818,6 +818,11 @@ describe('Creator flows', () => {
       'painting.demo.lake.author': 'You',
       'painting.demo.lake.title': 'Lake',
     });
+    // The variant joins #minecraft:placeable, so a placed painting item can pick it (B192).
+    const placeable = picked.elements.find((entry) => entry.id === 'minecraft:placeable');
+    expect(placeable?.kind).toBe('minecraft:tag/painting_variant');
+    expect(placeable?.data).toEqual({ values: ['demo:lake'] });
+    expect(picked.elements.find((entry) => entry.id === 'demo:lake')?.notes).not.toMatch(/give/);
   });
 
   it('Music disc: a real disc item by default, music disc 13 for vanilla packs', () => {

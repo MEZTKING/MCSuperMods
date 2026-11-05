@@ -1,0 +1,20 @@
+{
+  "data": {
+    "values": [
+      "minecraft:sunset",
+      "minecraft:sea",
+      "minecraft:lowmist"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:landscapes",
+  "kind": "minecraft:tag/painting_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A painting_variant tag gives one name to several painting_variant ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. A placed painting item picks a random variant from the vanilla tag #minecraft:placeable; a tag of your own such as #msm_examples:landscapes is for grouping and reuse.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

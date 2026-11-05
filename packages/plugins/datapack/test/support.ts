@@ -38,6 +38,7 @@ export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
   'tag/fluid': ['example:others'],
   'tag/function': ['example:others'],
   'tag/game_event': ['example:others'],
+  'tag/painting_variant': ['example:others'],
   'tag/item': ['demo:gems', 'example:others'],
   'tag/worldgen/biome': ['example:others'],
   'tag/worldgen/structure': ['example:others'],

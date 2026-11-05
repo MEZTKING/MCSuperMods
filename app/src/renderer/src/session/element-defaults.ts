@@ -5,7 +5,7 @@
  * @packageDocumentation
  */
 
-import { type Json, parseResourceLocation, type ResourceLocation } from '@msm/core';
+import { type Json, type Project, parseResourceLocation, type ResourceLocation } from '@msm/core';
 
 /** The placeholder some kinds use in `defaultData` for an id the app must fill in. */
 export const APP_PLACEHOLDER = '<set by the app>';
@@ -15,6 +15,29 @@ export const SOUNDS_KIND = 'minecraft:sounds';
 
 /** The kind of the project's `pack.mcmeta` element. */
 export const PACK_MCMETA_KIND = 'minecraft:pack_mcmeta';
+
+/** The kind of the project's mod metadata element. */
+export const MOD_METADATA_KIND = 'msm:mod';
+
+/**
+ * Kinds a project holds at most one element of, in any namespace: two would write the same
+ * output file (`pack.mcmeta`, `fabric.mod.json`) and clash on export (`lowering.conflict`).
+ */
+export const SINGLETON_KINDS: readonly string[] = [PACK_MCMETA_KIND, MOD_METADATA_KIND];
+
+/**
+ * The singleton kinds ({@link SINGLETON_KINDS}) `project` already has an element of. A
+ * starter or example added to the project leaves out its own elements of these kinds.
+ */
+export function presentSingletonKinds(project: Project): Set<string> {
+  const present = new Set<string>();
+  for (const namespace of project.namespaces) {
+    for (const element of namespace.elements) {
+      if (SINGLETON_KINDS.includes(element.kind)) present.add(element.kind);
+    }
+  }
+  return present;
+}
 
 /**
  * A namespace name derived from a folder name: lower case, every run of characters outside

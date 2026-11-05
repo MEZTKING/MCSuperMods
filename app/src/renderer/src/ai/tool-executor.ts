@@ -50,10 +50,10 @@ import {
 } from '../changeset/changeset';
 import { defaultRawValues, toValues, validateParameter } from '../components/wizard/wizard-model';
 import { assetImportError } from '../session/asset-files';
-import { assertElementIdAllowed, PACK_MCMETA_KIND } from '../session/element-defaults';
+import { assertElementIdAllowed, presentSingletonKinds } from '../session/element-defaults';
 import type { ProjectSession } from '../session/project-session';
 import { templateContext, templatesFor } from '../studios/templates';
-import { MOD_KIND, projectContextOf } from './project-context';
+import { projectContextOf } from './project-context';
 import { KIND_SCHEMA_SUMMARY_OPTIONS, kindSchemaSummary } from './schema-summary';
 
 /** What the executor asks the user (the panel answers; ADR 0041 D4 user-decision tools). */
@@ -233,9 +233,6 @@ function rawParameterValue(
 }
 
 /** Rejects with `cancelled` when `signal` aborts first. */
-/** Kinds a project holds at most one element of; `add_starter` keeps the project's own. */
-const SINGLETON_KINDS: readonly string[] = [PACK_MCMETA_KIND, MOD_KIND];
-
 function withSignal<T>(work: () => Promise<T>, signal: AbortSignal): Promise<T> {
   if (signal.aborted) return Promise.reject(new ToolError(ToolErrorCodes.cancelled, 'cancelled'));
   return new Promise<T>((resolve, reject) => {
@@ -925,10 +922,8 @@ export function createToolExecutor(
         // A project has one pack.mcmeta and one mod metadata element: a starter's own are
         // dropped (and reported as conflicts) when the project or the changeset has one, in
         // any namespace, as they would clash on export.
-        const singletons = SINGLETON_KINDS.filter((kind) =>
-          state.namespaces.some((entry) => entry.elements.some((e) => e.kind === kind)),
-        );
-        const dropped = bundle.elements.filter((entry) => singletons.includes(entry.kind));
+        const singletons = presentSingletonKinds(state);
+        const dropped = bundle.elements.filter((entry) => singletons.has(entry.kind));
         created = bundleToNewItems(
           { ...bundle, elements: bundle.elements.filter((entry) => !dropped.includes(entry)) },
           state,

@@ -23,6 +23,7 @@ import {
   isValidNamespace,
   type Json,
   loadProject,
+  lowerProjectAsync,
   mediaTypeForPath,
   type Problem,
   ProblemCodes,
@@ -100,6 +101,7 @@ import {
   defaultElementData,
   namespaceFromFolderName,
   PACK_MCMETA_KIND,
+  presentSingletonKinds,
 } from './element-defaults';
 import {
   collectImporters,
@@ -360,7 +362,10 @@ export interface AddBundleOptions {
 export interface AddBundleResult {
   /** Element ids added, in bundle order. */
   added: ResourceLocation[];
-  /** Element ids skipped because the project (or the bundle, earlier) already has them. */
+  /**
+   * Element ids skipped because the project (or the bundle, earlier) already has them, or,
+   * for `pack.mcmeta` and mod metadata elements, already has one of that kind.
+   */
   duplicates: ResourceLocation[];
   /** Assets written and recorded, as `<namespace>:<path>`. */
   assets: string[];
@@ -401,6 +406,24 @@ interface PreparedBundle {
   duplicates: ResourceLocation[];
   assets: { namespace: string; path: string; bytes: Uint8Array }[];
   skippedAssets: string[];
+}
+
+/**
+ * `bundle` without its elements of the singleton kinds `state` already has
+ * ({@link presentSingletonKinds}), and the ids left out.
+ */
+function withoutPresentSingletons(
+  bundle: ContentBundle,
+  state: Project,
+): { bundle: ContentBundle; dropped: ResourceLocation[] } {
+  const present = presentSingletonKinds(state);
+  if (present.size === 0) return { bundle, dropped: [] };
+  const dropped = bundle.elements.filter((entry) => present.has(entry.kind));
+  if (dropped.length === 0) return { bundle, dropped: [] };
+  return {
+    bundle: { ...bundle, elements: bundle.elements.filter((entry) => !present.has(entry.kind)) },
+    dropped: dropped.map((entry) => entry.id),
+  };
 }
 
 function dedupeById<T extends { id: string }>(entries: readonly T[]): T[] {
@@ -543,6 +566,12 @@ export const SessionProblemCodes = {
  * history survives a save.
  */
 export const ASSET_TRASH_DIR = '.msm/trash';
+
+/** Lowering problem codes {@link ProjectSession.checkProject} reports. */
+const LOWERING_CONFLICT_CODES: ReadonlySet<string> = new Set([
+  ProblemCodes.loweringConflict,
+  ProblemCodes.loweringMergeConflict,
+]);
 
 /** `namespace` + asset `path` pairs of a project, keyed `<ns>\u0000<path>`. */
 function assetKeys(project: Project | null): Set<string> {
@@ -1098,7 +1127,9 @@ export class ProjectSession {
    * is built for `options.namespace`; its asset bytes are written immediately (like
    * {@link importAssets}), then its elements, asset records and any namespaces the project
    * lacks go in as one undoable command. Element ids and asset paths the project already has
-   * are skipped and reported, not thrown.
+   * are skipped and reported, not thrown. So are the bundle's `pack.mcmeta` and mod metadata
+   * elements when the project already has one of that kind in any namespace (they would
+   * write the same file; reported under `duplicates`).
    *
    * @throws Error If no project is open, the namespace is invalid, or the bundle fails to
    *   build or check (nothing is added then).
@@ -1117,16 +1148,22 @@ export class ProjectSession {
       target: this.target,
       values: defaultValues(source),
     });
-    const prepared = prepareBundle(bundle, stack.state, this.registry, this.#now);
+    const prepared = prepareBundle(
+      withoutPresentSingletons(bundle, stack.state).bundle,
+      stack.state,
+      this.registry,
+      this.#now,
+    );
     await this.#writeBundleAssets(prepared);
     // The state may have moved on while the bytes were written: check again.
-    const current = prepareBundle(bundle, stack.state, this.registry, this.#now);
+    const kept = withoutPresentSingletons(bundle, stack.state);
+    const current = prepareBundle(kept.bundle, stack.state, this.registry, this.#now);
     if (current.elements.length > 0 || current.assets.length > 0) {
       stack.execute(bundleCommand(current, options.label ?? `Copy example ${source.title}`));
     }
     return {
       added: current.elements.map((element) => element.id),
-      duplicates: current.duplicates,
+      duplicates: [...kept.dropped, ...current.duplicates],
       assets: current.assets.map((asset) => `${asset.namespace}:${asset.path}`),
       skippedAssets: current.skippedAssets,
     };
@@ -1422,7 +1459,10 @@ export class ProjectSession {
    * The full check of an arbitrary project, as the live pass runs it over the open one: the
    * schema pass per element (with the registries and dangling `#[id]` references of
    * `project`), the mcfunction checker and the TypeScript check for elements without schema
-   * errors, then every plugin validator. Problems are in element order, then validator order.
+   * errors, then every plugin validator, then the lowering conflicts (two elements writing one
+   * output file, `lowering.conflict` and `lowering.merge-conflict`, found by lowering in
+   * memory as the export does). Problems are in element order, then validator order, then
+   * lowering order.
    * Changes no session state and publishes nothing. A failing schema load is returned as one
    * `schema.unavailable` warning.
    */
@@ -1468,6 +1508,7 @@ export class ProjectSession {
     }
     const input = this.#validatorInput(context, project);
     const results = await Promise.all(this.#validators.map((entry) => runValidator(entry, input)));
+    const lowering = await this.#loweringConflicts(project, context.target);
     return [
       ...(scriptFailure === undefined
         ? []
@@ -1480,7 +1521,19 @@ export class ProjectSession {
           ]),
       ...elementProblems,
       ...results.flat(),
+      ...lowering,
     ];
+  }
+
+  /**
+   * The lowering conflicts of `project`: two elements writing one output file
+   * (`lowering.conflict`) or merging it with disagreeing keys (`lowering.merge-conflict`), as
+   * the export's lowering step finds them. Lowers in memory only; other lowering problems
+   * (unknown kinds, failing `lower` calls) are left to the export gate.
+   */
+  async #loweringConflicts(project: Project, target: Target): Promise<Problem[]> {
+    const lowered = await lowerProjectAsync(project, this.registry, target);
+    return lowered.problems.filter((problem) => LOWERING_CONFLICT_CODES.has(problem.code));
   }
 
   /**

@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "replace": false,
+    "values": [
+      "minecraft:sunset",
+      "#minecraft:placeable",
+      "#example:others",
+      {
+        "id": "minecraft:sunset",
+        "required": false
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/tags/painting_variant/mixed.json",
+  "schema": "tag:painting_variant"
+}

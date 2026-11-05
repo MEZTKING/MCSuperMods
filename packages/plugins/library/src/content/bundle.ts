@@ -42,6 +42,7 @@ export const KINDS = Object.freeze({
   tagFunction: 'minecraft:tag/function',
   tagDamageType: 'minecraft:tag/damage_type',
   tagEnchantment: 'minecraft:tag/enchantment',
+  tagPaintingVariant: 'minecraft:tag/painting_variant',
   tagWorldgenBiome: 'minecraft:tag/worldgen/biome',
   tagWorldgenStructure: 'minecraft:tag/worldgen/structure',
   tagWorldgenWorldPreset: 'minecraft:tag/worldgen/world_preset',

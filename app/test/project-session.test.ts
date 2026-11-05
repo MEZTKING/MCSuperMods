@@ -643,6 +643,37 @@ describe('ProjectSession: library (ADR 0020)', () => {
     );
   });
 
+  it('leaves out the bundle pack.mcmeta and mod metadata when the project has one (B192)', async () => {
+    const { session } = newSession(createMemoryFileSystem());
+    await session.newProject();
+    const starterIn = (namespace: string): ContentBundleBuilder => ({
+      title: 'Second namespace',
+      build: () => ({
+        elements: [
+          {
+            id: `${namespace}:pack`,
+            kind: 'minecraft:pack_mcmeta',
+            data: { pack: { description: 'Second' } },
+          },
+          { id: `${namespace}:mod`, kind: 'msm:mod', data: { mod_id: namespace } },
+          { id: `${namespace}:hello`, kind: 'minecraft:function', data: { lines: ['say hi'] } },
+        ],
+        assets: [],
+      }),
+    });
+    const first = await session.addBundle(starterIn('gems'), { namespace: 'gems' });
+    expect(first.added).toEqual(['gems:mod', 'gems:hello']);
+    expect(first.duplicates).toEqual(['gems:pack']);
+    const second = await session.addBundle(starterIn('ores'), { namespace: 'ores' });
+    expect(second.added).toEqual(['ores:hello']);
+    expect(second.duplicates).toEqual(['ores:pack', 'ores:mod']);
+    const kinds = (session.snapshot.project?.namespaces ?? []).flatMap((namespace) =>
+      namespace.elements.map((element) => element.kind),
+    );
+    expect(kinds.filter((kind) => kind === 'minecraft:pack_mcmeta')).toHaveLength(1);
+    expect(kinds.filter((kind) => kind === 'msm:mod')).toHaveLength(1);
+  });
+
   it('rejects bundle assets that are not valid PNG textures', async () => {
     const { session } = newLibrarySession(createMemoryFileSystem());
     await session.newProject();

@@ -95,6 +95,16 @@ const TAGS: readonly TagExample[] = [
       `Enchantments refer to tags like #${id} in exclusive_set, and loot functions such as enchant_randomly take one in options.`,
   },
   {
+    registry: 'painting_variant',
+    kind: KINDS.tagPaintingVariant,
+    title: 'Painting variant tag',
+    description: 'A group of painting variants; minecraft:placeable lists those a placed painting can pick.',
+    path: 'landscapes',
+    values: ['minecraft:sunset', 'minecraft:sea', 'minecraft:lowmist'],
+    usage: (id) =>
+      `A placed painting item picks a random variant from the vanilla tag #minecraft:placeable; a tag of your own such as #${id} is for grouping and reuse.`,
+  },
+  {
     registry: 'worldgen/biome',
     kind: KINDS.tagWorldgenBiome,
     title: 'Biome tag',

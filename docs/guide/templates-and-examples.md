@@ -153,6 +153,7 @@ The id is the template's identifier (the app uses it as `template-<id>` in tests
 | Game event tag | `tag_game_event` | `minecraft:tag/game_event` | A named group of game events, used as `#<namespace>:<name>`. |
 | Damage type tag | `tag_damage_type` | `minecraft:tag/damage_type` | A named group of damage types, used as `#<namespace>:<name>`. |
 | Enchantment tag | `tag_enchantment` | `minecraft:tag/enchantment` | A named group of enchantments, used as `#<namespace>:<name>`. |
+| Painting variant tag: placeable | `tag_painting_variant_placeable` | `minecraft:tag/painting_variant` | Paintings a placed painting item can pick at random (`minecraft:placeable`); add painting variant ids to `values`. (default name `placeable`; namespace `minecraft`) |
 | Biome tag (has_structure) | `tag_worldgen_biome` | `minecraft:tag/worldgen/biome` | A named group of biomes, used as `#<namespace>:has_structure/<name>` in a structure's `biomes`. (name starts with `has_structure/`) |
 | Structure tag | `tag_worldgen_structure` | `minecraft:tag/worldgen/structure` | A named group of structures, used as `#<namespace>:<name>`. |
 | World preset tag: normal | `tag_worldgen_world_preset_normal` | `minecraft:tag/worldgen/world_preset` | Adds world presets to the create-world screen (`minecraft:normal`); add preset ids to `values`. (default name `normal`; namespace `minecraft`) |
@@ -401,6 +402,7 @@ There is one example for each of the 59 element kinds, six more behaviour exampl
 | Function tag | `example_tag_function` | Tags | `minecraft:tag/function` | A group of functions run together with /function `#<tag>`. |
 | Damage type tag | `example_tag_damage_type` | Tags | `minecraft:tag/damage_type` | A group of damage types, used in damage predicates and enchantments. |
 | Enchantment tag | `example_tag_enchantment` | Tags | `minecraft:tag/enchantment` | A group of enchantments, used for exclusivity and enchanting tables. |
+| Painting variant tag | `example_tag_painting_variant` | Tags | `minecraft:tag/painting_variant` | A group of painting variants; `minecraft:placeable` lists those a placed painting can pick. |
 | Biome tag | `example_tag_worldgen_biome` | Tags | `minecraft:tag/worldgen/biome` | A group of biomes, used to decide where structures generate. |
 | Structure tag | `example_tag_worldgen_structure` | Tags | `minecraft:tag/worldgen/structure` | A group of structures, used by /locate, maps and explorer trades. |
 | World preset tag | `example_tag_worldgen_world_preset` | Tags | `minecraft:tag/worldgen/world_preset` | A group of world presets; `minecraft:normal` lists the World Type choices. |

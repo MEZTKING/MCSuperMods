@@ -4,7 +4,7 @@ Ordinary MSM projects generated from the built-in templates and samples library 
 
 | Folder | Namespace | What it holds |
 |---|---|---|
-| `all-kinds/` | `msm_examples` | One commented example for every element kind of the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations and scripting plugins (59 examples in one project) |
+| `all-kinds/` | `msm_examples` | One commented example for every element kind of the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations and scripting plugins (61 examples in one project) |
 | `blocks-items/` | `msm_examples` | The blocks and items behaviour examples: the Sturdy pickaxe (a tool with its recipe) and the Beacon stone (an event chain that runs a function) |
 | `entities/` | `msm_examples` | The entity behaviour examples: the Brute (a hostile mob that attacks players) and the Meadow Hopper (natural spawning in a biome tag and a biome), each with its geo model, animations, skin and spawn egg texture |
 | `scripts/` | `msm_examples` | The script behaviour examples: Script: scheduled effects (an `msm.schedule` chain of particles over two seconds) and Script: action handler (the Chime Block, whose use event calls a script through a `run_script` action, and the script that defines that handler) |
@@ -26,7 +26,7 @@ Ordinary MSM projects generated from the built-in templates and samples library 
 | `starters/consumable/` | `msm_starter` | The Consumable starter with its default answers: the Ruby Tonic, a drink (`msm:consumable`) that gives speed and regeneration and leaves a glass bottle, its model and bottle texture, a recipe of sweet berries and a glass bottle and its English name |
 | `starters/totem/` | `msm_starter` | The Totem starter with its default answers: the Ruby Totem (`msm:death_protection`) that clears effects and gives regeneration, absorption and fire resistance, its model and texture, a recipe of an emerald and four gold ingots and its English name |
 | `starters/enchantment/` | `msm_starter` | The Enchantment starter with its default answers: Ruby Edge, a sword enchantment up to level 3 that adds damage, its English name and the vanilla tags that offer it at the enchanting table, from librarians and on loot |
-| `starters/painting/` | `msm_starter` | The Painting starter with its default answers: Ruby Sunset, a 2 by 1 painting variant with its English title and author and a placeholder landscape picture |
+| `starters/painting/` | `msm_starter` | The Painting starter with its default answers: Ruby Sunset, a 2 by 1 painting variant with its English title and author, a placeholder landscape picture and its entry in `#minecraft:placeable` |
 | `starters/music-disc-item/` | `msm_starter` | The Music disc starter with its default answers: the Ruby Waltz jukebox song, its sound event and English description, and a real music disc item (`msm:components` with `minecraft:jukebox_playable`) with its model and texture |
 
 The Custom ore, Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Custom mob and Scripted behaviour starters are wizards in the app (New project asks for a name, colours and a few numbers; the Painting asks for a picture), and all but Custom sword are also Creator flows; the folders here hold their default answers.

@@ -3,8 +3,9 @@
  * with an English title and author, a size in blocks from the vanilla sizes and its picture at
  * `textures/painting/<id>.png`: the PNG the user picked (an `image` parameter, written
  * unchanged; the game stretches it over the painting, so any resolution with the painting's
- * proportions works) or a tinted landscape placeholder at 16 pixels per block. No runtime: it
- * works in a resource pack and a data pack. Ids derive from `painting_name`.
+ * proportions works) or a tinted landscape placeholder at 16 pixels per block. The variant
+ * joins the vanilla `#minecraft:placeable` tag, so placed painting items can pick it. No
+ * runtime: it works in a resource pack and a data pack. Ids derive from `painting_name`.
  */
 import type {
   BundleContext,
@@ -132,7 +133,13 @@ export function paintingBundle(context: BundleContext): ContentBundle {
           title: { translate: titleKey, color: 'yellow' },
           author: { translate: authorKey, color: 'gray' },
         },
-        `A painting ${size.width} by ${size.height} blocks. asset_id names its picture, ${texturePath} in this namespace: ${pictureText}. Hang it with /give @s minecraft:painting[minecraft:painting/variant="${id}"]: a painting item without a variant picks a random placeable one, and this painting is not in the vanilla #minecraft:placeable tag.`,
+        `A painting ${size.width} by ${size.height} blocks. asset_id names its picture, ${texturePath} in this namespace: ${pictureText}. It is in the vanilla tag #minecraft:placeable, so a placed painting item can pick it.`,
+      ),
+      element(
+        'minecraft:placeable',
+        KINDS.tagPaintingVariant,
+        { values: [id] },
+        `Adds ${name.display} to the vanilla painting variant tag #minecraft:placeable: a painting item placed on a wall picks a random variant from it that fits the space. Vanilla paintings stay in the tag.`,
       ),
       element(
         rl(namespace, 'en_us'),

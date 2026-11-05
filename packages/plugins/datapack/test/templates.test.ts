@@ -23,7 +23,7 @@ const {
   ...FIRST_TARGET
 } = (builtInTargets[0] as TargetBundle).target;
 
-/** The 55 template ids, in picker order (library plan section 2.1). */
+/** The 56 template ids, in picker order (library plan section 2.1). */
 const IDS = [
   'recipe_shaped',
   'recipe_shapeless',
@@ -65,6 +65,7 @@ const IDS = [
   'tag_game_event',
   'tag_damage_type',
   'tag_enchantment',
+  'tag_painting_variant_placeable',
   'tag_worldgen_biome',
   'tag_worldgen_structure',
   'tag_worldgen_world_preset_normal',
@@ -144,9 +145,9 @@ const byId = (id: string): ElementTemplate => {
 };
 
 describe('data pack templates', () => {
-  it('has the 55 ids in picker order, unique, and contributed by the plugin', () => {
+  it('has the 56 ids in picker order, unique, and contributed by the plugin', () => {
     expect(dataPackTemplates.map((template) => template.id)).toEqual(IDS);
-    expect(new Set(IDS).size).toBe(55);
+    expect(new Set(IDS).size).toBe(56);
     expect(plugin.contributes.elementTemplates?.map((template) => template.id)).toEqual(IDS);
     for (const id of KEPT) expect(IDS).toContain(id);
   });
@@ -203,6 +204,19 @@ describe('data pack templates', () => {
     const context = contextFor(preset);
     expect(context.id).toBe('minecraft:normal');
     expect(preset.data(context)).toEqual({ replace: false, values: [] });
+  });
+
+  it('starts the painting variant tag as the vanilla placeable tag', () => {
+    const placeable = byId('tag_painting_variant_placeable');
+    expect(placeable).toMatchObject({
+      kind: 'minecraft:tag/painting_variant',
+      title: 'Painting variant tag: placeable',
+      defaultNamespace: 'minecraft',
+      defaultName: 'placeable',
+    });
+    const context = contextFor(placeable);
+    expect(context.id).toBe('minecraft:placeable');
+    expect(placeable.data(context)).toEqual({ replace: false, values: [] });
   });
 
   it('hangs child advancements from the project root advancement', () => {

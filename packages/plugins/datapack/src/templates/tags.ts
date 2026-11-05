@@ -1,6 +1,7 @@
 /**
  * Tag templates for every tag registry except `function` (see `functions.ts`), each with two
- * vanilla example values, except the `minecraft:normal` world preset tag, which starts empty.
+ * vanilla example values, except the `minecraft:placeable` painting variant tag and the
+ * `minecraft:normal` world preset tag, which start empty.
  */
 import type { ElementTemplate } from '@msm/plugin-api';
 
@@ -44,6 +45,17 @@ export const tagTemplates: readonly ElementTemplate[] = [
     'minecraft:sharpness',
     'minecraft:smite',
   ]),
+  {
+    id: 'tag_painting_variant_placeable',
+    kind: 'minecraft:tag/painting_variant',
+    category: 'Tags',
+    title: 'Painting variant tag: placeable',
+    description:
+      'Paintings a placed painting item can pick at random (minecraft:placeable); add painting variant ids to "values".',
+    defaultNamespace: 'minecraft',
+    defaultName: 'placeable',
+    data: () => ({ replace: false, values: [] }),
+  },
   {
     ...tag('tag_worldgen_biome', 'worldgen/biome', 'Biome tag (has_structure)', 'biomes', [
       'minecraft:plains',
