@@ -271,7 +271,7 @@ export function choicesAt(
     if (current === undefined) return [];
   }
   const direct = stringChoices(current);
-  if (direct.length > 0) return direct;
+  if (direct.length > 0 || current === undefined) return direct;
   // A union of named values and an object (a tool tier or a custom material, ADR 0042):
   // offer the named values; the object form stays editable in Raw JSON.
   const resolved = resolveNode(current);

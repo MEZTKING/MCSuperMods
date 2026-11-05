@@ -212,7 +212,12 @@ export const resourcePackExamples: readonly ExampleProject[] = [
         ],
         assets: [
           texture(namespace, 'entity/equipment/humanoid/ruby_armour', 'plain', COLOURS.ruby),
-          texture(namespace, 'entity/equipment/humanoid_leggings/ruby_armour', 'plain', COLOURS.ruby),
+          texture(
+            namespace,
+            'entity/equipment/humanoid_leggings/ruby_armour',
+            'plain',
+            COLOURS.ruby,
+          ),
         ],
       };
     },
