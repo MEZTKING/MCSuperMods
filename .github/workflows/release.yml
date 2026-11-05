@@ -153,11 +153,13 @@ jobs:
         run: |
           version=$(node -p "require('./app/package.json').version")
           releases=$(gh api "repos/${GH_REPO}/releases?per_page=100" --jq "[.[] | select(.tag_name == \"${RELEASE_TAG}\") | {id, draft}]")
-          if [ "$(jq '[.[] | select(.draft == false)] | length' <<< "$releases")" -gt 0 ]; then
+          # jq on the Windows runner ends lines with CRLF; strip the CR before using the values.
+          published=$(jq '[.[] | select(.draft == false)] | length' <<< "$releases" | tr -d '\r')
+          if [ "$published" -gt 0 ]; then
             echo "::error::${RELEASE_TAG} is already published; pick a new version."
             exit 1
           fi
-          for id in $(jq -r '.[].id' <<< "$releases"); do
+          for id in $(jq -r '.[].id' <<< "$releases" | tr -d '\r'); do
             echo "Deleting leftover draft ${id} for ${RELEASE_TAG}"
             gh api -X DELETE "repos/${GH_REPO}/releases/${id}"
           done
