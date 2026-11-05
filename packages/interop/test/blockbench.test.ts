@@ -1,6 +1,6 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { Json } from '@msm/plugin-api';
+import type { Json, JsonObject } from '@msm/plugin-api';
 import { strToU8 } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import {
@@ -38,7 +38,7 @@ function sortKeys(value: unknown): unknown {
 
 function golden(name: string, actual: unknown): void {
   const path = join(EXPECTED, name);
-  if (update || !existsSync(path)) {
+  if (update) {
     writeFileSync(path, `${JSON.stringify(sortKeys(actual), null, 2)}\n`);
   }
   expect(JSON.parse(JSON.stringify(actual))).toEqual(JSON.parse(readFileSync(path, 'utf8')));
@@ -371,26 +371,29 @@ describe('convertBbmodel', () => {
   });
 });
 
+function expected(name: string): Json {
+  return JSON.parse(readFileSync(join(EXPECTED, name), 'utf8')) as Json;
+}
+
 describe('pass-through', () => {
-  const geo = JSON.parse(readFileSync(join(EXPECTED, 'two_bones.geo.json'), 'utf8')) as Json;
-  const animation = JSON.parse(
-    readFileSync(join(EXPECTED, 'two_bones.animation.json'), 'utf8'),
-  ) as Json;
+  const geo = (): Json => expected('two_bones.geo.json');
+  const animation = (): Json => expected('two_bones.animation.json');
 
   it('returns geometry and animation files unchanged', () => {
-    expect(checkGeoJson(geo)).toEqual({ data: geo, problems: [] });
-    expect(checkGeoJson(geo).data).toBe(geo);
-    expect(checkAnimationJson(animation)).toEqual({ data: animation, problems: [] });
+    expect(checkGeoJson(geo())).toEqual({ data: geo(), problems: [] });
+    const same = geo();
+    expect(checkGeoJson(same).data).toBe(same);
+    expect(checkAnimationJson(animation())).toEqual({ data: animation(), problems: [] });
   });
 
   it('accepts newer geometry versions and warns on unknown ones', () => {
-    expect(checkGeoJson({ ...(geo as Obj as never), format_version: '1.21.20' }).problems).toEqual(
+    expect(checkGeoJson({ ...(geo() as JsonObject), format_version: '1.21.20' }).problems).toEqual(
       [],
     );
-    const old = checkGeoJson({ ...(geo as Obj as never), format_version: '1.10.0' });
+    const old = checkGeoJson({ ...(geo() as JsonObject), format_version: '1.10.0' });
     expect(codes(old.problems)).toEqual(['blockbench.unknown-format-version']);
     expect(old.data).toBeDefined();
-    const anim = checkAnimationJson({ ...(animation as Obj as never), format_version: '2.0.0' });
+    const anim = checkAnimationJson({ ...(animation() as JsonObject), format_version: '2.0.0' });
     expect(codes(anim.problems)).toEqual(['blockbench.unknown-format-version']);
   });
 
@@ -408,7 +411,7 @@ describe('pass-through', () => {
   });
 
   it('warns on unexpected top-level keys', () => {
-    const result = checkGeoJson({ ...(geo as Obj as never), debug: true });
+    const result = checkGeoJson({ ...(geo() as JsonObject), debug: true });
     expect(codes(result.problems)).toEqual(['blockbench.unknown-key']);
   });
 });
@@ -448,9 +451,13 @@ describe('blockbenchImporter', () => {
     const model = fixture();
     (model.textures as Obj[]).push({ name: 'eyes' }, { name: 'glow', source: dataUrl(PNG) });
     delete model.animations;
-    const result = importBlockbenchFile({ name: 'two_bones.bbmodel', bytes: bytesOf(model) }, 'ns', {
-      now,
-    });
+    const result = importBlockbenchFile(
+      { name: 'two_bones.bbmodel', bytes: bytesOf(model) },
+      'ns',
+      {
+        now,
+      },
+    );
     expect(result.elements.map((e) => e.id)).toEqual(['ns:entity/two_bones']);
     expect(result.assets.map((a) => a.asset.path)).toEqual([
       'textures/entity/two_bones_0.png',
@@ -476,10 +483,8 @@ describe('blockbenchImporter', () => {
   });
 
   it('passes .geo.json and .animation.json through unchanged', async () => {
-    const geo = JSON.parse(readFileSync(join(EXPECTED, 'two_bones.geo.json'), 'utf8')) as Json;
-    const anim = JSON.parse(
-      readFileSync(join(EXPECTED, 'two_bones.animation.json'), 'utf8'),
-    ) as Json;
+    const geo = expected('two_bones.geo.json');
+    const anim = expected('two_bones.animation.json');
     const g = await importer.import({ name: 'golem.geo.json', bytes: bytesOf(geo) }, 'ns');
     expect(g.elements).toEqual([
       {

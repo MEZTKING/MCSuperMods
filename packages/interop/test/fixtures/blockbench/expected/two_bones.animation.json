@@ -1,0 +1,66 @@
+{
+  "animations": {
+    "animation.two_bones.walk": {
+      "animation_length": 1,
+      "bones": {
+        "body": {
+          "scale": {
+            "0.25": [
+              1,
+              1.25,
+              1
+            ]
+          }
+        },
+        "head": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.5": {
+              "post": [
+                -2,
+                1,
+                0
+              ],
+              "pre": [
+                0,
+                0,
+                0
+              ]
+            },
+            "1.0": {
+              "lerp_mode": "catmullrom",
+              "post": [
+                "-(math.sin(q.anim_time * 90))",
+                0,
+                0
+              ],
+              "pre": [
+                "-(math.sin(q.anim_time * 90))",
+                0,
+                0
+              ]
+            }
+          },
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.5": [
+              -10,
+              20,
+              5
+            ]
+          }
+        }
+      },
+      "loop": true
+    }
+  },
+  "format_version": "1.8.0"
+}

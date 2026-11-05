@@ -1606,3 +1606,20 @@ Decisions:
 Next:
 - B118: `dataRegistryIds` should also count the generated egg item model `<ns>:item/<path>_spawn_egg` under `model` when the egg has a texture, or the gate warns `schema.unknown-id` on the lowered item definition (the tests add it to the project ids).
 - B122: the `packages/plugins/CLAUDE.md` status line (entities kinds, templates, validators).
+
+## 2026-11-05 — executor — B116 Blockbench import in @msm/interop
+
+What:
+- `packages/interop/src/blockbench/`: `convert.ts` (`convertBbmodel(json, { name? })` returning `{ name, geometry?, animations?, textures, problems }`, `cleanModelName`), `passthrough.ts` (`checkGeoJson`, `checkAnimationJson`), `importer.ts` (`blockbenchImporter`, `createBlockbenchImporter({ now })`, `importBlockbenchFile`, `blockbenchFileType`), `types.ts` (output types, `GEO_MODEL_KIND`, `ANIMATION_KIND`, format versions), `index.ts`; exported from `src/index.ts`. No Node imports (`atob`, `TextDecoder` are globals).
+- Conversion follows Blockbench's Bedrock export as read in `bedrock.js`, `keyframe.js`, `animation.js` and `bbmodel.js` at v5.0.0 (cube origin x = -(from.x + size.x), pivots x negated, rotations x and y negated, box UV `mirror` only when it differs from the bone's, per-face `uv_size` with up/down flipped, faces with `texture: null` left out, catmullrom `pre`/`post` rules, step keyframes as `pre`/`post` on the following keyframe, visible bounds like `calculateVisibleBox` without rotations).
+- Problem codes: `blockbench.not-a-model`, `invalid-json`, `unknown-format-version`, `java-block-not-supported`, `unsupported-element`, `texture-not-embedded`, `texture-not-png`, `texture-invalid`, `duplicate-bone-name`, `duplicate-animation`, `unknown-animation-bone`, `unsupported-interpolation` (bezier written as linear), `unsupported-channel` (info: sound, particle, timeline), `invalid-geometry`, `invalid-animation`, `unknown-key`.
+- Tests: `test/blockbench.test.ts` (25 tests), hand-written `test/fixtures/blockbench/two_bones.bbmodel` (5.0 layout, box UV, rotated mirrored cube, rotated child bone, one animation with rotation, position (step, linear, catmullrom with Molang) and scale keyframes; the 8x8 PNG is made by the test), goldens `expected/two_bones.geo.json` and `expected/two_bones.animation.json` (`UPDATE_GOLDENS=1` rewrites). The goldens were validated once against `MSM_SCHEMA_REFS.geoModel` / `.animation` with a throwaway test in `packages/schemas` (removed); the interop tests use structural checks because `@msm/schemas` is allowed by `layers.json` but not a dependency of `@msm/interop`.
+
+Decisions:
+- Blockbench 5.0 changed the project layout and keyframe orientation (verified in `bbmodel.js` v5.0.0): group fields moved to a top-level `groups` array with `{ uuid, isOpen, children }` outliner nodes, and keyframes are stored with position x and rotation x and y in Blockbench's orientation (the 4.x to 5.0 upgrade inverts them; the Bedrock export inverts them back). Both layouts are read; 5.x (and unversioned or newer) keyframes are negated, 4.x ones are written as they are. A test proves a 4.10 rewrite of the fixture converts to the same output.
+- Loose cubes go under `root` (the brief) rather than Blockbench's `bb_main`; `root_<n>` when a group is already called `root`.
+- Several textures are numbered by their index in the `.bbmodel` (`<name>_0.png`, `<name>_2.png` when texture 1 is not embedded).
+- Pass-through accepts geometry `1.12.0` to `1.21.x` and animation `1.8.0` / `1.10.0` without a warning; legacy pre-1.12 geometry is refused (`blockbench.invalid-geometry`).
+
+Next:
+- B118 registers `blockbenchImporter` as a host importer. B119/B120: add `@msm/schemas` as a dev dependency of `@msm/interop` (or check the converter output in an exporter test) so the schema validation runs in CI.

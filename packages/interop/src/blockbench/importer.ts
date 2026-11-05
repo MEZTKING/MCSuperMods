@@ -106,7 +106,11 @@ export function importBlockbenchFile(
   }
   const parsed = parseJson(file);
   if (!parsed.ok) {
-    return failure(file, 'blockbench.invalid-json', `${file.name} is not valid JSON: ${parsed.error}`);
+    return failure(
+      file,
+      'blockbench.invalid-json',
+      `${file.name} is not valid JSON: ${parsed.error}`,
+    );
   }
   const createdAt = (options.now ?? (() => new Date().toISOString()))();
   const geoId = `${namespace}:entity/${name}` as ResourceLocation;

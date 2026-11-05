@@ -155,7 +155,6 @@ function readTextures(raw: unknown, problems: Problem[]): BbmodelTexture[] {
 // ---------------------------------------------------------------------------------------------
 // Geometry
 
-
 interface GeometryContext {
   boxUvDefault: boolean;
   cubes: Map<string, Obj>;
@@ -480,7 +479,8 @@ function compileChannel(
     let value: KeyframeVec | KeyframeObject;
     if (kf.interpolation === 'catmullrom') {
       const includePre =
-        (!previous && kf.time > 0) || (previous !== undefined && previous.interpolation !== 'catmullrom');
+        (!previous && kf.time > 0) ||
+        (previous !== undefined && previous.interpolation !== 'catmullrom');
       const entry: KeyframeObject = {};
       if (includePre) entry.pre = flip(point(kf, 0));
       entry.post = flip(point(kf, includePre ? 1 : 0));
@@ -594,7 +594,10 @@ function convertAnimations(
     const length = num(animation.length);
     if (length > 0) entry.animation_length = clean(length);
     if (animation.override === true) entry.override_previous_animation = true;
-    if (typeof animation.anim_time_update === 'string' && animation.anim_time_update.trim() !== '') {
+    if (
+      typeof animation.anim_time_update === 'string' &&
+      animation.anim_time_update.trim() !== ''
+    ) {
       entry.anim_time_update = animation.anim_time_update.replace(/\n/g, '');
     }
     const blend = molangField(animation.blend_weight);
@@ -629,7 +632,10 @@ function convertAnimations(
  * @param options - See {@link ConvertBbmodelOptions}.
  * @returns See {@link BbmodelConversion}.
  */
-export function convertBbmodel(json: unknown, options: ConvertBbmodelOptions = {}): BbmodelConversion {
+export function convertBbmodel(
+  json: unknown,
+  options: ConvertBbmodelOptions = {},
+): BbmodelConversion {
   const problems: Problem[] = [];
   if (!isObj(json) || !isObj(json.meta)) {
     return {
