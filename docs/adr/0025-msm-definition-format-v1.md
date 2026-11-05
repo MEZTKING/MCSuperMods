@@ -68,6 +68,14 @@ Defaults: `msm:breakable` absent means hardness 1.5, resistance 6.0, no tool nee
 
 Events run on the logical server only. An unknown action type is a load-time error for that definition (the block or item is still registered without the event).
 
+Runtime rules, as implemented by `msm_runtime` v1 (B93):
+
+- **Dropped events.** Any event that fails to decode (an unknown action type, a missing or mistyped field, an invalid id) is dropped with an error naming the file and the event; the definition itself still registers. A component or `trigger_event` reference to an event the definition does not declare is an error too, and that reference does nothing.
+- **Chain depth.** The depth counts the fired event as 1, so a chain of `trigger_event` actions runs at most 16 events; the 17th is not run and an error is logged.
+- **Strict JSON types.** Definitions are decoded with `StrictJsonOps`: a boolean is never read as a number and a number with a fraction is never read as an integer (Mojang's `JsonOps` reads `true` as 1 and `1.5` as an int). The JUnit conformance tests over the shared corpus check this.
+- **No block item.** `"item": false` registers the block without a `BlockItem`; `"item": true` is invalid (`schema.no-union-match` in the corpus).
+- **Checks at load and after start.** Parsing needs no registry access; sound events and particle types are checked at load, items, block states, functions and creative tabs once the server has started (warnings).
+
 **D5. Element data adds editor-only fields.** `msm:block` element data is the definition plus `model` (block model id, lowered to a single-variant blockstate and the block item definition), `display_name` (lowered to language keys), `loot` (`"self"` generates the "drops itself" loot table; an id points at a loot table element; absent means no generated table), and `msm:breakable` gains `tool` and `min_tier`, which lower to the mineable and needs-tier tags and to `requires_tool: true`. `msm:item` element data is the definition plus `model` (item model id, lowered to the item definition) and `display_name`. Element ids are the registry ids: `mymod:ruby_ore` registers `mymod:ruby_ore`; a block and its item share the id, which is legal because the item is not a separate element.
 
 **D6. Mod metadata.** A singleton kind `msm:mod` (kind folder `mod`, conventional id `<ns>:mod`) holds `mod_id` (Fabric rule `^[a-z][a-z0-9_-]{1,63}$`), `version`, `name`, `description`, `authors`, `licence` (written as Fabric's `license`). It lowers to `fabric.mod.json` in layer `msm` with the target's Fabric dependencies; the content-jar exporter adds `jars` ([ADR 0026](0026-fabric-content-jar.md)) and synthesises a default from the project name when the project has no `msm:mod`.
@@ -85,4 +93,4 @@ Events run on the logical server only. An unknown action type is a load-time err
 
 ## Status
 
-Proposed (2026-11-05). To be accepted at Phase 4 close, or revised if the spike ([ADR 0024](0024-runtime-registration-spike.md)) changes the registration model.
+Accepted (2026-11-05). The spike ([ADR 0024](0024-runtime-registration-spike.md)) confirmed the registration model; `mcdoc-cli` exported the local folder, so the D7 fallback was not needed.

@@ -265,10 +265,11 @@ test('blocks and items: templates, Block Studio, unknown event, Fabric jar, reso
       events?: Record<string, { actions?: Record<string, unknown>[] }>;
     };
     expect(definition.format).toBe(1);
-    // Editor-only fields are stripped; the block item is the default one again.
+    // Editor-only fields are stripped; ticking "Has a block item" again restored the
+    // template's block item settings.
     expect(definition.model).toBeUndefined();
     expect(definition.display_name).toBeUndefined();
-    expect(definition.item).toBeUndefined();
+    expect(definition.item).toEqual({ creative_tab: 'minecraft:building_blocks' });
     const breakable = definition.components?.['msm:breakable'];
     expect(breakable?.hardness).toBe(4);
     expect(breakable?.requires_tool).toBe(true);

@@ -49,6 +49,19 @@ export async function writeFileAtomic(path: string, data: Uint8Array): Promise<v
   }
 }
 
+/**
+ * Wraps an {@link InstallFileSystem} so every `writeFile` goes through {@link writeFileAtomic}:
+ * pack installs into a game folder, the content jar and Fabric API in `mods/`, managed instance
+ * files and the download cache are never seen half written (the e2e specs read installed zips
+ * as soon as they appear).
+ */
+export function withAtomicWrites(fs: InstallFileSystem): InstallFileSystem {
+  return {
+    ...fs,
+    writeFile: (absPath, data) => writeFileAtomic(normalize(absPath), data),
+  };
+}
+
 /** The project file name; mirrors `PROJECT_FILE` in `@msm/core`. */
 export const PROJECT_FILE = 'msm.project.json';
 
@@ -167,7 +180,7 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
   let lastExportFolder: string | null = null;
 
   const settings = createSettingsStore({ msmHome: deps.msmHome, installEnv: deps.installEnv });
-  const installFs = deps.installFs ?? createNodeInstallFileSystem();
+  const installFs = deps.installFs ?? withAtomicWrites(createNodeInstallFileSystem());
   const locations = createLocationResolver({ fs: installFs, env: deps.installEnv, settings });
   const minecraft = createMinecraftService({
     msmHome: deps.msmHome,

@@ -1468,3 +1468,23 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 **Next**
 - B101/guide: labels in the B100 report. ADR 0026 D5 "(verify at implementation)" items can be ticked at B102; macOS/Linux program paths and Prism picking up a just-created instance while running stay unverified on a real machine.
 - Toolbar Export menu has no Test in Minecraft entry (menu and palette only).
+
+---
+
+## 2026-11-05 — executor — B102 Phase 4 close
+
+**What**
+- Atomic writes: the install file system in app main is wrapped by `withAtomicWrites` (`platform/node-platform.ts`), so pack installs into a game folder, the content jar and Fabric API in `mods/`, managed instance files and the download cache go through the existing `writeFileAtomic` (temporary file in the same folder, then rename). Saved exports and export folder files were already atomic; the flaky read was the data pack installed into a world (`datapack-path`), written with a plain `writeFile`. Unit test in `app/test/main-platform.test.ts`.
+- UX: Toolbar Export menu "Test in Minecraft…" after "Fabric mod (.jar)…" with the same disabled reason (test id `export-test-in-minecraft`); Block Studio remembers the last unticked block item per element in component state and restores it when "Has a block item" is ticked again. Tests in `Toolbar.test.tsx` and `blocks-items-studios.test.tsx`; `blocks-items-path.spec.ts` now expects the restored item.
+- Version 0.4.0 in `app/package.json` and `engine-mod/gradle.properties` `mod_version`; `app/test/runtime-version.test.ts` fails when they differ (ADR 0026 D4).
+- Docs: ADRs 0024–0027 accepted (0025 runtime rules, 0026 D5 B100 findings, 0024 production-jar scan); DESIGN §6, §8, §9, §10, §11, §13, §17 updated (19 numbered H2s kept); ROADMAP Phase 4 ticks, Status, follow-ups, exit-criteria proxy, Milestone Log row with `TESTS`/`SIZE` placeholders; Phase 3 follow-up "Real ore starter" ticked; guide "Test in Minecraft" with B100's labels; README status, Test in Minecraft, known limitations, releasing note; root, `docs/`, `app/` and seven package/engine-mod `CLAUDE.md` status lines; `docs/PHASE4-PLAN.md` deleted and its links removed; `docs/HANDOFF.md` rewritten with Phase 4 lessons.
+- Counts verified from the plugins' contributions: 55 kinds, 106 templates, 11 starters, 61 examples.
+- Checks: 15/15 test tasks (1,978 tests, 1 skipped), e2e 8/8 twice (38.0 s, 37.1 s), `./gradlew build` 46 JUnit tests and 18 GameTests, packaged smoke, app.asar 13.3 MB, renderer 6.0 MB.
+
+**Decisions**
+- The atomic wrapper lives in app main over `createNodeInstallFileSystem`, not in `@msm/interop/node`, reusing the existing helper; the scoped project file system (project saves) is unchanged.
+- The remembered block item is keyed by element id, so it never leaks into another block.
+
+**Next**
+- Orchestrator: fill `TESTS`/`SIZE` in the Milestone Log from the clean-worktree run; release 0.4.0 with the user's go-ahead; Phase 5 plan.
+- Turbo's `test` task does not hash `engine-mod/gradle.properties`, so the version test can be cached stale without `--force`.

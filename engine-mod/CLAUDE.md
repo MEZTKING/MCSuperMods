@@ -1,6 +1,6 @@
 # engine-mod/ — Fabric runtime mod
 
-Status: runtime v1 done (B93): Codec loader for ADR 0025 format 1, every Phase 4 block and item component and all six actions; JUnit over the shared corpus and GameTests pass in `./gradlew build`. Entities and scripting come later. This file describes intent and conventions.
+Status: Phase 4 code complete, awaiting the in-game check (`fixtures/sample-mod/README.md`). Runtime v1 (B93): Codec loader for ADR 0025 format 1 (ADRs 0024–0026 accepted), every Phase 4 block and item component and all six actions; 46 JUnit tests over the shared corpus and 18 GameTests pass in `./gradlew build`; CI job `engine-mod` also starts a headless server with the sample mod (`tools/run-fabric-server`), which proved the scan inside a production jar. `mod_version` 0.4.0 equals `app/package.json` (`app/test/runtime-version.test.ts`). Entities and scripting come later. This file describes intent and conventions.
 
 ## Purpose
 

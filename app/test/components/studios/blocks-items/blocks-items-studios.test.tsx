@@ -226,6 +226,24 @@ describe('Block Studio', () => {
     expect(lastEdit(second.onChange)).toEqual(['/item', undefined]);
   });
 
+  it('restores the earlier block item when "Has a block item" is ticked again', () => {
+    const id = 'demo:b' as ResourceLocation;
+    const item = { creative_tab: 'minecraft:building_blocks', max_stack_size: 16, rarity: 'rare' };
+    const stack = new CommandStack(
+      projectOf(
+        element(id, 'msm:block', {
+          ...(templateData('msm_block_simple', id) as object),
+          item,
+        }),
+      ),
+    );
+    render(<StackHarness stack={stack} id={id} />);
+    fireEvent.click(screen.getByTestId('block-has-item'));
+    expect((dataOf(stack, id) as { item?: unknown }).item).toBe(false);
+    fireEvent.click(screen.getByTestId('block-has-item'));
+    expect((dataOf(stack, id) as { item?: unknown }).item).toEqual(item);
+  });
+
   it('adds an event and an action, picks it for on_interact, and undoes', () => {
     const id = 'demo:b' as ResourceLocation;
     const stack = new CommandStack(

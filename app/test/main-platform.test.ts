@@ -1,11 +1,13 @@
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createNodeInstallFileSystem } from '@msm/interop/node';
 import { builtInTargets } from '@msm/targets';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   createNodePlatform,
   type NativeDialogs,
+  withAtomicWrites,
   writeFileAtomic,
 } from '../src/main/platform/node-platform';
 import { makeMmcRoot } from './helpers/fake-launchers';
@@ -78,6 +80,25 @@ describe('main platform dialogs', () => {
     await mkdir(join(out, 'taken.zip'));
     await expect(writeFileAtomic(join(out, 'taken.zip'), new Uint8Array([5]))).rejects.toThrow();
     expect((await readdir(out)).sort()).toEqual(['pack.zip', 'taken.zip']);
+  });
+
+  it('routes install file system writes through the atomic writer', async () => {
+    const inner = createNodeInstallFileSystem();
+    const fs = withAtomicWrites({
+      ...inner,
+      writeFile: async () => {
+        throw new Error('The plain writer must not be used.');
+      },
+    });
+    const datapacks = join(temp, 'saves', 'World', 'datapacks');
+    await fs.mkdirp(datapacks);
+    const file = join(datapacks, 'pack.zip');
+    await fs.writeFile(file, new Uint8Array([1, 2]));
+    await fs.writeFile(file, new Uint8Array([3]));
+    expect(new Uint8Array(await fs.readFile(file))).toEqual(new Uint8Array([3]));
+    // Only the target is left: the temporary file was renamed into place.
+    expect(await readdir(datapacks)).toEqual(['pack.zip']);
+    expect(await fs.exists(file)).toBe(true);
   });
 });
 

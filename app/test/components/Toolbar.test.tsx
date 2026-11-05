@@ -298,4 +298,30 @@ describe('Toolbar Fabric mod jar export', () => {
     expect(reason.textContent).toBe('Fix 2 errors first (see Problems).');
     expect(screen.getByTestId('export-fabric-jar').getAttribute('aria-disabled')).toBe('true');
   });
+
+  it('offers Test in Minecraft next to the Fabric mod jar', async () => {
+    const onTestInMinecraft = vi.fn();
+    renderToolbar(props({ onExportFabricJar: vi.fn(), onTestInMinecraft }));
+    await userEvent.setup().click(screen.getByTestId('toolbar-export-menu'));
+    const entry = await screen.findByTestId('export-test-in-minecraft');
+    expect(entry.textContent).toBe('Test in Minecraft…');
+    fireEvent.click(entry);
+    expect(onTestInMinecraft).toHaveBeenCalledOnce();
+  });
+
+  it('disables Test in Minecraft with the Fabric mod jar reason', async () => {
+    renderToolbar(
+      props({
+        onExportFabricJar: vi.fn(),
+        onTestInMinecraft: vi.fn(),
+        fabricJarExportDisabledReason: 'Fix 2 errors first (see Problems).',
+      }),
+    );
+    await userEvent.setup().click(screen.getByTestId('toolbar-export-menu'));
+    const reason = await screen.findByTestId('export-test-in-minecraft-reason');
+    expect(reason.textContent).toBe('Fix 2 errors first (see Problems).');
+    expect(screen.getByTestId('export-test-in-minecraft').getAttribute('aria-disabled')).toBe(
+      'true',
+    );
+  });
 });

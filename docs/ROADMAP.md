@@ -19,7 +19,7 @@ This is the phased delivery plan for MCSuperMods (MSM). The orchestrator updates
 | 1 | **MVP: Resource Pack Studio** (v0.1) | Textures import, block/item models + blockstates via schema forms, lang files, sounds, pack.mcmeta; deepslate 3D preview; vanilla `.zip` export; "Install to resourcepacks folder" | A user makes and installs a working texture + custom model pack without touching JSON | 4–6 wk |
 | 2 | Data Pack Studio (v0.2) | Recipes, loot tables, advancements, tags, predicates, item modifiers, mcfunction editor with Spyglass diagnostics; data pack export; combined pack export | Misode-generator parity on those kinds; a datapack with functions loads in 26.3 without errors | 4–6 wk |
 | 3 | Structures & Worldgen (v0.3) | `.nbt`/`.schem` import and export, structure templates as JSON with 3D preview, jigsaw pools with connections, structures and structure sets, configured and placed features, biomes, dimensions, world presets, noise settings and the other worldgen kinds as forms, worldgen tags, project validators, climate map, plugin-api 0.5.0 | Custom biome with a custom jigsaw structure generates in a 26.3 world (CI proxy: sample-worldgen chain walk, validators and e2e) | 5–7 wk |
-| 4 | Engine Mod + Blocks/Items (v0.4) | `msm_runtime` mod, `msm/` definition loader, components/events v1, Block & Item Studios, Fabric content-jar exporter, managed test instance launch from app | A custom block with custom behaviour works in-game from one exported jar | 8–10 wk |
+| 4 | Engine Mod + Blocks/Items (v0.4) | `msm_runtime` mod, `msm/` definition loader, components/events v1, Block & Item Studios, Fabric content-jar exporter, Test in Minecraft (managed Prism instance) | A custom block with custom behaviour works in-game from one exported jar | 8–10 wk |
 | 5 | Entities, Models, Animation (v0.5) | `msm:entity` + AI goal components, GeckoLib integration, Blockbench `.bbmodel` + animation import, spawn rules/eggs | A Blockbench-animated custom mob spawns, moves, attacks | 8–10 wk |
 | 6 | Scripting & Eject (v0.6) | Rhino scripting, TS typings, Monaco script editor, export-as-Java-project | Script-driven behaviour runs; ejected project builds with Gradle and matches runtime behaviour | 6–8 wk |
 | 7 | 1.0 | Third-party plugin loading, templates/wizards, second target (26.4 or whatever is current), docs site (auto-update moved to Phase 2) | Two targets supported; external plugin works; release | 6–8 wk |
@@ -196,7 +196,7 @@ Known gaps of the v0.3 design; none blocks the Phase 3 exit criterion.
 - [ ] Noise-sampled biome and terrain preview (reserve brief B84; DESIGN [Open Question 15](DESIGN.md#18-open-questions)).
 - [ ] Editing structure blocks inside the app (v0.3 edits size, palette entries and jigsaws; blocks are edited in-game with a structure block and re-imported).
 - [ ] Random palettes beyond the first (an imported template with several `palettes` keeps only the first).
-- [ ] Real ore starter: the Custom ore starter stays an emerald-ore reskin until Phase 4 adds `msm:block` ([ADR 0020](adr/0020-templates-starters-examples.md)).
+- [x] Real ore starter: the Custom ore starter is a real `msm:block` ruby ore since Phase 4 (B98; [ADR 0020](adr/0020-templates-starters-examples.md)).
 - [ ] Go to definition from the Biome Studio's "Used in" list and the other Studio id lists (today only form fields, the textarea editor and Monaco have it).
 - [ ] Gallery entries for the worldgen starters: `custom_biome`, `jigsaw_structure` and `worldgen_pack` are in the New project dialog and under `examples/starters/`, but not in Help → Examples….
 - [ ] Full-cube culling in the structure view: deepslate draws every face of neighbouring blocks, so large templates render slowly.
@@ -269,26 +269,44 @@ Phase 2 (data pack export, tags, reference index) and the templates and samples 
 
 ### Scope
 
-Introduce the `msm_runtime` Fabric mod and the content jar, so projects can add new blocks and items with behaviour that vanilla packs cannot express. The phase opens with a one-week registry-freeze spike before any editor work. Design references: [Engine Mod (Runtime)](DESIGN.md#10-engine-mod-runtime), [Behaviour Model (Components and Events)](DESIGN.md#11-behaviour-model-components-and-events), [Targets and Exporters](DESIGN.md#9-targets-and-exporters).
+Introduce the `msm_runtime` Fabric mod and the content jar, so projects can add new blocks and items with behaviour that vanilla packs cannot express. The phase opens with a one-week registry-freeze spike before any editor work. Design references: [Engine Mod (Runtime)](DESIGN.md#10-engine-mod-runtime), [Behaviour Model (Components and Events)](DESIGN.md#11-behaviour-model-components-and-events), [Targets and Exporters](DESIGN.md#9-targets-and-exporters), [Interop](DESIGN.md#13-interop-blockbench-nbt-minecraft-installation); decisions in [ADR 0024](adr/0024-runtime-registration-spike.md) (spike and toolchain), [ADR 0025](adr/0025-msm-definition-format-v1.md) (definition format v1, MSM mcdoc, the blocks and items plugin), [ADR 0026](adr/0026-fabric-content-jar.md) (content jar, runtime distribution, Test in Minecraft, headless check) and [ADR 0027](adr/0027-plugin-api-0.6.md) (plugin API 0.6.0). Release version 0.4.0.
+
+Status: code complete on 2026-11-05 (briefs B90–B102); in-game check pending (`fixtures/sample-mod/README.md`, plus Test in Minecraft on Windows with Prism Launcher).
 
 ### Deliverables
 
 - [x] **Week 1 — registry-freeze spike:** a throwaway `msm_runtime` that scans `msm/` in all mod containers at init, registers one block and one item from JSON, and runs one event. Result recorded as an ADR; if dynamic registration hits limits, re-plan around code generation (Tier 2). Done in B90: dynamic registration works ([ADR 0024](adr/0024-runtime-registration-spike.md)).
-- [x] `engine-mod/`: Gradle (Kotlin DSL), Java 25, Fabric Loom 26.1+ non-remapping variant (verify at implementation), Fabric Loader + Fabric API for 26.3.
+- [x] `engine-mod/`: Gradle 9.8.2 (Kotlin DSL), Java 25, Fabric Loom `net.fabricmc.fabric-loom` 1.19.3 (non-remapping), Fabric Loader 0.20.1 and Fabric API 0.165.2+26.3.
 - [x] `msm_runtime` loader: init-time scan of `msm/**/*.json`, driver classes `MsmBlock` and `MsmItem`.
 - [x] MSM mcdoc schemas for components and events v1 in `packages/schemas/mcdoc/msm/`, shared by app and runtime.
 - [x] Components v1: light, hardness, drops via loot, `on_interact`, `on_step`, redstone, food, tool tier, durability, use actions.
 - [x] Actions v1: `run_function`, `spawn_particle`, `set_block_state`, `give_item`, `play_sound`, `trigger_event`.
 - [x] `@msm/plugin-blocks-items`: `msm:block` and `msm:item` kinds lowering to vanilla files plus `msm/` definitions.
-- [ ] Block Studio and Item Studio views.
-- [ ] Real Custom ore starter on `msm:block` and `msm:item`, replacing the emerald-ore reskin in `@msm/plugin-library` ([ADR 0020](adr/0020-templates-starters-examples.md)).
-- [x] `@msm/exporters` `fabric-content-jar`: `assets/`, `data/`, `msm/`, `fabric.mod.json`, with `msm_runtime` nested by default and a "separate runtime" option.
-- [ ] Managed Fabric test instance launched from the app ("Test in Minecraft").
-- [ ] JUnit tests for definition parsing; Fabric GameTest for behaviour; kitchen-sink sample exported and loaded on a headless server in CI. JUnit and GameTests run in `./gradlew build` (B93); the CI job and headless server check are B99.
+- [x] Block Studio and Item Studio views (B97; "Has a block item" keeps the earlier item settings within a session, B102).
+- [x] Real Custom ore starter on `msm:block` and `msm:item`, replacing the emerald-ore reskin in `@msm/plugin-library` ([ADR 0020](adr/0020-templates-starters-examples.md)); five Phase 4 examples and the `examples/blocks-items/` mirror (B98).
+- [x] `@msm/exporters` `fabric-content-jar`: `assets/`, `data/`, `msm/`, `fabric.mod.json`, with `msm_runtime` nested by default and a "separate runtime" option (B95); app File > "Export Fabric Mod Jar…" and the runtime jar shipped as `runtime/msm_runtime.jar` (B96).
+- [x] Managed Fabric test instance launched from the app ("Test in Minecraft"): `@msm/interop` `fabric/` (readiness, managed Prism instance `MCSuperMods Test (<mc>)`, `mods/` install tracked in `.msm-installed.json`, Fabric API download with SHA-512 cache, launcher lookup), File and Export menu entries, palette, `TestInMinecraftDialog` (B100, B102).
+- [x] JUnit tests for definition parsing; Fabric GameTest for behaviour; kitchen-sink sample exported and loaded on a headless server in CI. JUnit (46) and GameTests (18) run in `./gradlew build` (B93); CI job `engine-mod` with `tools/run-fabric-server` and `fixtures/sample-mod/` (B99).
+- [x] e2e `blocks-items-path` (eighth spec) and the guide page `docs/guide/blocks-and-items.md` (B101); atomic writes for every install into a game folder (B102).
+- [x] B102: close: ROADMAP ticks, Milestone Log, ADRs 0024–0027 accepted, version 0.4.0 (app and `msm_runtime`, kept equal by a test), docs and scoped CLAUDE.md status lines.
+- [ ] User check: in-game on Windows with 26.3, the steps in `fixtures/sample-mod/README.md`, and Test in Minecraft with Prism Launcher (see [Exit criteria](#exit-criteria-4)).
+
+### Phase 4 follow-ups
+
+Known gaps of the v0.4 design; none blocks the Phase 4 exit criterion.
+
+- [ ] Move the Studio form parts shared by structures, worldgen and blocks-items (pickers, sections, the go-to host) into `studios/shared/`.
+- [ ] 3D block preview in the Block Studio.
+- [ ] Settings control for the launcher program (today `launcherPrograms` is set only through "Choose launcher program…" in the Test in Minecraft dialog).
+- [ ] Real-launcher Windows check of Test in Minecraft (Prism picking up a just-created instance, `--launch` from the installed program).
+- [ ] `msm_runtime` as its own release asset for modpack makers who use "Separate runtime (for modpacks)".
+- [ ] Prism and MultiMC program paths on macOS and Linux (Flatpak wrapper, Scoop on Windows) checked on real machines.
 
 ### Exit criteria
 
 A custom block with custom behaviour works in-game from one exported jar.
+
+CI cannot run the client, so an automated proxy proves the content first ([ADR 0026](adr/0026-fabric-content-jar.md) D6): the kitchen-sink `fixtures/sample-mod/` exports with zero problems and a pinned SHA-256, its `msm/` definitions validate against the MSM mcdoc, and a headless 26.3 Fabric dedicated server with Fabric API and the content jar (real runtime nested) logs the expected registrations with no runtime errors or warnings; the JUnit conformance tests and 18 GameTests pass in `./gradlew build`; the `blocks-items-path` e2e spec drives the Block and Item Studios through export gating and the jar export. The user then checks in-game on Windows (steps in `fixtures/sample-mod/README.md`).
 
 ### Estimate
 
@@ -405,3 +423,4 @@ Not committed; each needs an ADR before work starts.
 | 2026-11-04 | Phase 1 code complete — pending in-game check and licence | plugin-api 0.2.0, `@msm/plugin-resourcepack` (six kinds), `validateJson`, `@msm/exporters` `vanilla-packs`, `@msm/interop` client-jar extraction, `@msm/targets`, Resource Pack Studio with forms, Monaco, deepslate preview, export and install; golden-path e2e and packaged smoke in CI; ADRs 0009–0013. Sizes: `app.asar` 10.2 MB, renderer 5.6 MB, Windows installer about 122 MB. Releases are Windows only. Untagged: licence pending. Manual in-game verification pending. |
 | 2026-11-04 | Phase 2 code complete — pending in-game checks and first release | plugin-api 0.3.0, Node 24 and pnpm 12, `@msm/plugin-datapack` (14 kinds including eight tag kinds, plus ten schema-form kinds), `@msm/schemas/mcfunction` (offline Spyglass in main, with mcdoc symbols for JSON and NBT inside commands), reference index and one-step rename, data pack and combined export, install into a world, Recipe Studio, Tag editor, Function editor, command palette, animated texture preview, in-app auto-update; data pack golden-path e2e; ADRs 0014–0018. 1,037 tests (app 397, core 152, schemas 142, exporters 73, tools 60, datapack 57, plugin-api 44, mc-26.3 40, interop 32, resourcepack 28, targets aggregator 12). Sizes: `app.asar` 12.7 MB, renderer 5.7 MB, main `index.js` 266.2 kB (7.0 MB under `out/main`). Untagged: waiting on the user's first-release steps. Manual in-game checks (Phase 1 and Phase 2) pending. |
 | 2026-11-04 | Phase 3 code complete — pending in-game check | v0.3.0. plugin-api 0.5.0 (`ProjectValidator`, `ElementKind.registry`, `Target.dataVersion`, `Target.worldgen`), `@msm/plugin-structures` (five kinds, deepslate NBT codec with our own SNBT printer, `.nbt` and Sponge `.schem` import and export) and `@msm/plugin-worldgen` (fourteen kinds), three worldgen tag kinds (52 kinds in all), ten project validators gating export, 99 templates, 11 starters and 56 examples, `fixtures/sample-worldgen/` with SHA-256 golden and chain walk, Structure, Template Pool, Biome and Placed Feature Studios, structure 3D preview and climate map, world names from `level.dat`, recent projects; e2e `worldgen-path` (seven specs); ADRs 0021–0023. Tests: 1,719 across 14 packages (app 626, core 154, exporters 170, schemas 152, datapack 131, worldgen 89, target 69, interop 65, tools 60, structures 56, plugin-api 51, resourcepack 48, library 36, targets 12); seven e2e specs in 26.9 s. Sizes: app.asar 13.2 MB (budget 25 MB), build output 7.2 MB, lazy worldgen preview chunk 158.8 kB. Untagged: the user pushes `v0.3.0`. Manual in-game checks (Phases 1–3) pending. |
+| 2026-11-05 | Phase 4 code complete — pending in-game check | v0.4.0. plugin-api 0.6.0 (`OutputFile.merge`, exporter options, `Target.fabric`), MSM mcdoc v1 with a shared conformance corpus, `msm_runtime` v1 (Codecs, nine components, six actions; Loom 1.19.3, Loader 0.20.1, Fabric API 0.165.2+26.3; 46 JUnit tests and 18 GameTests in `./gradlew build`), `@msm/plugin-blocks-items` (`msm:block`, `msm:item`, `msm:mod`; 55 kinds in all), `fabric-content-jar` exporter with nested or separate runtime, Block and Item Studios, Export Fabric mod jar, Test in Minecraft (`@msm/interop` `fabric/`), real Custom ore starter, 106 templates, 11 starters and 61 examples, `fixtures/sample-mod/` with SHA-256 golden and the CI headless server check; e2e `blocks-items-path` (eight specs); ADRs 0024–0027. Tests: TESTS. Sizes: SIZE. Untagged: released through `release.yml` with the user's go-ahead. Manual in-game checks (Phases 1–4) pending. |

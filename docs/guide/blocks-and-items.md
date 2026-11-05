@@ -21,7 +21,7 @@ Selecting a block opens the Block Studio. Empty fields use the game's defaults. 
 - **Mining**: **Hardness** (how long the block takes to mine; default 1.5) and **Resistance** (against explosions; default 6). **Tool** makes the block mine fast with that tool (pickaxe, axe, shovel or hoe). **Minimum tier** is the weakest tool tier that still gets drops, for example `iron` for an iron pickaxe or better. A tool or a minimum tier also means the block drops nothing when mined by hand. **Requires the right tool for drops** sets that on its own, without a tool or tier.
 - **Light and sound**: **Light level** from 0 to 15 (empty: no light) and **Sound type**, the sounds for placing, breaking and walking (default stone).
 - **Drops**: **Drops itself** makes a loot table that drops the block's own item; **Loot table** points at a loot table of your own or a vanilla one; **None** makes no loot table.
-- **Block item**: **Has a block item** lets players hold and place the block, with **Stack size**, **Rarity** (the colour of its name) and **Creative tab**. Untick it for a block that only commands or events place; such a block cannot drop itself. Ticking it again gives the default block item (stack of 64, common, no creative tab), so set those fields again if you need them.
+- **Block item**: **Has a block item** lets players hold and place the block, with **Stack size**, **Rarity** (the colour of its name) and **Creative tab**. Untick it for a block that only commands or events place; such a block cannot drop itself. Ticking it again brings back the stack size, rarity and creative tab you had before, as long as you have not left the block since; otherwise it gives the default block item (stack of 64, common, no creative tab).
 - **Behaviour**: what starts the block's events. **On interact** runs an event when a player right-clicks the block. **On step** runs one when something walks onto it, at most once per **Step cooldown (ticks)** (20 ticks are one second). **Redstone signal emitted** makes the block a constant redstone source (0 to 15), and **On powered** and **On unpowered** run events when a redstone signal next to it switches on or off.
 - **Events**: the block's events and their actions (see [Events and actions](#events-and-actions)).
 
@@ -102,12 +102,17 @@ Start the game with the Fabric profile and open a creative world. Your blocks an
 
 ## Test in Minecraft
 
-This command is coming with this release. **Test in Minecraft** does the export and the install for you:
+**Test in Minecraft** exports the mod jar, installs it and starts the game for you. Open it with **File → Test in Minecraft…**, the toolbar **Export** menu (**Test in Minecraft…**, next to **Fabric mod (.jar)…**) or the command palette. Like the jar export, it is disabled while the project has errors.
 
-- It exports the mod jar and copies it into the `mods` folder of the game location chosen in **Settings → Game locations**. That must be a Prism Launcher or MultiMC instance with Fabric for your project's Minecraft version; if you have none, MCSuperMods can create a test instance, **MCSuperMods Test (<version>)**, in Prism Launcher.
-- It replaces only a copy of your mod that it installed itself earlier; other files in `mods` are never touched.
-- It downloads Fabric API for you when the instance does not have it.
-- It then starts the instance in Prism Launcher or MultiMC. For the official launcher and CurseForge it installs the jar only, and you start the game from that launcher.
+The **Test in Minecraft** dialog shows the game location it will use (the one chosen in **Settings → Game locations** or the toolbar install target), with its Minecraft and Fabric Loader versions, and what the mod needs: your project's Minecraft version, at least the Fabric Loader version MCSuperMods targets, and Fabric API.
+
+- **Prism Launcher or MultiMC instance with Fabric** on the right Minecraft version: the button is **Install and launch**. MCSuperMods copies the jar into the instance's `mods` folder as `<mod id>.jar`, adds Fabric API when it is missing, and starts the instance in the launcher. If MCSuperMods cannot find the launcher program, use **Choose launcher program…** to point at it (for Prism Launcher on Windows, usually `prismlauncher.exe` under `%LOCALAPPDATA%\Programs\PrismLauncher`).
+- **Official launcher or CurseForge location with Fabric**: the button is **Install**. MCSuperMods installs the jar (and Fabric API) only, with a note; start the game from that launcher yourself.
+- **No suitable location** (vanilla, another loader, another Minecraft version or an older Fabric Loader): the dialog says why and nothing can be installed. Choose another location with **Open Settings**, or use **Create test instance**: it creates the Prism Launcher instance **MCSuperMods Test (<version>)** with Minecraft and Fabric Loader for your project and selects it. Prism Launcher must be installed and started once first; Prism downloads the game the first time the instance starts.
+
+Only files MCSuperMods installed are replaced; other mods in the `mods` folder are never touched. MCSuperMods records what it installed in `mods/.msm-installed.json`. Fabric API is downloaded from the Fabric Maven, checked against its published SHA-512 and kept in the app's download cache, so later tests do not download it again. If the `mods` folder already has a Fabric API you put there, that copy is used.
+
+After a run the status bar says where the jar went, whether Fabric API was added and whether the launcher is starting.
 
 ## Troubleshooting
 

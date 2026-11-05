@@ -96,6 +96,8 @@ export interface ToolbarProps {
   fabricJarExportDisabledReason?: string | null;
   /** Opens the Fabric mod jar export dialog. */
   onExportFabricJar?(): void;
+  /** Opens the Test in Minecraft dialog (disabled for the same reason as the Fabric mod jar). */
+  onTestInMinecraft?(): void;
   /** Installs the resource pack into the resourcepacks folder. */
   onInstall?(): void;
   /** Installs the data pack into a world (the host shows the world picker). */
@@ -596,7 +598,7 @@ export function Toolbar(props: ToolbarProps) {
       <ToolMenu
         label=""
         ariaLabel="Export options"
-        tip="Export the resource pack, the data pack, both or a Fabric mod jar"
+        tip="Export the resource pack, the data pack, both or a Fabric mod jar, or test the mod in Minecraft"
         testId="toolbar-export-menu"
         icon={<ChevronDown size={iconSize} aria-hidden />}
         disabled={!props.hasProject || busy}
@@ -624,6 +626,12 @@ export function Toolbar(props: ToolbarProps) {
             testId: 'export-fabric-jar',
             reason: busyReason ?? fabricJarReason,
             onSelect: props.onExportFabricJar,
+          },
+          {
+            label: 'Test in Minecraft…',
+            testId: 'export-test-in-minecraft',
+            reason: busyReason ?? fabricJarReason,
+            onSelect: props.onTestInMinecraft,
           },
         ]}
         more={{

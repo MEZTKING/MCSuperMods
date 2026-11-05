@@ -27,4 +27,4 @@ A file without `merge` that meets any other file at its path is still a conflict
 
 ## Status
 
-Proposed (2026-11-05).
+Accepted (2026-11-05). A content jar with `"minecraft": "~26.3"` loads on a 26.3 headless Fabric server (B99), so the D3 range works for 26.3; whether `~` also admits later 26.3.x releases as intended is to be confirmed when one exists.

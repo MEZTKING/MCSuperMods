@@ -2,7 +2,7 @@
 
 ## Context
 
-The `msm_runtime` Fabric mod is meant to read `msm/` definitions from every loaded mod and register blocks and items from them at start-up ([Engine Mod](../DESIGN.md#10-engine-mod-runtime)). Minecraft registries freeze during start-up, so this only works if a mod can read its own and other mods' files and register entries early enough, on 26.3, with the non-remapping Loom and Mojang names. The Phase 4 plan ([PHASE4-PLAN](../PHASE4-PLAN.md)) made this the first brief (B90): if dynamic registration does not work, Phase 4 falls back to Tier 2 code generation and waves 2 to 4 are re-planned. The definition format the spike reads is [ADR 0025](0025-msm-definition-format-v1.md) D2 to D4.
+The `msm_runtime` Fabric mod is meant to read `msm/` definitions from every loaded mod and register blocks and items from them at start-up ([Engine Mod](../DESIGN.md#10-engine-mod-runtime)). Minecraft registries freeze during start-up, so this only works if a mod can read its own and other mods' files and register entries early enough, on 26.3, with the non-remapping Loom and Mojang names. The Phase 4 plan (a working document removed at phase close; history in `DEVLOG.md`) made this the first brief (B90): if dynamic registration does not work, Phase 4 falls back to Tier 2 code generation and waves 2 to 4 are re-planned. The definition format the spike reads is [ADR 0025](0025-msm-definition-format-v1.md) D2 to D4.
 
 ## Decision
 
@@ -72,4 +72,4 @@ Build layout: `settings.gradle.kts` (plugin repositories and the Loom version fr
 
 ## Status
 
-Proposed (2026-11-05). To be accepted at Phase 4 close.
+Accepted (2026-11-05). The production-jar scan left open in D4 was verified by B99's headless server check (see D4); client-side rendering of `assets/` and creative tab contents await the in-game check (`fixtures/sample-mod/README.md`).

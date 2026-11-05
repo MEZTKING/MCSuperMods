@@ -1,6 +1,6 @@
 # docs/ — design docs, roadmap, devlog, ADRs
 
-Active since Phase 0; Phases 2 and 3 code complete, awaiting the in-game checks; launcher and templates and samples library add-ons done; Phase 3 (Structures & Worldgen) delivered as briefs B70–B83 (ADRs 0001–0023, all accepted; B84 in reserve); Phase 4 in progress (`PHASE4-PLAN.md`, ADRs 0024–0027 proposed); user guide in `guide/`. This file describes conventions.
+Active since Phase 0; Phases 2 to 4 code complete, awaiting the in-game checks; launcher and templates and samples library add-ons done; Phase 3 (Structures & Worldgen) delivered as briefs B70–B83 (ADRs 0001–0023, all accepted; B84 in reserve); Phase 4 (Engine Mod + Blocks/Items) code complete, awaiting the in-game check (B90–B102; ADRs 0024–0027 accepted); Phase 5 next; user guide in `guide/`. This file describes conventions.
 
 ## Purpose
 
@@ -9,7 +9,7 @@ Holds the project's design record: the authoritative design, the delivery plan, 
 ## Contents
 
 - `DESIGN.md`: the authoritative design document. Everything else links here.
-- `ROADMAP.md`: phased plan with checklists and the milestone log.
+- `ROADMAP.md`: phased plan with checklists and the milestone log. A phase's working plan may live in `PHASE<n>-PLAN.md` while the phase runs; it is deleted at phase close (history goes to `DEVLOG.md`).
 - `DEVLOG.md`: append-only session log, newest entry at the bottom.
 - `HANDOFF.md`: where the project stands and how the work is run, for the next main session; rewritten (not appended) at each handover.
 - `adr/NNNN-title.md`: one file per architecture decision, sections Context / Decision / Consequences / Status.

@@ -1247,6 +1247,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               onExportSchematics={exportSchematics}
               fabricJarExportDisabledReason={fabricJarReason}
               onExportFabricJar={exportFabricJar}
+              onTestInMinecraft={testInMinecraft}
               onInstall={installResource}
               onInstallData={installData}
               onSettings={handlers.settings}

@@ -11,6 +11,11 @@
     },
     "lint": {
       "outputs": []
+    },
+    "@msm/app#test": {
+      "dependsOn": [],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/engine-mod/gradle.properties"],
+      "outputs": []
     }
   }
 }

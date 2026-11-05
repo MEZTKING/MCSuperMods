@@ -13,6 +13,7 @@
  * behind "Advanced (all fields)".
  */
 
+import type { Json } from '@msm/core';
 import { useState } from 'react';
 import { typingKey } from '../../forms/context';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
@@ -33,6 +34,9 @@ const DROPS_LABELS: Readonly<Record<Drops, string>> = {
 export function BlockStudio(props: StudioProps) {
   const { project, element, node, problems, suggest, onChange } = props;
   const [advanced, setAdvanced] = useState(false);
+  // The block item object last unticked in this session, per element, so ticking "Has a block
+  // item" again restores its stack size, rarity and creative tab.
+  const [lastItem, setLastItem] = useState<{ id: string; item: Json } | null>(null);
   const data = asObject(element.data);
   const set = pathSetter(element.data, onChange);
   const events = eventNames(element.data);
@@ -229,7 +233,18 @@ export function BlockStudio(props: StudioProps) {
         label="Has a block item"
         checked={hasItem}
         testId="block-has-item"
-        onChange={(checked) => set(['item'], checked ? undefined : false)}
+        onChange={(checked) => {
+          if (checked) {
+            const restored =
+              lastItem !== null && lastItem.id === element.id ? lastItem.item : undefined;
+            set(['item'], restored);
+            return;
+          }
+          if (data.item !== undefined && data.item !== false) {
+            setLastItem({ id: element.id, item: data.item });
+          }
+          set(['item'], false);
+        }}
       />
       {hasItem ? (
         <div className="flex flex-wrap gap-2">

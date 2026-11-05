@@ -227,8 +227,8 @@ We do not hand-write schemas. Vanilla file formats are described by **mcdoc**, t
 ### Pins and extensions
 
 - Each target declares one `vanilla-mcdoc` commit sha (`mcdocRef`). `tools/sync-mcdoc` regenerates the vendored symbol export in the target package; `@msm/schemas` receives it by injection.
-- Until MSM mcdoc arrives in Phase 4, MSM-owned shapes are TypeScript `SchemaNode` extensions in `@msm/schemas` behind built-in refs: `msm:function` (`{ lines: string[] }`, [ADR 0015](adr/0015-data-pack-element-model.md)) and `msm:structure_template` (the structure template JSON, with `jigsaws[*].pool` typed as a `worldgen/template_pool` id and block-entity NBT as SNBT strings, [ADR 0021](adr/0021-structure-templates-and-nbt.md)). Compiled MSM mcdoc later replaces them behind the same refs.
-- MSM's own kinds, components, events and actions are described in **MSM mcdoc files** under `packages/schemas/mcdoc/msm/`. These are the single source of truth: the app uses them for forms and validation, and the engine mod's definition parsing is generated from or aligned with them (Phase 4).
+- Before MSM mcdoc arrived in Phase 4, MSM-owned shapes were TypeScript `SchemaNode` extensions in `@msm/schemas` behind built-in refs: `msm:function` (`{ lines: string[] }`, [ADR 0015](adr/0015-data-pack-element-model.md)) and `msm:structure_template` (the structure template JSON, with `jigsaws[*].pool` typed as a `worldgen/template_pool` id and block-entity NBT as SNBT strings, [ADR 0021](adr/0021-structure-templates-and-nbt.md)). These two remain; compiled MSM mcdoc can replace them behind the same refs later.
+- MSM's own kinds, components, events and actions are described in **MSM mcdoc files** under `packages/schemas/mcdoc/msm/`. These are the single source of truth: the app uses them for forms and validation, and the engine mod's Codecs are aligned with them through a shared conformance corpus. `tools/build-msm-mcdoc` exports them into a checked-in `symbols.json` that `createSchemaIndex` merges with the target's vanilla symbols ([ADR 0025](adr/0025-msm-definition-format-v1.md) D7).
 
 ### Schema to form generation
 
@@ -333,7 +333,7 @@ Both paths edit the same element through the same command stack, so switching be
 Content comes from plugins ([Plugin System](#7-plugin-system)); the app only presents it ([ADR 0020](adr/0020-templates-starters-examples.md)).
 
 - **New element.** The picker groups templates under category headings (Models, Blockstates, Recipes, Loot tables, Tags and so on) and has a filter box. Every built-in kind has at least one template with starting content that validates against the current target; a third-party kind without templates gets a generic entry built from its `defaultData`.
-- **New project.** Toolbar "New" and File > New Project… still create a blank project directly. The split arrow on "New", File > New Project from Starter… and the palette open the New project dialog, which lists starters grouped as blank, pack and content, with layer badges; submitting asks for an empty folder and builds the starter there with the namespace derived from the folder name. Before Phase 4 the Custom ore starter reskins emerald ore as "Ruby Ore", because a vanilla pack cannot add blocks; Phase 4 replaces it with a real `msm:block` ore.
+- **New project.** Toolbar "New" and File > New Project… still create a blank project directly. The split arrow on "New", File > New Project from Starter… and the palette open the New project dialog, which lists starters grouped as blank, pack and content, with layer badges; submitting asks for an empty folder and builds the starter there with the namespace derived from the folder name. Since Phase 4 the Custom ore starter is a real `msm:block` ruby ore with its item, loot table, recipes and `msm:mod` element, exported as a Fabric mod jar (before Phase 4 it reskinned emerald ore).
 - **Examples gallery.** Help > Examples… and the palette open a gallery of one commented example per built-in kind plus the content starters, with search over title, kind, category and tags, a kind filter and a detail pane showing the notes. "Open as new project" builds the example into a new folder; "Copy into my project" adds it to the open project under a chosen namespace as one undo step, reporting ids that already exist.
 - **Notes callout.** An element with `meta.notes` (every copied example) shows them in a collapsible, read-only Notes callout above its editor.
 
@@ -351,7 +351,7 @@ From Phase 3 ([ADR 0023](adr/0023-structure-and-climate-previews.md)) the panel 
 
 - **Phase 1:** export the resource pack and copy it into the user's `resourcepacks` folder; the user enables it in-game.
 - **Phase 2:** export the data pack and copy it into a chosen world's `datapacks` folder; the user runs `/reload`.
-- **Phase 4:** launch a **managed Fabric test instance** with `msm_runtime` and the current content jar installed, from inside the app.
+- **Phase 4:** File > "Test in Minecraft…" (also in the Export menu and the palette) installs the current content jar, with `msm_runtime` nested, into a Fabric location and launches Prism or MultiMC, or creates a managed Prism test instance ([Interop](#13-interop-blockbench-nbt-minecraft-installation)).
 
 ### Error surfacing
 
@@ -382,7 +382,8 @@ interface Target {
     featureSteps: readonly string[];              // decoration steps in order (ADR 0022)
     biomeAttributes?: BiomeAttributeFacts;       // biome attribute ids: colours, sky colour, natural mob spawns (26.3)
   };
-  fabric?: { loader: string; api: string; loom: string };   // required from Phase 4 (verify at implementation)
+  fabric?: { loader: string; api: string; loom: string; minecraftDependency: string };
+                              // Phase 4 (ADR 0027); 26.3: loader 0.20.1, API 0.165.2+26.3, Loom 1.19.3, "~26.3" (verified 2026-11-05)
   geckolib?: string;          // required from Phase 5; 5.5+ line (verify at implementation)
   migrateFrom?(previous: Target, project: Project): MigrationReport;
 }
@@ -399,14 +400,16 @@ Support policy: the current release (26.3) and the previous one (26.2) at launch
 | Exporter | Output | Phase |
 |---|---|---|
 | `vanilla-packs` | Resource pack `.zip` (Phase 1), data pack `.zip`, or both zips in a folder the user picks (Phase 2; [ADR 0015](adr/0015-data-pack-element-model.md)) | 1–2 |
-| `fabric-content-jar` | Jar with `assets/`, `data/`, `msm/`, `fabric.mod.json`; `msm_runtime` nested by default; GeckoLib nested when used | 4 |
+| `fabric-content-jar` | Jar with `assets/`, `data/`, `msm/`, `fabric.mod.json`; `msm_runtime` nested by default, or left out with the "Separate runtime (for modpacks)" option ([ADR 0026](adr/0026-fabric-content-jar.md)); GeckoLib nested when used (Phase 5) | 4 (exists) |
 | `java-project` | Standalone Gradle project with generated Java (eject) | 6 |
+
+The content jar exporter lives in `@msm/exporters` (`src/fabric-content-jar/`), writes the same deterministic zip as the packs, takes its Fabric facts from `Target.fabric` and receives the runtime jar bytes from its host (`createFabricContentJarExporter({ loadRuntimeJar })`), so it has no file access. Exporters declare boolean options that the export dialog renders ([ADR 0027](adr/0027-plugin-api-0.6.md)). Files several elements contribute to (language files, tags) declare `OutputFile.merge` and are merged in step 3; other files meeting at one path are conflicts.
 
 ### Pipeline
 
 1. **Collect** all elements in the enabled namespaces.
 2. **Lower** each element against the chosen target into `OutputFile[]`.
-3. **Merge** outputs; conflicts on the same path are errors.
+3. **Merge** outputs: files that declare `merge` (`tag`, `object`) are combined; any other files on the same path are conflicts and errors ([ADR 0027](adr/0027-plugin-api-0.6.md)).
 4. **Validate** every JSON output that declares `OutputFile.schema` against the schema model derived from the target's vanilla-mcdoc and MSM mcdoc ([ADR 0009](adr/0009-phase1-validation-gate.md)), and every text output that declares `OutputFile.language` (`mcfunction`) with the injected text validator ([ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)).
 5. **Write** via the exporter: zip, folder, jar or Gradle project. Output is deterministic (entries sorted by path, fixed zip timestamps that are identical in every timezone; [ADR 0013](adr/0013-phase1-toolchain-and-packaging.md)), and each output includes an `msm.export.json` manifest listing target, MSM version and plugins.
 
@@ -420,11 +423,14 @@ Step 4 is a hard gate: every lowered JSON file is validated against the schema m
 
 ### Toolchain
 
+Verified on 2026-11-05 ([ADR 0024](adr/0024-runtime-registration-spike.md)):
+
 - **Java 25**, required by Minecraft 26.1+.
-- **Gradle** (current, Kotlin DSL).
-- **Fabric Loom, the 26.1+ non-remapping variant** (plugin id and version: verify at implementation). Dependencies use plain `implementation`, not `modImplementation`.
-- **Fabric Loader + Fabric API** for 26.3 (versions: verify at implementation).
+- **Gradle 9.8.2** (wrapper, Kotlin DSL).
+- **Fabric Loom, the 26.1+ non-remapping variant**: plugin id `net.fabricmc.fabric-loom`, release 1.19.3. Minecraft is `com.mojang:minecraft:26.3` with no mappings line; dependencies use plain `implementation`, not `modImplementation`.
+- **Fabric Loader 0.20.1 and Fabric API 0.165.2+26.3** for 26.3; the same facts live in the target's `fabric` block for the exporter.
 - **Mojang names only.** 26.1+ ships unobfuscated and Fabric no longer maintains Yarn for it; we use no Yarn and no Parchment.
+- **Fabric API modules used:** creative tabs through `fabric-creative-tab-api-v1` (`CreativeModeTabEvents.modifyOutputEvent`, keys built with `ResourceKey.create(Registries.CREATIVE_MODE_TAB, id)`); GameTests through `fabric-gametest-api-v1` (annotation `net.fabricmc.fabric.api.gametest.v1.GameTest`, entry point `fabric-gametest`, Loom `fabricApi { configureTests {} }`, task `runGameTest`, which `./gradlew build` runs). `Block.Properties` and `Item.Properties` need `setId(ResourceKey)` before construction.
 
 ### The registry freeze
 
@@ -436,7 +442,7 @@ During initialisation the runtime iterates `FabricLoader.getAllMods()`, calls `f
 
 ### Driver classes and components
 
-Each definition is registered through a generic **driver class**: `MsmBlock`, `MsmItem` or `MsmEntity`. The driver holds a list of parsed **components** and dispatches game callbacks (use, step, break, tick, attack) to them. Behaviour is never hardcoded per definition, and the runtime does not use reflection on definitions. Definitions are parsed with Codecs aligned with the MSM mcdoc schemas.
+Each definition is registered through a generic **driver class**: `MsmBlock`, `MsmItem` or `MsmEntity` (Phase 5). The driver holds a list of parsed **components** and dispatches game callbacks (use, step, break, tick, attack) to them. Behaviour is never hardcoded per definition, and the runtime does not use reflection on definitions. Definitions are parsed with Codecs aligned with the MSM mcdoc schemas (strict JSON types; a shared conformance corpus is checked by both the app's `validateJson` and the runtime's JUnit tests). The definition format v1 and the runtime's load rules are in [ADR 0025](adr/0025-msm-definition-format-v1.md).
 
 ### Frozen versus reloadable data
 
@@ -450,7 +456,7 @@ Anything that can be reloadable stays in the ordinary data pack inside the conte
 
 ### Distribution
 
-The exporter produces a **content jar** whose `fabric.mod.json` depends on `msm_runtime`. By default the runtime jar is **nested** in the content jar via the `"jars"` field, so users ship one file. A "separate runtime" checkbox omits nesting for modpack makers who want one shared runtime.
+The exporter produces a **content jar** whose `fabric.mod.json` depends on `msm_runtime`. By default the runtime jar is **nested** in the content jar via the `"jars"` field, so users ship one file. A "separate runtime" checkbox omits nesting for modpack makers who want one shared runtime. The runtime carries the app's version (`engine-mod/gradle.properties` `mod_version` equals `app/package.json`, checked by a test), is built by `engine-mod/` Gradle and ships with the app as `runtime/msm_runtime.jar`; content jars depend on `msm_runtime >=<version>` ([ADR 0026](adr/0026-fabric-content-jar.md)). CI starts a headless Fabric dedicated server with the kitchen-sink sample (`tools/run-fabric-server`, `fixtures/sample-mod/`) and fails on any runtime error or warning.
 
 ### Mixin policy
 
@@ -504,7 +510,7 @@ On export this lowers to `msm/mymod/block/ruby_ore.json` (the runtime definition
 | 4 | Items | `msm:food`, `msm:tool` (tier), `msm:durability`, `msm:on_use` (use actions) |
 | 5 | Entities | `msm:health`, `msm:movement`, `msm:ai_goals` (vanilla goal subset: wander, look, melee attack, flee, follow), `msm:attack`, `msm:animated_model` |
 
-A new component's MSM mcdoc and runtime implementation land in the same change.
+A new component's MSM mcdoc and runtime implementation land in the same change. The Phase 4 components and the six actions are implemented in `msm_runtime` v1 and edited in the Block and Item Studios; action fields, defaults and the runtime rules (dropped events, chain depth 16, strict types, `"item": false`) are in [ADR 0025](adr/0025-msm-definition-format-v1.md).
 
 ## 12. Scripting and Escape Hatches
 
@@ -585,12 +591,12 @@ Structure `.nbt` (vanilla structure template) and Sponge `.schem` (Version 2 and
   - **CurseForge app:** the modding folder defaults to `%USERPROFILE%\curseforge\minecraft\` on Windows and `~/Documents/curseforge/minecraft/` on macOS; other folders are added by hand. Instances are `Instances/<name>/` folders holding `minecraftinstance.json` (`name`, `gameVersion`, `baseModLoader`; loader from the `baseModLoader.name` prefix and `null` for vanilla, verify at implementation); the instance folder is the game folder. The client jar is read from `Install/versions/<v>/<v>.jar` (verify at implementation).
   - **Install target:** the user picks one location in Settings or the toolbar Install menu; when the stored target no longer exists, MSM falls back to the official folder and says so. Packs install only into the selected `gameDir`; the real path of `gameDir` must lie inside the real instance folder and instances root (for the official launcher, inside `.minecraft`). A version mismatch between the instance and the project warns but does not block; a missing game folder blocks with "Start the instance once so its game folder exists."
   - **Jar search for extraction:** the selected location's own store first (exact version, then the prefix rule), then every other known store in discovery order (official, Prism, MultiMC, CurseForge). The cache stays keyed by `mcVersion`.
-  - **Phase 4:** each location records its loader and `mods/` folder so the content jar can be installed into a Fabric instance; nothing is written to `mods/` before then.
+  - **Phase 4:** each location records its loader and `mods/` folder, so the content jar can be installed into a Fabric location (see Launching).
 - **Asset extraction:** the Electron main process reads vanilla models, blockstates, item definitions, block and item textures and `en_us` lang from the user's installed client jar (`versions/<v>/<v>.jar` for the official launcher; launcher stores as above) into `~/.msm/cache/assets/<version>/` for previews, and serves them to the renderer over IPC ([ADR 0011](adr/0011-client-jar-asset-extraction.md)). The cache is keyed by the project target's `mcVersion`. Animation metadata (`.png.mcmeta`) is extracted from Phase 2: project-authored sidecars are imported beside their texture and validated against `resource:texture_meta` at export, and the preview steps through frames without interpolation (in Phase 1 animated textures previewed as their first frame). **These assets are never redistributed** and never written into exports. Tests use a synthetic jar built at test time; the repository holds no Mojang bytes.
 - **Worlds:** from Phase 2 main lists worlds of the selected location as `<gameDir>/saves/<dir>/` folders containing `level.dat` (from Phase 3 with the world name read from it) and installs a data pack to `saves/<world>/datapacks/` ([ADR 0015](adr/0015-data-pack-element-model.md)).
-- **Launching:** Phase 1 is manual (copy pack, user starts the game). Phase 4 adds a managed instance created with the Fabric installer and a vanilla launcher profile (verify at implementation).
+- **Launching:** packs are installed and the user starts the game. From Phase 4, **Test in Minecraft** (`@msm/interop` `fabric/`, [ADR 0026](adr/0026-fabric-content-jar.md) D5) exports the content jar, installs it into a Fabric location's `mods/` as `<mod_id>.jar` and downloads Fabric API there when missing (Fabric Maven, SHA-512 checked, cached in the app's user-data folder). Only files MSM installed, recorded in `mods/.msm-installed.json`, are ever replaced. A Prism or MultiMC instance on the target's Minecraft with at least the target's Fabric Loader is launched with `--launch <instance>` (plus `--dir` for a non-default data folder); on request the app creates a managed Prism instance `MCSuperMods Test (<mc>)` naming only `net.minecraft` and `net.fabricmc.fabric-loader` (Prism adds intermediary itself). Official-launcher and CurseForge Fabric locations are install only, with a note.
 
-We are read-only on the user's game directories and launcher folders, except for copying packs into the selected location's `resourcepacks`/`datapacks` and managing our own instance folder.
+We are read-only on the user's game directories and launcher folders, except for copying packs into the selected location's `resourcepacks`/`datapacks`, installing our own files into `mods/` (Test in Minecraft) and managing our own instance folder. Every write into these folders is atomic (a temporary file in the same folder, then a rename), so a game or launcher never reads a half-written file.
 
 ## 14. Tech Stack
 
@@ -710,7 +716,7 @@ CI runs from Phase 0: Biome, type checks and unit tests on every push.
 |---|---|---|---|---|---|
 | 1 | Minecraft version churn (three drops a year) | High | High | Targets package isolates version facts; mcdoc/mcmeta pinned per target; support N and N-1 only. | A release needs changes outside `packages/targets`. |
 | 2 | Spyglass internal API instability | Medium | Medium | Wrap behind `@msm/schemas`; pin versions; keep a minimal own mcdoc reader as a fallback plan. | A Spyglass upgrade breaks more than `@msm/schemas`. |
-| 3 | Registry freeze limits runtime registration | Medium | High | Prototype in Phase 4 week 1 before building editors; fall back to code generation (Tier 2) if dynamic registration hits limits. | Spike fails to register a block from `msm/` cleanly. |
+| 3 | Registry freeze limits runtime registration | Medium | High | Prototype in Phase 4 week 1 before building editors; fall back to code generation (Tier 2) if dynamic registration hits limits. | Spike fails to register a block from `msm/` cleanly. Resolved: the Phase 4 spike passed ([ADR 0024](adr/0024-runtime-registration-spike.md)). |
 | 4 | Scope creep ("anything possible") | High | High | MVP is resource packs only; each phase ships a usable version; non-goals written down. | A phase exceeds its estimate by 50%. |
 | 5 | Shipping Mojang assets | Low | High | Never bundle; extract from the user's client jar at runtime; previews degrade gracefully. | Any export or installer contains vanilla assets. |
 | 6 | GeckoLib API churn | Medium | Medium | Isolate behind the `msm:animated_model` component; MIT licence permits nesting; own minimal renderer is the fallback. | GeckoLib lags a supported target by more than one release. |
