@@ -1,0 +1,20 @@
+{
+  "components": {
+    "msm:on_step": {
+      "event": "mymod:stepped"
+    }
+  },
+  "events": {
+    "mymod:stepped": {
+      "actions": [
+        {
+          "amplifier": 2,
+          "effect": "minecraft:slowness",
+          "seconds": 2.5,
+          "type": "apply_effect"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

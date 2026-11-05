@@ -29,3 +29,4 @@ export {
   toolTierName,
   vanillaTierName,
 } from './tools';
+export { WEAPON_ITEM_TAGS, weaponItemTags } from './weapons';

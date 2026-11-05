@@ -36,6 +36,11 @@ const IDS = [
   'msm_item_tool',
   'msm_item_tool_custom_material',
   'msm_item_armor_helmet',
+  'msm_item_spear',
+  'msm_item_bow',
+  'msm_item_shield',
+  'msm_item_drink',
+  'msm_item_totem',
   'msm_item_wand',
   'msm_mod',
 ];

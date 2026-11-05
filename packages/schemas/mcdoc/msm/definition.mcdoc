@@ -63,6 +63,12 @@ enum(string) ToolType {
 	Shovel = "shovel",
 	Hoe = "hoe",
 	Sword = "sword",
+	/// A spear (ADR 0044 D3): vanilla's spear attacks with the tier's material; joins
+	/// `minecraft:spears`.
+	Spear = "spear",
+	/// A mace (ADR 0044 D3): vanilla's smash attack with the tier's durability and enchantment
+	/// value; joins the mace enchanting tags.
+	Mace = "mace",
 }
 
 /// A tool tier (verify the list at implementation; validators check it against the target).
@@ -195,9 +201,11 @@ struct Tool {
 	type: ToolType,
 	/// A vanilla tier by name, or a custom material.
 	tier: (ToolTier | ToolMaterial),
-	/// Overrides the type's base attack damage (sword 3, axe 6, pickaxe 1, shovel 1.5, hoe -2).
+	/// Overrides the type's base attack damage (sword 3, axe 6, pickaxe 1, shovel 1.5, hoe -2;
+	/// spear and mace use vanilla's values).
 	attack_damage?: float,
-	/// Overrides the type's base attack speed (sword -2.4, axe -3.1, pickaxe -2.8, shovel -3.0, hoe -1.0).
+	/// Overrides the type's base attack speed (sword -2.4, axe -3.1, pickaxe -2.8, shovel -3.0,
+	/// hoe -1.0; spear and mace use vanilla's values).
 	attack_speed?: float,
 }
 
@@ -207,6 +215,10 @@ enum(string) ArmorSlot {
 	Chestplate = "chestplate",
 	Leggings = "leggings",
 	Boots = "boots",
+	/// Horse armour (ADR 0044 D5); the equipment asset needs a `horse_body` layer.
+	Horse = "horse",
+	/// Wolf armour (ADR 0044 D5); the equipment asset needs a `wolf_body` layer.
+	Wolf = "wolf",
 }
 
 /// Vanilla armour materials by name (checked against the target's `armorMaterials` facts).
@@ -226,7 +238,7 @@ enum(string) ArmorMaterialName {
 struct ArmorMaterial {
 	/// Base durability; each slot multiplies it as vanilla does (helmet 11, chestplate 16, leggings 15, boots 13).
 	durability: int @ 1..,
-	/// Armour points per slot.
+	/// Armour points per slot; horse and wolf armour use the `chestplate` value.
 	defense: struct ArmorDefense {
 		helmet: int @ 0..,
 		chestplate: int @ 0..,
@@ -268,14 +280,107 @@ struct OnUse {
 	cooldown_ticks?: int @ 0..,
 }
 
+/// How a consumable is used: the animation and the sound class.
+enum(string) ConsumeAnimation {
+	Eat = "eat",
+	Drink = "drink",
+	None = "none",
+}
+
+/// One vanilla mob effect a consumable, a totem-like item or an action gives.
+struct ConsumeEffect {
+	/// The mob effect, such as `minecraft:regeneration`.
+	effect: #[id="mob_effect"] string,
+	/// Duration in seconds.
+	seconds: float @ 0..,
+	/// Effect level minus one; defaults to 0 (level I).
+	amplifier?: int @ 0..255,
+	/// Probability that the effect is applied, 0 to 1; defaults to 1.
+	chance?: float @ 0..1,
+}
+
+/// Makes the item consumable (ADR 0044 D2). With `msm:food` it is food with these extras;
+/// alone it is a drink or another consumable that restores no hunger.
+struct Consumable {
+	/// Seconds it takes to consume the item (vanilla food 1.6, a potion 1.6, a honey bottle 2).
+	seconds: float @ 0..,
+	animation: ConsumeAnimation,
+	/// Mob effects given when the item is consumed.
+	effects?: [ConsumeEffect],
+	/// Sound played while consuming; defaults to the animation's vanilla sound.
+	sound?: #[id="sound_event"] string,
+	/// Whether item particles show while consuming; defaults to true.
+	particles?: boolean,
+	/// The item left after consuming, such as `minecraft:glass_bottle`.
+	converts_to?: #[id="item"] string,
+	/// Seconds before any item of this kind can be used again; defaults to none.
+	cooldown_seconds?: float @ 0..,
+}
+
+/// The kind of a ranged weapon.
+enum(string) RangedWeaponType {
+	Bow = "bow",
+	Crossbow = "crossbow",
+}
+
+/// Makes the item a bow or crossbow that shoots vanilla arrows (ADR 0044 D3).
+struct RangedWeapon {
+	type: RangedWeaponType,
+	/// Draw (bow) or charge (crossbow) speed factor; defaults to 1 (vanilla).
+	draw_speed?: float @ 0.1..10,
+	/// Arrow speed factor; defaults to 1 (vanilla).
+	velocity?: float @ 0.1..10,
+	/// Factor on the arrow's base damage; defaults to 1 (vanilla).
+	damage_multiplier?: float @ 0..10,
+	/// Spread of the shot; defaults to vanilla's (1).
+	inaccuracy?: float @ 0..10,
+}
+
+/// Makes the item block attacks while held up, like a shield (ADR 0044 D3); lowers to the
+/// vanilla `blocks_attacks` component.
+struct Shield {
+	/// Seconds of raising before blocking starts; defaults to 0.25 (vanilla shield).
+	block_delay_seconds?: float @ 0..,
+	/// Fraction of the damage blocked, 0 to 1; defaults to 1 (blocks all).
+	damage_reduction?: float @ 0..1,
+	/// Factor on the cooldown an axe hit puts on the shield; defaults to 1.
+	disable_cooldown_scale?: float @ 0..,
+	/// A damage type tag that goes through the block, such as `#minecraft:bypasses_shield`.
+	bypassed_by?: #[id(registry="damage_type", tags="required")] string,
+}
+
+/// Saves the holder from death like a totem of undying (ADR 0044 D4), held in either hand.
+struct DeathProtection {
+	/// Mob effects given when the item saves its holder.
+	effects: [ConsumeEffect],
+	/// Whether the holder's effects are cleared first, as the vanilla totem does; defaults to
+	/// false.
+	clear_effects?: boolean,
+}
+
 /// Runtime item components.
 struct ItemComponents {
 	"msm:food"?: Food,
 	"msm:tool"?: Tool,
-	/// An armour piece; not together with `msm:tool` (checked by the validators).
+	/// An armour piece; not together with `msm:tool`, `msm:ranged_weapon` or `msm:shield`
+	/// (checked by the validators).
 	"msm:armor"?: Armor,
 	"msm:durability"?: Durability,
 	"msm:on_use"?: OnUse,
+	/// Eating or drinking: effects, time, sound, the item left over and a cooldown.
+	"msm:consumable"?: Consumable,
+	/// A bow or crossbow; not together with `msm:tool`, `msm:armor` or `msm:shield`.
+	"msm:ranged_weapon"?: RangedWeapon,
+	/// Blocks attacks; not together with `msm:tool`, `msm:armor` or `msm:ranged_weapon`.
+	"msm:shield"?: Shield,
+	/// Saves the holder from death.
+	"msm:death_protection"?: DeathProtection,
+	/// Vanilla data components by id, each in its vanilla JSON form (ADR 0044 D1), checked
+	/// against the target's own component schemas. MSM's own components win: a vanilla
+	/// component that an MSM component also sets is an error (checked by the validators).
+	"msm:components"?: struct VanillaComponents {
+		[#[id="data_component_type"] string]: minecraft:data_component[[%key]],
+	},
 }
 
 /// Fields every item definition and item element share.

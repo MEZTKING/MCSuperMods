@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:ranged_weapon": {
+      "draw_speed": 0,
+      "type": "bow"
+    }
+  },
+  "format": 1
+}

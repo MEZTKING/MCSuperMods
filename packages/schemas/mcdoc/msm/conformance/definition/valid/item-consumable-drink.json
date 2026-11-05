@@ -1,0 +1,26 @@
+{
+  "components": {
+    "msm:consumable": {
+      "animation": "drink",
+      "converts_to": "minecraft:glass_bottle",
+      "cooldown_seconds": 2,
+      "effects": [
+        {
+          "amplifier": 1,
+          "effect": "minecraft:speed",
+          "seconds": 30
+        },
+        {
+          "chance": 0.5,
+          "effect": "minecraft:night_vision",
+          "seconds": 60
+        }
+      ],
+      "particles": false,
+      "seconds": 1.6,
+      "sound": "minecraft:entity.generic.drink"
+    }
+  },
+  "format": 1,
+  "max_stack_size": 16
+}

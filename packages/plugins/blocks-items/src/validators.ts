@@ -27,8 +27,13 @@
  *   `equipment_asset` names neither a `minecraft:equipment` element of the project nor a
  *   vanilla equipment asset of the target, so the piece is invisible when worn (ADR 0042 D2).
  *   Skipped when the registry knows no equipment assets and the project has none.
- * - `blocks-items.component-conflict` (error): an `msm:item` with both `msm:armor` and
- *   `msm:tool`; the runtime registers neither (ADR 0042 D1).
+ *   For horse and wolf armour (ADR 0044 D5) whose asset is a project equipment element, the
+ *   element must also have the `horse_body` or `wolf_body` layer.
+ * - `blocks-items.component-conflict` (error): an `msm:item` with two of the mutually
+ *   exclusive components {@link EXCLUSIVE_ITEM_COMPONENTS} (ADR 0042 D1, ADR 0044 D3; the
+ *   runtime registers none of them), or an `msm:components` entry for a vanilla component that
+ *   an MSM component or field of the same item already sets ({@link MSM_VANILLA_COMPONENTS};
+ *   ADR 0044 D1: MSM's own component wins). The message names the two components.
  * - `blocks-items.item-collision` (error): an `msm:item` with the id of an `msm:block` that
  *   registers its own block item (`item` is not `false`).
  */
@@ -75,6 +80,43 @@ export const BLOCKS_ITEMS_PROBLEM_CODES = Object.freeze([
   'blocks-items.unknown-equipment-asset',
   'blocks-items.component-conflict',
 ] as const);
+
+/**
+ * Item components of which an item may have at most one (ADR 0044 D3): the runtime builds a
+ * different item class or base properties for each.
+ */
+export const EXCLUSIVE_ITEM_COMPONENTS: readonly string[] = Object.freeze([
+  'msm:tool',
+  'msm:armor',
+  'msm:ranged_weapon',
+  'msm:shield',
+]);
+
+/**
+ * The vanilla data components (unprefixed ids) each MSM item component sets, so an
+ * `msm:components` entry for one of them clashes (ADR 0044 D1). Keys are component ids under
+ * `components`, or the top-level fields `max_stack_size` and `rarity`. Every id is checked
+ * against each built-in target's `data_component_type` registry in the tests.
+ */
+export const MSM_VANILLA_COMPONENTS: Readonly<Record<string, readonly string[]>> = Object.freeze({
+  max_stack_size: ['max_stack_size'],
+  rarity: ['rarity'],
+  'msm:food': ['food', 'consumable'],
+  'msm:consumable': ['consumable', 'use_cooldown', 'use_remainder'],
+  'msm:tool': ['tool', 'weapon', 'attribute_modifiers', 'max_damage', 'enchantable', 'repairable'],
+  'msm:armor': ['equippable', 'attribute_modifiers', 'max_damage', 'enchantable', 'repairable'],
+  'msm:durability': ['max_damage'],
+  'msm:shield': ['blocks_attacks'],
+  'msm:death_protection': ['death_protection'],
+});
+
+/** Extra vanilla components an `msm:tool` of type spear sets (vanilla's spear attack). */
+export const SPEAR_VANILLA_COMPONENTS: readonly string[] = Object.freeze([
+  'kinetic_weapon',
+  'piercing_weapon',
+  'attack_range',
+  'minimum_attack_charge',
+]);
 
 /** RFC 6901 escaping of one reference token. */
 const token = (key: string): string => key.replaceAll('~', '~0').replaceAll('/', '~1');
@@ -312,45 +354,103 @@ function unknownArmorMaterials(
 /** `ns:path` for a written id; an id without a namespace is `minecraft:`. */
 const namespacedId = (id: string): string => (id.includes(':') ? id : `minecraft:${id}`);
 
+/** The equipment layer horse and wolf armour draw (ADR 0044 D5). */
+const BODY_LAYERS: Readonly<Record<string, string>> = Object.freeze({
+  horse: 'horse_body',
+  wolf: 'wolf_body',
+});
+
 function unknownEquipmentAssets(
   elements: readonly Element[],
   registry: ValidationRegistry,
 ): Problem[] {
-  const project = new Set<string>(
-    elements.filter((element) => element.kind === EQUIPMENT_KIND).map((element) => element.id),
+  const project = new Map<string, Element>(
+    elements
+      .filter((element) => element.kind === EQUIPMENT_KIND)
+      .map((element) => [element.id, element]),
   );
   if (project.size === 0 && registry.ids('equipment').length === 0) return [];
   const problems: Problem[] = [];
+  const assetPath = pointer('components', 'msm:armor', 'material', 'equipment_asset');
   for (const element of elements) {
-    const asset = record(armorOf(element)?.material)?.equipment_asset;
+    const armor = armorOf(element);
+    const asset = record(armor?.material)?.equipment_asset;
     if (typeof asset !== 'string') continue;
     const id = namespacedId(asset);
-    if (project.has(id) || registry.has('equipment', id)) continue;
+    const equipment = project.get(id);
+    if (equipment === undefined && !registry.has('equipment', id)) {
+      problems.push({
+        severity: 'warning',
+        code: 'blocks-items.unknown-equipment-asset',
+        elementId: element.id,
+        path: assetPath,
+        message: `Equipment asset "${asset}" is neither an equipment element of this project nor a vanilla one, so the armour is invisible when worn. Add a "${id}" equipment element or pick an existing one.`,
+      });
+      continue;
+    }
+    const layer = typeof armor?.slot === 'string' ? BODY_LAYERS[armor.slot] : undefined;
+    if (equipment === undefined || layer === undefined) continue;
+    if (record(dataOf(equipment).layers)?.[layer] !== undefined) continue;
     problems.push({
       severity: 'warning',
       code: 'blocks-items.unknown-equipment-asset',
       elementId: element.id,
-      path: pointer('components', 'msm:armor', 'material', 'equipment_asset'),
-      message: `Equipment asset "${asset}" is neither an equipment element of this project nor a vanilla one, so the armour is invisible when worn. Add a "${id}" equipment element or pick an existing one.`,
+      path: assetPath,
+      message: `Equipment asset "${asset}" has no "${layer}" layer, so this ${armor?.slot} armour is invisible when worn. Add a "${layer}" layer to the "${id}" equipment element.`,
     });
   }
   return problems;
 }
 
+/** An `msm:components` key without its `minecraft:` prefix. */
+const vanillaComponentId = (key: string): string =>
+  key.startsWith('minecraft:') ? key.slice('minecraft:'.length) : key;
+
+/** `msm:x` or the top-level field `x`, as written in a message. */
+const describeSetter = (setter: string): string =>
+  setter.startsWith('msm:') ? `"${setter}"` : `the "${setter}" field`;
+
 function componentConflicts(elements: readonly Element[]): Problem[] {
   const problems: Problem[] = [];
   for (const element of elements) {
     if (element.kind !== ITEM_KIND) continue;
-    const components = record(dataOf(element).components);
-    if (components?.['msm:armor'] === undefined || components['msm:tool'] === undefined) continue;
-    problems.push({
-      severity: 'error',
-      code: 'blocks-items.component-conflict',
-      elementId: element.id,
-      path: pointer('components', 'msm:armor'),
-      message:
-        'An item cannot be both armour and a tool: the game would register neither. Remove "msm:armor" or "msm:tool".',
-    });
+    const data = dataOf(element);
+    const components = record(data.components) ?? {};
+    const present = EXCLUSIVE_ITEM_COMPONENTS.filter((id) => components[id] !== undefined);
+    for (const second of present.slice(1)) {
+      const first = present[0] as string;
+      problems.push({
+        severity: 'error',
+        code: 'blocks-items.component-conflict',
+        elementId: element.id,
+        path: pointer('components', second),
+        message: `An item cannot have both "${first}" and "${second}": the game would register neither. Remove one of them.`,
+      });
+    }
+    const passthrough = record(components['msm:components']);
+    if (passthrough === undefined) continue;
+    const setters = new Map<string, string>();
+    for (const [setter, vanilla] of Object.entries(MSM_VANILLA_COMPONENTS)) {
+      const isSet = setter.startsWith('msm:')
+        ? components[setter] !== undefined
+        : data[setter] !== undefined;
+      if (!isSet) continue;
+      for (const id of vanilla) if (!setters.has(id)) setters.set(id, setter);
+    }
+    if (record(components['msm:tool'])?.type === 'spear') {
+      for (const id of SPEAR_VANILLA_COMPONENTS) if (!setters.has(id)) setters.set(id, 'msm:tool');
+    }
+    for (const key of Object.keys(passthrough).sort()) {
+      const setter = setters.get(vanillaComponentId(key));
+      if (setter === undefined) continue;
+      problems.push({
+        severity: 'error',
+        code: 'blocks-items.component-conflict',
+        elementId: element.id,
+        path: pointer('components', 'msm:components', key),
+        message: `${describeSetter(setter)} and the "msm:components" entry "${key}" both set the vanilla "${vanillaComponentId(key)}" component; ${describeSetter(setter)} wins. Remove "${key}" from "msm:components" or remove ${describeSetter(setter)}.`,
+      });
+    }
   }
   return problems;
 }

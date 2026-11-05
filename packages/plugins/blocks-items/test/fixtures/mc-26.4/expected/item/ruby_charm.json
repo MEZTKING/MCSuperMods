@@ -1,0 +1,59 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:components": {
+          "minecraft:enchantment_glint_override": true,
+          "minecraft:glider": {}
+        },
+        "msm:on_use": {
+          "cooldown_ticks": 600,
+          "event": "example:charm_used"
+        }
+      },
+      "events": {
+        "example:charm_used": {
+          "actions": [
+            {
+              "amplifier": 1,
+              "effect": "minecraft:speed",
+              "seconds": 30,
+              "type": "apply_effect"
+            },
+            {
+              "effect": "minecraft:regeneration",
+              "seconds": 5,
+              "target": "self",
+              "type": "apply_effect"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "max_stack_size": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/item/ruby_charm.json",
+    "schema": "msm:item_definition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/heart_of_the_sea",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_charm.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "item.example.ruby_charm": "Ruby Charm"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

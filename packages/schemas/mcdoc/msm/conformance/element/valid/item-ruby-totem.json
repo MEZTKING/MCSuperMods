@@ -1,0 +1,20 @@
+{
+  "components": {
+    "msm:death_protection": {
+      "clear_effects": true,
+      "effects": [
+        {
+          "amplifier": 1,
+          "chance": 1,
+          "effect": "minecraft:regeneration",
+          "seconds": 45
+        }
+      ]
+    }
+  },
+  "display_name": "Ruby Totem",
+  "format": 1,
+  "max_stack_size": 1,
+  "model": "mymod:item/ruby_totem",
+  "rarity": "uncommon"
+}

@@ -135,6 +135,88 @@
           "desc": "Calls a script handler defined with `msm.actions.define` (ADR 0032 D4).",
           "identifier": "RunScript",
           "value": "run_script"
+        },
+        {
+          "desc": "Gives a vanilla mob effect to the player or the other entity of the event (ADR 0044 D2).",
+          "identifier": "ApplyEffect",
+          "value": "apply_effect"
+        }
+      ]
+    },
+    "::msm::action::ApplyEffect": {
+      "fields": [
+        {
+          "desc": "The mob effect, such as `minecraft:speed`.",
+          "key": "effect",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "mob_effect"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Duration in seconds.",
+          "key": "seconds",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Effect level minus one; defaults to 0 (level I).",
+          "key": "amplifier",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 255,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `self`.",
+          "key": "target",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::EffectTarget"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::EffectTarget": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "The event's player; in an entity definition without a player, the entity itself.",
+          "identifier": "Self",
+          "value": "self"
+        },
+        {
+          "desc": "The other entity of the event: the mob an entity hits (`on_attack`), the player who\nhurts or interacts with an entity; for block and item events, the player.",
+          "identifier": "Other",
+          "value": "other"
         }
       ]
     },
@@ -1075,7 +1157,7 @@
           }
         },
         {
-          "desc": "Armour points per slot.",
+          "desc": "Armour points per slot; horse and wolf armour use the `chestplate` value.",
           "key": "defense",
           "kind": "pair",
           "type": {
@@ -1301,6 +1383,16 @@
         {
           "identifier": "Boots",
           "value": "boots"
+        },
+        {
+          "desc": "Horse armour (ADR 0044 D5); the equipment asset needs a `horse_body` layer.",
+          "identifier": "Horse",
+          "value": "horse"
+        },
+        {
+          "desc": "Wolf armour (ADR 0044 D5); the equipment asset needs a `wolf_body` layer.",
+          "identifier": "Wolf",
+          "value": "wolf"
         }
       ]
     },
@@ -1614,6 +1706,217 @@
         {
           "desc": "Whether the block drops nothing unless mined with the right tool.",
           "key": "requires_tool",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Consumable": {
+      "fields": [
+        {
+          "desc": "Seconds it takes to consume the item (vanilla food 1.6, a potion 1.6, a honey bottle 2).",
+          "key": "seconds",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "key": "animation",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ConsumeAnimation"
+          }
+        },
+        {
+          "desc": "Mob effects given when the item is consumed.",
+          "key": "effects",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::definition::ConsumeEffect"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Sound played while consuming; defaults to the animation's vanilla sound.",
+          "key": "sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Whether item particles show while consuming; defaults to true.",
+          "key": "particles",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "The item left after consuming, such as `minecraft:glass_bottle`.",
+          "key": "converts_to",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Seconds before any item of this kind can be used again; defaults to none.",
+          "key": "cooldown_seconds",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::ConsumeAnimation": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Eat",
+          "value": "eat"
+        },
+        {
+          "identifier": "Drink",
+          "value": "drink"
+        },
+        {
+          "identifier": "None",
+          "value": "none"
+        }
+      ]
+    },
+    "::msm::definition::ConsumeEffect": {
+      "fields": [
+        {
+          "desc": "The mob effect, such as `minecraft:regeneration`.",
+          "key": "effect",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "mob_effect"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Duration in seconds.",
+          "key": "seconds",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Effect level minus one; defaults to 0 (level I).",
+          "key": "amplifier",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 255,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Probability that the effect is applied, 0 to 1; defaults to 1.",
+          "key": "chance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::DeathProtection": {
+      "fields": [
+        {
+          "desc": "Mob effects given when the item saves its holder.",
+          "key": "effects",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::definition::ConsumeEffect"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Whether the holder's effects are cleared first, as the vanilla totem does; defaults to\nfalse.",
+          "key": "clear_effects",
           "kind": "pair",
           "optional": true,
           "type": {
@@ -2329,7 +2632,7 @@
           }
         },
         {
-          "desc": "An armour piece; not together with `msm:tool` (checked by the validators).",
+          "desc": "An armour piece; not together with `msm:tool`, `msm:ranged_weapon` or `msm:shield`\n(checked by the validators).",
           "key": "msm:armor",
           "kind": "pair",
           "optional": true,
@@ -2354,6 +2657,89 @@
           "type": {
             "kind": "reference",
             "path": "::msm::definition::OnUse"
+          }
+        },
+        {
+          "desc": "Eating or drinking: effects, time, sound, the item left over and a cooldown.",
+          "key": "msm:consumable",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Consumable"
+          }
+        },
+        {
+          "desc": "A bow or crossbow; not together with `msm:tool`, `msm:armor` or `msm:shield`.",
+          "key": "msm:ranged_weapon",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::RangedWeapon"
+          }
+        },
+        {
+          "desc": "Blocks attacks; not together with `msm:tool`, `msm:armor` or `msm:ranged_weapon`.",
+          "key": "msm:shield",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Shield"
+          }
+        },
+        {
+          "desc": "Saves the holder from death.",
+          "key": "msm:death_protection",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::DeathProtection"
+          }
+        },
+        {
+          "desc": "Vanilla data components by id, each in its vanilla JSON form (ADR 0044 D1), checked\nagainst the target's own component schemas. MSM's own components win: a vanilla\ncomponent that an MSM component also sets is an error (checked by the validators).",
+          "key": "msm:components",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "attributes": [
+                    {
+                      "name": "id",
+                      "value": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "data_component_type"
+                        }
+                      }
+                    }
+                  ],
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "dispatcher",
+                  "parallelIndices": [
+                    {
+                      "accessor": [
+                        {
+                          "keyword": "key"
+                        }
+                      ],
+                      "kind": "dynamic"
+                    }
+                  ],
+                  "registry": "minecraft:data_component"
+                }
+              }
+            ],
+            "kind": "struct"
           }
         }
       ],
@@ -2666,6 +3052,89 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::RangedWeapon": {
+      "fields": [
+        {
+          "key": "type",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::RangedWeaponType"
+          }
+        },
+        {
+          "desc": "Draw (bow) or charge (crossbow) speed factor; defaults to 1 (vanilla).",
+          "key": "draw_speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 10,
+              "min": 0.1
+            }
+          }
+        },
+        {
+          "desc": "Arrow speed factor; defaults to 1 (vanilla).",
+          "key": "velocity",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 10,
+              "min": 0.1
+            }
+          }
+        },
+        {
+          "desc": "Factor on the arrow's base damage; defaults to 1 (vanilla).",
+          "key": "damage_multiplier",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 10,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Spread of the shot; defaults to vanilla's (1).",
+          "key": "inaccuracy",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 10,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::RangedWeaponType": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Bow",
+          "value": "bow"
+        },
+        {
+          "identifier": "Crossbow",
+          "value": "crossbow"
+        }
+      ]
+    },
     "::msm::definition::Rarity": {
       "enumKind": "string",
       "kind": "enum",
@@ -2719,6 +3188,84 @@
           "kind": "pair",
           "optional": true,
           "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Shield": {
+      "fields": [
+        {
+          "desc": "Seconds of raising before blocking starts; defaults to 0.25 (vanilla shield).",
+          "key": "block_delay_seconds",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Fraction of the damage blocked, 0 to 1; defaults to 1 (blocks all).",
+          "key": "damage_reduction",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Factor on the cooldown an axe hit puts on the shield; defaults to 1.",
+          "key": "disable_cooldown_scale",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "A damage type tag that goes through the block, such as `#minecraft:bypasses_shield`.",
+          "key": "bypassed_by",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "damage_type"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "required"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
             "kind": "string"
           }
         }
@@ -3105,7 +3652,7 @@
           }
         },
         {
-          "desc": "Overrides the type's base attack damage (sword 3, axe 6, pickaxe 1, shovel 1.5, hoe -2).",
+          "desc": "Overrides the type's base attack damage (sword 3, axe 6, pickaxe 1, shovel 1.5, hoe -2;\nspear and mace use vanilla's values).",
           "key": "attack_damage",
           "kind": "pair",
           "optional": true,
@@ -3114,7 +3661,7 @@
           }
         },
         {
-          "desc": "Overrides the type's base attack speed (sword -2.4, axe -3.1, pickaxe -2.8, shovel -3.0, hoe -1.0).",
+          "desc": "Overrides the type's base attack speed (sword -2.4, axe -3.1, pickaxe -2.8, shovel -3.0,\nhoe -1.0; spear and mace use vanilla's values).",
           "key": "attack_speed",
           "kind": "pair",
           "optional": true,
@@ -3295,8 +3842,55 @@
         {
           "identifier": "Sword",
           "value": "sword"
+        },
+        {
+          "desc": "A spear (ADR 0044 D3): vanilla's spear attacks with the tier's material; joins\n`minecraft:spears`.",
+          "identifier": "Spear",
+          "value": "spear"
+        },
+        {
+          "desc": "A mace (ADR 0044 D3): vanilla's smash attack with the tier's durability and enchantment\nvalue; joins the mace enchanting tags.",
+          "identifier": "Mace",
+          "value": "mace"
         }
       ]
+    },
+    "::msm::definition::VanillaComponents": {
+      "fields": [
+        {
+          "key": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "data_component_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": [
+                  {
+                    "keyword": "key"
+                  }
+                ],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "minecraft:data_component"
+          }
+        }
+      ],
+      "kind": "struct"
     },
     "::msm::definition::WanderGoal": {
       "fields": [
@@ -4291,6 +4885,10 @@
   },
   "mcdoc/dispatcher": {
     "msm:action": {
+      "apply_effect": {
+        "kind": "reference",
+        "path": "::msm::action::ApplyEffect"
+      },
       "give_item": {
         "kind": "reference",
         "path": "::msm::action::GiveItem"
@@ -4351,5 +4949,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:f43bfea3d6d17eab3c975397f90915b08e5dcd21e493e033e4600e54c567bad6"
+  "ref": "msm-mcdoc:sha256:ff62c07d97c732a95cdf8a45f59d8e1efe06128aa8e871998c969f4010f6e925"
 }

@@ -62,9 +62,15 @@ export function sourceRef(files: readonly { name: string; text: string }[]): str
 }
 
 /**
+ * Vanilla dispatchers MSM types may index without defining members (ADR 0044 D1): they
+ * resolve against the target's vanilla symbols when `createSchemaIndex` merges the export.
+ */
+export const VANILLA_DISPATCHER_PREFIX = 'minecraft:';
+
+/**
  * Problems that mcdoc-cli does not report: a type path or dispatcher outside `::msm` /
  * `msm:`, a reference to a path the export lacks, a dispatcher spread over an unknown
- * registry. Empty means valid.
+ * registry (a `minecraft:` registry counts as known: it is vanilla's). Empty means valid.
  */
 export function checkSymbols(symbols: MsmSymbols): string[] {
   const problems: string[] = [];
@@ -89,7 +95,8 @@ export function checkSymbols(symbols: MsmSymbols): string[] {
     if (
       value.kind === 'dispatcher' &&
       typeof value.registry === 'string' &&
-      !registries.has(value.registry)
+      !registries.has(value.registry) &&
+      !value.registry.startsWith(VANILLA_DISPATCHER_PREFIX)
     ) {
       problems.push(`${where}: dispatcher over unknown registry ${value.registry}`);
     }
@@ -100,6 +107,22 @@ export function checkSymbols(symbols: MsmSymbols): string[] {
     for (const [key, type] of Object.entries(members)) visit(type, `${registry}[${key}]`);
   }
   return problems;
+}
+
+/**
+ * The dispatcher map without the empty `minecraft:` entries mcdoc-cli adds for each vanilla
+ * dispatcher an MSM type only indexes (such as `minecraft:data_component[[%key]]`); an entry
+ * with members stays, so `checkSymbols` still refuses MSM members in a vanilla dispatcher.
+ */
+export function withoutUsedVanillaDispatchers(
+  dispatchers: MsmSymbols['mcdoc/dispatcher'],
+): MsmSymbols['mcdoc/dispatcher'] {
+  return Object.fromEntries(
+    Object.entries(dispatchers).filter(
+      ([registry, members]) =>
+        !registry.startsWith(VANILLA_DISPATCHER_PREFIX) || Object.keys(members).length > 0,
+    ),
+  );
 }
 
 async function locateMcdocCli(): Promise<string> {
@@ -152,7 +175,9 @@ export async function exportMsmMcdoc(sourceDir: string = SOURCE_DIR): Promise<Ms
     const symbols: MsmSymbols = {
       ref: sourceRef(files),
       mcdoc: parsed.mcdoc,
-      'mcdoc/dispatcher': parsed['mcdoc/dispatcher'] as MsmSymbols['mcdoc/dispatcher'],
+      'mcdoc/dispatcher': withoutUsedVanillaDispatchers(
+        parsed['mcdoc/dispatcher'] as MsmSymbols['mcdoc/dispatcher'],
+      ),
     };
     const problems = checkSymbols(symbols);
     if (problems.length > 0) throw new Error(`invalid MSM mcdoc:\n  ${problems.join('\n  ')}`);

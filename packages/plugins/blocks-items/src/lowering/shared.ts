@@ -15,6 +15,8 @@ export const BLOCK_STATE_SCHEMA = '::java::assets::block_state_definition::Block
 export const ITEM_DEFINITION_SCHEMA = '::java::assets::item_definition::ItemDefinition';
 /** Schema reference of block tags. */
 export const BLOCK_TAG_SCHEMA = 'tag:block';
+/** Schema reference of item tags. */
+export const ITEM_TAG_SCHEMA = 'tag:item';
 /** Schema reference of loot tables. */
 export const LOOT_TABLE_SCHEMA = 'resource:loot_table';
 

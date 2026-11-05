@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:ranged_weapon": {
+      "type": "sling"
+    }
+  },
+  "format": 1
+}

@@ -1,0 +1,26 @@
+{
+  "components": {
+    "msm:death_protection": {
+      "clear_effects": true,
+      "effects": [
+        {
+          "amplifier": 1,
+          "chance": 1,
+          "effect": "minecraft:regeneration",
+          "seconds": 45
+        },
+        {
+          "amplifier": 1,
+          "effect": "minecraft:absorption",
+          "seconds": 5
+        },
+        {
+          "effect": "minecraft:fire_resistance",
+          "seconds": 40
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

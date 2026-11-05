@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:tool": {
+      "tier": "iron",
+      "type": "spear"
+    }
+  },
+  "format": 1
+}

@@ -11,7 +11,8 @@ import {
   isRecord,
   splitResourceLocation,
 } from './paths';
-import { itemDefinitionFile, langFile, nonEmptyString } from './shared';
+import { ITEM_TAG_SCHEMA, itemDefinitionFile, langFile, nonEmptyString } from './shared';
+import { weaponItemTags } from './weapons';
 
 const ITEM_EDITOR_FIELDS = ['model', 'display_name'] as const;
 
@@ -25,8 +26,10 @@ function itemData(element: Element): JsonObject {
 /**
  * The runtime item definition: the element data without `model` and `display_name`, with
  * `format` set to the format this plugin writes. Every component passes through unchanged,
- * including `msm:armor` and a custom `msm:tool` material with its attack overrides (ADR 0042):
- * the runtime derives the vanilla components from them, so armour lowers to nothing else.
+ * including `msm:armor` and a custom `msm:tool` material with its attack overrides (ADR 0042),
+ * and `msm:consumable`, `msm:ranged_weapon`, `msm:shield`, `msm:death_protection` and the
+ * vanilla passthrough `msm:components` (ADR 0044): the runtime derives the vanilla components
+ * from them.
  *
  * @throws {@link BlocksItemsLoweringError} If the data is not an object.
  */
@@ -37,10 +40,23 @@ export function itemDefinition(element: Element): JsonObject {
   return definition;
 }
 
+/** An item tag file under `data/minecraft/tags/item/`, declared `merge: 'tag'`. */
+function itemTagFile(target: Target, tag: string, id: string): OutputFile {
+  return {
+    path: `data/minecraft/${target.folders.data.tags}/item/${tag}.json`,
+    contents: { values: [id] },
+    layer: 'datapack',
+    schema: ITEM_TAG_SCHEMA,
+    merge: 'tag',
+  };
+}
+
 /**
  * Lowers an `msm:item` element: the runtime definition `msm/<ns>/item/<path>.json` (layer
  * `msm`), with `model` the item model definition, with `display_name` the
- * `item.<ns>.<path>` key of `en_us` (`merge: 'object'`).
+ * `item.<ns>.<path>` key of `en_us` (`merge: 'object'`), and for a spear, mace, bow, crossbow
+ * or shield the vanilla enchanting item tags of {@link weaponItemTags} (layer `datapack`,
+ * `merge: 'tag'`; ADR 0044 D3).
  *
  * @param element - The element.
  * @param target - The target supplying the vanilla folder names.
@@ -64,5 +80,6 @@ export function lowerItem(element: Element, target: Target): OutputFile[] {
   if (displayName !== undefined) {
     files.push(langFile(target, namespace, descriptionKey('item', namespace, path), displayName));
   }
+  for (const tag of weaponItemTags(data)) files.push(itemTagFile(target, tag, element.id));
   return files;
 }

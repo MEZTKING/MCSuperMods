@@ -8,6 +8,7 @@ import {
   type ElementMeta,
   type ElementTemplate,
   type ExampleProject,
+  type ImageStarterParameter,
   type ItemFacts,
   type Json,
   type MaybePromise,
@@ -287,5 +288,31 @@ describe('1.1.0 additions', () => {
     const facts: TargetFacts = { ...testTarget, items: { armorMaterials: ['iron'] } };
     expect(facts.items?.armorMaterials).toEqual(['iron']);
     expect(testTarget.items).toBeUndefined();
+  });
+});
+
+describe('1.2.0 additions', () => {
+  it('declares the image parameter with a null default and PNG data URL values', () => {
+    expectTypeOf<ImageStarterParameter['type']>().toEqualTypeOf<'image'>();
+    expectTypeOf<ImageStarterParameter['default']>().toEqualTypeOf<null>();
+    expectTypeOf<ImageStarterParameter['maxBytes']>().toEqualTypeOf<number | undefined>();
+    expectTypeOf<ImageStarterParameter['maxSize']>().toEqualTypeOf<number | undefined>();
+    const image: ImageStarterParameter = {
+      id: 'image',
+      label: 'Image',
+      group: 'Painting',
+      type: 'image',
+      default: null,
+      maxBytes: 1_048_576,
+      maxSize: 64,
+    };
+    const values: BundleContext['values'] = {
+      image: image.default,
+      other: 'data:image/png;base64,iVBORw0KGgo=',
+    };
+    expect(values.image).toBeNull();
+    expect(String(values.other).startsWith('data:image/png;base64,')).toBe(true);
+    // Not yet in the union: B189 adds it with the wizard and the library.
+    expectTypeOf<ImageStarterParameter>().not.toExtend<StarterParameter>();
   });
 });

@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:shield": {
+      "block_delay_seconds": -1
+    }
+  },
+  "format": 1
+}

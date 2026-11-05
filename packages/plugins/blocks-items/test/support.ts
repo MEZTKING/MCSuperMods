@@ -32,6 +32,8 @@ export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
     'example:ores/glow_stone',
     'example:ruby',
     'example:wand',
+    'example:ruby_mace',
+    'example:ruby_crossbow',
   ],
   model: ['example:block/ruby_ore', 'example:item/ruby'],
   loot_table: ['example:blocks/ruby_ore_rare'],

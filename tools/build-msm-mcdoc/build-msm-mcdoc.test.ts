@@ -14,6 +14,7 @@ import {
   readCheckedIn,
   SOURCE_DIR,
   sourceRef,
+  withoutUsedVanillaDispatchers,
 } from './index.ts';
 
 const temporary: string[] = [];
@@ -70,6 +71,26 @@ describe('build-msm-mcdoc', () => {
     const dir = await sourceFolder({ 'a.mcdoc': 'struct A {\n\tb: Missing,\n}\n' });
     await expect(exportMsmMcdoc(dir)).rejects.toThrow(/unknown type ::msm::a::Missing/);
   }, 60_000);
+
+  it('indexes a vanilla dispatcher without exporting an entry for it (ADR 0044 D1)', async () => {
+    const dir = await sourceFolder({
+      'a.mcdoc':
+        'struct A {\n\tc?: struct {\n\t\t[#[id="data_component_type"] string]: minecraft:data_component[[%key]],\n\t},\n}\n',
+    });
+    const symbols = await exportMsmMcdoc(dir);
+    expect(Object.keys(symbols['mcdoc/dispatcher'])).toEqual([]);
+    expect(JSON.stringify(symbols.mcdoc)).toContain('"registry":"minecraft:data_component"');
+  }, 60_000);
+
+  it('withoutUsedVanillaDispatchers keeps msm entries and vanilla entries with members', () => {
+    expect(
+      withoutUsedVanillaDispatchers({
+        'minecraft:data_component': {},
+        'minecraft:thing': { x: { kind: 'boolean' } },
+        'msm:empty': {},
+      }),
+    ).toEqual({ 'minecraft:thing': { x: { kind: 'boolean' } }, 'msm:empty': {} });
+  });
 
   it('checkSymbols reports paths and dispatchers outside msm', () => {
     const symbols: MsmSymbols = {

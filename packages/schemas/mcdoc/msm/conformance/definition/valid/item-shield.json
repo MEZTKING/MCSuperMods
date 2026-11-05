@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:durability": {
+      "max": 400
+    },
+    "msm:shield": {
+      "block_delay_seconds": 0.25,
+      "bypassed_by": "#minecraft:bypasses_shield",
+      "damage_reduction": 0.8,
+      "disable_cooldown_scale": 0.5
+    }
+  },
+  "format": 1
+}

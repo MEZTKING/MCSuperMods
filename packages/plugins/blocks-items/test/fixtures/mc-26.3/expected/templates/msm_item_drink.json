@@ -1,0 +1,47 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:consumable": {
+          "animation": "drink",
+          "converts_to": "minecraft:glass_bottle",
+          "effects": [
+            {
+              "effect": "minecraft:speed",
+              "seconds": 60
+            },
+            {
+              "effect": "minecraft:regeneration",
+              "seconds": 10
+            }
+          ],
+          "seconds": 1.6,
+          "sound": "minecraft:item.honey_bottle.drink"
+        }
+      },
+      "creative_tab": "minecraft:food_and_drinks",
+      "format": 1,
+      "max_stack_size": 16
+    },
+    "layer": "msm",
+    "path": "msm/demo/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/honey_bottle",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "item.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  }
+]

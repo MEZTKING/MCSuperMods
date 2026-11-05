@@ -1,0 +1,24 @@
+{
+  "components": {
+    "msm:consumable": {
+      "animation": "drink",
+      "converts_to": "minecraft:glass_bottle",
+      "cooldown_seconds": 1,
+      "effects": [
+        {
+          "amplifier": 0,
+          "chance": 1,
+          "effect": "minecraft:strength",
+          "seconds": 30
+        }
+      ],
+      "particles": true,
+      "seconds": 1.6,
+      "sound": "minecraft:entity.generic.drink"
+    }
+  },
+  "display_name": "Ruby Tonic",
+  "format": 1,
+  "max_stack_size": 16,
+  "model": "mymod:item/ruby_tonic"
+}

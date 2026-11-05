@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": "armadillo_scute",
+      "slot": "wolf"
+    }
+  },
+  "format": 1
+}

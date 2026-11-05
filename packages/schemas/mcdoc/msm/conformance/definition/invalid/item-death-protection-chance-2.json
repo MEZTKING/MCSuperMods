@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:death_protection": {
+      "effects": [
+        {
+          "chance": 2,
+          "effect": "minecraft:regeneration",
+          "seconds": 5
+        }
+      ]
+    }
+  },
+  "format": 1
+}

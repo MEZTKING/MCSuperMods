@@ -33,6 +33,7 @@ export type {
   CreatorGroup,
   ElementTemplate,
   ExampleProject,
+  ImageStarterParameter,
   NumberStarterParameter,
   ProjectStarter,
   SetStarterParameter,

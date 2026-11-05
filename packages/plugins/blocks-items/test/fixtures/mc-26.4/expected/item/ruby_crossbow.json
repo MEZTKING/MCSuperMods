@@ -1,0 +1,63 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:durability": {
+          "max": 465
+        },
+        "msm:ranged_weapon": {
+          "draw_speed": 1.5,
+          "inaccuracy": 0.5,
+          "type": "crossbow"
+        }
+      },
+      "format": 1,
+      "max_stack_size": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/item/ruby_crossbow.json",
+    "schema": "msm:item_definition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/crossbow",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_crossbow.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "item.example.ruby_crossbow": "Ruby Crossbow"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_crossbow"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/enchantable/crossbow.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_crossbow"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/enchantable/durability.json",
+    "schema": "tag:item"
+  }
+]

@@ -195,3 +195,10 @@ Ordering: B186 and B187 start when B180 and B181 have landed (they reopen the sa
 - **Shared app files.** B184 waits for B173; if the AI helper slips, B184 is the one that moves, never the ownership.
 
 **Decision (2026-11-05, main session, from B181):** `enchantment_value: 0` means "not enchantable". The game rejects 0, so the runtime builds the material with 1 and removes the `enchantable` component; the B182 generator must do the same. 26.4 has the same armour and tool API as 26.3 (only `Equippable.equipSound()` returns an `Optional`, a test-only seam); per-slot durability multipliers are helmet 11, chestplate 16, leggings 15, boots 13 on both.
+
+**Hand-offs from B186 (2026-11-05, main session):**
+- B189 adds `| ImageStarterParameter` to the `StarterParameter` union together with `library/src/content/parameters.ts` and the wizard (`image` field), as B183 did for `set`.
+- B190 adds `apply_effect` to the Events editor's `ACTIONS` list (`app/src/renderer/src/studios/blocks-items/blocks-items-model.ts`).
+- B187 gives bows, crossbows and shields an `enchantable` component so they work at the enchanting table.
+- B188 mirrors `apply_effect`, the new components, `spear`/`mace` and `horse`/`wolf` in `java-project/actions.ts` and `items.ts`.
+- Deferred (post-0.8.0 unless a test needs it): an optional `ArmorDefense.body` for horse and wolf armour (custom materials use `defense.chestplate` today), and a validator for passthrough components holding data-pack registry holders outside the delayed-holder list.

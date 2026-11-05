@@ -1,0 +1,51 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:death_protection": {
+          "clear_effects": true,
+          "effects": [
+            {
+              "amplifier": 1,
+              "effect": "minecraft:regeneration",
+              "seconds": 45
+            },
+            {
+              "amplifier": 1,
+              "effect": "minecraft:absorption",
+              "seconds": 5
+            },
+            {
+              "effect": "minecraft:fire_resistance",
+              "seconds": 40
+            }
+          ]
+        }
+      },
+      "creative_tab": "minecraft:combat",
+      "format": 1,
+      "max_stack_size": 1,
+      "rarity": "uncommon"
+    },
+    "layer": "msm",
+    "path": "msm/demo/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/totem_of_undying",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "item.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  }
+]

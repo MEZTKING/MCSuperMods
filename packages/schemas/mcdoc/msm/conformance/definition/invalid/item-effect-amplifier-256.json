@@ -1,0 +1,16 @@
+{
+  "components": {
+    "msm:consumable": {
+      "animation": "drink",
+      "effects": [
+        {
+          "amplifier": 256,
+          "effect": "minecraft:speed",
+          "seconds": 5
+        }
+      ],
+      "seconds": 1
+    }
+  },
+  "format": 1
+}

@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:consumable": {
+      "animation": "sip",
+      "seconds": 1
+    }
+  },
+  "format": 1
+}

@@ -1,0 +1,17 @@
+{
+  "components": {
+    "msm:durability": {
+      "max": 400
+    },
+    "msm:shield": {
+      "block_delay_seconds": 0.2,
+      "bypassed_by": "#minecraft:bypasses_shield",
+      "damage_reduction": 1,
+      "disable_cooldown_scale": 0.75
+    }
+  },
+  "display_name": "Ruby Shield",
+  "format": 1,
+  "max_stack_size": 1,
+  "model": "mymod:item/ruby_shield"
+}

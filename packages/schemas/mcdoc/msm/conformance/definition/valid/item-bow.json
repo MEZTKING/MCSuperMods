@@ -1,0 +1,16 @@
+{
+  "components": {
+    "msm:durability": {
+      "max": 500
+    },
+    "msm:ranged_weapon": {
+      "damage_multiplier": 1.5,
+      "draw_speed": 1.5,
+      "inaccuracy": 0.5,
+      "type": "bow",
+      "velocity": 1.2
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

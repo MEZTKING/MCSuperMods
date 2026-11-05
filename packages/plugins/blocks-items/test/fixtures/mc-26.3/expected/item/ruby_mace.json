@@ -1,0 +1,81 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:tool": {
+          "tier": "diamond",
+          "type": "mace"
+        }
+      },
+      "format": 1,
+      "max_stack_size": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/item/ruby_mace.json",
+    "schema": "msm:item_definition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/mace",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_mace.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "item.example.ruby_mace": "Ruby Mace"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_mace"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/enchantable/durability.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_mace"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/enchantable/fire_aspect.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_mace"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/enchantable/mace.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_mace"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/enchantable/weapon.json",
+    "schema": "tag:item"
+  }
+]

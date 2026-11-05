@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:components": {
+      "minecraft:jukebox_playable": "mymod:ruby_song",
+      "minecraft:provides_trim_material": "mymod:ruby"
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

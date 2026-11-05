@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:consumable": {
+      "animation": "none",
+      "seconds": 0
+    }
+  },
+  "format": 1
+}

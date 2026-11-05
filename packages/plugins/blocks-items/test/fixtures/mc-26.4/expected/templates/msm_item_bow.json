@@ -1,0 +1,60 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:durability": {
+          "max": 450
+        },
+        "msm:ranged_weapon": {
+          "damage_multiplier": 1.2,
+          "draw_speed": 1.25,
+          "type": "bow",
+          "velocity": 1.1
+        }
+      },
+      "creative_tab": "minecraft:combat",
+      "format": 1,
+      "max_stack_size": 1
+    },
+    "layer": "msm",
+    "path": "msm/demo/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/bow",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "item.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/enchantable/bow.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/enchantable/durability.json"
+  }
+]

@@ -288,6 +288,104 @@ describe('blocks-items validators', () => {
       ]);
     });
 
+    it('reports each pair of exclusive components, naming both', async () => {
+      const problems = await validate([
+        item('demo:a', {
+          components: {
+            'msm:tool': { type: 'sword', tier: 'iron' },
+            'msm:ranged_weapon': { type: 'bow' },
+            'msm:shield': {},
+          },
+        }),
+        item('demo:b', {
+          components: { 'msm:armor': { slot: 'helmet', material: 'iron' }, 'msm:shield': {} },
+        }),
+      ]);
+      expect(problems.map((p) => [p.code, p.elementId, p.path])).toEqual([
+        ['blocks-items.component-conflict', 'demo:a', '/components/msm:ranged_weapon'],
+        ['blocks-items.component-conflict', 'demo:a', '/components/msm:shield'],
+        ['blocks-items.component-conflict', 'demo:b', '/components/msm:shield'],
+      ]);
+      expect(problems[0]?.message).toContain('"msm:tool" and "msm:ranged_weapon"');
+      expect(problems[2]?.message).toContain('"msm:armor" and "msm:shield"');
+    });
+
+    it('accepts the new components and the passthrough when nothing clashes', async () => {
+      const problems = await validate([
+        item('demo:tonic', {
+          max_stack_size: 16,
+          components: {
+            'msm:food': { nutrition: 2, saturation: 0.1 },
+            'msm:consumable': { seconds: 1.6, animation: 'drink' },
+            'msm:components': { 'minecraft:glider': {}, enchantment_glint_override: true },
+          },
+        }),
+        item('demo:totem', {
+          components: {
+            'msm:death_protection': { effects: [] },
+            'msm:on_use': { event: 'demo:e' },
+          },
+          events: {
+            'demo:e': {
+              actions: [{ type: 'apply_effect', effect: 'minecraft:speed', seconds: 5 }],
+            },
+          },
+        }),
+        item('demo:spear', { components: { 'msm:tool': { type: 'spear', tier: 'iron' } } }),
+      ]);
+      expect(problems).toEqual([]);
+    });
+
+    it('reports a passthrough entry that an MSM component or field also sets', async () => {
+      const problems = await validate([
+        item('demo:a', {
+          max_stack_size: 16,
+          components: {
+            'msm:food': { nutrition: 2, saturation: 0.1 },
+            'msm:durability': { max: 10 },
+            'msm:tool': { type: 'spear', tier: 'iron' },
+            'msm:components': {
+              food: {},
+              'minecraft:max_damage': 5,
+              'minecraft:max_stack_size': 2,
+              'minecraft:kinetic_weapon': {},
+              'minecraft:glider': {},
+            },
+          },
+        }),
+      ]);
+      expect(problems.map((p) => [p.code, p.path])).toEqual([
+        ['blocks-items.component-conflict', '/components/msm:components/food'],
+        ['blocks-items.component-conflict', '/components/msm:components/minecraft:kinetic_weapon'],
+        ['blocks-items.component-conflict', '/components/msm:components/minecraft:max_damage'],
+        ['blocks-items.component-conflict', '/components/msm:components/minecraft:max_stack_size'],
+      ]);
+      expect(problems[0]?.message).toContain('"msm:food" and the "msm:components" entry "food"');
+      expect(problems[2]?.message).toContain('"msm:tool"');
+      expect(problems[3]?.message).toContain('the "max_stack_size" field');
+    });
+
+    it('warns when horse or wolf armour uses project equipment without the body layer', async () => {
+      const horse = (id: `${string}:${string}`, asset: string, slot = 'horse') =>
+        item(id, { components: { 'msm:armor': { slot, material: customMaterial(asset) } } });
+      const problems = await validate([
+        horse('demo:a', 'demo:ruby'),
+        horse('demo:b', 'demo:ruby', 'wolf'),
+        horse('demo:c', 'demo:ruby_body'),
+        horse('demo:d', 'demo:ruby', 'helmet'),
+        equipment('demo:ruby'),
+        element('minecraft:equipment', 'demo:ruby_body', {
+          layers: { horse_body: [{ texture: 'demo:ruby' }] },
+        }),
+      ]);
+      expect(problems.map((p) => [p.code, p.severity, p.elementId])).toEqual([
+        ['blocks-items.unknown-equipment-asset', 'warning', 'demo:a'],
+        ['blocks-items.unknown-equipment-asset', 'warning', 'demo:b'],
+      ]);
+      expect(problems[0]?.message).toContain('no "horse_body" layer');
+      expect(problems[1]?.message).toContain('no "wolf_body" layer');
+    });
+
     it('does not check a custom tool material against the tier tags', async () => {
       const problems = await validate([
         item('demo:a', {

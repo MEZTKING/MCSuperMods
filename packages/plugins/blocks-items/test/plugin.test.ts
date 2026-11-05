@@ -15,10 +15,14 @@ import plugin, {
   lowerBlock,
   lowerItem,
   lowerMod,
+  MSM_VANILLA_COMPONENTS,
   NEEDS_TIER_TAGS,
   needsTierTag,
+  SPEAR_VANILLA_COMPONENTS,
   splitResourceLocation,
   TOOL_TIERS,
+  WEAPON_ITEM_TAGS,
+  weaponItemTags,
 } from '../src/index';
 import { blockingProblems, element, indexesFor } from './support';
 
@@ -146,6 +150,51 @@ describe('@msm/plugin-blocks-items', () => {
   });
 });
 
+describe('weapon item tags (ADR 0044 D3)', () => {
+  const tags = (components: Json): string[] => weaponItemTags({ format: 1, components });
+
+  it('joins the enchanting tags of each weapon kind', () => {
+    expect(tags({ 'msm:tool': { type: 'spear', tier: 'iron' } })).toEqual(['spears']);
+    expect(tags({ 'msm:tool': { type: 'mace', tier: 'iron' } })).toEqual([
+      'enchantable/durability',
+      'enchantable/fire_aspect',
+      'enchantable/mace',
+      'enchantable/weapon',
+    ]);
+    expect(tags({ 'msm:ranged_weapon': { type: 'bow' } })).toEqual(['enchantable/bow']);
+    expect(
+      tags({ 'msm:ranged_weapon': { type: 'crossbow' }, 'msm:durability': { max: 9 } }),
+    ).toEqual(['enchantable/crossbow', 'enchantable/durability']);
+    expect(tags({ 'msm:shield': {}, 'msm:durability': { max: 9 } })).toEqual([
+      'enchantable/durability',
+    ]);
+  });
+
+  it('adds none for other items', () => {
+    expect(tags({ 'msm:shield': {} })).toEqual([]);
+    expect(tags({ 'msm:tool': { type: 'sword', tier: 'iron' } })).toEqual([]);
+    expect(tags({ 'msm:durability': { max: 9 } })).toEqual([]);
+    expect(weaponItemTags({ format: 1 })).toEqual([]);
+  });
+
+  it('lowers them as merged data pack item tags', () => {
+    const files = lowerItem(
+      element('msm:item', 'demo:spear', {
+        format: 1,
+        components: { 'msm:tool': { type: 'spear', tier: 'iron' } },
+      }),
+      firstTarget,
+    );
+    expect(files.at(-1)).toEqual({
+      path: `data/minecraft/${firstTarget.folders.data.tags}/item/spears.json`,
+      contents: { values: ['demo:spear'] },
+      layer: 'datapack',
+      schema: 'tag:item',
+      merge: 'tag',
+    });
+  });
+});
+
 describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const))(
   'vanilla facts for %s',
   (_targetId, bundle) => {
@@ -157,6 +206,18 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         expect(registries.has('tag/block', `minecraft:${tag}`), tag).toBe(true);
       for (const tier of TOOL_TIERS)
         expect(registries.has('tag/block', incorrectForTierTag(tier)), tier).toBe(true);
+      for (const tag of WEAPON_ITEM_TAGS)
+        expect(registries.has('tag/item', `minecraft:${tag}`), tag).toBe(true);
+    });
+
+    it('has every vanilla data component the conflict check names', async () => {
+      const { registries } = await indexesFor(bundle);
+      const ids = new Set([
+        ...Object.values(MSM_VANILLA_COMPONENTS).flat(),
+        ...SPEAR_VANILLA_COMPONENTS,
+      ]);
+      for (const id of ids)
+        expect(registries.has('data_component_type', `minecraft:${id}`), id).toBe(true);
     });
 
     it('has the folders lowering uses', () => {

@@ -81,6 +81,7 @@ describe('MSM mcdoc symbols', () => {
     }
     expect(index.resolveSchemaRef(MSM_SCHEMA_REFS.block)).toBe(index.resolve(MSM_TYPE_PATHS.block));
     expect(index.dispatcherKeys('msm:action')).toEqual([
+      'apply_effect',
       'give_item',
       'play_animation',
       'play_sound',

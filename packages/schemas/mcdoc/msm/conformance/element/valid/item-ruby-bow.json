@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:durability": {
+      "max": 450
+    },
+    "msm:ranged_weapon": {
+      "damage_multiplier": 1.2,
+      "draw_speed": 1.25,
+      "inaccuracy": 1,
+      "type": "bow",
+      "velocity": 1.1
+    }
+  },
+  "creative_tab": "minecraft:combat",
+  "display_name": "Ruby Bow",
+  "format": 1,
+  "max_stack_size": 1,
+  "model": "mymod:item/ruby_bow"
+}

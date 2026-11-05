@@ -1,0 +1,20 @@
+{
+  "components": {
+    "msm:on_use": {
+      "event": "mymod:x"
+    }
+  },
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "effect": "minecraft:speed",
+          "seconds": 5,
+          "target": "everyone",
+          "type": "apply_effect"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

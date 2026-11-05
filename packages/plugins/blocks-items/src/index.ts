@@ -16,8 +16,11 @@ export {
   BLOCKS_ITEMS_PROBLEM_CODES,
   blocksItemsValidators,
   EQUIPMENT_KIND,
+  EXCLUSIVE_ITEM_COMPONENTS,
   MOD_ID_PATTERN,
+  MSM_VANILLA_COMPONENTS,
   RESERVED_MOD_IDS,
+  SPEAR_VANILLA_COMPONENTS,
 } from './validators';
 
 export default definePlugin({

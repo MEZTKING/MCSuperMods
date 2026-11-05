@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:ranged_weapon": {
+      "type": "crossbow"
+    }
+  },
+  "format": 1
+}

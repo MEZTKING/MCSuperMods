@@ -31,6 +31,10 @@
     "code": "schema.missing-field",
     "path": "/components"
   },
+  "item-consumable-seconds-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:consumable/seconds"
+  },
   "item-missing-format.json": {
     "code": "schema.missing-field",
     "path": "/format"

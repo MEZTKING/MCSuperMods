@@ -20,6 +20,17 @@ enum(string) ActionType {
 	PlayAnimation = "play_animation",
 	/// Calls a script handler defined with `msm.actions.define` (ADR 0032 D4).
 	RunScript = "run_script",
+	/// Gives a vanilla mob effect to the player or the other entity of the event (ADR 0044 D2).
+	ApplyEffect = "apply_effect",
+}
+
+/// Who an `apply_effect` action affects.
+enum(string) EffectTarget {
+	/// The event's player; in an entity definition without a player, the entity itself.
+	Self = "self",
+	/// The other entity of the event: the mob an entity hits (`on_attack`), the player who
+	/// hurts or interacts with an entity; for block and item events, the player.
+	Other = "other",
 }
 
 /// One action of an event, selected by `type`.
@@ -103,4 +114,17 @@ dispatch msm:action[play_animation] to struct PlayAnimation {
 dispatch msm:action[run_script] to struct RunScript {
 	/// The handler id, a resource location such as `mymod:open_vault`.
 	handler: string,
+}
+
+/// Gives a vanilla mob effect (ADR 0044 D2). Without a living entity to affect, the action
+/// does nothing; runtimes older than 0.8.0 reject it as an unknown type.
+dispatch msm:action[apply_effect] to struct ApplyEffect {
+	/// The mob effect, such as `minecraft:speed`.
+	effect: #[id="mob_effect"] string,
+	/// Duration in seconds.
+	seconds: float @ 0..,
+	/// Effect level minus one; defaults to 0 (level I).
+	amplifier?: int @ 0..255,
+	/// Defaults to `self`.
+	target?: EffectTarget,
 }

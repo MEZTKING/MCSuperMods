@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:components": {
+      "minecraft:damage_resistant": {
+        "types": "#minecraft:is_fire"
+      },
+      "minecraft:glider": {},
+      "minecraft:use_cooldown": {
+        "seconds": 1.5
+      }
+    }
+  },
+  "format": 1
+}

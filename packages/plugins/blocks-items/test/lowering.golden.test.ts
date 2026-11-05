@@ -207,6 +207,68 @@ const SAMPLES: Sample[] = [
     },
   },
   {
+    kind: itemKind,
+    name: 'ruby_mace',
+    id: 'example:ruby_mace',
+    data: {
+      format: 1,
+      model: 'minecraft:item/mace',
+      display_name: 'Ruby Mace',
+      max_stack_size: 1,
+      components: { 'msm:tool': { type: 'mace', tier: 'diamond' } },
+    },
+  },
+  {
+    kind: itemKind,
+    name: 'ruby_crossbow',
+    id: 'example:ruby_crossbow',
+    data: {
+      format: 1,
+      model: 'minecraft:item/crossbow',
+      display_name: 'Ruby Crossbow',
+      max_stack_size: 1,
+      components: {
+        'msm:ranged_weapon': { type: 'crossbow', draw_speed: 1.5, inaccuracy: 0.5 },
+        'msm:durability': { max: 465 },
+      },
+    },
+  },
+  {
+    kind: itemKind,
+    name: 'ruby_charm',
+    id: 'example:ruby_charm',
+    data: {
+      format: 1,
+      model: 'minecraft:item/heart_of_the_sea',
+      display_name: 'Ruby Charm',
+      max_stack_size: 1,
+      components: {
+        'msm:on_use': { event: 'example:charm_used', cooldown_ticks: 600 },
+        'msm:components': { 'minecraft:glider': {}, 'minecraft:enchantment_glint_override': true },
+      },
+      events: {
+        'example:charm_used': {
+          actions: [
+            { type: 'apply_effect', effect: 'minecraft:speed', seconds: 30, amplifier: 1 },
+            { type: 'apply_effect', effect: 'minecraft:regeneration', seconds: 5, target: 'self' },
+          ],
+        },
+      },
+    },
+  },
+  {
+    kind: itemKind,
+    name: 'ruby_horse_armor',
+    id: 'example:ruby_horse_armor',
+    data: {
+      format: 1,
+      model: 'minecraft:item/diamond_horse_armor',
+      display_name: 'Ruby Horse Armour',
+      max_stack_size: 1,
+      components: { 'msm:armor': { slot: 'horse', material: 'diamond' } },
+    },
+  },
+  {
     kind: modKind,
     name: 'full',
     id: 'example:mod',

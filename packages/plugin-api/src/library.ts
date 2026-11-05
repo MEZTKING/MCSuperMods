@@ -280,6 +280,41 @@ export interface SetStarterParameter extends StarterParameterBase {
 }
 
 /**
+ * A picture the user picks, for example a painting's image; the host renders a file picker
+ * with a thumbnail. Its value in {@link BundleContext.values} is a PNG `data:` URL
+ * (`data:image/png;base64,...`) or `null` when the user picked none, so a bundle draws a
+ * placeholder. The host checks the PNG signature, {@link maxBytes} and {@link maxSize} before
+ * passing a value, so `build` can trust both; like a colour, the image is a value, and a
+ * flow never reads project content for it. Since 1.2.0 (ADR 0044 D7).
+ *
+ * Not yet a member of {@link StarterParameter}: it joins the union when the host's wizard and
+ * the built-in library render and read it (brief B189), so no host meets a parameter type it
+ * cannot show. Until then starters cannot declare it.
+ *
+ * @example
+ * ```ts
+ * const image: ImageStarterParameter = {
+ *   id: 'image',
+ *   label: 'Image',
+ *   type: 'image',
+ *   default: null,
+ *   maxBytes: 1_048_576,
+ *   maxSize: 64,
+ * };
+ * ```
+ */
+export interface ImageStarterParameter extends StarterParameterBase {
+  /** The parameter's value type. */
+  type: 'image';
+  /** No image: the bundle uses its placeholder. */
+  default: null;
+  /** The largest file the host accepts, in bytes; absent means 1 048 576 (1 MB). */
+  maxBytes?: number;
+  /** The largest width and height the host accepts, in pixels; absent means no limit. */
+  maxSize?: number;
+}
+
+/**
  * One question a parameterised {@link ProjectStarter} asks; the host renders the parameters
  * as a multi-step wizard (ADR 0040) and passes the answers in {@link BundleContext.values}.
  * Since 1.0.0.
