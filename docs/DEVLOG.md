@@ -1212,3 +1212,20 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - B93: Codecs, full components and actions, JUnit over the corpus; production-jar scan exercised by B99's headless server check; client assets checked in game.
+
+---
+
+## 2026-11-05 — main session — Phase 4 Waves 0 and 1; release workflow fixes
+
+**What**
+- New container set up: Node 24.22.1 at `/opt/node24`, JDK 25.0.5 at `/root/jdk/jdk-25.0.5+8`.
+- Reviewed and committed B90 (registry-freeze spike, ADR 0024: positive, five GameTests pass in `./gradlew build`), B91 (plugin API 0.6.0, shared core merge, `Target.fabric`) and B92 (MSM mcdoc v1, `tools/build-msm-mcdoc`, conformance corpus). Clean-worktree checks green (14/14 test tasks).
+- ADR 0025 amended: `"item": false` means no block item (mcdoc has no null; the schema and runtime change lands with B93), the mod type path is `::msm::Mod`, the corpus layout is `conformance/{definition,element}/{valid,invalid}`.
+- Release workflow, first manual runs at the user's request: the tag-exists check read the 404 body of `gh api` as a SHA (fixed on `main`). The next run got HTTP 403 creating `v0.2.3` on 56885610: `GITHUB_TOKEN` may not create a ref on a commit whose workflow files differ from the default branch (no `workflows` permission). v0.3.0 was then run from the `main` tip.
+
+**Decisions**
+- 0.2.3 and 0.2.4 are skipped as manual runs; 0.3.0 supersedes them. If wanted, the user can push those tags locally (`git tag v0.2.3 5688561 && git push origin v0.2.3`).
+
+**Next**
+- Wave 2: B93 runtime v1 (include the `"item": false` schema change), B94 `@msm/plugin-blocks-items`, B95 `fabric-content-jar`.
+- User: publish the 0.3.0 draft; delete the duplicate 0.1.0, 0.2.0 and 0.2.2 drafts and the stray `release-fix-tag-check` branch.

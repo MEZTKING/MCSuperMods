@@ -14,7 +14,11 @@ Working plan of the main session, kept in the repository so a later session can 
 | Minecraft dependency | `com.mojang:minecraft:26.3`; plain `implementation` for loader and API; no mappings line | example mod `build.gradle` |
 | Latest stable game version on Fabric meta | 26.3 (26.4 snapshots exist) | meta.fabricmc.net `/v2/versions/game` |
 
-Unverified, to check in the briefs: block tags for tool tiers, `SoundType` names, `ToolMaterial` names (copper), `Block.Properties.setId`, Fabric GameTest entry points on 26.3, Prism `--launch`, `mmc-pack.json` components for 26.x Fabric, Fabric API resource loading without `pack.mcmeta`.
+Verified by B90 (ADR 0024): `setId(ResourceKey)` is required on `Block.Properties` and `Item.Properties`; GameTest is `net.fabricmc.fabric.api.gametest.v1.GameTest` (entry point `fabric-gametest`, Loom `fabricApi { configureTests {} }`, task `runGameTest`); creative tabs are `fabric-creative-tab-api-v1` `CreativeModeTabEvents.modifyOutputEvent`; a mod's `data/` loads without `pack.mcmeta`.
+
+Unverified, to check in the briefs: block tags for tool tiers, `SoundType` names, `ToolMaterial` names (copper), Prism `--launch`, `mmc-pack.json` components for 26.x Fabric, `assets/` loading without `pack.mcmeta` on the client, scanning `msm/` inside a production jar.
+
+Status (2026-11-05): Wave 0 (B90, positive: no Tier 2 fallback) and Wave 1 (B91, B92) done.
 
 ## Decisions (ADR drafts)
 
