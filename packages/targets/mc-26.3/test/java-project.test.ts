@@ -11,7 +11,12 @@ import { fileURLToPath } from 'node:url';
 import type { DefinitionInput, GeneratedFile, JavaProjectInput, JsonObject } from '@msm/plugin-api';
 import { describe, expect, it } from 'vitest';
 import { target } from '../src/index';
-import { className, constantName, eventMethodName, generateJavaProject } from '../src/java-project/index';
+import {
+  className,
+  constantName,
+  eventMethodName,
+  generateJavaProject,
+} from '../src/java-project/index';
 import { eventMethodNames, NameTable } from '../src/java-project/names';
 
 const update = process.env.UPDATE_GOLDENS === '1';
@@ -19,9 +24,19 @@ const here = dirname(fileURLToPath(import.meta.url));
 const inputRoot = join(here, 'fixtures', 'java-project', 'input');
 const expectedRoot = join(here, 'fixtures', 'java-project', 'expected');
 
-async function definition(kind: string, path: string, namespace = 'msm_test'): Promise<DefinitionInput> {
-  const json = JSON.parse(await readFile(join(inputRoot, `${kind}-${path}.json`), 'utf8')) as JsonObject;
-  return { id: `${namespace}:${path}`, path: `msm/${namespace}/${kind}/${path}.json`, definition: json };
+async function definition(
+  kind: string,
+  path: string,
+  namespace = 'msm_test',
+): Promise<DefinitionInput> {
+  const json = JSON.parse(
+    await readFile(join(inputRoot, `${kind}-${path}.json`), 'utf8'),
+  ) as JsonObject;
+  return {
+    id: `${namespace}:${path}`,
+    path: `msm/${namespace}/${kind}/${path}.json`,
+    definition: json,
+  };
 }
 
 function input(parts: Partial<JavaProjectInput>): JavaProjectInput {
@@ -66,7 +81,9 @@ async function golden(name: string, files: GeneratedFile[]): Promise<void> {
   }
   expect(await listFiles(root)).toEqual(files.map((file) => file.path));
   for (const file of files) {
-    expect(file.contents, file.path).toBe(await readFile(join(root, ...file.path.split('/')), 'utf8'));
+    expect(file.contents, file.path).toBe(
+      await readFile(join(root, ...file.path.split('/')), 'utf8'),
+    );
   }
 }
 
@@ -104,7 +121,9 @@ describe('Java generator (mc-26.3)', () => {
 
   it('generates the kitchen-sink block and a block without behaviour', async () => {
     const { files, entrypoints } = generateJavaProject(
-      input({ blocks: [await definition('block', 'defaults'), await definition('block', 'kitchen_sink')] }),
+      input({
+        blocks: [await definition('block', 'defaults'), await definition('block', 'kitchen_sink')],
+      }),
     );
     expect(entrypoints).toEqual({ main: 'msm_test.MsmTestMod', client: undefined });
     await golden('block', files);
@@ -182,25 +201,35 @@ describe('Java generator (mc-26.3)', () => {
             block({
               format: 1,
               components: { 'msm:on_interact': { event: 'msm_test:x' } },
-              events: { 'msm_test:x': { actions: [{ type: 'run_script', handler: 'msm_test:h' }] } },
+              events: {
+                'msm_test:x': { actions: [{ type: 'run_script', handler: 'msm_test:h' }] },
+              },
             }),
           ],
         }),
       ).toThrow(/action type 'run_script' cannot be ejected/);
-      expect(generate({ blocks: [block({ format: 1, colour: 'red' })] })).toThrow(/unknown top-level key 'colour'/);
+      expect(generate({ blocks: [block({ format: 1, colour: 'red' })] })).toThrow(
+        /unknown top-level key 'colour'/,
+      );
       expect(generate({ blocks: [block({ format: 2 })] })).toThrow(/format 2/);
     });
 
     it('rejects undeclared events', () => {
       expect(
-        generate({ blocks: [block({ format: 1, components: { 'msm:on_interact': { event: 'msm_test:missing' } } })] }),
+        generate({
+          blocks: [
+            block({ format: 1, components: { 'msm:on_interact': { event: 'msm_test:missing' } } }),
+          ],
+        }),
       ).toThrow(/names event msm_test:missing, which is not declared/);
       expect(
         generate({
           blocks: [
             block({
               format: 1,
-              events: { 'msm_test:a': { actions: [{ type: 'trigger_event', event: 'msm_test:b' }] } },
+              events: {
+                'msm_test:a': { actions: [{ type: 'trigger_event', event: 'msm_test:b' }] },
+              },
             }),
           ],
         }),
@@ -212,7 +241,9 @@ describe('Java generator (mc-26.3)', () => {
       expect(generate({ entities: [entity] })).toThrow(/GeckoLib/);
       const goals = structuredClone(entity);
       (goals.definition.components as JsonObject)['msm:ai_goals'] = { goals: [{ type: 'dance' }] };
-      expect(generate({ entities: [goals], geckolib: true })).toThrow(/goal type 'dance' cannot be ejected/);
+      expect(generate({ entities: [goals], geckolib: true })).toThrow(
+        /goal type 'dance' cannot be ejected/,
+      );
     });
   });
 });

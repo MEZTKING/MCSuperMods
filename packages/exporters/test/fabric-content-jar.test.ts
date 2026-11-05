@@ -8,6 +8,7 @@ import { utf8 } from '@msm/core';
 import type { Element, Json, Problem } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { unzipSync } from 'fflate';
+import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 import { needsGeckolib, nestedGeckolibPath } from '../src/fabric-content-jar/index';
 import {
@@ -21,7 +22,9 @@ import {
   nestedRuntimePath,
   RESERVED_MOD_IDS,
   runExport,
+  type ScriptTranspileResult,
   sanitiseModId,
+  transpiledScriptPath,
 } from '../src/index';
 import { element, fakeAsset, indexesFor, meta, project, raw, testRegistry } from './helpers';
 
@@ -29,6 +32,34 @@ const codes = (problems: Problem[]): string[] => problems.map((problem) => probl
 const runtimeJar = utf8.encode('PK fake msm_runtime jar bytes');
 const geckolibJar = utf8.encode('PK fake GeckoLib jar bytes');
 const sha256 = (bytes: Uint8Array): string => createHash('sha256').update(bytes).digest('hex');
+
+/** The transpiler of ADR 0031 D2: TypeScript to ES5 CommonJS; syntax errors as problems. */
+function typescriptTranspile(source: string, name: string): ScriptTranspileResult {
+  const output = ts.transpileModule(source, {
+    fileName: name,
+    reportDiagnostics: true,
+    compilerOptions: {
+      target: ts.ScriptTarget.ES5,
+      module: ts.ModuleKind.CommonJS,
+      downlevelIteration: true,
+      ignoreDeprecations: '6.0',
+    },
+  });
+  const diagnostics = (output.diagnostics ?? []).filter(
+    (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error,
+  );
+  if (diagnostics.length > 0) {
+    return {
+      problems: diagnostics.map((diagnostic) => ({
+        severity: 'error',
+        code: 'scripting.syntax',
+        message: ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'),
+        file: name,
+      })),
+    };
+  }
+  return { js: output.outputText };
+}
 
 const modelElement = element('test:model', 'ruby:block/ruby_block', {
   parent: 'minecraft:block/cube_all',
@@ -376,6 +407,79 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         expect(Object.keys(entries)).toEqual([]);
         const plain = await exportJar([definition], both, {}, 'Ruby', bare);
         expect(plain.report.ok).toBe(true);
+      });
+    });
+
+    describe('scripts (ADR 0031 D5)', () => {
+      const scriptSource =
+        // biome-ignore lint/suspicious/noTemplateCurlyInString: script source text
+        'import { msm } from "msm:runtime";\nclass Glow { run(): void { for (const n of [1, 2]) msm.log.info(`${n}`); } }\nnew Glow().run();\n';
+      const scriptElement = (text: string, path = 'msm/ruby/script/glow.ts') =>
+        raw(`ruby:${path}`, { path, layer: 'msm', language: 'typescript', text });
+
+      it('transpiles each script to ES5 CommonJS .js and leaves the .ts out', async () => {
+        const names: string[] = [];
+        const { report, entries } = await exportJar(
+          [
+            scriptElement(scriptSource),
+            scriptElement('export const x = 1;\n', 'msm/ruby/script/lib/x.ts'),
+            definition,
+          ],
+          {
+            loadRuntimeJar: async () => runtimeJar,
+            transpileScript: async (source, name) => {
+              names.push(name);
+              return typescriptTranspile(source, name);
+            },
+          },
+        );
+        expect(report.ok).toBe(true);
+        expect(names).toEqual(['msm/ruby/script/glow.ts', 'msm/ruby/script/lib/x.ts']);
+        const paths = Object.keys(entries);
+        expect(paths).toContain('msm/ruby/script/glow.js');
+        expect(paths).toContain('msm/ruby/script/lib/x.js');
+        expect(paths.some((path) => path.endsWith('.ts'))).toBe(false);
+        const js = utf8.decode(entries['msm/ruby/script/glow.js'] as Uint8Array);
+        expect(js).toContain('require("msm:runtime")');
+        expect(js).not.toMatch(/class Glow|for \(const|=>/);
+        // Jars with scripts need a runtime that runs them: the dependency is the runtime version.
+        expect(json(entries, 'fabric.mod.json').depends).toMatchObject({
+          msm_runtime: `>=${meta.msmVersion}`,
+        });
+        expect(transpiledScriptPath('msm/a/script/b.ts')).toBe('msm/a/script/b.js');
+      });
+
+      it('reports export.transpiler-missing without a transpiler and writes nothing', async () => {
+        const { report, entries } = await exportJar([scriptElement(scriptSource), definition]);
+        expect(report.ok).toBe(false);
+        expect(codes(report.problems)).toContain(ExportProblemCodes.transpilerMissing);
+        expect(Object.keys(entries)).toEqual([]);
+      });
+
+      it('reports transpile problems with the script path and blocks the jar', async () => {
+        const { report, entries } = await exportJar([scriptElement('const = 1;\n')], {
+          loadRuntimeJar: async () => runtimeJar,
+          transpileScript: async (source, name) => typescriptTranspile(source, name),
+        });
+        expect(report.ok).toBe(false);
+        const errors = report.problems.filter((problem) => problem.severity === 'error');
+        expect(errors.length).toBeGreaterThan(0);
+        expect(errors.every((problem) => problem.file === 'msm/ruby/script/glow.ts')).toBe(true);
+        expect(Object.keys(entries)).toEqual([]);
+      });
+
+      it('reports a throwing transpiler as export.script-transpile-failed', async () => {
+        const { report } = await exportJar([scriptElement(scriptSource)], {
+          loadRuntimeJar: async () => runtimeJar,
+          transpileScript: async () => {
+            throw new Error('worker gone');
+          },
+        });
+        expect(
+          report.problems.find(
+            (problem) => problem.code === ExportProblemCodes.scriptTranspileFailed,
+          ),
+        ).toMatchObject({ severity: 'error', file: 'msm/ruby/script/glow.ts' });
       });
     });
 

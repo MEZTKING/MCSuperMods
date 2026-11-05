@@ -1,0 +1,12 @@
+{
+  "exporter": "java-project",
+  "fileCount": 38,
+  "formatVersion": 1,
+  "minecraft": "26.3",
+  "msmVersion": "0.6.0",
+  "plugins": [
+    "msm.blocks-items",
+    "msm.datapack"
+  ],
+  "target": "mc-26.3"
+}

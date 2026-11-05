@@ -1,0 +1,26 @@
+{
+  "authors": [
+    "MCSuperMods"
+  ],
+  "depends": {
+    "fabric-api": "*",
+    "fabricloader": ">=0.20.1",
+    "geckolib": ">=5.5.7",
+    "minecraft": "~26.3"
+  },
+  "description": "Kitchen-sink sample: an animated mob with every entity component and goal.",
+  "entrypoints": {
+    "client": [
+      "msm_sample_mob.client.MsmSampleMobModClient"
+    ],
+    "main": [
+      "msm_sample_mob.MsmSampleMobMod"
+    ]
+  },
+  "environment": "*",
+  "id": "msm_sample_mob",
+  "license": "MIT",
+  "name": "MSM Sample Mob",
+  "schemaVersion": 1,
+  "version": "${version}"
+}

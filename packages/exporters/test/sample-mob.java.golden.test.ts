@@ -50,7 +50,8 @@ const meta = {
 };
 const PKG = 'src/main/java/msm_sample_mob';
 const notIdWarningOrInfo = (problem: Problem): boolean =>
-  problem.severity === 'error' || (problem.severity === 'warning' && problem.code !== 'schema.unknown-id');
+  problem.severity === 'error' ||
+  (problem.severity === 'warning' && problem.code !== 'schema.unknown-id');
 
 async function inTimeZone<T>(zone: string, body: () => Promise<T>): Promise<T> {
   const previous = process.env.TZ;
@@ -92,7 +93,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         expect(paths, path).toContain(path);
       }
       expect(paths.some((path) => path.startsWith('msm/') || path.includes('/msm/'))).toBe(false);
-      expect(paths.filter((path) => path.startsWith('src/main/resources/assets/')).length).toBeGreaterThan(0);
+      expect(
+        paths.filter((path) => path.startsWith('src/main/resources/assets/')).length,
+      ).toBeGreaterThan(0);
       const modJson = JSON.parse(
         utf8.decode(files.get('src/main/resources/fabric.mod.json') as Uint8Array),
       ) as { depends: Record<string, string>; entrypoints: Record<string, string[]> };

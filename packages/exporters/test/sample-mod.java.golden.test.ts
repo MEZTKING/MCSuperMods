@@ -39,7 +39,8 @@ for (const plugin of PLUGINS) registerPlugin(registry, plugin);
 const meta = { msmVersion: '0.6.0', plugins: ['msm.blocks-items', 'msm.datapack'] };
 const PKG = 'src/main/java/msm_sample_mod';
 const notIdWarningOrInfo = (problem: Problem): boolean =>
-  problem.severity === 'error' || (problem.severity === 'warning' && problem.code !== 'schema.unknown-id');
+  problem.severity === 'error' ||
+  (problem.severity === 'warning' && problem.code !== 'schema.unknown-id');
 
 async function inTimeZone<T>(zone: string, body: () => Promise<T>): Promise<T> {
   const previous = process.env.TZ;
@@ -91,16 +92,23 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(paths.some((path) => path.startsWith('msm/') || path.includes('/msm/'))).toBe(false);
       expect(paths.some((path) => path.includes('/client/'))).toBe(false);
       expect(paths.some((path) => path.includes('GlowStone'))).toBe(false); // no behaviour: plain Block
-      expect(paths.filter((path) => path.startsWith('src/main/resources/data/')).length).toBeGreaterThan(0);
-      const modJson = JSON.parse(utf8.decode(files.get('src/main/resources/fabric.mod.json') as Uint8Array)) as {
+      expect(
+        paths.filter((path) => path.startsWith('src/main/resources/data/')).length,
+      ).toBeGreaterThan(0);
+      const modJson = JSON.parse(
+        utf8.decode(files.get('src/main/resources/fabric.mod.json') as Uint8Array),
+      ) as {
         depends: Record<string, string>;
         entrypoints: Record<string, string[]>;
         version: string;
       };
       expect(modJson.depends.msm_runtime).toBeUndefined();
       expect(modJson.entrypoints).toEqual({ main: ['msm_sample_mod.MsmSampleMod'] });
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: Gradle's placeholder
       expect(modJson.version).toBe('${version}');
-      expect(utf8.decode(files.get('gradle.properties') as Uint8Array)).toContain('mod_version=1.0.0');
+      expect(utf8.decode(files.get('gradle.properties') as Uint8Array)).toContain(
+        'mod_version=1.0.0',
+      );
     });
 
     it('has the recorded tree SHA-256 in two time zones', async () => {

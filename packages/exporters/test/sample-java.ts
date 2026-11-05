@@ -17,7 +17,12 @@ import {
 } from '@msm/core';
 import type { Problem, Target } from '@msm/plugin-api';
 import type { TargetBundle } from '@msm/targets';
-import { createJavaProjectExporter, createMemorySink, type GradleWrapper, runExport } from '../src/index';
+import {
+  createJavaProjectExporter,
+  createMemorySink,
+  type GradleWrapper,
+  runExport,
+} from '../src/index';
 import { indexesFor } from './helpers';
 
 const here = dirname(fileURLToPath(import.meta.url));

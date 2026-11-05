@@ -10,8 +10,8 @@
  * @packageDocumentation
  */
 
-import { eventMethodNames } from './names';
 import { indent, type JavaFile, javaFloat, javaInt, javaString } from './java';
+import { eventMethodNames } from './names';
 import type { Reader } from './read';
 
 /** Where an event's definition lives. */

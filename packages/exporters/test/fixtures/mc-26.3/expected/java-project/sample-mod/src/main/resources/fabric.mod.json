@@ -1,0 +1,22 @@
+{
+  "authors": [
+    "MCSuperMods"
+  ],
+  "depends": {
+    "fabric-api": "*",
+    "fabricloader": ">=0.20.1",
+    "minecraft": "~26.3"
+  },
+  "description": "Kitchen-sink sample: every block and item component and every action.",
+  "entrypoints": {
+    "main": [
+      "msm_sample_mod.MsmSampleMod"
+    ]
+  },
+  "environment": "*",
+  "id": "msm_sample_mod",
+  "license": "MIT",
+  "name": "MSM Sample Mod",
+  "schemaVersion": 1,
+  "version": "${version}"
+}

@@ -69,6 +69,7 @@ export interface JavaProjectOptions {
 export const JAVA_PROJECT_MOD_JSON = `src/main/resources/${FABRIC_MOD_JSON_FILE}`;
 
 /** The version placeholder Loom's `processResources` expands in `fabric.mod.json`. */
+// biome-ignore lint/suspicious/noTemplateCurlyInString: Gradle's placeholder, not a template
 const VERSION_PLACEHOLDER = '${version}';
 
 const DEFINITION_PATTERN = /^msm\/([^/]+)\/(block|item|entity)\/(.+)\.json$/;

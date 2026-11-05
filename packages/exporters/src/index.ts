@@ -35,8 +35,8 @@ export {
   MSM_RUNTIME_MOD_ID,
   nestedRuntimePath,
   RESERVED_MOD_IDS,
-  SEPARATE_RUNTIME_OPTION,
   type ScriptTranspileResult,
+  SEPARATE_RUNTIME_OPTION,
   sanitiseModId,
   transpiledScriptPath,
 } from './fabric-content-jar/index';
