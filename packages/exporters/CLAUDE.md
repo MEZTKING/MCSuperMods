@@ -25,7 +25,7 @@ Shared modules in `src/`: `run-export.ts`, `zip.ts`, `sinks.ts`, `assets.ts` (as
 - The validation gate runs before anything is written: `validateJson` for outputs with `schema` (ADR 0009), the injected `validateText` for outputs with `language` (`mcfunction`; ADR 0014). Errors block; warnings pass; no validator gives `export.language-unchecked` info.
 - The data exporter synthesises `pack.mcmeta` from `packFormats.data` when absent; a combined export is two runs into two sinks, not a third exporter.
 - Zips: entries sorted by path, level 6, `os: 0`, timestamp `new Date(2000, 0, 1)` (local-time constructor, ADR 0013).
-- The runtime jar is nested by default; "separate runtime" is an option for modpack makers.
+- The runtime jar is nested by default; "separate runtime" is an option for modpack makers. Projects with entities (`msm/<ns>/entity/`) also depend on GeckoLib (`Target.geckolib`) and nest it from `loadGeckolibJar` unless `separateRuntime` is set (ADR 0029 D4; `export.geckolib-missing`, `export.no-geckolib-target`).
 - The `java-project` eject is one-way and includes a README in the generated project.
 
 ## Do / Don't

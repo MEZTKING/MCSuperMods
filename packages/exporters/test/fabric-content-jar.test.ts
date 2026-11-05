@@ -1,7 +1,7 @@
 /**
  * The `fabric-content-jar` exporter (ADR 0026): jar layout, determinism, `fabric.mod.json`
- * synthesised or provided, the nested runtime and its options and errors. Uses the
- * test-local `test:raw` kind.
+ * synthesised or provided, the nested runtime and its options and errors, and GeckoLib for
+ * projects with entities (ADR 0029 D4). Uses the test-local `test:raw` kind.
  */
 import { createHash } from 'node:crypto';
 import { utf8 } from '@msm/core';
@@ -9,6 +9,7 @@ import type { Element, Json, Problem } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { unzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
+import { needsGeckolib, nestedGeckolibPath } from '../src/fabric-content-jar/index';
 import {
   contentJarFileName,
   createFabricContentJarExporter,
@@ -26,6 +27,7 @@ import { element, fakeAsset, indexesFor, meta, project, raw, testRegistry } from
 
 const codes = (problems: Problem[]): string[] => problems.map((problem) => problem.code);
 const runtimeJar = utf8.encode('PK fake msm_runtime jar bytes');
+const geckolibJar = utf8.encode('PK fake GeckoLib jar bytes');
 const sha256 = (bytes: Uint8Array): string => createHash('sha256').update(bytes).digest('hex');
 
 const modelElement = element('test:model', 'ruby:block/ruby_block', {
@@ -41,6 +43,11 @@ const definition = raw('ruby:def', {
   path: 'msm/ruby/block/ruby_block.json',
   layer: 'msm',
   json: { format: 1, type: 'block' },
+});
+const entityDefinition = raw('ruby:entity', {
+  path: 'msm/ruby/entity/glow_golem.json',
+  layer: 'msm',
+  json: { format: 1, type: 'entity' },
 });
 const packMcmeta = raw('ruby:pack', {
   path: 'pack.mcmeta',
@@ -104,7 +111,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         options: [
           {
             id: 'separateRuntime',
-            label: 'Separate runtime (for modpacks)',
+            label: 'Separate runtime and GeckoLib (for modpacks)',
             type: 'boolean',
             default: false,
           },
@@ -237,6 +244,141 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(Object.keys(entries)).toEqual([]);
     });
 
+    describe('GeckoLib for entities', () => {
+      const facts = () => {
+        const geckolib = target.geckolib;
+        if (geckolib === undefined) throw new Error('target lacks GeckoLib facts');
+        return geckolib;
+      };
+      const both: FabricContentJarOptions = {
+        loadRuntimeJar: async () => runtimeJar,
+        loadGeckolibJar: async () => geckolibJar,
+      };
+
+      it('leaves a project without entities unchanged and never loads GeckoLib', async () => {
+        let loads = 0;
+        const elements = [modelElement, recipeLike, definition];
+        const plain = await exportJar(elements);
+        const withLoader = await exportJar(elements, {
+          loadRuntimeJar: async () => runtimeJar,
+          loadGeckolibJar: async () => {
+            loads++;
+            return geckolibJar;
+          },
+        });
+        expect(loads).toBe(0);
+        expect(sha256(withLoader.bytes)).toBe(sha256(plain.bytes));
+        const written = json(withLoader.entries, 'fabric.mod.json');
+        expect(Object.keys(written.depends as Record<string, Json>)).not.toContain(facts().modId);
+        expect(withLoader.entries[nestedGeckolibPath(facts())]).toBeUndefined();
+      });
+
+      it('depends on and nests GeckoLib when the project has entities', async () => {
+        const geckolib = facts();
+        const { report, entries } = await exportJar([definition, entityDefinition], both);
+        expect(report.ok).toBe(true);
+        const geckolibPath = nestedGeckolibPath(geckolib);
+        expect(geckolibPath).toBe(`META-INF/jars/${geckolib.fileName}`);
+        expect(entries[geckolibPath]).toEqual(geckolibJar);
+        expect(entries[nestedRuntimePath(meta.msmVersion)]).toEqual(runtimeJar);
+        const written = json(entries, 'fabric.mod.json');
+        expect(written.depends).toMatchObject({
+          [geckolib.modId]: geckolib.dependency,
+          msm_runtime: `>=${meta.msmVersion}`,
+        });
+        expect(written.jars).toEqual([
+          { file: nestedRuntimePath(meta.msmVersion) },
+          { file: geckolibPath },
+        ]);
+        expect(json(entries, 'msm.export.json')).toMatchObject({ fileCount: 5 });
+      });
+
+      it('completes a provided fabric.mod.json with GeckoLib', async () => {
+        const geckolib = facts();
+        const { report, entries } = await exportJar([entityDefinition, modJson], both);
+        expect(report.ok).toBe(true);
+        const written = json(entries, 'fabric.mod.json');
+        expect(written).toMatchObject({
+          depends: {
+            fabricloader: '>=0.20.1',
+            [geckolib.modId]: geckolib.dependency,
+            msm_runtime: '>=0.4.0',
+          },
+          id: 'ruby_mod',
+        });
+        expect(written.jars).toContainEqual({ file: nestedGeckolibPath(geckolib) });
+      });
+
+      it('writes the same bytes for the same input', async () => {
+        const first = await exportJar([definition, entityDefinition], both);
+        const second = await exportJar([entityDefinition, definition], both);
+        expect(sha256(first.bytes)).toBe(sha256(second.bytes));
+      });
+
+      it('only depends on GeckoLib with separateRuntime', async () => {
+        const geckolib = facts();
+        let loads = 0;
+        const { report, entries } = await exportJar(
+          [entityDefinition],
+          {
+            loadGeckolibJar: async () => {
+              loads++;
+              return geckolibJar;
+            },
+          },
+          { separateRuntime: true },
+        );
+        expect(report.ok).toBe(true);
+        expect(loads).toBe(0);
+        expect(Object.keys(entries).some((path) => path.startsWith('META-INF/'))).toBe(false);
+        const written = json(entries, 'fabric.mod.json');
+        expect(written.jars).toBeUndefined();
+        expect(written.depends).toMatchObject({
+          [geckolib.modId]: geckolib.dependency,
+          msm_runtime: `>=${meta.msmVersion}`,
+        });
+      });
+
+      it('reports export.geckolib-missing when nesting without GeckoLib bytes', async () => {
+        const geckolib = facts();
+        for (const factory of [
+          { loadRuntimeJar: async () => runtimeJar },
+          { loadRuntimeJar: async () => runtimeJar, loadGeckolibJar: async () => undefined },
+          {
+            loadRuntimeJar: async () => runtimeJar,
+            loadGeckolibJar: async () => new Uint8Array(),
+          },
+          {
+            loadRuntimeJar: async () => runtimeJar,
+            loadGeckolibJar: async (): Promise<Uint8Array> => {
+              throw new Error('offline');
+            },
+          },
+        ]) {
+          const { report, entries } = await exportJar([entityDefinition], factory);
+          expect(report.ok).toBe(false);
+          const problem = report.problems.find(
+            (entry) => entry.code === ExportProblemCodes.geckolibMissing,
+          );
+          expect(problem).toMatchObject({ severity: 'error', code: 'export.geckolib-missing' });
+          expect(problem?.message).toBe(
+            `GeckoLib ${geckolib.version} is needed for animated entities; connect to the internet once so MCSuperMods can download it.`,
+          );
+          expect(Object.keys(entries)).toEqual([]);
+        }
+      });
+
+      it('reports export.no-geckolib-target for a target without GeckoLib facts', async () => {
+        const { geckolib: _geckolib, ...bare } = target;
+        const { report, entries } = await exportJar([entityDefinition], both, {}, 'Ruby', bare);
+        expect(report.ok).toBe(false);
+        expect(codes(report.problems)).toContain('export.no-geckolib-target');
+        expect(Object.keys(entries)).toEqual([]);
+        const plain = await exportJar([definition], both, {}, 'Ruby', bare);
+        expect(plain.report.ok).toBe(true);
+      });
+    });
+
     it('rejects lowered files at reserved paths', async () => {
       const nested = raw('ruby:nested', {
         path: 'META-INF/jars/other.jar',
@@ -298,6 +440,21 @@ describe('mod ids', () => {
   });
 });
 
+describe('needsGeckolib', () => {
+  it('is true only for msm-layer entity definitions', () => {
+    expect(needsGeckolib([])).toBe(false);
+    expect(needsGeckolib([{ path: 'msm/ruby/block/a.json', contents: {}, layer: 'msm' }])).toBe(
+      false,
+    );
+    expect(
+      needsGeckolib([{ path: 'data/ruby/entity/a.json', contents: {}, layer: 'datapack' }]),
+    ).toBe(false);
+    expect(
+      needsGeckolib([{ path: 'msm/ruby/entity/mobs/a.json', contents: {}, layer: 'msm' }]),
+    ).toBe(true);
+  });
+});
+
 describe('problem codes', () => {
   it('keeps the content jar codes in ExportProblemCodes under the old alias', () => {
     expect(FabricContentJarProblemCodes).toEqual({
@@ -308,5 +465,7 @@ describe('problem codes', () => {
     });
     expect(ExportProblemCodes.noFabricTarget).toBe('export.no-fabric-target');
     expect(ExportProblemCodes.outsideJarFolders).toBe('export.outside-jar-folders');
+    expect(ExportProblemCodes.geckolibMissing).toBe('export.geckolib-missing');
+    expect(ExportProblemCodes.noGeckolibTarget).toBe('export.no-geckolib-target');
   });
 });

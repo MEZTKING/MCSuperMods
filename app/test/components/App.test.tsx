@@ -573,7 +573,7 @@ describe('App menu commands', () => {
     };
     const plugin = definePlugin({
       id: 'test.scripts',
-      apiVersion: '^0.6.0',
+      apiVersion: '^0.7.0',
       contributes: { elementKinds: [scriptKind] },
     });
     const harness = await renderApp({ plugins: [...builtInPlugins, plugin] });
@@ -813,7 +813,7 @@ describe('App Fabric mod jar export', () => {
     await harness.menu('exportFabricJar');
     const dialog = await screen.findByTestId('fabric-jar-dialog');
     const user = userEvent.setup();
-    await user.click(within(dialog).getByLabelText('Separate runtime (for modpacks)'));
+    await user.click(within(dialog).getByLabelText('Separate runtime and GeckoLib (for modpacks)'));
     await user.click(within(dialog).getByTestId('fabric-jar-dialog-submit'));
     await toast(/^Exported the Fabric mod jar to \/exports\/.+\.jar\./);
     expect(harness.saved).toHaveLength(1);

@@ -7,6 +7,7 @@ import type {
   ExporterInput,
   ExporterOption,
   FabricFacts,
+  GeckolibFacts,
   Json,
   OutputFile,
   OutputMergeMode,
@@ -67,7 +68,7 @@ describe('IR and output types', () => {
 
   it('keeps fabric and geckolib optional on Target', () => {
     expectTypeOf<Target['fabric']>().toEqualTypeOf<FabricFacts | undefined>();
-    expectTypeOf<Target['geckolib']>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<Target['geckolib']>().toEqualTypeOf<GeckolibFacts | undefined>();
   });
 });
 
@@ -257,6 +258,20 @@ describe('0.6.0 additions', () => {
       api: string;
       loom: string;
       minecraftDependency: string;
+    }>();
+  });
+});
+
+describe('0.7.0 additions', () => {
+  it('types the GeckoLib facts of a target', () => {
+    expectTypeOf<GeckolibFacts>().toEqualTypeOf<{
+      version: string;
+      modId: string;
+      dependency: string;
+      fileName: string;
+      url: string;
+      sha512: string;
+      modrinthVersionId?: string;
     }>();
   });
 });

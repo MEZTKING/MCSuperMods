@@ -22,7 +22,7 @@ import { parseArgs } from 'node:util';
 export const PLUGIN_NAME_PATTERN = /^[a-z][a-z0-9-]*$/;
 
 /** The plugin API range a freshly scaffolded plugin declares. */
-export const SCAFFOLD_API_RANGE = '^0.6.0';
+export const SCAFFOLD_API_RANGE = '^0.7.0';
 
 export class NewPluginError extends Error {
   constructor(message: string) {

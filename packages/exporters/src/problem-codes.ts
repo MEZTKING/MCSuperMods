@@ -38,6 +38,16 @@ export const ExportProblemCodes = {
    * jar. Nothing is written.
    */
   runtimeMissing: 'export.runtime-missing',
+  /**
+   * Fabric content jar: the project has entities, so GeckoLib must be nested, but the host
+   * supplied no GeckoLib jar. Nothing is written.
+   */
+  geckolibMissing: 'export.geckolib-missing',
+  /**
+   * Fabric content jar: the project has entities but the target has no GeckoLib facts
+   * (`Target.geckolib`). Nothing is written.
+   */
+  noGeckolibTarget: 'export.no-geckolib-target',
   /** Fabric content jar: the layer-`msm` `fabric.mod.json` is not a JSON object. Nothing is written. */
   invalidModJson: 'export.invalid-mod-json',
   /**

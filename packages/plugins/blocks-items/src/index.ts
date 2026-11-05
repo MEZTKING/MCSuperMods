@@ -21,7 +21,7 @@ export {
 
 export default definePlugin({
   id: 'msm.blocks-items',
-  apiVersion: '^0.6.0',
+  apiVersion: '^0.7.0',
   contributes: {
     elementKinds: [...blocksItemsKinds],
     elementTemplates: [...blocksItemsTemplates],

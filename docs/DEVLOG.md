@@ -1525,3 +1525,40 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 **Next**
 - Main session: launch Wave 0 (B110, B111, B112), paste B110's findings into the ADR 0028 and 0029 Status sections and into the Wave 1 briefs before B113 starts; settle the `BiomeModifications.addSpawn` question at B110 review (fallback in the plan's risks).
 - User: nothing new; the Phase 1–4 in-game checks are still pending.
+
+---
+
+## 2026-11-05 — executor — B111 plugin API 0.7.0, GeckoLib facts, content jar nesting, plugin scaffolds
+
+**What**
+- `@msm/plugin-api` 0.7.0 (ADR 0030): `GeckolibFacts` and `Target.geckolib?: GeckolibFacts` (exported from the index), `API_VERSION` `0.7.0`, CHANGELOG entry with the migration note; type test for the new shape.
+- `mc-26.3` target sets `geckolib` from the Phase 5 facts table (5.5.7, `geckolib`, `>=5.5.7`, `geckolib-fabric-26.3-5.5.7.jar`, Modrinth CDN URL, SHA-512, `kSxHvs99`); test checks the file name carries `mcVersion`, the URL ends in the file name and the hash is 128 hex characters; `CHANGES.md` row.
+- Every built-in plugin and `tools/new-plugin` declare `^0.7.0` (their range tests and the core and app test fixtures that declare a range follow).
+- `fabric-content-jar`: `loadGeckolibJar` factory option; any `msm`-layer `msm/<ns>/entity/` file makes the jar depend on GeckoLib and, unless `separateRuntime`, nest `META-INF/jars/<fileName>`; new codes `export.geckolib-missing` and `export.no-geckolib-target`; option relabelled "Separate runtime and GeckoLib (for modpacks)". Eight new content-jar tests; Phase 4 SHA-256 goldens unchanged.
+- Scaffolded `@msm/plugin-entities` and `@msm/plugin-models-anim` with `tools/new-plugin`; added to `tools/check-deps/layers.json` (exporters list), root `tsconfig.json` (by the tool) and `app/package.json` devDependencies; lockfile updated.
+
+**Decisions**
+- An existing `geckolib` entry in a provided `fabric.mod.json` `depends` is kept, as for `msm_runtime`. GeckoLib bytes are loaded only when the project has entities and nesting is on; an empty or throwing loader counts as missing.
+- The no-GeckoLib-target check runs before the runtime load, so a target without facts fails fast.
+
+**Next**
+- B114/B115 fill the scaffolds; B118 supplies `loadGeckolibJar` from the app's download cache and updates the comment in `app/src/main/platform/runtime-jar.ts`; B121 updates the guide and README for the new option label; B122 updates the plugin-api and plugins scoped `CLAUDE.md` status lines (still say 0.6.0).
+
+## 2026-11-05 — executor — B112 MSM mcdoc: entity, geometry, animation, play_animation
+
+What:
+- `definition.mcdoc`: `::msm::definition::Entity` (ADR 0028 D2) with `EntityCommon`, `EntitySize`, `SpawnEgg`, `Spawn`, enums `MobCategory`, `SpawnPlacement`, `Heightmap`, `SpawnRule`, `GoalType`; components `Health`, `Movement`, `Attack`, `AiGoals` (`Goal` with dispatcher `msm:ai_goal`: `wander`, `look_at_player`, `look_around`, `melee_attack`, `flee`, `follow`), `AnimatedModel`, `OnHurt`, `OnDeath`, reused `OnInteract`; `EntityBehaviourComponents` / `EntityComponents`. Biome entries use `#[id(registry="worldgen/biome", tags="allowed")]`, the vanilla mcdoc form.
+- `element.mcdoc`: `::msm::element::Entity` (definition plus `display_name`, `SpawnEgg` with `texture` and `display_name`, `AnimatedModel` documenting `model` / `animations` as `msm:geo_model` / `msm:animation` element ids).
+- `action.mcdoc`: `play_animation { animation, controller? }`.
+- New `geometry.mcdoc` (`::msm::geometry::Geometry`) and `animation.mcdoc` (`::msm::animation::Animations`, `Vec3Value`, `Channel`, `Keyframe`).
+- `MSM_SCHEMA_REFS` / `MSM_TYPE_PATHS`: `entity` (`msm:entity`, `::msm::element::Entity`), `entityDefinition` (`msm:entity_definition`, `::msm::definition::Entity`), `geoModel` (`msm:geo_model`, `::msm::geometry::Geometry`), `animation` (`msm:animation`, `::msm::animation::Animations`). `symbols.json` regenerated (91 types).
+- Corpus: definition `entity-*` 10 valid, 16 invalid; element `entity-*` 4 valid, 4 invalid; new group `geometry/` 5 valid, 9 invalid; new group `animation/` 5 valid, 8 invalid; each with `expected-errors.json`. Existing corpus files untouched (only the two `expected-errors.json` gained entries).
+- `msm-conformance.test.ts`: four groups, field coverage for the four new schemas (map-like struct keys derived from the schema), every goal type covered, every action covered by entity definitions and every action except `play_animation` by block and item definitions.
+
+Decisions:
+- `components` and `msm:animated_model` are required on entities (ADR 0028 D2 and ADR 0029 D1 say the model is required; the brief wrote `components?`); invalid case `entity-missing-animated-model`.
+- Geometry stays strict: `poly_mesh` and `texture_meshes` fail as `schema.unknown-field`; the Bedrock keys GeckoLib ignores that Blockbench may write are declared (`binding`, `reset` on bones, `material_instance` on faces). Animations also declare `particle_effects`, `sound_effects` and `timeline` (open maps), which GeckoLib reads, so real Blockbench exports validate; `start_delay`, `loop_delay` and `blend_weight` take a number or a Molang string.
+- `lerp_mode` is the literal union of the brief, so a bad value reports `schema.no-union-match`.
+
+Next:
+- B113 must teach `ConformanceCorpusTest` the `entity-` prefix: until then its `parse` throws on the new `entity-*` files in `conformance/definition/` (the JUnit test is red between B112 and B113).

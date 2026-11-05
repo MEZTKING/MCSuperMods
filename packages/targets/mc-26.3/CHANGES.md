@@ -22,6 +22,7 @@ Checked on 2026-11-04.
 | `worldgen.biomeAttributes` | colours `minecraft:visual/sky_color`, `minecraft:visual/fog_color`, `minecraft:visual/water_fog_color` (sky first is `skyColour`); `naturalMobSpawns` `minecraft:gameplay/natural_mob_spawns`. The biome `effects.sky_color`, `fog_color` and `water_fog_color` fields are `until 1.21.11`; spawns moved from `spawners`/`spawn_costs` into the attribute in 26.3 | vendored vanilla-mcdoc: `minecraft:environment_attribute` dispatcher (colour members are `RGBColorAttribute`; `gameplay/natural_mob_spawns` is `MergeableAttribute<NaturalMobSpawns>`, `since 26.3`), `::java::data::worldgen::biome::BiomeEffects` field gates; mcmeta `registries.json` `environment_attribute`; asserted by `test/target.test.ts`; checked 2026-11-04 |
 | `fabric` (Loader, Fabric API, Loom) | loader `0.20.1`, API `0.165.2+26.3`, Loom `1.19.3` | meta.fabricmc.net `/v2/versions/loader/26.3`, maven.fabricmc.net `fabric-api` metadata and Loom plugin markers, FabricMC example mod branch `26.3`; checked 2026-11-05 (ADR 0027) |
 | `fabric.minecraftDependency` | `~26.3` | (verify at implementation) |
+| `geckolib` | version `5.5.7`, mod id `geckolib`, `>=5.5.7`, `geckolib-fabric-26.3-5.5.7.jar`, Modrinth version `kSxHvs99`, SHA-512 `c7c89bd6…8c158fc5` | Modrinth API `project/geckolib/version` (Fabric, 26.3) and CDN; jar downloaded, hashed and its `fabric.mod.json` read; checked 2026-11-05 (ADR 0030, `docs/PHASE5-PLAN.md`) |
 | GeckoLib | not set (Phase 5) | (verify at implementation) |
 
 ## Vendored data

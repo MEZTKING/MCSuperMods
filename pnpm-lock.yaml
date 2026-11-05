@@ -331,9 +331,15 @@ importers:
       '@msm/plugin-datapack':
         specifier: workspace:*
         version: link:../packages/plugins/datapack
+      '@msm/plugin-entities':
+        specifier: workspace:*
+        version: link:../packages/plugins/entities
       '@msm/plugin-library':
         specifier: workspace:*
         version: link:../packages/plugins/library
+      '@msm/plugin-models-anim':
+        specifier: workspace:*
+        version: link:../packages/plugins/models-anim
       '@msm/plugin-resourcepack':
         specifier: workspace:*
         version: link:../packages/plugins/resourcepack
@@ -565,7 +571,45 @@ importers:
         specifier: 'catalog:'
         version: 5.1.0(@types/node@24.19.2)(happy-dom@21.0.4)(vite@8.3.5(@types/node@24.19.2)(jiti@2.7.0))
 
+  packages/plugins/entities:
+    dependencies:
+      '@msm/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+      '@msm/schemas':
+        specifier: workspace:*
+        version: link:../../schemas
+    devDependencies:
+      '@msm/targets':
+        specifier: workspace:*
+        version: link:../../targets/all
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.1.0(@types/node@24.19.2)(happy-dom@21.0.4)(vite@8.3.5(@types/node@24.19.2)(jiti@2.7.0))
+
   packages/plugins/library:
+    dependencies:
+      '@msm/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+      '@msm/schemas':
+        specifier: workspace:*
+        version: link:../../schemas
+    devDependencies:
+      '@msm/targets':
+        specifier: workspace:*
+        version: link:../../targets/all
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.1.0(@types/node@24.19.2)(happy-dom@21.0.4)(vite@8.3.5(@types/node@24.19.2)(jiti@2.7.0))
+
+  packages/plugins/models-anim:
     dependencies:
       '@msm/plugin-api':
         specifier: workspace:*

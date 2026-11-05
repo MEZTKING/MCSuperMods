@@ -167,6 +167,30 @@ export interface FabricFacts {
 }
 
 /**
+ * GeckoLib facts of a target: the GeckoLib build the content jar depends on and nests for
+ * animated entities. Since 0.7.0 (ADR 0030).
+ */
+export interface GeckolibFacts {
+  /** GeckoLib version, for example `<major>.<minor>.<patch>`. */
+  version: string;
+  /** GeckoLib's mod id, written as the key of its entry in `fabric.mod.json` `depends`. */
+  modId: string;
+  /** The version range written into `fabric.mod.json` `depends`, for example `>=<version>`. */
+  dependency: string;
+  /**
+   * The jar's file name, used as the nested jar's name under `META-INF/jars/`, for example
+   * `geckolib-fabric-<game version>-<version>.jar`.
+   */
+  fileName: string;
+  /** Where the host downloads the jar from. */
+  url: string;
+  /** SHA-512 of the jar as 128 lower-case hex characters, checked after download. */
+  sha512: string;
+  /** The Modrinth version id of this build, for the Modrinth Maven and the Modrinth API. */
+  modrinthVersionId?: string;
+}
+
+/**
  * One Minecraft version's facts, contributed by a `@msm/target-mc-<version>` package.
  *
  * This interface is the documented home of every target field.
@@ -221,8 +245,13 @@ export interface Target {
    * since a future non-Fabric target may lack it; every MSM target from Phase 4 sets it.
    */
   fabric?: FabricFacts;
-  /** GeckoLib version. Required when a project uses animated entities (Phase 5). */
-  geckolib?: string;
+  /**
+   * GeckoLib facts, used by the content jar exporter and the host's GeckoLib download when a
+   * project has animated entities. Optional, since a target may lack a GeckoLib build; the
+   * exporter reports a problem when a project with entities is exported for such a target.
+   * A {@link GeckolibFacts} object since 0.7.0 (a version string before).
+   */
+  geckolib?: GeckolibFacts;
   /**
    * Migrates a project written for `previous` so that it is valid for this target.
    *

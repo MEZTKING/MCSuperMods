@@ -18,6 +18,21 @@ describe('target mc-26.3', () => {
     expect(target.fabric?.api.endsWith(`+${target.mcVersion}`)).toBe(true);
   });
 
+  it('sets the GeckoLib facts', () => {
+    const geckolib = target.geckolib;
+    expect(geckolib).toBeDefined();
+    if (geckolib === undefined) return;
+    expect(geckolib.version).toBe('5.5.7');
+    expect(geckolib.modId).toBe('geckolib');
+    expect(geckolib.dependency).toBe(`>=${geckolib.version}`);
+    expect(geckolib.fileName).toBe(`geckolib-fabric-${target.mcVersion}-${geckolib.version}.jar`);
+    expect(geckolib.url.startsWith('https://cdn.modrinth.com/')).toBe(true);
+    expect(geckolib.url.endsWith(`/${geckolib.fileName}`)).toBe(true);
+    expect(geckolib.sha512).toMatch(/^[0-9a-f]{128}$/);
+    expect(geckolib.modrinthVersionId).toBe('kSxHvs99');
+    expect(geckolib.url).toContain(`/versions/${geckolib.modrinthVersionId}/`);
+  });
+
   it('derives its id from the Minecraft version', () => {
     expect(target.id).toBe(`mc-${target.mcVersion}`);
   });

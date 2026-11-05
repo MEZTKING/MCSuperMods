@@ -1,12 +1,13 @@
 /**
  * The `fabric-content-jar` exporter (ADR 0026): one Fabric mod jar holding the project's
  * `assets/`, `data/` and `msm/` files, `fabric.mod.json` and, by default, the `msm_runtime`
- * jar nested under `META-INF/jars/`.
+ * jar nested under `META-INF/jars/`. A project with entities also depends on GeckoLib and, by
+ * default, nests its jar (ADR 0029 D4).
  *
  * The exporter writes jar entries to its sink; the host passes a zip sink
  * (`createZipSink`), whose archive is deterministic (sorted entries, fixed timestamps,
  * ADR 0013). It never reads files itself: the runtime jar's bytes come from the factory's
- * `loadRuntimeJar` (ADR 0026 D4).
+ * `loadRuntimeJar` (ADR 0026 D4) and GeckoLib's from `loadGeckolibJar`.
  *
  * @packageDocumentation
  */
@@ -16,6 +17,7 @@ import type {
   Exporter,
   ExporterInput,
   FabricFacts,
+  GeckolibFacts,
   Json,
   JsonObject,
   OutputFile,
@@ -31,7 +33,7 @@ export const FABRIC_CONTENT_JAR_EXPORTER_ID = 'fabric-content-jar';
 /** The mod metadata file at the jar root. */
 export const FABRIC_MOD_JSON_FILE = 'fabric.mod.json';
 
-/** The id of the boolean option that leaves the runtime out of the jar. */
+/** The id of the boolean option that leaves the runtime (and GeckoLib) out of the jar. */
 export const SEPARATE_RUNTIME_OPTION = 'separateRuntime';
 
 /** The runtime mod's id, written into `depends`. */
@@ -39,6 +41,9 @@ export const MSM_RUNTIME_MOD_ID = 'msm_runtime';
 
 /** The folder nested jars live in. */
 const NESTED_JARS_FOLDER = 'META-INF/jars/';
+
+/** Entity definitions: `msm/<ns>/entity/...`. Their presence makes the jar need GeckoLib. */
+const ENTITY_DEFINITION_PATTERN = /^msm\/[^/]+\/entity\//;
 
 /** The version written into a synthesised `fabric.mod.json`. */
 export const DEFAULT_MOD_VERSION = '1.0.0';
@@ -84,6 +89,12 @@ export interface FabricContentJarOptions {
    * (ADR 0026 D4).
    */
   runtimeVersion?: string;
+  /**
+   * Returns the GeckoLib jar's bytes (`Target.geckolib.fileName`), or `undefined` when the
+   * host has none (not downloaded yet and offline). Called only when the project has entities
+   * and the runtime is nested. A throw counts as missing.
+   */
+  loadGeckolibJar?: () => Promise<Uint8Array | undefined>;
 }
 
 /**
@@ -117,6 +128,21 @@ function firstNamespace(files: readonly OutputFile[]): string | undefined {
 /** The nested runtime jar's path: `META-INF/jars/msm_runtime-<version>.jar`. */
 export function nestedRuntimePath(version: string): string {
   return `${NESTED_JARS_FOLDER}${MSM_RUNTIME_MOD_ID}-${version}.jar`;
+}
+
+/**
+ * Whether the files need GeckoLib: true when any `msm`-layer file is an entity definition
+ * (`msm/<ns>/entity/...`).
+ *
+ * @param files - The lowered files.
+ */
+export function needsGeckolib(files: readonly OutputFile[]): boolean {
+  return files.some((file) => file.layer === 'msm' && ENTITY_DEFINITION_PATTERN.test(file.path));
+}
+
+/** The nested GeckoLib jar's path: `META-INF/jars/<fileName>`. */
+export function nestedGeckolibPath(geckolib: GeckolibFacts): string {
+  return `${NESTED_JARS_FOLDER}${geckolib.fileName}`;
 }
 
 /** The `depends` block of ADR 0026 D2. */
@@ -202,6 +228,30 @@ function withRuntime(
   return result;
 }
 
+/**
+ * Applies the GeckoLib choice to a `fabric.mod.json`: adds the GeckoLib dependency when
+ * absent, removes any earlier entry for the same nested file from `jars`, and adds the nested
+ * GeckoLib entry when nesting. `jars` is dropped when it ends up empty.
+ */
+function withGeckolib(
+  modJson: JsonObject,
+  geckolib: GeckolibFacts,
+  nestedPath: string | undefined,
+): JsonObject {
+  const result: JsonObject = { ...modJson };
+  const depends: JsonObject = isObject(result.depends) ? { ...result.depends } : {};
+  if (!Object.hasOwn(depends, geckolib.modId)) depends[geckolib.modId] = geckolib.dependency;
+  result.depends = depends;
+  const path = nestedGeckolibPath(geckolib);
+  const jars = (Array.isArray(result.jars) ? result.jars : []).filter(
+    (entry) => !(isObject(entry) && entry.file === path),
+  );
+  if (nestedPath !== undefined) jars.push({ file: nestedPath });
+  if (jars.length > 0) result.jars = jars;
+  else delete result.jars;
+  return result;
+}
+
 /** Where a file lands in the jar, or why it is left out. */
 function placement(file: OutputFile): 'jar' | 'reserved' | 'outside' {
   if (file.path === EXPORT_MANIFEST_FILE || file.path.startsWith(NESTED_JARS_FOLDER)) {
@@ -210,6 +260,18 @@ function placement(file: OutputFile): 'jar' | 'reserved' | 'outside' {
   if (file.layer === 'msm') return file.path === FABRIC_MOD_JSON_FILE ? 'reserved' : 'jar';
   const prefix = file.layer === 'resourcepack' ? 'assets/' : 'data/';
   return file.path.startsWith(prefix) ? 'jar' : 'outside';
+}
+
+async function loadGeckolib(
+  load: FabricContentJarOptions['loadGeckolibJar'],
+): Promise<Uint8Array | undefined> {
+  if (load === undefined) return undefined;
+  try {
+    const bytes = await load();
+    return bytes === undefined || bytes.length === 0 ? undefined : bytes;
+  } catch {
+    return undefined;
+  }
 }
 
 async function loadRuntime(
@@ -239,7 +301,13 @@ async function loadRuntime(
  * and `msm.export.json` last. Without `Target.fabric` it reports `export.no-fabric-target`;
  * when nesting without runtime bytes, `export.runtime-missing`; both write nothing.
  *
- * @param options - Where the runtime jar comes from and its version.
+ * When the project has entities ({@link needsGeckolib}), `fabric.mod.json` also depends on
+ * GeckoLib (`Target.geckolib`) and, unless `separateRuntime` is set, the GeckoLib jar is
+ * nested as `META-INF/jars/<fileName>`. Without `Target.geckolib` it reports
+ * `export.no-geckolib-target`; when nesting without GeckoLib bytes,
+ * `export.geckolib-missing`; both write nothing. Projects without entities are unaffected.
+ *
+ * @param options - Where the runtime and GeckoLib jars come from, and the runtime version.
  */
 export function createFabricContentJarExporter(options: FabricContentJarOptions = {}): Exporter {
   return {
@@ -249,9 +317,9 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
     options: [
       {
         id: SEPARATE_RUNTIME_OPTION,
-        label: 'Separate runtime (for modpacks)',
+        label: 'Separate runtime and GeckoLib (for modpacks)',
         description:
-          'Leave msm_runtime out of the jar. The modpack must then include msm_runtime itself.',
+          'Leave msm_runtime and GeckoLib out of the jar. The modpack must then include both itself.',
         type: 'boolean',
         default: false,
       },
@@ -268,6 +336,16 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
       }
       const runtimeVersion = options.runtimeVersion ?? input.meta.msmVersion;
       const nest = input.options[SEPARATE_RUNTIME_OPTION] !== true;
+      const entities = needsGeckolib(input.files);
+      const geckolib = entities ? input.target.geckolib : undefined;
+      if (entities && geckolib === undefined) {
+        input.problems.report({
+          severity: 'error',
+          code: ExportProblemCodes.noGeckolibTarget,
+          message: `Target ${input.target.id} has no GeckoLib version, so a mod jar with animated entities cannot be built for it.`,
+        });
+        return;
+      }
 
       let runtimeBytes: Uint8Array | undefined;
       if (nest) {
@@ -276,11 +354,24 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
           input.problems.report({
             severity: 'error',
             code: ExportProblemCodes.runtimeMissing,
-            message: `The msm_runtime jar cannot be nested: ${runtime.reason}. Build the runtime, or choose "Separate runtime (for modpacks)".`,
+            message: `The msm_runtime jar cannot be nested: ${runtime.reason}. Build the runtime, or choose "Separate runtime and GeckoLib (for modpacks)".`,
           });
           return;
         }
         runtimeBytes = runtime.bytes;
+      }
+
+      let geckolibBytes: Uint8Array | undefined;
+      if (nest && geckolib !== undefined) {
+        geckolibBytes = await loadGeckolib(options.loadGeckolibJar);
+        if (geckolibBytes === undefined) {
+          input.problems.report({
+            severity: 'error',
+            code: ExportProblemCodes.geckolibMissing,
+            message: `GeckoLib ${geckolib.version} is needed for animated entities; connect to the internet once so MCSuperMods can download it.`,
+          });
+          return;
+        }
       }
 
       const files: OutputFile[] = [];
@@ -337,11 +428,15 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
         modJson = parsed;
       }
       const nestedPath = nest ? nestedRuntimePath(runtimeVersion) : undefined;
-      files.push({
-        path: FABRIC_MOD_JSON_FILE,
-        contents: withRuntime(modJson, runtimeVersion, nestedPath),
-        layer: 'msm',
-      });
+      let finalModJson = withRuntime(modJson, runtimeVersion, nestedPath);
+      const geckolibPath =
+        geckolib !== undefined && geckolibBytes !== undefined
+          ? nestedGeckolibPath(geckolib)
+          : undefined;
+      if (geckolib !== undefined) {
+        finalModJson = withGeckolib(finalModJson, geckolib, geckolibPath);
+      }
+      files.push({ path: FABRIC_MOD_JSON_FILE, contents: finalModJson, layer: 'msm' });
 
       const conflicts = new Set<string>();
       const seen = new Set<string>();
@@ -368,6 +463,9 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
       }));
       if (nestedPath !== undefined && runtimeBytes !== undefined) {
         entries.push({ path: nestedPath, data: runtimeBytes });
+      }
+      if (geckolibPath !== undefined && geckolibBytes !== undefined) {
+        entries.push({ path: geckolibPath, data: geckolibBytes });
       }
       entries.sort((a, b) => comparePaths(a.path, b.path));
       for (const entry of entries) await input.sink.writeFile(entry.path, entry.data);

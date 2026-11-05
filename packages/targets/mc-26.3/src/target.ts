@@ -82,5 +82,16 @@ export const target: Target = {
     // minecraftDependency: the fabric.mod.json range (verify at implementation).
     minecraftDependency: '~26.3',
   },
-  // geckolib is not set until Phase 5 (verify at implementation then).
+  // Verified 2026-11-05 against the Modrinth API and CDN (project geckolib, Fabric build for
+  // 26.3; jar downloaded and hashed). ADR 0030.
+  geckolib: {
+    version: '5.5.7',
+    modId: 'geckolib',
+    dependency: '>=5.5.7',
+    fileName: 'geckolib-fabric-26.3-5.5.7.jar',
+    url: 'https://cdn.modrinth.com/data/8BmcQJ2H/versions/kSxHvs99/geckolib-fabric-26.3-5.5.7.jar',
+    sha512:
+      'c7c89bd6c5f2801ef1575e2e1212202f5a3eff480d73503beff12b1d60dfb751112fccf36e36c243b26b6b492261cef12d8b2c1a92a734bb0b621daa8c158fc5',
+    modrinthVersionId: 'kSxHvs99',
+  },
 };

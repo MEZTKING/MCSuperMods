@@ -2,6 +2,18 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 0.7.0 — 2026-11-05
+
+GeckoLib target facts (ADR 0030). `API_VERSION` is `0.7.0`. Built-in plugins and `tools/new-plugin` declare `^0.7.0`.
+
+- `GeckolibFacts` (`version`, `modId`, `dependency`, `fileName`, `url`, `sha512`, optional `modrinthVersionId`) and `Target.geckolib?: GeckolibFacts`, replacing the placeholder `geckolib?: string`. The content jar exporter writes `modId` and `dependency` into `fabric.mod.json` `depends` and nests the jar as `META-INF/jars/<fileName>` when a project has entities; the host downloads it from `url` and checks `sha512`. Still optional on the type: a target may lack a GeckoLib build.
+
+### Migration from 0.6.0
+
+- Plugins only need the range change: declare `^0.7.0`. Plugins declaring `^0.6.0` no longer load, because `0.7.0` is outside a `^0.6.0` range (0.x minors are breaking under semver).
+- Code that reads `Target.geckolib` gets a `GeckolibFacts` object instead of a version string; read `target.geckolib?.version` for the old value.
+- A target that sets `geckolib` must supply the whole object.
+
 ## 0.6.0 — 2026-11-05
 
 Mergeable outputs, exporter options and Fabric target facts (ADR 0027). `API_VERSION` is `0.6.0`. Built-in plugins declare `^0.6.0`.

@@ -41,6 +41,7 @@ export type {
   BiomeAttributeFacts,
   DataFolderKey,
   FabricFacts,
+  GeckolibFacts,
   MigrationChange,
   MigrationReport,
   PackFormat,
