@@ -3,7 +3,7 @@
   "id": "msm_runtime_gametest",
   "version": "0.0.0",
   "name": "MSM Runtime GameTests",
-  "description": "GameTests for msm_runtime; ships msm/msm_spike/ (blocks, items, scripts) and msm/msm_test/ (blocks, items, entities with GeckoLib assets) definitions like a content jar would.",
+  "description": "GameTests for msm_runtime; ships msm/msm_spike/ (blocks, items) and msm/msm_test/ (blocks, items, entities with GeckoLib assets, scripts) definitions like a content jar would.",
   "license": "MIT",
   "environment": "*",
   "entrypoints": {
@@ -11,7 +11,7 @@
       "dev.mcsupermods.runtime.gametest.MsmSpikeGameTest",
       "dev.mcsupermods.runtime.gametest.MsmRuntimeGameTest",
       "dev.mcsupermods.runtime.gametest.MsmEntityGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmScriptSpikeGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmScriptGameTest"
     ]
   },
   "depends": {

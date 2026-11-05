@@ -75,7 +75,7 @@ public final class ScriptBridges {
         }
     }
 
-    public static InteractionResult useBlock(Player player, Level level, InteractionHand hand, BlockHitResult hit) {
+    static InteractionResult useBlock(Player player, Level level, InteractionHand hand, BlockHitResult hit) {
         ScriptHost host = host(level);
         if (host == null || !(player instanceof ServerPlayer sp)) {
             return InteractionResult.PASS;
@@ -93,7 +93,7 @@ public final class ScriptBridges {
         return cancelled(host, sp, hand, cancelled);
     }
 
-    public static InteractionResult useItem(Player player, Level level, InteractionHand hand) {
+    static InteractionResult useItem(Player player, Level level, InteractionHand hand) {
         ScriptHost host = host(level);
         if (host == null || !(player instanceof ServerPlayer sp)) {
             return InteractionResult.PASS;
@@ -109,7 +109,7 @@ public final class ScriptBridges {
         return cancelled(host, sp, hand, cancelled);
     }
 
-    public static InteractionResult useEntity(Player player, Level level, InteractionHand hand, Entity entity) {
+    static InteractionResult useEntity(Player player, Level level, InteractionHand hand, Entity entity) {
         ScriptHost host = host(level);
         if (host == null || !(player instanceof ServerPlayer sp)) {
             return InteractionResult.PASS;
@@ -161,11 +161,7 @@ public final class ScriptBridges {
         }
     }
 
-    /**
-     * {@code ServerPlayConnectionEvents.JOIN}; public so that GameTests can drive it with a mock player (the GameTest
-     * server has no network connections that would fire the Fabric event).
-     */
-    public static void playerJoined(ServerPlayer player) {
+    static void playerJoined(ServerPlayer player) {
         ScriptHost host = host(player.level());
         if (host != null && host.handles(ScriptEvents.PLAYER_JOIN_EVENT)) {
             host.fire(ScriptEvents.PLAYER_JOIN_EVENT, new ScriptEvents.PlayerJoin(player.level(), player));

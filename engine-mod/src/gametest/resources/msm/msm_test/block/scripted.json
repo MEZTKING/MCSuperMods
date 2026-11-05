@@ -1,0 +1,23 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "msm_test:scripted"
+    }
+  },
+  "events": {
+    "msm_test:scripted": {
+      "actions": [
+        {
+          "handler": "msm_test:scripted_action",
+          "type": "run_script"
+        },
+        {
+          "handler": "msm_test:undefined_handler",
+          "type": "run_script"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "item": false
+}
