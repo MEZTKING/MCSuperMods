@@ -9,3 +9,7 @@ out/
 coverage/
 .DS_Store
 test-results/
+# Gradle (engine-mod)
+.gradle/
+build/
+run/
