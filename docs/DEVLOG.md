@@ -1395,3 +1395,40 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 - B99: release workflow builds `engine-mod` before `pnpm --filter @msm/app dist` and may run `stage-runtime --require`.
 - B101/B98: `e2e/library-path.spec.ts` still expects the old Custom ore starter elements (fails since B98's starter rewrite).
 - `docs/guide/`: document "Export Fabric mod jar" and the "Separate runtime (for modpacks)" option.
+
+---
+
+## 2026-11-05 — executor — B99a Wave 3 fix-up
+
+**What**
+- `app/e2e/library-path.spec.ts`: follows the real Custom ore starter (`msm:block` `ruby_ore`, `msm:item` `ruby`, `ruby_block`, `mod`, loot table `blocks/ruby_ore`, recipe `ruby_block_from_rubies`; no `minecraft:` overrides). Checks the pack files under the project namespace (block state, lang keys, loot tables incl. the drops-itself table, recipe result) and that neither pack holds `msm/` or `fabric.mod.json`, then exports the Fabric mod jar with "Separate runtime (for modpacks)" and checks `msm/<ns>/block/ruby_ore.json`, the item definition, no `META-INF/jars/`, and `fabric.mod.json` id and `msm_runtime` dependency.
+- App registry ids: `dataRegistryIds` (`session/schema-context.ts`) now counts a registered kind of another namespace when its `ElementKind.registry` is a plain name (no `:`), so `msm:block` goes to `block` and `msm:item` to `item`; any element in the `block` registry also goes to `item` unless its data has `"item": false` (`blockHasItem`). The mcfunction checker gets these ids too. Tests in `app/test/schema-context-registry.test.ts`. The exporters' library test copy follows the same rule; `blocks-items/test/support.ts` is a static list and only its comment changed.
+- `sample-mod.golden.test.ts` imports `@msm/plugin-blocks-items` statically; `packages/exporters/tsconfig.json` references `../plugins/blocks-items`. SHA unchanged.
+- Reserved mod ids (ADR 0026 D2): new `blocks-items.reserved-mod-id` (error) for `minecraft`, `java`, `fabricloader`, `fabric-api`, `msm_runtime`, exported `RESERVED_MOD_IDS`; `modIdFromNamespace` (plugin and the library's copy) and the exporter's `sanitiseModId` (so the synthesised id) add a `mod_` prefix. The four content-jar codes moved into `ExportProblemCodes`; `FabricContentJarProblemCodes` stays as a deprecated alias.
+- `mc-26.3/test/mcfunction.test.ts`: hook timeout 60 s, test timeout 30 s, init bound 15 s (was 5 s, idle runs take about 0.5 s).
+- Docs: root, `app/` and `packages/plugins/` CLAUDE.md status and contents; README (counts, Custom ore, new "Export a Fabric mod" section, engine-mod note); `docs/guide/getting-started.md` Custom ore steps rewritten for the mod jar; new stub `docs/guide/blocks-and-items.md` ("Export a Fabric mod jar", "Separate runtime (for modpacks)") listed in the guide index and `docs/CLAUDE.md`; ADR 0020 note (reskin superseded); ADR 0024 D4 records B99's production-jar result.
+
+**Decisions**
+- New code `blocks-items.reserved-mod-id` rather than widening `bad-mod-id`, so the message can suggest `mod_<id>`.
+- The block-item rule keys on the `block` registry, not the kind id, so it is generic for any plugin's block kind.
+
+**Next**
+- ADR 0026 D2 still says "to implement in Wave 3"; tick it at acceptance.
+- `msm_runtime` is not published as a download of its own; the separate-runtime guide text says so. A release asset would help modpack makers.
+- `getting-started.md` steps for the mod jar are unchecked in game (the user's in-game check, `fixtures/sample-mod/README.md`).
+
+---
+
+## 2026-11-05 — main session — Phase 4 Wave 3 closed; 0.3.0 published
+
+**What**
+- 0.3.0 published through the new `publish-release.yml` (checks the three assets, then publishes; the user allowed session publishing).
+- Wave 3 reviewed: B96 (Export Fabric mod jar, runtime staging to `app/build/runtime/msm_runtime.jar`), B97 (Block and Item Studios), B98 (real ruby Custom ore starter, 5 examples; 106 templates, 61 examples), B99 (CI `engine-mod` job, `tools/run-fabric-server`, `fixtures/sample-mod`; the headless 26.3 server loaded the nested content jar: scanning inside a production jar works), B99a (library e2e, registry ids for msm blocks and items, reserved mod ids, problem codes, flaky timeout, docs).
+- The executors' files were checkpointed in "WIP Wave 3" commits (the stop hook asks for clean trees), so the wave lands as one verified set rather than one commit per brief.
+
+**Decisions**
+- B96 and B99 agree on the staged runtime path; `stage-runtime.mjs` also runs before `dist`.
+- Later tidy-up: move the Studio form parts shared by structures, worldgen and blocks-items into `studios/shared/`.
+
+**Next**
+- Wave 4: B100 Test in Minecraft (`@msm/interop` `fabric/`, `mods/.msm-installed.json`), B101 `blocks-items-path` e2e and the guide page; then B102 close (version 0.4.0, `mod_version`, ADRs accepted).

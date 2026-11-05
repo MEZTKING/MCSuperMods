@@ -20,8 +20,8 @@ const nodeReadFile = async (url: URL): Promise<Uint8Array> => readFile(url);
 /**
  * Ids the tests treat as project elements, per registry. `demo:sample` is what a template
  * creates when the user keeps the default name; the `example:` ids are the golden samples. A
- * block's item shares the block's id, so block ids are items too (the host does not know that
- * yet; see the report of B94).
+ * block's item shares the block's id, so block ids are items too, as the app's registry index
+ * counts them (`dataRegistryIds`).
  */
 export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
   block: ['demo:sample', 'example:ruby_ore', 'example:chime_block', 'example:ores/glow_stone'],

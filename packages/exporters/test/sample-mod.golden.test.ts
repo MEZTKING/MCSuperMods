@@ -15,9 +15,6 @@
  *   the jar is also exported with the real runtime nested and written to that folder as
  *   `msm_sample_mod.jar`, next to `fabric-facts.json` for `tools/run-fabric-server` (CI's
  *   `engine-mod` job). Without them that test is skipped.
- *
- * `@msm/plugin-blocks-items` is loaded from its source by URL until `@msm/exporters` lists it
- * as a dev dependency (the lockfile owner of Wave 3 adds it).
  */
 import { createHash } from 'node:crypto';
 import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
@@ -37,6 +34,7 @@ import {
   utf8,
 } from '@msm/core';
 import type { Element, Json, Plugin, Problem, Project, Target } from '@msm/plugin-api';
+import blocksItemsPlugin from '@msm/plugin-blocks-items';
 import dataPackPlugin from '@msm/plugin-datapack';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
 import {
@@ -72,9 +70,6 @@ const HAND_WRITTEN = new Set(['README.md']);
 
 /** Two zones on opposite sides of the date line, so a local-time leak changes the bytes. */
 const TIME_ZONES = ['Pacific/Kiritimati', 'America/Los_Angeles'] as const;
-
-const blocksItemsUrl = new URL('../../plugins/blocks-items/src/index.ts', import.meta.url).href;
-const blocksItemsPlugin = ((await import(blocksItemsUrl)) as { default: Plugin }).default;
 
 /** The plugins the sample needs, in the app's registration order. */
 const PLUGINS: readonly Plugin[] = [resourcePackPlugin, dataPackPlugin, blocksItemsPlugin];

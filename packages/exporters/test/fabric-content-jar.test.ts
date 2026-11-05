@@ -13,8 +13,12 @@ import {
   contentJarFileName,
   createFabricContentJarExporter,
   createZipSink,
+  defaultFabricModJson,
+  ExportProblemCodes,
   type FabricContentJarOptions,
+  FabricContentJarProblemCodes,
   nestedRuntimePath,
+  RESERVED_MOD_IDS,
   runExport,
   sanitiseModId,
 } from '../src/index';
@@ -254,5 +258,55 @@ describe('mod ids', () => {
     expect(sanitiseModId('123')).toBeUndefined();
     expect(sanitiseModId('a'.repeat(80))).toHaveLength(64);
     expect(contentJarFileName('ruby_pack')).toBe('ruby_pack.jar');
+  });
+
+  it('prefixes a reserved id with mod_ (ADR 0026 D2)', () => {
+    expect(RESERVED_MOD_IDS).toEqual([
+      'minecraft',
+      'java',
+      'fabricloader',
+      'fabric-api',
+      'msm_runtime',
+    ]);
+    expect(sanitiseModId('Minecraft')).toBe('mod_minecraft');
+    expect(sanitiseModId('Java')).toBe('mod_java');
+    expect(sanitiseModId('fabricloader')).toBe('mod_fabricloader');
+    expect(sanitiseModId('Fabric-API')).toBe('mod_fabric-api');
+    expect(sanitiseModId('MSM Runtime')).toBe('mod_msm_runtime');
+    expect(sanitiseModId('minecraft_plus')).toBe('minecraft_plus');
+    const fabric = builtInTargets.find((bundle) => bundle.target.fabric !== undefined)?.target
+      .fabric;
+    if (fabric === undefined) throw new Error('No built-in target has Fabric facts.');
+    const json = defaultFabricModJson({
+      projectName: 'Java',
+      files: [],
+      fabric,
+      runtimeVersion: '1.0.0',
+    });
+    expect(json.id).toBe('mod_java');
+    expect(json.name).toBe('Java');
+    const fromNamespace = defaultFabricModJson({
+      projectName: '!!!',
+      files: [
+        { path: 'data/minecraft/x.json', contents: {}, layer: 'datapack' },
+        { path: 'msm/java/item/a.json', contents: {}, layer: 'msm' },
+      ],
+      fabric,
+      runtimeVersion: '1.0.0',
+    });
+    expect(fromNamespace.id).toBe('mod_java');
+  });
+});
+
+describe('problem codes', () => {
+  it('keeps the content jar codes in ExportProblemCodes under the old alias', () => {
+    expect(FabricContentJarProblemCodes).toEqual({
+      noFabricTarget: ExportProblemCodes.noFabricTarget,
+      runtimeMissing: ExportProblemCodes.runtimeMissing,
+      invalidModJson: ExportProblemCodes.invalidModJson,
+      outsideJarFolders: ExportProblemCodes.outsideJarFolders,
+    });
+    expect(ExportProblemCodes.noFabricTarget).toBe('export.no-fabric-target');
+    expect(ExportProblemCodes.outsideJarFolders).toBe('export.outside-jar-folders');
   });
 });

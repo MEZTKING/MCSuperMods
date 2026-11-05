@@ -31,6 +31,7 @@ export {
   FabricContentJarProblemCodes,
   MSM_RUNTIME_MOD_ID,
   nestedRuntimePath,
+  RESERVED_MOD_IDS,
   SEPARATE_RUNTIME_OPTION,
   sanitiseModId,
 } from './fabric-content-jar/index';

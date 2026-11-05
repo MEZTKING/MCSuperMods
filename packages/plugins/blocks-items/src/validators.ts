@@ -11,6 +11,9 @@
  *   a loop; the runtime would stop the chain at 16 levels with a logged error.
  * - `blocks-items.bad-mod-id` (error): an `msm:mod` whose `mod_id` breaks Fabric's rule
  *   `^[a-z][a-z0-9_-]{1,63}$` (the schema checks the length only).
+ * - `blocks-items.reserved-mod-id` (error): an `msm:mod` whose `mod_id` is one of
+ *   {@link RESERVED_MOD_IDS} (ADR 0026 D2): the game, Java, Fabric Loader, Fabric API or the
+ *   MSM runtime itself.
  * - `blocks-items.unknown-tool-tier` (error): a `min_tier` of `msm:breakable` or a `tier` of
  *   `msm:tool` that the target has no tool material for (no
  *   `minecraft:incorrect_for_<tier>_tool` block tag). Skipped when the registry has no block
@@ -33,12 +36,25 @@ import { incorrectForTierTag } from './lowering/tools';
 /** The Fabric mod id rule (ADR 0025 D6). */
 export const MOD_ID_PATTERN = /^[a-z][a-z0-9_-]{1,63}$/;
 
+/**
+ * Mod ids a project's mod may not use (ADR 0026 D2): they name the game, Java, Fabric Loader,
+ * Fabric API and the MSM runtime, which the exported jar depends on.
+ */
+export const RESERVED_MOD_IDS: readonly string[] = Object.freeze([
+  'minecraft',
+  'java',
+  'fabricloader',
+  'fabric-api',
+  'msm_runtime',
+]);
+
 /** Every code the validators report. */
 export const BLOCKS_ITEMS_PROBLEM_CODES = Object.freeze([
   'blocks-items.missing-model',
   'blocks-items.unknown-event',
   'blocks-items.event-cycle',
   'blocks-items.bad-mod-id',
+  'blocks-items.reserved-mod-id',
   'blocks-items.unknown-tool-tier',
   'blocks-items.item-collision',
 ] as const);
@@ -193,7 +209,18 @@ function badModIds(elements: readonly Element[]): Problem[] {
   for (const element of elements) {
     if (element.kind !== MOD_KIND) continue;
     const modId = dataOf(element).mod_id;
-    if (typeof modId !== 'string' || MOD_ID_PATTERN.test(modId)) continue;
+    if (typeof modId !== 'string') continue;
+    if (RESERVED_MOD_IDS.includes(modId)) {
+      problems.push({
+        severity: 'error',
+        code: 'blocks-items.reserved-mod-id',
+        elementId: element.id,
+        path: '/mod_id',
+        message: `Mod id "${modId}" is reserved for ${modId === 'msm_runtime' ? 'the MSM runtime' : 'the game or Fabric'}: choose another id, for example "mod_${modId}".`,
+      });
+      continue;
+    }
+    if (MOD_ID_PATTERN.test(modId)) continue;
     problems.push({
       severity: 'error',
       code: 'blocks-items.bad-mod-id',

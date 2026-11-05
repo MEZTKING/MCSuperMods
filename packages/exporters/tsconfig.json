@@ -13,6 +13,7 @@
     { "path": "../targets/all" },
     { "path": "../plugins/resourcepack" },
     { "path": "../plugins/datapack" },
-    { "path": "../plugins/library" }
+    { "path": "../plugins/library" },
+    { "path": "../plugins/blocks-items" }
   ]
 }

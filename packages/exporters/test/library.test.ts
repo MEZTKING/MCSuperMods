@@ -233,10 +233,10 @@ const NON_DATA_KINDS = new Set([
 
 /**
  * A copy of the app's `projectRegistryIds` (the app cannot be imported here): a registered
- * kind's ids go to `ElementKind.registry`, else to the kind id without `minecraft:`. An
- * `msm:block` with a block item (any `item` but `false`) also registers that item under the
- * block's id, so its id goes to `item` too (the app does not do this yet; see the B94 and B98
- * reports).
+ * kind's ids go to `ElementKind.registry`, else to the kind id without `minecraft:`; a kind
+ * of another namespace counts only with a plain registry name (no `:`). An element in the
+ * `block` registry also registers its block item under the same id (any `item` but `false`),
+ * so its id goes to `item` too.
  */
 function projectRegistryIds(project: Project): Record<string, string[]> {
   const ids: Record<string, string[]> = { model: [], sound: [], sound_event: [], texture: [] };
@@ -249,8 +249,9 @@ function projectRegistryIds(project: Project): Record<string, string[]> {
     for (const element of namespace.elements) {
       const kind = registry.get(element.kind);
       const name = kind?.registry ?? element.kind.replace(/^minecraft:/, '');
+      if (name.includes(':')) continue;
       if (
-        element.kind === 'msm:block' &&
+        name === 'block' &&
         typeof element.data === 'object' &&
         element.data !== null &&
         (element.data as { item?: unknown }).item !== false

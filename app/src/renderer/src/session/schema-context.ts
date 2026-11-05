@@ -154,8 +154,12 @@ function sortedRecord(map: Map<string, string[]>): Record<string, string[]> {
  * The data pack ids a project defines, per registry: `function`, `recipe`, `loot_table`,
  * `advancement`, `predicate`, `item_modifier`, the tier-B registries, `tag/<registry>` (tag
  * ids without `#`) and the registry of every other registered `minecraft:` kind outside the
- * resource pack (for example `structure`, `worldgen/biome`, `dimension`). Only registries with
- * at least one id appear. Sorted, namespaced.
+ * resource pack (for example `structure`, `worldgen/biome`, `dimension`). A registered kind of
+ * another namespace counts when it declares a plain `ElementKind.registry` (no `:`), for
+ * example `msm:block` in `block` and `msm:item` in `item`. An element in the `block` registry
+ * also registers its block item under the same id, so it is in `item` too unless its data has
+ * `"item": false` ({@link blockHasItem}). Only registries with at least one id appear. Sorted,
+ * namespaced, without duplicates.
  *
  * @param project - The project.
  * @param kinds - The registered kinds; defaults to the built-in plugins' kinds.
@@ -164,23 +168,49 @@ export function dataRegistryIds(
   project: Project,
   kinds: KindRegistryLookup = BUILT_IN_KIND_LOOKUP,
 ): Record<string, string[]> {
-  const map = new Map<string, string[]>();
+  const map = new Map<string, Set<string>>();
+  const add = (registry: string, id: string): void => {
+    const ids = map.get(registry);
+    if (ids === undefined) map.set(registry, new Set([id]));
+    else ids.add(id);
+  };
   for (const namespace of project.namespaces) {
     for (const element of namespace.elements) {
-      if (!element.kind.startsWith(MINECRAFT_PREFIX)) continue;
       const registered = kinds.registryFor(element.kind);
+      if (!element.kind.startsWith(MINECRAFT_PREFIX)) {
+        // Another plugin's kind: only a declared, plain registry name counts.
+        if (registered === undefined || registered.includes(':')) continue;
+        add(registered, element.id);
+        if (registered === BLOCK_REGISTRY && blockHasItem(element.data)) {
+          add(ITEM_REGISTRY, element.id);
+        }
+        continue;
+      }
       const registry = registered ?? defaultKindRegistry(element.kind);
       const isData =
         DATA_REGISTRIES.has(registry) ||
         registry.startsWith(TAG_PREFIX) ||
         (registered !== undefined && !NON_DATA_KINDS.has(element.kind));
       if (!isData) continue;
-      const ids = map.get(registry);
-      if (ids === undefined) map.set(registry, [element.id]);
-      else ids.push(element.id);
+      add(registry, element.id);
+      if (registry === BLOCK_REGISTRY && blockHasItem(element.data)) add(ITEM_REGISTRY, element.id);
     }
   }
-  return sortedRecord(map);
+  return sortedRecord(new Map([...map].map(([name, ids]) => [name, [...ids]])));
+}
+
+const BLOCK_REGISTRY = 'block';
+const ITEM_REGISTRY = 'item';
+
+/**
+ * Whether a block element registers a block item under its own id: every block does, as in
+ * the game, unless its data is an object with `"item": false`.
+ *
+ * @param data - The block element's data.
+ */
+export function blockHasItem(data: unknown): boolean {
+  if (typeof data !== 'object' || data === null || Array.isArray(data)) return true;
+  return (data as { item?: unknown }).item !== false;
 }
 
 /** The event keys of a `minecraft:sounds` element's data (a map from event key to event). */

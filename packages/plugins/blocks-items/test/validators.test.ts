@@ -2,7 +2,7 @@ import type { Element, Problem, ValidationInput } from '@msm/plugin-api';
 import { createRegistryIndex } from '@msm/schemas';
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
-import { BLOCKS_ITEMS_PROBLEM_CODES, blocksItemsValidators } from '../src/index';
+import { BLOCKS_ITEMS_PROBLEM_CODES, blocksItemsValidators, RESERVED_MOD_IDS } from '../src/index';
 import { element, indexesFor } from './support';
 
 const bundle = builtInTargets[0] as TargetBundle;
@@ -26,7 +26,7 @@ const item = (id: `${string}:${string}`, data: Record<string, unknown>): Element
 
 describe('blocks-items validators', () => {
   it('lists every code it reports', () => {
-    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(6);
+    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(7);
   });
 
   it('accepts a clean project', async () => {
@@ -104,6 +104,17 @@ describe('blocks-items validators', () => {
       expect(codes(await validate([mod(bad)])), bad).toEqual(['blocks-items.bad-mod-id']);
     }
     expect(await validate([mod('ab')])).toEqual([]);
+  });
+
+  it('reports a reserved mod id (ADR 0026 D2)', async () => {
+    const mod = (modId: string) => element('msm:mod', 'demo:mod', { mod_id: modId, version: '1' });
+    for (const reserved of RESERVED_MOD_IDS) {
+      const problems = await validate([mod(reserved)]);
+      expect(codes(problems), reserved).toEqual(['blocks-items.reserved-mod-id']);
+      expect(problems[0]?.path).toBe('/mod_id');
+      expect(problems[0]?.message).toContain(`mod_${reserved}`);
+    }
+    expect(await validate([mod('mod_minecraft')])).toEqual([]);
   });
 
   it('reports tool tiers the target does not know, unless it has no block tags', async () => {

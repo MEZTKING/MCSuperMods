@@ -31,6 +31,20 @@ export const ExportProblemCodes = {
    * text was not checked. One info per language; the export goes ahead.
    */
   languageUnchecked: 'export.language-unchecked',
+  /** Fabric content jar: the target has no Fabric facts (`Target.fabric`). Nothing is written. */
+  noFabricTarget: 'export.no-fabric-target',
+  /**
+   * Fabric content jar: nesting the runtime was asked for but the host supplied no runtime
+   * jar. Nothing is written.
+   */
+  runtimeMissing: 'export.runtime-missing',
+  /** Fabric content jar: the layer-`msm` `fabric.mod.json` is not a JSON object. Nothing is written. */
+  invalidModJson: 'export.invalid-mod-json',
+  /**
+   * Fabric content jar: a resource or data layer file outside `assets/` or `data/` (such as
+   * `pack.mcmeta`) was left out.
+   */
+  outsideJarFolders: 'export.outside-jar-folders',
   /** The exporter threw while packaging. Some files may already have been written. */
   failed: 'export.failed',
 } as const;

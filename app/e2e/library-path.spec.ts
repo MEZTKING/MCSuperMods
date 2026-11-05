@@ -1,7 +1,8 @@
 /**
  * The templates and samples library path (ADR 0020), driven only through dialogs, menus and
- * the command palette: a new project from the Custom ore starter with no errors, resource and
- * data pack exports checked file by file, the Examples gallery (search, copy into the
+ * the command palette: a new project from the Custom ore starter (a real `msm:block` ruby ore,
+ * Phase 4) with no errors, resource and data pack exports checked file by file, the Fabric mod
+ * jar with a separate runtime (the e2e build may have no runtime jar), the Examples gallery (search, copy into the
  * project, the notes callout, a second copy that reports duplicates, undo and redo), a
  * template found through the New element filter, a second export, and a second launch that
  * opens a gallery example as a new project in a fresh folder.
@@ -21,10 +22,13 @@ const NAMESPACE = 'ruby_e2e';
 /** The second launch's fresh folder for "Open as new project". */
 const SECOND_NAMESPACE = 'fn_e2e';
 
+const ORE_BLOCK_ID = `${NAMESPACE}:ruby_ore`;
 const ORE_MODEL_ID = `${NAMESPACE}:block/ruby_ore`;
-const ORE_BLOCKSTATE_ID = 'minecraft:emerald_ore';
-const LOOT_TABLE_ID = 'minecraft:blocks/emerald_ore';
-const ORE_RECIPE_ID = `${NAMESPACE}:ruby_block`;
+const RUBY_ITEM_ID = `${NAMESPACE}:ruby`;
+const RUBY_BLOCK_ID = `${NAMESPACE}:ruby_block`;
+const MOD_ID = `${NAMESPACE}:mod`;
+const LOOT_TABLE_ID = `${NAMESPACE}:blocks/ruby_ore`;
+const ORE_RECIPE_ID = `${NAMESPACE}:ruby_block_from_rubies`;
 const ROOT_ADVANCEMENT_ID = `${NAMESPACE}:root`;
 /** The element the "Shaped recipe with a named result" example adds. */
 const EXAMPLE_RECIPE_ID = `${NAMESPACE}:lucky_lantern`;
@@ -54,6 +58,13 @@ function zipJson(files: Record<string, Uint8Array>, name: string): unknown {
 function zipsIn(dir: string): string[] {
   return readdirSync(dir)
     .filter((name) => name.endsWith('.zip'))
+    .sort();
+}
+
+/** `.jar` names in `dir`, sorted. */
+function jarsIn(dir: string): string[] {
+  return readdirSync(dir)
+    .filter((name) => name.endsWith('.jar'))
     .sort();
 }
 
@@ -167,22 +178,27 @@ test('library: Custom ore starter, exports, examples gallery, template filter, o
   await expect(toast(window)).toContainText(`New project from "Custom ore": ${folders.projectDir}`);
   for (const id of [
     `${NAMESPACE}:pack`,
+    ORE_BLOCK_ID,
+    RUBY_ITEM_ID,
+    RUBY_BLOCK_ID,
+    MOD_ID,
     ORE_MODEL_ID,
-    ORE_BLOCKSTATE_ID,
     LOOT_TABLE_ID,
     ORE_RECIPE_ID,
     ROOT_ADVANCEMENT_ID,
   ]) {
     await expect(window.getByTestId(`element-row-${id}`)).toBeVisible();
   }
+  // No vanilla block is reskinned any more.
+  await expect(window.getByTestId('element-row-minecraft:emerald_ore')).toHaveCount(0);
   await expect(
     window.getByTestId(`asset-row-${NAMESPACE}:textures/block/ruby_ore.png`),
   ).toBeVisible();
 
   // The starter's elements carry notes.
-  await window.getByTestId(`element-row-${ORE_BLOCKSTATE_ID}`).click();
+  await window.getByTestId(`element-row-${ORE_BLOCK_ID}`).click();
   await expect(window.getByTestId('element-notes')).toBeVisible();
-  await expect(window.getByTestId('element-notes-text')).toContainText('emerald ore blockstate');
+  await expect(window.getByTestId('element-notes-text')).toContainText('pickaxe');
 
   await expectNoErrors(window);
   await expect(window.getByTestId('toolbar-export-zip')).toBeEnabled();
@@ -195,16 +211,19 @@ test('library: Custom ore starter, exports, examples gallery, template filter, o
     expect(names).toContain(`assets/${NAMESPACE}/textures/block/ruby_ore.png`);
     expect(names).toContain(`assets/${NAMESPACE}/textures/item/ruby.png`);
     expect(names).toContain(`assets/${NAMESPACE}/models/block/ruby_ore.json`);
+    expect(names.some((name) => name.startsWith('assets/minecraft/'))).toBe(false);
+    expect(names.some((name) => name.startsWith('msm/'))).toBe(false);
     const blockstate = zipJson(
       firstExport.resource,
-      'assets/minecraft/blockstates/emerald_ore.json',
+      `assets/${NAMESPACE}/blockstates/ruby_ore.json`,
     ) as { variants?: Record<string, { model?: string }> };
     expect(blockstate.variants?.['']?.model).toBe(ORE_MODEL_ID);
-    const lang = zipJson(firstExport.resource, 'assets/minecraft/lang/en_us.json') as Record<
+    const lang = zipJson(firstExport.resource, `assets/${NAMESPACE}/lang/en_us.json`) as Record<
       string,
       string
     >;
-    expect(lang['block.minecraft.emerald_ore']).toBe('Ruby Ore');
+    expect(lang[`block.${NAMESPACE}.ruby_ore`]).toBe('Ruby Ore');
+    expect(lang[`item.${NAMESPACE}.ruby`]).toBe('Ruby');
     // PNG signature on the generated placeholder.
     const png = firstExport.resource[`assets/${NAMESPACE}/textures/block/ruby_ore.png`];
     expect(Array.from(png?.subarray(0, 4) ?? [])).toEqual([0x89, 0x50, 0x4e, 0x47]);
@@ -213,17 +232,63 @@ test('library: Custom ore starter, exports, examples gallery, template filter, o
     const names = Object.keys(firstExport.data);
     expect(names).toContain('pack.mcmeta');
     expect(names.some((name) => name.startsWith('assets/'))).toBe(false);
-    const loot = zipJson(firstExport.data, 'data/minecraft/loot_table/blocks/emerald_ore.json') as {
+    expect(names.some((name) => name.startsWith('msm/'))).toBe(false);
+    expect(names).not.toContain('fabric.mod.json');
+    const loot = zipJson(firstExport.data, `data/${NAMESPACE}/loot_table/blocks/ruby_ore.json`) as {
       type?: string;
+      pools?: { entries?: { name?: string }[] }[];
     };
     expect(loot.type).toBe('minecraft:block');
-    const recipe = zipJson(firstExport.data, `data/${NAMESPACE}/recipe/ruby_block.json`) as {
+    expect(loot.pools?.[0]?.entries?.[0]?.name).toBe(RUBY_ITEM_ID);
+    // "loot": "self" on the block of ruby generates its drops-itself table.
+    expect(names).toContain(`data/${NAMESPACE}/loot_table/blocks/ruby_block.json`);
+    const recipe = zipJson(
+      firstExport.data,
+      `data/${NAMESPACE}/recipe/ruby_block_from_rubies.json`,
+    ) as {
       type?: string;
       result?: { id?: string };
     };
     expect(recipe.type).toBe('minecraft:crafting_shaped');
-    expect(recipe.result?.id).toBe('minecraft:redstone_block');
+    expect(recipe.result?.id).toBe(RUBY_BLOCK_ID);
     expect(names).toContain(`data/${NAMESPACE}/advancement/root.json`);
+  }
+
+  // Export the Fabric mod jar with a separate runtime. --------------------------------------
+  await exportVia(window, 'export-fabric-jar');
+  const jarDialog = window.getByTestId('fabric-jar-dialog');
+  await expect(jarDialog).toBeVisible();
+  const separate = jarDialog.getByTestId('exporter-option-separateRuntime');
+  await expect(separate).not.toBeChecked();
+  await separate.check();
+  await jarDialog.getByTestId('fabric-jar-dialog-submit').click();
+  await expect(jarDialog).toBeHidden();
+  await expect
+    .poll(() => jarsIn(folders.outDir), { timeout: 20_000 })
+    .toEqual([`${NAMESPACE}.jar`]);
+  await expect(toast(window)).toContainText('Exported the Fabric mod jar to');
+  {
+    const jar = readZip(join(folders.outDir, `${NAMESPACE}.jar`));
+    const names = Object.keys(jar);
+    expect(names).toContain(`msm/${NAMESPACE}/block/ruby_ore.json`);
+    expect(names).toContain(`msm/${NAMESPACE}/item/ruby.json`);
+    expect(names).toContain(`assets/${NAMESPACE}/blockstates/ruby_ore.json`);
+    expect(names).toContain(`data/${NAMESPACE}/recipe/ruby_block_from_rubies.json`);
+    // A separate runtime is not nested.
+    expect(names.some((name) => name.startsWith('META-INF/jars/'))).toBe(false);
+    const modJson = zipJson(jar, 'fabric.mod.json') as {
+      id?: string;
+      depends?: Record<string, string>;
+    };
+    expect(modJson.id).toBe(NAMESPACE);
+    expect(Object.keys(modJson.depends ?? {})).toContain('msm_runtime');
+    // The definition keeps the mining and light components; the loot id becomes loot_table.
+    const definition = zipJson(jar, `msm/${NAMESPACE}/block/ruby_ore.json`) as {
+      loot_table?: string;
+      components?: Record<string, unknown>;
+    };
+    expect(definition.loot_table).toBe(LOOT_TABLE_ID);
+    expect(Object.keys(definition.components ?? {})).toContain('msm:light_emitter');
   }
 
   // Examples gallery: search, copy, notes, copy again, undo and redo. ----------------------
@@ -319,9 +384,11 @@ test('library: Custom ore starter, exports, examples gallery, template filter, o
       `data/${NAMESPACE}/recipe/raw_copper_blasting.json`,
     ) as { type?: string };
     expect(blast.type).toBe('minecraft:blasting');
-    expect(Object.keys(secondExport.data)).toContain(`data/${NAMESPACE}/recipe/ruby_block.json`);
+    expect(Object.keys(secondExport.data)).toContain(
+      `data/${NAMESPACE}/recipe/ruby_block_from_rubies.json`,
+    );
     expect(Object.keys(secondExport.resource)).toContain(
-      'assets/minecraft/blockstates/emerald_ore.json',
+      `assets/${NAMESPACE}/blockstates/ruby_ore.json`,
     );
   }
 

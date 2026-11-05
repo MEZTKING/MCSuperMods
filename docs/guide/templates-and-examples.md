@@ -290,7 +290,7 @@ Three starters need a word of explanation:
 - **The music disc plays a vanilla track.** MCSuperMods bundles no audio, so the sound event points at the game's own `records/cat` file. The disc itself is the vanilla `music_disc_13` item carrying the new song and a name, drawn with the starter's own disc model; the `give_disc` function gives it to you (`/function <namespace>:give_disc`), because a pack cannot add a new item to the creative inventory.
 - **A custom biome needs its own World Type.** A data pack cannot add a biome to the normal overworld, so the Custom biome starters add a World Type that lists the new biome. Choose it when creating a new world; existing worlds keep their biomes, although the hamlets of the jigsaw starters do appear in new chunks of an existing world.
 
-The [Getting started](getting-started.md) guide walks through the Functions starter in Minecraft (its Custom ore steps still describe the earlier emerald ore reskin); the [Worldgen](worldgen.md) guide walks through the worldgen starters.
+The [Getting started](getting-started.md) guide walks through the Custom ore starter (as a Fabric mod jar) and the Functions starter in Minecraft; the [Worldgen](worldgen.md) guide walks through the worldgen starters. [Blocks and items](blocks-and-items.md) explains the Fabric mod jar export and its separate runtime option.
 
 ## Examples gallery
 

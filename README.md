@@ -10,7 +10,7 @@ A desktop mod maker for Minecraft Java Edition that takes you from a simple text
 
 ## Status
 
-- Pre-alpha: Phase 1 (Resource Pack Studio), Phase 2 (Data Pack Studio), launcher support (Prism Launcher, CurseForge, MultiMC) and the templates and examples library are done; the in-game checks below are still to be confirmed. Windows installers are published on the [Releases page](https://github.com/MEZTKING/MCSuperMods/releases) and update themselves. Phase 3 (Structures & Worldgen) is being finished: structure import and export, jigsaw pools, custom biomes, features and World Types are in the app, and their in-game check is still to be confirmed.
+- Pre-alpha: Phase 1 (Resource Pack Studio), Phase 2 (Data Pack Studio), launcher support (Prism Launcher, CurseForge, MultiMC) and the templates and examples library are done; the in-game checks below are still to be confirmed. Windows installers are published on the [Releases page](https://github.com/MEZTKING/MCSuperMods/releases) and update themselves. Phase 3 (Structures & Worldgen) is being finished: structure import and export, jigsaw pools, custom biomes, features and World Types are in the app, and their in-game check is still to be confirmed. Phase 4 (custom blocks and items, exported as a Fabric mod jar) is in progress; see [Export a Fabric mod](#export-a-fabric-mod).
 - Installed releases update themselves: the app checks for a new version shortly after start-up and offers "Restart to update" once it has downloaded.
 - Releases will be for Windows only to begin with; Linux builds are made in CI for testing, and macOS builds are not planned for now.
 - Current Minecraft target: **Java 26.3** (with 26.2 as the previous supported release at launch).
@@ -75,15 +75,19 @@ The [Structures](docs/guide/structures.md) and [Worldgen](docs/guide/worldgen.md
 MCSuperMods comes with ready-made content, all validated and exported in CI for every supported Minecraft version. The full lists are in [Templates, starters and examples](docs/guide/templates-and-examples.md).
 
 - **Project starters (11).** Click the arrow next to **New** and choose **New from starter…**, or use **File → New Project from Starter…**. Pick a starter, choose **Choose folder and create** and an empty folder; the folder name becomes the namespace. There are a blank project, minimal resource, data and combined packs, and seven themed projects: **Custom ore**, **Recipe pack**, **Custom music disc**, **Functions**, **Custom biome**, **Jigsaw village-style structure** and **Custom biome with a jigsaw structure**. **New** on its own still creates a blank project.
-- **Element templates (99).** **Add element** (Ctrl+N) lists a template for every element kind, grouped by category (models, blockstates, recipes, loot tables, advancements, tags, enchantments, dialogs, structures, biomes, features, dimensions and more) with a filter box.
-- **Examples gallery (56).** **Help → Examples…** shows one commented example for each element kind plus four themed starter projects. Search by title, kind, category or tag and read each element's notes. **Open as new project…** creates a new project from an example; **Copy into my project** adds it to the open project in one undoable step, skipping ids that already exist. The notes stay with each element and show above the editor.
+- **Element templates (106).** **Add element** (Ctrl+N) lists a template for every element kind, grouped by category (models, blockstates, recipes, loot tables, advancements, tags, enchantments, dialogs, structures, biomes, features, dimensions, blocks, items and more) with a filter box.
+- **Examples gallery (61).** **Help → Examples…** shows one commented example for each element kind, two blocks and items behaviour examples and four themed starter projects. Search by title, kind, category or tag and read each element's notes. **Open as new project…** creates a new project from an example; **Copy into my project** adds it to the open project in one undoable step, skipping ids that already exist. The notes stay with each element and show above the editor.
 
 Two things to know:
 
-- **Custom ore reskins emerald ore.** A resource or data pack cannot add new blocks or items, so until Phase 4 the Custom ore starter turns emerald ore into "Ruby Ore" and the emerald into "Ruby" in any world with the packs enabled.
+- **Custom ore adds a real block.** Its Ruby Ore, Ruby and Block of Ruby are new blocks and items, which a resource or data pack cannot add, so they reach the game only in the Fabric mod jar (see [Export a Fabric mod](#export-a-fabric-mod)). Emerald ore is left alone.
 - **No bundled media.** Textures are placeholders that MCSuperMods draws itself. The music disc plays the vanilla `cat` track from your own game and has its own disc model and name, attached to a vanilla disc that the `give_disc` function gives you (`/function <namespace>:give_disc`). Import your own textures and `.ogg` to replace them.
 
 The examples are also in the repository as ordinary projects under [`examples/`](examples/README.md), for browsing on GitHub or opening with **File → Open Project…** (copy the folder elsewhere first).
+
+## Export a Fabric mod
+
+Projects with new blocks or items (the `msm:block` and `msm:item` kinds, for example the Custom ore starter) export as a Fabric mod: open the arrow next to **Export .zip** and choose **Fabric mod (.jar)…**, or **File → Export Fabric Mod Jar…**. The jar holds the blocks and items plus the project's resources and data, and carries the small `msm_runtime` mod inside it. Put it with **Fabric API** into the `mods` folder of an instance with **Fabric Loader** for the same Minecraft version. **Separate runtime (for modpacks)** leaves `msm_runtime` out for modpacks that already provide it. Details are in [Blocks and items](docs/guide/blocks-and-items.md); the in-game check of the mod jar is still to be confirmed.
 
 ## Using Prism Launcher or the CurseForge app
 
@@ -164,7 +168,7 @@ Full plan with checklists: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Documentation
 
-- [User guide](docs/guide/README.md): [getting started](docs/guide/getting-started.md), [structures](docs/guide/structures.md), [worldgen](docs/guide/worldgen.md) and [templates, starters and examples](docs/guide/templates-and-examples.md).
+- [User guide](docs/guide/README.md): [getting started](docs/guide/getting-started.md), [structures](docs/guide/structures.md), [worldgen](docs/guide/worldgen.md), [blocks and items](docs/guide/blocks-and-items.md) and [templates, starters and examples](docs/guide/templates-and-examples.md).
 - [docs/DESIGN.md](docs/DESIGN.md): the authoritative design document.
 - [docs/ROADMAP.md](docs/ROADMAP.md): phased delivery plan and milestone log.
 - [docs/DEVLOG.md](docs/DEVLOG.md): session-by-session development log.
@@ -197,7 +201,7 @@ pnpm --filter @msm/app dist         # Windows installer (dist:dir for an unpacke
 node tools/check-size/index.ts      # size budgets, after build and dist:dir
 ```
 
-Vendored Minecraft data is refreshed only by `tools/sync-mcdoc` and `tools/sync-mcmeta`; each has a README with its arguments. The `msm_runtime` engine mod (`cd engine-mod && ./gradlew build`) arrives in Phase 4.
+Vendored Minecraft data is refreshed only by `tools/sync-mcdoc` and `tools/sync-mcmeta`; each has a README with its arguments. `cd engine-mod && ./gradlew build` (JDK 25) builds the `msm_runtime` engine mod, which the app nests into Fabric mod jars; from source the app picks up the newest jar in `engine-mod/build/libs/`.
 
 Planned stack: Electron + TypeScript + React for the app; Fabric + Java 25 for the runtime mod. See [Tech Stack](docs/DESIGN.md#14-tech-stack) and [Repository Layout](docs/DESIGN.md#15-repository-layout).
 

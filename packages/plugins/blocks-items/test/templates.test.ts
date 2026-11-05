@@ -99,6 +99,8 @@ describe('blocks-items templates', () => {
       expect(modIdFromNamespace(namespace), namespace).toMatch(MOD_ID_PATTERN);
     }
     expect(modIdFromNamespace('my.pack')).toBe('my_pack');
+    expect(modIdFromNamespace('minecraft')).toBe('mod_minecraft');
+    expect(modIdFromNamespace('java')).toBe('mod_java');
   });
 });
 

@@ -1,6 +1,6 @@
 # MCSuperMods
 
-MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 4 in progress (Waves 0–2 of `docs/PHASE4-PLAN.md` done: runtime spike, plugin API 0.6.0, MSM mcdoc, `msm_runtime` v1, `@msm/plugin-blocks-items`, `fabric-content-jar`); Phase 3 awaits in-game checks. Done so far: Phases 0–2, two add-ons (launcher support, ADR 0019; templates and samples library, ADR 0020) and Phase 3 (Structures & Worldgen; ADRs 0021–0023; plugin-api 0.5.0; 52 kinds in all; v0.3.0). Library: 99 templates (resourcepack 14, datapack 55, structures 9, worldgen 21), 11 starters, 56 examples. Releases: Windows only (MIT; README "Releasing"). Toolchain: Node 24, pnpm 12.
+MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 4 in progress (Waves 0–3 of `docs/PHASE4-PLAN.md` done: runtime spike, plugin API 0.6.0, MSM mcdoc, `msm_runtime` v1, `@msm/plugin-blocks-items`, `fabric-content-jar`, app "Export Fabric mod jar", Block/Item Studios, real Custom ore starter, CI headless server check); Phase 3 awaits in-game checks. Done so far: Phases 0–2, two add-ons (launcher support, ADR 0019; templates and samples library, ADR 0020) and Phase 3 (Structures & Worldgen; ADRs 0021–0023; plugin-api 0.5.0; 52 kinds in all; v0.3.0). Library: 106 templates (resourcepack 14, datapack 55, structures 9, worldgen 21, blocks-items 7), 11 starters, 61 examples. Releases: Windows only (MIT; README "Releasing"). Toolchain: Node 24, pnpm 12.
 
 ## Directory map
 
@@ -9,13 +9,13 @@ MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla p
 - `packages/core/` — `@msm/core`, IR, project load/save, command stack, lowering driver
 - `packages/schemas/` — `@msm/schemas`, mcdoc adapter, `validateJson`; `@msm/schemas/mcfunction` (offline Spyglass)
 - `packages/plugin-api/` — `@msm/plugin-api`, public interfaces only
-- `packages/plugins/` — `@msm/plugin-<name>`: `resourcepack`, `datapack`, `structures`, `worldgen` (kinds, templates, validators), `library` (starters, examples); four more planned
-- `packages/exporters/` — `@msm/exporters`, vanilla-packs (resource, data, combined); later content jar, java-project
+- `packages/plugins/` — `@msm/plugin-<name>`: `resourcepack`, `datapack`, `structures`, `worldgen`, `blocks-items` (kinds, templates, validators), `library` (starters, examples); three more planned
+- `packages/exporters/` — `@msm/exporters`, vanilla-packs (resource, data, combined), fabric-content-jar; later java-project
 - `packages/targets/` — `@msm/target-*`, one folder per MC version (`mc-26.3/`), plus the `@msm/targets` aggregator (`all/`)
 - `packages/interop/` — `@msm/interop`, Minecraft installation, launcher instances, `level.dat` world names; Blockbench later
 - `engine-mod/` — `msm_runtime` Fabric mod (Gradle, Java 25)
-- `tools/` — dev scripts: check-deps, check-size, sync-mcdoc, sync-mcmeta, new-plugin
-- `fixtures/sample-resourcepack/`, `sample-datapack/`, `sample-worldgen/` — sample projects for the in-game checks
+- `tools/` — dev scripts: check-deps, check-size, sync-mcdoc, sync-mcmeta, new-plugin, run-fabric-server
+- `fixtures/sample-resourcepack/`, `sample-datapack/`, `sample-worldgen/`, `sample-mod/` — sample projects for the in-game checks
 - `examples/` — generated mirror of the library's starters and examples (golden; `UPDATE_GOLDENS=1`)
 - `.claude/agents/` — `orchestrator.md`, `executor.md`
 
@@ -65,4 +65,4 @@ Read only the one for the area you work in, plus docs/DESIGN.md sections it link
 
 - `pnpm i` / `pnpm dev` (app) / `pnpm lint` (Biome + check-deps) / `pnpm typecheck` / `pnpm test` / `pnpm build`
 - `pnpm --filter @msm/app smoke|e2e|dist:dir|smoke:packaged|dist` (headless: `xvfb-run -a`); `node tools/check-size/index.ts`
-- engine-mod Gradle build is not wired until Phase 4.
+- `cd engine-mod && ./gradlew build` (JDK 25); CI job `engine-mod` also runs `tools/run-fabric-server`.

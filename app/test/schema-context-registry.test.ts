@@ -1,8 +1,9 @@
 import { ElementKindRegistry, type Project, registerPlugin } from '@msm/core';
-import { definePlugin, type ElementKind } from '@msm/plugin-api';
+import { definePlugin, type ElementKind, type JsonObject } from '@msm/plugin-api';
 import { describe, expect, it } from 'vitest';
 import {
   BUILT_IN_KIND_LOOKUP,
+  blockHasItem,
   dataRegistryIds,
   kindLookupFor,
   kindRegistry,
@@ -29,7 +30,9 @@ const phase3Plugin = definePlugin({
   },
 });
 
-function project(elements: { id: `${string}:${string}`; kind: string }[]): Project {
+function project(
+  elements: { id: `${string}:${string}`; kind: string; data?: JsonObject }[],
+): Project {
   return {
     formatVersion: 1,
     name: 'Test',
@@ -60,6 +63,12 @@ const sample = project([
   { id: 'demo:cube', kind: 'minecraft:model' },
   { id: 'demo:pack', kind: 'minecraft:pack_mcmeta' },
 ]);
+
+function registryOf(...plugins: Parameters<typeof registerPlugin>[1][]): ElementKindRegistry {
+  const registry = new ElementKindRegistry();
+  for (const plugin of plugins) registerPlugin(registry, plugin);
+  return registry;
+}
 
 describe('kindRegistry', () => {
   it('reads ElementKind.registry from the kind registry', () => {
@@ -104,6 +113,52 @@ describe('dataRegistryIds', () => {
       recipe: ['demo:ruby'],
       'tag/item': ['demo:gems'],
     });
+  });
+
+  it("counts other plugins' kinds that declare a plain registry, and block items", () => {
+    const msmPlugin = definePlugin({
+      id: 'test.msm',
+      apiVersion: '^0.6.0',
+      contributes: {
+        elementKinds: [
+          kind('msm:block', 'block', 'block'),
+          kind('msm:item', 'item', 'item'),
+          kind('msm:mod', 'mod'),
+        ],
+      },
+    });
+    const msm = project([
+      { id: 'demo:ruby_ore', kind: 'msm:block', data: { item: { creative_tab: 'x' } } },
+      { id: 'demo:glow', kind: 'msm:block', data: { item: false } },
+      { id: 'demo:ruby', kind: 'msm:item' },
+      { id: 'demo:mod', kind: 'msm:mod' },
+      { id: 'demo:other', kind: 'other:thing' },
+    ]);
+    for (const lookup of [kindLookupFor([msmPlugin]), registryOf(msmPlugin)]) {
+      expect(dataRegistryIds(msm, lookup)).toEqual({
+        block: ['demo:glow', 'demo:ruby_ore'],
+        item: ['demo:ruby', 'demo:ruby_ore'],
+      });
+    }
+    // Unregistered kinds of another namespace never count.
+    expect(dataRegistryIds(msm, kindLookupFor([]))).toEqual({});
+  });
+
+  it('knows the built-in blocks and items kinds by default', () => {
+    const msm = project([
+      { id: 'demo:ruby_block', kind: 'msm:block' },
+      { id: 'demo:ruby', kind: 'msm:item' },
+    ]);
+    const ids = projectRegistryIds(msm);
+    expect(ids.block).toEqual(['demo:ruby_block']);
+    expect(ids.item).toEqual(['demo:ruby', 'demo:ruby_block']);
+  });
+
+  it('blockHasItem is true unless item is false', () => {
+    expect(blockHasItem({})).toBe(true);
+    expect(blockHasItem({ item: {} })).toBe(true);
+    expect(blockHasItem({ item: false })).toBe(false);
+    expect(blockHasItem(null)).toBe(true);
   });
 
   it('leaves resource pack kinds to projectRegistryIds', () => {

@@ -14,8 +14,19 @@ async function readJson(url: URL): Promise<unknown> {
 // This package cannot depend on `@msm/targets` (cycle), so it iterates its own bundle.
 const bundles = [{ target, vendored }];
 
+/**
+ * Generous limits: the service initialises in about 0.5 s on an idle machine, but under a full
+ * `turbo run test` the CPU is shared with every other package, which has made the default
+ * hook and test timeouts (and a 5 s init bound) flaky.
+ */
+const INIT_HOOK_TIMEOUT_MS = 60_000;
+const TEST_TIMEOUT_MS = 30_000;
+const INIT_BOUND_MS = 15_000;
+
 for (const bundle of bundles) {
-  describe(`mcfunction service over vendored ${bundle.target.id} data`, () => {
+  describe(`mcfunction service over vendored ${bundle.target.id} data`, {
+    timeout: TEST_TIMEOUT_MS,
+  }, () => {
     let service: McfunctionService;
     let bare: McfunctionService;
     let initMs = 0;
@@ -40,12 +51,12 @@ for (const bundle of bundles) {
       console.info(
         `mcfunction init ${Math.round(bareInitMs)} ms without, ${Math.round(initMs)} ms with mcdoc symbols`,
       );
-    });
+    }, INIT_HOOK_TIMEOUT_MS);
 
-    it('initialises in under 2 s, with and without mcdoc symbols', () => {
+    it('initialises in bounded time, with and without mcdoc symbols', () => {
       expect(service.mcVersion).toBe(bundle.target.mcVersion);
-      expect(bareInitMs).toBeLessThan(5000);
-      expect(initMs).toBeLessThan(5000);
+      expect(bareInitMs).toBeLessThan(INIT_BOUND_MS);
+      expect(initMs).toBeLessThan(INIT_BOUND_MS);
     });
 
     it('accepts a plain command', async () => {

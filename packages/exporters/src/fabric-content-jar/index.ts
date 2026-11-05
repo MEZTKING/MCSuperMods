@@ -47,18 +47,27 @@ export const DEFAULT_MOD_VERSION = '1.0.0';
 export const FABRIC_MOD_ID_PATTERN = /^[a-z][a-z0-9_-]{1,63}$/;
 
 /**
- * Problem codes reported by this exporter. They belong with `ExportProblemCodes` and are
- * kept here until that table is next edited.
+ * Mod ids the synthesised `fabric.mod.json` never uses (ADR 0026 D2): the game, Java, Fabric
+ * Loader, Fabric API and the MSM runtime. A derived id equal to one gains a `mod_` prefix.
+ */
+export const RESERVED_MOD_IDS: readonly string[] = Object.freeze([
+  'minecraft',
+  'java',
+  'fabricloader',
+  'fabric-api',
+  MSM_RUNTIME_MOD_ID,
+]);
+
+/**
+ * The codes this exporter reports, kept under their earlier name.
+ *
+ * @deprecated Use the same entries of `ExportProblemCodes`.
  */
 export const FabricContentJarProblemCodes = {
-  /** The target has no Fabric facts (`Target.fabric`). Nothing is written. */
-  noFabricTarget: 'export.no-fabric-target',
-  /** Nesting the runtime was asked for but the host supplied no runtime jar. Nothing is written. */
-  runtimeMissing: 'export.runtime-missing',
-  /** The layer-`msm` `fabric.mod.json` is not a JSON object. Nothing is written. */
-  invalidModJson: 'export.invalid-mod-json',
-  /** A resource or data layer file outside `assets/` or `data/` (such as `pack.mcmeta`) was left out. */
-  outsideJarFolders: 'export.outside-jar-folders',
+  noFabricTarget: ExportProblemCodes.noFabricTarget,
+  runtimeMissing: ExportProblemCodes.runtimeMissing,
+  invalidModJson: ExportProblemCodes.invalidModJson,
+  outsideJarFolders: ExportProblemCodes.outsideJarFolders,
 } as const;
 
 /** Factory options of {@link createFabricContentJarExporter}. */
@@ -79,18 +88,20 @@ export interface FabricContentJarOptions {
 
 /**
  * A Fabric mod id derived from free text: lower case, runs of other characters become `_`,
- * leading characters that are not letters are dropped, cut to 64 characters. Returns
- * `undefined` when nothing valid remains.
+ * leading characters that are not letters are dropped, cut to 64 characters, and a reserved
+ * id ({@link RESERVED_MOD_IDS}) gains a `mod_` prefix. Returns `undefined` when nothing valid
+ * remains.
  *
  * @param value - A project name or namespace.
  */
 export function sanitiseModId(value: string): string | undefined {
-  const id = value
+  let id = value
     .toLowerCase()
     .replace(/[^a-z0-9_-]+/g, '_')
     .replace(/^[^a-z]+/, '')
     .replace(/[_-]+$/, '')
     .slice(0, 64);
+  if (RESERVED_MOD_IDS.includes(id)) id = `mod_${id}`;
   return FABRIC_MOD_ID_PATTERN.test(id) ? id : undefined;
 }
 
@@ -250,7 +261,7 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
       if (fabric === undefined) {
         input.problems.report({
           severity: 'error',
-          code: FabricContentJarProblemCodes.noFabricTarget,
+          code: ExportProblemCodes.noFabricTarget,
           message: `Target ${input.target.id} has no Fabric versions, so no mod jar can be built for it.`,
         });
         return;
@@ -264,7 +275,7 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
         if ('reason' in runtime) {
           input.problems.report({
             severity: 'error',
-            code: FabricContentJarProblemCodes.runtimeMissing,
+            code: ExportProblemCodes.runtimeMissing,
             message: `The msm_runtime jar cannot be nested: ${runtime.reason}. Build the runtime, or choose "Separate runtime (for modpacks)".`,
           });
           return;
@@ -299,7 +310,7 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
       if (outside > 0) {
         input.problems.report({
           severity: 'info',
-          code: FabricContentJarProblemCodes.outsideJarFolders,
+          code: ExportProblemCodes.outsideJarFolders,
           message: `${outside} resource or data pack file(s) outside assets/ and data/ (such as pack.mcmeta) are not needed in a mod jar and were left out.`,
         });
       }
@@ -317,7 +328,7 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
         if (parsed === undefined) {
           input.problems.report({
             severity: 'error',
-            code: FabricContentJarProblemCodes.invalidModJson,
+            code: ExportProblemCodes.invalidModJson,
             file: FABRIC_MOD_JSON_FILE,
             message: `${FABRIC_MOD_JSON_FILE} from the msm:mod element is not a JSON object.`,
           });

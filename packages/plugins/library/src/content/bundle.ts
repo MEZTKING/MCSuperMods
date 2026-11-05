@@ -117,16 +117,26 @@ export function texture(
   };
 }
 
+/** Reserved mod ids (ADR 0026 D2). */
+const RESERVED: readonly string[] = [
+  'minecraft',
+  'java',
+  'fabricloader',
+  'fabric-api',
+  'msm_runtime',
+];
+
 /**
  * A Fabric mod id (`^[a-z][a-z0-9_-]{1,63}$`) from a namespace, as the blocks and items
  * plugin's `msm:mod` template derives it (the library does not import that plugin): other
- * characters become `_`, a leading non-letter gets a `mod_` prefix, and the result is cut to
- * 64 characters.
+ * characters become `_`, a leading non-letter or a reserved id (ADR 0026 D2) gets a `mod_`
+ * prefix, and the result is cut to 64 characters.
  */
 export function modIdFromNamespace(namespace: string): string {
   let id = namespace.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
   if (!/^[a-z]/.test(id)) id = `mod_${id}`;
   if (id.length < 2) id = `${id}_mod`;
+  if (RESERVED.includes(id)) id = `mod_${id}`;
   return id.slice(0, 64);
 }
 

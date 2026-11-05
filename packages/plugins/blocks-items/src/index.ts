@@ -12,7 +12,12 @@ import { blocksItemsValidators } from './validators';
 export * from './kinds';
 export * from './lowering';
 export { blocksItemsTemplates, modIdFromNamespace } from './templates';
-export { BLOCKS_ITEMS_PROBLEM_CODES, blocksItemsValidators, MOD_ID_PATTERN } from './validators';
+export {
+  BLOCKS_ITEMS_PROBLEM_CODES,
+  blocksItemsValidators,
+  MOD_ID_PATTERN,
+  RESERVED_MOD_IDS,
+} from './validators';
 
 export default definePlugin({
   id: 'msm.blocks-items',
