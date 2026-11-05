@@ -1,0 +1,13 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:health": {
+      "max": 20.0
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  }
+}

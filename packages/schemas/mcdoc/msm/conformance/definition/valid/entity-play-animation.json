@@ -1,0 +1,41 @@
+{
+  "category": "axolotls",
+  "components": {
+    "msm:animated_model": {
+      "animations": "mymod:entity/ruby_golem_animations",
+      "model": "mymod:entity/ruby_golem",
+      "texture": "mymod:entity/ruby_golem"
+    },
+    "msm:on_interact": {
+      "event": "mymod:wave"
+    }
+  },
+  "events": {
+    "mymod:wave": {
+      "actions": [
+        {
+          "animation": "wave",
+          "type": "play_animation"
+        },
+        {
+          "animation": "spin",
+          "controller": "extra",
+          "type": "play_animation"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  },
+  "spawn": {
+    "biomes": ["minecraft:lush_caves"],
+    "max_group": 4,
+    "min_group": 1,
+    "placement": "in_lava",
+    "rule": "surface_monster",
+    "weight": 10
+  }
+}

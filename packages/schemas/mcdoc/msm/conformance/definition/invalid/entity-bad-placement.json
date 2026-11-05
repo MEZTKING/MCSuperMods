@@ -1,0 +1,23 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/ruby_golem",
+      "texture": "mymod:entity/ruby_golem"
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  },
+  "spawn": {
+    "biomes": ["#minecraft:is_forest", "minecraft:plains"],
+    "heightmap": "motion_blocking_no_leaves",
+    "max_group": 2,
+    "min_group": 1,
+    "placement": "in_air",
+    "rule": "mob",
+    "weight": 6
+  }
+}

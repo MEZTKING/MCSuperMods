@@ -1,0 +1,57 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:geometry": [
+    {
+      "bones": [
+        {
+          "binding": "q.item_slot_to_bone_name(c.item_slot)",
+          "name": "root",
+          "pivot": [0.0, 0.0, 0.0],
+          "reset": false
+        },
+        {
+          "cubes": [
+            {
+              "inflate": 0.5,
+              "mirror": false,
+              "origin": [-4.0, 12.0, -2.0],
+              "pivot": [0.0, 18.0, 0.0],
+              "rotation": [0.0, 0.0, 22.5],
+              "size": [8.0, 12.0, 4.0],
+              "uv": [16, 16]
+            }
+          ],
+          "inflate": 0.25,
+          "locators": {
+            "hand": [6.0, 20.0, 0.0],
+            "lead": {
+              "offset": [0.0, 16.0, -2.0],
+              "rotation": [0.0, 90.0, 0.0]
+            }
+          },
+          "mirror": true,
+          "name": "body",
+          "parent": "root",
+          "pivot": [0.0, 12.0, 0.0],
+          "rotation": [5.0, 0.0, 0.0]
+        }
+      ],
+      "description": {
+        "identifier": "geometry.ruby_golem",
+        "texture_height": 64,
+        "texture_width": 64,
+        "visible_bounds_height": 3.5,
+        "visible_bounds_offset": [0.0, 1.25, 0.0],
+        "visible_bounds_width": 3.0
+      }
+    },
+    {
+      "bones": [],
+      "description": {
+        "identifier": "geometry.ruby_golem.small",
+        "texture_height": 32,
+        "texture_width": 32
+      }
+    }
+  ]
+}

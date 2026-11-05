@@ -1,0 +1,12 @@
+{
+  "animations": {
+    "a": {
+      "bones": {
+        "b": {
+          "spin": [0.0, 0.0, 0.0]
+        }
+      }
+    }
+  },
+  "format_version": "1.8.0"
+}

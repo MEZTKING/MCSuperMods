@@ -12,6 +12,11 @@ import { parseVanillaMcdocSymbols, type VanillaMcdocSymbols } from '../symbols/p
  * - `blockDefinition` / `itemDefinition`: the runtime definitions written to
  *   `msm/<ns>/block/<path>.json` and `msm/<ns>/item/<path>.json`.
  * - `mod`: element data of the singleton `msm:mod` kind.
+ * - `entity` / `entityDefinition`: element data of the `msm:entity` kind (definition plus
+ *   `display_name` and the spawn egg's `texture` / `display_name`) and the runtime definition
+ *   written to `msm/<ns>/entity/<path>.json` (ADR 0028).
+ * - `geoModel` / `animation`: element data of the `msm:geo_model` and `msm:animation` kinds,
+ *   the Bedrock geometry and animation JSON GeckoLib reads (ADR 0029).
  */
 export const MSM_SCHEMA_REFS = {
   block: 'msm:block',
@@ -19,6 +24,10 @@ export const MSM_SCHEMA_REFS = {
   mod: 'msm:mod',
   blockDefinition: 'msm:block_definition',
   itemDefinition: 'msm:item_definition',
+  entity: 'msm:entity',
+  entityDefinition: 'msm:entity_definition',
+  geoModel: 'msm:geo_model',
+  animation: 'msm:animation',
 } as const;
 
 /** The mcdoc type path behind each MSM schema reference. */
@@ -28,6 +37,10 @@ export const MSM_TYPE_PATHS = {
   mod: '::msm::Mod',
   blockDefinition: '::msm::definition::Block',
   itemDefinition: '::msm::definition::Item',
+  entity: '::msm::element::Entity',
+  entityDefinition: '::msm::definition::Entity',
+  geoModel: '::msm::geometry::Geometry',
+  animation: '::msm::animation::Animations',
   action: '::msm::action::Action',
 } as const;
 
@@ -38,6 +51,10 @@ export const MSM_SCHEMA_ALIASES: Readonly<Record<string, string>> = Object.freez
   [MSM_SCHEMA_REFS.mod]: MSM_TYPE_PATHS.mod,
   [MSM_SCHEMA_REFS.blockDefinition]: MSM_TYPE_PATHS.blockDefinition,
   [MSM_SCHEMA_REFS.itemDefinition]: MSM_TYPE_PATHS.itemDefinition,
+  [MSM_SCHEMA_REFS.entity]: MSM_TYPE_PATHS.entity,
+  [MSM_SCHEMA_REFS.entityDefinition]: MSM_TYPE_PATHS.entityDefinition,
+  [MSM_SCHEMA_REFS.geoModel]: MSM_TYPE_PATHS.geoModel,
+  [MSM_SCHEMA_REFS.animation]: MSM_TYPE_PATHS.animation,
 });
 
 let parsed: VanillaMcdocSymbols | undefined;

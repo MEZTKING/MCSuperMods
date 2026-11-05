@@ -1,0 +1,8 @@
+{
+  "animations": {
+    "a": {
+      "loop": "forever"
+    }
+  },
+  "format_version": "1.8.0"
+}

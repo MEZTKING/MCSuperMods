@@ -15,6 +15,22 @@
     "code": "schema.no-union-match",
     "path": "/loot"
   },
+  "entity-display-name-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/display_name"
+  },
+  "entity-egg-texture-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/spawn_egg/texture"
+  },
+  "entity-egg-unknown-field.json": {
+    "code": "schema.unknown-field",
+    "path": "/spawn_egg/colour"
+  },
+  "entity-missing-components.json": {
+    "code": "schema.missing-field",
+    "path": "/components"
+  },
   "item-missing-format.json": {
     "code": "schema.missing-field",
     "path": "/format"

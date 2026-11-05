@@ -11,12 +11,24 @@ base {
 
 repositories {
     // Loom adds the Minecraft, Fabric and library repositories itself.
+    // GeckoLib from the Modrinth Maven (the official GeckoLib Maven is not reachable from every build host; ADR 0029 D6).
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = uri("https://api.modrinth.com/maven")
+            }
+        }
+        filter { includeGroup("maven.modrinth") }
+    }
 }
 
 dependencies {
     minecraft("com.mojang:minecraft:${providers.gradleProperty("minecraft_version").get()}")
     implementation("net.fabricmc:fabric-loader:${providers.gradleProperty("loader_version").get()}")
     implementation("net.fabricmc.fabric-api:fabric-api:${providers.gradleProperty("fabric_api_version").get()}")
+
+    compileOnly("maven.modrinth:geckolib:${providers.gradleProperty("geckolib_modrinth_version_id").get()}")
 
     // JUnit 5 for the Codecs over the shared MSM conformance corpus (GameTests cover behaviour).
     testImplementation(platform("org.junit:junit-bom:${providers.gradleProperty("junit_version").get()}"))

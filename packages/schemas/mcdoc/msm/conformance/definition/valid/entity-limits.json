@@ -1,0 +1,47 @@
+{
+  "category": "misc",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "priority": 0,
+          "type": "look_around"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "mymod:entity/ruby_golem",
+      "scale": 0.01,
+      "texture": "mymod:entity/ruby_golem",
+      "transition_ticks": 0
+    },
+    "msm:attack": {
+      "damage": 0.0,
+      "knockback": 0.0
+    },
+    "msm:health": {
+      "max": 1.0
+    },
+    "msm:movement": {
+      "fire_immune": true,
+      "follow_range": 0.0,
+      "knockback_resistance": 1.0,
+      "speed": 0.0
+    }
+  },
+  "eye_height": 0.0,
+  "format": 1,
+  "size": {
+    "height": 8.0,
+    "width": 0.1
+  },
+  "spawn": {
+    "biomes": [],
+    "heightmap": "motion_blocking",
+    "max_group": 1,
+    "min_group": 1,
+    "placement": "no_restrictions",
+    "rule": "any_light_monster",
+    "weight": 1
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "geometry-cube-missing-size.json": {
+    "code": "schema.missing-field",
+    "path": "/minecraft:geometry/0/bones/0/cubes/0/size"
+  },
+  "geometry-format-version-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/format_version"
+  },
+  "geometry-missing-description.json": {
+    "code": "schema.missing-field",
+    "path": "/minecraft:geometry/0/description"
+  },
+  "geometry-missing-geometry.json": {
+    "code": "schema.missing-field",
+    "path": "/minecraft:geometry"
+  },
+  "geometry-pivot-wrong-length.json": {
+    "code": "schema.invalid-length",
+    "path": "/minecraft:geometry/0/bones/0/pivot"
+  },
+  "geometry-poly-mesh.json": {
+    "code": "schema.unknown-field",
+    "path": "/minecraft:geometry/0/bones/0/poly_mesh"
+  },
+  "geometry-texture-meshes.json": {
+    "code": "schema.unknown-field",
+    "path": "/minecraft:geometry/0/texture_meshes"
+  },
+  "geometry-texture-width-zero.json": {
+    "code": "schema.out-of-range",
+    "path": "/minecraft:geometry/0/description/texture_width"
+  },
+  "geometry-uv-wrong-length.json": {
+    "code": "schema.invalid-length",
+    "path": "/minecraft:geometry/0/bones/0/cubes/0/uv"
+  }
+}

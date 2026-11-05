@@ -1,0 +1,37 @@
+{
+  "animations": {
+    "animation.ruby_golem.walk": {
+      "animation_length": 1.0,
+      "bones": {
+        "body": {
+          "position": {
+            "0.0": [0.0, 0.0, 0.0],
+            "0.25": 1.0,
+            "0.5": "q.life_time"
+          },
+          "scale": {
+            "0.0": {
+              "post": 1.0
+            }
+          }
+        },
+        "leg_left": {
+          "rotation": {
+            "0.0": [-30.0, 0.0, 0.0],
+            "0.5": {
+              "lerp_mode": "catmullrom",
+              "post": [30.0, 0.0, 0.0]
+            },
+            "1.0": {
+              "lerp_mode": "linear",
+              "post": [-30.0, 0.0, 0.0],
+              "pre": [30.0, 0.0, 0.0]
+            }
+          }
+        }
+      },
+      "loop": true
+    }
+  },
+  "format_version": "1.8.0"
+}

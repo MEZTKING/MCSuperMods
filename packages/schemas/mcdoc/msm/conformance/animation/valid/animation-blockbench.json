@@ -1,0 +1,32 @@
+{
+  "animations": {
+    "animation.model.new": {
+      "animation_length": 2,
+      "bones": {
+        "bone": {
+          "position": {
+            "0.0": [0, 0, 0],
+            "1.0": [0, 2, 0],
+            "2.0": [0, 0, 0]
+          },
+          "rotation": {
+            "0.0": {
+              "lerp_mode": "catmullrom",
+              "post": [0, 0, 0]
+            },
+            "1.0": {
+              "lerp_mode": "catmullrom",
+              "post": [0, 180, 0]
+            },
+            "2.0": {
+              "lerp_mode": "catmullrom",
+              "post": [0, 360, 0]
+            }
+          }
+        }
+      },
+      "loop": true
+    }
+  },
+  "format_version": "1.8.0"
+}

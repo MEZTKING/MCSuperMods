@@ -1,0 +1,15 @@
+{
+  "animations": {
+    "animation.ruby_golem.idle": {
+      "bones": {
+        "body": {
+          "position": 0.5,
+          "rotation": [0.0, "math.sin(q.anim_time * 90) * 5", 0.0],
+          "scale": "1 + q.anim_time * 0.1"
+        }
+      },
+      "loop": true
+    }
+  },
+  "format_version": "1.8.0"
+}

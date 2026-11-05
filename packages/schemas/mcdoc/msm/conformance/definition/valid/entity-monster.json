@@ -1,0 +1,40 @@
+{
+  "category": "monster",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "retaliate": true,
+          "targets": [],
+          "type": "melee_attack"
+        },
+        {
+          "type": "wander"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "attack": "attack",
+      "idle": "idle",
+      "model": "mymod:entity/ruby_golem",
+      "texture": "mymod:entity/ruby_golem"
+    },
+    "msm:attack": {
+      "damage": 3.0
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  },
+  "spawn": {
+    "biomes": ["#minecraft:is_overworld"],
+    "heightmap": "world_surface",
+    "max_group": 4,
+    "min_group": 2,
+    "placement": "on_ground",
+    "rule": "monster",
+    "weight": 100
+  }
+}

@@ -1,9 +1,12 @@
-// MSM element data for `msm:block` and `msm:item` (ADR 0025 D5): the runtime definition plus
-// editor-only fields that lower to ordinary pack files.
+// MSM element data for `msm:block` and `msm:item` (ADR 0025 D5) and `msm:entity` (ADR 0028 D3):
+// the runtime definition plus editor-only fields that lower to ordinary pack files.
 
 use super::definition::BlockBehaviourComponents
 use super::definition::BlockCommon
 use super::definition::Breakable as DefinitionBreakable
+use super::definition::EntityBehaviourComponents
+use super::definition::EntityCommon
+use super::definition::SpawnEgg as DefinitionSpawnEgg
 use super::definition::ItemCommon
 use super::definition::ToolTier
 
@@ -52,4 +55,54 @@ struct Item {
 	model?: #[id="model"] string,
 	/// Display name, lowered to the `item.<ns>.<path>` language key.
 	display_name?: string,
+}
+
+/// `msm:animated_model` in element data: the definition's fields, with `model` and `animations`
+/// naming elements of the project (ADR 0029). The ids are also the GeckoLib resource ids the
+/// runtime reads, so lowering copies them unchanged.
+struct AnimatedModel {
+	/// An `msm:geo_model` element id, by convention `<ns>:entity/<name>`.
+	model: string,
+	/// An `msm:animation` element id, by convention `<ns>:entity/<name>_animations`.
+	animations?: string,
+	/// Texture id; `ns:entity/x` is `assets/ns/textures/entity/x.png`.
+	texture: string,
+	/// Render scale; defaults to 1.
+	scale?: float @ 0.01..,
+	/// Animation looped while idle.
+	idle?: string,
+	/// Animation looped while moving.
+	walk?: string,
+	/// Animation played once on each melee hit.
+	attack?: string,
+	/// Ticks to blend between animations; defaults to 0.
+	transition_ticks?: int @ 0..,
+}
+
+/// Entity components in element data.
+struct EntityComponents {
+	"msm:animated_model": AnimatedModel,
+	...EntityBehaviourComponents,
+}
+
+/// The spawn egg in element data: `texture` and `display_name` lower to the egg's item
+/// definition, item model and language key.
+struct SpawnEgg {
+	...DefinitionSpawnEgg,
+	/// Item texture such as `mymod:item/ruby_golem_spawn_egg`, lowered to
+	/// `assets/<ns>/items/<path>_spawn_egg.json` and a `minecraft:item/generated` model.
+	texture?: #[id="texture"] string,
+	/// Display name, lowered to the `item.<ns>.<path>_spawn_egg` language key.
+	display_name?: string,
+}
+
+/// `msm:entity` element data.
+struct Entity {
+	...EntityCommon,
+	/// Display name, lowered to the `entity.<ns>.<path>` language key.
+	display_name?: string,
+	/// The spawn egg; absent means an egg in `minecraft:spawn_eggs`; `false` means no egg.
+	spawn_egg?: (SpawnEgg | false),
+	/// Behaviour components; `msm:animated_model` is required.
+	components: EntityComponents,
 }

@@ -1,0 +1,34 @@
+{
+  "animation-bad-lerp-mode.json": {
+    "code": "schema.no-union-match",
+    "path": "/animations/a/bones/b/rotation/0.0/lerp_mode"
+  },
+  "animation-bad-loop.json": {
+    "code": "schema.no-union-match",
+    "path": "/animations/a/loop"
+  },
+  "animation-bones-list.json": {
+    "code": "schema.type-mismatch",
+    "path": "/animations/a/bones"
+  },
+  "animation-keyframe-wrong-length.json": {
+    "code": "schema.invalid-length",
+    "path": "/animations/a/bones/b/rotation/0.0/post"
+  },
+  "animation-length-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/animations/a/animation_length"
+  },
+  "animation-missing-animations.json": {
+    "code": "schema.missing-field",
+    "path": "/animations"
+  },
+  "animation-override-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/animations/a/override_previous_animation"
+  },
+  "animation-unknown-channel.json": {
+    "code": "schema.unknown-field",
+    "path": "/animations/a/bones/b/spin"
+  }
+}

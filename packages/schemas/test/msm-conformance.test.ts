@@ -11,21 +11,31 @@ import {
 } from '../src/index';
 
 /**
- * The MSM conformance corpus (ADR 0025 D7), shared with the runtime's JUnit tests:
- * `conformance/definition/` holds runtime definitions, `conformance/element/` element data.
- * The file name prefix selects the schema; `expected-errors.json` maps each invalid file to
- * one error (pointer and code) that `validateJson` must report.
+ * The MSM conformance corpus (ADR 0025 D7, ADR 0028 D7), shared with the runtime's JUnit tests:
+ * `conformance/definition/` holds runtime definitions, `conformance/element/` element data,
+ * `conformance/geometry/` and `conformance/animation/` the GeckoLib JSON of the
+ * `msm:geo_model` and `msm:animation` elements. The file name prefix selects the schema;
+ * `expected-errors.json` maps each invalid file to one error (pointer and code) that
+ * `validateJson` must report.
  */
 const CORPUS = new URL('../mcdoc/msm/conformance/', import.meta.url);
 
-type Group = 'definition' | 'element';
+type Group = 'definition' | 'element' | 'geometry' | 'animation';
 
 const SCHEMAS: Record<Group, Record<string, string>> = {
   definition: {
     block: MSM_SCHEMA_REFS.blockDefinition,
     item: MSM_SCHEMA_REFS.itemDefinition,
+    entity: MSM_SCHEMA_REFS.entityDefinition,
   },
-  element: { block: MSM_SCHEMA_REFS.block, item: MSM_SCHEMA_REFS.item, mod: MSM_SCHEMA_REFS.mod },
+  element: {
+    block: MSM_SCHEMA_REFS.block,
+    item: MSM_SCHEMA_REFS.item,
+    mod: MSM_SCHEMA_REFS.mod,
+    entity: MSM_SCHEMA_REFS.entity,
+  },
+  geometry: { geometry: MSM_SCHEMA_REFS.geoModel },
+  animation: { animation: MSM_SCHEMA_REFS.animation },
 };
 
 interface Expected {
@@ -56,7 +66,7 @@ const schemaFor = (group: Group, name: string): SchemaNode => {
   return index.resolveSchemaRef(ref);
 };
 
-const GROUPS: Group[] = ['definition', 'element'];
+const GROUPS: Group[] = ['definition', 'element', 'geometry', 'animation'];
 
 describe('MSM mcdoc symbols', () => {
   it('load and resolve through every schema reference and type path', () => {
@@ -72,6 +82,7 @@ describe('MSM mcdoc symbols', () => {
     expect(index.resolveSchemaRef(MSM_SCHEMA_REFS.block)).toBe(index.resolve(MSM_TYPE_PATHS.block));
     expect(index.dispatcherKeys('msm:action')).toEqual([
       'give_item',
+      'play_animation',
       'play_sound',
       'run_function',
       'set_block_state',
@@ -115,36 +126,6 @@ describe.each(GROUPS)('MSM conformance corpus: %s', (group) => {
 });
 
 describe('MSM conformance corpus coverage', () => {
-  /** Every key path (`/a/b`, list indices dropped) and every action `type` in a value. */
-  const collect = (value: Json, path: string, keys: Set<string>, actions: Set<string>): void => {
-    if (Array.isArray(value)) {
-      for (const entry of value) collect(entry, path, keys, actions);
-      return;
-    }
-    if (typeof value !== 'object' || value === null) return;
-    for (const [key, entry] of Object.entries(value)) {
-      const next = path.endsWith('/events') ? `${path}/*` : `${path}/${key}`;
-      keys.add(next);
-      if (key === 'actions' && Array.isArray(entry)) {
-        for (const action of entry) {
-          if (typeof action === 'object' && action !== null && !Array.isArray(action)) {
-            if (typeof action.type === 'string') actions.add(action.type);
-          }
-        }
-      }
-      collect(entry, next, keys, actions);
-    }
-  };
-
-  const covered = (group: Group, prefix: string) => {
-    const keys = new Set<string>();
-    const actions = new Set<string>();
-    for (const name of files(group, 'valid').filter((n) => n.startsWith(`${prefix}-`))) {
-      collect(read(group, 'valid', name), '', keys, actions);
-    }
-    return { keys, actions };
-  };
-
   /** Field paths of a struct schema (map fields as `*`), depth-first. */
   const fieldPaths = (node: SchemaNode, path: string, out: Set<string>, depth = 0): void => {
     if (depth > 6) return;
@@ -161,10 +142,80 @@ describe('MSM conformance corpus coverage', () => {
     }
   };
 
-  it('uses every action type in a valid block and item definition', () => {
+  /**
+   * Every key path (`/a/b`, list indices dropped; keys of the map-like objects at `maps` as
+   * `*`) and every action `type` in a value.
+   */
+  const collect = (
+    value: Json,
+    path: string,
+    maps: ReadonlySet<string>,
+    keys: Set<string>,
+    actions: Set<string>,
+  ): void => {
+    if (Array.isArray(value)) {
+      for (const entry of value) collect(entry, path, maps, keys, actions);
+      return;
+    }
+    if (typeof value !== 'object' || value === null) return;
+    for (const [key, entry] of Object.entries(value)) {
+      const next = maps.has(path) ? `${path}/*` : `${path}/${key}`;
+      keys.add(next);
+      if (key === 'actions' && Array.isArray(entry)) {
+        for (const action of entry) {
+          if (typeof action === 'object' && action !== null && !Array.isArray(action)) {
+            if (typeof action.type === 'string') actions.add(action.type);
+          }
+        }
+      }
+      collect(entry, next, maps, keys, actions);
+    }
+  };
+
+  /** Paths of the map-like structs (`[string]: T`) of a schema, and always `/events`. */
+  const mapPaths = (ref: string | undefined): Set<string> => {
+    const maps = new Set(['/events']);
+    if (ref === undefined) return maps;
+    const declared = new Set<string>();
+    fieldPaths(index.resolveSchemaRef(ref), '', declared);
+    for (const path of declared) if (path.endsWith('/*')) maps.add(path.slice(0, -2));
+    return maps;
+  };
+
+  const covered = (group: Group, prefix: string) => {
+    const keys = new Set<string>();
+    const actions = new Set<string>();
+    const maps = mapPaths(SCHEMAS[group][prefix]);
+    for (const name of files(group, 'valid').filter((n) => n.startsWith(`${prefix}-`))) {
+      collect(read(group, 'valid', name), '', maps, keys, actions);
+    }
+    return { keys, actions };
+  };
+
+  it('uses every action type in a valid entity definition, and every other one in a valid block and item definition', () => {
     const all = index.dispatcherKeys('msm:action');
-    expect([...covered('definition', 'block').actions].sort()).toEqual(all);
-    expect([...covered('definition', 'item').actions].sort()).toEqual(all);
+    expect([...covered('definition', 'entity').actions].sort()).toEqual(all);
+    // `play_animation` is dropped with a warning outside entity definitions (ADR 0028 D4).
+    const blockAndItem = all.filter((type) => type !== 'play_animation');
+    expect([...covered('definition', 'block').actions].sort()).toEqual(blockAndItem);
+    expect([...covered('definition', 'item').actions].sort()).toEqual(blockAndItem);
+  });
+
+  it('uses every goal type in a valid entity definition and element', () => {
+    const goals = (group: Group): string[] => {
+      const types = new Set<string>();
+      for (const name of files(group, 'valid').filter((n) => n.startsWith('entity-'))) {
+        const value = read(group, 'valid', name);
+        if (typeof value !== 'object' || value === null || Array.isArray(value)) continue;
+        const list = (value.components as { 'msm:ai_goals'?: { goals?: { type?: unknown }[] } })?.[
+          'msm:ai_goals'
+        ]?.goals;
+        for (const goal of list ?? []) if (typeof goal.type === 'string') types.add(goal.type);
+      }
+      return [...types].sort();
+    };
+    expect(goals('definition')).toEqual(index.dispatcherKeys('msm:ai_goal'));
+    expect(goals('element')).toEqual(index.dispatcherKeys('msm:ai_goal'));
   });
 
   it.each([
@@ -173,6 +224,10 @@ describe('MSM conformance corpus coverage', () => {
     ['element', 'block', MSM_SCHEMA_REFS.block],
     ['element', 'item', MSM_SCHEMA_REFS.item],
     ['element', 'mod', MSM_SCHEMA_REFS.mod],
+    ['definition', 'entity', MSM_SCHEMA_REFS.entityDefinition],
+    ['element', 'entity', MSM_SCHEMA_REFS.entity],
+    ['geometry', 'geometry', MSM_SCHEMA_REFS.geoModel],
+    ['animation', 'animation', MSM_SCHEMA_REFS.animation],
   ] as const)('sets every %s %s field in some valid file', (group, prefix, ref) => {
     const declared = new Set<string>();
     fieldPaths(index.resolveSchemaRef(ref), '', declared);

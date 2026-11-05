@@ -1,5 +1,6 @@
-// MSM definition format v1: the runtime definitions of blocks and items (ADR 0025 D2, D3).
-// Lowering writes these to `msm/<ns>/block/<path>.json` and `msm/<ns>/item/<path>.json`.
+// MSM definition format v1: the runtime definitions of blocks, items (ADR 0025 D2, D3) and
+// entities (ADR 0028 D2). Lowering writes these to `msm/<ns>/block/<path>.json`,
+// `msm/<ns>/item/<path>.json` and `msm/<ns>/entity/<path>.json`.
 
 use super::action::Event
 
@@ -222,4 +223,274 @@ struct ItemCommon {
 /// An item definition, `msm/<ns>/item/<path>.json`.
 struct Item {
 	...ItemCommon,
+}
+
+/// A vanilla `MobCategory` in lower case: the spawn group that caps how many such mobs exist.
+enum(string) MobCategory {
+	Monster = "monster",
+	Creature = "creature",
+	Ambient = "ambient",
+	WaterCreature = "water_creature",
+	WaterAmbient = "water_ambient",
+	UndergroundWaterCreature = "underground_water_creature",
+	Axolotls = "axolotls",
+	Misc = "misc",
+}
+
+/// Where a natural spawn may be placed (vanilla `SpawnPlacementTypes`).
+enum(string) SpawnPlacement {
+	OnGround = "on_ground",
+	InWater = "in_water",
+	InLava = "in_lava",
+	NoRestrictions = "no_restrictions",
+}
+
+/// The heightmap a natural spawn position is taken from (vanilla `Heightmap.Types`).
+enum(string) Heightmap {
+	MotionBlockingNoLeaves = "motion_blocking_no_leaves",
+	MotionBlocking = "motion_blocking",
+	WorldSurface = "world_surface",
+	OceanFloor = "ocean_floor",
+}
+
+/// The vanilla spawn check a natural spawn must pass.
+enum(string) SpawnRule {
+	/// `Mob.checkMobSpawnRules`.
+	Mob = "mob",
+	/// `Monster.checkMonsterSpawnRules`: dark enough, not peaceful.
+	Monster = "monster",
+	/// `Monster.checkSurfaceMonstersSpawnRules`.
+	SurfaceMonster = "surface_monster",
+	/// `Monster.checkAnyLightMonsterSpawnRules`.
+	AnyLightMonster = "any_light_monster",
+	/// No check beyond the placement.
+	Always = "always",
+}
+
+/// The entity's hitbox in blocks.
+struct EntitySize {
+	width: float @ 0.1..8,
+	height: float @ 0.1..8,
+}
+
+/// The spawn egg registered with an entity as the item `<ns>:<path>_spawn_egg`.
+struct SpawnEgg {
+	/// The creative tab that lists the egg; defaults to `minecraft:spawn_eggs`.
+	creative_tab?: #[id="creative_mode_tab"] string,
+}
+
+/// Natural spawning in biomes, registered in the entity's `category`.
+struct Spawn {
+	/// Biome ids and biome tags (`#`-prefixed); the spawn applies to their union.
+	biomes: [#[id(registry="worldgen/biome", tags="allowed")] string],
+	/// Spawn weight relative to the other spawns of the category.
+	weight: int @ 1..,
+	/// Smallest group size.
+	min_group: int @ 1..,
+	/// Largest group size; at least `min_group` (checked by the validators).
+	max_group: int @ 1..,
+	/// Defaults to `on_ground`.
+	placement?: SpawnPlacement,
+	/// Defaults to `motion_blocking_no_leaves`.
+	heightmap?: Heightmap,
+	/// Defaults to `mob`.
+	rule?: SpawnRule,
+}
+
+/// Maximum health; absent means 20.
+struct Health {
+	/// Maximum health in half hearts.
+	max: float @ 1..,
+}
+
+/// Movement attributes. Absent means speed 0.25, follow range 16, no knockback resistance,
+/// swims and not fire immune.
+struct Movement {
+	/// The `movement_speed` attribute.
+	speed?: float @ 0..,
+	/// The `follow_range` attribute, in blocks.
+	follow_range?: float @ 0..,
+	/// The `knockback_resistance` attribute, 0 to 1.
+	knockback_resistance?: float @ 0..1,
+	/// Whether the mob floats up in water (adds a float goal first).
+	swims?: boolean,
+	/// Whether the mob ignores fire and lava damage.
+	fire_immune?: boolean,
+}
+
+/// Melee attack attributes; absent means no melee damage.
+struct Attack {
+	/// The `attack_damage` attribute.
+	damage: float @ 0..,
+	/// The `attack_knockback` attribute.
+	knockback?: float @ 0..,
+	/// Event fired after a successful melee hit.
+	on_attack?: string,
+}
+
+/// The kind of an AI goal. An unknown kind is dropped with a warning by the runtime.
+enum(string) GoalType {
+	/// Strolls about (`WaterAvoidingRandomStrollGoal` or `RandomStrollGoal`).
+	Wander = "wander",
+	/// Looks at a nearby player.
+	LookAtPlayer = "look_at_player",
+	/// Looks around at random.
+	LookAround = "look_around",
+	/// Attacks the listed entity types in melee.
+	MeleeAttack = "melee_attack",
+	/// Runs away from the listed entity types.
+	Flee = "flee",
+	/// Follows the nearest of the listed entity types.
+	Follow = "follow",
+}
+
+/// One AI goal, selected by `type`.
+struct Goal {
+	/// What the goal does.
+	type: GoalType,
+	/// Goal priority, lower runs first; defaults to the goal's position in the list.
+	priority?: int @ 0..,
+	...msm:ai_goal[[type]],
+}
+
+/// Strolls about at random.
+dispatch msm:ai_goal[wander] to struct WanderGoal {
+	/// Speed multiplier; defaults to 1.
+	speed?: float @ 0..,
+	/// Whether to keep out of water; defaults to true.
+	avoid_water?: boolean,
+}
+
+/// Looks at the nearest player in range.
+dispatch msm:ai_goal[look_at_player] to struct LookAtPlayerGoal {
+	/// Range in blocks; defaults to 8.
+	distance?: float @ 0..,
+}
+
+/// Looks around at random.
+dispatch msm:ai_goal[look_around] to struct LookAroundGoal {}
+
+/// Attacks entities in melee; needs `msm:attack`.
+dispatch msm:ai_goal[melee_attack] to struct MeleeAttackGoal {
+	/// Speed multiplier while chasing; defaults to 1.
+	speed?: float @ 0..,
+	/// Entity types to attack; `minecraft:player` matches players. Absent or empty with
+	/// `retaliate` only fights back.
+	targets?: [#[id="entity_type"] string],
+	/// Whether a target must be in sight; defaults to true.
+	must_see?: boolean,
+	/// Whether to fight back when hurt; defaults to false.
+	retaliate?: boolean,
+}
+
+/// Runs away from entities of the listed types.
+dispatch msm:ai_goal[flee] to struct FleeGoal {
+	/// Entity types to run from.
+	from: [#[id="entity_type"] string],
+	/// Range in blocks; defaults to 6.
+	distance?: float @ 0..,
+	/// Speed multiplier when the threat is far; defaults to 1.
+	speed?: float @ 0..,
+	/// Speed multiplier when the threat is near; defaults to 1.2.
+	sprint_speed?: float @ 0..,
+}
+
+/// Follows the nearest entity of the listed types.
+dispatch msm:ai_goal[follow] to struct FollowGoal {
+	/// Entity types to follow; `minecraft:player` matches players.
+	entities: [#[id="entity_type"] string],
+	/// Speed multiplier; defaults to 1.
+	speed?: float @ 0..,
+	/// Distance in blocks at which the mob stops; defaults to 2.
+	stop_distance?: float @ 0..,
+	/// Search range in blocks; defaults to 16.
+	range?: float @ 0..,
+}
+
+/// The mob's AI goals.
+struct AiGoals {
+	/// Goals in priority order.
+	goals: [Goal],
+}
+
+/// The GeckoLib model, animations and texture the entity renders with (ADR 0029). Required:
+/// every entity renders through GeckoLib.
+struct AnimatedModel {
+	/// Geo model id; `ns:entity/x` is `assets/ns/geckolib/models/entity/x.geo.json`.
+	model: string,
+	/// Animation set id; `ns:entity/x_animations` is
+	/// `assets/ns/geckolib/animations/entity/x_animations.animation.json`.
+	animations?: string,
+	/// Texture id; `ns:entity/x` is `assets/ns/textures/entity/x.png`.
+	texture: string,
+	/// Render scale; defaults to 1.
+	scale?: float @ 0.01..,
+	/// Animation looped while idle.
+	idle?: string,
+	/// Animation looped while moving.
+	walk?: string,
+	/// Animation played once on each melee hit.
+	attack?: string,
+	/// Ticks to blend between animations; defaults to 0.
+	transition_ticks?: int @ 0..,
+}
+
+/// Fires an event after the entity takes damage.
+struct OnHurt {
+	/// An event id declared in `events`.
+	event: string,
+}
+
+/// Fires an event when the entity dies.
+struct OnDeath {
+	/// An event id declared in `events`.
+	event: string,
+}
+
+/// Entity components other than `msm:animated_model`, shared with the element data.
+struct EntityBehaviourComponents {
+	"msm:health"?: Health,
+	"msm:movement"?: Movement,
+	"msm:attack"?: Attack,
+	"msm:ai_goals"?: AiGoals,
+	"msm:on_hurt"?: OnHurt,
+	"msm:on_death"?: OnDeath,
+	/// Fires when a player right-clicks the entity.
+	"msm:on_interact"?: OnInteract,
+}
+
+/// Runtime entity components; `msm:animated_model` is required.
+struct EntityComponents {
+	"msm:animated_model": AnimatedModel,
+	...EntityBehaviourComponents,
+}
+
+/// Fields every entity definition and entity element share, except `spawn_egg` and
+/// `components`.
+struct EntityCommon {
+	/// Definition format; this is version 1.
+	format: 1,
+	/// Spawn group.
+	category: MobCategory,
+	/// Hitbox size.
+	size: EntitySize,
+	/// Eye height in blocks; defaults to 0.85 times the height.
+	eye_height?: float @ 0..,
+	/// Drops; absent means the vanilla default `<ns>:entities/<path>`.
+	loot_table?: #[id="loot_table"] string,
+	/// Natural spawning; absent means none.
+	spawn?: Spawn,
+	/// Events that components and actions refer to, by id.
+	events?: struct EntityEvents {
+		[string]: Event,
+	},
+}
+
+/// An entity definition, `msm/<ns>/entity/<path>.json` (ADR 0028 D2).
+struct Entity {
+	...EntityCommon,
+	/// The spawn egg; absent means an egg in `minecraft:spawn_eggs`; `false` means no egg.
+	spawn_egg?: (SpawnEgg | false),
+	/// Behaviour components; `msm:animated_model` is required.
+	components: EntityComponents,
 }

@@ -1,0 +1,108 @@
+// Bedrock geometry 1.12.0 subset, the data of the `msm:geo_model` element (ADR 0029 D2): the
+// JSON GeckoLib reads from `assets/<ns>/geckolib/models/<path>.geo.json`. Cubes only: poly
+// meshes (`poly_mesh`) and `texture_meshes` are out of scope and fail as unknown fields.
+
+/// A locator with an offset and an optional rotation.
+struct Locator {
+	/// Position `[x, y, z]` in model units.
+	offset?: [float] @ 3,
+	/// Rotation `[x, y, z]` in degrees.
+	rotation?: [float] @ 3,
+}
+
+/// The UV of one cube face.
+struct FaceUv {
+	/// Texture position `[u, v]` in pixels.
+	uv: [float] @ 2,
+	/// Texture size `[width, height]` in pixels; negative values mirror.
+	uv_size?: [float] @ 2,
+	/// Rotation of the UV in degrees (0, 90, 180 or 270).
+	uv_rotation?: int,
+	/// Bedrock material instance; GeckoLib ignores it.
+	material_instance?: string,
+}
+
+/// Per-face UVs; a face without an entry is not drawn.
+struct FaceUvs {
+	north?: FaceUv,
+	south?: FaceUv,
+	east?: FaceUv,
+	west?: FaceUv,
+	up?: FaceUv,
+	down?: FaceUv,
+}
+
+/// A cube of a bone.
+struct Cube {
+	/// Lowest corner `[x, y, z]` in model units.
+	origin: [float] @ 3,
+	/// Size `[x, y, z]` in model units.
+	size: [float] @ 3,
+	/// Rotation pivot `[x, y, z]`.
+	pivot?: [float] @ 3,
+	/// Rotation `[x, y, z]` in degrees about `pivot`.
+	rotation?: [float] @ 3,
+	/// Grows the cube by this many units on every side without changing its UV.
+	inflate?: float,
+	/// Mirrors a box UV; defaults to the bone's `mirror`.
+	mirror?: boolean,
+	/// Box UV `[u, v]` (the top-left of the unfolded box) or per-face UVs.
+	uv: ([float] @ 2 | FaceUvs),
+}
+
+/// A bone: a named node of the hierarchy that animations move.
+struct Bone {
+	/// Unique bone name; animations address bones by it.
+	name: string,
+	/// The parent bone's name; absent for a root bone.
+	parent?: string,
+	/// Pivot `[x, y, z]` that rotation and scale are applied about.
+	pivot?: [float] @ 3,
+	/// Rest rotation `[x, y, z]` in degrees.
+	rotation?: [float] @ 3,
+	/// Mirrors the box UV of every cube that does not set `mirror`.
+	mirror?: boolean,
+	/// Inflate for every cube that does not set `inflate`.
+	inflate?: float,
+	/// Cubes of the bone.
+	cubes?: [Cube],
+	/// Named attachment points: a position `[x, y, z]` or an offset with a rotation.
+	locators?: struct BoneLocators {
+		[string]: ([float] @ 3 | Locator),
+	},
+	/// Molang binding of an attachable; GeckoLib ignores it.
+	binding?: string,
+	/// Bedrock reset flag; GeckoLib ignores it.
+	reset?: boolean,
+}
+
+/// Size and bounds of a geometry.
+struct GeometryDescription {
+	/// The geometry id, such as `geometry.ruby_golem`.
+	identifier: string,
+	/// Texture width in pixels.
+	texture_width: int @ 1..,
+	/// Texture height in pixels.
+	texture_height: int @ 1..,
+	/// Culling box width in blocks.
+	visible_bounds_width?: float,
+	/// Culling box height in blocks.
+	visible_bounds_height?: float,
+	/// Culling box offset `[x, y, z]` in blocks.
+	visible_bounds_offset?: [float] @ 3,
+}
+
+/// One geometry of the file.
+struct GeometryDefinition {
+	description: GeometryDescription,
+	/// Bones; absent means an empty model.
+	bones?: [Bone],
+}
+
+/// A Bedrock geometry file (`.geo.json`).
+struct Geometry {
+	/// Geometry format version, such as `1.12.0`; GeckoLib warns on unknown versions.
+	format_version: string,
+	/// The geometries; GeckoLib uses the first.
+	"minecraft:geometry": [GeometryDefinition],
+}

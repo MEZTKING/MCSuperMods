@@ -1,0 +1,35 @@
+{
+  "category": "water_creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "avoid_water": false,
+          "type": "wander"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "mymod:entity/ruby_golem",
+      "texture": "mymod:entity/ruby_golem"
+    },
+    "msm:movement": {
+      "speed": 0.6,
+      "swims": true
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  },
+  "spawn": {
+    "biomes": ["#minecraft:is_ocean"],
+    "heightmap": "ocean_floor",
+    "max_group": 3,
+    "min_group": 1,
+    "placement": "in_water",
+    "rule": "always",
+    "weight": 4
+  }
+}

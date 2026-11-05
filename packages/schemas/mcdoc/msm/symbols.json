@@ -125,6 +125,11 @@
           "desc": "Runs another event of the same definition.",
           "identifier": "TriggerEvent",
           "value": "trigger_event"
+        },
+        {
+          "desc": "Triggers a GeckoLib animation on the event's entity (entity definitions only; ADR 0028 D4).",
+          "identifier": "PlayAnimation",
+          "value": "play_animation"
         }
       ]
     },
@@ -178,6 +183,28 @@
               "kind": 0,
               "min": 1
             }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::PlayAnimation": {
+      "fields": [
+        {
+          "desc": "An animation name in the entity's animation file.",
+          "key": "animation",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The GeckoLib controller that plays it; defaults to `msm_triggered`.",
+          "key": "controller",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
           }
         }
       ],
@@ -362,6 +389,611 @@
           "desc": "An event id declared in this definition's `events`.",
           "key": "event",
           "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::animation::Animation": {
+      "fields": [
+        {
+          "desc": "`true` loops, `\"hold_on_last_frame\"` stops on the last frame; defaults to `false`.",
+          "key": "loop",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "boolean"
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "hold_on_last_frame"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "desc": "Length in seconds; defaults to the last keyframe.",
+          "key": "animation_length",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Seconds (or a Molang expression) before the animation starts.",
+          "key": "start_delay",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "float"
+              },
+              {
+                "kind": "string"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "Seconds (or a Molang expression) between two loops.",
+          "key": "loop_delay",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "float"
+              },
+              {
+                "kind": "string"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "Blend weight (or a Molang expression).",
+          "key": "blend_weight",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "float"
+              },
+              {
+                "kind": "string"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "Whether the animation replaces the bone values of earlier animations.",
+          "key": "override_previous_animation",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Molang expression that advances the animation time.",
+          "key": "anim_time_update",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Channels by bone name.",
+          "key": "bones",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "reference",
+                  "path": "::msm::animation::BoneAnimation"
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        },
+        {
+          "desc": "Particle keyframes by time; GeckoLib hands them to the entity's keyframe handlers.",
+          "key": "particle_effects",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "any"
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        },
+        {
+          "desc": "Sound keyframes by time; GeckoLib hands them to the entity's keyframe handlers.",
+          "key": "sound_effects",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "any"
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        },
+        {
+          "desc": "Instruction keyframes by time; GeckoLib hands them to the entity's keyframe handlers.",
+          "key": "timeline",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "any"
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::animation::AnimationBones": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::animation::BoneAnimation"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::animation::AnimationMap": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::animation::Animation"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::animation::Animations": {
+      "fields": [
+        {
+          "desc": "Animation format version, such as `1.8.0`.",
+          "key": "format_version",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Animations by name, such as `animation.ruby_golem.walk`.",
+          "key": "animations",
+          "kind": "pair",
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "reference",
+                  "path": "::msm::animation::Animation"
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::animation::BoneAnimation": {
+      "fields": [
+        {
+          "desc": "Rotation in degrees.",
+          "key": "rotation",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::animation::Channel"
+          }
+        },
+        {
+          "desc": "Translation in model units.",
+          "key": "position",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::animation::Channel"
+          }
+        },
+        {
+          "desc": "Scale factors.",
+          "key": "scale",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::animation::Channel"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::animation::Channel": {
+      "kind": "union",
+      "members": [
+        {
+          "kind": "reference",
+          "path": "::msm::animation::Vec3Value"
+        },
+        {
+          "fields": [
+            {
+              "key": {
+                "kind": "string"
+              },
+              "kind": "pair",
+              "type": {
+                "kind": "union",
+                "members": [
+                  {
+                    "kind": "reference",
+                    "path": "::msm::animation::Vec3Value"
+                  },
+                  {
+                    "kind": "reference",
+                    "path": "::msm::animation::Keyframe"
+                  }
+                ]
+              }
+            }
+          ],
+          "kind": "struct"
+        }
+      ]
+    },
+    "::msm::animation::ChannelKeyframes": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "reference",
+                "path": "::msm::animation::Vec3Value"
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::animation::Keyframe"
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::animation::Keyframe": {
+      "fields": [
+        {
+          "desc": "Value approaching the keyframe.",
+          "key": "pre",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::animation::Vec3Value"
+          }
+        },
+        {
+          "desc": "Value leaving the keyframe.",
+          "key": "post",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::animation::Vec3Value"
+          }
+        },
+        {
+          "desc": "Interpolation towards the next keyframe; defaults to `linear`.",
+          "key": "lerp_mode",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "linear"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "catmullrom"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::animation::ParticleEffects": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "any"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::animation::SoundEffects": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "any"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::animation::Timeline": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "any"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::animation::Vec3Value": {
+      "kind": "union",
+      "members": [
+        {
+          "item": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "float"
+              },
+              {
+                "kind": "string"
+              }
+            ]
+          },
+          "kind": "list",
+          "lengthRange": {
+            "kind": 0,
+            "max": 3,
+            "min": 3
+          }
+        },
+        {
+          "kind": "float"
+        },
+        {
+          "kind": "string"
+        }
+      ]
+    },
+    "::msm::definition::AiGoals": {
+      "fields": [
+        {
+          "desc": "Goals in priority order.",
+          "key": "goals",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::definition::Goal"
+            },
+            "kind": "list"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::AnimatedModel": {
+      "fields": [
+        {
+          "desc": "Geo model id; `ns:entity/x` is `assets/ns/geckolib/models/entity/x.geo.json`.",
+          "key": "model",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Animation set id; `ns:entity/x_animations` is\n`assets/ns/geckolib/animations/entity/x_animations.animation.json`.",
+          "key": "animations",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Texture id; `ns:entity/x` is `assets/ns/textures/entity/x.png`.",
+          "key": "texture",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Render scale; defaults to 1.",
+          "key": "scale",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0.01
+            }
+          }
+        },
+        {
+          "desc": "Animation looped while idle.",
+          "key": "idle",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Animation looped while moving.",
+          "key": "walk",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Animation played once on each melee hit.",
+          "key": "attack",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Ticks to blend between animations; defaults to 0.",
+          "key": "transition_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Attack": {
+      "fields": [
+        {
+          "desc": "The `attack_damage` attribute.",
+          "key": "damage",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "The `attack_knockback` attribute.",
+          "key": "knockback",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Event fired after a successful melee hit.",
+          "key": "on_attack",
+          "kind": "pair",
+          "optional": true,
           "type": {
             "kind": "string"
           }
@@ -666,6 +1298,416 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::Entity": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::EntityCommon"
+          }
+        },
+        {
+          "desc": "The spawn egg; absent means an egg in `minecraft:spawn_eggs`; `false` means no egg.",
+          "key": "spawn_egg",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "reference",
+                "path": "::msm::definition::SpawnEgg"
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              }
+            ]
+          }
+        },
+        {
+          "desc": "Behaviour components; `msm:animated_model` is required.",
+          "key": "components",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::EntityComponents"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::EntityBehaviourComponents": {
+      "fields": [
+        {
+          "key": "msm:health",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Health"
+          }
+        },
+        {
+          "key": "msm:movement",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Movement"
+          }
+        },
+        {
+          "key": "msm:attack",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Attack"
+          }
+        },
+        {
+          "key": "msm:ai_goals",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::AiGoals"
+          }
+        },
+        {
+          "key": "msm:on_hurt",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnHurt"
+          }
+        },
+        {
+          "key": "msm:on_death",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnDeath"
+          }
+        },
+        {
+          "desc": "Fires when a player right-clicks the entity.",
+          "key": "msm:on_interact",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnInteract"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::EntityCommon": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "desc": "Spawn group.",
+          "key": "category",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::MobCategory"
+          }
+        },
+        {
+          "desc": "Hitbox size.",
+          "key": "size",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::EntitySize"
+          }
+        },
+        {
+          "desc": "Eye height in blocks; defaults to 0.85 times the height.",
+          "key": "eye_height",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Drops; absent means the vanilla default `<ns>:entities/<path>`.",
+          "key": "loot_table",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "loot_table"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Natural spawning; absent means none.",
+          "key": "spawn",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Spawn"
+          }
+        },
+        {
+          "desc": "Events that components and actions refer to, by id.",
+          "key": "events",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "reference",
+                  "path": "::msm::action::Event"
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::EntityComponents": {
+      "fields": [
+        {
+          "key": "msm:animated_model",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::AnimatedModel"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::EntityBehaviourComponents"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::EntityEvents": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::Event"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::EntitySize": {
+      "fields": [
+        {
+          "key": "width",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 8,
+              "min": 0.1
+            }
+          }
+        },
+        {
+          "key": "height",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 8,
+              "min": 0.1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::FleeGoal": {
+      "fields": [
+        {
+          "desc": "Entity types to run from.",
+          "key": "from",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "entity_type"
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Range in blocks; defaults to 6.",
+          "key": "distance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Speed multiplier when the threat is far; defaults to 1.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Speed multiplier when the threat is near; defaults to 1.2.",
+          "key": "sprint_speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::FollowGoal": {
+      "fields": [
+        {
+          "desc": "Entity types to follow; `minecraft:player` matches players.",
+          "key": "entities",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "entity_type"
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Speed multiplier; defaults to 1.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Distance in blocks at which the mob stops; defaults to 2.",
+          "key": "stop_distance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Search range in blocks; defaults to 16.",
+          "key": "range",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::Food": {
       "fields": [
         {
@@ -703,6 +1745,121 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::definition::Goal": {
+      "fields": [
+        {
+          "desc": "What the goal does.",
+          "key": "type",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::GoalType"
+          }
+        },
+        {
+          "desc": "Goal priority, lower runs first; defaults to the goal's position in the list.",
+          "key": "priority",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["type"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:ai_goal"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::GoalType": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Strolls about (`WaterAvoidingRandomStrollGoal` or `RandomStrollGoal`).",
+          "identifier": "Wander",
+          "value": "wander"
+        },
+        {
+          "desc": "Looks at a nearby player.",
+          "identifier": "LookAtPlayer",
+          "value": "look_at_player"
+        },
+        {
+          "desc": "Looks around at random.",
+          "identifier": "LookAround",
+          "value": "look_around"
+        },
+        {
+          "desc": "Attacks the listed entity types in melee.",
+          "identifier": "MeleeAttack",
+          "value": "melee_attack"
+        },
+        {
+          "desc": "Runs away from the listed entity types.",
+          "identifier": "Flee",
+          "value": "flee"
+        },
+        {
+          "desc": "Follows the nearest of the listed entity types.",
+          "identifier": "Follow",
+          "value": "follow"
+        }
+      ]
+    },
+    "::msm::definition::Health": {
+      "fields": [
+        {
+          "desc": "Maximum health in half hearts.",
+          "key": "max",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Heightmap": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "MotionBlockingNoLeaves",
+          "value": "motion_blocking_no_leaves"
+        },
+        {
+          "identifier": "MotionBlocking",
+          "value": "motion_blocking"
+        },
+        {
+          "identifier": "WorldSurface",
+          "value": "world_surface"
+        },
+        {
+          "identifier": "OceanFloor",
+          "value": "ocean_floor"
+        }
+      ]
     },
     "::msm::definition::Item": {
       "fields": [
@@ -878,6 +2035,215 @@
               "max": 15,
               "min": 0
             }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::LookAroundGoal": {
+      "fields": [],
+      "kind": "struct"
+    },
+    "::msm::definition::LookAtPlayerGoal": {
+      "fields": [
+        {
+          "desc": "Range in blocks; defaults to 8.",
+          "key": "distance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::MeleeAttackGoal": {
+      "fields": [
+        {
+          "desc": "Speed multiplier while chasing; defaults to 1.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Entity types to attack; `minecraft:player` matches players. Absent or empty with\n`retaliate` only fights back.",
+          "key": "targets",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "entity_type"
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Whether a target must be in sight; defaults to true.",
+          "key": "must_see",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether to fight back when hurt; defaults to false.",
+          "key": "retaliate",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::MobCategory": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Monster",
+          "value": "monster"
+        },
+        {
+          "identifier": "Creature",
+          "value": "creature"
+        },
+        {
+          "identifier": "Ambient",
+          "value": "ambient"
+        },
+        {
+          "identifier": "WaterCreature",
+          "value": "water_creature"
+        },
+        {
+          "identifier": "WaterAmbient",
+          "value": "water_ambient"
+        },
+        {
+          "identifier": "UndergroundWaterCreature",
+          "value": "underground_water_creature"
+        },
+        {
+          "identifier": "Axolotls",
+          "value": "axolotls"
+        },
+        {
+          "identifier": "Misc",
+          "value": "misc"
+        }
+      ]
+    },
+    "::msm::definition::Movement": {
+      "fields": [
+        {
+          "desc": "The `movement_speed` attribute.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "The `follow_range` attribute, in blocks.",
+          "key": "follow_range",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "The `knockback_resistance` attribute, 0 to 1.",
+          "key": "knockback_resistance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Whether the mob floats up in water (adds a float goal first).",
+          "key": "swims",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether the mob ignores fire and lava damage.",
+          "key": "fire_immune",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::OnDeath": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::OnHurt": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
           }
         }
       ],
@@ -1173,6 +2539,191 @@
         }
       ]
     },
+    "::msm::definition::Spawn": {
+      "fields": [
+        {
+          "desc": "Biome ids and biome tags (`#`-prefixed); the spawn applies to their union.",
+          "key": "biomes",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "tree",
+                    "values": {
+                      "registry": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "worldgen/biome"
+                        }
+                      },
+                      "tags": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "allowed"
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Spawn weight relative to the other spawns of the category.",
+          "key": "weight",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Smallest group size.",
+          "key": "min_group",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Largest group size; at least `min_group` (checked by the validators).",
+          "key": "max_group",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `on_ground`.",
+          "key": "placement",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::SpawnPlacement"
+          }
+        },
+        {
+          "desc": "Defaults to `motion_blocking_no_leaves`.",
+          "key": "heightmap",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Heightmap"
+          }
+        },
+        {
+          "desc": "Defaults to `mob`.",
+          "key": "rule",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::SpawnRule"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::SpawnEgg": {
+      "fields": [
+        {
+          "desc": "The creative tab that lists the egg; defaults to `minecraft:spawn_eggs`.",
+          "key": "creative_tab",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "creative_mode_tab"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::SpawnPlacement": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "OnGround",
+          "value": "on_ground"
+        },
+        {
+          "identifier": "InWater",
+          "value": "in_water"
+        },
+        {
+          "identifier": "InLava",
+          "value": "in_lava"
+        },
+        {
+          "identifier": "NoRestrictions",
+          "value": "no_restrictions"
+        }
+      ]
+    },
+    "::msm::definition::SpawnRule": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "`Mob.checkMobSpawnRules`.",
+          "identifier": "Mob",
+          "value": "mob"
+        },
+        {
+          "desc": "`Monster.checkMonsterSpawnRules`: dark enough, not peaceful.",
+          "identifier": "Monster",
+          "value": "monster"
+        },
+        {
+          "desc": "`Monster.checkSurfaceMonstersSpawnRules`.",
+          "identifier": "SurfaceMonster",
+          "value": "surface_monster"
+        },
+        {
+          "desc": "`Monster.checkAnyLightMonsterSpawnRules`.",
+          "identifier": "AnyLightMonster",
+          "value": "any_light_monster"
+        },
+        {
+          "desc": "No check beyond the placement.",
+          "identifier": "Always",
+          "value": "always"
+        }
+      ]
+    },
     "::msm::definition::Tool": {
       "fields": [
         {
@@ -1253,6 +2804,116 @@
           "value": "sword"
         }
       ]
+    },
+    "::msm::definition::WanderGoal": {
+      "fields": [
+        {
+          "desc": "Speed multiplier; defaults to 1.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Whether to keep out of water; defaults to true.",
+          "key": "avoid_water",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::AnimatedModel": {
+      "fields": [
+        {
+          "desc": "An `msm:geo_model` element id, by convention `<ns>:entity/<name>`.",
+          "key": "model",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "An `msm:animation` element id, by convention `<ns>:entity/<name>_animations`.",
+          "key": "animations",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Texture id; `ns:entity/x` is `assets/ns/textures/entity/x.png`.",
+          "key": "texture",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Render scale; defaults to 1.",
+          "key": "scale",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0.01
+            }
+          }
+        },
+        {
+          "desc": "Animation looped while idle.",
+          "key": "idle",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Animation looped while moving.",
+          "key": "walk",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Animation played once on each melee hit.",
+          "key": "attack",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Ticks to blend between animations; defaults to 0.",
+          "key": "transition_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
     },
     "::msm::element::Block": {
       "fields": [
@@ -1414,6 +3075,78 @@
       ],
       "kind": "struct"
     },
+    "::msm::element::Entity": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::EntityCommon"
+          }
+        },
+        {
+          "desc": "Display name, lowered to the `entity.<ns>.<path>` language key.",
+          "key": "display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The spawn egg; absent means an egg in `minecraft:spawn_eggs`; `false` means no egg.",
+          "key": "spawn_egg",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "reference",
+                "path": "::msm::element::SpawnEgg"
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              }
+            ]
+          }
+        },
+        {
+          "desc": "Behaviour components; `msm:animated_model` is required.",
+          "key": "components",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::EntityComponents"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::EntityComponents": {
+      "fields": [
+        {
+          "key": "msm:animated_model",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::AnimatedModel"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::EntityBehaviourComponents"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::element::Item": {
       "fields": [
         {
@@ -1455,6 +3188,612 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::element::SpawnEgg": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::SpawnEgg"
+          }
+        },
+        {
+          "desc": "Item texture such as `mymod:item/ruby_golem_spawn_egg`, lowered to\n`assets/<ns>/items/<path>_spawn_egg.json` and a `minecraft:item/generated` model.",
+          "key": "texture",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Display name, lowered to the `item.<ns>.<path>_spawn_egg` language key.",
+          "key": "display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::geometry::Bone": {
+      "fields": [
+        {
+          "desc": "Unique bone name; animations address bones by it.",
+          "key": "name",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The parent bone's name; absent for a root bone.",
+          "key": "parent",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Pivot `[x, y, z]` that rotation and scale are applied about.",
+          "key": "pivot",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "float"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        },
+        {
+          "desc": "Rest rotation `[x, y, z]` in degrees.",
+          "key": "rotation",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "float"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        },
+        {
+          "desc": "Mirrors the box UV of every cube that does not set `mirror`.",
+          "key": "mirror",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Inflate for every cube that does not set `inflate`.",
+          "key": "inflate",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float"
+          }
+        },
+        {
+          "desc": "Cubes of the bone.",
+          "key": "cubes",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::geometry::Cube"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Named attachment points: a position `[x, y, z]` or an offset with a rotation.",
+          "key": "locators",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "union",
+                  "members": [
+                    {
+                      "item": {
+                        "kind": "float"
+                      },
+                      "kind": "list",
+                      "lengthRange": {
+                        "kind": 0,
+                        "max": 3,
+                        "min": 3
+                      }
+                    },
+                    {
+                      "kind": "reference",
+                      "path": "::msm::geometry::Locator"
+                    }
+                  ]
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        },
+        {
+          "desc": "Molang binding of an attachable; GeckoLib ignores it.",
+          "key": "binding",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Bedrock reset flag; GeckoLib ignores it.",
+          "key": "reset",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::geometry::BoneLocators": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "item": {
+                  "kind": "float"
+                },
+                "kind": "list",
+                "lengthRange": {
+                  "kind": 0,
+                  "max": 3,
+                  "min": 3
+                }
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::geometry::Locator"
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::geometry::Cube": {
+      "fields": [
+        {
+          "desc": "Lowest corner `[x, y, z]` in model units.",
+          "key": "origin",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "float"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        },
+        {
+          "desc": "Size `[x, y, z]` in model units.",
+          "key": "size",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "float"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        },
+        {
+          "desc": "Rotation pivot `[x, y, z]`.",
+          "key": "pivot",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "float"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        },
+        {
+          "desc": "Rotation `[x, y, z]` in degrees about `pivot`.",
+          "key": "rotation",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "float"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        },
+        {
+          "desc": "Grows the cube by this many units on every side without changing its UV.",
+          "key": "inflate",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float"
+          }
+        },
+        {
+          "desc": "Mirrors a box UV; defaults to the bone's `mirror`.",
+          "key": "mirror",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Box UV `[u, v]` (the top-left of the unfolded box) or per-face UVs.",
+          "key": "uv",
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "item": {
+                  "kind": "float"
+                },
+                "kind": "list",
+                "lengthRange": {
+                  "kind": 0,
+                  "max": 2,
+                  "min": 2
+                }
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::geometry::FaceUvs"
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::geometry::FaceUv": {
+      "fields": [
+        {
+          "desc": "Texture position `[u, v]` in pixels.",
+          "key": "uv",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "float"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 2,
+              "min": 2
+            }
+          }
+        },
+        {
+          "desc": "Texture size `[width, height]` in pixels; negative values mirror.",
+          "key": "uv_size",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "float"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 2,
+              "min": 2
+            }
+          }
+        },
+        {
+          "desc": "Rotation of the UV in degrees (0, 90, 180 or 270).",
+          "key": "uv_rotation",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int"
+          }
+        },
+        {
+          "desc": "Bedrock material instance; GeckoLib ignores it.",
+          "key": "material_instance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::geometry::FaceUvs": {
+      "fields": [
+        {
+          "key": "north",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::geometry::FaceUv"
+          }
+        },
+        {
+          "key": "south",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::geometry::FaceUv"
+          }
+        },
+        {
+          "key": "east",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::geometry::FaceUv"
+          }
+        },
+        {
+          "key": "west",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::geometry::FaceUv"
+          }
+        },
+        {
+          "key": "up",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::geometry::FaceUv"
+          }
+        },
+        {
+          "key": "down",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::geometry::FaceUv"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::geometry::Geometry": {
+      "fields": [
+        {
+          "desc": "Geometry format version, such as `1.12.0`; GeckoLib warns on unknown versions.",
+          "key": "format_version",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The geometries; GeckoLib uses the first.",
+          "key": "minecraft:geometry",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::geometry::GeometryDefinition"
+            },
+            "kind": "list"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::geometry::GeometryDefinition": {
+      "fields": [
+        {
+          "key": "description",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::geometry::GeometryDescription"
+          }
+        },
+        {
+          "desc": "Bones; absent means an empty model.",
+          "key": "bones",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::geometry::Bone"
+            },
+            "kind": "list"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::geometry::GeometryDescription": {
+      "fields": [
+        {
+          "desc": "The geometry id, such as `geometry.ruby_golem`.",
+          "key": "identifier",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Texture width in pixels.",
+          "key": "texture_width",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Texture height in pixels.",
+          "key": "texture_height",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Culling box width in blocks.",
+          "key": "visible_bounds_width",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float"
+          }
+        },
+        {
+          "desc": "Culling box height in blocks.",
+          "key": "visible_bounds_height",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float"
+          }
+        },
+        {
+          "desc": "Culling box offset `[x, y, z]` in blocks.",
+          "key": "visible_bounds_offset",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "float"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::geometry::Locator": {
+      "fields": [
+        {
+          "desc": "Position `[x, y, z]` in model units.",
+          "key": "offset",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "float"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        },
+        {
+          "desc": "Rotation `[x, y, z]` in degrees.",
+          "key": "rotation",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "float"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        }
+      ],
+      "kind": "struct"
     }
   },
   "mcdoc/dispatcher": {
@@ -1462,6 +3801,10 @@
       "give_item": {
         "kind": "reference",
         "path": "::msm::action::GiveItem"
+      },
+      "play_animation": {
+        "kind": "reference",
+        "path": "::msm::action::PlayAnimation"
       },
       "play_sound": {
         "kind": "reference",
@@ -1483,7 +3826,33 @@
         "kind": "reference",
         "path": "::msm::action::TriggerEvent"
       }
+    },
+    "msm:ai_goal": {
+      "flee": {
+        "kind": "reference",
+        "path": "::msm::definition::FleeGoal"
+      },
+      "follow": {
+        "kind": "reference",
+        "path": "::msm::definition::FollowGoal"
+      },
+      "look_around": {
+        "kind": "reference",
+        "path": "::msm::definition::LookAroundGoal"
+      },
+      "look_at_player": {
+        "kind": "reference",
+        "path": "::msm::definition::LookAtPlayerGoal"
+      },
+      "melee_attack": {
+        "kind": "reference",
+        "path": "::msm::definition::MeleeAttackGoal"
+      },
+      "wander": {
+        "kind": "reference",
+        "path": "::msm::definition::WanderGoal"
+      }
     }
   },
-  "ref": "msm-mcdoc:sha256:d15455b9e723d88c7d814ad80e9044f64da99490d060ab20e0dc42c26a63ff52"
+  "ref": "msm-mcdoc:sha256:a3655dc2db55eff88fcf2f0b7274e02fbc56f565e9e05f0406dbdf47ec74b427"
 }

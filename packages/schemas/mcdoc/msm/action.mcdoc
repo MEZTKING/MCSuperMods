@@ -16,6 +16,8 @@ enum(string) ActionType {
 	PlaySound = "play_sound",
 	/// Runs another event of the same definition.
 	TriggerEvent = "trigger_event",
+	/// Triggers a GeckoLib animation on the event's entity (entity definitions only; ADR 0028 D4).
+	PlayAnimation = "play_animation",
 }
 
 /// One action of an event, selected by `type`.
@@ -80,4 +82,14 @@ dispatch msm:action[play_sound] to struct PlaySound {
 dispatch msm:action[trigger_event] to struct TriggerEvent {
 	/// An event id declared in this definition's `events`.
 	event: string,
+}
+
+/// Triggers a GeckoLib animation on the event's entity (ADR 0028 D4). In a block or item
+/// definition, or on an entity without GeckoLib loaded, the runtime drops the action at load
+/// with a warning and runs the rest of the event.
+dispatch msm:action[play_animation] to struct PlayAnimation {
+	/// An animation name in the entity's animation file.
+	animation: string,
+	/// The GeckoLib controller that plays it; defaults to `msm_triggered`.
+	controller?: string,
 }

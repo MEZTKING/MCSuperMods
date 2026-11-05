@@ -55,6 +55,70 @@
     "code": "schema.invalid-enum",
     "path": "/events/mymod:x/actions/0/type"
   },
+  "entity-bad-category.json": {
+    "code": "schema.invalid-enum",
+    "path": "/category"
+  },
+  "entity-bad-placement.json": {
+    "code": "schema.invalid-enum",
+    "path": "/spawn/placement"
+  },
+  "entity-flee-missing-from.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:ai_goals/goals/0/from"
+  },
+  "entity-format-2.json": {
+    "code": "schema.invalid-literal",
+    "path": "/format"
+  },
+  "entity-goal-priority-fraction.json": {
+    "code": "schema.not-integer",
+    "path": "/components/msm:ai_goals/goals/0/priority"
+  },
+  "entity-health-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:health/max"
+  },
+  "entity-max-group-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/spawn/max_group"
+  },
+  "entity-missing-animated-model.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:animated_model"
+  },
+  "entity-missing-size.json": {
+    "code": "schema.missing-field",
+    "path": "/size"
+  },
+  "entity-model-missing-texture.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:animated_model/texture"
+  },
+  "entity-play-animation-missing-animation.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:x/actions/0/animation"
+  },
+  "entity-spawn-egg-true.json": {
+    "code": "schema.no-union-match",
+    "path": "/spawn_egg"
+  },
+  "entity-spawn-weight-zero.json": {
+    "code": "schema.out-of-range",
+    "path": "/spawn/weight"
+  },
+  "entity-unknown-action.json": {
+    "code": "schema.invalid-enum",
+    "path": "/events/mymod:x/actions/0/type"
+  },
+  "entity-unknown-goal-type.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:ai_goals/goals/0/type"
+  },
+  "entity-width-too-large.json": {
+    "code": "schema.out-of-range",
+    "path": "/size/width"
+  },
   "item-actions-not-list.json": {
     "code": "schema.type-mismatch",
     "path": "/events/mymod:x/actions"

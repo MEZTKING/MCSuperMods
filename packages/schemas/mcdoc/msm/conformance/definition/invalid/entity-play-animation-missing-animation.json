@@ -1,0 +1,24 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/ruby_golem",
+      "texture": "mymod:entity/ruby_golem"
+    }
+  },
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "controller": "main",
+          "type": "play_animation"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "animations": {
+    "animation.ruby_golem.attack": {
+      "anim_time_update": "q.anim_time + q.delta_time",
+      "animation_length": 0.75,
+      "blend_weight": "q.is_moving ? 0.5 : 1.0",
+      "bones": {
+        "arm": {
+          "rotation": {
+            "0.0": [0.0, 0.0, 0.0],
+            "0.375": [-90.0, 0.0, 0.0]
+          }
+        }
+      },
+      "loop": "hold_on_last_frame",
+      "loop_delay": "0.5",
+      "override_previous_animation": true,
+      "particle_effects": {
+        "0.375": {
+          "effect": "crit",
+          "locator": "hand"
+        }
+      },
+      "sound_effects": {
+        "0.375": {
+          "effect": "attack"
+        }
+      },
+      "start_delay": 0.1,
+      "timeline": {
+        "0.75": "v.done = 1;"
+      }
+    },
+    "animation.ruby_golem.spin": {
+      "blend_weight": 0.5,
+      "bones": {},
+      "loop": false,
+      "loop_delay": 1.0,
+      "start_delay": 0
+    }
+  },
+  "format_version": "1.8.0"
+}

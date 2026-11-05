@@ -1,0 +1,79 @@
+// Bedrock animation subset, the data of the `msm:animation` element (ADR 0029 D2): the JSON
+// GeckoLib reads from `assets/<ns>/geckolib/animations/<path>.animation.json`. Strings in
+// values are Molang expressions and are accepted as they are.
+
+/// A vector value: `[x, y, z]` (numbers or Molang strings), one number or Molang string for all
+/// three axes.
+type Vec3Value = ([(float | string)] @ 3 | float | string)
+
+/// A keyframe with separate values before and after its time.
+struct Keyframe {
+	/// Value approaching the keyframe.
+	pre?: Vec3Value,
+	/// Value leaving the keyframe.
+	post?: Vec3Value,
+	/// Interpolation towards the next keyframe; defaults to `linear`.
+	lerp_mode?: ("linear" | "catmullrom"),
+}
+
+/// A bone channel: a constant value, or keyframes keyed by time in seconds (such as `"0.5"`).
+type Channel = (
+	Vec3Value |
+	struct ChannelKeyframes {
+		[string]: (Vec3Value | Keyframe),
+	}
+)
+
+/// The channels of one bone.
+struct BoneAnimation {
+	/// Rotation in degrees.
+	rotation?: Channel,
+	/// Translation in model units.
+	position?: Channel,
+	/// Scale factors.
+	scale?: Channel,
+}
+
+/// One animation.
+struct Animation {
+	/// `true` loops, `"hold_on_last_frame"` stops on the last frame; defaults to `false`.
+	loop?: (boolean | "hold_on_last_frame"),
+	/// Length in seconds; defaults to the last keyframe.
+	animation_length?: float @ 0..,
+	/// Seconds (or a Molang expression) before the animation starts.
+	start_delay?: (float | string),
+	/// Seconds (or a Molang expression) between two loops.
+	loop_delay?: (float | string),
+	/// Blend weight (or a Molang expression).
+	blend_weight?: (float | string),
+	/// Whether the animation replaces the bone values of earlier animations.
+	override_previous_animation?: boolean,
+	/// Molang expression that advances the animation time.
+	anim_time_update?: string,
+	/// Channels by bone name.
+	bones?: struct AnimationBones {
+		[string]: BoneAnimation,
+	},
+	/// Particle keyframes by time; GeckoLib hands them to the entity's keyframe handlers.
+	particle_effects?: struct ParticleEffects {
+		[string]: any,
+	},
+	/// Sound keyframes by time; GeckoLib hands them to the entity's keyframe handlers.
+	sound_effects?: struct SoundEffects {
+		[string]: any,
+	},
+	/// Instruction keyframes by time; GeckoLib hands them to the entity's keyframe handlers.
+	timeline?: struct Timeline {
+		[string]: any,
+	},
+}
+
+/// A Bedrock animation file (`.animation.json`).
+struct Animations {
+	/// Animation format version, such as `1.8.0`.
+	format_version: string,
+	/// Animations by name, such as `animation.ruby_golem.walk`.
+	animations: struct AnimationMap {
+		[string]: Animation,
+	},
+}

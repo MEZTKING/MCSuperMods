@@ -1,0 +1,8 @@
+{
+  "animations": {
+    "a": {
+      "override_previous_animation": "yes"
+    }
+  },
+  "format_version": "1.8.0"
+}

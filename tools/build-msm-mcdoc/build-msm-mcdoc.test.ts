@@ -35,8 +35,10 @@ describe('build-msm-mcdoc', () => {
   it('the checked-in symbols.json matches a fresh export of the mcdoc sources', async () => {
     expect(await listSources(SOURCE_DIR)).toEqual([
       'action.mcdoc',
+      'animation.mcdoc',
       'definition.mcdoc',
       'element.mcdoc',
+      'geometry.mcdoc',
       'mod.mcdoc',
     ]);
     const fresh = await exportMsmMcdoc();
