@@ -5,8 +5,10 @@ import {
   builtInTargets,
   defaultTargetId,
   readVendoredJson,
+  releaseTargets,
   type TargetBundle,
   targetById,
+  targetFacts,
   type VendoredKey,
 } from '../src/index';
 
@@ -61,8 +63,51 @@ describe('builtInTargets', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('defaults to the first (newest) target', () => {
-    expect(defaultTargetId).toBe(builtInTargets[0]?.target.id);
+  it('is ordered newest first by Minecraft version', () => {
+    const versions = builtInTargets.map((bundle) => bundle.target.mcVersion);
+    const sorted = [...versions].sort((a, b) =>
+      b.localeCompare(a, 'en', { numeric: true, sensitivity: 'base' }),
+    );
+    expect(versions).toEqual(sorted);
+  });
+
+  it('holds at least one release and one snapshot target', () => {
+    const channels = new Set(builtInTargets.map((bundle) => bundle.target.channel));
+    expect(channels).toEqual(new Set(['release', 'snapshot']));
+  });
+
+  it('lists the release targets in order', () => {
+    expect(releaseTargets.length).toBeGreaterThan(0);
+    expect(releaseTargets).toEqual(
+      builtInTargets.filter((bundle) => bundle.target.channel === 'release'),
+    );
+  });
+
+  it('defaults to the newest release target, never a snapshot', () => {
+    const firstRelease = builtInTargets.find((bundle) => bundle.target.channel === 'release');
+    expect(defaultTargetId).toBe(firstRelease?.target.id);
+    expect(targetById(defaultTargetId)?.target.channel).toBe('release');
+    // The newest target is a snapshot while 26.4 is unreleased, so the default is not it.
+    if (builtInTargets[0]?.target.channel === 'snapshot') {
+      expect(defaultTargetId).not.toBe(builtInTargets[0].target.id);
+    }
+  });
+
+  it('returns target facts without hooks that survive structuredClone', () => {
+    for (const { target } of builtInTargets) {
+      const facts = targetFacts(target.id);
+      expect(facts).toBeDefined();
+      if (facts === undefined) continue;
+      expect(facts).not.toHaveProperty('javaProject');
+      expect(facts).not.toHaveProperty('migrateFrom');
+      expect(facts.id).toBe(target.id);
+      expect(facts.channel).toBe(target.channel);
+      expect(facts.fabric).toEqual(target.fabric);
+      expect(facts.geckolib).toEqual(target.geckolib);
+      expect(structuredClone(facts)).toEqual(facts);
+      expect(facts.fabric).not.toBe(target.fabric);
+    }
+    expect(targetFacts('mc-0.0')).toBeUndefined();
   });
 
   it('round-trips through targetById', () => {
@@ -85,9 +130,11 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
   (_id, bundle) => {
     const { target } = bundle;
 
-    it('has an id derived from its Minecraft version', () => {
+    it('has an id derived from its Minecraft version line', () => {
+      // The version up to the first '-' (`<line>-snapshot-<n>` belongs to `mc-<line>`).
       expect(target.id).toMatch(/^mc-/);
-      expect(target.id).toBe(`mc-${target.mcVersion}`);
+      expect(target.id).toBe(`mc-${target.mcVersion.split('-')[0]}`);
+      if (target.channel === 'release') expect(target.id).toBe(`mc-${target.mcVersion}`);
     });
 
     it('names every resource pack folder', () => {

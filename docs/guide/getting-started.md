@@ -16,7 +16,7 @@ MCSuperMods updates itself. A few seconds after start-up, and then every six hou
 
 New project, New from starter, Open project and the Examples gallery's **Open as new project…** open their folder picker where you last chose a project folder.
 
-Starters and the Examples gallery come with the first release after 0.2.1. To run the very latest code instead, see [Try it](../../README.md#try-it) in the README.
+Starters and the Examples gallery come with the first release after 0.2.1. To run the very latest code instead, see [Try it](https://github.com/MEZTKING/MCSuperMods/blob/main/README.md#try-it) in the README.
 
 ## 2. First launch: tell MCSuperMods where Minecraft is
 
@@ -30,7 +30,7 @@ Choose **Settings** on the toolbar (or **File → Settings…**).
 - A portable Prism, MultiMC, PolyMC or a moved CurseForge folder is added under **Other launchers**.
 - A new instance has no game folder until it has run once. If a row says "Start the instance once so its game folder exists.", launch it once from its launcher and close it.
 
-The README section [Using Prism Launcher or the CurseForge app](../../README.md#using-prism-launcher-or-the-curseforge-app) has every detail.
+The README section [Using Prism Launcher or the CurseForge app](https://github.com/MEZTKING/MCSuperMods/blob/main/README.md#using-prism-launcher-or-the-curseforge-app) has every detail.
 
 **Vanilla assets.** The 3D preview draws your models with the game's own textures. MCSuperMods never ships Mojang files; it copies them from the Minecraft you installed. Under **Vanilla assets** choose **Extract vanilla assets**. If it cannot find Minecraft 26.3, start that version once in any launcher, then try again.
 
@@ -156,10 +156,10 @@ Press **Ctrl+Shift+P** to open the command palette and type part of a command's 
 ## Where next
 
 - [Templates, starters and examples](templates-and-examples.md): every template, starter and example, and the Examples gallery.
-- [Known limitations](../../README.md#known-limitations) in the README.
+- [Known limitations](https://github.com/MEZTKING/MCSuperMods/blob/main/README.md#known-limitations) in the README.
 - [Structures](structures.md) and [Worldgen](worldgen.md): jigsaw structures, custom biomes and World Types.
 - [Blocks and items](blocks-and-items.md): exporting the Fabric mod jar and the separate runtime for modpacks.
 - [Entities and models](entities-and-models.md): animated mobs. Create a project from the **Custom mob** starter (a Ruby Golem with its model, animations and spawn egg), or import a model with **File → Import Blockbench Model…** and give it a body and behaviour in the Entity Studio; the Fabric mod jar then carries GeckoLib too.
 - [Scripting](scripting.md): behaviour in TypeScript. Create a project from the **Scripted ore** starter, or add a script from the **Block interaction script** template under **Scripts** in **Add element**; the Script Studio completes `msm.` as you type, and the Fabric mod jar carries the scripts into the game.
 - [Eject to a Java project](eject.md): **File → Export Java Project…** writes a standalone Fabric Gradle project with generated Java that no longer needs `msm_runtime`, for when you want to carry on in code.
-- The [roadmap](../ROADMAP.md): what comes after scripting.
+- The [roadmap](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/ROADMAP.md): what comes after scripting.

@@ -9,6 +9,7 @@
   "references": [
     { "path": "../../plugin-api" },
     { "path": "../../schemas" },
-    { "path": "../mc-26.3" }
+    { "path": "../mc-26.3" },
+    { "path": "../mc-26.4" }
   ]
 }

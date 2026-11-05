@@ -4,28 +4,14 @@ import { defineConfig } from 'vitepress';
 
 /**
  * The MCSuperMods documentation site (ADR 0039): the user guide in `docs/guide/`, built by
- * VitePress and deployed to GitHub Pages under `/MCSuperMods/`. B158 fills the navigation.
+ * VitePress and deployed to GitHub Pages under `/MCSuperMods/` by `.github/workflows/docs.yml`.
  *
- * Dead links fail the build. `MSM_SITE_IGNORE_DEAD_LINKS=1` ignores every dead link.
+ * Dead links fail the build. Guide pages link to repository files outside `docs/guide/` with
+ * absolute `https://github.com/MEZTKING/MCSuperMods/blob/main/…` URLs (ADR 0039 D2), so every
+ * relative link must resolve to another guide page.
  */
-const ignoreAllDeadLinks = process.env.MSM_SITE_IGNORE_DEAD_LINKS === '1';
 
-/**
- * The guide's relative links to repository files outside the guide, dead on the site until
- * B158 rewrites them as absolute GitHub URLs; listed so that `pnpm build` (which builds every
- * package) passes meanwhile, while any other dead link still fails the build. B158 deletes
- * this list.
- */
-const KNOWN_REPOSITORY_LINKS = [
-  './../../README',
-  './../../examples/README',
-  './../../fixtures/sample-mob/README',
-  './../../fixtures/sample-script/README',
-  './../../fixtures/sample-worldgen/README',
-  './../DESIGN',
-  './../ROADMAP',
-  './../adr/0020-templates-starters-examples',
-];
+const repository = 'https://github.com/MEZTKING/MCSuperMods';
 
 /**
  * The pages live outside this package (`srcDir` is `../guide`), where pnpm's strict layout
@@ -41,12 +27,43 @@ export default defineConfig({
   lang: 'en-GB',
   // The guide's index is README.md (it also renders on GitHub); serve it as the home page.
   rewrites: { 'README.md': 'index.md' },
-  ignoreDeadLinks: ignoreAllDeadLinks ? true : KNOWN_REPOSITORY_LINKS,
+  ignoreDeadLinks: false,
+  lastUpdated: false,
   // The guide is plain Markdown that also renders on GitHub, and its prose names placeholders
   // such as <namespace>: treat raw HTML as text so Vue does not read them as elements.
   markdown: { html: false },
   vite: { resolve: { alias: [{ find: /^vue(?=$|\/)/, replacement: vueRoot }] } },
   themeConfig: {
-    sidebar: [],
+    nav: [
+      { text: 'Guide', link: '/getting-started' },
+      { text: 'GitHub', link: repository },
+    ],
+    // The order of the guide index table (docs/guide/README.md).
+    sidebar: [
+      {
+        text: 'Guide',
+        items: [
+          { text: 'Overview', link: '/' },
+          { text: 'Getting started', link: '/getting-started' },
+          { text: 'Structures', link: '/structures' },
+          { text: 'Worldgen', link: '/worldgen' },
+          { text: 'Blocks and items', link: '/blocks-and-items' },
+          { text: 'Entities and models', link: '/entities-and-models' },
+          { text: 'Scripting', link: '/scripting' },
+          { text: 'Eject to a Java project', link: '/eject' },
+        ],
+      },
+      {
+        text: 'Reference',
+        items: [{ text: 'Templates, starters and examples', link: '/templates-and-examples' }],
+      },
+    ],
+    outline: [2, 3],
+    search: { provider: 'local' },
+    socialLinks: [{ icon: 'github', link: repository }],
+    footer: {
+      message: 'Released under the MIT Licence.',
+      copyright: 'Copyright (c) 2026 MEZTKING and MCSuperMods contributors',
+    },
   },
 });

@@ -8,6 +8,8 @@ async function readJson(relative: string): Promise<Record<string, unknown>> {
 }
 
 describe('target mc-26.3', () => {
+  it('is a release target', () => expect(target.channel).toBe('release'));
+
   it('sets the Fabric toolchain versions', () => {
     expect(target.fabric).toEqual({
       loader: '0.20.1',

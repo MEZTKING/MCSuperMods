@@ -9,7 +9,7 @@ Worldgen elements are listed in the sidebar's **Worldgen** group, with their reg
 Click the arrow next to **New** and choose **New from starter…**. Under Themed content there are two worldgen starters:
 
 - **Custom biome**: the Amber Woods biome with its own tree and copper ore, a World Type that offers it, and English names for both.
-- **Custom biome with a jigsaw structure**: the same biome plus a jigsaw hamlet that generates in it and in every vanilla forest. This is the project in [`fixtures/sample-worldgen/`](../../fixtures/sample-worldgen/README.md).
+- **Custom biome with a jigsaw structure**: the same biome plus a jigsaw hamlet that generates in it and in every vanilla forest. This is the project in [`fixtures/sample-worldgen/`](https://github.com/MEZTKING/MCSuperMods/blob/main/fixtures/sample-worldgen/README.md).
 
 Element ids are unique across kinds in a project, so linked elements have different ids: the configured feature `amber_tree` and the placed feature `amber_tree_placed`, the structure `hamlet` and its structure set `hamlets`. Minecraft would allow the same name in different folders; MCSuperMods does not. Some templates start a link pointing at the new element's own id; their description says so, and you point the field at the real element after creating it.
 
@@ -68,10 +68,10 @@ Dimensions (**Multi-noise overworld**, **Single-biome dimension**) and the eleme
 
 ## Check it in the game
 
-The full in-game check of the sample biome, World Type and hamlet is in the [sample worldgen README](../../fixtures/sample-worldgen/README.md#in-game-check-windows-minecraft-java-263): install or copy the data pack, choose the World Type when creating a world, then `/locate biome` and `/locate structure`, and look for `Feature order cycle` and other errors in `latest.log`.
+The full in-game check of the sample biome, World Type and hamlet is in the [sample worldgen README](https://github.com/MEZTKING/MCSuperMods/blob/main/fixtures/sample-worldgen/README.md#in-game-check-windows-minecraft-java-263): install or copy the data pack, choose the World Type when creating a world, then `/locate biome` and `/locate structure`, and look for `Feature order cycle` and other errors in `latest.log`.
 
 ## Where next
 
 - [Structures](structures.md): jigsaw structures and how they generate.
 - [Templates, starters and examples](templates-and-examples.md).
-- [Known limitations](../../README.md#known-limitations).
+- [Known limitations](https://github.com/MEZTKING/MCSuperMods/blob/main/README.md#known-limitations).

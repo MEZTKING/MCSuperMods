@@ -18,6 +18,6 @@
     "fabric-api": "*"
   },
   "suggests": {
-    "geckolib": ">=${geckolib_version}"
+${geckolib_suggests}
   }
 }

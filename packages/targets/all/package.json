@@ -16,7 +16,8 @@
   "dependencies": {
     "@msm/plugin-api": "workspace:*",
     "@msm/schemas": "workspace:*",
-    "@msm/target-mc-26.3": "workspace:*"
+    "@msm/target-mc-26.3": "workspace:*",
+    "@msm/target-mc-26.4": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

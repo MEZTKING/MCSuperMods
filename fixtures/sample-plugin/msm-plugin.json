@@ -1,0 +1,14 @@
+{
+  "apiVersion": "^1.0.0",
+  "author": "MCSuperMods",
+  "capabilities": ["elementKinds", "elementTemplates", "examples", "validators"],
+  "description": "Sample external plugin: a greeting element that says hello to every player when the world loads.",
+  "homepage": "https://github.com/MEZTKING/MCSuperMods/tree/main/fixtures/sample-plugin",
+  "id": "sample.greetings",
+  "licence": "MIT",
+  "main": "main.js",
+  "manifestVersion": 1,
+  "name": "Greetings",
+  "schemas": ["symbols.json"],
+  "version": "1.0.0"
+}

@@ -1,0 +1,11 @@
+// The data of a `sample:greeting` element. The build exports this folder with
+// `@spyglassmc/mcdoc-cli` to `dist/symbols.json`; the module path comes from the plugin's
+// namespace (`sample`) and the file name, so the type is `::sample::greeting::Greeting`.
+
+/// A message shown to every player when the world loads.
+struct Greeting {
+	/// The text shown to every player.
+	message: string,
+	/// A text colour name such as `gold`, or `#rrggbb`. White when omitted.
+	colour?: string,
+}

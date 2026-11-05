@@ -4,25 +4,35 @@ plugins {
     id("net.fabricmc.fabric-loom") // version from settings.gradle.kts (loom_version)
 }
 
-// `-Pmc=<version>` reads the Minecraft, Fabric and GeckoLib facts from versions/<version>.properties
-// (ADR 0038 D1, B151 spike; B159 finishes the layout). Without it gradle.properties holds them as before.
-val mc: String? = providers.gradleProperty("mc").orNull
-val versionFacts: Properties? =
-    mc?.let { selected ->
-        val file = layout.projectDirectory.file("versions/$selected.properties").asFile
-        require(file.isFile) { "No engine-mod/versions/$selected.properties for -Pmc=$selected" }
-        Properties().also { properties -> file.inputStream().use { properties.load(it) } }
-    }
+// `-Pmc=<version>` (default: gradle.properties default_mc) reads the Minecraft, Loader, Fabric API and
+// GeckoLib facts and the fabric.mod.json "minecraft" range from versions/<version>.properties (ADR 0038 D1).
+val mc: String = providers.gradleProperty("mc").orNull ?: providers.gradleProperty("default_mc").get()
 
-fun fact(name: String): String =
-    if (versionFacts == null) {
-        providers.gradleProperty(name).get()
-    } else {
-        versionFacts.getProperty(name) ?: error("versions/$mc.properties has no $name")
-    }
+fun readVersionFacts(selected: String): Properties {
+    val file = layout.projectDirectory.file("versions/$selected.properties")
+    require(file.asFile.isFile) { "No engine-mod/versions/$selected.properties for -Pmc=$selected" }
+    return Properties().also { it.load(java.io.StringReader(providers.fileContents(file).asText.get())) }
+}
+val versionFacts: Properties = readVersionFacts(mc)
 
-// The jar carries the Minecraft version as build metadata only when -Pmc is given (ADR 0038 D3).
-version = providers.gradleProperty("mod_version").get() + (mc?.let { "+mc$it" } ?: "")
+/** A fact of the selected version; blank values are allowed (GeckoLib on a version without a build). */
+fun fact(name: String): String = versionFacts.getProperty(name)?.trim() ?: error("versions/$mc.properties has no $name")
+
+// gradle.properties mirrors the default version's Fabric facts for tools/check-deps only; keep them equal.
+run {
+    val defaultMc = providers.gradleProperty("default_mc").get()
+    val defaultFacts = if (defaultMc == mc) versionFacts else readVersionFacts(defaultMc)
+    for (key in listOf("minecraft_version", "loader_version", "loom_version", "fabric_api_version")) {
+        val mirrored = providers.gradleProperty(key).orNull
+        val expected = defaultFacts.getProperty(key)?.trim()
+        require(mirrored == expected) {
+            "gradle.properties $key=$mirrored differs from versions/$defaultMc.properties ($expected); keep the mirror equal"
+        }
+    }
+}
+
+// Fabric semver build metadata (ADR 0038 D3): msm_runtime-<mod_version>+mc<mc>.jar.
+version = providers.gradleProperty("mod_version").get() + "+mc$mc"
 group = providers.gradleProperty("maven_group").get()
 
 base {
@@ -93,10 +103,10 @@ dependencies {
     // Non-remapping Loom has no mod* configurations: a plain jar with a fabric.mod.json on the run classpath is
     // discovered by Fabric Loader as a mod. `localRuntime` puts it on runClient, runServer and runGameTest without
     // exposing it to consumers; -PwithoutGeckolib leaves it off to check the runtime without GeckoLib.
-    // A version without a GeckoLib build (blank id, such as 26.4) compiles the bridge against the 26.3 jar
-    // from gradle.properties and never puts GeckoLib on the run classpath (ADR 0038 D3).
+    // A version without a GeckoLib build (blank id, such as 26.4) compiles the bridge against
+    // geckolib_compile_fallback_version_id and never puts GeckoLib on the run classpath (ADR 0038 D3).
     val geckolibId = fact("geckolib_modrinth_version_id")
-    val geckolib = "maven.modrinth:geckolib:${geckolibId.ifBlank { providers.gradleProperty("geckolib_modrinth_version_id").get() }}"
+    val geckolib = "maven.modrinth:geckolib:${geckolibId.ifBlank { providers.gradleProperty("geckolib_compile_fallback_version_id").get() }}"
     compileOnly(geckolib)
     "gametestCompileOnly"(geckolib)
     if (geckolibId.isNotBlank() && !providers.gradleProperty("withoutGeckolib").isPresent) {
@@ -105,37 +115,31 @@ dependencies {
 }
 
 tasks.processResources {
-    val version = project.version
-    val geckolibVersion = fact("geckolib_version").ifBlank { providers.gradleProperty("geckolib_version").get() }
+    val version = project.version.toString()
+    // "suggests" names GeckoLib only for a version with a GeckoLib build (the 26.3 output is unchanged).
+    val geckolibVersion = fact("geckolib_version")
+    val geckolibSuggests = if (geckolibVersion.isBlank()) "" else "    \"geckolib\": \">=$geckolibVersion\""
     val minecraftDependency = fact("minecraft_dependency")
     inputs.property("version", version)
-    inputs.property("geckolibVersion", geckolibVersion)
+    inputs.property("geckolibSuggests", geckolibSuggests)
     inputs.property("minecraftDependency", minecraftDependency)
     filesMatching("fabric.mod.json") {
         expand(
             "version" to version,
-            "geckolib_version" to geckolibVersion,
+            "geckolib_suggests" to geckolibSuggests,
             "minecraft_dependency" to minecraftDependency,
         )
     }
 }
 
-// B151 spike overlay (ADR 0038 D2; B159 replaces it with seams): with -Pmc, src/mc/<mc>/java joins the
-// main source set and src/mc/<mc>/gametest the gametest source set; each file an overlay holds replaces
-// the file of the same relative path in src/main/java or src/gametest/java.
-fun overlay(sourceSet: String, overlayName: String, sharedName: String, compileTask: String, sourcesJar: String?) {
-    val overlayDir = mc?.let { layout.projectDirectory.dir("src/mc/$it/$overlayName").asFile } ?: return
-    if (!overlayDir.isDirectory) return
-    val sharedDir = layout.projectDirectory.dir("src/$sharedName/java").asFile.absolutePath + File.separator
-    val replaced: Set<String> =
-        overlayDir.walkTopDown().filter { it.isFile }.map { it.relativeTo(overlayDir).invariantSeparatorsPath }.toSet()
-    sourceSets.named(sourceSet) { java.srcDir(overlayDir) }
-    val shadowed = Spec<FileTreeElement> { it.file.absolutePath.startsWith(sharedDir) && it.relativePath.pathString in replaced }
-    tasks.named<JavaCompile>(compileTask) { exclude(shadowed) }
-    if (sourcesJar != null) tasks.withType<Jar>().matching { it.name == sourcesJar }.configureEach { exclude(shadowed) }
+// Version overlays (ADR 0038 D2): src/mc/<mc>/java joins the main source set and src/mc/<mc>/gametest the
+// gametest source set. They hold only the seams (one implementation per version of each, same class name);
+// the shared code never names a class that exists in one version only.
+for ((sourceSet, overlay) in listOf("main" to "java", "gametest" to "gametest")) {
+    val dir = layout.projectDirectory.dir("src/mc/$mc/$overlay")
+    require(dir.asFile.isDirectory) { "No engine-mod/src/mc/$mc/$overlay: every version provides its seams" }
+    sourceSets.named(sourceSet) { java.srcDir(dir) }
 }
-overlay("main", "java", "main", "compileJava", "sourcesJar")
-overlay("gametest", "gametest", "gametest", "compileGametestJava", null)
 
 tasks.withType<JavaCompile>().configureEach {
     options.release = 25

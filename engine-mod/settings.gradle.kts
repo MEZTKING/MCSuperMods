@@ -7,19 +7,15 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
-    // `-Pmc=<version>` selects engine-mod/versions/<version>.properties (ADR 0038 D1, B151 spike);
-    // without it gradle.properties holds the facts as before. Only loom_version is read here.
-    val mc: String? = providers.gradleProperty("mc").orNull
+    // `-Pmc=<version>` (default: gradle.properties default_mc) selects versions/<version>.properties
+    // (ADR 0038 D1); only loom_version is read here, build.gradle.kts reads the rest.
+    val mc: String = providers.gradleProperty("mc").orNull ?: providers.gradleProperty("default_mc").get()
+    val versionFile = settingsDir.resolve("versions/$mc.properties")
+    require(versionFile.isFile) { "No engine-mod/versions/$mc.properties for -Pmc=$mc" }
+    val versionFacts = java.util.Properties()
+    versionFacts.load(java.io.StringReader(providers.fileContents(layout.rootDirectory.file("versions/$mc.properties")).asText.get()))
     val loomVersion: String =
-        if (mc == null) {
-            providers.gradleProperty("loom_version").get()
-        } else {
-            val file = settingsDir.resolve("versions/$mc.properties")
-            require(file.isFile) { "No engine-mod/versions/$mc.properties for -Pmc=$mc" }
-            val properties = java.util.Properties()
-            file.inputStream().use { properties.load(it) }
-            properties.getProperty("loom_version") ?: error("versions/$mc.properties has no loom_version")
-        }
+        versionFacts.getProperty("loom_version")?.trim()?.ifBlank { null } ?: error("versions/$mc.properties has no loom_version")
     plugins {
         id("net.fabricmc.fabric-loom") version loomVersion
     }

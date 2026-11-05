@@ -2144,3 +2144,23 @@ Next:
 
 **Next**
 - B153: register `mc-26.4`, migration; B154: a `Target` with hook functions cannot be structured-cloned, so send `TargetFacts` without hooks to workers, and replace the `requireSyncResult` sites with awaits where the UI allows; B157: replace the sample-plugin placeholders; B158: rewrite the links, delete `KNOWN_REPOSITORY_LINKS`.
+
+## 2026-11-05 — executor — B158: documentation site, CONTRIBUTING.md, guide links
+
+**What**
+- `docs/site/.vitepress/config.ts`: nav (Guide, GitHub), sidebar in the guide index order (Overview, Getting started, the six content guides; "Reference": Templates, starters and examples), `outline: [2, 3]`, `lastUpdated: false`, local search, GitHub social link, MIT footer, `ignoreDeadLinks: false`. `KNOWN_REPOSITORY_LINKS` and the `MSM_SITE_IGNORE_DEAD_LINKS` escape flag deleted. VitePress `2.0.0-alpha.21` builds the guide (no fallback to 1.6.4; `package.json` untouched).
+- Guide links (ADR 0039 D2): the 17 remaining repository links in `docs/guide/*.md` (the CHANGELOG link was already done) rewritten to `https://github.com/MEZTKING/MCSuperMods/blob/main/<path>`, anchors kept; no other text changed. Every target file exists in the tree and the anchors match the headings.
+- `.github/workflows/docs.yml`: push to `main` and `workflow_dispatch`; `contents: read`, `pages: write`, `id-token: write`; concurrency `pages`; build job (checkout v7, pnpm/action-setup v6, setup-node v7 with `.nvmrc`, frozen install, `pnpm --filter @msm/site build`, configure-pages v6, upload-pages-artifact v5 with `docs/site/.vitepress/dist`), deploy job (deploy-pages v5, `github-pages` environment). Majors checked 2026-11-05 with `git ls-remote --tags`.
+- `CONTRIBUTING.md` and `.github/PULL_REQUEST_TEMPLATE.md`.
+- Checks: `pnpm --filter @msm/site build` and `turbo run build --force --filter=@msm/site` pass; an injected dead link fails the build; `npx biome ci .` and `pnpm lint` clean; `docs.yml` parses as YAML (actionlint not installed; read by hand).
+
+**Decisions**
+- Two jobs (build, deploy) so the deploy alone needs the `github-pages` environment; `cancel-in-progress: false` so a running deployment is not cut off.
+- The VitePress footer shows only on pages without a sidebar, so on this site it is effectively hidden; kept as configured by the brief.
+- The bug-report section names the version via the installer file name or Help → What's New… (the app has no About item).
+
+**Next**
+- Repository owner: Settings > Pages > Build and deployment > Source: GitHub Actions (once).
+- `turbo.json` (not B158's): `@msm/site#build` should declare `inputs` including `$TURBO_ROOT$/docs/guide/**` and `outputs` `.vitepress/dist/**`; today turbo does not see guide edits (local cache can hide a dead link) and warns about missing outputs.
+- `CHANGELOG.md` is not on `main` yet; its link resolves once the branch is fast-forwarded.
+- B161: point CONTRIBUTING's plugin link at `docs/guide/plugins.md`, add Plugins and Targets to the sidebar.
