@@ -1,5 +1,5 @@
 import type { Json, ResourceLocation } from '@msm/core';
-import type { TargetFacts } from '@msm/plugin-api';
+import type { MaybePromise, TargetFacts } from '@msm/plugin-api';
 import { Dialog } from 'radix-ui';
 import { type FormEvent, type ReactNode, useId, useState } from 'react';
 import { useUiStore } from '../store/ui-store';

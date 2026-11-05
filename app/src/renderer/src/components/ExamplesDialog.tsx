@@ -8,10 +8,9 @@
  * @packageDocumentation
  */
 
-import { requireSyncResult } from '@msm/core';
 import type { ContentBundle, ExampleProject, TargetFacts } from '@msm/plugin-api';
 import { Dialog } from 'radix-ui';
-import { useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { categorySlug, fieldClass } from './NewElementDialog';
 import { Button } from './ui/Button';
 
@@ -64,19 +63,25 @@ export function copyDisabledReason(namespaces: readonly string[] | null): string
 /** The namespace the detail pane previews with when no project namespace is known. */
 const PREVIEW_NAMESPACE = 'my_project';
 
+const errorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
+
+/**
+ * The bundle an example builds for the preview, or why it cannot be built. A built-in
+ * example answers at once; a third-party plugin's resolves through its worker (ADR 0035 D3),
+ * so the result may be a Promise.
+ */
 function previewBundle(
   example: ExampleProject,
   namespace: string,
   target: TargetFacts | null,
-): ContentBundle | string {
+): ContentBundle | string | Promise<ContentBundle | string> {
   try {
     if (target === null) throw new Error('No Minecraft target is available.');
-    return requireSyncResult(
-      example.build({ namespace, projectName: namespace, target, values: {} }),
-      `The example "${example.id}"`,
-    );
+    const built = example.build({ namespace, projectName: namespace, target, values: {} });
+    return built instanceof Promise ? built.catch(errorMessage) : built;
   } catch (error) {
-    return error instanceof Error ? error.message : String(error);
+    return errorMessage(error);
   }
 }
 
@@ -131,13 +136,33 @@ export function ExamplesDialog(props: ExamplesDialogProps) {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const bundle = useMemo(
+  const built = useMemo(
     () =>
       selected === undefined
         ? undefined
         : previewBundle(selected, namespace ?? PREVIEW_NAMESPACE, props.target),
     [selected, namespace, props.target],
   );
+  const [resolved, setResolved] = useState<{
+    from: Promise<ContentBundle | string>;
+    value: ContentBundle | string;
+  } | null>(null);
+  useEffect(() => {
+    if (!(built instanceof Promise)) return;
+    let live = true;
+    void built.then((value) => {
+      if (live) setResolved({ from: built, value });
+    });
+    return () => {
+      live = false;
+    };
+  }, [built]);
+  const bundle =
+    built instanceof Promise
+      ? resolved !== null && resolved.from === built
+        ? resolved.value
+        : 'Loading the example…'
+      : built;
 
   const searchId = useId();
   const kindId = useId();

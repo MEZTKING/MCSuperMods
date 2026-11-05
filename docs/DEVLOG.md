@@ -2164,3 +2164,22 @@ Next:
 - `turbo.json` (not B158's): `@msm/site#build` should declare `inputs` including `$TURBO_ROOT$/docs/guide/**` and `outputs` `.vitepress/dist/**`; today turbo does not see guide edits (local cache can hide a dead link) and warns about missing outputs.
 - `CHANGELOG.md` is not on `main` yet; its link resolves once the branch is fast-forwarded.
 - B161: point CONTRIBUTING's plugin link at `docs/guide/plugins.md`, add Plugins and Targets to the sidebar.
+
+## 2026-11-05 — executor — B157: `tools/new-plugin --external` and the sample external plugin
+
+**What**
+- `tools/new-plugin/index.ts`: `node tools/new-plugin/index.ts <name> --external <dir>` (`scaffoldExternalPlugin`, `externalPluginFiles`): writes `msm-plugin-<name>` into a new folder: `package.json` (`private: false`, `type: module`, scripts `build`/`test`/`check`, devDependencies `@msm/plugin-api` `^1.0.0`, `esbuild`, `@spyglassmc/mcdoc-cli` (exact), `typescript`, `vitest` at the catalog versions), `pnpm-workspace.yaml` (`allowBuilds: esbuild: false`), `tsconfig.json` (strict, bundler resolution, `lib: ["ES2022"]`, `types: []`), `msm-plugin.json` (capabilities `elementKinds`, `elementTemplates`), `src/index.ts` (kind `<name>:example` lowering `{ text }` to one merged lang key; template `<name>-example`), `mcdoc/<name>.mcdoc`, `scripts/build.mjs`, `test/plugin.test.ts`, `README.md`, `.gitignore`. Names `minecraft` and `msm` are refused. `validateManifest` copies the rules of the app's `pluginManifestSchema` (B154's, as of this session). Tests: 49 in `new-plugin.test.ts` (manifest rules, file list, catalog versions, build steps shared with the sample).
+- `fixtures/sample-plugin/`: `src/index.ts` (`sample.greetings`: kind `sample:greeting` → `data/<ns>/function/greet_<path>.mcfunction` with `tellraw @a {"text": …, "color": …}` and a `minecraft:load` tag entry, `merge: 'tag'`, schema `tag:function`; template `sample-greeting`; example `sample-greeting-example`; validator `sample.empty-message`), `mcdoc/greeting.mcdoc`, `msm-plugin.json`, `build.ts`, `test/plugin.test.ts` (6 tests), `README.md`. The placeholder `src/main.ts` is gone.
+- `pnpm --filter @msm/sample-plugin build` writes `dist/main.js` (4,872 bytes), `dist/symbols.json` (689), `dist/msm-plugin.json` (514). A scaffolded project in a temp folder installs with `pnpm add -D ../msm-plugin-api-1.0.0.tgz`, and `build`, `test` and `check` pass.
+
+**Decisions**
+- Bundle handshake: an esbuild IIFE whose last statement is `defineMsmPlugin(plugin)` (the bootstrap convention from B150, which B154 keeps); the bundle throws a clear error when that global is missing.
+- In both manifests, `main` is `main.js` and `schemas` is `["symbols.json"]`, relative to the installed folder (the contents of `dist/`, as the plan's fixed names say), rather than the `dist/…` paths in the ADR 0035 example. The build copies the manifest unchanged and checks that the files it names exist.
+- Symbol export: the module folder is the id up to its first dot. The build stamps `ref` `<id>@<version>:sha256:<sources>` (`parseVanillaMcdocSymbols` requires a `ref`) and refuses any type or dispatcher outside the plugin's namespace.
+- The sample keeps its build at `build.ts` (B152's fixed script `node build.ts`). Below a marker line it is byte-identical to the scaffold's `scripts/build.mjs`, and a tools test enforces this.
+- The scaffold's kind lowers to JSON (a lang key), so it needs no `TextEncoder` under `lib: ["ES2022"]` without DOM or Node types.
+
+**Next**
+- B154: keep `defineMsmPlugin` as the bundle handshake, or tell B157's owner to change the build steps in both files.
+- B161: copy `fixtures/sample-plugin/dist/` into `<msmHome>/plugins/greetings/`.
+- When the manifest schema changes, update `validateManifest` in `tools/new-plugin`.
