@@ -141,7 +141,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       '%s lowers to its folder and validates',
       async (kindId) => {
         const kind = kinds().find((entry) => entry.id === kindId) as ElementKind;
-        const files = kind.lower(
+        const files = await kind.lower(
           element(kind.id, 'demo:nested/sample', kind.defaultData as Json),
           bundle.target,
         );

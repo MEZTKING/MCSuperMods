@@ -58,7 +58,7 @@ describe('@msm/plugin-structures', () => {
       for (const kind of structureKinds) {
         const data = kind.defaultData as Json;
         expect(blockingProblems(indexes, kind.schema, data), kind.id).toEqual([]);
-        const files = kind.lower(
+        const files = await kind.lower(
           {
             formatVersion: 1,
             id: 'demo:sample',

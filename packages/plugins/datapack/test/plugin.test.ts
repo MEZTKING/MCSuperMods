@@ -73,12 +73,12 @@ describe('@msm/plugin-datapack', () => {
     }
   });
 
-  it('builds tag kinds for any registry', () => {
+  it('builds tag kinds for any registry', async () => {
     const kind = tagKind('worldgen/biome');
     expect(kind.id).toBe('minecraft:tag/worldgen/biome');
     expect(kind.schema).toBe('tag:worldgen/biome');
     expect(kind.folder).toBe('tags/worldgen/biome');
-    const [file] = kind.lower(
+    const [file] = await kind.lower(
       element(kind.id, 'example:hot', { values: ['minecraft:desert'] }),
       firstTarget,
     );
@@ -88,10 +88,10 @@ describe('@msm/plugin-datapack', () => {
     expect(file?.merge).toBe('tag');
   });
 
-  it('lowers generic kinds into the target folder of their registry', () => {
+  it('lowers generic kinds into the target folder of their registry', async () => {
     for (const registry of GENERIC_DATA_REGISTRIES) {
       const kind = genericKind(registry);
-      const [file] = kind.lower(element(kind.id, 'example:dir/thing', {}), firstTarget);
+      const [file] = await kind.lower(element(kind.id, 'example:dir/thing', {}), firstTarget);
       expect(file, registry).toEqual({
         path: `data/example/${firstTarget.folders.data[registry]}/dir/thing.json`,
         contents: {},
@@ -133,7 +133,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     it('lowers every default to a valid file', async () => {
       const indexes = await indexesFor(bundle);
       for (const kind of kinds()) {
-        const files = kind.lower(
+        const files = await kind.lower(
           element(kind.id, 'example:thing', kind.defaultData ?? {}),
           bundle.target,
         );
@@ -223,11 +223,11 @@ describe('lowering', () => {
     expect(files[0]?.contents).not.toBe(data);
   });
 
-  it('lowers a function to UTF-8 text with a trailing newline and no schema', () => {
+  it('lowers a function to UTF-8 text with a trailing newline and no schema', async () => {
     const input = element(functionKind.id, 'example:dir/greet', {
       lines: ['# Grüße', 'say hi', '$say $(name)'],
     });
-    const [file] = functionKind.lower(input, firstTarget);
+    const [file] = await functionKind.lower(input, firstTarget);
     expect(file?.path).toBe(`data/example/${folders.function}/dir/greet.mcfunction`);
     expect(file?.layer).toBe('datapack');
     expect(file?.language).toBe(MCFUNCTION_LANGUAGE);
@@ -238,8 +238,8 @@ describe('lowering', () => {
     );
   });
 
-  it('lowers an empty function to an empty file', () => {
-    const [file] = functionKind.lower(
+  it('lowers an empty function to an empty file', async () => {
+    const [file] = await functionKind.lower(
       element(functionKind.id, 'example:empty', { lines: [] }),
       firstTarget,
     );
