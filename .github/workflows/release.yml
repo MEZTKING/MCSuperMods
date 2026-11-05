@@ -75,7 +75,11 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           sha=$(git rev-parse HEAD)
-          existing=$(gh api "repos/${GH_REPO}/git/ref/tags/${RELEASE_TAG}" --jq '.object.sha' 2>/dev/null || true)
+          # On a missing tag `gh api` exits non-zero and prints the 404 body to stdout, so test
+          # the exit status rather than the output.
+          if ! existing=$(gh api "repos/${GH_REPO}/git/ref/tags/${RELEASE_TAG}" --jq '.object.sha' 2>/dev/null); then
+            existing=""
+          fi
           if [ -z "$existing" ]; then
             gh api "repos/${GH_REPO}/git/refs" -f ref="refs/tags/${RELEASE_TAG}" -f sha="$sha" >/dev/null
             echo "Created ${RELEASE_TAG} at $sha"
