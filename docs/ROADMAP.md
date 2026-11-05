@@ -213,7 +213,7 @@ Carried over from Phase 2 (known gaps recorded in DEVLOG); none blocks the v0.2 
 - [ ] HD textures in the deepslate preview: the atlas crops every texture to its first 16×16 tile. Stays open.
 - [ ] Bespoke Loot Table Studio (v0.2 ships the schema form plus templates; [ADR 0015](adr/0015-data-pack-element-model.md)). Stays open.
 - [x] World names from `level.dat` in the world picker ([ADR 0015](adr/0015-data-pack-element-model.md)). Done in B75 ([ADR 0021](adr/0021-structure-templates-and-nbt.md)).
-- [ ] Remove the pnpm `minimumReleaseAgeExclude` entries in `pnpm-workspace.yaml` once those versions are older than the release-age rule (one day). B83 removed `electron@45.2.2`; `electron-to-chromium@1.5.475` (eligible after 2026-11-04 23:03 UTC) and `lucide-react@1.68.0` (after 2026-11-05 06:11 UTC) remain; remove them and check `pnpm install --frozen-lockfile` in a later session.
+- [x] Remove the pnpm `minimumReleaseAgeExclude` entries in `pnpm-workspace.yaml` once those versions are older than the release-age rule (one day). B83 removed `electron@45.2.2`; `electron-to-chromium@1.5.475` and `lucide-react@1.68.0` were removed on 2026-11-05; `pnpm install --frozen-lockfile` passes without them.
 
 ### Phase 2 add-on — Launcher support
 

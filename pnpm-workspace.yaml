@@ -51,7 +51,3 @@ catalog:
 allowBuilds:
   electron: true
   electron-winstaller: false
-
-minimumReleaseAgeExclude:
-  - electron-to-chromium@1.5.475
-  - lucide-react@1.68.0

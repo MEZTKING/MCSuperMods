@@ -21,7 +21,6 @@ Written 2026-11-05 by the main session that ran Phases 0–3, for the next main 
 
 ## Housekeeping due now
 
-- `pnpm-workspace.yaml` `minimumReleaseAgeExclude` still lists `electron-to-chromium@1.5.475` and `lucide-react@1.68.0`; both became eligible by 2026-11-05 06:11 UTC. Remove them, confirm `pnpm install --frozen-lockfile` still passes, tick the ROADMAP item.
 - Phase 3 follow-ups in `ROADMAP.md` (go to definition from Studio id lists, gallery entries for the worldgen starters, full-cube culling in the structure view, `#[id(tags="implicit")]` support, B84 noise preview in reserve).
 
 ## User decisions to respect
