@@ -34,7 +34,7 @@ interface BlockInteractEvent extends GameEvent {
   /** Cancels the event: the block and the held item are not used. */
   cancel(): void;
   /** The hand the player used. */
-  readonly hand: "main" | "off";
+  readonly hand: 'main' | 'off';
   /** The player who used it. */
   readonly player: Player;
 }
@@ -131,7 +131,7 @@ interface EntityInteractEvent extends GameEvent {
   /** The entity that was used. */
   readonly entity: Entity;
   /** The hand the player used. */
-  readonly hand: "main" | "off";
+  readonly hand: 'main' | 'off';
   /** The player who used it. */
   readonly player: Player;
 }
@@ -155,7 +155,7 @@ interface ItemUseEvent extends GameEvent {
   /** Cancels the event: the item is not used. */
   cancel(): void;
   /** The hand holding the item. */
-  readonly hand: "main" | "off";
+  readonly hand: 'main' | 'off';
   /** The item being used. */
   readonly item: ItemRef;
   /** The player using it. */
@@ -193,23 +193,23 @@ interface MsmActions {
 /** Game events scripts can handle. */
 interface MsmEvents {
   /** Runs when a player uses (right-clicks) a block. Several handlers run in registration order. */
-  on(name: "block.interact", handler: (e: BlockInteractEvent) => void): void;
+  on(name: 'block.interact', handler: (e: BlockInteractEvent) => void): void;
   /** Runs before a player breaks a block. Several handlers run in registration order. */
-  on(name: "block.break", handler: (e: BlockBreakEvent) => void): void;
+  on(name: 'block.break', handler: (e: BlockBreakEvent) => void): void;
   /** Runs when a player uses (right-clicks) a held item. Several handlers run in registration order. */
-  on(name: "item.use", handler: (e: ItemUseEvent) => void): void;
+  on(name: 'item.use', handler: (e: ItemUseEvent) => void): void;
   /** Runs when a player uses (right-clicks) an entity. Several handlers run in registration order. */
-  on(name: "entity.interact", handler: (e: EntityInteractEvent) => void): void;
+  on(name: 'entity.interact', handler: (e: EntityInteractEvent) => void): void;
   /** Runs before a living entity takes damage. Several handlers run in registration order. */
-  on(name: "entity.hurt", handler: (e: EntityHurtEvent) => void): void;
+  on(name: 'entity.hurt', handler: (e: EntityHurtEvent) => void): void;
   /** Runs after a living entity dies. Several handlers run in registration order. */
-  on(name: "entity.death", handler: (e: EntityDeathEvent) => void): void;
+  on(name: 'entity.death', handler: (e: EntityDeathEvent) => void): void;
   /** Runs when a player joins the server. Several handlers run in registration order. */
-  on(name: "player.join", handler: (e: PlayerJoinEvent) => void): void;
+  on(name: 'player.join', handler: (e: PlayerJoinEvent) => void): void;
   /** Runs once the server has started. Several handlers run in registration order. */
-  on(name: "server.started", handler: (e: ServerStartedEvent) => void): void;
+  on(name: 'server.started', handler: (e: ServerStartedEvent) => void): void;
   /** Runs at the end of every server tick (20 times a second); keep the handler cheap. Several handlers run in registration order. */
-  on(name: "server.tick", handler: (e: ServerTickEvent) => void): void;
+  on(name: 'server.tick', handler: (e: ServerTickEvent) => void): void;
 }
 
 /** Writes to the server log as `[msm_runtime] <script id>: <message>`. */
@@ -278,8 +278,7 @@ interface Pos {
 }
 
 /** The server finished starting; `world` is the overworld. */
-interface ServerStartedEvent extends GameEvent {
-}
+interface ServerStartedEvent extends GameEvent {}
 
 /** The server finished a tick; `world` is the overworld. */
 interface ServerTickEvent extends GameEvent {
@@ -336,7 +335,11 @@ interface World {
    * @param id - The particle type id, for example `minecraft:flame`.
    * @param options - How many particles, how far they spread in blocks and how fast they move.
    */
-  spawnParticle(id: string, pos: Pos, options?: { count?: number; spread?: number; speed?: number }): void;
+  spawnParticle(
+    id: string,
+    pos: Pos,
+    options?: { count?: number; spread?: number; speed?: number },
+  ): void;
   /** The dimension's game time in ticks. */
   readonly time: number;
 }
@@ -345,7 +348,7 @@ interface World {
 declare const msm: Msm;
 
 /** The runtime module; `require("msm:runtime")` returns the same objects. */
-declare module "msm:runtime" {
+declare module 'msm:runtime' {
   /** The MSM runtime API, available to every script. */
   export const msm: Msm;
   export type ActionEvent = globalThis.ActionEvent;

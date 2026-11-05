@@ -285,7 +285,7 @@ public final class ScriptHost {
         try {
             h.fn.call(cx, h.scope, h.scope, new Object[] {ev});
             cx.processMicrotasks();
-        } catch (ScriptTimeout | RhinoException | RuntimeException e) {
+        } catch (ScriptTimeout | RuntimeException e) {
             handlerFailed(h, e);
         } finally {
             exit(top);
@@ -297,7 +297,7 @@ public final class ScriptHost {
         try {
             s.fn().call(cx, s.scope(), s.scope(), new Object[0]);
             cx.processMicrotasks();
-        } catch (ScriptTimeout | RhinoException | RuntimeException e) {
+        } catch (ScriptTimeout | RuntimeException e) {
             String line = "script " + s.script().id() + ": scheduled function: " + describe(e, s.script());
             handlerErrors.add(line);
             MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, line);

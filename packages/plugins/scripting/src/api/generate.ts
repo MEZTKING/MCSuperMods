@@ -204,7 +204,9 @@ export function checkScriptApi(api: ScriptApi): string[] {
       issues.push(`The on overload of ${name} has handler type ${handler}.`);
     }
     if (hasCancel(event.type) !== event.cancellable) {
-      issues.push(`Event ${name}: cancellable is ${event.cancellable} but ${event.type} disagrees.`);
+      issues.push(
+        `Event ${name}: cancellable is ${event.cancellable} but ${event.type} disagrees.`,
+      );
     }
   }
   return issues;

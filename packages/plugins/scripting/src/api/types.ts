@@ -153,7 +153,10 @@ function parseParams(value: unknown, where: string): ScriptApiParam[] {
     const at = `${where}[${index}]`;
     const raw = obj(entry, at);
     onlyKeys(raw, ['name', 'type', 'optional', 'doc'], at);
-    const param: ScriptApiParam = { name: str(raw.name, `${at}.name`), type: str(raw.type, `${at}.type`) };
+    const param: ScriptApiParam = {
+      name: str(raw.name, `${at}.name`),
+      type: str(raw.type, `${at}.type`),
+    };
     const optional = optBool(raw.optional, `${at}.optional`);
     if (optional !== undefined) param.optional = optional;
     if (raw.doc !== undefined) param.doc = str(raw.doc, `${at}.doc`);
@@ -167,7 +170,11 @@ function parseMember(value: unknown, where: string): ScriptApiMember {
   switch (raw.kind) {
     case 'property': {
       onlyKeys(raw, ['kind', 'type', 'optional', 'doc'], where);
-      const member: ScriptApiProperty = { kind: 'property', type: str(raw.type, `${where}.type`), doc };
+      const member: ScriptApiProperty = {
+        kind: 'property',
+        type: str(raw.type, `${where}.type`),
+        doc,
+      };
       const optional = optBool(raw.optional, `${where}.optional`);
       if (optional !== undefined) member.optional = optional;
       return member;
@@ -243,7 +250,10 @@ export function parseScriptApi(json: unknown): ScriptApi {
     const at = `api.globals.${name}`;
     const raw = obj(value, at);
     onlyKeys(raw, ['doc', 'members'], at);
-    globals[name] = { doc: str(raw.doc, `${at}.doc`), members: parseMembers(raw.members, `${at}.members`) };
+    globals[name] = {
+      doc: str(raw.doc, `${at}.doc`),
+      members: parseMembers(raw.members, `${at}.members`),
+    };
   }
   const events: Record<string, ScriptApiEvent> = {};
   for (const [name, value] of Object.entries(obj(root.events, 'api.events'))) {

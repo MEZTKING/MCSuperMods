@@ -39,7 +39,8 @@ function typeCheck(script: string): string[] {
   const host = ts.createCompilerHost(options);
   host.getDefaultLibLocation = () => libDir;
   host.getSourceFile = (fileName, languageVersion) => {
-    const text = files.get(fileName) ?? readFileSync(join(libDir, fileName.split('/').pop() ?? ''), 'utf8');
+    const text =
+      files.get(fileName) ?? readFileSync(join(libDir, fileName.split('/').pop() ?? ''), 'utf8');
     return ts.createSourceFile(fileName, text, languageVersion);
   };
   host.fileExists = (fileName) => files.has(fileName) || fileName.startsWith(libDir);
