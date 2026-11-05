@@ -26,10 +26,12 @@
     "@msm/plugin-library": "workspace:*",
     "@msm/plugin-models-anim": "workspace:*",
     "@msm/plugin-resourcepack": "workspace:*",
+    "@msm/plugin-scripting": "workspace:*",
     "@msm/plugin-structures": "workspace:*",
     "@msm/plugin-worldgen": "workspace:*",
     "@msm/targets": "workspace:*",
     "@types/node": "catalog:",
+    "typescript": "catalog:",
     "vitest": "catalog:"
   }
 }

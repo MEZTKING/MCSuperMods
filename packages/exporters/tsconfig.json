@@ -16,6 +16,7 @@
     { "path": "../plugins/library" },
     { "path": "../plugins/blocks-items" },
     { "path": "../plugins/entities" },
-    { "path": "../plugins/models-anim" }
+    { "path": "../plugins/models-anim" },
+    { "path": "../plugins/scripting" }
   ]
 }

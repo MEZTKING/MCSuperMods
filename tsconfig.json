@@ -13,6 +13,7 @@
     { "path": "packages/plugins/library" },
     { "path": "packages/plugins/models-anim" },
     { "path": "packages/plugins/resourcepack" },
+    { "path": "packages/plugins/scripting" },
     { "path": "packages/plugins/structures" },
     { "path": "packages/plugins/worldgen" },
     { "path": "packages/schemas" },

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "msm_parity_tests",
+  "version": "${version}",
+  "name": "MSM parity GameTests",
+  "description": "Behaviour-parity GameTests over the sample mods' public behaviour (vanilla and Fabric API only); run by tools/run-fabric-server --gametest against a content jar and an ejected jar.",
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.mcsupermods.parity.SampleModParityTest"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.20.1",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*",
+    "fabric-gametest-api-v1": "*"
+  }
+}

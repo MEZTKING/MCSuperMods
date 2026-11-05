@@ -81,6 +81,10 @@ export const target: Target = {
     loom: '1.19.3',
     // minecraftDependency: the fabric.mod.json range (verify at implementation).
     minecraftDependency: '~26.3',
+    // gradle: verified 2026-11-05 against services.gradle.org/versions/current (9.8.2 is
+    // current); equals engine-mod/gradle/wrapper/gradle-wrapper.properties, and the two move
+    // together (ADR 0034).
+    gradle: '9.8.2',
   },
   // Verified 2026-11-05 against the Modrinth API and CDN (project geckolib, Fabric build for
   // 26.3; jar downloaded and hashed). ADR 0030.

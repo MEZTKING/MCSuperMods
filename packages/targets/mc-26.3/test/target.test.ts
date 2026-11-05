@@ -14,8 +14,19 @@ describe('target mc-26.3', () => {
       api: '0.165.2+26.3',
       loom: '1.19.3',
       minecraftDependency: '~26.3',
+      gradle: '9.8.2',
     });
     expect(target.fabric?.api.endsWith(`+${target.mcVersion}`)).toBe(true);
+  });
+
+  it('sets the Gradle version of the engine-mod wrapper', async () => {
+    const properties = await readFile(
+      new URL('../../../../engine-mod/gradle/wrapper/gradle-wrapper.properties', import.meta.url),
+      'utf8',
+    );
+    const match = /^distributionUrl=.*\/gradle-([^/]+?)-(?:bin|all)\.zip\s*$/m.exec(properties);
+    expect(match?.[1]).toBeDefined();
+    expect(target.fabric?.gradle).toBe(match?.[1]);
   });
 
   it('sets the GeckoLib facts', () => {

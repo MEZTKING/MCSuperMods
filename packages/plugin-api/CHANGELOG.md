@@ -2,6 +2,19 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 0.8.0 — 2026-11-05
+
+Gradle fact, Java project generator and the `typescript` output language (ADR 0034). `API_VERSION` is `0.8.0`. Built-in plugins and `tools/new-plugin` declare `^0.8.0`.
+
+- `FabricFacts.gradle: string` (required): the Gradle version the ejected Java project's wrapper uses.
+- `Target.javaProject?: JavaProjectGenerator` with `JavaProjectInput` (`modId`, `javaPackage`, `modClassName`, `blocks`, `items`, `entities`, `geckolib`), `DefinitionInput` (`id`, `path`, `definition`) and `GeneratedFile` (`path`, `contents`): the version-specific Java generator the `java-project` exporter calls. `generate` is pure and deterministic and may throw an `Error` naming the definition, which the exporter reports as `export.java-generation-failed`.
+- `OutputFile.language` documents the value `typescript` (script sources the host checks and the content jar exporter transpiles) alongside `mcfunction`. No type change.
+
+### Migration from 0.7.0
+
+- Plugins only need the range change: declare `^0.8.0`. Plugins declaring `^0.7.0` no longer load, because `0.8.0` is outside a `^0.7.0` range (0.x minors are breaking under semver).
+- A target that sets `fabric` must add `gradle`. `javaProject` is optional.
+
 ## 0.7.0 — 2026-11-05
 
 GeckoLib target facts (ADR 0030). `API_VERSION` is `0.7.0`. Built-in plugins and `tools/new-plugin` declare `^0.7.0`.

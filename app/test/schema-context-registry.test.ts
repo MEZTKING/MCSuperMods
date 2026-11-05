@@ -21,7 +21,7 @@ const kind = (id: string, folder: string, registry?: string): ElementKind => ({
 
 const phase3Plugin = definePlugin({
   id: 'test.phase3',
-  apiVersion: '^0.7.0',
+  apiVersion: '^0.8.0',
   contributes: {
     elementKinds: [
       kind('minecraft:structure_template', 'structure', 'structure'),
@@ -119,7 +119,7 @@ describe('dataRegistryIds', () => {
   it("counts other plugins' kinds that declare a plain registry, and block items", () => {
     const msmPlugin = definePlugin({
       id: 'test.msm',
-      apiVersion: '^0.7.0',
+      apiVersion: '^0.8.0',
       contributes: {
         elementKinds: [
           kind('msm:block', 'block', 'block'),

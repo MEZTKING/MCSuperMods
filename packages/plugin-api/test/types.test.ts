@@ -1,6 +1,7 @@
 import { describe, expectTypeOf, it } from 'vitest';
 import type {
   DataFolderKey,
+  DefinitionInput,
   Element,
   ElementKind,
   Exporter,
@@ -8,7 +9,11 @@ import type {
   ExporterOption,
   FabricFacts,
   GeckolibFacts,
+  GeneratedFile,
+  JavaProjectGenerator,
+  JavaProjectInput,
   Json,
+  JsonObject,
   OutputFile,
   OutputMergeMode,
   PluginContributions,
@@ -258,6 +263,7 @@ describe('0.6.0 additions', () => {
       api: string;
       loom: string;
       minecraftDependency: string;
+      gradle: string;
     }>();
   });
 });
@@ -273,5 +279,36 @@ describe('0.7.0 additions', () => {
       sha512: string;
       modrinthVersionId?: string;
     }>();
+  });
+});
+
+describe('0.8.0 additions', () => {
+  it('types the Java project generator', () => {
+    expectTypeOf<DefinitionInput>().toEqualTypeOf<{
+      id: string;
+      path: string;
+      definition: JsonObject;
+    }>();
+    expectTypeOf<GeneratedFile>().toEqualTypeOf<{ path: string; contents: string }>();
+    expectTypeOf<JavaProjectInput>().toEqualTypeOf<{
+      modId: string;
+      javaPackage: string;
+      modClassName: string;
+      blocks: DefinitionInput[];
+      items: DefinitionInput[];
+      entities: DefinitionInput[];
+      geckolib: boolean;
+    }>();
+    expectTypeOf<JavaProjectGenerator['generate']>().toEqualTypeOf<
+      (input: JavaProjectInput) => GeneratedFile[]
+    >();
+    expectTypeOf<Target['javaProject']>().toEqualTypeOf<JavaProjectGenerator | undefined>();
+  });
+
+  it('accepts a pure generator', () => {
+    const generator: JavaProjectGenerator = {
+      generate: (input) => [{ path: `src/main/java/${input.modClassName}.java`, contents: '' }],
+    };
+    expectTypeOf(generator.generate).returns.toEqualTypeOf<GeneratedFile[]>();
   });
 });

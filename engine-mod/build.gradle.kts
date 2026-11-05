@@ -28,6 +28,12 @@ dependencies {
     implementation("net.fabricmc:fabric-loader:${providers.gradleProperty("loader_version").get()}")
     implementation("net.fabricmc.fabric-api:fabric-api:${providers.gradleProperty("fabric_api_version").get()}")
 
+    // Rhino (ADR 0031 D1): the plain runtime jar, unmodified, nested through Loom's jar-in-jar (`include`);
+    // Loom generates a fabric.mod.json for it inside the nested jar.
+    val rhino = "org.mozilla:rhino:${providers.gradleProperty("rhino_version").get()}"
+    implementation(rhino)
+    include(rhino)
+
     // JUnit 5 for the Codecs over the shared MSM conformance corpus (GameTests cover behaviour).
     testImplementation(platform("org.junit:junit-bom:${providers.gradleProperty("junit_version").get()}"))
     testImplementation("org.junit.jupiter:junit-jupiter")

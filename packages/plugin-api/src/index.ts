@@ -40,8 +40,12 @@ export type { Problem, ProblemReporter, ProblemSeverity } from './problems';
 export type {
   BiomeAttributeFacts,
   DataFolderKey,
+  DefinitionInput,
   FabricFacts,
   GeckolibFacts,
+  GeneratedFile,
+  JavaProjectGenerator,
+  JavaProjectInput,
   MigrationChange,
   MigrationReport,
   PackFormat,

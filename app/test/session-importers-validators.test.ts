@@ -92,7 +92,7 @@ const fakeExporter: Exporter = {
 
 const testPlugin: Plugin = definePlugin({
   id: 'test.fakes',
-  apiVersion: '^0.7.0',
+  apiVersion: '^0.8.0',
   contributes: {
     importers: [fakeImporter],
     validators: [fakeValidator],
@@ -163,7 +163,7 @@ describe('importer helpers', () => {
     const shadow = { ...blockbenchImporter, displayName: 'Plugin Blockbench' };
     const plugin = definePlugin({
       id: 'test.shadow',
-      apiVersion: '^0.7.0',
+      apiVersion: '^0.8.0',
       contributes: { importers: [shadow] },
     });
     const shadowed = collectImporters([plugin]);

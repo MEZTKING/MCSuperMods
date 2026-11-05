@@ -56,7 +56,7 @@ export * from './validators';
 
 export default definePlugin({
   id: 'msm.structures',
-  apiVersion: '^0.7.0',
+  apiVersion: '^0.8.0',
   contributes: {
     elementKinds: [...structureKinds],
     elementTemplates: [...structureTemplates],

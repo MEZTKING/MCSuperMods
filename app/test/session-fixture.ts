@@ -272,7 +272,7 @@ const noteKind: ElementKind = {
  */
 export const fakeLibraryPlugin: Plugin = definePlugin({
   id: 'test.library',
-  apiVersion: '^0.7.0',
+  apiVersion: '^0.8.0',
   contributes: {
     elementKinds: [noteKind],
     elementTemplates: [

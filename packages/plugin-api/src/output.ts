@@ -41,8 +41,13 @@ export interface OutputFile {
    */
   schema?: string;
   /**
-   * A text language id the export validation gate may check, such as `mcfunction`; omitted
-   * for JSON and binary files.
+   * A text language id the host may check and transform, or omitted for JSON and binary
+   * files. Known values:
+   *
+   * - `mcfunction`: a data pack function; the export validation gate checks its commands.
+   * - `typescript` (since 0.8.0, ADR 0034): a script source (for example
+   *   `msm/<namespace>/script/<path>.ts`); the host checks it with an injected validator and
+   *   the content jar exporter transpiles it to JavaScript.
    *
    * A file with a `language` carries its text as UTF-8 bytes in {@link OutputFile.contents}.
    */

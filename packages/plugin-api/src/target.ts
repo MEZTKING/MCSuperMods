@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import type { ResourceLocation } from './json';
+import type { JsonObject, ResourceLocation } from './json';
 import type { Project } from './model';
 import type { Problem } from './problems';
 
@@ -150,7 +150,8 @@ export interface BiomeAttributeFacts {
 }
 
 /**
- * Fabric toolchain versions of a target. Since 0.6.0 (`minecraftDependency` is new in 0.6.0).
+ * Fabric toolchain versions of a target. Since 0.6.0 (`minecraftDependency` is new in 0.6.0,
+ * `gradle` in 0.8.0).
  */
 export interface FabricFacts {
   /** Fabric Loader version, for example `0.<minor>.<patch>`. */
@@ -164,6 +165,13 @@ export interface FabricFacts {
    * `~<game version>`.
    */
   minecraftDependency: string;
+  /**
+   * The Gradle version the ejected Java project's wrapper uses, written into
+   * `gradle/wrapper/gradle-wrapper.properties` as `gradle-<version>-bin.zip`, for example
+   * `<major>.<minor>.<patch>`. It equals the version of the wrapper the host serves with the
+   * project. Required since 0.8.0 (ADR 0034).
+   */
+  gradle: string;
 }
 
 /**
@@ -188,6 +196,71 @@ export interface GeckolibFacts {
   sha512: string;
   /** The Modrinth version id of this build, for the Modrinth Maven and the Modrinth API. */
   modrinthVersionId?: string;
+}
+
+/**
+ * One block, item or entity definition handed to a {@link JavaProjectGenerator}. Since 0.8.0
+ * (ADR 0034).
+ */
+export interface DefinitionInput {
+  /** The definition's id as a resource location, for example `<namespace>:ruby_ore`. */
+  id: string;
+  /**
+   * The definition file's path in the content jar, for example
+   * `msm/<namespace>/block/ruby_ore.json`.
+   */
+  path: string;
+  /** The parsed definition (runtime definition format 1), as the content jar holds it. */
+  definition: JsonObject;
+}
+
+/**
+ * Everything a {@link JavaProjectGenerator} needs to write one ejected Java project. Built by
+ * the `java-project` exporter from the lowered output files. Since 0.8.0 (ADR 0034).
+ */
+export interface JavaProjectInput {
+  /** The mod id, taken from the project's `fabric.mod.json`. */
+  modId: string;
+  /** The Java package of the generated sources, derived by the exporter, for example `com.example.ruby`. */
+  javaPackage: string;
+  /** The simple name of the generated mod initialiser class, for example `RubyMod`. */
+  modClassName: string;
+  /** Block definitions (`msm/<namespace>/block/*.json`), in a stable order. */
+  blocks: DefinitionInput[];
+  /** Item definitions (`msm/<namespace>/item/*.json`), in a stable order. */
+  items: DefinitionInput[];
+  /** Entity definitions (`msm/<namespace>/entity/*.json`), in a stable order. */
+  entities: DefinitionInput[];
+  /** `true` when the project has entities and the target has {@link Target.geckolib} facts. */
+  geckolib: boolean;
+}
+
+/**
+ * One text file a {@link JavaProjectGenerator} writes. Since 0.8.0 (ADR 0034).
+ */
+export interface GeneratedFile {
+  /** Path relative to the ejected project's root, with `/` separators, for example `src/main/java/<package path>/RubyMod.java`. */
+  path: string;
+  /** The file's contents as UTF-8 text. */
+  contents: string;
+}
+
+/**
+ * Generates the version-specific Java sources and resources of an ejected project (the
+ * `java-project` exporter, ADR 0033). The generated Java names one Minecraft version's
+ * classes, so the generator is a target fact. Since 0.8.0 (ADR 0034).
+ */
+export interface JavaProjectGenerator {
+  /**
+   * Generates the Java sources and resources of the ejected project. Pure and deterministic:
+   * the same input always yields the same files in the same order.
+   *
+   * @param input - The mod's identity and its parsed definitions.
+   * @returns The generated files, relative to the project root.
+   * @throws Error - When a definition cannot be generated; the message names the definition.
+   *   The exporter reports it as `export.java-generation-failed` and writes nothing.
+   */
+  generate(input: JavaProjectInput): GeneratedFile[];
 }
 
 /**
@@ -252,6 +325,11 @@ export interface Target {
    * A {@link GeckolibFacts} object since 0.7.0 (a version string before).
    */
   geckolib?: GeckolibFacts;
+  /**
+   * The Java generator of the `java-project` exporter (ADR 0033). Optional: a target without
+   * it cannot eject a Java project, and the exporter reports a problem. Since 0.8.0.
+   */
+  javaProject?: JavaProjectGenerator;
   /**
    * Migrates a project written for `previous` so that it is valid for this target.
    *

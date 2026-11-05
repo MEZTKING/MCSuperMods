@@ -15,7 +15,7 @@ export { WORLDGEN_PROBLEM_CODES, worldgenValidators } from './validators';
 
 export default definePlugin({
   id: 'msm.worldgen',
-  apiVersion: '^0.7.0',
+  apiVersion: '^0.8.0',
   contributes: {
     elementKinds: [...worldgenKinds],
     elementTemplates: [...worldgenTemplates],

@@ -343,6 +343,9 @@ importers:
       '@msm/plugin-resourcepack':
         specifier: workspace:*
         version: link:../packages/plugins/resourcepack
+      '@msm/plugin-scripting':
+        specifier: workspace:*
+        version: link:../packages/plugins/scripting
       '@msm/plugin-structures':
         specifier: workspace:*
         version: link:../packages/plugins/structures
@@ -424,6 +427,9 @@ importers:
       tailwindcss:
         specifier: 'catalog:'
         version: 4.3.4
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
       vite:
         specifier: 'catalog:'
         version: 8.3.5(@types/node@24.19.2)(jiti@2.7.0)
@@ -495,6 +501,9 @@ importers:
       '@msm/plugin-resourcepack':
         specifier: workspace:*
         version: link:../plugins/resourcepack
+      '@msm/plugin-scripting':
+        specifier: workspace:*
+        version: link:../plugins/scripting
       '@msm/plugin-structures':
         specifier: workspace:*
         version: link:../plugins/structures
@@ -507,6 +516,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.2
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
       vitest:
         specifier: 'catalog:'
         version: 5.1.0(@types/node@24.19.2)(happy-dom@21.0.4)(vite@8.3.5(@types/node@24.19.2)(jiti@2.7.0))
@@ -652,6 +664,28 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.1.0(@types/node@24.19.2)(happy-dom@21.0.4)(vite@8.3.5(@types/node@24.19.2)(jiti@2.7.0))
+
+  packages/plugins/scripting:
+    dependencies:
+      '@msm/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+      '@msm/schemas':
+        specifier: workspace:*
+        version: link:../../schemas
+    devDependencies:
+      '@msm/targets':
+        specifier: workspace:*
+        version: link:../../targets/all
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
       vitest:
         specifier: 'catalog:'
         version: 5.1.0(@types/node@24.19.2)(happy-dom@21.0.4)(vite@8.3.5(@types/node@24.19.2)(jiti@2.7.0))
