@@ -140,6 +140,26 @@
           }
         }
       }
+    },
+    {
+      "includes": ["app/src/preload/**", "app/src/renderer/**", "src/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@anthropic-ai/sdk", "@anthropic-ai/sdk/*", "@msm/ai/sdk"],
+                    "message": "the Claude SDK runs only in main, ADR 0041 D2"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }

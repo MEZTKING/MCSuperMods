@@ -109,7 +109,7 @@ const bridge: MsmBridge = {
         folder,
         files: files.map((file) => ({ name: file.name, data: file.data })),
       }),
-    runtimeJar: () => ipcRenderer.invoke(InvokeChannels.exportsRuntimeJar),
+    runtimeJar: (targetId) => ipcRenderer.invoke(InvokeChannels.exportsRuntimeJar, { targetId }),
     geckolibJar: (targetId) => ipcRenderer.invoke(InvokeChannels.exportsGeckolibJar, { targetId }),
     writeTree: (folder, files) =>
       ipcRenderer.invoke(InvokeChannels.exportsWriteTree, {

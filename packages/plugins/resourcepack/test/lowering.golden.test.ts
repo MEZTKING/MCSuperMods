@@ -6,6 +6,7 @@ import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import {
   blockDefinitionKind,
+  equipmentKind,
   itemDefinitionKind,
   langKind,
   modelKind,
@@ -71,6 +72,17 @@ const SAMPLES: Sample[] = [
     name: 'pack',
     id: 'example:pack',
     data: { pack: { description: 'Example resources', pack_format: 1, supported_formats: [1, 2] } },
+  },
+  {
+    kind: equipmentKind,
+    name: 'ruby',
+    id: 'example:ruby',
+    data: {
+      layers: {
+        humanoid: [{ texture: 'example:ruby' }],
+        humanoid_leggings: [{ texture: 'example:ruby' }],
+      },
+    },
   },
 ];
 

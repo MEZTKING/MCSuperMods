@@ -34,13 +34,15 @@ public final class MsmCodecs {
             Identifier::toString);
 
     /**
-     * A tag id such as {@code #minecraft:incorrect_for_iron_tool}, decoded without the {@code #}.
-     * The leading {@code #} is optional, so both spellings of a tag-only mcdoc string are read.
+     * A tag reference such as {@code #minecraft:incorrect_for_iron_tool} (mcdoc
+     * {@code #[id(registry=..., tags="required")] string}), decoded to the id without the {@code #}.
      */
     public static final Codec<Identifier> TAG_ID = Codec.STRING.comapFlatMap(
             s -> {
-                Identifier id = Identifier.tryParse(s.startsWith("#") ? s.substring(1) : s);
-                return id == null ? DataResult.error(() -> "invalid tag id '" + s + "'") : DataResult.success(id);
+                Identifier id = s.startsWith("#") ? Identifier.tryParse(s.substring(1)) : null;
+                return id == null
+                        ? DataResult.error(() -> "invalid tag reference '" + s + "' (expected #namespace:path)")
+                        : DataResult.success(id);
             },
             id -> "#" + id);
 

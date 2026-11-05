@@ -105,7 +105,7 @@ export function createIpcHandlers(
       ),
     [InvokeChannels.exportsPickFolder]: (req) => platform.exports.pickFolder(req.title),
     [InvokeChannels.exportsWriteFiles]: (req) => platform.exports.writeFiles(req.folder, req.files),
-    [InvokeChannels.exportsRuntimeJar]: () => platform.exports.runtimeJar(),
+    [InvokeChannels.exportsRuntimeJar]: (req) => platform.exports.runtimeJar(req.targetId),
     [InvokeChannels.exportsGeckolibJar]: (req) => platform.exports.geckolibJar(req.targetId),
     [InvokeChannels.exportsWriteTree]: (req) => platform.exports.writeTree(req.folder, req.files),
     [InvokeChannels.exportsGradleWrapper]: () => platform.exports.gradleWrapper(),

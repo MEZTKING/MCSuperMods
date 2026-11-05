@@ -23,8 +23,8 @@ describe('@msm/plugin-scripting', () => {
   it('declares its id and API range', () => {
     expect(plugin.id).toBe('msm.scripting');
     expect(plugin.apiVersion).toBe('^1.0.0');
-    const [major, minor] = API_VERSION.split('.');
-    expect(plugin.apiVersion).toBe(`^${major}.${minor}.0`);
+    const [major] = API_VERSION.split('.');
+    expect(plugin.apiVersion).toBe(`^${major}.0.0`);
     expect(Object.isFrozen(plugin)).toBe(true);
   });
 

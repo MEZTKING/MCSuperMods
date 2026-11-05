@@ -19,7 +19,16 @@
  * - `blocks-items.unknown-tool-tier` (error): a `min_tier` of `msm:breakable` or a `tier` of
  *   `msm:tool` that the target has no tool material for (no
  *   `minecraft:incorrect_for_<tier>_tool` block tag). Skipped when the registry has no block
- *   tags at all.
+ *   tags at all. A custom tool material (an object `tier`, ADR 0042 D3) is not checked.
+ * - `blocks-items.unknown-armor-material` (error): an `msm:armor` `material` given by name that
+ *   is not one of the target's `items.armorMaterials` (ADR 0042 D4). Skipped for a target
+ *   without that fact; a custom material (an object) is not checked.
+ * - `blocks-items.unknown-equipment-asset` (warning): a custom armour material whose
+ *   `equipment_asset` names neither a `minecraft:equipment` element of the project nor a
+ *   vanilla equipment asset of the target, so the piece is invisible when worn (ADR 0042 D2).
+ *   Skipped when the registry knows no equipment assets and the project has none.
+ * - `blocks-items.component-conflict` (error): an `msm:item` with both `msm:armor` and
+ *   `msm:tool`; the runtime registers neither (ADR 0042 D1).
  * - `blocks-items.item-collision` (error): an `msm:item` with the id of an `msm:block` that
  *   registers its own block item (`item` is not `false`).
  */
@@ -33,7 +42,10 @@ import type {
 } from '@msm/plugin-api';
 import { BLOCK_KIND, ITEM_KIND, MOD_KIND } from './kinds';
 import { isRecord } from './lowering/paths';
-import { incorrectForTierTag } from './lowering/tools';
+import { incorrectForTierTag, toolTierName } from './lowering/tools';
+
+/** Kind id of equipment assets, contributed by `@msm/plugin-resourcepack` (ADR 0042 D2). */
+export const EQUIPMENT_KIND = 'minecraft:equipment';
 
 /** The Fabric mod id rule (ADR 0025 D6). */
 export const MOD_ID_PATTERN = /^[a-z][a-z0-9_-]{1,63}$/;
@@ -59,6 +71,9 @@ export const BLOCKS_ITEMS_PROBLEM_CODES = Object.freeze([
   'blocks-items.reserved-mod-id',
   'blocks-items.unknown-tool-tier',
   'blocks-items.item-collision',
+  'blocks-items.unknown-armor-material',
+  'blocks-items.unknown-equipment-asset',
+  'blocks-items.component-conflict',
 ] as const);
 
 /** RFC 6901 escaping of one reference token. */
@@ -242,13 +257,14 @@ function unknownToolTiers(
   if (registry.ids('tag/block').length === 0) return [];
   const problems: Problem[] = [];
   const check = (element: Element, tier: Json | undefined, path: string): void => {
-    if (typeof tier !== 'string' || registry.has('tag/block', incorrectForTierTag(tier))) return;
+    const name = toolTierName(tier);
+    if (name === undefined || registry.has('tag/block', incorrectForTierTag(name))) return;
     problems.push({
       severity: 'error',
       code: 'blocks-items.unknown-tool-tier',
       elementId: element.id,
       path,
-      message: `Tool tier "${tier}" does not exist in ${targetId}: the target has no "${incorrectForTierTag(tier)}" block tag.`,
+      message: `Tool tier "${name}" does not exist in ${targetId}: the target has no "${incorrectForTierTag(name)}" block tag.`,
     });
   };
   for (const element of definitions(elements)) {
@@ -260,6 +276,81 @@ function unknownToolTiers(
       const tool = record(components?.['msm:tool']);
       check(element, tool?.tier, pointer('components', 'msm:tool', 'tier'));
     }
+  }
+  return problems;
+}
+
+/** The `msm:armor` component of an item element, if any. */
+const armorOf = (element: Element): JsonObject | undefined =>
+  element.kind === ITEM_KIND
+    ? record(record(dataOf(element).components)?.['msm:armor'])
+    : undefined;
+
+const ARMOR_MATERIAL_PATH = pointer('components', 'msm:armor', 'material');
+
+function unknownArmorMaterials(
+  elements: readonly Element[],
+  materials: readonly string[] | undefined,
+  targetId: string,
+): Problem[] {
+  if (materials === undefined) return [];
+  const problems: Problem[] = [];
+  for (const element of elements) {
+    const material = armorOf(element)?.material;
+    if (typeof material !== 'string' || materials.includes(material)) continue;
+    problems.push({
+      severity: 'error',
+      code: 'blocks-items.unknown-armor-material',
+      elementId: element.id,
+      path: ARMOR_MATERIAL_PATH,
+      message: `Armour material "${material}" does not exist in ${targetId}. Use one of ${materials.map((name) => `"${name}"`).join(', ')}, or a custom material.`,
+    });
+  }
+  return problems;
+}
+
+/** `ns:path` for a written id; an id without a namespace is `minecraft:`. */
+const namespacedId = (id: string): string => (id.includes(':') ? id : `minecraft:${id}`);
+
+function unknownEquipmentAssets(
+  elements: readonly Element[],
+  registry: ValidationRegistry,
+): Problem[] {
+  const project = new Set(
+    elements.filter((element) => element.kind === EQUIPMENT_KIND).map((element) => element.id),
+  );
+  if (project.size === 0 && registry.ids('equipment').length === 0) return [];
+  const problems: Problem[] = [];
+  for (const element of elements) {
+    const asset = record(armorOf(element)?.material)?.equipment_asset;
+    if (typeof asset !== 'string') continue;
+    const id = namespacedId(asset);
+    if (project.has(id) || registry.has('equipment', id)) continue;
+    problems.push({
+      severity: 'warning',
+      code: 'blocks-items.unknown-equipment-asset',
+      elementId: element.id,
+      path: pointer('components', 'msm:armor', 'material', 'equipment_asset'),
+      message: `Equipment asset "${asset}" is neither an equipment element of this project nor a vanilla one, so the armour is invisible when worn. Add a "${id}" equipment element or pick an existing one.`,
+    });
+  }
+  return problems;
+}
+
+function componentConflicts(elements: readonly Element[]): Problem[] {
+  const problems: Problem[] = [];
+  for (const element of elements) {
+    if (element.kind !== ITEM_KIND) continue;
+    const components = record(dataOf(element).components);
+    if (components?.['msm:armor'] === undefined || components['msm:tool'] === undefined) continue;
+    problems.push({
+      severity: 'error',
+      code: 'blocks-items.component-conflict',
+      elementId: element.id,
+      path: pointer('components', 'msm:armor'),
+      message:
+        'An item cannot be both armour and a tool: the game would register neither. Remove "msm:armor" or "msm:tool".',
+    });
   }
   return problems;
 }
@@ -332,5 +423,21 @@ export const blocksItemsValidators: readonly ProjectValidator[] = Object.freeze(
     id: 'msm.blocks-items.item-collision',
     kinds: DEFINITION_KINDS,
     validate: ({ elements }) => itemCollisions(elements),
+  },
+  {
+    id: 'msm.blocks-items.armor-material',
+    kinds: [ITEM_KIND],
+    validate: ({ elements, target }) =>
+      unknownArmorMaterials(elements, target.items?.armorMaterials, target.id),
+  },
+  {
+    id: 'msm.blocks-items.equipment-asset',
+    kinds: [ITEM_KIND, EQUIPMENT_KIND],
+    validate: ({ elements, registry }) => unknownEquipmentAssets(elements, registry),
+  },
+  {
+    id: 'msm.blocks-items.component-conflict',
+    kinds: [ITEM_KIND],
+    validate: ({ elements }) => componentConflicts(elements),
   },
 ] satisfies ProjectValidator[]);

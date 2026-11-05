@@ -115,6 +115,7 @@ export const MENU_COMMANDS = [
   'whatsNew',
   'examples',
   'clearRecentProjects',
+  'upgradeTarget',
 ] as const;
 
 /** A command the application menu sends to the renderer. */

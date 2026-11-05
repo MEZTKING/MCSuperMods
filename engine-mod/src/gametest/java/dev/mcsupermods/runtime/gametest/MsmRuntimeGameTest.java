@@ -8,16 +8,21 @@ import dev.mcsupermods.runtime.events.EventRunner;
 import dev.mcsupermods.runtime.registry.MsmBlock;
 import dev.mcsupermods.runtime.registry.MsmItem;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.List;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
@@ -25,6 +30,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.enchantment.Enchantable;
+import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -310,6 +318,145 @@ public class MsmRuntimeGameTest {
         InteractionResult second = gadget.use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
         helper.assertValueEqual(second, InteractionResult.FAIL, "use during the cooldown");
         helper.assertValueEqual(count(player, shard), 3, "event ran during the cooldown");
+        helper.succeed();
+    }
+
+    // Armour and custom tool materials (ADR 0042)
+
+    private static Item item(String path) {
+        return BuiltInRegistries.ITEM.getValue(id(path));
+    }
+
+    /** The sum of a stack's modifiers of one attribute for a slot. */
+    private static double modifier(ItemStack stack, EquipmentSlot slot, Holder<Attribute> attribute) {
+        double[] sum = {0};
+        stack.forEachModifier(slot, (a, m) -> {
+            if (a.equals(attribute)) {
+                sum[0] += m.amount();
+            }
+        });
+        return sum[0];
+    }
+
+    private static void assertClose(GameTestHelper helper, double actual, double expected, String what) {
+        helper.assertTrue(Math.abs(actual - expected) < 1.0e-4, what + ": expected " + expected + ", got " + actual);
+    }
+
+    @GameTest
+    public void armorHelmetProperties(GameTestHelper helper) {
+        Item helmet = item("ruby_helmet");
+        helper.assertTrue(helmet instanceof MsmItem, "ruby_helmet is not an MsmItem");
+        ItemStack stack = new ItemStack(helmet);
+        Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
+        helper.assertTrue(equippable != null, "msm:armor sets the equippable component");
+        helper.assertValueEqual(equippable.slot(), EquipmentSlot.HEAD, "equippable slot");
+        helper.assertValueEqual(equippable.assetId().map(k -> k.identifier()), Optional.of(id("ruby")), "equipment asset");
+        helper.assertTrue(EquipSoundCheck.plays(equippable, Identifier.parse("minecraft:item.armor.equip_diamond")), "equip sound by id");
+        assertClose(helper, modifier(stack, EquipmentSlot.HEAD, Attributes.ARMOR), 3, "armor (helmet defense)");
+        assertClose(helper, modifier(stack, EquipmentSlot.HEAD, Attributes.ARMOR_TOUGHNESS), 1.5, "armor_toughness");
+        assertClose(helper, modifier(stack, EquipmentSlot.HEAD, Attributes.KNOCKBACK_RESISTANCE), 0.1f, "knockback_resistance");
+        assertClose(helper, modifier(stack, EquipmentSlot.CHEST, Attributes.ARMOR), 0, "armor in another slot");
+        helper.assertValueEqual(stack.getMaxDamage(), 11 * 20, "max_damage is the helmet multiplier (11) times the base durability");
+        helper.assertValueEqual(stack.getMaxStackSize(), 1, "armour stacks to 1");
+        helper.succeed();
+    }
+
+    @GameTest
+    public void armorCustomMaterial(GameTestHelper helper) {
+        ItemStack ruby = new ItemStack(item("ruby_helmet"));
+        helper.assertTrue(ruby.has(DataComponents.REPAIRABLE), "repairable component");
+        helper.assertTrue(ruby.isValidRepairItem(new ItemStack(Items.DIAMOND)), "repair_items #minecraft:diamond_tool_materials");
+        helper.assertFalse(ruby.isValidRepairItem(new ItemStack(Items.IRON_INGOT)), "iron repairs the ruby helmet");
+        Enchantable enchantable = ruby.get(DataComponents.ENCHANTABLE);
+        helper.assertTrue(enchantable != null && enchantable.value() == 15, "enchantable from enchantment_value: " + enchantable);
+
+        // A vanilla material by name equals the vanilla piece.
+        ItemStack ours = new ItemStack(item("iron_chestplate"));
+        ItemStack vanilla = new ItemStack(Items.IRON_CHESTPLATE);
+        Equippable equippable = ours.get(DataComponents.EQUIPPABLE);
+        helper.assertValueEqual(equippable.slot(), EquipmentSlot.CHEST, "chestplate slot");
+        helper.assertValueEqual(equippable.assetId(), Optional.of(EquipmentAssets.IRON), "iron equipment asset");
+        helper.assertValueEqual(ours.getMaxDamage(), vanilla.getMaxDamage(), "max_damage of iron");
+        for (Holder<Attribute> a : List.of(Attributes.ARMOR, Attributes.ARMOR_TOUGHNESS, Attributes.KNOCKBACK_RESISTANCE)) {
+            assertClose(helper, modifier(ours, EquipmentSlot.CHEST, a), modifier(vanilla, EquipmentSlot.CHEST, a), a.getRegisteredName());
+        }
+        helper.assertTrue(ours.isValidRepairItem(new ItemStack(Items.IRON_INGOT)), "iron ingots repair iron armour");
+        helper.succeed();
+    }
+
+    @GameTest
+    public void armorDurabilityOverride(GameTestHelper helper) {
+        ItemStack boots = new ItemStack(item("sturdy_boots"));
+        helper.assertValueEqual(boots.getMaxDamage(), 777, "msm:durability overrides the material's per-slot durability");
+        Equippable equippable = boots.get(DataComponents.EQUIPPABLE);
+        helper.assertValueEqual(equippable.slot(), EquipmentSlot.FEET, "boots slot");
+        helper.assertTrue(EquipSoundCheck.plays(equippable, Identifier.parse("minecraft:item.armor.equip_generic")),
+                "an unknown equip_sound falls back to the generic sound");
+        List<String> warnings = MsmRuntime.report().warnings();
+        helper.assertTrue(warnings.stream().anyMatch(w -> w.contains("sturdy_boots.json") && w.contains("msm_test:no_such_sound")),
+                "no warning for the unknown equip sound: " + warnings);
+        // Without repair_items the repair tag is a project tag nobody fills.
+        helper.assertFalse(boots.isValidRepairItem(new ItemStack(Items.DIAMOND)), "diamonds repair boots without repair_items");
+        helper.assertFalse(boots.isValidRepairItem(new ItemStack(Items.LEATHER)), "leather repairs boots without repair_items");
+        helper.assertFalse(boots.has(DataComponents.ENCHANTABLE), "enchantment_value 0 is not enchantable");
+        helper.succeed();
+    }
+
+    @GameTest
+    public void armorAndToolTogetherRegisterNeither(GameTestHelper helper) {
+        ItemStack stack = new ItemStack(item("armed_helmet"));
+        helper.assertTrue(stack.getItem() instanceof MsmItem, "armed_helmet still registers");
+        helper.assertFalse(stack.has(DataComponents.EQUIPPABLE), "msm:armor applied beside msm:tool");
+        helper.assertFalse(stack.has(DataComponents.TOOL), "msm:tool applied beside msm:armor");
+        List<String> errors = MsmRuntime.report().errors();
+        helper.assertTrue(errors.stream().anyMatch(e -> e.contains("armed_helmet.json") && e.contains("msm:armor and msm:tool")),
+                "no error for armour and tool on one item: " + errors);
+        helper.succeed();
+    }
+
+    @GameTest
+    public void customToolMaterialMinesAndRefusesDrops(GameTestHelper helper) {
+        ItemStack ruby = new ItemStack(item("ruby_pickaxe"));
+        ItemStack flint = new ItemStack(item("flint_pickaxe"));
+        BlockState obsidian = Blocks.OBSIDIAN.defaultBlockState();
+        helper.assertTrue(ruby.isCorrectToolForDrops(obsidian), "ruby (incorrect_for_diamond_tool) gets obsidian drops");
+        helper.assertValueEqual(ruby.getDestroySpeed(obsidian), 10.0f, "ruby mines at its speed");
+        helper.assertFalse(flint.isCorrectToolForDrops(obsidian), "flint (incorrect_for_stone_tool) gets obsidian drops");
+        helper.assertTrue(flint.isCorrectToolForDrops(Blocks.IRON_ORE.defaultBlockState()), "flint mines iron ore for drops");
+        helper.assertValueEqual(flint.getDestroySpeed(obsidian), 4.0f, "flint still mines at its speed");
+        helper.assertValueEqual(ruby.getMaxDamage(), 1200, "custom material durability");
+        helper.assertValueEqual(flint.getMaxDamage(), 100, "custom material durability");
+        helper.assertTrue(ruby.isValidRepairItem(new ItemStack(Items.DIAMOND)), "ruby repair_items");
+        helper.assertFalse(flint.isValidRepairItem(new ItemStack(Items.FLINT)), "flint without repair_items is repaired by flint");
+        Enchantable enchantable = ruby.get(DataComponents.ENCHANTABLE);
+        helper.assertTrue(enchantable != null && enchantable.value() == 12, "enchantable: " + enchantable);
+
+        // Through the player: progress is speed / hardness / 30 with drops and / 100 without.
+        helper.setBlock(AT, Blocks.OBSIDIAN);
+        BlockPos abs = helper.absolutePos(AT);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, ruby);
+        float rubyProgress = obsidian.getDestroyProgress(player, helper.getLevel(), abs);
+        player.setItemInHand(InteractionHand.MAIN_HAND, flint);
+        float flintProgress = obsidian.getDestroyProgress(player, helper.getLevel(), abs);
+        assertClose(helper, rubyProgress / flintProgress, (10.0 / 30.0) / (4.0 / 100.0), "ruby against flint progress on obsidian");
+        helper.succeed();
+    }
+
+    @GameTest
+    public void toolAttackOverrides(GameTestHelper helper) {
+        ItemStack sword = new ItemStack(item("heavy_sword"));
+        ItemStack iron = new ItemStack(Items.IRON_SWORD);
+        double vanillaDamage = modifier(iron, EquipmentSlot.MAINHAND, Attributes.ATTACK_DAMAGE);
+        assertClose(helper, modifier(sword, EquipmentSlot.MAINHAND, Attributes.ATTACK_DAMAGE), vanillaDamage + (9.0 - 3.0),
+                "attack_damage 9 replaces the sword base 3; the iron bonus stays");
+        assertClose(helper, modifier(sword, EquipmentSlot.MAINHAND, Attributes.ATTACK_SPEED), -3.0, "attack_speed override");
+        assertClose(helper, modifier(iron, EquipmentSlot.MAINHAND, Attributes.ATTACK_SPEED), -2.4, "vanilla sword speed");
+        helper.assertValueEqual(sword.getMaxDamage(), iron.getMaxDamage(), "iron durability");
+        // Without overrides a custom material adds its bonus to the type's base (pickaxe 1.0, -2.8).
+        ItemStack ruby = new ItemStack(item("ruby_pickaxe"));
+        assertClose(helper, modifier(ruby, EquipmentSlot.MAINHAND, Attributes.ATTACK_DAMAGE), 1.0 + 3.5, "pickaxe base plus bonus");
+        assertClose(helper, modifier(ruby, EquipmentSlot.MAINHAND, Attributes.ATTACK_SPEED), -2.8f, "pickaxe base speed");
         helper.succeed();
     }
 }

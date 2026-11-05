@@ -27,10 +27,10 @@ public class MsmSpikeGameTest {
 
     @GameTest
     public void definitionsAreRegistered(GameTestHelper helper) {
-        // msm_test/ ships two deliberately broken files (MsmRuntimeGameTest); nothing else may fail,
+        // msm_test/ ships three deliberately broken files (MsmRuntimeGameTest); nothing else may fail,
         // except the missing-GeckoLib errors of a run with -PwithoutGeckolib (MsmEntityGameTest).
         helper.assertTrue(MsmRuntime.report().errors().stream()
-                .allMatch(e -> e.contains("partly_broken.json") || e.contains("future_format.json")
+                .allMatch(e -> e.contains("partly_broken.json") || e.contains("future_format.json") || e.contains("armed_helmet.json")
                         || e.contains("needs the mod 'geckolib'")),
                 "load errors: " + MsmRuntime.report().errors());
         helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(ORE), "block " + ORE + " not registered");

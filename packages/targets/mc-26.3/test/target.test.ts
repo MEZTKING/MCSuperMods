@@ -116,6 +116,27 @@ describe('target mc-26.3', () => {
     }
   });
 
+  it('lists the nine vanilla armour materials, each a vanilla equipment asset', async () => {
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    expect(target.items?.armorMaterials).toEqual([
+      'leather',
+      'copper',
+      'chainmail',
+      'iron',
+      'gold',
+      'diamond',
+      'turtle_scute',
+      'netherite',
+      'armadillo_scute',
+    ]);
+    for (const name of target.items?.armorMaterials ?? []) {
+      expect(registries.equipment).toContain(name);
+    }
+  });
+
   it('matches the vendored mcmeta data version', async () => {
     const version = await readJson('../vendor/mcmeta/version.json');
     expect(target.dataVersion).toBe(version.data_version);

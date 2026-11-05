@@ -5,6 +5,11 @@
  * against each built-in target's vendored block tags in the tests; the validator
  * `blocks-items.unknown-tool-tier` checks a tier against the target's
  * `minecraft:incorrect_for_<tier>_tool` tag, so a target without a tier reports it.
+ *
+ * `msm:tool.tier` is either a tier name or a custom tool material (ADR 0042 D3): an object
+ * whose mining level is its own `incorrect_blocks_for_drops` tag. A custom material joins no
+ * `needs_<tier>_tool` logic and is not checked against the tier tags; lowering copies it into
+ * the runtime definition unchanged.
  */
 
 /** Tools whose `minecraft:mineable/<tool>` tag a block can join. */
@@ -26,6 +31,26 @@ export type ToolTier = (typeof TOOL_TIERS)[number];
 
 const isToolTier = (tier: string): tier is ToolTier =>
   (TOOL_TIERS as readonly string[]).includes(tier);
+
+/**
+ * The tier name of an `msm:tool` `tier` value, or `undefined` for a custom tool material (an
+ * object) and for anything that is not a string.
+ *
+ * @param tier - The `tier` field as written in element data.
+ */
+export function toolTierName(tier: unknown): string | undefined {
+  return typeof tier === 'string' ? tier : undefined;
+}
+
+/**
+ * Whether an `msm:tool` `tier` value is a custom tool material (ADR 0042 D3) rather than a
+ * tier name.
+ *
+ * @param tier - The `tier` field as written in element data.
+ */
+export function isCustomToolMaterial(tier: unknown): boolean {
+  return typeof tier === 'object' && tier !== null && !Array.isArray(tier);
+}
 
 /**
  * The tier's name in vanilla tag ids, which say `wooden` where the format says `wood`.

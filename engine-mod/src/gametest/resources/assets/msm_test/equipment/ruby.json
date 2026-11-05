@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "msm_test:ruby"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "msm_test:ruby"
+      }
+    ]
+  }
+}

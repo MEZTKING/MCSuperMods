@@ -13,17 +13,15 @@ files:
   - out/**
   - package.json
 artifactName: ${productName}-${version}-${os}-${arch}.${ext}
-# The msm_runtime jar the Fabric content jar nests (ADR 0026 D4), read by the packaged app
-# from `resources/runtime/msm_runtime.jar`. `scripts/stage-runtime.mjs` (run by `dist` and
-# `dist:dir`) copies it from `engine-mod/build/libs/`; when it is absent electron-builder
-# warns "file source doesn't exist" and packages the app without it.
+# The msm_runtime jars the Fabric content jar nests, one per Minecraft version (ADR 0026 D4,
+# ADR 0038 D4), read by the packaged app from `resources/runtime/msm_runtime-mc-<mc>.jar`, and
+# the Gradle wrapper the Java project export copies (ADR 0033 D2), read from
+# `resources/runtime/gradle-wrapper/`. `scripts/stage-runtime.mjs` (run by `dist` and
+# `dist:dir`) fills `build/runtime/` from `engine-mod/`; a version without a jar is packaged
+# without it (`--require` fails instead).
 extraResources:
-  - from: build/runtime/msm_runtime.jar
-    to: runtime/msm_runtime.jar
-  # The Gradle wrapper the Java project export copies (ADR 0033 D2), read from
-  # `resources/runtime/gradle-wrapper/`; staged by `scripts/stage-runtime.mjs` from `engine-mod/`.
-  - from: build/runtime/gradle-wrapper
-    to: runtime/gradle-wrapper
+  - from: build/runtime
+    to: runtime
 
 # Release target: Windows installer, unsigned until the user supplies signing credentials.
 win:

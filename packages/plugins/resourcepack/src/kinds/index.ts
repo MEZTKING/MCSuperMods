@@ -3,6 +3,7 @@
  */
 import type { ElementKind } from '@msm/plugin-api';
 import { blockDefinitionKind } from './block-definition';
+import { equipmentKind } from './equipment';
 import { itemDefinitionKind } from './item-definition';
 import { langKind } from './lang';
 import { modelKind } from './model';
@@ -10,6 +11,7 @@ import { packMcmetaKind } from './pack-mcmeta';
 import { soundsKind } from './sounds';
 
 export { blockDefinitionKind } from './block-definition';
+export { EQUIPMENT_FOLDER, equipmentKind } from './equipment';
 export { itemDefinitionKind } from './item-definition';
 export { langKind } from './lang';
 export { modelKind } from './model';
@@ -24,4 +26,5 @@ export const resourcePackKinds: readonly ElementKind[] = Object.freeze([
   langKind,
   soundsKind,
   packMcmetaKind,
+  equipmentKind,
 ]);

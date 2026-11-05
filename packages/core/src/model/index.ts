@@ -1,6 +1,7 @@
 export type {
   Asset,
   Element,
+  ElementCreatorMeta,
   ElementMeta,
   Json,
   JsonObject,

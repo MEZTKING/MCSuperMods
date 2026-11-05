@@ -1063,7 +1063,7 @@
     "::msm::definition::ArmorMaterial": {
       "fields": [
         {
-          "desc": "Base durability; each slot multiplies it as vanilla does (helmet 11, chestplate 16, leggings 15, boots 13; verify at implementation).",
+          "desc": "Base durability; each slot multiplies it as vanilla does (helmet 11, chestplate 16, leggings 15, boots 13).",
           "key": "durability",
           "kind": "pair",
           "type": {
@@ -4349,5 +4349,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:a98fcc3b151e1a6d145835dd2b8caf4f2850bd5df99dd1670def4f7eef878430"
+  "ref": "msm-mcdoc:sha256:96d9fba943fef5d27e86e9885294b270bcbf587b1aaeb0ae0a811d1e951e9cb7"
 }

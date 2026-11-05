@@ -222,7 +222,7 @@ enum(string) ArmorMaterialName {
 
 /// A custom armour material (ADR 0042 D1), the fields of the vanilla `ArmorMaterial` record.
 struct ArmorMaterial {
-	/// Base durability; each slot multiplies it as vanilla does (helmet 11, chestplate 16, leggings 15, boots 13; verify at implementation).
+	/// Base durability; each slot multiplies it as vanilla does (helmet 11, chestplate 16, leggings 15, boots 13).
 	durability: int @ 1..,
 	/// Armour points per slot.
 	defense: struct ArmorDefense {

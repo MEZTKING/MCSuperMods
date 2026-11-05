@@ -13,6 +13,7 @@ import { basename, dirname, isAbsolute, join, normalize } from 'node:path';
 import type { ProjectFileSystem } from '@msm/core';
 import type { Downloader, InstallEnv, InstallFileSystem, LauncherProgramEnv } from '@msm/interop';
 import { createNodeInstallFileSystem } from '@msm/interop/node';
+import { targetById } from '@msm/targets';
 import type {
   FileFilter,
   PlatformAdapter,
@@ -26,7 +27,7 @@ import { type GradleWrapperLocation, readGradleWrapper } from './gradle-wrapper'
 import { createLocationResolver } from './locations';
 import { createMcfunctionBroker } from './mcfunction';
 import { createMinecraftService, type MinecraftService } from './minecraft';
-import { type RuntimeJarLocation, readRuntimeJar } from './runtime-jar';
+import { type RuntimeJarLocation, readRuntimeJar, runtimeVersionKey } from './runtime-jar';
 import { createScopedFileSystem, isWithin, type ScopedFileSystem } from './scoped-fs';
 import { createScriptingService, type ScriptingService } from './scripting';
 import { createSettingsStore, type SettingsStore } from './settings';
@@ -123,8 +124,8 @@ export interface NodePlatformDeps {
   /** Clears the OS recent documents; optional. */
   clearRecentDocuments?(): void;
   /**
-   * Where the `msm_runtime` jar is (ADR 0026 D4). When absent, `exports.runtimeJar()`
-   * returns `null`.
+   * Where the `msm_runtime` jars are (ADR 0026 D4; one per target since ADR 0038 D4). When
+   * absent, `exports.runtimeJar(targetId)` returns `null`.
    */
   runtimeJar?: RuntimeJarLocation;
   /**
@@ -418,8 +419,12 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
           lastExportFolder = dirname(path);
         },
       }),
-      runtimeJar: async () =>
-        deps.runtimeJar === undefined ? null : readRuntimeJar(deps.runtimeJar),
+      runtimeJar: async (targetId) => {
+        // ADR 0038 D4: one runtime per target, found by the target's runtime version key.
+        const mcVersion = targetById(targetId)?.target.mcVersion;
+        if (deps.runtimeJar === undefined || mcVersion === undefined) return null;
+        return readRuntimeJar(deps.runtimeJar, runtimeVersionKey(mcVersion));
+      },
       geckolibJar: (targetId) => geckolib.jar(targetId),
       gradleWrapper: async () =>
         deps.gradleWrapper === undefined ? null : readGradleWrapper(deps.gradleWrapper),

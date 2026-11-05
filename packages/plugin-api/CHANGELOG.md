@@ -2,6 +2,19 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.1.0 — unreleased
+
+Armour facts and the Creator (ADRs 0042, 0043). `API_VERSION` is `1.1.0`. Additive: every change is an optional field or a new type, so plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `TargetFacts.items?: ItemFacts` with `armorMaterials: readonly string[]`: the vanilla armour material names of the target (ADR 0042 D4). A target without it skips the checks that need it.
+- `ProjectStarter.creator?: StarterCreatorInfo` (`group: CreatorGroup`, `blurb: string`; `CreatorGroup` is `'gear' | 'blocks' | 'food' | 'mobs' | 'scripts'`): lists the starter in the host's Creator as a guided flow (ADR 0043 D1).
+- `SetStarterParameter` (`type: 'set'`, `choices`, `default: string[]`, `min?`): a parameter whose value is a subset of a fixed list, passed to `build` as a `string[]` in `BundleContext.values` (already a `Json`, so the `values` type is unchanged). Declared ahead of hosts: it joins the `StarterParameter` union once the host's wizard renders it, so starters cannot declare it yet.
+- `ElementMeta.creator?: ElementCreatorMeta` (`flowId`, `setId`, `values`, `generatedId`): written by the host on elements the Creator made, kept through load and save by `@msm/core` (ADR 0043 D4).
+
+### Migration from 1.0.0
+
+None. Hosts that switch over `CreatorGroup` must handle every group.
+
 ## 1.0.0 — unreleased
 
 The first stable API (ADR 0036). `API_VERSION` is `1.0.0`. Built-in plugins and `tools/new-plugin` declare `^1.0.0`. The package gains a publishable build (`tsup`: `dist/index.js` ES module, `dist/index.cjs`, `dist/index.d.ts`) and a tarball attached to every release.

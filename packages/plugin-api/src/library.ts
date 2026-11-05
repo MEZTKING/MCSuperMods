@@ -253,6 +253,9 @@ export interface ChoiceStarterParameter extends StarterParameterBase {
  * {@link BundleContext.values} is a `string[]` of the chosen {@link choices}' values, in the
  * order of {@link choices}. Since 1.1.0 (ADR 0043 D1).
  *
+ * Declared ahead of hosts: it joins the {@link StarterParameter} union once the host's wizard
+ * renders it (the next 1.x minor), so a starter cannot declare it yet.
+ *
  * @example
  * ```ts
  * const pieces: SetStarterParameter = {
@@ -298,8 +301,24 @@ export type StarterParameter =
   | NumberStarterParameter
   | BooleanStarterParameter
   | ColourStarterParameter
-  | ChoiceStarterParameter
-  | SetStarterParameter;
+  | ChoiceStarterParameter;
+
+/**
+ * The Creator group a {@link ProjectStarter} is listed under (ADR 0043 D1): `gear` (tools and
+ * armour), `blocks`, `food`, `mobs` or `scripts`. Since 1.1.0.
+ */
+export type CreatorGroup = 'gear' | 'blocks' | 'food' | 'mobs' | 'scripts';
+
+/**
+ * How a {@link ProjectStarter} appears in the host's Creator, the guided flow with a live
+ * preview (ADR 0043). Since 1.1.0.
+ */
+export interface StarterCreatorInfo {
+  /** The Creator group the flow is listed under. */
+  group: CreatorGroup;
+  /** One sentence shown on the flow's card, in British English. */
+  blurb: string;
+}
 
 /**
  * One entry of the host's "New project" starter list.
@@ -323,6 +342,18 @@ export interface ProjectStarter {
    * questions. Since 1.0.0.
    */
   parameters?: StarterParameter[];
+  /**
+   * Lists the starter in the host's Creator as a guided flow (ADR 0043 D1): the host renders
+   * its {@link parameters} next to a live preview of {@link build}'s bundle and adds the
+   * bundle to the open project. Omit it for a starter that is offered for new projects only.
+   * Since 1.1.0.
+   *
+   * @example
+   * ```ts
+   * creator: { group: 'gear', blurb: 'Tools and armour of one material, with recipes.' },
+   * ```
+   */
+  creator?: StarterCreatorInfo;
   /**
    * Whether the starter applies to a target. The host hides a starter that returns `false`
    * for the chosen target, and the library tests build it only for the targets it supports.

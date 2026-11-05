@@ -455,11 +455,12 @@ export interface PlatformAdapter {
       files: { name: string; data: Uint8Array }[],
     ): Promise<{ paths: string[] }>;
     /**
-     * The `msm_runtime` jar the Fabric content jar nests (ADR 0026 D4): the packaged app's
-     * `resources/runtime/msm_runtime.jar`, or in development the newest jar in
-     * `engine-mod/build/libs/`. `null` when there is none.
+     * The `msm_runtime` jar the Fabric content jar nests (ADR 0026 D4), for the target named
+     * by `targetId` (ADR 0038 D4): the packaged app's `resources/runtime/msm_runtime-mc-<mc>.jar`,
+     * or in development the newest `msm_runtime-*+mc<mc>.jar` in `engine-mod/build/libs/`.
+     * `null` when there is none or the target is unknown.
      */
-    runtimeJar(): Promise<Uint8Array | null>;
+    runtimeJar(targetId: string): Promise<Uint8Array | null>;
     /**
      * The GeckoLib jar the Fabric content jar nests for projects with entities (ADR 0029 D4),
      * for the target named by `targetId`: the cached copy in the download cache, or downloaded

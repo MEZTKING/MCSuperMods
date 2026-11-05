@@ -50,6 +50,10 @@ const COVERED_REFS: readonly string[] = [
   'tag:worldgen/biome',
   'tag:worldgen/structure',
   'tag:worldgen/world_preset',
+  // Armour (ADR 0042): MSM item element data and the equipment asset kind.
+  'msm:item',
+  'msm:item_definition',
+  '::java::assets::equipment::Equipment',
 ];
 
 /** Tier-B kinds: reported (not asserted), since unmodelled nodes may remain there. */

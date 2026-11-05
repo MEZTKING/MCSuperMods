@@ -58,6 +58,7 @@ import { RenameElementDialog } from './components/RenameElementDialog';
 import { RightDock } from './components/RightDock';
 import { SettingsDialog } from './components/SettingsDialog';
 import { StatusBar } from './components/StatusBar';
+import { UpgradeTargetDialog } from './components/UpgradeTargetDialog';
 import { StatusToast } from './components/StatusToast';
 import { TestInMinecraftDialog, testInMinecraftMessage } from './components/TestInMinecraftDialog';
 import { modKey, Toolbar } from './components/Toolbar';
@@ -161,6 +162,7 @@ type DialogState =
   | { type: 'fabric-jar' }
   | { type: 'java-project' }
   | { type: 'test-in-minecraft' }
+  | { type: 'upgrade-target' }
   | { type: 'whats-new'; version: string; notes?: string }
   | { type: 'no-minecraft'; message: string };
 
@@ -378,6 +380,11 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       void refreshRecent();
     },
     [select, session, setMessage, setExportProblems, refreshMinecraftStatus, refreshRecent],
+  );
+
+  const previewUpgrade = useCallback(
+    (targetId: string) => session.upgradeTargetPreview(targetId),
+    [session],
   );
 
   const openRecent = useCallback(
@@ -1141,6 +1148,13 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     checkForUpdates,
     whatsNew,
     clearRecentProjects: clearRecent,
+    upgradeTarget: () => {
+      if (project === null) {
+        setMessage({ kind: 'error', text: 'Open a project first.' });
+        return;
+      }
+      setDialog({ type: 'upgrade-target' });
+    },
   };
 
   const commandHandlers: CommandHandlers = {
@@ -1152,6 +1166,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       void refreshRecent();
       setRecentPickerOpen(true);
     },
+    upgradeTarget: project === null || target === null ? null : handlers.upgradeTarget,
     save: saveDisabledReason === null ? handlers.save : null,
     undo: snapshot.canUndo ? () => session.undo() : null,
     redo: snapshot.canRedo ? () => session.redo() : null,
@@ -1421,7 +1436,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               onReveal={reveal}
             />
           </main>
-          <StatusBar snapshot={snapshot} />
+          <StatusBar snapshot={snapshot} target={project === null ? null : target} />
         </div>
         <StatusToast />
         {dialog?.type === 'namespace' && (
@@ -1437,7 +1452,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
           <NewElementDialog
             namespaces={namespaces}
             templates={templates}
-            kindDefault={(kind) => session.registry.get(kind)?.defaultData}
+            kindDefault={(kind) => session.kindDefault(kind)}
             target={target}
             onCancel={() => setDialog(null)}
             onSubmit={(input) => {
@@ -1451,12 +1466,46 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         {dialog?.type === 'new-project' && (
           <NewProjectDialog
             starters={session.library.starters}
+            targets={session.availableTargets}
+            defaultTargetId={session.defaultTargetId ?? ''}
             onCancel={() => setDialog(null)}
-            onSubmit={(starter) => {
+            onCreate={({ starterId, targetId, values }) => {
+              // The dialog closes first; `newProject` then asks for the folder.
               setDialog(null);
+              const starter =
+                starterId === null
+                  ? undefined
+                  : session.library.starters.find((entry) => entry.id === starterId);
               void openWith(
-                starter === null ? 'New project' : `New project from "${starter.title}"`,
-                () => session.newProject(starter === null ? {} : { starter }),
+                starter === undefined ? 'New project' : `New project from "${starter.title}"`,
+                () =>
+                  session.newProject({
+                    starterId,
+                    values,
+                    ...(targetId === '' ? {} : { targetId }),
+                  }),
+              );
+            }}
+          />
+        )}
+        {dialog?.type === 'upgrade-target' && project !== null && target !== null && (
+          <UpgradeTargetDialog
+            currentTargetId={target.id}
+            targets={session.availableTargets}
+            preview={previewUpgrade}
+            onCancel={() => setDialog(null)}
+            onUpgrade={(targetId, report) => {
+              setDialog(null);
+              session.upgradeTarget(targetId, report).then(
+                () => {
+                  setMessage({ kind: 'info', text: `Project target changed to ${targetId}.` });
+                  void refreshMinecraftStatus();
+                },
+                (error: unknown) =>
+                  setMessage({
+                    kind: 'error',
+                    text: `Upgrade project target failed: ${messageOf(error)}`,
+                  }),
               );
             }}
           />

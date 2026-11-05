@@ -20,6 +20,28 @@ export interface ElementMeta {
   notes?: string;
   /** User-defined tags used for searching and grouping in the editor. */
   tags?: string[];
+  /**
+   * Set on elements the host's Creator made (ADR 0043 D4), so "Edit in Creator" can reopen the
+   * flow with the values it was built from. Since 1.1.0.
+   */
+  creator?: ElementCreatorMeta;
+}
+
+/**
+ * Where a Creator-made element came from (ADR 0043 D4). Since 1.1.0.
+ */
+export interface ElementCreatorMeta {
+  /** The `ProjectStarter.id` of the flow that built the element. */
+  flowId: string;
+  /** Shared by every element of one Create (a UUID). */
+  setId: string;
+  /** The flow's parameter values at that Create, keyed by parameter id. */
+  values: Record<string, string | number | boolean | string[]>;
+  /**
+   * The element id the flow produced, so the set still recognises the element after the user
+   * renamed it.
+   */
+  generatedId: string;
 }
 
 /**

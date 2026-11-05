@@ -202,7 +202,8 @@ class DefinitionParserTest {
                   "msm:on_use": {"event": "x:e", "cooldown_ticks": 5}},
                  "events": {"x:e": {"actions": []}}}""").definition().orElseThrow();
         ItemComponents c = def.components();
-        assertEquals(new ItemComponents.Tool(ItemComponents.ToolType.SWORD, ItemComponents.ToolTier.NETHERITE), c.tool().orElseThrow());
+        assertEquals(new ItemComponents.Tool(ItemComponents.ToolType.SWORD, ItemComponents.ToolTier.NETHERITE, Optional.empty(),
+                Optional.empty()), c.tool().orElseThrow());
         assertEquals(9, c.durability().orElseThrow().max());
         assertEquals(new ItemComponents.Food(2, 0.1f, false), c.food().orElseThrow());
         assertEquals(5, c.onUse().orElseThrow().cooldownTicks());
@@ -215,5 +216,78 @@ class DefinitionParserTest {
         assertFalse(block("{\"format\": 1, \"components\": {\"msm:light_emitter\": {\"level\": true}}}").clean());
         assertFalse(block("{\"format\": 1, \"components\": {\"msm:light_emitter\": {\"level\": 2.5}}}").clean());
         assertTrue(block("{\"format\": 1, \"components\": {\"msm:light_emitter\": {\"level\": 2.0}}}").clean());
+    }
+
+    @Test
+    void customToolMaterialAndOverridesDecode() {
+        ParseResult<ItemDefinition> result = item("""
+                {"format": 1, "components": {"msm:tool": {"type": "pickaxe", "attack_damage": 9, "attack_speed": -3,
+                  "tier": {"durability": 1200, "speed": 10, "attack_damage_bonus": 3.5, "enchantment_value": 12,
+                    "incorrect_blocks_for_drops": "#minecraft:incorrect_for_diamond_tool", "repair_items": "#minecraft:diamond_tool_materials"}}}}""");
+        assertTrue(result.clean(), result.errors() + " " + result.warnings());
+        ItemComponents.Tool tool = result.definition().orElseThrow().components().tool().orElseThrow();
+        assertEquals(new ItemComponents.ToolMaterialSpec(1200, 10f, 3.5f, 12, Identifier.parse("minecraft:incorrect_for_diamond_tool"),
+                Optional.of(Identifier.parse("minecraft:diamond_tool_materials"))), tool.tier());
+        assertEquals(Optional.of(9f), tool.attackDamage());
+        assertEquals(Optional.of(-3f), tool.attackSpeed());
+        // A tag reference needs the leading # (mcdoc tags="required").
+        ParseResult<ItemDefinition> noHash = item("""
+                {"format": 1, "components": {"msm:tool": {"type": "axe", "tier": {"durability": 1, "speed": 0,
+                  "attack_damage_bonus": -1, "enchantment_value": 0, "incorrect_blocks_for_drops": "x:y"}}}}""");
+        assertTrue(noHash.errors().getFirst().contains("incorrect_blocks_for_drops"), noHash.errors().toString());
+        ParseResult<ItemDefinition> negative = item("""
+                {"format": 1, "components": {"msm:tool": {"type": "axe", "tier": {"durability": 1, "speed": -1,
+                  "attack_damage_bonus": 0, "enchantment_value": 0, "incorrect_blocks_for_drops": "#x:y"}}}}""");
+        assertTrue(negative.definition().isEmpty());
+        assertTrue(negative.errors().getFirst().contains("speed"), negative.errors().toString());
+        ParseResult<ItemDefinition> badTier = item("{\"format\": 1, \"components\": {\"msm:tool\": {\"type\": \"axe\", \"tier\": \"ruby\"}}}");
+        assertTrue(badTier.errors().getFirst().contains("unknown tool tier 'ruby'"), badTier.errors().toString());
+    }
+
+    @Test
+    void armorDecodes() {
+        ParseResult<ItemDefinition> vanilla = item("{\"format\": 1, \"components\": {\"msm:armor\": {\"slot\": \"chestplate\", \"material\": \"iron\"}}}");
+        assertTrue(vanilla.clean(), vanilla.errors() + " " + vanilla.warnings());
+        ItemComponents c = vanilla.definition().orElseThrow().components();
+        assertEquals(new ItemComponents.Armor(ItemComponents.ArmorSlot.CHESTPLATE, ItemComponents.ArmorMaterialName.IRON), c.armor().orElseThrow());
+        assertTrue(c.damageable());
+
+        ParseResult<ItemDefinition> custom = item("""
+                {"format": 1, "components": {"msm:armor": {"slot": "helmet", "material": {"durability": 20,
+                  "defense": {"helmet": 3, "chestplate": 7, "leggings": 6, "boots": 3}, "enchantment_value": 15,
+                  "toughness": 1.5, "knockback_resistance": 0.1, "equip_sound": "minecraft:item.armor.equip_diamond",
+                  "repair_items": "#minecraft:diamond_tool_materials", "equipment_asset": "x:ruby"}}}}""");
+        assertTrue(custom.clean(), custom.errors() + " " + custom.warnings());
+        assertEquals(new ItemComponents.CustomArmorMaterial(20, new ItemComponents.Defense(3, 7, 6, 3), 15, 1.5f, 0.1f,
+                Optional.of(Identifier.parse("minecraft:item.armor.equip_diamond")), Optional.of(Identifier.parse("minecraft:diamond_tool_materials")),
+                Identifier.parse("x:ruby")), custom.definition().orElseThrow().components().armor().orElseThrow().material());
+
+        assertTrue(item("{\"format\": 1, \"components\": {\"msm:armor\": {\"slot\": \"body\", \"material\": \"iron\"}}}")
+                .errors().getFirst().contains("slot"));
+        assertTrue(item("{\"format\": 1, \"components\": {\"msm:armor\": {\"slot\": \"boots\", \"material\": \"ruby\"}}}")
+                .errors().getFirst().contains("unknown armor material 'ruby'"));
+        ParseResult<ItemDefinition> noAsset = item("""
+                {"format": 1, "components": {"msm:armor": {"slot": "helmet", "material": {"durability": 20,
+                  "defense": {"helmet": 3, "chestplate": 7, "leggings": 6, "boots": 3}, "enchantment_value": 15,
+                  "toughness": 0, "knockback_resistance": 0}}}}""");
+        assertTrue(noAsset.definition().isEmpty());
+        assertTrue(noAsset.errors().getFirst().contains("equipment_asset"), noAsset.errors().toString());
+        ParseResult<ItemDefinition> knockback = item("""
+                {"format": 1, "components": {"msm:armor": {"slot": "helmet", "material": {"durability": 20,
+                  "defense": {"helmet": 3, "chestplate": 7, "leggings": 6, "boots": 3}, "enchantment_value": 15,
+                  "toughness": 0, "knockback_resistance": 1.5, "equipment_asset": "x:ruby"}}}}""");
+        assertTrue(knockback.errors().getFirst().contains("knockback_resistance"), knockback.errors().toString());
+    }
+
+    @Test
+    void armorAndToolTogetherDropBoth() {
+        ParseResult<ItemDefinition> result = item("""
+                {"format": 1, "components": {"msm:armor": {"slot": "helmet", "material": "iron"},
+                  "msm:tool": {"type": "sword", "tier": "iron"}, "msm:durability": {"max": 5}}}""");
+        assertEquals(List.of("components: msm:armor and msm:tool on one item; neither is applied"), result.errors());
+        ItemComponents c = result.definition().orElseThrow().components();
+        assertEquals(Optional.empty(), c.armor());
+        assertEquals(Optional.empty(), c.tool());
+        assertEquals(5, c.durability().orElseThrow().max());
     }
 }

@@ -21,9 +21,11 @@ export { DISPLAY_NAME_LANGUAGE } from './shared';
 export {
   BLOCK_TOOLS,
   incorrectForTierTag,
+  isCustomToolMaterial,
   NEEDS_TIER_TAGS,
   needsTierTag,
   TOOL_TIERS,
   type ToolTier,
+  toolTierName,
   vanillaTierName,
 } from './tools';

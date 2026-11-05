@@ -1,0 +1,23 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": {
+        "defense": {
+          "boots": 2,
+          "chestplate": 7,
+          "helmet": 3,
+          "leggings": 5
+        },
+        "durability": 20,
+        "enchantment_value": 15,
+        "equip_sound": "minecraft:item.armor.equip_diamond",
+        "equipment_asset": "msm_test:ruby",
+        "knockback_resistance": 0.1,
+        "repair_items": "#minecraft:diamond_tool_materials",
+        "toughness": 1.5
+      },
+      "slot": "helmet"
+    }
+  },
+  "format": 1
+}

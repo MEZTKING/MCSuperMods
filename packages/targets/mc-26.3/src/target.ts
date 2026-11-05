@@ -77,6 +77,21 @@ export const target: Target = {
     // noise_settings still require default_block (vendored mcdoc; ADR 0036 D8).
     noiseSettingsDefaultBlock: true,
   },
+  // items.armorMaterials: the ArmorMaterials constants in lower case, verified 2026-11-05 with
+  // javap over the Loom-cached 26.3 merged jar (ADR 0042 D4).
+  items: {
+    armorMaterials: [
+      'leather',
+      'copper',
+      'chainmail',
+      'iron',
+      'gold',
+      'diamond',
+      'turtle_scute',
+      'netherite',
+      'armadillo_scute',
+    ],
+  },
   // Verified 2026-11-05 against maven.fabricmc.net and the FabricMC example mod's 26.3
   // branch (ADR 0027).
   fabric: {

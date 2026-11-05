@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": "iron",
+      "slot": "helmet"
+    },
+    "msm:tool": {
+      "tier": "iron",
+      "type": "sword"
+    }
+  },
+  "format": 1
+}

@@ -81,6 +81,22 @@ export const target: Target = {
     // noise_settings lost default_block (`until 26.4` in the vendored mcdoc; ADR 0036 D8).
     noiseSettingsDefaultBlock: false,
   },
+  // items.armorMaterials: the ArmorMaterials constants in lower case. B151's error table had no
+  // armour entry; javap over the Loom-cached 26.4-snapshot-7 merged jar (2026-11-05) lists the
+  // same nine constants as 26.3 (re-check at the next snapshot pin; ADR 0042 D4).
+  items: {
+    armorMaterials: [
+      'leather',
+      'copper',
+      'chainmail',
+      'iron',
+      'gold',
+      'diamond',
+      'turtle_scute',
+      'netherite',
+      'armadillo_scute',
+    ],
+  },
   // Verified 2026-11-05: meta.fabricmc.net lists Loader 0.20.1 for 26.4-snapshot-7, and
   // 0.165.4+26.4 is the newest Fabric API for 26.4 on maven.fabricmc.net (ADR 0037 D2). Loom
   // 1.19.3 handles the snapshot (B151).

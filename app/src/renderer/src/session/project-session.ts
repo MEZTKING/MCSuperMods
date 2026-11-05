@@ -62,9 +62,11 @@ import type {
   ElementTemplate,
   ExampleProject,
   Exporter,
+  ElementKind,
   ExporterOption,
   ImportResult,
   MaybePromise,
+  MigrationReport,
   OutputFile,
   OutputSink,
   Plugin,
@@ -75,6 +77,7 @@ import type {
 } from '@msm/plugin-api';
 import { MSM_RUNTIME_TYPINGS } from '@msm/plugin-scripting';
 import { type SchemaNode, type VanillaMcdocSymbols, validateJson } from '@msm/schemas';
+import { targetFacts } from '@msm/targets';
 import { PluginProblemCodes } from '../../../shared/ipc-channels';
 import type {
   AppSettingsPatch,
@@ -310,12 +313,38 @@ function defaultValues(source: ContentBundleBuilder): Record<string, Json> {
   );
 }
 
+/**
+ * A kind's `defaultDataFor(target)` result (ADR 0036 D8), or `undefined` when the kind has no
+ * such hook or it throws or rejects (the caller falls back to `defaultData`).
+ */
+async function defaultDataFor(kind: ElementKind, target: TargetFacts): Promise<Json | undefined> {
+  if (kind.defaultDataFor === undefined) return undefined;
+  try {
+    return await kind.defaultDataFor(target);
+  } catch {
+    return undefined;
+  }
+}
+
 /** Options of {@link ProjectSession.newProject}. */
 export interface NewProjectOptions {
   /** The starter whose bundle fills the new project. */
   starter?: ProjectStarter;
+  /**
+   * The id of a starter in {@link ProjectSession.library} (the New project dialog's choice);
+   * `null` or absent with no {@link starter} is a blank project. Ignored when {@link starter}
+   * is given.
+   */
+  starterId?: string | null;
   /** Any other bundle source, for example an example opened as a new project. */
   bundle?: ContentBundleBuilder;
+  /** The target of the new project (ADR 0037 D4); default {@link ProjectSession.defaultTargetId}. */
+  targetId?: string;
+  /**
+   * `BundleContext.values` for the starter's wizard (ADR 0040); merged over the parameters'
+   * defaults.
+   */
+  values?: Record<string, Json>;
 }
 
 /** Options of {@link ProjectSession.addBundle}. */
@@ -477,6 +506,8 @@ export const SessionProblemCodes = {
   renameConflict: ProblemCodes.refsRenameConflict,
   /** An imported element whose id the project (or an earlier imported file) already has. */
   importDuplicateId: 'import.duplicate-id',
+  /** A target without a `migrateFrom` hook: an upgrade only changes the target id. */
+  noMigrationNeeded: 'target.no-migration-needed',
   /** An imported asset whose path the project already records. */
   importDuplicateAsset: 'import.duplicate-asset',
   /** No registered importer accepts the file's extension. */
@@ -570,6 +601,9 @@ export class ProjectSession {
   #validatorProblems = new Map<string, Problem[]>();
   #pendingValidators = new Set<string>();
   readonly #loadedSchemas = new Map<string, SchemaContext>();
+  /** `defaultDataFor(target)` results per target id, then per kind id (ADR 0036 D8). */
+  readonly #kindDefaults = new Map<string, ReadonlyMap<string, Json>>();
+  #availableTargets: readonly TargetFacts[] | null = null;
   #referenceCache: {
     state: Project;
     context: SchemaContext | null;
@@ -632,11 +666,13 @@ export class ProjectSession {
       dedupeById(this.#plugins.flatMap((plugin) => plugin.contributes.exporters ?? [])),
     );
     // The runtime version defaults to `meta.msmVersion`, the app's version (ADR 0026 D4);
-    // main finds the jar (packaged resources or `engine-mod/build/libs/`). GeckoLib (ADR 0029
+    // main finds the open project's target's jar (packaged resources or
+    // `engine-mod/build/libs/`). GeckoLib (ADR 0029
     // D4) is asked for only when the project has entities and nesting is on; main serves it from
     // its download cache or downloads it once for the open project's target.
     this.#contentJarExporter = createFabricContentJarExporter({
-      loadRuntimeJar: async () => (await platform.exports.runtimeJar()) ?? undefined,
+      // ADR 0038 D4: one runtime jar per target.
+      loadRuntimeJar: async () => (await platform.exports.runtimeJar(this.target.id)) ?? undefined,
       loadGeckolibJar: async () =>
         (await platform.exports.geckolibJar(this.target.id)) ?? undefined,
       // Scripts are transpiled by TypeScript in main (ADR 0031 D2), for export and Test in
@@ -785,6 +821,132 @@ export class ProjectSession {
   }
 
   /**
+   * The built-in targets as hook-free facts (`targetFacts` of `@msm/targets`; a target that
+   * package does not know is listed as given), newest first (ADR 0037 D4).
+   */
+  get availableTargets(): readonly TargetFacts[] {
+    this.#availableTargets ??= Object.freeze(
+      this.#targets.map((entry) => targetFacts(entry.target.id) ?? entry.target),
+    );
+    return this.#availableTargets;
+  }
+
+  /** The built-in target with `id`, or `undefined`. */
+  #targetById(id: string): Target | undefined {
+    return this.#targets.find((entry) => entry.target.id === id)?.target;
+  }
+
+  /** The open project's target, or `undefined` with no targets. */
+  #currentTarget(): Target | undefined {
+    try {
+      return this.target;
+    } catch {
+      return undefined;
+    }
+  }
+
+  /**
+   * The default data for a new element of `kindId` on the open project's target: the kind's
+   * `defaultDataFor(target)` result (ADR 0036 D8), cached per target when a project is opened
+   * or created and after a target change, else its `defaultData`. `undefined` for an unknown
+   * kind or a kind without defaults.
+   */
+  kindDefault(kindId: string): Json | undefined {
+    const kind = this.registry.get(kindId);
+    if (kind === undefined) return undefined;
+    const target = this.#currentTarget();
+    const cached = target === undefined ? undefined : this.#kindDefaults.get(target.id)?.get(kindId);
+    return cached ?? kind.defaultData;
+  }
+
+  /**
+   * Fills the {@link kindDefault} cache for `target` (once per target). A `defaultDataFor` that
+   * throws or rejects leaves that kind on its `defaultData`.
+   */
+  async #fillKindDefaults(target: Target | undefined): Promise<void> {
+    if (target === undefined || this.#kindDefaults.has(target.id)) return;
+    const defaults = new Map<string, Json>();
+    for (const kind of this.registry.all()) {
+      if (kind.defaultDataFor === undefined) continue;
+      const data = await defaultDataFor(kind, target);
+      if (data !== undefined) defaults.set(kind.id, data);
+    }
+    this.#kindDefaults.set(target.id, defaults);
+  }
+
+  /**
+   * What upgrading the open project to `targetId` would do (ADR 0037 D4): the target's
+   * `migrateFrom(current target, project)` report, applied by nothing yet. A target without
+   * the hook yields no changes and one info problem "No migration needed"; the project's own
+   * target yields an empty report.
+   *
+   * @throws Error If no project is open or `targetId` is not a built-in target.
+   */
+  async upgradeTargetPreview(targetId: string): Promise<MigrationReport> {
+    const stack = this.#requireStack();
+    const next = this.#targetById(targetId);
+    if (next === undefined) throw new Error(`Unknown target ${JSON.stringify(targetId)}.`);
+    const previous = this.target;
+    if (previous.id === next.id && stack.state.targets[0] === next.id) {
+      return { changes: [], problems: [] };
+    }
+    if (next.migrateFrom === undefined) {
+      return {
+        changes: [],
+        problems: [
+          {
+            severity: 'info',
+            code: SessionProblemCodes.noMigrationNeeded,
+            message: 'No migration needed',
+          },
+        ],
+      };
+    }
+    const report = next.migrateFrom(previous, stack.state);
+    return structuredClone({ changes: report.changes, problems: report.problems });
+  }
+
+  /**
+   * Upgrades (or downgrades) the open project to `targetId` as one undo step (ADR 0037 D4):
+   * the project's targets become `[targetId]`, every `update` change with `data` replaces its
+   * element's data and every `remove` change deletes its element (changes for elements the
+   * project no longer has are skipped). Then the schema context of the new target loads and
+   * every element is validated again. Undo reverts the target and the data together.
+   *
+   * @param report - The report {@link upgradeTargetPreview} returned for `targetId`.
+   * @throws Error If no project is open or `targetId` is not a built-in target.
+   */
+  async upgradeTarget(targetId: string, report: MigrationReport): Promise<void> {
+    const stack = this.#requireStack();
+    const next = this.#targetById(targetId);
+    if (next === undefined) throw new Error(`Unknown target ${JSON.stringify(targetId)}.`);
+    const existing = elementsById(stack.state);
+    const parts: ProjectCommand[] = [commands.setTargets([targetId])];
+    for (const change of report.changes) {
+      if (!existing.has(change.elementId)) continue;
+      if (change.kind === 'remove') {
+        parts.push(commands.removeElement(change.elementId));
+      } else if (change.data !== undefined) {
+        parts.push(commands.setElementData(change.elementId, structuredClone(change.data)));
+      }
+    }
+    stack.execute({
+      id: 'app.upgrade-target',
+      label: `Upgrade target to ${targetId}`,
+      apply(draft) {
+        for (const part of parts) part.apply(draft);
+      },
+    });
+    await this.#fillKindDefaults(next);
+    try {
+      await this.schemas();
+    } catch {
+      // Reported by the validation pass as `schema.unavailable`.
+    }
+    await this.flushValidation();
+  }
+
+  /**
    * The target the open project exports for: its first listed target when built in, else
    * the default target (the session then reports `project.unknown-target`).
    *
@@ -826,6 +988,18 @@ export class ProjectSession {
    * project behind and is reported as `{ ok: false, reason }`.
    */
   async newProject(options: NewProjectOptions = {}): Promise<OpenOutcome> {
+    const starter =
+      options.starter ??
+      (options.starterId === undefined || options.starterId === null
+        ? undefined
+        : this.#library.starters.find((entry) => entry.id === options.starterId));
+    if (starter === undefined && typeof options.starterId === 'string') {
+      return { ok: false, reason: `Unknown starter ${JSON.stringify(options.starterId)}.` };
+    }
+    const targetId = options.targetId ?? this.defaultTargetId;
+    if (options.targetId !== undefined && this.#targetById(options.targetId) === undefined) {
+      return { ok: false, reason: `Unknown target ${JSON.stringify(options.targetId)}.` };
+    }
     if (!(await this.#confirmDiscard())) return { ok: false, cancelled: true };
     const path = await this.#platform.dialogs.pickDirectory({
       title: 'Choose an empty folder for the new project',
@@ -835,7 +1009,6 @@ export class ProjectSession {
     if (path === null) return { ok: false, cancelled: true };
     const name = baseName(path);
     const namespace = namespaceFromFolderName(name);
-    const targetId = this.defaultTargetId;
     const project = createEmptyProject(name, {
       targets: targetId === undefined ? [] : [targetId],
       plugins: this.#plugins
@@ -843,17 +1016,18 @@ export class ProjectSession {
         .map((plugin) => plugin.id),
     });
     project.namespaces.push({ name: namespace, elements: [], assets: [] });
-    const source = options.starter ?? options.bundle;
+    const source = starter ?? options.bundle;
     let prepared: PreparedBundle;
     try {
+      const facts = this.#newProjectTarget(targetId);
       const bundle: ContentBundle =
         source === undefined
           ? { elements: [], assets: [] }
           : await source.build({
               namespace,
               projectName: name,
-              target: this.#newProjectTarget(targetId),
-              values: defaultValues(source),
+              target: facts,
+              values: { ...defaultValues(source), ...(options.values ?? {}) },
             });
       const elements = [...bundle.elements];
       const packKind = this.registry.get(PACK_MCMETA_KIND);
@@ -862,7 +1036,11 @@ export class ProjectSession {
         elements.unshift({
           id,
           kind: PACK_MCMETA_KIND,
-          data: defaultElementData(PACK_MCMETA_KIND, id, packKind.defaultData),
+          data: defaultElementData(
+            PACK_MCMETA_KIND,
+            id,
+            (await defaultDataFor(packKind, facts)) ?? packKind.defaultData,
+          ),
         });
       }
       prepared = prepareBundle(
@@ -883,6 +1061,7 @@ export class ProjectSession {
     const state = initial.state;
     const saved = await saveProject(this.#fs, state, this.registry);
     this.#adopt(path, state, [], saved.manifest);
+    await this.#fillKindDefaults(this.#currentTarget());
     await this.#emptyTrash();
     await this.#writeScriptTypings();
     return { ok: true };
@@ -987,6 +1166,7 @@ export class ProjectSession {
     try {
       const { project, problems, manifest } = await loadProject(this.#fs, this.registry);
       this.#adopt(path, project, problems, manifest);
+      await this.#fillKindDefaults(this.#currentTarget());
       await this.#emptyTrash();
       await this.#writeScriptTypings();
       return { ok: true };
@@ -1034,8 +1214,9 @@ export class ProjectSession {
   }
 
   /**
-   * Adds an element of a registered kind. Without `data`, the kind's `defaultData` is used
-   * with its placeholders replaced by ids in the element's namespace.
+   * Adds an element of a registered kind. Without `data`, the kind's default for the open
+   * project's target ({@link kindDefault}) is used with its placeholders replaced by ids in the
+   * element's namespace.
    *
    * @throws Error If the kind is unknown or the id breaks a kind rule (`<ns>:sounds`).
    */
@@ -1048,7 +1229,7 @@ export class ProjectSession {
     const element = createElement({
       id: input.id,
       kind: input.kind,
-      data: input.data ?? defaultElementData(input.kind, input.id, kind.defaultData),
+      data: input.data ?? defaultElementData(input.kind, input.id, this.kindDefault(input.kind)),
       ...(this.#now === undefined ? {} : { now: this.#now }),
     });
     const stack = this.#requireStack();
@@ -2058,7 +2239,15 @@ export class ProjectSession {
             mcfunctionProjectIds(project).objective ?? [],
           ]);
     this.#renameProblems = [];
-    if (idsKey(this.#lastState) !== idsKey(event.state)) {
+    const targetChanged =
+      this.#lastState !== null && this.#lastState.targets[0] !== event.state.targets[0];
+    if (targetChanged) {
+      // A target change (upgrade, or its undo) changes the schema and the registries: check
+      // everything again, against the new target's defaults too.
+      this.#targetProblems = this.#targetProblemsFor(event.state);
+      void this.#fillKindDefaults(this.#currentTarget());
+    }
+    if (targetChanged || idsKey(this.#lastState) !== idsKey(event.state)) {
       // Project-defined ids changed, so `#[id]` warnings anywhere may change.
       for (const id of after.keys()) this.#pending.add(id);
       // Validators read registry ids too.

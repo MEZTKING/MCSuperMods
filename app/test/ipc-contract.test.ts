@@ -330,7 +330,7 @@ const samples: Record<
     response: [{ paths: ['/tmp/out/pack-data.zip'] }, { paths: [''] }],
   },
   [InvokeChannels.exportsRuntimeJar]: {
-    request: [undefined, { path: '/tmp/msm_runtime.jar' }],
+    request: [{ targetId: 'mc-26.3' }, { targetId: '' }],
     response: [null, '/tmp/msm_runtime.jar'],
   },
   [InvokeChannels.exportsGeckolibJar]: {

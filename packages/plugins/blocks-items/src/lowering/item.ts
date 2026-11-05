@@ -24,7 +24,9 @@ function itemData(element: Element): JsonObject {
 
 /**
  * The runtime item definition: the element data without `model` and `display_name`, with
- * `format` set to the format this plugin writes.
+ * `format` set to the format this plugin writes. Every component passes through unchanged,
+ * including `msm:armor` and a custom `msm:tool` material with its attack overrides (ADR 0042):
+ * the runtime derives the vanilla components from them, so armour lowers to nothing else.
  *
  * @throws {@link BlocksItemsLoweringError} If the data is not an object.
  */

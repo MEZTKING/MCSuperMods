@@ -15,6 +15,7 @@ export { blocksItemsTemplates, modIdFromNamespace } from './templates';
 export {
   BLOCKS_ITEMS_PROBLEM_CODES,
   blocksItemsValidators,
+  EQUIPMENT_KIND,
   MOD_ID_PATTERN,
   RESERVED_MOD_IDS,
 } from './validators';

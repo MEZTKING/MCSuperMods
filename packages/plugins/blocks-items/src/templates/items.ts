@@ -43,6 +43,50 @@ export const itemTemplates: readonly ElementTemplate[] = [
     }),
   },
   {
+    id: 'msm_item_tool_custom_material',
+    kind: ITEM_KIND,
+    category: CATEGORY,
+    title: 'Tool with a custom material',
+    description:
+      'A pickaxe of its own material: faster than iron, mines what iron mines and is repaired with iron ingots.',
+    data: (context) => ({
+      format: 1,
+      model: 'minecraft:item/iron_pickaxe',
+      display_name: displayName(context.path),
+      max_stack_size: 1,
+      creative_tab: 'minecraft:tools_and_utilities',
+      components: {
+        'msm:tool': {
+          type: 'pickaxe',
+          tier: {
+            durability: 500,
+            speed: 7,
+            attack_damage_bonus: 2.5,
+            enchantment_value: 14,
+            incorrect_blocks_for_drops: '#minecraft:incorrect_for_iron_tool',
+            repair_items: '#minecraft:iron_tool_materials',
+          },
+        },
+      },
+    }),
+  },
+  {
+    id: 'msm_item_armor_helmet',
+    kind: ITEM_KIND,
+    category: CATEGORY,
+    title: 'Armour piece (helmet)',
+    description:
+      'An iron helmet: armour points, durability and the worn look come from the iron material.',
+    data: (context) => ({
+      format: 1,
+      model: 'minecraft:item/iron_helmet',
+      display_name: displayName(context.path),
+      max_stack_size: 1,
+      creative_tab: 'minecraft:combat',
+      components: { 'msm:armor': { slot: 'helmet', material: 'iron' } },
+    }),
+  },
+  {
     id: 'msm_item_wand',
     kind: ITEM_KIND,
     category: CATEGORY,

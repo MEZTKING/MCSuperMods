@@ -7,6 +7,7 @@
 import type {
   Asset,
   Element,
+  ElementCreatorMeta,
   ElementMeta,
   Json,
   JsonObject,
@@ -122,6 +123,33 @@ async function readProjectFile(
   };
 }
 
+/** A Creator parameter value: a string, number, boolean or array of strings. */
+function isCreatorValue(value: Json | undefined): value is string | number | boolean | string[] {
+  return (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    isStringArray(value)
+  );
+}
+
+/**
+ * `meta.creator` (ADR 0043 D4), or `undefined` when it is absent or malformed. A malformed
+ * value is dropped like an unknown field: it is bookkeeping, so the element still loads.
+ */
+function toCreatorMeta(value: Json | undefined): ElementCreatorMeta | undefined {
+  if (!isObject(value)) return undefined;
+  const { flowId, generatedId, setId, values } = value;
+  if (typeof flowId !== 'string' || typeof setId !== 'string') return undefined;
+  if (typeof generatedId !== 'string' || !isObject(values)) return undefined;
+  const copied: Record<string, string | number | boolean | string[]> = {};
+  for (const [key, entry] of Object.entries(values)) {
+    if (!isCreatorValue(entry)) return undefined;
+    copied[key] = Array.isArray(entry) ? [...entry] : entry;
+  }
+  return { flowId, generatedId, setId, values: copied };
+}
+
 /**
  * Checks a migrated element document and builds the element, or returns why it is invalid.
  */
@@ -141,6 +169,8 @@ function toElement(document: JsonObject): Element | string {
     if (!isStringArray(meta.tags)) return '"meta.tags" must be an array of strings';
     elementMeta.tags = [...meta.tags];
   }
+  const creator = toCreatorMeta(meta.creator);
+  if (creator !== undefined) elementMeta.creator = creator;
   return {
     data,
     formatVersion: ELEMENT_FORMAT_VERSION,

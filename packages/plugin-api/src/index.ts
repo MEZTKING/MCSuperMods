@@ -30,17 +30,26 @@ export type {
   ContentBundle,
   ContentBundleAsset,
   ContentBundleElement,
+  CreatorGroup,
   ElementTemplate,
   ExampleProject,
   NumberStarterParameter,
   ProjectStarter,
   SetStarterParameter,
   StarterParameter,
+  StarterCreatorInfo,
   StarterParameterBase,
   StringStarterParameter,
   TemplateContext,
 } from './library';
-export type { Asset, Element, ElementMeta, Namespace, Project } from './model';
+export type {
+  Asset,
+  Element,
+  ElementCreatorMeta,
+  ElementMeta,
+  Namespace,
+  Project,
+} from './model';
 export type { OutputFile, OutputLayer, OutputMergeMode, OutputSink } from './output';
 export { assertProjectRelativePath, isProjectRelativePath } from './paths';
 export type { Plugin } from './plugin';
@@ -53,6 +62,7 @@ export type {
   FabricFacts,
   GeckolibFacts,
   GeneratedFile,
+  ItemFacts,
   JavaProjectGenerator,
   JavaProjectInput,
   MigrationChange,

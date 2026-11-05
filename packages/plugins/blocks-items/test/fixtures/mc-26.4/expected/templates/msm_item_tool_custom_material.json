@@ -1,0 +1,42 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:tool": {
+          "tier": {
+            "attack_damage_bonus": 2.5,
+            "durability": 500,
+            "enchantment_value": 14,
+            "incorrect_blocks_for_drops": "#minecraft:incorrect_for_iron_tool",
+            "repair_items": "#minecraft:iron_tool_materials",
+            "speed": 7
+          },
+          "type": "pickaxe"
+        }
+      },
+      "creative_tab": "minecraft:tools_and_utilities",
+      "format": 1,
+      "max_stack_size": 1
+    },
+    "layer": "msm",
+    "path": "msm/demo/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/iron_pickaxe",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "item.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  }
+]

@@ -25,6 +25,7 @@ const TEMPLATE_IDS = [
   'model_block_cross',
   'item_model',
   'model_item_handheld',
+  'equipment-humanoid',
   'blockstate',
   'blockstate_facing',
   'blockstate_slab',
@@ -89,7 +90,7 @@ function namespacesIn(value: Json, out = new Set<string>()): Set<string> {
 }
 
 describe('resource pack templates', () => {
-  it('contributes the fourteen templates in picker order', () => {
+  it('contributes the fifteen templates in picker order', () => {
     expect(resourcePackTemplates.map((template) => template.id)).toEqual(TEMPLATE_IDS);
     expect(plugin.contributes.elementTemplates?.map((template) => template.id)).toEqual(
       TEMPLATE_IDS,

@@ -4,7 +4,13 @@
  * @packageDocumentation
  */
 
-import type { Element, Json, Project, ResourceLocation } from '@msm/plugin-api';
+import type {
+  Element,
+  ElementCreatorMeta,
+  Json,
+  Project,
+  ResourceLocation,
+} from '@msm/plugin-api';
 import { parseResourceLocation } from './resource-location';
 
 /** The current version of the `msm.project.json` format. */
@@ -49,6 +55,7 @@ export function createElement<D extends Json>(input: {
   now?: () => string;
   notes?: string;
   tags?: string[];
+  creator?: ElementCreatorMeta;
 }): Element<D> {
   parseResourceLocation(input.id);
   const now = input.now ?? (() => new Date().toISOString());
@@ -61,6 +68,7 @@ export function createElement<D extends Json>(input: {
   };
   if (input.notes !== undefined) element.meta.notes = input.notes;
   if (input.tags !== undefined) element.meta.tags = [...input.tags];
+  if (input.creator !== undefined) element.meta.creator = structuredClone(input.creator);
   return element;
 }
 

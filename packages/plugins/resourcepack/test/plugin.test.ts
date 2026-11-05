@@ -13,6 +13,7 @@ import { indexesFor, schemaErrors } from './support';
 
 const KIND_IDS = [
   'minecraft:block_definition',
+  'minecraft:equipment',
   'minecraft:item_definition',
   'minecraft:lang',
   'minecraft:model',
@@ -39,7 +40,7 @@ describe('@msm/plugin-resourcepack', () => {
     expect(Object.isFrozen(plugin)).toBe(true);
   });
 
-  it('contributes the six vanilla resource pack kinds with unique ids and folders', () => {
+  it('contributes the seven vanilla resource pack kinds with unique ids and folders', () => {
     const ids = kinds().map((kind) => kind.id);
     expect([...ids].sort()).toEqual(KIND_IDS);
     expect(new Set(kinds().map((kind) => kind.folder)).size).toBe(KIND_IDS.length);
@@ -61,6 +62,7 @@ describe('@msm/plugin-resourcepack', () => {
       'minecraft:lang': undefined,
       'minecraft:sounds': undefined,
       'minecraft:pack_mcmeta': undefined,
+      'minecraft:equipment': undefined,
     });
   });
 

@@ -2,15 +2,21 @@ import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
   type BundleContext,
   type ContentBundle,
+  type CreatorGroup,
+  type ElementCreatorMeta,
+  type ElementMeta,
   definePlugin,
   type ElementTemplate,
   type ExampleProject,
+  type ItemFacts,
   type Json,
   type MaybePromise,
   type OutputLayer,
   type PluginContributions,
   type ProjectStarter,
   type ResourceLocation,
+  type SetStarterParameter,
+  type StarterCreatorInfo,
   type StarterParameter,
   type TargetFacts,
   type TemplateContext,
@@ -218,5 +224,62 @@ describe('1.0.0 library additions', () => {
       supports: (target) => target.geckolib !== undefined,
     };
     expect(gated.supports?.(testTarget)).toBe(false);
+  });
+});
+
+describe('1.1.0 additions', () => {
+  it('lists a starter in the Creator with a group and a blurb', () => {
+    expectTypeOf<ProjectStarter['creator']>().toEqualTypeOf<StarterCreatorInfo | undefined>();
+    expectTypeOf<StarterCreatorInfo['group']>().toEqualTypeOf<CreatorGroup>();
+    expectTypeOf<CreatorGroup>().toEqualTypeOf<'gear' | 'blocks' | 'food' | 'mobs' | 'scripts'>();
+    const flow: ProjectStarter = {
+      ...starter,
+      creator: { group: 'gear', blurb: 'Tools and armour of one material.' },
+    };
+    expect(flow.creator?.group).toBe('gear');
+  });
+
+  it('declares the set parameter with a string[] default', () => {
+    expectTypeOf<SetStarterParameter['type']>().toEqualTypeOf<'set'>();
+    expectTypeOf<SetStarterParameter['default']>().toEqualTypeOf<string[]>();
+    expectTypeOf<SetStarterParameter['min']>().toEqualTypeOf<number | undefined>();
+    const pieces: SetStarterParameter = {
+      id: 'pieces',
+      label: 'Pieces',
+      type: 'set',
+      choices: [
+        { value: 'sword', label: 'Sword' },
+        { value: 'helmet', label: 'Helmet' },
+      ],
+      default: ['sword', 'helmet'],
+      min: 1,
+    };
+    const values: BundleContext['values'] = { pieces: pieces.default };
+    expect(values.pieces).toEqual(['sword', 'helmet']);
+  });
+
+  it('records where a Creator-made element came from', () => {
+    expectTypeOf<ElementMeta['creator']>().toEqualTypeOf<ElementCreatorMeta | undefined>();
+    expectTypeOf<ElementCreatorMeta['values']>().toEqualTypeOf<
+      Record<string, string | number | boolean | string[]>
+    >();
+    const meta: ElementMeta = {
+      createdAt: '2026-01-01T00:00:00.000Z',
+      creator: {
+        flowId: 'gear-set',
+        setId: 'set-1',
+        values: { material_name: 'Ruby', pieces: ['sword'] },
+        generatedId: 'demo:ruby_sword',
+      },
+    };
+    expect(meta.creator?.generatedId).toBe('demo:ruby_sword');
+  });
+
+  it('carries optional item facts on a target', () => {
+    expectTypeOf<TargetFacts['items']>().toEqualTypeOf<ItemFacts | undefined>();
+    expectTypeOf<ItemFacts['armorMaterials']>().toEqualTypeOf<readonly string[]>();
+    const facts: TargetFacts = { ...testTarget, items: { armorMaterials: ['iron'] } };
+    expect(facts.items?.armorMaterials).toEqual(['iron']);
+    expect(testTarget.items).toBeUndefined();
   });
 });

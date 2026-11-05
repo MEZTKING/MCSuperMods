@@ -87,6 +87,8 @@ export function installMenu(recent: readonly RecentProject[] = []): void {
           label: 'Open Recent',
           submenu: recentSubmenu(recent, sendOpenRecent, () => send('clearRecentProjects')),
         },
+        // ADR 0037 D4: move the open project to another built-in target.
+        { label: 'Upgrade Project Target…', click: () => send('upgradeTarget') },
         { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => send('save') },
         { type: 'separator' },
         { label: 'Import Assets…', click: () => send('importAssets') },

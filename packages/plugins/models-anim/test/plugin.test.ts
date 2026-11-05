@@ -22,8 +22,8 @@ const firstTarget = (builtInTargets[0] as TargetBundle).target;
 /** What `registerPlugin` in `@msm/core` checks (core is not a dependency of this package). */
 function registrationProblems(): string[] {
   const problems: string[] = [];
-  const [major, minor] = API_VERSION.split('.');
-  if (plugin.apiVersion !== `^${major}.${minor}.0`) problems.push(`range ${plugin.apiVersion}`);
+  const [major] = API_VERSION.split('.');
+  if (plugin.apiVersion !== `^${major}.0.0`) problems.push(`range ${plugin.apiVersion}`);
   const ids = new Set<string>();
   const folders = new Set<string>();
   for (const kind of kinds()) {

@@ -27,7 +27,13 @@ export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
     'demo:item/sample_gui',
     'demo:item/sample_using',
   ],
-  texture: ['demo:block/sample', 'demo:block/sample_top', 'demo:item/sample'],
+  texture: [
+    'demo:block/sample',
+    'demo:block/sample_top',
+    'demo:item/sample',
+    'demo:entity/equipment/humanoid/sample',
+    'demo:entity/equipment/humanoid_leggings/sample',
+  ],
 };
 
 const nodeReadFile = async (url: URL): Promise<Uint8Array> => readFile(url);

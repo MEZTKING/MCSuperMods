@@ -43,6 +43,20 @@ export function elementDocument(element: Element): JsonObject {
   const meta: JsonObject = { createdAt: element.meta.createdAt };
   if (element.meta.notes !== undefined) meta.notes = element.meta.notes;
   if (element.meta.tags !== undefined) meta.tags = [...element.meta.tags];
+  const creator = element.meta.creator;
+  if (creator !== undefined) {
+    meta.creator = {
+      flowId: creator.flowId,
+      generatedId: creator.generatedId,
+      setId: creator.setId,
+      values: Object.fromEntries(
+        Object.entries(creator.values).map(([key, value]) => [
+          key,
+          Array.isArray(value) ? [...value] : value,
+        ]),
+      ),
+    };
+  }
   return {
     data: element.data as Json,
     formatVersion: ELEMENT_FORMAT_VERSION,

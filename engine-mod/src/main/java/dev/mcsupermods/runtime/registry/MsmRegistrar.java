@@ -15,23 +15,33 @@ import dev.mcsupermods.runtime.loader.MsmRarity;
 import dev.mcsupermods.runtime.loader.ParseResult;
 import dev.mcsupermods.runtime.loader.RawDefinition;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.ToolMaterial;
+import net.minecraft.world.item.equipment.ArmorMaterial;
+import net.minecraft.world.item.equipment.ArmorMaterials;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
@@ -202,10 +212,13 @@ public final class MsmRegistrar {
             props = props.food(builder.build());
         }
         if (c.tool().isPresent()) {
-            props = tool(props, c.tool().get());
+            props = tool(props, id, c.tool().get());
+        }
+        if (c.armor().isPresent()) {
+            props = armor(props, raw, c.armor().get(), warnings);
         }
         if (c.durability().isPresent()) {
-            props = props.durability(c.durability().get().max()); // after tool(): overrides the tier's durability
+            props = props.durability(c.durability().get().max()); // after tool() and armor(): overrides the material's durability
         }
         MsmItem item = Registry.register(BuiltInRegistries.ITEM, key, new MsmItem(id, def, props));
         def.creativeTab().ifPresent(tab -> addToTab(raw, tab, item));
@@ -213,26 +226,124 @@ public final class MsmRegistrar {
 
     /**
      * {@code msm:tool} through the vanilla tool helpers on {@code Item.Properties} (checked against
-     * the 26.3 jar). Attack damage and speed are the vanilla iron-tier base values per tool type;
-     * the tier's material adds its own bonus, speed, durability and drop tier.
+     * the 26.3 and 26.4 jars). Attack damage and speed default to the vanilla base values per tool
+     * type, which {@code attack_damage} and {@code attack_speed} override; the material adds its
+     * own damage bonus, speed, durability and drop tier.
      */
-    private static Item.Properties tool(Item.Properties props, ItemComponents.Tool tool) {
+    static Item.Properties tool(Item.Properties props, Identifier itemId, ItemComponents.Tool tool) {
         ToolMaterial material = switch (tool.tier()) {
-            case WOOD -> ToolMaterial.WOOD;
-            case STONE -> ToolMaterial.STONE;
-            case COPPER -> ToolMaterial.COPPER;
-            case IRON -> ToolMaterial.IRON;
-            case DIAMOND -> ToolMaterial.DIAMOND;
-            case GOLD -> ToolMaterial.GOLD;
-            case NETHERITE -> ToolMaterial.NETHERITE;
+            case ItemComponents.ToolTier.WOOD -> ToolMaterial.WOOD;
+            case ItemComponents.ToolTier.STONE -> ToolMaterial.STONE;
+            case ItemComponents.ToolTier.COPPER -> ToolMaterial.COPPER;
+            case ItemComponents.ToolTier.IRON -> ToolMaterial.IRON;
+            case ItemComponents.ToolTier.DIAMOND -> ToolMaterial.DIAMOND;
+            case ItemComponents.ToolTier.GOLD -> ToolMaterial.GOLD;
+            case ItemComponents.ToolTier.NETHERITE -> ToolMaterial.NETHERITE;
+            case ItemComponents.ToolMaterialSpec m -> new ToolMaterial(
+                    TagKey.create(Registries.BLOCK, m.incorrectBlocksForDrops()),
+                    m.durability(),
+                    m.speed(),
+                    m.attackDamageBonus(),
+                    Math.max(1, m.enchantmentValue()), // vanilla rejects 0; removed again below
+                    TagKey.create(Registries.ITEM, m.repairItems().orElseGet(() -> noRepairTag(itemId))));
         };
-        return switch (tool.type()) {
-            case PICKAXE -> props.pickaxe(material, 1.0f, -2.8f);
-            case AXE -> props.axe(material, 6.0f, -3.1f);
-            case SHOVEL -> props.shovel(material, 1.5f, -3.0f);
-            case HOE -> props.hoe(material, -2.0f, -1.0f);
-            case SWORD -> props.sword(material, 3.0f, -2.4f);
+        float damage = tool.attackDamage().orElse(switch (tool.type()) {
+            case PICKAXE -> 1.0f;
+            case AXE -> 6.0f;
+            case SHOVEL -> 1.5f;
+            case HOE -> -2.0f;
+            case SWORD -> 3.0f;
+        });
+        float speed = tool.attackSpeed().orElse(switch (tool.type()) {
+            case PICKAXE -> -2.8f;
+            case AXE -> -3.1f;
+            case SHOVEL -> -3.0f;
+            case HOE -> -1.0f;
+            case SWORD -> -2.4f;
+        });
+        props = switch (tool.type()) {
+            case PICKAXE -> props.pickaxe(material, damage, speed);
+            case AXE -> props.axe(material, damage, speed);
+            case SHOVEL -> props.shovel(material, damage, speed);
+            case HOE -> props.hoe(material, damage, speed);
+            case SWORD -> props.sword(material, damage, speed);
         };
+        return tool.tier() instanceof ItemComponents.ToolMaterialSpec m && m.enchantmentValue() == 0 ? notEnchantable(props) : props;
+    }
+
+    /**
+     * {@code enchantment_value: 0} means "not enchantable": vanilla's {@code Enchantable} requires
+     * a positive value, so the material is built with 1 and the component is removed afterwards.
+     */
+    private static Item.Properties notEnchantable(Item.Properties props) {
+        return props.component(DataComponents.ENCHANTABLE, null);
+    }
+
+    /**
+     * {@code msm:armor} through {@code Item.Properties.humanoidArmor(material, type)}, which sets
+     * vanilla's {@code equippable}, {@code attribute_modifiers}, {@code max_damage},
+     * {@code repairable} and {@code enchantable} components (ADR 0042 D5).
+     */
+    static Item.Properties armor(Item.Properties props, RawDefinition raw, ItemComponents.Armor armor, List<String> warnings) {
+        ArmorType type = switch (armor.slot()) {
+            case HELMET -> ArmorType.HELMET;
+            case CHESTPLATE -> ArmorType.CHESTPLATE;
+            case LEGGINGS -> ArmorType.LEGGINGS;
+            case BOOTS -> ArmorType.BOOTS;
+        };
+        props = props.humanoidArmor(armorMaterial(raw, armor.material(), warnings), type);
+        return armor.material() instanceof ItemComponents.CustomArmorMaterial m && m.enchantmentValue() == 0 ? notEnchantable(props) : props;
+    }
+
+    private static ArmorMaterial armorMaterial(RawDefinition raw, ItemComponents.ArmorMaterialSpec spec, List<String> warnings) {
+        return switch (spec) {
+            case ItemComponents.ArmorMaterialName.LEATHER -> ArmorMaterials.LEATHER;
+            case ItemComponents.ArmorMaterialName.COPPER -> ArmorMaterials.COPPER;
+            case ItemComponents.ArmorMaterialName.CHAINMAIL -> ArmorMaterials.CHAINMAIL;
+            case ItemComponents.ArmorMaterialName.IRON -> ArmorMaterials.IRON;
+            case ItemComponents.ArmorMaterialName.GOLD -> ArmorMaterials.GOLD;
+            case ItemComponents.ArmorMaterialName.DIAMOND -> ArmorMaterials.DIAMOND;
+            case ItemComponents.ArmorMaterialName.NETHERITE -> ArmorMaterials.NETHERITE;
+            case ItemComponents.ArmorMaterialName.TURTLE_SCUTE -> ArmorMaterials.TURTLE_SCUTE;
+            case ItemComponents.ArmorMaterialName.ARMADILLO_SCUTE -> ArmorMaterials.ARMADILLO_SCUTE;
+            case ItemComponents.CustomArmorMaterial m -> {
+                Map<ArmorType, Integer> defense = new EnumMap<>(ArmorType.class);
+                defense.put(ArmorType.HELMET, m.defense().helmet());
+                defense.put(ArmorType.CHESTPLATE, m.defense().chestplate());
+                defense.put(ArmorType.LEGGINGS, m.defense().leggings());
+                defense.put(ArmorType.BOOTS, m.defense().boots());
+                defense.put(ArmorType.BODY, m.defense().chestplate()); // never used by humanoid armour
+                Holder<SoundEvent> sound = SoundEvents.ARMOR_EQUIP_GENERIC;
+                if (m.equipSound().isPresent()) {
+                    Optional<Holder.Reference<SoundEvent>> found = BuiltInRegistries.SOUND_EVENT.get(m.equipSound().get());
+                    if (found.isPresent()) {
+                        sound = found.get();
+                    } else {
+                        String message = raw.describe() + ": msm:armor: unknown equip_sound " + m.equipSound().get()
+                                + "; the generic armour equip sound is used";
+                        warnings.add(message);
+                        MsmRuntime.LOGGER.warn("[{}] {}", MsmRuntime.MOD_ID, message);
+                    }
+                }
+                yield new ArmorMaterial(
+                        m.durability(),
+                        Map.copyOf(defense),
+                        Math.max(1, m.enchantmentValue()), // vanilla rejects 0; removed again in armor()
+                        sound,
+                        m.toughness(),
+                        m.knockbackResistance(),
+                        TagKey.create(Registries.ITEM, m.repairItems().orElseGet(() -> noRepairTag(raw.id()))),
+                        ResourceKey.create(EquipmentAssets.ROOT_ID, m.equipmentAsset()));
+            }
+        };
+    }
+
+    /**
+     * The repair tag of a custom material without {@code repair_items}: a project-specific item
+     * tag that no data pack fills unless the project adds it, so nothing repairs the item.
+     */
+    static Identifier noRepairTag(Identifier itemId) {
+        return Identifier.fromNamespaceAndPath(itemId.getNamespace(), "msm_repairs/" + itemId.getPath());
     }
 
     private static Rarity rarity(MsmRarity rarity) {

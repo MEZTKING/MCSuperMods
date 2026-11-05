@@ -170,6 +170,20 @@ export interface BiomeAttributeFacts {
 }
 
 /**
+ * Item facts of a target: names the definition format checks against the game's own
+ * constants. Since 1.1.0 (ADR 0042 D4).
+ */
+export interface ItemFacts {
+  /**
+   * The vanilla armour material names of the target's game version, in lower case (the
+   * game's armour material constants, for example `iron` or `turtle_scute`). The
+   * `blocks-items.unknown-armor-material` validator checks an `msm:armor` material given by
+   * name against this list.
+   */
+  armorMaterials: readonly string[];
+}
+
+/**
  * Fabric toolchain versions of a target. Since 0.6.0 (`minecraftDependency` is new in 0.6.0,
  * `gradle` in 0.8.0).
  */
@@ -359,6 +373,11 @@ export interface TargetFacts {
    * A {@link GeckolibFacts} object since 0.7.0 (a version string before).
    */
   geckolib?: GeckolibFacts;
+  /**
+   * Item facts, such as the vanilla armour material names. Optional: a target without them
+   * skips the checks that need them. Since 1.1.0 (ADR 0042 D4).
+   */
+  items?: ItemFacts;
 }
 
 /**

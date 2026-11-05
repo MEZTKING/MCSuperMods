@@ -1,0 +1,19 @@
+{
+  "contents": {
+    "layers": {
+      "humanoid": [
+        {
+          "texture": "example:ruby"
+        }
+      ],
+      "humanoid_leggings": [
+        {
+          "texture": "example:ruby"
+        }
+      ]
+    }
+  },
+  "layer": "resourcepack",
+  "path": "assets/example/equipment/ruby.json",
+  "schema": "::java::assets::equipment::Equipment"
+}
