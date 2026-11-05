@@ -8,9 +8,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- Work on version 1.0 has started: loading plugins made by other people, more templates and wizards, a second Minecraft version and a documentation site.
+
+## [0.6.1] - 2026-11-05
+
+### Added
+
 - **What's new.** After an update, MCSuperMods shows what changed in the new version once. You can open it again at any time from **Help > What's New…** or the command palette ("What's new…"), and from the update banner before you restart.
 - **Update notifications.** With **Check for updates automatically** on (Settings > Updates), MCSuperMods checks a few seconds after it starts and then every six hours. A new version shows the banner "Version X is available, downloading…" on its own, then "Version X is ready" with **Restart to update**, plus a Windows notification once the download has finished.
-- Work on version 1.0 has started: loading plugins made by other people, more templates and wizards, a second Minecraft version and a documentation site.
 
 ### Changed
 
@@ -18,7 +23,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
-- A new version published while MCSuperMods was already open was only found by **Help > Check for Updates…**; the app now looks again every six hours and tells you without a click.
+- A new version published while MCSuperMods was already open was only found by **Help > Check for Updates…**; the app now looks again every six hours and tells you without a click. Copies of 0.6.0 and older still check only once at start-up, so restart the app (or use **Help > Check for Updates…**) to get this version.
 
 ## [0.6.0] - 2026-11-05
 
