@@ -2,7 +2,7 @@
  * The `java-project` exporter (ADR 0033): layout, `fabric.mod.json`, determinism across runs
  * and time zones, the problems (no generator, no Fabric facts, missing wrapper, scripts not
  * ejected, generator failures, entities without GeckoLib) and a blank project. Uses the
- * test-local `test:raw` kind and the real 26.3 generator.
+ * test-local `test:raw` kind and the real generator of each built-in target.
  */
 import { utf8 } from '@msm/core';
 import type { Element, Json, Problem, Target } from '@msm/plugin-api';
