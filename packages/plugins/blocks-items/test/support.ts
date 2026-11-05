@@ -36,6 +36,7 @@ export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
   model: ['example:block/ruby_ore', 'example:item/ruby'],
   loot_table: ['example:blocks/ruby_ore_rare'],
   function: ['example:ruby/shimmer'],
+  equipment: ['example:ruby'],
 };
 
 export interface TargetIndexes {

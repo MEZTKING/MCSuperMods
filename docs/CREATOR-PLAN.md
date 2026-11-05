@@ -193,3 +193,5 @@ Ordering: B186 and B187 start when B180 and B181 have landed (they reopen the sa
 - **Armour preview fidelity.** The humanoid geometry is a preview aid; the game is the reference (the guide says so, as it does for animations).
 - **Reopen rule and generator changes.** A generator fix after a set was created makes old sets look "edited" for the changed pieces; the review shows the diff, and the user chooses. Acceptable for v1; a stored generator version in `meta.creator` is the follow-up if it bites.
 - **Shared app files.** B184 waits for B173; if the AI helper slips, B184 is the one that moves, never the ownership.
+
+**Decision (2026-11-05, main session, from B181):** `enchantment_value: 0` means "not enchantable". The game rejects 0, so the runtime builds the material with 1 and removes the `enchantable` component; the B182 generator must do the same. 26.4 has the same armour and tool API as 26.3 (only `Equippable.equipSound()` returns an `Optional`, a test-only seam); per-slot durability multipliers are helmet 11, chestplate 16, leggings 15, boots 13 on both.

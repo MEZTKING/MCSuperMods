@@ -1,0 +1,46 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:tool": {
+          "attack_damage": 1.5,
+          "attack_speed": -2.6,
+          "tier": {
+            "attack_damage_bonus": 3,
+            "durability": 1200,
+            "enchantment_value": 12,
+            "incorrect_blocks_for_drops": "#minecraft:incorrect_for_diamond_tool",
+            "repair_items": "#minecraft:diamond_tool_materials",
+            "speed": 8.5
+          },
+          "type": "pickaxe"
+        }
+      },
+      "format": 1,
+      "max_stack_size": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/item/ruby_pickaxe.json",
+    "schema": "msm:item_definition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/diamond_pickaxe",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_pickaxe.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "item.example.ruby_pickaxe": "Ruby Pickaxe"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

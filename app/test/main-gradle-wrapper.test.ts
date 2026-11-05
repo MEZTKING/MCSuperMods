@@ -119,9 +119,11 @@ describe('Gradle wrapper service', () => {
   it('is packaged where the service looks and staged under those names', async () => {
     const appDir = join(import.meta.dirname, '..');
     const builder = await readFile(join(appDir, 'electron-builder.yml'), 'utf8');
-    expect(builder).toContain('- from: build/runtime/gradle-wrapper');
-    expect(builder).toContain(`to: ${PACKAGED_GRADLE_WRAPPER_DIR.join('/')}`);
+    // ADR 0038 D4: the whole staged folder ships as `runtime/` (runtime jars and wrapper).
+    expect(builder).toMatch(/- from: build\/runtime\n\s+to: runtime\n/);
+    expect(PACKAGED_GRADLE_WRAPPER_DIR[0]).toBe('runtime');
     const stage = await readFile(join(appDir, 'scripts', 'stage-runtime.mjs'), 'utf8');
+    expect(stage).toContain(`'${PACKAGED_GRADLE_WRAPPER_DIR.slice(1).join('/')}'`);
     for (const name of Object.values(GRADLE_WRAPPER_FILES)) expect(stage).toContain(`'${name}'`);
   });
 });

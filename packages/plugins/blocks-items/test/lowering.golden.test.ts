@@ -154,6 +154,59 @@ const SAMPLES: Sample[] = [
     },
   },
   {
+    kind: itemKind,
+    name: 'ruby_helmet',
+    id: 'example:ruby_helmet',
+    data: {
+      format: 1,
+      model: 'minecraft:item/iron_helmet',
+      display_name: 'Ruby Helmet',
+      max_stack_size: 1,
+      components: {
+        'msm:armor': {
+          slot: 'helmet',
+          material: {
+            durability: 30,
+            defense: { helmet: 3, chestplate: 7, leggings: 6, boots: 3 },
+            enchantment_value: 12,
+            toughness: 1.5,
+            knockback_resistance: 0.05,
+            equip_sound: 'minecraft:item.armor.equip_diamond',
+            repair_items: '#minecraft:repairs_diamond_armor',
+            equipment_asset: 'example:ruby',
+          },
+        },
+        'msm:durability': { max: 420 },
+      },
+    },
+  },
+  {
+    kind: itemKind,
+    name: 'ruby_pickaxe',
+    id: 'example:ruby_pickaxe',
+    data: {
+      format: 1,
+      model: 'minecraft:item/diamond_pickaxe',
+      display_name: 'Ruby Pickaxe',
+      max_stack_size: 1,
+      components: {
+        'msm:tool': {
+          type: 'pickaxe',
+          tier: {
+            durability: 1200,
+            speed: 8.5,
+            attack_damage_bonus: 3,
+            enchantment_value: 12,
+            incorrect_blocks_for_drops: '#minecraft:incorrect_for_diamond_tool',
+            repair_items: '#minecraft:diamond_tool_materials',
+          },
+          attack_damage: 1.5,
+          attack_speed: -2.6,
+        },
+      },
+    },
+  },
+  {
     kind: modKind,
     name: 'full',
     id: 'example:mod',

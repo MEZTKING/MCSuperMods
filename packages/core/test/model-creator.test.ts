@@ -71,11 +71,14 @@ describe('ElementMeta.creator', () => {
     const fs = createMemoryFileSystem();
     const project = projectWith(creator());
     await saveProject(fs, project, registry);
-    const text = utf8.decode(
-      fs.snapshot()['content/alpha/thing/ruby_sword.json'] as Uint8Array,
-    );
+    const text = utf8.decode(fs.snapshot()['content/alpha/thing/ruby_sword.json'] as Uint8Array);
     const document = JSON.parse(text) as { meta: { creator: Record<string, unknown> } };
-    expect(Object.keys(document.meta.creator)).toEqual(['flowId', 'generatedId', 'setId', 'values']);
+    expect(Object.keys(document.meta.creator)).toEqual([
+      'flowId',
+      'generatedId',
+      'setId',
+      'values',
+    ]);
     expect(Object.keys(document.meta.creator.values as object)).toEqual([
       'colour',
       'custom_durability',

@@ -316,7 +316,7 @@ function unknownEquipmentAssets(
   elements: readonly Element[],
   registry: ValidationRegistry,
 ): Problem[] {
-  const project = new Set(
+  const project = new Set<string>(
     elements.filter((element) => element.kind === EQUIPMENT_KIND).map((element) => element.id),
   );
   if (project.size === 0 && registry.ids('equipment').length === 0) return [];

@@ -4,13 +4,7 @@
  * @packageDocumentation
  */
 
-import type {
-  Element,
-  ElementCreatorMeta,
-  Json,
-  Project,
-  ResourceLocation,
-} from '@msm/plugin-api';
+import type { Element, ElementCreatorMeta, Json, Project, ResourceLocation } from '@msm/plugin-api';
 import { parseResourceLocation } from './resource-location';
 
 /** The current version of the `msm.project.json` format. */

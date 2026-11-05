@@ -1,0 +1,54 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:armor": {
+          "material": {
+            "defense": {
+              "boots": 3,
+              "chestplate": 7,
+              "helmet": 3,
+              "leggings": 6
+            },
+            "durability": 30,
+            "enchantment_value": 12,
+            "equip_sound": "minecraft:item.armor.equip_diamond",
+            "equipment_asset": "example:ruby",
+            "knockback_resistance": 0.05,
+            "repair_items": "#minecraft:repairs_diamond_armor",
+            "toughness": 1.5
+          },
+          "slot": "helmet"
+        },
+        "msm:durability": {
+          "max": 420
+        }
+      },
+      "format": 1,
+      "max_stack_size": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/item/ruby_helmet.json",
+    "schema": "msm:item_definition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/iron_helmet",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_helmet.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "item.example.ruby_helmet": "Ruby Helmet"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

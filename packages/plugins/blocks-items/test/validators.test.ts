@@ -184,7 +184,9 @@ describe('blocks-items validators', () => {
 
     it('accepts vanilla and custom armour, custom tool materials and attack overrides', async () => {
       const problems = await validate([
-        item('demo:iron_cap', { components: { 'msm:armor': { slot: 'helmet', material: 'iron' } } }),
+        item('demo:iron_cap', {
+          components: { 'msm:armor': { slot: 'helmet', material: 'iron' } },
+        }),
         item('demo:ruby_chestplate', {
           components: {
             'msm:armor': { slot: 'chestplate', material: customMaterial('demo:ruby') },
@@ -219,7 +221,12 @@ describe('blocks-items validators', () => {
         item('demo:a', { components: { 'msm:armor': { slot: 'helmet', material: 'mithril' } } }),
       ]);
       expect(problems.map((p) => [p.code, p.severity, p.elementId, p.path])).toEqual([
-        ['blocks-items.unknown-armor-material', 'error', 'demo:a', '/components/msm:armor/material'],
+        [
+          'blocks-items.unknown-armor-material',
+          'error',
+          'demo:a',
+          '/components/msm:armor/material',
+        ],
       ]);
       expect(problems[0]?.message).toContain('"turtle_scute"');
     });
@@ -253,7 +260,18 @@ describe('blocks-items validators', () => {
           '/components/msm:armor/material/equipment_asset',
         ],
       ]);
-      expect(await validate([item('demo:a', { components: { 'msm:armor': { slot: 'leggings', material: customMaterial('demo:ruby') } } })], false)).toEqual([]);
+      expect(
+        await validate(
+          [
+            item('demo:a', {
+              components: {
+                'msm:armor': { slot: 'leggings', material: customMaterial('demo:ruby') },
+              },
+            }),
+          ],
+          false,
+        ),
+      ).toEqual([]);
     });
 
     it('reports armour and a tool on one item', async () => {
