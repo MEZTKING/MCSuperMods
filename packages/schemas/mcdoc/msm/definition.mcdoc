@@ -93,8 +93,9 @@ struct BlockCommon {
 	sound_type?: SoundType,
 	/// Drops; absent means the vanilla default for the block id.
 	loot_table?: #[id="loot_table"] string,
-	/// The block item; absent means a stack size of 64 in no creative tab.
-	item?: BlockItem,
+	/// The block item; absent means a stack size of 64 in no creative tab; `false` means no
+	/// block item.
+	item?: (BlockItem | false),
 	/// Events that components and actions refer to, by id.
 	events?: struct BlockEvents {
 		[string]: Event,

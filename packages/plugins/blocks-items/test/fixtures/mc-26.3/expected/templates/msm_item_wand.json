@@ -1,0 +1,52 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:on_use": {
+          "cooldown_ticks": 20,
+          "event": "demo:sample_use"
+        }
+      },
+      "creative_tab": "minecraft:tools_and_utilities",
+      "events": {
+        "demo:sample_use": {
+          "actions": [
+            {
+              "sound": "minecraft:block.amethyst_block.resonate",
+              "type": "play_sound"
+            },
+            {
+              "count": 8,
+              "particle": "minecraft:end_rod",
+              "spread": 0.3,
+              "type": "spawn_particle"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "max_stack_size": 1,
+      "rarity": "uncommon"
+    },
+    "layer": "msm",
+    "path": "msm/demo/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/blaze_rod",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "item.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  }
+]

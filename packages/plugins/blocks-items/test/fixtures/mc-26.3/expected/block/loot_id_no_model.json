@@ -1,0 +1,12 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "loot_table": "example:blocks/ruby_ore_rare",
+      "sound_type": "deepslate"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_ore.json",
+    "schema": "msm:block_definition"
+  }
+]

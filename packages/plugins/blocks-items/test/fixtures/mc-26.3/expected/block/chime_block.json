@@ -1,0 +1,141 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0.8,
+          "requires_tool": false
+        },
+        "msm:on_step": {
+          "cooldown_ticks": 20,
+          "event": "example:wake"
+        },
+        "msm:redstone": {
+          "emit": 0,
+          "on_powered": "example:wake",
+          "on_unpowered": "example:sleep"
+        }
+      },
+      "events": {
+        "example:sleep": {
+          "actions": [
+            {
+              "offset": [
+                0,
+                1,
+                0
+              ],
+              "state": "minecraft:air",
+              "type": "set_block_state"
+            },
+            {
+              "event": "example:wake",
+              "type": "trigger_event"
+            }
+          ]
+        },
+        "example:wake": {
+          "actions": [
+            {
+              "pitch": 1.5,
+              "sound": "minecraft:block.note_block.bell",
+              "type": "play_sound"
+            },
+            {
+              "offset": [
+                0,
+                1,
+                0
+              ],
+              "state": "minecraft:glowstone",
+              "type": "set_block_state"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "sound_type": "wood"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/chime_block.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "minecraft:block/note_block"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/chime_block.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:block/note_block",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/chime_block.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.chime_block": "Chime Block"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:chime_block"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/axe.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:chime_block"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/needs_stone_tool.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:chime_block",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/chime_block",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/chime_block.json",
+    "schema": "resource:loot_table"
+  }
+]

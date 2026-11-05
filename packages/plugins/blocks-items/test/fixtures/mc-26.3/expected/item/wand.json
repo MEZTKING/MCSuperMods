@@ -1,0 +1,67 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:durability": {
+          "max": 32
+        },
+        "msm:food": {
+          "can_always_eat": true,
+          "nutrition": 1,
+          "saturation": 0.1
+        },
+        "msm:on_use": {
+          "cooldown_ticks": 10,
+          "event": "example:zap"
+        },
+        "msm:tool": {
+          "tier": "gold",
+          "type": "sword"
+        }
+      },
+      "events": {
+        "example:zap": {
+          "actions": [
+            {
+              "count": 2,
+              "item": "example:ruby",
+              "type": "give_item"
+            },
+            {
+              "count": 5,
+              "particle": "minecraft:electric_spark",
+              "speed": 0.1,
+              "type": "spawn_particle"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "max_stack_size": 1,
+      "rarity": "epic"
+    },
+    "layer": "msm",
+    "path": "msm/example/item/wand.json",
+    "schema": "msm:item_definition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/blaze_rod",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/wand.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "item.example.wand": "Wand"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

@@ -27,6 +27,10 @@
     "code": "schema.out-of-range",
     "path": "/item/max_stack_size"
   },
+  "block-item-true.json": {
+    "code": "schema.no-union-match",
+    "path": "/item"
+  },
   "block-light-16.json": {
     "code": "schema.out-of-range",
     "path": "/components/msm:light_emitter/level"

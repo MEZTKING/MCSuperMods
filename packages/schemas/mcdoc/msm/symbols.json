@@ -478,13 +478,25 @@
           }
         },
         {
-          "desc": "The block item; absent means a stack size of 64 in no creative tab.",
+          "desc": "The block item; absent means a stack size of 64 in no creative tab; `false` means no\nblock item.",
           "key": "item",
           "kind": "pair",
           "optional": true,
           "type": {
-            "kind": "reference",
-            "path": "::msm::definition::BlockItem"
+            "kind": "union",
+            "members": [
+              {
+                "kind": "reference",
+                "path": "::msm::definition::BlockItem"
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              }
+            ]
           }
         },
         {
@@ -1473,5 +1485,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:bae388ae72bdfa3c144d8f0a6faa619dbc86c1490d0d2bc062c3758533e4d573"
+  "ref": "msm-mcdoc:sha256:d15455b9e723d88c7d814ad80e9044f64da99490d060ab20e0dc42c26a63ff52"
 }

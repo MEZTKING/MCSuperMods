@@ -1,0 +1,22 @@
+[
+  {
+    "contents": {
+      "authors": [],
+      "depends": {
+        "fabric-api": "*",
+        "fabricloader": ">=0.20.1",
+        "minecraft": "~26.3",
+        "msm_runtime": "*"
+      },
+      "description": "",
+      "environment": "*",
+      "id": "demo",
+      "license": "All-Rights-Reserved",
+      "name": "Demo",
+      "schemaVersion": 1,
+      "version": "1.0.0"
+    },
+    "layer": "msm",
+    "path": "fabric.mod.json"
+  }
+]

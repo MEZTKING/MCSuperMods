@@ -1,0 +1,8 @@
+{
+  "display_name": "Glow Pane",
+  "format": 1,
+  "item": false,
+  "loot": "self",
+  "model": "mymod:block/glow_pane",
+  "sound_type": "glass"
+}
