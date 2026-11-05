@@ -8,8 +8,8 @@
  */
 
 import type { Json } from '@msm/core';
-import { lazy, Suspense, useCallback, useEffect, useId, useRef, useState } from 'react';
-import { joinLines, problemLine, splitLines } from '../components/function-editor/source-text';
+import { lazy, Suspense, useId } from 'react';
+import { problemLine } from '../components/function-editor/source-text';
 import { TextareaFunctionEditor } from '../components/function-editor/TextareaFunctionEditor';
 import type {
   CompleteFunction,
@@ -17,6 +17,7 @@ import type {
   FunctionProblem,
   FunctionSourceEditorProps,
 } from '../components/function-editor/types';
+import { useDebouncedLines } from '../components/function-editor/use-debounced-lines';
 import { monacoDisabled } from '../components/RawJsonPanel';
 import type { ChangeOptions } from '../forms';
 
@@ -71,47 +72,13 @@ export function FunctionEditor({
   focusLine = null,
   onFocused,
 }: FunctionEditorProps) {
-  const source = joinLines(lines);
-  const [draft, setDraft] = useState(source);
-  const [shownSource, setShownSource] = useState(source);
   const editorId = useId();
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pending = useRef<string | null>(null);
-  /** Sources this editor reported; their echo through `lines` must not reset the draft. */
-  const reported = useRef(new Set<string>());
-  const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
-
-  const flush = useCallback(() => {
-    if (timer.current !== null) clearTimeout(timer.current);
-    timer.current = null;
-    const text = pending.current;
-    pending.current = null;
-    if (text === null) return;
-    reported.current.add(text);
-    onChangeRef.current('/lines', splitLines(text), { coalesce: FUNCTION_SOURCE_COALESCE });
-  }, []);
-
-  // Report a pending edit when the editor goes away (element switch, Studio closed).
-  useEffect(() => flush, [flush]);
-
-  if (source !== shownSource) {
-    setShownSource(source);
-    if (reported.current.has(source)) {
-      reported.current.delete(source);
-    } else if (pending.current === null) {
-      // Changed elsewhere (undo, Raw JSON, a rename): show it.
-      reported.current.clear();
-      setDraft(source);
-    }
-  }
-
-  const edit = (text: string) => {
-    setDraft(text);
-    pending.current = text;
-    if (timer.current !== null) clearTimeout(timer.current);
-    timer.current = setTimeout(flush, FUNCTION_EDIT_DEBOUNCE_MS);
-  };
+  const { draft, edit } = useDebouncedLines(
+    lines,
+    onChange,
+    FUNCTION_SOURCE_COALESCE,
+    FUNCTION_EDIT_DEBOUNCE_MS,
+  );
 
   const other = problems.filter((problem) => problemLine(problem) === undefined);
 

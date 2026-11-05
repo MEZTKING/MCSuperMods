@@ -42,11 +42,15 @@ dependencies {
 
 // The corpus lives with the MSM mcdoc in packages/schemas; the runtime reads it in place.
 val conformanceCorpus = layout.projectDirectory.dir("../packages/schemas/mcdoc/msm/conformance/definition")
+// The script API v1 description (ADR 0032 D1) lives with the scripting plugin; the contract test reads it in place.
+val scriptApi = layout.projectDirectory.file("../packages/plugins/scripting/api/script-api-v1.json")
 
 tasks.test {
     useJUnitPlatform()
     inputs.dir(conformanceCorpus).withPropertyName("conformanceCorpus")
     systemProperty("msm.conformance.definition", conformanceCorpus.asFile.absolutePath)
+    inputs.file(scriptApi).withPropertyName("scriptApi")
+    systemProperty("msm.script.api", scriptApi.asFile.absolutePath)
     testLogging {
         events("failed")
         showStandardStreams = false

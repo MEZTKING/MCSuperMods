@@ -20,9 +20,9 @@ export class JavaFile {
   ) {}
 
   /**
-   * Imports a class and returns its simple name. Nested classes are imported by their
-   * outer class (`net.minecraft.world.level.levelgen.Heightmap.Types` imports `Heightmap`
-   * and returns `Heightmap.Types`) when `outer` gives the outer class's length in segments.
+   * Imports a class and returns its simple name. A nested class is imported through its
+   * outer class: `use('net.minecraft.world.level.levelgen.Heightmap', 'Types')` imports
+   * `Heightmap` and returns `Heightmap.Types`.
    *
    * @param fqcn - The fully qualified class name (outer class only, for nested ones).
    * @param nested - Nested class names appended to the simple name, for example `Types`.
@@ -97,4 +97,13 @@ export function identifierExpression(file: JavaFile, id: string): string {
   const path = colon < 0 ? id : id.slice(colon + 1);
   const identifier = file.use('net.minecraft.resources.Identifier');
   return `${identifier}.fromNamespaceAndPath(${javaString(namespace)}, ${javaString(path)})`;
+}
+
+/** The lines without leading and trailing empty lines. */
+export function trimBlank(lines: readonly string[]): string[] {
+  let start = 0;
+  let end = lines.length;
+  while (start < end && lines[start] === '') start++;
+  while (end > start && lines[end - 1] === '') end--;
+  return lines.slice(start, end);
 }

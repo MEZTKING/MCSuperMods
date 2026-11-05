@@ -3,6 +3,7 @@
  */
 
 import type { Target } from '@msm/plugin-api';
+import { javaProjectGenerator } from './java-project/index';
 
 export const target: Target = {
   id: 'mc-26.3',
@@ -98,4 +99,5 @@ export const target: Target = {
       'c7c89bd6c5f2801ef1575e2e1212202f5a3eff480d73503beff12b1d60dfb751112fccf36e36c243b26b6b492261cef12d8b2c1a92a734bb0b621daa8c158fc5',
     modrinthVersionId: 'kSxHvs99',
   },
+  javaProject: javaProjectGenerator,
 };
