@@ -1562,3 +1562,20 @@ Decisions:
 
 Next:
 - B113 must teach `ConformanceCorpusTest` the `entity-` prefix: until then its `parse` throws on the new `entity-*` files in `conformance/definition/` (the JUnit test is red between B112 and B113).
+
+## 2026-11-05 — executor — B110 entity and GeckoLib spike (engine-mod)
+
+What:
+- Gradle: Modrinth Maven as an `exclusiveContent` repository (group `maven.modrinth`); `geckolib_version=5.5.7`, `geckolib_modrinth_version_id=kSxHvs99`; `compileOnly` + `gametestCompileOnly` + `localRuntime` (left off with `-PwithoutGeckolib`). `fabric.mod.json`: `client` entrypoint `dev.mcsupermods.runtime.client.MsmRuntimeClient`, `suggests` `geckolib >=5.5.7` (expanded by `processResources`).
+- Runtime: scanner kind `entity`; spike parser `loader/EntitySpikeDefinition` (Gson); `registry/MsmEntity` (`PathfinderMob`, goals `wander`, `look_at_player`, `melee_attack` by type), `MsmEntityRegistrar` (createMob with attributes and spawn placement, spawn egg in `minecraft:spawn_eggs`, `BiomeModifications.addSpawn` from tags and ids), `GeckolibEntities` + `MsmGeoEntity` (controllers `msm_main`, `msm_triggered` with `triggerableAnim`), `client/MsmRuntimeClient`, `GeckolibRenderers`, `MsmGeoModel`. Log: the Phase 4 line unchanged, then `[msm_runtime] registered K entity type(s)`; spawn eggs count as items.
+- GameTest mod: `msm/msm_spike/entity/glow_golem.json` (GeckoLib) and `walker.json` (no model, no goals, no egg); hand-written geo (1.12.0, 2 bones, 3 cubes), animations (1.8.0, idle, walk, attack), a generated 64x64 checker PNG. `MsmEntitySpikeGameTest`: `entityTypeIsRegistered`, `spawnEggSpawnsTheType`, `attributesComeFromTheDefinition`, `walkToReachesTheTarget`, `meleeAttackTargetsListedTypes`, `meleeAttackHurtsAPlayer`, `triggerAnimDoesNotThrowOnTheServer`, `naturalSpawnReachesTheBiomeAttribute`.
+- `ConformanceCorpusTest` skips `entity-*` corpus files (entity Codecs land in B113), so the build is green with B112's corpus.
+- Results: `./gradlew clean build` "All 26 required tests passed", 46 JUnit tests; `runGameTest -PwithoutGeckolib` "All 26 required tests passed" with the expected geo error; `msm_runtime-0.4.0.jar` has no `com/geckolib` and no hard GeckoLib dependency; `tools/run-fabric-server` with runtime jar, GeckoLib jar and a hand-made spike content jar: PASS, 0 errors, 0 warnings. Findings in ADR 0028 and 0029 Status.
+
+Decisions:
+- Without GeckoLib the spike registers the plain `MsmEntity` and logs one error (brief B110); ADR 0028 D5's "registers nothing" stays for B113.
+- Player attacks are tested with `setTarget(makeMockPlayer(...))`: the mock player is not in the level, and the in-level mock server player is always creative.
+- `runClient` under `xvfb-run` loads GeckoLib and runs the client entrypoint but cannot create a render backend (no GLX visual, no Vulkan surface): reserve B123 is not runnable in this container.
+
+Next:
+- B113: Codecs replace the spike parser; `EntityRendererRegistry` is deprecated in fabric-rendering-v1 27.2.0 (replacement: verify at implementation); `engine-mod/CLAUDE.md` contents (`client/`, GeckoLib configuration).

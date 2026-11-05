@@ -19,7 +19,7 @@ import net.minecraft.resources.Identifier;
 
 /** Walks {@code msm/<namespace>/<kind>/**}{@code /*.json} in every loaded mod container. */
 public final class DefinitionScanner {
-    private static final List<String> KINDS = List.of("block", "item");
+    private static final List<String> KINDS = List.of("block", "item", "entity");
 
     private DefinitionScanner() {}
 

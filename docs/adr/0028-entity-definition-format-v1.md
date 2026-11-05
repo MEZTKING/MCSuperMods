@@ -89,3 +89,15 @@ Defaults and rules:
 ## Status
 
 Proposed (2026-11-05). Findings of the spike (B110) are appended here before Wave 1; accepted at Phase 5 close.
+
+Spike findings (B110, 2026-11-05; `engine-mod` with a Gson spike parser, GameTests `MsmEntitySpikeGameTest`, 26 of 26 required GameTests and 46 JUnit tests pass, with and without GeckoLib on the run classpath):
+
+- Registration as D5 describes works on 26.3: `FabricEntityType.Builder.createMob(factory, category, mob -> mob.defaultAttributes(...).spawnPlacement(SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mob::checkMobSpawnRules)).sized(w, h).build(key)` and `Registry.register(BuiltInRegistries.ENTITY_TYPE, key, type)` at init. Attribute holders are `Attributes.MAX_HEALTH`, `MOVEMENT_SPEED`, `ATTACK_DAMAGE`, `ATTACK_KNOCKBACK`, `FOLLOW_RANGE`, `KNOCKBACK_RESISTANCE` (all checked in the 26.3 jar).
+- `registerGoals` runs inside the `Mob` constructor, before subclass fields exist; the definition is looked up from a static `EntityType -> definition` map filled before `Registry.register`. `getType()` is already set at that point.
+- Spawn egg: `new SpawnEggItem(new Item.Properties().setId(key).spawnEgg(type))`; `SpawnEggItem.getType(stack)` and `byId(type)` find it. `CreativeModeTabs.SPAWN_EGGS` is private in 26.3; the tab key is built from `minecraft:spawn_eggs`.
+- **`BiomeModifications.addSpawn` reaches the 26.3 `minecraft:gameplay/natural_mob_spawns` attribute**: Fabric biome API 20.1.1 reads and rewrites `EnvironmentAttributes.NATURAL_MOB_SPAWNS` (`SpawnSettingsContextImpl`). Read back with `biome.getAttributes().applyModifier(EnvironmentAttributes.NATURAL_MOB_SPAWNS, EnvironmentAttributes.NATURAL_MOB_SPAWNS.defaultValue()).getMobsInCategory(category)`; plains, forest and birch forest (`minecraft:plains` plus `#minecraft:is_forest`) list the mob with weight 6 and count `[1-2]`, desert does not. No lowered biome attribute override is needed.
+- `melee_attack` with a type list works through `NearestAttackableTargetGoal<LivingEntity>(mob, LivingEntity.class, mustSee, (target, level) -> types.contains(...))`: the mob found and hit a pig listed by id. `GameTestHelper.makeMockPlayer` creates a player that is **not in the level**, so no target goal can find it; `makeMockServerPlayerInLevel` is in the level but always creative. GameTests drive player attacks with `setTarget(mockPlayer)` (the player lost 5 health on difficulty NORMAL); B113 should do the same and test type selection with a vanilla mob.
+- `helper.walkTo(mob, pos, 1.0f)` moves a goal-less mob across an 8x8 stone floor within 200 ticks (the empty test structure has no floor; tests place one).
+- Without GeckoLib the spike registers the plain `MsmEntity` and logs one error per geo definition (`msm:animated_model needs the mod 'geckolib', which is not loaded; the entity has no renderer`), as the B110 brief asked; D5's "registers nothing" remains the B113 behaviour.
+- Spawn eggs are counted as items in the Phase 4 line and `[msm_runtime] registered K entity type(s)` follows it; the Phase 4 line is unchanged.
+- Nothing in D2 is awkward for the game API beyond the mock-player limit above.

@@ -93,6 +93,8 @@ public final class MsmRegistrar {
                 fail(errors, raw, e);
             }
         }
+        // Entities last: their spawn eggs count as items and must not collide with item definitions.
+        MsmEntityRegistrar.registerAll(scanned.definitions(), items, errors);
         return new LoadReport(scanned.filesRead(), scanned.definitions(), List.copyOf(blocks), List.copyOf(items),
                 List.copyOf(errors), List.copyOf(warnings));
     }

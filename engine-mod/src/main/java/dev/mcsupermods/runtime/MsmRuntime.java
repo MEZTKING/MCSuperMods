@@ -2,6 +2,7 @@ package dev.mcsupermods.runtime;
 
 import dev.mcsupermods.runtime.loader.DefinitionScanner;
 import dev.mcsupermods.runtime.loader.LoadReport;
+import dev.mcsupermods.runtime.registry.MsmEntityRegistrar;
 import dev.mcsupermods.runtime.registry.MsmRegistrar;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -22,6 +23,7 @@ public final class MsmRuntime implements ModInitializer {
         LOGGER.info("[{}] registered {} block(s) and {} item(s) from {} definition file(s); {} error(s), {} warning(s)",
                 MOD_ID, report.blocks().size(), report.items().size(), report.filesRead(), report.errors().size(),
                 report.warnings().size());
+        LOGGER.info("[{}] registered {} entity type(s)", MOD_ID, MsmEntityRegistrar.types().size());
         // Creative tabs, items, block states and functions of other mods and data packs exist only once the server runs.
         ServerLifecycleEvents.SERVER_STARTED.register(server -> report = report.withWarnings(MsmRegistrar.checkAfterStart(server)));
     }

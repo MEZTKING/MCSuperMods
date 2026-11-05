@@ -3,17 +3,21 @@
   "id": "msm_runtime",
   "version": "${version}",
   "name": "MSM Runtime",
-  "description": "Registers blocks and items from msm/ definitions in every loaded mod.",
+  "description": "Registers blocks, items and entities from msm/ definitions in every loaded mod.",
   "authors": ["MCSuperMods"],
   "license": "MIT",
   "environment": "*",
   "entrypoints": {
-    "main": ["dev.mcsupermods.runtime.MsmRuntime"]
+    "main": ["dev.mcsupermods.runtime.MsmRuntime"],
+    "client": ["dev.mcsupermods.runtime.client.MsmRuntimeClient"]
   },
   "depends": {
     "fabricloader": ">=0.20.1",
     "minecraft": "~26.3",
     "java": ">=25",
     "fabric-api": "*"
+  },
+  "suggests": {
+    "geckolib": ">=${geckolib_version}"
   }
 }

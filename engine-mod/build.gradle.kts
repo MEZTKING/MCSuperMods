@@ -28,8 +28,6 @@ dependencies {
     implementation("net.fabricmc:fabric-loader:${providers.gradleProperty("loader_version").get()}")
     implementation("net.fabricmc.fabric-api:fabric-api:${providers.gradleProperty("fabric_api_version").get()}")
 
-    compileOnly("maven.modrinth:geckolib:${providers.gradleProperty("geckolib_modrinth_version_id").get()}")
-
     // JUnit 5 for the Codecs over the shared MSM conformance corpus (GameTests cover behaviour).
     testImplementation(platform("org.junit:junit-bom:${providers.gradleProperty("junit_version").get()}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -60,11 +58,26 @@ fabricApi {
     }
 }
 
+dependencies {
+    // GeckoLib (ADR 0029 D6): compiled against, never bundled, never a hard dependency (fabric.mod.json "suggests").
+    // Non-remapping Loom has no mod* configurations: a plain jar with a fabric.mod.json on the run classpath is
+    // discovered by Fabric Loader as a mod. `localRuntime` puts it on runClient, runServer and runGameTest without
+    // exposing it to consumers; -PwithoutGeckolib leaves it off to check the runtime without GeckoLib.
+    val geckolib = "maven.modrinth:geckolib:${providers.gradleProperty("geckolib_modrinth_version_id").get()}"
+    compileOnly(geckolib)
+    "gametestCompileOnly"(geckolib)
+    if (!providers.gradleProperty("withoutGeckolib").isPresent) {
+        localRuntime(geckolib)
+    }
+}
+
 tasks.processResources {
     val version = project.version
+    val geckolibVersion = providers.gradleProperty("geckolib_version").get()
     inputs.property("version", version)
+    inputs.property("geckolibVersion", geckolibVersion)
     filesMatching("fabric.mod.json") {
-        expand("version" to version)
+        expand("version" to version, "geckolib_version" to geckolibVersion)
     }
 }
 
