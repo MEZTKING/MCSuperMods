@@ -137,13 +137,13 @@ describe('msm-runtime.d.ts', () => {
       '  e.cancel();',
       '});',
       'msm.events.on("entity.hurt", (e) => { const a = e.attacker; if (a) a.asPlayer()?.sendMessage("Ouch"); });',
-      'msm.actions.define("mymod:glow", (e) => { msm.log.info(`${e.owner} ${e.pos.toString()}`); });',
+      'msm.actions.define("mymod:glow", (e) => { msm.log.info(e.owner + " " + e.pos.toString()); });',
       'msm.schedule(20, () => msm.log.warn(msm.version));',
     ].join('\n');
     expect(typeCheck(global)).toEqual([]);
     const imported = [
       'import { msm, type Player, type Pos } from "msm:runtime";',
-      'const greet = (p: Player, at: Pos): void => p.sendMessage(`${at.x}`);',
+      'const greet = (p: Player, at: Pos): void => p.sendMessage(String(at.x));',
       'msm.events.on("player.join", (e) => greet(e.player, e.player.pos));',
       'export {};',
     ].join('\n');

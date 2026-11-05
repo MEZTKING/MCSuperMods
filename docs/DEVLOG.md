@@ -1796,3 +1796,26 @@ Next:
 **Next**
 - B133: Codec `Action.RunScript(handler)`, then `git mv` `definition-script/{valid,invalid}/*` into `definition/`, merge the two `expected-errors.json`, delete `definition-script/` and its entry in `GROUPS`/`SCHEMAS` of `packages/schemas/test/msm-conformance.test.ts` (or have the JUnit test read both folders).
 - B137b: the Events editor action lists in `blocks-items-model.ts` are hard-coded and need `run_script`.
+
+## 2026-11-05 — executor — B132 plugin API 0.8.0, Gradle fact, script API JSON and typings
+
+What:
+- `@msm/plugin-api` 0.8.0 (ADR 0034): `FabricFacts.gradle` (required), `Target.javaProject?: JavaProjectGenerator` with `JavaProjectInput`, `DefinitionInput`, `GeneratedFile` (exported, JSDoc, version-neutral examples), `OutputFile.language` JSDoc names `typescript`; `API_VERSION` `0.8.0`; CHANGELOG entry with the migration note; type-level tests for the new types.
+- Every built-in plugin, `tools/new-plugin` (`SCAFFOLD_API_RANGE`) and the tests that pin the range or build test plugins (core, plugin-api, the plugins' `plugin.test.ts`, six app test files) move to `^0.8.0`; core's "previous minor" test now uses `^0.7.0`.
+- `mc-26.3`: `fabric.gradle` `9.8.2` with source and date; a test reads `engine-mod/gradle/wrapper/gradle-wrapper.properties` and asserts the same version.
+- `@msm/plugin-scripting` scaffolded with `tools/new-plugin` (root `tsconfig.json` reference), `typescript` devDependency; `@msm/plugin-scripting` and `typescript` in `app` and `exporters` devDependencies; `layers.json` exporters entry; exporters `tsconfig.json` reference; lockfile updated.
+- `api/script-api-v1.json`: ADR 0032 D2 (types `Pos`, `World`, `Entity`, `Player extends Entity`, `BlockRef`, `ItemRef`, `GameEvent` (base with `world`), nine event types and `ActionEvent`; global `msm` with `version`, `log`, `events.on` (one overload per event), `actions.define`, `schedule`; nine events with `type`, `cancellable`, `source`, `doc`).
+- `src/api/`: `types.ts` (`ScriptApi` types, `parseScriptApi` structural check), `generate.ts` (`generateTypings`, `checkScriptApi` cross-check), `index.ts` (`SCRIPT_API`, `MSM_RUNTIME_TYPINGS`, re-exported from the package root). `api/msm-runtime.d.ts` checked in; `test/typings.test.ts` (8 tests): golden equality, parse without diagnostics, every event declared, a real type check of scripts with and without `import ... from "msm:runtime"` against `lib.es5`, and rejection of unknown events, `cancel()` on a non-cancellable event and assignment to a read-only property.
+- Checks: `tsc -b`, `biome ci .` (815 files), check-deps clean; `turbo run test --force` 18/18 tasks, 2,264 passed, 2 skipped; `pnpm install --frozen-lockfile --offline` passes here and in a clean worktree of HEAD.
+
+Decisions:
+- `SCRIPT_API` imports the JSON with `with { type: 'json' }` (as `@msm/schemas` does for `symbols.json`; the file is in the package's `tsconfig` `include`) and passes it through `parseScriptApi`, since the inferred JSON type does not match the literal unions.
+- `MSM_RUNTIME_TYPINGS` is `generateTypings(SCRIPT_API)` computed at module load, not a read of the `.d.ts` (plugin code reads no files); the golden test pins it byte for byte to the checked-in file.
+- An ambient module can export only its own declarations, so `declare module "msm:runtime"` re-exports each global interface as `export type X = globalThis.X;` (`export type { X }` fails the type check).
+- The generated file starts with `// biome-ignore-all format: generated file`: Biome would otherwise rewrite quotes and wrap long signatures in the golden.
+- Every property in the typings is `readonly`; namespaces become interfaces named after their owner (`MsmLog`, `MsmEvents`, `MsmActions`); events share a `GameEvent` base.
+
+Next:
+- B133: `ScriptApiContractTest` reads the JSON (inheritance through `extends`, `GameEvent` included); event `source` fields name the Fabric API callbacks.
+- B134: the kind and validators in this package; B137a writes `MSM_RUNTIME_TYPINGS` to `.msm/`.
+- B141: plugin-api, plugins and targets `CLAUDE.md` status lines (0.8.0, `^0.8.0`, `gradle`).

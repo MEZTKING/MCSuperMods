@@ -120,6 +120,8 @@ function memberLines(owner: string, name: string, member: ScriptApiMember): stri
 export function generateTypings(api: ScriptApi): string {
   const decls = collectInterfaces(api);
   const out: string[] = [
+    // The checked-in golden lives in the repository, where Biome would otherwise reformat it.
+    '// biome-ignore-all format: generated file',
     `// msm-runtime.d.ts: typings of the MSM runtime script API, version ${api.version}.`,
     '// Generated from script-api-v1.json by @msm/plugin-scripting (generateTypings); do not edit.',
   ];

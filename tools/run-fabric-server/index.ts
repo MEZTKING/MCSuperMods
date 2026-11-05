@@ -21,10 +21,22 @@
  *    error (nor warning unless `--allow-warnings`), no `Failed to load`, no mod resolution
  *    failure and no stack frame from `dev.mcsupermods` or `com.geckolib`.
  *
+ * GameTests (`--gametest <jar>`, ADR 0033 D5): the test jar and Fabric API's
+ * `fabric-gametest-api-v1` module (not nested in the `fabric-api` jar; its version is read from
+ * Fabric API's POM) go into `mods/`, and the JVM gets `-Dfabric-api.gametest=true` and
+ * `-Dfabric-api.gametest.report-file=<report>`. Fabric API then starts the vanilla GameTest server
+ * instead of the dedicated server: it runs every registered test (Minecraft's own
+ * `minecraft:always_pass` included), writes a JUnit-like XML report and exits with the number of
+ * failed required tests (`GameTestServer.onServerExit`; -1 when no tests could be selected, 1 on a
+ * crash). It never logs `Done (` and needs no `stop`. The run passes when the exit status is 0,
+ * the report exists, lists at least one test outside the `minecraft` namespace and has no
+ * failure, and the log rules above (other than `Done (`) hold. `--no-runtime` (ejected jars) skips
+ * the runtime's registration lines and fails on any `[msm_runtime]` line instead.
+ *
  * The facts file is what `packages/exporters/test/sample-mod.golden.test.ts` and
  * `sample-mob.golden.test.ts` write next to the sample jar: `minecraft`, `loader`,
  * `fabricApi` (from the target's Fabric facts), the optional `expectBlocks`, `expectItems`,
- * `expectEntities`, and `geckolib` (`fileName`, `url`, `sha512` from the target's GeckoLib
+ * `expectEntities`, `expectScripts` (accepted, not yet checked), and `geckolib` (`fileName`, `url`, `sha512` from the target's GeckoLib
  * facts). Flags override it.
  *
  * GeckoLib: a content jar with entities nests GeckoLib (ADR 0029 D4), so by default the tool
@@ -57,6 +69,14 @@ export interface Options {
   expectBlocks: number | undefined;
   expectItems: number | undefined;
   expectEntities: number | undefined;
+  /** Scripts the runtime must report (B139 adds the check; parsed and accepted now). */
+  expectScripts: number | undefined;
+  /** A GameTest mod jar: run Fabric API's production GameTest server instead of a plain start. */
+  gametest: string | undefined;
+  /** Where the GameTest report goes (default `<work>/gametest-report.xml`). */
+  report: string | undefined;
+  /** No `msm_runtime` in the run (an ejected jar): skip the registration checks. */
+  noRuntime: boolean;
   /** GeckoLib download facts; used only with {@link Options.separateGeckolib}. */
   geckolib: GeckolibFacts | undefined;
   /** Download GeckoLib and put it in `mods/` beside the content jar. */
@@ -85,13 +105,14 @@ export interface FactsFile {
   expectBlocks?: number;
   expectItems?: number;
   expectEntities?: number;
+  expectScripts?: number;
   geckolib?: GeckolibFacts;
 }
 
 export const USAGE = `Usage: node tools/run-fabric-server/index.ts --jar <content jar> [options]
 
   --facts <file>        fabric-facts.json (minecraft, loader, fabricApi, expectBlocks,
-                        expectItems, expectEntities, geckolib)
+                        expectItems, expectEntities, expectScripts, geckolib)
   --minecraft <ver>     game version (overrides the facts file)
   --loader <ver>        Fabric Loader version
   --fabric-api <ver>    Fabric API version as on maven.fabricmc.net
@@ -100,6 +121,12 @@ export const USAGE = `Usage: node tools/run-fabric-server/index.ts --jar <conten
   --expect-blocks <n>   blocks the runtime must report
   --expect-items <n>    items the runtime must report
   --expect-entities <n> entity types the runtime must report
+  --expect-scripts <n>  scripts the runtime must report (accepted; checked from B139)
+  --gametest <jar>      run the GameTests of this mod jar on a production GameTest server
+                        (adds Fabric API's fabric-gametest-api-v1 module to mods/)
+  --report <file>       GameTest report file (default: <work>/gametest-report.xml)
+  --no-runtime          the jar has no msm_runtime (an ejected project): skip the
+                        registration checks and fail on any [msm_runtime] line
   --separate-geckolib   download GeckoLib (facts file's geckolib) into mods/, for a jar
                         exported without it nested
   --allow-warnings      pass with runtime and GeckoLib warnings
@@ -133,6 +160,7 @@ export function parseArgs(
   const extra: string[] = [];
   let allowWarnings = false;
   let separateGeckolib = false;
+  let noRuntime = false;
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i] as string;
     if (arg === '--allow-warnings') {
@@ -141,6 +169,10 @@ export function parseArgs(
     }
     if (arg === '--separate-geckolib') {
       separateGeckolib = true;
+      continue;
+    }
+    if (arg === '--no-runtime') {
+      noRuntime = true;
       continue;
     }
     if (!arg.startsWith('--')) throw new Error(`Unexpected argument ${arg}\n\n${USAGE}`);
@@ -160,6 +192,9 @@ export function parseArgs(
     'expect-blocks',
     'expect-items',
     'expect-entities',
+    'expect-scripts',
+    'gametest',
+    'report',
     'work',
     'cache',
     'java',
@@ -181,6 +216,10 @@ export function parseArgs(
   const blocks = flags.get('expect-blocks');
   const items = flags.get('expect-items');
   const entities = flags.get('expect-entities');
+  const scripts = flags.get('expect-scripts');
+  if (flags.has('report') && !flags.has('gametest')) {
+    throw new Error('--report needs --gametest');
+  }
   if (separateGeckolib && facts.geckolib === undefined) {
     throw new Error('--separate-geckolib needs the geckolib entry of the --facts file');
   }
@@ -196,6 +235,11 @@ export function parseArgs(
     expectItems: items === undefined ? facts.expectItems : integer('--expect-items', items),
     expectEntities:
       entities === undefined ? facts.expectEntities : integer('--expect-entities', entities),
+    expectScripts:
+      scripts === undefined ? facts.expectScripts : integer('--expect-scripts', scripts),
+    gametest: flags.get('gametest'),
+    report: flags.get('report'),
+    noRuntime,
     geckolib: facts.geckolib,
     separateGeckolib,
     allowWarnings,
@@ -223,6 +267,36 @@ export function serverLauncherUrl(minecraft: string, loader: string, installer: 
 /** Fabric API's jar on maven.fabricmc.net (`.sha1` appended gives its checksum). */
 export function fabricApiUrl(version: string): string {
   return `${MAVEN}/net/fabricmc/fabric-api/fabric-api/${version}/fabric-api-${version}.jar`;
+}
+
+/** Fabric API's POM, which names the version of each of its modules. */
+export function fabricApiPomUrl(version: string): string {
+  return `${MAVEN}/net/fabricmc/fabric-api/fabric-api/${version}/fabric-api-${version}.pom`;
+}
+
+/** One Fabric API module's jar on maven.fabricmc.net (`.sha1` appended gives its checksum). */
+export function fabricApiModuleUrl(module: string, version: string): string {
+  return `${MAVEN}/net/fabricmc/fabric-api/${module}/${version}/${module}-${version}.jar`;
+}
+
+/** The GameTest module, which the `fabric-api` jar lists in its POM but does not nest. */
+export const GAMETEST_MODULE = 'fabric-gametest-api-v1';
+
+/**
+ * The version of a Fabric API module as Fabric API's POM names it.
+ *
+ * @param pom - The text of `fabric-api-<version>.pom`.
+ * @param module - The module's artifact id, such as {@link GAMETEST_MODULE}.
+ */
+export function moduleVersionFromPom(pom: string, module: string): string {
+  for (const match of pom.matchAll(/<dependency>([\s\S]*?)<\/dependency>/g)) {
+    const body = match[1] as string;
+    if (body.includes(`<artifactId>${module}</artifactId>`)) {
+      const version = /<version>\s*([^<\s]+)\s*<\/version>/.exec(body)?.[1];
+      if (version !== undefined) return version;
+    }
+  }
+  throw new Error(`Fabric API's POM names no version of ${module}`);
 }
 
 /** The installer versions list. */
@@ -255,6 +329,8 @@ export interface Analysis {
   warnings: number | undefined;
   /** The lines worth printing in a summary. */
   keyLines: string[];
+  /** The GameTest report's test cases (GameTest runs only). */
+  gametests?: GameTestCase[];
 }
 
 const REGISTERED =
@@ -270,7 +346,14 @@ const GECKOLIB = /geckolib/i;
 const DONE = /\bDone \(\d/;
 const LOAD_FAILURE =
   /Failed to load|Mod resolution failed|Incompatible mods? found|Some of your mods are incompatible/;
-const RUNTIME_FRAME = /\bat (?:dev\.mcsupermods|com\.geckolib)\./;
+/**
+ * A stack frame from MSM or GeckoLib code. On a Fabric server frames read `at knot//<class>`;
+ * frames of the parity GameTest mod (`dev.mcsupermods.parity`) are test failures, which the
+ * GameTest report carries, so they do not count here.
+ */
+const RUNTIME_FRAME = /\bat (?:knot\/\/)?(?:dev\.mcsupermods\.(?!parity\.)|com\.geckolib\.)/;
+/** The GameTest server's crash line (`GameTestServer.onServerCrash`). */
+const GAMETEST_CRASH = /Game test server crashed/;
 const MOD_LIST =
   /Loading \d+ mods:|^\s+(?:- |\\-- |\|-- )(?:msm|geckolib |fabric-api |fabricloader |minecraft )/;
 
@@ -283,8 +366,12 @@ const MOD_LIST =
 export function analyseLog(
   lines: readonly string[],
   expect: Pick<Options, 'expectBlocks' | 'expectItems' | 'allowWarnings'> &
-    Partial<Pick<Options, 'expectEntities'>>,
+    Partial<Pick<Options, 'expectEntities' | 'noRuntime'>> & {
+      /** A GameTest run: the server exits after the tests and never logs `Done (`. */
+      gametest?: boolean;
+    },
 ): Analysis {
+  const noRuntime = expect.noRuntime === true;
   const failures: string[] = [];
   const keyLines: string[] = [];
   let done = false;
@@ -294,6 +381,15 @@ export function analyseLog(
     if (DONE.test(line)) {
       done = true;
       keyLines.push(line);
+    }
+    if (noRuntime && line.includes('[msm_runtime]')) {
+      keyLines.push(line);
+      failures.push(`msm_runtime is loaded, but --no-runtime says it is not: ${line.trim()}`);
+      continue;
+    }
+    if (GAMETEST_CRASH.test(line)) {
+      keyLines.push(line);
+      failures.push(`the GameTest server crashed: ${line.trim()}`);
     }
     const match = REGISTERED.exec(line);
     if (match !== null) {
@@ -337,8 +433,12 @@ export function analyseLog(
   const items = count(2);
   const errors = count(4);
   const warnings = count(5);
-  if (!done) failures.push('the server never logged "Done (" (it did not finish starting)');
-  if (registered === undefined) {
+  if (!done && expect.gametest !== true) {
+    failures.push('the server never logged "Done (" (it did not finish starting)');
+  }
+  if (noRuntime) {
+    // An ejected jar: no registration lines to check (any [msm_runtime] line failed above).
+  } else if (registered === undefined) {
     failures.push('no "[msm_runtime] registered ..." line: the runtime did not load or scan');
   } else {
     if (errors !== 0) failures.push(`the runtime reported ${errors} error(s)`);
@@ -352,7 +452,7 @@ export function analyseLog(
       failures.push(`expected ${expect.expectItems} item(s), the runtime registered ${items}`);
     }
   }
-  if (expect.expectEntities !== undefined) {
+  if (expect.expectEntities !== undefined && !noRuntime) {
     if (entities === undefined) {
       failures.push('no "[msm_runtime] registered K entity type(s)" line');
     } else if (entities !== expect.expectEntities) {
@@ -388,6 +488,112 @@ export function serverProperties(port: number): string {
     'sync-chunk-writes=false',
     '',
   ].join('\n');
+}
+
+// GameTest report ----------------------------------------------------------------------------
+
+/** One test case of a GameTest report. */
+export interface GameTestCase {
+  /** The test id, such as `msm_parity_tests:sample_mod_parity_test_ruby_ore_is_registered`. */
+  name: string;
+  /** The test environment's structure, such as `fabric-gametest-api-v1:empty`. */
+  classname: string;
+  /** The failure message, when the test failed. */
+  failure: string | undefined;
+  /** The skip message, when the test was skipped. */
+  skipped: string | undefined;
+}
+
+const XML_ENTITIES: Record<string, string> = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+};
+
+function decodeXml(text: string): string {
+  return text.replace(/&(#x[0-9a-fA-F]+|#\d+|[a-z]+);/g, (whole, entity: string) => {
+    if (entity.startsWith('#x')) return String.fromCodePoint(Number.parseInt(entity.slice(2), 16));
+    if (entity.startsWith('#')) return String.fromCodePoint(Number.parseInt(entity.slice(1), 10));
+    return XML_ENTITIES[entity] ?? whole;
+  });
+}
+
+function attribute(attributes: string, name: string): string | undefined {
+  const match = new RegExp(`(?:^|\\s)${name}="([^"]*)"`).exec(attributes);
+  return match === null ? undefined : decodeXml(match[1] as string);
+}
+
+/** The message of a `<failure>` or `<skipped>` child: its `message`, else its text. */
+function childMessage(body: string, element: 'failure' | 'skipped'): string | undefined {
+  const match = new RegExp(`<${element}(\\s[^>]*?)?(?:/>|>([\\s\\S]*?)</${element}>)`).exec(body);
+  if (match === null) return undefined;
+  const message = attribute(match[1] ?? '', 'message');
+  const text = decodeXml((match[2] ?? '').trim());
+  return message ?? (text === '' ? element : text);
+}
+
+/**
+ * Reads the JUnit-like XML report that Fabric API's GameTest runner writes
+ * (`fabric-api.gametest.report-file`): `<testsuite><testsuite time=".." timestamp="..">` holding
+ * one `<testcase classname=".." name=".." time=".."/>` per test, with a
+ * `<failure message=".."/>` child for a failed test (and `<skipped message=".."/>` for a skipped
+ * one).
+ */
+export function parseGameTestReport(xml: string): GameTestCase[] {
+  const cases: GameTestCase[] = [];
+  const testcase = /<testcase(\s[^>]*?)?(?:\/>|>([\s\S]*?)<\/testcase>)/g;
+  for (const match of xml.matchAll(testcase)) {
+    const attributes = match[1] ?? '';
+    const body = match[2] ?? '';
+    cases.push({
+      name: attribute(attributes, 'name') ?? '(unnamed)',
+      classname: attribute(attributes, 'classname') ?? '',
+      failure: childMessage(body, 'failure'),
+      skipped: childMessage(body, 'skipped'),
+    });
+  }
+  return cases;
+}
+
+/** What a GameTest run showed, from its report and exit status. */
+export interface GameTestOutcome {
+  ok: boolean;
+  failures: string[];
+  /** Every test case of the report. */
+  tests: GameTestCase[];
+}
+
+/**
+ * Checks a GameTest run: the server must exit with status 0 (the number of failed required
+ * tests), the report must exist and list at least one test outside the `minecraft` namespace
+ * (Minecraft always adds `minecraft:always_pass`), and no test may fail.
+ *
+ * @param report - The report's text, or `undefined` when the server wrote none.
+ * @param code - The server's exit status (`null` when it was killed).
+ */
+export function checkGameTests(report: string | undefined, code: number | null): GameTestOutcome {
+  const failures: string[] = [];
+  const tests = report === undefined ? [] : parseGameTestReport(report);
+  if (report === undefined) {
+    failures.push('the GameTest server wrote no report (it did not get to run the tests)');
+  } else if (!tests.some((test) => !test.name.startsWith('minecraft:'))) {
+    failures.push('the GameTest report lists no test from the --gametest jar');
+  }
+  for (const test of tests) {
+    if (test.failure !== undefined) failures.push(`GameTest failed: ${test.name}: ${test.failure}`);
+  }
+  if (code !== 0) {
+    const meaning =
+      code === null
+        ? 'it was killed'
+        : code === 255
+          ? 'no tests could be selected, or the server failed to start'
+          : 'the number of failed required tests, or 1 for a crash';
+    failures.push(`the GameTest server exited with status ${String(code)} (${meaning})`);
+  }
+  return { ok: failures.length === 0, failures, tests };
 }
 
 // Running ------------------------------------------------------------------------------------
@@ -461,6 +667,35 @@ async function freePort(): Promise<number> {
   });
 }
 
+/** Downloads a text file (a POM or a `.sha1`). */
+async function fetchText(url: string): Promise<string> {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`GET ${url} returned HTTP ${response.status}`);
+  return response.text();
+}
+
+/** The first token of a Maven `.sha1` file. */
+async function fetchSha1(url: string): Promise<string> {
+  return (await fetchText(`${url}.sha1`)).trim().split(/\s+/)[0] as string;
+}
+
+/** Where a GameTest run writes its report. */
+export function reportPath(options: Pick<Options, 'report' | 'workDir'>): string {
+  return resolve(options.report ?? join(options.workDir, 'gametest-report.xml'));
+}
+
+/**
+ * The server's command line after `java`: `-Xmx`, the GameTest properties when `report` is
+ * given, `-jar <launcher> nogui`.
+ */
+export function serverArguments(memory: string, launcher: string, report?: string): string[] {
+  const gametest =
+    report === undefined
+      ? []
+      : ['-Dfabric-api.gametest=true', `-Dfabric-api.gametest.report-file=${report}`];
+  return [`-Xmx${memory}`, ...gametest, '-jar', launcher, 'nogui'];
+}
+
 async function prepare(options: Options): Promise<{ launcher: string; runDir: string }> {
   await mkdir(options.cacheDir, { recursive: true });
   const installer =
@@ -470,14 +705,22 @@ async function prepare(options: Options): Promise<{ launcher: string; runDir: st
   await cached(serverLauncherUrl(options.minecraft, options.loader, installer), launcher);
 
   const apiUrl = fabricApiUrl(options.fabricApi);
-  const apiSha1Response = await fetch(`${apiUrl}.sha1`);
-  if (!apiSha1Response.ok)
-    throw new Error(`GET ${apiUrl}.sha1 returned HTTP ${apiSha1Response.status}`);
-  const apiSha1 = (await apiSha1Response.text()).trim().split(/\s+/)[0] as string;
+  const apiSha1 = await fetchSha1(apiUrl);
   const apiJar = join(options.cacheDir, `fabric-api-${options.fabricApi}.jar`);
   await cached(apiUrl, apiJar, { algorithm: 'sha1', hex: apiSha1 });
 
   const modJars = [apiJar, resolve(options.jar), ...options.extra.map((jar) => resolve(jar))];
+  if (options.gametest !== undefined) {
+    // The fabric-api jar does not nest the GameTest module; its POM names the matching version.
+    const version = moduleVersionFromPom(
+      await fetchText(fabricApiPomUrl(options.fabricApi)),
+      GAMETEST_MODULE,
+    );
+    const moduleUrl = fabricApiModuleUrl(GAMETEST_MODULE, version);
+    const moduleJar = join(options.cacheDir, `${GAMETEST_MODULE}-${version}.jar`);
+    await cached(moduleUrl, moduleJar, { algorithm: 'sha1', hex: await fetchSha1(moduleUrl) });
+    modJars.push(moduleJar, resolve(options.gametest));
+  }
   if (options.separateGeckolib) {
     const geckolib = options.geckolib;
     if (geckolib === undefined) throw new Error('--separate-geckolib needs geckolib facts');
@@ -492,6 +735,7 @@ async function prepare(options: Options): Promise<{ launcher: string; runDir: st
     await rm(join(runDir, stale), { recursive: true, force: true });
   }
   await mkdir(join(runDir, 'mods'));
+  if (options.gametest !== undefined) await rm(reportPath(options), { force: true });
   await writeFile(join(runDir, 'eula.txt'), 'eula=true\n');
   await writeFile(join(runDir, 'server.properties'), serverProperties(await freePort()));
   for (const jar of modJars) await copyFile(jar, join(runDir, 'mods', basename(jar)));
@@ -508,10 +752,14 @@ async function runServer(
 ): Promise<{ lines: string[]; code: number | null; timedOut: boolean }> {
   const lines: string[] = [];
   const output = createWriteStream(join(runDir, 'run-fabric-server.log'));
-  log(
-    `starting ${options.java} -Xmx${options.memory} -jar ${basename(launcher)} nogui in ${runDir}`,
+  const gametest = options.gametest !== undefined;
+  const args = serverArguments(
+    options.memory,
+    launcher,
+    gametest ? reportPath(options) : undefined,
   );
-  const child = spawn(options.java, [`-Xmx${options.memory}`, '-jar', launcher, 'nogui'], {
+  log(`starting ${options.java} ${args.join(' ')} in ${runDir}`);
+  const child = spawn(options.java, args, {
     cwd: runDir,
     stdio: ['pipe', 'pipe', 'pipe'],
   });
@@ -532,7 +780,8 @@ async function runServer(
     lines.push(line);
     output.write(`${line}\n`);
     process.stdout.write(`  | ${line}\n`);
-    if (DONE.test(line) || LOAD_FAILURE.test(line)) stop();
+    // A GameTest server stops by itself after the tests and never logs "Done (".
+    if ((DONE.test(line) && !gametest) || LOAD_FAILURE.test(line)) stop();
   };
   createInterface({ input: child.stdout }).on('line', onLine);
   createInterface({ input: child.stderr }).on('line', onLine);
@@ -552,12 +801,24 @@ async function runServer(
  */
 export async function runCheck(options: Options): Promise<Analysis> {
   if (!existsSync(options.jar)) throw new Error(`No content jar at ${options.jar}`);
+  if (options.gametest !== undefined && !existsSync(options.gametest)) {
+    throw new Error(`No GameTest jar at ${options.gametest}`);
+  }
   const { launcher, runDir } = await prepare(options);
   const { lines, code, timedOut } = await runServer(options, launcher, runDir);
-  const analysis = analyseLog(lines, options);
-  if (timedOut)
+  const gametest = options.gametest !== undefined;
+  const analysis = analyseLog(lines, { ...options, gametest });
+  if (timedOut) {
     analysis.failures.push(`the server did not stop within ${options.timeoutSeconds} s`);
-  else if (code !== 0) analysis.failures.push(`the server exited with status ${String(code)}`);
+  } else if (gametest) {
+    const path = reportPath(options);
+    const report = existsSync(path) ? await readFile(path, 'utf8') : undefined;
+    const outcome = checkGameTests(report, code);
+    analysis.gametests = outcome.tests;
+    analysis.failures.push(...outcome.failures);
+  } else if (code !== 0) {
+    analysis.failures.push(`the server exited with status ${String(code)}`);
+  }
   analysis.ok = analysis.failures.length === 0;
   return analysis;
 }
@@ -576,11 +837,25 @@ async function main(): Promise<number> {
   const analysis = await runCheck(options);
   log('key lines:');
   for (const line of analysis.keyLines) process.stdout.write(`  ${line}\n`);
+  if (analysis.gametests !== undefined) {
+    log(`GameTests (${reportPath(options)}):`);
+    for (const test of analysis.gametests) {
+      const status =
+        test.failure === undefined ? (test.skipped === undefined ? 'pass' : 'skip') : 'FAIL';
+      const detail = test.failure ?? test.skipped;
+      process.stdout.write(
+        `  ${status} ${test.name}${detail === undefined ? '' : `: ${detail}`}\n`,
+      );
+    }
+  }
   if (analysis.ok) {
     const entities = analysis.entities === undefined ? '' : `, ${analysis.entities} entity type(s)`;
-    log(
-      `PASS: ${analysis.blocks} block(s), ${analysis.items} item(s)${entities} from ${analysis.files} definition file(s); 0 errors`,
-    );
+    const runtime = options.noRuntime
+      ? 'no msm_runtime'
+      : `${analysis.blocks} block(s), ${analysis.items} item(s)${entities} from ${analysis.files} definition file(s); 0 errors`;
+    const tests =
+      analysis.gametests === undefined ? '' : `; ${analysis.gametests.length} GameTest(s) passed`;
+    log(`PASS: ${runtime}${tests}`);
     return 0;
   }
   for (const failure of analysis.failures) log(`FAIL: ${failure}`);
