@@ -1,0 +1,21 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": {
+        "defense": {
+          "boots": 2,
+          "chestplate": 9,
+          "helmet": 2,
+          "leggings": 5
+        },
+        "durability": 20,
+        "enchantment_value": 10,
+        "equipment_asset": "msm_test:ruby",
+        "knockback_resistance": 0,
+        "toughness": 1
+      },
+      "slot": "horse"
+    }
+  },
+  "format": 1
+}

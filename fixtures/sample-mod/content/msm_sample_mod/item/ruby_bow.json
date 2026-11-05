@@ -1,0 +1,23 @@
+{
+  "data": {
+    "components": {
+      "msm:ranged_weapon": {
+        "damage_multiplier": 1.5,
+        "draw_speed": 2,
+        "type": "bow",
+        "velocity": 1.5
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Ruby Bow",
+    "format": 1,
+    "model": "minecraft:item/bow",
+    "rarity": "rare"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_bow",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

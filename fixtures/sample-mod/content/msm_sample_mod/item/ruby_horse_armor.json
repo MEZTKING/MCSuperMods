@@ -1,0 +1,34 @@
+{
+  "data": {
+    "components": {
+      "msm:armor": {
+        "material": {
+          "defense": {
+            "boots": 2,
+            "chestplate": 9,
+            "helmet": 3,
+            "leggings": 5
+          },
+          "durability": 25,
+          "enchantment_value": 12,
+          "equipment_asset": "msm_sample_mod:ruby_armor",
+          "knockback_resistance": 0,
+          "repair_items": "#minecraft:repairs_diamond_armor",
+          "toughness": 1
+        },
+        "slot": "horse"
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Ruby Horse Armour",
+    "format": 1,
+    "model": "minecraft:item/diamond_horse_armor",
+    "rarity": "rare"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_horse_armor",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

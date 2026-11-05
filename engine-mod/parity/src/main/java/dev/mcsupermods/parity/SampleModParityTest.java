@@ -10,19 +10,29 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.enchantment.Enchantable;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.GameType;
@@ -30,6 +40,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RedstoneLampBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -40,7 +52,10 @@ import net.minecraft.world.phys.Vec3;
  * <p>Expected values are the fixture's: blocks {@code ruby_ore}, {@code chime_block},
  * {@code glow_stone}; items {@code ruby}, {@code ruby_wand}, {@code ruby_pickaxe} (a custom tool
  * material, ADR 0042), {@code ruby_helmet} (custom armour material, equipment asset
- * {@code ruby_armor}), {@code ruby_apple}; function {@code ruby/shimmer}
+ * {@code ruby_armor}), {@code ruby_apple}, and since ADR 0044 {@code ruby_bow} (draw speed 2, velocity
+ * 1.5, damage multiplier 1.5), {@code ruby_tonic} (a drink with speed and regeneration, a glass bottle
+ * back, a 3 second cooldown), {@code ruby_charm} ({@code apply_effect} on use, a 100-tick cooldown) and
+ * {@code ruby_horse_armor}; function {@code ruby/shimmer}
  * ({@code say The ruby shimmers.}). Events are
  * observed through their vanilla effects: placed blocks, given items, item cooldowns and the
  * function's chat line. Sounds and particles have no server-side trace a GameTest can read.
@@ -348,6 +363,122 @@ public class SampleModParityTest {
         helper.assertTrue(result.consumesAction(), "use: " + result);
         helper.assertValueEqual(ParityChat.since(mark), List.of(SHIMMER), "chat after using ruby_apple (run_function ruby/shimmer)");
         helper.assertTrue(player.isUsingItem(), "a full player starts eating (can_always_eat)");
+        helper.succeed();
+    }
+
+    // Gear (ADR 0044)
+
+    /** Arrows near {@code shooter}, removed from the level once found. */
+    private static List<AbstractArrow> takeArrows(ServerLevel level, LivingEntity shooter) {
+        List<AbstractArrow> arrows = level.getEntitiesOfClass(AbstractArrow.class, new AABB(shooter.blockPosition()).inflate(4));
+        arrows.forEach(AbstractArrow::discard);
+        return arrows;
+    }
+
+    /** An arrow's base damage, read from its saved data ({@code AbstractArrow} has no getter). */
+    private static double baseDamage(ServerLevel level, AbstractArrow arrow) {
+        TagValueOutput out = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
+        arrow.saveWithoutId(out);
+        return out.buildResult().getDoubleOr("damage", -1);
+    }
+
+    private static void assertEffect(GameTestHelper helper, LivingEntity entity, Holder<MobEffect> effect, int amplifier, int ticks, String what) {
+        MobEffectInstance instance = entity.getEffect(effect);
+        helper.assertTrue(instance != null, what + ": no " + effect.getRegisteredName());
+        helper.assertValueEqual(instance.getAmplifier(), amplifier, what + ": amplifier");
+        helper.assertTrue(Math.abs(instance.getDuration() - ticks) <= 2, what + ": duration " + instance.getDuration() + ", expected " + ticks);
+    }
+
+    @GameTest
+    public void rubyBowShoots(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        player.setPos(helper.absoluteVec(new Vec3(2.5, 2.0, 2.5))); // arrows spawn at the player, inside the test's loaded area
+        player.getInventory().setItem(9, new ItemStack(Items.ARROW, 32)); // not the selected slot, which holds the bow
+        ItemStack bow = new ItemStack(item(helper, "ruby_bow"));
+        helper.assertValueEqual(bow.getMaxDamage(), 384, "ruby_bow durability (vanilla bow's)");
+        helper.assertValueEqual(bow.getMaxStackSize(), 1, "ruby_bow stacks to 1");
+        helper.assertValueEqual(bow.getRarity(), Rarity.RARE, "ruby_bow rarity");
+        helper.assertTrue(bow.has(DataComponents.ENCHANTABLE), "ruby_bow is enchantable");
+        int duration = bow.getUseDuration(player);
+        takeArrows(level, player);
+
+        // 10 ticks drawn at draw_speed 2 count as 20: full power (3.0) times velocity 1.5.
+        player.setItemInHand(InteractionHand.MAIN_HAND, bow);
+        helper.assertTrue(bow.getItem().releaseUsing(bow, level, player, duration - 10), "ruby_bow did not shoot");
+        List<AbstractArrow> ours = takeArrows(level, player);
+        helper.assertValueEqual(ours.size(), 1, "arrows shot by ruby_bow");
+        ItemStack vanilla = new ItemStack(Items.BOW);
+        player.setItemInHand(InteractionHand.MAIN_HAND, vanilla);
+        helper.assertTrue(vanilla.getItem().releaseUsing(vanilla, level, player, duration - 10), "the vanilla bow did not shoot");
+        List<AbstractArrow> theirs = takeArrows(level, player);
+        helper.assertValueEqual(theirs.size(), 1, "arrows shot by the vanilla bow");
+
+        double fast = ours.getFirst().getDeltaMovement().length();
+        double slow = theirs.getFirst().getDeltaMovement().length();
+        helper.assertTrue(Math.abs(fast - 4.5) < 0.3, "ruby_bow arrow speed: expected about 4.5, got " + fast);
+        helper.assertTrue(Math.abs(slow - 1.25) < 0.3, "vanilla bow arrow speed after 10 ticks: expected about 1.25, got " + slow);
+        assertClose(helper, baseDamage(level, ours.getFirst()), 2.0 * 1.5, "ruby_bow arrow base damage (damage_multiplier 1.5)");
+        assertClose(helper, baseDamage(level, theirs.getFirst()), 2.0, "vanilla arrow base damage");
+        helper.succeed();
+    }
+
+    @GameTest
+    public void rubyTonicEffects(GameTestHelper helper) {
+        Item tonicItem = item(helper, "ruby_tonic");
+        ItemStack tonic = new ItemStack(tonicItem);
+        helper.assertValueEqual(tonic.getMaxStackSize(), 16, "ruby_tonic max stack size");
+        Consumable consumable = tonic.get(DataComponents.CONSUMABLE);
+        helper.assertTrue(consumable != null, "ruby_tonic is consumable");
+        helper.assertValueEqual(consumable.animation(), ItemUseAnimation.DRINK, "ruby_tonic animation");
+        assertClose(helper, consumable.consumeSeconds(), 1, "ruby_tonic consume seconds");
+        helper.assertFalse(tonic.has(DataComponents.FOOD), "ruby_tonic restores no hunger (no msm:food)");
+
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, tonic);
+        ItemStack left = tonic.finishUsingItem(helper.getLevel(), player);
+        helper.assertTrue(left.is(Items.GLASS_BOTTLE), "drinking ruby_tonic leaves a glass bottle (converts_to), got " + left);
+        assertEffect(helper, player, MobEffects.SPEED, 1, 600, "ruby_tonic speed");
+        assertEffect(helper, player, MobEffects.REGENERATION, 0, 100, "ruby_tonic regeneration");
+        helper.assertTrue(player.getCooldowns().isOnCooldown(new ItemStack(tonicItem)), "ruby_tonic cooldown_seconds starts a cooldown");
+        helper.succeed();
+    }
+
+    @GameTest
+    public void rubyCharmCooldown(GameTestHelper helper) {
+        Item charmItem = item(helper, "ruby_charm");
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        player.setPos(helper.absoluteVec(new Vec3(2.5, 2.0, 2.5)));
+        ItemStack charm = new ItemStack(charmItem);
+        helper.assertValueEqual(charm.getMaxStackSize(), 1, "ruby_charm stacks to 1");
+        helper.assertValueEqual(charm.getRarity(), Rarity.UNCOMMON, "ruby_charm rarity");
+        player.setItemInHand(InteractionHand.MAIN_HAND, charm);
+        InteractionResult first = charmItem.use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+        helper.assertTrue(first.consumesAction(), "first use: " + first);
+        assertEffect(helper, player, MobEffects.SPEED, 1, 200, "apply_effect self");
+        assertEffect(helper, player, MobEffects.GLOWING, 0, 40, "apply_effect other (the player in item events)");
+        helper.assertValueEqual(player.getMainHandItem().getCount(), 1, "ruby_charm is not used up");
+        helper.assertTrue(player.getCooldowns().isOnCooldown(player.getMainHandItem()), "cooldown_ticks started");
+        player.removeAllEffects();
+        InteractionResult second = charmItem.use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+        helper.assertValueEqual(second, InteractionResult.FAIL, "use during the cooldown");
+        helper.assertFalse(player.hasEffect(MobEffects.SPEED), "ruby_charm works during its cooldown");
+        helper.succeed();
+    }
+
+    @GameTest
+    public void rubyHorseArmorIsBodyArmor(GameTestHelper helper) {
+        ItemStack armor = new ItemStack(item(helper, "ruby_horse_armor"));
+        Equippable equippable = armor.get(DataComponents.EQUIPPABLE);
+        helper.assertTrue(equippable != null, "ruby_horse_armor is equippable (msm:armor slot horse)");
+        helper.assertValueEqual(equippable.slot(), EquipmentSlot.BODY, "ruby_horse_armor slot");
+        helper.assertValueEqual(equippable.assetId().map(k -> k.identifier()), Optional.of(id("ruby_armor")), "ruby_horse_armor equipment asset");
+        helper.assertTrue(equippable.canBeEquippedBy(BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(EntityTypes.HORSE)), "a horse cannot wear ruby_horse_armor");
+        helper.assertFalse(equippable.canBeEquippedBy(BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(EntityTypes.WOLF)), "a wolf can wear ruby_horse_armor");
+        assertClose(helper, modifier(armor, EquipmentSlot.BODY, Attributes.ARMOR), 9, "ruby_horse_armor armor (the chestplate defence)");
+        assertClose(helper, modifier(armor, EquipmentSlot.BODY, Attributes.ARMOR_TOUGHNESS), 1, "ruby_horse_armor armor_toughness");
+        helper.assertValueEqual(armor.getMaxStackSize(), 1, "ruby_horse_armor stacks to 1");
+        helper.assertValueEqual(armor.getRarity(), Rarity.RARE, "ruby_horse_armor rarity");
         helper.succeed();
     }
 }

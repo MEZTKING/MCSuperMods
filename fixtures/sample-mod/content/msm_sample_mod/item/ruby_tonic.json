@@ -1,0 +1,34 @@
+{
+  "data": {
+    "components": {
+      "msm:consumable": {
+        "animation": "drink",
+        "converts_to": "minecraft:glass_bottle",
+        "cooldown_seconds": 3,
+        "effects": [
+          {
+            "amplifier": 1,
+            "effect": "minecraft:speed",
+            "seconds": 30
+          },
+          {
+            "effect": "minecraft:regeneration",
+            "seconds": 5
+          }
+        ],
+        "seconds": 1
+      }
+    },
+    "creative_tab": "minecraft:food_and_drinks",
+    "display_name": "Ruby Tonic",
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "minecraft:item/honey_bottle"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_tonic",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

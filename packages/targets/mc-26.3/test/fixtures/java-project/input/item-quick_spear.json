@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:tool": {
+      "attack_damage": 2,
+      "attack_speed": -1,
+      "tier": "stone",
+      "type": "spear"
+    }
+  },
+  "format": 1
+}

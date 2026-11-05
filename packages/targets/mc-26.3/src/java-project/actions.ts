@@ -5,7 +5,10 @@
  * generated `Actions` helpers. Mirrors the runtime's `EventRunner.run`: the depth guard
  * first (16), then the actions in order; `trigger_event` is a direct call with `depth + 1`;
  * `play_animation` calls `triggerAnim` on entities and is left out with a comment elsewhere
- * (the runtime drops it at load).
+ * (the runtime drops it at load); `apply_effect` (ADR 0044 D2) gives its effect to `self` (the
+ * player, else the entity of an entity definition) or `other` (the player for block and item
+ * events; for entity events the player, or the mob an entity hits through `on_attack`, passed
+ * as an extra `LivingEntity other` parameter only to entity definitions that need it).
  *
  * @packageDocumentation
  */
@@ -26,6 +29,7 @@ export const ACTION_TYPES = [
   'play_sound',
   'trigger_event',
   'play_animation',
+  'apply_effect',
 ] as const;
 
 /** The default `play_animation` controller (the runtime's `TRIGGERED_CONTROLLER`). */
@@ -37,13 +41,20 @@ export interface Events {
   readonly byId: ReadonlyMap<string, readonly Reader[]>;
   /** Method name per event id. */
   readonly methods: ReadonlyMap<string, string>;
+  /**
+   * Whether the event methods take a `LivingEntity other` parameter after `entity`: entity
+   * definitions with an `apply_effect` whose target is `other` (blocks and items use `player`).
+   */
+  readonly otherParameter: boolean;
+  /** Whether any action is `apply_effect` (the `Actions` helper then has `applyEffect`). */
+  readonly appliesEffects: boolean;
 }
 
 /**
  * Reads and checks a definition's `events`: every event has an `actions` list, every action
  * a known `type`, every `trigger_event` names a declared event.
  */
-export function readEvents(definition: Reader): Events {
+export function readEvents(definition: Reader, kind: EventOwnerKind): Events {
   const events = definition.object('events');
   const byId = new Map<string, Reader[]>();
   if (events !== undefined) {
@@ -70,7 +81,38 @@ export function readEvents(definition: Reader): Events {
       }
     }
   }
-  return { byId, methods: eventMethodNames([...byId.keys()]) };
+  let appliesEffects = false;
+  let otherTarget = false;
+  for (const actions of byId.values()) {
+    for (const action of actions) {
+      if (action.requiredString('type') !== 'apply_effect') continue;
+      appliesEffects = true;
+      if (effectTarget(action) === 'other') otherTarget = true;
+    }
+  }
+  return {
+    byId,
+    methods: eventMethodNames([...byId.keys()]),
+    otherParameter: kind === 'entity' && otherTarget,
+    appliesEffects,
+  };
+}
+
+/** The `target` of an `apply_effect`: `self` (the default) or `other`. */
+function effectTarget(action: Reader): string {
+  const target = action.string('target', 'self');
+  if (target !== 'self' && target !== 'other') {
+    action.fail(`target '${target}' is not one of self, other`);
+  }
+  return target;
+}
+
+/**
+ * The duration in ticks of `seconds`, as the runtime's `Math.round(seconds * 20)` over Java
+ * floats.
+ */
+export function ticksOf(seconds: number): number {
+  return Math.round(Math.fround(Math.fround(seconds) * 20));
 }
 
 /**
@@ -117,7 +159,8 @@ export function playAnimations(events: Events): [string, string][] {
  * A call of an event method from a trigger.
  *
  * @param method - The event method name.
- * @param args - `level, base, origin, player, entity` expressions.
+ * @param args - `level, base, origin, player, entity` expressions, plus `other` when the
+ *   events take it ({@link Events.otherParameter}).
  */
 export function fireCall(method: string, args: string): string {
   return `${method}(${args}, 1);`;
@@ -143,26 +186,32 @@ export function eventMethods(
   const vec3 = file.use('net.minecraft.world.phys.Vec3');
   const player = file.use('net.minecraft.world.entity.player.Player');
   const entity = file.use('net.minecraft.world.entity.Entity');
+  const other = events.otherParameter
+    ? `, ${file.use('net.minecraft.world.entity.LivingEntity')} other`
+    : '';
   const lines: string[] = [];
   for (const [id, actions] of events.byId) {
     const method = events.methods.get(id) as string;
     lines.push(
       '',
       `/** Event {@code ${id}}. */`,
-      `private void ${method}(${serverLevel} level, ${blockPos} base, ${vec3} origin, ${player} player, ${entity} entity, int depth) {`,
+      `private void ${method}(${serverLevel} level, ${blockPos} base, ${vec3} origin, ${player} player, ${entity} entity${other}, int depth) {`,
     );
     const body: string[] = [
       `if (${actionsClass}.tooDeep(OWNER, ${javaString(id)}, depth)) {`,
       '    return;',
       '}',
     ];
-    for (const action of actions) body.push(...actionLines(action, events, kind, actionsClass));
+    for (const action of actions) {
+      body.push(...actionLines(file, action, events, kind, actionsClass));
+    }
     lines.push(...indent(body), '}');
   }
   return lines;
 }
 
 function actionLines(
+  file: JavaFile,
   action: Reader,
   events: Events,
   kind: EventOwnerKind,
@@ -208,7 +257,8 @@ function actionLines(
     case 'trigger_event': {
       action.onlyKeys(['type', 'event'], 'trigger_event field');
       const method = eventMethod(action, events, action.requiredString('event'));
-      return [`${method}(level, base, origin, player, entity, depth + 1);`];
+      const other = events.otherParameter ? ', other' : '';
+      return [`${method}(level, base, origin, player, entity${other}, depth + 1);`];
     }
     case 'play_animation': {
       action.onlyKeys(['type', 'animation', 'controller'], 'play_animation field');
@@ -218,6 +268,26 @@ function actionLines(
         return [`triggerAnim(${javaString(controller)}, ${javaString(animation)});`];
       return [
         `// play_animation '${animation.replace(/[\r\n]/g, ' ')}' left out: only entities with GeckoLib play animations.`,
+      ];
+    }
+    case 'apply_effect': {
+      action.onlyKeys(['type', 'effect', 'seconds', 'amplifier', 'target'], 'apply_effect field');
+      const effect = javaString(action.requiredString('effect'));
+      const seconds = action.requiredNumber('seconds');
+      if (seconds < 0) action.fail('seconds must be at least 0');
+      const amplifier = action.integer('amplifier', 0);
+      if (amplifier < 0 || amplifier > 255) action.fail('amplifier must be 0 to 255');
+      let target: string;
+      if (effectTarget(action) === 'other') {
+        target = events.otherParameter ? 'other' : 'player';
+      } else if (kind === 'entity') {
+        const living = file.use('net.minecraft.world.entity.LivingEntity');
+        target = `player != null ? player : entity instanceof ${living} living ? living : null`;
+      } else {
+        target = 'player';
+      }
+      return [
+        `${actions}.applyEffect(OWNER, ${target}, ${effect}, ${javaInt(ticksOf(seconds))}, ${javaInt(amplifier)});`,
       ];
     }
     default:

@@ -1,0 +1,40 @@
+{
+  "data": {
+    "components": {
+      "msm:on_use": {
+        "cooldown_ticks": 100,
+        "event": "msm_sample_mod:charm"
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "display_name": "Ruby Charm",
+    "events": {
+      "msm_sample_mod:charm": {
+        "actions": [
+          {
+            "amplifier": 1,
+            "effect": "minecraft:speed",
+            "seconds": 10,
+            "type": "apply_effect"
+          },
+          {
+            "effect": "minecraft:glowing",
+            "seconds": 2,
+            "target": "other",
+            "type": "apply_effect"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "minecraft:item/heart_of_the_sea",
+    "rarity": "uncommon"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_charm",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

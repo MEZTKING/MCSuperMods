@@ -1,0 +1,16 @@
+{
+  "components": {
+    "msm:components": {
+      "minecraft:damage_resistant": {
+        "types": "#minecraft:is_fire"
+      },
+      "minecraft:equippable": {
+        "slot": "chest"
+      },
+      "minecraft:glider": {},
+      "minecraft:max_stack_size": 4
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

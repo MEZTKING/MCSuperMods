@@ -1,0 +1,28 @@
+{
+  "components": {
+    "msm:on_use": {
+      "cooldown_ticks": 100,
+      "event": "msm_test:charm_used"
+    }
+  },
+  "events": {
+    "msm_test:charm_used": {
+      "actions": [
+        {
+          "amplifier": 1,
+          "effect": "minecraft:speed",
+          "seconds": 10,
+          "type": "apply_effect"
+        },
+        {
+          "effect": "minecraft:glowing",
+          "seconds": 2,
+          "target": "other",
+          "type": "apply_effect"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

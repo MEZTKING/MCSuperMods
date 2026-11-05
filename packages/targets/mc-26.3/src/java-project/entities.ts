@@ -138,7 +138,7 @@ function readEntity(input: DefinitionInput): EntitySpec {
   checkFormat(reader);
   const components = reader.requiredObject('components');
   components.onlyKeys(ENTITY_COMPONENTS, 'component');
-  const events = readEvents(reader);
+  const events = readEvents(reader, 'entity');
   const size = reader.requiredObject('size');
   size.onlyKeys(['width', 'height'], 'size field');
 
@@ -455,6 +455,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   const usesHelper = usesActions(spec.events);
   const actions = usesHelper ? file.use(`${context.input.javaPackage}.Actions`) : 'Actions';
   if (usesHelper) context.usesActions = true;
+  if (spec.events.appliesEffects) context.usesApplyEffect = true;
 
   const members: string[] = [];
   if (spec.events.byId.size > 0)
@@ -614,8 +615,10 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   const serverLevel = () => file.use('net.minecraft.server.level.ServerLevel');
   const player = () => file.use('net.minecraft.world.entity.player.Player');
   const damageSource = () => file.use('net.minecraft.world.damagesource.DamageSource');
-  const fireArgs = (playerExpression: string, levelExpression = 'level') =>
-    `${levelExpression}, blockPosition(), position(), ${playerExpression}, this`;
+  // With an apply_effect targeting `other`, the event methods also take the other entity:
+  // the player, or the mob hit through on_attack (the runtime's EventContext.other).
+  const fireArgs = (playerExpression: string, otherExpression = playerExpression) =>
+    `level, blockPosition(), position(), ${playerExpression}, this${spec.events.otherParameter ? `, ${otherExpression}` : ''}`;
 
   if (spec.model.attack !== undefined || spec.attack?.onAttack !== undefined) {
     const entity = file.use('net.minecraft.world.entity.Entity');
@@ -627,7 +630,13 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
     }
     if (spec.attack?.onAttack !== undefined) {
       inner.push(
-        fireCall(spec.attack.onAttack, fireArgs(`target instanceof ${player()} p ? p : null`)),
+        fireCall(
+          spec.attack.onAttack,
+          fireArgs(
+            `target instanceof ${player()} p ? p : null`,
+            `target instanceof ${file.use('net.minecraft.world.entity.LivingEntity')} living ? living : null`,
+          ),
+        ),
       );
     }
     members.push(

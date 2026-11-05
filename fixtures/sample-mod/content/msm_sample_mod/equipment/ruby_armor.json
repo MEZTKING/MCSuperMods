@@ -1,6 +1,11 @@
 {
   "data": {
     "layers": {
+      "horse_body": [
+        {
+          "texture": "msm_sample_mod:ruby"
+        }
+      ],
       "humanoid": [
         {
           "texture": "msm_sample_mod:ruby"

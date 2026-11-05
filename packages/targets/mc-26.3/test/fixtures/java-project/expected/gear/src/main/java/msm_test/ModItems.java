@@ -25,7 +25,7 @@ public final class ModItems {
     /** The custom armour material of {@code msm_test:ruby_helmet}. */
     private static final ArmorMaterial RUBY_HELMET_ARMOR = new ArmorMaterial(
             20, // base durability; each slot multiplies it (helmet 11, chestplate 16, leggings 15, boots 13)
-            Map.of(ArmorType.HELMET, 3, ArmorType.CHESTPLATE, 7, ArmorType.LEGGINGS, 5, ArmorType.BOOTS, 2, ArmorType.BODY, 7), // defense (BODY as the chestplate, unused by humanoid armour)
+            Map.of(ArmorType.HELMET, 3, ArmorType.CHESTPLATE, 7, ArmorType.LEGGINGS, 5, ArmorType.BOOTS, 2, ArmorType.BODY, 7), // defense (BODY as the chestplate: horse and wolf armour)
             15, // enchantment value
             BuiltInRegistries.SOUND_EVENT.get(Identifier.fromNamespaceAndPath("minecraft", "item.armor.equip_diamond")).<Holder<SoundEvent>>map(sound -> sound).orElse(SoundEvents.ARMOR_EQUIP_GENERIC), // equip sound (an unknown id falls back to the generic one, as the runtime)
             1.5f, // toughness
@@ -50,7 +50,7 @@ public final class ModItems {
     /** The custom armour material of {@code msm_test:sturdy_boots}. */
     private static final ArmorMaterial STURDY_BOOTS_ARMOR = new ArmorMaterial(
             5, // base durability; each slot multiplies it (helmet 11, chestplate 16, leggings 15, boots 13)
-            Map.of(ArmorType.HELMET, 1, ArmorType.CHESTPLATE, 3, ArmorType.LEGGINGS, 2, ArmorType.BOOTS, 1, ArmorType.BODY, 3), // defense (BODY as the chestplate, unused by humanoid armour)
+            Map.of(ArmorType.HELMET, 1, ArmorType.CHESTPLATE, 3, ArmorType.LEGGINGS, 2, ArmorType.BOOTS, 1, ArmorType.BODY, 3), // defense (BODY as the chestplate: horse and wolf armour)
             1, // enchantment_value 0: built with 1 (vanilla rejects 0), the enchantable component is removed
             BuiltInRegistries.SOUND_EVENT.get(Identifier.fromNamespaceAndPath("msm_test", "no_such_sound")).<Holder<SoundEvent>>map(sound -> sound).orElse(SoundEvents.ARMOR_EQUIP_GENERIC), // equip sound (an unknown id falls back to the generic one, as the runtime)
             0.0f, // toughness

@@ -7,7 +7,8 @@
  * here belongs to this target; the next target copies the folder and adjusts names.
  *
  * Output: `src/main/java/<package>/` with `<ModClass>.java`, `ModBlocks.java`,
- * `ModItems.java`, `ModEntities.java`, `Actions.java`, `block/`, `item/`, `entity/` (with
+ * `ModItems.java`, `ModEntities.java`, `Actions.java`, `VanillaComponents.java` (when an item
+ * uses `msm:components`), `block/`, `item/`, `entity/` (with
  * `FollowTypesGoal.java` when a follow goal exists), and `client/` with
  * `<ModClass>Client.java` and `client/entity/` models when the project has entities. Paths
  * are sorted; text uses LF and four-space indentation.
@@ -25,6 +26,7 @@ import { generateMod } from './mod';
 import { NameTable } from './names';
 import { actionsJava } from './templates/actions-java';
 import { followTypesGoalJava } from './templates/follow-types-goal-java';
+import { vanillaComponentsJava } from './templates/vanilla-components-java';
 
 export { className, constantName, eventMethodName, JAVA_KEYWORDS } from './names';
 
@@ -48,6 +50,8 @@ export function generateJavaProject(input: JavaProjectInput): {
     javaRoot: `src/main/java/${input.javaPackage.replaceAll('.', '/')}`,
     files: [],
     usesActions: false,
+    usesApplyEffect: false,
+    usesVanillaComponents: false,
     usesFollowGoal: false,
   };
   const classNames = new NameTable();
@@ -64,7 +68,13 @@ export function generateJavaProject(input: JavaProjectInput): {
   if (context.usesActions) {
     context.files.push({
       path: `${context.javaRoot}/Actions.java`,
-      contents: actionsJava(input.javaPackage, input.modId),
+      contents: actionsJava(input.javaPackage, input.modId, context.usesApplyEffect),
+    });
+  }
+  if (context.usesVanillaComponents) {
+    context.files.push({
+      path: `${context.javaRoot}/VanillaComponents.java`,
+      contents: vanillaComponentsJava(input.javaPackage, input.modId),
     });
   }
   if (context.usesFollowGoal) {

@@ -1,8 +1,9 @@
 /**
  * Golden over the committed kitchen-sink mod project (`fixtures/sample-mod`, ADR 0026 D6):
- * an `msm:mod`, three `msm:block` and five `msm:item` elements covering every block and item
- * component and all six actions, a `minecraft:equipment` element with its two armour layer
- * textures (ADR 0042), a function and a loot table, namespace `msm_sample_mod`.
+ * an `msm:mod`, three `msm:block` and nine `msm:item` elements covering the block and item
+ * components and the actions (gear since ADR 0044: a bow, a drink, a charm with `apply_effect`,
+ * horse armour), a `minecraft:equipment` element with its three armour layer textures
+ * (ADR 0042), a function and a loot table, namespace `msm_sample_mod`.
  *
  * - The fixture equals the project built from {@link SAMPLE_ELEMENTS} and
  *   {@link SAMPLE_ASSETS} now; `UPDATE_GOLDENS=1` rewrites it (the README is hand-written).
@@ -98,10 +99,11 @@ const ns = (path: string): string => `${NAMESPACE}:${path}`;
  * The kitchen sink. Between them the blocks and items use every component (`msm:breakable`,
  * `msm:light_emitter`, `msm:on_interact`, `msm:on_step`, `msm:redstone`, `msm:food`,
  * `msm:tool` with a vanilla tier and with a custom material and an attack speed override,
- * `msm:armor` with a custom material, `msm:durability`, `msm:on_use`) and every action
- * (`play_sound`, `spawn_particle`, `run_function`, `set_block_state`, `give_item`,
- * `trigger_event`). Item and block models are vanilla ones; the only textures are the two
- * armour layers of the ruby equipment asset ({@link SAMPLE_ASSETS}). The equipment element is
+ * `msm:armor` with a custom material (helmet and horse armour), `msm:durability`, `msm:on_use`,
+ * `msm:consumable`, `msm:ranged_weapon`) and every action (`play_sound`, `spawn_particle`,
+ * `run_function`, `set_block_state`, `give_item`, `trigger_event`, `apply_effect`). Item and
+ * block models are vanilla ones; the only textures are the three armour layers of the ruby
+ * equipment asset ({@link SAMPLE_ASSETS}). The equipment element is
  * `ruby_armor`, not `ruby`: element ids are unique per namespace and `ruby` is the item.
  */
 const SAMPLE_ELEMENTS: readonly SampleElement[] = [
@@ -290,8 +292,95 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
     kind: 'minecraft:equipment',
     data: {
       layers: {
+        horse_body: [{ texture: ns('ruby') }],
         humanoid: [{ texture: ns('ruby') }],
         humanoid_leggings: [{ texture: ns('ruby') }],
+      },
+    },
+  },
+  {
+    id: ns('ruby_horse_armor'),
+    kind: 'msm:item',
+    data: {
+      format: 1,
+      model: 'minecraft:item/diamond_horse_armor',
+      display_name: 'Ruby Horse Armour',
+      rarity: 'rare',
+      creative_tab: 'minecraft:combat',
+      components: {
+        'msm:armor': {
+          slot: 'horse',
+          // Horse armour takes the chestplate defence (ADR 0044 D5).
+          material: {
+            durability: 25,
+            defense: { helmet: 3, chestplate: 9, leggings: 5, boots: 2 },
+            enchantment_value: 12,
+            toughness: 1,
+            knockback_resistance: 0,
+            repair_items: '#minecraft:repairs_diamond_armor',
+            equipment_asset: ns('ruby_armor'),
+          },
+        },
+      },
+    },
+  },
+  {
+    id: ns('ruby_bow'),
+    kind: 'msm:item',
+    data: {
+      format: 1,
+      model: 'minecraft:item/bow',
+      display_name: 'Ruby Bow',
+      rarity: 'rare',
+      creative_tab: 'minecraft:combat',
+      components: {
+        'msm:ranged_weapon': { type: 'bow', draw_speed: 2, velocity: 1.5, damage_multiplier: 1.5 },
+      },
+    },
+  },
+  {
+    id: ns('ruby_tonic'),
+    kind: 'msm:item',
+    data: {
+      format: 1,
+      model: 'minecraft:item/honey_bottle',
+      display_name: 'Ruby Tonic',
+      max_stack_size: 16,
+      creative_tab: 'minecraft:food_and_drinks',
+      components: {
+        'msm:consumable': {
+          seconds: 1,
+          animation: 'drink',
+          effects: [
+            { effect: 'minecraft:speed', seconds: 30, amplifier: 1 },
+            { effect: 'minecraft:regeneration', seconds: 5 },
+          ],
+          converts_to: 'minecraft:glass_bottle',
+          cooldown_seconds: 3,
+        },
+      },
+    },
+  },
+  {
+    id: ns('ruby_charm'),
+    kind: 'msm:item',
+    data: {
+      format: 1,
+      model: 'minecraft:item/heart_of_the_sea',
+      display_name: 'Ruby Charm',
+      max_stack_size: 1,
+      rarity: 'uncommon',
+      creative_tab: 'minecraft:tools_and_utilities',
+      components: {
+        'msm:on_use': { event: ns('charm'), cooldown_ticks: 100 },
+      },
+      events: {
+        [ns('charm')]: {
+          actions: [
+            { type: 'apply_effect', effect: 'minecraft:speed', seconds: 10, amplifier: 1 },
+            { type: 'apply_effect', effect: 'minecraft:glowing', seconds: 2, target: 'other' },
+          ],
+        },
       },
     },
   },
@@ -366,17 +455,17 @@ interface SampleAsset {
 const RUBY: Rgb = [196, 28, 52];
 
 /**
- * A 64x32 placeholder armour layer: the whole sheet in `colour`, a darker lower half (body and
- * legs) and a lighter one-pixel grid every eight pixels, so every humanoid UV box is filled.
- * Original work; it stands in until the library's armour layer patterns exist.
+ * A placeholder armour layer (64x32 for humanoid layers, 64x64 for horse armour): the whole
+ * sheet in `colour`, a darker lower half and a lighter one-pixel grid every eight pixels, so
+ * every UV box is filled. Original work; it stands in until the library's armour layer patterns
+ * exist.
  */
-function armorLayerPlaceholder(colour: Rgb): Uint8Array {
+function armorLayerPlaceholder(colour: Rgb, height = 32): Uint8Array {
   const width = 64;
-  const height = 32;
   const rgba = new Uint8Array(width * height * 4);
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const shade = x % 8 === 0 || y % 8 === 0 ? 1.2 : y >= 16 ? 0.8 : 1;
+      const shade = x % 8 === 0 || y % 8 === 0 ? 1.2 : y >= height / 2 ? 0.8 : 1;
       const offset = (y * width + x) * 4;
       for (let channel = 0; channel < 3; channel++) {
         rgba[offset + channel] = Math.min(255, Math.round((colour[channel] as number) * shade));
@@ -387,8 +476,12 @@ function armorLayerPlaceholder(colour: Rgb): Uint8Array {
   return encodePng(rgba, width, height);
 }
 
-/** The two armour layers of `ruby_armor` (`humanoid` and `humanoid_leggings`). */
+/** The three armour layers of `ruby_armor` (`horse_body`, `humanoid`, `humanoid_leggings`). */
 const SAMPLE_ASSETS: readonly SampleAsset[] = [
+  {
+    path: 'textures/entity/equipment/horse_body/ruby.png',
+    bytes: armorLayerPlaceholder(RUBY, 64),
+  },
   {
     path: 'textures/entity/equipment/humanoid/ruby.png',
     bytes: armorLayerPlaceholder(RUBY),
@@ -633,6 +726,8 @@ describe('sample mod project', () => {
       'msm:armor',
       'msm:durability',
       'msm:on_use',
+      'msm:consumable',
+      'msm:ranged_weapon',
     ]) {
       expect(text.includes(`"${component}"`), component).toBe(true);
     }
@@ -643,6 +738,7 @@ describe('sample mod project', () => {
       'set_block_state',
       'give_item',
       'trigger_event',
+      'apply_effect',
     ]) {
       expect(text.includes(`"type":"${action}"`), action).toBe(true);
     }
@@ -760,6 +856,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         `assets/${NAMESPACE}/equipment/ruby_armor.json`,
         `assets/${NAMESPACE}/${target.folders.resource.textures}/entity/equipment/humanoid/ruby.png`,
         `assets/${NAMESPACE}/${target.folders.resource.textures}/entity/equipment/humanoid_leggings/ruby.png`,
+        `assets/${NAMESPACE}/${target.folders.resource.textures}/entity/equipment/horse_body/ruby.png`,
       ]) {
         expect(paths, path).toContain(path);
       }

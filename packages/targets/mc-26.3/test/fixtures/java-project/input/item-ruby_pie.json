@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:consumable": {
+      "animation": "eat",
+      "effects": [
+        {
+          "effect": "minecraft:haste",
+          "seconds": 10
+        }
+      ],
+      "seconds": 2.5
+    },
+    "msm:food": {
+      "nutrition": 8,
+      "saturation": 0.6
+    }
+  },
+  "format": 1
+}

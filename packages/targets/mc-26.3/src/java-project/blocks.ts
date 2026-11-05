@@ -116,7 +116,7 @@ function readBlock(input: DefinitionInput): BlockSpec {
   checkFormat(reader);
   const components = reader.object('components');
   components?.onlyKeys(BLOCK_COMPONENTS, 'component');
-  const events = readEvents(reader);
+  const events = readEvents(reader, 'block');
 
   let item: BlockSpec['item'];
   const rawItem = input.definition.item;
@@ -307,6 +307,7 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
     ? file.use(`${context.input.javaPackage}.Actions`)
     : 'Actions';
   if (usesActions(spec.events)) context.usesActions = true;
+  if (spec.events.appliesEffects) context.usesApplyEffect = true;
   const power = tracksPower(spec);
 
   const members: string[] = [];

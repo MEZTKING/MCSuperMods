@@ -15,6 +15,10 @@ export interface GenerationContext {
   readonly files: GeneratedFile[];
   /** Set when a generated class calls the `Actions` helpers. */
   usesActions: boolean;
+  /** Set when an event uses `apply_effect` (`Actions.applyEffect` is then written). */
+  usesApplyEffect: boolean;
+  /** Set when an item uses `msm:components` (`VanillaComponents.java` is then written). */
+  usesVanillaComponents: boolean;
   /** Set when an entity uses the `follow` goal. */
   usesFollowGoal: boolean;
 }

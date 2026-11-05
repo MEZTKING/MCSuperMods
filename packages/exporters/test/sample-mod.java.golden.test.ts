@@ -1,6 +1,7 @@
 /**
  * Golden over the Java project eject of `fixtures/sample-mod` (ADR 0033): every block and item
- * component and every block and item action.
+ * component and every block and item action of the fixture (gear since ADR 0044: a bow
+ * subclass, a drink, a charm with `apply_effect`, horse armour).
  *
  * - The export succeeds without errors (warnings only for project ids the vanilla registries
  *   do not know); the project's files and contents hash to the value
@@ -89,6 +90,8 @@ describe.each(
       `${PKG}/block/ChimeBlock.java`,
       `${PKG}/item/RubyWandItem.java`,
       `${PKG}/item/RubyAppleItem.java`,
+      `${PKG}/item/RubyBowItem.java`,
+      `${PKG}/item/RubyCharmItem.java`,
     ]) {
       expect(paths, path).toContain(path);
     }

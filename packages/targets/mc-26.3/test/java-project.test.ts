@@ -1,7 +1,9 @@
 /**
  * The 26.3 Java generator (ADR 0033 D3): identifier derivation, one golden per kind built from
  * the runtime's GameTest kitchen-sink definitions (copied from
- * `engine-mod/src/gametest/resources/msm/msm_test/` into `test/fixtures/java-project/input/`),
+ * `engine-mod/src/gametest/resources/msm/msm_test/` into `test/fixtures/java-project/input/`;
+ * `block-stepping_stone` and `entity-frost_golem` are the `apply_effect` corpus cases of
+ * `packages/schemas/mcdoc/msm/conformance/definition/valid/`),
  * determinism, and the errors the exporter reports as `export.java-generation-failed`.
  * `UPDATE_GOLDENS=1` rewrites `test/fixtures/java-project/expected/`.
  */
@@ -158,6 +160,70 @@ describe('Java generator (mc-26.3)', () => {
     );
   });
 
+  it('generates weapons, consumables, totems, body armour and the passthrough (ADR 0044)', async () => {
+    const paths = [
+      'ruby_bow',
+      'ruby_crossbow',
+      'ruby_shield',
+      'ruby_spear',
+      'quick_spear',
+      'ruby_mace',
+      'ruby_tonic',
+      'ruby_pie',
+      'ruby_charm',
+      'ruby_totem',
+      'ruby_horse_armor',
+      'scute_wolf_armor',
+      'winged_charm',
+      'ruby_disc',
+    ];
+    const items = await Promise.all(paths.map((path) => definition('item', path)));
+    const { files } = generateJavaProject(input({ items }));
+    await golden('weapons', files);
+    const generated = files.map((file) => file.path);
+    // A bow or crossbow with factors gets a subclass; the shield, mace and spear do not.
+    expect(generated).toContain('src/main/java/msm_test/item/RubyBowItem.java');
+    expect(generated).toContain('src/main/java/msm_test/item/RubyCrossbowItem.java');
+    expect(generated).toContain('src/main/java/msm_test/item/RubyCharmItem.java');
+    expect(generated).toContain('src/main/java/msm_test/VanillaComponents.java');
+    expect(generated).not.toContain('src/main/java/msm_test/item/RubyMaceItem.java');
+    const modItems = files.find((file) => file.path.endsWith('/ModItems.java'))?.contents ?? '';
+    expect(modItems).toContain('new MaceItem(new Item.Properties()');
+    expect(modItems).toContain('.horseArmor(RUBY_HORSE_ARMOR_ARMOR)');
+    expect(modItems).toContain('.wolfArmor(ArmorMaterials.ARMADILLO_SCUTE)');
+    // Durations in ticks as the runtime rounds them (30 s is 600 ticks).
+    expect(modItems).toContain('"minecraft", "speed"), 600, 1, 1.0f)');
+    const actions = files.find((file) => file.path.endsWith('/Actions.java'))?.contents ?? '';
+    expect(actions).toContain('public static void applyEffect(');
+    const charm = files.find((file) => file.path.endsWith('/RubyCharmItem.java'))?.contents ?? '';
+    // Item events: other is the player.
+    expect(charm).toContain('Actions.applyEffect(OWNER, player, "minecraft:glowing", 40, 0);');
+  });
+
+  it('generates apply_effect on blocks and on entities with an other target', async () => {
+    const { files } = generateJavaProject(
+      input({
+        blocks: [await definition('block', 'stepping_stone')],
+        entities: [await definition('entity', 'frost_golem')],
+        geckolib: true,
+      }),
+    );
+    await golden('effects', files);
+    const golem =
+      files.find((file) => file.path.endsWith('/FrostGolemEntity.java'))?.contents ?? '';
+    expect(golem).toContain('LivingEntity other, int depth)');
+    expect(golem).toContain('target instanceof LivingEntity living ? living : null, 1);');
+    expect(golem).toContain('Actions.applyEffect(OWNER, other, "minecraft:slowness", 80, 0);');
+    const stone =
+      files.find((file) => file.path.endsWith('/SteppingStoneBlock.java'))?.contents ?? '';
+    expect(stone).toContain('Actions.applyEffect(OWNER, player, "minecraft:slowness", 50, 2);');
+    // Without apply_effect, Actions has no applyEffect (the older goldens stay as they were).
+    const plain = generateJavaProject(input({ items: [await definition('item', 'gadget')] }));
+    const plainActions =
+      plain.files.find((file) => file.path.endsWith('/Actions.java'))?.contents ?? '';
+    expect(plainActions).not.toContain('applyEffect');
+  });
+
   it('generates the kitchen-sink entity with GeckoLib and the client entrypoint', async () => {
     const { files, entrypoints } = generateJavaProject(
       input({ entities: [await definition('entity', 'kitchen_sink')], geckolib: true }),
@@ -284,7 +350,48 @@ describe('Java generator (mc-26.3)', () => {
             item({ format: 1, components: { 'msm:armor': { slot: 'body', material: 'iron' } } }),
           ],
         }),
-      ).toThrow(/slot 'body' is not one of helmet, chestplate, leggings, boots/);
+      ).toThrow(/slot 'body' is not one of helmet, chestplate, leggings, boots, horse, wolf/);
+    });
+
+    it('rejects exclusive gear components together and a spear attack_speed of -4', () => {
+      const item = (definition: JsonObject): DefinitionInput => ({
+        id: 'msm_test:bad',
+        path: 'msm/msm_test/item/bad.json',
+        definition,
+      });
+      expect(
+        generate({
+          items: [
+            item({
+              format: 1,
+              components: {
+                'msm:shield': {},
+                'msm:ranged_weapon': { type: 'bow' },
+              },
+            }),
+          ],
+        }),
+      ).toThrow(/msm:ranged_weapon and msm:shield on one item cannot be ejected/);
+      expect(
+        generate({
+          items: [
+            item({
+              format: 1,
+              components: { 'msm:tool': { type: 'spear', tier: 'iron', attack_speed: -4 } },
+            }),
+          ],
+        }),
+      ).toThrow(/attack_speed of a spear must be above -4/);
+      expect(
+        generate({
+          items: [
+            item({
+              format: 1,
+              components: { 'msm:shield': { bypassed_by: 'minecraft:bypasses_shield' } },
+            }),
+          ],
+        }),
+      ).toThrow(/bypassed_by 'minecraft:bypasses_shield' is not a tag reference/);
     });
 
     it('rejects undeclared events', () => {

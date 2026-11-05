@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:durability": {
+      "max": 900
+    },
+    "msm:ranged_weapon": {
+      "damage_multiplier": 2.5,
+      "draw_speed": 2,
+      "type": "crossbow"
+    }
+  },
+  "format": 1
+}

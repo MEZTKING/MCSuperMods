@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:tool": {
+      "tier": "diamond",
+      "type": "mace"
+    }
+  },
+  "format": 1
+}
