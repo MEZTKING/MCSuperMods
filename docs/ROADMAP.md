@@ -273,18 +273,18 @@ Introduce the `msm_runtime` Fabric mod and the content jar, so projects can add 
 
 ### Deliverables
 
-- [ ] **Week 1 — registry-freeze spike:** a throwaway `msm_runtime` that scans `msm/` in all mod containers at init, registers one block and one item from JSON, and runs one event. Result recorded as an ADR; if dynamic registration hits limits, re-plan around code generation (Tier 2).
-- [ ] `engine-mod/`: Gradle (Kotlin DSL), Java 25, Fabric Loom 26.1+ non-remapping variant (verify at implementation), Fabric Loader + Fabric API for 26.3.
-- [ ] `msm_runtime` loader: init-time scan of `msm/**/*.json`, driver classes `MsmBlock` and `MsmItem`.
-- [ ] MSM mcdoc schemas for components and events v1 in `packages/schemas/mcdoc/msm/`, shared by app and runtime.
-- [ ] Components v1: light, hardness, drops via loot, `on_interact`, `on_step`, redstone, food, tool tier, durability, use actions.
-- [ ] Actions v1: `run_function`, `spawn_particle`, `set_block_state`, `give_item`, `play_sound`, `trigger_event`.
-- [ ] `@msm/plugin-blocks-items`: `msm:block` and `msm:item` kinds lowering to vanilla files plus `msm/` definitions.
+- [x] **Week 1 — registry-freeze spike:** a throwaway `msm_runtime` that scans `msm/` in all mod containers at init, registers one block and one item from JSON, and runs one event. Result recorded as an ADR; if dynamic registration hits limits, re-plan around code generation (Tier 2). Done in B90: dynamic registration works ([ADR 0024](adr/0024-runtime-registration-spike.md)).
+- [x] `engine-mod/`: Gradle (Kotlin DSL), Java 25, Fabric Loom 26.1+ non-remapping variant (verify at implementation), Fabric Loader + Fabric API for 26.3.
+- [x] `msm_runtime` loader: init-time scan of `msm/**/*.json`, driver classes `MsmBlock` and `MsmItem`.
+- [x] MSM mcdoc schemas for components and events v1 in `packages/schemas/mcdoc/msm/`, shared by app and runtime.
+- [x] Components v1: light, hardness, drops via loot, `on_interact`, `on_step`, redstone, food, tool tier, durability, use actions.
+- [x] Actions v1: `run_function`, `spawn_particle`, `set_block_state`, `give_item`, `play_sound`, `trigger_event`.
+- [x] `@msm/plugin-blocks-items`: `msm:block` and `msm:item` kinds lowering to vanilla files plus `msm/` definitions.
 - [ ] Block Studio and Item Studio views.
 - [ ] Real Custom ore starter on `msm:block` and `msm:item`, replacing the emerald-ore reskin in `@msm/plugin-library` ([ADR 0020](adr/0020-templates-starters-examples.md)).
-- [ ] `@msm/exporters` `fabric-content-jar`: `assets/`, `data/`, `msm/`, `fabric.mod.json`, with `msm_runtime` nested by default and a "separate runtime" option.
+- [x] `@msm/exporters` `fabric-content-jar`: `assets/`, `data/`, `msm/`, `fabric.mod.json`, with `msm_runtime` nested by default and a "separate runtime" option.
 - [ ] Managed Fabric test instance launched from the app ("Test in Minecraft").
-- [ ] JUnit tests for definition parsing; Fabric GameTest for behaviour; kitchen-sink sample exported and loaded on a headless server in CI.
+- [ ] JUnit tests for definition parsing; Fabric GameTest for behaviour; kitchen-sink sample exported and loaded on a headless server in CI. JUnit and GameTests run in `./gradlew build` (B93); the CI job and headless server check are B99.
 
 ### Exit criteria
 

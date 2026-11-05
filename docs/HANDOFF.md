@@ -1,27 +1,27 @@
 # Session handoff
 
-Written 2026-11-05 by the main session that ran Phases 0–3, for the next main session. Read this, then the root `CLAUDE.md`, then the last three `DEVLOG.md` entries. `DESIGN.md` is authoritative; this file only says where things stand and how the work has been run. Update this file (do not append history to it; history goes in `DEVLOG.md`) when you hand over again.
+Rewritten 2026-11-05 by the main session that runs Phase 4 (Waves 0–2), for the next main session. Read this, then the root `CLAUDE.md`, `docs/PHASE4-PLAN.md`, then the last four `DEVLOG.md` entries. `DESIGN.md` is authoritative; this file only says where things stand and how the work has been run. Update this file (do not append history to it; history goes in `DEVLOG.md`) when you hand over again.
 
 ## Where things stand
 
-- `main` = the working branch tip, CI green. App version **0.3.0**. Phases 0, 1, 2 and 3 are code complete; the launcher add-on (ADR 0019) and the templates and samples library (ADR 0020) are done; recent projects is done.
-- 14 packages, 1,719 tests, 7 Playwright e2e specs (`smoke`, `golden-path`, `datapack-path`, `launchers-path`, `library-path`, `recent-path`, `worldgen-path`). Milestone Log in `ROADMAP.md` has the numbers.
-- **Next: Phase 4** (Engine Mod + Blocks/Items, v0.4). It opens with the one-week registry-freeze spike (ROADMAP "Phase 4"). No Phase 4 plan exists yet: write one first (see "How to run a phase").
+- App version **0.3.0** (released as a draft on 2026-11-05). Phases 0–3 code complete; Phase 3 awaits in-game checks.
+- **Phase 4 in progress** on the plan in `docs/PHASE4-PLAN.md` (waves of briefs B90–B102). Done: Wave 0 (B90 spike: dynamic registration works on 26.3, ADR 0024), Wave 1 (B91 plugin API 0.6.0, B92 MSM mcdoc v1) and Wave 2 (B93 `msm_runtime` v1, B94 `@msm/plugin-blocks-items`, B95 `fabric-content-jar`). ADRs 0024–0027 are Proposed, to be accepted at phase close (B102).
+- 15 packages; the clean-worktree run is 15/15 test tasks green; `engine-mod/` `./gradlew build` runs 46 JUnit tests and 18 GameTests.
+- **Next: Wave 3** (B96 app export wiring with `loadRuntimeJar`, B97 Block and Item Studios, B98 real Custom ore starter and `examples/`, B99 CI engine-mod job and `fixtures/sample-mod/`), then Waves 4–5.
+- Only one main session may run Phase 4. A parallel session duplicated Waves 0–2 on `claude/phase-4`; the user chose this session's line (`ccr-f6800165-ug2dvi`, fast-forwarded into `main`). `claude/phase-4` is abandoned: do not merge it. Its two useful ideas (reserved mod ids, `mods/.msm-installed.json`) are in ADR 0026.
 
 ## Waiting on the user
 
-1. **Releases** (the session cannot push tags; see "Releases"). In order, via GitHub Actions > Release > Run workflow on branch `main`:
-   - version `0.2.3`, commit `56885610ca9fb32d2a15556bbb26be64a912cbd2` (delete the old duplicate 0.2.3 drafts first, or the run stops);
-   - user installs 0.2.3 by hand and publishes the draft;
-   - version `0.2.4`, commit `6d48c71104d48d6d25dab061e4b6d282f2269782`; publish; the installed 0.2.3 should auto-update (first real auto-update test);
-   - version `0.3.0`, commit empty.
-   The manual-run path (`workflow_dispatch` with `version`/`commit` inputs, which creates the tag with `GITHUB_TOKEN`) is new and **untested**: watch the first run and fix it if it fails.
-2. **In-game checks**, still pending for all phases: `fixtures/sample-resourcepack/` (stick test), `fixtures/sample-datapack/`, the Custom ore and music disc starters, and `fixtures/sample-worldgen/README.md` (hamlet via `/locate`, "Amber Woods" World Type, jigsaw orientation, 3D structure preview with real WebGL).
-3. **Confirmations**: the CurseForge `Install/versions/` jar path and `baseModLoader: null`; the vetoable defaults in ADR 0020 (emerald-ore reskin, cat record, `examples/` mirror) and Phase 3 (deepslate NBT, structure templates stored as JSON, noise preview deferred, `dimension_type` in the data pack plugin, tier-B schema-form kinds); DESIGN open question 12 (fallback parent models).
+1. **Publish the 0.3.0 draft** (GitHub > Releases). Delete the duplicate 0.1.0, 0.2.0 and 0.2.2 drafts, and the stale branches `claude/phase-4`, `release-fix-tag-check` and `ccr-d077e76e-4gnbx2` (the session's proxy refuses branch deletes).
+2. **0.2.3 and 0.2.4 were skipped**: `GITHUB_TOKEN` gets HTTP 403 creating a tag on a commit whose workflow files differ from `main`. The user can push those tags locally if still wanted; 0.3.0 supersedes them.
+3. **In-game checks**, still pending for all phases: `fixtures/sample-resourcepack/` (stick test), `fixtures/sample-datapack/`, the Custom ore and music disc starters, and `fixtures/sample-worldgen/README.md`.
+4. **Confirmations**: the CurseForge `Install/versions/` jar path and `baseModLoader: null`; the vetoable defaults in ADR 0020 and Phase 3; DESIGN open question 12 (fallback parent models).
 
 ## Housekeeping due now
 
-- Phase 3 follow-ups in `ROADMAP.md` (go to definition from Studio id lists, gallery entries for the worldgen starters, full-cube culling in the structure view, `#[id(tags="implicit")]` support, B84 noise preview in reserve).
+- Wave 3 carry-overs: reserved mod ids (ADR 0026 D2) in the `msm:mod` validator and the exporter's synthesised id; move `FabricContentJarProblemCodes` into `ExportProblemCodes`; block items are not in the host registry index (`schema.unknown-id` warnings on a block's own item); register `@msm/plugin-blocks-items` in `packages/exporters/test/library.test.ts` (B98); CI must check out `packages/schemas` beside `engine-mod/` and cache `~/.gradle` (B99).
+- At phase close (B102): `engine-mod/gradle.properties` `mod_version` (still `0.0.1-spike`) must equal the app version; record B93's runtime rules (dropped events, depth counting, strict JSON types) in ADR 0025.
+- Phase 3 follow-ups in `ROADMAP.md`.
 
 ## User decisions to respect
 
@@ -57,7 +57,8 @@ Written 2026-11-05 by the main session that ran Phases 0–3, for the next main 
    W=<scratchpad>/wt; rm -rf $W; git worktree add -q $W HEAD; cd $W
    pnpm install --frozen-lockfile --offline
    npx tsc -b; npx biome ci .; node tools/check-deps/index.ts
-   pnpm turbo run test --force
+   node_modules/.bin/turbo run test --force
+   # engine-mod: cd engine-mod && JAVA_HOME=/root/jdk/jdk-25.0.5+8 ./gradlew build
    # app changes: pnpm build; xvfb-run -a pnpm --filter @msm/app e2e
    # phase close: also smoke, dist:dir, smoke:packaged, node tools/check-size/index.ts
    cd -; git worktree remove --force $W
@@ -67,13 +68,14 @@ Written 2026-11-05 by the main session that ran Phases 0–3, for the next main 
 
 ## Releases
 
-- The session's git proxy rejects tag pushes (403). An earlier attempt to have the workflow create tags and trigger it from the session was stopped by the session's safety check; do not retry that without the user's explicit go-ahead each time.
+- The session's git proxy rejects tag and branch-delete pushes (403). Trigger releases with the GitHub MCP `actions_run_trigger` (`release.yml`, ref `main`, inputs `version`, `commit`) only with the user's explicit go-ahead each time (given on 2026-11-05 for 0.3.0).
+- A manual run can tag only commits whose `.github/workflows/` match `main` (otherwise HTTP 403); release from the `main` tip.
 - `.github/workflows/release.yml`: on a `v*` tag, or a manual run with a `version`, it guards tag = `app/package.json` version, creates the tag (manual runs; never moves an existing tag), creates one draft release first (parallel uploads once split assets over two drafts), runs `electron-builder --publish always`, checks the draft has exactly the `.exe`, `.exe.blockmap` and `latest.yml`, and checks the 150 MB installer budget.
 - The user publishes drafts by hand; the in-app updater only sees published releases. Bump the version in `app/package.json` in the commit to be released.
 
 ## Environment notes
 
-- Containers differ between sessions. On 2026-11-05 the default `node` was 22; Node 24.22.1 was at `/opt/node24/bin` (put it first on PATH). `pnpm turbo ...` failed there with "Exec format error"; run `node_modules/.bin/turbo` directly. JDK 25 (Temurin 25.0.5) was installed by hand at `/root/jdk/jdk-25.0.5+8` (system Java is 21); a new container needs it again (`api.adoptium.net/v3/binary/latest/25/ga/linux/x64/jdk/hotspot/normal/eclipse`).
+- Containers differ between sessions. On 2026-11-05 the default `node` was 22; Node 24 was installed by hand at `/opt/node24` from nodejs.org (put `/opt/node24/bin` first on PATH; `corepack enable --install-directory /opt/node24/bin pnpm`). `pnpm turbo ...` failed there with "Exec format error"; run `node_modules/.bin/turbo` directly. JDK 25 (Temurin 25.0.5) was installed by hand at `/root/jdk/jdk-25.0.5+8` (system Java is 21); a new container needs it again (`api.adoptium.net/v3/binary/latest/25/ga/linux/x64/jdk/hotspot/normal/eclipse`).
 - Playwright: use the pre-installed Chromium; headless app runs need `xvfb-run -a`. Native Electron menus cannot be clicked in e2e: drive commands through the palette.
 - The user is on Windows with Node 26 (engines `>=24 <27`), PowerShell; README "Try it" covers their setup.
 

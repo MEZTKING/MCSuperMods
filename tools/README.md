@@ -4,6 +4,7 @@ Development scripts for the MSM monorepo (`@msm/tools`). Every script is TypeScr
 
 | Folder | Command | Purpose |
 |---|---|---|
+| `build-msm-mcdoc/` | `node tools/build-msm-mcdoc/index.ts [--check]` | Exports the MSM mcdoc in `packages/schemas/mcdoc/msm/` to its checked-in `symbols.json`; `--check` fails when it is stale. See its README. |
 | `check-deps/` | `node tools/check-deps/index.ts` | Enforces the package layer map (`layers.json`) and rejects Minecraft version literals outside `packages/targets`. Part of `pnpm lint`. |
 | `check-size/` | `node tools/check-size/index.ts` | Size budgets for `app.asar` and the renderer output, run in CI after `dist:dir`; see its README. |
 | `new-plugin/` | `node tools/new-plugin/index.ts <name>` | Scaffolds `packages/plugins/<name>` as `@msm/plugin-<name>`; see its README. |

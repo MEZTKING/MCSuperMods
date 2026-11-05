@@ -1,6 +1,6 @@
 # docs/ — design docs, roadmap, devlog, ADRs
 
-Active since Phase 0; Phases 2 and 3 code complete, awaiting the in-game checks; launcher and templates and samples library add-ons done; Phase 3 (Structures & Worldgen) delivered as briefs B70–B83 (ADRs 0001–0023, all accepted; B84 in reserve); Phase 4 next; user guide in `guide/`. This file describes conventions.
+Active since Phase 0; Phases 2 and 3 code complete, awaiting the in-game checks; launcher and templates and samples library add-ons done; Phase 3 (Structures & Worldgen) delivered as briefs B70–B83 (ADRs 0001–0023, all accepted; B84 in reserve); Phase 4 in progress (`PHASE4-PLAN.md`, ADRs 0024–0027 proposed); user guide in `guide/`. This file describes conventions.
 
 ## Purpose
 

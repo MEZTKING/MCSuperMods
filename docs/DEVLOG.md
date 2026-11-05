@@ -1302,3 +1302,19 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - Wave 3: B96 app export wiring (`loadRuntimeJar`), B97 Block and Item Studios, B98 real Custom ore starter and `examples/` (register the plugin in `library.test.ts`), B99 CI engine-mod job (check out `packages/schemas` beside it; cache `~/.gradle`), `fixtures/sample-mod/`.
+
+---
+
+## 2026-11-05 — main session — audit before Wave 3
+
+**What**
+- At the user's request, checked everything so far for duplicates and handoff problems before more changes.
+- Clean: no duplicate DEVLOG headings, ADR numbers 0024–0027 unique, no conflict markers, the new plugin registered once, every problem code defined once, `main` holds only this session's line.
+- Found and fixed stale records: `docs/HANDOFF.md` (rewritten: Phase 4 state, release outcome, parallel-session warning, Wave 3 carry-overs, environment), root `CLAUDE.md` and `docs/CLAUDE.md` status lines, ROADMAP Phase 4 ticks (spike, engine-mod, loader, mcdoc, components, actions, plugin, content jar), `packages/exporters/CLAUDE.md` (content jar exists), `tools/README.md` (`build-msm-mcdoc` row).
+- The abandoned parallel branch `claude/phase-4` kept committing until 07:32 (its own merge of `main`). Not merged. Its ADR 0026 ideas were taken as text: reserved mod ids (D2) and `mods/.msm-installed.json` install tracking (D5); its factory signature (`runtime: { version, loadJar }`) was not, since the code uses `loadRuntimeJar`.
+
+**Decisions**
+- None beyond the ADR 0026 text above.
+
+**Next**
+- Wave 3 (see HANDOFF "Housekeeping due now").
