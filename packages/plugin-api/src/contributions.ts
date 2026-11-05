@@ -6,12 +6,13 @@
  * @packageDocumentation
  */
 
+import type { MaybePromise } from './async';
 import type { Json } from './json';
 import type { ElementTemplate, ExampleProject, ProjectStarter } from './library';
 import type { Asset, Element } from './model';
 import type { OutputFile, OutputLayer, OutputSink } from './output';
 import type { Problem, ProblemReporter } from './problems';
-import type { Target } from './target';
+import type { Target, TargetFacts } from './target';
 
 /**
  * A kind of element, such as `minecraft:recipe` or `msm:block`.
@@ -56,13 +57,27 @@ export interface ElementKind<D extends Json = Json> {
    * Turns one element into output files for a target.
    *
    * Must be pure and deterministic: the same element and target always produce the same files
-   * in the same order.
+   * in the same order. May return a Promise (a sandboxed plugin's functions resolve through a
+   * worker); hosts await the result. Built-in kinds return the files directly. A Promise
+   * return since 1.0.0.
+   *
+   * @example
+   * ```ts
+   * lower: (element, target) => [
+   *   {
+   *     path: `data/${element.id.split(':')[0]}/${target.folders.data.recipe}/ruby.json`,
+   *     contents: element.data,
+   *     layer: 'datapack',
+   *   },
+   * ],
+   * ```
    *
    * @param element - The element to lower.
-   * @param target - The target being exported for.
-   * @returns The files that represent the element.
+   * @param target - The facts of the target being exported for ({@link TargetFacts} since
+   *   1.0.0; a host passes its full {@link Target}).
+   * @returns The files that represent the element, or a Promise of them.
    */
-  lower(element: Element<D>, target: Target): OutputFile[];
+  lower(element: Element<D>, target: TargetFacts): MaybePromise<OutputFile[]>;
 }
 
 /**
@@ -81,7 +96,10 @@ export interface EditorContribution {
 export interface ExporterInput {
   /** The project's name, used for archive and folder names. */
   projectName: string;
-  /** The target being exported for. */
+  /**
+   * The target being exported for: the full {@link Target}, hooks included (an exporter may
+   * call {@link Target.javaProject}).
+   */
   target: Target;
   /** The merged, validated output files of every element. */
   files: OutputFile[];
@@ -225,8 +243,8 @@ export interface ValidationRegistry {
 export interface ValidationInput {
   /** Every element of the project (all kinds), in a stable order. */
   elements: readonly Element[];
-  /** The target being validated for. */
-  target: Target;
+  /** The facts of the target being validated for ({@link TargetFacts} since 1.0.0). */
+  target: TargetFacts;
   /** Vanilla plus project ids, as the host's registry index sees them. */
   registry: ValidationRegistry;
 }
@@ -258,12 +276,13 @@ export interface ProjectValidator {
   kinds: readonly string[];
   /**
    * Checks the project. Must be pure and deterministic. Problems carry `elementId` and an
-   * RFC 6901 `path` where possible; codes are `<area>.<check>`.
+   * RFC 6901 `path` where possible; codes are `<area>.<check>`. May return a Promise (a
+   * Promise return since 1.0.0); hosts await the result.
    *
    * @param input - The project's elements, the target and the registry ids.
-   * @returns The problems found; empty when there are none.
+   * @returns The problems found (empty when there are none), or a Promise of them.
    */
-  validate(input: ValidationInput): Problem[];
+  validate(input: ValidationInput): MaybePromise<Problem[]>;
 }
 
 /**

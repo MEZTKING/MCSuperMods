@@ -1,13 +1,14 @@
 /**
  * The `Target` contract: one Minecraft version's facts.
  *
- * Every version-specific value MSM uses is a field of {@link Target}, and targets are only
- * implemented in `packages/targets`. No other package hard-codes a version number.
+ * Every version-specific value MSM uses is a field of {@link TargetFacts} (data) or
+ * {@link Target} (data plus hooks), and targets are only implemented in `packages/targets`.
+ * No other package hard-codes a version number.
  *
  * @packageDocumentation
  */
 
-import type { JsonObject, ResourceLocation } from './json';
+import type { Json, JsonObject, ResourceLocation } from './json';
 import type { Project } from './model';
 import type { Problem } from './problems';
 
@@ -29,10 +30,22 @@ export interface MigrationChange {
   elementId: ResourceLocation;
   /** Human-readable description of the change, in British English. */
   description: string;
+  /**
+   * What the host does with the element when it applies the report: `update` replaces the
+   * element's data with {@link MigrationChange.data}, `remove` deletes the element. Absent
+   * means `update` when `data` is present and an informational entry otherwise. Since 1.0.0.
+   */
+  kind?: 'update' | 'remove';
+  /**
+   * The element's new data. Absent means the change is informational (or a `remove`): the
+   * host leaves the element's data as it is. Since 1.0.0.
+   */
+  data?: Json;
 }
 
 /**
- * The outcome of migrating a project from one target to another.
+ * The outcome of migrating a project from one target to another. {@link Target.migrateFrom}
+ * returns it without touching the project; the host applies every change as one undo step.
  */
 export interface MigrationReport {
   /** Every change the migration applied. */
@@ -42,7 +55,7 @@ export interface MigrationReport {
 }
 
 /**
- * Keys of {@link Target.folders}`.resource`: the resource pack folders whose names a target
+ * Keys of {@link TargetFacts.folders}`.resource`: the resource pack folders whose names a target
  * supplies.
  *
  * - `model`: block and item models.
@@ -65,7 +78,7 @@ export type ResourceFolderKey =
   | 'font';
 
 /**
- * Keys of {@link Target.folders}`.data`: the data pack folders whose names a target supplies.
+ * Keys of {@link TargetFacts.folders}`.data`: the data pack folders whose names a target supplies.
  * Each value is a single folder name directly under `data/<namespace>/`.
  *
  * - `recipe`: recipes.
@@ -231,7 +244,7 @@ export interface JavaProjectInput {
   items: DefinitionInput[];
   /** Entity definitions (`msm/<namespace>/entity/*.json`), in a stable order. */
   entities: DefinitionInput[];
-  /** `true` when the project has entities and the target has {@link Target.geckolib} facts. */
+  /** `true` when the project has entities and the target has {@link TargetFacts.geckolib} facts. */
   geckolib: boolean;
 }
 
@@ -264,15 +277,29 @@ export interface JavaProjectGenerator {
 }
 
 /**
- * One Minecraft version's facts, contributed by a `@msm/target-mc-<version>` package.
- *
- * This interface is the documented home of every target field.
+ * Whether a target describes a released game version or a snapshot. Snapshot targets are shown
+ * with a badge and are never the default for new projects. Since 1.0.0.
  */
-export interface Target {
+export type TargetChannel = 'release' | 'snapshot';
+
+/**
+ * One Minecraft version's facts as plain data: what every plugin-facing function
+ * ({@link ElementKind.lower}, {@link ProjectValidator.validate}, templates, starters and
+ * examples) receives. Hosts and exporters work with the full {@link Target}, which adds the
+ * hooks. Since 1.0.0 (these fields were on `Target` before).
+ *
+ * This interface is the documented home of every target data field.
+ */
+export interface TargetFacts {
   /** Target id: `mc-` followed by the Minecraft version, such as `mc-<version>`. */
   id: string;
   /** The Minecraft version this target describes, as the game names it. */
   mcVersion: string;
+  /**
+   * `release` for a released game version, `snapshot` for a development snapshot. Snapshot
+   * targets are shown with a badge and are never the default for new projects. Since 1.0.0.
+   */
+  channel: TargetChannel;
   /** The Java feature release the game requires, for example `25`. */
   java: number;
   /** Resource pack and data pack formats written into `pack.mcmeta`. */
@@ -325,20 +352,40 @@ export interface Target {
    * A {@link GeckolibFacts} object since 0.7.0 (a version string before).
    */
   geckolib?: GeckolibFacts;
+}
+
+/**
+ * One Minecraft version, contributed by a `@msm/target-mc-<version>` package: the
+ * {@link TargetFacts} plus the hooks hosts and exporters call. A `Target` is assignable to
+ * `TargetFacts`, so a host passes it to any plugin-facing function as it is.
+ *
+ * @example
+ * ```ts
+ * const target: Target = {
+ *   id: 'mc-<version>',
+ *   mcVersion: '<version>',
+ *   channel: 'release',
+ *   // ...the remaining TargetFacts fields
+ *   migrateFrom: (previous, project) => ({ changes: [], problems: [] }),
+ * };
+ * ```
+ */
+export interface Target extends TargetFacts {
   /**
    * The Java generator of the `java-project` exporter (ADR 0033). Optional: a target without
    * it cannot eject a Java project, and the exporter reports a problem. Since 0.8.0.
    */
   javaProject?: JavaProjectGenerator;
   /**
-   * Migrates a project written for `previous` so that it is valid for this target.
+   * Works out how to move a project written for `previous` to this target.
    *
-   * Called when the user moves a project to this target. Omit the hook when no migration is
-   * needed.
+   * Pure: returns the changes without mutating `project`; the host applies them as one undo
+   * step (an `update` change replaces an element's data, a `remove` change deletes it). Omit
+   * the hook when no migration is needed.
    *
    * @param previous - The target the project was written for.
-   * @param project - The project to migrate.
-   * @returns What changed and what needs the user's attention.
+   * @param project - The project to migrate; read only.
+   * @returns What would change and what needs the user's attention.
    */
   migrateFrom?(previous: Target, project: Project): MigrationReport;
 }

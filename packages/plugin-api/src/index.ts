@@ -5,6 +5,7 @@
  * @packageDocumentation
  */
 
+export type { MaybePromise } from './async';
 export type {
   Command,
   EditorContribution,
@@ -22,13 +23,20 @@ export type {
 } from './contributions';
 export type { Json, JsonObject, ResourceLocation } from './json';
 export type {
+  BooleanStarterParameter,
   BundleContext,
+  ChoiceStarterParameter,
+  ColourStarterParameter,
   ContentBundle,
   ContentBundleAsset,
   ContentBundleElement,
   ElementTemplate,
   ExampleProject,
+  NumberStarterParameter,
   ProjectStarter,
+  StarterParameter,
+  StarterParameterBase,
+  StringStarterParameter,
   TemplateContext,
 } from './library';
 export type { Asset, Element, ElementMeta, Namespace, Project } from './model';
@@ -51,6 +59,8 @@ export type {
   PackFormat,
   ResourceFolderKey,
   Target,
+  TargetChannel,
+  TargetFacts,
   WorldgenFacts,
 } from './target';
 export { API_VERSION } from './version';

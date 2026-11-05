@@ -1,8 +1,28 @@
+import java.util.Properties
+
 plugins {
     id("net.fabricmc.fabric-loom") // version from settings.gradle.kts (loom_version)
 }
 
-version = providers.gradleProperty("mod_version").get()
+// `-Pmc=<version>` reads the Minecraft, Fabric and GeckoLib facts from versions/<version>.properties
+// (ADR 0038 D1, B151 spike; B159 finishes the layout). Without it gradle.properties holds them as before.
+val mc: String? = providers.gradleProperty("mc").orNull
+val versionFacts: Properties? =
+    mc?.let { selected ->
+        val file = layout.projectDirectory.file("versions/$selected.properties").asFile
+        require(file.isFile) { "No engine-mod/versions/$selected.properties for -Pmc=$selected" }
+        Properties().also { properties -> file.inputStream().use { properties.load(it) } }
+    }
+
+fun fact(name: String): String =
+    if (versionFacts == null) {
+        providers.gradleProperty(name).get()
+    } else {
+        versionFacts.getProperty(name) ?: error("versions/$mc.properties has no $name")
+    }
+
+// The jar carries the Minecraft version as build metadata only when -Pmc is given (ADR 0038 D3).
+version = providers.gradleProperty("mod_version").get() + (mc?.let { "+mc$it" } ?: "")
 group = providers.gradleProperty("maven_group").get()
 
 base {
@@ -24,9 +44,9 @@ repositories {
 }
 
 dependencies {
-    minecraft("com.mojang:minecraft:${providers.gradleProperty("minecraft_version").get()}")
-    implementation("net.fabricmc:fabric-loader:${providers.gradleProperty("loader_version").get()}")
-    implementation("net.fabricmc.fabric-api:fabric-api:${providers.gradleProperty("fabric_api_version").get()}")
+    minecraft("com.mojang:minecraft:${fact("minecraft_version")}")
+    implementation("net.fabricmc:fabric-loader:${fact("loader_version")}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${fact("fabric_api_version")}")
 
     // Rhino (ADR 0031 D1): the plain runtime jar, unmodified, nested through Loom's jar-in-jar (`include`);
     // Loom generates a fabric.mod.json for it inside the nested jar.
@@ -73,21 +93,30 @@ dependencies {
     // Non-remapping Loom has no mod* configurations: a plain jar with a fabric.mod.json on the run classpath is
     // discovered by Fabric Loader as a mod. `localRuntime` puts it on runClient, runServer and runGameTest without
     // exposing it to consumers; -PwithoutGeckolib leaves it off to check the runtime without GeckoLib.
-    val geckolib = "maven.modrinth:geckolib:${providers.gradleProperty("geckolib_modrinth_version_id").get()}"
+    // A version without a GeckoLib build (blank id, such as 26.4) compiles the bridge against the 26.3 jar
+    // from gradle.properties and never puts GeckoLib on the run classpath (ADR 0038 D3).
+    val geckolibId = fact("geckolib_modrinth_version_id")
+    val geckolib = "maven.modrinth:geckolib:${geckolibId.ifBlank { providers.gradleProperty("geckolib_modrinth_version_id").get() }}"
     compileOnly(geckolib)
     "gametestCompileOnly"(geckolib)
-    if (!providers.gradleProperty("withoutGeckolib").isPresent) {
+    if (geckolibId.isNotBlank() && !providers.gradleProperty("withoutGeckolib").isPresent) {
         localRuntime(geckolib)
     }
 }
 
 tasks.processResources {
     val version = project.version
-    val geckolibVersion = providers.gradleProperty("geckolib_version").get()
+    val geckolibVersion = fact("geckolib_version").ifBlank { providers.gradleProperty("geckolib_version").get() }
+    val minecraftDependency = fact("minecraft_dependency")
     inputs.property("version", version)
     inputs.property("geckolibVersion", geckolibVersion)
+    inputs.property("minecraftDependency", minecraftDependency)
     filesMatching("fabric.mod.json") {
-        expand("version" to version, "geckolib_version" to geckolibVersion)
+        expand(
+            "version" to version,
+            "geckolib_version" to geckolibVersion,
+            "minecraft_dependency" to minecraftDependency,
+        )
     }
 }
 
