@@ -209,6 +209,50 @@ export interface WorldInfo {
 /** Ids the project declares per Spyglass symbol category, for the mcfunction checker. */
 export type McfunctionProjectIds = Record<string, string[]>;
 
+/** How Test in Minecraft can use the selected game location (ADR 0026 D5). */
+export type TestInMinecraftMode = 'launch' | 'install-only' | 'blocked';
+
+/** The launchers Test in Minecraft can start. */
+export type LaunchableLauncher = 'prism' | 'multimc';
+
+/** What Test in Minecraft would do for a target, read before running it. */
+export interface TestInMinecraftStatus {
+  /** The target's Minecraft version and Fabric versions. */
+  mcVersion: string;
+  loader: string;
+  api: string;
+  /** The selected game location, or `null` when there is none. */
+  location: GameLocationView | null;
+  /** `launch`: install and start the launcher; `install-only`; `blocked`. */
+  mode: TestInMinecraftMode;
+  /** Why it is blocked, or for `install-only` how to start the game; else `null`. */
+  reason: string | null;
+  /** For `launch`: the launcher program found, or `null` (then the jar is installed only). */
+  launcherProgram: string | null;
+  /** The managed instance's name, `MCSuperMods Test (<mc version>)`. */
+  managedInstanceName: string;
+  /** Whether the selected location is the managed instance. */
+  managedInstanceSelected: boolean;
+  /** Whether a Prism Launcher data folder exists to create the managed instance in. */
+  canCreateInstance: boolean;
+}
+
+/** What a Test in Minecraft run did. */
+export interface TestInMinecraftResult {
+  /** The content jar's path in `mods/`. */
+  jarPath: string;
+  /** `true` when an earlier copy MSM installed was replaced. */
+  replaced: boolean;
+  /** Fabric API: downloaded and installed, MSM's copy already there, or the user's own copy. */
+  fabricApi: 'installed' | 'present' | 'user-copy';
+  /** Fabric API's file name in `mods/`. */
+  fabricApiFile: string;
+  /** Whether the launcher was started. */
+  launched: boolean;
+  /** How to start the game when it was not launched; otherwise `null`. */
+  note: string | null;
+}
+
 /** Host services for the renderer. */
 export interface PlatformAdapter {
   app: { info(): Promise<{ version: string; electron: string; platform: string }> };
@@ -298,6 +342,28 @@ export interface PlatformAdapter {
      * `engine-mod/build/libs/`. `null` when there is none.
      */
     runtimeJar(): Promise<Uint8Array | null>;
+  };
+  /**
+   * Test in Minecraft (ADR 0026 D5): installs the content jar and Fabric API into a Fabric game
+   * location's `mods/` folder and starts Prism Launcher or MultiMC on it. Fabric versions come
+   * from the target named by `targetId`.
+   */
+  testInMinecraft: {
+    /** What a run would do with the selected location. */
+    status(targetId: string): Promise<TestInMinecraftStatus>;
+    /**
+     * Creates (or updates) the managed Prism instance `MCSuperMods Test (<mc version>)`, makes
+     * it the install target and returns the new status.
+     */
+    createInstance(targetId: string): Promise<TestInMinecraftStatus>;
+    /**
+     * Installs `data` as `mods/<modId>.jar` (replacing only a copy MSM installed), makes sure
+     * Fabric API is present (downloaded and checked when missing) and starts the launcher
+     * when the location allows it.
+     */
+    run(targetId: string, modId: string, data: Uint8Array): Promise<TestInMinecraftResult>;
+    /** Asks for a launcher program and stores it; returns its path, or `null` when cancelled. */
+    pickLauncherProgram(launcher: LaunchableLauncher): Promise<string | null>;
   };
   thumbnails: {
     /** A PNG thumbnail of a project texture (`assets/...png`), at most `size` pixels square. */

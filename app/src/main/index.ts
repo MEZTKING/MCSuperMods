@@ -138,6 +138,11 @@ const platform = createNodePlatform({
     resourcesPath: process.resourcesPath,
     devLibsDir: join(app.getAppPath(), '..', 'engine-mod', 'build', 'libs'),
   },
+  // ADR 0026 D5: Fabric API downloads are cached in the app's user-data folder.
+  testInMinecraft: {
+    cacheDir: join(app.getPath('userData'), 'downloads'),
+    env: { localAppData: process.env.LOCALAPPDATA, programFiles: process.env.ProgramFiles },
+  },
 });
 
 // `<userData>/logs/updater.log`, created on the first logged error.

@@ -1,0 +1,57 @@
+export {
+  cachedFabricApi,
+  FABRIC_MAVEN,
+  type FabricApiCacheDeps,
+  type FabricApiJar,
+  fabricApiFileName,
+  fabricApiUrl,
+  fetchDownloader,
+  MAX_DOWNLOAD_BYTES,
+  parseChecksumFile,
+  webCryptoSha512,
+} from './download';
+export {
+  createManagedInstance,
+  FABRIC_LOADER_COMPONENT_UID,
+  type FabricReadiness,
+  fabricReadiness,
+  isManagedInstance,
+  MANAGED_INSTANCE_MARKER,
+  type ManagedInstance,
+  MINECRAFT_COMPONENT_UID,
+  managedInstanceCfg,
+  managedInstanceName,
+  managedMmcPack,
+} from './instance';
+export {
+  findLauncherProgram,
+  type LauncherProgramEnv,
+  launchArguments,
+  launcherProgramCandidates,
+} from './launch';
+export {
+  type ContentJarInstall,
+  contentJarModsFileName,
+  ensureFabricApi,
+  type FabricApiInstall,
+  INSTALLED_RECORD_FILE,
+  type InstalledFile,
+  type InstalledRecord,
+  type InstalledRole,
+  installContentJar,
+  isFabricApiFileName,
+  type ModsInstallDeps,
+  readInstalledRecord,
+} from './mods-install';
+export {
+  assertSafeVersion,
+  compareDottedVersions,
+  type Downloader,
+  FABRIC_MOD_ID,
+  FabricTestError,
+  type FabricTestErrorCode,
+  type FabricTestFacts,
+  SAFE_VERSION,
+  type Sha512,
+  stableJson,
+} from './types';

@@ -27,6 +27,7 @@ import type {
   MsmBridge,
   PlatformAdapter,
   RecentProjectView,
+  TestInMinecraftStatus,
   WorldInfo,
 } from '../../src/shared/platform';
 import { fakeLibraryPlugin } from './library-fixtures';
@@ -157,7 +158,26 @@ interface Harness {
   pickedFiles: { name: string; path: string; data: Uint8Array }[];
   /** The folder of every export folder write. */
   writtenFolders: string[];
+  /** What `testInMinecraft.status` returns. */
+  testStatus: TestInMinecraftStatus;
+  /** Every `testInMinecraft.run` call. */
+  testRuns: { targetId: string; modId: string; size: number }[];
+  /** How often `testInMinecraft.createInstance` ran. */
+  testInstances: number;
 }
+
+const blockedTestStatus: TestInMinecraftStatus = {
+  mcVersion: '26.3',
+  loader: '0.20.1',
+  api: '0.165.2+26.3',
+  location: null,
+  mode: 'blocked',
+  reason: 'No game location was found.',
+  launcherProgram: null,
+  managedInstanceName: 'MCSuperMods Test (26.3)',
+  managedInstanceSelected: false,
+  canCreateInstance: true,
+};
 
 async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise<Harness> {
   let listener: ((command: MenuCommand) => void) | null = null;
@@ -188,6 +208,9 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
     openedRecent: [],
     pickedFiles: [],
     writtenFolders: [],
+    testStatus: blockedTestStatus,
+    testRuns: [],
+    testInstances: 0,
     menu: async (command) => {
       await act(async () => listener?.(command));
     },
@@ -293,6 +316,33 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
         return { paths: files.map((file) => `${folder}/${file.name}`) };
       },
       runtimeJar: async () => harness.runtimeJar,
+    },
+    testInMinecraft: {
+      status: async () => harness.testStatus,
+      createInstance: async () => {
+        harness.testInstances += 1;
+        harness.testStatus = {
+          ...harness.testStatus,
+          location: { ...prismLocation, displayName: 'MCSuperMods Test (26.3)' },
+          mode: 'launch',
+          reason: null,
+          launcherProgram: '/usr/bin/prismlauncher',
+          managedInstanceSelected: true,
+        };
+        return harness.testStatus;
+      },
+      run: async (targetId, modId, data) => {
+        harness.testRuns.push({ targetId, modId, size: data.byteLength });
+        return {
+          jarPath: `/prism/instances/Test/minecraft/mods/${modId}.jar`,
+          replaced: false,
+          fabricApi: 'installed',
+          fabricApiFile: 'fabric-api-0.165.2+26.3.jar',
+          launched: true,
+          note: null,
+        };
+      },
+      pickLauncherProgram: unavailable,
     },
     thumbnails: { get: unavailable },
     updates: {
@@ -811,6 +861,65 @@ describe('App Fabric mod jar export', () => {
     await act(() => harness.session.flushValidation());
     await harness.menu('exportResourcePack');
     await screen.findByText((content) => content.includes(MSM_CONTENT_NOTE));
+  });
+});
+
+describe('App Test in Minecraft', () => {
+  it('creates the test instance, then installs and launches from the dialog', async () => {
+    const harness = await renderApp();
+    harness.runtimeJar = new Uint8Array([1, 2, 3]);
+    await harness.menu('testInMinecraft');
+    const dialog = await screen.findByTestId('test-in-minecraft-dialog');
+    expect(await within(dialog).findByTestId('test-in-minecraft-reason')).toBeTruthy();
+    const submit = within(dialog).getByTestId('test-in-minecraft-dialog-submit');
+    expect((submit as HTMLButtonElement).disabled).toBe(true);
+    const user = userEvent.setup();
+    await user.click(within(dialog).getByRole('button', { name: 'Create test instance' }));
+    await within(dialog).findByTestId('test-in-minecraft-plan');
+    expect(harness.testInstances).toBe(1);
+    expect(submit.textContent).toBe('Install and launch');
+    await user.click(submit);
+    await toast(
+      /^Installed the mod to \/prism\/instances\/Test\/minecraft\/mods\/.+\.jar\. Fabric API was added/,
+    );
+    expect(harness.testRuns).toHaveLength(1);
+    expect(harness.testRuns[0]?.targetId).toBe('mc-26.3');
+    expect(harness.testRuns[0]?.modId).toMatch(/^[a-z][a-z0-9_-]+$/);
+    expect(screen.queryByTestId('test-in-minecraft-dialog')).toBeNull();
+  });
+
+  it('blocks the run when the export has errors (runtime jar missing)', async () => {
+    const harness = await renderApp();
+    harness.testStatus = {
+      ...blockedTestStatus,
+      mode: 'install-only',
+      reason: 'Start it.',
+      location: officialLocation,
+    };
+    await harness.menu('testInMinecraft');
+    const dialog = await screen.findByTestId('test-in-minecraft-dialog');
+    await within(dialog).findByTestId('test-in-minecraft-plan');
+    const submit = within(dialog).getByTestId('test-in-minecraft-dialog-submit');
+    expect(submit.textContent).toBe('Install');
+    await userEvent.setup().click(submit);
+    await toast('Test in Minecraft blocked by 1 error(s); nothing was installed. See Problems.');
+    expect(harness.testRuns).toHaveLength(0);
+  });
+
+  it('is offered in the palette and gated by errors', async () => {
+    const harness = await renderApp();
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    expect(within(palette).getByTestId('command-testInMinecraft').textContent).toContain(
+      'Test in Minecraft…',
+    );
+    await userEvent.setup().keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByTestId('command-palette')).toBeNull());
+    addFunction(harness, ['bogus here']);
+    await act(() => harness.session.flushValidation());
+    await harness.menu('testInMinecraft');
+    await toast('Fix 1 error first (see Problems).');
+    expect(screen.queryByTestId('test-in-minecraft-dialog')).toBeNull();
   });
 });
 

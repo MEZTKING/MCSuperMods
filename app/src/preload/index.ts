@@ -108,6 +108,15 @@ const bridge: MsmBridge = {
       }),
     runtimeJar: () => ipcRenderer.invoke(InvokeChannels.exportsRuntimeJar),
   },
+  testInMinecraft: {
+    status: (targetId) => ipcRenderer.invoke(InvokeChannels.testInMinecraftStatus, { targetId }),
+    createInstance: (targetId) =>
+      ipcRenderer.invoke(InvokeChannels.testInMinecraftCreateInstance, { targetId }),
+    run: (targetId, modId, data) =>
+      ipcRenderer.invoke(InvokeChannels.testInMinecraftRun, { targetId, modId, data }),
+    pickLauncherProgram: (launcher) =>
+      ipcRenderer.invoke(InvokeChannels.testInMinecraftPickLauncherProgram, { launcher }),
+  },
   thumbnails: {
     get: (assetPath, size) => ipcRenderer.invoke(InvokeChannels.thumbnailsGet, { assetPath, size }),
   },

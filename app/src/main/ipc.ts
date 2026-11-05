@@ -97,6 +97,13 @@ export function createIpcHandlers(platform: MainPlatform, updates: IpcUpdates): 
     [InvokeChannels.exportsPickFolder]: (req) => platform.exports.pickFolder(req.title),
     [InvokeChannels.exportsWriteFiles]: (req) => platform.exports.writeFiles(req.folder, req.files),
     [InvokeChannels.exportsRuntimeJar]: () => platform.exports.runtimeJar(),
+    [InvokeChannels.testInMinecraftStatus]: (req) => platform.testInMinecraft.status(req.targetId),
+    [InvokeChannels.testInMinecraftCreateInstance]: (req) =>
+      platform.testInMinecraft.createInstance(req.targetId),
+    [InvokeChannels.testInMinecraftRun]: (req) =>
+      platform.testInMinecraft.run(req.targetId, req.modId, req.data),
+    [InvokeChannels.testInMinecraftPickLauncherProgram]: (req) =>
+      platform.testInMinecraft.pickLauncherProgram(req.launcher),
     [InvokeChannels.thumbnailsGet]: (req) => platform.thumbnails.get(req.assetPath, req.size),
     [InvokeChannels.updatesCheck]: () => updates.check(),
     [InvokeChannels.updatesInstall]: () => updates.install(),

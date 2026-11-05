@@ -19,6 +19,7 @@ export function stubPlatformServices(): Pick<
   | 'thumbnails'
   | 'mcfunction'
   | 'exports'
+  | 'testInMinecraft'
   | 'updates'
 > & { dialogs: Pick<PlatformAdapter['dialogs'], 'pickFiles' | 'saveFile'> } {
   return {
@@ -39,6 +40,12 @@ export function stubPlatformServices(): Pick<
     thumbnails: { get: unavailable },
     mcfunction: { check: unavailable, complete: unavailable },
     exports: { pickFolder: unavailable, writeFiles: unavailable, runtimeJar: unavailable },
+    testInMinecraft: {
+      status: unavailable,
+      createInstance: unavailable,
+      run: unavailable,
+      pickLauncherProgram: unavailable,
+    },
     updates: { check: unavailable, install: unavailable, onStatus: () => () => {} },
   };
 }

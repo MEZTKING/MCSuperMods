@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MenuCommand } from '../../shared/ipc-channels';
 import type {
   AppSettingsPatch,
+  LaunchableLauncher,
   LauncherSettings,
   MinecraftStatus,
   MsmBridge,
@@ -47,6 +48,7 @@ import { RightDock } from './components/RightDock';
 import { SettingsDialog } from './components/SettingsDialog';
 import { StatusBar } from './components/StatusBar';
 import { StatusToast } from './components/StatusToast';
+import { TestInMinecraftDialog, testInMinecraftMessage } from './components/TestInMinecraftDialog';
 import { modKey, Toolbar } from './components/Toolbar';
 import { UpdateBanner, updateCheckMessage } from './components/UpdateBanner';
 import { UsagesDialog } from './components/UsagesDialog';
@@ -135,6 +137,7 @@ type DialogState =
   | { type: 'usages'; id: ResourceLocation; usages: readonly Reference[] }
   | { type: 'worlds'; worlds: readonly WorldInfo[] }
   | { type: 'fabric-jar' }
+  | { type: 'test-in-minecraft' }
   | { type: 'no-minecraft'; message: string };
 
 /**
@@ -564,6 +567,29 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     }
   };
 
+  /** Runs Test in Minecraft (ADR 0026 D5) and reports the outcome. */
+  const runTestInMinecraft = async (): Promise<void> => {
+    setExporting(true);
+    try {
+      const result = await session.testInMinecraft();
+      setExportProblems(userFacingExportProblems(result.problems));
+      if (!result.ok || result.test === undefined) {
+        setRightDock('problems');
+        const errors = errorCount(result.problems);
+        setMessage({
+          kind: 'error',
+          text: `Test in Minecraft blocked by ${errors} error(s); nothing was installed. See Problems.`,
+        });
+        return;
+      }
+      setMessage({ kind: 'info', text: testInMinecraftMessage(result.test) });
+    } catch (error) {
+      setMessage({ kind: 'error', text: `Test in Minecraft failed: ${messageOf(error)}` });
+    } finally {
+      setExporting(false);
+    }
+  };
+
   /** Runs a plugin exporter (structure files) into a folder and reports the outcome. */
   const runFolderExport = async (exporterId: string, what: string): Promise<void> => {
     setExporting(true);
@@ -626,6 +652,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       void runPackExport('resource', 'install', () => session.exportPack('resource', 'install')),
   );
   const exportFabricJar = guarded(fabricJarReason, () => setDialog({ type: 'fabric-jar' }));
+  const testInMinecraft = guarded(fabricJarReason, () => setDialog({ type: 'test-in-minecraft' }));
   const exportStructures = guarded(
     structureExportReason,
     () => void runFolderExport('structure-nbt', 'structure file(s)'),
@@ -762,6 +789,17 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   // Settings ------------------------------------------------------------------------------
 
   const loadSettings = useCallback(() => session.getSettings(), [session]);
+  const loadTestStatus = useCallback(() => session.testInMinecraftStatus(), [session]);
+  const createTestInstance = useCallback(async () => {
+    const status = await session.createTestInstance();
+    // The managed instance is now the install target; the toolbar shows it.
+    void refreshMinecraftStatus();
+    return status;
+  }, [session, refreshMinecraftStatus]);
+  const pickLauncherProgram = useCallback(
+    (launcher: LaunchableLauncher) => bridge.testInMinecraft.pickLauncherProgram(launcher),
+    [bridge],
+  );
   const saveSettings = useCallback(
     async (settings: AppSettingsPatch) => {
       await bridge.settings.set(settings);
@@ -977,6 +1015,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     exportStructures,
     exportSchematics,
     exportFabricJar,
+    testInMinecraft,
     settings: () => {
       setDialog({ type: 'settings' });
       // Launchers may have gained instances since the last read; look again.
@@ -1014,6 +1053,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     exportStructures: structureExportReason === null ? exportStructures : null,
     exportSchematics: structureExportReason === null ? exportSchematics : null,
     exportFabricJar: fabricJarReason === null ? exportFabricJar : null,
+    testInMinecraft: fabricJarReason === null ? testInMinecraft : null,
     renameElement: selected === null ? null : renameSelected,
     goToDefinition: selected === null ? null : () => goToDefinition(),
     findUsages: selected === null ? null : findUsages,
@@ -1412,6 +1452,19 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             onExport={(values) => {
               setDialog(null);
               void runFabricJarExport(values);
+            }}
+          />
+        )}
+        {dialog?.type === 'test-in-minecraft' && (
+          <TestInMinecraftDialog
+            load={loadTestStatus}
+            createInstance={createTestInstance}
+            pickLauncherProgram={pickLauncherProgram}
+            onClose={() => setDialog(null)}
+            onOpenSettings={handlers.settings}
+            onRun={() => {
+              setDialog(null);
+              void runTestInMinecraft();
             }}
           />
         )}

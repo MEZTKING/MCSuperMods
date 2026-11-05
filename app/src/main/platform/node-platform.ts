@@ -11,7 +11,7 @@ import { randomBytes } from 'node:crypto';
 import { mkdir, readdir, readFile, realpath, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, normalize } from 'node:path';
 import type { ProjectFileSystem } from '@msm/core';
-import type { InstallEnv, InstallFileSystem } from '@msm/interop';
+import type { Downloader, InstallEnv, InstallFileSystem, LauncherProgramEnv } from '@msm/interop';
 import { createNodeInstallFileSystem } from '@msm/interop/node';
 import type {
   FileFilter,
@@ -28,6 +28,7 @@ import { type RuntimeJarLocation, readRuntimeJar } from './runtime-jar';
 import { createScopedFileSystem, isWithin, type ScopedFileSystem } from './scoped-fs';
 import { createSettingsStore, type SettingsStore } from './settings';
 import { createTargetsService } from './targets';
+import { createTestInMinecraftService } from './test-in-minecraft';
 import { createThumbnailService } from './thumbnails';
 
 /**
@@ -100,6 +101,17 @@ export interface NodePlatformDeps {
    * returns `null`.
    */
   runtimeJar?: RuntimeJarLocation;
+  /**
+   * Test in Minecraft (ADR 0026 D5): the download cache folder (default
+   * `<msmHome>/cache/downloads`), extra host facts for finding launcher programs, and test
+   * doubles for the downloader and the process spawn.
+   */
+  testInMinecraft?: {
+    cacheDir?: string;
+    env?: Partial<LauncherProgramEnv>;
+    download?: Downloader;
+    spawnLauncher?(program: string, args: readonly string[]): Promise<void>;
+  };
 }
 
 /**
@@ -165,6 +177,19 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
   });
 
   const targets = createTargetsService();
+  const testOptions = deps.testInMinecraft ?? {};
+  const testInMinecraft = createTestInMinecraftService({
+    fs: installFs,
+    env: { ...deps.installEnv, ...testOptions.env },
+    locations,
+    settings,
+    cacheDir: testOptions.cacheDir ?? join(deps.msmHome, 'cache', 'downloads'),
+    ...(testOptions.download === undefined ? {} : { download: testOptions.download }),
+    ...(testOptions.spawnLauncher === undefined
+      ? {}
+      : { spawnLauncher: testOptions.spawnLauncher }),
+    pickProgram: async (opts) => (await deps.dialogs.openFiles(opts))[0] ?? null,
+  });
   const now = deps.now ?? (() => new Date().toISOString());
 
   const recentChanged = (recent: readonly RecentProject[]): void => {
@@ -304,6 +329,7 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
       runtimeJar: async () =>
         deps.runtimeJar === undefined ? null : readRuntimeJar(deps.runtimeJar),
     },
+    testInMinecraft,
     thumbnails: createThumbnailService({ projectFs: active, resizePng: deps.resizePng }),
     project: {
       openRoot,

@@ -249,6 +249,25 @@ const gameLocationView = z
     warnings: z.array(locationWarning),
   })
   .strict();
+/** A Fabric mod id (`fabric.mod.json` `id`): a lower-case letter, then 1 to 63 of `a-z0-9_-`. */
+export const FABRIC_MOD_ID = /^[a-z][a-z0-9_-]{1,63}$/;
+const fabricModId = z.string().regex(FABRIC_MOD_ID);
+const shortVersion = z.string().min(1).max(128);
+/** {@link TestInMinecraftStatus} as a schema. */
+const testInMinecraftStatus = z
+  .object({
+    mcVersion: shortVersion,
+    loader: shortVersion,
+    api: shortVersion,
+    location: gameLocationView.nullable(),
+    mode: z.enum(['launch', 'install-only', 'blocked']),
+    reason: z.string().max(1024).nullable(),
+    launcherProgram: absolutePath.nullable(),
+    managedInstanceName: z.string().min(1).max(255),
+    managedInstanceSelected: z.boolean(),
+    canCreateInstance: z.boolean(),
+  })
+  .strict();
 /** {@link UpdateStatus} as a schema. */
 export const updateStatusSchema = z.discriminatedUnion('state', [
   z.object({ state: z.literal('idle') }).strict(),
@@ -476,6 +495,31 @@ export const ipcContract = {
     response: z.object({ paths: z.array(absolutePath) }).strict(),
   },
   [InvokeChannels.exportsRuntimeJar]: { request: noRequest, response: bytes.nullable() },
+  [InvokeChannels.testInMinecraftStatus]: {
+    request: z.object({ targetId }).strict(),
+    response: testInMinecraftStatus,
+  },
+  [InvokeChannels.testInMinecraftCreateInstance]: {
+    request: z.object({ targetId }).strict(),
+    response: testInMinecraftStatus,
+  },
+  [InvokeChannels.testInMinecraftRun]: {
+    request: z.object({ targetId, modId: fabricModId, data: bytes }).strict(),
+    response: z
+      .object({
+        jarPath: absolutePath,
+        replaced: z.boolean(),
+        fabricApi: z.enum(['installed', 'present', 'user-copy']),
+        fabricApiFile: fileName,
+        launched: z.boolean(),
+        note: z.string().max(1024).nullable(),
+      })
+      .strict(),
+  },
+  [InvokeChannels.testInMinecraftPickLauncherProgram]: {
+    request: z.object({ launcher: z.enum(['prism', 'multimc']) }).strict(),
+    response: absolutePath.nullable(),
+  },
   [InvokeChannels.thumbnailsGet]: {
     request: z
       .object({

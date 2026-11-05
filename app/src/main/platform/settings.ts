@@ -63,10 +63,41 @@ export interface SettingsStore {
   removeRecentProject(root: string): Promise<RecentProject[]>;
   /** Empties the recent list. */
   clearRecentProjects(): Promise<void>;
+  /**
+   * The launcher programs the user chose for Test in Minecraft (ADR 0026 D5), by launcher;
+   * `null` when none was chosen. Main only: not part of {@link AppSettings}.
+   */
+  launcherPrograms(): Promise<LauncherPrograms>;
+  /** Stores (or with `null` clears) the program for one launcher. Must be absolute. */
+  setLauncherProgram(launcher: keyof LauncherPrograms, path: string | null): Promise<void>;
+}
+
+/** Launcher programs chosen by hand (absolute paths), stored as `launcherPrograms`. */
+export interface LauncherPrograms {
+  prism: string | null;
+  multimc: string | null;
+}
+
+const emptyPrograms = (): LauncherPrograms => ({ prism: null, multimc: null });
+
+/** A stored program path: an absolute string, else `null`. */
+function cleanProgram(value: unknown): string | null {
+  return typeof value === 'string' && value !== '' && !value.includes('\0') && isAbsolute(value)
+    ? normalize(value)
+    : null;
+}
+
+function cleanPrograms(value: unknown): LauncherPrograms {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return emptyPrograms();
+  const record = value as Record<string, unknown>;
+  return { prism: cleanProgram(record.prism), multimc: cleanProgram(record.multimc) };
 }
 
 /** {@link AppSettings} with every field present, plus the recent projects. */
-type StoredSettings = Required<AppSettings> & { recentProjects: RecentProject[] };
+type StoredSettings = Required<AppSettings> & {
+  recentProjects: RecentProject[];
+  launcherPrograms: LauncherPrograms;
+};
 
 const LAUNCHER_LISTS = ['prismDataDirs', 'multimcRoots', 'curseForgeRoots'] as const;
 
@@ -82,6 +113,7 @@ const defaults = (): StoredSettings => ({
   launchers: emptyLaunchers(),
   installTarget: null,
   recentProjects: [],
+  launcherPrograms: emptyPrograms(),
 });
 
 /** Normalises a folder path and drops a trailing separator (but keeps a root such as `/`). */
@@ -238,6 +270,7 @@ export function createSettingsStore(deps: {
       launchers: cleanLaunchers(record.launchers, caseInsensitive, false),
       installTarget: parseInstallTarget(record.installTarget),
       recentProjects: cleanRecent(record.recentProjects, caseInsensitive),
+      launcherPrograms: cleanPrograms(record.launcherPrograms),
     };
   };
 
@@ -249,13 +282,21 @@ export function createSettingsStore(deps: {
       launchers: nextLaunchers,
       installTarget: nextTarget,
       recentProjects: nextRecent,
+      launcherPrograms: nextPrograms,
       ...base
     } = next;
-    const stored: AppSettings & { recentProjects?: RecentProject[] } = {
+    const programs = Object.fromEntries(
+      Object.entries(nextPrograms).filter(([, path]) => path !== null),
+    );
+    const stored: AppSettings & {
+      recentProjects?: RecentProject[];
+      launcherPrograms?: Partial<LauncherPrograms>;
+    } = {
       ...base,
       ...(hasManualRoots(nextLaunchers) ? { launchers: nextLaunchers } : {}),
       ...(nextTarget === null ? {} : { installTarget: nextTarget }),
       ...(nextRecent.length === 0 ? {} : { recentProjects: nextRecent }),
+      ...(Object.keys(programs).length === 0 ? {} : { launcherPrograms: programs }),
     };
     // Sorted keys, 2-space indent; written to a temporary file and renamed into place.
     const text = sortedJson(stored);
@@ -271,7 +312,7 @@ export function createSettingsStore(deps: {
 
   return {
     async get() {
-      const { recentProjects: _recent, ...settings } = await read();
+      const { recentProjects: _recent, launcherPrograms: _programs, ...settings } = await read();
       return { ...settings, detectedMinecraftDir: await detected() };
     },
     async set(settings) {
@@ -301,6 +342,7 @@ export function createSettingsStore(deps: {
         launchers: launchers ?? current.launchers,
         installTarget: installTarget === undefined ? current.installTarget : installTarget,
         recentProjects: current.recentProjects,
+        launcherPrograms: current.launcherPrograms,
       };
       await write(next);
     },
@@ -346,6 +388,19 @@ export function createSettingsStore(deps: {
     async clearRecentProjects() {
       const current = await read();
       if (current.recentProjects.length > 0) await write({ ...current, recentProjects: [] });
+    },
+    async launcherPrograms() {
+      return (await read()).launcherPrograms;
+    },
+    async setLauncherProgram(launcher, path) {
+      if (path !== null && cleanProgram(path) === null) {
+        throw new Error('The launcher program must be an absolute path.');
+      }
+      const current = await read();
+      await write({
+        ...current,
+        launcherPrograms: { ...current.launcherPrograms, [launcher]: cleanProgram(path) },
+      });
     },
   };
 }

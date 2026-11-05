@@ -53,6 +53,19 @@ const launchers = {
   curseForgeRoots: ['C:\\Users\\a\\curseforge\\minecraft'],
 };
 
+const testStatus = {
+  mcVersion: '26.3',
+  loader: '0.20.1',
+  api: '0.165.2+26.3',
+  location: null,
+  mode: 'blocked',
+  reason: 'No game location was found.',
+  launcherProgram: null,
+  managedInstanceName: 'MCSuperMods Test (26.3)',
+  managedInstanceSelected: false,
+  canCreateInstance: true,
+};
+
 /** One valid and one invalid request and response per channel. */
 const samples: Record<
   InvokeChannel,
@@ -303,6 +316,42 @@ const samples: Record<
   [InvokeChannels.exportsRuntimeJar]: {
     request: [undefined, { path: '/tmp/msm_runtime.jar' }],
     response: [null, '/tmp/msm_runtime.jar'],
+  },
+  [InvokeChannels.testInMinecraftStatus]: {
+    request: [{ targetId: 'mc-26.3' }, { targetId: '' }],
+    response: [testStatus, { ...testStatus, mode: 'maybe' }],
+  },
+  [InvokeChannels.testInMinecraftCreateInstance]: {
+    request: [{ targetId: 'mc-26.3' }, {}],
+    response: [{ ...testStatus, location: prismLocation, mode: 'launch' }, null],
+  },
+  [InvokeChannels.testInMinecraftRun]: {
+    request: [
+      { targetId: 'mc-26.3', modId: 'ruby_mod', data: bytes },
+      { targetId: 'mc-26.3', modId: '../evil', data: bytes },
+    ],
+    response: [
+      {
+        jarPath: '/p/instances/T/minecraft/mods/ruby_mod.jar',
+        replaced: false,
+        fabricApi: 'installed',
+        fabricApiFile: 'fabric-api-0.165.2+26.3.jar',
+        launched: true,
+        note: null,
+      },
+      {
+        jarPath: '/p/mods/ruby_mod.jar',
+        replaced: false,
+        fabricApi: 'downloaded',
+        fabricApiFile: 'fabric-api.jar',
+        launched: false,
+        note: null,
+      },
+    ],
+  },
+  [InvokeChannels.testInMinecraftPickLauncherProgram]: {
+    request: [{ launcher: 'prism' }, { launcher: 'official' }],
+    response: ['/usr/bin/prismlauncher', 3],
   },
   [InvokeChannels.thumbnailsGet]: {
     request: [

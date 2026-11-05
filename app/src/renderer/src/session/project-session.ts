@@ -77,6 +77,8 @@ import type {
   MinecraftStatus,
   PlatformAdapter,
   RecentProjectView,
+  TestInMinecraftResult,
+  TestInMinecraftStatus,
   WorldInfo,
 } from '../../../shared/platform';
 import { assetImportError } from './asset-files';
@@ -185,6 +187,12 @@ export type ExportResult = ExportReport & {
   location?: string;
   /** `true` when the user cancelled the save dialog. */
   cancelled?: boolean;
+};
+
+/** The result of {@link ProjectSession.testInMinecraft}: the export report plus the run. */
+export type TestInMinecraftOutcome = ExportReport & {
+  /** What the install and launch did; absent when the export was blocked. */
+  test?: TestInMinecraftResult;
 };
 
 /** The result of {@link ProjectSession.importAssets}. */
@@ -1432,6 +1440,48 @@ export class ProjectSession {
       data,
     });
     return location === null ? { ...report, cancelled: true } : { ...report, location };
+  }
+
+  /**
+   * What Test in Minecraft would do for the open project's target with the selected game
+   * location (ADR 0026 D5).
+   *
+   * @throws Error If no project is open.
+   */
+  async testInMinecraftStatus(): Promise<TestInMinecraftStatus> {
+    this.#requireStack();
+    return this.#platform.testInMinecraft.status(this.target.id);
+  }
+
+  /**
+   * Creates (or updates) the managed Prism instance for the target and makes it the install
+   * target; returns the new status.
+   *
+   * @throws Error If no project is open, or main cannot create the instance.
+   */
+  async createTestInstance(): Promise<TestInMinecraftStatus> {
+    this.#requireStack();
+    return this.#platform.testInMinecraft.createInstance(this.target.id);
+  }
+
+  /**
+   * Test in Minecraft (ADR 0026 D5): exports the Fabric mod jar with the runtime nested (as
+   * {@link exportFabricJar} with default options; every error blocks), then main installs it
+   * as `mods/<mod id>.jar` with Fabric API into the selected Fabric location and starts the
+   * launcher when it can.
+   *
+   * @throws Error If no project is open, or the install fails in main.
+   */
+  async testInMinecraft(): Promise<TestInMinecraftOutcome> {
+    const sink = createMemorySink();
+    const { report, project, target } = await this.#runPipeline(this.#contentJarExporter, sink, {});
+    if (!report.ok) return report;
+    const written = sink.files();
+    const modId =
+      modIdOf(written.get(FABRIC_MOD_JSON_FILE)) ?? sanitiseModId(project.name) ?? 'mod';
+    const data = createZipBytes([...written].map(([path, bytes]) => ({ path, data: bytes })));
+    const test = await this.#platform.testInMinecraft.run(target.id, modId, data);
+    return { ...report, test };
   }
 
   /** Runs the export pipeline for one pack into a zip; `data` is absent when blocked. */
