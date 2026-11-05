@@ -6,14 +6,16 @@ import type {
   ContentBundle,
   OutputLayer,
   ProjectStarter,
+  StarterParameter,
   TargetFacts,
 } from '@msm/plugin-api';
 import { kindsOf } from '../content/bundle';
 import { PROBE_CONTEXT } from '../content/probe';
 import { hasGeckolib } from '../content/supports';
 import { customBiomeBundle } from './custom-biome';
-import { customMobBundle } from './custom-mob';
-import { customOreBundle } from './custom-ore';
+import { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
+import { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
+import { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
 import { functionStarterBundle } from './function-starter';
 import { jigsawStructureBundle } from './jigsaw-structure';
 import { musicDiscBundle } from './music-disc';
@@ -23,8 +25,9 @@ import { scriptedOreBundle } from './scripted-ore';
 import { worldgenPackBundle } from './worldgen-pack';
 
 export { customBiomeBundle, customBiomeContent, customBiomeIds } from './custom-biome';
-export { customMobBundle } from './custom-mob';
-export { customOreBundle } from './custom-ore';
+export { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
+export { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
+export { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
 export { functionStarterBundle } from './function-starter';
 export { hamletIds, jigsawStructureBundle, jigsawStructureContent } from './jigsaw-structure';
 export { musicDiscBundle, SONG } from './music-disc';
@@ -40,7 +43,12 @@ function starter(
   category: ProjectStarter['category'],
   layers: OutputLayer[],
   build: (context: BundleContext) => ContentBundle,
-  supports?: (target: TargetFacts) => boolean,
+  options: {
+    /** The targets the starter works on; omitted means every target (ADR 0036 D4). */
+    supports?: (target: TargetFacts) => boolean;
+    /** The wizard's questions (ADR 0040); omitted means no wizard. */
+    parameters?: readonly StarterParameter[];
+  } = {},
 ): ProjectStarter {
   const entry: ProjectStarter = {
     id,
@@ -51,7 +59,10 @@ function starter(
     requiresKinds: kindsOf(build(PROBE_CONTEXT)).sort(),
     build,
   };
-  if (supports !== undefined) entry.supports = supports;
+  if (options.parameters !== undefined) {
+    entry.parameters = options.parameters.map((parameter) => structuredClone(parameter));
+  }
+  if (options.supports !== undefined) entry.supports = options.supports;
   return Object.freeze(entry);
 }
 
@@ -98,6 +109,16 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     'content',
     ['resourcepack', 'datapack', 'msm'],
     customOreBundle,
+    { parameters: CUSTOM_ORE_PARAMETERS },
+  ),
+  starter(
+    'custom-sword',
+    'Custom sword',
+    'A new sword with its own name, colour, tier and durability: a handheld texture and model, a crafting recipe, its English name and the mod metadata. New items need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    customSwordBundle,
+    { parameters: CUSTOM_SWORD_PARAMETERS },
   ),
   starter(
     'recipe_pack',
@@ -154,7 +175,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     'content',
     ['resourcepack', 'datapack', 'msm'],
     customMobBundle,
-    hasGeckolib,
+    { supports: hasGeckolib, parameters: CUSTOM_MOB_PARAMETERS },
   ),
   starter(
     'scripted_ore',

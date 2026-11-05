@@ -58,7 +58,10 @@ const SURFACE_RULE: Json = {
  * A noise settings template: `data` carries `default_block` and is shaped per target
  * (ADR 0036 D8).
  */
-function perTargetNoiseSettings(fields: Omit<ElementTemplate, 'data'>, data: Json): ElementTemplate {
+function perTargetNoiseSettings(
+  fields: Omit<ElementTemplate, 'data'>,
+  data: Json,
+): ElementTemplate {
   return { ...fields, data: (context) => noiseSettingsFor(data, context.target) };
 }
 

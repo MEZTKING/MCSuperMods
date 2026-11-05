@@ -4,8 +4,9 @@
  * notes). Feature lists in biomes are vanilla-ordered subsequences of the forest biome, so the
  * examples never cause a "Feature order cycle".
  */
-import type { ExampleProject, Json } from '@msm/plugin-api';
+import type { ExampleProject, Json, TargetFacts } from '@msm/plugin-api';
 import { element, KINDS, rl } from '../content/bundle';
+import { noiseSettingsFor, noiseSettingsHaveDefaultBlock } from '../content/per-target';
 import { defineExample } from './define';
 
 const CATEGORY = 'Worldgen';
@@ -93,7 +94,9 @@ function single(input: {
   tags: string[];
   path: string;
   data: Json;
-  notes: (id: string) => string;
+  notes: (id: string, target: TargetFacts) => string;
+  /** Shapes `data` for the target (ADR 0036 D8); omitted means the data fits every target. */
+  forTarget?: (data: Json, target: TargetFacts) => Json;
 }): ExampleProject {
   return defineExample({
     id: input.id,
@@ -102,10 +105,11 @@ function single(input: {
     kind: input.kind,
     category: input.category,
     tags: input.tags,
-    build: ({ namespace }) => {
+    build: ({ namespace, target }) => {
       const id = rl(namespace, input.path);
+      const data = input.forTarget?.(input.data, target) ?? structuredClone(input.data);
       return {
-        elements: [element(id, input.kind, structuredClone(input.data), input.notes(id))],
+        elements: [element(id, input.kind, data, input.notes(id, target))],
         assets: [],
       };
     },
@@ -334,8 +338,9 @@ export const worldgenExamples: readonly ExampleProject[] = [
       spawn_target: [],
       material_rule: SURFACE_RULE,
     },
-    notes: (id) =>
-      `Noise settings shape the terrain of a noise generator. final_density decides solid or empty at each block: positive is default_block, negative is air or, below sea_level, default_fluid. Here a gradient from y 32 to y 96 plus a gentle noise makes low hills, and material_rule paints grass, dirt and bedrock. Use it as the settings of a dimension's generator, for example settings: ${id}.`,
+    forTarget: noiseSettingsFor,
+    notes: (id, target) =>
+      `Noise settings shape the terrain of a noise generator. final_density decides solid or empty at each block: positive is ${noiseSettingsHaveDefaultBlock(target) ? 'default_block' : 'solid ground'}, negative is air or, below sea_level, default_fluid. Here a gradient from y 32 to y 96 plus a gentle noise makes low hills, and material_rule paints grass, dirt and bedrock. Use it as the settings of a dimension's generator, for example settings: ${id}.`,
   }),
   single({
     id: 'example_density_function',

@@ -11,6 +11,7 @@ import { noiseSettingsFor } from './per-target';
 import { kindId, WORLDGEN_PREFIX, WORLDGEN_REGISTRIES, type WorldgenRegistry } from './registries';
 
 export { VANILLA_END, VANILLA_NETHER, VANILLA_OVERWORLD } from './defaults';
+export { noiseSettingsFor, noiseSettingsHaveDefaultBlock } from './per-target';
 export {
   kindId,
   TIER_A_REGISTRIES,
@@ -18,7 +19,6 @@ export {
   WORLDGEN_REGISTRIES,
   type WorldgenRegistry,
 } from './registries';
-export { noiseSettingsFor, noiseSettingsHaveDefaultBlock } from './per-target';
 
 /**
  * Creates the kind of one registry.
@@ -41,7 +41,8 @@ export function worldgenKind(registry: WorldgenRegistry): ElementKind {
     defaultData: structuredClone(WORLDGEN_DEFAULTS[registry]),
     ...(registry === 'worldgen/noise_settings'
       ? {
-          defaultDataFor: (target: TargetFacts) => noiseSettingsFor(WORLDGEN_DEFAULTS[registry], target),
+          defaultDataFor: (target: TargetFacts) =>
+            noiseSettingsFor(WORLDGEN_DEFAULTS[registry], target),
         }
       : {}),
     ...(registry === 'dimension' || registry === 'worldgen/world_preset'

@@ -1,11 +1,18 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Element, ElementKind, Json, OutputFile, ResourceLocation } from '@msm/plugin-api';
+import type {
+  Element,
+  ElementKind,
+  Json,
+  OutputFile,
+  ResourceLocation,
+  TargetFacts,
+} from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import { kindFor, worldgenKinds } from '../src/index';
-import { blockingProblems, indexesFor, sortedJson, withoutKnownGap } from './support';
+import { blockingProblems, indexesFor, sortedJson } from './support';
 
 /** Set `UPDATE_GOLDENS=1` to rewrite the expected files instead of comparing. */
 const UPDATE = process.env.UPDATE_GOLDENS === '1';
@@ -15,6 +22,17 @@ interface Sample {
   name: string;
   id: ResourceLocation;
   data: Json;
+}
+
+/**
+ * A sample's data for `target`: a `default` sample takes the kind's `defaultDataFor(target)`
+ * when it has one (ADR 0036 D8), else its `defaultData`.
+ */
+async function dataFor(sample: Sample, target: TargetFacts): Promise<Json> {
+  if (sample.name === 'default' && sample.kind.defaultDataFor !== undefined) {
+    return sample.kind.defaultDataFor(target);
+  }
+  return sample.data;
 }
 
 /** Every kind's default data, plus samples that reference project ids across kinds. */
@@ -105,11 +123,11 @@ const fixturesRoot = new URL('./fixtures/', import.meta.url);
 const fixtureUrl = (targetId: string, sample: Sample): URL =>
   new URL(`${targetId}/expected/${sample.kind.folder}/${sample.name}.json`, fixturesRoot);
 
-const element = (sample: Sample): Element => ({
+const element = (sample: Sample, data: Json): Element => ({
   formatVersion: 1,
   id: sample.id,
   kind: sample.kind.id,
-  data: sample.data,
+  data,
   meta: { createdAt: '2026-01-01T00:00:00.000Z' },
 });
 
@@ -132,26 +150,15 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     it.each(SAMPLES.map((sample) => [`${sample.kind.id} ${sample.name}`, sample] as const))(
       '%s',
       async (_label, sample) => {
-        const files = await sample.kind.lower(element(sample), bundle.target);
+        const data = await dataFor(sample, bundle.target);
+        const files = await sample.kind.lower(element(sample, data), bundle.target);
         expect(files).toHaveLength(1);
         const [file] = files;
         if (file === undefined) throw new Error('no output');
         expect(file.schema).toBe(sample.kind.schema);
         const indexes = await indexesFor(bundle);
-        expect(
-          withoutKnownGap(
-            blockingProblems(indexes, sample.kind.schema, sample.data),
-            indexes,
-            sample.kind.schema,
-          ),
-        ).toEqual([]);
-        expect(
-          withoutKnownGap(
-            blockingProblems(indexes, file.schema ?? '', file.contents as Json),
-            indexes,
-            file.schema ?? '',
-          ),
-        ).toEqual([]);
+        expect(blockingProblems(indexes, sample.kind.schema, data)).toEqual([]);
+        expect(blockingProblems(indexes, file.schema ?? '', file.contents as Json)).toEqual([]);
 
         const actual = sortedJson(recorded(file));
         const url = fixtureUrl(targetId, sample);

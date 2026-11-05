@@ -24,9 +24,11 @@ export type Rgb = readonly [number, number, number];
  * - `ore`: coloured specks on grey stone (block texture);
  * - `gem`: a cut gem on a transparent background (item texture);
  * - `disc`: a music disc with a coloured label (item texture);
- * - `egg`: a speckled spawn egg on a transparent background (item texture).
+ * - `egg`: a speckled spawn egg on a transparent background (item texture);
+ * - `sword`: a diagonal sword with a coloured blade and a wooden grip on a transparent
+ *   background (handheld item texture).
  */
-export type PlaceholderPattern = 'plain' | 'ore' | 'gem' | 'disc' | 'egg';
+export type PlaceholderPattern = 'plain' | 'ore' | 'gem' | 'disc' | 'egg' | 'sword';
 
 /** Every pattern, in documentation order. */
 export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze([
@@ -35,12 +37,18 @@ export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze
   'gem',
   'disc',
   'egg',
+  'sword',
 ]);
 
 /** Options for {@link placeholderPng}. */
 export interface PlaceholderOptions {
   /** The main colour; defaults to {@link DEFAULT_COLOUR}. */
   colour?: Rgb;
+  /**
+   * A second colour: the spots of the `egg` pattern. Defaults to a darker shade of the main
+   * colour (scaled to 71 per cent). Other patterns ignore it.
+   */
+  accent?: Rgb;
 }
 
 /** Ruby red, the default placeholder colour. */
@@ -60,6 +68,8 @@ function shade(colour: Rgb, factor: number): Rgba {
 }
 
 interface Palette {
+  /** The second colour (egg spots); defaults to {@link Palette.deep}. */
+  accent: Rgba;
   dark: Rgba;
   deep: Rgba;
   mid: Rgba;
@@ -67,8 +77,9 @@ interface Palette {
   shine: Rgba;
 }
 
-function paletteOf(colour: Rgb): Palette {
+function paletteOf(colour: Rgb, accent?: Rgb): Palette {
   return {
+    accent: accent === undefined ? shade(colour, 0.71) : [accent[0], accent[1], accent[2], 255],
     dark: shade(colour, 0.47),
     deep: shade(colour, 0.71),
     mid: shade(colour, 1),
@@ -185,10 +196,34 @@ function egg(palette: Palette): Pixel {
       return palette.dark;
     }
     for (const [sx, sy] of EGG_SPOTS) {
-      if (Math.abs(x - sx) + Math.abs(y - sy) <= 1) return palette.deep;
+      if (Math.abs(x - sx) + Math.abs(y - sy) <= 1) return palette.accent;
     }
     if (x < cx - 1 && y < cy - 2) return palette.shine;
     return palette.light;
+  };
+}
+
+const GRIP: Rgba = [104, 72, 40, 255];
+const GRIP_DARK: Rgba = [72, 48, 24, 255];
+
+/**
+ * A sword from the bottom-left grip to the top-right tip along the diagonal `x + y = 15`: a
+ * blade with a light and a dark edge, a cross guard and a wooden grip with a pommel.
+ */
+function sword(palette: Palette): Pixel {
+  return (x, y) => {
+    const diagonal = x + y;
+    // Cross guard: perpendicular to the blade through (5, 10).
+    if (x - y === -5 && x >= 3 && x <= 7) return palette.dark;
+    if (diagonal === 15) {
+      if (x === 1) return GRIP_DARK;
+      if (x >= 2 && x <= 4) return GRIP;
+      if (x === 14) return palette.shine;
+      if (x >= 6 && x <= 13) return palette.mid;
+    }
+    if (diagonal === 14 && x >= 6 && x <= 12) return palette.light;
+    if (diagonal === 16 && x >= 7 && x <= 13) return palette.deep;
+    return CLEAR;
   };
 }
 
@@ -198,13 +233,14 @@ const PATTERNS: Readonly<Record<PlaceholderPattern, (palette: Palette) => Pixel>
   gem,
   disc,
   egg,
+  sword,
 };
 
 /**
  * The RGBA pixels (row-major, 4 bytes each) of a placeholder pattern.
  *
  * @param pattern - The pattern to draw.
- * @param options - The main colour.
+ * @param options - The main colour and, for `egg`, the spot colour.
  */
 export function placeholderPixels(
   pattern: PlaceholderPattern,
@@ -212,7 +248,7 @@ export function placeholderPixels(
 ): Uint8Array {
   const draw = PATTERNS[pattern];
   if (draw === undefined) throw new Error(`Unknown placeholder pattern ${String(pattern)}.`);
-  const pixel = draw(paletteOf(options.colour ?? DEFAULT_COLOUR));
+  const pixel = draw(paletteOf(options.colour ?? DEFAULT_COLOUR, options.accent));
   const rgba = new Uint8Array(PLACEHOLDER_SIZE * PLACEHOLDER_SIZE * 4);
   for (let y = 0; y < PLACEHOLDER_SIZE; y += 1) {
     for (let x = 0; x < PLACEHOLDER_SIZE; x += 1) {

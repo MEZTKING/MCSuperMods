@@ -11,6 +11,8 @@
  *   Fabric mod jar export).
  * - The Custom mob starter adds an animated Ruby Golem (Phase 5, ADRs 0028 and 0029; it needs
  *   the Fabric mod jar export with GeckoLib).
+ * - The Custom ore, Custom sword and Custom mob starters are wizards: their `parameters`
+ *   (ADR 0040) name, colour and tune the content; the defaults build the ruby content.
  * - The Scripted ore starter adds three runtime scripts to the Custom ore starter's content
  *   (Phase 6, ADRs 0031 and 0032; scripts need the Fabric mod jar export and are not part of
  *   the Java project export).
@@ -50,7 +52,13 @@ export {
   scriptBehaviourExamples,
   starterExamples,
 } from './examples/index';
-export { libraryStarters, scriptedOreIds } from './starters/index';
+export {
+  CUSTOM_MOB_PARAMETERS,
+  CUSTOM_ORE_PARAMETERS,
+  CUSTOM_SWORD_PARAMETERS,
+  libraryStarters,
+  scriptedOreIds,
+} from './starters/index';
 
 const plugin: Readonly<Plugin> = definePlugin({
   id: 'msm.library',

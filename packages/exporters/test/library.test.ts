@@ -96,7 +96,6 @@ import {
   resourcePackExporter,
   runExport,
 } from '../src/index';
-import { NOISE_SETTINGS_KIND, noiseSettingsHasDefaultBlock } from './target-gaps';
 
 const update = process.env.UPDATE_GOLDENS === '1';
 
@@ -853,21 +852,6 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         }
         expect(bundleData.elements.some((entry) => (entry.notes ?? '').length > 0)).toBe(true);
         const built = await buildProject('Library Test', 'demo', [bundleData]);
-        if (
-          example.requiresKinds.includes(NOISE_SETTINGS_KIND) &&
-          !noiseSettingsHasDefaultBlock(context.schemaIndex)
-        ) {
-          // The known noise settings gap (target-gaps.ts): exactly one unknown field.
-          const project = await reload(built.fs);
-          const registries = createRegistryIndex({
-            vanilla: context.vanilla,
-            project: projectRegistryIds(project),
-          });
-          const problems = elementProblems(project, context.schemaIndex, registries);
-          expect(problems).toHaveLength(1);
-          expect(problems[0]).toContain(' /default_block schema.unknown-field:');
-          return;
-        }
         await checkProject(bundle, context, built);
       },
     );

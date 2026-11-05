@@ -118,11 +118,15 @@ export function texture(
   path: string,
   pattern: PlaceholderPattern,
   colour?: Rgb,
+  accent?: Rgb,
 ): ContentBundleAsset {
   return {
     namespace,
     path: `textures/${path}.png`,
-    bytes: placeholderPng(pattern, colour === undefined ? {} : { colour }),
+    bytes: placeholderPng(pattern, {
+      ...(colour === undefined ? {} : { colour }),
+      ...(accent === undefined ? {} : { accent }),
+    }),
   };
 }
 

@@ -13,7 +13,7 @@ import plugin, {
   worldgenTemplates,
   worldgenValidators,
 } from '../src/index';
-import { blockingProblems, indexesFor, withoutKnownGap } from './support';
+import { blockingProblems, indexesFor } from './support';
 
 /** The fourteen kinds of ADR 0022 D4, in order: tier A, then tier B. */
 const KIND_IDS = [
@@ -141,8 +141,12 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       '%s lowers to its folder and validates',
       async (kindId) => {
         const kind = kinds().find((entry) => entry.id === kindId) as ElementKind;
+        // The host's starting data for this target (ADR 0036 D8).
+        const startData = (
+          kind.defaultDataFor ? await kind.defaultDataFor(bundle.target) : kind.defaultData
+        ) as Json;
         const files = await kind.lower(
-          element(kind.id, 'demo:nested/sample', kind.defaultData as Json),
+          element(kind.id, 'demo:nested/sample', startData),
           bundle.target,
         );
         expect(files).toHaveLength(1);
@@ -156,22 +160,10 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         expect(file.path).toBe(`data/demo/${folder}/nested/sample.json`);
         expect(file.layer).toBe('datapack');
         expect(file.schema).toBe(kind.schema);
-        expect(file.contents).toEqual(kind.defaultData);
+        expect(file.contents).toEqual(startData);
         const indexes = await indexesFor(bundle);
-        expect(
-          withoutKnownGap(
-            blockingProblems(indexes, kind.schema, kind.defaultData as Json),
-            indexes,
-            kind.schema,
-          ),
-        ).toEqual([]);
-        expect(
-          withoutKnownGap(
-            blockingProblems(indexes, file.schema ?? '', file.contents as Json),
-            indexes,
-            file.schema ?? '',
-          ),
-        ).toEqual([]);
+        expect(blockingProblems(indexes, kind.schema, startData)).toEqual([]);
+        expect(blockingProblems(indexes, file.schema ?? '', file.contents as Json)).toEqual([]);
       },
     );
   },

@@ -100,7 +100,8 @@ function scripts(namespace: string): ContentBundleElement[] {
 export function scriptedOreBundle(context: BundleContext): ContentBundle {
   const { namespace, projectName } = context;
   const ids = scriptedOreIds(namespace);
-  const base = customOreBundle(context);
+  // The ore with its default answers: the Scripted ore starter has no wizard of its own.
+  const base = customOreBundle({ ...context, values: {} });
   const elements = base.elements.map((entry): ContentBundleElement => {
     if (entry.kind === KINDS.pack) {
       return packElement(

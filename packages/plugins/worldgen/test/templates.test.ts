@@ -9,12 +9,7 @@ import type {
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, { worldgenKinds, worldgenTemplates } from '../src/index';
-import {
-  blockingProblems,
-  indexesFor,
-  noiseSettingsHasDefaultBlock,
-  withoutKnownGap,
-} from './support';
+import { blockingProblems, indexesFor, NOISE_SETTINGS_SCHEMA, schemaHasField } from './support';
 
 /** The first target's facts without its hooks: a template context is plain data. */
 const {
@@ -64,14 +59,21 @@ function elementId(template: ElementTemplate): ResourceLocation {
   return `${namespace}:${name.startsWith(prefix) ? name : `${prefix}${name}`}`;
 }
 
-/** The context the host builds (`app/src/renderer/src/studios/templates.ts`). */
+/**
+ * The context the host builds (`app/src/renderer/src/studios/templates.ts`); `kindDefault` is
+ * the kind's `defaultDataFor(target)` when it has one (ADR 0036 D8; built-ins return it
+ * synchronously).
+ */
 function contextFor(
   template: ElementTemplate,
   target: TargetFacts = FIRST_TARGET,
 ): TemplateContext {
   const id = elementId(template);
   const colon = id.indexOf(':');
-  const kindDefault = kindOf(template).defaultData;
+  const kind = kindOf(template);
+  const kindDefault = kind.defaultDataFor
+    ? (kind.defaultDataFor(target) as Json)
+    : kind.defaultData;
   return {
     id,
     namespace: id.slice(0, colon),
@@ -183,21 +185,28 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(problems.map((problem) => problem.code)).toContain('schema.unknown-id');
     });
 
-    it('noise_settings has default_block exactly where the target schema has it (known gap)', async () => {
+    it('the target fact noiseSettingsDefaultBlock matches the vendored schema (ADR 0036 D8)', async () => {
       const indexes = await indexesFor(bundle);
+      expect(bundle.target.worldgen.noiseSettingsDefaultBlock !== false).toBe(
+        schemaHasField(indexes, NOISE_SETTINGS_SCHEMA, 'default_block'),
+      );
+    });
+
+    it('noise settings default data and template carry default_block exactly where the schema has it', async () => {
+      const indexes = await indexesFor(bundle);
+      const hasField = schemaHasField(indexes, NOISE_SETTINGS_SCHEMA, 'default_block');
       const template = worldgenTemplates.find((entry) => entry.id === 'noise_settings');
       if (template === undefined) throw new Error('no noise_settings template');
       const kind = kindOf(template);
-      const data = await template.data(contextFor(template, bundle.target));
-      expect(data).toHaveProperty('default_block');
-      const problems = blockingProblems(indexes, kind.schema, data);
-      if (noiseSettingsHasDefaultBlock(indexes)) {
-        expect(problems).toEqual([]);
-      } else {
-        expect(problems.map((problem) => [problem.code, problem.path])).toEqual([
-          ['schema.unknown-field', '/default_block'],
-        ]);
+      if (kind.defaultDataFor === undefined) throw new Error('no defaultDataFor');
+      const fromKind = await kind.defaultDataFor(bundle.target);
+      const fromTemplate = await template.data(contextFor(template, bundle.target));
+      for (const data of [fromKind, fromTemplate]) {
+        expect(Object.hasOwn(data as object, 'default_block')).toBe(hasField);
+        expect(blockingProblems(indexes, kind.schema, data)).toEqual([]);
       }
+      // `defaultData` keeps the shape with the field; it is not mutated by defaultDataFor.
+      expect(kind.defaultData).toHaveProperty('default_block');
     });
 
     it.each(worldgenTemplates.map((template) => [template.id, template] as const))(
@@ -207,9 +216,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         const kind = kindOf(template);
         const context = contextFor(template, bundle.target);
         const data = await template.data(context);
-        expect(
-          withoutKnownGap(blockingProblems(indexes, kind.schema, data), indexes, kind.schema),
-        ).toEqual([]);
+        expect(blockingProblems(indexes, kind.schema, data)).toEqual([]);
         const files = await kind.lower(
           {
             formatVersion: 1,
@@ -224,13 +231,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         const [file] = files;
         if (file === undefined) throw new Error('no output');
         expect(file.layer).toBe('datapack');
-        expect(
-          withoutKnownGap(
-            blockingProblems(indexes, file.schema ?? '', file.contents as Json),
-            indexes,
-            file.schema ?? '',
-          ),
-        ).toEqual([]);
+        expect(blockingProblems(indexes, file.schema ?? '', file.contents as Json)).toEqual([]);
       },
     );
   },
