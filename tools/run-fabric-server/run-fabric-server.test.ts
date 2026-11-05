@@ -1,10 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
   analyseLog,
+  checkGameTests,
+  fabricApiModuleUrl,
+  fabricApiPomUrl,
   fabricApiUrl,
+  GAMETEST_MODULE,
   geckolibCachePath,
   latestStableInstaller,
+  moduleVersionFromPom,
   parseArgs,
+  parseGameTestReport,
+  reportPath,
+  serverArguments,
   serverLauncherUrl,
   serverProperties,
 } from './index.ts';
@@ -228,5 +236,202 @@ describe('URLs and files', () => {
     const text = serverProperties(41234);
     expect(text).toContain('online-mode=false\n');
     expect(text).toContain('server-port=41234\n');
+  });
+});
+
+describe('GameTest runs', () => {
+  // Reports as Fabric API 4.0.36's runner wrote them on 26.3 (B131 runs, positions shortened).
+  const PASSED =
+    '<?xml version="1.0" encoding="UTF-8" standalone="no"?><testsuite><testsuite time="5.614" timestamp="2026-11-05T18:14:41.823108274Z"><testcase classname="minecraft:empty" name="minecraft:always_pass" time="0.002"/><testcase classname="fabric-gametest-api-v1:empty" name="msm_parity_tests:sample_mod_parity_test_ruby_ore_is_registered" time="0.0"/></testsuite></testsuite>';
+  const FAILED =
+    '<?xml version="1.0" encoding="UTF-8" standalone="no"?><testsuite><testsuite time="8.136" timestamp="2026-11-05T18:17:32.225852800Z"><testcase classname="minecraft:empty" name="minecraft:always_pass" time="0.004"/><testcase classname="fabric-gametest-api-v1:empty" name="msm_parity_tests:sample_mod_parity_test_ruby_ore_is_registered" time="0.01"><failure message="(-1, 4, 1) block msm_sample_mod:ruby_ore is not registered on tick 0"/></testcase></testsuite></testsuite>';
+  const TEST = 'msm_parity_tests:sample_mod_parity_test_ruby_ore_is_registered';
+  const MESSAGE = '(-1, 4, 1) block msm_sample_mod:ruby_ore is not registered on tick 0';
+
+  it('reads passed, failed and skipped test cases from the report', () => {
+    expect(parseGameTestReport(PASSED)).toEqual([
+      {
+        name: 'minecraft:always_pass',
+        classname: 'minecraft:empty',
+        failure: undefined,
+        skipped: undefined,
+      },
+      {
+        name: TEST,
+        classname: 'fabric-gametest-api-v1:empty',
+        failure: undefined,
+        skipped: undefined,
+      },
+    ]);
+    expect(parseGameTestReport(FAILED)[1]).toMatchObject({ name: TEST, failure: MESSAGE });
+    const other = parseGameTestReport(
+      '<testsuite><testcase name="a:b" classname="c"><failure>x &lt; y &amp; &quot;z&quot;</failure></testcase><testcase name="a:&#99;"><skipped message="optional"/></testcase></testsuite>',
+    );
+    expect(other).toEqual([
+      { name: 'a:b', classname: 'c', failure: 'x < y & "z"', skipped: undefined },
+      { name: 'a:c', classname: '', failure: undefined, skipped: 'optional' },
+    ]);
+  });
+
+  it('passes on exit 0 with a clean report that lists a test of the jar', () => {
+    const outcome = checkGameTests(PASSED, 0);
+    expect(outcome.failures).toEqual([]);
+    expect(outcome.ok).toBe(true);
+    expect(outcome.tests.map((test) => test.name)).toEqual(['minecraft:always_pass', TEST]);
+  });
+
+  it('fails naming the test, and on the exit status', () => {
+    expect(checkGameTests(FAILED, 1).failures).toEqual([
+      `GameTest failed: ${TEST}: ${MESSAGE}`,
+      'the GameTest server exited with status 1 (the number of failed required tests, or 1 for a crash)',
+    ]);
+    // A failed optional test is in the report but not in the exit status: still a failure here.
+    expect(checkGameTests(FAILED, 0).ok).toBe(false);
+  });
+
+  it('fails without a report, without a test from the jar and on -1 or a kill', () => {
+    expect(checkGameTests(undefined, 255).failures).toEqual([
+      'the GameTest server wrote no report (it did not get to run the tests)',
+      'the GameTest server exited with status 255 (no tests could be selected, or the server failed to start)',
+    ]);
+    const vanillaOnly =
+      '<testsuite><testsuite><testcase classname="minecraft:empty" name="minecraft:always_pass" time="0.0"/></testsuite></testsuite>';
+    expect(checkGameTests(vanillaOnly, 0).failures).toEqual([
+      'the GameTest report lists no test from the --gametest jar',
+    ]);
+    expect(checkGameTests(PASSED, null).failures).toEqual([
+      'the GameTest server exited with status null (it was killed)',
+    ]);
+  });
+
+  it('does not need "Done (" in a GameTest run, and still checks the runtime', () => {
+    const lines = [REGISTERED, '[18:14:44] [Server thread/INFO]: Started game test server'];
+    expect(analyseLog(lines, { ...expect3, gametest: true }).failures).toEqual([]);
+    expect(analyseLog(lines, expect3).ok).toBe(false);
+    expect(analyseLog([], { ...expect3, gametest: true }).failures).toEqual([
+      'no "[msm_runtime] registered ..." line: the runtime did not load or scan',
+    ]);
+    const crash = '[18:17:40] [Server thread/ERROR]: Game test server crashed';
+    expect(analyseLog([REGISTERED, crash], { ...expect3, gametest: true }).failures).toEqual([
+      `the GameTest server crashed: ${crash}`,
+    ]);
+  });
+
+  it('counts knot frames from the runtime and GeckoLib, not from the parity tests', () => {
+    const runtimeFrame =
+      '\tat knot//dev.mcsupermods.runtime.registry.MsmRegistrar.registerAll(MsmRegistrar.java:80)';
+    const geckolibFrame = '\tat knot//com.geckolib.loading.FileLoader.load(FileLoader.java:40)';
+    const parityFrame =
+      '\tat knot//dev.mcsupermods.parity.SampleModParityTest.rubyOreIsRegistered(SampleModParityTest.java:23)';
+    const analysis = analyseLog([REGISTERED, runtimeFrame, geckolibFrame, parityFrame], {
+      ...expect3,
+      gametest: true,
+    });
+    expect(analysis.failures).toEqual([
+      `exception in msm_runtime: ${runtimeFrame.trim()}`,
+      `exception in msm_runtime: ${geckolibFrame.trim()}`,
+    ]);
+  });
+});
+
+describe('--no-runtime', () => {
+  const expectNone = { expectBlocks: 3, expectItems: 6, expectEntities: 1, allowWarnings: false };
+
+  it('skips the registration checks for an ejected jar', () => {
+    const analysis = analyseLog([...MODS.slice(0, 3), DONE], { ...expectNone, noRuntime: true });
+    expect(analysis.failures).toEqual([]);
+    expect(analysis.blocks).toBeUndefined();
+  });
+
+  it('fails on any msm_runtime line', () => {
+    const analysis = analyseLog([REGISTERED, DONE], { ...expectNone, noRuntime: true });
+    expect(analysis.failures).toEqual([
+      `msm_runtime is loaded, but --no-runtime says it is not: ${REGISTERED}`,
+    ]);
+  });
+
+  it('still requires "Done (" outside GameTest runs', () => {
+    expect(analyseLog([], { ...expectNone, noRuntime: true }).failures).toEqual([
+      'the server never logged "Done (" (it did not finish starting)',
+    ]);
+  });
+});
+
+describe('parseArgs for GameTests and scripts', () => {
+  const facts = { minecraft: '1.0', loader: '0.1.0', fabricApi: '0.2.0+1.0' };
+
+  it('reads --gametest, --report, --no-runtime and expectScripts', () => {
+    expect(parseArgs(['--jar', 'a.jar'], { ...facts, expectScripts: 4 })).toMatchObject({
+      gametest: undefined,
+      report: undefined,
+      noRuntime: false,
+      expectScripts: 4,
+    });
+    expect(
+      parseArgs(
+        [
+          '--jar',
+          'a.jar',
+          '--gametest',
+          't.jar',
+          '--report',
+          'r.xml',
+          '--no-runtime',
+          '--expect-scripts',
+          '2',
+        ],
+        { ...facts, expectScripts: 4 },
+      ),
+    ).toMatchObject({ gametest: 't.jar', report: 'r.xml', noRuntime: true, expectScripts: 2 });
+    expect(() => parseArgs(['--jar', 'a.jar', '--report', 'r.xml'], facts)).toThrow(
+      /--report needs --gametest/,
+    );
+    expect(() => parseArgs(['--jar', 'a.jar', '--expect-scripts', 'x'], facts)).toThrow(/whole/);
+  });
+
+  it('puts the report in the run folder by default and passes it to the JVM', () => {
+    const work = { workDir: '/work', report: undefined };
+    expect(reportPath(work).replaceAll('\\', '/')).toMatch(/\/work\/gametest-report\.xml$/);
+    expect(reportPath({ ...work, report: '/out/r.xml' }).replaceAll('\\', '/')).toMatch(
+      /\/out\/r\.xml$/,
+    );
+    expect(serverArguments('2G', 'l.jar')).toEqual(['-Xmx2G', '-jar', 'l.jar', 'nogui']);
+    expect(serverArguments('2G', 'l.jar', '/w/r.xml')).toEqual([
+      '-Xmx2G',
+      '-Dfabric-api.gametest=true',
+      '-Dfabric-api.gametest.report-file=/w/r.xml',
+      '-jar',
+      'l.jar',
+      'nogui',
+    ]);
+  });
+});
+
+describe('the GameTest module', () => {
+  // Excerpt of fabric-api-0.165.2+26.3.pom: the module is a dependency, not nested in the jar.
+  const POM = `<project><dependencies>
+    <dependency>
+      <groupId>net.fabricmc.fabric-api</groupId>
+      <artifactId>fabric-client-gametest-api-v1</artifactId>
+      <version>5.0.0+client</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.fabricmc.fabric-api</groupId>
+      <artifactId>fabric-gametest-api-v1</artifactId>
+      <version>4.0.36+3434d6d95d</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies></project>`;
+
+  it('reads its version from Fabric API POM and builds its URLs', () => {
+    expect(moduleVersionFromPom(POM, GAMETEST_MODULE)).toBe('4.0.36+3434d6d95d');
+    expect(() => moduleVersionFromPom('<project/>', GAMETEST_MODULE)).toThrow(/names no version/);
+    expect(fabricApiPomUrl('0.2.0+1.0')).toBe(
+      'https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/0.2.0+1.0/fabric-api-0.2.0+1.0.pom',
+    );
+    expect(fabricApiModuleUrl(GAMETEST_MODULE, '4.0.36+3434d6d95d')).toBe(
+      'https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-gametest-api-v1/4.0.36+3434d6d95d/fabric-gametest-api-v1-4.0.36+3434d6d95d.jar',
+    );
   });
 });
