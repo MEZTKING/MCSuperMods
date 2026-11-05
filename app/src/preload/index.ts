@@ -18,7 +18,10 @@ import {
 import type { MsmBridge } from '../shared/platform';
 
 const bridge: MsmBridge = {
-  app: { info: () => ipcRenderer.invoke(InvokeChannels.appInfo) },
+  app: {
+    info: () => ipcRenderer.invoke(InvokeChannels.appInfo),
+    whatsNewOnLaunch: () => ipcRenderer.invoke(InvokeChannels.appWhatsNewOnLaunch),
+  },
   dialogs: {
     pickDirectory: (opts) => ipcRenderer.invoke(InvokeChannels.projectPickDirectory, opts),
     confirmDiscard: (message) =>
@@ -136,6 +139,7 @@ const bridge: MsmBridge = {
   updates: {
     check: () => ipcRenderer.invoke(InvokeChannels.updatesCheck),
     install: () => ipcRenderer.invoke(InvokeChannels.updatesInstall),
+    current: () => ipcRenderer.invoke(InvokeChannels.updatesCurrent),
     onStatus(listener) {
       const handler = (_event: IpcRendererEvent, status: unknown): void => {
         if (isUpdateStatus(status)) listener(status);

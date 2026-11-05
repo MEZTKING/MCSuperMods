@@ -1,6 +1,7 @@
 import type { ElementKind, OutputFile } from '@msm/plugin-api';
 import { describe, expect, it } from 'vitest';
 import {
+  AsyncResultError,
   createElement,
   createEmptyProject,
   ElementKindRegistry,
@@ -9,6 +10,7 @@ import {
   type Project,
   ProblemCodes,
   type ResourceLocation,
+  requireSyncResult,
 } from '../src/index';
 import { fixedNow } from './helpers/kinds';
 import { testTarget as target } from './helpers/target';
@@ -196,5 +198,17 @@ describe('lowerProject with asynchronous kinds', () => {
     ]);
     expect(result.problems[0]?.message).toContain('a:later');
     expect(result.problems[0]?.message).toContain('test:async');
+  });
+});
+
+describe('requireSyncResult', () => {
+  it('returns values and refuses Promises', async () => {
+    expect(requireSyncResult([1], 'test')).toEqual([1]);
+    expect(() => requireSyncResult(Promise.resolve([1]), 'kind "x" lower')).toThrow(
+      AsyncResultError,
+    );
+    expect(() => requireSyncResult(Promise.reject(new Error('no')), 'kind "x" lower')).toThrow(
+      /kind "x" lower returned a Promise/,
+    );
   });
 });

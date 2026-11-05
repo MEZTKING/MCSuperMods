@@ -73,7 +73,12 @@ export const MAX_PICKED_FILE_BYTES = 32 * 1024 * 1024;
 
 /** Native dialogs supplied by Electron (or by the e2e hooks). */
 export interface NativeDialogs {
-  pickDirectory(opts: { title: string; mustBeEmpty?: boolean }): Promise<string | null>;
+  /** Shows a folder picker, opening in `defaultPath` when given. */
+  pickDirectory(opts: {
+    title: string;
+    mustBeEmpty?: boolean;
+    defaultPath?: string;
+  }): Promise<string | null>;
   /**
    * Shows a folder picker for export output; returns the absolute folder, or `null`. When
    * absent, `pickDirectory` is used.
@@ -106,6 +111,11 @@ export interface NodePlatformDeps {
   installFs?: InstallFileSystem;
   /** ISO 8601 timestamp source for the asset cache and the recent-projects list. */
   now?(): string;
+  /**
+   * When true, `app.whatsNewOnLaunch()` always answers `false` (smoke and end-to-end runs);
+   * the running version is still recorded.
+   */
+  suppressWhatsNew?: boolean;
   /** Called after the recent-projects list changed (the menu rebuilds from it). */
   onRecentChanged?(recent: readonly RecentProject[]): void;
   /** Adds a project root to the OS recent documents (the Windows jump list); optional. */
@@ -145,6 +155,21 @@ export interface NodePlatformDeps {
 export interface MainPlatform extends Omit<PlatformAdapter, 'updates'> {
   minecraft: MinecraftService;
   settings: SettingsStore;
+}
+
+/**
+ * Whether "What's new" shows on this launch: once after the version changed, never on a
+ * brand-new install (no settings file yet) or when suppressed (test runs). A settings file
+ * without `lastSeenVersion` comes from an earlier version and counts as a change.
+ */
+export function shouldShowWhatsNew(facts: {
+  previous: string | null;
+  existed: boolean;
+  current: string;
+  suppressed: boolean;
+}): boolean {
+  if (facts.suppressed || !facts.existed) return false;
+  return facts.previous !== facts.current;
 }
 
 async function statOrNull(path: string): Promise<Awaited<ReturnType<typeof stat>> | null> {
@@ -297,10 +322,50 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     return Promise.all(roots.map(realpathOrSelf));
   };
 
+  // Project folder pickers open where the last project folder was chosen (B145).
+  const pickDirectory: MainPlatform['dialogs']['pickDirectory'] = async ({
+    purpose,
+    ...opts
+  }) => {
+    if (purpose !== 'project') return deps.dialogs.pickDirectory(opts);
+    let defaultPath: string | null = null;
+    try {
+      defaultPath = await settings.lastProjectParent();
+    } catch {
+      // Unreadable settings: the dialog opens in its default folder.
+    }
+    const picked = await deps.dialogs.pickDirectory(
+      defaultPath === null ? opts : { ...opts, defaultPath },
+    );
+    if (picked !== null && isAbsolute(picked)) {
+      try {
+        await settings.setLastProjectParent(dirname(normalize(picked)));
+      } catch {
+        // An unwritable settings file only loses the remembered folder.
+      }
+    }
+    return picked;
+  };
+
   return {
-    app: { info: deps.info },
+    app: {
+      info: deps.info,
+      async whatsNewOnLaunch() {
+        try {
+          const { version } = await deps.info();
+          const seen = await settings.recordSeenVersion(version);
+          return shouldShowWhatsNew({
+            ...seen,
+            current: version,
+            suppressed: deps.suppressWhatsNew === true,
+          });
+        } catch {
+          return false;
+        }
+      },
+    },
     dialogs: {
-      pickDirectory: (opts) => deps.dialogs.pickDirectory(opts),
+      pickDirectory,
       confirmDiscard: (message) => deps.dialogs.confirmDiscard(message),
       async pickFiles(opts) {
         const paths = await deps.dialogs.openFiles(opts);

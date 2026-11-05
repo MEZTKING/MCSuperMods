@@ -33,6 +33,7 @@ import {
   type ReferenceIndex,
   type ResourceLocation,
   registerPlugin,
+  requireSyncResult,
   type SaveManifest,
   saveProject,
 } from '@msm/core';
@@ -67,8 +68,11 @@ import type {
   OutputFile,
   OutputSink,
   Plugin,
+  MaybePromise,
   ProjectStarter,
+  StarterParameter,
   Target,
+  TargetFacts,
 } from '@msm/plugin-api';
 import { MSM_RUNTIME_TYPINGS } from '@msm/plugin-scripting';
 import { type SchemaNode, validateJson } from '@msm/schemas';
@@ -282,8 +286,17 @@ export interface ReplaceFromFileResult {
 export interface ContentBundleBuilder {
   /** Shown in the undo label and in error messages. */
   title: string;
-  /** Builds the bundle for a namespace; must be pure. */
-  build(context: BundleContext): ContentBundle;
+  /** The starter's parameters; their defaults fill {@link BundleContext.values}. */
+  parameters?: readonly StarterParameter[];
+  /** Builds the bundle for a namespace; must be pure. May return a Promise (ADR 0036). */
+  build(context: BundleContext): MaybePromise<ContentBundle>;
+}
+
+/** Every parameter of a bundle source at its default (ADR 0036 D5). */
+function defaultValues(source: ContentBundleBuilder): Record<string, Json> {
+  return Object.fromEntries(
+    (source.parameters ?? []).map((parameter) => [parameter.id, parameter.default]),
+  );
 }
 
 /** Options of {@link ProjectSession.newProject}. */
@@ -757,7 +770,12 @@ export class ProjectSession {
       const bundle: ContentBundle =
         source === undefined
           ? { elements: [], assets: [] }
-          : source.build({ namespace, projectName: name });
+          : await source.build({
+              namespace,
+              projectName: name,
+              target: this.#newProjectTarget(targetId),
+              values: defaultValues(source),
+            });
       const elements = [...bundle.elements];
       const packKind = this.registry.get(PACK_MCMETA_KIND);
       if (packKind !== undefined && !elements.some((entry) => entry.kind === PACK_MCMETA_KIND)) {
@@ -809,7 +827,12 @@ export class ProjectSession {
     if (!isValidNamespace(options.namespace)) {
       throw new Error(`Invalid namespace name ${JSON.stringify(options.namespace)}.`);
     }
-    const bundle = source.build({ namespace: options.namespace, projectName: stack.state.name });
+    const bundle = await source.build({
+      namespace: options.namespace,
+      projectName: stack.state.name,
+      target: this.target,
+      values: defaultValues(source),
+    });
     const prepared = prepareBundle(bundle, stack.state, this.registry, this.#now);
     await this.#writeBundleAssets(prepared);
     // The state may have moved on while the bytes were written: check again.
@@ -823,6 +846,13 @@ export class ProjectSession {
       assets: current.assets.map((asset) => `${asset.namespace}:${asset.path}`),
       skippedAssets: current.skippedAssets,
     };
+  }
+
+  /** The facts of the target a new project is created for. */
+  #newProjectTarget(targetId: string | undefined): TargetFacts {
+    const found = this.#targets.find((entry) => entry.target.id === targetId)?.target;
+    if (found === undefined) throw new Error('No Minecraft target is available.');
+    return found;
   }
 
   async #writeBundleAssets(prepared: PreparedBundle): Promise<void> {
@@ -1628,7 +1658,11 @@ export class ProjectSession {
     const blocking = blockingValidatorErrors(
       [...this.#validatorProblems.values()].flat(),
       project,
-      (element) => this.registry.get(element.kind)?.lower(element, context.target) ?? [],
+      (element) => {
+        const kind = this.registry.get(element.kind);
+        if (kind === undefined) return [];
+        return requireSyncResult(kind.lower(element, context.target), `kind "${kind.id}" lower`);
+      },
       exporter.layers,
     );
     if (blocking.length === 0) return { report, project, target: context.target };

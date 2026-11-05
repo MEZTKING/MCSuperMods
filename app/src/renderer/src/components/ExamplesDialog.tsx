@@ -8,7 +8,8 @@
  * @packageDocumentation
  */
 
-import type { ContentBundle, ExampleProject } from '@msm/plugin-api';
+import { requireSyncResult } from '@msm/core';
+import type { ContentBundle, ExampleProject, TargetFacts } from '@msm/plugin-api';
 import { Dialog } from 'radix-ui';
 import { useId, useMemo, useState } from 'react';
 import { categorySlug, fieldClass } from './NewElementDialog';
@@ -28,6 +29,8 @@ export interface ExamplesDialogProps {
   examples: readonly ExampleProject[];
   /** The open project's namespaces, or `null` when no project is open. */
   namespaces: readonly string[] | null;
+  /** The facts of the target examples are previewed for, or `null` when none is available. */
+  target: TargetFacts | null;
   onClose(): void;
   /** Builds the example into a new project (the host asks for a folder). */
   onOpenAsProject(example: ExampleProject): void;
@@ -61,9 +64,17 @@ export function copyDisabledReason(namespaces: readonly string[] | null): string
 /** The namespace the detail pane previews with when no project namespace is known. */
 const PREVIEW_NAMESPACE = 'my_project';
 
-function previewBundle(example: ExampleProject, namespace: string): ContentBundle | string {
+function previewBundle(
+  example: ExampleProject,
+  namespace: string,
+  target: TargetFacts | null,
+): ContentBundle | string {
   try {
-    return example.build({ namespace, projectName: namespace });
+    if (target === null) throw new Error('No Minecraft target is available.');
+    return requireSyncResult(
+      example.build({ namespace, projectName: namespace, target, values: {} }),
+      `The example "${example.id}"`,
+    );
   } catch (error) {
     return error instanceof Error ? error.message : String(error);
   }
@@ -122,8 +133,10 @@ export function ExamplesDialog(props: ExamplesDialogProps) {
 
   const bundle = useMemo(
     () =>
-      selected === undefined ? undefined : previewBundle(selected, namespace ?? PREVIEW_NAMESPACE),
-    [selected, namespace],
+      selected === undefined
+        ? undefined
+        : previewBundle(selected, namespace ?? PREVIEW_NAMESPACE, props.target),
+    [selected, namespace, props.target],
   );
 
   const searchId = useId();

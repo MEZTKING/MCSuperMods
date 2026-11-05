@@ -21,7 +21,7 @@ import type { MainPlatform } from './platform/node-platform';
 import type { Updater } from './updater';
 
 /** The updater operations the IPC layer serves. */
-export type IpcUpdates = Pick<Updater, 'check' | 'install'>;
+export type IpcUpdates = Pick<Updater, 'check' | 'install' | 'status'>;
 
 /** Per-call services a handler may use. */
 export interface HandlerContext {
@@ -41,11 +41,11 @@ export type MainHandlers = {
 export function createIpcHandlers(platform: MainPlatform, updates: IpcUpdates): MainHandlers {
   return {
     [InvokeChannels.projectPickDirectory]: (req) =>
-      platform.dialogs.pickDirectory(
-        req.mustBeEmpty === undefined
-          ? { title: req.title }
-          : { title: req.title, mustBeEmpty: req.mustBeEmpty },
-      ),
+      platform.dialogs.pickDirectory({
+        title: req.title,
+        ...(req.mustBeEmpty === undefined ? {} : { mustBeEmpty: req.mustBeEmpty }),
+        ...(req.purpose === undefined ? {} : { purpose: req.purpose }),
+      }),
     [InvokeChannels.projectOpenRoot]: (req) => platform.project.openRoot(req.path),
     [InvokeChannels.projectCreateRoot]: (req) => platform.project.createRoot(req.path),
     [InvokeChannels.projectCloseRoot]: () => platform.project.closeRoot(),
@@ -61,6 +61,7 @@ export function createIpcHandlers(platform: MainPlatform, updates: IpcUpdates): 
     [InvokeChannels.fsMkdirp]: (req) => platform.fs.mkdirp(req.path),
     [InvokeChannels.fsRemove]: (req) => platform.fs.remove(req.path),
     [InvokeChannels.appInfo]: () => platform.app.info(),
+    [InvokeChannels.appWhatsNewOnLaunch]: () => platform.app.whatsNewOnLaunch(),
     [InvokeChannels.dialogConfirmDiscard]: (req) => platform.dialogs.confirmDiscard(req.message),
     [InvokeChannels.dialogPickFiles]: (req) => platform.dialogs.pickFiles(req),
     [InvokeChannels.dialogSaveFile]: (req) => platform.dialogs.saveFile(req),
@@ -114,6 +115,7 @@ export function createIpcHandlers(platform: MainPlatform, updates: IpcUpdates): 
     [InvokeChannels.thumbnailsGet]: (req) => platform.thumbnails.get(req.assetPath, req.size),
     [InvokeChannels.updatesCheck]: () => updates.check(),
     [InvokeChannels.updatesInstall]: () => updates.install(),
+    [InvokeChannels.updatesCurrent]: async () => updates.status,
   };
 }
 

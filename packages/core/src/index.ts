@@ -40,6 +40,7 @@ export { lowerProject } from './lowering/lower-project';
 export { lowerProjectAsync } from './lowering/lower-project-async';
 export type { MergeEntry, MergeOptions, MergeOutputResult } from './lowering/merge-outputs';
 export { mergeOutputFiles } from './lowering/merge-outputs';
+export { AsyncResultError, requireSyncResult } from './lowering/sync-result';
 export * from './model/index';
 export type { ProblemCode } from './problems/codes';
 export { ProblemCodes } from './problems/codes';

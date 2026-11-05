@@ -76,6 +76,7 @@ defineMsmPlugin({
       options && typeof options.documentUrl === 'string' ? options.documentUrl : '';
     // A local script outside the app folder, written by the e2e spec.
     const fileScript = options && typeof options.fileScript === 'string' ? options.fileScript : '';
+    const fileJson = fileScript.replace(/\.js$/, '.json');
     const results = [
       await probe('typeof fetch', () => ({ outcome: 'value', detail: typeof fetch })),
       await probe("fetch('https://example.com')", () =>
@@ -97,7 +98,20 @@ defineMsmPlugin({
         importScripts(fileScript);
         return { outcome: 'resolved', detail: `loaded=${self.__msmFileLoaded === true}` };
       }),
-      await probe('import(local file)', () => settleWithin(import(fileScript), 3000)),
+      await probe('import(local file)', () =>
+        settleWithin(
+          import(fileScript).then(() => `module evaluated, flag=${self.__msmFileLoaded === true}`),
+          3000,
+        ),
+      ),
+      await probe('import(local JSON file)', () =>
+        settleWithin(
+          import(fileJson, { with: { type: 'json' } }).then(
+            (module) => `read ${JSON.stringify(module.default).length} characters`,
+          ),
+          3000,
+        ),
+      ),
       await probe('import(blobUrl)', () => settleWithin(import(blobUrl()), 3000)),
       // biome-ignore lint/security/noGlobalEval: probes that the CSP refuses eval in the worker.
       await probe("eval('1')", () => ({ outcome: 'resolved', detail: String(eval('1')) })),

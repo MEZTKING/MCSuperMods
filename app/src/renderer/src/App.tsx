@@ -453,7 +453,10 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     (element: ProjectElement) => {
       const kind = session.registry.get(element.kind);
       if (kind === undefined || target === null) return [];
-      return kind.lower(element, target);
+      const files = kind.lower(element, target);
+      // A kind that lowers asynchronously (a sandboxed plugin, ADR 0036) adds no layers to
+      // these render-time checks; export lowers it with the asynchronous driver.
+      return Array.isArray(files) ? files : [];
     },
     [session, target],
   );
@@ -1394,11 +1397,12 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             }}
           />
         )}
-        {dialog?.type === 'element' && project !== null && (
+        {dialog?.type === 'element' && project !== null && target !== null && (
           <NewElementDialog
             namespaces={namespaces}
             templates={templates}
             kindDefault={(kind) => session.registry.get(kind)?.defaultData}
+            target={target}
             onCancel={() => setDialog(null)}
             onSubmit={(input) => {
               // Throws on kind rules (e.g. `<ns>:sounds`) and duplicates; the dialog shows it.
@@ -1425,6 +1429,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
           <ExamplesDialog
             examples={session.library.examples}
             namespaces={project === null ? null : namespaces}
+            target={target}
             onClose={() => setDialog(null)}
             onOpenAsProject={(example) => {
               setDialog(null);

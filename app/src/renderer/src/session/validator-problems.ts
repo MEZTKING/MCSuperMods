@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import type { Element, Problem, Project } from '@msm/core';
+import { type Element, type Problem, type Project, requireSyncResult } from '@msm/core';
 import type {
   OutputLayer,
   Plugin,
@@ -94,7 +94,11 @@ export function runValidator(
   input: { elements: readonly Element[]; target: Target; registry: ValidationRegistry },
 ): Problem[] {
   try {
-    return entry.validator.validate(input).map((problem) => ({ ...problem }));
+    const problems = requireSyncResult(
+      entry.validator.validate(input),
+      `The check ${entry.validator.id}`,
+    );
+    return problems.map((problem) => ({ ...problem }));
   } catch (error) {
     return [
       {

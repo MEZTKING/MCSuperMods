@@ -34,6 +34,7 @@ const FILE_PROBES = new Set([
   "XMLHttpRequest('file:///etc/hostname')",
   'importScripts(local file)',
   'import(local file)',
+  'import(local JSON file)',
 ]);
 const REFUSED = new Set(['threw', 'rejected', 'undefined']);
 
@@ -64,6 +65,7 @@ test('a blob: worker is constrained by the CSP and the proxy round-trips', async
   // A local script outside the app folder, for the `importScripts`/`import()` file probes.
   const fileScriptPath = join(launched.msmHome, 'probe-script.js');
   writeFileSync(fileScriptPath, 'self.__msmFileLoaded = true;\n');
+  writeFileSync(join(launched.msmHome, 'probe-script.json'), '{"secret": "local file"}\n');
   const fileScript = pathToFileURL(fileScriptPath).href;
   await window.waitForFunction(
     () => (globalThis as { __msmSandboxSpike?: unknown }).__msmSandboxSpike !== undefined,
@@ -95,17 +97,18 @@ test('a blob: worker is constrained by the CSP and the proxy round-trips', async
       }),
     fileScript,
   );
-  // A main-process guard: cancel every file: request outside the renderer's own folder.
+  // A main-process guard: refuse every file: request outside the renderer's own folder.
   const rendererRoot = await window.evaluate(
     () =>
       new URL('.', (globalThis as unknown as { location: { href: string } }).location.href).href,
   );
-  await app.evaluate(({ session }, root) => {
-    session.defaultSession.webRequest.onBeforeRequest(
-      { urls: ['file://*/*'] },
-      (details, callback) => {
-        callback({ cancel: !details.url.startsWith(root) });
-      },
+  // Tried first and recorded in ADR 0035: `session.webRequest.onBeforeRequest` with a file://
+  // filter does not see these requests. `protocol.handle('file')` does.
+  await app.evaluate(({ net, protocol }, root) => {
+    protocol.handle('file', (request) =>
+      request.url.startsWith(root)
+        ? net.fetch(request, { bypassCustomProtocolHandlers: true })
+        : Response.error(),
     );
   }, rendererRoot);
   const guarded = await window.evaluate(

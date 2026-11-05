@@ -58,6 +58,8 @@ export const InvokeChannels = {
   thumbnailsGet: 'msm:v1:thumbnails:get',
   updatesCheck: 'msm:v1:updates:check',
   updatesInstall: 'msm:v1:updates:install',
+  updatesCurrent: 'msm:v1:updates:current',
+  appWhatsNewOnLaunch: 'msm:v1:app:whatsNewOnLaunch',
 } as const;
 
 /**
@@ -107,6 +109,7 @@ export const MENU_COMMANDS = [
   'renameElement',
   'commandPalette',
   'checkForUpdates',
+  'whatsNew',
   'examples',
   'clearRecentProjects',
 ] as const;
@@ -189,14 +192,20 @@ export type UpdateDisabledReason = (typeof UPDATE_DISABLED_REASONS)[number];
  */
 export const UPDATE_STATUS_MESSAGE_MAX = 300;
 
+/**
+ * The longest release notes text that may cross IPC (Markdown made in main from the update
+ * feed; longer notes are cut).
+ */
+export const UPDATE_NOTES_MAX = 20_000;
+
 /** The auto-updater's state (ADR 0018), sent on {@link EventChannels.updatesStatus}. */
 export type UpdateStatus =
   | { state: 'idle' }
   | { state: 'checking' }
-  | { state: 'available'; version: string }
+  | { state: 'available'; version: string; notes?: string }
   | { state: 'not-available'; reason?: UpdateNotAvailableReason }
-  | { state: 'downloading'; percent: number }
-  | { state: 'downloaded'; version: string }
+  | { state: 'downloading'; percent: number; version?: string }
+  | { state: 'downloaded'; version: string; notes?: string }
   | { state: 'error'; message: string }
   | { state: 'disabled'; reason: UpdateDisabledReason };
 
@@ -218,9 +227,17 @@ export function isUpdateStatus(value: unknown): value is UpdateStatus {
       return record.reason === undefined || record.reason === 'no-published-release';
     case 'available':
     case 'downloaded':
-      return typeof record.version === 'string';
+      return (
+        typeof record.version === 'string' &&
+        (record.notes === undefined ||
+          (typeof record.notes === 'string' && record.notes.length <= UPDATE_NOTES_MAX))
+      );
     case 'downloading':
-      return typeof record.percent === 'number' && Number.isFinite(record.percent);
+      return (
+        typeof record.percent === 'number' &&
+        Number.isFinite(record.percent) &&
+        (record.version === undefined || typeof record.version === 'string')
+      );
     case 'error':
       return (
         typeof record.message === 'string' && record.message.length <= UPDATE_STATUS_MESSAGE_MAX

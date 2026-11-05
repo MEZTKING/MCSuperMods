@@ -302,9 +302,26 @@ export type WriteTreeResult =
 
 /** Host services for the renderer. */
 export interface PlatformAdapter {
-  app: { info(): Promise<{ version: string; electron: string; platform: string }> };
+  app: {
+    info(): Promise<{ version: string; electron: string; platform: string }>;
+    /**
+     * Whether to show "What's new" on this launch: `true` once after the app version changed
+     * since the last launch. Records the running version. A brand-new install (no settings
+     * yet) and test runs get `false`.
+     */
+    whatsNewOnLaunch(): Promise<boolean>;
+  };
   dialogs: {
-    pickDirectory(opts: { title: string; mustBeEmpty?: boolean }): Promise<string | null>;
+    /**
+     * Shows a folder picker. With `purpose: 'project'` (creating or opening a project) it
+     * opens in the parent folder of the last project folder chosen, and remembers the new
+     * choice's parent (`lastProjectParent` in settings).
+     */
+    pickDirectory(opts: {
+      title: string;
+      mustBeEmpty?: boolean;
+      purpose?: 'project';
+    }): Promise<string | null>;
     confirmDiscard(message: string): Promise<boolean>;
     /** Shows an open dialog and returns the chosen files' bytes (32 MB cap per file). */
     pickFiles(opts: { title: string; filters?: FileFilter[] | undefined }): Promise<PickedFile[]>;
@@ -463,6 +480,8 @@ export interface PlatformAdapter {
      * prompt first; nothing happens when no update has been downloaded.
      */
     install(): Promise<void>;
+    /** The current status (a renderer that subscribes late, or reloads, starts from it). */
+    current(): Promise<UpdateStatus>;
     /** Subscribes to status changes; returns an unsubscribe function. */
     onStatus(listener: (status: UpdateStatus) => void): () => void;
   };

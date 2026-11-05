@@ -11,6 +11,7 @@ import {
   type InvokeChannel,
   InvokeChannels,
   UPDATE_DISABLED_REASONS,
+  UPDATE_NOTES_MAX,
   UPDATE_STATUS_MESSAGE_MAX,
   VENDORED_KEYS,
 } from './ipc-channels';
@@ -35,6 +36,7 @@ export {
   MENU_COMMANDS,
   MINECRAFT_PROGRESS_PHASES,
   UPDATE_DISABLED_REASONS,
+  UPDATE_NOTES_MAX,
   VENDORED_KEYS,
 } from './ipc-channels';
 
@@ -321,15 +323,33 @@ const testInMinecraftStatus = z
 export const updateStatusSchema = z.discriminatedUnion('state', [
   z.object({ state: z.literal('idle') }).strict(),
   z.object({ state: z.literal('checking') }).strict(),
-  z.object({ state: z.literal('available'), version: z.string().max(256) }).strict(),
+  z
+    .object({
+      state: z.literal('available'),
+      version: z.string().max(256),
+      notes: z.string().max(UPDATE_NOTES_MAX).optional(),
+    })
+    .strict(),
   z
     .object({
       state: z.literal('not-available'),
       reason: z.literal('no-published-release').optional(),
     })
     .strict(),
-  z.object({ state: z.literal('downloading'), percent: z.number().min(0).max(100) }).strict(),
-  z.object({ state: z.literal('downloaded'), version: z.string().max(256) }).strict(),
+  z
+    .object({
+      state: z.literal('downloading'),
+      percent: z.number().min(0).max(100),
+      version: z.string().max(256).optional(),
+    })
+    .strict(),
+  z
+    .object({
+      state: z.literal('downloaded'),
+      version: z.string().max(256),
+      notes: z.string().max(UPDATE_NOTES_MAX).optional(),
+    })
+    .strict(),
   z
     .object({ state: z.literal('error'), message: z.string().max(UPDATE_STATUS_MESSAGE_MAX) })
     .strict(),
@@ -357,7 +377,13 @@ const rootResult = z.union([
 /** The request and response schema of every invoke channel. */
 export const ipcContract = {
   [InvokeChannels.projectPickDirectory]: {
-    request: z.object({ title: z.string(), mustBeEmpty: z.boolean().optional() }).strict(),
+    request: z
+      .object({
+        title: z.string(),
+        mustBeEmpty: z.boolean().optional(),
+        purpose: z.literal('project').optional(),
+      })
+      .strict(),
     response: z.string().nullable(),
   },
   [InvokeChannels.projectOpenRoot]: { request: pathRequest, response: rootResult },
@@ -633,6 +659,8 @@ export const ipcContract = {
   },
   [InvokeChannels.updatesCheck]: { request: noRequest, response: updateStatusSchema },
   [InvokeChannels.updatesInstall]: { request: noRequest, response: voidResponse },
+  [InvokeChannels.updatesCurrent]: { request: noRequest, response: updateStatusSchema },
+  [InvokeChannels.appWhatsNewOnLaunch]: { request: noRequest, response: z.boolean() },
 } as const satisfies Record<InvokeChannel, { request: z.ZodType; response: z.ZodType }>;
 
 /** The contract as a whole. */

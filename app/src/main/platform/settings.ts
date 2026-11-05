@@ -70,6 +70,19 @@ export interface SettingsStore {
   launcherPrograms(): Promise<LauncherPrograms>;
   /** Stores (or with `null` clears) the program for one launcher. Must be absolute. */
   setLauncherProgram(launcher: keyof LauncherPrograms, path: string | null): Promise<void>;
+  /**
+   * The folder the last project folder was chosen in (`lastProjectParent`), when it still
+   * exists as a directory; otherwise `null`. Main only.
+   */
+  lastProjectParent(): Promise<string | null>;
+  /** Stores the parent folder of a chosen project folder. Must be absolute. */
+  setLastProjectParent(path: string): Promise<void>;
+  /**
+   * Records `version` as the last version launched (`lastSeenVersion`) and returns the
+   * version stored before (`null` when none) and whether the settings file existed at all
+   * (`false` on a brand-new install). Main only.
+   */
+  recordSeenVersion(version: string): Promise<{ previous: string | null; existed: boolean }>;
 }
 
 /** Launcher programs chosen by hand (absolute paths), stored as `launcherPrograms`. */
@@ -97,6 +110,8 @@ function cleanPrograms(value: unknown): LauncherPrograms {
 type StoredSettings = Required<AppSettings> & {
   recentProjects: RecentProject[];
   launcherPrograms: LauncherPrograms;
+  lastProjectParent: string | null;
+  lastSeenVersion: string | null;
 };
 
 const LAUNCHER_LISTS = ['prismDataDirs', 'multimcRoots', 'curseForgeRoots'] as const;
@@ -114,7 +129,16 @@ const defaults = (): StoredSettings => ({
   installTarget: null,
   recentProjects: [],
   launcherPrograms: emptyPrograms(),
+  lastProjectParent: null,
+  lastSeenVersion: null,
 });
+
+/** The longest stored version string (`lastSeenVersion`). */
+const VERSION_MAX = 64;
+
+function cleanVersion(value: unknown): string | null {
+  return typeof value === 'string' && value !== '' && value.length <= VERSION_MAX ? value : null;
+}
 
 /** Normalises a folder path and drops a trailing separator (but keeps a root such as `/`). */
 function normaliseFolder(path: string): string {
@@ -271,6 +295,8 @@ export function createSettingsStore(deps: {
       installTarget: parseInstallTarget(record.installTarget),
       recentProjects: cleanRecent(record.recentProjects, caseInsensitive),
       launcherPrograms: cleanPrograms(record.launcherPrograms),
+      lastProjectParent: cleanProgram(record.lastProjectParent),
+      lastSeenVersion: cleanVersion(record.lastSeenVersion),
     };
   };
 
@@ -283,6 +309,8 @@ export function createSettingsStore(deps: {
       installTarget: nextTarget,
       recentProjects: nextRecent,
       launcherPrograms: nextPrograms,
+      lastProjectParent: nextParent,
+      lastSeenVersion: nextSeen,
       ...base
     } = next;
     const programs = Object.fromEntries(
@@ -291,12 +319,16 @@ export function createSettingsStore(deps: {
     const stored: AppSettings & {
       recentProjects?: RecentProject[];
       launcherPrograms?: Partial<LauncherPrograms>;
+      lastProjectParent?: string;
+      lastSeenVersion?: string;
     } = {
       ...base,
       ...(hasManualRoots(nextLaunchers) ? { launchers: nextLaunchers } : {}),
       ...(nextTarget === null ? {} : { installTarget: nextTarget }),
       ...(nextRecent.length === 0 ? {} : { recentProjects: nextRecent }),
       ...(Object.keys(programs).length === 0 ? {} : { launcherPrograms: programs }),
+      ...(nextParent === null ? {} : { lastProjectParent: nextParent }),
+      ...(nextSeen === null ? {} : { lastSeenVersion: nextSeen }),
     };
     // Sorted keys, 2-space indent; written to a temporary file and renamed into place.
     const text = sortedJson(stored);
@@ -312,7 +344,13 @@ export function createSettingsStore(deps: {
 
   return {
     async get() {
-      const { recentProjects: _recent, launcherPrograms: _programs, ...settings } = await read();
+      const {
+        recentProjects: _recent,
+        launcherPrograms: _programs,
+        lastProjectParent: _parent,
+        lastSeenVersion: _seen,
+        ...settings
+      } = await read();
       return { ...settings, detectedMinecraftDir: await detected() };
     },
     async set(settings) {
@@ -343,6 +381,8 @@ export function createSettingsStore(deps: {
         installTarget: installTarget === undefined ? current.installTarget : installTarget,
         recentProjects: current.recentProjects,
         launcherPrograms: current.launcherPrograms,
+        lastProjectParent: current.lastProjectParent,
+        lastSeenVersion: current.lastSeenVersion,
       };
       await write(next);
     },
@@ -401,6 +441,30 @@ export function createSettingsStore(deps: {
         ...current,
         launcherPrograms: { ...current.launcherPrograms, [launcher]: cleanProgram(path) },
       });
+    },
+    async lastProjectParent() {
+      const parent = (await read()).lastProjectParent;
+      return parent !== null && (await isDirectory(parent)) ? parent : null;
+    },
+    async setLastProjectParent(path) {
+      const parent = cleanProgram(path);
+      if (parent === null) throw new Error('The project folder must be an absolute path.');
+      const current = await read();
+      if (current.lastProjectParent === parent) return;
+      await write({ ...current, lastProjectParent: parent });
+    },
+    async recordSeenVersion(version) {
+      let existed = true;
+      try {
+        await stat(file);
+      } catch {
+        existed = false;
+      }
+      const current = await read();
+      const previous = current.lastSeenVersion;
+      const next = cleanVersion(version);
+      if (next !== null && next !== previous) await write({ ...current, lastSeenVersion: next });
+      return { previous, existed };
     },
   };
 }

@@ -8,7 +8,13 @@
  * @packageDocumentation
  */
 
-import type { ElementTemplate, Json, ResourceLocation, TemplateContext } from '@msm/plugin-api';
+import type {
+  ElementTemplate,
+  Json,
+  ResourceLocation,
+  TargetFacts,
+  TemplateContext,
+} from '@msm/plugin-api';
 import { defaultElementData } from '../session/element-defaults';
 
 export type { ElementTemplate, TemplateContext };
@@ -44,11 +50,13 @@ export function projectNamespace(id: ResourceLocation, namespaces: readonly stri
  * @param id - The new element's id.
  * @param namespaces - The open project's namespaces.
  * @param kindDefault - The kind's `defaultData`; deep-copied here.
+ * @param target - The facts of the open project's target.
  */
 export function templateContext(
   id: ResourceLocation,
   namespaces: readonly string[],
   kindDefault: Json | undefined,
+  target: TargetFacts,
 ): TemplateContext {
   const { namespace, path } = pathOf(id);
   return {
@@ -58,6 +66,7 @@ export function templateContext(
     projectNamespace: projectNamespace(id, namespaces),
     namespaces: [...namespaces],
     kindDefault: kindDefault === undefined ? undefined : structuredClone(kindDefault),
+    target,
   };
 }
 

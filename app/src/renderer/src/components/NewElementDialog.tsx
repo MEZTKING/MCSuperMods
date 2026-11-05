@@ -1,4 +1,5 @@
-import type { Json, ResourceLocation } from '@msm/core';
+import { type Json, type ResourceLocation, requireSyncResult } from '@msm/core';
+import type { TargetFacts } from '@msm/plugin-api';
 import { Dialog } from 'radix-ui';
 import { type FormEvent, type ReactNode, useId, useState } from 'react';
 import { useUiStore } from '../store/ui-store';
@@ -172,6 +173,8 @@ export function NewElementDialog(props: {
   templates: readonly ElementTemplate[];
   /** The `defaultData` of a kind, for templates that start from it. */
   kindDefault(kind: string): Json | undefined;
+  /** The facts of the open project's target, passed to `template.data`. */
+  target: TargetFacts;
   onCancel(): void;
   onSubmit(input: NewElementInput): void;
 }) {
@@ -231,8 +234,16 @@ export function NewElementDialog(props: {
           props.onSubmit({
             id,
             kind: template.kind,
-            data: template.data(
-              templateContext(id, props.namespaces, props.kindDefault(template.kind)),
+            data: requireSyncResult(
+              template.data(
+                templateContext(
+                  id,
+                  props.namespaces,
+                  props.kindDefault(template.kind),
+                  props.target,
+                ),
+              ),
+              `The template "${template.id}"`,
             ),
           });
           if (template.defaultNamespace === undefined) setLastNamespace(namespace);
