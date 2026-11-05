@@ -1659,6 +1659,12 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             folders={target.folders.resource}
             readProjectAsset={readProjectAsset}
             vanilla={vanilla}
+            pickImage={(title) =>
+              bridge.dialogs.pickFiles({
+                title,
+                filters: [{ name: 'PNG image', extensions: ['png'] }],
+              })
+            }
             onClose={() => setDialog(null)}
             onCreated={(result) => {
               setDialog(null);

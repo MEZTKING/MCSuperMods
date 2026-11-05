@@ -3,7 +3,9 @@
  * from memory (nothing is applied). Items and Blocks list every piece with its generated
  * texture as a `data:` image and draw the chosen one with the deepslate preview; Recipes draws
  * crafting grids; Armour shows the two layer textures and the humanoid armour geometry in the
- * geo renderer; Stats puts the numbers in words; Elements lists what Create will do.
+ * geo renderer, and horse and wolf armour layers as flat textures; Stats puts the numbers in
+ * words (weapons, armour, food, consumables with their effects); Card shows paintings on a wall
+ * and enchantment cards (ADR 0044 D6); Elements lists what Create will do.
  *
  * deepslate, gl-matrix and the geo renderer load lazily, only when a canvas is shown on a
  * machine with WebGL (as in the Preview panel).
@@ -36,7 +38,9 @@ import type { ResourceFolders, VanillaAssetReader } from '../../preview/model-ch
 import { hasWebGL } from '../../preview/webgl';
 import { RecipeGridView } from '../recipe-grid/RecipeGridView';
 import { tabTriggerClass } from '../ui/Button';
+import { CreatorCards } from './CreatorCards';
 import { CreatorElements } from './CreatorElements';
+import type { EffectRow } from './creator-cards';
 import {
   bundleArmour,
   bundleBlocks,
@@ -47,6 +51,58 @@ import {
   type CreatorTab,
   equipmentTexturePath,
 } from './creator-model';
+
+/** The effects of a Stats card as a table. */
+function EffectTable(props: { name: string; effects: readonly EffectRow[] }) {
+  const targets = props.effects.some((row) => row.target !== null);
+  const chances = props.effects.some((row) => row.chance !== null);
+  const cell = 'border border-border px-1.5 py-0.5';
+  return (
+    <table className="mt-1 w-fit border-collapse text-left text-xs" data-testid="creator-effects">
+      <caption className="pb-0.5 text-left text-muted">Effects of {props.name}</caption>
+      <thead>
+        <tr>
+          <th scope="col" className={cell}>
+            Effect
+          </th>
+          <th scope="col" className={cell}>
+            Level
+          </th>
+          <th scope="col" className={cell}>
+            Duration
+          </th>
+          {chances && (
+            <th scope="col" className={cell}>
+              Chance
+            </th>
+          )}
+          {targets && (
+            <th scope="col" className={cell}>
+              Affects
+            </th>
+          )}
+        </tr>
+      </thead>
+      <tbody>
+        {props.effects.map((row, index) => (
+          <tr key={`${row.name}-${index}`}>
+            <th scope="row" className={`${cell} font-normal`}>
+              {row.name}
+            </th>
+            <td className={cell}>{row.level}</td>
+            <td className={cell}>
+              {row.seconds} second{row.seconds === 1 ? '' : 's'}
+            </td>
+            {chances && (
+              <td className={cell}>{row.chance === null ? 'Always' : `${row.chance}%`}</td>
+            )}
+            {targets && <td className={cell}>{row.target ?? 'The user'}</td>}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
 
 const PreviewCanvas = lazy(() => import('../../preview/PreviewCanvas'));
 const GeoCanvas = lazy(() => import('../../preview/geo/GeoCanvas'));
@@ -174,7 +230,7 @@ function ArmourTab(props: {
   const { bundle, folders } = props;
   const info = bundleArmour(bundle);
   const textures = folders.textures;
-  const layer = (id: string | null, name: 'humanoid' | 'humanoid_leggings') => {
+  const layer = (id: string | null, name: Parameters<typeof equipmentTexturePath>[1]) => {
     if (id === null) return null;
     const { namespace, path } = equipmentTexturePath(id, name, textures);
     return bundleAssetBytes(bundle, namespace, path) ?? null;
@@ -196,30 +252,60 @@ function ArmourTab(props: {
     [pieces, props.revision],
   );
   if (info === null) return <Empty>This flow makes no armour.</Empty>;
+  const bodyLayers = info.bodyLayers.map((entry) => ({
+    ...entry,
+    bytes: layer(entry.texture, entry.layer),
+  }));
+  const humanoid = info.pieces.length > 0;
   return (
     <div className="flex flex-col gap-2">
       <p className="text-xs text-muted">
-        Worn pieces: {info.pieces.join(', ')}. Drawn by {info.equipmentId}.
+        {humanoid ? `Worn pieces: ${info.pieces.join(', ')}. ` : ''}Drawn by {info.equipmentId}.
       </p>
-      <div className="flex flex-wrap gap-3">
-        {[
-          { bytes: layer1, label: 'Layer 1 (helmet, chestplate and boots)', id: 'layer-1' },
-          { bytes: layer2, label: 'Layer 2 (leggings)', id: 'layer-2' },
-        ].map((entry) =>
-          entry.bytes === null ? null : (
-            <figure key={entry.id} className="m-0 flex flex-col gap-1 text-xs text-muted">
-              <img
-                alt={entry.label}
-                data-testid={`creator-armour-${entry.id}`}
-                src={pngDataUrl(entry.bytes)}
-                className="h-16 w-32 border border-border [image-rendering:pixelated]"
-              />
-              <figcaption>{entry.label}</figcaption>
-            </figure>
-          ),
-        )}
-      </div>
-      {!props.webgl ? (
+      {bodyLayers.length > 0 && (
+        <div className="flex flex-wrap gap-3" data-testid="creator-armour-body">
+          {bodyLayers.map((entry) =>
+            entry.bytes === null ? (
+              <p key={entry.layer} className="text-xs text-muted">
+                {entry.label}: no texture in this set ({entry.texture}).
+              </p>
+            ) : (
+              <figure key={entry.layer} className="m-0 flex flex-col gap-1 text-xs text-muted">
+                <img
+                  alt={`${entry.label} layer`}
+                  data-testid={`creator-armour-${entry.layer}`}
+                  src={pngDataUrl(entry.bytes)}
+                  className="h-auto w-32 border border-border [image-rendering:pixelated]"
+                />
+                <figcaption>
+                  {entry.label} ({entry.layer} layer)
+                </figcaption>
+              </figure>
+            ),
+          )}
+        </div>
+      )}
+      {humanoid && (
+        <div className="flex flex-wrap gap-3">
+          {[
+            { bytes: layer1, label: 'Layer 1 (helmet, chestplate and boots)', id: 'layer-1' },
+            { bytes: layer2, label: 'Layer 2 (leggings)', id: 'layer-2' },
+          ].map((entry) =>
+            entry.bytes === null ? null : (
+              <figure key={entry.id} className="m-0 flex flex-col gap-1 text-xs text-muted">
+                <img
+                  alt={entry.label}
+                  data-testid={`creator-armour-${entry.id}`}
+                  src={pngDataUrl(entry.bytes)}
+                  className="h-16 w-32 border border-border [image-rendering:pixelated]"
+                />
+                <figcaption>{entry.label}</figcaption>
+              </figure>
+            ),
+          )}
+        </div>
+      )}
+      {!humanoid ? null : !props.webgl ? (
         <p role="status" className="text-xs text-muted">
           3D preview unavailable: WebGL is disabled.
         </p>
@@ -321,10 +407,20 @@ export function CreatorPreview(props: CreatorPreviewProps) {
                       <li key={line}>{line}</li>
                     ))}
                   </ul>
+                  {card.effects !== undefined && card.effects.length > 0 && (
+                    <EffectTable name={name(card.id) ?? card.id} effects={card.effects} />
+                  )}
                 </li>
               ))}
             </ul>
           )}
+        </Tabs.Content>
+        <Tabs.Content value="card">
+          <CreatorCards
+            bundle={bundle}
+            folders={props.folders}
+            readProjectAsset={props.readProjectAsset}
+          />
         </Tabs.Content>
         <Tabs.Content value="elements">
           {props.plan === null ? (

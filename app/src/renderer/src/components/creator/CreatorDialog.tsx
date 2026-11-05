@@ -11,7 +11,9 @@
  * Test ids: `creator-dialog`, `creator-group-<group>`, `creator-flow-<id>`, `param-<id>`,
  * `creator-namespace`, `creator-tab-<tab>`, `creator-element-<key>`, `creator-conflict-<key>`,
  * `creator-kept-<key>`, `creator-overwrite-<key>`, `creator-create`, `creator-cancel`,
- * `creator-back`, `creator-status`, `creator-error`.
+ * `creator-back`, `creator-status`, `creator-error`. An `image` parameter uses
+ * {@link CreatorImageField} (the host's file picker) when `pickImage` is given, otherwise the
+ * wizard's file input.
  *
  * @packageDocumentation
  */
@@ -43,6 +45,7 @@ import {
   stepErrors,
   toValues,
 } from '../wizard/wizard-model';
+import { CreatorImageField, type PickImage } from './CreatorImageField';
 import { CreatorPreview } from './CreatorPreview';
 import {
   CREATOR_DEBOUNCE_MS,
@@ -50,6 +53,7 @@ import {
   type CreatorFlow,
   type CreatorTab,
   creatorFlows,
+  firstTab,
   parameterGroups,
   rawValuesFromStored,
 } from './creator-model';
@@ -105,6 +109,11 @@ export interface CreatorDialogProps {
   onCreated(result: CreatorCreated): void;
   /** A new set id (default `crypto.randomUUID`). */
   newSetId?(): string;
+  /**
+   * Opens the host's PNG file picker for an `image` field (`platform.dialogs.pickFiles`,
+   * ADR 0044 D7); without it the field falls back to the wizard's file input.
+   */
+  pickImage?: PickImage;
   /** Test hook: overrides WebGL detection in the preview. */
   webgl?: boolean;
   /** Test hook: the rebuild delay (default 150 ms). */
@@ -209,6 +218,8 @@ export function CreatorDialog(props: CreatorDialogProps) {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const setIdRef = useRef<string | null>(null);
+  /** Set when a flow is picked: the first build then chooses the tab ({@link firstTab}). */
+  const autoTabRef = useRef(editFlow === undefined);
   const tokenRef = useRef(0);
   const namespaceId = useId();
   const errors = useMemo(
@@ -281,6 +292,10 @@ export function CreatorDialog(props: CreatorDialogProps) {
           if (token !== tokenRef.current) return;
           setBuilt({ ...result, revision: token });
           setBuildError(null);
+          if (autoTabRef.current) {
+            autoTabRef.current = false;
+            setTab(firstTab(result.bundle));
+          }
         },
         (error: unknown) => {
           if (token !== tokenRef.current) return;
@@ -298,6 +313,7 @@ export function CreatorDialog(props: CreatorDialogProps) {
     setBuildError(null);
     setOverwrite(new Set());
     setTab('items');
+    autoTabRef.current = true;
   };
 
   const change = (id: string, value: RawValue): void => {
@@ -413,15 +429,28 @@ export function CreatorDialog(props: CreatorDialogProps) {
                     <legend className="px-1 text-xs font-semibold tracking-wide text-muted uppercase">
                       {group.title}
                     </legend>
-                    {group.parameters.map((parameter) => (
-                      <ParameterField
-                        key={parameter.id}
-                        parameter={parameter}
-                        value={raw[parameter.id] ?? ''}
-                        error={errors[parameter.id] ?? null}
-                        onChange={(value) => change(parameter.id, value)}
-                      />
-                    ))}
+                    {group.parameters.map((parameter) =>
+                      parameter.type === 'image' && props.pickImage !== undefined ? (
+                        <CreatorImageField
+                          key={parameter.id}
+                          parameter={parameter}
+                          value={
+                            typeof raw[parameter.id] === 'string' ? String(raw[parameter.id]) : ''
+                          }
+                          error={errors[parameter.id] ?? null}
+                          pickImage={props.pickImage}
+                          onChange={(value) => change(parameter.id, value)}
+                        />
+                      ) : (
+                        <ParameterField
+                          key={parameter.id}
+                          parameter={parameter}
+                          value={raw[parameter.id] ?? ''}
+                          error={errors[parameter.id] ?? null}
+                          onChange={(value) => change(parameter.id, value)}
+                        />
+                      ),
+                    )}
                   </fieldset>
                 ))}
                 {/* Enter in a text field creates, as in the other dialogs. */}

@@ -105,7 +105,9 @@ export function levelValue(value: Json | undefined, level: number): number | und
     case 'lookup': {
       const values = Array.isArray(value.values) ? value.values : [];
       const index = level - 1;
-      return index < values.length ? levelValue(values[index], level) : levelValue(value.fallback, level);
+      return index < values.length
+        ? levelValue(values[index], level)
+        : levelValue(value.fallback, level);
     }
     default:
       return undefined;
@@ -185,7 +187,10 @@ function entityEffectColumns(effect: JsonObject): LevelColumn[] {
   switch (type) {
     case 'ignite':
       return [
-        { label: 'Sets on fire (seconds)', at: (level) => show(levelValue(effect.duration, level)) },
+        {
+          label: 'Sets on fire (seconds)',
+          at: (level) => show(levelValue(effect.duration, level)),
+        },
       ];
     case 'apply_mob_effect': {
       const toApply = Array.isArray(effect.to_apply) ? effect.to_apply[0] : effect.to_apply;

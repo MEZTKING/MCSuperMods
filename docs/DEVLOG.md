@@ -2633,3 +2633,31 @@ Next:
 - `changeset/creator-sets.ts` keeps its own `SINGLETON_KINDS`; it could import the one from `session/element-defaults.ts` (left alone because B184 owned the file).
 - B191 / orchestrator: counts move to 60 kinds (datapack 28), templates +1 (datapack 56), per-kind examples 61, examples 71; root and `packages/plugins/CLAUDE.md` and the guide's summary table still show older counts.
 - `addBundle` could merge shared tags and language files as the Creator does (`mergeShared`) instead of skipping them as duplicates.
+
+## 2026-11-05 — executor — B190: Creator previews for the 0.8.0 flows, the image field, `apply_effect` in the Events editor
+
+**What**
+- `components/creator/creator-cards.ts` (new, pure): `levelValue` (the game's level-based values `linear`, `levels_squared`, `clamped`, `fraction`, `lookup`, numbers), `enchantingCost`, `romanLevel`, `idWords`, `bundleTranslation`; `enchantmentCards` (name from the bundle's lang, max level, `supported_items`, slots, weight with rarity word for 10/5/2/1, anvil cost, exclusive set, level table up to `LEVEL_TABLE_LIMIT` 10 with enchanting cost and one column per effect: value effects `add`/`multiply`/`set`/`remove_binomial`, `attributes`, `ignite`, `apply_mob_effect` duration and level ranges, `damage_entity`), `enchantmentSummary`; `paintingCards`, `pictureFit` (pixels per block, or a note that the game stretches a picture of other proportions); `consumeEffectRows`, `actionEffectRows` (`EffectRow`).
+- `creator-model.ts`: tab `card` ("Card", before Elements); `firstTab(bundle)` (Items, else Blocks, else Card, else Stats, else Elements; the dialog applies it on the first build after a flow is picked, so Painting and Enchantment open on their card); `bundleArmour` also returns `bodyLayers` (`horse_body`, `wolf_body` of pieces with slot `horse`/`wolf`; `pieces` may be empty); Stats gain ranged weapons (draw or charge speed, arrow speed, damage multiplier, inaccuracy against vanilla), shields (block delay, damage reduction, axe cooldown scale, `bypassed_by`), consumables (time and verb, leftover `converts_to` or used up, cooldown), death protection, charms (effects of the `msm:on_use` event's `apply_effect` actions and `cooldown_ticks`), spear and mace lines, "Attack damage and speed of a vanilla <tier> <type>." when not overridden, horse and wolf armour (chestplate defence, no slot multiplier line); `StatsCard.effects`.
+- `CreatorCards.tsx` (new): a painting on a CSS-drawn wall (40 px per block, one block of wall around it), the picture stretched to its size in blocks, caption with title, author and size, fit note; an enchantment card with a tooltip box (name at each level), summary lines and the level table (caption "<name> per level"). No WebGL.
+- `CreatorImageField.tsx` (new): "Choose picture…" / "Replace…" through `pickImage` (the host's `platform.dialogs.pickFiles` with a PNG filter), checked with the wizard's `checkPngBytes`, stored with `pngDataUrl`; thumbnail or "No image", summary from `imageSummary`, "Remove image"; a refused file shows "<file>: <reason>" and keeps the value. `CreatorDialog` takes `pickImage?` and falls back to the wizard's file input without it; `App.tsx` passes it.
+- `CreatorPreview.tsx`: Card tab, effect tables in Stats (caption "Effects of <name>", columns Effect, Level, Duration, and Chance / Affects when any row has one), horse and wolf layer images in the Armour tab (humanoid canvas only when humanoid pieces exist; still one lazy canvas at a time).
+- `preview/bundle-source.ts`: `paintingTexturePath(assetId, folders)`, `paintingTextureBytes` (bundle first, then the project).
+- Events editor: `apply_effect` in `ACTIONS` (effect `id` from `mob_effect`, seconds required with `initialValue` 10, amplifier default 0, target `choice` of `EFFECT_TARGETS` `self`/`other` default `self`); `ActionField` gains type `choice`, `choices`, `initialValue`; the editor renders a choice as a select with "(default: self)".
+- Tests: `test/components/creator-gear-preview.test.tsx` (12), `test/components/studios/blocks-items/apply-effect.test.tsx` (2).
+
+**Test ids (for B185/B191)**
+- Tab `creator-tab-card`; `creator-cards`; painting `creator-painting-<id>` (wall `role="img"` labelled "<title> by <author>, W by H blocks, on a wall"), `creator-painting-picture`, `creator-painting-fit`; enchantment `creator-enchantment-<id>`, `creator-enchantment-tooltip`, `creator-enchantment-levels`, rows `creator-enchantment-level-<n>`.
+- Stats effect table `creator-effects` (inside `creator-stats-<id>`); Armour body layers `creator-armour-body`, images `creator-armour-horse_body`, `creator-armour-wolf_body`.
+- Image field: `param-<id>` is the "Choose picture…" button (e2e: `MSM_E2E_PICK_FILES` feeds it), `param-<id>-field`, `-thumbnail`, `-empty`, `-summary`, `-clear`, `-error`.
+
+**Decisions**
+- Weapon damage and speed are numbers only when the item overrides them; for a vanilla tier the Stats say "of a vanilla <tier> <type>", because base attack values are game facts the app may not hard-code (they would belong in `packages/targets`).
+- The picked picture is not scaled: the game stretches it, and the card shows how it fits; scaling in the renderer would lose detail and needs a canvas encode.
+- Wiring `pickImage` needed one prop in `App.tsx` (outside the brief's file list).
+
+**Checks**: `tsc -b` clean; `biome ci .` clean for these files (fails only on other briefs' in-progress files: `changeset/creator-sets.ts`, `test/project-session.test.ts`, `packages/core/test/command-stack.test.ts`); app 122 files / 1173 tests; `pnpm build`; smoke; e2e 13/13; `dist:dir`; check-size within budget (renderer 13.3 MB of 16 MB, `app.asar` 30.1 MB of 32 MB).
+
+**Next**
+- B191: extend `creator-path` with the ids above (Painting opens on the Card tab; pick a PNG through `MSM_E2E_PICK_FILES`); guide labels "Card", "Choose picture…", "Remove image", "Apply effect".
+- Orchestrator: `app/CLAUDE.md` should list `creator-cards.ts`, `CreatorCards.tsx`, `CreatorImageField.tsx`; numeric base attack values per tier would need a `TargetFacts.items` addition.
