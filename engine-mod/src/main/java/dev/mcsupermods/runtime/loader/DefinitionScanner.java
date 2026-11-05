@@ -81,6 +81,6 @@ public final class DefinitionScanner {
         for (String error : errors) {
             MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, error);
         }
-        return new LoadReport(files, List.copyOf(found), List.of(), List.of(), List.copyOf(errors));
+        return new LoadReport(files, List.copyOf(found), List.of(), List.of(), List.copyOf(errors), List.of());
     }
 }

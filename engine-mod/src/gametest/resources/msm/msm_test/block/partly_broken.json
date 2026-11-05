@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "msm_test:bad"
+    }
+  },
+  "events": {
+    "msm_test:bad": {
+      "actions": [
+        {
+          "power": 4,
+          "type": "explode"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "future_key": true
+}

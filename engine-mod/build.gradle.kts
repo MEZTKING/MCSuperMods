@@ -17,6 +17,24 @@ dependencies {
     minecraft("com.mojang:minecraft:${providers.gradleProperty("minecraft_version").get()}")
     implementation("net.fabricmc:fabric-loader:${providers.gradleProperty("loader_version").get()}")
     implementation("net.fabricmc.fabric-api:fabric-api:${providers.gradleProperty("fabric_api_version").get()}")
+
+    // JUnit 5 for the Codecs over the shared MSM conformance corpus (GameTests cover behaviour).
+    testImplementation(platform("org.junit:junit-bom:${providers.gradleProperty("junit_version").get()}"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+// The corpus lives with the MSM mcdoc in packages/schemas; the runtime reads it in place.
+val conformanceCorpus = layout.projectDirectory.dir("../packages/schemas/mcdoc/msm/conformance/definition")
+
+tasks.test {
+    useJUnitPlatform()
+    inputs.dir(conformanceCorpus).withPropertyName("conformanceCorpus")
+    systemProperty("msm.conformance.definition", conformanceCorpus.asFile.absolutePath)
+    testLogging {
+        events("failed")
+        showStandardStreams = false
+    }
 }
 
 fabricApi {

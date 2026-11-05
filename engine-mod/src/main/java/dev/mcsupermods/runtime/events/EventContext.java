@@ -16,7 +16,7 @@ import net.minecraft.world.phys.Vec3;
 public record EventContext(ServerLevel level, BlockPos base, Vec3 origin, Player player) {
     /** A block event: offsets from the block, effects at its centre. */
     public static EventContext forBlock(ServerLevel level, BlockPos pos, Player player) {
-        return new EventContext(level, pos.immutable(), pos.getCenter(), player);
+        return new EventContext(level, pos.immutable(), Vec3.atCenterOf(pos), player);
     }
 
     /** An item event: offsets from the block below the player, effects at the player. */
