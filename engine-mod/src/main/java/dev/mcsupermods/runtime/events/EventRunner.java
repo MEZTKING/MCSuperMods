@@ -2,6 +2,7 @@ package dev.mcsupermods.runtime.events;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.mcsupermods.runtime.MsmRuntime;
+import dev.mcsupermods.runtime.scripting.ScriptHost;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -95,6 +96,7 @@ public final class EventRunner {
                         target.playAnimation(a.controller(), a.animation());
                     }
                 }
+                case Action.RunScript a -> ScriptHost.runAction(owner, eventId, a.handler(), ctx);
             }
         }
     }

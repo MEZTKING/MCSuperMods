@@ -27,7 +27,8 @@ public sealed interface Action {
         GIVE_ITEM("give_item", GiveItem.CODEC),
         PLAY_SOUND("play_sound", PlaySound.CODEC),
         TRIGGER_EVENT("trigger_event", TriggerEvent.CODEC),
-        PLAY_ANIMATION("play_animation", PlayAnimation.CODEC);
+        PLAY_ANIMATION("play_animation", PlayAnimation.CODEC),
+        RUN_SCRIPT("run_script", RunScript.CODEC);
 
         public final String serialName;
         final MapCodec<? extends Action> codec;
@@ -133,6 +134,20 @@ public sealed interface Action {
         @Override
         public Type type() {
             return Type.PLAY_ANIMATION;
+        }
+    }
+
+    /**
+     * Calls the script handler that {@code msm.actions.define(handler, fn)} defined (ADR 0032 D4) with the event
+     * context; an undefined handler is logged once per handler id.
+     */
+    record RunScript(Identifier handler) implements Action {
+        static final MapCodec<RunScript> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+                required("handler", ID).forGetter(RunScript::handler)).apply(i, RunScript::new));
+
+        @Override
+        public Type type() {
+            return Type.RUN_SCRIPT;
         }
     }
 }

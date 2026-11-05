@@ -14,23 +14,16 @@ import {
  * The MSM conformance corpus (ADR 0025 D7, ADR 0028 D7), shared with the runtime's JUnit tests:
  * `conformance/definition/` holds runtime definitions, `conformance/element/` element data,
  * `conformance/geometry/` and `conformance/animation/` the GeckoLib JSON of the
- * `msm:geo_model` and `msm:animation` elements. `conformance/definition-script/` holds runtime
- * definitions with the `run_script` action (ADR 0032 D4), kept apart until the runtime's
- * Codecs learn the action (its JUnit test reads `definition/` only). The file name prefix selects the schema;
+ * `msm:geo_model` and `msm:animation` elements. The file name prefix selects the schema;
  * `expected-errors.json` maps each invalid file to one error (pointer and code) that
  * `validateJson` must report.
  */
 const CORPUS = new URL('../mcdoc/msm/conformance/', import.meta.url);
 
-type Group = 'definition' | 'definition-script' | 'element' | 'geometry' | 'animation';
+type Group = 'definition' | 'element' | 'geometry' | 'animation';
 
 const SCHEMAS: Record<Group, Record<string, string>> = {
   definition: {
-    block: MSM_SCHEMA_REFS.blockDefinition,
-    item: MSM_SCHEMA_REFS.itemDefinition,
-    entity: MSM_SCHEMA_REFS.entityDefinition,
-  },
-  'definition-script': {
     block: MSM_SCHEMA_REFS.blockDefinition,
     item: MSM_SCHEMA_REFS.itemDefinition,
     entity: MSM_SCHEMA_REFS.entityDefinition,
@@ -73,7 +66,7 @@ const schemaFor = (group: Group, name: string): SchemaNode => {
   return index.resolveSchemaRef(ref);
 };
 
-const GROUPS: Group[] = ['definition', 'definition-script', 'element', 'geometry', 'animation'];
+const GROUPS: Group[] = ['definition', 'element', 'geometry', 'animation'];
 
 describe('MSM mcdoc symbols', () => {
   it('load and resolve through every schema reference and type path', () => {
@@ -202,14 +195,8 @@ describe('MSM conformance corpus coverage', () => {
 
   it('uses every action type in a valid entity definition, and every other one in a valid block and item definition', () => {
     const all = index.dispatcherKeys('msm:action');
-    // Runtime definitions span `definition/` and `definition-script/` (`run_script`).
     const definitionActions = (prefix: string): string[] =>
-      [
-        ...new Set([
-          ...covered('definition', prefix).actions,
-          ...covered('definition-script', prefix).actions,
-        ]),
-      ].sort();
+      [...covered('definition', prefix).actions].sort();
     expect(definitionActions('entity')).toEqual(all);
     // `play_animation` is dropped with a warning outside entity definitions (ADR 0028 D4).
     const blockAndItem = all.filter((type) => type !== 'play_animation');

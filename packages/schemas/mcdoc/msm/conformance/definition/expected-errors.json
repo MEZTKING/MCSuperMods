@@ -47,6 +47,10 @@
     "code": "schema.missing-field",
     "path": "/events/mymod:x/actions/0/sound"
   },
+  "block-run-script-no-handler.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:x/actions/0/handler"
+  },
   "block-step-cooldown-negative.json": {
     "code": "schema.out-of-range",
     "path": "/components/msm:on_step/cooldown_ticks"
@@ -158,6 +162,10 @@
   "item-run-function-missing-function.json": {
     "code": "schema.missing-field",
     "path": "/events/mymod:x/actions/0/function"
+  },
+  "item-run-script-handler-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/events/mymod:x/actions/0/handler"
   },
   "item-stack-zero.json": {
     "code": "schema.out-of-range",
