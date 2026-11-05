@@ -112,7 +112,11 @@ describe('@msm/plugin-entities', () => {
     const data = minimal({
       format: 7,
       display_name: 'X',
-      spawn_egg: { creative_tab: 'minecraft:spawn_eggs', texture: 'demo:item/x', display_name: 'E' },
+      spawn_egg: {
+        creative_tab: 'minecraft:spawn_eggs',
+        texture: 'demo:item/x',
+        display_name: 'E',
+      },
       loot_table: 'demo:entities/x',
     });
     const created = element('msm:entity', 'demo:x', data);
@@ -143,7 +147,9 @@ describe('@msm/plugin-entities', () => {
       'entity.demo.x': 'Ex',
       'item.demo.x_spawn_egg': 'Ex Spawn Egg',
     });
-    expect(lang(minimal({ display_name: 'Ex', spawn_egg: { display_name: 'Egg' } }))?.contents).toEqual({
+    expect(
+      lang(minimal({ display_name: 'Ex', spawn_egg: { display_name: 'Egg' } }))?.contents,
+    ).toEqual({
       'entity.demo.x': 'Ex',
       'item.demo.x_spawn_egg': 'Egg',
     });
@@ -188,7 +194,11 @@ describe('@msm/plugin-entities', () => {
   it('never generates a loot table', () => {
     for (const bundle of builtInTargets) {
       const files = lowerEntity(
-        element('msm:entity', 'demo:x', minimal({ loot_table: 'demo:entities/x', display_name: 'X' })),
+        element(
+          'msm:entity',
+          'demo:x',
+          minimal({ loot_table: 'demo:entities/x', display_name: 'X' }),
+        ),
         bundle.target,
       );
       expect(files.some((file) => file.path.startsWith('data/'))).toBe(false);

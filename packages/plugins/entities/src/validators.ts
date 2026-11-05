@@ -99,7 +99,11 @@ function actionsOf(element: Element): { event: string; action: JsonObject; path:
     actions.forEach((action, index) => {
       const fields = record(action);
       if (fields !== undefined) {
-        found.push({ event: name, action: fields, path: pointer('events', name, 'actions', index) });
+        found.push({
+          event: name,
+          action: fields,
+          path: pointer('events', name, 'actions', index),
+        });
       }
     });
   }

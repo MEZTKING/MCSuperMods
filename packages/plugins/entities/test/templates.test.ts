@@ -62,7 +62,11 @@ describe('entities templates', () => {
       expect(template.description, template.id).toContain('reported missing');
       expect(template.category, template.id).toBe('Entities');
     }
-    expect(entitiesTemplates.map((t) => t.title)).toEqual(['Creature', 'Monster', 'Ambient critter']);
+    expect(entitiesTemplates.map((t) => t.title)).toEqual([
+      'Creature',
+      'Monster',
+      'Ambient critter',
+    ]);
   });
 
   it('returns fresh data on every call and never mutates the context', () => {
@@ -89,13 +93,20 @@ describe('entities templates', () => {
       const text = JSON.stringify(template.data(context))
         .replaceAll(/"msm:[a-z_]+":/g, '')
         .replaceAll(/"zz:(entity|item)\/own(_[a-z_]+)?"/g, '');
-      expect(text, template.id).not.toMatch(/"(?!minecraft:|#minecraft:)[a-z0-9_.-]+:[a-z0-9_./-]+"/);
+      expect(text, template.id).not.toMatch(
+        /"(?!minecraft:|#minecraft:)[a-z0-9_.-]+:[a-z0-9_./-]+"/,
+      );
     }
   });
 
   it('points the animated model at ids derived from the template id', () => {
     const monster = entitiesTemplates[1] as ElementTemplate;
-    const data = monster.data({ ...contextFor(monster), id: 'mod:mobs/ghoul', namespace: 'mod', path: 'mobs/ghoul' }) as {
+    const data = monster.data({
+      ...contextFor(monster),
+      id: 'mod:mobs/ghoul',
+      namespace: 'mod',
+      path: 'mobs/ghoul',
+    }) as {
       components: Record<string, unknown>;
       spawn_egg: unknown;
     };

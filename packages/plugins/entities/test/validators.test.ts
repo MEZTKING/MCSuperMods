@@ -104,7 +104,9 @@ describe('entities validators', () => {
       withRefs(
         entity(
           'example:a',
-          { events: { 'example:ok': { actions: [{ type: 'trigger_event', event: 'example:z' }] } } },
+          {
+            events: { 'example:ok': { actions: [{ type: 'trigger_event', event: 'example:z' }] } },
+          },
           {},
           {
             'msm:attack': { damage: 1, on_attack: 'example:w' },
@@ -234,8 +236,18 @@ describe('entities validators', () => {
       entity('example:b', {}, { texture: '' }),
     );
     expect(summary(await validate(elements))).toEqual([
-      ['entities.missing-texture', 'warning', 'example:a', '/components/msm:animated_model/texture'],
-      ['entities.missing-texture', 'warning', 'example:b', '/components/msm:animated_model/texture'],
+      [
+        'entities.missing-texture',
+        'warning',
+        'example:a',
+        '/components/msm:animated_model/texture',
+      ],
+      [
+        'entities.missing-texture',
+        'warning',
+        'example:b',
+        '/components/msm:animated_model/texture',
+      ],
     ]);
     expect((await validate(elements, false)).map((p) => p.code)).toEqual([]);
   });
@@ -308,27 +320,30 @@ describe('entities validators', () => {
 
   it('ignores elements of other kinds and tolerates malformed data', async () => {
     const problems = await validate([
-      element('msm:block', 'example:a', { events: { x: { actions: [{ type: 'trigger_event', event: 'y' }] } } }),
+      element('msm:block', 'example:a', {
+        events: { x: { actions: [{ type: 'trigger_event', event: 'y' }] } },
+      }),
       element('msm:entity', 'example:b', 'nonsense' as never),
-      element('msm:entity', 'example:c', { components: { 'msm:ai_goals': { goals: 3 } }, spawn_egg: false } as never),
+      element('msm:entity', 'example:c', {
+        components: { 'msm:ai_goals': { goals: 3 } },
+        spawn_egg: false,
+      } as never),
     ]);
     expect(problems).toEqual([]);
   });
 
   it('reports every listed code somewhere in these tests', () => {
     // Guard: the codes the suite asserts above are exactly the listed codes.
-    expect([...ENTITIES_PROBLEM_CODES].sort()).toEqual(
-      [
-        'entities.egg-texture-missing',
-        'entities.event-cycle',
-        'entities.goal-needs-targets',
-        'entities.group-range',
-        'entities.missing-texture',
-        'entities.unknown-animation-name',
-        'entities.unknown-animations',
-        'entities.unknown-event',
-        'entities.unknown-model',
-      ],
-    );
+    expect([...ENTITIES_PROBLEM_CODES].sort()).toEqual([
+      'entities.egg-texture-missing',
+      'entities.event-cycle',
+      'entities.goal-needs-targets',
+      'entities.group-range',
+      'entities.missing-texture',
+      'entities.unknown-animation-name',
+      'entities.unknown-animations',
+      'entities.unknown-event',
+      'entities.unknown-model',
+    ]);
   });
 });

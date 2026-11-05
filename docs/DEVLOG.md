@@ -1579,3 +1579,11 @@ Decisions:
 
 Next:
 - B113: Codecs replace the spike parser; `EntityRendererRegistry` is deprecated in fabric-rendering-v1 27.2.0 (replacement: verify at implementation); `engine-mod/CLAUDE.md` contents (`client/`, GeckoLib configuration).
+
+## 2026-11-05 — executor — B114 `@msm/plugin-models-anim`
+
+**What:** Filled the B111 scaffold. Kinds `msm:geo_model` (folder and registry `geo_model`, `previewKind: 'geo_model'`, default one `body` bone with a 16x16x16 cube over 64x64) and `msm:animation` (folder and registry `animation`, default `idle` 2 s loop bobbing `body`), lowering the data unchanged (numeric `format_version` becomes a string) to `assets/<ns>/geckolib/models/<path>.geo.json` and `assets/<ns>/geckolib/animations/<path>.animation.json` (layer `resourcepack`, schemas `msm:geo_model` / `msm:animation`). GeckoLib segments and suffixes live only in `src/lowering/paths.ts`, whose header says why they are not target facts. Validators `models-anim.cube-outside-texture` (warning), `duplicate-bone` and `unknown-parent` (errors, per geometry; self-parent counts as unknown), `animation-unknown-bone` (warning, against bones of every project geo model), `molang-unsupported` (info, once per bone channel; numeric strings are not Molang). Templates "Cube creature model", "Biped model" (player skin layout) and "Idle and walk animations" (biped bone names), all with prefix `entity/`. Tests: plugin, templates (validated per target, zero unknown ids, validators clean with the biped model), lowering goldens (5 under `test/fixtures/mc-26.3/expected/{geo_model,animation}/`), validators (every code); 34 tests.
+
+**Decisions:** Template categories "Entity models" and "Entity animations". The animation lowering normalises `format_version` the same way as the geo model (the brief names it for the geo model only). No template goldens (the brief names only the kind folders); template tests assert schema validity, path and bone names instead. `packages/plugins/CLAUDE.md` unchanged: the `models-anim` row already exists, and the status paragraph is the orchestrator's.
+
+**Next:** B117 preview reads `previewKind` `geo_model` / `animation`; B118 registers the plugin and its sidebar group; the status paragraph and counts (2 kinds, 3 templates) at the close brief.

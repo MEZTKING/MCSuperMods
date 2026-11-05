@@ -170,7 +170,10 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     it.each(SAMPLES.map((sample) => [sample.name, sample] as const))(
       '%s',
       async (_label, sample) => {
-        const files = entityKind.lower(element(entityKind.id, sample.id, sample.data), bundle.target);
+        const files = entityKind.lower(
+          element(entityKind.id, sample.id, sample.data),
+          bundle.target,
+        );
         const indexes = await indexesFor(bundle);
         const problems = (schema: string, value: Json) => blockingProblems(indexes, schema, value);
         expect(problems(entityKind.schema, sample.data)).toEqual([]);
@@ -178,9 +181,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           if (file.schema === undefined) continue;
           expect(problems(file.schema, file.contents as Json), file.path).toEqual([]);
         }
-        expect(entityKind.lower(element(entityKind.id, sample.id, sample.data), bundle.target)).toEqual(
-          files,
-        );
+        expect(
+          entityKind.lower(element(entityKind.id, sample.id, sample.data), bundle.target),
+        ).toEqual(files);
 
         const actual = sortedJson(files.map(recorded));
         const url = fixtureUrl(targetId, sample);
