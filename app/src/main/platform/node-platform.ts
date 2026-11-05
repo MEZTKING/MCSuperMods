@@ -21,10 +21,10 @@ import type {
   RootResult,
 } from '../../shared/platform';
 import { createExportsService } from './exports';
-import { type RuntimeJarLocation, readRuntimeJar } from './runtime-jar';
 import { createLocationResolver } from './locations';
 import { createMcfunctionBroker } from './mcfunction';
 import { createMinecraftService, type MinecraftService } from './minecraft';
+import { type RuntimeJarLocation, readRuntimeJar } from './runtime-jar';
 import { createScopedFileSystem, isWithin, type ScopedFileSystem } from './scoped-fs';
 import { createSettingsStore, type SettingsStore } from './settings';
 import { createTargetsService } from './targets';

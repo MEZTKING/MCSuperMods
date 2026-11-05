@@ -30,9 +30,9 @@ function modJson(entries: Record<string, Uint8Array>): Record<string, unknown> {
 describe('ProjectSession.exportFabricJar', () => {
   it('declares the content jar options for the dialog', async () => {
     const { session } = await openSession(null);
-    expect(session.fabricJarOptions.map((option) => [option.id, option.type, option.default])).toEqual([
-      [SEPARATE_RUNTIME_OPTION, 'boolean', false],
-    ]);
+    expect(
+      session.fabricJarOptions.map((option) => [option.id, option.type, option.default]),
+    ).toEqual([[SEPARATE_RUNTIME_OPTION, 'boolean', false]]);
   });
 
   it('nests the runtime jar from the platform and saves <mod id>.jar', async () => {

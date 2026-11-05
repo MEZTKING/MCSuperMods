@@ -24,6 +24,7 @@ import { ConfirmDialog } from './components/ConfirmDialog';
 import { EditorArea } from './components/EditorArea';
 import { ElementSidebar } from './components/ElementSidebar';
 import { ExamplesDialog } from './components/ExamplesDialog';
+import { ExportFabricJarDialog } from './components/ExportFabricJarDialog';
 import {
   type FunctionCaret,
   GO_TO_DEFINITION_EVENT,
@@ -52,7 +53,6 @@ import { UsagesDialog } from './components/UsagesDialog';
 import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
-import { ExportFabricJarDialog } from './components/ExportFabricJarDialog';
 import { importerFileFilters } from './session/importers';
 import {
   FUNCTION_KIND,

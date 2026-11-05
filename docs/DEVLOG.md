@@ -1318,3 +1318,20 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - Wave 3 (see HANDOFF "Housekeeping due now").
+
+---
+
+## 2026-11-05 — executor — B97 Block Studio and Item Studio
+
+**What**
+- `app/src/renderer/src/studios/blocks-items/`: `studios.tsx` (registers `msm.blocks-items.block` and `msm.blocks-items.item`; `msm:mod` keeps the schema form), `BlockStudio.tsx` (appearance with "Go to model", mining, light and sound, drops as self / loot table / none, block item with `"item": false`, behaviour triggers), `ItemStudio.tsx` (model, display name, stack size shown as 1 under durability, rarity, creative tab, food, tool, durability, on_use), shared `EventsEditor.tsx`, `parts.tsx`, `blocks-items-model.ts` (format v1 action table with D4 defaults, rename with references, schema choices).
+- Tests: `app/test/components/studios/blocks-items/blocks-items-studios.test.tsx` (12 tests, through `ElementForm` and a real `CommandStack` for undo).
+
+**Decisions**
+- Renaming an event is one root edit (one undo step) that rewrites trigger fields and `trigger_event` actions; removing an event leaves references for `blocks-items.unknown-event` to report.
+- Optional action fields stay absent on new actions and show their D4 default; choosing "(none)" for a trigger removes its component.
+- Reuses `structures/pickers` fields, `worldgen/parts` `Section`/`AdvancedToggle` and `StructureStudioHostContext.openElement` for "Go to model" without editing those files.
+
+**Next**
+- A shared `studios/shared/` for pickers, sections and the go-to host would remove the cross-area imports (orchestrator decision).
+- B101: e2e and guide page can use the test ids `block-studio`, `item-studio`, `msm-events`.

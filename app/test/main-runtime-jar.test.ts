@@ -54,7 +54,11 @@ describe('development runtime jar', () => {
     await jar('msm_runtime-0.4.0-dev.jar', 3000);
     expect(await newestRuntimeJar(libs)).toBe(newest);
     expect(
-      await resolveRuntimeJarPath({ isPackaged: false, resourcesPath: resources, devLibsDir: libs }),
+      await resolveRuntimeJarPath({
+        isPackaged: false,
+        resourcesPath: resources,
+        devLibsDir: libs,
+      }),
     ).toBe(newest);
   });
 

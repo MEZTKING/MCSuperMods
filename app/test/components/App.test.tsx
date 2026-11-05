@@ -15,7 +15,10 @@ import { builtInPlugins } from '../../src/renderer/src/plugins/built-in';
 import type { McfunctionChecker } from '../../src/renderer/src/session/mcfunction-problems';
 import { ProjectSession } from '../../src/renderer/src/session/project-session';
 import { useUiStore } from '../../src/renderer/src/store/ui-store';
-import { MSM_CONTENT_NOTE, NO_DATA_PACK_CONTENT } from '../../src/renderer/src/studios/export-state';
+import {
+  MSM_CONTENT_NOTE,
+  NO_DATA_PACK_CONTENT,
+} from '../../src/renderer/src/studios/export-state';
 import type { MenuCommand, UpdateStatus } from '../../src/shared/ipc-channels';
 import type {
   AppSettingsPatch,

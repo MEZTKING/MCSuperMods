@@ -5,8 +5,8 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   defaultOptionValues,
-  ExportFabricJarDialog,
   ExporterOptionFields,
+  ExportFabricJarDialog,
 } from '../../src/renderer/src/components/ExportFabricJarDialog';
 
 afterEach(cleanup);
@@ -24,7 +24,9 @@ const options: ExporterOption[] = [
 
 describe('ExporterOptionFields', () => {
   it('renders each boolean option as a labelled checkbox with its description', () => {
-    render(<ExporterOptionFields options={options} values={{ compact: true }} onChange={vi.fn()} />);
+    render(
+      <ExporterOptionFields options={options} values={{ compact: true }} onChange={vi.fn()} />,
+    );
     const separate = screen.getByLabelText('Separate runtime (for modpacks)') as HTMLInputElement;
     expect(separate.type).toBe('checkbox');
     expect(separate.checked).toBe(false);
