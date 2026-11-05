@@ -2051,3 +2051,19 @@ Next:
 **Next**
 - Orchestrator: clean-worktree verification, fill `TESTS`/`SIZE`, commit, push, CI, fast-forward `main`; release 0.5.0/0.6.0 with the user's go-ahead; Phase 7 plan (untracked ADR drafts 0035–0040 are in `docs/adr/`, not from this brief).
 - User: in-game check `fixtures/sample-script/README.md` and an ejected project build.
+
+## 2026-11-05 — executor — B151 second-version runtime spike (engine-mod, 26.4-snapshot-7)
+
+**What**
+- `-Pmc` in its simplest form: `engine-mod/versions/26.4.properties` (minecraft `26.4-snapshot-7`, Loader 0.20.1, Fabric API 0.165.4+26.4, Loom 1.19.3, blank GeckoLib, `minecraft_dependency=>=26.4- <26.5-`); `settings.gradle.kts` reads `loom_version` from it, `build.gradle.kts` reads the rest through `fact(name)`; without `-Pmc` everything comes from `gradle.properties` as before (which gains `minecraft_dependency=~26.3`; `fabric.mod.json` now expands `${minecraft_dependency}`). With `-Pmc` the version is `<mod_version>+mc<mc>`. Blank GeckoLib id: `compileOnly` against the 26.3 jar, never `localRuntime`. Same `-Pmc` handling in `parity/` (reads `../versions/`), whose `fabric.mod.json` also expands the range.
+- Spike overlays: `src/mc/26.4/java` (copies of `MsmRegistrar`, `GeckolibRenderers`), `src/mc/26.4/gametest` (copy of `MsmRuntimeGameTest`), `parity/src/mc/26.4/java` (copy of `SampleModParityTest`); each shadows the shared file of the same relative path (compile and sources jar excludes).
+- Loom 1.19.3 accepts the snapshot. Errors: `SoundType` removed (block sounds are the `block_sound_set` registry; `Properties.sound(ResourceKey<BlockSoundSet>)`, `BlockSoundSets` keys, `amethyst` → `AMETHYST_BLOCK`); `EntityRenderers.register` takes `BuiltInClientRegistries.ENTITY_RENDERER` first (Fabric `EntityRendererRegistry` gone); `Block.getDrops` takes six arguments (parity). GeckoLib bridge compiles against the 26.3 jar.
+- Checks: `./gradlew clean build -Pmc=26.4` (also `-PwithoutGeckolib`): 90 JUnit, "All 60 required tests passed", 29 s warm; `./gradlew clean build` (26.3) and `-PwithoutGeckolib`: 90 JUnit, 60 GameTests, 27–29 s; the 26.3 runtime and parity jars are entry-for-entry identical to the pre-B151 build. `./gradlew -p parity build -Pmc=26.4` green. 26.4 headless server: hand-built content jar (glow_ore, shard, nested `msm_runtime-0.6.0+mc26.4.jar`) passes with `>=26.4- <26.5-`, `>=26.4-` and `~26.4-`; `~26.4` fails mod resolution (game is `26.4-alpha.7`). The sample mod with the 26.4 runtime nested passes the server check and its 11 parity GameTests (`fabric-gametest-api-v1` 4.0.44). `tools/check-deps` OK. Findings in ADR 0038 and 0037 Status sections.
+
+**Decisions**
+- Overlay copies rather than seams (allowed by the brief) so the 26.3 build stays byte-identical; B159 designs the seams `BlockSounds`, `EntityRendererRegistration` and the test helpers.
+- Version suffix only with `-Pmc`, so the default jar keeps `msm_runtime-0.6.0.jar` for `app/scripts/stage-runtime.mjs`.
+- The session's automatic WIP commits picked up these files; this executor did not commit.
+
+**Next**
+- B159: seams, `default_mc`, `versions/26.3.properties`, jar naming for both, CI matrix. B160: `newestRuntimeJar` picks by mtime among `msm_runtime-*.jar`, so a `+mc26.4` jar built after the 26.3 one would be staged as the only runtime; resolve per target. Client check of the 26.4 entity renderer registration once a 26.4 GeckoLib exists. MSM mcdoc could later accept any `block_sound_set` id on 26.4.
