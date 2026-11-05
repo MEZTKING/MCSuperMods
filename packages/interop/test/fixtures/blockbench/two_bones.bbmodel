@@ -164,7 +164,7 @@
               "uuid": "e0000000-0000-4000-8000-000000000004",
               "time": 0.5,
               "color": -1,
-              "interpolation": "catmullrom"
+              "interpolation": "linear"
             },
             {
               "channel": "position",
@@ -172,7 +172,7 @@
               "uuid": "e0000000-0000-4000-8000-000000000005",
               "time": 1,
               "color": -1,
-              "interpolation": "linear"
+              "interpolation": "catmullrom"
             }
           ]
         },

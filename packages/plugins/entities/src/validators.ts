@@ -258,7 +258,7 @@ const animationNames = (element: Element): Set<string> =>
   new Set(Object.keys(record(dataOf(element).animations) ?? {}));
 
 function unknownAnimationNames(elements: readonly Element[]): Problem[] {
-  const sets = new Map(
+  const sets = new Map<string, Element>(
     elements
       .filter((element) => element.kind === ANIMATION_KIND)
       .map((element) => [element.id, element] as const),
