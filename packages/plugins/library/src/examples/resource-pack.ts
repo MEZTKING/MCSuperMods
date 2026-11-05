@@ -187,4 +187,34 @@ export const resourcePackExamples: readonly ExampleProject[] = [
       assets: [],
     }),
   }),
+  defineExample({
+    id: 'example_equipment',
+    title: 'Worn armour look',
+    description: 'An equipment asset: how armour of one material looks on a player.',
+    kind: KINDS.equipment,
+    category: 'Models',
+    tags: ['armour', 'equipment', 'texture'],
+    build: ({ namespace }) => {
+      const id = rl(namespace, 'ruby_armour');
+      return {
+        elements: [
+          element(
+            id,
+            KINDS.equipment,
+            {
+              layers: {
+                humanoid: [{ texture: id }],
+                humanoid_leggings: [{ texture: id }],
+              },
+            },
+            'An armour piece names this asset in its equipment_asset field, and the game draws these layers on whoever wears it. humanoid covers the helmet, chestplate and boots; humanoid_leggings covers the leggings. Each texture id names textures/entity/equipment/<layer>/ruby_armour.png in this namespace; the placeholders here are small, so draw the real 64 by 32 armour textures over them.',
+          ),
+        ],
+        assets: [
+          texture(namespace, 'entity/equipment/humanoid/ruby_armour', 'plain', COLOURS.ruby),
+          texture(namespace, 'entity/equipment/humanoid_leggings/ruby_armour', 'plain', COLOURS.ruby),
+        ],
+      };
+    },
+  }),
 ];

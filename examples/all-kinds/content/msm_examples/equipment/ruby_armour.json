@@ -1,0 +1,27 @@
+{
+  "data": {
+    "layers": {
+      "humanoid": [
+        {
+          "texture": "msm_examples:ruby_armour"
+        }
+      ],
+      "humanoid_leggings": [
+        {
+          "texture": "msm_examples:ruby_armour"
+        }
+      ]
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ruby_armour",
+  "kind": "minecraft:equipment",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An armour piece names this asset in its equipment_asset field, and the game draws these layers on whoever wears it. humanoid covers the helmet, chestplate and boots; humanoid_leggings covers the leggings. Each texture id names textures/entity/equipment/<layer>/ruby_armour.png in this namespace; the placeholders here are small, so draw the real 64 by 32 armour textures over them.",
+    "tags": [
+      "example",
+      "models"
+    ]
+  }
+}

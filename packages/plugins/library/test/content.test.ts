@@ -40,7 +40,7 @@ const STARTER_IDS = [
 ];
 
 /**
- * The 59 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
+ * The 60 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
  * items, entities, models and animations and scripting plugins, in per-kind example order.
  */
 const KIND_IDS = [
@@ -50,6 +50,7 @@ const KIND_IDS = [
   'minecraft:lang',
   'minecraft:sounds',
   'minecraft:pack_mcmeta',
+  'minecraft:equipment',
   'minecraft:recipe',
   'minecraft:loot_table',
   'minecraft:advancement',
@@ -397,8 +398,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 59 per-kind examples, one per built-in kind, 6 behaviour examples and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(59);
+  it('has 60 per-kind examples, one per built-in kind, 6 behaviour examples and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(60);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -416,7 +417,7 @@ describe('examples', () => {
       'example_msm_script_schedule',
       'example_msm_script_action',
     ]);
-    expect(libraryExamples).toHaveLength(69);
+    expect(libraryExamples).toHaveLength(70);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -512,7 +513,12 @@ describe('every starter and example', () => {
       for (const asset of bundle.assets) {
         const id = `${asset.namespace}:${asset.path.replace(/^textures\//, '').replace(/\.png$/, '')}`;
         const paintingId = id.replace(':painting/', ':');
-        expect(text.includes(`"${id}"`) || text.includes(`"${paintingId}"`), id).toBe(true);
+        // Equipment layers name `<ns>:<name>` for textures/entity/equipment/<layer>/<name>.png.
+        const equipmentId = id.replace(/:entity\/equipment\/[a-z_]+\//, ':');
+        expect(
+          [id, paintingId, equipmentId].some((candidate) => text.includes(`"${candidate}"`)),
+          id,
+        ).toBe(true);
       }
     }
   });

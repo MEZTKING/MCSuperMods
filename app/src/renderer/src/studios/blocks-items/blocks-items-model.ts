@@ -13,6 +13,7 @@
 import type { Element, Json, Project } from '@msm/core';
 import type { SchemaNode } from '@msm/schemas';
 import { childPointer, isJsonObject } from '../../forms/pointer';
+import { flattenUnion, resolveNode } from '../../forms/schema-utils';
 import { fieldNode, stringChoices } from '../structures/pickers';
 
 type JsonObject = { [key: string]: Json };
@@ -269,7 +270,13 @@ export function choicesAt(
     currentValue = asObject(currentValue)[key];
     if (current === undefined) return [];
   }
-  return stringChoices(current);
+  const direct = stringChoices(current);
+  if (direct.length > 0) return direct;
+  // A union of named values and an object (a tool tier or a custom material, ADR 0042):
+  // offer the named values; the object form stays editable in Raw JSON.
+  const resolved = resolveNode(current);
+  if (resolved.kind !== 'union') return [];
+  return [...new Set(flattenUnion(resolved).flatMap((member) => stringChoices(member)))];
 }
 
 /** The project element with id `id` and kind `kind`, or `undefined`. */

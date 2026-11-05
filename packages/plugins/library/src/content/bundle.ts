@@ -27,6 +27,7 @@ export const KINDS = Object.freeze({
   lang: 'minecraft:lang',
   sounds: 'minecraft:sounds',
   pack: 'minecraft:pack_mcmeta',
+  equipment: 'minecraft:equipment',
   recipe: 'minecraft:recipe',
   lootTable: 'minecraft:loot_table',
   advancement: 'minecraft:advancement',
