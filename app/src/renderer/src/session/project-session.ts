@@ -33,7 +33,6 @@ import {
   type ReferenceIndex,
   type ResourceLocation,
   registerPlugin,
-  requireSyncResult,
   type SaveManifest,
   saveProject,
 } from '@msm/core';
@@ -75,7 +74,8 @@ import type {
   TargetFacts,
 } from '@msm/plugin-api';
 import { MSM_RUNTIME_TYPINGS } from '@msm/plugin-scripting';
-import { type SchemaNode, validateJson } from '@msm/schemas';
+import { type SchemaNode, type VanillaMcdocSymbols, validateJson } from '@msm/schemas';
+import { PluginProblemCodes } from '../../../shared/ipc-channels';
 import type {
   AppSettingsPatch,
   AppSettingsView,
@@ -89,6 +89,7 @@ import type {
   TestInMinecraftStatus,
   WorldInfo,
 } from '../../../shared/platform';
+import type { ExternalPluginState, ExternalPluginStatus } from '../plugins/external-plugins';
 import { assetImportError } from './asset-files';
 import {
   assertElementIdAllowed,
@@ -229,6 +230,16 @@ export interface SessionTarget {
 export interface ProjectSessionOptions {
   /** Plugins to register. */
   plugins?: readonly Plugin[];
+  /**
+   * Third-party plugin facades (ADR 0035; built by `plugins/external-plugins.ts` before the
+   * session is constructed), registered after {@link plugins}. One whose registration throws
+   * is skipped.
+   */
+  externalPlugins?: readonly Plugin[];
+  /** The live states of the third-party plugins (Settings > Plugins, `plugin.unavailable`). */
+  externalPluginStatus?: ExternalPluginStatus;
+  /** The third-party plugins' mcdoc symbol exports, merged into every schema context. */
+  externalSymbols?: readonly VanillaMcdocSymbols[];
   /** Clock for element timestamps. */
   now?: () => string;
   /** Built-in targets, newest first; the first is the default for new projects. */
@@ -541,6 +552,9 @@ export class ProjectSession {
   readonly #fs: ProjectFileSystem;
   readonly #now: (() => string) | undefined;
   readonly #plugins: readonly Plugin[];
+  readonly #externalPluginIds: ReadonlySet<string>;
+  readonly #externalStatus: ExternalPluginStatus | undefined;
+  readonly #externalSymbols: readonly VanillaMcdocSymbols[];
   readonly #library: SessionLibrary;
   readonly #targets: readonly SessionTarget[];
   readonly #validationDelay: number;
@@ -589,13 +603,28 @@ export class ProjectSession {
     this.#platform = platform;
     this.#fs = platform.fs;
     this.#now = options.now;
-    this.#plugins = options.plugins ?? [];
+    const builtIn = options.plugins ?? [];
+    for (const plugin of builtIn) registerPlugin(this.registry, plugin);
+    const external: Plugin[] = [];
+    for (const plugin of options.externalPlugins ?? []) {
+      try {
+        registerPlugin(this.registry, plugin);
+        external.push(plugin);
+      } catch {
+        // `loadExternalPlugins` already refuses clashes; a facade that still fails is skipped.
+      }
+    }
+    this.#plugins = [...builtIn, ...external];
+    this.#externalPluginIds = new Set(external.map((plugin) => plugin.id));
+    this.#externalStatus = options.externalPluginStatus;
+    this.#externalSymbols = options.externalSymbols ?? [];
+    // A plugin that fails later blocks the export of its elements (`plugin.unavailable`).
+    this.#externalStatus?.subscribe(() => this.#publish());
     this.#targets = options.targets ?? [];
     this.#validationDelay = options.validationDelay ?? 150;
     this.#mcfunction = options.mcfunction;
     this.#scripting = options.scripting;
     this.#scriptTypings = options.scriptTypings ?? MSM_RUNTIME_TYPINGS;
-    for (const plugin of this.#plugins) registerPlugin(this.registry, plugin);
     this.#library = this.#collectLibrary();
     this.#importers = Object.freeze(collectImporters(this.#plugins, options.targetImporters));
     this.#validators = Object.freeze(collectValidators(this.#plugins));
@@ -633,6 +662,43 @@ export class ProjectSession {
   /** The options the Fabric mod jar export declares, shown in its dialog (ADR 0027 D2). */
   get fabricJarOptions(): readonly ExporterOption[] {
     return this.#contentJarExporter.options ?? [];
+  }
+
+  /** The third-party plugins found at start-up and their states (ADR 0035 D4). */
+  get externalPlugins(): readonly ExternalPluginState[] {
+    return this.#externalStatus?.states ?? [];
+  }
+
+  /**
+   * `plugin.unavailable` errors (ADR 0035 D4), one per element whose kind belongs to a
+   * registered third-party plugin that has failed since start-up. They block export.
+   */
+  #unavailablePluginProblems(project: Project): Problem[] {
+    const status = this.#externalStatus;
+    if (status === undefined) return [];
+    const failed = new Set(
+      status.states
+        .filter((state) => state.state === 'failed' && this.#externalPluginIds.has(state.id))
+        .map((state) => state.id),
+    );
+    if (failed.size === 0) return [];
+    const kinds = new Map<string, string>();
+    for (const plugin of this.#plugins) {
+      if (!failed.has(plugin.id)) continue;
+      for (const kind of plugin.contributes.elementKinds ?? []) kinds.set(kind.id, plugin.id);
+    }
+    const problems: Problem[] = [];
+    for (const element of projectElements(project)) {
+      const pluginId = kinds.get(element.kind);
+      if (pluginId === undefined) continue;
+      problems.push({
+        severity: 'error',
+        code: PluginProblemCodes.unavailable,
+        elementId: element.id,
+        message: `${element.id} cannot be exported: its plugin ${pluginId} stopped working. Restart MCSuperMods to load it again.`,
+      });
+    }
+    return problems;
   }
 
   /** The registered plugins' importers, in plugin order (first id wins). */
@@ -728,7 +794,7 @@ export class ProjectSession {
     const target = this.target;
     let cached = this.#schemaCache.get(target.id);
     if (cached === undefined) {
-      cached = loadSchemaContext(this.#platform, target, this.registry);
+      cached = loadSchemaContext(this.#platform, target, this.registry, this.#externalSymbols);
       this.#schemaCache.set(target.id, cached);
       cached.then(
         (context) => this.#loadedSchemas.set(target.id, context),
@@ -1659,16 +1725,19 @@ export class ProjectSession {
       ...(options === undefined ? {} : { options }),
       ...(validateText === undefined ? {} : { validateText }),
     });
-    const blocking = blockingValidatorErrors(
-      [...this.#validatorProblems.values()].flat(),
-      project,
-      (element) => {
-        const kind = this.registry.get(element.kind);
-        if (kind === undefined) return [];
-        return requireSyncResult(kind.lower(element, context.target), `kind "${kind.id}" lower`);
-      },
-      exporter.layers,
-    );
+    const blocking = [
+      ...this.#unavailablePluginProblems(project),
+      ...(await blockingValidatorErrors(
+        [...this.#validatorProblems.values()].flat(),
+        project,
+        async (element) => {
+          const kind = this.registry.get(element.kind);
+          if (kind === undefined) return [];
+          return kind.lower(element, context.target);
+        },
+        exporter.layers,
+      )),
+    ];
     if (blocking.length === 0) return { report, project, target: context.target };
     return {
       report: { ok: false, problems: [...blocking, ...report.problems], files: [] },
@@ -1824,7 +1893,8 @@ export class ProjectSession {
         this.#schemaProblems.set(id, problems);
       }
     }
-    this.#runValidators(context, project);
+    await this.#runValidators(context, project);
+    if (generation !== this.#generation || this.#stack === null) return;
     this.#publish();
     if (functions.length > 0) await this.#checkFunctions(functions, context, project, generation);
     if (scripts.length > 0) await this.#checkScripts(scripts, generation);
@@ -1906,7 +1976,7 @@ export class ProjectSession {
    * Runs the pending project validators (those whose kinds changed) over `project`, after the
    * schema pass, with the registry index of the session's registered kinds.
    */
-  #runValidators(context: SchemaContext, project: Project): void {
+  async #runValidators(context: SchemaContext, project: Project): Promise<void> {
     if (this.#pendingValidators.size === 0) return;
     const pending = this.#pendingValidators;
     this.#pendingValidators = new Set();
@@ -1915,10 +1985,16 @@ export class ProjectSession {
       target: context.target,
       registry: context.registries(project),
     };
-    for (const entry of this.#validators) {
-      if (!pending.has(entry.validator.id)) continue;
-      this.#validatorProblems.set(entry.validator.id, runValidator(entry, input));
-    }
+    const generation = this.#generation;
+    // Validators of third-party plugins resolve through their workers (ADR 0035 D3); all run
+    // at once and their problems are kept in validator order.
+    const results = await Promise.all(
+      this.#validators
+        .filter((entry) => pending.has(entry.validator.id))
+        .map(async (entry) => [entry.validator.id, await runValidator(entry, input)] as const),
+    );
+    if (generation !== this.#generation) return;
+    for (const [id, problems] of results) this.#validatorProblems.set(id, problems);
   }
 
   #validateElement(
@@ -2236,6 +2312,7 @@ export class ProjectSession {
           ...(this.#scriptingProblem === null ? [] : [this.#scriptingProblem]),
           ...this.#renameProblems,
           ...this.#overwriteProblems(project),
+          ...this.#unavailablePluginProblems(project),
           ...schemaProblems,
           ...validatorProblems,
         ],

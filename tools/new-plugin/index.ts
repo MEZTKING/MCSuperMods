@@ -315,7 +315,9 @@ export function validateManifest(manifest: unknown): string[] {
     if (!Array.isArray(m.schemas) || m.schemas.length > MANIFEST_SCHEMAS_MAX) {
       problems.push(`schemas: must be an array of at most ${MANIFEST_SCHEMAS_MAX} paths`);
     } else {
-      m.schemas.forEach((schema, index) => relativePath(schema, `schemas/${index}`));
+      m.schemas.forEach((schema, index) => {
+        relativePath(schema, `schemas/${index}`);
+      });
     }
   }
   if (!Array.isArray(m.capabilities) || m.capabilities.length > MANIFEST_CAPABILITIES.length) {

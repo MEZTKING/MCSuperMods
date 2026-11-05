@@ -7,8 +7,9 @@
  * @packageDocumentation
  */
 
-import { type Element, type Problem, type Project, requireSyncResult } from '@msm/core';
+import type { Element, Problem, Project } from '@msm/core';
 import type {
+  MaybePromise,
   OutputLayer,
   Plugin,
   ProjectValidator,
@@ -84,20 +85,19 @@ export function validatorsFor(
 }
 
 /**
- * Runs one validator over the project. A throw becomes one `validator.failed` warning.
+ * Runs one validator over the project, awaiting a validator that resolves later (a
+ * third-party plugin's, through its worker; ADR 0035 D3). A throw or rejection becomes one
+ * `validator.failed` warning.
  *
  * @param entry - The validator.
  * @param input - The project's elements, the target and the registry ids.
  */
-export function runValidator(
+export async function runValidator(
   entry: RegisteredValidator,
   input: { elements: readonly Element[]; target: Target; registry: ValidationRegistry },
-): Problem[] {
+): Promise<Problem[]> {
   try {
-    const problems = requireSyncResult(
-      entry.validator.validate(input),
-      `The check ${entry.validator.id}`,
-    );
+    const problems = await entry.validator.validate(input);
     return problems.map((problem) => ({ ...problem }));
   } catch (error) {
     return [
@@ -119,23 +119,27 @@ export function runValidator(
  * @param lower - Lowers one element for the export's target; may throw.
  * @param layers - The layers the exporter packages.
  */
-export function blockingValidatorErrors(
+export async function blockingValidatorErrors(
   problems: readonly Problem[],
   project: Project,
-  lower: (element: Element) => readonly { layer: OutputLayer }[],
+  lower: (element: Element) => MaybePromise<readonly { layer: OutputLayer }[]>,
   layers: readonly OutputLayer[],
-): Problem[] {
+): Promise<Problem[]> {
   const elements = new Map(projectElements(project).map((element) => [element.id, element]));
   const wanted = new Set(layers);
-  return problems.filter((problem) => {
-    if (problem.severity !== 'error') return false;
-    if (problem.elementId === undefined) return true;
-    const element = elements.get(problem.elementId);
-    if (element === undefined) return true;
-    try {
-      return lower(element).some((file) => wanted.has(file.layer));
-    } catch {
-      return true;
+  const blocking: Problem[] = [];
+  for (const problem of problems) {
+    if (problem.severity !== 'error') continue;
+    const element = problem.elementId === undefined ? undefined : elements.get(problem.elementId);
+    if (element === undefined) {
+      blocking.push(problem);
+      continue;
     }
-  });
+    try {
+      if ((await lower(element)).some((file) => wanted.has(file.layer))) blocking.push(problem);
+    } catch {
+      blocking.push(problem);
+    }
+  }
+  return blocking;
 }
