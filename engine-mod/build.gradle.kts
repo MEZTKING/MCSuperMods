@@ -1,5 +1,5 @@
 plugins {
-    id("net.fabricmc.fabric-loom") version providers.gradleProperty("loom_version").get()
+    id("net.fabricmc.fabric-loom") // version from settings.gradle.kts (loom_version)
 }
 
 version = providers.gradleProperty("mod_version").get()

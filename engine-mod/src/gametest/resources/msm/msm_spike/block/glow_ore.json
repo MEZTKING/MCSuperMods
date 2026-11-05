@@ -1,0 +1,37 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 3.0,
+      "requires_tool": true,
+      "resistance": 3.0
+    },
+    "msm:light_emitter": {
+      "level": 4
+    },
+    "msm:on_interact": {
+      "event": "msm_spike:shimmer"
+    }
+  },
+  "events": {
+    "msm_spike:shimmer": {
+      "actions": [
+        {
+          "sound": "minecraft:block.amethyst_block.chime",
+          "type": "play_sound"
+        },
+        {
+          "count": 2,
+          "item": "msm_spike:shard",
+          "type": "give_item"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:building_blocks",
+    "max_stack_size": 64,
+    "rarity": "common"
+  },
+  "sound_type": "amethyst"
+}

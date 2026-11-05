@@ -1197,3 +1197,18 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 **Next**
 - Orchestrator: decide the "no block item" encoding (ADR 0025 D2); add the `build-msm-mcdoc` row to `tools/README.md`.
 - B93 reads the corpus in JUnit (skip `expected-errors.json`; the prefix selects block or item); B94 uses `MSM_SCHEMA_REFS`.
+
+---
+
+## 2026-11-05 — executor — B90 registry-freeze spike
+
+**What**
+- `engine-mod/`: Gradle 9.8.2 wrapper, Kotlin DSL build with Loom `net.fabricmc.fabric-loom` 1.19.3, Loader 0.20.1, Fabric API 0.165.2+26.3, Minecraft 26.3, Java 25. `msm_runtime` scans `msm/` in all mod containers at `onInitialize`, parses block and item definitions (ADR 0025 subset, Gson), registers `MsmBlock` plus `BlockItem` and `MsmItem`, runs `msm:on_interact` events (`play_sound`, `give_item`).
+- GameTest mod `msm_runtime_gametest` (Loom `fabricApi.configureTests`) ships `msm/msm_spike/` and a little `data/`; five GameTests pass headless; `./gradlew build` runs them.
+- ADR 0024 written (Proposed); root `.gitignore` ignores `.gradle/`, `build/`, `run/`.
+
+**Decisions**
+- Dynamic registration works on 26.3; no Tier 2 fallback needed. Creative tabs use `fabric-creative-tab-api-v1` (`CreativeModeTabEvents`), keys built from definition ids.
+
+**Next**
+- B93: Codecs, full components and actions, JUnit over the corpus; production-jar scan exercised by B99's headless server check; client assets checked in game.

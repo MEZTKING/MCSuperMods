@@ -1,0 +1,15 @@
+{
+  "pools": [
+    {
+      "entries": [
+        {
+          "name": "msm_spike:shard",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "msm_spike:blocks/glow_ore",
+  "type": "minecraft:block"
+}

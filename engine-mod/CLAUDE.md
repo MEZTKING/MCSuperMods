@@ -1,6 +1,6 @@
 # engine-mod/ — Fabric runtime mod
 
-No code yet; this directory is planned for Phase 4. This file describes intent and conventions.
+Status: B90 registry-freeze spike done (ADR 0024): Gradle build, loader, `MsmBlock`/`MsmItem`, GameTests pass; B93 builds runtime v1. This file describes intent and conventions.
 
 ## Purpose
 
@@ -33,11 +33,10 @@ No code yet; this directory is planned for Phase 4. This file describes intent a
 - Don't hardcode content.
 - Don't add Kotlin.
 
-## Commands (planned)
+## Commands
 
-- `./gradlew build`
-- `./gradlew runClient`
-- `./gradlew runGametest`
+- `JAVA_HOME=<jdk 25> ./gradlew build` (also runs the GameTests)
+- `./gradlew runGameTest` (headless GameTest server) / `./gradlew runClient`
 
 ## Read next
 
