@@ -9,7 +9,7 @@
  *   modification time, then name), skipping the `-sources` and `-dev` jars Gradle also writes.
  *
  * `<mc>` is the target's runtime version key ({@link runtimeVersionKey}): its `mcVersion` up to
- * the first `-` (`26.4-snapshot-7` → `26.4`). A missing jar is `null`, never an error: the
+ * the first `-` (`<major>.<minor>-snapshot-<n>` → `<major>.<minor>`). A missing jar is `null`, never an error: the
  * exporter then reports `export.runtime-missing` and the user can still choose "Separate
  * runtime and GeckoLib (for modpacks)".
  *
@@ -30,7 +30,7 @@ export const MAX_RUNTIME_JAR_BYTES = 64 * 1024 * 1024;
 /** A Gradle runtime jar name: `msm_runtime-<version>+mc<mc>.jar`, not `-sources` or `-dev`. */
 const RUNTIME_JAR_NAME = /^msm_runtime-.+\+mc([0-9][0-9A-Za-z.]*)\.jar$/;
 const EXCLUDED_SUFFIX = /-(?:sources|dev)\.jar$/;
-/** A runtime version key: digits and dots, for example `26.3`. */
+/** A runtime version key: digits and dots (`<major>.<minor>`). */
 const VERSION_KEY = /^[0-9][0-9A-Za-z.]*$/;
 
 /** Where the host looks for the runtime jars. */
@@ -44,8 +44,9 @@ export interface RuntimeJarLocation {
 }
 
 /**
- * The runtime version key of a target: its `mcVersion` up to the first `-` (`26.4-snapshot-7`
- * → `26.4`, `26.3` → `26.3`). It also equals the target id without `mc-`.
+ * The runtime version key of a target: its `mcVersion` up to the first `-`
+ * (`<major>.<minor>-snapshot-<n>` → `<major>.<minor>`; a release version is its own key). It
+ * also equals the target id without `mc-`.
  *
  * @param mcVersion - The target's `mcVersion`.
  */
@@ -60,7 +61,7 @@ export function stagedRuntimeJarName(versionKey: string): string {
 }
 
 /**
- * The version key of a Gradle runtime jar name (`msm_runtime-0.6.1+mc26.3.jar` → `26.3`), or
+ * The version key of a Gradle runtime jar name (`msm_runtime-<version>+mc<mc>.jar` → `<mc>`), or
  * `null` for anything else (sources and dev jars, jars without `+mc<mc>`).
  */
 export function runtimeJarVersionKey(name: string): string | null {
@@ -110,7 +111,7 @@ export async function newestRuntimeJars(dir: string): Promise<Map<string, string
  * The newest runtime jar for `versionKey` in `dir`, or `null` when there is none.
  *
  * @param dir - `engine-mod/build/libs/`.
- * @param versionKey - The target's runtime version key, for example `26.3`.
+ * @param versionKey - The target's runtime version key ({@link runtimeVersionKey}).
  */
 export async function newestRuntimeJar(dir: string, versionKey: string): Promise<string | null> {
   return (await newestRuntimeJars(dir)).get(versionKey) ?? null;

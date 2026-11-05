@@ -1,8 +1,9 @@
 # Publishes a draft GitHub Release made by release.yml (Actions > Publish release > Run workflow).
 # The user allowed the main session to publish releases on 2026-11-05; before that, drafts
 # were published by hand (ADR 0018). The run refuses unless the draft for the tag exists, is
-# the only release for that tag, and holds exactly the installer, its `.blockmap` and
-# `latest.yml`, which the in-app updater needs.
+# the only release for that tag, and holds exactly four assets: the installer, its `.blockmap`
+# and `latest.yml`, which the in-app updater needs, and the `@msm/plugin-api` tarball
+# `msm-plugin-api-<version>.tgz` (ADR 0036).
 name: Publish release
 
 on:
@@ -42,9 +43,10 @@ jobs:
           exe=$(grep -c '\.exe$' <<<"$assets" || true)
           map=$(grep -c '\.exe\.blockmap$' <<<"$assets" || true)
           yml=$(grep -cx 'latest.yml' <<<"$assets" || true)
+          tgz=$(grep -c '^msm-plugin-api-.*\.tgz$' <<<"$assets" || true)
           total=$(grep -c . <<<"$assets" || true)
-          if [ "$exe" -ne 1 ] || [ "$map" -ne 1 ] || [ "$yml" -ne 1 ] || [ "$total" -ne 3 ]; then
-            echo "::error::The ${TAG} draft must hold exactly the .exe, .exe.blockmap and latest.yml."
+          if [ "$exe" -ne 1 ] || [ "$map" -ne 1 ] || [ "$yml" -ne 1 ] || [ "$tgz" -ne 1 ] || [ "$total" -ne 4 ]; then
+            echo "::error::The ${TAG} draft must hold exactly the .exe, .exe.blockmap, latest.yml and the msm-plugin-api tarball."
             exit 1
           fi
           id=$(jq -r '.[0].id' <<<"$releases")

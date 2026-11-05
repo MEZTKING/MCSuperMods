@@ -16,7 +16,7 @@
 // `engine-mod/versions/<mc>.properties` has no jar (or a wrapper file is missing).
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { newestRuntimeJars, stagedRuntimeJarName } from '../src/main/platform/runtime-jar.ts';
 
 /** The Minecraft versions `engine-mod/versions/` lists (`<mc>.properties`), sorted. */
@@ -118,6 +118,17 @@ async function main() {
   }
 }
 
-if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {
+/** Whether this file is the script node was started with (not imported by a test). */
+function isEntryPoint() {
+  const entry = process.argv[1];
+  if (entry === undefined) return false;
+  const self = fileURLToPath(import.meta.url);
+  const started = resolve(entry);
+  return process.platform === 'win32'
+    ? self.toLowerCase() === started.toLowerCase()
+    : self === started;
+}
+
+if (isEntryPoint()) {
   await main();
 }

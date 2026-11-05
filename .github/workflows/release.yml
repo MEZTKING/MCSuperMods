@@ -5,8 +5,9 @@
 # Runs on `v*` tags and manually. On a tag the workflow creates one DRAFT GitHub Release of
 # MEZTKING/MCSuperMods named after the version in app/package.json, with the CHANGELOG.md
 # section for that version as its body, then electron-builder
-# publishes into it (ADR 0018): the installer, its `.blockmap` and `latest.yml`, which a last
-# step checks. The maintainer reviews and
+# publishes into it (ADR 0018): the installer, its `.blockmap` and `latest.yml`, plus the
+# `@msm/plugin-api` tarball `msm-plugin-api-<version>.tgz` for third-party plugin authors
+# (ADR 0036), which a last step checks. The maintainer reviews and
 # publishes the draft by hand; the in-app updater only sees published releases.
 #
 # Manual runs (Actions > Release > Run workflow):
@@ -108,8 +109,9 @@ jobs:
           else
             echo "${RELEASE_TAG} already at $sha"
           fi
-      # The msm_runtime jar the app nests in Fabric content jars (ADR 0026 D4): built with JDK 25
-      # (JUnit and GameTests included) and staged as app/build/runtime/msm_runtime.jar before
+      # The msm_runtime jars the app nests in Fabric content jars, one per Minecraft version in
+      # engine-mod/versions/ (ADR 0026 D4, ADR 0038 D4): built with JDK 25 (JUnit and GameTests
+      # included) and staged as app/build/runtime/msm_runtime-mc-<mc>.jar before
       # electron-builder packages the app.
       - uses: actions/setup-java@v6
         with:
@@ -121,25 +123,46 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('engine-mod/*.gradle.kts', 'engine-mod/gradle.properties', 'engine-mod/gradle/wrapper/gradle-wrapper.properties') }}
+          key: gradle-${{ runner.os }}-${{ hashFiles('engine-mod/*.gradle.kts', 'engine-mod/gradle.properties', 'engine-mod/versions/*.properties', 'engine-mod/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: gradle-${{ runner.os }}-
-      - name: Build msm_runtime
+      # One build per version, sequentially in one checkout (each writes its own +mc<mc> jar).
+      - name: Build msm_runtime for every version
         working-directory: engine-mod
         shell: bash
-        run: ./gradlew build --no-daemon
-      - name: Stage the runtime jar for the app
-        shell: bash
         run: |
-          mapfile -t jars < <(ls engine-mod/build/libs/msm_runtime-*.jar | grep -v -e '-sources\.jar$' -e '-dev\.jar$')
-          if [ "${#jars[@]}" -ne 1 ]; then
-            echo "::error::Expected one msm_runtime jar in engine-mod/build/libs, found ${#jars[@]}: ${jars[*]}"
+          shopt -s nullglob
+          files=(versions/*.properties)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "::error::engine-mod/versions/ lists no Minecraft version."
             exit 1
           fi
-          mkdir -p app/build/runtime
-          cp "${jars[0]}" app/build/runtime/msm_runtime.jar
-          echo "Staged ${jars[0]} as app/build/runtime/msm_runtime.jar"
+          for file in "${files[@]}"; do
+            mc=$(basename "$file" .properties)
+            echo "::group::msm_runtime for Minecraft ${mc}"
+            ./gradlew build -Pmc="${mc}" --no-daemon
+            echo "::endgroup::"
+          done
       - run: pnpm install --frozen-lockfile
+      # `--require` fails when any version in engine-mod/versions/ has no jar (or the Gradle
+      # wrapper is missing). electron-builder ships build/runtime/ as resources/runtime/.
+      - name: Stage the runtime jars for the app
+        run: node app/scripts/stage-runtime.mjs --require
       - run: pnpm build
+      # The plugin API tarball for third-party plugin authors (ADR 0036): the tsup build in
+      # packages/plugin-api/dist/, packed with `publishConfig` pointing at it.
+      - name: Pack the plugin API tarball
+        shell: bash
+        run: |
+          pnpm --filter @msm/plugin-api build
+          pnpm --filter @msm/plugin-api pack:tarball
+          version=$(node -p "require('./packages/plugin-api/package.json').version")
+          tarball="packages/plugin-api/dist/msm-plugin-api-${version}.tgz"
+          if [ ! -f "$tarball" ]; then
+            echo "::error::Expected $tarball after pack:tarball."
+            ls packages/plugin-api/dist
+            exit 1
+          fi
+          echo "PLUGIN_API_TARBALL=$tarball" >> "$GITHUB_ENV"
       # One draft per tag. electron-builder's own parallel uploads split assets over two drafts
       # (seen on v0.2.2 and v0.6.0), so it builds without publishing and the files are uploaded
       # here. A re-run first deletes leftover unpublished drafts for the tag; a published
@@ -178,9 +201,11 @@ jobs:
           gh release upload "${RELEASE_TAG}" \
             "app/dist/MCSuperMods-${version}-win-x64.exe" \
             "app/dist/MCSuperMods-${version}-win-x64.exe.blockmap" \
-            app/dist/latest.yml --clobber
-      # The updater needs all three files on one release: the installer, its `.blockmap` and
-      # `latest.yml`. Upload `latest.yml` again if it is missing; fail on anything else.
+            app/dist/latest.yml \
+            "${PLUGIN_API_TARBALL}" --clobber
+      # The draft holds exactly four files: the installer, its `.blockmap` and `latest.yml` (the
+      # updater needs all three on one release) and the plugin API tarball. Upload `latest.yml`
+      # again if it is missing; fail on anything else.
       - name: Check the draft release assets
         if: env.RELEASE_TAG != ''
         shell: bash
@@ -198,15 +223,21 @@ jobs:
           if ! assets | grep -qx "latest.yml"; then
             gh release upload "${RELEASE_TAG}" app/dist/latest.yml --clobber
           fi
-          names=$(assets)
+          names=$(assets | tr -d '\r')
           echo "$names"
           missing=0
-          for name in "MCSuperMods-${version}-win-x64.exe" "MCSuperMods-${version}-win-x64.exe.blockmap" "latest.yml"; do
+          tarball=$(basename "${PLUGIN_API_TARBALL}")
+          for name in "MCSuperMods-${version}-win-x64.exe" "MCSuperMods-${version}-win-x64.exe.blockmap" "latest.yml" "$tarball"; do
             if ! grep -qx "$name" <<< "$names"; then
               echo "::error::The draft release ${RELEASE_TAG} is missing $name."
               missing=1
             fi
           done
+          total=$(grep -c . <<< "$names" || true)
+          if [ "$total" -ne 4 ]; then
+            echo "::error::The draft release ${RELEASE_TAG} must hold exactly four assets, found $total."
+            missing=1
+          fi
           exit $missing
       # Installer budget (tools/check-size/README.md): the NSIS installer is at most 150 MB.
       - name: Check installer size
@@ -227,4 +258,5 @@ jobs:
             app/dist/*.exe
             app/dist/*.blockmap
             app/dist/latest.yml
+            packages/plugin-api/dist/msm-plugin-api-*.tgz
           if-no-files-found: error

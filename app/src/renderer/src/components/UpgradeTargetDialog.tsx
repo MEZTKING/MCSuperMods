@@ -156,7 +156,6 @@ function UpgradePreview({ report }: { report: MigrationReport }) {
           <ul className="list-disc pl-5" data-testid="upgrade-target-changes">
             {report.changes.map((change, index) => (
               // Changes have no id of their own; the order is fixed for one report.
-              // biome-ignore lint/suspicious/noArrayIndexKey: see above
               <li key={index}>
                 <span className="font-mono">{change.elementId}</span>: {change.description}
                 {change.kind === 'remove' ? ' (removed)' : ''}
@@ -173,9 +172,10 @@ function UpgradePreview({ report }: { report: MigrationReport }) {
             <h3 className="font-semibold">{heading}</h3>
             <ul className="list-disc pl-5" data-testid={`upgrade-target-problems-${severity}`}>
               {problems.map((problem, index) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: problems have no id of their own
                 <li key={index}>
-                  {problem.elementId === undefined ? '' : (
+                  {problem.elementId === undefined ? (
+                    ''
+                  ) : (
                     <span className="font-mono">{problem.elementId}: </span>
                   )}
                   {problem.message}

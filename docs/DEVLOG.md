@@ -2300,3 +2300,23 @@ Next:
 
 **Next**
 - Orchestrator: record the 26.4 findings and multipliers in ADR 0042's Status (not in B181's Owns); decide `enchantment_value` 0 semantics for the schema text and B182. B182: generator, sample mod, parity.
+
+## 2026-11-05 — executor — B180: armour, custom tool materials, equipment kind, API 1.1.0
+
+**What**
+- Schema (`packages/schemas/mcdoc/msm/definition.mcdoc`, ADR 0042 D1, D3): `msm:armor` (`Armor { slot: ArmorSlot, material: (ArmorMaterialName | ArmorMaterial) }`, `ArmorMaterial` with `defense` struct `ArmorDefense`), `Tool.tier: (ToolTier | ToolMaterial)`, `Tool.attack_damage?`, `Tool.attack_speed?`; `enchantment_value` doc says 0 means not enchantable (the runtime drops `enchantable`, main-session decision). `symbols.json` regenerated (98 types). Corpus: valid `item-armor-helmet`, `item-armor-custom-material`, `item-tool-custom-material`, `item-tool-attack-overrides`; invalid `item-armor-bad-slot` (`/components/msm:armor/slot` `schema.invalid-enum`), `item-armor-material-missing-asset` (`/components/msm:armor/material/equipment_asset` `schema.missing-field`), `item-tool-material-negative-speed` (`/components/msm:tool/tier/speed` `schema.out-of-range`); `item-bad-tool-tier` now expects `schema.no-union-match` (same path); element cases `element/valid/item-armor-helmet.json`, `item-tool-custom-material.json` (the coverage test requires every element field in a valid file).
+- `@msm/plugin-api` 1.1.0: `TargetFacts.items?: ItemFacts { armorMaterials }`, `ProjectStarter.creator?: StarterCreatorInfo { group: CreatorGroup; blurb }`, `SetStarterParameter` (exported, not yet in the `StarterParameter` union, see Decisions), `ElementMeta.creator?: ElementCreatorMeta { flowId, setId, values, generatedId }` (declared in `model.ts`, ADR 0008); CHANGELOG, type tests.
+- `@msm/core`: `createElement({ creator })`, load (`toCreatorMeta`: a malformed value is dropped, the element still loads) and save (sorted keys) of `meta.creator`; `test/model-creator.test.ts`.
+- `@msm/plugin-resourcepack`: kind `minecraft:equipment` (folder `equipment`, schema `::java::assets::equipment::Equipment`, default `{ layers: {} }`, lowered to `assets/<ns>/equipment/<path>.json`), template `equipment-humanoid` (category Models), goldens for both targets.
+- `@msm/plugin-blocks-items`: `toolTierName`, `isCustomToolMaterial`; validators `blocks-items.unknown-armor-material` (error, skipped without `target.items`), `blocks-items.unknown-equipment-asset` (warning), `blocks-items.component-conflict` (error); `unknown-tool-tier` ignores the object form; templates `msm_item_tool_custom_material` ("Tool with a custom material") and `msm_item_armor_helmet` ("Armour piece (helmet)"); goldens `item/ruby_helmet`, `item/ruby_pickaxe` and the two templates per target.
+- Targets: `items.armorMaterials` (nine names) on 26.3 and 26.4, both verified with `javap`; target tests check each name is a vanilla `equipment` asset; schema coverage now asserts zero unsupported nodes for `msm:item`, `msm:item_definition` and `::java::assets::equipment::Equipment`.
+- Counts: 60 kinds, 119 templates (resourcepack 15, blocks-items 9).
+
+**Decisions**
+- Tag-only ids keep `#[id(registry=..., tags="required")]`: the vendored format uses it, build and `validateJson` support it as is; no normaliser change (recorded in ADR 0042 Status with the `javap` findings).
+- `SetStarterParameter` is declared but not added to the `StarterParameter` union: adding it breaks typecheck in `app/.../wizard/wizard-model.ts` and `packages/plugins/library/src/content/parameters.ts` (B183's files). B183 adds it to the union with the consumers.
+- The equipment folder is a constant in the kind (ADR 0042 D2), not a `ResourceFolderKey`: a new required key would break contributed targets in 1.x.
+- Plugin tests that pinned `^${major}.${minor}.0` now pin `^${major}.0.0` (built-ins keep `^1.0.0`).
+
+**Next**
+- B183: equipment library example (the exporters `library.test.ts` per-kind test fails until one exists), `set` in the union. Item Studio tier select is empty for the union `tier` (app owner). B181/B182 read the corpus cases above.

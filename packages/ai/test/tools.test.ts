@@ -149,8 +149,7 @@ describe('tool catalogue', () => {
   it('keeps element data a free-form object', () => {
     const create = toolParams().find((t) => t.name === 'create_elements');
     const json = JSON.stringify(create?.input_schema);
-    expect(json).toContain('"data":{"description"');
-    expect(json).toContain('"additionalProperties":true');
+    expect(json).toContain('"data":{"type":"object","additionalProperties":true');
   });
 });
 

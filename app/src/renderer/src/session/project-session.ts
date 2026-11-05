@@ -59,10 +59,10 @@ import type {
   BundleContext,
   Command,
   ContentBundle,
+  ElementKind,
   ElementTemplate,
   ExampleProject,
   Exporter,
-  ElementKind,
   ExporterOption,
   ImportResult,
   MaybePromise,
@@ -855,7 +855,8 @@ export class ProjectSession {
     const kind = this.registry.get(kindId);
     if (kind === undefined) return undefined;
     const target = this.#currentTarget();
-    const cached = target === undefined ? undefined : this.#kindDefaults.get(target.id)?.get(kindId);
+    const cached =
+      target === undefined ? undefined : this.#kindDefaults.get(target.id)?.get(kindId);
     return cached ?? kind.defaultData;
   }
 

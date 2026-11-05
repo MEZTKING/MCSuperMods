@@ -35,7 +35,13 @@ describe('models', () => {
     expect(estimateCost('claude-opus-5-5', usage)).toBeCloseTo(6.2, 6);
     expect(estimateCost('claude-sonnet-5-5', usage)).toBeCloseTo(3.2, 6);
     expect(
-      estimateCost('claude-opus-5-5', { ...usage, inputTokens: 0, outputTokens: 0, cacheReadInputTokens: 0, cacheCreationInputTokens: 1_000_000 }),
+      estimateCost('claude-opus-5-5', {
+        ...usage,
+        inputTokens: 0,
+        outputTokens: 0,
+        cacheReadInputTokens: 0,
+        cacheCreationInputTokens: 1_000_000,
+      }),
     ).toBeCloseTo(5, 6);
   });
 
@@ -48,8 +54,16 @@ describe('models', () => {
   it('validates the default settings', () => {
     expect(aiSettingsSchema.parse(DEFAULT_AI_SETTINGS)).toEqual(DEFAULT_AI_SETTINGS);
     expect(DEFAULT_AI_SETTINGS.limits).toEqual(DEFAULT_LIMITS);
-    expect(DEFAULT_LIMITS.chat).toEqual({ maxToolTurns: 24, maxOutputTokens: 100_000, taskBudget: true });
-    expect(DEFAULT_LIMITS.build).toEqual({ maxToolTurns: 150, maxOutputTokens: 600_000, taskBudget: true });
+    expect(DEFAULT_LIMITS.chat).toEqual({
+      maxToolTurns: 24,
+      maxOutputTokens: 100_000,
+      taskBudget: true,
+    });
+    expect(DEFAULT_LIMITS.build).toEqual({
+      maxToolTurns: 150,
+      maxOutputTokens: 600_000,
+      taskBudget: true,
+    });
     expect(DEFAULT_AI_SETTINGS.effort).toEqual({ chat: 'medium', build: 'high' });
   });
 });

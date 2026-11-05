@@ -146,6 +146,8 @@ interface Harness {
   written: string[];
   /** What `exports.runtimeJar()` resolves to (default `null`: no runtime jar). */
   runtimeJar: Uint8Array | null;
+  /** The target id of every `exports.runtimeJar` call, in order. */
+  runtimeJarTargets: string[];
   /** What `exports.geckolibJar()` resolves to (default `null`: not cached, offline). */
   geckolibJar: Uint8Array | null;
   /** Every location `listLocations` reports. */
@@ -214,6 +216,7 @@ async function renderApp(
     revealed: [],
     saved: [],
     runtimeJar: null,
+    runtimeJarTargets: [],
     geckolibJar: null,
     worlds: [{ dir: 'Survival', name: 'Survival', lastModified: '2026-01-01T00:00:00.000Z' }],
     installs: [],
@@ -349,7 +352,10 @@ async function renderApp(
         harness.written.push(...files.map((file) => file.name));
         return { paths: files.map((file) => `${folder}/${file.name}`) };
       },
-      runtimeJar: async () => harness.runtimeJar,
+      runtimeJar: async (targetId) => {
+        harness.runtimeJarTargets.push(targetId);
+        return harness.runtimeJar;
+      },
       geckolibJar: async () => harness.geckolibJar,
       writeTree: unavailable,
       gradleWrapper: async () => null,
@@ -833,6 +839,74 @@ describe('App library (starters and examples)', () => {
   });
 });
 
+describe('App project target (ADR 0037 D4)', () => {
+  const snapshotTarget = builtInTargets.find((entry) => entry.target.channel === 'snapshot')
+    ?.target as (typeof builtInTargets)[number]['target'];
+
+  it('creates a project for the target chosen in the New project dialog', async () => {
+    const harness = await renderApp({
+      plugins: builtInPlugins.filter((plugin) => plugin.id !== 'msm.library'),
+    });
+    expect(screen.getByTestId('project-target').textContent).toBe(defaultTargetId);
+    await harness.menu('newProjectFromStarter');
+    const dialog = await screen.findByTestId('new-project-dialog');
+    const user = userEvent.setup();
+    const select = within(dialog).getByTestId('new-project-target') as HTMLSelectElement;
+    expect(select.value).toBe(defaultTargetId);
+    await user.selectOptions(select, snapshotTarget.id);
+    await user.click(within(dialog).getByTestId('new-project-dialog-submit'));
+    await toast(/^New project: /);
+    expect(harness.session.snapshot.project?.targets).toEqual([snapshotTarget.id]);
+    await waitFor(() =>
+      expect(screen.getByTestId('project-target').textContent).toBe(`${snapshotTarget.id}snapshot`),
+    );
+    expect(screen.getByTestId('project-target-snapshot')).toBeTruthy();
+  });
+
+  it('upgrades the target from the menu, shows it in the status bar and undoes it', async () => {
+    const harness = await renderApp();
+    expect(screen.queryByTestId('project-target-snapshot')).toBeNull();
+    await harness.menu('upgradeTarget');
+    const dialog = await screen.findByTestId('upgrade-target-dialog');
+    expect(within(dialog).queryByTestId(`upgrade-target-${defaultTargetId}`)).toBeNull();
+    const option = within(dialog).getByTestId(`upgrade-target-${snapshotTarget.id}`);
+    expect(within(option).getByTestId(`upgrade-target-${snapshotTarget.id}-snapshot`)).toBeTruthy();
+    expect((await within(dialog).findByTestId('upgrade-target-summary')).textContent).toBe(
+      '0 changes, 0 problems.',
+    );
+    const user = userEvent.setup();
+    await user.click(within(dialog).getByTestId('upgrade-target-dialog-submit'));
+    await toast(`Project target changed to ${snapshotTarget.id}.`);
+    expect(harness.session.snapshot.project?.targets).toEqual([snapshotTarget.id]);
+    expect(screen.getByTestId('project-target').textContent).toBe(`${snapshotTarget.id}snapshot`);
+
+    // Test in Minecraft and the runtime jar follow the project's target.
+    harness.runtimeJar = new Uint8Array([1, 2, 3]);
+    await act(async () => {
+      await harness.session.testInMinecraft();
+    });
+    expect(harness.runtimeJarTargets.at(-1)).toBe(snapshotTarget.id);
+    expect(harness.testRuns.at(-1)?.targetId).toBe(snapshotTarget.id);
+
+    await act(async () => {
+      harness.session.undo();
+    });
+    expect(harness.session.snapshot.project?.targets).toEqual([defaultTargetId]);
+    expect(screen.getByTestId('project-target').textContent).toBe(defaultTargetId);
+  });
+
+  it('offers "Upgrade project target…" in the palette', async () => {
+    const harness = await renderApp();
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    const user = userEvent.setup();
+    await user.click(within(palette).getByTestId('command-upgradeTarget'));
+    const dialog = await screen.findByTestId('upgrade-target-dialog');
+    await user.click(within(dialog).getByText('Cancel'));
+    await waitFor(() => expect(screen.queryByTestId('upgrade-target-dialog')).toBeNull());
+  });
+});
+
 describe('App function problems', () => {
   it('puts the caret at the problem column within the line', async () => {
     const harness = await renderApp();
@@ -912,6 +986,8 @@ describe('App Fabric mod jar export', () => {
     await userEvent.setup().click(await screen.findByTestId('fabric-jar-dialog-submit'));
     await toast(/^Exported the Fabric mod jar to /);
     expect(harness.saved).toHaveLength(1);
+    // ADR 0038 D4: the runtime of the project's target.
+    expect(harness.runtimeJarTargets).toEqual([defaultTargetId]);
   });
 
   it('is gated by errors in any layer and offered in the palette and the Export menu', async () => {

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { ModelClient } from '../src/index';
 import {
   type AiModelScript,
   type AiSettings,
@@ -6,18 +7,23 @@ import {
   createConversation,
   FALLBACK_BETA,
   ModelClientError,
-  type ModelRequest,
   ModelOutputError,
+  type ModelRequest,
   runAssistant,
   ScriptedModelClient,
   TASK_BUDGET_BETA,
   toolParams,
 } from '../src/index';
-import type { ModelClient } from '../src/index';
 import { doneEvent, limits, recordingHost, settings, startRequest } from './helpers';
 
-function setup(script: AiModelScript, model: 'claude-opus-5-5' | 'claude-haiku-5-5' = 'claude-opus-5-5') {
-  return { client: new ScriptedModelClient(script), conversation: createConversation('conv1', model) };
+function setup(
+  script: AiModelScript,
+  model: 'claude-opus-5-5' | 'claude-haiku-5-5' = 'claude-opus-5-5',
+) {
+  return {
+    client: new ScriptedModelClient(script),
+    conversation: createConversation('conv1', model),
+  };
 }
 
 function toolResultsOf(message: BetaMessageParam | undefined): Array<{
@@ -25,8 +31,9 @@ function toolResultsOf(message: BetaMessageParam | undefined): Array<{
   content: string;
   is_error?: boolean;
 }> {
-  if (message === undefined || typeof message.content === 'string') return [];
-  return message.content.filter((b) => b.type === 'tool_result') as never;
+  const content = message?.content;
+  if (!Array.isArray(content)) return [];
+  return content.filter((b) => b.type === 'tool_result') as never;
 }
 
 describe('runAssistant', () => {
@@ -159,7 +166,10 @@ describe('runAssistant', () => {
     const body = JSON.parse(first?.content ?? '{}');
     expect(body.INVALID_INPUT).toBeInstanceOf(Array);
     expect(body.received).toEqual({ id: 'NOT VALID' });
-    expect(JSON.parse(second?.content ?? '{}')).toEqual({ UNKNOWN_TOOL: 'format_disk', received: {} });
+    expect(JSON.parse(second?.content ?? '{}')).toEqual({
+      UNKNOWN_TOOL: 'format_disk',
+      received: {},
+    });
   });
 
   it('turns a throwing tool into an error result', async () => {
@@ -337,7 +347,9 @@ describe('runAssistant', () => {
         return { requestId: request.requestId, content: '[]', isError: false };
       }
       setTimeout(() => controller.abort(), 1);
-      return new Promise((_, reject) => signal.addEventListener('abort', () => reject(new Error())));
+      return new Promise((_, reject) =>
+        signal.addEventListener('abort', () => reject(new Error())),
+      );
     });
     await runAssistant({
       client,
@@ -454,14 +466,18 @@ describe('runAssistant', () => {
       expect(request.output_config?.effort).toBe('high');
       expect(request.model).toBe('claude-opus-5-5');
     }
-    expect(JSON.stringify(client.requests[0]?.system)).toBe(JSON.stringify(client.requests[1]?.system));
+    expect(JSON.stringify(client.requests[0]?.system)).toBe(
+      JSON.stringify(client.requests[1]?.system),
+    );
     // The volatile context is in the user message, never in the system prompt.
     expect(JSON.stringify(client.requests[0]?.system)).not.toContain('Hello');
   });
 
   it('sends the task budget only when on and at least 20,000 tokens', async () => {
     const request = async (overrides: Parameters<typeof limits>[0]): Promise<ModelRequest> => {
-      const { client, conversation } = setup({ turns: [{ content: [{ type: 'text', text: 'ok' }] }] });
+      const { client, conversation } = setup({
+        turns: [{ content: [{ type: 'text', text: 'ok' }] }],
+      });
       await runAssistant({
         client,
         conversation,
@@ -487,7 +503,10 @@ describe('runAssistant', () => {
 
   it('sends fallbacks only for models that support them and when enabled', async () => {
     const send = async (model: 'claude-opus-5-5' | 'claude-haiku-5-5', s: AiSettings) => {
-      const { client, conversation } = setup({ turns: [{ content: [{ type: 'text', text: 'ok' }] }] }, model);
+      const { client, conversation } = setup(
+        { turns: [{ content: [{ type: 'text', text: 'ok' }] }] },
+        model,
+      );
       await runAssistant({
         client,
         conversation,
