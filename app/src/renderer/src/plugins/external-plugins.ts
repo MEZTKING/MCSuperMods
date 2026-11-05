@@ -44,6 +44,7 @@ import type {
   ValidationRegistry,
 } from '@msm/plugin-api';
 import type { VanillaMcdocSymbols } from '@msm/schemas';
+import { targetById, targetFacts } from '@msm/targets';
 import { PluginProblemCodes } from '../../../shared/ipc-channels';
 import type {
   ExternalPluginEntry,
@@ -122,7 +123,10 @@ const facts = new WeakMap<object, TargetFacts>();
 export function toTargetFacts(target: TargetFacts | Target): TargetFacts {
   const cached = facts.get(target);
   if (cached !== undefined) return cached;
-  const out: TargetFacts = structuredClone({
+  // A built-in target: `@msm/targets` strips its hooks. Any other (tests, future targets):
+  // copy the data fields.
+  const builtIn = targetById(target.id)?.target === target ? targetFacts(target.id) : undefined;
+  const out: TargetFacts = builtIn ?? structuredClone({
     id: target.id,
     mcVersion: target.mcVersion,
     channel: target.channel,

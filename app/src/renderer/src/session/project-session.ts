@@ -767,9 +767,21 @@ export class ProjectSession {
     return this.#snapshot.problems.filter((problem) => problem.elementId === elementId);
   }
 
+  /**
+   * The default target for new projects (ADR 0037): the first target on the `release`
+   * channel (targets are listed newest first, and a snapshot is never the default), else the
+   * first target; `undefined` with no targets.
+   */
+  get #defaultTarget(): Target | undefined {
+    return (
+      this.#targets.find((entry) => entry.target.channel === 'release')?.target ??
+      this.#targets[0]?.target
+    );
+  }
+
   /** The id of the default target for new projects, or `undefined` with no targets. */
   get defaultTargetId(): string | undefined {
-    return this.#targets[0]?.target.id;
+    return this.#defaultTarget?.id;
   }
 
   /**
@@ -781,7 +793,7 @@ export class ProjectSession {
   get target(): Target {
     const wanted = this.#stack?.state.targets[0];
     const found = this.#targets.find((entry) => entry.target.id === wanted);
-    const target = found?.target ?? this.#targets[0]?.target;
+    const target = found?.target ?? this.#defaultTarget;
     if (target === undefined) throw new Error('No Minecraft target is available.');
     return target;
   }
@@ -2221,7 +2233,7 @@ export class ProjectSession {
     if (wanted === undefined || this.#targets.some((entry) => entry.target.id === wanted)) {
       return [];
     }
-    const fallback = this.#targets[0]?.target.id;
+    const fallback = this.#defaultTarget?.id;
     return [
       {
         severity: 'warning',
