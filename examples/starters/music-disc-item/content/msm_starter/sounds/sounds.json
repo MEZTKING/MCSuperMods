@@ -1,0 +1,19 @@
+{
+  "data": {
+    "music_disc.ruby_waltz": {
+      "sounds": [
+        {
+          "name": "minecraft:records/cat",
+          "stream": true
+        }
+      ]
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sounds",
+  "kind": "minecraft:sounds",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Defines the sound event msm_starter:music_disc.ruby_waltz. It plays the vanilla file records/cat for now: choose Import assets, then Sounds, and pick your own .ogg (for example ruby_waltz.ogg; it is stored as sounds/ruby_waltz.ogg in this namespace), then change name to msm_starter:ruby_waltz. stream: true plays long music without loading it all at once."
+  }
+}

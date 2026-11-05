@@ -11,7 +11,10 @@
  * - `run_checks` runs the session's full check over the scratch project.
  * - `propose_plan` and `checkpoint` wait for the user through the {@link DecisionHost}.
  *
- * Every tool obeys the run's abort signal: a cancelled run answers `cancelled`.
+ * Every tool obeys the run's abort signal: a cancelled run answers `cancelled`. Calls run one
+ * at a time in the order they arrive, so the parallel `tool_use` blocks of one assistant turn see
+ * each other's proposals (three starters in one namespace share their `msm:mod` element, and an
+ * `update_element` may follow the `add_starter` that proposed the element).
  *
  * @packageDocumentation
  */
@@ -47,10 +50,10 @@ import {
 } from '../changeset/changeset';
 import { defaultRawValues, toValues, validateParameter } from '../components/wizard/wizard-model';
 import { assetImportError } from '../session/asset-files';
-import { assertElementIdAllowed } from '../session/element-defaults';
+import { assertElementIdAllowed, PACK_MCMETA_KIND } from '../session/element-defaults';
 import type { ProjectSession } from '../session/project-session';
 import { templateContext, templatesFor } from '../studios/templates';
-import { projectContextOf } from './project-context';
+import { MOD_KIND, projectContextOf } from './project-context';
 import { KIND_SCHEMA_SUMMARY_OPTIONS, kindSchemaSummary } from './schema-summary';
 
 /** What the executor asks the user (the panel answers; ADR 0041 D4 user-decision tools). */
@@ -230,6 +233,9 @@ function rawParameterValue(
 }
 
 /** Rejects with `cancelled` when `signal` aborts first. */
+/** Kinds a project holds at most one element of; `add_starter` keeps the project's own. */
+const SINGLETON_KINDS: readonly string[] = [PACK_MCMETA_KIND, MOD_KIND];
+
 function withSignal<T>(work: () => Promise<T>, signal: AbortSignal): Promise<T> {
   if (signal.aborted) return Promise.reject(new ToolError(ToolErrorCodes.cancelled, 'cancelled'));
   return new Promise<T>((resolve, reject) => {
@@ -267,6 +273,8 @@ export function createToolExecutor(
     renameReferences: (state, from) => session.referencesForRename(state, from),
   };
   let cache: { project: Project; version: number; state: Project } | null = null;
+  /** Settles when the call before the newest one has finished. */
+  let queue: Promise<void> = Promise.resolve();
 
   const live = (): Project => {
     const project = session.snapshot.project;
@@ -914,11 +922,19 @@ export function createToolExecutor(
           values: toValues(parameters, raw),
         });
         for (const entry of bundle.elements) assertElementIdAllowed(entry.kind, entry.id);
+        // A project has one pack.mcmeta and one mod metadata element: a starter's own are
+        // dropped (and reported as conflicts) when the project or the changeset has one, in
+        // any namespace, as they would clash on export.
+        const singletons = SINGLETON_KINDS.filter((kind) =>
+          state.namespaces.some((entry) => entry.elements.some((e) => e.kind === kind)),
+        );
+        const dropped = bundle.elements.filter((entry) => singletons.includes(entry.kind));
         created = bundleToNewItems(
-          bundle,
+          { ...bundle, elements: bundle.elements.filter((entry) => !dropped.includes(entry)) },
           state,
           (kind) => session.registry.get(kind) !== undefined,
         );
+        created.conflicts.push(...dropped.map((entry) => entry.id));
       } catch (error) {
         throw new ToolError(
           ToolErrorCodes.starterFailed,
@@ -942,7 +958,7 @@ export function createToolExecutor(
           ...(created.conflicts.length + created.assetConflicts.length === 0
             ? {}
             : {
-                note: 'Ids and asset paths listed as conflicts already exist and were not proposed again.',
+                note: 'Ids and asset paths listed as conflicts already exist (or, for pack.mcmeta and mod metadata elements, the project already has one) and were not proposed again.',
               }),
         },
       };
@@ -1041,8 +1057,19 @@ export function createToolExecutor(
       input: unknown,
       signal: AbortSignal,
     ) => Promise<ToolOutcome>;
+    // One call at a time, in arrival order (see the module comment).
+    const previous = queue;
+    const work = withSignal(async () => {
+      await previous;
+      if (signal.aborted) throw new ToolError(ToolErrorCodes.cancelled, 'cancelled');
+      return handler(parsed.input, signal);
+    }, signal);
+    queue = work.then(
+      () => undefined,
+      () => undefined,
+    );
     try {
-      const outcome = await withSignal(() => handler(parsed.input, signal), signal);
+      const outcome = await work;
       return answer(outcome.value, outcome.isError === true);
     } catch (error) {
       if (error instanceof ToolError) return failure(error.code, error.message, error.details);

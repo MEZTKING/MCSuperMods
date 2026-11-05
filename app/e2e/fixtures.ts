@@ -39,6 +39,11 @@ export interface LaunchOptions {
   reuse?: Pick<LaunchedApp, 'projectDir' | 'outDir' | 'msmHome'>;
   /** Extra Chromium or Electron switches, for example to enable software WebGL. */
   args?: readonly string[];
+  /**
+   * Absolute path of a scripted AI model script (`MSM_E2E_AI_SCRIPT`, ADR 0041 D9): one scripted
+   * client serves every AI helper run of the launch, and the key reads as set ("e2e!").
+   */
+  aiScript?: string;
 }
 
 const CLOSE_TIMEOUT_MS = 10_000;
@@ -63,6 +68,7 @@ export async function launchApp(options: LaunchOptions = {}): Promise<LaunchedAp
   env.MSM_HOME = msmHome;
   const delimiter = process.platform === 'win32' ? ';' : ':';
   if (options.pickFiles !== undefined) env.MSM_E2E_PICK_FILES = options.pickFiles.join(delimiter);
+  if (options.aiScript !== undefined) env.MSM_E2E_AI_SCRIPT = options.aiScript;
 
   const app = await _electron.launch({
     args: [appDir, '--no-sandbox', `--user-data-dir=${userData}`, ...(options.args ?? [])],

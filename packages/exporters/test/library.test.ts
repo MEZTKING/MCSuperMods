@@ -54,6 +54,7 @@ import dataPackPlugin from '@msm/plugin-datapack';
 import entitiesPlugin from '@msm/plugin-entities';
 import libraryPlugin, {
   behaviourExamples,
+  encodePng,
   entityBehaviourExamples,
   kindExamples,
   libraryExamples,
@@ -182,6 +183,146 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
       pieces: ['pickaxe', 'leggings'],
       upgrade_from: 'iron',
     },
+    {
+      material_name: 'Jade',
+      colour: '#28a060',
+      tier: 'iron',
+      pieces: [
+        'sword',
+        'helmet',
+        'spear',
+        'mace',
+        'bow',
+        'crossbow',
+        'shield',
+        'horse_armor',
+        'wolf_armor',
+      ],
+      upgrade_from: 'diamond',
+      trim_material: true,
+    },
+    {
+      material_name: 'Storm Glass',
+      tier: 'custom',
+      material_source: 'item',
+      pieces: ['bow', 'shield', 'wolf_armor'],
+      trim_material: true,
+    },
+  ],
+  weapon: [
+    {
+      weapon_name: 'Frost Bow',
+      weapon_type: 'bow',
+      draw_speed: 2,
+      ingredient: 'minecraft:diamond',
+    },
+    {
+      weapon_name: 'Oak Guard',
+      weapon_type: 'shield',
+      damage_reduction: 0.6,
+      ingredient: 'minecraft:iron_ingot',
+    },
+    {
+      weapon_name: 'Thunder Mace',
+      weapon_type: 'mace',
+      tier: 'netherite',
+      custom_damage: true,
+      attack_damage: 9,
+      attack_speed: -3.2,
+    },
+    { weapon_name: 'Amber Blade', weapon_type: 'sword', tier: 'gold' },
+    { weapon_name: 'Star Crossbow', weapon_type: 'crossbow', ingredient: 'none' },
+  ],
+  consumable: [
+    {
+      consumable_name: 'Honey Cake',
+      kind: 'food',
+      nutrition: 8,
+      can_always_eat: true,
+      effect_1: 'minecraft:absorption',
+      effect_1_chance: 0.5,
+      cooldown_seconds: 2,
+      ingredient: 'minecraft:apple',
+    },
+    {
+      consumable_name: 'Lucky Charm',
+      kind: 'charm',
+      cooldown_seconds: 15,
+      effect_1: 'minecraft:luck',
+      effect_1_level: 3,
+      effect_2: 'minecraft:night_vision',
+    },
+    {
+      consumable_name: 'Plain Water',
+      kind: 'drink',
+      returns_bottle: false,
+      effect_1: 'none',
+      effect_2: 'none',
+    },
+  ],
+  totem: [
+    {
+      totem_name: 'Phoenix Feather',
+      effect_1: 'minecraft:fire_resistance',
+      effect_2: 'none',
+      effect_3: 'minecraft:speed',
+      clear_effects: false,
+      ingredient: 'minecraft:heart_of_the_sea',
+    },
+  ],
+  enchantment: [
+    {
+      enchantment_name: 'Frost Bite',
+      applies_to: 'bows',
+      effect: 'mob_effect',
+      hit_effect: 'minecraft:slowness',
+    },
+    {
+      enchantment_name: 'Ember',
+      applies_to: 'swords',
+      effect: 'fire',
+      exclusive_with: 'damage',
+      rarity: 'rare',
+    },
+    {
+      enchantment_name: 'Push',
+      applies_to: 'crossbows',
+      effect: 'knockback',
+      exclusive_with: 'crossbow',
+    },
+    {
+      enchantment_name: 'Sturdy',
+      applies_to: 'everything',
+      effect: 'durability',
+      rarity: 'common',
+    },
+    {
+      enchantment_name: 'Quick Hands',
+      applies_to: 'tools',
+      effect: 'mining_speed',
+      exclusive_with: 'mining',
+    },
+    {
+      enchantment_name: 'Bulwark',
+      applies_to: 'armour',
+      effect: 'damage',
+      exclusive_with: 'armor',
+    },
+    {
+      enchantment_name: 'Spring Step',
+      applies_to: 'armour',
+      effect: 'knockback',
+      exclusive_with: 'boots',
+    },
+    { enchantment_name: 'Hidden Edge', exclusive_with: 'bow', in_enchanting_table: false },
+  ],
+  painting: [
+    { painting_name: 'Mountain Lake', author: 'Alex', size: '4x3', colour: '#2454c4' },
+    { painting_name: 'Grey Square', size: '1x1', image: pngDataUrl(32, 32) },
+  ],
+  'music-disc-item': [
+    { song_name: 'Night Walk', artist: 'Steve', length_seconds: 240, comparator_output: 12 },
+    { song_name: 'Old Tune', disc_type: 'vanilla', colour: '#28a060' },
   ],
   'simple-block': [
     {
@@ -211,6 +352,12 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     { item_name: 'Cloud Feather', behaviour: 'launch', launch_height: 12, cooldown_seconds: 5 },
   ],
 };
+
+/** A PNG `data:` URL of a grey picture, as the wizard passes an image parameter's value. */
+function pngDataUrl(width: number, height: number): string {
+  const bytes = encodePng(new Uint8Array(width * height * 4).fill(160), width, height);
+  return `data:image/png;base64,${Buffer.from(bytes).toString('base64')}`;
+}
 
 /** Every behaviour of the Scripted behaviour flow, so each generated script is type-checked. */
 const SCRIPTED_BEHAVIOURS = ['heal', 'launch', 'lightning', 'effect'];
@@ -252,6 +399,12 @@ const MIRRORED_STARTERS = [
   'simple-block',
   'food',
   'scripted-item',
+  'weapon',
+  'consumable',
+  'totem',
+  'enchantment',
+  'painting',
+  'music-disc-item',
 ];
 
 function kindRegistry(): ElementKindRegistry {
@@ -996,9 +1149,98 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           buildEntry(starter, 'demo', 'Wizard Test', bundle.target, values),
         ]);
         const files = await checkProject(bundle, context, built);
-        expect(files.jarFiles.length).toBeGreaterThan(0);
+        const hasMod = built.project.namespaces.some((namespace) =>
+          namespace.elements.some((element) => element.kind.startsWith('msm:')),
+        );
+        expect(files.jarFiles.length > 0, 'a jar exactly when there is mod content').toBe(hasMod);
       },
     );
+
+    it('the 0.8.0 flows write only vanilla tags, effects and items the target has (ADR 0044 D6)', () => {
+      const vanilla = (registry: string) => new Set(context.vanilla[registry] ?? []);
+      const tagRegistries: Record<string, string> = {
+        'minecraft:tag/item': 'tag/item',
+        'minecraft:tag/enchantment': 'tag/enchantment',
+      };
+      const flows = [
+        'gear-set',
+        'weapon',
+        'consumable',
+        'totem',
+        'enchantment',
+        'painting',
+        'music-disc-item',
+      ];
+      for (const id of flows) {
+        const flow = starterById(id);
+        for (const values of [{}, ...(WIZARD_ALTERNATIVES[id] ?? []), minimumValues(flow)]) {
+          const built = buildEntry(flow, 'demo', 'Flow', bundle.target, values);
+          for (const entry of built.elements) {
+            const registry = tagRegistries[entry.kind];
+            if (registry !== undefined && entry.id.startsWith('minecraft:')) {
+              expect(vanilla(registry).has(entry.id.slice(10)), `${id} ${entry.id}`).toBe(true);
+            }
+          }
+          const text = JSON.stringify(built.elements);
+          for (const match of text.matchAll(/"#minecraft:([a-z_/]+)"/g)) {
+            const tag = match[1] as string;
+            const known = ['tag/item', 'tag/enchantment', 'tag/block'].some((name) =>
+              vanilla(name).has(tag),
+            );
+            expect(known, `${id} #minecraft:${tag}`).toBe(true);
+          }
+        }
+      }
+      const effects = vanilla('mob_effect');
+      for (const parameter of starterById('consumable').parameters ?? []) {
+        if (parameter.type !== 'choice' || !parameter.id.startsWith('effect_')) continue;
+        for (const choice of parameter.choices) {
+          if (choice.value !== 'none')
+            expect(effects.has(choice.value.slice(10)), choice.value).toBe(true);
+        }
+      }
+    });
+
+    it('the Painting flow writes the picked PNG unchanged and a placeholder otherwise (ADR 0044 D7)', async () => {
+      const image = pngDataUrl(32, 32);
+      const built = await buildProject('Painting', 'demo', [
+        buildEntry(starterById('painting'), 'demo', 'Painting', bundle.target, {
+          painting_name: 'Grey Square',
+          image,
+        }),
+      ]);
+      const { resourceFiles, dataFiles, jarFiles } = await checkProject(bundle, context, built);
+      const { resource, data } = bundle.target.folders;
+      expect(resourceFiles).toContain(`assets/demo/${resource.textures}/painting/grey_square.png`);
+      expect(dataFiles).toContain(`data/demo/${data.painting_variant}/grey_square.json`);
+      expect(jarFiles).toEqual([]);
+      const bytes = await built.fs.readFile('assets/demo/textures/painting/grey_square.png');
+      expect(Buffer.from(bytes).toString('base64')).toBe(
+        image.slice('data:image/png;base64,'.length),
+      );
+    });
+
+    it('the Music disc and Weapon flows export real items in the Fabric mod jar (ADR 0044 D6)', async () => {
+      const disc = buildEntry(starterById('music-disc-item'), 'demo', 'Gear', bundle.target);
+      const bow = buildEntry(starterById('weapon'), 'demo', 'Gear', bundle.target, {
+        weapon_type: 'bow',
+      });
+      // Both flows add the pack, the mod metadata and a language file: keep the disc's.
+      const shared = new Set(['demo:pack', 'demo:mod', 'demo:en_us']);
+      const built = await buildProject('Gear', 'demo', [
+        disc,
+        { elements: bow.elements.filter((entry) => !shared.has(entry.id)), assets: bow.assets },
+      ]);
+      const { dataFiles, jarFiles } = await checkProject(bundle, context, built);
+      const { data } = bundle.target.folders;
+      expect(dataFiles).toContain(`data/demo/${data.jukebox_song}/ruby_waltz.json`);
+      expect(jarFiles).toEqual(
+        expect.arrayContaining([
+          'msm/demo/item/ruby_waltz_disc.json',
+          'msm/demo/item/ruby_spear.json',
+        ]),
+      );
+    });
 
     it('the Custom sword starter exports a sword in the Fabric mod jar (ADR 0040)', async () => {
       const built = await buildProject('Sword', 'demo', [

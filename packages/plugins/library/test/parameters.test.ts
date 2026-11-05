@@ -12,8 +12,29 @@ import type {
 } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
-import { idFromName, nameForms, pluralOf, readValues, rgbFromHex } from '../src/content/parameters';
-import { armorLayerPng, libraryStarters } from '../src/index';
+import { EFFECT_CHOICES } from '../src/content/effects';
+import {
+  base64Bytes,
+  decodePngDataUrl,
+  idFromName,
+  nameForms,
+  pluralOf,
+  readValues,
+  rgbFromHex,
+} from '../src/content/parameters';
+import {
+  armorLayerPng,
+  bodyArmorLayerPng,
+  encodePng,
+  libraryStarters,
+  nearestTrimPalette,
+  paintingPng,
+  placeholderPng,
+} from '../src/index';
+
+/** A PNG `data:` URL of `bytes`. */
+const dataUrl = (bytes: Uint8Array): string =>
+  `data:image/png;base64,${Buffer.from(bytes).toString('base64')}`;
 
 const target = (builtInTargets[0] as (typeof builtInTargets)[number]).target;
 
@@ -43,6 +64,12 @@ const WIZARDS = [
   'gear-set',
   'simple-block',
   'food',
+  'weapon',
+  'consumable',
+  'totem',
+  'enchantment',
+  'painting',
+  'music-disc-item',
   'custom_mob',
   'scripted-item',
 ];
@@ -53,6 +80,12 @@ const FLOWS: Record<string, string> = {
   'gear-set': 'gear',
   'simple-block': 'blocks',
   food: 'food',
+  weapon: 'gear',
+  consumable: 'food',
+  totem: 'gear',
+  enchantment: 'gear',
+  painting: 'blocks',
+  'music-disc-item': 'blocks',
   custom_mob: 'mobs',
   'scripted-item': 'scripts',
 };
@@ -77,6 +110,12 @@ describe('wizard starters', () => {
     expect(groups('simple-block')).toEqual(['Block', 'Mining', 'Recipe']);
     expect(groups('food')).toEqual(['Food', 'Eating', 'Recipe']);
     expect(groups('scripted-item')).toEqual(['Item', 'Behaviour']);
+    expect(groups('weapon')).toEqual(['Weapon', 'Stats', 'Ranged', 'Shield', 'Recipe']);
+    expect(groups('consumable')).toEqual(['Item', 'Using', 'Effects', 'Recipe']);
+    expect(groups('totem')).toEqual(['Totem', 'Effects', 'Recipe']);
+    expect(groups('enchantment')).toEqual(['Enchantment', 'Effect', 'Offering']);
+    expect(groups('painting')).toEqual(['Painting', 'Picture']);
+    expect(groups('music-disc-item')).toEqual(['Song', 'Disc']);
   });
 
   it('lists the Creator flows with their groups and blurbs (ADR 0043 D1)', () => {
@@ -95,6 +134,7 @@ describe('wizard starters', () => {
       'material_source',
       'pieces',
       'upgrade_from',
+      'trim_material',
       'tier',
       'custom_durability',
       'custom_speed',
@@ -156,6 +196,11 @@ describe('wizard starters', () => {
           expect(parameter.default.length).toBeGreaterThanOrEqual(parameter.min ?? 0);
           break;
         }
+        case 'image':
+          expect(parameter.default).toBeNull();
+          expect(parameter.maxBytes ?? 0).toBeGreaterThan(0);
+          expect(parameter.maxSize ?? 0).toBeGreaterThanOrEqual(64);
+          break;
       }
     }
   });
@@ -170,7 +215,13 @@ describe('wizard starters', () => {
     const wrong = Object.fromEntries(
       (entry.parameters ?? []).map((parameter) => [
         parameter.id,
-        parameter.type === 'number' ? 'nine' : parameter.type === 'set' ? 'sword' : 42,
+        parameter.type === 'number'
+          ? 'nine'
+          : parameter.type === 'set'
+            ? 'sword'
+            : parameter.type === 'image'
+              ? 'data:image/png;base64,bm90IGEgcG5n'
+              : 42,
       ]),
     );
     expect(build(entry, { ...wrong, unknown: true })).toEqual(build(entry, {}));
@@ -473,6 +524,343 @@ describe('Creator flows', () => {
     });
   });
 
+  it('Gear set: the new pieces, body armour layers and the trim material follow the values', () => {
+    const bundle = build(starter('gear-set'), {
+      material_name: 'Jade',
+      colour: '#28a060',
+      pieces: ['spear', 'mace', 'bow', 'crossbow', 'shield', 'horse_armor', 'wolf_armor'],
+      tier: 'iron',
+      upgrade_from: 'diamond',
+      trim_material: true,
+    });
+    expect(ids(bundle)).toEqual(
+      expect.arrayContaining([
+        'demo:jade_spear',
+        'demo:jade_spear_smithing',
+        'demo:jade_mace_from_jade',
+        'demo:jade_bow_from_jade',
+        'demo:jade_crossbow_from_jade',
+        'demo:jade_shield_from_jade',
+        'demo:jade_horse_armor_smithing',
+        'demo:jade_wolf_armor_from_jade',
+        'demo:jade_armor',
+        'demo:jade_trim',
+        'minecraft:trim_materials',
+      ]),
+    );
+    // Weapons get their enchanting tags from lowering; only the trim tag is written here.
+    expect(ids(bundle).filter((id) => id.startsWith('minecraft:'))).toEqual([
+      'minecraft:trim_materials',
+    ]);
+    expect(data(bundle, 'demo:jade_spear')).toMatchObject({
+      components: { 'msm:tool': { type: 'spear', tier: 'iron' } },
+    });
+    expect(data(bundle, 'demo:jade_bow')).toMatchObject({
+      components: { 'msm:ranged_weapon': { type: 'bow' }, 'msm:durability': { max: 384 } },
+    });
+    expect(data(bundle, 'demo:jade_shield')).toMatchObject({
+      components: { 'msm:shield': { damage_reduction: 1 }, 'msm:durability': { max: 336 } },
+    });
+    expect(data(bundle, 'demo:jade_horse_armor')).toMatchObject({
+      components: {
+        'msm:armor': { slot: 'horse', material: { equipment_asset: 'demo:jade_armor' } },
+      },
+    });
+    expect(data(bundle, 'demo:jade_horse_armor_smithing')).toMatchObject({
+      base: 'minecraft:diamond_horse_armor',
+    });
+    expect(data(bundle, 'demo:jade_crossbow_from_jade')).toEqual({
+      type: 'minecraft:crafting_shaped',
+      category: 'equipment',
+      pattern: ['#X#', 'STS', ' # '],
+      key: {
+        X: 'demo:jade',
+        '#': 'minecraft:stick',
+        S: 'minecraft:string',
+        T: 'minecraft:tripwire_hook',
+      },
+      result: { id: 'demo:jade_crossbow', count: 1 },
+    });
+    expect(data(bundle, 'demo:jade_armor')).toEqual({
+      layers: { horse_body: [{ texture: 'demo:jade' }], wolf_body: [{ texture: 'demo:jade' }] },
+    });
+    expect(data(bundle, 'demo:jade')).toMatchObject({
+      components: { 'msm:components': { 'minecraft:provides_trim_material': 'demo:jade_trim' } },
+    });
+    expect(data(bundle, 'demo:jade_trim')).toEqual({
+      palette_id: 'minecraft:trim/emerald',
+      description: { translate: 'trim_material.demo.jade', color: '#28a060' },
+    });
+    expect(data(bundle, 'minecraft:trim_materials')).toEqual({ values: ['demo:jade'] });
+    const asset = (path: string) => bundle.assets.find((entry) => entry.path === path)?.bytes;
+    expect(asset('textures/entity/equipment/horse_body/jade.png')).toEqual(
+      bodyArmorLayerPng('horse', [40, 160, 96]),
+    );
+    expect(asset('textures/entity/equipment/wolf_body/jade.png')).toEqual(
+      bodyArmorLayerPng('wolf', [40, 160, 96]),
+    );
+    expect(asset('textures/item/jade_upgrade_smithing_template.png')).toEqual(
+      placeholderPng('smithing_template', { colour: [24, 96, 58] }),
+    );
+    expect(bundle.assets.some((entry) => entry.path.includes('humanoid'))).toBe(false);
+  });
+
+  it('Gear set: picks the nearest vanilla trim palette', () => {
+    expect(nearestTrimPalette([196, 28, 52])).toBe('redstone');
+    expect(nearestTrimPalette([36, 84, 196])).toBe('lapis');
+    expect(nearestTrimPalette([250, 250, 250])).toBe('iron');
+  });
+
+  it('Weapon: each type gets its component, model parent, recipe and texture', () => {
+    const cases: [string, string, JsonObject][] = [
+      ['sword', 'minecraft:item/handheld', { 'msm:tool': { type: 'sword', tier: 'iron' } }],
+      ['spear', 'minecraft:item/handheld', { 'msm:tool': { type: 'spear', tier: 'iron' } }],
+      ['mace', 'minecraft:item/handheld_mace', { 'msm:tool': { type: 'mace', tier: 'iron' } }],
+      [
+        'bow',
+        'minecraft:item/bow',
+        {
+          'msm:ranged_weapon': {
+            type: 'bow',
+            draw_speed: 1.25,
+            velocity: 1.1,
+            damage_multiplier: 1.2,
+          },
+        },
+      ],
+      ['crossbow', 'minecraft:item/crossbow', { 'msm:ranged_weapon': { type: 'crossbow' } }],
+      [
+        'shield',
+        'minecraft:item/generated',
+        { 'msm:shield': { block_delay_seconds: 0.25, damage_reduction: 1 } },
+      ],
+    ];
+    for (const [type, parent, components] of cases) {
+      const bundle = build(starter('weapon'), { weapon_type: type, weapon_name: 'Ruby Thing' });
+      expect(data(bundle, 'demo:ruby_thing'), type).toMatchObject({
+        components: { ...components, 'msm:durability': { max: 500 } },
+        max_stack_size: 1,
+      });
+      expect(data(bundle, 'demo:item/ruby_thing'), type).toMatchObject({ parent });
+      expect(ids(bundle), type).toContain('demo:ruby_thing_from_emerald');
+      expect(ids(bundle).includes('minecraft:swords'), type).toBe(type === 'sword');
+      expect(bundle.assets[0]?.bytes, type).toEqual(
+        placeholderPng(type as 'sword', { colour: [196, 28, 52] }),
+      );
+    }
+    const custom = build(starter('weapon'), {
+      weapon_type: 'sword',
+      custom_damage: true,
+      attack_damage: 7.5,
+      attack_speed: -2,
+      ingredient: 'none',
+    });
+    expect(data(custom, 'demo:ruby_spear')).toMatchObject({
+      components: { 'msm:tool': { type: 'sword', attack_damage: 7.5, attack_speed: -2 } },
+    });
+    expect(ids(custom).some((id) => id.includes('_from_'))).toBe(false);
+  });
+
+  it('Consumable: a drink, a food and a charm get their components', () => {
+    const drink = build(starter('consumable'), {});
+    expect(data(drink, 'demo:ruby_tonic')).toEqual({
+      format: 1,
+      model: 'demo:item/ruby_tonic',
+      max_stack_size: 16,
+      creative_tab: 'minecraft:food_and_drinks',
+      components: {
+        'msm:consumable': {
+          seconds: 1.6,
+          animation: 'drink',
+          effects: [
+            { effect: 'minecraft:speed', seconds: 60 },
+            { effect: 'minecraft:regeneration', seconds: 10 },
+          ],
+          converts_to: 'minecraft:glass_bottle',
+        },
+      },
+    });
+    expect(data(drink, 'demo:ruby_tonic_from_sweet_berries')).toMatchObject({
+      ingredients: ['minecraft:sweet_berries', 'minecraft:glass_bottle'],
+    });
+    const food = build(starter('consumable'), {
+      kind: 'food',
+      nutrition: 6,
+      can_always_eat: true,
+      effect_1_level: 2,
+      effect_1_chance: 0.5,
+      effect_2: 'none',
+      cooldown_seconds: 3,
+    });
+    expect(data(food, 'demo:ruby_tonic')).toMatchObject({
+      max_stack_size: 64,
+      components: {
+        'msm:food': { nutrition: 6, saturation: 0.6, can_always_eat: true },
+        'msm:consumable': {
+          animation: 'eat',
+          effects: [{ effect: 'minecraft:speed', seconds: 60, amplifier: 1, chance: 0.5 }],
+          cooldown_seconds: 3,
+        },
+      },
+    });
+    const charm = build(starter('consumable'), { kind: 'charm', cooldown_seconds: 10 });
+    expect(data(charm, 'demo:ruby_tonic')).toMatchObject({
+      max_stack_size: 1,
+      components: { 'msm:on_use': { event: 'demo:ruby_tonic_used', cooldown_ticks: 200 } },
+      events: {
+        'demo:ruby_tonic_used': {
+          actions: [
+            { type: 'apply_effect', effect: 'minecraft:speed', seconds: 60, target: 'self' },
+            { type: 'apply_effect', effect: 'minecraft:regeneration', seconds: 10, target: 'self' },
+          ],
+        },
+      },
+    });
+    expect(data(charm, 'demo:ruby_tonic').components).not.toHaveProperty('msm:consumable');
+  });
+
+  it('Totem: death protection with the chosen effects', () => {
+    const bundle = build(starter('totem'), { effect_3: 'none', clear_effects: false });
+    expect(data(bundle, 'demo:ruby_totem')).toMatchObject({
+      rarity: 'uncommon',
+      components: {
+        'msm:death_protection': {
+          effects: [
+            { effect: 'minecraft:regeneration', seconds: 45, amplifier: 1 },
+            { effect: 'minecraft:absorption', seconds: 5, amplifier: 1 },
+          ],
+        },
+      },
+    });
+    expect(
+      (data(bundle, 'demo:ruby_totem').components as JsonObject)['msm:death_protection'],
+    ).not.toHaveProperty('clear_effects');
+    expect(data(bundle, 'demo:ruby_totem_from_emerald')).toMatchObject({
+      pattern: [' G ', 'GXG', ' G '],
+      key: { G: 'minecraft:gold_ingot', X: 'minecraft:emerald' },
+    });
+  });
+
+  it('Enchantment: targets, levels, rarity, effect and tags follow the values', () => {
+    const bundle = build(starter('enchantment'), {});
+    expect(ids(bundle)).toEqual([
+      'demo:pack',
+      'demo:ruby_edge',
+      'demo:en_us',
+      'minecraft:in_enchanting_table',
+      'minecraft:non_treasure',
+      'minecraft:tradeable',
+      'minecraft:on_random_loot',
+    ]);
+    expect(data(bundle, 'demo:ruby_edge')).toMatchObject({
+      description: { translate: 'enchantment.demo.ruby_edge' },
+      supported_items: '#minecraft:swords',
+      weight: 5,
+      max_level: 3,
+      anvil_cost: 2,
+      slots: ['mainhand'],
+      effects: { 'minecraft:damage': [{ effect: { type: 'minecraft:add' } }] },
+    });
+    const effects = ['damage', 'knockback', 'fire', 'mob_effect', 'durability', 'mining_speed'];
+    const keys = effects.map(
+      (effect) =>
+        Object.keys(
+          data(build(starter('enchantment'), { effect }), 'demo:ruby_edge').effects as JsonObject,
+        )[0],
+    );
+    expect(keys).toEqual([
+      'minecraft:damage',
+      'minecraft:knockback',
+      'minecraft:post_attack',
+      'minecraft:post_attack',
+      'minecraft:item_damage',
+      'minecraft:attributes',
+    ]);
+    const armour = build(starter('enchantment'), {
+      applies_to: 'armour',
+      rarity: 'very_rare',
+      exclusive_with: 'armor',
+      in_enchanting_table: false,
+    });
+    expect(data(armour, 'demo:ruby_edge')).toMatchObject({
+      supported_items: '#minecraft:enchantable/armor',
+      slots: ['armor'],
+      weight: 1,
+      anvil_cost: 8,
+      exclusive_set: '#minecraft:exclusive_set/armor',
+    });
+    expect(ids(armour).some((id) => id.startsWith('minecraft:'))).toBe(false);
+  });
+
+  it('Painting: a placeholder sized by the choice, or the picked PNG unchanged', () => {
+    const placeholder = build(starter('painting'), { size: '4x3' });
+    expect(data(placeholder, 'demo:ruby_sunset')).toEqual({
+      asset_id: 'demo:ruby_sunset',
+      width: 4,
+      height: 3,
+      title: { translate: 'painting.demo.ruby_sunset.title', color: 'yellow' },
+      author: { translate: 'painting.demo.ruby_sunset.author', color: 'gray' },
+    });
+    expect(placeholder.assets).toEqual([
+      {
+        namespace: 'demo',
+        path: 'textures/painting/ruby_sunset.png',
+        bytes: paintingPng(4, 3, [222, 148, 32]),
+      },
+    ]);
+    const picture = encodePng(new Uint8Array(32 * 16 * 4).fill(200), 32, 16);
+    const picked = build(starter('painting'), { image: dataUrl(picture), painting_name: 'Lake' });
+    expect(picked.assets[0]?.bytes).toEqual(picture);
+    expect(picked.elements.find((entry) => entry.id === 'demo:lake')?.notes).toMatch(
+      /32 by 16 pixels/,
+    );
+    expect(data(picked, 'demo:en_us')).toEqual({
+      'painting.demo.lake.author': 'You',
+      'painting.demo.lake.title': 'Lake',
+    });
+  });
+
+  it('Music disc: a real disc item by default, music disc 13 for vanilla packs', () => {
+    const item = build(starter('music-disc-item'), {});
+    expect(ids(item)).toEqual([
+      'demo:pack',
+      'demo:mod',
+      'demo:sounds',
+      'demo:ruby_waltz',
+      'demo:ruby_waltz_disc',
+      'demo:item/ruby_waltz_disc',
+      'demo:en_us',
+    ]);
+    expect(data(item, 'demo:ruby_waltz_disc')).toMatchObject({
+      components: { 'msm:components': { 'minecraft:jukebox_playable': 'demo:ruby_waltz' } },
+    });
+    expect(data(item, 'demo:ruby_waltz')).toEqual({
+      sound_event: 'demo:music_disc.ruby_waltz',
+      description: { translate: 'jukebox_song.demo.ruby_waltz' },
+      length_in_seconds: 185,
+      comparator_output: 7,
+    });
+    expect(data(item, 'demo:en_us')).toEqual({
+      'item.demo.ruby_waltz_disc': 'Music Disc',
+      'jukebox_song.demo.ruby_waltz': 'You - Ruby Waltz',
+    });
+    const vanilla = build(starter('music-disc-item'), { disc_type: 'vanilla' });
+    expect(ids(vanilla)).toEqual([
+      'demo:pack',
+      'demo:sounds',
+      'demo:ruby_waltz',
+      'demo:item/ruby_waltz_disc',
+      'minecraft:music_disc_13',
+      'demo:give_ruby_waltz_disc',
+      'demo:en_us',
+    ]);
+    expect(vanilla.elements.some((entry) => entry.kind.startsWith('msm:'))).toBe(false);
+  });
+
+  it('Effects: offers only vanilla effect ids', () => {
+    for (const choice of EFFECT_CHOICES) expect(choice.value).toMatch(/^minecraft:[a-z_]+$/);
+  });
+
   it.each(['heal', 'launch', 'lightning', 'effect'])(
     'Scripted behaviour: the %s script defines the handler the item runs',
     (behaviour) => {
@@ -543,7 +931,37 @@ describe('parameter helpers', () => {
     expect(readValues([set], { values: { p: ['c', 'x', 'a'] } })).toEqual({ p: ['a', 'c'] });
     expect(readValues([set], { values: { p: 'a' } })).toEqual({ p: ['a'] });
     expect(readValues([set], { values: {} })).toEqual({ p: ['a'] });
+    const image: StarterParameter = { id: 'i', label: 'I', type: 'image', default: null };
+    const png = dataUrl(placeholderPng('gem'));
+    expect(readValues([image], { values: { i: png } })).toEqual({ i: png });
+    expect(readValues([image], { values: { i: 'data:image/png;base64,AAAA' } })).toEqual({
+      i: null,
+    });
+    expect(readValues([image], { values: { i: 7 } })).toEqual({ i: null });
+    expect(readValues([image], { values: {} })).toEqual({ i: null });
     expect(rgbFromHex('#C41C34', [0, 0, 0])).toEqual([196, 28, 52]);
     expect(rgbFromHex('red', [1, 2, 3])).toEqual([1, 2, 3]);
+  });
+});
+
+describe('image values', () => {
+  it('decodes base64 like Node does', () => {
+    for (const text of ['', 'f', 'fo', 'foo', 'foob', 'fooba', 'foobar']) {
+      const encoded = Buffer.from(text).toString('base64');
+      expect(Buffer.from(base64Bytes(encoded) as Uint8Array).toString(), text).toBe(text);
+    }
+    expect(base64Bytes('a$b')).toBeNull();
+  });
+
+  it('reads the size of a PNG data URL and refuses anything else', () => {
+    const png = encodePng(new Uint8Array(48 * 16 * 4), 48, 16);
+    const decoded = decodePngDataUrl(dataUrl(png));
+    expect(decoded?.width).toBe(48);
+    expect(decoded?.height).toBe(16);
+    expect(decoded?.bytes).toEqual(png);
+    expect(
+      decodePngDataUrl(`data:image/jpeg;base64,${Buffer.from(png).toString('base64')}`),
+    ).toBeNull();
+    expect(decodePngDataUrl(dataUrl(new Uint8Array(40)))).toBeNull();
   });
 });

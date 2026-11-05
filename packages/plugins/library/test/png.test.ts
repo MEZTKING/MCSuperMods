@@ -7,16 +7,22 @@ import { describe, expect, it } from 'vitest';
 import {
   ARMOR_LAYER_SIZE,
   armorLayerPng,
+  bodyArmorLayerPng,
   encodePng,
+  HORSE_ARMOR_LAYER_SIZE,
+  PAINTING_PIXELS_PER_BLOCK,
   PLACEHOLDER_PATTERNS,
   PLACEHOLDER_SIZE,
   PLACEHOLDER_SKIN_SIZE,
   type PlaceholderPattern,
+  paintingPixels,
+  paintingPng,
   placeholderPixels,
   placeholderPng,
   placeholderSize,
   placeholderSkinPixels,
   placeholderSkinPng,
+  WOLF_ARMOR_LAYER_SIZE,
 } from '../src/index';
 
 const sha256 = (bytes: Uint8Array): string => createHash('sha256').update(bytes).digest('hex');
@@ -76,7 +82,7 @@ const PINNED: Partial<Record<PlaceholderPattern, string>> = {
 const PINNED_SKIN = '224f2f4715ddc13cad76f34fd7555f720a9149052645c23f4c28c102c2ff4fd5';
 
 describe('placeholder textures', () => {
-  it('has seventeen patterns', () => {
+  it('has twenty-nine patterns', () => {
     expect(PLACEHOLDER_PATTERNS).toEqual([
       'plain',
       'ore',
@@ -95,6 +101,18 @@ describe('placeholder textures', () => {
       'ingot',
       'armor_layer_1',
       'armor_layer_2',
+      'bow',
+      'crossbow',
+      'shield',
+      'spear',
+      'mace',
+      'bottle',
+      'totem',
+      'smithing_template',
+      'horse_armor',
+      'wolf_armor',
+      'horse_armor_layer',
+      'wolf_armor_layer',
     ]);
   });
 
@@ -108,14 +126,64 @@ describe('placeholder textures', () => {
     expect(Buffer.from(readFileSync(file)).equals(Buffer.from(png))).toBe(true);
   });
 
-  it('draws the armour layers at 64x32 and every other pattern at 16x16', () => {
+  it('draws the armour layers at their vanilla sizes and every other pattern at 16x16', () => {
+    const sizes: Partial<Record<PlaceholderPattern, { width: number; height: number }>> = {
+      armor_layer_1: ARMOR_LAYER_SIZE,
+      armor_layer_2: ARMOR_LAYER_SIZE,
+      horse_armor_layer: HORSE_ARMOR_LAYER_SIZE,
+      wolf_armor_layer: WOLF_ARMOR_LAYER_SIZE,
+    };
+    expect(HORSE_ARMOR_LAYER_SIZE).toEqual({ width: 64, height: 64 });
+    expect(WOLF_ARMOR_LAYER_SIZE).toEqual({ width: 64, height: 32 });
     for (const pattern of PLACEHOLDER_PATTERNS) {
       const { width, height } = decode(placeholderPng(pattern));
       expect({ width, height }, pattern).toEqual(placeholderSize(pattern));
-      const layer = pattern.startsWith('armor_layer_');
-      expect(width, pattern).toBe(layer ? ARMOR_LAYER_SIZE.width : PLACEHOLDER_SIZE);
-      expect(height, pattern).toBe(layer ? ARMOR_LAYER_SIZE.height : PLACEHOLDER_SIZE);
+      const expected = sizes[pattern] ?? { width: PLACEHOLDER_SIZE, height: PLACEHOLDER_SIZE };
+      expect({ width, height }, pattern).toEqual({ ...expected });
     }
+  });
+
+  it('draws horse and wolf armour layers in the vanilla box layout', () => {
+    const colour: [number, number, number] = [36, 84, 196];
+    expect(bodyArmorLayerPng('horse', colour)).toEqual(
+      placeholderPng('horse_armor_layer', { colour }),
+    );
+    expect(bodyArmorLayerPng('wolf')).toEqual(placeholderPng('wolf_armor_layer'));
+    const horse = placeholderPixels('horse_armor_layer');
+    const horseAlpha = (x: number, y: number) => horse[(y * 64 + x) * 4 + 3];
+    // The body box's top face (22..31, 32..53) and its sides (row 54 on) are drawn.
+    expect(horseAlpha(26, 40)).toBe(255);
+    expect(horseAlpha(2, 60)).toBe(255);
+    // The tail's texture area (42.., 36..) is not armoured.
+    expect(horseAlpha(50, 45)).toBe(0);
+    const wolf = placeholderPixels('wolf_armor_layer');
+    const wolfAlpha = (x: number, y: number) => wolf[(y * 64 + x) * 4 + 3];
+    expect(wolfAlpha(30, 2)).toBe(255);
+    expect(wolfAlpha(63, 31)).toBe(0);
+  });
+
+  it('draws a painting placeholder of any vanilla size at 16 pixels per block', () => {
+    expect(PAINTING_PIXELS_PER_BLOCK).toBe(16);
+    for (const [width, height] of [
+      [1, 1],
+      [2, 1],
+      [4, 3],
+      [4, 4],
+    ] as const) {
+      const decoded = decode(paintingPng(width, height));
+      expect(decoded.width).toBe(width * 16);
+      expect(decoded.height).toBe(height * 16);
+      expect(decoded.rgba).toEqual(paintingPixels(width, height));
+      expect([...decoded.rgba].filter((_, index) => index % 4 === 3).every((a) => a === 255)).toBe(
+        true,
+      );
+    }
+    expect(sha256(paintingPng(2, 1, [36, 84, 196]))).not.toBe(sha256(paintingPng(2, 1)));
+    expect(() => paintingPng(0, 1)).toThrow(/whole numbers of blocks/);
+    expect(() => paintingPng(1.5, 1)).toThrow(/whole numbers of blocks/);
+    const file = join(fixtures, 'painting_2x1.png');
+    if (update) writeFileSync(file, paintingPng(2, 1));
+    expect(Buffer.from(readFileSync(file)).equals(Buffer.from(paintingPng(2, 1)))).toBe(true);
   });
 
   it('tints the armour layers and draws layer 2 apart from layer 1', () => {

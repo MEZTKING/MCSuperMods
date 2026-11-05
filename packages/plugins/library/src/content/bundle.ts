@@ -179,3 +179,33 @@ export function kindsOf(bundle: ContentBundle): string[] {
 export function packElement(namespace: string, description: string, notes?: string) {
   return element(rl(namespace, 'pack'), KINDS.pack, { pack: { description } }, notes);
 }
+
+/** The pack note every Creator flow with mod content uses. */
+export const PACK_NOTES =
+  'The pack description shown in the resource pack and data pack lists. The Fabric mod jar leaves pack.mcmeta out and puts the same assets and data inside the jar.';
+
+/**
+ * The `msm:mod` element `<namespace>:mod` of a flow that adds items: the mod id from the
+ * namespace, version 1.0.0, the project name, `description` and the usual note.
+ */
+export function modElement(namespace: string, projectName: string, description: string) {
+  return element(
+    rl(namespace, 'mod'),
+    KINDS.mod,
+    {
+      mod_id: modIdFromNamespace(namespace),
+      version: '1.0.0',
+      name: projectName,
+      description,
+      authors: [],
+      licence: 'All-Rights-Reserved',
+    },
+    'The mod metadata, written to fabric.mod.json when you export the Fabric mod jar. New items exist only in that jar, which also needs Fabric API and msm_runtime (nested in the jar unless you choose a separate runtime). The mod id must stay unique among the mods you install.',
+  );
+}
+
+/** A flat (`generated`) or other item model `<namespace>:item/<path>` drawn from its own texture. */
+export function itemModel(namespace: string, path: string, parent: string, notes: string) {
+  const model = rl(namespace, `item/${path}`);
+  return element(model, KINDS.model, { parent, textures: { layer0: model } }, notes);
+}

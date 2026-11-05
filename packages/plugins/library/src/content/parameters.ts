@@ -20,13 +20,18 @@ export const NAME_PATTERN = '^[A-Za-z][A-Za-z0-9]*( [A-Za-z0-9]+)*$';
 /** The longest name a wizard accepts. */
 export const NAME_MAX_LENGTH = 32;
 
+/** The value of one parameter as {@link readValues} gives it. */
+export type ParameterValue = string | number | boolean | readonly string[] | null;
+
 /**
  * The value of every declared parameter: the context's value when valid, else the default. A
- * `set` parameter's value is a `string[]` of chosen values in the order of its choices.
+ * `set` parameter's value is a `string[]` of chosen values in the order of its choices; an
+ * `image` parameter's value is a PNG `data:` URL or `null`.
  */
-export type ParameterValues = Readonly<
-  Record<string, string | number | boolean | readonly string[]>
->;
+export type ParameterValues = Readonly<Record<string, ParameterValue>>;
+
+/** The prefix of every image parameter value (ADR 0044 D7). */
+export const PNG_DATA_URL_PREFIX = 'data:image/png;base64,';
 
 /**
  * Every declared parameter's value from `context.values`, falling back to the default when a
@@ -40,9 +45,14 @@ export function readValues(
   parameters: readonly StarterParameter[],
   context: Pick<BundleContext, 'values'>,
 ): ParameterValues {
-  const out: Record<string, string | number | boolean | readonly string[]> = {};
+  const out: Record<string, ParameterValue> = {};
   for (const parameter of parameters) {
     const value: Json | undefined = context.values?.[parameter.id];
+    if (parameter.type === 'image') {
+      out[parameter.id] =
+        typeof value === 'string' && decodePngDataUrl(value) !== null ? value : null;
+      continue;
+    }
     if (parameter.type === 'set') {
       out[parameter.id] = Array.isArray(value)
         ? parameter.choices.map((choice) => choice.value).filter((choice) => value.includes(choice))
@@ -76,6 +86,69 @@ export function setValue(values: ParameterValues, id: string): readonly string[]
 /** The value of a boolean parameter. */
 export function booleanValue(values: ParameterValues, id: string): boolean {
   return values[id] === true;
+}
+
+/** The value of an image parameter: a PNG `data:` URL, or `null` when none was picked. */
+export function imageValue(values: ParameterValues, id: string): string | null {
+  const value = values[id];
+  return typeof value === 'string' ? value : null;
+}
+
+/** A PNG decoded from an image parameter's value: its bytes and its size in pixels. */
+export interface DecodedPng {
+  bytes: Uint8Array;
+  width: number;
+  height: number;
+}
+
+const BASE64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+/** Standard base64 (padding optional) as bytes, or `null` for anything else. */
+export function base64Bytes(text: string): Uint8Array | null {
+  const clean = text.replace(/=+$/, '');
+  if (!/^[A-Za-z0-9+/]*$/.test(clean) || clean.length % 4 === 1) return null;
+  const out = new Uint8Array(Math.floor((clean.length * 3) / 4));
+  let bits = 0;
+  let buffer = 0;
+  let at = 0;
+  for (const char of clean) {
+    buffer = (buffer << 6) | BASE64.indexOf(char);
+    bits += 6;
+    if (bits >= 8) {
+      bits -= 8;
+      out[at] = (buffer >> bits) & 0xff;
+      at += 1;
+    }
+  }
+  return out;
+}
+
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+
+/**
+ * An image parameter's value decoded: a `data:image/png;base64,` URL whose bytes start with the
+ * PNG signature and an `IHDR` chunk with a non-zero size. Anything else gives `null`, so a
+ * bundle draws its placeholder. The pixels are not decoded; the bytes are used as they are.
+ *
+ * @param value - The parameter's value.
+ */
+export function decodePngDataUrl(value: string): DecodedPng | null {
+  if (!value.startsWith(PNG_DATA_URL_PREFIX)) return null;
+  const bytes = base64Bytes(value.slice(PNG_DATA_URL_PREFIX.length));
+  if (bytes === null || bytes.length < 33) return null;
+  if (PNG_SIGNATURE.some((byte, index) => bytes[index] !== byte)) return null;
+  const type = String.fromCharCode(...bytes.subarray(12, 16));
+  if (type !== 'IHDR') return null;
+  const read = (at: number): number =>
+    (((bytes[at] as number) << 24) |
+      ((bytes[at + 1] as number) << 16) |
+      ((bytes[at + 2] as number) << 8) |
+      (bytes[at + 3] as number)) >>>
+    0;
+  const width = read(16);
+  const height = read(20);
+  if (width === 0 || height === 0) return null;
+  return { bytes, width, height };
 }
 
 /**

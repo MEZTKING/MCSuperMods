@@ -61,6 +61,11 @@ export interface NewProjectDialogProps {
   onCreate?(request: NewProjectRequest): void;
   /** The chosen starter, or `null` for a blank project without a starter (before `onCreate`). */
   onSubmit?(starter: ProjectStarter | null): void;
+  /**
+   * Opens the Creator in the open project instead (ADR 0043 D3); the list then ends with
+   * "or Create something with the Creator" (`new-project-open-creator`). Hidden when absent.
+   */
+  onOpenCreator?(): void;
 }
 
 /** The id of the host's own blank entry, offered when no plugin contributes a blank starter. */
@@ -271,6 +276,16 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
                   })}
                 </div>
               </div>
+              {props.onOpenCreator !== undefined && (
+                <button
+                  type="button"
+                  data-testid="new-project-open-creator"
+                  className="self-start cursor-pointer text-sm text-accent underline-offset-2 hover:underline"
+                  onClick={props.onOpenCreator}
+                >
+                  or Create something with the Creator
+                </button>
+              )}
               {!wizard && (
                 <TargetSelect
                   targets={offered}

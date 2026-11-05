@@ -1,5 +1,5 @@
 import type { Element, Json, ResourceLocation } from '@msm/core';
-import { Braces, FormInput, Sparkles } from 'lucide-react';
+import { Braces, FormInput, Sparkles, WandSparkles } from 'lucide-react';
 import { ScrollArea, Tabs } from 'radix-ui';
 import { type ReactNode, useState } from 'react';
 import { RawJsonPanel } from './RawJsonPanel';
@@ -22,6 +22,16 @@ export interface EditorAreaProps {
    * (`editor-ask-ai`). Hidden when absent.
    */
   onAskAi?(id: ResourceLocation): void;
+  /**
+   * Reopens the element's Creator set (ADR 0043 D4); the header then has an "Edit in Creator"
+   * button (`editor-edit-in-creator`) for elements with `meta.creator`. Hidden when absent.
+   */
+  onEditInCreator?(element: Element): void;
+  /**
+   * Opens the Creator; with no element selected the editor then offers "or Create something
+   * with the Creator" (`editor-open-creator`).
+   */
+  onOpenCreator?(): void;
 }
 
 /**
@@ -29,14 +39,37 @@ export interface EditorAreaProps {
  * element's `meta.notes` (a copied example's explanation) in a collapsible, read-only Notes
  * callout above them.
  */
-export function EditorArea({ element, onApply, form, tab, onTabChange, onAskAi }: EditorAreaProps) {
+export function EditorArea({
+  element,
+  onApply,
+  form,
+  tab,
+  onTabChange,
+  onAskAi,
+  onEditInCreator,
+  onOpenCreator,
+}: EditorAreaProps) {
   const [ownTab, setOwnTab] = useState<EditorTab>('form');
   const current = tab ?? ownTab;
 
   if (element === null) {
     return (
-      <section aria-label="Editor" className="flex min-h-0 items-center justify-center p-4">
+      <section
+        aria-label="Editor"
+        className="flex min-h-0 flex-col items-center justify-center gap-1 p-4"
+      >
         <p className="text-muted">Select an element to edit it, or add one with Add element.</p>
+        {onOpenCreator !== undefined && (
+          <button
+            type="button"
+            data-testid="editor-open-creator"
+            className="inline-flex cursor-pointer items-center gap-1 rounded px-1.5 py-0.5 text-sm text-accent underline-offset-2 hover:underline"
+            onClick={onOpenCreator}
+          >
+            <WandSparkles size={14} aria-hidden />
+            or Create something with the Creator
+          </button>
+        )}
       </section>
     );
   }
@@ -67,6 +100,18 @@ export function EditorArea({ element, onApply, form, tab, onTabChange, onAskAi }
         <span className="ml-auto truncate text-xs text-muted">
           <code className="font-mono">{element.id}</code> ({element.kind})
         </span>
+        {onEditInCreator !== undefined && element.meta.creator !== undefined && (
+          <button
+            type="button"
+            className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted hover:bg-bg hover:text-text"
+            data-testid="editor-edit-in-creator"
+            title="Reopen the set this element belongs to in the Creator"
+            onClick={() => onEditInCreator(element)}
+          >
+            <WandSparkles size={12} aria-hidden />
+            Edit in Creator
+          </button>
+        )}
         {onAskAi !== undefined && (
           <button
             type="button"

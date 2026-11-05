@@ -1,0 +1,17 @@
+{
+  "data": {
+    "authors": [],
+    "description": "Adds a ruby totem that saves its holder from death.",
+    "licence": "All-Rights-Reserved",
+    "mod_id": "msm_starter",
+    "name": "Totem",
+    "version": "1.0.0"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:mod",
+  "kind": "msm:mod",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The mod metadata, written to fabric.mod.json when you export the Fabric mod jar. New items exist only in that jar, which also needs Fabric API and msm_runtime (nested in the jar unless you choose a separate runtime). The mod id must stay unique among the mods you install."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "data": {
+    "item.msm_starter.ruby_waltz_disc": "Music Disc",
+    "jukebox_song.msm_starter.ruby_waltz": "You - Ruby Waltz"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:en_us",
+  "kind": "minecraft:lang",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The English text of the song description, shown under the disc and when it starts playing."
+  }
+}

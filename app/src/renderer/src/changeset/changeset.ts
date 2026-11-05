@@ -234,6 +234,23 @@ function ensureNamespace(name: string): ProjectCommand {
   };
 }
 
+/** A command that writes `meta.creator` on an existing element. */
+function stampCreator(id: ResourceLocation, creator: ElementCreatorMeta): ProjectCommand {
+  return {
+    id: 'app.stamp-creator',
+    label: 'Stamp Creator set',
+    apply(draft) {
+      for (const namespace of draft.namespaces) {
+        const element = namespace.elements.find((entry) => entry.id === id);
+        if (element !== undefined) {
+          element.meta.creator = structuredClone(creator);
+          return;
+        }
+      }
+    },
+  };
+}
+
 /** The commands of one item against `state` (which it fits). */
 function itemCommands(
   state: Project,
@@ -254,13 +271,14 @@ function itemCommands(
       });
       return [ensureNamespace(namespaceOf(id)), commands.addElement(element)];
     }
-    case 'update':
-      return [
-        commands.setElementData(
-          item.elementId as ResourceLocation,
-          structuredClone(item.after as Json),
-        ),
-      ];
+    case 'update': {
+      const id = item.elementId as ResourceLocation;
+      const parts = [commands.setElementData(id, structuredClone(item.after as Json))];
+      // The Creator re-stamps the elements of a reopened set (ADR 0043 D4).
+      const creator = item.meta?.creator;
+      if (creator !== undefined) parts.push(stampCreator(id, creator));
+      return parts;
+    }
     case 'delete':
       return [commands.removeElement(item.elementId as ResourceLocation)];
     case 'rename': {

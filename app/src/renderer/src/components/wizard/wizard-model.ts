@@ -51,8 +51,9 @@ export function hasParameters(starter: ProjectStarter | null | undefined): boole
 
 /**
  * The editing value of one parameter: text for string, number, colour and choice parameters
- * (a number field may hold text that is not a number yet), a boolean for boolean parameters
- * and the ticked values for set parameters.
+ * (a number field may hold text that is not a number yet), a boolean for boolean parameters,
+ * the ticked values for set parameters and, for image parameters, the PNG `data:` URL or `''`
+ * when no image is chosen.
  */
 export type RawValue = string | boolean | readonly string[];
 
@@ -68,6 +69,8 @@ export function defaultRawValue(parameter: StarterParameter): RawValue {
       return String(parameter.default);
     case 'set':
       return [...parameter.default];
+    case 'image':
+      return '';
     default:
       return parameter.default;
   }
@@ -104,6 +107,7 @@ export function toValue(parameter: StarterParameter, raw: RawValue | undefined):
   if (raw === undefined || validateParameter(parameter, raw) !== null) {
     return parameter.type === 'set' ? [...parameter.default] : parameter.default;
   }
+  if (parameter.type === 'image') return raw === '' ? null : String(raw);
   switch (parameter.type) {
     case 'boolean':
       return raw === true;
@@ -121,6 +125,8 @@ export function toValue(parameter: StarterParameter, raw: RawValue | undefined):
         .map((choice) => choice.value)
         .filter((choice) => chosen.includes(choice));
     }
+    default:
+      return null;
   }
 }
 
@@ -205,7 +211,108 @@ export function validateParameter(
       if (chosen < min) return min === 1 ? 'Choose at least one.' : `Choose at least ${min}.`;
       return null;
     }
+    case 'image': {
+      if (typeof raw !== 'string') return NOT_A_PNG;
+      if (raw === '') return null;
+      const bytes = bytesOfPngDataUrl(raw);
+      return bytes === null ? NOT_A_PNG : checkPngBytes(parameter, bytes);
+    }
   }
+}
+
+// Image parameters (ADR 0044 D7) ------------------------------------------------------------
+
+/** The largest image file when an image parameter sets no `maxBytes`: 1 MB. */
+export const DEFAULT_IMAGE_MAX_BYTES = 1_048_576;
+
+/** The prefix of an image parameter's value. */
+export const PNG_DATA_URL_PREFIX = 'data:image/png;base64,';
+
+const NOT_A_PNG = 'Choose a PNG image.';
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+
+/** The width and height in pixels of PNG bytes (from `IHDR`), or `null` when they are not a PNG. */
+export function pngSize(bytes: Uint8Array): { width: number; height: number } | null {
+  if (bytes.length < 33 || PNG_SIGNATURE.some((byte, index) => bytes[index] !== byte)) return null;
+  if (String.fromCharCode(...bytes.subarray(12, 16)) !== 'IHDR') return null;
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const width = view.getUint32(16);
+  const height = view.getUint32(20);
+  return width === 0 || height === 0 ? null : { width, height };
+}
+
+/** Formats a byte count for a message: `1 MB`, `512 KB` or `300 bytes`. */
+function showBytes(bytes: number): string {
+  if (bytes >= 1_048_576 && bytes % 1_048_576 === 0) return `${bytes / 1_048_576} MB`;
+  if (bytes >= 1024) return `${Math.floor(bytes / 1024)} KB`;
+  return `${bytes} bytes`;
+}
+
+/**
+ * Checks a picked file's bytes against an image parameter (ADR 0044 D7): the PNG signature and
+ * a readable size, at most `maxBytes` (1 MB by default) and at most `maxSize` pixels wide and
+ * high.
+ *
+ * @returns An error message in British English, or `null` when the image is accepted.
+ */
+export function checkPngBytes(
+  parameter: StarterParameter & { type: 'image' },
+  bytes: Uint8Array,
+): string | null {
+  const size = pngSize(bytes);
+  if (size === null) return NOT_A_PNG;
+  const maxBytes = parameter.maxBytes ?? DEFAULT_IMAGE_MAX_BYTES;
+  if (bytes.length > maxBytes) return `Choose an image of at most ${showBytes(maxBytes)}.`;
+  const maxSize = parameter.maxSize;
+  if (maxSize !== undefined && (size.width > maxSize || size.height > maxSize)) {
+    return `Choose an image of at most ${maxSize} by ${maxSize} pixels.`;
+  }
+  return null;
+}
+
+/** PNG bytes as an image parameter's value, a `data:image/png;base64,` URL. */
+export function pngDataUrl(bytes: Uint8Array): string {
+  let binary = '';
+  for (let at = 0; at < bytes.length; at += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(at, at + 0x8000));
+  }
+  return `${PNG_DATA_URL_PREFIX}${btoa(binary)}`;
+}
+
+/** The bytes of a `data:image/png;base64,` URL, or `null` for anything else. */
+export function bytesOfPngDataUrl(value: string): Uint8Array | null {
+  if (!value.startsWith(PNG_DATA_URL_PREFIX)) return null;
+  try {
+    return Uint8Array.from(atob(value.slice(PNG_DATA_URL_PREFIX.length)), (char) =>
+      char.charCodeAt(0),
+    );
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Reads a picked file for an image parameter: its bytes checked with {@link checkPngBytes}, then
+ * turned into the parameter's value.
+ *
+ * @returns The value, or the error to show (the field keeps its previous value).
+ */
+export async function readImageFile(
+  parameter: StarterParameter & { type: 'image' },
+  file: Blob,
+): Promise<{ value: string } | { error: string }> {
+  const maxBytes = parameter.maxBytes ?? DEFAULT_IMAGE_MAX_BYTES;
+  if (file.size > maxBytes) return { error: `Choose an image of at most ${showBytes(maxBytes)}.` };
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const error = checkPngBytes(parameter, bytes);
+  return error === null ? { value: pngDataUrl(bytes) } : { error };
+}
+
+/** The summary text of an image parameter's value: its size in pixels, or `None`. */
+export function imageSummary(value: Json): string {
+  const bytes = typeof value === 'string' ? bytesOfPngDataUrl(value) : null;
+  const size = bytes === null ? null : pngSize(bytes);
+  return size === null ? 'None' : `PNG image, ${size.width} by ${size.height} pixels`;
 }
 
 /** Whether `value` matches the whole of `pattern`; an invalid pattern accepts everything. */

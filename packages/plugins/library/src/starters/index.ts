@@ -4,6 +4,7 @@
 import type {
   BundleContext,
   ContentBundle,
+  Json,
   OutputLayer,
   ProjectStarter,
   StarterCreatorInfo,
@@ -13,32 +14,47 @@ import type {
 import { kindsOf } from '../content/bundle';
 import { PROBE_CONTEXT } from '../content/probe';
 import { hasGeckolib } from '../content/supports';
+import { CONSUMABLE_PARAMETERS, consumableBundle } from './consumable';
 import { customBiomeBundle } from './custom-biome';
 import { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
 import { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
 import { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
+import { ENCHANTMENT_PARAMETERS, enchantmentBundle } from './enchantment';
 import { FOOD_PARAMETERS, foodBundle } from './food';
 import { functionStarterBundle } from './function-starter';
 import { GEAR_SET_PARAMETERS, gearSetBundle } from './gear-set';
 import { jigsawStructureBundle } from './jigsaw-structure';
 import { musicDiscBundle } from './music-disc';
+import { MUSIC_DISC_ITEM_PARAMETERS, musicDiscItemBundle } from './music-disc-item';
 import { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
+import { PAINTING_PARAMETERS, paintingBundle } from './painting';
 import { recipePackBundle } from './recipe-pack';
 import { SCRIPTED_ITEM_PARAMETERS, scriptedItemBundle } from './scripted-item';
 import { scriptedOreBundle } from './scripted-ore';
 import { SIMPLE_BLOCK_PARAMETERS, simpleBlockBundle } from './simple-block';
+import { TOTEM_PARAMETERS, totemBundle } from './totem';
+import { WEAPON_PARAMETERS, weaponBundle } from './weapon';
 import { worldgenPackBundle } from './worldgen-pack';
 
+export { CONSUMABLE_PARAMETERS, consumableBundle } from './consumable';
 export { customBiomeBundle, customBiomeContent, customBiomeIds } from './custom-biome';
 export { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
 export { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
 export { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
+export { ENCHANTMENT_PARAMETERS, enchantmentBundle } from './enchantment';
 export { FOOD_PARAMETERS, foodBundle } from './food';
 export { functionStarterBundle } from './function-starter';
-export { GEAR_SET_PARAMETERS, gearSetBundle, gearSetIds } from './gear-set';
+export { GEAR_SET_PARAMETERS, gearSetBundle, gearSetIds, nearestTrimPalette } from './gear-set';
 export { hamletIds, jigsawStructureBundle, jigsawStructureContent } from './jigsaw-structure';
 export { musicDiscBundle, SONG } from './music-disc';
+export { MUSIC_DISC_ITEM_PARAMETERS, musicDiscItemBundle } from './music-disc-item';
 export { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
+export {
+  PAINTING_MAX_BYTES,
+  PAINTING_MAX_SIZE,
+  PAINTING_PARAMETERS,
+  paintingBundle,
+} from './painting';
 export { recipePackBundle } from './recipe-pack';
 export {
   SCRIPTED_ITEM_PARAMETERS,
@@ -47,6 +63,8 @@ export {
 } from './scripted-item';
 export { scriptedOreBundle, scriptedOreIds } from './scripted-ore';
 export { SIMPLE_BLOCK_PARAMETERS, simpleBlockBundle } from './simple-block';
+export { TOTEM_PARAMETERS, totemBundle } from './totem';
+export { WEAPON_PARAMETERS, WEAPON_TYPES, weaponBundle } from './weapon';
 export { worldgenPackBundle } from './worldgen-pack';
 
 function starter(
@@ -63,15 +81,24 @@ function starter(
     parameters?: readonly StarterParameter[];
     /** Lists the starter in the Creator (ADR 0043 D1); omitted means New project only. */
     creator?: StarterCreatorInfo;
+    /**
+     * More answers whose bundles use kinds the default bundle does not (a choice that builds
+     * different content); `requiresKinds` is the union over the default and these.
+     */
+    probeValues?: readonly Readonly<Record<string, Json>>[];
   } = {},
 ): ProjectStarter {
+  const kinds = new Set(kindsOf(build(PROBE_CONTEXT)));
+  for (const values of options.probeValues ?? []) {
+    for (const kind of kindsOf(build({ ...PROBE_CONTEXT, values }))) kinds.add(kind);
+  }
   const entry: ProjectStarter = {
     id,
     title,
     description,
     category,
     layers,
-    requiresKinds: kindsOf(build(PROBE_CONTEXT)).sort(),
+    requiresKinds: [...kinds].sort(),
     build,
   };
   if (options.parameters !== undefined) {
@@ -145,7 +172,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'gear-set',
     'Gear set',
-    'Tools and armour of one new material: a sword, pickaxe, axe, shovel and hoe, a helmet, chestplate, leggings and boots, the material (from a new ore or as an ingot), recipes or smithing upgrades, the worn armour look and the vanilla tags. New items need the Fabric mod jar export.',
+    'Tools and armour of one new material: a sword, pickaxe, axe, shovel and hoe, a helmet, chestplate, leggings and boots (and, if you choose, a spear, mace, bow, crossbow, shield, horse armour and wolf armour), the material (from a new ore or as an ingot, optionally an armour trim material), recipes or smithing upgrades, the worn armour look and the vanilla tags. New items need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'datapack', 'msm'],
     gearSetBundle,
@@ -182,6 +209,98 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     {
       parameters: FOOD_PARAMETERS,
       creator: { group: 'food', blurb: 'Something to eat: how much it fills and how it is made.' },
+    },
+  ),
+  starter(
+    'weapon',
+    'Weapon',
+    'One new weapon: a sword, spear, mace, bow, crossbow or shield with its own name, colour and stats, a texture and model, and an optional recipe. New items need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    weaponBundle,
+    {
+      parameters: WEAPON_PARAMETERS,
+      creator: {
+        group: 'gear',
+        blurb: 'One weapon: a sword, spear, mace, bow, crossbow or shield with its stats.',
+      },
+    },
+  ),
+  starter(
+    'consumable',
+    'Consumable',
+    'A food with effects, a potion-like drink or a charm that gives effects when used: its effects, eating time, cooldown, texture and model, and an optional recipe. New items need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    consumableBundle,
+    {
+      parameters: CONSUMABLE_PARAMETERS,
+      creator: {
+        group: 'food',
+        blurb: 'A food, drink or charm that gives mob effects.',
+      },
+      probeValues: [{ kind: 'charm' }],
+    },
+  ),
+  starter(
+    'totem',
+    'Totem',
+    'An item that saves its holder from death like a totem of undying and gives the effects you choose, with a texture, model and optional recipe. New items need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    totemBundle,
+    {
+      parameters: TOTEM_PARAMETERS,
+      creator: {
+        group: 'gear',
+        blurb: 'A totem that saves its holder from death and gives effects.',
+      },
+    },
+  ),
+  starter(
+    'enchantment',
+    'Enchantment',
+    'A new enchantment: what it goes on, its highest level, how rare it is and what it does, offered at the enchanting table. Works in a data pack.',
+    'content',
+    ['datapack'],
+    enchantmentBundle,
+    {
+      parameters: ENCHANTMENT_PARAMETERS,
+      creator: {
+        group: 'gear',
+        blurb: 'An enchantment with one effect that grows with its level.',
+      },
+    },
+  ),
+  starter(
+    'painting',
+    'Painting',
+    'A new painting with its title, author, size and your own picture (or a placeholder landscape). Works in vanilla packs.',
+    'content',
+    BOTH,
+    paintingBundle,
+    {
+      parameters: PAINTING_PARAMETERS,
+      creator: {
+        group: 'blocks',
+        blurb: 'A painting of your own picture, from 1 by 1 to 4 by 4 blocks.',
+      },
+    },
+  ),
+  starter(
+    'music-disc-item',
+    'Music disc',
+    'A new jukebox song and a music disc that plays it: a real disc item in the Fabric mod jar, or music disc 13 with a new look in vanilla packs. Import your own .ogg to hear your song.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    musicDiscItemBundle,
+    {
+      parameters: MUSIC_DISC_ITEM_PARAMETERS,
+      creator: {
+        group: 'blocks',
+        blurb: 'A jukebox song with its own music disc.',
+      },
+      probeValues: [{ disc_type: 'vanilla' }],
     },
   ),
   starter(

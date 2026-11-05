@@ -351,4 +351,35 @@ describe('Toolbar Java project export', () => {
     expect(reason.textContent).toBe('Fix 2 errors first (see Problems).');
     expect(screen.getByTestId('export-java-project').getAttribute('aria-disabled')).toBe('true');
   });
+
+  it('offers "Create…" only with an onCreator handler, enabled with a project', async () => {
+    renderToolbar(props());
+    expect(screen.queryByTestId('toolbar-creator')).toBeNull();
+    cleanup();
+    const onCreator = vi.fn();
+    renderToolbar(props({ onCreator }));
+    expect(button('Create…').disabled).toBe(false);
+    await userEvent.setup().click(screen.getByTestId('toolbar-creator'));
+    expect(onCreator).toHaveBeenCalledOnce();
+    cleanup();
+    renderToolbar(props({ onCreator, hasProject: false }));
+    expect(button('Create…').disabled).toBe(true);
+  });
+
+  it('shows the secondary buttons as icons named by their labels', () => {
+    renderToolbar(props({ onSettings: vi.fn(), onAiHelper: vi.fn(), onImportAssets: vi.fn() }));
+    for (const name of [
+      'Undo',
+      'Redo',
+      'Add namespace',
+      'Import assets',
+      'AI helper',
+      'Settings',
+    ]) {
+      const found = button(name);
+      expect(found.getAttribute('aria-label')).toBe(name);
+      expect(found.textContent).toBe('');
+    }
+    expect(button('Add element').textContent).toBe('Add element');
+  });
 });

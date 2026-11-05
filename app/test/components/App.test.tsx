@@ -1579,3 +1579,61 @@ describe('App AI helper (ADR 0041 D8)', () => {
     expect(screen.queryByTestId('toolbar-ai-helper')).toBeNull();
   });
 });
+
+describe('App Creator (ADR 0043 D3)', () => {
+  it('opens the Creator from the menu, the toolbar, the palette and the empty editor', async () => {
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    await harness.menu('creator');
+    expect(await screen.findByTestId('creator-dialog')).toBeTruthy();
+    await user.click(screen.getByTestId('creator-cancel'));
+    await waitFor(() => expect(screen.queryByTestId('creator-dialog')).toBeNull());
+
+    expect(screen.getByTestId('toolbar-creator').textContent).toBe('Create…');
+    await user.click(screen.getByTestId('toolbar-creator'));
+    expect(await screen.findByTestId('creator-dialog')).toBeTruthy();
+    await user.click(screen.getByTestId('creator-cancel'));
+
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    const command = within(palette).getByTestId('command-creator');
+    expect(command.textContent).toContain('Create with the Creator…');
+    await user.click(command);
+    expect(await screen.findByTestId('creator-dialog')).toBeTruthy();
+    await user.click(screen.getByTestId('creator-cancel'));
+
+    await user.click(await screen.findByTestId('editor-open-creator'));
+    expect(await screen.findByTestId('creator-dialog')).toBeTruthy();
+  });
+
+  it('creates a set, selects its first element and reopens it with "Edit in Creator"', async () => {
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('toolbar-creator'));
+    await user.click(await screen.findByTestId('creator-flow-food'));
+    await screen.findByTestId('creator-tab-elements');
+    await waitFor(() =>
+      expect((screen.getByTestId('creator-create') as HTMLButtonElement).disabled).toBe(false),
+    );
+    await user.click(screen.getByTestId('creator-create'));
+    await toast(/^Create Food: \d+ change\(s\) applied\. Undo reverts them in one step\.$/);
+    expect(harness.session.snapshot.undoLabel).toBe('Create Food');
+    const selected = useUiStore.getState().selectedId;
+    expect(selected).not.toBeNull();
+    act(() => useUiStore.getState().select('demo:ruby_apple'));
+    await user.click(await screen.findByTestId('editor-edit-in-creator'));
+    const dialog = await screen.findByTestId('creator-dialog');
+    expect(within(dialog).getByRole('heading', { name: 'Edit: Food' })).toBeTruthy();
+    expect(
+      (await within(dialog).findByTestId('creator-element-demo:ruby_apple')).dataset.status,
+    ).toBe('unchanged');
+  });
+
+  it('hides "Edit in Creator" for elements the Creator did not make', async () => {
+    const harness = await renderApp();
+    addFunction(harness, ['say hi']);
+    act(() => useUiStore.getState().select('demo:greet'));
+    expect(await screen.findByTestId('editor-tab-form')).toBeTruthy();
+    expect(screen.queryByTestId('editor-edit-in-creator')).toBeNull();
+  });
+});

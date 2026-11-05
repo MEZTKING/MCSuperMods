@@ -2,15 +2,24 @@
  * One wizard question (ADR 0040): a labelled control for a {@link StarterParameter}, its
  * description, the id preview of a name field and the validation error under it. The control
  * carries `data-testid="param-<id>"`; a `set` parameter is a fieldset of checkboxes
- * (`param-<id>` on the fieldset, `param-<id>-<value>` on each box, ADR 0043 D1).
+ * (`param-<id>` on the fieldset, `param-<id>-<value>` on each box, ADR 0043 D1); an `image`
+ * parameter is a PNG file picker (`param-<id>`) with a thumbnail (`param-<id>-thumbnail`) or
+ * "No image" (`param-<id>-empty`) and a "Remove image" button (`param-<id>-clear`), ADR 0044 D7.
  *
  * @packageDocumentation
  */
 
 import type { StarterParameter } from '@msm/plugin-api';
-import { type ReactNode, useId } from 'react';
+import { type ReactNode, useId, useState } from 'react';
 import { fieldClass } from '../NewElementDialog';
-import { derivedId, type RawValue, showsIdPreview, toggleSetValue } from './wizard-model';
+import { Button } from '../ui/Button';
+import {
+  derivedId,
+  type RawValue,
+  readImageFile,
+  showsIdPreview,
+  toggleSetValue,
+} from './wizard-model';
 
 /** Props of {@link ParameterField}. */
 export interface ParameterFieldProps {
@@ -35,15 +44,20 @@ export function ParameterField({
   const inputId = useId();
   const descriptionId = useId();
   const errorId = useId();
+  const [fileError, setFileError] = useState<string | null>(null);
+  const shownError = fileError ?? error;
   const testId = `param-${parameter.id}`;
   const describedBy =
-    [parameter.description === undefined ? null : descriptionId, error === null ? null : errorId]
+    [
+      parameter.description === undefined ? null : descriptionId,
+      shownError === null ? null : errorId,
+    ]
       .filter((entry) => entry !== null)
       .join(' ') || undefined;
   const common = {
     id: inputId,
     'data-testid': testId,
-    'aria-invalid': error !== null,
+    'aria-invalid': shownError !== null,
     'aria-describedby': describedBy,
     autoFocus,
   };
@@ -137,6 +151,58 @@ export function ParameterField({
       );
       break;
     }
+    case 'image':
+      control = (
+        <span className="flex flex-wrap items-center gap-2">
+          {text === '' ? (
+            <span
+              className="flex h-12 w-12 items-center justify-center rounded border border-border text-center text-[10px] text-muted"
+              data-testid={`${testId}-empty`}
+            >
+              No image
+            </span>
+          ) : (
+            <img
+              src={text}
+              alt={`${parameter.label} preview`}
+              className="h-12 w-12 rounded border border-border object-contain [image-rendering:pixelated]"
+              data-testid={`${testId}-thumbnail`}
+            />
+          )}
+          <input
+            {...common}
+            type="file"
+            accept="image/png"
+            className="text-xs"
+            onChange={(event) => {
+              const input = event.target;
+              const file = input.files?.[0];
+              if (file === undefined) return;
+              void readImageFile(parameter, file).then((result) => {
+                if ('error' in result) {
+                  setFileError(result.error);
+                } else {
+                  setFileError(null);
+                  onChange(result.value);
+                }
+                input.value = '';
+              });
+            }}
+          />
+          {text !== '' && (
+            <Button
+              data-testid={`${testId}-clear`}
+              onClick={() => {
+                setFileError(null);
+                onChange('');
+              }}
+            >
+              Remove image
+            </Button>
+          )}
+        </span>
+      );
+      break;
     case 'string':
       control = (
         <input
@@ -173,14 +239,14 @@ export function ParameterField({
           {parameter.description}
         </p>
       )}
-      {showsIdPreview(parameter) && error === null && preview !== '' && (
+      {showsIdPreview(parameter) && shownError === null && preview !== '' && (
         <p className="text-xs text-muted" data-testid={`${testId}-id`}>
           Ids start with <code>{preview}</code>
         </p>
       )}
-      {error !== null && (
+      {shownError !== null && (
         <p id={errorId} className="text-xs text-error" role="alert" data-testid={`${testId}-error`}>
-          {error}
+          {shownError}
         </p>
       )}
     </div>

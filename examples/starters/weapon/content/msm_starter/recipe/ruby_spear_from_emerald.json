@@ -1,0 +1,26 @@
+{
+  "data": {
+    "category": "equipment",
+    "key": {
+      "#": "minecraft:stick",
+      "X": "minecraft:emerald"
+    },
+    "pattern": [
+      "  X",
+      " # ",
+      "#  "
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_starter:ruby_spear"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_spear_from_emerald",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A shaped spear recipe with emerald as the material and the vanilla parts (sticks, string, a tripwire hook or planks). Element ids are unique across kinds, so the recipe has a name of its own."
+  }
+}

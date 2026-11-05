@@ -1,0 +1,32 @@
+{
+  "data": {
+    "components": {
+      "msm:consumable": {
+        "animation": "drink",
+        "converts_to": "minecraft:glass_bottle",
+        "effects": [
+          {
+            "effect": "minecraft:speed",
+            "seconds": 60
+          },
+          {
+            "effect": "minecraft:regeneration",
+            "seconds": 10
+          }
+        ],
+        "seconds": 1.6
+      }
+    },
+    "creative_tab": "minecraft:food_and_drinks",
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "msm_starter:item/ruby_tonic"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_tonic",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A drink: msm:consumable with the drink animation takes 1.6 seconds and gives Speed I for 60 seconds and Regeneration I for 10 seconds, then leaves a glass bottle (converts_to). It restores no hunger."
+  }
+}

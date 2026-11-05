@@ -1,0 +1,37 @@
+{
+  "data": {
+    "components": {
+      "msm:death_protection": {
+        "clear_effects": true,
+        "effects": [
+          {
+            "amplifier": 1,
+            "effect": "minecraft:regeneration",
+            "seconds": 45
+          },
+          {
+            "amplifier": 1,
+            "effect": "minecraft:absorption",
+            "seconds": 5
+          },
+          {
+            "effect": "minecraft:fire_resistance",
+            "seconds": 40
+          }
+        ]
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_starter:item/ruby_totem",
+    "rarity": "uncommon"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_totem",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A totem-like item: held in either hand when its holder would die, msm:death_protection uses it up and keeps the holder alive with half a heart, clears their effects and gives Regeneration II for 45 seconds, Absorption II for 5 seconds and Fire resistance I for 40 seconds."
+  }
+}

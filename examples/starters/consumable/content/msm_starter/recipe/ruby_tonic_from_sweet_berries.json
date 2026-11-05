@@ -1,0 +1,21 @@
+{
+  "data": {
+    "category": "misc",
+    "ingredients": [
+      "minecraft:sweet_berries",
+      "minecraft:glass_bottle"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_starter:ruby_tonic"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_tonic_from_sweet_berries",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Sweet berries and a glass bottle anywhere in the crafting grid make a ruby tonic."
+  }
+}

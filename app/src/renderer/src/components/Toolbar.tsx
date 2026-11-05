@@ -15,6 +15,7 @@ import {
   Sparkles,
   Trash2,
   Undo2,
+  WandSparkles,
 } from 'lucide-react';
 import { DropdownMenu, Toolbar as RadixToolbar } from 'radix-ui';
 import type { ReactNode } from 'react';
@@ -111,6 +112,8 @@ export interface ToolbarProps {
   onSettings?(): void;
   /** Opens or closes the AI helper tab in the right dock (ADR 0041 D8); hidden without it. */
   onAiHelper?(): void;
+  /** Opens the Creator (ADR 0043 D3, "Create…"); hidden without it. */
+  onCreator?(): void;
   /**
    * Where installs go. When given (also as `null`), the Install menu opens with a sentence
    * naming the target; `null` means none is chosen or found.
@@ -426,6 +429,11 @@ function ToolButton(props: {
   icon: ReactNode;
   testId: string;
   disabled?: boolean;
+  /**
+   * Shows only the icon; the label becomes the accessible name and the tooltip says the rest
+   * (keeps the toolbar on one line at 1200 px).
+   */
+  iconOnly?: boolean;
   onClick?: (() => void) | undefined;
 }) {
   const disabled = props.disabled === true || props.onClick === undefined;
@@ -435,10 +443,11 @@ function ToolButton(props: {
       className={buttonClass}
       disabled={disabled}
       data-testid={props.testId}
+      aria-label={props.iconOnly === true ? props.label : undefined}
       onClick={props.onClick}
     >
       {props.icon}
-      {props.label}
+      {props.iconOnly === true ? null : props.label}
     </RadixToolbar.Button>
   );
   // A disabled button gets no pointer or focus events, so its tooltip (which says why it is
@@ -544,6 +553,7 @@ export function Toolbar(props: ToolbarProps) {
             : `Undo ${props.undoLabel} (${modKey}+Z)`
         }
         testId="toolbar-undo"
+        iconOnly
         icon={<Undo2 size={iconSize} aria-hidden />}
         disabled={!props.canUndo}
         onClick={props.onUndo}
@@ -556,15 +566,31 @@ export function Toolbar(props: ToolbarProps) {
             : `Redo ${props.redoLabel} (${modKey}+Shift+Z)`
         }
         testId="toolbar-redo"
+        iconOnly
         icon={<Redo2 size={iconSize} aria-hidden />}
         disabled={!props.canRedo}
         onClick={props.onRedo}
       />
       {separator}
+      {props.onCreator !== undefined && (
+        <ToolButton
+          label="Create…"
+          tip={
+            props.hasProject
+              ? 'Make tools, armour, blocks, food and more with a live preview'
+              : 'Open a project to use the Creator.'
+          }
+          testId="toolbar-creator"
+          icon={<WandSparkles size={iconSize} aria-hidden />}
+          disabled={!props.hasProject}
+          onClick={props.onCreator}
+        />
+      )}
       <ToolButton
         label="Add namespace"
         tip={props.hasProject ? 'Add a namespace to the project' : 'No project is open.'}
         testId="toolbar-add-namespace"
+        iconOnly
         icon={<FolderPlus size={iconSize} aria-hidden />}
         disabled={!props.hasProject}
         onClick={props.onAddNamespace}
@@ -587,6 +613,7 @@ export function Toolbar(props: ToolbarProps) {
             : 'Open a project with a namespace.'
         }
         testId="toolbar-import-assets"
+        iconOnly
         icon={<ImageUp size={iconSize} aria-hidden />}
         disabled={!props.canAddElement}
         onClick={props.onImportAssets}
@@ -703,6 +730,7 @@ export function Toolbar(props: ToolbarProps) {
           label="AI helper"
           tip="Ask the AI helper about your project or have it build content"
           testId="toolbar-ai-helper"
+          iconOnly
           icon={<Sparkles size={iconSize} aria-hidden />}
           onClick={props.onAiHelper}
         />
@@ -711,6 +739,7 @@ export function Toolbar(props: ToolbarProps) {
         label="Settings"
         tip="Game locations, vanilla assets, updates and the AI helper"
         testId="toolbar-settings"
+        iconOnly
         icon={<Settings size={iconSize} aria-hidden />}
         onClick={props.onSettings}
       />

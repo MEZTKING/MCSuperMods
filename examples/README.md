@@ -22,8 +22,14 @@ Ordinary MSM projects generated from the built-in templates and samples library 
 | `starters/simple-block/` | `msm_starter` | The Simple block starter with its default answers: Ruby Tiles (a pickaxe-mined block that drops itself), its model and texture, a recipe of four stone and its English name |
 | `starters/food/` | `msm_starter` | The Food starter with its default answers: the Ruby Apple (`msm:food`, 4 hunger, 0.6 saturation), its model and texture, a recipe of an apple and sugar and its English name |
 | `starters/scripted-item/` | `msm_starter` | The Scripted behaviour starter with its default answers: the Ruby Wand, whose use event calls a script through a `run_script` action, and the generated script that heals the player |
+| `starters/weapon/` | `msm_starter` | The Weapon starter with its default answers: the Ruby Spear (an iron-tier `msm:item` spear with 500 durability), its handheld model and texture, a spear recipe with an emerald and its English name |
+| `starters/consumable/` | `msm_starter` | The Consumable starter with its default answers: the Ruby Tonic, a drink (`msm:consumable`) that gives speed and regeneration and leaves a glass bottle, its model and bottle texture, a recipe of sweet berries and a glass bottle and its English name |
+| `starters/totem/` | `msm_starter` | The Totem starter with its default answers: the Ruby Totem (`msm:death_protection`) that clears effects and gives regeneration, absorption and fire resistance, its model and texture, a recipe of an emerald and four gold ingots and its English name |
+| `starters/enchantment/` | `msm_starter` | The Enchantment starter with its default answers: Ruby Edge, a sword enchantment up to level 3 that adds damage, its English name and the vanilla tags that offer it at the enchanting table, from librarians and on loot |
+| `starters/painting/` | `msm_starter` | The Painting starter with its default answers: Ruby Sunset, a 2 by 1 painting variant with its English title and author and a placeholder landscape picture |
+| `starters/music-disc-item/` | `msm_starter` | The Music disc starter with its default answers: the Ruby Waltz jukebox song, its sound event and English description, and a real music disc item (`msm:components` with `minecraft:jukebox_playable`) with its model and texture |
 
-The Custom ore, Custom sword, Gear set, Simple block, Food, Custom mob and Scripted behaviour starters are wizards in the app (New project asks for a name, colours and a few numbers), and all but Custom sword are also Creator flows; the folders here hold their default answers.
+The Custom ore, Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Custom mob and Scripted behaviour starters are wizards in the app (New project asks for a name, colours and a few numbers; the Painting asks for a picture), and all but Custom sword are also Creator flows; the folders here hold their default answers.
 
 Every element carries notes (`meta.notes`) explaining its fields; the app shows them above the editor.
 
@@ -31,21 +37,28 @@ Every element carries notes (`meta.notes`) explaining its fields; the app shows 
 
 1. Copy the folder somewhere outside this repository, so your edits do not change the mirror.
 2. In MCSuperMods choose File > Open Project… and pick the copied folder.
-3. Export the resource pack and data pack as usual and try them in game. Structure templates export as `.nbt` files in the data pack; a World Type appears on the Create New World screen only when the data pack is enabled there. New blocks and items (`msm:block`, `msm:item`, in `all-kinds/`, `blocks-items/`, `starters/custom_ore/`, `starters/custom-sword/`, `starters/gear-set/`, `starters/simple-block/`, `starters/food/` and `starters/scripted-item/`) and new mobs (`msm:entity`, in `all-kinds/`, `entities/` and `starters/custom_mob/`) work only from the Fabric mod jar export, installed with Fabric Loader and Fabric API; mobs also need GeckoLib, which the jar nests unless you keep it separate. Scripts (`msm:script`, in `all-kinds/`, `scripts/`, `starters/scripted_ore/` and `starters/scripted-item/`) run only from the Fabric mod jar export, through `msm_runtime`; the Java project export leaves them out.
+3. Export the resource pack and data pack as usual and try them in game. Structure templates export as `.nbt` files in the data pack; a World Type appears on the Create New World screen only when the data pack is enabled there. New blocks and items (`msm:block`, `msm:item`, in `all-kinds/`, `blocks-items/`, `starters/custom_ore/`, `starters/custom-sword/`, `starters/gear-set/`, `starters/simple-block/`, `starters/food/`, `starters/weapon/`, `starters/consumable/`, `starters/totem/`, `starters/music-disc-item/` and `starters/scripted-item/`) and new mobs (`msm:entity`, in `all-kinds/`, `entities/` and `starters/custom_mob/`) work only from the Fabric mod jar export, installed with Fabric Loader and Fabric API; mobs also need GeckoLib, which the jar nests unless you keep it separate. Scripts (`msm:script`, in `all-kinds/`, `scripts/`, `starters/scripted_ore/` and `starters/scripted-item/`) run only from the Fabric mod jar export, through `msm_runtime`; the Java project export leaves them out.
 
 The textures are generated placeholders, not Mojang assets, drawn from these patterns (`packages/plugins/library/src/assets/png.ts`, tinted from one colour):
 
 | Pattern | Size | Used for |
 |---|---|---|
-| `plain` | 16x16 | Blocks (storage blocks, Simple block), smithing templates |
+| `plain` | 16x16 | Blocks (storage blocks, Simple block) |
 | `ore` | 16x16 | Ore blocks |
-| `gem` | 16x16 | Gems, the Scripted behaviour item |
+| `gem` | 16x16 | Gems, the Scripted behaviour item, charms |
 | `disc` | 16x16 | Music discs |
 | `egg` | 16x16 | Spawn eggs, foods |
 | `sword`, `pickaxe`, `axe`, `shovel`, `hoe` | 16x16 | Handheld tools |
+| `spear`, `mace`, `bow`, `crossbow`, `shield` | 16x16 | Weapons |
 | `helmet`, `chestplate`, `leggings`, `boots` | 16x16 | Armour item icons |
+| `horse_armor`, `wolf_armor` | 16x16 | Horse and wolf armour item icons |
+| `bottle`, `totem` | 16x16 | Drinks, totems |
+| `smithing_template` | 16x16 | Smithing templates |
 | `ingot` | 16x16 | Ingots |
 | `armor_layer_1`, `armor_layer_2` | 64x32 | Worn armour (`entity/equipment/humanoid/` and `humanoid_leggings/`) |
+| `horse_armor_layer` | 64x64 | Worn horse armour (`entity/equipment/horse_body/`) |
+| `wolf_armor_layer` | 64x32 | Worn wolf armour (`entity/equipment/wolf_body/`) |
+| painting placeholder | 16 per block | Paintings without a picked image (`paintingPng`) |
 
 The music disc plays the vanilla `records/cat` track until you import your own `.ogg` and point the sound event at it.
 

@@ -38,3 +38,33 @@ describe('EditorArea notes callout', () => {
     expect(screen.queryByTestId('element-notes')).toBeNull();
   });
 });
+
+describe('EditorArea Creator entry points (ADR 0043)', () => {
+  it('shows "Edit in Creator" only for elements with meta.creator', async () => {
+    const onEditInCreator = vi.fn();
+    render(<EditorArea element={element()} onApply={vi.fn()} onEditInCreator={onEditInCreator} />);
+    expect(screen.queryByTestId('editor-edit-in-creator')).toBeNull();
+    cleanup();
+    const made = element();
+    made.meta.creator = {
+      flowId: 'gear-set',
+      setId: 'set-1',
+      values: { material_name: 'Ruby' },
+      generatedId: 'demo:greet',
+    };
+    render(<EditorArea element={made} onApply={vi.fn()} onEditInCreator={onEditInCreator} />);
+    const button = screen.getByTestId('editor-edit-in-creator');
+    expect(button.textContent).toBe('Edit in Creator');
+    await userEvent.setup().click(button);
+    expect(onEditInCreator).toHaveBeenCalledWith(made);
+  });
+
+  it('offers the Creator when nothing is selected', async () => {
+    const onOpenCreator = vi.fn();
+    render(<EditorArea element={null} onApply={vi.fn()} onOpenCreator={onOpenCreator} />);
+    const link = screen.getByTestId('editor-open-creator');
+    expect(link.textContent).toBe('or Create something with the Creator');
+    await userEvent.setup().click(link);
+    expect(onOpenCreator).toHaveBeenCalledOnce();
+  });
+});

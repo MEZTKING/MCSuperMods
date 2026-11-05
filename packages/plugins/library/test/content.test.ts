@@ -3,7 +3,7 @@
  * namespaces and placeholder assets. Validation against the schema, loading and export with
  * the real resource pack and data pack plugins live in `packages/exporters/test/library.test.ts`.
  */
-import type { ContentBundle, ExampleProject, ProjectStarter } from '@msm/plugin-api';
+import type { ContentBundle, ExampleProject, Json, ProjectStarter } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import { COLOURS } from '../src/content/bundle';
@@ -15,6 +15,7 @@ import {
   libraryExamples,
   libraryStarters,
   PLACEHOLDER_PATTERNS,
+  paintingPng,
   placeholderPng,
   placeholderSkinPng,
   STARTERS_CATEGORY,
@@ -32,6 +33,12 @@ const STARTER_IDS = [
   'gear-set',
   'simple-block',
   'food',
+  'weapon',
+  'consumable',
+  'totem',
+  'enchantment',
+  'painting',
+  'music-disc-item',
   'recipe_pack',
   'music_disc',
   'function_starter',
@@ -117,15 +124,19 @@ const entries: readonly (ProjectStarter | ExampleProject)[] = [
 
 const target = (builtInTargets[0] as (typeof builtInTargets)[number]).target;
 
-const build = (entry: ProjectStarter | ExampleProject, namespace = 'demo'): ContentBundle => {
-  const bundle = entry.build({ namespace, projectName: 'Demo Project', target, values: {} });
+const build = (
+  entry: ProjectStarter | ExampleProject,
+  namespace = 'demo',
+  values: Record<string, Json> = {},
+): ContentBundle => {
+  const bundle = entry.build({ namespace, projectName: 'Demo Project', target, values });
   if (bundle instanceof Promise) throw new Error(`${entry.id} builds asynchronously.`);
   return bundle;
 };
 
 /**
- * Every placeholder the library may produce: each pattern and the entity skin in each library
- * colour.
+ * Every placeholder the library may produce: each pattern, the entity skin and the painting
+ * placeholder of every size up to 4 by 4 in each library colour.
  */
 const PLACEHOLDERS = new Set([
   ...PLACEHOLDER_PATTERNS.flatMap((pattern) =>
@@ -136,10 +147,17 @@ const PLACEHOLDERS = new Set([
   ...Object.values(COLOURS).map((colour) =>
     Buffer.from(placeholderSkinPng({ colour })).toString('hex'),
   ),
+  ...[1, 2, 3, 4].flatMap((width) =>
+    [1, 2, 3, 4].flatMap((height) =>
+      Object.values(COLOURS).map((colour) =>
+        Buffer.from(paintingPng(width, height, colour)).toString('hex'),
+      ),
+    ),
+  ),
 ]);
 
 describe('project starters', () => {
-  it('lists the eighteen starters in order', () => {
+  it('lists the twenty-four starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -149,7 +167,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(14).fill('content'),
+      ...Array<string>(20).fill('content'),
     ]);
   });
 
@@ -458,8 +476,19 @@ describe('every starter and example', () => {
 
   it('declares exactly the kinds its bundle uses', () => {
     for (const entry of entries) {
-      const used = [...new Set(build(entry).elements.map((element) => element.kind))].sort();
-      expect(entry.requiresKinds, entry.id).toEqual(used);
+      const used = new Set(build(entry).elements.map((element) => element.kind));
+      // A choice that builds other content adds its kinds (`probeValues`).
+      if (entry.id === 'music-disc-item') {
+        for (const element of build(entry, 'demo', { disc_type: 'vanilla' }).elements) {
+          used.add(element.kind);
+        }
+      }
+      if (entry.id === 'consumable') {
+        for (const element of build(entry, 'demo', { kind: 'charm' }).elements) {
+          used.add(element.kind);
+        }
+      }
+      expect(entry.requiresKinds, entry.id).toEqual([...used].sort());
       for (const kind of used) expect(KIND_IDS, entry.id).toContain(kind);
     }
   });

@@ -19,17 +19,28 @@ afterEach(async () => {
   await rm(temp, { recursive: true, force: true });
 });
 
-/** A reversible fake: a marker plus the reversed UTF-8 bytes. */
-function fakeSafeStorage(available = true): SafeStorageLike {
-  return {
-    isEncryptionAvailable: () => available,
-    encryptString: (text: string) => Buffer.from(`enc:${[...text].reverse().join('')}`, 'utf8'),
-    decryptString: (bytes: Buffer) => {
+/**
+ * A reversible fake: a marker plus the reversed UTF-8 bytes. `old:` files decrypt with
+ * `shouldReEncrypt` (a rotated OS key).
+ */
+function fakeSafeStorage(available = true): SafeStorageLike & { encryptions: number } {
+  const fake = {
+    encryptions: 0,
+    isAsyncEncryptionAvailable: async () => available,
+    encryptStringAsync: async (text: string) => {
+      fake.encryptions += 1;
+      return Buffer.from(`enc:${[...text].reverse().join('')}`, 'utf8');
+    },
+    decryptStringAsync: async (bytes: Buffer) => {
       const text = bytes.toString('utf8');
-      if (!text.startsWith('enc:')) throw new Error('Error while decrypting the ciphertext');
-      return [...text.slice(4)].reverse().join('');
+      const marker = text.slice(0, 4);
+      if (marker !== 'enc:' && marker !== 'old:') {
+        throw new Error('Error while decrypting the ciphertext');
+      }
+      return { result: [...text.slice(4)].reverse().join(''), shouldReEncrypt: marker === 'old:' };
     },
   };
+  return fake;
 }
 
 describe('AI key store', () => {
@@ -79,6 +90,51 @@ describe('AI key store', () => {
     expect(await store.status()).toEqual({ set: false, tail: null, encryptionAvailable: true });
     expect(logged).toHaveLength(1);
     expect(logged[0]).not.toContain('garbage');
+  });
+
+  it('stores the key again when safeStorage asks for re-encryption', async () => {
+    const safeStorage = fakeSafeStorage();
+    const store = createAiKeyStore({ msmHome: temp, safeStorage });
+    await writeFile(join(temp, AI_KEY_FILE), `old:${[...key].reverse().join('')}`);
+    expect(await store.read()).toBe(key);
+    expect(safeStorage.encryptions).toBe(1);
+    expect((await readFile(join(temp, AI_KEY_FILE))).toString('utf8').startsWith('enc:')).toBe(
+      true,
+    );
+    expect(await store.status()).toEqual({ set: true, tail: 'WXYZ', encryptionAvailable: true });
+    expect(safeStorage.encryptions).toBe(1);
+  });
+
+  it('reads encryption as unavailable when the check throws', async () => {
+    const store = createAiKeyStore({
+      msmHome: temp,
+      safeStorage: {
+        ...fakeSafeStorage(),
+        isAsyncEncryptionAvailable: async () => {
+          throw new Error('no backend');
+        },
+      },
+    });
+    expect((await store.status()).encryptionAvailable).toBe(false);
+    await expect(store.set(key)).rejects.toThrow(ENCRYPTION_UNAVAILABLE_MESSAGE);
+  });
+
+  it('reads the Linux basic_text backend as unavailable, as the synchronous check did', async () => {
+    const safeStorage = {
+      ...fakeSafeStorage(),
+      getSelectedStorageBackend: () => 'basic_text' as const,
+    };
+    const linux = createAiKeyStore({ msmHome: temp, safeStorage, platform: 'linux' });
+    expect((await linux.status()).encryptionAvailable).toBe(false);
+    await expect(linux.set(key)).rejects.toThrow(ENCRYPTION_UNAVAILABLE_MESSAGE);
+    const secret = createAiKeyStore({
+      msmHome: temp,
+      safeStorage: { ...safeStorage, getSelectedStorageBackend: () => 'gnome_libsecret' as const },
+      platform: 'linux',
+    });
+    expect((await secret.status()).encryptionAvailable).toBe(true);
+    const windows = createAiKeyStore({ msmHome: temp, safeStorage, platform: 'win32' });
+    expect((await windows.status()).encryptionAvailable).toBe(true);
   });
 
   it('clears the key, also when none is stored', async () => {

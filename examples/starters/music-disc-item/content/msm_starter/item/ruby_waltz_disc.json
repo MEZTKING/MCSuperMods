@@ -1,0 +1,21 @@
+{
+  "data": {
+    "components": {
+      "msm:components": {
+        "minecraft:jukebox_playable": "msm_starter:ruby_waltz"
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_starter:item/ruby_waltz_disc",
+    "rarity": "uncommon"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_waltz_disc",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The music disc: a new item whose vanilla component minecraft:jukebox_playable (set through msm:components) names the song msm_starter:ruby_waltz, so a jukebox plays it and the tooltip shows the song. Take it from the creative menu or add a recipe or loot table."
+  }
+}

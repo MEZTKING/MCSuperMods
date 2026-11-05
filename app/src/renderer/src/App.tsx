@@ -18,6 +18,7 @@ import type {
   RecentProjectView,
   WorldInfo,
 } from '../../shared/platform';
+import { namespaceOfId } from './changeset/creator-sets';
 import {
   type BuiltInCommandId,
   type CommandHandlers,
@@ -30,6 +31,7 @@ import { AiPanel } from './components/ai/AiPanel';
 import { AiController, useAiPanelStore } from './components/ai/ai-controller';
 import { CommandPalette, type PaletteCommand } from './components/CommandPalette';
 import { ConfirmDialog } from './components/ConfirmDialog';
+import { CreatorDialog, type CreatorEditRequest } from './components/creator/CreatorDialog';
 import { EditorArea } from './components/EditorArea';
 import { ElementSidebar } from './components/ElementSidebar';
 import { ExamplesDialog } from './components/ExamplesDialog';
@@ -161,6 +163,7 @@ type DialogState =
   | { type: 'element' }
   | { type: 'new-project' }
   | { type: 'examples' }
+  | { type: 'creator'; edit?: CreatorEditRequest }
   | { type: 'import'; namespace?: string }
   | { type: 'import-files'; mode: ImportMode }
   | { type: 'settings' }
@@ -1153,6 +1156,30 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     return () => document.removeEventListener(GO_TO_DEFINITION_EVENT, onRequest);
   }, []);
 
+  const editInCreator = (element: ProjectElement): void => {
+    const meta = element.meta.creator;
+    if (meta === undefined) return;
+    const flow = session.library.starters.find(
+      (starter) => starter.id === meta.flowId && starter.creator !== undefined,
+    );
+    if (flow === undefined) {
+      setMessage({
+        kind: 'error',
+        text: `The Creator flow ${meta.flowId} is not available, so this set cannot be reopened.`,
+      });
+      return;
+    }
+    setDialog({
+      type: 'creator',
+      edit: {
+        flowId: meta.flowId,
+        setId: meta.setId,
+        values: meta.values,
+        namespace: namespaceOfId(meta.generatedId),
+      },
+    });
+  };
+
   const handlers: Record<MenuCommand, Action> = {
     new: () => void openWith('New project', () => session.newProject()),
     newProjectFromStarter: () => setDialog({ type: 'new-project' }),
@@ -1203,8 +1230,13 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         setMessage({ kind: 'error', text: 'The AI helper is not available.' });
       else aiController.toggle();
     },
-    // ADR 0043: the Creator arrives with B184.
-    creator: () => {},
+    creator: () => {
+      if (project === null) {
+        setMessage({ kind: 'error', text: 'Open a project to use the Creator.' });
+        return;
+      }
+      setDialog({ type: 'creator' });
+    },
   };
 
   const commandHandlers: CommandHandlers = {
@@ -1256,6 +1288,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       aiController === null || selected === null
         ? null
         : () => aiController.askAboutElement(selected.id),
+    creator: project === null ? null : handlers.creator,
   } satisfies Record<BuiltInCommandId, Action | null>;
 
   const palette = paletteCommands(commandHandlers, session.pluginCommands, {
@@ -1425,6 +1458,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               onNew={handlers.new}
               onNewFromStarter={handlers.newProjectFromStarter}
               onExamples={handlers.examples}
+              onCreator={handlers.creator}
               onOpen={handlers.open}
               recentProjects={recentProjects}
               onOpenRecent={openRecent}
@@ -1486,6 +1520,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               {...(aiController === null
                 ? {}
                 : { onAskAi: (id: ResourceLocation) => aiController.askAboutElement(id) })}
+              onEditInCreator={editInCreator}
+              {...(project === null ? {} : { onOpenCreator: handlers.creator })}
             />
             <RightDock
               problems={snapshot.problems}
@@ -1541,6 +1577,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             targets={session.availableTargets}
             defaultTargetId={session.defaultTargetId ?? ''}
             onCancel={() => setDialog(null)}
+            {...(project === null ? {} : { onOpenCreator: () => setDialog({ type: 'creator' }) })}
             onCreate={({ starterId, targetId, values }) => {
               // The dialog closes first; `newProject` then asks for the folder.
               setDialog(null);
@@ -1610,6 +1647,32 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               const first = result.added[0];
               if (first !== undefined) select(first);
               return result;
+            }}
+          />
+        )}
+        {dialog?.type === 'creator' && project !== null && target !== null && (
+          <CreatorDialog
+            session={session}
+            project={project}
+            namespaces={namespaces.filter((name) => name !== 'minecraft')}
+            edit={dialog.edit ?? null}
+            folders={target.folders.resource}
+            readProjectAsset={readProjectAsset}
+            vanilla={vanilla}
+            onClose={() => setDialog(null)}
+            onCreated={(result) => {
+              setDialog(null);
+              if (result.written > 0 || result.applied > 0) {
+                setAssetRevision((revision) => revision + 1);
+              }
+              const skipped =
+                result.skipped > 0 ? ` ${result.skipped} no longer fitted and were skipped.` : '';
+              setMessage({
+                kind: 'info',
+                text: `${result.label}: ${result.applied + result.written} change(s) applied. Undo reverts them in one step.${skipped}`,
+              });
+              const first = result.created[0];
+              if (first !== undefined) select(first);
             }}
           />
         )}

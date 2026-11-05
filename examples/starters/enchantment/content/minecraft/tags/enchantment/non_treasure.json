@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "msm_starter:ruby_edge"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:non_treasure",
+  "kind": "minecraft:tag/enchantment",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds Ruby Edge to the vanilla enchantment tag #minecraft:non_treasure, so it counts as an ordinary (not treasure) enchantment. Vanilla enchantments stay in the tag."
+  }
+}

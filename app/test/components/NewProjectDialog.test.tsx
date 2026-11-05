@@ -74,3 +74,23 @@ describe('NewProjectDialog', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 });
+
+describe('NewProjectDialog Creator link (ADR 0043 D3)', () => {
+  it('offers the Creator only when the host passes onOpenCreator', async () => {
+    renderDialog([fakeStarter]);
+    expect(screen.queryByTestId('new-project-open-creator')).toBeNull();
+    cleanup();
+    const onOpenCreator = vi.fn();
+    render(
+      <NewProjectDialog
+        starters={[fakeStarter]}
+        onCancel={vi.fn()}
+        onOpenCreator={onOpenCreator}
+      />,
+    );
+    const link = screen.getByTestId('new-project-open-creator');
+    expect(link.textContent).toBe('or Create something with the Creator');
+    await userEvent.setup().click(link);
+    expect(onOpenCreator).toHaveBeenCalledOnce();
+  });
+});

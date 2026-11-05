@@ -49,6 +49,7 @@ export const BUILT_IN_COMMAND_IDS = [
   'aiHelper',
   'aiExplainProblem',
   'aiAskElement',
+  'creator',
 ] as const;
 
 /** A built-in command id. */
@@ -93,6 +94,7 @@ export const BUILT_IN_COMMANDS: Readonly<
   aiHelper: { title: 'Open AI helper', shortcut: 'Mod+Shift+A' },
   aiExplainProblem: { title: 'Explain this problem with the AI helper' },
   aiAskElement: { title: 'Ask the AI helper about this element' },
+  creator: { title: 'Create with the Creator…' },
 };
 
 /** Handlers of the available built-in commands; a missing or `null` one is unavailable. */

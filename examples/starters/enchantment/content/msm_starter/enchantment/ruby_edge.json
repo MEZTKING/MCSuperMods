@@ -1,0 +1,43 @@
+{
+  "data": {
+    "anvil_cost": 2,
+    "description": {
+      "translate": "enchantment.msm_starter.ruby_edge"
+    },
+    "effects": {
+      "minecraft:damage": [
+        {
+          "effect": {
+            "type": "minecraft:add",
+            "value": {
+              "base": 1,
+              "per_level_above_first": 0.5,
+              "type": "minecraft:linear"
+            }
+          }
+        }
+      ]
+    },
+    "max_cost": {
+      "base": 25,
+      "per_level_above_first": 8
+    },
+    "max_level": 3,
+    "min_cost": {
+      "base": 5,
+      "per_level_above_first": 8
+    },
+    "slots": [
+      "mainhand"
+    ],
+    "supported_items": "#minecraft:swords",
+    "weight": 5
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_edge",
+  "kind": "minecraft:enchantment",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An enchantment for swords (supported_items #minecraft:swords), up to level 3: minecraft:damage adds 1 damage at level I and half a heart more per level. weight 5 sets how often enchanting tables and loot offer it, min_cost and max_cost the enchanting levels it appears at, anvil_cost what combining it costs. Try /enchant @s msm_starter:ruby_edge 3 with the item in hand."
+  }
+}

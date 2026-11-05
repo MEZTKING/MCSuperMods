@@ -1,0 +1,26 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "G": "minecraft:gold_ingot",
+      "X": "minecraft:emerald"
+    },
+    "pattern": [
+      " G ",
+      "GXG",
+      " G "
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_starter:ruby_totem"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_totem_from_emerald",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "One emerald surrounded by four gold ingots makes the ruby totem."
+  }
+}

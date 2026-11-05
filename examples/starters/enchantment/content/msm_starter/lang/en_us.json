@@ -1,0 +1,12 @@
+{
+  "data": {
+    "enchantment.msm_starter.ruby_edge": "Ruby Edge"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:en_us",
+  "kind": "minecraft:lang",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The English name shown in tooltips: enchantment.msm_starter.ruby_edge is its translation key."
+  }
+}

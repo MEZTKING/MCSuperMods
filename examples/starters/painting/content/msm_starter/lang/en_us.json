@@ -1,0 +1,13 @@
+{
+  "data": {
+    "painting.msm_starter.ruby_sunset.author": "You",
+    "painting.msm_starter.ruby_sunset.title": "Ruby Sunset"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:en_us",
+  "kind": "minecraft:lang",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The English title and author shown on the painting item."
+  }
+}

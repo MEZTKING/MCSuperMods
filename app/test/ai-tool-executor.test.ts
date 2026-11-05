@@ -488,6 +488,98 @@ describe('createToolExecutor: proposals', () => {
       'reserved_namespace',
     );
   });
+
+  it('add_starter in another namespace keeps the single pack.mcmeta and mod metadata of the project', async () => {
+    const fixture = await setup();
+    const first = await fixture.call('add_starter', { starterId: 'custom_ore', namespace: 'ruby' });
+    expect(first.value.created).toContain('ruby:mod');
+    expect(first.value.created).not.toContain('ruby:pack');
+    expect(first.value.conflicts).toEqual(['ruby:pack']);
+    const second = await fixture.call('add_starter', {
+      starterId: 'custom-sword',
+      namespace: 'gems',
+    });
+    expect(second.result.isError, second.result.content).toBe(false);
+    expect([...second.value.conflicts].sort()).toEqual(['gems:mod', 'gems:pack']);
+    const kinds = fixture.changeset.items.map((item) => item.kind);
+    expect(kinds.filter((kind) => kind === 'msm:mod')).toHaveLength(1);
+    expect(kinds).not.toContain('minecraft:pack_mcmeta');
+  });
+
+  it('runs the calls of one turn one at a time, in arrival order', async () => {
+    const fs = createMemoryFileSystem();
+    const { session } = newSession(fs);
+    await session.newProject();
+    await session.schemas();
+    const changeset = new PendingChangeset();
+    const execute = createToolExecutor(session, changeset, {
+      proposePlan: async (plan) => ({ decision: 'build_all', items: plan.items, comments: '' }),
+      checkpoint: async () => 'continue',
+    });
+    const signal = new AbortController().signal;
+    const request = (n: number, name: string, input: unknown) =>
+      execute({ requestId: `r${n}`, toolUseId: `toolu_${n}`, name, input }, signal);
+    // Started together, as the parallel tool_use blocks of one assistant turn are.
+    const results = await Promise.all([
+      request(1, 'add_starter', { starterId: 'custom_ore', namespace: 'ruby' }),
+      request(2, 'add_starter', { starterId: 'custom-sword', namespace: 'ruby' }),
+      request(3, 'update_element', {
+        id: 'ruby:item/ruby',
+        data: { parent: 'minecraft:item/handheld', textures: { layer0: 'ruby:item/ruby' } },
+      }),
+    ]);
+    expect(results.map((result) => result.isError)).toEqual([false, false, false]);
+    expect(JSON.parse(results[1]?.content ?? '{}').conflicts).toContain('ruby:mod');
+    expect(changeset.items.filter((item) => item.elementId === 'ruby:mod')).toHaveLength(1);
+    expect(changeset.items.find((item) => item.elementId === 'ruby:item/ruby')?.after).toEqual({
+      parent: 'minecraft:item/handheld',
+      textures: { layer0: 'ruby:item/ruby' },
+    });
+  });
+
+  it('answers cancelled for a call still waiting behind another when the run is cancelled', async () => {
+    const fs = createMemoryFileSystem();
+    const { session } = newSession(fs);
+    await session.newProject();
+    const changeset = new PendingChangeset();
+    const abort = new AbortController();
+    const execute = createToolExecutor(session, changeset, {
+      proposePlan: (_plan, signal) =>
+        new Promise((_resolve, reject) => {
+          signal?.addEventListener('abort', () => reject(new Error('aborted')), { once: true });
+        }),
+      checkpoint: async () => 'continue',
+    });
+    const plan = execute(
+      {
+        requestId: 'r1',
+        toolUseId: 'toolu_1',
+        name: 'propose_plan',
+        input: {
+          title: 'Plan',
+          items: [{ itemId: 'a', kind: 'minecraft:model', elementId: 'demo:a', summary: 'A.' }],
+        },
+      },
+      abort.signal,
+    );
+    const texture = execute(
+      {
+        requestId: 'r2',
+        toolUseId: 'toolu_2',
+        name: 'create_texture',
+        input: { namespace: 'demo', path: 'item/a', pattern: 'gem' },
+      },
+      abort.signal,
+    );
+    abort.abort();
+    const answers = await Promise.all([plan, texture]);
+    expect(answers.map((answer) => JSON.parse(answer.content).error.code)).toEqual([
+      'cancelled',
+      'cancelled',
+    ]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(changeset.items).toEqual([]);
+  });
 });
 
 describe('createToolExecutor: checks and decisions', () => {

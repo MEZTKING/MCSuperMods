@@ -1,0 +1,22 @@
+{
+  "data": {
+    "asset_id": "msm_starter:ruby_sunset",
+    "author": {
+      "color": "gray",
+      "translate": "painting.msm_starter.ruby_sunset.author"
+    },
+    "height": 1,
+    "title": {
+      "color": "yellow",
+      "translate": "painting.msm_starter.ruby_sunset.title"
+    },
+    "width": 2
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_sunset",
+  "kind": "minecraft:painting_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A painting 2 by 1 blocks. asset_id names its picture, textures/painting/ruby_sunset.png in this namespace: a placeholder landscape of 32 by 16 pixels (16 per block): paint over it or replace the file. Hang it with /give @s minecraft:painting[minecraft:painting/variant=\"msm_starter:ruby_sunset\"]: a painting item without a variant picks a random placeable one, and this painting is not in the vanilla #minecraft:placeable tag."
+  }
+}

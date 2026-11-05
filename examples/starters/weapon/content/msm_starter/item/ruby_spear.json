@@ -1,0 +1,24 @@
+{
+  "data": {
+    "components": {
+      "msm:durability": {
+        "max": 500
+      },
+      "msm:tool": {
+        "tier": "iron",
+        "type": "spear"
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_starter:item/ruby_spear"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_spear",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A spear of the iron tier with vanilla's spear attacks (a charged thrust and a jab). msm:tool takes the iron material's damage bonus and enchantability. msm:durability gives it 500 uses."
+  }
+}

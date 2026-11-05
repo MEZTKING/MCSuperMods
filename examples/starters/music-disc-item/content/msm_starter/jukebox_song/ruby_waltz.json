@@ -1,0 +1,17 @@
+{
+  "data": {
+    "comparator_output": 7,
+    "description": {
+      "translate": "jukebox_song.msm_starter.ruby_waltz"
+    },
+    "length_in_seconds": 185,
+    "sound_event": "msm_starter:music_disc.ruby_waltz"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_waltz",
+  "kind": "minecraft:jukebox_song",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The jukebox song: the sound event msm_starter:music_disc.ruby_waltz, the \"Now playing\" text, how long the jukebox counts as playing (185 seconds) and the comparator signal (7)."
+  }
+}

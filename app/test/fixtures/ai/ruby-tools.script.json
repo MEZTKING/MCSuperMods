@@ -1,0 +1,268 @@
+{
+  "turns": [
+    {
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "The user wants a ruby tools mod. The Custom ore, Custom sword and Custom mob starters cover the ore, the sword and the mob; the pickaxe, the axe and the storage block's loot table are hand-written."
+        },
+        {
+          "type": "text",
+          "text": "Here is a plan for the ruby tools mod. Nothing changes until you apply the proposed changes."
+        },
+        {
+          "type": "tool_use",
+          "name": "propose_plan",
+          "input": {
+            "title": "Ruby tools mod",
+            "items": [
+              {
+                "itemId": "ore",
+                "kind": "msm:block",
+                "elementId": "ruby:ruby_ore",
+                "summary": "Ruby ore that drops rubies, a block of ruby with its recipes and the mod metadata (Custom ore starter)."
+              },
+              {
+                "itemId": "sword",
+                "kind": "msm:item",
+                "elementId": "ruby:ruby_sword",
+                "summary": "A diamond-tier ruby sword with its model, name and recipe (Custom sword starter).",
+                "dependsOn": ["ore"]
+              },
+              {
+                "itemId": "pickaxe",
+                "kind": "msm:item",
+                "elementId": "ruby:ruby_pickaxe",
+                "summary": "A diamond-tier ruby pickaxe with a handheld model, an English name and a shaped recipe from rubies and sticks.",
+                "dependsOn": ["ore"]
+              },
+              {
+                "itemId": "axe",
+                "kind": "msm:item",
+                "elementId": "ruby:ruby_axe",
+                "summary": "A diamond-tier ruby axe with a handheld model, an English name and a shaped recipe from rubies and sticks.",
+                "dependsOn": ["ore"]
+              },
+              {
+                "itemId": "block-loot",
+                "kind": "minecraft:loot_table",
+                "elementId": "ruby:blocks/ruby_block",
+                "summary": "A plain loot table for the block of ruby that drops the block itself, unless it is blown up.",
+                "dependsOn": ["ore"]
+              },
+              {
+                "itemId": "mob",
+                "kind": "msm:entity",
+                "elementId": "ruby:ruby_golem",
+                "summary": "The Ruby Golem, an animated neutral mob with a spawn egg (Custom mob starter)."
+              }
+            ],
+            "assets": [
+              {
+                "namespace": "ruby",
+                "path": "item/ruby_pickaxe",
+                "purpose": "The ruby pickaxe's placeholder texture."
+              },
+              {
+                "namespace": "ruby",
+                "path": "item/ruby_axe",
+                "purpose": "The ruby axe's placeholder texture."
+              }
+            ],
+            "notes": "The starters bring their own placeholder textures. Blocks, items and the mob need the Fabric mod jar export."
+          }
+        }
+      ],
+      "usage": { "inputTokens": 5200, "outputTokens": 900, "cacheCreationInputTokens": 4100 }
+    },
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "Building every item of the plan."
+        },
+        {
+          "type": "tool_use",
+          "name": "add_starter",
+          "input": { "starterId": "custom_ore", "namespace": "ruby", "values": { "ore_name": "Ruby" } }
+        },
+        {
+          "type": "tool_use",
+          "name": "add_starter",
+          "input": {
+            "starterId": "custom-sword",
+            "namespace": "ruby",
+            "values": { "sword_name": "Ruby Sword" }
+          }
+        },
+        {
+          "type": "tool_use",
+          "name": "add_starter",
+          "input": {
+            "starterId": "custom_mob",
+            "namespace": "ruby",
+            "values": { "mob_name": "Ruby Golem" }
+          }
+        },
+        {
+          "type": "tool_use",
+          "name": "create_texture",
+          "input": {
+            "namespace": "ruby",
+            "path": "item/ruby_pickaxe",
+            "pattern": "pickaxe",
+            "colour": "#d0103a"
+          }
+        },
+        {
+          "type": "tool_use",
+          "name": "create_texture",
+          "input": { "namespace": "ruby", "path": "item/ruby_axe", "pattern": "axe", "colour": "#d0103a" }
+        },
+        {
+          "type": "tool_use",
+          "name": "create_elements",
+          "input": {
+            "elements": [
+              {
+                "id": "ruby:ruby_pickaxe",
+                "kind": "msm:item",
+                "data": {
+                  "format": 1,
+                  "model": "ruby:item/ruby_pickaxe",
+                  "display_name": "Ruby Pickaxe",
+                  "max_stack_size": 1,
+                  "creative_tab": "minecraft:tools_and_utilities",
+                  "components": {
+                    "msm:tool": { "type": "pickaxe", "tier": "diamond" },
+                    "msm:durability": { "max": 1561 }
+                  }
+                }
+              },
+              {
+                "id": "ruby:item/ruby_pickaxe",
+                "kind": "minecraft:model",
+                "data": {
+                  "parent": "minecraft:item/handheld",
+                  "textures": { "layer0": "ruby:item/ruby_pickaxe" }
+                }
+              },
+              {
+                "id": "ruby:ruby_pickaxe_from_rubies",
+                "kind": "minecraft:recipe",
+                "data": {
+                  "type": "minecraft:crafting_shaped",
+                  "category": "equipment",
+                  "pattern": ["RRR", " S ", " S "],
+                  "key": { "R": "ruby:ruby", "S": "minecraft:stick" },
+                  "result": { "id": "ruby:ruby_pickaxe", "count": 1 }
+                }
+              },
+              {
+                "id": "ruby:ruby_axe",
+                "kind": "msm:item",
+                "data": {
+                  "format": 1,
+                  "model": "ruby:item/ruby_axe",
+                  "display_name": "Ruby Axe",
+                  "max_stack_size": 1,
+                  "creative_tab": "minecraft:tools_and_utilities",
+                  "components": {
+                    "msm:tool": { "type": "axe", "tier": "diamond" },
+                    "msm:durability": { "max": 1561 }
+                  }
+                }
+              },
+              {
+                "id": "ruby:item/ruby_axe",
+                "kind": "minecraft:model",
+                "data": {
+                  "parent": "minecraft:item/handheld",
+                  "textures": { "layer0": "ruby:item/ruby_axe" }
+                }
+              },
+              {
+                "id": "ruby:ruby_axe_from_rubies",
+                "kind": "minecraft:recipe",
+                "data": {
+                  "type": "minecraft:crafting_shaped",
+                  "category": "equipment",
+                  "pattern": ["RR", "RS", " S"],
+                  "key": { "R": "ruby:ruby", "S": "minecraft:stick" },
+                  "result": { "id": "ruby:ruby_axe", "count": 1 }
+                }
+              },
+              {
+                "id": "ruby:blocks/ruby_block",
+                "kind": "minecraft:loot_table",
+                "data": {
+                  "type": "minecraft:block",
+                  "pools": [
+                    {
+                      "rolls": 1,
+                      "condition": { "type": "minecraft:survives_explosion" },
+                      "entries": [{ "type": "minecraft:item", "name": "ruby:ruby_block" }]
+                    }
+                  ],
+                  "random_sequence": "ruby:blocks/ruby_block"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "tool_use",
+          "name": "update_element",
+          "input": {
+            "id": "ruby:ruby_block",
+            "data": {
+              "format": 1,
+              "model": "ruby:block/ruby_block",
+              "display_name": "Block of Ruby",
+              "sound_type": "metal",
+              "loot": "ruby:blocks/ruby_block",
+              "item": { "creative_tab": "minecraft:building_blocks" },
+              "components": {
+                "msm:breakable": { "hardness": 5, "resistance": 6, "tool": "pickaxe", "min_tier": "iron" }
+              }
+            }
+          }
+        }
+      ],
+      "usage": { "inputTokens": 900, "outputTokens": 4200, "cacheReadInputTokens": 6100 }
+    },
+    {
+      "content": [
+        {
+          "type": "tool_use",
+          "name": "run_checks",
+          "input": { "scope": "all" }
+        }
+      ],
+      "usage": { "inputTokens": 3100, "outputTokens": 120, "cacheReadInputTokens": 10400 }
+    },
+    {
+      "content": [
+        {
+          "type": "tool_use",
+          "name": "checkpoint",
+          "input": {
+            "completedItemIds": ["ore", "sword", "pickaxe", "axe", "block-loot", "mob"],
+            "summary": "Every plan item is proposed and the checks report no errors."
+          }
+        }
+      ],
+      "usage": { "inputTokens": 400, "outputTokens": 90, "cacheReadInputTokens": 13500 }
+    },
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "The ruby tools mod is ready to review: ruby ore with rubies and a block of ruby, a ruby sword, pickaxe and axe with their recipes, a loot table for the block of ruby and the Ruby Golem. The textures are placeholders to replace later. Export the Fabric mod jar to try the blocks, items and the mob in game."
+        }
+      ],
+      "stopReason": "end_turn",
+      "usage": { "inputTokens": 300, "outputTokens": 260, "cacheReadInputTokens": 13900 }
+    }
+  ]
+}

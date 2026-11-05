@@ -16,6 +16,16 @@
  * `chest_armor`, `leg_armor` and `foot_armor` is enough for every `enchantable/*` tag: those
  * vanilla tags list the base tags (checked against the vanilla data when this was written;
  * the library test checks the tag names against each target's vendored registries).
+ *
+ * ADR 0044 D6 adds the pieces `spear`, `mace` (`msm:tool` with the set's tier), `bow`,
+ * `crossbow` (`msm:ranged_weapon`), `shield` (`msm:shield`), `horse_armor` and `wolf_armor`
+ * (`msm:armor` slots `horse` and `wolf`, drawn from the equipment asset's `horse_body` and
+ * `wolf_body` layers); these get their enchanting tags from the blocks and items lowering,
+ * and the smithing upgrade covers the spear and the horse armour (vanilla has both in every
+ * upgrade material), the others are crafted. `trim_material` makes the material item an
+ * armour trim material too: a `minecraft:trim_material` element `<id>_trim` with the vanilla
+ * colour palette nearest to the set's colour, `provides_trim_material` through
+ * `msm:components` and the `minecraft:trim_materials` item tag.
  */
 import type {
   BundleContext,
@@ -26,7 +36,7 @@ import type {
   ResourceLocation,
   StarterParameter,
 } from '@msm/plugin-api';
-import { armorLayerPng, type PlaceholderPattern } from '../assets/png';
+import { armorLayerPng, bodyArmorLayerPng, type PlaceholderPattern } from '../assets/png';
 import {
   COLOURS,
   element,
@@ -38,6 +48,7 @@ import {
 } from '../content/bundle';
 import {
   articleFor,
+  booleanValue,
   hexFromRgb,
   NAME_MAX_LENGTH,
   NAME_PATTERN,
@@ -81,6 +92,138 @@ const ARMOUR: readonly ArmourPiece[] = [
   { value: 'leggings', label: 'Leggings', pattern: ['XXX', 'X X', 'X X'], tag: 'leg_armor' },
   { value: 'boots', label: 'Boots', pattern: ['X X', 'X X'], tag: 'foot_armor' },
 ];
+
+/**
+ * A weapon piece (ADR 0044 D6): its display word, recipe pattern (`X` the material, `#` a
+ * stick, `S` string, `T` a tripwire hook, `W` planks), model parent and whether vanilla has it
+ * in every upgrade material (so a smithing upgrade can start from it).
+ */
+interface WeaponPiece {
+  value: 'spear' | 'mace' | 'bow' | 'crossbow' | 'shield';
+  label: string;
+  pattern: string[];
+  parent: string;
+  upgradable: boolean;
+}
+
+/** The weapon pieces. */
+const WEAPONS: readonly WeaponPiece[] = [
+  {
+    value: 'spear',
+    label: 'Spear',
+    pattern: ['  X', ' # ', '#  '],
+    parent: 'minecraft:item/handheld',
+    upgradable: true,
+  },
+  {
+    value: 'mace',
+    label: 'Mace',
+    pattern: ['XXX', 'XXX', ' # '],
+    parent: 'minecraft:item/handheld_mace',
+    upgradable: false,
+  },
+  {
+    value: 'bow',
+    label: 'Bow',
+    pattern: [' #S', 'X S', ' #S'],
+    parent: 'minecraft:item/bow',
+    upgradable: false,
+  },
+  {
+    value: 'crossbow',
+    label: 'Crossbow',
+    pattern: ['#X#', 'STS', ' # '],
+    parent: 'minecraft:item/crossbow',
+    upgradable: false,
+  },
+  {
+    value: 'shield',
+    label: 'Shield',
+    pattern: ['WXW', 'WWW', ' W '],
+    parent: 'minecraft:item/generated',
+    upgradable: false,
+  },
+];
+
+/** The recipe keys of weapon pieces other than the material. */
+const WEAPON_KEYS: Readonly<Record<string, string>> = Object.freeze({
+  '#': 'minecraft:stick',
+  S: 'minecraft:string',
+  T: 'minecraft:tripwire_hook',
+  W: '#minecraft:planks',
+});
+
+/** Vanilla durability of the ranged weapons and the shield, used with a vanilla tier. */
+const WEAPON_DURABILITY: Readonly<Record<string, number>> = Object.freeze({
+  bow: 384,
+  crossbow: 465,
+  shield: 336,
+});
+
+/** A body armour piece (ADR 0044 D5): the animal, display word, recipe pattern and layer. */
+interface BodyArmourPiece {
+  value: 'horse_armor' | 'wolf_armor';
+  label: string;
+  slot: 'horse' | 'wolf';
+  layer: 'horse_body' | 'wolf_body';
+  pattern: string[];
+  upgradable: boolean;
+}
+
+/** The body armour pieces, with the vanilla leather horse armour and wolf armour patterns. */
+const BODY_ARMOUR: readonly BodyArmourPiece[] = [
+  {
+    value: 'horse_armor',
+    label: 'Horse armour',
+    slot: 'horse',
+    layer: 'horse_body',
+    pattern: ['X X', 'XXX', 'X X'],
+    upgradable: true,
+  },
+  {
+    value: 'wolf_armor',
+    label: 'Wolf armour',
+    slot: 'wolf',
+    layer: 'wolf_body',
+    pattern: ['X  ', 'XXX', 'X X'],
+    upgradable: false,
+  },
+];
+
+/**
+ * The vanilla trim colour palettes with the colour of their material's tooltip, for the
+ * palette nearest to a set's colour (`trim_material`).
+ */
+const TRIM_PALETTES: readonly { value: string; rgb: readonly [number, number, number] }[] = [
+  { value: 'amethyst', rgb: [154, 92, 198] },
+  { value: 'copper', rgb: [180, 104, 77] },
+  { value: 'diamond', rgb: [110, 236, 210] },
+  { value: 'emerald', rgb: [17, 160, 54] },
+  { value: 'gold', rgb: [222, 177, 45] },
+  { value: 'iron', rgb: [236, 236, 236] },
+  { value: 'lapis', rgb: [65, 110, 151] },
+  { value: 'netherite', rgb: [98, 88, 89] },
+  { value: 'quartz', rgb: [227, 212, 196] },
+  { value: 'redstone', rgb: [151, 22, 7] },
+  { value: 'resin', rgb: [252, 120, 18] },
+];
+
+/** The vanilla trim palette closest to `colour` (squared RGB distance; ties keep list order). */
+export function nearestTrimPalette(colour: readonly [number, number, number]): string {
+  let best = TRIM_PALETTES[0] as (typeof TRIM_PALETTES)[number];
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (const palette of TRIM_PALETTES) {
+    const distance = palette.rgb.reduce((sum, channel, index) => {
+      const delta = channel - (colour[index] as number);
+      return sum + delta * delta;
+    }, 0);
+    if (distance < bestDistance) {
+      best = palette;
+      bestDistance = distance;
+    }
+  }
+  return best.value;
+}
 
 /** The vanilla tool tiers, in the order the flow lists them, then `custom`. */
 const TIERS: readonly { value: string; label: string }[] = [
@@ -224,7 +367,10 @@ const UPGRADES: readonly { value: string; label: string; prefix?: string }[] = [
   { value: 'copper', label: 'Upgrade copper gear at a smithing table', prefix: 'copper' },
 ];
 
-const PIECES = [...TOOLS, ...ARMOUR];
+const PIECES = [...TOOLS, ...ARMOUR, ...WEAPONS, ...BODY_ARMOUR];
+
+/** The pieces a new set makes unless the user chooses: the tools and the humanoid armour. */
+const DEFAULT_PIECES = [...TOOLS, ...ARMOUR].map((piece) => piece.value);
 
 const CUSTOM_ONLY = 'Used when Tier is Custom.';
 const ARMOUR_CUSTOM_ONLY = 'Used when Armour stats is Custom.';
@@ -264,10 +410,11 @@ export const GEAR_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
   {
     id: 'pieces',
     label: 'Pieces',
-    description: 'The tools and armour pieces to make.',
+    description:
+      'The tools, weapons and armour pieces to make. Spears and maces use the tool tier; bows, crossbows and shields the tool durability; horse and wolf armour the chestplate armour points.',
     group: 'Pieces',
     type: 'set',
-    default: PIECES.map((piece) => piece.value),
+    default: [...DEFAULT_PIECES],
     choices: PIECES.map(({ value, label }) => ({ value, label })),
     min: 1,
   },
@@ -280,6 +427,15 @@ export const GEAR_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     type: 'choice',
     default: 'none',
     choices: UPGRADES.map(({ value, label }) => ({ value, label })),
+  },
+  {
+    id: 'trim_material',
+    label: 'Also an armour trim material',
+    description:
+      'The material item can trim armour at a smithing table, in the vanilla trim colours nearest to the set colour.',
+    group: 'Pieces',
+    type: 'boolean',
+    default: false,
   },
   {
     id: 'tier',
@@ -455,6 +611,9 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
   const chosen = setValue(values, 'pieces');
   const tools = TOOLS.filter((piece) => chosen.includes(piece.value));
   const armour = ARMOUR.filter((piece) => chosen.includes(piece.value));
+  const weapons = WEAPONS.filter((piece) => chosen.includes(piece.value));
+  const bodyArmour = BODY_ARMOUR.filter((piece) => chosen.includes(piece.value));
+  const trim = booleanValue(values, 'trim_material');
   const upgrade = UPGRADES.find((entry) => entry.value === stringValue(values, 'upgrade_from'));
   const upgradePrefix = upgrade?.prefix;
   const tierValue = stringValue(values, 'tier');
@@ -484,7 +643,9 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
   const materialName = fromOre ? name.display : `${name.display} Ingot`;
   const materialLower = materialName.toLowerCase();
   const repairTag = ids.repairTag;
-  const usesRepairTag = armour.length > 0 || (tools.length > 0 && isCustomTier);
+  const meleeWeapons = weapons.filter((piece) => piece.value === 'spear' || piece.value === 'mace');
+  const anyArmour = armour.length + bodyArmour.length > 0;
+  const usesRepairTag = anyArmour || (tools.length + meleeWeapons.length > 0 && isCustomTier);
   const lang: Record<string, string> = {};
   const itemKey = (id: ResourceLocation): string => `item.${id.replace(':', '.')}`;
   const blockKey = (id: ResourceLocation): string => `block.${id.replace(':', '.')}`;
@@ -494,7 +655,9 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
     elements.push(...entries);
   };
 
-  const pieceWords = [...tools, ...armour].map((piece) => piece.label.toLowerCase());
+  const pieceWords = [...tools, ...armour, ...weapons, ...bodyArmour].map((piece) =>
+    piece.label.toLowerCase(),
+  );
   const summary =
     pieceWords.length === 0
       ? `${name.lower} material`
@@ -524,19 +687,28 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
   // The material -----------------------------------------------------------------------------
   const materialModel = rl(namespace, `item/${material.slice(namespace.length + 1)}`);
   lang[itemKey(material)] = materialName;
+  const materialData: JsonObject = {
+    format: 1,
+    model: materialModel,
+    max_stack_size: 64,
+    creative_tab: 'minecraft:ingredients',
+  };
+  if (trim) {
+    materialData.components = {
+      'msm:components': { 'minecraft:provides_trim_material': ids.trimMaterial },
+    };
+  }
   add(
     element(
       material,
       KINDS.item,
-      {
-        format: 1,
-        model: materialModel,
-        max_stack_size: 64,
-        creative_tab: 'minecraft:ingredients',
-      },
-      fromOre
+      materialData,
+      (fromOre
         ? `The material: a gem the ${name.lower} ore drops. Every recipe of the set uses it, and it repairs the set's tools and armour on an anvil through the tag ${repairTag}.`
-        : `The material: an ingot. The set has no recipe for it, so take it from the creative menu or add a recipe (or a loot table) that makes it. Every recipe of the set uses it, and it repairs the set's tools and armour on an anvil through the tag ${repairTag}.`,
+        : `The material: an ingot. The set has no recipe for it, so take it from the creative menu or add a recipe (or a loot table) that makes it. Every recipe of the set uses it, and it repairs the set's tools and armour on an anvil through the tag ${repairTag}.`) +
+        (trim
+          ? ` Its vanilla component minecraft:provides_trim_material (set through msm:components) names the trim material ${ids.trimMaterial}, so it also trims armour at a smithing table.`
+          : ''),
     ),
     element(
       materialModel,
@@ -681,14 +853,19 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
         repairTag,
         KINDS.tagItem,
         { values: [material] },
-        `The items that repair the set's ${isCustomTier && tools.length > 0 ? 'tools and ' : ''}armour on an anvil: its custom materials name this tag in repair_items. Add more items to let them repair too.`,
+        `The items that repair the set's ${isCustomTier && tools.length + meleeWeapons.length > 0 ? 'tools and ' : ''}armour on an anvil: its custom materials name this tag in repair_items. Add more items to let them repair too.`,
       ),
     );
   }
 
   // The smithing template ---------------------------------------------------------------------
   const template = ids.template;
-  const upgrading = upgradePrefix !== undefined && tools.length + armour.length > 0;
+  const upgradableCount =
+    tools.length +
+    armour.length +
+    weapons.filter((piece) => piece.upgradable).length +
+    bodyArmour.filter((piece) => piece.upgradable).length;
+  const upgrading = upgradePrefix !== undefined && upgradableCount > 0;
   if (upgrading) {
     const templateModel = rl(namespace, `item/${name.id}_upgrade_smithing_template`);
     lang[itemKey(template)] = `${name.display} Upgrade`;
@@ -708,7 +885,7 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
         templateModel,
         KINDS.model,
         { parent: 'minecraft:item/generated', textures: { layer0: templateModel } },
-        `A flat item model drawn from textures/item/${name.id}_upgrade_smithing_template.png, a plain placeholder to paint over.`,
+        `A flat item model drawn from textures/item/${name.id}_upgrade_smithing_template.png, a placeholder to paint over.`,
       ),
       element(
         rl(
@@ -727,7 +904,7 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
       ),
     );
     assets.push(
-      texture(namespace, `item/${name.id}_upgrade_smithing_template`, 'plain', [
+      texture(namespace, `item/${name.id}_upgrade_smithing_template`, 'smithing_template', [
         Math.round(colour[0] * 0.6),
         Math.round(colour[1] * 0.6),
         Math.round(colour[2] * 0.6),
@@ -735,14 +912,18 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
     );
   }
 
-  /** The recipe of one piece: shaped from the material, or a smithing upgrade. */
+  /**
+   * The recipe of one piece: shaped from the material, or a smithing upgrade when the set
+   * upgrades and vanilla has the piece in the upgrade material.
+   */
   const recipeOf = (
     pieceId: ResourceLocation,
-    piece: ToolPiece | ArmourPiece,
+    piece: ToolPiece | ArmourPiece | WeaponPiece | BodyArmourPiece,
     isTool: boolean,
   ): ContentBundleElement => {
     const path = pieceId.slice(namespace.length + 1);
-    if (upgrading) {
+    const upgradable = !('upgradable' in piece) || piece.upgradable;
+    if (upgrading && upgradable) {
       const base = `minecraft:${upgradePrefix}_${piece.value}`;
       return element(
         rl(namespace, `${path}_smithing`),
@@ -758,6 +939,14 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
       );
     }
     const key: JsonObject = isTool ? { X: material, '#': 'minecraft:stick' } : { X: material };
+    if ('parent' in piece) {
+      for (const symbol of Object.keys(WEAPON_KEYS).sort()) {
+        if (piece.pattern.some((row) => row.includes(symbol))) {
+          key[symbol] = WEAPON_KEYS[symbol] as string;
+        }
+      }
+    }
+    const vanillaShape = !('parent' in piece) || piece.value === 'spear';
     return element(
       rl(namespace, `${path}_from_${material.slice(namespace.length + 1)}`),
       KINDS.recipe,
@@ -768,7 +957,7 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
         key,
         result: { id: pieceId, count: 1 },
       },
-      `The vanilla ${piece.label.toLowerCase()} recipe with ${materialLower === name.lower ? name.plural : `${materialLower}s`}${isTool ? ' and sticks' : ''}.`,
+      `${vanillaShape ? 'The vanilla' : 'A shaped'} ${piece.label.toLowerCase()} recipe with ${materialLower === name.lower ? name.plural : `${materialLower}s`}${isTool ? ' and sticks' : 'parent' in piece && piece.value !== 'mace' ? ' and the vanilla parts' : ''}${upgrading && !upgradable ? `: vanilla has no ${upgradePrefix} ${piece.label.toLowerCase()} to upgrade` : ''}.`,
     );
   };
 
@@ -868,31 +1057,151 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
       ),
     );
   }
-  if (armour.length > 0) {
+  // Weapons --------------------------------------------------------------------------------
+  for (const piece of weapons) {
+    const id = rl(namespace, `${name.id}_${piece.value}`);
+    const model = rl(namespace, `item/${name.id}_${piece.value}`);
+    lang[itemKey(id)] = `${name.display} ${piece.label}`;
+    const components: JsonObject = {};
+    let notes: string;
+    if (piece.value === 'spear' || piece.value === 'mace') {
+      components['msm:tool'] = { type: piece.value, tier: structuredClone(toolTier) };
+      notes = `A new ${piece.label.toLowerCase()} with vanilla's ${piece.value === 'spear' ? 'spear attacks' : 'smash attack'} and the set's ${isCustomTier ? 'custom tool material' : `${tier.value} tier`}. It joins the vanilla ${piece.value === 'spear' ? 'spears tag' : 'mace enchanting tags'} when exported, so ${piece.value} enchantments apply.`;
+    } else {
+      const durability = isCustomTier
+        ? Math.round(numberValue(values, 'custom_durability'))
+        : (WEAPON_DURABILITY[piece.value] as number);
+      if (piece.value === 'shield') {
+        components['msm:shield'] = { block_delay_seconds: 0.25, damage_reduction: 1 };
+        notes = `A new shield: held up, msm:shield blocks every attack after a quarter of a second, as the vanilla shield does. msm:durability gives it ${durability} uses${isCustomTier ? ' (the tool durability)' : ''}.`;
+      } else {
+        components['msm:ranged_weapon'] = { type: piece.value };
+        notes = `A new ${piece.label.toLowerCase()} that shoots vanilla arrows like the vanilla ${piece.label.toLowerCase()}; add draw_speed, velocity or damage_multiplier to msm:ranged_weapon to change it. msm:durability gives it ${durability} uses${isCustomTier ? ' (the tool durability)' : ''}.`;
+      }
+      components['msm:durability'] = { max: durability };
+    }
+    add(
+      element(
+        id,
+        KINDS.item,
+        {
+          format: 1,
+          model,
+          max_stack_size: 1,
+          creative_tab: 'minecraft:combat',
+          components,
+        },
+        notes,
+      ),
+      element(
+        model,
+        KINDS.model,
+        { parent: piece.parent, textures: { layer0: model } },
+        `An item model drawn from textures/item/${name.id}_${piece.value}.png; its parent ${piece.parent} sets how it is held.`,
+      ),
+      recipeOf(id, piece, false),
+    );
+    assets.push(texture(namespace, `item/${name.id}_${piece.value}`, piece.value, colour));
+  }
+
+  // Horse and wolf armour ---------------------------------------------------------------------
+  for (const piece of bodyArmour) {
+    const id = rl(namespace, `${name.id}_${piece.value}`);
+    const model = rl(namespace, `item/${name.id}_${piece.value}`);
+    lang[itemKey(id)] = `${name.display} ${piece.label}`;
+    add(
+      element(
+        id,
+        KINDS.item,
+        {
+          format: 1,
+          model,
+          max_stack_size: 1,
+          creative_tab: 'minecraft:combat',
+          components: {
+            'msm:armor': { slot: piece.slot, material: structuredClone(armourMaterial) },
+          },
+        },
+        `New ${piece.label.toLowerCase()} of the set's armour material: ${armourStats.defense.chestplate} armour points (the chestplate's). Put it on a ${piece.slot === 'horse' ? 'tamed horse in its armour slot' : 'tamed wolf by using it on the wolf'}; equipment_asset names ${ids.equipment}, whose ${piece.layer} layer draws it.`,
+      ),
+      element(
+        model,
+        KINDS.model,
+        { parent: 'minecraft:item/generated', textures: { layer0: model } },
+        `A flat item model drawn from textures/item/${name.id}_${piece.value}.png.`,
+      ),
+      recipeOf(id, piece, false),
+    );
+    assets.push(texture(namespace, `item/${name.id}_${piece.value}`, piece.value, colour));
+  }
+
+  if (anyArmour) {
+    const layers: JsonObject = {};
+    const files: string[] = [];
+    if (armour.length > 0) {
+      layers.humanoid = [{ texture: material }];
+      layers.humanoid_leggings = [{ texture: material }];
+      files.push(
+        `humanoid draws the helmet, chestplate and boots from textures/entity/equipment/humanoid/${name.id}.png`,
+        `humanoid_leggings draws the leggings from textures/entity/equipment/humanoid_leggings/${name.id}.png`,
+      );
+      assets.push(
+        {
+          namespace,
+          path: `textures/entity/equipment/humanoid/${name.id}.png`,
+          bytes: armorLayerPng(1, colour),
+        },
+        {
+          namespace,
+          path: `textures/entity/equipment/humanoid_leggings/${name.id}.png`,
+          bytes: armorLayerPng(2, colour),
+        },
+      );
+    }
+    for (const piece of bodyArmour) {
+      layers[piece.layer] = [{ texture: material }];
+      files.push(
+        `${piece.layer} draws the ${piece.label.toLowerCase()} from textures/entity/equipment/${piece.layer}/${name.id}.png`,
+      );
+      assets.push({
+        namespace,
+        path: `textures/entity/equipment/${piece.layer}/${name.id}.png`,
+        bytes: bodyArmorLayerPng(piece.slot, colour),
+      });
+    }
+    const listed =
+      files.length === 1 ? files[0] : `${files.slice(0, -1).join('; ')}; ${files.at(-1)}`;
     add(
       element(
         ids.equipment,
         KINDS.equipment,
-        {
-          layers: {
-            humanoid: [{ texture: material }],
-            humanoid_leggings: [{ texture: material }],
-          },
-        },
-        `How the armour looks when worn; the armour pieces name it in equipment_asset. The texture id ${material} names one file in each layer folder: humanoid draws the helmet, chestplate and boots from textures/entity/equipment/humanoid/${name.id}.png; humanoid_leggings draws the leggings from textures/entity/equipment/humanoid_leggings/${name.id}.png. Both are 64 by 32 placeholders in the vanilla armour layout: paint over them, or replace them with textures from Blockbench.`,
+        { layers },
+        `How the armour looks when worn; the armour pieces name it in equipment_asset. The texture id ${material} names one file in each layer folder: ${listed}. ${bodyArmour.length === 0 ? 'Both are 64 by 32 placeholders in the vanilla armour layout' : `${files.length === 1 ? 'It is a placeholder' : 'They are placeholders'} in the vanilla texture layouts (64 by 32${bodyArmour.some((piece) => piece.slot === 'horse') ? ', the horse layer 64 by 64' : ''})`}: paint over ${files.length === 1 ? 'it' : 'them'}, or replace ${files.length === 1 ? 'it' : 'them'} with textures from Blockbench.`,
       ),
     );
-    assets.push(
-      {
-        namespace,
-        path: `textures/entity/equipment/humanoid/${name.id}.png`,
-        bytes: armorLayerPng(1, colour),
-      },
-      {
-        namespace,
-        path: `textures/entity/equipment/humanoid_leggings/${name.id}.png`,
-        bytes: armorLayerPng(2, colour),
-      },
+  }
+
+  // Trim material -----------------------------------------------------------------------------
+  if (trim) {
+    const palette = nearestTrimPalette(colour);
+    const trimKey = `trim_material.${namespace}.${name.id}`;
+    lang[trimKey] = `${name.display} Material`;
+    add(
+      element(
+        ids.trimMaterial,
+        KINDS.trimMaterial,
+        {
+          palette_id: `minecraft:trim/${palette}`,
+          description: { translate: trimKey, color: hexFromRgb(colour) },
+        },
+        `The armour trim material the ${materialLower} provides: palette_id picks the vanilla ${palette} trim colours (the vanilla palette nearest to the set colour), and description is the tooltip line in the set colour. A trim material cannot share the material item's id, so it is ${ids.trimMaterial}.`,
+      ),
+      element(
+        'minecraft:trim_materials',
+        KINDS.tagItem,
+        { values: [material] },
+        `Adds the ${materialLower} to the vanilla tag #minecraft:trim_materials, so the smithing table accepts it in the material slot of an armour trim.`,
+      ),
     );
   }
 
@@ -928,5 +1237,6 @@ export function gearSetIds(namespace: string, materialId: string) {
     repairTag: rl(namespace, `${materialId}_repair_materials`),
     template: rl(namespace, `${materialId}_upgrade_smithing_template`),
     equipment: rl(namespace, `${materialId}_armor`),
+    trimMaterial: rl(namespace, `${materialId}_trim`),
   };
 }

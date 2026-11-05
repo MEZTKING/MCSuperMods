@@ -18,6 +18,7 @@ import { Button } from '../ui/Button';
 import { ParameterField } from './ParameterField';
 import {
   CREATE_STEP_TITLE,
+  imageSummary,
   pickTargetId,
   type RawValue,
   type RawValues,
@@ -213,7 +214,9 @@ export function StarterWizard(props: StarterWizardProps) {
                         String(value))
                       : parameter.type === 'set'
                         ? setSummary(parameter, value)
-                        : String(value);
+                        : parameter.type === 'image'
+                          ? imageSummary(value)
+                          : String(value);
                 return [
                   <dt key={`${parameter.id}-label`} className="text-muted">
                     {parameter.label}

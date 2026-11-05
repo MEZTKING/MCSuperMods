@@ -14,7 +14,8 @@
  * - The Custom ore, Custom sword and Custom mob starters are wizards: their `parameters`
  *   (ADR 0040) name, colour and tune the content; the defaults build the ruby content.
  * - Creator flows (ADR 0043) are starters with `creator`: Gear set, Simple block, Food,
- *   Scripted behaviour, Custom ore and Custom mob.
+ *   Scripted behaviour, Custom ore and Custom mob, and (ADR 0044) Weapon, Consumable, Totem,
+ *   Enchantment, Painting and Music disc.
  * - The Scripted ore starter adds three runtime scripts to the Custom ore starter's content
  *   (Phase 6, ADRs 0031 and 0032; scripts need the Fabric mod jar export and are not part of
  *   the Java project export).
@@ -31,22 +32,29 @@ import { libraryStarters } from './starters/index';
 export {
   ARMOR_LAYER_SIZE,
   armorLayerPng,
+  bodyArmorLayerPng,
   DEFAULT_COLOUR,
   encodePng,
+  HORSE_ARMOR_LAYER_SIZE,
+  PAINTING_PIXELS_PER_BLOCK,
   PLACEHOLDER_PATTERNS,
   PLACEHOLDER_SIZE,
   PLACEHOLDER_SKIN_SIZE,
   type PlaceholderOptions,
   type PlaceholderPattern,
+  paintingPixels,
+  paintingPng,
   placeholderPixels,
   placeholderPng,
   placeholderSize,
   placeholderSkinPixels,
   placeholderSkinPng,
   type Rgb,
+  WOLF_ARMOR_LAYER_SIZE,
 } from './assets/png';
 
 export { COLOURS, KINDS, modIdFromNamespace } from './content/bundle';
+export { type DecodedPng, decodePngDataUrl, PNG_DATA_URL_PREFIX } from './content/parameters';
 export {
   behaviourExamples,
   categoryTag,
@@ -58,17 +66,27 @@ export {
   starterExamples,
 } from './examples/index';
 export {
+  CONSUMABLE_PARAMETERS,
   CUSTOM_MOB_PARAMETERS,
   CUSTOM_ORE_PARAMETERS,
   CUSTOM_SWORD_PARAMETERS,
+  ENCHANTMENT_PARAMETERS,
   FOOD_PARAMETERS,
   GEAR_SET_PARAMETERS,
   gearSetIds,
   libraryStarters,
+  MUSIC_DISC_ITEM_PARAMETERS,
+  nearestTrimPalette,
+  PAINTING_MAX_BYTES,
+  PAINTING_MAX_SIZE,
+  PAINTING_PARAMETERS,
   SCRIPTED_ITEM_PARAMETERS,
   SIMPLE_BLOCK_PARAMETERS,
   scriptedItemIds,
   scriptedOreIds,
+  TOTEM_PARAMETERS,
+  WEAPON_PARAMETERS,
+  WEAPON_TYPES,
 } from './starters/index';
 
 const plugin: Readonly<Plugin> = definePlugin({
