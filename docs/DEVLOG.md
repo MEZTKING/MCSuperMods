@@ -2183,3 +2183,19 @@ Next:
 - B154: keep `defineMsmPlugin` as the bundle handshake, or tell B157's owner to change the build steps in both files.
 - B161: copy `fixtures/sample-plugin/dist/` into `<msmHome>/plugins/greetings/`.
 - When the manifest schema changes, update `validateManifest` in `tools/new-plugin`.
+
+## 2026-11-05 — executor — B159 per-version runtime builds, parity `-Pmc`, CI matrix (engine-mod)
+
+**What**
+- `engine-mod/versions/26.3.properties` (new) and `26.4.properties` (tidied) hold `minecraft_version`, `loader_version`, `fabric_api_version`, `loom_version`, `geckolib_version`, `geckolib_modrinth_version_id` (blank for 26.4), `minecraft_dependency`. `gradle.properties` gains `default_mc=26.3` and `geckolib_compile_fallback_version_id=kSxHvs99`, keeps `mod_version`, Rhino, JUnit; its four Fabric keys remain only as a mirror of `versions/26.3.properties` for `tools/check-deps` (the build fails if they differ). `settings.gradle.kts` and `build.gradle.kts` always read `versions/<mc>.properties` (`-Pmc`, default `default_mc`) through `providers.fileContents`; version is `<mod_version>+mc<mc>`, so the jars are `msm_runtime-0.6.1+mc26.3.jar` and `msm_runtime-0.6.1+mc26.4.jar`; `fabric.mod.json` `suggests` names GeckoLib only when the version has one (26.3 output unchanged, 26.4 `{}`).
+- Seams replace the B151 full-class overlays: `src/mc/<mc>/java/.../registry/BlockSounds` (26.3 `SoundType`, 26.4 `BlockSoundSets`, `amethyst` → `AMETHYST_BLOCK`), `.../client/EntityRendererRegistration` (26.4 passes `BuiltInClientRegistries.ENTITY_RENDERER`), GameTest `src/mc/<mc>/gametest/.../BlockSoundCheck`, parity `parity/src/mc/<mc>/java/.../ParitySounds`. `MsmRegistrar`, `GeckolibRenderers`, `MsmRuntimeGameTest` and `SampleModParityTest` are shared again. The parity drops call uses the six-argument `Block.getDrops(…, null, null, ItemStack.EMPTY)`, which compiles on both versions, so no drops seam.
+- `parity/`: same `-Pmc` handling (default from `../gradle.properties`), jar `msm_parity_tests-0.0.0+mc<mc>.jar`.
+- `ci.yml` `engine-mod` job: matrix `mc: ["26.3", "26.4"]` (`fail-fast: false`, `MSM_TARGET_ID=mc-<mc>`), version facts step (Minecraft version, GeckoLib present), Gradle and Fabric server caches keyed by `mc`, jars found by `+mc<mc>`, a check that the facts file names the version's `minecraft_version`, sample mob steps only with GeckoLib (a notice otherwise), ejected builds and ejected parity runs only for 26.3, artifact names suffixed `-mc<mc>`.
+- Results: `./gradlew clean build`, `-PwithoutGeckolib`, `-Pmc=26.4`, `-Pmc=26.4 -PwithoutGeckolib`: each 90 JUnit, "All 60 required tests passed", 26 s warm; both jars side by side after building 26.4 then 26.3 without clean. Parity builds for both. Local 26.4-snapshot-7 server (sample mod and sample script exported for mc-26.4 in a scratch worktree, 26.4 runtime nested): PASS 3 blocks, 6 items; PASS 11 scripts, 0 errors; parity 11 GameTests passed. 26.3 parity on the sample mod content jar: 11 passed. `tools/check-deps` OK; `ci.yml` parses (actionlint could not be run).
+
+**Decisions**
+- Mirror keys instead of editing `tools/check-deps` (not in B159's Owns); the build enforces the mirror.
+- CI follows the plan (B153's `MSM_TARGET_ID` writes the 26.4 facts) rather than a facts file written by the job; the facts check step fails clearly while B153 has not landed.
+
+**Next**
+- B160: per-target staging and resolution (`stage-runtime.mjs`, `runtime-jar.ts` pick the newest `msm_runtime-*.jar` today), `release.yml` loop over `versions/`. `tools/check-deps` could compare `versions/` files instead of the mirrors. The CI check names become `engine-mod (26.3)` and `engine-mod (26.4)` (branch protection, if any). Client check of the 26.4 entity renderer registration once GeckoLib for 26.4 exists.
