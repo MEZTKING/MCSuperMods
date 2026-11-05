@@ -18,7 +18,7 @@ Verified by B90 (ADR 0024): `setId(ResourceKey)` is required on `Block.Propertie
 
 Unverified, to check in the briefs: block tags for tool tiers, `SoundType` names, `ToolMaterial` names (copper), Prism `--launch`, `mmc-pack.json` components for 26.x Fabric, `assets/` loading without `pack.mcmeta` on the client, scanning `msm/` inside a production jar.
 
-Status (2026-11-05): Wave 0 (B90, positive: no Tier 2 fallback) and Wave 1 (B91, B92) done.
+Status (2026-11-05): Wave 0 (B90, positive: no Tier 2 fallback), Wave 1 (B91, B92) and Wave 2 (B93, B94, B95) done. Next: Wave 3 (B96–B99).
 
 ## Decisions (ADR drafts)
 

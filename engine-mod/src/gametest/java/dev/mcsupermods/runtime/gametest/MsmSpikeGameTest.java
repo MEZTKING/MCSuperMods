@@ -28,7 +28,10 @@ public class MsmSpikeGameTest {
 
     @GameTest
     public void definitionsAreRegistered(GameTestHelper helper) {
-        helper.assertTrue(MsmRuntime.report().errors().isEmpty(), "load errors: " + MsmRuntime.report().errors());
+        // msm_test/ ships two deliberately broken files (MsmRuntimeGameTest); nothing else may fail.
+        helper.assertTrue(MsmRuntime.report().errors().stream()
+                .allMatch(e -> e.contains("partly_broken.json") || e.contains("future_format.json")),
+                "load errors: " + MsmRuntime.report().errors());
         helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(ORE), "block " + ORE + " not registered");
         Block block = BuiltInRegistries.BLOCK.getValue(ORE);
         helper.assertTrue(block instanceof MsmBlock, "block is not an MsmBlock: " + block);

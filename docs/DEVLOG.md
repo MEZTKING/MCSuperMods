@@ -1267,3 +1267,38 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 - Host: a block's item shares its id, but the registry index only puts `msm:block` ids in `block`, so a generated loot table naming a project block's item gets a `schema.unknown-id` warning at export.
 - B95/orchestrator: lowering writes `msm_runtime: "*"`, and the content-jar exporter only fills `>=<version>` when the key is absent.
 - B98: add the plugin to `packages/exporters/test/library.test.ts` (changes every `examples/` `msm.project.json` plugin list).
+
+---
+
+## 2026-11-05 — executor — B93 msm_runtime v1
+
+**What**
+- `engine-mod/`: Gson helpers replaced by DataFixerUpper Codecs aligned with MSM mcdoc (`loader/MsmCodecs`, `StrictJsonOps`, `DefinitionParser`, `BlockDefinition`, `ItemDefinition`; `components/BlockComponents`, `ItemComponents`; `events/Action` dispatched on `type`, `Events`, `EventRunner`). All Phase 4 components (`msm:breakable`, `msm:light_emitter`, `msm:on_interact`, `msm:on_step`, `msm:redstone`, `msm:food`, `msm:tool`, `msm:durability`, `msm:on_use`) and the six D4 actions work through `MsmBlock`, `MsmItem` and `MsmRegistrar`; no Mixins.
+- JUnit 5 (BOM 5.14.2, new test dependency): the shared corpus `packages/schemas/mcdoc/msm/conformance/definition/` read in place (37 tests, every valid file clean, every invalid file fails and names the expected field) plus 9 parser tests. GameTests: 13 new on kitchen-sink definitions in `src/gametest/resources/msm/msm_test/`; `./gradlew build` runs both ("All 18 required tests passed").
+- `packages/schemas`: `"item": false` (`item?: (BlockItem | false)`), `symbols.json` regenerated, corpus `definition/valid/block-no-item.json`, `element/valid/block-no-item.json`, `definition/invalid/block-item-true.json` (`schema.no-union-match`).
+
+**Decisions**
+- Parsing is pure (no registry access) so JUnit needs no bootstrap; sounds and particles are checked at load, items, block states, functions and creative tabs after server start (warnings).
+- Numbers and booleans are strict (`StrictJsonOps`): Mojang's `JsonOps` reads `true` as 1 and `1.5` as an int.
+- Any event that fails to decode (not only an unknown action type) is dropped with an error and the definition still registers; component or `trigger_event` references to undeclared events are errors too.
+- `trigger_event` depth counts the fired event as 1, so a chain runs at most 16 events. `msm:redstone` events use a `powered` block state property only on blocks that declare `on_powered`/`on_unpowered`; placement records power silently.
+- `msm:tool` uses `Item.Properties.pickaxe/axe/shovel/hoe/sword(ToolMaterial, damage, speed)` with fixed per-type base values; `msm:durability` applied after it overrides the tier durability; food `saturation` is the vanilla saturation modifier.
+
+**Next**
+- Orchestrator: record the dropped-event and depth rules in ADR 0025 D4 at acceptance; B102 bumps `mod_version` (still `0.0.1-spike`).
+- B99: CI runs `./gradlew build` with `packages/schemas` checked out (the JUnit corpus path).
+
+---
+
+## 2026-11-05 — main session — Phase 4 Wave 2 closed
+
+**What**
+- Reviewed and committed B93 (runtime v1: Codecs, all v1 components and actions, JUnit over the shared corpus, 18 GameTests in `./gradlew build`), B94 (`@msm/plugin-blocks-items`) and B95 (`fabric-content-jar`). Biome leaves `engine-mod/` to Gradle.
+- Fix-up on B94: the `msm:mod` lowering no longer writes `msm_runtime: "*"`; the content-jar exporter adds `>=<runtime version>` (ADR 0026 D2).
+- The user chose this session to continue Phase 4; a parallel session on `claude/phase-4` is to be stopped.
+
+**Decisions**
+- Runtime choices accepted as implementation notes for ADR 0025 at close: any event that fails to decode is dropped (the definition still registers), chain depth counts the fired event as 1, strict JSON types (`StrictJsonOps`).
+
+**Next**
+- Wave 3: B96 app export wiring (`loadRuntimeJar`), B97 Block and Item Studios, B98 real Custom ore starter and `examples/` (register the plugin in `library.test.ts`), B99 CI engine-mod job (check out `packages/schemas` beside it; cache `~/.gradle`), `fixtures/sample-mod/`.

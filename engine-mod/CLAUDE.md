@@ -1,28 +1,29 @@
 # engine-mod/ — Fabric runtime mod
 
-Status: B90 registry-freeze spike done (ADR 0024): Gradle build, loader, `MsmBlock`/`MsmItem`, GameTests pass; B93 builds runtime v1. This file describes intent and conventions.
+Status: runtime v1 done (B93): Codec loader for ADR 0025 format 1, every Phase 4 block and item component and all six actions; JUnit over the shared corpus and GameTests pass in `./gradlew build`. Entities and scripting come later. This file describes intent and conventions.
 
 ## Purpose
 
 `msm_runtime`: the Fabric mod that reads `msm/` definitions from every loaded mod jar and turns them into blocks, items and entities with component-driven behaviour. Java package `dev.mcsupermods.runtime`.
 
-## Contents (planned)
+## Contents
 
-- `build.gradle.kts` — Gradle, Kotlin DSL.
+- `build.gradle.kts`, `gradle.properties` (versions), `settings.gradle.kts` — Gradle, Kotlin DSL.
 - `src/main/java/dev/mcsupermods/runtime/`
-  - `loader/` — scan `msm/` in all mod containers at init.
-  - `registry/` — driver classes `MsmBlock`, `MsmItem`, `MsmEntity`.
-  - `components/`, `events/` — behaviour model.
-  - `scripting/` — Rhino (Tier 1 scripts).
-  - `client/` — GeckoLib bridge (optional).
-- `src/gametest/` — Fabric GameTest suites.
+  - `loader/` — `DefinitionScanner` (scan `msm/` in all mods), `DefinitionParser` (pure; format, warnings, Codecs), `MsmCodecs`, `StrictJsonOps`, `BlockDefinition`, `ItemDefinition`.
+  - `components/` — component records and Codecs, aligned with `packages/schemas/mcdoc/msm/`.
+  - `events/` — `Action` (dispatch on `type`), `Events` (per-event decoding), `EventRunner` (depth 16).
+  - `registry/` — `MsmRegistrar`, driver classes `MsmBlock`, `MsmItem` (`MsmEntity` in Phase 5).
+  - Later: `scripting/` (Rhino, Tier 1), `client/` (GeckoLib bridge, optional).
+- `src/test/` — JUnit 5 over `../packages/schemas/mcdoc/msm/conformance/definition/`.
+- `src/gametest/` — Fabric GameTests; `resources/msm/msm_test/` holds the kitchen-sink definitions.
 
 ## Conventions
 
 - Java 25; Mojang names only (no Yarn, no Parchment).
 - Fabric Loom 26.1+ non-remapping variant (verify at implementation).
 - Fabric API events over Mixins; every Mixin needs a justification comment.
-- Definitions parsed via Codecs generated from, or aligned with, MSM mcdoc.
+- Definitions parsed via Codecs aligned with MSM mcdoc; a schema change updates the Codecs and the corpus together.
 - Registries are touched only during init; reloadable data stays in data packs.
 - Log with the mod-id prefix; no reflection on definitions.
 - Every session: append an entry to `docs/DEVLOG.md` (`## YYYY-MM-DD — <agent> — <topic>`, then What / Decisions / Next).
@@ -35,7 +36,8 @@ Status: B90 registry-freeze spike done (ADR 0024): Gradle build, loader, `MsmBlo
 
 ## Commands
 
-- `JAVA_HOME=<jdk 25> ./gradlew build` (also runs the GameTests)
+- `JAVA_HOME=<jdk 25> ./gradlew build` (runs JUnit and the GameTests)
+- `./gradlew test` (JUnit only; the corpus test reads the schemas package in place)
 - `./gradlew runGameTest` (headless GameTest server) / `./gradlew runClient`
 
 ## Read next
