@@ -29,4 +29,20 @@ test('launches, shows the window title and renders the toolbar', async () => {
 
   mkdirSync(outputDir, { recursive: true });
   await window.screenshot({ path: join(outputDir, 'smoke.png') });
+
+  // What's new (B145): never by itself in test runs; from the palette it shows the bundled
+  // CHANGELOG.md section for the running version.
+  await expect(window.getByTestId('whats-new-dialog')).toHaveCount(0);
+  await window.keyboard.press('ControlOrMeta+Shift+P');
+  const palette = window.getByTestId('command-palette');
+  await expect(palette).toBeVisible();
+  await palette.getByTestId('command-palette-input').fill('new');
+  await palette.getByTestId('command-whatsNew').click();
+  const dialog = window.getByTestId('whats-new-dialog');
+  const { version } = await launched.app.evaluate(({ app }) => ({ version: app.getVersion() }));
+  await expect(dialog.getByText(`What's new in MCSuperMods ${version}`)).toBeVisible();
+  await expect(dialog.getByTestId('markdown')).toBeVisible();
+  await expect(dialog.getByTestId('whats-new-missing')).toHaveCount(0);
+  await dialog.getByTestId('whats-new-close').click();
+  await expect(dialog).toHaveCount(0);
 });
