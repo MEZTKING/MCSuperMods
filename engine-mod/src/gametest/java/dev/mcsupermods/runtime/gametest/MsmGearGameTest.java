@@ -85,7 +85,7 @@ public class MsmGearGameTest {
 
     private static Player archer(GameTestHelper helper) {
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        player.getInventory().add(new ItemStack(Items.ARROW, 32));
+        player.getInventory().setItem(9, new ItemStack(Items.ARROW, 32)); // not the selected slot, which holds the weapon
         return player;
     }
 
@@ -96,6 +96,7 @@ public class MsmGearGameTest {
         ItemStack bow = new ItemStack(item("ruby_bow"));
         helper.assertTrue(bow.getItem() instanceof MsmBowItem, "ruby_bow is not an MsmBowItem");
         helper.assertValueEqual(bow.getMaxDamage(), 384, "vanilla bow durability");
+        helper.assertTrue(bow.has(DataComponents.ENCHANTABLE), "a bow is enchantable");
         int duration = bow.getUseDuration(player);
         takeArrows(level, player);
 
@@ -156,6 +157,7 @@ public class MsmGearGameTest {
         assertClose(helper, blocks.disableCooldownScale(), 1, "default disable_cooldown_scale");
         helper.assertTrue(blocks.bypassedBy().isPresent(), "default bypassed_by #minecraft:bypasses_shield");
         helper.assertValueEqual(shield.getMaxDamage(), 336, "vanilla shield durability");
+        helper.assertTrue(shield.has(DataComponents.ENCHANTABLE), "a shield is enchantable");
         helper.assertValueEqual(shield.get(DataComponents.EQUIPPABLE).slot(), EquipmentSlot.OFFHAND, "off-hand equippable");
 
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
@@ -263,16 +265,16 @@ public class MsmGearGameTest {
 
     @GameTest
     public void totemProtects(GameTestHelper helper) {
-        Mob zombie = helper.spawnWithNoFreeWill(EntityTypes.ZOMBIE, AT);
-        zombie.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(item("ruby_totem")));
-        zombie.addEffect(new MobEffectInstance(MobEffects.POISON, 400));
-        zombie.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 1000.0f);
-        helper.assertTrue(zombie.isAlive(), "msm:death_protection did not save the holder");
-        helper.assertTrue(zombie.getItemBySlot(EquipmentSlot.OFFHAND).isEmpty(), "the totem is not used up");
-        helper.assertFalse(zombie.hasEffect(MobEffects.POISON), "clear_effects did not clear poison");
-        assertEffect(helper, zombie, MobEffects.REGENERATION, 1, 200, "regeneration");
-        assertEffect(helper, zombie, MobEffects.FIRE_RESISTANCE, 0, 400, "fire resistance");
-        zombie.discard();
+        Mob holder = helper.spawnWithNoFreeWill(EntityTypes.COW, AT); // not undead: those ignore poison and regeneration
+        holder.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(item("ruby_totem")));
+        holder.addEffect(new MobEffectInstance(MobEffects.POISON, 400));
+        holder.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 1000.0f);
+        helper.assertTrue(holder.isAlive(), "msm:death_protection did not save the holder");
+        helper.assertTrue(holder.getItemBySlot(EquipmentSlot.OFFHAND).isEmpty(), "the totem is not used up");
+        helper.assertFalse(holder.hasEffect(MobEffects.POISON), "clear_effects did not clear poison");
+        assertEffect(helper, holder, MobEffects.REGENERATION, 1, 200, "regeneration");
+        assertEffect(helper, holder, MobEffects.FIRE_RESISTANCE, 0, 400, "fire resistance");
+        holder.discard();
         helper.succeed();
     }
 
@@ -302,7 +304,7 @@ public class MsmGearGameTest {
         ItemStack wings = new ItemStack(item("winged_charm"));
         helper.assertTrue(wings.has(DataComponents.GLIDER), "minecraft:glider through msm:components");
         helper.assertValueEqual(wings.get(DataComponents.EQUIPPABLE).slot(), EquipmentSlot.CHEST, "minecraft:equippable");
-        helper.assertTrue(wings.has(DataComponents.DAMAGE_RESISTANT), "minecraft:damage_resistant (a tag, no registry needed)");
+        helper.assertTrue(wings.has(DataComponents.DAMAGE_RESISTANT), "minecraft:damage_resistant (a damage type tag, decoded once data packs are loaded)");
         helper.assertValueEqual(wings.getMaxStackSize(), 1, "max_stack_size of the definition wins over minecraft:max_stack_size");
         helper.succeed();
     }

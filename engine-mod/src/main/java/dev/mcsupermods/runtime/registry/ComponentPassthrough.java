@@ -33,11 +33,19 @@ import net.minecraft.world.item.Item;
  * such component is a load error and is not applied.
  */
 public final class ComponentPassthrough {
-    /** Components whose value is a holder in a data pack registry, decoded once data packs are loaded. */
+    /**
+     * Components whose value names an element or a tag of a data pack registry, decoded once data packs are loaded:
+     * ADR 0044 D1's three holders ({@code jukebox_playable}, {@code provides_trim_material}, {@code trim}) and three
+     * components that name damage types ({@code damage_resistant} and {@code blocks_attacks} by tag,
+     * {@code damage_type} by id).
+     */
     public static final Set<Identifier> DELAYED = Set.of(
             Identifier.withDefaultNamespace("jukebox_playable"),
             Identifier.withDefaultNamespace("provides_trim_material"),
-            Identifier.withDefaultNamespace("trim"));
+            Identifier.withDefaultNamespace("trim"),
+            Identifier.withDefaultNamespace("damage_resistant"),
+            Identifier.withDefaultNamespace("blocks_attacks"),
+            Identifier.withDefaultNamespace("damage_type"));
 
     private static RegistryAccess staticRegistries;
 

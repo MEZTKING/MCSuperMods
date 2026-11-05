@@ -360,7 +360,7 @@ public final class MsmRegistrar {
 
     /**
      * {@code msm:shield} (ADR 0044 D3) as vanilla's shield setup: {@code blocks_attacks} (a plain item with it blocks;
-     * {@code Item.use} starts using it), 336 durability, off-hand equippable without swapping, the shield sounds. The
+     * {@code Item.use} starts using it), 336 durability, enchantable 1, off-hand equippable without swapping, the shield sounds. The
      * component is delayed like vanilla's because {@code bypassed_by} is a tag of the data pack registry
      * {@code damage_type}.
      */
@@ -370,6 +370,7 @@ public final class MsmRegistrar {
         Holder<SoundEvent> blockSound = SoundEvents.SHIELD_BLOCK;
         Holder<SoundEvent> breakSound = SoundEvents.SHIELD_BREAK;
         return props.durability(336)
+                .enchantable(1) // vanilla's shield has none; B186's lowering adds the enchanting tags (unbreaking, mending)
                 .equippableUnswappable(EquipmentSlot.OFFHAND)
                 .component(DataComponents.BREAK_SOUND, breakSound)
                 .delayedComponent(DataComponents.BLOCKS_ATTACKS, provider -> {
