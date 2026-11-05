@@ -24,6 +24,7 @@ import {
   stableStringify,
 } from '@msm/core';
 import type { ContentBundle, ProjectStarter, TargetFacts } from '@msm/plugin-api';
+import { isMergeableKind, mergeShared, SINGLETON_KINDS } from '../session/element-defaults';
 import {
   type ChangeAsset,
   type ChangeItem,
@@ -31,6 +32,8 @@ import {
   PendingChangeset,
   sameJson,
 } from './changeset';
+
+export { isMergeableKind, mergeShared, SINGLETON_KINDS };
 
 /** The values `meta.creator` stores (the JSON a flow's parameters produce). */
 export type CreatorValues = ElementCreatorMeta['values'];
@@ -104,54 +107,11 @@ export interface CreatorChanges {
   writes: ChangeAsset[];
 }
 
-/**
- * Kinds a project holds once (pack.mcmeta and the mod metadata): a bundle's own is a conflict
- * when the project has one in any namespace, as two would clash on export.
- */
-export const SINGLETON_KINDS: readonly string[] = ['minecraft:pack_mcmeta', 'msm:mod'];
-
 /** The project's element of a singleton kind, if any. */
 function singletonOf(project: Project, kind: string): Element | undefined {
   return SINGLETON_KINDS.includes(kind)
     ? elementsOf(project).find((element) => element.kind === kind)
     : undefined;
-}
-
-/** Kinds whose existing elements are merged rather than skipped. */
-export function isMergeableKind(kind: string): boolean {
-  return kind === 'minecraft:lang' || kind.startsWith('minecraft:tag/');
-}
-
-type JsonObject = { [key: string]: Json };
-
-const isObject = (value: Json | undefined): value is JsonObject =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-/**
- * `current` with what `incoming` adds: a language file gains the keys it lacks, a tag the
- * values it lacks (in `incoming`'s order, after its own). Nothing in `current` is overwritten.
- */
-export function mergeShared(kind: string, current: Json, incoming: Json): Json {
-  if (!isObject(current) || !isObject(incoming)) return current;
-  if (kind === 'minecraft:lang') {
-    const merged: JsonObject = { ...current };
-    for (const [key, value] of Object.entries(incoming)) {
-      if (!Object.hasOwn(merged, key)) merged[key] = value;
-    }
-    return merged;
-  }
-  const have = Array.isArray(current.values) ? current.values : [];
-  const add = Array.isArray(incoming.values) ? incoming.values : [];
-  const seen = new Set(have.map((value) => stableStringify(value)));
-  const values = [...have];
-  for (const value of add) {
-    const key = stableStringify(value);
-    if (!seen.has(key)) {
-      seen.add(key);
-      values.push(value);
-    }
-  }
-  return { ...current, values };
 }
 
 /** Keeps the parameter values `meta.creator` can store. */
@@ -600,15 +560,12 @@ export function creatorLabel(plan: CreatorPlan, flowTitle: string): string {
 
 /** What {@link applyCreatorPlan} needs of the session. */
 export interface CreatorApplyHost {
-  importAssets(
-    namespace: string,
-    files: readonly { name: string; data: Uint8Array }[],
-    subfolder: string,
-  ): Promise<{ rejected: readonly { name: string; reason: string }[] }>;
+  /** `ProjectSession.applyChangeset`; `options.writes` must be applied in the same undo step. */
   applyChangeset(
     items: readonly ChangeItem[],
     label: string,
-  ): Promise<{ applied: string[]; skipped: string[] }>;
+    options?: { writes?: readonly ChangeAsset[] },
+  ): Promise<{ applied: string[]; skipped: string[]; written?: string[] }>;
 }
 
 /** The outcome of {@link applyCreatorPlan}. */
@@ -622,34 +579,26 @@ export interface CreatorApplyResult {
 }
 
 /**
- * Applies a plan: bytes of replaced assets are written first (as an asset import does; the
- * records do not change), then every change item goes in through `applyChangeset` as one undo
- * step labelled `label`.
+ * Applies a plan: every change item and the bytes of replaced assets go in through
+ * `applyChangeset` as one undo step labelled `label`, so Undo also restores the old bytes
+ * (ADR 0045). The records of replaced assets do not change.
  *
- * @throws Error If an asset write is refused.
+ * @throws Error If an asset write is refused (nothing is applied then).
  */
 export async function applyCreatorPlan(
   host: CreatorApplyHost,
   changes: CreatorChanges,
   label: string,
 ): Promise<CreatorApplyResult> {
-  for (const write of changes.writes) {
-    const slash = write.path.lastIndexOf('/');
-    const result = await host.importAssets(
-      write.namespace,
-      [{ name: write.path.slice(slash + 1), data: write.bytes }],
-      write.path.slice(0, slash),
-    );
-    const refused = result.rejected[0];
-    if (refused !== undefined) throw new Error(`${write.path}: ${refused.reason}`);
-  }
   const items = new PendingChangeset().add(...changes.items);
-  const result =
-    items.length === 0 ? { applied: [], skipped: [] } : await host.applyChangeset(items, label);
+  if (items.length === 0 && changes.writes.length === 0) {
+    return { applied: 0, skipped: 0, written: 0 };
+  }
+  const result = await host.applyChangeset(items, label, { writes: changes.writes });
   return {
     applied: result.applied.length,
     skipped: result.skipped.length,
-    written: changes.writes.length,
+    written: result.written?.length ?? changes.writes.length,
   };
 }
 

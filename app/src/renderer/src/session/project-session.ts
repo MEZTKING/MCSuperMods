@@ -11,6 +11,7 @@
  */
 
 import {
+  type CommandEffect,
   type CommandEvent,
   CommandStack,
   commands,
@@ -36,6 +37,7 @@ import {
   registerPlugin,
   type SaveManifest,
   saveProject,
+  stableStringify,
 } from '@msm/core';
 import {
   combinedFileNames,
@@ -99,6 +101,8 @@ import { assetImportError } from './asset-files';
 import {
   assertElementIdAllowed,
   defaultElementData,
+  isMergeableKind,
+  mergeShared,
   namespaceFromFolderName,
   PACK_MCMETA_KIND,
   presentSingletonKinds,
@@ -367,10 +371,27 @@ export interface AddBundleResult {
    * for `pack.mcmeta` and mod metadata elements, already has one of that kind.
    */
   duplicates: ResourceLocation[];
+  /**
+   * Language files and tags the project already had, merged with the bundle's (missing keys or
+   * values added, nothing overwritten; `mergeShared`), in bundle order. Includes those that
+   * already held everything.
+   */
+  merged: ResourceLocation[];
   /** Assets written and recorded, as `<namespace>:<path>`. */
   assets: string[];
   /** Assets skipped because the project already records that path, as `<namespace>:<path>`. */
   skippedAssets: string[];
+}
+
+/** Options of {@link ProjectSession.applyChangeset}. */
+export interface ApplyChangesetOptions {
+  /**
+   * Bytes written over asset files (the Creator's replaced textures), in the same undo step:
+   * Undo restores the previous bytes (or removes a file that did not exist), Redo writes these
+   * again (ADR 0045). Asset records are not changed. Writes equal to the current bytes are
+   * left out.
+   */
+  writes?: readonly ChangeAsset[];
 }
 
 /** The result of {@link ProjectSession.applyChangeset}. */
@@ -379,6 +400,8 @@ export interface ApplyChangesetResult {
   applied: string[];
   /** Accepted item ids left out because they no longer fit the project. */
   skipped: string[];
+  /** Files `options.writes` changed, as `<namespace>:<path>`. */
+  written: string[];
 }
 
 /** The undo label of {@link ProjectSession.applyChangeset} (ADR 0041 D5). */
@@ -424,6 +447,42 @@ function withoutPresentSingletons(
     bundle: { ...bundle, elements: bundle.elements.filter((entry) => !present.has(entry.kind)) },
     dropped: dropped.map((entry) => entry.id),
   };
+}
+
+/**
+ * The bundle's language files and tags whose id `state` already has with the same kind: the
+ * merged data of each ({@link mergeShared}; only those that change are in `updates`), and the
+ * remaining duplicates.
+ */
+function sharedMerges(
+  bundle: ContentBundle,
+  duplicates: readonly ResourceLocation[],
+  state: Project,
+): { merged: ResourceLocation[]; updates: Map<ResourceLocation, Json>; rest: ResourceLocation[] } {
+  const existing = elementsById(state);
+  const merged: ResourceLocation[] = [];
+  const updates = new Map<ResourceLocation, Json>();
+  const rest: ResourceLocation[] = [];
+  const done = new Set<string>();
+  for (const id of duplicates) {
+    const element = existing.get(id);
+    const entries = bundle.elements.filter((entry) => entry.id === id);
+    const mergeable =
+      element !== undefined &&
+      isMergeableKind(element.kind) &&
+      entries.every((entry) => entry.kind === element.kind);
+    if (!mergeable) {
+      rest.push(id);
+      continue;
+    }
+    if (done.has(id)) continue;
+    done.add(id);
+    merged.push(id);
+    let data = element.data;
+    for (const entry of entries) data = mergeShared(element.kind, data, entry.data);
+    if (stableStringify(data) !== stableStringify(element.data)) updates.set(id, data);
+  }
+  return { merged, updates, rest };
 }
 
 function dedupeById<T extends { id: string }>(entries: readonly T[]): T[] {
@@ -567,6 +626,34 @@ export const SessionProblemCodes = {
  */
 export const ASSET_TRASH_DIR = '.msm/trash';
 
+/**
+ * Where the bytes of undoable asset writes wait (ADR 0045, project-relative): for each write,
+ * `<token>/before` (the bytes it replaced, absent when there was no file) and `<token>/after`
+ * (the bytes it wrote). Emptied with the trash when a project is opened or created.
+ */
+export const ASSET_UNDO_DIR = '.msm/undo';
+
+/** The {@link CommandEffect} type of an undoable asset byte write (ADR 0045). */
+export const ASSET_WRITE_EFFECT = 'app.asset-write';
+
+/** The `data` of an {@link ASSET_WRITE_EFFECT} effect. */
+interface AssetWriteData {
+  /** The live file, `assets/<namespace>/<path>`. */
+  file: string;
+  /** The stored bytes it replaced, or `null` when no file existed. */
+  before: string | null;
+  /** The stored bytes it writes. */
+  after: string;
+}
+
+function isAssetWrite(effect: CommandEffect): effect is CommandEffect & { data: AssetWriteData } {
+  return effect.type === ASSET_WRITE_EFFECT && typeof effect.data === 'object';
+}
+
+function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
+  return a.length === b.length && a.every((byte, index) => byte === b[index]);
+}
+
 /** Lowering problem codes {@link ProjectSession.checkProject} reports. */
 const LOWERING_CONFLICT_CODES: ReadonlySet<string> = new Set([
   ProblemCodes.loweringConflict,
@@ -667,6 +754,8 @@ export class ProjectSession {
   #timer: ReturnType<typeof setTimeout> | null = null;
   #validation: Promise<void> = Promise.resolve();
   #assetOps: Promise<void> = Promise.resolve();
+  /** Numbers the stored asset writes (ADR 0045). */
+  #writeCounter = 0;
   #assetProblems: Problem[] = [];
   #generation = 0;
   #snapshot: SessionSnapshot = EMPTY;
@@ -1127,9 +1216,11 @@ export class ProjectSession {
    * is built for `options.namespace`; its asset bytes are written immediately (like
    * {@link importAssets}), then its elements, asset records and any namespaces the project
    * lacks go in as one undoable command. Element ids and asset paths the project already has
-   * are skipped and reported, not thrown. So are the bundle's `pack.mcmeta` and mod metadata
-   * elements when the project already has one of that kind in any namespace (they would
-   * write the same file; reported under `duplicates`).
+   * are skipped and reported, not thrown, except language files and tags: those are merged
+   * into the project's (missing keys or values added, as the Creator does; reported under
+   * `merged`). The bundle's `pack.mcmeta` and mod metadata elements are skipped when the
+   * project already has one of that kind in any namespace (they would write the same file;
+   * reported under `duplicates`).
    *
    * @throws Error If no project is open, the namespace is invalid, or the bundle fails to
    *   build or check (nothing is added then).
@@ -1158,12 +1249,22 @@ export class ProjectSession {
     // The state may have moved on while the bytes were written: check again.
     const kept = withoutPresentSingletons(bundle, stack.state);
     const current = prepareBundle(kept.bundle, stack.state, this.registry, this.#now);
-    if (current.elements.length > 0 || current.assets.length > 0) {
-      stack.execute(bundleCommand(current, options.label ?? `Copy example ${source.title}`));
+    const shared = sharedMerges(kept.bundle, current.duplicates, stack.state);
+    if (current.elements.length > 0 || current.assets.length > 0 || shared.updates.size > 0) {
+      const add = bundleCommand(current, options.label ?? `Copy example ${source.title}`);
+      const merges = [...shared.updates].map(([id, data]) => commands.setElementData(id, data));
+      stack.execute({
+        ...add,
+        apply(draft) {
+          add.apply(draft);
+          for (const merge of merges) merge.apply(draft);
+        },
+      });
     }
     return {
       added: current.elements.map((element) => element.id),
-      duplicates: [...kept.dropped, ...current.duplicates],
+      merged: shared.merged,
+      duplicates: [...kept.dropped, ...shared.rest],
       assets: current.assets.map((asset) => `${asset.namespace}:${asset.path}`),
       skippedAssets: current.skippedAssets,
     };
@@ -1543,18 +1644,37 @@ export class ProjectSession {
    * captured `before`, a rename onto a taken id and an `asset` whose path is recorded or
    * whose file exists are skipped. Asset bytes are written first (as {@link addBundle} does),
    * then one command `ai.apply-changeset` adds missing namespaces, creates, updates, deletes,
-   * renames (rewriting references as the F2 rename does) and records the assets. The normal
-   * validation pass follows; Undo reverts everything and moves the asset bytes to the trash.
+   * renames (rewriting references as the F2 rename does) and records the assets. The same
+   * command carries `options.writes` as asset write effects (ADR 0045): their previous bytes
+   * are kept in {@link ASSET_UNDO_DIR} and the new bytes are written once the command runs.
+   * The normal validation pass follows; Undo reverts everything, moves created asset bytes to
+   * the trash and restores the bytes of replaced files; Redo writes them again. Resolves when
+   * the bytes are in place.
    *
    * @param items - The changeset's items; rejected ones (`accepted: false`) are left out.
    * @param label - The undo label; default "Apply AI helper changes".
-   * @throws Error If no project is open.
+   * @param options - `writes`: bytes written over existing asset files.
+   * @throws Error If no project is open, or a write is not a valid asset file (nothing is
+   *   applied then).
    */
   async applyChangeset(
     items: readonly ChangeItem[],
     label: string = APPLY_CHANGESET_LABEL,
+    options: ApplyChangesetOptions = {},
   ): Promise<ApplyChangesetResult> {
     const stack = this.#requireStack();
+    const writes = options.writes ?? [];
+    for (const write of writes) {
+      const slash = write.path.lastIndexOf('/');
+      const reason =
+        !isValidNamespace(write.namespace) || slash < 0
+          ? 'not a valid asset path.'
+          : assetImportError(write.path.slice(0, slash), write.path.slice(slash + 1), write.bytes);
+      if (reason !== undefined) throw new Error(`${write.namespace}:${write.path}: ${reason}`);
+    }
+    // Earlier byte moves must finish before the current bytes are read.
+    await this.flushAssetFiles();
+    const effects = await this.#stageAssetWrites(writes);
     const accepted = items.filter((item) => item.accepted);
     const existing = new Set<string>();
     for (const item of accepted) {
@@ -1584,7 +1704,7 @@ export class ProjectSession {
     });
     // The state may have moved on while the bytes were written: plan again.
     const current = plan(stack.state);
-    if (current.commands.length > 0) {
+    if (current.commands.length > 0 || effects.length > 0) {
       const parts = current.commands;
       stack.execute({
         id: 'ai.apply-changeset',
@@ -1592,9 +1712,41 @@ export class ProjectSession {
         apply(draft) {
           for (const part of parts) part.apply(draft);
         },
+        ...(effects.length === 0 ? {} : { effects }),
       });
+      await this.flushAssetFiles();
     }
-    return { applied: current.applied, skipped: current.skipped.map((entry) => entry.itemId) };
+    return {
+      applied: current.applied,
+      skipped: current.skipped.map((entry) => entry.itemId),
+      written: effects.map((effect) => {
+        const file = (effect.data as AssetWriteData).file.slice('assets/'.length);
+        const slash = file.indexOf('/');
+        return `${file.slice(0, slash)}:${file.slice(slash + 1)}`;
+      }),
+    };
+  }
+
+  /**
+   * Keeps the current and the new bytes of each write in {@link ASSET_UNDO_DIR} and returns
+   * one {@link ASSET_WRITE_EFFECT} per write that changes the file. The live files are not
+   * touched here: the effects write them when the command runs.
+   */
+  async #stageAssetWrites(writes: readonly ChangeAsset[]): Promise<CommandEffect[]> {
+    const effects: CommandEffect[] = [];
+    for (const write of writes) {
+      const file = `assets/${write.namespace}/${write.path}`;
+      const current = (await this.#fs.exists(file)) ? await this.#fs.readFile(file) : null;
+      if (current !== null && sameBytes(current, write.bytes)) continue;
+      this.#writeCounter += 1;
+      const dir = `${ASSET_UNDO_DIR}/${this.#generation}-${this.#writeCounter}`;
+      const before = current === null ? null : `${dir}/before`;
+      if (current !== null) await this.#fs.writeFile(`${dir}/before`, current);
+      await this.#fs.writeFile(`${dir}/after`, write.bytes);
+      const data: AssetWriteData = { file, before, after: `${dir}/after` };
+      effects.push({ type: ASSET_WRITE_EFFECT, data });
+    }
+    return effects;
   }
 
   /** Undoes the last command; returns `false` if there was none. */
@@ -2541,6 +2693,7 @@ export class ProjectSession {
       }
     }
     this.#syncAssetFiles(this.#lastState, event.state);
+    this.#replayAssetWrites(event);
     this.#lastState = event.state;
     if (this.#pending.size > 0 || this.#pendingValidators.size > 0) {
       this.#scheduleValidation(this.#validationDelay);
@@ -2590,6 +2743,40 @@ export class ProjectSession {
     });
   }
 
+  /**
+   * Performs the asset write effects of a command (ADR 0045): on execute and redo the stored
+   * new bytes go to the live file, in order; on undo, in reverse order, the stored previous
+   * bytes go back, or the file is removed when there was none. Queued with the trash moves.
+   */
+  #replayAssetWrites(event: CommandEvent): void {
+    const writes = event.effects.filter(isAssetWrite);
+    if (writes.length === 0) return;
+    const generation = this.#generation;
+    const undo = event.type === 'undo';
+    const ordered = undo ? [...writes].reverse() : writes;
+    this.#assetOps = this.#assetOps.then(async () => {
+      if (generation !== this.#generation) return;
+      for (const { data } of ordered) {
+        const source = undo ? data.before : data.after;
+        try {
+          if (source === null) {
+            await this.#fs.remove(data.file);
+          } else {
+            await this.#fs.writeFile(data.file, await this.#fs.readFile(source));
+          }
+        } catch (error) {
+          this.#assetProblems.push({
+            severity: 'warning',
+            code: SessionProblemCodes.assetTrashFailed,
+            file: data.file,
+            message: `Could not ${undo ? 'restore' : 'write'} ${data.file}: ${messageOf(error)}`,
+          });
+          this.#publish();
+        }
+      }
+    });
+  }
+
   async #moveAssetFile(from: string, to: string, what: string): Promise<void> {
     try {
       if (!(await this.#fs.exists(from))) return;
@@ -2634,6 +2821,7 @@ export class ProjectSession {
   async #emptyTrash(): Promise<void> {
     try {
       await this.#fs.remove(ASSET_TRASH_DIR);
+      await this.#fs.remove(ASSET_UNDO_DIR);
     } catch {
       // Leftover trash is harmless: load never reads `.msm/`.
     }

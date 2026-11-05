@@ -601,6 +601,7 @@ describe('ProjectSession: library (ADR 0020)', () => {
     expect(result).toEqual({
       added: ['gems:block/ruby_ore'],
       duplicates: [],
+      merged: [],
       assets: ['gems:textures/block/ruby_ore.png'],
       skippedAssets: [],
     });
@@ -634,6 +635,7 @@ describe('ProjectSession: library (ADR 0020)', () => {
     expect(again).toEqual({
       added: [],
       duplicates: ['demo:block/ruby_ore'],
+      merged: [],
       assets: [],
       skippedAssets: ['demo:textures/block/ruby_ore.png'],
     });
@@ -672,6 +674,65 @@ describe('ProjectSession: library (ADR 0020)', () => {
     );
     expect(kinds.filter((kind) => kind === 'minecraft:pack_mcmeta')).toHaveLength(1);
     expect(kinds.filter((kind) => kind === 'msm:mod')).toHaveLength(1);
+  });
+
+  it('merges shared tags and language files the project already has (one undo step)', async () => {
+    const { session } = newLibrarySession(createMemoryFileSystem());
+    await session.newProject();
+    session.addElement({
+      id: 'minecraft:load',
+      kind: 'minecraft:tag/function',
+      data: { values: ['demo:start'] },
+    });
+    session.addElement({
+      id: 'demo:en_us',
+      kind: 'minecraft:lang',
+      data: { 'item.demo.ruby': 'My ruby' },
+    });
+    const before = session.snapshot.project;
+    const shared: ContentBundleBuilder = {
+      title: 'Shared',
+      build: () => ({
+        elements: [
+          {
+            id: 'minecraft:load',
+            kind: 'minecraft:tag/function',
+            data: { values: ['demo:init', 'demo:start'] },
+          },
+          {
+            id: 'demo:en_us',
+            kind: 'minecraft:lang',
+            data: { 'item.demo.ruby': 'Ruby', 'item.demo.sapphire': 'Sapphire' },
+          },
+          { id: 'demo:init', kind: 'minecraft:function', data: { lines: ['say init'] } },
+        ],
+        assets: [],
+      }),
+    };
+    const result = await session.addBundle(shared, { namespace: 'demo', label: 'Shared' });
+    expect(result.added).toEqual(['demo:init']);
+    expect(result.merged).toEqual(['minecraft:load', 'demo:en_us']);
+    expect(result.duplicates).toEqual([]);
+    const data = (id: string) =>
+      session.snapshot.project?.namespaces
+        .flatMap((namespace) => namespace.elements)
+        .find((element) => element.id === id)?.data;
+    expect(data('minecraft:load')).toEqual({ values: ['demo:start', 'demo:init'] });
+    // Nothing the project had is overwritten.
+    expect(data('demo:en_us')).toEqual({
+      'item.demo.ruby': 'My ruby',
+      'item.demo.sapphire': 'Sapphire',
+    });
+    expect(session.snapshot.undoLabel).toBe('Shared');
+    expect(session.undo()).toBe(true);
+    expect(session.snapshot.project).toEqual(before);
+
+    // A second copy finds everything there: merged, nothing changes, no undo step.
+    session.redo();
+    const again = await session.addBundle(shared, { namespace: 'demo', label: 'Again' });
+    expect(again.merged).toEqual(['minecraft:load', 'demo:en_us']);
+    expect(again.duplicates).toEqual(['demo:init']);
+    expect(session.snapshot.undoLabel).toBe('Shared');
   });
 
   it('rejects bundle assets that are not valid PNG textures', async () => {

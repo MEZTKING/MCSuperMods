@@ -1,11 +1,18 @@
 /**
  * New-project and new-element defaults: the first namespace's name and the substitution of a
- * kind's placeholder defaults with ids in the user's namespace.
+ * kind's placeholder defaults with ids in the user's namespace; the singleton kinds a project
+ * holds once and the merge of shared language files and tags.
  *
  * @packageDocumentation
  */
 
-import { type Json, type Project, parseResourceLocation, type ResourceLocation } from '@msm/core';
+import {
+  type Json,
+  type Project,
+  parseResourceLocation,
+  type ResourceLocation,
+  stableStringify,
+} from '@msm/core';
 
 /** The placeholder some kinds use in `defaultData` for an id the app must fill in. */
 export const APP_PLACEHOLDER = '<set by the app>';
@@ -24,6 +31,47 @@ export const MOD_METADATA_KIND = 'msm:mod';
  * output file (`pack.mcmeta`, `fabric.mod.json`) and clash on export (`lowering.conflict`).
  */
 export const SINGLETON_KINDS: readonly string[] = [PACK_MCMETA_KIND, MOD_METADATA_KIND];
+
+/**
+ * Kinds shared by many sets (language files and tags): an element of one of these kinds whose
+ * id already exists is merged ({@link mergeShared}) rather than skipped.
+ */
+export function isMergeableKind(kind: string): boolean {
+  return kind === 'minecraft:lang' || kind.startsWith('minecraft:tag/');
+}
+
+type JsonObject = { [key: string]: Json };
+
+const isObject = (value: Json | undefined): value is JsonObject =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
+ * `current` with what `incoming` adds: a language file gains the keys it lacks, a tag the
+ * values it lacks (in `incoming`'s order, after its own). Nothing in `current` is overwritten.
+ * Used by the Creator, the AI helper's changesets and `ProjectSession.addBundle`.
+ */
+export function mergeShared(kind: string, current: Json, incoming: Json): Json {
+  if (!isObject(current) || !isObject(incoming)) return current;
+  if (kind === 'minecraft:lang') {
+    const merged: JsonObject = { ...current };
+    for (const [key, value] of Object.entries(incoming)) {
+      if (!Object.hasOwn(merged, key)) merged[key] = value;
+    }
+    return merged;
+  }
+  const have = Array.isArray(current.values) ? current.values : [];
+  const add = Array.isArray(incoming.values) ? incoming.values : [];
+  const seen = new Set(have.map((value) => stableStringify(value)));
+  const values = [...have];
+  for (const value of add) {
+    const key = stableStringify(value);
+    if (!seen.has(key)) {
+      seen.add(key);
+      values.push(value);
+    }
+  }
+  return { ...current, values };
+}
 
 /**
  * The singleton kinds ({@link SINGLETON_KINDS}) `project` already has an element of. A

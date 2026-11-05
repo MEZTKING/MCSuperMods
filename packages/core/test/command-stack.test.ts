@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  type CommandEffect,
   type CommandEvent,
   CommandStack,
   commands,
@@ -196,6 +197,71 @@ describe('CommandStack', () => {
     ]);
     expect(events[3]?.state.name).toBe('R');
     expect(events[3]?.patches).toEqual([]);
+  });
+});
+
+describe('CommandStack effects (ADR 0045)', () => {
+  const write = (token: string): CommandEffect => ({ type: 'test.write', data: { token } });
+
+  it("hands a command's effects to subscribers on execute, undo and redo", () => {
+    const stack = new CommandStack(projectWithElement());
+    const events: CommandEvent[] = [];
+    stack.subscribe((event) => events.push(event));
+    stack.execute({ ...setX(2), effects: [write('a'), write('b')] });
+    stack.undo();
+    stack.redo();
+    stack.execute(setX(3));
+    expect(events.map((event) => [event.type, event.effects])).toEqual([
+      ['execute', [write('a'), write('b')]],
+      ['undo', [write('a'), write('b')]],
+      ['redo', [write('a'), write('b')]],
+      ['execute', []],
+    ]);
+  });
+
+  it('records a command that only carries effects, as one undo step that makes the project dirty', () => {
+    const stack = new CommandStack(projectWithElement());
+    const events: CommandEvent[] = [];
+    stack.subscribe((event) => events.push(event));
+    const before = stack.state;
+    expect(
+      stack.execute({ id: 'test.bytes', label: 'Write bytes', apply() {}, effects: [write('x')] }),
+    ).toEqual([]);
+    expect(stack.state).toBe(before);
+    expect(stack.canUndo).toBe(true);
+    expect(stack.isDirty).toBe(true);
+    expect(stack.undoLabel()).toBe('Write bytes');
+    expect(stack.undo()).toBe(true);
+    expect(stack.isDirty).toBe(false);
+    expect(events.map((event) => [event.type, event.patches, event.effects])).toEqual([
+      ['execute', [], [write('x')]],
+      ['undo', [], [write('x')]],
+    ]);
+    // Without effects, a no-op is still not recorded.
+    stack.execute({ id: 'test.noop', label: 'Nothing', apply() {} });
+    expect(stack.canUndo).toBe(false);
+  });
+
+  it('merges the effects of coalesced commands in execution order', () => {
+    let time = 0;
+    const stack = new CommandStack(projectWithElement(), { now: () => time });
+    const events: CommandEvent[] = [];
+    stack.subscribe((event) => events.push(event));
+    stack.execute({ ...setX(2), coalesce: 'x', effects: [write('a')] });
+    time = 100;
+    stack.execute({ ...setX(3), coalesce: 'x', effects: [write('b')] });
+    expect(events[1]?.effects).toEqual([write('b')]);
+    stack.undo();
+    expect(events[2]?.effects).toEqual([write('a'), write('b')]);
+    expect(stack.canUndo).toBe(false);
+  });
+
+  it('reset events carry no effects', () => {
+    const stack = new CommandStack(projectWithElement());
+    const events: CommandEvent[] = [];
+    stack.subscribe((event) => events.push(event));
+    stack.reset(createEmptyProject('R'));
+    expect(events[0]?.effects).toEqual([]);
   });
 });
 

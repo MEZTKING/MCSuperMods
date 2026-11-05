@@ -8,6 +8,7 @@
  */
 
 export type {
+  CommandEffect,
   CommandEvent,
   CommandStackOptions,
   ProjectCommand,

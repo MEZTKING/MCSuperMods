@@ -18,6 +18,20 @@ import { immerPatchesToJsonPatch, type JsonPatchOperation } from './json-pointer
 enablePatches();
 
 /**
+ * A side effect outside the project document that a command records in its history entry
+ * (ADR 0045), for example an asset file write. The stack never performs effects: it hands them
+ * to subscribers with every `execute`, `undo` and `redo` event, and the host does the work
+ * (writes the new bytes on execute and redo, restores the old ones on undo). `data` is opaque
+ * to the stack and must not be mutated.
+ */
+export interface CommandEffect {
+  /** Effect type, namespaced by its owner, for example `app.asset-write`. */
+  readonly type: string;
+  /** What the host needs to perform and revert the effect. */
+  readonly data?: unknown;
+}
+
+/**
  * One undoable edit: an Immer recipe applied to a draft of the project.
  */
 export interface ProjectCommand {
@@ -37,6 +51,11 @@ export interface ProjectCommand {
    * @param draft - A mutable draft of the project.
    */
   apply(draft: Draft<Project>): void;
+  /**
+   * Side effects recorded with the command (ADR 0045). A command whose recipe changes nothing
+   * is still recorded when it carries effects.
+   */
+  effects?: readonly CommandEffect[];
 }
 
 /** Sent to subscribers after every state change. */
@@ -49,6 +68,14 @@ export interface CommandEvent {
   state: Project;
   /** The RFC 6902 patch that turned the previous state into `state`; empty for `reset`. */
   patches: JsonPatchOperation[];
+  /**
+   * The effects of the command executed, undone or redone, in execution order; empty for
+   * `reset` and for commands without effects. Hosts perform them in this order on `execute`
+   * and `redo` and revert them in reverse order on `undo`. When commands coalesce, an
+   * `execute` event carries only the new command's effects, while later `undo` and `redo`
+   * events carry the merged entry's.
+   */
+  effects: readonly CommandEffect[];
 }
 
 interface HistoryEntry {
@@ -58,6 +85,7 @@ interface HistoryEntry {
   forwardJson: JsonPatchOperation[];
   inverseJson: JsonPatchOperation[];
   version: number;
+  effects: readonly CommandEffect[];
   coalesce?: string;
   /** When the entry was last executed or merged into, from the stack's clock. */
   time: number;
@@ -148,7 +176,8 @@ export class CommandStack {
   }
 
   /**
-   * Runs a command and records it. Commands that change nothing are not recorded.
+   * Runs a command and records it. Commands that change nothing and carry no effects are not
+   * recorded.
    * Executing discards any redo history. A command with a `coalesce` key merges into the
    * previous entry when that entry has the same key, was recorded within the coalescing
    * window and nothing was undone, redone, reset or saved since; the merged entry keeps its
@@ -161,7 +190,8 @@ export class CommandStack {
     const [next, forward, inverse] = produceWithPatches(this.#state, (draft) => {
       command.apply(draft);
     });
-    if (forward.length === 0) return [];
+    const effects: readonly CommandEffect[] = Object.freeze([...(command.effects ?? [])]);
+    if (forward.length === 0 && effects.length === 0) return [];
     const forwardJson = immerPatchesToJsonPatch(forward);
     const inverseJson = immerPatchesToJsonPatch(inverse);
     const time = this.#now();
@@ -179,10 +209,17 @@ export class CommandStack {
       previous.inverse = [...inverse, ...previous.inverse];
       previous.forwardJson = [...previous.forwardJson, ...forwardJson];
       previous.inverseJson = [...inverseJson, ...previous.inverseJson];
+      previous.effects = Object.freeze([...previous.effects, ...effects]);
       previous.version = this.#nextVersion++;
       previous.time = time;
       this.#state = next;
-      this.#emit({ type: 'execute', label: previous.label, state: next, patches: forwardJson });
+      this.#emit({
+        type: 'execute',
+        label: previous.label,
+        state: next,
+        patches: forwardJson,
+        effects,
+      });
       return forwardJson;
     }
 
@@ -193,6 +230,7 @@ export class CommandStack {
       forwardJson,
       inverseJson,
       version: this.#nextVersion++,
+      effects,
       time,
       ...(command.coalesce === undefined ? {} : { coalesce: command.coalesce }),
     };
@@ -205,7 +243,13 @@ export class CommandStack {
     }
     this.#position = this.#history.length;
     this.#state = next;
-    this.#emit({ type: 'execute', label: entry.label, state: next, patches: forwardJson });
+    this.#emit({
+      type: 'execute',
+      label: entry.label,
+      state: next,
+      patches: forwardJson,
+      effects,
+    });
     return forwardJson;
   }
 
@@ -225,6 +269,7 @@ export class CommandStack {
       label: entry.label,
       state: this.#state,
       patches: entry.inverseJson,
+      effects: entry.effects,
     });
     return true;
   }
@@ -245,6 +290,7 @@ export class CommandStack {
       label: entry.label,
       state: this.#state,
       patches: entry.forwardJson,
+      effects: entry.effects,
     });
     return true;
   }
@@ -262,7 +308,7 @@ export class CommandStack {
     this.#position = 0;
     this.#baseVersion = this.#nextVersion++;
     this.#savedVersion = this.#baseVersion;
-    this.#emit({ type: 'reset', state: this.#state, patches: [] });
+    this.#emit({ type: 'reset', state: this.#state, patches: [], effects: [] });
   }
 
   /** Records the current state as saved. The next command starts a new undo step. */
