@@ -1,0 +1,9 @@
+[
+  {
+    "language": "typescript",
+    "layer": "msm",
+    "path": "msm/example/script/ores/ore_glow.ts",
+    "schema": null,
+    "text": "import { msm, type Pos } from \"msm:runtime\";\n\nconst above = (pos: Pos): Pos => pos.offset(0, 1, 0);\n\nmsm.actions.define(\"example:ore_glow\", (e) => {\n  e.world.setBlock(above(e.pos), \"minecraft:glowstone\");\n  e.world.playSound(\"minecraft:block.amethyst_block.chime\", e.pos, { pitch: 1.5 });\n});\n\nmsm.events.on(\"block.break\", (e) => {\n  if (e.block.id === \"example:ruby_ore\" && !e.player.isCreative) {\n    msm.schedule(20, () => msm.log.info(\"Ruby ore broken at \" + e.block.pos.toString()));\n  }\n});\n"
+  }
+]

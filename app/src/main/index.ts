@@ -11,16 +11,22 @@ import { join } from 'node:path';
 import { nodeEnv } from '@msm/interop/node';
 import { app, BrowserWindow, dialog, ipcMain, Notification, nativeImage, shell } from 'electron';
 import { EventChannels } from '../shared/ipc-channels';
+import { registerAppSchemePrivileges } from './app-scheme';
 import { applyE2eHooks, readE2eHooks } from './e2e-hooks';
 import { registerIpc } from './ipc';
 import { installMenu } from './menu';
 import { createNodePlatform, type NativeDialogs } from './platform/node-platform';
+import { createPluginsService } from './platform/plugins';
 import { resolveMsmHome } from './platform/settings';
 import { createUpdateLog } from './update-log';
 import { type AutoUpdaterLike, createUpdater, updateDisabledReason } from './updater';
 import { createMainWindow } from './window';
 
 const smoke = process.env.MSM_SMOKE === '1';
+
+// ADR 0035 D1a: the renderer is served from `msm-app://app/`; the scheme's privileges must be
+// registered before `app.ready`.
+registerAppSchemePrivileges();
 
 /** Whether this is a smoke or end-to-end run (the updater's `test-run` rule). */
 function isTestRun(env: NodeJS.ProcessEnv): boolean {
@@ -116,6 +122,11 @@ function resizePng(png: Uint8Array, size: number): Uint8Array {
   return new Uint8Array(resized.toPNG());
 }
 
+const msmHome = resolveMsmHome(process.env, app.getPath('home'));
+
+// ADR 0035: third-party plugin folders under `<msmHome>/plugins/`; main reads, never runs them.
+const plugins = createPluginsService({ msmHome, openPath: (path) => shell.openPath(path) });
+
 const platform = createNodePlatform({
   async info() {
     return {
@@ -127,7 +138,7 @@ const platform = createNodePlatform({
   dialogs: applyE2eHooks(electronDialogs, readE2eHooks(process.env)),
   showItemInFolder: (path) => shell.showItemInFolder(path),
   resizePng,
-  msmHome: resolveMsmHome(process.env, app.getPath('home')),
+  msmHome,
   installEnv: nodeEnv(),
   // "What's new" never opens by itself in smoke and end-to-end runs.
   suppressWhatsNew: isTestRun(process.env),
@@ -261,7 +272,7 @@ function runSmoke(window: BrowserWindow): void {
 }
 
 void app.whenReady().then(() => {
-  registerIpc(platform, updater);
+  registerIpc(platform, updater, plugins);
   installMenu();
   platform.settings.recentProjects().then(
     (recent) => installMenu(recent),

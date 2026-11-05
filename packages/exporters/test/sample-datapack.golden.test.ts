@@ -50,6 +50,7 @@ import {
   resourcePackExporter,
   runExport,
 } from '../src/index';
+import { defaultTarget } from './selected-target';
 
 const update = process.env.UPDATE_GOLDENS === '1';
 
@@ -184,7 +185,7 @@ describe('sample data pack project', () => {
     expect(problems).toEqual([]);
     expect(project.name).toBe(PROJECT_NAME);
     expect(project.plugins).toEqual(['msm.datapack', 'msm.resourcepack']);
-    expect(project.targets).toEqual([builtInTargets[0]?.target.id]);
+    expect(project.targets).toEqual([defaultTarget().target.id]);
     const summary = project.namespaces.map((namespace) => ({
       name: namespace.name,
       elements: namespace.elements.map((element) => `${element.kind} ${element.id}`).sort(),

@@ -1,0 +1,9 @@
+{
+  "contents": {
+    "asset_id": "example:ruby",
+    "translation_key": "block.example.banner.ruby"
+  },
+  "layer": "datapack",
+  "path": "data/example/banner_pattern/ruby.json",
+  "schema": "resource:banner_pattern"
+}

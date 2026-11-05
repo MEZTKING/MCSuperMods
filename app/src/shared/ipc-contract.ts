@@ -6,10 +6,16 @@
  * @packageDocumentation
  */
 
+import { isProjectRelativePath } from '@msm/plugin-api';
 import { z } from 'zod';
 import {
   type InvokeChannel,
   InvokeChannels,
+  PLUGIN_CAPABILITIES,
+  PLUGIN_MAIN_MAX_BYTES,
+  PLUGIN_SCHEMA_MAX_BYTES,
+  PLUGIN_SCHEMAS_MAX,
+  PLUGINS_MAX,
   UPDATE_DISABLED_REASONS,
   UPDATE_NOTES_MAX,
   UPDATE_STATUS_MESSAGE_MAX,
@@ -18,6 +24,8 @@ import {
 
 export type {
   InvokeChannel,
+  PluginCapability,
+  PluginProblemCode,
   MenuCommand,
   MenuOpenRecent,
   MinecraftProgress,
@@ -35,6 +43,13 @@ export {
   isUpdateStatus,
   MENU_COMMANDS,
   MINECRAFT_PROGRESS_PHASES,
+  PLUGIN_CAPABILITIES,
+  PLUGIN_MAIN_MAX_BYTES,
+  PLUGIN_SCHEMA_MAX_BYTES,
+  PLUGIN_SCHEMAS_MAX,
+  PLUGINS_MAX,
+  PluginProblemCodes,
+  UNSUPPORTED_PLUGIN_CAPABILITIES,
   UPDATE_DISABLED_REASONS,
   UPDATE_NOTES_MAX,
   VENDORED_KEYS,
@@ -375,6 +390,84 @@ const rootResult = z.union([
 ]);
 
 /** The request and response schema of every invoke channel. */
+/** A plugin id (ADR 0035 D2): lower case, digits, `.` and `-`, starting with a letter. */
+export const PLUGIN_ID = /^[a-z][a-z0-9.-]*$/;
+/** Namespaces no external plugin may use (ADR 0035 D2). */
+export const RESERVED_PLUGIN_NAMESPACES: readonly string[] = Object.freeze(['minecraft', 'msm']);
+/** A plugin's own version: semver `x.y.z` with optional pre-release and build parts. */
+export const PLUGIN_VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
+/** The characters of a semver range; the renderer checks the range itself. */
+export const PLUGIN_API_RANGE = /^[0-9A-Za-z.^~<>=|*+ -]+$/;
+
+/** The namespace of a plugin id: its first `.`-separated segment. */
+export function pluginNamespace(id: string): string {
+  return id.split('.')[0] ?? id;
+}
+
+export const pluginIdSchema = z
+  .string()
+  .min(1)
+  .max(64)
+  .regex(PLUGIN_ID, { message: 'The id must match /^[a-z][a-z0-9.-]*$/.' })
+  .refine((id) => !id.startsWith('msm.'), { message: 'The id must not start with "msm.".' })
+  .refine((id) => !RESERVED_PLUGIN_NAMESPACES.includes(pluginNamespace(id)), {
+    message: 'The id must not use the minecraft or msm namespace.',
+  });
+
+const pluginRelativePath = z
+  .string()
+  .min(1)
+  .max(512)
+  .refine(isProjectRelativePath, {
+    message: 'The path must be relative, use "/" and stay inside the plugin folder.',
+  });
+
+/** The manifest `msm-plugin.json` (ADR 0035 D2). Unknown fields are refused. */
+export const pluginManifestSchema = z
+  .object({
+    manifestVersion: z.literal(1),
+    id: pluginIdSchema,
+    name: z.string().trim().min(1).max(80),
+    version: z.string().max(64).regex(PLUGIN_VERSION, { message: 'The version must be semver.' }),
+    apiVersion: z
+      .string()
+      .trim()
+      .min(1)
+      .max(64)
+      .regex(PLUGIN_API_RANGE, { message: 'The apiVersion must be a semver range.' }),
+    main: pluginRelativePath,
+    schemas: z.array(pluginRelativePath).max(PLUGIN_SCHEMAS_MAX).default([]),
+    capabilities: z.array(z.enum(PLUGIN_CAPABILITIES)).max(PLUGIN_CAPABILITIES.length),
+    description: z.string().max(1000).optional(),
+    author: z.string().max(200).optional(),
+    licence: z.string().max(100).optional(),
+    homepage: z
+      .string()
+      .max(512)
+      .regex(/^https:\/\/\S+$/, { message: 'The homepage must be an https: URL.' })
+      .optional(),
+  })
+  .strict();
+
+const ipcProblem = z
+  .object({
+    severity: z.enum(['error', 'warning', 'info']),
+    code: z.string().min(1).max(128),
+    message: z.string().max(4096),
+    path: z.string().max(1024).optional(),
+    file: z.string().max(1024).optional(),
+  })
+  .strict();
+
+const externalPluginEntry = z
+  .object({
+    id: z.string().min(1).max(255),
+    folder: z.string().min(1).max(255),
+    manifest: pluginManifestSchema.nullable(),
+    problems: z.array(ipcProblem).max(64),
+  })
+  .strict();
+
 export const ipcContract = {
   [InvokeChannels.projectPickDirectory]: {
     request: z
@@ -661,6 +754,21 @@ export const ipcContract = {
   [InvokeChannels.updatesInstall]: { request: noRequest, response: voidResponse },
   [InvokeChannels.updatesCurrent]: { request: noRequest, response: updateStatusSchema },
   [InvokeChannels.appWhatsNewOnLaunch]: { request: noRequest, response: z.boolean() },
+  [InvokeChannels.pluginsList]: {
+    request: noRequest,
+    response: z.array(externalPluginEntry).max(PLUGINS_MAX),
+  },
+  [InvokeChannels.pluginsRead]: {
+    request: z.object({ id: pluginIdSchema }).strict(),
+    response: z
+      .object({
+        manifest: pluginManifestSchema,
+        main: z.string().max(PLUGIN_MAIN_MAX_BYTES),
+        schemas: z.array(z.string().max(PLUGIN_SCHEMA_MAX_BYTES)).max(PLUGIN_SCHEMAS_MAX),
+      })
+      .strict(),
+  },
+  [InvokeChannels.pluginsOpenFolder]: { request: noRequest, response: voidResponse },
 } as const satisfies Record<InvokeChannel, { request: z.ZodType; response: z.ZodType }>;
 
 /** The contract as a whole. */

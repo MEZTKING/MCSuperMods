@@ -29,7 +29,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RedstoneLampBlock;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Half;
@@ -101,7 +100,7 @@ public class MsmRuntimeGameTest {
         helper.assertValueEqual(state.getDestroySpeed(helper.getLevel(), abs), 2.5f, "msm:breakable hardness");
         helper.assertValueEqual(block.getExplosionResistance(), 9.0f, "msm:breakable resistance");
         helper.assertTrue(state.requiresCorrectToolForDrops(), "msm:breakable requires_tool");
-        helper.assertTrue(state.getSoundType() == SoundType.AMETHYST, "sound_type amethyst");
+        helper.assertTrue(BlockSoundCheck.hasSound(state, "amethyst"), "sound_type amethyst");
         helper.assertValueEqual(block.getLootTable().orElseThrow().identifier(), id("blocks/kitchen_sink_custom"), "loot_table");
         helper.assertTrue(state.hasProperty(MsmBlock.POWERED), "blocks with redstone events track POWERED");
         Item item = BuiltInRegistries.ITEM.getValue(SINK);
@@ -120,7 +119,7 @@ public class MsmRuntimeGameTest {
         helper.assertValueEqual(block.getExplosionResistance(), 6.0f, "default resistance");
         helper.assertFalse(state.requiresCorrectToolForDrops(), "default requires no tool");
         helper.assertValueEqual(state.getLightEmission(), 0, "default light");
-        helper.assertTrue(state.getSoundType() == SoundType.STONE, "default sound_type stone");
+        helper.assertTrue(BlockSoundCheck.hasSound(state, "stone"), "default sound_type stone");
         helper.assertFalse(state.hasProperty(MsmBlock.POWERED), "no POWERED without redstone events");
         helper.assertFalse(state.isSignalSource(), "no signal without msm:redstone");
         Item item = BuiltInRegistries.ITEM.getValue(id("defaults"));

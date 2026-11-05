@@ -1,0 +1,22 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "max_stack_size": 64
+    },
+    "layer": "msm",
+    "path": "msm/demo/item/sample.json",
+    "schema": "msm:item_definition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/stick",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  }
+]

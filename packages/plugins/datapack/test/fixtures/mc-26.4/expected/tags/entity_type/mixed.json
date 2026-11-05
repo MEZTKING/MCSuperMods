@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "replace": false,
+    "values": [
+      "minecraft:zombie",
+      "#minecraft:skeletons",
+      "#example:others",
+      {
+        "id": "minecraft:zombie",
+        "required": false
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/tags/entity_type/mixed.json",
+  "schema": "tag:entity_type"
+}

@@ -21,7 +21,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RedstoneLampBlock;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -71,13 +70,13 @@ public class SampleModParityTest {
         return n;
     }
 
-    /** Places {@code block} at {@link #AT} and checks the state's light, hardness and sound. */
-    private static BlockState place(GameTestHelper helper, Block block, int light, float hardness, SoundType sound, String what) {
+    /** Places {@code block} at {@link #AT} and checks the state's light, hardness and sound (an mcdoc sound_type id). */
+    private static BlockState place(GameTestHelper helper, Block block, int light, float hardness, String sound, String what) {
         helper.setBlock(AT, block);
         BlockState state = helper.getBlockState(AT);
         helper.assertValueEqual(state.getLightEmission(), light, what + " light");
         helper.assertValueEqual(state.getDestroySpeed(helper.getLevel(), helper.absolutePos(AT)), hardness, what + " hardness");
-        helper.assertTrue(state.getSoundType() == sound, what + " sound type");
+        helper.assertTrue(ParitySounds.hasSound(state, sound), what + " sound type");
         return state;
     }
 
@@ -100,7 +99,7 @@ public class SampleModParityTest {
     @GameTest
     public void rubyOreProperties(GameTestHelper helper) {
         Block block = block(helper, "ruby_ore");
-        BlockState state = place(helper, block, 7, 3.0f, SoundType.STONE, "ruby_ore");
+        BlockState state = place(helper, block, 7, 3.0f, "stone", "ruby_ore");
         helper.assertValueEqual(block.getExplosionResistance(), 3.0f, "ruby_ore resistance");
         helper.assertTrue(state.requiresCorrectToolForDrops(), "ruby_ore requires the tool");
         helper.assertTrue(new ItemStack(Items.IRON_PICKAXE).isCorrectToolForDrops(state), "iron pickaxe is the correct tool (min_tier iron)");
@@ -119,13 +118,13 @@ public class SampleModParityTest {
     @GameTest
     public void chimeBlockProperties(GameTestHelper helper) {
         Block block = block(helper, "chime_block");
-        BlockState state = place(helper, block, 0, 0.8f, SoundType.WOOD, "chime_block");
+        BlockState state = place(helper, block, 0, 0.8f, "wood", "chime_block");
         helper.assertValueEqual(block.getExplosionResistance(), 6.0f, "chime_block default resistance");
         helper.assertFalse(state.requiresCorrectToolForDrops(), "chime_block drops without the tool (requires_tool false)");
         helper.assertTrue(new ItemStack(Items.WOODEN_AXE).getDestroySpeed(state) > 1.0f, "an axe is the tool (mineable with axe)");
         helper.assertValueEqual(new ItemStack(Items.IRON_PICKAXE).getDestroySpeed(state), 1.0f, "a pickaxe is not the tool");
         helper.assertValueEqual(block.getLootTable().orElseThrow().identifier(), id("blocks/chime_block"), "chime_block loot table");
-        List<ItemStack> drops = Block.getDrops(state, helper.getLevel(), helper.absolutePos(AT), null);
+        List<ItemStack> drops = Block.getDrops(state, helper.getLevel(), helper.absolutePos(AT), null, null, ItemStack.EMPTY);
         helper.assertTrue(drops.size() == 1 && drops.getFirst().is(item(helper, "chime_block")) && drops.getFirst().getCount() == 1,
                 "chime_block drops itself (loot self): " + drops);
         assertBlockItem(helper, block, "chime_block", 16, Rarity.UNCOMMON);
@@ -135,7 +134,7 @@ public class SampleModParityTest {
     @GameTest
     public void glowStoneProperties(GameTestHelper helper) {
         Block block = block(helper, "glow_stone");
-        BlockState state = place(helper, block, 15, 2.0f, SoundType.GLASS, "glow_stone");
+        BlockState state = place(helper, block, 15, 2.0f, "glass", "glow_stone");
         helper.assertValueEqual(block.getExplosionResistance(), 6.0f, "glow_stone default resistance");
         helper.assertTrue(state.requiresCorrectToolForDrops(), "glow_stone requires the tool");
         helper.assertTrue(new ItemStack(Items.NETHERITE_SHOVEL).isCorrectToolForDrops(state), "netherite shovel is the correct tool");

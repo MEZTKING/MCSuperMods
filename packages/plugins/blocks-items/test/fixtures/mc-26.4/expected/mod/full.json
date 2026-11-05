@@ -1,0 +1,24 @@
+[
+  {
+    "contents": {
+      "authors": [
+        "Alex",
+        "Sam"
+      ],
+      "depends": {
+        "fabric-api": "*",
+        "fabricloader": ">=0.20.1",
+        "minecraft": ">=26.4- <26.5-"
+      },
+      "description": "Rubies and a wand.",
+      "environment": "*",
+      "id": "example-mod",
+      "license": "MIT",
+      "name": "Example Mod",
+      "schemaVersion": 1,
+      "version": "1.2.0"
+    },
+    "layer": "msm",
+    "path": "fabric.mod.json"
+  }
+]

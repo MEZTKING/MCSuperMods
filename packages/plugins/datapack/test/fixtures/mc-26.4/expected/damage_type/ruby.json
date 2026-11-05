@@ -1,0 +1,12 @@
+{
+  "contents": {
+    "death_message_type": "default",
+    "effects": "burning",
+    "exhaustion": 0,
+    "message_id": "example.ruby",
+    "scaling": "never"
+  },
+  "layer": "datapack",
+  "path": "data/example/damage_type/ruby.json",
+  "schema": "resource:damage_type"
+}

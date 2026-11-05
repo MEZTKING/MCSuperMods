@@ -1,0 +1,80 @@
+[
+  {
+    "contents": {
+      "animations": {
+        "attack": {
+          "animation_length": 0.5,
+          "bones": {
+            "body": {
+              "rotation": {
+                "0.0": {
+                  "lerp_mode": "catmullrom",
+                  "post": [
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                "0.25": {
+                  "post": [
+                    -25,
+                    0,
+                    0
+                  ],
+                  "pre": [
+                    -20,
+                    0,
+                    0
+                  ]
+                },
+                "0.5": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            }
+          },
+          "override_previous_animation": true,
+          "sound_effects": {
+            "0.25": {
+              "effect": "attack"
+            }
+          }
+        },
+        "idle": {
+          "animation_length": 2,
+          "blend_weight": 1,
+          "bones": {
+            "head": {
+              "rotation": [
+                0,
+                "math.sin(query.anim_time * 180) * 5",
+                0
+              ],
+              "scale": 1
+            }
+          },
+          "loop": true,
+          "loop_delay": "math.random(0, 1)",
+          "start_delay": 0.1
+        },
+        "stand": {
+          "bones": {
+            "body": {
+              "position": {
+                "0.0": 0,
+                "1.0": 2
+              }
+            }
+          },
+          "loop": "hold_on_last_frame"
+        }
+      },
+      "format_version": "1.8.0"
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/geckolib/animations/entity/golem_animations.animation.json",
+    "schema": "msm:animation"
+  }
+]

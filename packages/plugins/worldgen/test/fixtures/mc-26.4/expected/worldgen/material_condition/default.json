@@ -1,0 +1,13 @@
+{
+  "contents": {
+    "add_stone_depth": false,
+    "anchor": {
+      "absolute": 63
+    },
+    "surface_depth_multiplier": 0,
+    "type": "minecraft:y_above"
+  },
+  "layer": "datapack",
+  "path": "data/example/worldgen/material_condition/sample.json",
+  "schema": "resource:worldgen/material_condition"
+}

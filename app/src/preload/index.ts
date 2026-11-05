@@ -160,6 +160,11 @@ const bridge: MsmBridge = {
     removeRecent: (root) => ipcRenderer.invoke(InvokeChannels.projectRemoveRecent, { root }),
     clearRecent: () => ipcRenderer.invoke(InvokeChannels.projectClearRecent),
   },
+  plugins: {
+    list: () => ipcRenderer.invoke(InvokeChannels.pluginsList),
+    read: (id) => ipcRenderer.invoke(InvokeChannels.pluginsRead, { id }),
+    openFolder: () => ipcRenderer.invoke(InvokeChannels.pluginsOpenFolder),
+  },
   fs: {
     readFile: (path) => ipcRenderer.invoke(InvokeChannels.fsReadFile, { path }),
     writeFile: (path, data) => ipcRenderer.invoke(InvokeChannels.fsWriteFile, { path, data }),
@@ -203,7 +208,6 @@ const bridge: MsmBridge = {
   },
   // The sandboxed preload sees the environment the main process was started with.
   isSmoke: process.env.MSM_SMOKE === '1',
-  isE2e: (process.env.MSM_E2E_PROJECT_DIR ?? '') !== '',
 };
 
 contextBridge.exposeInMainWorld('msm', bridge);

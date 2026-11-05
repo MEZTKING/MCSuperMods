@@ -1,0 +1,15 @@
+{
+  "contents": {
+    "carvers": [],
+    "downfall": 0.4,
+    "effects": {
+      "water_color": 4159204
+    },
+    "features": [],
+    "has_precipitation": true,
+    "temperature": 0.8
+  },
+  "layer": "datapack",
+  "path": "data/example/worldgen/biome/sample.json",
+  "schema": "resource:worldgen/biome"
+}

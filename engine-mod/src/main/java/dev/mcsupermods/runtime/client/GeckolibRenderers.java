@@ -6,7 +6,6 @@ import dev.mcsupermods.runtime.components.EntityComponents;
 import dev.mcsupermods.runtime.registry.MsmEntity;
 import dev.mcsupermods.runtime.registry.MsmEntityRegistrar;
 import dev.mcsupermods.runtime.registry.MsmGeoEntity;
-import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.entity.EntityType;
 
@@ -14,10 +13,7 @@ import net.minecraft.world.entity.EntityType;
 final class GeckolibRenderers {
     private GeckolibRenderers() {}
 
-    // Fabric's EntityRendererRegistry is @Deprecated in fabric-rendering-v1 27.2.0; its replacement is
-    // vanilla EntityRenderers.register, private in 26.3 and made accessible by Fabric API's transitive
-    // access widener (fabric-transitive-access-wideners-v1). Renderer providers are read when the
-    // client builds its entity renderers, after client initialisation.
+    // Registration goes through the version seam EntityRendererRegistration (src/mc/<mc>/java, ADR 0038 D2).
     @SuppressWarnings("unchecked")
     static void registerAll() {
         for (EntityType<MsmEntity> type : MsmEntityRegistrar.geoTypes()) {
@@ -26,7 +22,7 @@ final class GeckolibRenderers {
             EntityComponents.AnimatedModel def = MsmEntityRegistrar.definition(type).orElseThrow().components().animatedModel();
             MsmGeoModel model = new MsmGeoModel(def);
             float scale = def.scale();
-            EntityRenderers.register(geoType, ctx -> new GeoEntityRenderer<MsmGeoEntity, EntityRenderState>(ctx, model).withScale(scale));
+            EntityRendererRegistration.register(geoType, ctx -> new GeoEntityRenderer<MsmGeoEntity, EntityRenderState>(ctx, model).withScale(scale));
         }
         MsmRuntime.LOGGER.info("[{}] registered {} GeckoLib entity renderer(s)", MsmRuntime.MOD_ID, MsmEntityRegistrar.geoTypes().size());
     }

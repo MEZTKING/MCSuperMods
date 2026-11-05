@@ -1,0 +1,54 @@
+[
+  {
+    "contents": {
+      "format_version": "1.12.0",
+      "minecraft:geometry": [
+        {
+          "bones": [
+            {
+              "cubes": [
+                {
+                  "origin": [
+                    -8,
+                    0,
+                    -8
+                  ],
+                  "size": [
+                    16,
+                    16,
+                    16
+                  ],
+                  "uv": [
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "name": "body",
+              "pivot": [
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "description": {
+            "identifier": "geometry.unknown",
+            "texture_height": 64,
+            "texture_width": 64,
+            "visible_bounds_height": 2,
+            "visible_bounds_offset": [
+              0,
+              0.5,
+              0
+            ],
+            "visible_bounds_width": 2
+          }
+        }
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/geckolib/models/entity/sample.geo.json",
+    "schema": "msm:geo_model"
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "data": {
+    "values": [
+      "minecraft:water",
+      "minecraft:lava"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:liquids",
+  "kind": "minecraft:tag/fluid",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A fluid tag gives one name to several fluid ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. Use it in location predicates that check fluids, as #msm_examples:liquids.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "replace": false,
+    "values": [
+      "minecraft:diamond",
+      "#minecraft:planks",
+      "#example:others",
+      {
+        "id": "minecraft:diamond",
+        "required": false
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/tags/item/mixed.json",
+  "schema": "tag:item"
+}

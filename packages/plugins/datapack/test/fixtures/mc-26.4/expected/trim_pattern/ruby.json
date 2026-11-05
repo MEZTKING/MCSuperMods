@@ -1,0 +1,12 @@
+{
+  "contents": {
+    "asset_id": "example:ruby",
+    "decal": true,
+    "description": {
+      "text": "Ruby Armour Trim"
+    }
+  },
+  "layer": "datapack",
+  "path": "data/example/trim_pattern/ruby.json",
+  "schema": "resource:trim_pattern"
+}

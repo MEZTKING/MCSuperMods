@@ -1,0 +1,19 @@
+{
+  "contents": {
+    "ambient_light": 0.1,
+    "coordinate_scale": 8,
+    "has_ceiling": true,
+    "has_ender_dragon_fight": false,
+    "has_fixed_time": true,
+    "has_skylight": false,
+    "height": 256,
+    "infiniburn": "#minecraft:infiniburn_nether",
+    "logical_height": 128,
+    "min_y": 0,
+    "monster_spawn_block_light_limit": 15,
+    "monster_spawn_light_level": 7
+  },
+  "layer": "datapack",
+  "path": "data/example/dimension_type/ruby.json",
+  "schema": "resource:dimension_type"
+}

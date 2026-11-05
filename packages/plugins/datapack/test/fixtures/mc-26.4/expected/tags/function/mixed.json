@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "replace": false,
+    "values": [
+      "example:greet",
+      "example:tick",
+      "#example:others",
+      {
+        "id": "example:greet",
+        "required": false
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/tags/function/mixed.json",
+  "schema": "tag:function"
+}

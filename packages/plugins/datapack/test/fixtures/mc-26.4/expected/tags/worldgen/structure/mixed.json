@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "replace": false,
+    "values": [
+      "minecraft:village_plains",
+      "#minecraft:village",
+      "#example:others",
+      {
+        "id": "minecraft:village_plains",
+        "required": false
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/tags/worldgen/structure/mixed.json",
+  "schema": "tag:worldgen/structure"
+}

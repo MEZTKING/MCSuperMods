@@ -283,12 +283,14 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         if (geckolib === undefined) throw new Error('target lacks GeckoLib facts');
         return geckolib;
       };
+      /** Runs only on targets with GeckoLib facts; the last test covers the others. */
+      const withGeckolib = it.runIf(target.geckolib !== undefined);
       const both: FabricContentJarOptions = {
         loadRuntimeJar: async () => runtimeJar,
         loadGeckolibJar: async () => geckolibJar,
       };
 
-      it('leaves a project without entities unchanged and never loads GeckoLib', async () => {
+      withGeckolib('leaves a project without entities unchanged and never loads GeckoLib', async () => {
         let loads = 0;
         const elements = [modelElement, recipeLike, definition];
         const plain = await exportJar(elements);
@@ -306,7 +308,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         expect(withLoader.entries[nestedGeckolibPath(facts())]).toBeUndefined();
       });
 
-      it('depends on and nests GeckoLib when the project has entities', async () => {
+      withGeckolib('depends on and nests GeckoLib when the project has entities', async () => {
         const geckolib = facts();
         const { report, entries } = await exportJar([definition, entityDefinition], both);
         expect(report.ok).toBe(true);
@@ -326,7 +328,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         expect(json(entries, 'msm.export.json')).toMatchObject({ fileCount: 5 });
       });
 
-      it('completes a provided fabric.mod.json with GeckoLib', async () => {
+      withGeckolib('completes a provided fabric.mod.json with GeckoLib', async () => {
         const geckolib = facts();
         const { report, entries } = await exportJar([entityDefinition, modJson], both);
         expect(report.ok).toBe(true);
@@ -342,13 +344,13 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         expect(written.jars).toContainEqual({ file: nestedGeckolibPath(geckolib) });
       });
 
-      it('writes the same bytes for the same input', async () => {
+      withGeckolib('writes the same bytes for the same input', async () => {
         const first = await exportJar([definition, entityDefinition], both);
         const second = await exportJar([entityDefinition, definition], both);
         expect(sha256(first.bytes)).toBe(sha256(second.bytes));
       });
 
-      it('only depends on GeckoLib with separateRuntime', async () => {
+      withGeckolib('only depends on GeckoLib with separateRuntime', async () => {
         const geckolib = facts();
         let loads = 0;
         const { report, entries } = await exportJar(
@@ -372,7 +374,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         });
       });
 
-      it('reports export.geckolib-missing when nesting without GeckoLib bytes', async () => {
+      withGeckolib('reports export.geckolib-missing when nesting without GeckoLib bytes', async () => {
         const geckolib = facts();
         for (const factory of [
           { loadRuntimeJar: async () => runtimeJar },

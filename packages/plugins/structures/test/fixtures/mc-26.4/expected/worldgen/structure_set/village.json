@@ -1,0 +1,18 @@
+{
+  "contents": {
+    "placement": {
+      "salt": 20241104,
+      "separation": 8,
+      "spacing": 34,
+      "type": "minecraft:random_spread"
+    },
+    "structures": [
+      {
+        "structure": "example:village",
+        "weight": 1
+      }
+    ]
+  },
+  "path": "data/example/worldgen/structure_set/village.json",
+  "schema": "resource:worldgen/structure_set"
+}

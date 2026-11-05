@@ -26,6 +26,7 @@ import { unzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { createZipSink, packFileName, runExport, vanillaPacksExporter } from '../src/index';
 import { indexesFor, meta } from './helpers';
+import { defaultTarget } from './selected-target';
 
 const update = process.env.UPDATE_GOLDENS === '1';
 
@@ -85,7 +86,7 @@ describe('sample resource pack project', () => {
     const { project, problems } = await loadSample();
     expect(problems).toEqual([]);
     expect(project.plugins).toEqual(['msm.resourcepack']);
-    expect(project.targets).toEqual([builtInTargets[0]?.target.id]);
+    expect(project.targets).toEqual([defaultTarget().target.id]);
     const summary = project.namespaces.map((namespace) => ({
       name: namespace.name,
       elements: namespace.elements.map((element) => `${element.kind} ${element.id}`),

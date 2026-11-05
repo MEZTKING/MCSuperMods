@@ -3,7 +3,7 @@
  * every element with `example` and the example's category, so copied elements stay easy to
  * find.
  */
-import type { BundleContext, ContentBundle, ExampleProject } from '@msm/plugin-api';
+import type { BundleContext, ContentBundle, ExampleProject, TargetFacts } from '@msm/plugin-api';
 import { kindsOf } from '../content/bundle';
 import { PROBE_CONTEXT } from '../content/probe';
 
@@ -20,6 +20,8 @@ export interface ExampleInput {
   category: string;
   tags?: string[];
   build(context: BundleContext): ContentBundle;
+  /** The targets the example works on; omitted means every target (ADR 0036 D4). */
+  supports?(target: TargetFacts): boolean;
 }
 
 /**
@@ -48,5 +50,6 @@ export function defineExample(input: ExampleInput): ExampleProject {
     build,
   };
   if (input.tags !== undefined) entry.tags = [...input.tags];
+  if (input.supports !== undefined) entry.supports = input.supports;
   return Object.freeze(entry);
 }

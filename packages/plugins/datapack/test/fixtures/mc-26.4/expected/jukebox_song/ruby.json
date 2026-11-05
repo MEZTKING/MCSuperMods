@@ -1,0 +1,13 @@
+{
+  "contents": {
+    "comparator_output": 7,
+    "description": {
+      "text": "Ruby Waltz"
+    },
+    "length_in_seconds": 92.5,
+    "sound_event": "example:music_disc.ruby"
+  },
+  "layer": "datapack",
+  "path": "data/example/jukebox_song/ruby.json",
+  "schema": "resource:jukebox_song"
+}

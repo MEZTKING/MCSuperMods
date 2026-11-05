@@ -1,0 +1,117 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 1.5,
+          "requires_tool": true,
+          "resistance": 1.5
+        },
+        "msm:light_emitter": {
+          "level": 4
+        },
+        "msm:on_interact": {
+          "event": "demo:sample_use"
+        },
+        "msm:on_step": {
+          "cooldown_ticks": 20,
+          "event": "demo:sample_sparkle"
+        }
+      },
+      "events": {
+        "demo:sample_sparkle": {
+          "actions": [
+            {
+              "count": 12,
+              "particle": "minecraft:glow",
+              "spread": 0.4,
+              "type": "spawn_particle"
+            }
+          ]
+        },
+        "demo:sample_use": {
+          "actions": [
+            {
+              "sound": "minecraft:block.amethyst_block.chime",
+              "type": "play_sound",
+              "volume": 1
+            },
+            {
+              "event": "demo:sample_sparkle",
+              "type": "trigger_event"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:functional_blocks"
+      },
+      "sound_type": "amethyst"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "minecraft:block/amethyst_block"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:block/amethyst_block",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/pickaxe.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

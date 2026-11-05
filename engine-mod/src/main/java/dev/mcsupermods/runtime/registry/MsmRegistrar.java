@@ -12,11 +12,9 @@ import dev.mcsupermods.runtime.loader.DefinitionParser;
 import dev.mcsupermods.runtime.loader.ItemDefinition;
 import dev.mcsupermods.runtime.loader.LoadReport;
 import dev.mcsupermods.runtime.loader.MsmRarity;
-import dev.mcsupermods.runtime.loader.MsmSoundType;
 import dev.mcsupermods.runtime.loader.ParseResult;
 import dev.mcsupermods.runtime.loader.RawDefinition;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +33,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 /** Turns parsed definitions into registry entries. Runs once, from {@code onInitialize}. */
@@ -155,8 +152,8 @@ public final class MsmRegistrar {
         BlockBehaviour.Properties props = BlockBehaviour.Properties.of()
                 .setId(blockKey) // required since 1.21.2: the constructor reads the id from the properties
                 .strength(breakable.hardness(), breakable.resistance())
-                .sound(soundType(def.soundType()))
                 .lightLevel(state -> light);
+        props = BlockSounds.apply(props, def.soundType()); // version seam (ADR 0038 D2)
         if (breakable.requiresTool()) {
             props = props.requiresCorrectToolForDrops();
         }
@@ -245,59 +242,6 @@ public final class MsmRegistrar {
             case RARE -> Rarity.RARE;
             case EPIC -> Rarity.EPIC;
         };
-    }
-
-    private static final Map<MsmSoundType, SoundType> SOUND_TYPES = new EnumMap<>(MsmSoundType.class);
-
-    /** Maps each mcdoc sound type onto the vanilla constant of the same name. */
-    private static SoundType soundType(MsmSoundType type) {
-        if (SOUND_TYPES.isEmpty()) {
-            for (MsmSoundType t : MsmSoundType.values()) {
-                SOUND_TYPES.put(t, switch (t) {
-                    case STONE -> SoundType.STONE;
-                    case WOOD -> SoundType.WOOD;
-                    case GRAVEL -> SoundType.GRAVEL;
-                    case GRASS -> SoundType.GRASS;
-                    case METAL -> SoundType.METAL;
-                    case GLASS -> SoundType.GLASS;
-                    case WOOL -> SoundType.WOOL;
-                    case SAND -> SoundType.SAND;
-                    case SNOW -> SoundType.SNOW;
-                    case LADDER -> SoundType.LADDER;
-                    case ANVIL -> SoundType.ANVIL;
-                    case SLIME_BLOCK -> SoundType.SLIME_BLOCK;
-                    case HONEY_BLOCK -> SoundType.HONEY_BLOCK;
-                    case CORAL_BLOCK -> SoundType.CORAL_BLOCK;
-                    case BAMBOO -> SoundType.BAMBOO;
-                    case BAMBOO_WOOD -> SoundType.BAMBOO_WOOD;
-                    case CHERRY_WOOD -> SoundType.CHERRY_WOOD;
-                    case NETHER_WOOD -> SoundType.NETHER_WOOD;
-                    case NETHERRACK -> SoundType.NETHERRACK;
-                    case NETHER_BRICKS -> SoundType.NETHER_BRICKS;
-                    case NETHER_ORE -> SoundType.NETHER_ORE;
-                    case BASALT -> SoundType.BASALT;
-                    case BONE_BLOCK -> SoundType.BONE_BLOCK;
-                    case SOUL_SAND -> SoundType.SOUL_SAND;
-                    case SOUL_SOIL -> SoundType.SOUL_SOIL;
-                    case AMETHYST -> SoundType.AMETHYST;
-                    case AMETHYST_CLUSTER -> SoundType.AMETHYST_CLUSTER;
-                    case CALCITE -> SoundType.CALCITE;
-                    case TUFF -> SoundType.TUFF;
-                    case DEEPSLATE -> SoundType.DEEPSLATE;
-                    case DEEPSLATE_BRICKS -> SoundType.DEEPSLATE_BRICKS;
-                    case DEEPSLATE_TILES -> SoundType.DEEPSLATE_TILES;
-                    case POLISHED_DEEPSLATE -> SoundType.POLISHED_DEEPSLATE;
-                    case COPPER -> SoundType.COPPER;
-                    case MUD -> SoundType.MUD;
-                    case MUD_BRICKS -> SoundType.MUD_BRICKS;
-                    case PACKED_MUD -> SoundType.PACKED_MUD;
-                    case MOSS -> SoundType.MOSS;
-                    case LANTERN -> SoundType.LANTERN;
-                    case SCULK -> SoundType.SCULK;
-                });
-            }
-        }
-        return SOUND_TYPES.get(type);
     }
 
     private static final List<LateCheck> TABS = new ArrayList<>();

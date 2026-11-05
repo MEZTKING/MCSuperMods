@@ -1,22 +1,31 @@
 /**
- * Message protocol between the renderer host and a plugin worker (ADR 0035 D3). Spike quality
- * (B150); the real loader (B154) replaces it.
- *
- * Everything that crosses is JSON or `Uint8Array` (structured clone).
+ * Message protocol between the renderer host and a plugin worker (ADR 0035 D3). Everything
+ * that crosses is JSON or `Uint8Array` (structured clone).
  *
  * @packageDocumentation
  */
 
-/** Methods the host may call on a plugin worker. */
-export type SandboxMethod =
-  | 'lower'
-  | 'data'
-  | 'build'
-  | 'validate'
-  | 'run'
-  | 'import'
-  /** Spike only: calls a top-level function of the plugin object by name (probes, loops). */
-  | 'call';
+/** Methods the host may call on a plugin worker; each names one contribution function. */
+export type SandboxMethod = 'lower' | 'data' | 'build' | 'validate' | 'run' | 'import';
+
+/**
+ * The arguments of each method. `point` and `id` name the contribution; the rest are the
+ * function's arguments as data (a target as `TargetFacts`, a registry as a snapshot key plus
+ * the snapshot the first time the worker sees that key).
+ */
+export interface SandboxArgs {
+  lower: [kindId: string, element: unknown, target: unknown];
+  data: [templateId: string, context: unknown];
+  build: [point: 'projectStarters' | 'examples', id: string, context: unknown];
+  validate: [
+    validatorId: string,
+    input: { elements: unknown; target: unknown },
+    registryKey: string,
+    snapshot: Record<string, string[]> | null,
+  ];
+  run: [exporterId: string, input: unknown];
+  import: [importerId: string, file: unknown, namespace: string];
+}
 
 /** Host to worker: one request. */
 export interface SandboxRequest {
@@ -65,5 +74,6 @@ export interface ContributionDescription {
 export interface PluginDescription {
   id: string;
   apiVersion: string;
+  /** Every contribution point the plugin object has, including unsupported ones. */
   contributes: Record<string, ContributionDescription[]>;
 }

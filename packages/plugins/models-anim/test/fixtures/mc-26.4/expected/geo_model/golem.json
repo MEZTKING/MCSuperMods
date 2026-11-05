@@ -1,0 +1,165 @@
+[
+  {
+    "contents": {
+      "format_version": "1.12.0",
+      "minecraft:geometry": [
+        {
+          "bones": [
+            {
+              "cubes": [
+                {
+                  "origin": [
+                    -4,
+                    12,
+                    -2
+                  ],
+                  "size": [
+                    8,
+                    12,
+                    4
+                  ],
+                  "uv": [
+                    16,
+                    16
+                  ]
+                },
+                {
+                  "inflate": 0.25,
+                  "origin": [
+                    -2,
+                    20,
+                    -3
+                  ],
+                  "pivot": [
+                    0,
+                    21,
+                    -2.5
+                  ],
+                  "rotation": [
+                    15,
+                    0,
+                    0
+                  ],
+                  "size": [
+                    4,
+                    2,
+                    1
+                  ],
+                  "uv": {
+                    "north": {
+                      "uv": [
+                        0,
+                        0
+                      ],
+                      "uv_size": [
+                        4,
+                        2
+                      ]
+                    },
+                    "south": {
+                      "uv": [
+                        4,
+                        0
+                      ],
+                      "uv_rotation": 180,
+                      "uv_size": [
+                        -4,
+                        2
+                      ]
+                    },
+                    "up": {
+                      "material_instance": "main",
+                      "uv": [
+                        8,
+                        2
+                      ],
+                      "uv_size": [
+                        -4,
+                        -1
+                      ]
+                    }
+                  }
+                }
+              ],
+              "inflate": 0.1,
+              "locators": {
+                "chest": [
+                  0,
+                  20,
+                  -2
+                ],
+                "hand": {
+                  "offset": [
+                    5,
+                    14,
+                    0
+                  ],
+                  "rotation": [
+                    0,
+                    90,
+                    0
+                  ]
+                }
+              },
+              "mirror": false,
+              "name": "body",
+              "pivot": [
+                0,
+                12,
+                0
+              ]
+            },
+            {
+              "cubes": [
+                {
+                  "mirror": true,
+                  "origin": [
+                    -4,
+                    24,
+                    -4
+                  ],
+                  "size": [
+                    8,
+                    8,
+                    8
+                  ],
+                  "uv": [
+                    0,
+                    0
+                  ]
+                }
+              ],
+              "name": "head",
+              "parent": "body",
+              "pivot": [
+                0,
+                24,
+                0
+              ],
+              "rotation": [
+                -5,
+                0,
+                0
+              ]
+            }
+          ],
+          "description": {
+            "identifier": "geometry.golem",
+            "texture_height": 32,
+            "texture_width": 64,
+            "visible_bounds_height": 3.5,
+            "visible_bounds_offset": [
+              0,
+              1.25,
+              0
+            ],
+            "visible_bounds_width": 3
+          }
+        }
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/geckolib/models/entity/golem.geo.json",
+    "schema": "msm:geo_model"
+  }
+]

@@ -34,18 +34,41 @@ jobs:
       - run: xvfb-run -a pnpm --filter @msm/app smoke:packaged
       - run: node tools/check-size/index.ts
 
-  # The msm_runtime Fabric mod (ADR 0024, ADR 0026 D6): JUnit and GameTests through
-  # `./gradlew build`, then the kitchen-sink sample (fixtures/sample-mod) exported with the real
-  # runtime nested and started on a headless Fabric dedicated server (tools/run-fabric-server).
+  # The msm_runtime Fabric mod (ADR 0024, ADR 0026 D6), once per Minecraft version (ADR 0038 D5):
+  # JUnit and GameTests through `./gradlew build -Pmc=<mc>`, then the samples exported for target
+  # mc-<mc> with that runtime nested and started on a headless Fabric dedicated server
+  # (tools/run-fabric-server). 26.3 also builds the ejected Java projects and runs the four parity
+  # runs; other versions run parity on the content jars only (the sample mob only with GeckoLib).
   # Action versions: setup-java and cache v6 (checked 2026-11-05).
   engine-mod:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # One entry per engine-mod/versions/<mc>.properties: that folder is the source of these
+        # literals (check-deps does not scan workflow files). The 26.3 entry runs everything.
+        mc: ["26.3", "26.4"]
     env:
       CI: true
+      # The exporter golden tests export the samples for this target (B153).
+      MSM_TARGET_ID: mc-${{ matrix.mc }}
     steps:
       # A full checkout: the JUnit corpus test reads packages/schemas/mcdoc/msm/conformance/
       # relative to engine-mod/, so both folders must stay side by side.
       - uses: actions/checkout@v7
+      - name: Read the version facts
+        id: facts
+        run: |
+          file="engine-mod/versions/${{ matrix.mc }}.properties"
+          if [ ! -f "$file" ]; then
+            echo "::error::No $file for matrix entry ${{ matrix.mc }}"
+            exit 1
+          fi
+          minecraft=$(sed -n 's/^minecraft_version=//p' "$file" | tr -d '[:space:]')
+          geckolib_id=$(sed -n 's/^geckolib_modrinth_version_id=//p' "$file" | tr -d '[:space:]')
+          echo "minecraft=$minecraft" >> "$GITHUB_OUTPUT"
+          if [ -n "$geckolib_id" ]; then echo "geckolib=true" >> "$GITHUB_OUTPUT"; else echo "geckolib=false" >> "$GITHUB_OUTPUT"; fi
+          echo "Minecraft $minecraft, GeckoLib id '${geckolib_id}'"
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -56,11 +79,11 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('engine-mod/*.gradle.kts', 'engine-mod/parity/*.gradle.kts', 'engine-mod/gradle.properties', 'engine-mod/parity/gradle.properties', 'engine-mod/gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: gradle-${{ runner.os }}-
+          key: gradle-${{ runner.os }}-mc${{ matrix.mc }}-${{ hashFiles('engine-mod/*.gradle.kts', 'engine-mod/parity/*.gradle.kts', 'engine-mod/gradle.properties', 'engine-mod/parity/gradle.properties', 'engine-mod/versions/*.properties', 'engine-mod/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-mc${{ matrix.mc }}-
       - name: Build msm_runtime (JUnit and GameTests)
         working-directory: engine-mod
-        run: ./gradlew build --no-daemon
+        run: ./gradlew build -Pmc=${{ matrix.mc }} --no-daemon
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
@@ -74,12 +97,12 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.cache/msm-fabric-server
-          key: fabric-server-geckolib-${{ hashFiles('packages/targets/*/src/target.ts') }}
+          key: fabric-server-geckolib-mc${{ matrix.mc }}-${{ hashFiles('packages/targets/*/src/target.ts') }}
       - name: Find the msm_runtime jar
         run: |
-          mapfile -t jars < <(ls "$GITHUB_WORKSPACE"/engine-mod/build/libs/msm_runtime-*.jar | grep -v -e '-sources\.jar$' -e '-dev\.jar$')
+          mapfile -t jars < <(ls "$GITHUB_WORKSPACE"/engine-mod/build/libs/msm_runtime-*+mc${{ matrix.mc }}.jar | grep -v -e '-sources\.jar$' -e '-dev\.jar$')
           if [ "${#jars[@]}" -ne 1 ]; then
-            echo "::error::Expected one msm_runtime jar in engine-mod/build/libs, found ${#jars[@]}: ${jars[*]}"
+            echo "::error::Expected one msm_runtime +mc${{ matrix.mc }} jar in engine-mod/build/libs, found ${#jars[@]}: ${jars[*]}"
             exit 1
           fi
           echo "Runtime jar: ${jars[0]}"
@@ -90,12 +113,25 @@ jobs:
             pnpm --filter @msm/exporters exec vitest run test/sample-mod.golden.test.ts
           test -f "$RUNNER_TEMP/sample-mod/msm_sample_mod.jar"
           cat "$RUNNER_TEMP/sample-mod/fabric-facts.json"
+      # The facts file comes from the target (MSM_TARGET_ID); its game version must be the one
+      # this runtime was built against, or the server below would start the wrong game.
+      - name: Check the facts name this Minecraft version
+        run: |
+          actual=$(node -p 'JSON.parse(require("node:fs").readFileSync(process.argv[1], "utf8")).minecraft' "$RUNNER_TEMP/sample-mod/fabric-facts.json")
+          if [ "$actual" != "${{ steps.facts.outputs.minecraft }}" ]; then
+            echo "::error::fabric-facts.json names Minecraft $actual, engine-mod/versions/${{ matrix.mc }}.properties ${{ steps.facts.outputs.minecraft }} (is MSM_TARGET_ID honoured?)"
+            exit 1
+          fi
       - name: Export the sample mob with the real runtime and GeckoLib
+        if: steps.facts.outputs.geckolib == 'true'
         run: |
           MSM_GECKOLIB_JAR="$HOME/.cache/msm-fabric-server/geckolib.jar" MSM_SAMPLE_MOB_OUT="$RUNNER_TEMP/sample-mob" \
             pnpm --filter @msm/exporters exec vitest run test/sample-mob.golden.test.ts
           test -f "$RUNNER_TEMP/sample-mob/msm_sample_mob.jar"
           cat "$RUNNER_TEMP/sample-mob/fabric-facts.json"
+      - name: Sample mob skipped (no GeckoLib for this version)
+        if: steps.facts.outputs.geckolib != 'true'
+        run: echo "::notice::No GeckoLib build for Minecraft ${{ matrix.mc }} (blank geckolib_modrinth_version_id in engine-mod/versions/${{ matrix.mc }}.properties); the sample mob export, server check and parity runs are skipped."
       - name: Headless Fabric server check (sample mod)
         run: >-
           node tools/run-fabric-server/index.ts
@@ -104,6 +140,7 @@ jobs:
           --work "$RUNNER_TEMP/fabric-server"
           --cache ~/.cache/msm-fabric-server
       - name: Headless Fabric server check (sample mob, GeckoLib nested)
+        if: steps.facts.outputs.geckolib == 'true'
         run: >-
           node tools/run-fabric-server/index.ts
           --jar "$RUNNER_TEMP/sample-mob/msm_sample_mob.jar"
@@ -130,14 +167,17 @@ jobs:
       - name: Build the parity GameTests
         working-directory: engine-mod
         run: |
-          ./gradlew -p parity build --no-daemon
-          mapfile -t jars < <(ls "$GITHUB_WORKSPACE"/engine-mod/parity/build/libs/msm_parity_tests-*.jar | grep -v -e '-sources\.jar$')
+          ./gradlew -p parity build -Pmc=${{ matrix.mc }} --no-daemon
+          mapfile -t jars < <(ls "$GITHUB_WORKSPACE"/engine-mod/parity/build/libs/msm_parity_tests-*+mc${{ matrix.mc }}.jar | grep -v -e '-sources\.jar$')
           if [ "${#jars[@]}" -ne 1 ]; then
-            echo "::error::Expected one msm_parity_tests jar, found ${#jars[@]}: ${jars[*]}"
+            echo "::error::Expected one msm_parity_tests +mc${{ matrix.mc }} jar, found ${#jars[@]}: ${jars[*]}"
             exit 1
           fi
           echo "MSM_PARITY_JAR=${jars[0]}" >> "$GITHUB_ENV"
+      # The Java project eject and the ejected parity runs: 26.3 only until the other versions'
+      # Java generators are confirmed (ADR 0038 D5).
       - name: Export the sample mod and the sample mob as Java projects
+        if: matrix.mc == '26.3'
         run: |
           MSM_SAMPLE_MOD_JAVA_OUT="$RUNNER_TEMP/java/sample-mod" \
             pnpm --filter @msm/exporters exec vitest run test/sample-mod.java.golden.test.ts
@@ -148,12 +188,15 @@ jobs:
       # Each written project builds with its own wrapper; the Gradle cache above holds the 26.3
       # artefacts. Loom's "(kSxHvs99) is not valid semver" line for the nested GeckoLib is harmless.
       - name: Build the ejected sample mod
+        if: matrix.mc == '26.3'
         working-directory: ${{ runner.temp }}/java/sample-mod
         run: ./gradlew build --no-daemon
       - name: Build the ejected sample mob
+        if: matrix.mc == '26.3'
         working-directory: ${{ runner.temp }}/java/sample-mob
         run: ./gradlew build --no-daemon
       - name: Find the ejected jars
+        if: matrix.mc == '26.3'
         run: |
           for sample in mod mob; do
             mapfile -t jars < <(ls "$RUNNER_TEMP/java/sample-$sample"/build/libs/msm_sample_$sample-*.jar | grep -v -e '-sources\.jar$')
@@ -164,8 +207,8 @@ jobs:
             echo "Ejected sample-$sample jar: ${jars[0]}"
             echo "MSM_EJECTED_${sample^^}_JAR=${jars[0]}" >> "$GITHUB_ENV"
           done
-      # The four parity runs share one run folder (the game server is downloaded once); each
-      # writes its own report. The filter picks the sample's tests from the one parity jar.
+      # The parity runs share one run folder (the game server is downloaded once); each writes
+      # its own report. The filter picks the sample's tests from the one parity jar.
       - name: Parity GameTests (sample mod, content jar)
         run: >-
           node tools/run-fabric-server/index.ts
@@ -176,6 +219,7 @@ jobs:
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
       - name: Parity GameTests (sample mod, ejected jar)
+        if: matrix.mc == '26.3'
         run: >-
           node tools/run-fabric-server/index.ts
           --jar "$MSM_EJECTED_MOD_JAR"
@@ -185,6 +229,7 @@ jobs:
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
       - name: Parity GameTests (sample mob, content jar)
+        if: steps.facts.outputs.geckolib == 'true'
         run: >-
           node tools/run-fabric-server/index.ts
           --jar "$RUNNER_TEMP/sample-mob/msm_sample_mob.jar"
@@ -194,6 +239,7 @@ jobs:
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
       - name: Parity GameTests (sample mob, ejected jar)
+        if: matrix.mc == '26.3'
         run: >-
           node tools/run-fabric-server/index.ts
           --jar "$MSM_EJECTED_MOB_JAR"
@@ -202,28 +248,29 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-mob-ejected.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
+      # Artifact names carry the version: matrix jobs may not upload the same name twice.
       - if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: msm-sample-mod
+          name: msm-sample-mod-mc${{ matrix.mc }}
           path: ${{ runner.temp }}/sample-mod/msm_sample_mod.jar
           if-no-files-found: ignore
       - if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: msm-sample-mob
+          name: msm-sample-mob-mc${{ matrix.mc }}
           path: ${{ runner.temp }}/sample-mob/msm_sample_mob.jar
           if-no-files-found: ignore
       - if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: msm-sample-script
+          name: msm-sample-script-mc${{ matrix.mc }}
           path: ${{ runner.temp }}/sample-script/msm_sample_script.jar
           if-no-files-found: ignore
       - if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: msm-ejected-jars
+          name: msm-ejected-jars-mc${{ matrix.mc }}
           path: |
             ${{ runner.temp }}/java/sample-mod/build/libs/*.jar
             ${{ runner.temp }}/java/sample-mob/build/libs/*.jar
@@ -231,13 +278,13 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: parity-gametest-reports
+          name: parity-gametest-reports-mc${{ matrix.mc }}
           path: ${{ runner.temp }}/parity-reports
           if-no-files-found: ignore
       - if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: engine-mod-logs
+          name: engine-mod-logs-mc${{ matrix.mc }}
           path: |
             engine-mod/build/run/gameTest/logs
             engine-mod/build/reports/tests

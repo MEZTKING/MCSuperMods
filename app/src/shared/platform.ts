@@ -8,8 +8,15 @@
 
 import type { ProjectFileSystem } from '@msm/core';
 // Type-only: the service itself runs in main (ADR 0014); these are plain MSM shapes.
+import type { Problem } from '@msm/plugin-api';
 import type { McfunctionCompletion, McfunctionProblem } from '@msm/schemas/mcfunction';
-import type { MenuCommand, MinecraftProgress, UpdateStatus, VendoredKeyName } from './ipc-channels';
+import type {
+  MenuCommand,
+  MinecraftProgress,
+  PluginCapability,
+  UpdateStatus,
+  VendoredKeyName,
+} from './ipc-channels';
 
 /** The outcome of opening or creating a project root. */
 export type RootResult = { ok: true } | { ok: false; reason: string };
@@ -300,6 +307,52 @@ export type WriteTreeResult =
   | { ok: true; root: string; count: number }
   | { ok: false; reason: 'folder-not-empty'; root: string };
 
+/**
+ * A third-party plugin's manifest, `msm-plugin.json` (ADR 0035 D2), as main validated it.
+ * `main` and `schemas` are relative paths inside the plugin folder.
+ */
+export interface PluginManifest {
+  manifestVersion: 1;
+  /** `/^[a-z][a-z0-9.-]*$/`; its first `.`-separated segment is the plugin's namespace. */
+  id: string;
+  name: string;
+  /** The plugin's own version (semver). */
+  version: string;
+  /** The plugin API range the plugin needs, such as `^1.0.0`. */
+  apiVersion: string;
+  /** The single-file bundle. */
+  main: string;
+  /** mcdoc symbol exports (mcdoc-cli format); empty when the plugin has none. */
+  schemas: string[];
+  /** The contribution points the bundle uses. */
+  capabilities: PluginCapability[];
+  description?: string | undefined;
+  author?: string | undefined;
+  licence?: string | undefined;
+  homepage?: string | undefined;
+}
+
+/** One folder under `<msmHome>/plugins/`, with its manifest when it is valid. */
+export interface ExternalPluginEntry {
+  /** The manifest's `id`, or the folder name when the manifest is unusable. */
+  id: string;
+  /** The folder name (one path segment). */
+  folder: string;
+  /** The validated manifest, or `null` (then `problems` says why). */
+  manifest: PluginManifest | null;
+  /** `plugin.manifest-invalid` problems; empty for a usable manifest. */
+  problems: Problem[];
+}
+
+/** What the renderer needs to start a plugin: its manifest, bundle text and schema exports. */
+export interface ExternalPluginBundle {
+  manifest: PluginManifest;
+  /** The `main` bundle as UTF-8 text. */
+  main: string;
+  /** Each `schemas` file's text, in manifest order. */
+  schemas: string[];
+}
+
 /** Host services for the renderer. */
 export interface PlatformAdapter {
   app: {
@@ -504,6 +557,21 @@ export interface PlatformAdapter {
   };
   /** File access scoped to the current project root. Rejects when no root is open. */
   fs: ProjectFileSystem;
+  /**
+   * Third-party plugins in `<msmHome>/plugins/` (ADR 0035). The preload always provides it;
+   * optional so that test doubles written before Phase 7 may omit it (no external plugins).
+   */
+  plugins?: {
+    /** Every plugin folder (sorted by folder name) with its manifest or problems. */
+    list(): Promise<ExternalPluginEntry[]>;
+    /**
+     * Reads one plugin's bundle and schema files. Rejects with a message starting with
+     * `plugin.too-large` or `plugin.manifest-invalid` when they cannot be served.
+     */
+    read(id: string): Promise<ExternalPluginBundle>;
+    /** Creates `<msmHome>/plugins/` when missing and opens it in the OS file manager. */
+    openFolder(): Promise<void>;
+  };
 }
 
 /** What the preload exposes as `window.msm`: the adapter plus window-level events. */
@@ -526,9 +594,4 @@ export interface MsmBridge extends PlatformAdapter {
    * `window.msmNoMonaco` so headless smoke runs skip Monaco. Optional so test doubles may omit it.
    */
   readonly isSmoke?: boolean;
-  /**
-   * `true` when the app runs under the e2e hooks (`MSM_E2E_PROJECT_DIR` set). The renderer then
-   * installs test-only hooks such as `window.__msmSandboxSpike` (B150). Optional for test doubles.
-   */
-  readonly isE2e?: boolean;
 }

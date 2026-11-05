@@ -1,0 +1,189 @@
+[
+  {
+    "contents": {
+      "category": "creature",
+      "components": {
+        "msm:ai_goals": {
+          "goals": [
+            {
+              "avoid_water": true,
+              "speed": 1,
+              "type": "wander"
+            },
+            {
+              "distance": 8,
+              "type": "look_at_player"
+            },
+            {
+              "type": "look_around"
+            },
+            {
+              "must_see": true,
+              "priority": 1,
+              "retaliate": true,
+              "speed": 1.2,
+              "targets": [
+                "minecraft:zombie"
+              ],
+              "type": "melee_attack"
+            },
+            {
+              "distance": 6,
+              "from": [
+                "minecraft:creeper"
+              ],
+              "speed": 1,
+              "sprint_speed": 1.2,
+              "type": "flee"
+            },
+            {
+              "entities": [
+                "minecraft:player"
+              ],
+              "range": 16,
+              "speed": 1,
+              "stop_distance": 2,
+              "type": "follow"
+            }
+          ]
+        },
+        "msm:animated_model": {
+          "animations": "example:entity/ruby_golem_animations",
+          "attack": "attack",
+          "idle": "idle",
+          "model": "example:entity/ruby_golem",
+          "scale": 1,
+          "texture": "example:entity/ruby_golem",
+          "transition_ticks": 2,
+          "walk": "walk"
+        },
+        "msm:attack": {
+          "damage": 4,
+          "knockback": 0.5,
+          "on_attack": "example:thump"
+        },
+        "msm:health": {
+          "max": 30
+        },
+        "msm:movement": {
+          "fire_immune": false,
+          "follow_range": 24,
+          "knockback_resistance": 0.2,
+          "speed": 0.28,
+          "swims": true
+        },
+        "msm:on_death": {
+          "event": "example:shatter"
+        },
+        "msm:on_hurt": {
+          "event": "example:ouch"
+        },
+        "msm:on_interact": {
+          "event": "example:pat"
+        }
+      },
+      "events": {
+        "example:ouch": {
+          "actions": [
+            {
+              "animation": "idle",
+              "controller": "msm_triggered",
+              "type": "play_animation"
+            }
+          ]
+        },
+        "example:pat": {
+          "actions": [
+            {
+              "event": "example:ouch",
+              "type": "trigger_event"
+            }
+          ]
+        },
+        "example:shatter": {
+          "actions": [
+            {
+              "count": 12,
+              "particle": "minecraft:crit",
+              "spread": 0.5,
+              "type": "spawn_particle"
+            },
+            {
+              "function": "example:golem/death",
+              "type": "run_function"
+            }
+          ]
+        },
+        "example:thump": {
+          "actions": [
+            {
+              "sound": "minecraft:entity.iron_golem.attack",
+              "type": "play_sound"
+            },
+            {
+              "animation": "attack",
+              "type": "play_animation"
+            }
+          ]
+        }
+      },
+      "eye_height": 1.4,
+      "format": 1,
+      "loot_table": "example:entities/ruby_golem_rare",
+      "size": {
+        "height": 1.6,
+        "width": 0.9
+      },
+      "spawn": {
+        "biomes": [
+          "#minecraft:is_forest",
+          "minecraft:plains"
+        ],
+        "heightmap": "motion_blocking_no_leaves",
+        "max_group": 2,
+        "min_group": 1,
+        "placement": "on_ground",
+        "rule": "mob",
+        "weight": 6
+      },
+      "spawn_egg": {
+        "creative_tab": "minecraft:spawn_eggs"
+      }
+    },
+    "layer": "msm",
+    "path": "msm/example/entity/ruby_golem.json",
+    "schema": "msm:entity_definition"
+  },
+  {
+    "contents": {
+      "entity.example.ruby_golem": "Ruby Golem",
+      "item.example.ruby_golem_spawn_egg": "Golem Egg"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/ruby_golem_spawn_egg",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_golem_spawn_egg.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:item/ruby_golem_spawn_egg"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/ruby_golem_spawn_egg.json",
+    "schema": "resource:model"
+  }
+]

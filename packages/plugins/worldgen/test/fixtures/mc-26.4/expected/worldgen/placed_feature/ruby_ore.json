@@ -1,0 +1,32 @@
+{
+  "contents": {
+    "feature": "example:ruby_ore",
+    "placement": [
+      {
+        "count": 4,
+        "type": "minecraft:count"
+      },
+      {
+        "type": "minecraft:in_square"
+      },
+      {
+        "height": {
+          "max_inclusive": {
+            "absolute": 32
+          },
+          "min_inclusive": {
+            "absolute": -32
+          },
+          "type": "minecraft:trapezoid"
+        },
+        "type": "minecraft:height_range"
+      },
+      {
+        "type": "minecraft:biome"
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/worldgen/placed_feature/ruby_ore.json",
+  "schema": "resource:worldgen/placed_feature"
+}

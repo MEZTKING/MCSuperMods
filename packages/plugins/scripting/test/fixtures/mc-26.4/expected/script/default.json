@@ -1,0 +1,9 @@
+[
+  {
+    "language": "typescript",
+    "layer": "msm",
+    "path": "msm/demo/script/sample.ts",
+    "schema": null,
+    "text": "import { msm } from \"msm:runtime\";\n\nmsm.events.on(\"block.interact\", (e) => {\n  msm.log.info(`${e.player.name} used ${e.block.id}`);\n});\n"
+  }
+]

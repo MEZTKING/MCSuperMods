@@ -1,0 +1,33 @@
+[
+  {
+    "contents": {
+      "creative_tab": "minecraft:ingredients",
+      "format": 1,
+      "max_stack_size": 64,
+      "rarity": "uncommon"
+    },
+    "layer": "msm",
+    "path": "msm/example/item/ruby.json",
+    "schema": "msm:item_definition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/ruby",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "item.example.ruby": "Ruby"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

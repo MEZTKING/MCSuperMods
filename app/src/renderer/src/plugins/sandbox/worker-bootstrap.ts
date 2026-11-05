@@ -1,17 +1,22 @@
 /**
- * The worker bootstrap (ADR 0035 D1, D3). Spike quality (B150); B154 replaces it.
+ * The worker bootstrap (ADR 0035 D1, D3).
  *
- * {@link workerBootstrap} is serialised with `Function.prototype.toString` and concatenated in
- * front of the plugin bundle in one `Blob`, so it must be self-contained: it may reference
- * nothing outside its own body (type imports are erased). The plugin bundle then calls
- * `defineMsmPlugin(plugin)` once at its top level.
+ * {@link workerBootstrap} is serialised with `Function.prototype.toString` (B150: survives the
+ * minified build and needs no request) and concatenated in front of the plugin bundle in one
+ * `Blob`, so it must be self-contained: it may reference nothing outside its own body (type
+ * imports are erased). The plugin bundle then calls `defineMsmPlugin(plugin)` once at its top
+ * level.
+ *
+ * The network boundary is the document's CSP, which a `blob:` worker inherits (B150); the
+ * bootstrap also removes network globals (defence in depth) and the storage globals, which the
+ * CSP does not govern (`indexedDB`, `caches`, `navigator.storage`).
  *
  * @packageDocumentation
  */
 
 import type { SandboxRequest } from './protocol';
 
-/** The globals the bootstrap removes from the worker scope when `strip` is set (defence in depth). */
+/** The globals the bootstrap removes from the worker scope before the plugin runs. */
 export const STRIPPED_GLOBALS = [
   'fetch',
   'XMLHttpRequest',
@@ -27,14 +32,20 @@ export const STRIPPED_GLOBALS = [
   'SharedWorker',
 ] as const;
 
+/** How many registry snapshots a worker keeps (the host resends an evicted one). */
+export const REGISTRY_SNAPSHOTS_KEPT = 4;
+
 /**
- * Runs first inside the worker. Captures `postMessage` and the message listener, optionally
- * removes network and storage globals, installs `defineMsmPlugin`, and answers requests.
+ * Runs first inside the worker. Captures `postMessage` and the message listener, removes
+ * network and storage globals, installs `defineMsmPlugin`, and answers requests.
  *
- * @param strip - Whether to remove {@link STRIPPED_GLOBALS} and `navigator.storage`.
- * @param stripped - The names to remove (passed in because the function cannot see the module).
+ * A function that throws answers its request with `plugin.crashed` and leaves the worker
+ * running; a result that is not JSON or `Uint8Array` answers with `plugin.bad-result`.
+ *
+ * @param stripped - The global names to remove (passed in: the function cannot see the module).
+ * @param keep - How many registry snapshots to keep.
  */
-export function workerBootstrap(strip: boolean, stripped: readonly string[]): void {
+export function workerBootstrap(stripped: readonly string[], keep: number): void {
   type Fn = (...args: unknown[]) => unknown;
   type Obj = Record<string, unknown>;
   interface Scope {
@@ -68,10 +79,10 @@ export function workerBootstrap(strip: boolean, stripped: readonly string[]): vo
       // Already non-configurable on the object itself.
     }
   };
-  if (strip) {
-    for (const name of stripped) remove(scope, name);
-    remove(scope.navigator, 'storage');
-  }
+  for (const name of stripped) remove(scope, name);
+  remove(scope.navigator, 'storage');
+  // Only the bootstrap answers the host: the plugin cannot post messages of its own.
+  remove(scope, 'postMessage');
 
   const isUint8Array = (value: unknown): boolean =>
     ArrayBuffer.isView(value) && Object.prototype.toString.call(value) === '[object Uint8Array]';
@@ -90,7 +101,9 @@ export function workerBootstrap(strip: boolean, stripped: readonly string[]): vo
         if (Array.isArray(value)) return value.every((item) => cloneable(item, depth + 1));
         const proto = Object.getPrototypeOf(value) as unknown;
         if (proto !== Object.prototype && proto !== null) return false;
-        return Object.values(value as Obj).every((item) => cloneable(item, depth + 1));
+        return Object.values(value as Obj).every(
+          (item) => item === undefined || cloneable(item, depth + 1),
+        );
       }
       default:
         return false;
@@ -104,7 +117,7 @@ export function workerBootstrap(strip: boolean, stripped: readonly string[]): vo
     if (Array.isArray(value)) return value.map((item) => dataOnly(item, depth + 1));
     const out: Obj = {};
     for (const [key, item] of Object.entries(value as Obj)) {
-      if (typeof item !== 'function') out[key] = dataOnly(item, depth + 1);
+      if (typeof item !== 'function' && item !== undefined) out[key] = dataOnly(item, depth + 1);
     }
     return out;
   };
@@ -126,60 +139,79 @@ export function workerBootstrap(strip: boolean, stripped: readonly string[]): vo
     return (fn as Fn).apply(target, args);
   };
 
+  /** `x` reads as `minecraft:x`; a registry name may carry `minecraft:`. */
+  const namespaced = (id: string): string => (id.includes(':') ? id : `minecraft:${id}`);
+  const registryName = (name: string): string =>
+    name.startsWith('minecraft:') ? name.slice('minecraft:'.length) : name;
+  const registryView = (snapshot: Map<string, Set<string>>) => ({
+    has(name: string, id: string): boolean {
+      const registry = registryName(String(name));
+      const value = String(id);
+      if (value.startsWith('#')) {
+        const tags = snapshot.get(`tag/${registry}`);
+        return tags === undefined ? true : tags.has(namespaced(value.slice(1)));
+      }
+      return snapshot.get(registry)?.has(namespaced(value)) ?? false;
+    },
+    ids(name: string): readonly string[] {
+      return [...(snapshot.get(registryName(String(name))) ?? [])];
+    },
+  });
+
   const handle = async (request: SandboxRequest): Promise<unknown> => {
-    const [first, second, third, fourth] = request.args;
+    const args = request.args;
     switch (request.method) {
       case 'lower':
-        return invoke(contribution('elementKinds', first), 'lower', [second, third]);
+        return invoke(contribution('elementKinds', args[0]), 'lower', [args[1], args[2]]);
       case 'data':
-        return invoke(contribution('elementTemplates', first), 'data', [second]);
+        return invoke(contribution('elementTemplates', args[0]), 'data', [args[1]]);
       case 'build': {
-        let entry: Obj;
-        try {
-          entry = contribution('projectStarters', first);
-        } catch {
-          entry = contribution('examples', first);
-        }
-        return invoke(entry, 'build', [second]);
+        const point = args[0] === 'examples' ? 'examples' : 'projectStarters';
+        return invoke(contribution(point, args[1]), 'build', [args[2]]);
       }
       case 'validate': {
-        const key = String(third);
-        if (fourth !== undefined && fourth !== null) {
+        const key = String(args[2]);
+        const sent = args[3];
+        if (sent !== undefined && sent !== null) {
           const map = new Map<string, Set<string>>();
-          for (const [name, ids] of Object.entries(fourth as Record<string, string[]>)) {
+          for (const [name, ids] of Object.entries(sent as Record<string, string[]>)) {
             map.set(name, new Set(ids));
           }
+          registries.delete(key);
           registries.set(key, map);
+          while (registries.size > keep) {
+            const oldest = registries.keys().next().value;
+            if (oldest === undefined) break;
+            registries.delete(oldest);
+          }
         }
         const snapshot = registries.get(key);
         if (snapshot === undefined) throw new Error(`Unknown registry snapshot ${key}.`);
-        const registry = {
-          has: (name: string, id: string): boolean => snapshot.get(name)?.has(id) ?? false,
-          ids: (name: string): readonly string[] => [...(snapshot.get(name) ?? [])],
-        };
-        const input = { ...(second as Obj), registry };
-        return invoke(contribution('validators', first), 'validate', [input]);
+        const input = { ...(args[1] as Obj), registry: registryView(snapshot) };
+        return invoke(contribution('validators', args[0]), 'validate', [input]);
       }
       case 'run': {
         const sink = {
-          writeFile: async (path: string, contents: Uint8Array): Promise<void> => {
+          writeFile: async (path: unknown, contents: unknown): Promise<void> => {
             post({ type: 'callback', id: request.id, op: 'writeFile', args: [path, contents] });
           },
         };
         const problems = {
           report: (problem: unknown): void => {
-            post({ type: 'callback', id: request.id, op: 'report', args: [problem] });
+            post({
+              type: 'callback',
+              id: request.id,
+              op: 'report',
+              args: [cloneable(problem, 0) ? problem : null],
+            });
           },
         };
-        const input = { ...(second as Obj), sink, problems };
-        await invoke(contribution('exporters', first), 'run', [input]);
+        const input = { ...(args[1] as Obj), sink, problems };
+        await invoke(contribution('exporters', args[0]), 'run', [input]);
         return null;
       }
       case 'import':
-        return invoke(contribution('importers', first), 'import', [second, third]);
-      case 'call':
-        if (plugin === null) throw new Error('No plugin registered.');
-        return invoke(plugin, String(first), request.args.slice(1));
+        return invoke(contribution('importers', args[0]), 'import', [args[1], args[2]]);
       default:
         throw new Error(`Unknown method ${String(request.method)}.`);
     }
@@ -203,12 +235,18 @@ export function workerBootstrap(strip: boolean, stripped: readonly string[]): vo
         }
         post({ type: 'response', id: request.id, ok: true, value: value ?? null });
       } catch (error) {
+        let message: string;
+        try {
+          message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+        } catch {
+          message = 'The plugin threw a value that cannot be shown.';
+        }
         post({
           type: 'response',
           id: request.id,
           ok: false,
           code: 'plugin.crashed',
-          message: error instanceof Error ? `${error.name}: ${error.message}` : String(error),
+          message: message.slice(0, 2000),
         });
       }
     })();
@@ -218,7 +256,7 @@ export function workerBootstrap(strip: boolean, stripped: readonly string[]): vo
   scope.defineMsmPlugin = (candidate: unknown): void => {
     if (registered) throw new Error('defineMsmPlugin may be called once.');
     registered = true;
-    plugin = candidate as Obj;
+    plugin = typeof candidate === 'object' && candidate !== null ? (candidate as Obj) : null;
   };
 
   // Microtasks run once the whole classic script (bootstrap plus plugin) has been evaluated.
@@ -228,17 +266,22 @@ export function workerBootstrap(strip: boolean, stripped: readonly string[]): vo
       post({
         type: 'fatal',
         code: 'plugin.crashed',
-        message: 'The bundle never called defineMsmPlugin.',
+        message: 'The bundle never called defineMsmPlugin with a plugin object.',
       });
       return;
     }
     const contributes: Record<string, { data: unknown; functions: string[] }[]> = {};
-    for (const [point, list] of Object.entries((plugin.contributes as Obj | undefined) ?? {})) {
+    const raw = plugin.contributes;
+    for (const [point, list] of Object.entries(
+      typeof raw === 'object' && raw !== null ? (raw as Obj) : {},
+    )) {
       if (!Array.isArray(list)) continue;
-      contributes[point] = (list as Obj[]).map((entry) => ({
-        data: dataOnly(entry, 0),
-        functions: Object.keys(entry).filter((key) => typeof entry[key] === 'function'),
-      }));
+      contributes[point] = (list as unknown[])
+        .filter((entry): entry is Obj => typeof entry === 'object' && entry !== null)
+        .map((entry) => ({
+          data: dataOnly(entry, 0),
+          functions: Object.keys(entry).filter((key) => typeof entry[key] === 'function'),
+        }));
     }
     post({
       type: 'ready',
@@ -247,11 +290,7 @@ export function workerBootstrap(strip: boolean, stripped: readonly string[]): vo
   });
 }
 
-/**
- * The bootstrap's source text, ready to be followed by a plugin bundle.
- *
- * @param strip - Whether the bootstrap removes network and storage globals.
- */
-export function bootstrapSource(strip: boolean): string {
-  return `(${workerBootstrap.toString()})(${JSON.stringify(strip)}, ${JSON.stringify(STRIPPED_GLOBALS)});\n`;
+/** The bootstrap's source text, ready to be followed by a plugin bundle. */
+export function bootstrapSource(): string {
+  return `(${workerBootstrap.toString()})(${JSON.stringify(STRIPPED_GLOBALS)}, ${REGISTRY_SNAPSHOTS_KEPT});\n`;
 }

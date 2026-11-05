@@ -74,6 +74,7 @@ import {
   nestedRuntimePath,
   runExport,
 } from '../src/index';
+import { defaultTarget, selectedTarget } from './selected-target';
 
 const update = process.env.UPDATE_GOLDENS === '1';
 
@@ -416,7 +417,7 @@ const EXPECTED_ENTITIES = SAMPLE_ELEMENTS.filter((entry) => entry.kind === 'msm:
 /** Builds the sample into a project the way the app's `newProject` does, then saves it. */
 async function buildSample(): Promise<MemoryFileSystem> {
   const project = createEmptyProject(PROJECT_NAME, {
-    targets: [builtInTargets[0]?.target.id as string],
+    targets: [defaultTarget().target.id],
     plugins: PLUGINS.filter((plugin) => (plugin.contributes.elementKinds ?? []).length > 0).map(
       (plugin) => plugin.id,
     ),
@@ -906,12 +907,12 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     const runtimeJarPath = process.env.MSM_RUNTIME_JAR;
     const geckolibJarPath = process.env.MSM_GECKOLIB_JAR;
     const outDir = process.env.MSM_SAMPLE_MOB_OUT;
-    const isFirstTarget = bundle === builtInTargets[0];
+    const isSelectedTarget = bundle === selectedTarget();
     it.runIf(
       runtimeJarPath !== undefined &&
         geckolibJarPath !== undefined &&
         outDir !== undefined &&
-        isFirstTarget,
+        isSelectedTarget,
     )(
       'writes the jar with the real runtime and GeckoLib for the headless server check',
       async () => {

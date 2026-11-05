@@ -49,6 +49,7 @@ import { unzipSync, zipSync } from 'fflate';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createZipSink, dataPackExporter, resourcePackExporter, runExport } from '../src/index';
 import { chainWalk } from './chain-walk';
+import { defaultTarget } from './selected-target';
 
 const update = process.env.UPDATE_GOLDENS === '1';
 
@@ -89,11 +90,11 @@ async function buildSample(): Promise<MemoryFileSystem> {
   const bundle = await starter.build({
     namespace: NAMESPACE,
     projectName: PROJECT_NAME,
-    target: (builtInTargets[0] as (typeof builtInTargets)[number]).target,
+    target: defaultTarget().target,
     values: {},
   });
   const project = createEmptyProject(PROJECT_NAME, {
-    targets: [builtInTargets[0]?.target.id as string],
+    targets: [defaultTarget().target.id],
     plugins: PLUGINS.filter((plugin) => (plugin.contributes.elementKinds ?? []).length > 0).map(
       (plugin) => plugin.id,
     ),

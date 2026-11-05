@@ -19,6 +19,7 @@ import {
   cubeCreatureAnimations,
   cubeCreatureGeometry,
 } from '../content/entities';
+import { hasGeckolib } from '../content/supports';
 import { defineExample } from './define';
 
 type Shape = 'biped' | 'cube';
@@ -92,6 +93,7 @@ function mob(input: MobInput): ContentBundle {
 export const entityKindExamples: readonly ExampleProject[] = [
   defineExample({
     id: 'example_msm_entity',
+    supports: hasGeckolib,
     title: 'Wandering creature',
     description:
       'A peaceful mob that strolls about, looks at players and has a spawn egg, with its model, animations and textures.',
@@ -133,6 +135,7 @@ export const entityKindExamples: readonly ExampleProject[] = [
   }),
   defineExample({
     id: 'example_msm_geo_model',
+    supports: hasGeckolib,
     title: 'Cube creature model',
     description:
       'A box-shaped GeckoLib model with a body and a head bone over a 64x64 texture, shown on a small mob.',
@@ -167,6 +170,7 @@ export const entityKindExamples: readonly ExampleProject[] = [
   }),
   defineExample({
     id: 'example_msm_animation',
+    supports: hasGeckolib,
     title: 'Idle and walk animations',
     description:
       'An idle bob and a walk cycle that swings the arms and legs of a biped model, shown on a small mob.',
@@ -204,6 +208,7 @@ export const entityKindExamples: readonly ExampleProject[] = [
 export const entityBehaviourExamples: readonly ExampleProject[] = [
   defineExample({
     id: 'example_msm_hostile_mob',
+    supports: hasGeckolib,
     title: 'Hostile mob',
     description:
       'A monster that chases and hits players, fights back when hurt and spawns in the dark.',
@@ -263,6 +268,7 @@ export const entityBehaviourExamples: readonly ExampleProject[] = [
   }),
   defineExample({
     id: 'example_msm_natural_spawn',
+    supports: hasGeckolib,
     title: 'Natural spawning',
     description:
       'A creature that spawns on its own in forests and plains, using a biome tag and a biome id.',

@@ -1,3 +1,4 @@
+import java.io.StringReader
 import java.util.Properties
 
 plugins {
@@ -11,7 +12,7 @@ val mc: String = providers.gradleProperty("mc").orNull ?: providers.gradleProper
 fun readVersionFacts(selected: String): Properties {
     val file = layout.projectDirectory.file("versions/$selected.properties")
     require(file.asFile.isFile) { "No engine-mod/versions/$selected.properties for -Pmc=$selected" }
-    return Properties().also { it.load(java.io.StringReader(providers.fileContents(file).asText.get())) }
+    return Properties().also { it.load(StringReader(providers.fileContents(file).asText.get())) }
 }
 val versionFacts: Properties = readVersionFacts(mc)
 

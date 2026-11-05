@@ -1,0 +1,17 @@
+[
+  {
+    "contents": {
+      "depends": {
+        "fabric-api": "*",
+        "fabricloader": ">=0.20.1",
+        "minecraft": ">=26.4- <26.5-"
+      },
+      "environment": "*",
+      "id": "my_mod",
+      "schemaVersion": 1,
+      "version": "1.0.0"
+    },
+    "layer": "msm",
+    "path": "fabric.mod.json"
+  }
+]

@@ -1,5 +1,7 @@
 /**
- * The main window: sandboxed renderer, typed preload, unsaved-changes prompt on close.
+ * The main window: sandboxed renderer, typed preload, unsaved-changes prompt on close. In
+ * production the renderer is loaded from the privileged `msm-app://app/` scheme, not from
+ * `file:` (ADR 0035 D1a); in development from electron-vite's dev server.
  *
  * @packageDocumentation
  */
@@ -7,6 +9,23 @@
 import { fileURLToPath } from 'node:url';
 import { BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import { EventChannels } from '../shared/ipc-channels';
+import { APP_INDEX_URL, serveAppScheme } from './app-scheme';
+
+/** The built renderer folder (`out/renderer/`, inside `app.asar` when packaged). */
+export const RENDERER_DIR = fileURLToPath(new URL('../renderer/', import.meta.url));
+
+let schemeServed = false;
+
+/**
+ * Serves the built renderer on `msm-app://app/` (ADR 0035 D1a). Call after `app.ready`;
+ * {@link createMainWindow} calls it on first use. `registerAppSchemePrivileges` must have run
+ * before `app.ready` (see `index.ts`).
+ */
+export function serveRenderer(): void {
+  if (schemeServed) return;
+  schemeServed = true;
+  serveAppScheme(RENDERER_DIR);
+}
 
 const dirtyWindows = new Set<number>();
 
@@ -65,7 +84,8 @@ export function createMainWindow(options: { show?: boolean } = {}): BrowserWindo
   if (devUrl !== undefined && devUrl !== '') {
     void window.loadURL(devUrl);
   } else {
-    void window.loadFile(fileURLToPath(new URL('../renderer/index.html', import.meta.url)));
+    serveRenderer();
+    void window.loadURL(APP_INDEX_URL);
   }
   return window;
 }

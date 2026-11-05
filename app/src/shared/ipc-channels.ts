@@ -60,6 +60,9 @@ export const InvokeChannels = {
   updatesInstall: 'msm:v1:updates:install',
   updatesCurrent: 'msm:v1:updates:current',
   appWhatsNewOnLaunch: 'msm:v1:app:whatsNewOnLaunch',
+  pluginsList: 'msm:v1:plugins:list',
+  pluginsRead: 'msm:v1:plugins:read',
+  pluginsOpenFolder: 'msm:v1:plugins:openFolder',
 } as const;
 
 /**
@@ -251,3 +254,68 @@ export function isUpdateStatus(value: unknown): value is UpdateStatus {
       return false;
   }
 }
+
+/**
+ * The contribution points an external plugin may declare in `msm-plugin.json`
+ * (`capabilities`, ADR 0035 D2).
+ */
+export const PLUGIN_CAPABILITIES = [
+  'elementKinds',
+  'elementTemplates',
+  'projectStarters',
+  'examples',
+  'validators',
+  'exporters',
+  'importers',
+] as const;
+
+/** A capability an external plugin may declare. */
+export type PluginCapability = (typeof PLUGIN_CAPABILITIES)[number];
+
+/**
+ * Contribution points external plugins cannot use in 1.0 (ADR 0035 D2): they are host-side
+ * (`editors`, `commands`) or carry vendored data (`targets`). The host ignores them with a
+ * `plugin.capability-unsupported` warning.
+ */
+export const UNSUPPORTED_PLUGIN_CAPABILITIES = ['editors', 'commands', 'targets'] as const;
+
+/** The largest plugin bundle (`main`) main reads, in bytes (ADR 0035 D1). */
+export const PLUGIN_MAIN_MAX_BYTES = 4 * 1024 * 1024;
+
+/** The largest schema file (`schemas[]`) main reads, in bytes (ADR 0035 D1). */
+export const PLUGIN_SCHEMA_MAX_BYTES = 8 * 1024 * 1024;
+
+/** The most schema files one manifest may list. */
+export const PLUGIN_SCHEMAS_MAX = 16;
+
+/** The most plugin folders main lists. */
+export const PLUGINS_MAX = 64;
+
+/** Problem codes of external plugin loading and calls (ADR 0035; Phase 7 plan). */
+export const PluginProblemCodes = {
+  /** `msm-plugin.json` is missing, not JSON, or breaks the manifest rules. */
+  manifestInvalid: 'plugin.manifest-invalid',
+  /** The manifest's `apiVersion` range excludes this build's plugin API version. */
+  apiIncompatible: 'plugin.api-incompatible',
+  /** The bundle or a schema file is over its size limit. */
+  tooLarge: 'plugin.too-large',
+  /** An id of the plugin uses the `minecraft` or `msm` namespace. */
+  reservedNamespace: 'plugin.reserved-namespace',
+  /** The bundle contributes a point the manifest does not declare. */
+  capabilityMissing: 'plugin.capability-missing',
+  /** The bundle contributes `editors`, `commands` or `targets` (ignored; a warning). */
+  capabilityUnsupported: 'plugin.capability-unsupported',
+  /** The plugin was not loaded: an id clashes, its schemas leave its namespace, or similar. */
+  refused: 'plugin.refused',
+  /** The plugin's worker threw, failed to start, or a call threw. */
+  crashed: 'plugin.crashed',
+  /** The plugin did not start or answer within its deadline. */
+  timeout: 'plugin.timeout',
+  /** An element's kind belongs to a plugin that is not running (blocks export). */
+  unavailable: 'plugin.unavailable',
+  /** A plugin function returned something other than JSON or `Uint8Array`. */
+  badResult: 'plugin.bad-result',
+} as const;
+
+/** One of the `plugin.*` problem codes. */
+export type PluginProblemCode = (typeof PluginProblemCodes)[keyof typeof PluginProblemCodes];

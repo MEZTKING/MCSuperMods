@@ -1,0 +1,12 @@
+{
+  "contents": {
+    "description": {
+      "color": "#9B111E",
+      "text": "Ruby Material"
+    },
+    "palette_id": "example:trim/ruby"
+  },
+  "layer": "datapack",
+  "path": "data/example/trim_material/ruby.json",
+  "schema": "resource:trim_material"
+}

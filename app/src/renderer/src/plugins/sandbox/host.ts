@@ -1,11 +1,20 @@
 /**
- * The renderer side of a plugin worker (ADR 0035 D1, D3, D4). Spike quality (B150); B154
- * replaces it with the real loader.
+ * The renderer side of a plugin worker (ADR 0035 D1, D3, D4): starts a dedicated worker from
+ * a `blob:` of the bootstrap plus the plugin bundle, sends requests with deadlines and
+ * relays exporter callbacks.
+ *
+ * Failure semantics: a request past its deadline, an uncaught error in the worker (the
+ * `error` event: a bundle that throws at top level, for example) or a `fatal` message
+ * terminates the worker and marks it `failed` (`plugin.timeout` or `plugin.crashed`); every
+ * later call rejects with `plugin.unavailable`. A plugin function that throws or rejects only
+ * fails that call (`plugin.crashed`), and one that returns something other than JSON or
+ * `Uint8Array` fails it with `plugin.bad-result`: the worker keeps running, because the
+ * plugin's other functions are unaffected.
  *
  * @packageDocumentation
  */
 
-import { assertProjectRelativePath } from '@msm/plugin-api';
+import { isProjectRelativePath } from '@msm/plugin-api';
 import type {
   PluginDescription,
   SandboxCallback,
@@ -15,6 +24,19 @@ import type {
 } from './protocol';
 import { bootstrapSource } from './worker-bootstrap';
 
+/** Request deadlines in milliseconds (ADR 0035 D4). */
+export const SANDBOX_DEADLINES: Readonly<Record<SandboxMethod, number>> = Object.freeze({
+  lower: 2000,
+  data: 2000,
+  validate: 5000,
+  build: 5000,
+  import: 30_000,
+  run: 120_000,
+});
+
+/** How long a plugin may take to report `ready` (plan B154: 10 s, then `plugin.timeout`). */
+export const SANDBOX_START_DEADLINE_MS = 10_000;
+
 /** The part of a `Worker` the host uses (a test double in Node). */
 export interface WorkerLike {
   postMessage(message: unknown): void;
@@ -23,7 +45,7 @@ export interface WorkerLike {
   terminate(): void;
 }
 
-/** A failed call: `code` is one of the plan's `plugin.*` codes. */
+/** A failed call or start: `code` is one of the plan's `plugin.*` codes. */
 export class SandboxError extends Error {
   /** The `plugin.*` code. */
   readonly code: string;
@@ -41,7 +63,7 @@ export class SandboxError extends Error {
 
 /** Handlers for the callbacks a request may make (exporter sink and problem reporter). */
 export interface CallHooks {
-  writeFile?(path: string, contents: Uint8Array): void;
+  writeFile?(path: string, contents: Uint8Array): void | Promise<void>;
   report?(problem: unknown): void;
 }
 
@@ -51,25 +73,32 @@ export interface PluginWorker {
   readonly ready: Promise<PluginDescription>;
   /** `starting`, `ready`, `failed` (timeout or crash; the worker is gone) or `terminated`. */
   readonly state: 'starting' | 'ready' | 'failed' | 'terminated';
-  /** Sends one request; rejects with a {@link SandboxError} on a deadline, crash or bad result. */
+  /** The error that failed the worker, once `state` is `failed`. */
+  readonly failure: SandboxError | null;
+  /**
+   * Sends one request; rejects with a {@link SandboxError} on a deadline, crash or bad
+   * result. Resolves only after every `writeFile` hook the request triggered has settled.
+   */
   call(
     method: SandboxMethod,
     args: unknown[],
-    deadlineMs: number,
+    deadlineMs?: number,
     hooks?: CallHooks,
   ): Promise<unknown>;
   /** Stops the worker; pending calls reject with `plugin.unavailable`. */
   terminate(): void;
+  /** Subscribes to the worker failing (not to {@link terminate}); returns an unsubscribe function. */
+  onFail(listener: (error: SandboxError) => void): () => void;
 }
 
 /** Options of {@link createPluginWorker}. */
 export interface CreatePluginWorkerOptions {
-  /** Remove network and storage globals in the bootstrap (default `true`). */
-  strip?: boolean;
-  /** Deadline for the `ready` message (default 5 s). */
+  /** Deadline for the `ready` message (default {@link SANDBOX_START_DEADLINE_MS}). */
   startDeadlineMs?: number;
   /** Starts a worker from the full script text; the default uses a `blob:` URL. */
-  spawn?(source: string): WorkerLike;
+  spawn?(source: string, name: string): WorkerLike;
+  /** The worker's name in developer tools (default `msm-plugin`). */
+  name?: string;
 }
 
 interface BlobWorkerGlobals {
@@ -78,15 +107,41 @@ interface BlobWorkerGlobals {
   Worker: new (url: string, options?: { name?: string }) => WorkerLike;
 }
 
-/** Starts a dedicated worker from a `blob:` URL of `source` (ADR 0035 D1). */
-export function spawnBlobWorker(source: string): WorkerLike {
+/** Starts a dedicated classic worker from a `blob:` URL of `source` (ADR 0035 D1). */
+export function spawnBlobWorker(source: string, name = 'msm-plugin'): WorkerLike {
   const globals = globalThis as unknown as BlobWorkerGlobals;
   const url = globals.URL.createObjectURL(new globals.Blob([source], { type: 'text/javascript' }));
   try {
-    return new globals.Worker(url, { name: 'msm-plugin' });
+    return new globals.Worker(url, { name });
   } finally {
     // The worker has already resolved its script URL; revoking it keeps nothing alive.
     globals.URL.revokeObjectURL(url);
+  }
+}
+
+const isUint8Array = (value: unknown): value is Uint8Array => value instanceof Uint8Array;
+
+/** Whether `value` is JSON or `Uint8Array` all the way down (the host's own check, ADR 0035 D3). */
+export function isCloneableResult(value: unknown, depth = 0): boolean {
+  if (depth > 200) return false;
+  if (value === null) return true;
+  switch (typeof value) {
+    case 'string':
+    case 'boolean':
+      return true;
+    case 'number':
+      return Number.isFinite(value);
+    case 'object': {
+      if (isUint8Array(value)) return true;
+      if (Array.isArray(value)) return value.every((item) => isCloneableResult(item, depth + 1));
+      const proto = Object.getPrototypeOf(value) as unknown;
+      if (proto !== Object.prototype && proto !== null) return false;
+      return Object.values(value as Record<string, unknown>).every(
+        (item) => item === undefined || isCloneableResult(item, depth + 1),
+      );
+    }
+    default:
+      return false;
   }
 }
 
@@ -95,6 +150,10 @@ interface Pending {
   reject(error: SandboxError): void;
   timer: ReturnType<typeof setTimeout>;
   hooks: CallHooks | undefined;
+  /** `writeFile` hooks still running; the call settles after them. */
+  writes: Promise<void>[];
+  /** The first hook failure, which fails the call. */
+  hookError: SandboxError | null;
 }
 
 /**
@@ -105,12 +164,13 @@ export function createPluginWorker(
   code: string,
   options: CreatePluginWorkerOptions = {},
 ): PluginWorker {
-  const worker = (options.spawn ?? spawnBlobWorker)(
-    `${bootstrapSource(options.strip ?? true)}${code}\n`,
-  );
+  const name = options.name ?? 'msm-plugin';
+  const worker = (options.spawn ?? spawnBlobWorker)(`${bootstrapSource()}${code}\n`, name);
   const pending = new Map<number, Pending>();
+  const failListeners = new Set<(error: SandboxError) => void>();
   let nextId = 1;
   let state: PluginWorker['state'] = 'starting';
+  let failure: SandboxError | null = null;
   let resolveReady!: (description: PluginDescription) => void;
   let rejectReady!: (error: SandboxError) => void;
   const ready = new Promise<PluginDescription>((resolve, reject) => {
@@ -120,56 +180,83 @@ export function createPluginWorker(
   // Callers that never await `ready` must not see an unhandled rejection.
   ready.catch(() => undefined);
 
-  const fail = (error: SandboxError, nextState: 'failed' | 'terminated'): void => {
+  const stop = (error: SandboxError, nextState: 'failed' | 'terminated'): void => {
     if (state === 'failed' || state === 'terminated') return;
     state = nextState;
     worker.terminate();
     clearTimeout(startTimer);
     rejectReady(error);
+    const unavailable =
+      nextState === 'failed'
+        ? new SandboxError('plugin.unavailable', `The plugin stopped: ${error.message}`)
+        : error;
     for (const entry of pending.values()) {
       clearTimeout(entry.timer);
-      entry.reject(
-        nextState === 'failed' ? error : new SandboxError('plugin.unavailable', error.message),
-      );
+      entry.reject(unavailable);
     }
     pending.clear();
+    if (nextState === 'failed') {
+      failure = error;
+      for (const listener of failListeners) listener(error);
+    }
   };
 
   const startTimer = setTimeout(() => {
-    fail(new SandboxError('plugin.timeout', 'The plugin did not register in time.'), 'failed');
-  }, options.startDeadlineMs ?? 5000);
-
-  const onCallback = (message: SandboxCallback): void => {
-    const entry = pending.get(message.id);
-    if (entry === undefined) return;
-    if (message.op === 'writeFile') {
-      const [path, contents] = message.args;
-      if (typeof path !== 'string' || !(contents instanceof Uint8Array)) {
-        settle(
-          message.id,
-          new SandboxError('plugin.bad-result', 'writeFile needs a path and bytes.'),
-        );
-        return;
-      }
-      try {
-        assertProjectRelativePath(path);
-      } catch (error) {
-        settle(message.id, new SandboxError('plugin.bad-result', (error as Error).message));
-        return;
-      }
-      entry.hooks?.writeFile?.(path, contents);
-    } else {
-      entry.hooks?.report?.(message.args[0]);
-    }
-  };
+    stop(
+      new SandboxError(
+        'plugin.timeout',
+        `The plugin did not start within ${options.startDeadlineMs ?? SANDBOX_START_DEADLINE_MS} ms.`,
+      ),
+      'failed',
+    );
+  }, options.startDeadlineMs ?? SANDBOX_START_DEADLINE_MS);
 
   const settle = (id: number, outcome: SandboxError | { value: unknown }): void => {
     const entry = pending.get(id);
     if (entry === undefined) return;
     pending.delete(id);
     clearTimeout(entry.timer);
-    if (outcome instanceof SandboxError) entry.reject(outcome);
-    else entry.resolve(outcome.value);
+    void Promise.allSettled(entry.writes).then(() => {
+      if (outcome instanceof SandboxError) entry.reject(outcome);
+      else if (entry.hookError !== null) entry.reject(entry.hookError);
+      else entry.resolve(outcome.value);
+    });
+  };
+
+  const onCallback = (message: SandboxCallback): void => {
+    const entry = pending.get(message.id);
+    if (entry === undefined || !Array.isArray(message.args)) return;
+    if (message.op === 'writeFile') {
+      const [path, contents] = message.args;
+      if (typeof path !== 'string' || !isUint8Array(contents)) {
+        entry.hookError ??= new SandboxError(
+          'plugin.bad-result',
+          'writeFile needs a path and Uint8Array contents.',
+        );
+        return;
+      }
+      if (!isProjectRelativePath(path)) {
+        entry.hookError ??= new SandboxError(
+          'plugin.bad-result',
+          `writeFile path ${JSON.stringify(path)} is not a safe relative path.`,
+        );
+        return;
+      }
+      const write = entry.hooks?.writeFile;
+      if (write === undefined) return;
+      entry.writes.push(
+        Promise.resolve()
+          .then(() => write(path, contents))
+          .catch((error: unknown) => {
+            entry.hookError ??= new SandboxError(
+              'plugin.crashed',
+              `writeFile ${path} failed: ${error instanceof Error ? error.message : String(error)}`,
+            );
+          }),
+      );
+    } else if (message.op === 'report') {
+      entry.hooks?.report?.(message.args[0]);
+    }
   };
 
   worker.addEventListener('message', (event) => {
@@ -183,21 +270,31 @@ export function createPluginWorker(
         resolveReady(message.description);
         return;
       case 'fatal':
-        fail(new SandboxError(message.code, message.message), 'failed');
+        stop(new SandboxError('plugin.crashed', String(message.message)), 'failed');
         return;
       case 'callback':
         onCallback(message);
         return;
-      case 'response':
-        settle(
-          message.id,
-          message.ok ? { value: message.value } : new SandboxError(message.code, message.message),
-        );
+      case 'response': {
+        if (typeof message.id !== 'number') return;
+        if (!message.ok) {
+          const code =
+            message.code === 'plugin.bad-result' ? 'plugin.bad-result' : 'plugin.crashed';
+          settle(message.id, new SandboxError(code, String(message.message)));
+        } else if (!isCloneableResult(message.value)) {
+          settle(
+            message.id,
+            new SandboxError('plugin.bad-result', 'The result is not JSON or Uint8Array.'),
+          );
+        } else {
+          settle(message.id, { value: message.value });
+        }
         return;
+      }
     }
   });
   worker.addEventListener('error', (event) => {
-    fail(
+    stop(
       new SandboxError('plugin.crashed', event.message ?? 'The plugin worker crashed.'),
       'failed',
     );
@@ -208,30 +305,55 @@ export function createPluginWorker(
     get state() {
       return state;
     },
-    call(method, args, deadlineMs, hooks) {
+    get failure() {
+      return failure;
+    },
+    call(method, args, deadlineMs = SANDBOX_DEADLINES[method], hooks) {
       if (state === 'failed' || state === 'terminated') {
         return Promise.reject(
-          new SandboxError('plugin.unavailable', 'The plugin worker is not running.'),
+          new SandboxError(
+            'plugin.unavailable',
+            failure === null
+              ? 'The plugin is not running.'
+              : `The plugin is not running: ${failure.message}`,
+          ),
         );
       }
       const id = nextId++;
       return new Promise<unknown>((resolve, reject) => {
         const timer = setTimeout(() => {
-          fail(
-            new SandboxError('plugin.timeout', `${method} did not answer within ${deadlineMs} ms.`),
-            'failed',
+          const error = new SandboxError(
+            'plugin.timeout',
+            `${method} did not answer within ${deadlineMs} ms.`,
           );
+          pending.delete(id);
+          reject(error);
+          stop(error, 'failed');
         }, deadlineMs);
-        pending.set(id, { resolve, reject, timer, hooks });
+        pending.set(id, { resolve, reject, timer, hooks, writes: [], hookError: null });
         const request: SandboxRequest = { type: 'request', id, method, args };
-        worker.postMessage(request);
+        try {
+          worker.postMessage(request);
+        } catch (error) {
+          pending.delete(id);
+          clearTimeout(timer);
+          reject(
+            new SandboxError(
+              'plugin.bad-result',
+              `The request could not be sent: ${error instanceof Error ? error.message : String(error)}`,
+            ),
+          );
+        }
       });
     },
     terminate() {
-      fail(
-        new SandboxError('plugin.unavailable', 'The plugin worker was terminated.'),
-        'terminated',
-      );
+      stop(new SandboxError('plugin.unavailable', 'The plugin worker was terminated.'), 'terminated');
+    },
+    onFail(listener) {
+      failListeners.add(listener);
+      return () => {
+        failListeners.delete(listener);
+      };
     },
   };
 }

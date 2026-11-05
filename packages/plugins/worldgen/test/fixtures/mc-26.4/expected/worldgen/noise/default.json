@@ -1,0 +1,9 @@
+{
+  "contents": {
+    "base_octave": -7,
+    "octave_count": 2
+  },
+  "layer": "datapack",
+  "path": "data/example/worldgen/noise/sample.json",
+  "schema": "resource:worldgen/noise"
+}

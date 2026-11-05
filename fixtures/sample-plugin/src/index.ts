@@ -42,7 +42,8 @@ export interface GreetingData {
 function readGreeting(data: Json): GreetingData {
   const object = typeof data === 'object' && data !== null && !Array.isArray(data) ? data : {};
   const message = typeof object.message === 'string' ? object.message : '';
-  const colour = typeof object.colour === 'string' && object.colour !== '' ? object.colour : undefined;
+  const colour =
+    typeof object.colour === 'string' && object.colour !== '' ? object.colour : undefined;
   return colour === undefined ? { message } : { message, colour };
 }
 

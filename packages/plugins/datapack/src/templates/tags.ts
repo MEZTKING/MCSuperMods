@@ -31,7 +31,7 @@ export const tagTemplates: readonly ElementTemplate[] = [
     'minecraft:zombie',
     'minecraft:husk',
   ]),
-  tag('tag_fluid', 'fluid', 'Fluid tag', 'fluids', ['minecraft:water', 'minecraft:flowing_water']),
+  tag('tag_fluid', 'fluid', 'Fluid tag', 'fluids', ['minecraft:water', 'minecraft:lava']),
   tag('tag_game_event', 'game_event', 'Game event tag', 'game events', [
     'minecraft:block_open',
     'minecraft:block_close',

@@ -1,9 +1,16 @@
 /**
  * The library's project starters (ADR 0020), in list order.
  */
-import type { BundleContext, ContentBundle, OutputLayer, ProjectStarter } from '@msm/plugin-api';
+import type {
+  BundleContext,
+  ContentBundle,
+  OutputLayer,
+  ProjectStarter,
+  TargetFacts,
+} from '@msm/plugin-api';
 import { kindsOf } from '../content/bundle';
 import { PROBE_CONTEXT } from '../content/probe';
+import { hasGeckolib } from '../content/supports';
 import { customBiomeBundle } from './custom-biome';
 import { customMobBundle } from './custom-mob';
 import { customOreBundle } from './custom-ore';
@@ -33,8 +40,9 @@ function starter(
   category: ProjectStarter['category'],
   layers: OutputLayer[],
   build: (context: BundleContext) => ContentBundle,
+  supports?: (target: TargetFacts) => boolean,
 ): ProjectStarter {
-  return Object.freeze({
+  const entry: ProjectStarter = {
     id,
     title,
     description,
@@ -42,7 +50,9 @@ function starter(
     layers,
     requiresKinds: kindsOf(build(PROBE_CONTEXT)).sort(),
     build,
-  });
+  };
+  if (supports !== undefined) entry.supports = supports;
+  return Object.freeze(entry);
 }
 
 const BOTH: OutputLayer[] = ['resourcepack', 'datapack'];
@@ -144,6 +154,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     'content',
     ['resourcepack', 'datapack', 'msm'],
     customMobBundle,
+    hasGeckolib,
   ),
   starter(
     'scripted_ore',

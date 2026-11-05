@@ -18,10 +18,14 @@ import {
   type MinecraftProgress,
 } from '../shared/ipc-contract';
 import type { MainPlatform } from './platform/node-platform';
+import type { PluginsService } from './platform/plugins';
 import type { Updater } from './updater';
 
 /** The updater operations the IPC layer serves. */
 export type IpcUpdates = Pick<Updater, 'check' | 'install' | 'status'>;
+
+/** The third-party plugin operations the IPC layer serves (ADR 0035). */
+export type IpcPlugins = Pick<PluginsService, 'list' | 'read' | 'openFolder'>;
 
 /** Per-call services a handler may use. */
 export interface HandlerContext {
@@ -38,7 +42,11 @@ export type MainHandlers = {
 };
 
 /** Maps every channel to the platform method that serves it. */
-export function createIpcHandlers(platform: MainPlatform, updates: IpcUpdates): MainHandlers {
+export function createIpcHandlers(
+  platform: MainPlatform,
+  updates: IpcUpdates,
+  plugins: IpcPlugins,
+): MainHandlers {
   return {
     [InvokeChannels.projectPickDirectory]: (req) =>
       platform.dialogs.pickDirectory({
@@ -116,6 +124,9 @@ export function createIpcHandlers(platform: MainPlatform, updates: IpcUpdates): 
     [InvokeChannels.updatesCheck]: () => updates.check(),
     [InvokeChannels.updatesInstall]: () => updates.install(),
     [InvokeChannels.updatesCurrent]: async () => updates.status,
+    [InvokeChannels.pluginsList]: () => plugins.list(),
+    [InvokeChannels.pluginsRead]: (req) => plugins.read(req.id),
+    [InvokeChannels.pluginsOpenFolder]: () => plugins.openFolder(),
   };
 }
 
@@ -125,8 +136,12 @@ function isTrustedSender(event: IpcMainInvokeEvent): boolean {
 }
 
 /** Registers every handler. Call once, after `app.whenReady()`. */
-export function registerIpc(platform: MainPlatform, updates: IpcUpdates): void {
-  const handlers = createIpcHandlers(platform, updates);
+export function registerIpc(
+  platform: MainPlatform,
+  updates: IpcUpdates,
+  plugins: IpcPlugins,
+): void {
+  const handlers = createIpcHandlers(platform, updates, plugins);
   for (const channel of Object.values(InvokeChannels) as InvokeChannel[]) {
     const { request } = ipcContract[channel];
     const handler = handlers[channel] as (

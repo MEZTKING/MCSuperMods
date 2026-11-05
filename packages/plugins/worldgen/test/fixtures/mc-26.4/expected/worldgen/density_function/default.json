@@ -1,0 +1,9 @@
+{
+  "contents": {
+    "type": "minecraft:constant",
+    "value": 0
+  },
+  "layer": "datapack",
+  "path": "data/example/worldgen/density_function/sample.json",
+  "schema": "resource:worldgen/density_function"
+}

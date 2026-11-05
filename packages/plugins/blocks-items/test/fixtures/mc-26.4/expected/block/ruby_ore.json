@@ -1,0 +1,128 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 3,
+          "requires_tool": true,
+          "resistance": 3
+        },
+        "msm:light_emitter": {
+          "level": 4
+        },
+        "msm:on_interact": {
+          "event": "example:shimmer"
+        }
+      },
+      "events": {
+        "example:shimmer": {
+          "actions": [
+            {
+              "sound": "minecraft:block.amethyst_block.chime",
+              "type": "play_sound",
+              "volume": 1
+            },
+            {
+              "count": 12,
+              "particle": "minecraft:glow",
+              "spread": 0.4,
+              "type": "spawn_particle"
+            },
+            {
+              "function": "example:ruby/shimmer",
+              "type": "run_function"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:natural_blocks",
+        "max_stack_size": 64,
+        "rarity": "common"
+      },
+      "sound_type": "stone"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_ore.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/ruby_ore"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_ore.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ruby_ore",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_ore.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.ruby_ore": "Ruby Ore"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_ore"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/pickaxe.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_ore"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/needs_iron_tool.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ruby_ore",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ruby_ore",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ruby_ore.json",
+    "schema": "resource:loot_table"
+  }
+]

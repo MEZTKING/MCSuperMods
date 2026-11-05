@@ -51,10 +51,9 @@ const TAGS: readonly TagExample[] = [
     kind: KINDS.tagFluid,
     title: 'Fluid tag',
     description: 'A group of fluids, used in location predicates.',
-    path: 'all_water',
-    values: ['minecraft:water', 'minecraft:flowing_water'],
-    usage: (id) =>
-      `Fluids have a source and a flowing form, so a tag usually lists both. Use it in location predicates that check fluids, as #${id}.`,
+    path: 'liquids',
+    values: ['minecraft:water', 'minecraft:lava'],
+    usage: (id) => `Use it in location predicates that check fluids, as #${id}.`,
   },
   {
     registry: 'game_event',

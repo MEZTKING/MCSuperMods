@@ -1,0 +1,39 @@
+{
+  "contents": {
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "example:path",
+          "processors": "example:weathered",
+          "projection": "terrain_matching"
+        },
+        "weight": 3
+      },
+      {
+        "element": {
+          "element_type": "minecraft:list_pool_element",
+          "elements": [
+            {
+              "element_type": "minecraft:single_pool_element",
+              "location": "example:hut",
+              "processors": "minecraft:empty",
+              "projection": "rigid"
+            }
+          ],
+          "projection": "rigid"
+        },
+        "weight": 1
+      },
+      {
+        "element": {
+          "element_type": "minecraft:empty_pool_element"
+        },
+        "weight": 1
+      }
+    ],
+    "fallback": "minecraft:empty"
+  },
+  "path": "data/example/worldgen/template_pool/streets.json",
+  "schema": "resource:worldgen/template_pool"
+}

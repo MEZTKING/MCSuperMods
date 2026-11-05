@@ -9,19 +9,20 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
-    // `-Pmc=<version>` selects ../versions/<version>.properties (ADR 0038 D5, B151 spike); without it
-    // gradle.properties holds the facts as before. Only loom_version is read here.
-    val mc: String? = providers.gradleProperty("mc").orNull
-    val loomVersion: String =
-        if (mc == null) {
-            providers.gradleProperty("loom_version").get()
-        } else {
-            val file = settingsDir.resolve("../versions/$mc.properties")
-            require(file.isFile) { "No engine-mod/versions/$mc.properties for -Pmc=$mc" }
-            val properties = java.util.Properties()
-            file.inputStream().use { properties.load(it) }
-            properties.getProperty("loom_version") ?: error("versions/$mc.properties has no loom_version")
+    // `-Pmc=<version>` (default: ../gradle.properties default_mc) selects ../versions/<version>.properties
+    // (ADR 0038 D5); only loom_version is read here, build.gradle.kts reads the rest.
+    fun load(path: String): java.util.Properties {
+        require(settingsDir.resolve(path).isFile) { "No engine-mod/parity/$path" }
+        return java.util.Properties().also {
+            it.load(java.io.StringReader(providers.fileContents(layout.rootDirectory.file(path)).asText.get()))
         }
+    }
+    val mc: String = providers.gradleProperty("mc").orNull
+        ?: load("../gradle.properties").getProperty("default_mc")?.trim()
+        ?: error("../gradle.properties has no default_mc")
+    val loomVersion: String =
+        load("../versions/$mc.properties").getProperty("loom_version")?.trim()?.ifBlank { null }
+            ?: error("versions/$mc.properties has no loom_version")
     plugins {
         id("net.fabricmc.fabric-loom") version loomVersion
     }

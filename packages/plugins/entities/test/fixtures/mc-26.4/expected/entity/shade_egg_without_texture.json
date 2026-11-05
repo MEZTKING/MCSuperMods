@@ -1,0 +1,32 @@
+[
+  {
+    "contents": {
+      "category": "monster",
+      "components": {
+        "msm:animated_model": {
+          "model": "example:entity/shade",
+          "texture": "example:entity/shade"
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 1.9,
+        "width": 0.6
+      },
+      "spawn_egg": {}
+    },
+    "layer": "msm",
+    "path": "msm/example/entity/shade.json",
+    "schema": "msm:entity_definition"
+  },
+  {
+    "contents": {
+      "entity.example.shade": "Shade",
+      "item.example.shade_spawn_egg": "Shade Spawn Egg"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

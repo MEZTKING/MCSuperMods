@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "category": "misc",
+    "ingredients": [
+      "minecraft:diamond",
+      "#minecraft:logs"
+    ],
+    "result": {
+      "count": 2,
+      "id": "minecraft:emerald"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "layer": "datapack",
+  "path": "data/example/recipe/emerald_from_logs.json",
+  "schema": "resource:recipe"
+}

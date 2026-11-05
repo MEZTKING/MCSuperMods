@@ -1,27 +1,25 @@
+import java.io.StringReader
 import java.util.Properties
 
 plugins {
     id("net.fabricmc.fabric-loom") // version from settings.gradle.kts (loom_version)
 }
 
-// `-Pmc=<version>` reads the Minecraft and Fabric facts from ../versions/<version>.properties
-// (ADR 0038 D5, B151 spike; B159 finishes it). Without it gradle.properties holds them as before.
-val mc: String? = providers.gradleProperty("mc").orNull
-val versionFacts: Properties? =
-    mc?.let { selected ->
-        val file = layout.projectDirectory.file("../versions/$selected.properties").asFile
-        require(file.isFile) { "No engine-mod/versions/$selected.properties for -Pmc=$selected" }
-        Properties().also { properties -> file.inputStream().use { properties.load(it) } }
-    }
+// `-Pmc=<version>` (default: ../gradle.properties default_mc) reads the Minecraft and Fabric facts and the
+// fabric.mod.json "minecraft" range from ../versions/<version>.properties (ADR 0038 D5).
+fun loadProperties(path: String): Properties {
+    val file = layout.projectDirectory.file(path)
+    require(file.asFile.isFile) { "No engine-mod/parity/$path" }
+    return Properties().also { it.load(StringReader(providers.fileContents(file).asText.get())) }
+}
+val mc: String = providers.gradleProperty("mc").orNull
+    ?: loadProperties("../gradle.properties").getProperty("default_mc")?.trim()
+    ?: error("../gradle.properties has no default_mc")
+val versionFacts: Properties = loadProperties("../versions/$mc.properties")
 
-fun fact(name: String): String =
-    if (versionFacts == null) {
-        providers.gradleProperty(name).get()
-    } else {
-        versionFacts.getProperty(name) ?: error("versions/$mc.properties has no $name")
-    }
+fun fact(name: String): String = versionFacts.getProperty(name)?.trim() ?: error("versions/$mc.properties has no $name")
 
-version = providers.gradleProperty("mod_version").get() + (mc?.let { "+mc$it" } ?: "")
+version = providers.gradleProperty("mod_version").get() + "+mc$mc"
 group = providers.gradleProperty("maven_group").get()
 
 base {
@@ -48,18 +46,11 @@ tasks.processResources {
     }
 }
 
-// B151 spike overlay (ADR 0038 D2; B159 replaces it with seams): with -Pmc, src/mc/<mc>/java joins the
-// main source set and each file it holds replaces the file of the same relative path in src/main/java.
-val overlayDir = mc?.let { layout.projectDirectory.dir("src/mc/$it/java").asFile }
-if (overlayDir != null && overlayDir.isDirectory) {
-    val sharedDir = layout.projectDirectory.dir("src/main/java").asFile.absolutePath + File.separator
-    val replaced: Set<String> =
-        overlayDir.walkTopDown().filter { it.isFile }.map { it.relativeTo(overlayDir).invariantSeparatorsPath }.toSet()
-    sourceSets.main { java.srcDir(overlayDir) }
-    tasks.compileJava {
-        exclude { it.file.absolutePath.startsWith(sharedDir) && it.relativePath.pathString in replaced }
-    }
-}
+// Version overlay (ADR 0038 D2): src/mc/<mc>/java joins the main source set; it holds only the seams
+// (one implementation per version, same class name).
+val overlayDir = layout.projectDirectory.dir("src/mc/$mc/java")
+require(overlayDir.asFile.isDirectory) { "No engine-mod/parity/src/mc/$mc/java: every version provides its seams" }
+sourceSets.main { java.srcDir(overlayDir) }
 
 tasks.withType<JavaCompile>().configureEach {
     options.release = 25

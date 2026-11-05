@@ -1,0 +1,26 @@
+{
+  "contents": {
+    "pools": [
+      {
+        "condition": {
+          "type": "minecraft:survives_explosion"
+        },
+        "entries": [
+          {
+            "modifier": {
+              "count": 2,
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:diamond",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:block"
+  },
+  "layer": "datapack",
+  "path": "data/example/loot_table/blocks/ruby_ore.json",
+  "schema": "resource:loot_table"
+}

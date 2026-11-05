@@ -78,7 +78,13 @@ import {
   createMcfunctionService,
   type McfunctionService,
 } from '@msm/schemas/mcfunction';
-import { builtInTargets, readVendoredJson, type TargetBundle } from '@msm/targets';
+import {
+  builtInTargets,
+  defaultTargetId,
+  readVendoredJson,
+  type TargetBundle,
+  targetById,
+} from '@msm/targets';
 import ts from 'typescript';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { nestedGeckolibPath } from '../src/fabric-content-jar/index';
@@ -90,6 +96,7 @@ import {
   resourcePackExporter,
   runExport,
 } from '../src/index';
+import { NOISE_SETTINGS_KIND, noiseSettingsHasDefaultBlock } from './target-gaps';
 
 const update = process.env.UPDATE_GOLDENS === '1';
 
@@ -110,7 +117,13 @@ const PLUGINS: readonly Plugin[] = [
 ];
 const PACK_KIND = 'minecraft:pack_mcmeta';
 const NOW = '2026-11-04T00:00:00.000Z';
-const DEFAULT_TARGET = builtInTargets[0]?.target.id as string;
+/** The target new projects get: the newest release target (ADR 0037 D4). */
+const DEFAULT_TARGET = defaultTargetId;
+const DEFAULT_BUNDLE = targetById(DEFAULT_TARGET) as TargetBundle;
+
+/** Whether a starter or example is offered on `target` (`supports`, ADR 0036 D4). */
+const supported = (entry: ProjectStarter | ExampleProject, target: TargetFacts): boolean =>
+  entry.supports?.(target) ?? true;
 
 /**
  * Builds a library starter or example for a target (the default target unless given), with
@@ -121,7 +134,7 @@ function buildEntry(
   entry: ProjectStarter | ExampleProject,
   namespace: string,
   projectName: string,
-  target: TargetFacts = (builtInTargets[0] as TargetBundle).target,
+  target: TargetFacts = DEFAULT_BUNDLE.target,
 ): ContentBundle {
   const parameters = 'parameters' in entry ? (entry.parameters ?? []) : [];
   const values = Object.fromEntries(
@@ -797,7 +810,25 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       context = await contextFor(bundle);
     }, 60_000);
 
-    it.each(libraryStarters.map((starter) => [starter.id, starter] as const))(
+    const starters = libraryStarters.filter((starter) => supported(starter, bundle.target));
+    const examples = libraryExamples.filter((example) => supported(example, bundle.target));
+
+    it('hides the entries that need GeckoLib on a target without it', () => {
+      const withEntities = [...libraryStarters, ...libraryExamples].filter((entry) =>
+        entry.requiresKinds.includes('msm:entity'),
+      );
+      expect(withEntities.map((entry) => entry.id)).toContain('custom_mob');
+      for (const entry of withEntities) {
+        expect(supported(entry, bundle.target), entry.id).toBe(
+          bundle.target.geckolib !== undefined,
+        );
+      }
+      expect(starters.some((starter) => starter.id === 'custom_mob')).toBe(
+        bundle.target.geckolib !== undefined,
+      );
+    });
+
+    it.each(starters.map((starter) => [starter.id, starter] as const))(
       'starter %s loads, validates and exports with zero problems',
       async (_starterId, starter) => {
         const built = await buildProject('Library Test', 'demo', [
@@ -813,7 +844,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       },
     );
 
-    it.each(libraryExamples.map((example) => [example.id, example] as const))(
+    it.each(examples.map((example) => [example.id, example] as const))(
       'example %s loads, validates and exports with zero problems',
       async (_exampleId, example) => {
         const bundleData = buildEntry(example, 'demo', 'Library Test', bundle.target);
@@ -822,6 +853,21 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         }
         expect(bundleData.elements.some((entry) => (entry.notes ?? '').length > 0)).toBe(true);
         const built = await buildProject('Library Test', 'demo', [bundleData]);
+        if (
+          example.requiresKinds.includes(NOISE_SETTINGS_KIND) &&
+          !noiseSettingsHasDefaultBlock(context.schemaIndex)
+        ) {
+          // The known noise settings gap (target-gaps.ts): exactly one unknown field.
+          const project = await reload(built.fs);
+          const registries = createRegistryIndex({
+            vanilla: context.vanilla,
+            project: projectRegistryIds(project),
+          });
+          const problems = elementProblems(project, context.schemaIndex, registries);
+          expect(problems).toHaveLength(1);
+          expect(problems[0]).toContain(' /default_block schema.unknown-field:');
+          return;
+        }
         await checkProject(bundle, context, built);
       },
     );
@@ -928,89 +974,96 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(guard).toContain('msm.actions.define("demo:guard"');
     });
 
-    it('the Custom mob starter adds an animated Ruby Golem; the jar nests runtime and GeckoLib (ADRs 0028, 0029)', async () => {
-      const built = await buildProject('Mob', 'demo', [
-        buildEntry(starterById('custom_mob'), 'demo', 'Mob', bundle.target),
-      ]);
-      const { resourceFiles, dataFiles, jarFiles } = await checkProject(bundle, context, built);
-      const resource = bundle.target.folders.resource;
-      const data = bundle.target.folders.data;
-      const assets = [
-        `assets/demo/${resource.textures}/entity/ruby_golem.png`,
-        `assets/demo/${resource.textures}/item/ruby_golem_spawn_egg.png`,
-        'assets/demo/geckolib/models/entity/ruby_golem.geo.json',
-        'assets/demo/geckolib/animations/entity/ruby_golem_animations.animation.json',
-        `assets/demo/${resource.item_definition}/ruby_golem_spawn_egg.json`,
-        `assets/demo/${resource.model}/item/ruby_golem_spawn_egg.json`,
-        `assets/demo/${resource.lang}/en_us.json`,
-      ];
-      const datafiles = [
-        `data/demo/${data.loot_table}/entities/ruby_golem.json`,
-        `data/demo/${data.function}/golem/death.mcfunction`,
-      ];
-      expect(resourceFiles).toEqual(expect.arrayContaining([...assets, 'pack.mcmeta']));
-      expect(dataFiles).toEqual(expect.arrayContaining([...datafiles, 'pack.mcmeta']));
-      expect(jarFiles).toEqual(
-        expect.arrayContaining([
-          ...assets,
-          ...datafiles,
-          'msm/demo/entity/ruby_golem.json',
-          'fabric.mod.json',
-        ]),
-      );
-      expect(jarFiles.some((path) => path.startsWith('META-INF/jars/'))).toBe(false);
+    it.runIf(bundle.target.geckolib !== undefined)(
+      'the Custom mob starter adds an animated Ruby Golem; the jar nests runtime and GeckoLib (ADRs 0028, 0029)',
+      async () => {
+        const built = await buildProject('Mob', 'demo', [
+          buildEntry(starterById('custom_mob'), 'demo', 'Mob', bundle.target),
+        ]);
+        const { resourceFiles, dataFiles, jarFiles } = await checkProject(bundle, context, built);
+        const resource = bundle.target.folders.resource;
+        const data = bundle.target.folders.data;
+        const assets = [
+          `assets/demo/${resource.textures}/entity/ruby_golem.png`,
+          `assets/demo/${resource.textures}/item/ruby_golem_spawn_egg.png`,
+          'assets/demo/geckolib/models/entity/ruby_golem.geo.json',
+          'assets/demo/geckolib/animations/entity/ruby_golem_animations.animation.json',
+          `assets/demo/${resource.item_definition}/ruby_golem_spawn_egg.json`,
+          `assets/demo/${resource.model}/item/ruby_golem_spawn_egg.json`,
+          `assets/demo/${resource.lang}/en_us.json`,
+        ];
+        const datafiles = [
+          `data/demo/${data.loot_table}/entities/ruby_golem.json`,
+          `data/demo/${data.function}/golem/death.mcfunction`,
+        ];
+        expect(resourceFiles).toEqual(expect.arrayContaining([...assets, 'pack.mcmeta']));
+        expect(dataFiles).toEqual(expect.arrayContaining([...datafiles, 'pack.mcmeta']));
+        expect(jarFiles).toEqual(
+          expect.arrayContaining([
+            ...assets,
+            ...datafiles,
+            'msm/demo/entity/ruby_golem.json',
+            'fabric.mod.json',
+          ]),
+        );
+        expect(jarFiles.some((path) => path.startsWith('META-INF/jars/'))).toBe(false);
 
-      // Nested: the stub runtime and GeckoLib jars go into META-INF/jars/.
-      const geckolib = bundle.target.geckolib;
-      if (geckolib === undefined) throw new Error(`${bundle.target.id} lacks GeckoLib facts`);
-      const project = await reload(built.fs);
-      const ids = projectRegistryIds(project);
-      const registries = createRegistryIndex({ vanilla: context.vanilla, project: ids });
-      const nested = await exportProblems(
-        bundle,
-        context,
-        built.fs,
-        project,
-        registries,
-        ids,
-        contentJarExporter,
-      );
-      expect(nested.problems.filter((problem) => problem.severity !== 'info')).toEqual([]);
-      expect(nested.ok).toBe(true);
-      const geckolibPath = nestedGeckolibPath(geckolib);
-      const runtimePath = nestedRuntimePath(meta.msmVersion);
-      expect(nested.contents.get(geckolibPath)).toEqual(STUB_GECKOLIB_JAR);
-      expect(nested.contents.get(runtimePath)).toEqual(STUB_RUNTIME_JAR);
-      const json = (path: string): Record<string, unknown> =>
-        JSON.parse(utf8.decode(nested.contents.get(path) as Uint8Array));
-      const modJson = json('fabric.mod.json');
-      expect(modJson).toMatchObject({
-        id: 'demo',
-        depends: { [geckolib.modId]: geckolib.dependency },
-      });
-      expect(modJson.jars).toEqual(
-        expect.arrayContaining([{ file: runtimePath }, { file: geckolibPath }]),
-      );
-      expect(json('msm/demo/entity/ruby_golem.json')).toMatchObject({
-        format: 1,
-        category: 'creature',
-        loot_table: 'demo:entities/ruby_golem',
-        spawn_egg: {},
-        components: {
-          'msm:animated_model': {
-            model: 'demo:entity/ruby_golem',
-            animations: 'demo:entity/ruby_golem_animations',
-            texture: 'demo:entity/ruby_golem',
+        // Nested: the stub runtime and GeckoLib jars go into META-INF/jars/.
+        const geckolib = bundle.target.geckolib;
+        if (geckolib === undefined) throw new Error(`${bundle.target.id} lacks GeckoLib facts`);
+        const project = await reload(built.fs);
+        const ids = projectRegistryIds(project);
+        const registries = createRegistryIndex({ vanilla: context.vanilla, project: ids });
+        const nested = await exportProblems(
+          bundle,
+          context,
+          built.fs,
+          project,
+          registries,
+          ids,
+          contentJarExporter,
+        );
+        expect(nested.problems.filter((problem) => problem.severity !== 'info')).toEqual([]);
+        expect(nested.ok).toBe(true);
+        const geckolibPath = nestedGeckolibPath(geckolib);
+        const runtimePath = nestedRuntimePath(meta.msmVersion);
+        expect(nested.contents.get(geckolibPath)).toEqual(STUB_GECKOLIB_JAR);
+        expect(nested.contents.get(runtimePath)).toEqual(STUB_RUNTIME_JAR);
+        const json = (path: string): Record<string, unknown> =>
+          JSON.parse(utf8.decode(nested.contents.get(path) as Uint8Array));
+        const modJson = json('fabric.mod.json');
+        expect(modJson).toMatchObject({
+          id: 'demo',
+          depends: { [geckolib.modId]: geckolib.dependency },
+        });
+        expect(modJson.jars).toEqual(
+          expect.arrayContaining([{ file: runtimePath }, { file: geckolibPath }]),
+        );
+        expect(json('msm/demo/entity/ruby_golem.json')).toMatchObject({
+          format: 1,
+          category: 'creature',
+          loot_table: 'demo:entities/ruby_golem',
+          spawn_egg: {},
+          components: {
+            'msm:animated_model': {
+              model: 'demo:entity/ruby_golem',
+              animations: 'demo:entity/ruby_golem_animations',
+              texture: 'demo:entity/ruby_golem',
+            },
           },
-        },
-      });
-      expect(json(`assets/demo/${resource.lang}/en_us.json`)).toMatchObject({
-        'entity.demo.ruby_golem': 'Ruby Golem',
-        'item.demo.ruby_golem_spawn_egg': 'Ruby Golem Spawn Egg',
-      });
-    });
+        });
+        expect(json(`assets/demo/${resource.lang}/en_us.json`)).toMatchObject({
+          'entity.demo.ruby_golem': 'Ruby Golem',
+          'item.demo.ruby_golem_spawn_egg': 'Ruby Golem Spawn Egg',
+        });
+      },
+    );
 
-    it.each(MIRROR.map((entry) => [entry.folder, entry] as const))(
+    // The mirror projects are written for the default target (their `targets`), so they are
+    // checked against it only.
+    it
+      .runIf(bundle.target.id === DEFAULT_TARGET)
+      .each(MIRROR.map((entry) => [entry.folder, entry] as const))(
       'mirror project %s loads, validates and exports with zero problems',
       async (_folder, entry) => {
         await checkProject(bundle, context, await entry.build());

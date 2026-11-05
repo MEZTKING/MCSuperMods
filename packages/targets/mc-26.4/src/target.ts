@@ -4,11 +4,14 @@
  */
 
 import type { Target } from '@msm/plugin-api';
-import { javaProjectGenerator } from './java-project/index';
+import { createMigrateFrom, migrationTables } from './migrate';
+
+const ID = 'mc-26.4';
+const MC_VERSION = '26.4-snapshot-7';
 
 export const target: Target = {
-  id: 'mc-26.4',
-  mcVersion: '26.4-snapshot-7',
+  id: ID,
+  mcVersion: MC_VERSION,
   channel: 'snapshot',
   java: 25,
   packFormats: {
@@ -78,20 +81,24 @@ export const target: Target = {
   },
   // Verified 2026-11-05: meta.fabricmc.net lists Loader 0.20.1 for 26.4-snapshot-7, and
   // 0.165.4+26.4 is the newest Fabric API for 26.4 on maven.fabricmc.net (ADR 0037 D2). Loom
-  // 1.19.3 against the snapshot: (verify at implementation; B151).
+  // 1.19.3 handles the snapshot (B151).
   fabric: {
     loader: '0.20.1',
     api: '0.165.4+26.4',
     loom: '1.19.3',
-    // minecraftDependency: the candidate range for a snapshot server (verify at
-    // implementation; B151 reports which range the 26.4-snapshot-7 server accepts).
+    // minecraftDependency: Fabric Loader reports the snapshot as `26.4-alpha.7`; B151 found
+    // that this range loads on the 26.4-snapshot-7 server (`~26.4` does not) and it also
+    // admits the 26.4 release (ADR 0037 Status).
     minecraftDependency: '>=26.4- <26.5-',
     // gradle: equals engine-mod/gradle/wrapper/gradle-wrapper.properties, as for 26.3.
     gradle: '9.8.2',
   },
   // No geckolib: Modrinth lists no GeckoLib build for any 26.4 snapshot (checked 2026-11-05,
   // ADR 0037); the entities export reports export.no-geckolib-target for this target.
-  // javaProject: the 26.3 generator copied as is (ADR 0037); B153 decides whether 26.4 needs
-  // its own.
-  javaProject: javaProjectGenerator,
+  // No javaProject: the 26.3 generator's Java does not compile against 26.4 (B151: SoundType
+  // is gone, block sounds are the data-driven `block_sound_set` registry; entity renderers
+  // register through the client registry), so the java-project exporter reports
+  // export.no-java-project-target for this target (ADR 0037 D2).
+  // Moving a project from mc-26.3: removed ids and known renames (ADR 0037 D3).
+  migrateFrom: createMigrateFrom(migrationTables(ID, MC_VERSION)),
 };

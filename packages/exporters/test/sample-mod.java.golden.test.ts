@@ -28,6 +28,7 @@ import {
   treeHash,
   writeTree,
 } from './sample-java';
+import { selectedTarget } from './selected-target';
 
 const update = process.env.UPDATE_GOLDENS === '1';
 const sampleRoot = join(repoRoot, 'fixtures', 'sample-mod');
@@ -129,7 +130,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     });
 
     const outDir = process.env.MSM_SAMPLE_MOD_JAVA_OUT;
-    it.runIf(outDir !== undefined && bundle === builtInTargets[0])(
+    it.runIf(outDir !== undefined && bundle === selectedTarget())(
       'writes the project with the real Gradle wrapper for the ejected build',
       async () => {
         const { files, ok } = await run(await engineModWrapper());

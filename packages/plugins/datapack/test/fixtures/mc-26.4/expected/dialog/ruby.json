@@ -1,0 +1,24 @@
+{
+  "contents": {
+    "actions": [
+      {
+        "action": {
+          "command": "function example:greet",
+          "type": "minecraft:run_command"
+        },
+        "label": "Ruby"
+      }
+    ],
+    "body": {
+      "contents": "Pick one.",
+      "type": "minecraft:plain_message"
+    },
+    "can_close_with_escape": true,
+    "columns": 2,
+    "title": "Choose a gem",
+    "type": "minecraft:multi_action"
+  },
+  "layer": "datapack",
+  "path": "data/example/dialog/ruby.json",
+  "schema": "resource:dialog"
+}

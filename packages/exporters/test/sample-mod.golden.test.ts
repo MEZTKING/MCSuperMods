@@ -56,6 +56,7 @@ import {
   type FabricContentJarOptions,
   runExport,
 } from '../src/index';
+import { defaultTarget, selectedTarget } from './selected-target';
 
 const update = process.env.UPDATE_GOLDENS === '1';
 
@@ -309,7 +310,7 @@ const EXPECTED_ITEM_COUNT =
 /** Builds the sample into a project the way the app's `newProject` does, then saves it. */
 async function buildSample(): Promise<MemoryFileSystem> {
   const project = createEmptyProject(PROJECT_NAME, {
-    targets: [builtInTargets[0]?.target.id as string],
+    targets: [defaultTarget().target.id],
     plugins: PLUGINS.filter((plugin) => (plugin.contributes.elementKinds ?? []).length > 0).map(
       (plugin) => plugin.id,
     ),
@@ -701,8 +702,8 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
 
     const runtimeJarPath = process.env.MSM_RUNTIME_JAR;
     const outDir = process.env.MSM_SAMPLE_MOD_OUT;
-    const isFirstTarget = bundle === builtInTargets[0];
-    it.runIf(runtimeJarPath !== undefined && outDir !== undefined && isFirstTarget)(
+    const isSelectedTarget = bundle === selectedTarget();
+    it.runIf(runtimeJarPath !== undefined && outDir !== undefined && isSelectedTarget)(
       'writes the jar with the real runtime for the headless server check',
       async () => {
         const runtimeJar = new Uint8Array(await readFile(runtimeJarPath as string));

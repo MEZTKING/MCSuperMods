@@ -1,0 +1,9 @@
+{
+  "contents": {
+    "state": "minecraft:stone",
+    "type": "minecraft:simple"
+  },
+  "layer": "datapack",
+  "path": "data/example/worldgen/block_state_provider/sample.json",
+  "schema": "resource:worldgen/block_state_provider"
+}
