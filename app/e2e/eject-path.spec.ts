@@ -23,7 +23,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { builtInTargets } from '@msm/targets';
+import { defaultTargetId, targetById } from '@msm/targets';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import { appDir, type LaunchedApp, launchApp, outputDir } from './fixtures';
 
@@ -41,8 +41,9 @@ test.afterEach(async () => {
 
 /** The current target's Fabric toolchain, read from the target rather than written here. */
 function fabricFacts(): { loader: string; loom: string; api: string; gradle: string } {
-  const bundle = builtInTargets[0];
-  if (bundle === undefined) throw new Error('No built-in target.');
+  // New projects use the default (newest release) target.
+  const bundle = targetById(defaultTargetId);
+  if (bundle === undefined) throw new Error('No default target.');
   const fabric = bundle.target.fabric;
   if (fabric === undefined) throw new Error('The built-in target has no Fabric facts.');
   return fabric;

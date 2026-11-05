@@ -21,7 +21,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { builtInTargets } from '@msm/targets';
+import { defaultTargetId, targetById } from '@msm/targets';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import { type LaunchedApp, launchApp, outputDir } from './fixtures';
@@ -50,8 +50,9 @@ const RESULT_ITEM = 'minecraft:emerald_block';
 
 /** The current target's data pack format, read from the target rather than written here. */
 function dataFormat(): { major: number; minor: number } {
-  const bundle = builtInTargets[0];
-  if (bundle === undefined) throw new Error('No built-in target.');
+  // New projects use the default (newest release) target.
+  const bundle = targetById(defaultTargetId);
+  if (bundle === undefined) throw new Error('No default target.');
   return bundle.target.packFormats.data;
 }
 

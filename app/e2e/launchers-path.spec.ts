@@ -14,7 +14,7 @@
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { builtInTargets } from '@msm/targets';
+import { defaultTargetId, targetById } from '@msm/targets';
 import { expect, type Page, test } from 'playwright/test';
 import { makeCurseForgeRoot, makeMmcRoot } from '../test/helpers/fake-launchers';
 import { buildSyntheticJar } from '../test/helpers/synthetic-jar';
@@ -44,8 +44,9 @@ const CF_ID = 'curseforge:MSM_CF';
 
 /** The built-in target's Minecraft version, read rather than written here. */
 function mcVersion(): string {
-  const bundle = builtInTargets[0];
-  if (bundle === undefined) throw new Error('No built-in target.');
+  // New projects use the default (newest release) target.
+  const bundle = targetById(defaultTargetId);
+  if (bundle === undefined) throw new Error('No default target.');
   return bundle.target.mcVersion;
 }
 
