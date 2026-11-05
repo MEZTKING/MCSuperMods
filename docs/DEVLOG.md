@@ -1229,3 +1229,21 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 **Next**
 - Wave 2: B93 runtime v1 (include the `"item": false` schema change), B94 `@msm/plugin-blocks-items`, B95 `fabric-content-jar`.
 - User: publish the 0.3.0 draft; delete the duplicate 0.1.0, 0.2.0 and 0.2.2 drafts and the stray `release-fix-tag-check` branch.
+
+---
+
+## 2026-11-05 — executor — B95 fabric-content-jar exporter
+
+**What**
+- `packages/exporters/src/fabric-content-jar/index.ts`: `createFabricContentJarExporter({ loadRuntimeJar, runtimeVersion })` (id `fabric-content-jar`, layers `resourcepack`, `datapack`, `msm`, option `separateRuntime`), `defaultFabricModJson`, `sanitiseModId`, `nestedRuntimePath`, `contentJarFileName`, `FabricContentJarProblemCodes`; exported from `src/index.ts`.
+- Jar entries: resource files under `assets/`, data files under `data/`, every `msm` file, `fabric.mod.json`, `META-INF/jars/msm_runtime-<version>.jar` when nesting, `msm.export.json`; deterministic through `createZipSink`.
+- `test/fabric-content-jar.test.ts`: 11 tests (layout, SHA-256 determinism, synthesised vs provided `fabric.mod.json`, namespace fallback, nested entry and `jars`, `separateRuntime`, `export.runtime-missing`, `export.no-fabric-target`, reserved paths, mod id sanitising).
+
+**Decisions**
+- Runtime version defaults to `meta.msmVersion` (ADR 0026 D4: runtime carries the app's version); factory `runtimeVersion` overrides.
+- Synthesised mod id: project name, else first non-`minecraft` namespace, else `msm_mod`; version `1.0.0` (ExporterInput carries no project version or namespace).
+- Resource/data files outside `assets/`/`data/` (such as `pack.mcmeta`) are left out with an `export.outside-jar-folders` info. A provided `fabric.mod.json` keeps its fields; the exporter adds `depends.msm_runtime` when absent and sets or removes the runtime `jars` entry.
+- New codes (`export.no-fabric-target`, `export.runtime-missing`, `export.invalid-mod-json`, `export.outside-jar-folders`) live in the exporter module, since `problem-codes.ts` was outside the brief.
+
+**Next**
+- Move the four codes into `ExportProblemCodes`; update `packages/exporters/CLAUDE.md`; golden test on `fixtures/sample-mod/` once it exists; B96 wires `loadRuntimeJar` in `app/main`.

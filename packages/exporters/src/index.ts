@@ -19,6 +19,21 @@ export {
   TEXTURE_META_SCHEMA,
 } from './assets';
 export { outputFileBytes } from './contents';
+export {
+  contentJarFileName,
+  createFabricContentJarExporter,
+  DEFAULT_MOD_VERSION,
+  defaultFabricModJson,
+  FABRIC_CONTENT_JAR_EXPORTER_ID,
+  FABRIC_MOD_ID_PATTERN,
+  FABRIC_MOD_JSON_FILE,
+  type FabricContentJarOptions,
+  FabricContentJarProblemCodes,
+  MSM_RUNTIME_MOD_ID,
+  nestedRuntimePath,
+  SEPARATE_RUNTIME_OPTION,
+  sanitiseModId,
+} from './fabric-content-jar/index';
 export { EXPORT_MANIFEST_FILE, EXPORT_MANIFEST_FORMAT_VERSION, exportManifest } from './manifest';
 export { type ExportProblemCode, ExportProblemCodes } from './problem-codes';
 export {
