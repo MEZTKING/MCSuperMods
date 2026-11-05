@@ -4,14 +4,14 @@ Rewritten 2026-11-05 at Phase 4 close (B102), for the next main session. Read th
 
 ## Where things stand
 
-- **Phase 4 (Engine Mod + Blocks/Items) is code complete** (briefs B90–B102; ADRs 0024–0027 accepted). App version **0.4.0**, `engine-mod` `mod_version` 0.4.0 (kept equal by `app/test/runtime-version.test.ts`). **v0.4.0 is ready to release** (see Releases); 0.3.0 is the last published release.
+- **Phase 4 (Engine Mod + Blocks/Items) is code complete** (briefs B90–B102; ADRs 0024–0027 accepted). App version **0.4.0**, `engine-mod` `mod_version` 0.4.0 (kept equal by `app/test/runtime-version.test.ts`). **v0.4.0 is published** (2026-11-05, release run built the runtime with JDK 25 and bundled it).
 - Phases 0–4 are code complete; every phase still awaits the user's in-game checks.
 - 15 packages; plugin-api 0.6.0; 55 kinds, 106 templates, 11 starters, 61 examples; eight e2e specs; `engine-mod/` `./gradlew build` runs 46 JUnit tests and 18 GameTests; CI job `engine-mod` also starts a headless 26.3 Fabric server with `fixtures/sample-mod/`.
 - **Next: Phase 5 (Entities, Models, Animation; v0.5).** Write the plan first (see "How to run a phase"): verify GeckoLib and Blockbench facts, ADR drafts, waves of briefs. A working plan may live in `docs/PHASE5-PLAN.md` while the phase runs and is deleted at close.
 
 ## Waiting on the user
 
-1. **Release 0.4.0**: with the user's go-ahead, run `release.yml` (version `0.4.0`, from the `main` tip once this close is on `main`), then `publish-release.yml`.
+1. **Install 0.4.0** (published; installed 0.3.0 copies should offer the update, the first real auto-update test) and run the in-game checks below.
 2. **In-game checks**, still pending for all phases: `fixtures/sample-resourcepack/` (stick test), `fixtures/sample-datapack/`, the Custom ore and music disc starters, `fixtures/sample-worldgen/README.md`, and now `fixtures/sample-mod/README.md` (the kitchen-sink Fabric mod: blocks, items, every component and action).
 3. **Test in Minecraft on Windows with Prism Launcher**: create the test instance, install and launch, check that a second run replaces only MCSuperMods' own files; also install-only on the official launcher.
 4. **Old housekeeping**: delete the duplicate 0.1.0, 0.2.0 and 0.2.2 drafts and the stale branches `claude/phase-4`, `release-fix-tag-check` and `ccr-d077e76e-4gnbx2` (the session's proxy refuses branch deletes).

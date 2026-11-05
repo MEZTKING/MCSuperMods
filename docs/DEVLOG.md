@@ -1488,3 +1488,19 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 **Next**
 - Orchestrator: fill `TESTS`/`SIZE` in the Milestone Log from the clean-worktree run; release 0.4.0 with the user's go-ahead; Phase 5 plan.
 - Turbo's `test` task does not hash `engine-mod/gradle.properties`, so the version test can be cached stale without `--force`.
+
+---
+
+## 2026-11-05 — main session — Phase 4 closed; v0.4.0 published
+
+**What**
+- Reviewed and committed Wave 4 (B100 Test in Minecraft, B101 `blocks-items-path` e2e and guide) and B102 (close). Added `@msm/app#test` inputs in `turbo.json` so a cached app test run notices `engine-mod/gradle.properties`.
+- Clean-worktree acceptance: 15 packages, 1,978 tests (1 skipped), build, smoke, e2e 8/8 (38.1 s), `./gradlew build` (46 JUnit, 18 GameTests), staged runtime, `dist:dir`, packaged smoke, check-size within budget (app.asar 13.3 MB). GitHub CI green (both jobs); `main` fast-forwarded to 1feb1af.
+- v0.4.0 built by `release.yml` (first run that builds `msm_runtime` with JDK 25 and bundles it) and published by `publish-release.yml`.
+
+**Decisions**
+- Phase 4 is code complete; its exit criterion still needs the user's in-game check (`fixtures/sample-mod/README.md`) and a real-launcher check of Test in Minecraft on Windows.
+
+**Next**
+- User: install 0.4.0 (auto-update from 0.3.0), in-game checks for Phases 1–4.
+- Next main session: plan Phase 5 (Entities, Models, Animation), following HANDOFF "How to run a phase".
