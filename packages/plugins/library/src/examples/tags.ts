@@ -98,7 +98,8 @@ const TAGS: readonly TagExample[] = [
     registry: 'painting_variant',
     kind: KINDS.tagPaintingVariant,
     title: 'Painting variant tag',
-    description: 'A group of painting variants; minecraft:placeable lists those a placed painting can pick.',
+    description:
+      'A group of painting variants; minecraft:placeable lists those a placed painting can pick.',
     path: 'landscapes',
     values: ['minecraft:sunset', 'minecraft:sea', 'minecraft:lowmist'],
     usage: (id) =>

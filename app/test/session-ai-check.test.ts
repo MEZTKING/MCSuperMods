@@ -88,9 +88,7 @@ describe('ProjectSession.checkProject (ADR 0041 D4)', () => {
     expect(mod).toBeDefined();
     const stack = new CommandStack(project);
     stack.execute(commands.addNamespace('zzz_extra'));
-    stack.execute(
-      commands.addElement({ ...structuredClone(mod as Element), id: 'zzz_extra:mod' }),
-    );
+    stack.execute(commands.addElement({ ...structuredClone(mod as Element), id: 'zzz_extra:mod' }));
     const problems = await session.checkProject(stack.state);
     const conflicts = problems.filter((problem) => problem.code === 'lowering.conflict');
     expect(conflicts.length).toBeGreaterThan(0);

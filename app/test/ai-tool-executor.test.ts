@@ -506,6 +506,44 @@ describe('createToolExecutor: proposals', () => {
     expect(kinds).not.toContain('minecraft:pack_mcmeta');
   });
 
+  it('add_starter stamps meta.creator on the create items of a Creator flow (B192)', async () => {
+    const fixture = await setup();
+    const flow = await fixture.call('add_starter', {
+      starterId: 'custom_ore',
+      namespace: 'demo',
+      values: { ore_name: 'Sapphire' },
+    });
+    expect(flow.result.isError, flow.result.content).toBe(false);
+    const creates = fixture.changeset.items.filter((item) => item.op === 'create');
+    expect(creates.length).toBeGreaterThan(0);
+    const setIds = new Set(creates.map((item) => item.meta?.creator?.setId));
+    expect(setIds.size).toBe(1);
+    expect([...setIds][0]).toMatch(/^[0-9a-f-]{36}$/);
+    for (const item of creates) {
+      expect(item.meta?.creator).toMatchObject({
+        flowId: 'custom_ore',
+        generatedId: item.elementId,
+      });
+      expect(item.meta?.creator?.values.ore_name).toBe('Sapphire');
+    }
+    expect(
+      fixture.changeset.items
+        .filter((item) => item.op === 'asset')
+        .every((item) => item.meta?.creator === undefined),
+    ).toBe(true);
+
+    // A starter that is not a Creator flow writes no stamp.
+    const before = fixture.changeset.items.length;
+    const plain = await fixture.call('add_starter', {
+      starterId: 'custom-sword',
+      namespace: 'demo',
+    });
+    expect(plain.result.isError, plain.result.content).toBe(false);
+    const added = fixture.changeset.items.slice(before);
+    expect(added.length).toBeGreaterThan(0);
+    expect(added.every((item) => item.meta?.creator === undefined)).toBe(true);
+  });
+
   it('runs the calls of one turn one at a time, in arrival order', async () => {
     const fs = createMemoryFileSystem();
     const { session } = newSession(fs);

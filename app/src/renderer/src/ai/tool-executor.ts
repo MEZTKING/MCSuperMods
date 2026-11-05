@@ -48,6 +48,7 @@ import {
   type PendingChangeset,
   planChangeItems,
 } from '../changeset/changeset';
+import { creatorValues, stampItems } from '../changeset/creator-sets';
 import { defaultRawValues, toValues, validateParameter } from '../components/wizard/wizard-model';
 import { assetImportError } from '../session/asset-files';
 import { assertElementIdAllowed, presentSingletonKinds } from '../session/element-defaults';
@@ -911,12 +912,13 @@ export function createToolExecutor(
         );
       }
       let created: ReturnType<typeof bundleToNewItems>;
+      const starterValues = toValues(parameters, raw);
       try {
         const bundle = await starter.build({
           namespace,
           projectName: state.name,
           target,
-          values: toValues(parameters, raw),
+          values: starterValues,
         });
         for (const entry of bundle.elements) assertElementIdAllowed(entry.kind, entry.id);
         // A project has one pack.mcmeta and one mod metadata element: a starter's own are
@@ -930,6 +932,15 @@ export function createToolExecutor(
           (kind) => session.registry.get(kind) !== undefined,
         );
         created.conflicts.push(...dropped.map((entry) => entry.id));
+        // A Creator flow's elements carry `meta.creator`, so the set reopens in the Creator
+        // ("Edit in Creator", ADR 0043 D5).
+        if (starter.creator !== undefined) {
+          created.items = stampItems(created.items, {
+            flowId: starter.id,
+            setId: crypto.randomUUID(),
+            values: creatorValues(starterValues),
+          });
+        }
       } catch (error) {
         throw new ToolError(
           ToolErrorCodes.starterFailed,
