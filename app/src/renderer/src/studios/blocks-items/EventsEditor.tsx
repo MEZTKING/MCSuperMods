@@ -2,7 +2,8 @@
  * The events editor shared by the Block, Item and Entity Studios (B97, B118): add, rename and
  * remove events, and edit each event's ordered action list (add, remove, reorder, change type,
  * and the fields of the format v1 actions with their ADR 0025 D4 defaults, including
- * `run_script` with its handler picked from the project's scripts or typed, ADR 0032 D4;
+ * `run_script` with its handler picked from the project's scripts or typed, ADR 0032 D4, and
+ * `apply_effect` with its mob effect, seconds, amplifier and target, ADR 0044 D2;
  * entity events also offer `play_animation`, ADR 0028).
  *
  * Renaming rewrites the references in trigger components and `trigger_event` actions in one
@@ -162,6 +163,18 @@ function ActionFieldEditor(props: {
       );
     case 'handler':
       return <HandlerField label={label} value={value} handlers={props.handlers} set={set} />;
+    case 'choice':
+      return (
+        <SelectField
+          label={label}
+          value={typeof value === 'string' && value !== '' ? value : undefined}
+          choices={field.choices ?? []}
+          emptyLabel={
+            typeof field.defaultValue === 'string' ? `(default: ${field.defaultValue})` : '(none)'
+          }
+          onChange={(next) => set(field.key, next)}
+        />
+      );
   }
 }
 

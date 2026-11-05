@@ -44,16 +44,27 @@ export interface ActionField {
    * `id`: a registry id (with {@link registry}); `text`: free text; `int`/`float`: a number;
    * `offset`: three integers; `event`: an event of the same element; `animation`: an
    * animation name offered by the host (the entity's animation set); `handler`: a script
-   * handler id (`msm.actions.define`), offered from the project's scripts or typed.
+   * handler id (`msm.actions.define`), offered from the project's scripts or typed; `choice`:
+   * one of {@link choices}.
    */
-  type: 'id' | 'text' | 'int' | 'float' | 'offset' | 'event' | 'animation' | 'handler';
+  type: 'id' | 'text' | 'int' | 'float' | 'offset' | 'event' | 'animation' | 'handler' | 'choice';
   /** The registry suggestions come from, for `id` fields. */
   registry?: string;
+  /** The values a `choice` field offers. */
+  choices?: readonly string[];
+  /** The value {@link newAction} writes for a required field (otherwise an empty string). */
+  initialValue?: Json;
   /** Whether the field must be set. */
   required: boolean;
   /** The value the runtime uses when the field is absent (ADR 0025 D4). */
   defaultValue?: Json;
 }
+
+/**
+ * Who an `apply_effect` action affects (`EffectTarget` in `action.mcdoc`): `self` is the
+ * event's player (an entity without one: itself), `other` the other entity of the event.
+ */
+export const EFFECT_TARGETS: readonly string[] = Object.freeze(['self', 'other']);
 
 /** One action type of format v1. */
 export interface ActionSpec {
@@ -63,8 +74,9 @@ export interface ActionSpec {
 }
 
 /**
- * The actions of format v1 with their fields and defaults: the six of ADR 0025 D4 plus
- * `run_script` (ADR 0032 D4), which calls a handler a script defines.
+ * The actions of format v1 with their fields and defaults: the six of ADR 0025 D4,
+ * `run_script` (ADR 0032 D4), which calls a handler a script defines, and `apply_effect`
+ * (ADR 0044 D2), which gives a mob effect to the event's player or the other entity.
  */
 export const ACTIONS: readonly ActionSpec[] = Object.freeze([
   {
@@ -125,6 +137,23 @@ export const ACTIONS: readonly ActionSpec[] = Object.freeze([
     label: 'Run script',
     fields: [{ key: 'handler', label: 'Handler', type: 'handler', required: true }],
   },
+  {
+    type: 'apply_effect',
+    label: 'Apply effect',
+    fields: [
+      { key: 'effect', label: 'Effect', type: 'id', registry: 'mob_effect', required: true },
+      { key: 'seconds', label: 'Seconds', type: 'float', required: true, initialValue: 10 },
+      { key: 'amplifier', label: 'Amplifier', type: 'int', required: false, defaultValue: 0 },
+      {
+        key: 'target',
+        label: 'Target',
+        type: 'choice',
+        choices: EFFECT_TARGETS,
+        required: false,
+        defaultValue: 'self',
+      },
+    ],
+  },
 ] satisfies ActionSpec[]);
 
 /** `play_animation` (ADR 0028), which only entity events may use. */
@@ -167,7 +196,8 @@ export function newAction(type: string, events: readonly string[], ownEvent?: st
   for (const field of spec?.fields ?? []) {
     if (!field.required) continue;
     action[field.key] =
-      field.type === 'event' ? (events.find((name) => name !== ownEvent) ?? '') : '';
+      field.initialValue ??
+      (field.type === 'event' ? (events.find((name) => name !== ownEvent) ?? '') : '');
   }
   return action;
 }

@@ -163,3 +163,28 @@ export function displayName(
   }
   return undefined;
 }
+
+/**
+ * The asset path of a painting variant's picture: `asset_id` `<ns>:<path>` names
+ * `<textures>/painting/<path>.png` in `<ns>`.
+ */
+export function paintingTexturePath(
+  assetId: string,
+  folders: ResourceFolders,
+): { namespace: string; path: string } {
+  return texturePath(normaliseId(assetId).replace(':', ':painting/'), folders);
+}
+
+/**
+ * The bytes of a painting variant's picture: the bundle's own file first, then `fallback`
+ * (the project's files), `null` when neither has it.
+ */
+export async function paintingTextureBytes(
+  bundle: ContentBundle,
+  assetId: string,
+  folders: ResourceFolders,
+  fallback: (namespace: string, path: string) => Promise<Uint8Array | null>,
+): Promise<Uint8Array | null> {
+  const { namespace, path } = paintingTexturePath(assetId, folders);
+  return bundleAssetReader(bundle, fallback)(namespace, path).catch(() => null);
+}
