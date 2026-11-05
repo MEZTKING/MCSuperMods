@@ -1,0 +1,26 @@
+{
+  "data": {
+    "category": "equipment",
+    "key": {
+      "I": "minecraft:emerald",
+      "S": "minecraft:stick"
+    },
+    "pattern": [
+      "I",
+      "I",
+      "S"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_starter:ruby_sword"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_sword_from_emerald",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Two emeralds above a stick craft a ruby sword, like the vanilla swords. Element ids are unique across kinds, so the recipe cannot share the sword's id ruby_sword and has a name of its own."
+  }
+}

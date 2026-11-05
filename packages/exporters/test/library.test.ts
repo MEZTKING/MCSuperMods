@@ -134,17 +134,59 @@ function buildEntry(
   namespace: string,
   projectName: string,
   target: TargetFacts = DEFAULT_BUNDLE.target,
+  overrides: Readonly<Record<string, Json>> = {},
 ): ContentBundle {
   const parameters = 'parameters' in entry ? (entry.parameters ?? []) : [];
-  const values = Object.fromEntries(
-    parameters.map((parameter) => [parameter.id, parameter.default]),
-  );
+  const values = {
+    ...Object.fromEntries(parameters.map((parameter) => [parameter.id, parameter.default])),
+    ...overrides,
+  };
   return requireSyncResult(entry.build({ namespace, projectName, target, values }), entry.id);
+}
+
+/**
+ * Alternative wizard answers (ADR 0040): every parameterised starter is also built with these,
+ * and once more with {@link minimumValues}, and must validate and export with zero problems.
+ */
+const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>[]>> = {
+  custom_ore: [
+    { ore_name: 'Amber', colour: '#de9420', drop_max: 9, tool_tier: 'diamond', make_block: false },
+  ],
+  'custom-sword': [
+    {
+      sword_name: 'Frost Blade',
+      colour: '#2454c4',
+      tool_tier: 'iron',
+      durability: 250,
+      ingredient: 'minecraft:diamond',
+    },
+  ],
+  custom_mob: [
+    { mob_name: 'Cave Troll', behaviour: 'hostile', spawn_biomes: '#minecraft:is_taiga' },
+    { mob_name: 'Moss Sheep', behaviour: 'peaceful', spawn_biomes: '#minecraft:is_badlands' },
+  ],
+};
+
+/**
+ * Every number at its minimum, every boolean flipped and every choice at its last entry; strings
+ * and colours keep their defaults.
+ */
+function minimumValues(starter: ProjectStarter): Record<string, Json> {
+  const values: Record<string, Json> = {};
+  for (const parameter of starter.parameters ?? []) {
+    if (parameter.type === 'number') values[parameter.id] = parameter.min ?? parameter.default;
+    if (parameter.type === 'boolean') values[parameter.id] = !parameter.default;
+    if (parameter.type === 'choice') {
+      values[parameter.id] = parameter.choices.at(-1)?.value ?? parameter.default;
+    }
+  }
+  return values;
 }
 
 /** The content starters mirrored under `examples/starters/`. */
 const MIRRORED_STARTERS = [
   'custom_ore',
+  'custom-sword',
   'recipe_pack',
   'music_disc',
   'function_starter',
@@ -855,6 +897,48 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         await checkProject(bundle, context, built);
       },
     );
+
+    const wizardCases = starters.flatMap((starter) =>
+      (starter.parameters ?? []).length === 0
+        ? []
+        : [
+            ...(WIZARD_ALTERNATIVES[starter.id] ?? []).map(
+              (values, index) =>
+                [`${starter.id} alternative ${index + 1}`, starter, values] as const,
+            ),
+            [`${starter.id} minimums`, starter, minimumValues(starter)] as const,
+          ],
+    );
+
+    it('has alternative answers for every wizard starter (ADR 0040)', () => {
+      for (const starter of starters.filter((entry) => (entry.parameters ?? []).length > 0)) {
+        expect(WIZARD_ALTERNATIVES[starter.id], starter.id).toBeDefined();
+      }
+    });
+
+    it.each(wizardCases)(
+      'wizard %s loads, validates and exports with zero problems',
+      async (_label, starter, values) => {
+        const built = await buildProject('Wizard Test', 'demo', [
+          buildEntry(starter, 'demo', 'Wizard Test', bundle.target, values),
+        ]);
+        const files = await checkProject(bundle, context, built);
+        expect(files.jarFiles.length).toBeGreaterThan(0);
+      },
+    );
+
+    it('the Custom sword starter exports a sword in the Fabric mod jar (ADR 0040)', async () => {
+      const built = await buildProject('Sword', 'demo', [
+        buildEntry(starterById('custom-sword'), 'demo', 'Sword', bundle.target),
+      ]);
+      const { resourceFiles, dataFiles, jarFiles } = await checkProject(bundle, context, built);
+      const { resource, data } = bundle.target.folders;
+      expect(resourceFiles).toContain(`assets/demo/${resource.model}/item/ruby_sword.json`);
+      expect(resourceFiles).toContain('assets/demo/textures/item/ruby_sword.png');
+      expect(dataFiles).toContain(`data/demo/${data.recipe}/ruby_sword_from_emerald.json`);
+      expect(jarFiles).toContain('msm/demo/item/ruby_sword.json');
+      expect(jarFiles).toContain('fabric.mod.json');
+    });
 
     it('the Custom ore starter adds a real ruby ore, ruby and block of ruby (ADR 0025)', async () => {
       const built = await buildProject('Ore', 'demo', [

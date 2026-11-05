@@ -273,7 +273,9 @@ describe('project starters', () => {
   });
 
   it('builds the Custom sword starter: an msm:item sword with a handheld model, recipe and name', () => {
-    const sword = libraryStarters.find((starter) => starter.id === 'custom-sword') as ProjectStarter;
+    const sword = libraryStarters.find(
+      (starter) => starter.id === 'custom-sword',
+    ) as ProjectStarter;
     expect(sword.title).toBe('Custom sword');
     expect(sword.category).toBe('content');
     expect(sword.description).toMatch(/Fabric mod jar/);

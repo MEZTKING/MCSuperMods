@@ -1,0 +1,24 @@
+{
+  "data": {
+    "components": {
+      "msm:durability": {
+        "max": 1561
+      },
+      "msm:tool": {
+        "tier": "diamond",
+        "type": "sword"
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_starter:item/ruby_sword"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_sword",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new item. msm:tool makes it a sword of the diamond tier, so its attack damage and attack speed are those of the vanilla diamond sword. msm:durability gives it 1561 uses before it breaks (instead of the tier's own durability) and keeps it in stacks of one. Its English name comes from the language file below. The sword reaches the game only in the Fabric mod jar export; the vanilla packs carry its model, texture, name and recipe."
+  }
+}

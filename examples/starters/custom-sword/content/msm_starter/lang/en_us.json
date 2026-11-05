@@ -1,0 +1,12 @@
+{
+  "data": {
+    "item.msm_starter.ruby_sword": "Ruby Sword"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:en_us",
+  "kind": "minecraft:lang",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The English name of the sword: the key item.msm_starter.ruby_sword is the translation key of the item msm_starter:ruby_sword. Another language file (for example de_de) can give it a name in that language. Setting display_name on the item writes the same key for you."
+  }
+}

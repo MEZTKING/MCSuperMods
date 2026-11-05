@@ -57,7 +57,7 @@ const PINNED: Record<PlaceholderPattern, string> = {
   gem: '875d1b156d354c2310f5167f3fa6803eea063b38adc7b35d501a1882e5482c28',
   disc: 'a8c7d397e6b78ba544c7657e79cb03363ace66f202c081bf5619edb3acfb0b95',
   egg: '249b1b90e8fba88bfd0018b3e38633b244d57185834bdafba9a6259cd532e724',
-  sword: 'SWORD_HASH',
+  sword: '5612e754418698361acac031cae58f83c4a577130d3bc02d7bf6391a2fa75c8d',
 };
 
 /** SHA-256 of the entity skin in the default colour. */

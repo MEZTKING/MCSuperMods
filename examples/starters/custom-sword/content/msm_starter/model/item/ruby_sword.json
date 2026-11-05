@@ -1,0 +1,15 @@
+{
+  "data": {
+    "parent": "minecraft:item/handheld",
+    "textures": {
+      "layer0": "msm_starter:item/ruby_sword"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:item/ruby_sword",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A handheld item model: held like a tool, drawn from textures/item/ruby_sword.png. Paint over the placeholder to restyle the blade."
+  }
+}
