@@ -9,7 +9,7 @@ import type {
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, { worldgenKinds, worldgenTemplates } from '../src/index';
-import { blockingProblems, indexesFor } from './support';
+import { blockingProblems, indexesFor, withoutKnownGap } from './support';
 
 /** The first target's facts without its hooks: a template context is plain data. */
 const {
@@ -185,7 +185,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         const kind = kindOf(template);
         const context = contextFor(template, bundle.target);
         const data = await template.data(context);
-        expect(blockingProblems(indexes, kind.schema, data)).toEqual([]);
+        expect(
+          withoutKnownGap(blockingProblems(indexes, kind.schema, data), indexes, kind.schema),
+        ).toEqual([]);
         const files = await kind.lower(
           {
             formatVersion: 1,
@@ -200,7 +202,13 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         const [file] = files;
         if (file === undefined) throw new Error('no output');
         expect(file.layer).toBe('datapack');
-        expect(blockingProblems(indexes, file.schema ?? '', file.contents as Json)).toEqual([]);
+        expect(
+          withoutKnownGap(
+            blockingProblems(indexes, file.schema ?? '', file.contents as Json),
+            indexes,
+            file.schema ?? '',
+          ),
+        ).toEqual([]);
       },
     );
   },

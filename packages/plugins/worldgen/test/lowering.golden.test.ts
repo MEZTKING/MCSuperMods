@@ -5,7 +5,7 @@ import type { Element, ElementKind, Json, OutputFile, ResourceLocation } from '@
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import { kindFor, worldgenKinds } from '../src/index';
-import { blockingProblems, indexesFor, sortedJson } from './support';
+import { blockingProblems, indexesFor, sortedJson, withoutKnownGap } from './support';
 
 /** Set `UPDATE_GOLDENS=1` to rewrite the expected files instead of comparing. */
 const UPDATE = process.env.UPDATE_GOLDENS === '1';
@@ -138,8 +138,20 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         if (file === undefined) throw new Error('no output');
         expect(file.schema).toBe(sample.kind.schema);
         const indexes = await indexesFor(bundle);
-        expect(blockingProblems(indexes, sample.kind.schema, sample.data)).toEqual([]);
-        expect(blockingProblems(indexes, file.schema ?? '', file.contents as Json)).toEqual([]);
+        expect(
+          withoutKnownGap(
+            blockingProblems(indexes, sample.kind.schema, sample.data),
+            indexes,
+            sample.kind.schema,
+          ),
+        ).toEqual([]);
+        expect(
+          withoutKnownGap(
+            blockingProblems(indexes, file.schema ?? '', file.contents as Json),
+            indexes,
+            file.schema ?? '',
+          ),
+        ).toEqual([]);
 
         const actual = sortedJson(recorded(file));
         const url = fixtureUrl(targetId, sample);

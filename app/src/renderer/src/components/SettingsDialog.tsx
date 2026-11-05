@@ -53,7 +53,7 @@ export interface SettingsDialogProps {
    */
   plugins?: readonly ExternalPluginState[];
   /** Opens the plugins folder (`<msmHome>/plugins/`, created when missing). */
-  onOpenPluginsFolder?(): Promise<void>;
+  onOpenPluginsFolder?: (() => Promise<void>) | undefined;
 }
 
 /** The label of a plugin state in Settings > Plugins. */

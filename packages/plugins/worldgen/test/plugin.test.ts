@@ -13,7 +13,7 @@ import plugin, {
   worldgenTemplates,
   worldgenValidators,
 } from '../src/index';
-import { blockingProblems, indexesFor } from './support';
+import { blockingProblems, indexesFor, withoutKnownGap } from './support';
 
 /** The fourteen kinds of ADR 0022 D4, in order: tier A, then tier B. */
 const KIND_IDS = [
@@ -158,8 +158,20 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         expect(file.schema).toBe(kind.schema);
         expect(file.contents).toEqual(kind.defaultData);
         const indexes = await indexesFor(bundle);
-        expect(blockingProblems(indexes, kind.schema, kind.defaultData as Json)).toEqual([]);
-        expect(blockingProblems(indexes, file.schema ?? '', file.contents as Json)).toEqual([]);
+        expect(
+          withoutKnownGap(
+            blockingProblems(indexes, kind.schema, kind.defaultData as Json),
+            indexes,
+            kind.schema,
+          ),
+        ).toEqual([]);
+        expect(
+          withoutKnownGap(
+            blockingProblems(indexes, file.schema ?? '', file.contents as Json),
+            indexes,
+            file.schema ?? '',
+          ),
+        ).toEqual([]);
       },
     );
   },

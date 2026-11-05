@@ -365,7 +365,7 @@ describe('ProjectSession validators', () => {
     );
   });
 
-  it('blocks only on errors of elements in the exported layers', () => {
+  it('blocks only on errors of elements in the exported layers', async () => {
     const project = {
       name: 'p',
       namespaces: [
@@ -390,11 +390,13 @@ describe('ProjectSession validators', () => {
       { severity: 'warning', code: 'z', message: 'warn' },
     ];
     const lowerData = () => [{ layer: 'datapack' as const }];
-    expect(codes(blockingValidatorErrors(problems, project, lowerData, ['datapack']))).toEqual([
+    expect(codes(await blockingValidatorErrors(problems, project, lowerData, ['datapack']))).toEqual([
       'x',
       'y',
     ]);
-    expect(codes(blockingValidatorErrors(problems, project, lowerData, ['resourcepack']))).toEqual([
+    expect(
+      codes(await blockingValidatorErrors(problems, project, lowerData, ['resourcepack'])),
+    ).toEqual([
       'x',
     ]);
   });

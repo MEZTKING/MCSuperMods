@@ -79,6 +79,38 @@ export function blockingProblems(
   );
 }
 
+/** The schema reference of noise settings, the one kind with a known gap between targets. */
+export const NOISE_SETTINGS_SCHEMA = 'resource:worldgen/noise_settings';
+
+/**
+ * Whether the target's noise settings schema has `default_block`. The worldgen default data
+ * and the noise settings template carry it (required on the release target); a newer target's
+ * vanilla-mcdoc gates it out, so there the schema check reports one `schema.unknown-field`
+ * (the known gap, B153: no shared data is valid on both, and the plugin may not know versions).
+ */
+export function noiseSettingsHasDefaultBlock(indexes: TargetIndexes): boolean {
+  const node = indexes.schemaIndex.resolveSchemaRef(NOISE_SETTINGS_SCHEMA);
+  return node.kind === 'struct' && node.fields.some((field) => field.key === 'default_block');
+}
+
+/**
+ * `problems` without the known noise settings gap: on a target whose schema lacks
+ * `default_block`, exactly one `schema.unknown-field` at `/default_block` is removed; anything
+ * else stays. `templates.test.ts` asserts the gap itself.
+ */
+export function withoutKnownGap(
+  problems: readonly SchemaProblem[],
+  indexes: TargetIndexes,
+  schemaRef: string,
+): SchemaProblem[] {
+  if (schemaRef !== NOISE_SETTINGS_SCHEMA || noiseSettingsHasDefaultBlock(indexes)) {
+    return [...problems];
+  }
+  const gap = (problem: SchemaProblem): boolean =>
+    problem.code === 'schema.unknown-field' && problem.path === '/default_block';
+  return problems.filter((problem) => !gap(problem));
+}
+
 /** JSON text with sorted keys, 2-space indent and a trailing newline (project file style). */
 export function sortedJson(value: unknown): string {
   const sort = (input: unknown): unknown => {
