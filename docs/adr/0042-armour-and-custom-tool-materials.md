@@ -88,4 +88,4 @@ A custom material's mining level is whatever its `incorrect_blocks_for_drops` ta
 
 ## Status
 
-Proposed (2026-11-05). Implemented by B180 (schema, plugins, targets), B181 (runtime), B182 (eject, sample mod, parity); accepted with the 0.7.0 release. Record here: the 26.3 and 26.4 class differences found, the per-slot durability multipliers verified from `ArmorType.getDurability`, and whether `#[id(registry=..., tags="required")]` is the right mcdoc attribute for a tag-only string in the vendored symbol format.
+Proposed (2026-11-05). Implemented by B180 (schema, plugins, targets), B181 (runtime), B182 (eject, sample mod, parity); accepted with the 0.7.0 release. Amended the same day by [ADR 0044](0044-gear-weapons-and-consumables.md) D5: `ArmorSlot` gains `horse` and `wolf` (0.8.0, B186–B187), using the equipment layers `horse_body` and `wolf_body`. Record here: the 26.3 and 26.4 class differences found, the per-slot durability multipliers verified from `ArmorType.getDurability`, and whether `#[id(registry=..., tags="required")]` is the right mcdoc attribute for a tag-only string in the vendored symbol format.

@@ -460,6 +460,15 @@ User request of 2026-11-05: beginners should see in real time what they make, wi
 - [ ] Scenario test, e2e `creator-path`, guide `creator.md`, armour in `blocks-and-items.md` (B185).
 - Follow-up: blocks that *require* a custom tier (`min_tier` as a tag); a stored generator version in `meta.creator` if generator fixes make old sets look edited.
 
+### Phase 7 add-on — Gear, weapons and consumables (v0.8.0)
+
+The user's follow-up of 2026-11-05 ("armour was only an example; add others that fit"). Chosen by value for beginners against cost after checking MSM and the 26.3 game: [ADR 0044](adr/0044-gear-weapons-and-consumables.md); plan in [CREATOR-PLAN.md](CREATOR-PLAN.md) (B186–B191). The Gear set's smithing `upgrade_from` option ships in 0.7.0 (B183).
+
+- [ ] Format: `msm:components` (vanilla component passthrough validated by the target's mcdoc), `msm:consumable` with effects, `msm:ranged_weapon` (bow, crossbow), `msm:shield`, `msm:death_protection`, tool types `spear` and `mace`, armour slots `horse` and `wolf`, action `apply_effect`, the `image` parameter type (B186).
+- [ ] Runtime: the passthrough decoder, `MsmBowItem`, `MsmCrossbowItem`, `MsmMaceItem`, spears, horse and wolf armour, GameTests (B187); eject, sample mod, parity (B188).
+- [ ] Flows: Weapon, Consumable, Totem, Enchantment, Painting, Music disc item; Gear set pieces spear, mace, bow, crossbow, shield, horse and wolf armour, and `trim_material` (B189); Creator previews and the image field (B190); tests, guide, release 0.8.0 (B191).
+- Deferred to post-1.0 with reasons in ADR 0044 D8: trident-style throwables and custom projectiles, custom status effects, armour trim patterns, banner patterns, gliders.
+
 ### Exit criteria
 
 Two targets supported; an external plugin works; 1.0 released.
@@ -481,6 +490,7 @@ Not committed; each needs an ADR before work starts.
 - **Collaboration**: shared projects beyond git, such as live co-editing.
 - **Marketplace**: discovery and install for third-party plugins and templates.
 - **Pre-26.1 vanilla export**: 1.21.x pack export via a target plugin, using existing mcdoc schemas.
+- **More gear and content types** (deferred from [ADR 0044](adr/0044-gear-weapons-and-consumables.md) D8): trident-style throwables and custom projectile entities (need a projectile entity and renderer), custom status effects (a code registry needing a script tick hook), armour trim patterns (per-layer textures), banner patterns, a glider flow.
 - **AI assistant (user request, 2026-11-04)**: moved ahead of 1.0 on 2026-11-05 as the "AI helper" add-on of Phase 7 ([ADR 0041](adr/0041-ai-helper.md)). Later ideas for it: persisted conversations with their own retention rules, a base URL setting for proxies, server-side compaction for very long build runs, a stored generator version in Creator metadata.
 
 ## Milestone Log
