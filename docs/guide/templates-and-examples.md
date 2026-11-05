@@ -8,7 +8,7 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 | **Project starters** (13) | **New from starter…** | A new project, already filled |
 | **Examples** (69) | **Help → Examples…** | A commented project or element to open or copy |
 
-Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, and scripting plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](../adr/0020-templates-starters-examples.md)).
+Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, and scripting plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
 
 No starter or example contains Mojang files. Textures are small placeholder images that MCSuperMods draws itself; the music disc plays a track from your own copy of the game.
 
@@ -471,7 +471,7 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 | `examples/starters/custom_mob/` | `msm_starter` | The Custom mob starter |
 | `examples/starters/scripted_ore/` | `msm_starter` | The Scripted ore starter |
 
-Copy a folder somewhere else before opening it, so your edits do not change the repository. See [examples/README.md](../../examples/README.md).
+Copy a folder somewhere else before opening it, so your edits do not change the repository. See [examples/README.md](https://github.com/MEZTKING/MCSuperMods/blob/main/examples/README.md).
 
 ## Replacing the placeholders
 

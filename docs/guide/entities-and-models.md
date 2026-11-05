@@ -118,7 +118,7 @@ Install the jar with Fabric API as described in [Install the mod in a Fabric gam
 3. The mob looks like the preview and plays its idle animation; its walk animation plays as it moves.
 4. Its goals, events and drops behave as set, and it spawns in its biomes in new chunks.
 
-The sample mob project has a full checklist: [`fixtures/sample-mob/README.md`](../../fixtures/sample-mob/README.md#in-game-check-windows-minecraft-java-263).
+The sample mob project has a full checklist: [`fixtures/sample-mob/README.md`](https://github.com/MEZTKING/MCSuperMods/blob/main/fixtures/sample-mob/README.md#in-game-check-windows-minecraft-java-263).
 
 ## Troubleshooting
 

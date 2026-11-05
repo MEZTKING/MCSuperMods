@@ -15,8 +15,8 @@ How to use MCSuperMods to make resource packs, data packs and Fabric mods with n
 
 More help:
 
-- [Using Prism Launcher or the CurseForge app](../../README.md#using-prism-launcher-or-the-curseforge-app): where instances are found and how to choose the install target.
-- [Known limitations](../../README.md#known-limitations).
-- [`examples/`](../../examples/README.md): the examples as ordinary projects you can open with **File → Open Project…**.
+- [Using Prism Launcher or the CurseForge app](https://github.com/MEZTKING/MCSuperMods/blob/main/README.md#using-prism-launcher-or-the-curseforge-app): where instances are found and how to choose the install target.
+- [Known limitations](https://github.com/MEZTKING/MCSuperMods/blob/main/README.md#known-limitations).
+- [`examples/`](https://github.com/MEZTKING/MCSuperMods/blob/main/examples/README.md): the examples as ordinary projects you can open with **File → Open Project…**.
 
-The guide describes the current release. The design behind the app is in [DESIGN.md](../DESIGN.md); what comes next is in the [roadmap](../ROADMAP.md).
+The guide describes the current release. The design behind the app is in [DESIGN.md](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/DESIGN.md); what comes next is in the [roadmap](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/ROADMAP.md).

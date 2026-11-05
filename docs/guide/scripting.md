@@ -110,7 +110,7 @@ What that means in practice:
 
 Install the jar with Fabric API as described in [Install the mod in a Fabric game](blocks-and-items.md#install-the-mod-in-a-fabric-game), or use **Test in Minecraft…**. Then open the game log and try each script's event in a creative world.
 
-The sample script project has a full checklist, one row per event: [`fixtures/sample-script/README.md`](../../fixtures/sample-script/README.md#in-game-check-windows-minecraft-java-263).
+The sample script project has a full checklist, one row per event: [`fixtures/sample-script/README.md`](https://github.com/MEZTKING/MCSuperMods/blob/main/fixtures/sample-script/README.md#in-game-check-windows-minecraft-java-263).
 
 ## Troubleshooting
 

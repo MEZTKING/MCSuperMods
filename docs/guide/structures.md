@@ -87,10 +87,10 @@ Both ask for a folder, and both are disabled while the data pack has errors. The
 
 ## Check it in the game
 
-The full in-game check of the sample hamlet and biome, with the exact commands and what to expect, is in the [sample worldgen README](../../fixtures/sample-worldgen/README.md#in-game-check-windows-minecraft-java-263).
+The full in-game check of the sample hamlet and biome, with the exact commands and what to expect, is in the [sample worldgen README](https://github.com/MEZTKING/MCSuperMods/blob/main/fixtures/sample-worldgen/README.md#in-game-check-windows-minecraft-java-263).
 
 ## Where next
 
 - [Worldgen](worldgen.md): custom biomes, features and World Types.
 - [Templates, starters and examples](templates-and-examples.md).
-- [Known limitations](../../README.md#known-limitations).
+- [Known limitations](https://github.com/MEZTKING/MCSuperMods/blob/main/README.md#known-limitations).
