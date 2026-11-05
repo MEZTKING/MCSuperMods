@@ -38,6 +38,8 @@ An optional `group?: string` on each parameter names the wizard step it is shown
 - Type-level narrowing (`TargetFacts` in plugin signatures) is source compatible for every built-in: a `Target` is a `TargetFacts`.
 - `lowerProject` stays for tests and tools; the async driver is the one the app runs.
 
+**D8 (amendment, 2026-11-05, after B153). Per-target default data.** `ElementKind` gains an optional `defaultDataFor?: (target: TargetFacts) => MaybePromise<Json>`; the host uses it for new elements, templates' fallback data and starters when present, and `defaultData` otherwise. B153 found that `minecraft:worldgen/noise_settings` has no data valid on both targets (26.3 requires `default_block`, 26.4's schema removes it). The worldgen plugin derives the 26.4 shape from the target's schema facts, not from a version literal; B156 implements it with the wizard parameters, and the test-only `withoutKnownGap` allowances are removed then. Additive and optional, so it stays inside 1.0.0.
+
 ## Status
 
 Proposed (2026-11-05). Implemented by B152 (package, core driver, built-in ranges), used by B153, B154, B156 and B160; accepted at Phase 7 close.
