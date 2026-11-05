@@ -73,7 +73,7 @@ Written 2026-11-05 by the main session that ran Phases 0–3, for the next main 
 
 ## Environment notes
 
-- This container has Node 24.22.2 and pnpm 12.16.1 on the PATH (`/root/.local/bin`), Java 21 and Gradle 8.14.3. **Phase 4 needs Java 25** for `engine-mod/` (verify at implementation); install it or record the gap before the spike.
+- Containers differ between sessions. On 2026-11-05 the default `node` was 22; Node 24.22.1 was at `/opt/node24/bin` (put it first on PATH). `pnpm turbo ...` failed there with "Exec format error"; run `node_modules/.bin/turbo` directly. JDK 25 (Temurin 25.0.5) was installed by hand at `/root/jdk/jdk-25.0.5+8` (system Java is 21); a new container needs it again (`api.adoptium.net/v3/binary/latest/25/ga/linux/x64/jdk/hotspot/normal/eclipse`).
 - Playwright: use the pre-installed Chromium; headless app runs need `xvfb-run -a`. Native Electron menus cannot be clicked in e2e: drive commands through the palette.
 - The user is on Windows with Node 26 (engines `>=24 <27`), PowerShell; README "Try it" covers their setup.
 
