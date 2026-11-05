@@ -16,6 +16,11 @@
       "dependsOn": [],
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/engine-mod/gradle.properties"],
       "outputs": []
+    },
+    "@msm/site#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/docs/guide/**"],
+      "outputs": [".vitepress/dist/**"]
     }
   }
 }
