@@ -1,6 +1,6 @@
 /**
- * The Examples gallery (ADR 0020): one commented example per registered kind, then the four
- * content starters as complete projects.
+ * The Examples gallery (ADR 0020): one commented example per registered kind, the blocks and
+ * items behaviour examples, then the four content starters as complete projects.
  */
 import type { ExampleProject } from '@msm/plugin-api';
 import { KINDS } from '../content/bundle';
@@ -10,6 +10,7 @@ import {
   musicDiscBundle,
   recipePackBundle,
 } from '../starters/index';
+import { behaviourExamples, blocksItemsExamples } from './blocks-items';
 import { dataPackExamples } from './data-pack';
 import { defineExample } from './define';
 import { registryExamples } from './registries';
@@ -18,11 +19,12 @@ import { structureExamples } from './structures';
 import { tagExamples } from './tags';
 import { worldgenExamples } from './worldgen';
 
+export { behaviourExamples } from './blocks-items';
 export { categoryTag, defineExample, type ExampleInput } from './define';
 
 /**
  * The per-kind examples, in gallery order: resource pack, data pack, tags, registries,
- * structures, worldgen.
+ * structures, worldgen, blocks and items.
  */
 export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...resourcePackExamples,
@@ -31,6 +33,7 @@ export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...registryExamples,
   ...structureExamples,
   ...worldgenExamples,
+  ...blocksItemsExamples,
 ]);
 
 /** The category of the starter projects in the gallery. */
@@ -42,10 +45,10 @@ export const starterExamples: readonly ExampleProject[] = Object.freeze([
     id: 'starter_custom_ore',
     title: 'Custom ore project',
     description:
-      'The Custom ore starter: emerald ore reskinned as ruby ore, with loot, a recipe, a tag and advancements.',
-    kind: KINDS.blockDefinition,
+      'The Custom ore starter: a real ruby ore block, the ruby item and a block of ruby, with loot, recipes, a tag, advancements and the mod metadata.',
+    kind: KINDS.block,
     category: STARTERS_CATEGORY,
-    tags: ['starter', 'ore', 'reskin'],
+    tags: ['starter', 'ore', 'mod'],
     build: customOreBundle,
   }),
   defineExample({
@@ -80,5 +83,6 @@ export const starterExamples: readonly ExampleProject[] = Object.freeze([
 /** Every gallery entry, in gallery order. */
 export const libraryExamples: readonly ExampleProject[] = Object.freeze([
   ...kindExamples,
+  ...behaviourExamples,
   ...starterExamples,
 ]);

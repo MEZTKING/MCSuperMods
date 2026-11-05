@@ -52,6 +52,7 @@ import { UsagesDialog } from './components/UsagesDialog';
 import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
+import { ExportFabricJarDialog } from './components/ExportFabricJarDialog';
 import { importerFileFilters } from './session/importers';
 import {
   FUNCTION_KIND,
@@ -75,10 +76,12 @@ import {
   elementLayers,
   errorCount,
   exportDisabledReason,
+  fabricJarExportDisabledReason,
   hasLayerOutput,
   installDisabledReason,
   installTargetOption,
   layerProblems,
+  MSM_CONTENT_NOTE,
   userFacingExportProblems,
 } from './studios/export-state';
 import type { CompleteFunction } from './studios/FunctionEditor';
@@ -130,6 +133,7 @@ type DialogState =
   | { type: 'rename'; id: ResourceLocation; references: number }
   | { type: 'usages'; id: ResourceLocation; usages: readonly Reference[] }
   | { type: 'worlds'; worlds: readonly WorldInfo[] }
+  | { type: 'fabric-jar' }
   | { type: 'no-minecraft'; message: string };
 
 /**
@@ -442,6 +446,11 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         hasLayerOutput(project, 'resourcepack', lowerForTarget)),
     [project, lowerForTarget],
   );
+  // Blocks, items and the mod element lower to the `msm` layer, which only the jar carries.
+  const hasMsmContent = useMemo(
+    () => project !== null && hasLayerOutput(project, 'msm', lowerForTarget),
+    [project, lowerForTarget],
+  );
   // Errors block per pack: an error in an element that lowers only to the data pack leaves
   // the resource pack exportable, and the other way round.
   const resourceProblems = useMemo(
@@ -471,6 +480,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     minecraft.status,
     hasDataPack,
   );
+  // The jar packages every layer, so every error blocks it.
+  const fabricJarReason = fabricJarExportDisabledReason(project !== null, snapshot.problems);
   // Structure files come from the data pack layer, so its errors block them.
   const structureExportReason = exportDisabledReason(project !== null, dataProblems);
 
@@ -507,6 +518,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       } else {
         text = `Exported to ${result.location ?? 'the chosen file'}.`;
       }
+      if (hasMsmContent) text = `${text} ${MSM_CONTENT_NOTE}`;
       // Version mismatches never block an install (ADR 0019), so say it again afterwards.
       const notes =
         mode === 'install'
@@ -517,6 +529,35 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       setMessage({ kind: 'info', text: `${text}${notes}${suffix}` });
     } catch (error) {
       setMessage({ kind: 'error', text: `${verb} failed: ${messageOf(error)}` });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  /** Runs the Fabric mod jar export with the dialog's option values and reports the outcome. */
+  const runFabricJarExport = async (values: Record<string, Json>): Promise<void> => {
+    setExporting(true);
+    try {
+      const result = await session.exportFabricJar(values);
+      setExportProblems(userFacingExportProblems(result.problems));
+      if (!result.ok) {
+        setRightDock('problems');
+        const errors = errorCount(result.problems);
+        setMessage({
+          kind: 'error',
+          text: `Export blocked by ${errors} error(s); nothing was written. See Problems.`,
+        });
+        return;
+      }
+      if (result.cancelled === true) return;
+      const warnings = result.problems.filter((problem) => problem.severity === 'warning').length;
+      const suffix = warnings > 0 ? ` ${warnings} warning(s), see Problems.` : '';
+      setMessage({
+        kind: 'info',
+        text: `Exported the Fabric mod jar to ${result.location ?? 'the chosen file'}. Put it in the mods folder with Fabric API.${suffix}`,
+      });
+    } catch (error) {
+      setMessage({ kind: 'error', text: `Export failed: ${messageOf(error)}` });
     } finally {
       setExporting(false);
     }
@@ -583,6 +624,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     () =>
       void runPackExport('resource', 'install', () => session.exportPack('resource', 'install')),
   );
+  const exportFabricJar = guarded(fabricJarReason, () => setDialog({ type: 'fabric-jar' }));
   const exportStructures = guarded(
     structureExportReason,
     () => void runFolderExport('structure-nbt', 'structure file(s)'),
@@ -933,6 +975,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     installDataPack: installData,
     exportStructures,
     exportSchematics,
+    exportFabricJar,
     settings: () => {
       setDialog({ type: 'settings' });
       // Launchers may have gained instances since the last read; look again.
@@ -969,6 +1012,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     installDataPack: dataInstallReason === null ? installData : null,
     exportStructures: structureExportReason === null ? exportStructures : null,
     exportSchematics: structureExportReason === null ? exportSchematics : null,
+    exportFabricJar: fabricJarReason === null ? exportFabricJar : null,
     renameElement: selected === null ? null : renameSelected,
     goToDefinition: selected === null ? null : () => goToDefinition(),
     findUsages: selected === null ? null : findUsages,
@@ -1160,6 +1204,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               structureExportDisabledReason={structureExportReason}
               onExportStructures={exportStructures}
               onExportSchematics={exportSchematics}
+              fabricJarExportDisabledReason={fabricJarReason}
+              onExportFabricJar={exportFabricJar}
               onInstall={installResource}
               onInstallData={installData}
               onSettings={handlers.settings}
@@ -1358,6 +1404,16 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             void runPackExport('data', 'install', () => session.installDataPack(world.dir));
           }}
         />
+        {dialog?.type === 'fabric-jar' && (
+          <ExportFabricJarDialog
+            options={session.fabricJarOptions}
+            onClose={() => setDialog(null)}
+            onExport={(values) => {
+              setDialog(null);
+              void runFabricJarExport(values);
+            }}
+          />
+        )}
         {dialog?.type === 'no-minecraft' && (
           <ConfirmDialog
             title="Install data pack"

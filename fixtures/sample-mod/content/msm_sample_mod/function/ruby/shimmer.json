@@ -1,0 +1,15 @@
+{
+  "data": {
+    "lines": [
+      "# Run by the ruby ore and the ruby apple (run_function action).",
+      "particle minecraft:end_rod ~ ~1 ~ 0.3 0.3 0.3 0.02 10",
+      "say The ruby shimmers."
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby/shimmer",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

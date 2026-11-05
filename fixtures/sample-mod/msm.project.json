@@ -1,0 +1,16 @@
+{
+  "formatVersion": 1,
+  "name": "MSM Sample Mod",
+  "namespaces": [
+    "msm_sample_mod"
+  ],
+  "plugins": [
+    "msm.resourcepack",
+    "msm.datapack",
+    "msm.blocks-items"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

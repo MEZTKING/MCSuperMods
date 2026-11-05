@@ -21,6 +21,7 @@ import type {
   RootResult,
 } from '../../shared/platform';
 import { createExportsService } from './exports';
+import { type RuntimeJarLocation, readRuntimeJar } from './runtime-jar';
 import { createLocationResolver } from './locations';
 import { createMcfunctionBroker } from './mcfunction';
 import { createMinecraftService, type MinecraftService } from './minecraft';
@@ -94,6 +95,11 @@ export interface NodePlatformDeps {
   addRecentDocument?(root: string): void;
   /** Clears the OS recent documents; optional. */
   clearRecentDocuments?(): void;
+  /**
+   * Where the `msm_runtime` jar is (ADR 0026 D4). When absent, `exports.runtimeJar()`
+   * returns `null`.
+   */
+  runtimeJar?: RuntimeJarLocation;
 }
 
 /**
@@ -285,15 +291,19 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     settings,
     minecraft,
     mcfunction: createMcfunctionBroker({ readVendored: targets.readVendored }),
-    exports: createExportsService({
-      pickFolder: (opts) =>
-        deps.dialogs.pickExportFolder === undefined
-          ? deps.dialogs.pickDirectory(opts)
-          : deps.dialogs.pickExportFolder(opts),
-      onWritten: (path) => {
-        lastExportFolder = dirname(path);
-      },
-    }),
+    exports: {
+      ...createExportsService({
+        pickFolder: (opts) =>
+          deps.dialogs.pickExportFolder === undefined
+            ? deps.dialogs.pickDirectory(opts)
+            : deps.dialogs.pickExportFolder(opts),
+        onWritten: (path) => {
+          lastExportFolder = dirname(path);
+        },
+      }),
+      runtimeJar: async () =>
+        deps.runtimeJar === undefined ? null : readRuntimeJar(deps.runtimeJar),
+    },
     thumbnails: createThumbnailService({ projectFs: active, resizePng: deps.resizePng }),
     project: {
       openRoot,

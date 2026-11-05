@@ -1,0 +1,35 @@
+{
+  "data": {
+    "pools": [
+      {
+        "bonus_rolls": 0,
+        "condition": {
+          "type": "minecraft:survives_explosion"
+        },
+        "entries": [
+          {
+            "modifier": {
+              "count": {
+                "max": 3,
+                "min": 1,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:set_count"
+            },
+            "name": "msm_sample_mod:ruby",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "random_sequence": "msm_sample_mod:blocks/ruby_ore_rich",
+    "type": "minecraft:block"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:blocks/ruby_ore_rich",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

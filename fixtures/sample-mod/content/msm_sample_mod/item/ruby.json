@@ -1,0 +1,16 @@
+{
+  "data": {
+    "creative_tab": "minecraft:ingredients",
+    "display_name": "Ruby",
+    "format": 1,
+    "max_stack_size": 64,
+    "model": "minecraft:item/emerald",
+    "rarity": "uncommon"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

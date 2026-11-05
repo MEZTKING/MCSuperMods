@@ -1,0 +1,21 @@
+{
+  "data": {
+    "components": {
+      "msm:tool": {
+        "tier": "diamond",
+        "type": "pickaxe"
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "display_name": "Ruby Pickaxe",
+    "format": 1,
+    "model": "minecraft:item/diamond_pickaxe",
+    "rarity": "rare"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_pickaxe",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

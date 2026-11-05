@@ -126,6 +126,8 @@ interface Harness {
   installs: string[];
   picks: number;
   written: string[];
+  /** What `exports.runtimeJar()` resolves to (default `null`: no runtime jar). */
+  runtimeJar: Uint8Array | null;
   /** Every location `listLocations` reports. */
   locations: GameLocationView[];
   /** The id of the install target; `null` makes status report no target at all. */
@@ -166,6 +168,7 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
       });
     },
     saved: [],
+    runtimeJar: null,
     worlds: [{ dir: 'Survival', name: 'Survival', lastModified: '2026-01-01T00:00:00.000Z' }],
     installs: [],
     picks: 0,
@@ -286,6 +289,7 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
         harness.written.push(...files.map((file) => file.name));
         return { paths: files.map((file) => `${folder}/${file.name}`) };
       },
+      runtimeJar: async () => harness.runtimeJar,
     },
     thumbnails: { get: unavailable },
     updates: {

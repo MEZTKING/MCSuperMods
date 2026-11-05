@@ -1,0 +1,83 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.8,
+        "min_tier": "copper",
+        "requires_tool": false,
+        "tool": "axe"
+      },
+      "msm:on_step": {
+        "cooldown_ticks": 20,
+        "event": "msm_sample_mod:wake"
+      },
+      "msm:redstone": {
+        "emit": 0,
+        "on_powered": "msm_sample_mod:wake",
+        "on_unpowered": "msm_sample_mod:sleep"
+      }
+    },
+    "display_name": "Chime Block",
+    "events": {
+      "msm_sample_mod:chime": {
+        "actions": [
+          {
+            "pitch": 0.8,
+            "sound": "minecraft:block.note_block.chime",
+            "type": "play_sound"
+          }
+        ]
+      },
+      "msm_sample_mod:sleep": {
+        "actions": [
+          {
+            "offset": [
+              0,
+              1,
+              0
+            ],
+            "state": "minecraft:air",
+            "type": "set_block_state"
+          },
+          {
+            "event": "msm_sample_mod:chime",
+            "type": "trigger_event"
+          }
+        ]
+      },
+      "msm_sample_mod:wake": {
+        "actions": [
+          {
+            "pitch": 1.5,
+            "sound": "minecraft:block.note_block.bell",
+            "type": "play_sound"
+          },
+          {
+            "offset": [
+              0,
+              1,
+              0
+            ],
+            "state": "minecraft:glowstone",
+            "type": "set_block_state"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:redstone_blocks",
+      "max_stack_size": 16,
+      "rarity": "uncommon"
+    },
+    "loot": "self",
+    "model": "minecraft:block/note_block",
+    "sound_type": "wood"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:chime_block",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

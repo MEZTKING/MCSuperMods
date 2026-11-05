@@ -475,6 +475,7 @@ export const ipcContract = {
       .strict(),
     response: z.object({ paths: z.array(absolutePath) }).strict(),
   },
+  [InvokeChannels.exportsRuntimeJar]: { request: noRequest, response: bytes.nullable() },
   [InvokeChannels.thumbnailsGet]: {
     request: z
       .object({

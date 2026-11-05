@@ -116,6 +116,7 @@ async function openSession(options: { plugins?: readonly Plugin[] } = {}) {
       writes.push({ folder, names: files.map((file) => file.name) });
       return { paths: files.map((file) => `${folder}/${file.name}`) };
     },
+    runtimeJar: async () => null,
   };
   await session.newProject();
   return { session, fs, writes, picks: () => picks };

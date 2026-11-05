@@ -131,6 +131,13 @@ const platform = createNodePlatform({
   clearRecentDocuments: () => {
     if (process.platform === 'win32') app.clearRecentDocuments();
   },
+  // ADR 0026 D4: packaged, `resources/runtime/msm_runtime.jar`; from source, the Gradle
+  // output of `engine-mod/` next to `app/` (the app path is `app/` under electron-vite).
+  runtimeJar: {
+    isPackaged: app.isPackaged,
+    resourcesPath: process.resourcesPath,
+    devLibsDir: join(app.getAppPath(), '..', 'engine-mod', 'build', 'libs'),
+  },
 });
 
 // `<userData>/logs/updater.log`, created on the first logged error.

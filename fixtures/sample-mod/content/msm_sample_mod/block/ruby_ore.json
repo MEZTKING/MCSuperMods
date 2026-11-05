@@ -1,0 +1,55 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "iron",
+        "resistance": 3,
+        "tool": "pickaxe"
+      },
+      "msm:light_emitter": {
+        "level": 7
+      },
+      "msm:on_interact": {
+        "event": "msm_sample_mod:shimmer"
+      }
+    },
+    "display_name": "Ruby Ore",
+    "events": {
+      "msm_sample_mod:shimmer": {
+        "actions": [
+          {
+            "sound": "minecraft:block.amethyst_block.chime",
+            "type": "play_sound",
+            "volume": 1
+          },
+          {
+            "count": 12,
+            "particle": "minecraft:glow",
+            "spread": 0.4,
+            "type": "spawn_particle"
+          },
+          {
+            "function": "msm_sample_mod:ruby/shimmer",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks",
+      "max_stack_size": 64,
+      "rarity": "common"
+    },
+    "loot": "msm_sample_mod:blocks/ruby_ore_rich",
+    "model": "minecraft:block/redstone_ore",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_ore",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

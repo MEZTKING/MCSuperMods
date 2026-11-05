@@ -22,7 +22,7 @@ function isInside(parent: string, child: string): boolean {
 }
 
 /** The main-process exports service. */
-export type ExportsService = PlatformAdapter['exports'];
+export type ExportsService = Omit<PlatformAdapter['exports'], 'runtimeJar'>;
 
 /** What the service needs from its host. */
 export interface ExportsServiceDeps {

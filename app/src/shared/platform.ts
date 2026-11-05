@@ -292,6 +292,12 @@ export interface PlatformAdapter {
       folder: string,
       files: { name: string; data: Uint8Array }[],
     ): Promise<{ paths: string[] }>;
+    /**
+     * The `msm_runtime` jar the Fabric content jar nests (ADR 0026 D4): the packaged app's
+     * `resources/runtime/msm_runtime.jar`, or in development the newest jar in
+     * `engine-mod/build/libs/`. `null` when there is none.
+     */
+    runtimeJar(): Promise<Uint8Array | null>;
   };
   thumbnails: {
     /** A PNG thumbnail of a project texture (`assets/...png`), at most `size` pixels square. */

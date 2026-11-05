@@ -1,0 +1,40 @@
+{
+  "data": {
+    "components": {
+      "msm:food": {
+        "can_always_eat": true,
+        "nutrition": 4,
+        "saturation": 0.6
+      },
+      "msm:on_use": {
+        "event": "msm_sample_mod:crunch"
+      }
+    },
+    "creative_tab": "minecraft:food_and_drinks",
+    "display_name": "Ruby Apple",
+    "events": {
+      "msm_sample_mod:crunch": {
+        "actions": [
+          {
+            "count": 8,
+            "particle": "minecraft:happy_villager",
+            "type": "spawn_particle"
+          },
+          {
+            "function": "msm_sample_mod:ruby/shimmer",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "minecraft:item/apple"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_apple",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

@@ -192,3 +192,21 @@ export function dataInstallDisabledReason(
   if (reason !== null) return reason;
   return installDisabledReason(hasProject, problems, status);
 }
+
+/**
+ * Why "Export Fabric mod jar" is disabled, or `null` when it is enabled. The jar packages
+ * every layer (resource, data and `msm`), so every error blocks it.
+ */
+export function fabricJarExportDisabledReason(
+  hasProject: boolean,
+  problems: readonly Problem[],
+): string | null {
+  return exportDisabledReason(hasProject, problems);
+}
+
+/**
+ * Added to a vanilla pack export's message when the project has `msm` layer content (blocks,
+ * items, the mod element): packs cannot carry it.
+ */
+export const MSM_CONTENT_NOTE =
+  'Blocks and items are not part of resource or data packs; use Export Fabric mod jar for them.';

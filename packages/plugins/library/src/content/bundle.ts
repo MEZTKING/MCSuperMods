@@ -68,6 +68,9 @@ export const KINDS = Object.freeze({
   blockStateProvider: 'minecraft:worldgen/block_state_provider',
   materialCondition: 'minecraft:worldgen/material_condition',
   materialRule: 'minecraft:worldgen/material_rule',
+  block: 'msm:block',
+  item: 'msm:item',
+  mod: 'msm:mod',
 } as const);
 
 /** Ruby red, gem blue and the other placeholder colours the library uses. */
@@ -112,6 +115,19 @@ export function texture(
     path: `textures/${path}.png`,
     bytes: placeholderPng(pattern, colour === undefined ? {} : { colour }),
   };
+}
+
+/**
+ * A Fabric mod id (`^[a-z][a-z0-9_-]{1,63}$`) from a namespace, as the blocks and items
+ * plugin's `msm:mod` template derives it (the library does not import that plugin): other
+ * characters become `_`, a leading non-letter gets a `mod_` prefix, and the result is cut to
+ * 64 characters.
+ */
+export function modIdFromNamespace(namespace: string): string {
+  let id = namespace.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+  if (!/^[a-z]/.test(id)) id = `mod_${id}`;
+  if (id.length < 2) id = `${id}_mod`;
+  return id.slice(0, 64);
 }
 
 /** Concatenates bundles in order. */

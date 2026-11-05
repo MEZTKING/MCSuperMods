@@ -38,7 +38,7 @@ export function stubPlatformServices(): Pick<
     },
     thumbnails: { get: unavailable },
     mcfunction: { check: unavailable, complete: unavailable },
-    exports: { pickFolder: unavailable, writeFiles: unavailable },
+    exports: { pickFolder: unavailable, writeFiles: unavailable, runtimeJar: unavailable },
     updates: { check: unavailable, install: unavailable, onStatus: () => () => {} },
   };
 }

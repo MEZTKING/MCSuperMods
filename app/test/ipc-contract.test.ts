@@ -300,6 +300,10 @@ const samples: Record<
     ],
     response: [{ paths: ['/tmp/out/pack-data.zip'] }, { paths: [''] }],
   },
+  [InvokeChannels.exportsRuntimeJar]: {
+    request: [undefined, { path: '/tmp/msm_runtime.jar' }],
+    response: [null, '/tmp/msm_runtime.jar'],
+  },
   [InvokeChannels.thumbnailsGet]: {
     request: [
       { assetPath: 'assets/demo/textures/block/ruby.png', size: 64 },

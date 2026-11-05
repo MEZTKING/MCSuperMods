@@ -1,0 +1,26 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2,
+        "min_tier": "netherite",
+        "tool": "shovel"
+      },
+      "msm:light_emitter": {
+        "level": 15
+      }
+    },
+    "display_name": "Glow Stone",
+    "format": 1,
+    "item": false,
+    "loot": "self",
+    "model": "minecraft:block/glowstone",
+    "sound_type": "glass"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:glow_stone",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

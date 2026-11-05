@@ -106,6 +106,7 @@ const bridge: MsmBridge = {
         folder,
         files: files.map((file) => ({ name: file.name, data: file.data })),
       }),
+    runtimeJar: () => ipcRenderer.invoke(InvokeChannels.exportsRuntimeJar),
   },
   thumbnails: {
     get: (assetPath, size) => ipcRenderer.invoke(InvokeChannels.thumbnailsGet, { assetPath, size }),

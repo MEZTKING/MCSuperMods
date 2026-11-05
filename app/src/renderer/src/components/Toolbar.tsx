@@ -92,6 +92,10 @@ export interface ToolbarProps {
   onExportStructures?(): void;
   /** Exports every structure template as a Sponge schematic (`.schem`) into a folder. */
   onExportSchematics?(): void;
+  /** Why "Fabric mod (.jar)…" is disabled, or `null` when it is enabled. */
+  fabricJarExportDisabledReason?: string | null;
+  /** Opens the Fabric mod jar export dialog. */
+  onExportFabricJar?(): void;
   /** Installs the resource pack into the resourcepacks folder. */
   onInstall?(): void;
   /** Installs the data pack into a world (the host shows the world picker). */
@@ -454,6 +458,7 @@ export function Toolbar(props: ToolbarProps) {
   const combinedReason = props.combinedExportDisabledReason ?? dataExportReason;
   const dataInstallReason = props.dataInstallDisabledReason ?? null;
   const structureReason = props.structureExportDisabledReason ?? null;
+  const fabricJarReason = props.fabricJarExportDisabledReason ?? null;
   const busy = props.exporting === true;
   const busyReason = busy ? 'An export is running.' : null;
   const primaryIsData = props.primaryExport === 'data';
@@ -591,7 +596,7 @@ export function Toolbar(props: ToolbarProps) {
       <ToolMenu
         label=""
         ariaLabel="Export options"
-        tip="Export the resource pack, the data pack or both"
+        tip="Export the resource pack, the data pack, both or a Fabric mod jar"
         testId="toolbar-export-menu"
         icon={<ChevronDown size={iconSize} aria-hidden />}
         disabled={!props.hasProject || busy}
@@ -613,6 +618,12 @@ export function Toolbar(props: ToolbarProps) {
             testId: 'export-combined',
             reason: busyReason ?? combinedReason,
             onSelect: props.onExportCombined,
+          },
+          {
+            label: 'Fabric mod (.jar)…',
+            testId: 'export-fabric-jar',
+            reason: busyReason ?? fabricJarReason,
+            onSelect: props.onExportFabricJar,
           },
         ]}
         more={{

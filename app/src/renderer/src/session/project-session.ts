@@ -38,14 +38,20 @@ import {
 } from '@msm/core';
 import {
   combinedFileNames,
+  contentJarFileName,
+  createFabricContentJarExporter,
   createMemorySink,
+  createZipBytes,
   createZipSink,
   dataPackExporter,
+  FABRIC_MOD_ID_PATTERN,
+  FABRIC_MOD_JSON_FILE,
   ExportProblemCodes,
   type ExportReport,
   packFileName,
   resourcePackExporter,
   runExport,
+  sanitiseModId,
 } from '@msm/exporters';
 import type {
   BundleContext,
@@ -54,6 +60,7 @@ import type {
   ElementTemplate,
   ExampleProject,
   Exporter,
+  ExporterOption,
   ImportResult,
   OutputSink,
   Plugin,
@@ -468,6 +475,19 @@ function elementsById(project: Project | null): Map<ResourceLocation, Element> {
 }
 
 /** A project session over a {@link PlatformAdapter}. */
+/** The `id` of a written `fabric.mod.json`, or `undefined` when it has none. */
+function modIdOf(bytes: Uint8Array | undefined): string | undefined {
+  if (bytes === undefined) return undefined;
+  try {
+    const parsed: unknown = JSON.parse(new TextDecoder().decode(bytes));
+    if (typeof parsed !== 'object' || parsed === null) return undefined;
+    const id = (parsed as Record<string, unknown>).id;
+    return typeof id === 'string' && FABRIC_MOD_ID_PATTERN.test(id) ? id : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export class ProjectSession {
   readonly registry = new ElementKindRegistry();
   readonly #platform: PlatformAdapter;
@@ -481,6 +501,7 @@ export class ProjectSession {
   readonly #importers: readonly RegisteredImporter[];
   readonly #validators: readonly RegisteredValidator[];
   readonly #exporters: readonly Exporter[];
+  readonly #contentJarExporter: Exporter;
   #validatorProblems = new Map<string, Problem[]>();
   #pendingValidators = new Set<string>();
   readonly #loadedSchemas = new Map<string, SchemaContext>();
@@ -528,6 +549,16 @@ export class ProjectSession {
     this.#exporters = Object.freeze(
       dedupeById(this.#plugins.flatMap((plugin) => plugin.contributes.exporters ?? [])),
     );
+    // The runtime version defaults to `meta.msmVersion`, the app's version (ADR 0026 D4);
+    // main finds the jar (packaged resources or `engine-mod/build/libs/`).
+    this.#contentJarExporter = createFabricContentJarExporter({
+      loadRuntimeJar: async () => (await platform.exports.runtimeJar()) ?? undefined,
+    });
+  }
+
+  /** The options the Fabric mod jar export declares, shown in its dialog (ADR 0027 D2). */
+  get fabricJarOptions(): readonly ExporterOption[] {
+    return this.#contentJarExporter.options ?? [];
   }
 
   /** The registered plugins' importers, in plugin order (first id wins). */
@@ -1376,6 +1407,33 @@ export class ProjectSession {
     return { ...report, location: chosen };
   }
 
+  /**
+   * Exports the Fabric mod jar (`fabric-content-jar`, ADR 0026) and asks where to save it as
+   * `<mod id>.jar`. Every error problem blocks, as for the packs; nothing is asked or written
+   * then. A missing runtime jar is `export.runtime-missing` unless `separateRuntime` is set.
+   *
+   * @param options - Values for {@link fabricJarOptions}, keyed by option id; missing ones
+   *   take their default.
+   * @throws Error If no project is open.
+   */
+  async exportFabricJar(options: Record<string, Json> = {}): Promise<ExportResult> {
+    const sink = createMemorySink();
+    const { report, project } = await this.#runPipeline(this.#contentJarExporter, sink, options);
+    if (!report.ok) return report;
+    const written = sink.files();
+    const fileName = contentJarFileName(
+      modIdOf(written.get(FABRIC_MOD_JSON_FILE)) ?? sanitiseModId(project.name) ?? 'mod',
+    );
+    const data = createZipBytes([...written].map(([path, bytes]) => ({ path, data: bytes })));
+    const location = await this.#platform.dialogs.saveFile({
+      title: 'Export Fabric mod jar',
+      defaultName: fileName,
+      filters: [{ name: 'Fabric mod', extensions: ['jar'] }],
+      data,
+    });
+    return location === null ? { ...report, cancelled: true } : { ...report, location };
+  }
+
   /** Runs the export pipeline for one pack into a zip; `data` is absent when blocked. */
   async #buildPack(
     pack: PackKind,
@@ -1397,6 +1455,7 @@ export class ProjectSession {
   async #runPipeline(
     exporter: Exporter,
     sink: OutputSink,
+    options?: Record<string, Json>,
   ): Promise<{ report: ExportReport; project: Project; target: Target }> {
     const stack = this.#requireStack();
     await this.flushValidation();
@@ -1415,6 +1474,7 @@ export class ProjectSession {
       sink,
       readAsset: (namespace, path) => this.readAsset(namespace, path),
       meta: { msmVersion: info.version, plugins: [...project.plugins] },
+      ...(options === undefined ? {} : { options }),
       ...(checker === undefined
         ? {}
         : { validateText: mcfunctionTextValidator(checker, project, context.target) }),

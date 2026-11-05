@@ -82,9 +82,9 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'custom_ore',
     'Custom ore',
-    'Turns emerald ore into "Ruby Ore" and the emerald into "Ruby": textures, models, a loot table, a recipe, an item tag and advancements. A vanilla pack cannot add new blocks, so this reskins emerald ore until real blocks arrive in Phase 4.',
+    'A real ruby ore block that drops rubies when mined with an iron pickaxe, the ruby item and a block of ruby: textures, models, a loot table, recipes, an item tag, advancements and the mod metadata. New blocks and items need the Fabric mod jar export.',
     'content',
-    BOTH,
+    ['resourcepack', 'datapack', 'msm'],
     customOreBundle,
   ),
   starter(
