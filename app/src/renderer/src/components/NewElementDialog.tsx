@@ -1,4 +1,4 @@
-import { type Json, type ResourceLocation, requireSyncResult } from '@msm/core';
+import type { Json, ResourceLocation } from '@msm/core';
 import type { TargetFacts } from '@msm/plugin-api';
 import { Dialog } from 'radix-ui';
 import { type FormEvent, type ReactNode, useId, useState } from 'react';
@@ -227,28 +227,37 @@ export function NewElementDialog(props: {
       testId="new-element-dialog"
       submitLabel={isNewNamespace ? 'Add namespace and create' : 'Create'}
       onCancel={props.onCancel}
-      onSubmit={() =>
-        attempt(() => {
+      onSubmit={() => {
+        let id: ResourceLocation;
+        let data: MaybePromise<Json>;
+        try {
           if (template === undefined) throw new Error('Choose what to create.');
-          const id = templateElementId(template, namespace, name);
-          props.onSubmit({
-            id,
-            kind: template.kind,
-            data: requireSyncResult(
-              template.data(
-                templateContext(
-                  id,
-                  props.namespaces,
-                  props.kindDefault(template.kind),
-                  props.target,
-                ),
-              ),
-              `The template "${template.id}"`,
+          id = templateElementId(template, namespace, name);
+          data = template.data(
+            templateContext(id, props.namespaces, props.kindDefault(template.kind), props.target),
+          );
+        } catch (error) {
+          setError(error instanceof Error ? error.message : String(error));
+          return;
+        }
+        const chosen = template;
+        const submit = (value: Json): void =>
+          attempt(() => {
+            props.onSubmit({ id, kind: chosen.kind, data: value });
+            if (chosen.defaultNamespace === undefined) setLastNamespace(namespace);
+          }, setError);
+        // Built-in templates answer at once; a third-party plugin's resolves through its
+        // sandboxed worker (ADR 0035 D3).
+        if (data instanceof Promise) {
+          data.then(submit, (error: unknown) =>
+            setError(
+              `The template "${chosen.id}" failed: ${error instanceof Error ? error.message : String(error)}`,
             ),
-          });
-          if (template.defaultNamespace === undefined) setLastNamespace(namespace);
-        }, setError)
-      }
+          );
+        } else {
+          submit(data);
+        }
+      }}
     >
       <label htmlFor={filterId}>Find a template</label>
       <input

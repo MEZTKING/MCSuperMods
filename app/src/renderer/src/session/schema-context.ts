@@ -14,6 +14,7 @@ import {
   parseVanillaMcdocSymbols,
   type RegistryIndex,
   type SchemaIndex,
+  type VanillaMcdocSymbols,
 } from '@msm/schemas';
 import type { PlatformAdapter } from '../../../shared/platform';
 import { builtInPlugins } from '../plugins/built-in';
@@ -322,23 +323,53 @@ function withSeeds(
 }
 
 /**
+ * `vanilla` with third-party plugin symbol exports added (ADR 0035): types and dispatchers
+ * a plugin defines are added, and on a clash the vanilla (and earlier plugin) entry wins, as
+ * `mergeMsmSymbols` does for MSM's own types. `loadExternalPlugins` has already refused
+ * exports outside a plugin's namespace, so no clash is expected.
+ */
+export function mergeExternalSymbols(
+  vanilla: VanillaMcdocSymbols,
+  extra: readonly VanillaMcdocSymbols[],
+): VanillaMcdocSymbols {
+  if (extra.length === 0) return vanilla;
+  const mcdoc: VanillaMcdocSymbols['mcdoc'] = { ...vanilla.mcdoc };
+  const dispatchers: VanillaMcdocSymbols['dispatchers'] = { ...vanilla.dispatchers };
+  for (const symbols of extra) {
+    for (const [path, type] of Object.entries(symbols.mcdoc)) {
+      if (!Object.hasOwn(mcdoc, path)) mcdoc[path] = type;
+    }
+    for (const [registry, members] of Object.entries(symbols.dispatchers)) {
+      dispatchers[registry] = { ...members, ...dispatchers[registry] };
+    }
+  }
+  return { ref: vanilla.ref, mcdoc, dispatchers };
+}
+
+/**
  * Reads and parses the target's vendored symbols and registries through the platform.
  *
  * @param platform - Supplies `targets.readVendored`.
  * @param target - The target to load.
  * @param kinds - The registered kinds, whose registries receive the project's element ids;
  *   defaults to the built-in plugins' kinds.
+ * @param extraSymbols - Third-party plugin symbol exports merged after the vanilla symbols
+ *   (vanilla wins on a clash).
  */
 export async function loadSchemaContext(
   platform: Pick<PlatformAdapter, 'targets'>,
   target: Target,
   kinds: KindRegistryLookup = BUILT_IN_KIND_LOOKUP,
+  extraSymbols: readonly VanillaMcdocSymbols[] = [],
 ): Promise<SchemaContext> {
   const [symbolBytes, registryBytes] = await Promise.all([
     platform.targets.readVendored(target.id, 'vanillaMcdocSymbols'),
     platform.targets.readVendored(target.id, 'mcmetaRegistries'),
   ]);
-  const symbols = parseVanillaMcdocSymbols(parseJsonBytes(symbolBytes, 'vanilla-mcdoc symbols'));
+  const symbols = mergeExternalSymbols(
+    parseVanillaMcdocSymbols(parseJsonBytes(symbolBytes, 'vanilla-mcdoc symbols')),
+    extraSymbols,
+  );
   const vanillaRegistries = withSeeds(parseRegistries(parseJsonBytes(registryBytes, 'registries')));
   const schemaIndex = createSchemaIndex(symbols, {
     mcVersion: target.mcVersion,

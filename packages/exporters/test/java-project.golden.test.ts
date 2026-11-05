@@ -46,32 +46,33 @@ const PINNED = [
   'src/main/resources/fabric.mod.json',
 ];
 
-describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const))(
-  'Java project files (%s)',
-  (_id, bundle) => {
-    it.each(['sample-mod', 'sample-mob'])('%s', async (sample) => {
-      const { files, ok } = await exportJavaProject({
-        root: join(repoRoot, 'fixtures', sample),
-        registry,
-        bundle,
-        meta,
-        wrapper: STUB_WRAPPER,
-      });
-      expect(ok).toBe(true);
-      const root = join(fixturesRoot, bundle.target.id, 'expected', 'java-project', sample);
-      if (update) {
-        await rm(root, { recursive: true, force: true });
-        for (const path of PINNED) {
-          const out = join(root, ...path.split('/'));
-          await mkdir(dirname(out), { recursive: true });
-          await writeFile(out, files.get(path) as Uint8Array);
-        }
-      }
-      for (const path of PINNED) {
-        const actual = utf8.decode(files.get(path) as Uint8Array);
-        expect(actual, path).toBe(await readFile(join(root, ...path.split('/')), 'utf8'));
-        expect(actual.includes('\r'), path).toBe(false);
-      }
+describe.each(
+  builtInTargets
+    .filter((bundle) => bundle.target.javaProject !== undefined)
+    .map((bundle) => [bundle.target.id, bundle] as const),
+)('Java project files (%s)', (_id, bundle) => {
+  it.each(['sample-mod', 'sample-mob'])('%s', async (sample) => {
+    const { files, ok } = await exportJavaProject({
+      root: join(repoRoot, 'fixtures', sample),
+      registry,
+      bundle,
+      meta,
+      wrapper: STUB_WRAPPER,
     });
-  },
-);
+    expect(ok).toBe(true);
+    const root = join(fixturesRoot, bundle.target.id, 'expected', 'java-project', sample);
+    if (update) {
+      await rm(root, { recursive: true, force: true });
+      for (const path of PINNED) {
+        const out = join(root, ...path.split('/'));
+        await mkdir(dirname(out), { recursive: true });
+        await writeFile(out, files.get(path) as Uint8Array);
+      }
+    }
+    for (const path of PINNED) {
+      const actual = utf8.decode(files.get(path) as Uint8Array);
+      expect(actual, path).toBe(await readFile(join(root, ...path.split('/')), 'utf8'));
+      expect(actual.includes('\r'), path).toBe(false);
+    }
+  });
+});

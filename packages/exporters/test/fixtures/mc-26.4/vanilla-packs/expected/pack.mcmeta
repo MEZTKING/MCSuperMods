@@ -1,0 +1,14 @@
+{
+  "pack": {
+    "description": "Ruby Pack",
+    "max_format": [
+      102,
+      0
+    ],
+    "min_format": [
+      102,
+      0
+    ],
+    "pack_format": 102
+  }
+}

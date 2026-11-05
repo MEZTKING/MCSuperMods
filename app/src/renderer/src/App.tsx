@@ -1663,6 +1663,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             manualRoots={manualRoots}
             onAddLauncherRoot={addLauncherRoot}
             onRemoveLauncherRoot={removeLauncherRoot}
+            plugins={session.externalPlugins}
+            onOpenPluginsFolder={bridge.plugins?.openFolder}
           />
         )}
       </Toast.Provider>

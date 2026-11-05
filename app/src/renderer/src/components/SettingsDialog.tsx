@@ -2,6 +2,7 @@ import { Dialog } from 'radix-ui';
 import { useEffect, useId, useState } from 'react';
 import type { MinecraftProgress } from '../../../shared/ipc-channels';
 import type { AppSettingsPatch, AppSettingsView, MinecraftStatus } from '../../../shared/platform';
+import type { ExternalPluginState } from '../plugins/external-plugins';
 import {
   type InstallTargetOption,
   installTargetName,
@@ -46,6 +47,95 @@ export interface SettingsDialogProps {
   onRemoveLauncherRoot?(kind: ManualLauncher, path: string): void | Promise<void>;
   /** Which launcher's client jar extraction reads, such as "Prism Launcher — x.y", or `null`. */
   jarSource?: string | null;
+  /**
+   * The third-party plugin folders found at start-up with their states (ADR 0035 D4). When
+   * omitted, the Plugins section lists none.
+   */
+  plugins?: readonly ExternalPluginState[];
+  /** Opens the plugins folder (`<msmHome>/plugins/`, created when missing). */
+  onOpenPluginsFolder?(): Promise<void>;
+}
+
+/** The label of a plugin state in Settings > Plugins. */
+export const PLUGIN_STATE_LABELS: Readonly<Record<ExternalPluginState['state'], string>> =
+  Object.freeze({ loaded: 'Loaded', refused: 'Refused', failed: 'Failed' });
+
+/** The Settings "Plugins" section (ADR 0035 D4, D5). */
+export function PluginsSection(props: {
+  plugins: readonly ExternalPluginState[];
+  onOpenFolder?: (() => Promise<void>) | undefined;
+}) {
+  const [error, setError] = useState<string | null>(null);
+  const open = async (): Promise<void> => {
+    if (props.onOpenFolder === undefined) return;
+    setError(null);
+    try {
+      await props.onOpenFolder();
+    } catch (problem) {
+      setError(errorText(problem));
+    }
+  };
+  return (
+    <section className="flex flex-col gap-1.5" data-testid="settings-plugins" aria-label="Plugins">
+      <h3 className="mt-3 font-semibold">Plugins</h3>
+      <p className="text-xs text-muted">
+        Plugins are code written by third parties. They run sandboxed, without access to your
+        files, the network or other projects, but install them only from sources you trust.
+      </p>
+      {props.plugins.length === 0 ? (
+        <p className="text-sm text-muted" data-testid="settings-plugins-empty">
+          No plugins installed. Copy a plugin's folder into the plugins folder to add it.
+        </p>
+      ) : (
+        <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+          {props.plugins.map((plugin) => (
+            <li
+              key={plugin.id}
+              data-testid={`plugin-${plugin.id}`}
+              className="flex flex-col gap-0.5 rounded border border-border p-2"
+            >
+              <span className="flex flex-wrap items-center gap-1.5 text-sm">
+                <span className="font-medium">{plugin.name}</span>
+                {plugin.version !== '' && <span className="text-muted">{plugin.version}</span>}
+                <span className="font-mono text-xs text-muted">{plugin.id}</span>
+                <span className={badgeClass} data-testid={`plugin-${plugin.id}-state`}>
+                  {PLUGIN_STATE_LABELS[plugin.state]}
+                </span>
+              </span>
+              {plugin.problems.length > 0 && (
+                <ul className="m-0 flex list-none flex-col gap-0.5 p-0 text-xs">
+                  {plugin.problems.map((problem, index) => (
+                    <li
+                      // biome-ignore lint/suspicious/noArrayIndexKey: problems have no id
+                      key={index}
+                      className={problem.severity === 'error' ? 'text-error' : 'text-muted'}
+                    >
+                      <span className="font-mono">{problem.code}</span>: {problem.message}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="text-xs text-muted">Changes take effect after restarting MCSuperMods.</p>
+      <div>
+        <Button
+          data-testid="settings-open-plugins"
+          disabled={props.onOpenFolder === undefined}
+          onClick={() => void open()}
+        >
+          Open plugins folder
+        </Button>
+      </div>
+      {error !== null && (
+        <p role="alert" className="text-sm text-error">
+          {error}
+        </p>
+      )}
+    </section>
+  );
 }
 
 const ADD_ROOT_BUTTONS: readonly { kind: ManualLauncher; label: string }[] = [
@@ -562,6 +652,8 @@ export function SettingsDialog(props: SettingsDialogProps) {
               downloads it in the background. It installs only when you choose Restart to update.
               Help, Check for Updates works either way.
             </p>
+
+            <PluginsSection plugins={props.plugins ?? []} onOpenFolder={props.onOpenPluginsFolder} />
 
             {error !== null && (
               <p role="alert" className="whitespace-pre-line text-error">

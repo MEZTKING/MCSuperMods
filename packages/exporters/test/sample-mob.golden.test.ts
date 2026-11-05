@@ -757,9 +757,32 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       return sink.finish();
     }
 
-    it('has GeckoLib facts', () => {
-      expect(geckolib).toBeDefined();
-    });
+    /** The jar needs GeckoLib: on a target without it only the problem is asserted. */
+    const withGeckolib = it.runIf(geckolib !== undefined);
+
+    it.runIf(geckolib === undefined)(
+      'refuses the content jar with export.no-geckolib-target (no GeckoLib build)',
+      async () => {
+        const report = await runExport({
+          project: await loadSample(),
+          registry,
+          target,
+          schemaIndex: context.schemaIndex,
+          registries: context.registries,
+          exporter: createFabricContentJarExporter({
+            loadRuntimeJar: async () => stubRuntimeJar,
+            loadGeckolibJar: async () => stubGeckolibJar,
+          }),
+          sink: createZipSink(),
+          readAsset: (namespace, path) => sampleFs.readFile(`assets/${namespace}/${path}`),
+          meta,
+        });
+        expect(report.ok).toBe(false);
+        expect(report.problems.map((problem) => problem.code)).toContain(
+          'export.no-geckolib-target',
+        );
+      },
+    );
 
     it('validates every element with zero problems', async () => {
       const problems: string[] = [];
@@ -792,91 +815,98 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(found).toEqual([]);
     });
 
-    it('holds the expected files, the definition and GeckoLib resources validate', async () => {
-      if (geckolib === undefined) throw new Error(`${target.id} has no GeckoLib facts`);
-      const files = unzipSync(await exportJar());
-      const paths = Object.keys(files).sort();
-      const resource = target.folders.resource;
-      const data = target.folders.data;
-      const definition = `msm/${NAMESPACE}/entity/glow_golem.json`;
-      const geo = `assets/${NAMESPACE}/geckolib/models/entity/glow_golem.geo.json`;
-      const animation = `assets/${NAMESPACE}/geckolib/animations/entity/glow_golem_animations.animation.json`;
-      expect(paths.filter((path) => path.startsWith('msm/'))).toEqual([definition]);
-      for (const path of [
-        'fabric.mod.json',
-        'msm.export.json',
-        geo,
-        animation,
-        `assets/${NAMESPACE}/${resource.textures}/entity/glow_golem.png`,
-        `assets/${NAMESPACE}/${resource.textures}/item/glow_golem_spawn_egg.png`,
-        `assets/${NAMESPACE}/${resource.item_definition}/glow_golem_spawn_egg.json`,
-        `assets/${NAMESPACE}/${resource.model}/item/glow_golem_spawn_egg.json`,
-        `assets/${NAMESPACE}/${resource.lang}/en_us.json`,
-        `data/${NAMESPACE}/${data.function}/golem/glow_burst.mcfunction`,
-        `data/${NAMESPACE}/${data.loot_table}/entities/glow_golem.json`,
-      ]) {
-        expect(paths, path).toContain(path);
-      }
-      const runtimePath = nestedRuntimePath(meta.msmVersion);
-      const geckolibPath = nestedGeckolibPath(geckolib);
-      expect(paths.filter((path) => path.startsWith('META-INF/jars/'))).toEqual(
-        [runtimePath, geckolibPath].sort(),
-      );
-      expect(files[runtimePath]).toEqual(stubRuntimeJar);
-      expect(files[geckolibPath]).toEqual(stubGeckolibJar);
-      expect(paths).not.toContain('pack.mcmeta');
-
-      const json = (path: string): Json => JSON.parse(utf8.decode(files[path] as Uint8Array));
-      const problems: string[] = [];
-      for (const [path, ref] of [
-        [definition, MSM_SCHEMA_REFS.entityDefinition],
-        [geo, MSM_SCHEMA_REFS.geoModel],
-        [animation, MSM_SCHEMA_REFS.animation],
-      ] as const) {
-        for (const problem of validateJson(json(path), context.schemaIndex.resolveSchemaRef(ref), {
-          registries: context.registries,
-        })) {
-          problems.push(`${path} ${problem.path} ${problem.code}: ${problem.message}`);
+    withGeckolib(
+      'holds the expected files, the definition and GeckoLib resources validate',
+      async () => {
+        if (geckolib === undefined) throw new Error(`${target.id} has no GeckoLib facts`);
+        const files = unzipSync(await exportJar());
+        const paths = Object.keys(files).sort();
+        const resource = target.folders.resource;
+        const data = target.folders.data;
+        const definition = `msm/${NAMESPACE}/entity/glow_golem.json`;
+        const geo = `assets/${NAMESPACE}/geckolib/models/entity/glow_golem.geo.json`;
+        const animation = `assets/${NAMESPACE}/geckolib/animations/entity/glow_golem_animations.animation.json`;
+        expect(paths.filter((path) => path.startsWith('msm/'))).toEqual([definition]);
+        for (const path of [
+          'fabric.mod.json',
+          'msm.export.json',
+          geo,
+          animation,
+          `assets/${NAMESPACE}/${resource.textures}/entity/glow_golem.png`,
+          `assets/${NAMESPACE}/${resource.textures}/item/glow_golem_spawn_egg.png`,
+          `assets/${NAMESPACE}/${resource.item_definition}/glow_golem_spawn_egg.json`,
+          `assets/${NAMESPACE}/${resource.model}/item/glow_golem_spawn_egg.json`,
+          `assets/${NAMESPACE}/${resource.lang}/en_us.json`,
+          `data/${NAMESPACE}/${data.function}/golem/glow_burst.mcfunction`,
+          `data/${NAMESPACE}/${data.loot_table}/entities/glow_golem.json`,
+        ]) {
+          expect(paths, path).toContain(path);
         }
-      }
-      expect(problems).toEqual([]);
+        const runtimePath = nestedRuntimePath(meta.msmVersion);
+        const geckolibPath = nestedGeckolibPath(geckolib);
+        expect(paths.filter((path) => path.startsWith('META-INF/jars/'))).toEqual(
+          [runtimePath, geckolibPath].sort(),
+        );
+        expect(files[runtimePath]).toEqual(stubRuntimeJar);
+        expect(files[geckolibPath]).toEqual(stubGeckolibJar);
+        expect(paths).not.toContain('pack.mcmeta');
 
-      expect(json(definition)).toMatchObject({
-        format: 1,
-        category: 'creature',
-        loot_table: LOOT,
-        spawn_egg: { creative_tab: 'minecraft:spawn_eggs' },
-        components: {
-          'msm:animated_model': {
-            model: MODEL,
-            animations: ANIMATIONS,
-            texture: SKIN,
-            idle: 'idle',
-            walk: 'walk',
-            attack: 'attack',
+        const json = (path: string): Json => JSON.parse(utf8.decode(files[path] as Uint8Array));
+        const problems: string[] = [];
+        for (const [path, ref] of [
+          [definition, MSM_SCHEMA_REFS.entityDefinition],
+          [geo, MSM_SCHEMA_REFS.geoModel],
+          [animation, MSM_SCHEMA_REFS.animation],
+        ] as const) {
+          for (const problem of validateJson(
+            json(path),
+            context.schemaIndex.resolveSchemaRef(ref),
+            {
+              registries: context.registries,
+            },
+          )) {
+            problems.push(`${path} ${problem.path} ${problem.code}: ${problem.message}`);
+          }
+        }
+        expect(problems).toEqual([]);
+
+        expect(json(definition)).toMatchObject({
+          format: 1,
+          category: 'creature',
+          loot_table: LOOT,
+          spawn_egg: { creative_tab: 'minecraft:spawn_eggs' },
+          components: {
+            'msm:animated_model': {
+              model: MODEL,
+              animations: ANIMATIONS,
+              texture: SKIN,
+              idle: 'idle',
+              walk: 'walk',
+              attack: 'attack',
+            },
           },
-        },
-      });
-      expect(json(`assets/${NAMESPACE}/${resource.lang}/en_us.json`)).toMatchObject({
-        [`entity.${NAMESPACE}.glow_golem`]: 'Glow Golem',
-        [`item.${NAMESPACE}.glow_golem_spawn_egg`]: 'Glow Golem Spawn Egg',
-      });
+        });
+        expect(json(`assets/${NAMESPACE}/${resource.lang}/en_us.json`)).toMatchObject({
+          [`entity.${NAMESPACE}.glow_golem`]: 'Glow Golem',
+          [`item.${NAMESPACE}.glow_golem_spawn_egg`]: 'Glow Golem Spawn Egg',
+        });
 
-      const modJson = json('fabric.mod.json') as {
-        id: string;
-        depends: Record<string, string>;
-        jars: { file: string }[];
-      };
-      expect(modJson.id).toBe(NAMESPACE);
-      expect(modJson.depends.msm_runtime).toBe(`>=${meta.msmVersion}`);
-      expect(modJson.depends[geckolib.modId]).toBe(geckolib.dependency);
-      expect(modJson.jars).toEqual(
-        expect.arrayContaining([{ file: runtimePath }, { file: geckolibPath }]),
-      );
-      expect(modJson.jars).toHaveLength(2);
-    });
+        const modJson = json('fabric.mod.json') as {
+          id: string;
+          depends: Record<string, string>;
+          jars: { file: string }[];
+        };
+        expect(modJson.id).toBe(NAMESPACE);
+        expect(modJson.depends.msm_runtime).toBe(`>=${meta.msmVersion}`);
+        expect(modJson.depends[geckolib.modId]).toBe(geckolib.dependency);
+        expect(modJson.jars).toEqual(
+          expect.arrayContaining([{ file: runtimePath }, { file: geckolibPath }]),
+        );
+        expect(modJson.jars).toHaveLength(2);
+      },
+    );
 
-    describe('content jar', () => {
+    describe.runIf(geckolib !== undefined)('content jar', () => {
       const hashFile = join(fixturesRoot, target.id, 'sample-mob-jar.sha256');
       const savedZone = process.env.TZ;
       afterAll(() => {
@@ -912,7 +942,8 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       runtimeJarPath !== undefined &&
         geckolibJarPath !== undefined &&
         outDir !== undefined &&
-        isSelectedTarget,
+        isSelectedTarget &&
+        geckolib !== undefined,
     )(
       'writes the jar with the real runtime and GeckoLib for the headless server check',
       async () => {

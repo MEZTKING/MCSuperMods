@@ -290,23 +290,26 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         loadGeckolibJar: async () => geckolibJar,
       };
 
-      withGeckolib('leaves a project without entities unchanged and never loads GeckoLib', async () => {
-        let loads = 0;
-        const elements = [modelElement, recipeLike, definition];
-        const plain = await exportJar(elements);
-        const withLoader = await exportJar(elements, {
-          loadRuntimeJar: async () => runtimeJar,
-          loadGeckolibJar: async () => {
-            loads++;
-            return geckolibJar;
-          },
-        });
-        expect(loads).toBe(0);
-        expect(sha256(withLoader.bytes)).toBe(sha256(plain.bytes));
-        const written = json(withLoader.entries, 'fabric.mod.json');
-        expect(Object.keys(written.depends as Record<string, Json>)).not.toContain(facts().modId);
-        expect(withLoader.entries[nestedGeckolibPath(facts())]).toBeUndefined();
-      });
+      withGeckolib(
+        'leaves a project without entities unchanged and never loads GeckoLib',
+        async () => {
+          let loads = 0;
+          const elements = [modelElement, recipeLike, definition];
+          const plain = await exportJar(elements);
+          const withLoader = await exportJar(elements, {
+            loadRuntimeJar: async () => runtimeJar,
+            loadGeckolibJar: async () => {
+              loads++;
+              return geckolibJar;
+            },
+          });
+          expect(loads).toBe(0);
+          expect(sha256(withLoader.bytes)).toBe(sha256(plain.bytes));
+          const written = json(withLoader.entries, 'fabric.mod.json');
+          expect(Object.keys(written.depends as Record<string, Json>)).not.toContain(facts().modId);
+          expect(withLoader.entries[nestedGeckolibPath(facts())]).toBeUndefined();
+        },
+      );
 
       withGeckolib('depends on and nests GeckoLib when the project has entities', async () => {
         const geckolib = facts();
@@ -374,34 +377,37 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         });
       });
 
-      withGeckolib('reports export.geckolib-missing when nesting without GeckoLib bytes', async () => {
-        const geckolib = facts();
-        for (const factory of [
-          { loadRuntimeJar: async () => runtimeJar },
-          { loadRuntimeJar: async () => runtimeJar, loadGeckolibJar: async () => undefined },
-          {
-            loadRuntimeJar: async () => runtimeJar,
-            loadGeckolibJar: async () => new Uint8Array(),
-          },
-          {
-            loadRuntimeJar: async () => runtimeJar,
-            loadGeckolibJar: async (): Promise<Uint8Array> => {
-              throw new Error('offline');
+      withGeckolib(
+        'reports export.geckolib-missing when nesting without GeckoLib bytes',
+        async () => {
+          const geckolib = facts();
+          for (const factory of [
+            { loadRuntimeJar: async () => runtimeJar },
+            { loadRuntimeJar: async () => runtimeJar, loadGeckolibJar: async () => undefined },
+            {
+              loadRuntimeJar: async () => runtimeJar,
+              loadGeckolibJar: async () => new Uint8Array(),
             },
-          },
-        ]) {
-          const { report, entries } = await exportJar([entityDefinition], factory);
-          expect(report.ok).toBe(false);
-          const problem = report.problems.find(
-            (entry) => entry.code === ExportProblemCodes.geckolibMissing,
-          );
-          expect(problem).toMatchObject({ severity: 'error', code: 'export.geckolib-missing' });
-          expect(problem?.message).toBe(
-            `GeckoLib ${geckolib.version} is needed for animated entities; connect to the internet once so MCSuperMods can download it.`,
-          );
-          expect(Object.keys(entries)).toEqual([]);
-        }
-      });
+            {
+              loadRuntimeJar: async () => runtimeJar,
+              loadGeckolibJar: async (): Promise<Uint8Array> => {
+                throw new Error('offline');
+              },
+            },
+          ]) {
+            const { report, entries } = await exportJar([entityDefinition], factory);
+            expect(report.ok).toBe(false);
+            const problem = report.problems.find(
+              (entry) => entry.code === ExportProblemCodes.geckolibMissing,
+            );
+            expect(problem).toMatchObject({ severity: 'error', code: 'export.geckolib-missing' });
+            expect(problem?.message).toBe(
+              `GeckoLib ${geckolib.version} is needed for animated entities; connect to the internet once so MCSuperMods can download it.`,
+            );
+            expect(Object.keys(entries)).toEqual([]);
+          }
+        },
+      );
 
       it('reports export.no-geckolib-target for a target without GeckoLib facts', async () => {
         const { geckolib: _geckolib, ...bare } = target;

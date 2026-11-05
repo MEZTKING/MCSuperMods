@@ -65,82 +65,83 @@ async function inTimeZone<T>(zone: string, body: () => Promise<T>): Promise<T> {
   }
 }
 
-describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const))(
-  'sample mob Java project (%s)',
-  (_id, bundle) => {
-    const run = (wrapper = STUB_WRAPPER) =>
-      exportJavaProject({ root: sampleRoot, registry, bundle, meta, wrapper });
+describe.each(
+  builtInTargets
+    .filter((bundle) => bundle.target.javaProject !== undefined)
+    .map((bundle) => [bundle.target.id, bundle] as const),
+)('sample mob Java project (%s)', (_id, bundle) => {
+  const run = (wrapper = STUB_WRAPPER) =>
+    exportJavaProject({ root: sampleRoot, registry, bundle, meta, wrapper });
 
-    it('exports with infos only and the expected layout', async () => {
-      const { files, problems, ok } = await run();
-      // Project ids are not in the vanilla registries the gate checks against: warnings only.
-      expect(problems.filter(notIdWarningOrInfo)).toEqual([]);
-      expect(ok).toBe(true);
-      const paths = [...files.keys()];
-      for (const path of [
-        'build.gradle.kts',
-        'gradle.properties',
-        'gradlew',
-        'src/main/resources/fabric.mod.json',
-        `${PKG}/MsmSampleMobMod.java`,
-        `${PKG}/ModEntities.java`,
-        `${PKG}/Actions.java`,
-        `${PKG}/entity/GlowGolemEntity.java`,
-        `${PKG}/entity/FollowTypesGoal.java`,
-        `${PKG}/client/MsmSampleMobModClient.java`,
-        `${PKG}/client/entity/GeoModelBase.java`,
-        `${PKG}/client/entity/GlowGolemModel.java`,
-      ]) {
-        expect(paths, path).toContain(path);
-      }
-      expect(paths.some((path) => path.startsWith('msm/') || path.includes('/msm/'))).toBe(false);
-      expect(
-        paths.filter((path) => path.startsWith('src/main/resources/assets/')).length,
-      ).toBeGreaterThan(0);
-      const modJson = JSON.parse(
-        utf8.decode(files.get('src/main/resources/fabric.mod.json') as Uint8Array),
-      ) as { depends: Record<string, string>; entrypoints: Record<string, string[]> };
-      const geckolib = bundle.target.geckolib;
-      if (geckolib === undefined) throw new Error('no GeckoLib facts');
-      expect(modJson.depends.msm_runtime).toBeUndefined();
-      expect(modJson.depends[geckolib.modId]).toBe(geckolib.dependency);
-      expect(modJson.entrypoints).toEqual({
-        client: ['msm_sample_mob.client.MsmSampleMobModClient'],
-        main: ['msm_sample_mob.MsmSampleMobMod'],
-      });
-      const build = utf8.decode(files.get('build.gradle.kts') as Uint8Array);
-      expect(build).toContain('include(geckolib)');
-      expect(utf8.decode(files.get('gradle.properties') as Uint8Array)).toContain(
-        `geckolib_modrinth_version_id=${geckolib.modrinthVersionId}`,
-      );
-      expect(utf8.decode(files.get('README.md') as Uint8Array)).toContain('is not valid semver');
+  it('exports with infos only and the expected layout', async () => {
+    const { files, problems, ok } = await run();
+    // Project ids are not in the vanilla registries the gate checks against: warnings only.
+    expect(problems.filter(notIdWarningOrInfo)).toEqual([]);
+    expect(ok).toBe(true);
+    const paths = [...files.keys()];
+    for (const path of [
+      'build.gradle.kts',
+      'gradle.properties',
+      'gradlew',
+      'src/main/resources/fabric.mod.json',
+      `${PKG}/MsmSampleMobMod.java`,
+      `${PKG}/ModEntities.java`,
+      `${PKG}/Actions.java`,
+      `${PKG}/entity/GlowGolemEntity.java`,
+      `${PKG}/entity/FollowTypesGoal.java`,
+      `${PKG}/client/MsmSampleMobModClient.java`,
+      `${PKG}/client/entity/GeoModelBase.java`,
+      `${PKG}/client/entity/GlowGolemModel.java`,
+    ]) {
+      expect(paths, path).toContain(path);
+    }
+    expect(paths.some((path) => path.startsWith('msm/') || path.includes('/msm/'))).toBe(false);
+    expect(
+      paths.filter((path) => path.startsWith('src/main/resources/assets/')).length,
+    ).toBeGreaterThan(0);
+    const modJson = JSON.parse(
+      utf8.decode(files.get('src/main/resources/fabric.mod.json') as Uint8Array),
+    ) as { depends: Record<string, string>; entrypoints: Record<string, string[]> };
+    const geckolib = bundle.target.geckolib;
+    if (geckolib === undefined) throw new Error('no GeckoLib facts');
+    expect(modJson.depends.msm_runtime).toBeUndefined();
+    expect(modJson.depends[geckolib.modId]).toBe(geckolib.dependency);
+    expect(modJson.entrypoints).toEqual({
+      client: ['msm_sample_mob.client.MsmSampleMobModClient'],
+      main: ['msm_sample_mob.MsmSampleMobMod'],
     });
-
-    it('has the recorded tree SHA-256 in two time zones', async () => {
-      const hashes: string[] = [];
-      for (const zone of TIME_ZONES) {
-        await inTimeZone(zone, async () => {
-          hashes.push(treeHash((await run()).files));
-        });
-      }
-      expect(new Set(hashes).size).toBe(1);
-      const hashFile = join(fixturesRoot, bundle.target.id, 'sample-mob-java.sha256');
-      const actual = hashes[0] as string;
-      if (update) {
-        await mkdir(dirname(hashFile), { recursive: true });
-        await writeFile(hashFile, `${actual}\n`);
-      }
-      expect(actual).toBe((await readFile(hashFile, 'utf8')).trim());
-    });
-
-    const outDir = process.env.MSM_SAMPLE_MOB_JAVA_OUT;
-    it.runIf(outDir !== undefined && bundle === selectedTarget())(
-      'writes the project with the real Gradle wrapper for the ejected build',
-      async () => {
-        const { files, ok } = await run(await engineModWrapper());
-        expect(ok).toBe(true);
-        await writeTree(files, outDir as string);
-      },
+    const build = utf8.decode(files.get('build.gradle.kts') as Uint8Array);
+    expect(build).toContain('include(geckolib)');
+    expect(utf8.decode(files.get('gradle.properties') as Uint8Array)).toContain(
+      `geckolib_modrinth_version_id=${geckolib.modrinthVersionId}`,
     );
-  },
-);
+    expect(utf8.decode(files.get('README.md') as Uint8Array)).toContain('is not valid semver');
+  });
+
+  it('has the recorded tree SHA-256 in two time zones', async () => {
+    const hashes: string[] = [];
+    for (const zone of TIME_ZONES) {
+      await inTimeZone(zone, async () => {
+        hashes.push(treeHash((await run()).files));
+      });
+    }
+    expect(new Set(hashes).size).toBe(1);
+    const hashFile = join(fixturesRoot, bundle.target.id, 'sample-mob-java.sha256');
+    const actual = hashes[0] as string;
+    if (update) {
+      await mkdir(dirname(hashFile), { recursive: true });
+      await writeFile(hashFile, `${actual}\n`);
+    }
+    expect(actual).toBe((await readFile(hashFile, 'utf8')).trim());
+  });
+
+  const outDir = process.env.MSM_SAMPLE_MOB_JAVA_OUT;
+  it.runIf(outDir !== undefined && bundle === selectedTarget())(
+    'writes the project with the real Gradle wrapper for the ejected build',
+    async () => {
+      const { files, ok } = await run(await engineModWrapper());
+      expect(ok).toBe(true);
+      await writeTree(files, outDir as string);
+    },
+  );
+});
