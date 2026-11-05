@@ -1,0 +1,41 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 5,
+        "min_tier": "iron",
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:on_step": {
+        "cooldown_ticks": 20,
+        "event": "msm_starter:ruby_block_step"
+      }
+    },
+    "display_name": "Block of Ruby",
+    "events": {
+      "msm_starter:ruby_block_step": {
+        "actions": [
+          {
+            "handler": "msm_starter:guard",
+            "type": "run_script"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "model": "msm_starter:block/ruby_block",
+    "sound_type": "metal"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_block",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A storage block for nine rubies that also guards whoever stands on it. msm:on_step fires the event msm_starter:ruby_block_step when an entity steps on it, at most once every 20 ticks (one second). The event's only action is run_script, which calls the handler msm_starter:guard that the script msm_starter:ruby_block_guard defines. \"loot\": \"self\" generates a loot table that drops the block itself."
+  }
+}

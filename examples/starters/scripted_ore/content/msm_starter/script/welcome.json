@@ -1,0 +1,20 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// Greets every player who joins and points them at the ruby ore trick.",
+      "msm.events.on(\"player.join\", (e) => {",
+      "  e.player.sendMessage(\"Welcome, \" + e.player.name + \"! Sneak and use ruby ore for a bonus ruby.\");",
+      "  msm.log.info(e.player.name + \" joined\");",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:welcome",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A script that handles the player.join event: it sends the joining player a chat message and writes a line to the server log ([msm_runtime] msm_starter:welcome: <name> joined). Server log lines from scripts are the quickest way to see that they loaded and ran. Scripts run only in the Fabric mod jar export, with msm_runtime; the vanilla packs and the Java project export leave them out."
+  }
+}

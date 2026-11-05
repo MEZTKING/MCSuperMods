@@ -1,0 +1,22 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// Called by the \"run_script\" action of msm_starter:ruby_block's step event.",
+      "msm.actions.define(\"msm_starter:guard\", (e) => {",
+      "  e.world.playSound(\"minecraft:block.amethyst_block.chime\", e.pos, { pitch: 1.2 });",
+      "  if (e.player !== undefined) {",
+      "    e.player.heal(2);",
+      "  }",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_block_guard",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A script that defines the action handler msm_starter:guard with msm.actions.define. The block of ruby's step event (msm_starter:ruby_block_step) runs it through a run_script action naming that handler. It plays a chime at the block and heals a player standing on it by one heart (2 half hearts), at most once a second because of the step cooldown. If no script defined the handler, the Problems panel would warn about the run_script action. Scripts run only in the Fabric mod jar export, with msm_runtime; the vanilla packs and the Java project export leave them out."
+  }
+}

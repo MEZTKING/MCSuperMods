@@ -1,0 +1,27 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// Using a lodestone with an empty main hand gives a compass instead.",
+      "msm.events.on(\"block.interact\", (e) => {",
+      "  if (e.block.id !== \"minecraft:lodestone\" || e.hand !== \"main\") return;",
+      "  if (e.player.heldItem !== undefined) return;",
+      "  e.cancel();",
+      "  e.player.give(\"minecraft:compass\", 1);",
+      "  e.world.playSound(\"minecraft:item.lodestone_compass.lock\", e.block.pos);",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:lodestone_compass",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A TypeScript script, stored one line per entry. msm.events.on registers a handler for the block.interact event, which runs whenever a player uses a block. The handler returns early unless the block is a lodestone used with an empty main hand; otherwise e.cancel() stops the normal use, e.player.give hands over a compass and a sound plays at the block. The Script Studio checks the code against the msm-runtime typings as you type. Scripts run only in the Fabric mod jar export, with msm_runtime; the Java project export leaves them out.",
+    "tags": [
+      "example",
+      "scripts"
+    ]
+  }
+}

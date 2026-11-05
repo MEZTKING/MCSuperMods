@@ -17,6 +17,7 @@ import {
   placeholderPng,
   placeholderSkinPng,
   STARTERS_CATEGORY,
+  scriptBehaviourExamples,
   starterExamples,
 } from '../src/index';
 
@@ -33,11 +34,12 @@ const STARTER_IDS = [
   'jigsaw_structure',
   'worldgen_pack',
   'custom_mob',
+  'scripted_ore',
 ];
 
 /**
- * The 58 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
- * items, entities and models and animations plugins, in per-kind example order.
+ * The 59 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
+ * items, entities, models and animations and scripting plugins, in per-kind example order.
  */
 const KIND_IDS = [
   'minecraft:model',
@@ -98,6 +100,7 @@ const KIND_IDS = [
   'msm:entity',
   'msm:geo_model',
   'msm:animation',
+  'msm:script',
 ];
 
 const entries: readonly (ProjectStarter | ExampleProject)[] = [
@@ -124,7 +127,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the twelve starters in order', () => {
+  it('lists the thirteen starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -134,6 +137,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
+      'content',
       'content',
       'content',
       'content',
@@ -260,6 +264,57 @@ describe('project starters', () => {
     ]);
   });
 
+  it('builds the Scripted ore starter: the Custom ore content plus three scripts', () => {
+    const scripted = libraryStarters.find(
+      (starter) => starter.id === 'scripted_ore',
+    ) as ProjectStarter;
+    const ore = libraryStarters.find((starter) => starter.id === 'custom_ore') as ProjectStarter;
+    expect(scripted.category).toBe('content');
+    expect(scripted.description).toMatch(/Fabric mod jar/);
+    expect(scripted.description).toMatch(/Java project export/);
+    expect(scripted.layers).toEqual(['resourcepack', 'datapack', 'msm']);
+    const bundle = build(scripted);
+    const base = build(ore);
+    expect(bundle.elements.map((entry) => `${entry.kind} ${entry.id}`)).toEqual([
+      ...base.elements.map((entry) => `${entry.kind} ${entry.id}`),
+      'msm:script demo:ore_glow',
+      'msm:script demo:ruby_block_guard',
+      'msm:script demo:welcome',
+    ]);
+    expect(bundle.assets).toEqual(base.assets);
+    // Only the pack, the mod and the block of ruby differ from the Custom ore starter.
+    const changed = bundle.elements
+      .filter((entry, index) => {
+        const before = base.elements[index];
+        return before !== undefined && JSON.stringify(before) !== JSON.stringify(entry);
+      })
+      .map((entry) => entry.id);
+    expect(changed).toEqual(['demo:pack', 'demo:mod', 'demo:ruby_block']);
+    const block = bundle.elements.find((entry) => entry.id === 'demo:ruby_block');
+    expect(block?.data).toMatchObject({
+      components: { 'msm:on_step': { event: 'demo:ruby_block_step', cooldown_ticks: 20 } },
+      events: {
+        'demo:ruby_block_step': { actions: [{ type: 'run_script', handler: 'demo:guard' }] },
+      },
+    });
+    const text = (id: string): string =>
+      (
+        (bundle.elements.find((entry) => entry.id === id)?.data as { lines: string[] }) ?? {
+          lines: [],
+        }
+      ).lines.join('\n');
+    expect(text('demo:ore_glow')).toContain('msm.events.on("block.interact"');
+    expect(text('demo:ore_glow')).toContain('e.player.isSneaking');
+    expect(text('demo:ore_glow')).toContain('e.cancel();');
+    expect(text('demo:ore_glow')).toContain('e.player.give("demo:ruby", 1);');
+    expect(text('demo:ruby_block_guard')).toContain('msm.actions.define("demo:guard"');
+    expect(text('demo:welcome')).toContain('msm.events.on("player.join"');
+    for (const entry of bundle.elements.filter((element) => element.kind === 'msm:script')) {
+      expect(entry.notes, entry.id).toMatch(/Fabric mod jar/);
+      expect(entry.notes, entry.id).toMatch(/Java project export/);
+    }
+  });
+
   it('plays the vanilla cat record in the music disc starter, with no bundled sound', () => {
     const disc = libraryStarters.find((starter) => starter.id === 'music_disc');
     const bundle = build(disc as ProjectStarter);
@@ -283,8 +338,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 58 per-kind examples, one per built-in kind, 4 behaviour examples and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(58);
+  it('has 59 per-kind examples, one per built-in kind, 6 behaviour examples and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(59);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -298,7 +353,11 @@ describe('examples', () => {
       'example_msm_hostile_mob',
       'example_msm_natural_spawn',
     ]);
-    expect(libraryExamples).toHaveLength(66);
+    expect(scriptBehaviourExamples.map((example) => example.id)).toEqual([
+      'example_msm_script_schedule',
+      'example_msm_script_action',
+    ]);
+    expect(libraryExamples).toHaveLength(69);
   });
 
   it('reuses the starter builders for the starter projects', () => {

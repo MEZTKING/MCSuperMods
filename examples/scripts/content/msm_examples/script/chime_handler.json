@@ -1,0 +1,28 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// Called by the \"run_script\" action of msm_examples:chime_block.",
+      "msm.actions.define(\"msm_examples:chime\", (e) => {",
+      "  const pitch = 0.5 + (e.world.time % 16) / 10;",
+      "  e.world.playSound(\"minecraft:block.note_block.chime\", e.pos, { pitch: pitch });",
+      "  e.world.spawnParticle(\"minecraft:note\", e.pos.offset(0, 1.2, 0), { count: 1 });",
+      "  if (e.player !== undefined) {",
+      "    e.player.sendMessage(e.owner + \" chimed at pitch \" + pitch.toFixed(1));",
+      "  }",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:chime_handler",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The script that defines the handler msm_examples:chime with msm.actions.define. The handler receives the owner (the block's id), the event id, the position and the player who used the block, when there is one. It plays a chime whose pitch follows the world time, shows a note particle and tells the player the pitch. Scripts run only in the Fabric mod jar export, with msm_runtime; the Java project export leaves them out.",
+    "tags": [
+      "example",
+      "scripts"
+    ]
+  }
+}

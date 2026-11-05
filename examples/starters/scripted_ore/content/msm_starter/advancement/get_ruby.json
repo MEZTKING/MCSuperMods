@@ -1,0 +1,32 @@
+{
+  "data": {
+    "criteria": {
+      "has_ruby": {
+        "conditions": {
+          "items": [
+            {
+              "items": "msm_starter:ruby"
+            }
+          ]
+        },
+        "trigger": "minecraft:inventory_changed"
+      }
+    },
+    "display": {
+      "description": "Mine a ruby",
+      "frame": "goal",
+      "icon": {
+        "id": "msm_starter:ruby"
+      },
+      "title": "Red Gold"
+    },
+    "parent": "msm_starter:root"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:get_ruby",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A child advancement under the root. It shows a toast and a chat message when you first hold a ruby."
+  }
+}

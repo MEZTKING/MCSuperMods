@@ -2,22 +2,26 @@
  * Cross-plugin check of the library's starters and examples (ADR 0020, plan D6): every
  * bundle is built into a project the way the app's session does it (`newProject`), saved,
  * reloaded with the real built-in plugins (resource pack, data pack, structures, worldgen,
- * blocks and items, entities, models and animations, library), validated element by element
+ * blocks and items, entities, models and animations, scripting, library), validated element by element
  * with the project's own registry ids, and exported as a resource pack and a data pack with
  * every function checked by the offline mcfunction service; projects with `msm:` elements are
  * also exported as a Fabric mod jar (separate runtime, so no runtime or GeckoLib jar is
  * needed; the Custom mob starter is also exported with stub runtime and GeckoLib jars
- * nested). Zero problems (errors or warnings, so no unknown ids) are allowed, for every
- * built-in target.
+ * nested). Projects with scripts export with a stub `transpileScript` that returns the source
+ * unchanged, and every library script is parsed and type-checked against the generated
+ * `msm-runtime.d.ts` with the real `typescript` package. Zero problems (errors or warnings, so
+ * no unknown ids) are allowed, for every built-in target.
  *
  * The `examples/` folder at the repository root mirrors the library as ordinary MSM
  * projects: `examples/all-kinds/` (every per-kind example in one project),
  * `examples/blocks-items/` (the blocks and items behaviour examples), `examples/entities/`
- * (the entity behaviour examples) and
+ * (the entity behaviour examples), `examples/scripts/` (the script behaviour examples) and
  * `examples/starters/<starter id>/` (each content starter). It is a golden: set
  * `UPDATE_GOLDENS=1` to rewrite it from the current library.
  */
+import { readFileSync } from 'node:fs';
 import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -52,9 +56,11 @@ import libraryPlugin, {
   kindExamples,
   libraryExamples,
   libraryStarters,
+  scriptBehaviourExamples,
 } from '@msm/plugin-library';
 import modelsAnimPlugin from '@msm/plugin-models-anim';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
+import scriptingPlugin, { MSM_RUNTIME_TYPINGS } from '@msm/plugin-scripting';
 import structuresPlugin from '@msm/plugin-structures';
 import worldgenPlugin from '@msm/plugin-worldgen';
 import {
@@ -71,6 +77,7 @@ import {
   type McfunctionService,
 } from '@msm/schemas/mcfunction';
 import { builtInTargets, readVendoredJson, type TargetBundle } from '@msm/targets';
+import ts from 'typescript';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { nestedGeckolibPath } from '../src/fabric-content-jar/index';
 import {
@@ -96,6 +103,7 @@ const PLUGINS: readonly Plugin[] = [
   blocksItemsPlugin,
   entitiesPlugin,
   modelsAnimPlugin,
+  scriptingPlugin,
   libraryPlugin,
 ];
 const PACK_KIND = 'minecraft:pack_mcmeta';
@@ -112,6 +120,7 @@ const MIRRORED_STARTERS = [
   'jigsaw_structure',
   'worldgen_pack',
   'custom_mob',
+  'scripted_ore',
 ];
 
 function kindRegistry(): ElementKindRegistry {
@@ -250,7 +259,7 @@ const NON_DATA_KINDS = new Set([
  * so its id goes to `item` too. An element in the `entity_type` registry with a spawn egg
  * (any `spawn_egg` but `false`) registers the item `<id>_spawn_egg`, and an egg with a
  * texture also gets the generated item model `<ns>:item/<path>_spawn_egg` (as lowering
- * writes it).
+ * writes it). `msm:script` has no registry, so script ids register nothing.
  */
 function projectRegistryIds(project: Project): Record<string, string[]> {
   const ids: Record<string, string[]> = { model: [], sound: [], sound_event: [], texture: [] };
@@ -466,12 +475,24 @@ const STUB_RUNTIME_JAR = utf8.encode('PK stub msm_runtime jar');
 const STUB_GECKOLIB_JAR = utf8.encode('PK stub GeckoLib jar');
 
 /**
+ * A stand-in for the host's TypeScript transpiler (ADR 0031 D5): it returns the source
+ * unchanged, so the test needs no transpiler options. It is spread into the exporter options
+ * so the test also compiles against an exporter without the hook.
+ */
+const stubTranspiler = {
+  transpileScript: async (source: string, _name: string): Promise<{ js: string }> => ({
+    js: source,
+  }),
+};
+
+/**
  * The Fabric mod jar exporter. Most exports set `separateRuntime`, so nothing is nested; the
  * stub loaders serve the Custom mob starter test, which nests both jars.
  */
 const contentJarExporter = createFabricContentJarExporter({
   loadRuntimeJar: async () => STUB_RUNTIME_JAR,
   loadGeckolibJar: async () => STUB_GECKOLIB_JAR,
+  ...stubTranspiler,
 });
 
 /** Whether a project has elements of `msm:` kinds, which only the Fabric mod jar carries. */
@@ -579,6 +600,17 @@ const MIRROR: readonly MirrorProject[] = [
         ),
       ),
   },
+  {
+    folder: 'scripts',
+    build: () =>
+      buildProject(
+        'MSM Script Examples',
+        'msm_examples',
+        scriptBehaviourExamples.map((example) =>
+          example.build({ namespace: 'msm_examples', projectName: 'MSM Script Examples' }),
+        ),
+      ),
+  },
   ...MIRRORED_STARTERS.map((id) => ({
     folder: `starters/${id}`,
     build: () => {
@@ -634,6 +666,62 @@ function diskFs(root: string): ProjectFileSystem {
   };
 }
 
+// Scripts ------------------------------------------------------------------------------------
+
+/** Every `msm:script` of the library's starters and examples, as `[label, source]`. */
+function libraryScripts(): [string, string][] {
+  const out: [string, string][] = [];
+  for (const entry of [...libraryStarters, ...libraryExamples]) {
+    for (const element of entry.build({ namespace: 'demo', projectName: 'Demo' }).elements) {
+      if (element.kind !== 'msm:script') continue;
+      const lines = (element.data as { lines: string[] }).lines;
+      out.push([`${entry.id} ${element.id}`, `${lines.join('\n')}\n`]);
+    }
+  }
+  return out;
+}
+
+/** The syntax errors TypeScript reports for `source`. */
+function syntaxErrors(source: string): string[] {
+  const file = ts.createSourceFile('script.ts', source, ts.ScriptTarget.Latest, true);
+  return (file as unknown as { parseDiagnostics: ts.Diagnostic[] }).parseDiagnostics.map((d) =>
+    ts.flattenDiagnosticMessageText(d.messageText, '\n'),
+  );
+}
+
+/**
+ * Type-checks `script` against the generated typings with `lib.es5` only, as the scripting
+ * plugin's own template test does.
+ */
+function typeCheck(script: string): string[] {
+  const libDir = dirname(createRequire(import.meta.url).resolve('typescript/lib/lib.es5.d.ts'));
+  const files = new Map<string, string>([
+    ['/msm-runtime.d.ts', MSM_RUNTIME_TYPINGS],
+    ['/script.ts', script],
+  ]);
+  const options: ts.CompilerOptions = {
+    strict: true,
+    noEmit: true,
+    target: ts.ScriptTarget.ES2018,
+    module: ts.ModuleKind.CommonJS,
+    lib: ['lib.es5.d.ts'],
+    types: [],
+  };
+  const host = ts.createCompilerHost(options);
+  host.getDefaultLibLocation = () => libDir;
+  host.getSourceFile = (fileName, languageVersion) => {
+    const text =
+      files.get(fileName) ?? readFileSync(join(libDir, fileName.split('/').pop() ?? ''), 'utf8');
+    return ts.createSourceFile(fileName, text, languageVersion);
+  };
+  host.fileExists = (fileName) => files.has(fileName) || fileName.startsWith(libDir);
+  host.readFile = (fileName) => files.get(fileName);
+  const program = ts.createProgram(['/msm-runtime.d.ts', '/script.ts'], options, host);
+  return ts
+    .getPreEmitDiagnostics(program)
+    .map((d) => ts.flattenDiagnosticMessageText(d.messageText, '\n'));
+}
+
 // Tests --------------------------------------------------------------------------------------
 
 describe('library bundles', () => {
@@ -651,6 +739,22 @@ describe('library bundles', () => {
       .map((kind) => kind.id)
       .sort();
     expect(kindExamples.map((example: ExampleProject) => example.kind).sort()).toEqual(kinds);
+  });
+
+  it('has scripts in the Scripted ore starter and the three script examples', () => {
+    expect(libraryScripts().map(([label]) => label)).toEqual([
+      'scripted_ore demo:ore_glow',
+      'scripted_ore demo:ruby_block_guard',
+      'scripted_ore demo:welcome',
+      'example_msm_script demo:lodestone_compass',
+      'example_msm_script_schedule demo:amethyst_spiral',
+      'example_msm_script_action demo:chime_handler',
+    ]);
+  });
+
+  it.each(libraryScripts())('script %s parses and type-checks against the typings', (_, source) => {
+    expect(syntaxErrors(source)).toEqual([]);
+    expect(typeCheck(source)).toEqual([]);
   });
 
   it('builds assets the app accepts: lower-case names inside a folder, valid PNGs', () => {
@@ -756,6 +860,57 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         ]),
       );
       expect(jarFiles).not.toContain('pack.mcmeta');
+    });
+
+    it('the Scripted ore starter exports its scripts in the Fabric mod jar only (ADRs 0031, 0032)', async () => {
+      const built = await buildProject('Scripted', 'demo', [
+        starterById('scripted_ore').build({ namespace: 'demo', projectName: 'Scripted' }),
+      ]);
+      const { resourceFiles, dataFiles, jarFiles } = await checkProject(bundle, context, built);
+      for (const files of [resourceFiles, dataFiles]) {
+        expect(files.some((path) => path.startsWith('msm/'))).toBe(false);
+      }
+      const scripts = ['ore_glow', 'ruby_block_guard', 'welcome'];
+      // With the exporter's transpileScript hook (B136) the jar holds `.js`; without it, `.ts`.
+      const extension = jarFiles.includes('msm/demo/script/ore_glow.js') ? 'js' : 'ts';
+      expect(jarFiles).toEqual(
+        expect.arrayContaining([
+          ...scripts.map((name) => `msm/demo/script/${name}.${extension}`),
+          'msm/demo/block/ruby_ore.json',
+          'msm/demo/block/ruby_block.json',
+          'msm/demo/item/ruby.json',
+          'fabric.mod.json',
+        ]),
+      );
+      if (extension === 'js') {
+        expect(jarFiles.filter((path) => path.endsWith('.ts'))).toEqual([]);
+      }
+
+      const project = await reload(built.fs);
+      const ids = projectRegistryIds(project);
+      const registries = createRegistryIndex({ vanilla: context.vanilla, project: ids });
+      const report = await exportProblems(
+        bundle,
+        context,
+        built.fs,
+        project,
+        registries,
+        ids,
+        contentJarExporter,
+        { separateRuntime: true },
+      );
+      const json = (path: string): Record<string, unknown> =>
+        JSON.parse(utf8.decode(report.contents.get(path) as Uint8Array));
+      expect(json('msm/demo/block/ruby_block.json')).toMatchObject({
+        components: { 'msm:on_step': { event: 'demo:ruby_block_step', cooldown_ticks: 20 } },
+        events: {
+          'demo:ruby_block_step': { actions: [{ type: 'run_script', handler: 'demo:guard' }] },
+        },
+      });
+      const guard = utf8.decode(
+        report.contents.get(`msm/demo/script/ruby_block_guard.${extension}`) as Uint8Array,
+      );
+      expect(guard).toContain('msm.actions.define("demo:guard"');
     });
 
     it('the Custom mob starter adds an animated Ruby Golem; the jar nests runtime and GeckoLib (ADRs 0028, 0029)', async () => {

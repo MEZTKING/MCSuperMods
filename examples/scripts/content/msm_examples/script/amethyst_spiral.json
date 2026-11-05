@@ -1,0 +1,37 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// Using an amethyst shard draws a rising spiral: ten steps, 4 ticks apart.",
+      "const STEPS = 10;",
+      "",
+      "msm.events.on(\"item.use\", (e) => {",
+      "  if (e.item.id !== \"minecraft:amethyst_shard\") return;",
+      "  const player = e.player;",
+      "  const step = (n: number): void => {",
+      "    if (n >= STEPS || !player.isAlive) return;",
+      "    const angle = (n / STEPS) * Math.PI * 2;",
+      "    const at = player.pos.offset(Math.cos(angle), n * 0.25, Math.sin(angle));",
+      "    player.world.spawnParticle(\"minecraft:end_rod\", at, { count: 4, spread: 0.1 });",
+      "    if (n === STEPS - 1) {",
+      "      player.world.playSound(\"minecraft:block.amethyst_block.resonate\", player.pos);",
+      "    }",
+      "    msm.schedule(4, () => step(n + 1));",
+      "  };",
+      "  step(0);",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:amethyst_spiral",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A chain of scheduled effects. msm.schedule(ticks, fn) runs fn after that many server ticks (20 a second), so each step draws its particles and schedules the next one 4 ticks later. The chain stops after ten steps, or early when the player is no longer alive, which is worth checking for anything held across ticks. Pending calls are cleared when scripts reload. Scripts run only in the Fabric mod jar export, with msm_runtime.",
+    "tags": [
+      "example",
+      "scripts"
+    ]
+  }
+}

@@ -79,6 +79,7 @@ export const KINDS = Object.freeze({
   entity: 'msm:entity',
   geoModel: 'msm:geo_model',
   animation: 'msm:animation',
+  script: 'msm:script',
 } as const);
 
 /** Ruby red, gem blue and the other placeholder colours the library uses. */

@@ -1871,3 +1871,22 @@ Decisions:
 Next:
 - B137b: the Studio can use `findHandlerDefinitions` to offer handler ids in the `run_script` action picker.
 - B138: the library's script examples; B141: the `apiVersion` text in `packages/plugins/CLAUDE.md` still says `^0.7.0`.
+
+## 2026-11-05 — executor — B138 library: Scripted ore starter, script examples, examples/ mirror
+
+What:
+- Starter `scripted_ore` "Scripted ore" (`starters/scripted-ore.ts`, category content, layers resource pack, data pack and `msm`): reuses `customOreBundle`, replaces the pack description, the mod description and notes, and the block of ruby (adds `msm:on_step` firing `<ns>:ruby_block_step` with a 20-tick cooldown, whose only action is `run_script` handler `<ns>:guard`), then adds three `msm:script` elements: `<ns>:ore_glow` (`block.interact` on `<ns>:ruby_ore`, main hand, sneaking: spark particles, one ruby, cancel), `<ns>:ruby_block_guard` (`msm.actions.define("<ns>:guard", ...)`: chime and `heal(2)` for a player) and `<ns>:welcome` (`player.join` message plus `msm.log.info`). Each script's notes say what it does and that scripts need the Fabric mod jar and are left out of the Java project export. `scriptedOreIds` exported.
+- Examples (`examples/scripts.ts`, category "Scripts"): `example_msm_script` "Script: block interaction" (the per-kind example of `msm:script`: an empty-handed lodestone use is cancelled and gives a compass), `example_msm_script_schedule` "Script: scheduled effects" (amethyst shard: ten-step `msm.schedule` spiral of particles) and `example_msm_script_action` "Script: action handler" (Chime Block with `msm:on_interact` and a `run_script` action, plus the script defining `<ns>:chime`). `KINDS.script` added.
+- Totals: 13 starters, 69 examples (59 per-kind, 6 behaviour, 4 starter projects).
+- `packages/exporters/test/library.test.ts`: `@msm/plugin-scripting` in `PLUGINS` (after models and animations, before the library); `scripted_ore` mirrored; new mirror folder `examples/scripts/`; the content-jar exporter gets a stub `transpileScript` (returns `{ js: source }`) spread into its options; every library script is parsed and type-checked against `MSM_RUNTIME_TYPINGS` with the real `typescript` (already a dev dependency); a Scripted ore jar test (scripts only in the jar; `.js` when the exporter transpiles, `.ts` until B136 lands; the block's `run_script` action and the handler text). `msm:script` needs no registry-id change (its kind id contains `:` and has no registry, so it was already skipped).
+- `examples/` regenerated: every `msm.project.json` lists `msm.scripting`; new `all-kinds/content/msm_examples/script/`, `scripts/`, `starters/scripted_ore/`. `examples/README.md` rows and notes.
+- Library content tests: starter list and categories, 59 kinds, a Scripted ore test (only pack, mod and block of ruby differ from Custom ore), example counts.
+
+Decisions:
+- "Script: block interaction" is the per-kind example of `msm:script`, so the "one per-kind example for every registered kind" rule holds with the scripting plugin registered; the other two are behaviour examples. The Scripted ore starter is not added to the gallery's starter projects (the brief's 69 leaves no room).
+- The stub transpiler is spread from a separate object so `library.test.ts` compiles both before and after B136 adds the option.
+
+Next:
+- B136: once `transpileScript` lands, the Scripted ore jar test asserts `.js` and no `.ts` automatically.
+- B140: README and guide counts (13 starters, 69 examples), `templates-and-examples.md` rows for the new entries.
+- B141: `packages/plugins/CLAUDE.md` library counts (13 starters, 69 examples).

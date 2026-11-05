@@ -1,0 +1,30 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "iron",
+        "resistance": 3,
+        "tool": "pickaxe"
+      },
+      "msm:light_emitter": {
+        "level": 3
+      }
+    },
+    "display_name": "Ruby Ore",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "msm_starter:blocks/ruby_ore",
+    "model": "msm_starter:block/ruby_ore",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_ore",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new block. tool and min_tier put it in the pickaxe and iron-tool tags, so it mines quickly with a pickaxe and drops nothing unless the pickaxe is iron or better. It gives off a faint light (level 3). loot points at the loot table element below, which drops rubies instead of the ore."
+  }
+}

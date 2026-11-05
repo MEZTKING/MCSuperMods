@@ -1,7 +1,7 @@
 /**
  * The Examples gallery (ADR 0020): one commented example per registered kind, the blocks and
- * items behaviour examples, the entity behaviour examples, then the four content starters as
- * complete projects.
+ * items behaviour examples, the entity behaviour examples, the script behaviour examples, then
+ * the four content starters as complete projects.
  */
 import type { ExampleProject } from '@msm/plugin-api';
 import { KINDS } from '../content/bundle';
@@ -17,6 +17,7 @@ import { defineExample } from './define';
 import { entityBehaviourExamples, entityKindExamples } from './entities';
 import { registryExamples } from './registries';
 import { resourcePackExamples } from './resource-pack';
+import { scriptBehaviourExamples, scriptKindExamples } from './scripts';
 import { structureExamples } from './structures';
 import { tagExamples } from './tags';
 import { worldgenExamples } from './worldgen';
@@ -24,10 +25,11 @@ import { worldgenExamples } from './worldgen';
 export { behaviourExamples } from './blocks-items';
 export { categoryTag, defineExample, type ExampleInput } from './define';
 export { entityBehaviourExamples } from './entities';
+export { scriptBehaviourExamples } from './scripts';
 
 /**
  * The per-kind examples, in gallery order: resource pack, data pack, tags, registries,
- * structures, worldgen, blocks and items, entities, models and animations.
+ * structures, worldgen, blocks and items, entities, models and animations, scripts.
  */
 export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...resourcePackExamples,
@@ -38,6 +40,7 @@ export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...worldgenExamples,
   ...blocksItemsExamples,
   ...entityKindExamples,
+  ...scriptKindExamples,
 ]);
 
 /** The category of the starter projects in the gallery. */
@@ -89,5 +92,6 @@ export const libraryExamples: readonly ExampleProject[] = Object.freeze([
   ...kindExamples,
   ...behaviourExamples,
   ...entityBehaviourExamples,
+  ...scriptBehaviourExamples,
   ...starterExamples,
 ]);

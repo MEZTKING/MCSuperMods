@@ -1,0 +1,27 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// Sneak and use ruby ore with the main hand: sparks, one ruby, and the use is cancelled.",
+      "const ORE = \"msm_starter:ruby_ore\";",
+      "",
+      "msm.events.on(\"block.interact\", (e) => {",
+      "  if (e.block.id !== ORE || e.hand !== \"main\" || !e.player.isSneaking) return;",
+      "  e.cancel();",
+      "  e.world.spawnParticle(\"minecraft:electric_spark\", e.block.pos.offset(0, 1, 0), {",
+      "    count: 12,",
+      "    spread: 0.4,",
+      "  });",
+      "  e.player.give(\"msm_starter:ruby\", 1);",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ore_glow",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A script that handles the block.interact event. When a player sneaks and uses msm_starter:ruby_ore with the main hand, it spawns spark particles above the ore, gives one msm_starter:ruby and cancels the use, so nothing else happens. Without sneaking the ore behaves as usual. The handler runs for every block, so it returns early unless the block id matches. Scripts run only in the Fabric mod jar export, with msm_runtime; the vanilla packs and the Java project export leave them out."
+  }
+}

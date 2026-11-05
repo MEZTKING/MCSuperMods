@@ -11,6 +11,7 @@ import { jigsawStructureBundle } from './jigsaw-structure';
 import { musicDiscBundle } from './music-disc';
 import { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
 import { recipePackBundle } from './recipe-pack';
+import { scriptedOreBundle } from './scripted-ore';
 import { worldgenPackBundle } from './worldgen-pack';
 
 export { customBiomeBundle, customBiomeContent, customBiomeIds } from './custom-biome';
@@ -21,6 +22,7 @@ export { hamletIds, jigsawStructureBundle, jigsawStructureContent } from './jigs
 export { musicDiscBundle, SONG } from './music-disc';
 export { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
 export { recipePackBundle } from './recipe-pack';
+export { scriptedOreBundle, scriptedOreIds } from './scripted-ore';
 export { worldgenPackBundle } from './worldgen-pack';
 
 /** The namespace used to work out a bundle's kinds; any valid namespace gives the same set. */
@@ -144,5 +146,13 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     'content',
     ['resourcepack', 'datapack', 'msm'],
     customMobBundle,
+  ),
+  starter(
+    'scripted_ore',
+    'Scripted ore',
+    'The Custom ore starter with scripts: sneak-using ruby ore gives a bonus ruby, standing on a block of ruby heals you through a run_script action, and joining players are greeted. Scripts need the Fabric mod jar export and are not part of the Java project export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    scriptedOreBundle,
   ),
 ]);

@@ -2,15 +2,18 @@
  * `@msm/plugin-library`: the built-in templates and samples library (ADR 0020). It
  * contributes project starters and Examples gallery entries, and the deterministic
  * placeholder textures they use. It registers no element kinds: its bundles use the kinds of
- * the resource pack, data pack, structures, worldgen, blocks and items, entities and models
- * and animations plugins, named in each entry's `requiresKinds`, and the host hides entries
- * whose kinds are not registered.
+ * the resource pack, data pack, structures, worldgen, blocks and items, entities, models and
+ * animations and scripting plugins, named in each entry's `requiresKinds`, and the host hides
+ * entries whose kinds are not registered.
  *
  * Content decisions recorded in ADR 0020:
  * - The Custom ore starter adds a real ruby ore block and ruby item (Phase 4; it needs the
  *   Fabric mod jar export).
  * - The Custom mob starter adds an animated Ruby Golem (Phase 5, ADRs 0028 and 0029; it needs
  *   the Fabric mod jar export with GeckoLib).
+ * - The Scripted ore starter adds three runtime scripts to the Custom ore starter's content
+ *   (Phase 6, ADRs 0031 and 0032; scripts need the Fabric mod jar export and are not part of
+ *   the Java project export).
  * - The music disc starter refers to the vanilla sound file `minecraft:records/cat`; no
  *   `.ogg` is bundled.
  * - Examples are mirrored on disk under `examples/` as ordinary MSM projects.
@@ -44,9 +47,10 @@ export {
   kindExamples,
   libraryExamples,
   STARTERS_CATEGORY,
+  scriptBehaviourExamples,
   starterExamples,
 } from './examples/index';
-export { libraryStarters } from './starters/index';
+export { libraryStarters, scriptedOreIds } from './starters/index';
 
 const plugin: Readonly<Plugin> = definePlugin({
   id: 'msm.library',

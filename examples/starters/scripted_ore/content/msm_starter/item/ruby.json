@@ -1,0 +1,16 @@
+{
+  "data": {
+    "creative_tab": "minecraft:ingredients",
+    "display_name": "Ruby",
+    "format": 1,
+    "max_stack_size": 64,
+    "model": "msm_starter:item/ruby"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new item with its own model and English name. The display name becomes the item.<namespace>.ruby language key when you export."
+  }
+}

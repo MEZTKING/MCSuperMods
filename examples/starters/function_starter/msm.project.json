@@ -12,7 +12,8 @@
     "msm.worldgen",
     "msm.blocks-items",
     "msm.entities",
-    "msm.models-anim"
+    "msm.models-anim",
+    "msm.scripting"
   ],
   "settings": {},
   "targets": [
