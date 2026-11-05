@@ -1,5 +1,12 @@
 /**
  * Pure lowering functions (`lower(element, target) -> OutputFile[]`) for
- * `@msm/plugin-scripting`. None yet.
+ * `@msm/plugin-scripting`.
  */
-export {};
+
+export {
+  isRecord,
+  ScriptingLoweringError,
+  scriptPath,
+  splitResourceLocation,
+} from './paths';
+export { lowerScript, SCRIPT_LANGUAGE, scriptText } from './script';

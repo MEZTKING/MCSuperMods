@@ -4,8 +4,6 @@
  * that use the global and the `msm:runtime` module.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 import raw from '../api/script-api-v1.json' with { type: 'json' };
@@ -17,39 +15,10 @@ import {
   SCRIPT_API,
   ScriptApiError,
 } from '../src/index';
+import { typeCheck } from './support';
 
 const UPDATE = process.env.UPDATE_GOLDENS === '1';
 const GOLDEN = new URL('../api/msm-runtime.d.ts', import.meta.url);
-
-/** Type-checks `script` against the typings with `lib.es5` only (no DOM, no Node). */
-function typeCheck(script: string): string[] {
-  const libDir = dirname(createRequire(import.meta.url).resolve('typescript/lib/lib.es5.d.ts'));
-  const files = new Map<string, string>([
-    ['/msm-runtime.d.ts', MSM_RUNTIME_TYPINGS],
-    ['/script.ts', script],
-  ]);
-  const options: ts.CompilerOptions = {
-    strict: true,
-    noEmit: true,
-    target: ts.ScriptTarget.ES2018,
-    module: ts.ModuleKind.CommonJS,
-    lib: ['lib.es5.d.ts'],
-    types: [],
-  };
-  const host = ts.createCompilerHost(options);
-  host.getDefaultLibLocation = () => libDir;
-  host.getSourceFile = (fileName, languageVersion) => {
-    const text =
-      files.get(fileName) ?? readFileSync(join(libDir, fileName.split('/').pop() ?? ''), 'utf8');
-    return ts.createSourceFile(fileName, text, languageVersion);
-  };
-  host.fileExists = (fileName) => files.has(fileName) || fileName.startsWith(libDir);
-  host.readFile = (fileName) => files.get(fileName);
-  const program = ts.createProgram(['/msm-runtime.d.ts', '/script.ts'], options, host);
-  return ts
-    .getPreEmitDiagnostics(program)
-    .map((d) => ts.flattenDiagnosticMessageText(d.messageText, '\n'));
-}
 
 describe('script API v1', () => {
   it('parses the JSON and is consistent', () => {

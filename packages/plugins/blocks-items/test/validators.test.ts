@@ -79,6 +79,28 @@ describe('blocks-items validators', () => {
     ]);
   });
 
+  it('does not treat run_script actions as event references (ADR 0032 D4)', async () => {
+    const problems = await validate([
+      block('demo:a', {
+        components: { 'msm:on_interact': { event: 'demo:x' } },
+        events: {
+          'demo:x': {
+            actions: [
+              { type: 'run_script', handler: 'demo:x' },
+              { type: 'run_script', handler: 'demo:undeclared' },
+              { type: 'trigger_event', event: 'demo:y' },
+            ],
+          },
+          'demo:y': { actions: [{ type: 'run_script', handler: 'demo:y' }] },
+        },
+      }),
+      item('demo:b', {
+        events: { 'demo/self': { actions: [{ type: 'run_script', handler: 'demo/self' }] } },
+      }),
+    ]);
+    expect(problems).toEqual([]);
+  });
+
   it('reports event cycles, including a self-loop', async () => {
     const trigger = (event: string) => ({ actions: [{ type: 'trigger_event', event }] });
     const problems = await validate([

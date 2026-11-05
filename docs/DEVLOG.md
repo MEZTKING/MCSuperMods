@@ -1852,3 +1852,22 @@ Decisions:
 Next:
 - B139: the full parity set, four runs in CI sharing one `--work` folder, `expectScripts` in the pass rule.
 - B136: name the nested GeckoLib by coordinates (file is `geckolib-<modrinth id>.jar`); mention Loom's harmless "not valid semver" line in the generated README.
+
+## 2026-11-05 — executor — B134 @msm/plugin-scripting and the run_script validators
+
+What:
+- `@msm/plugin-scripting`: kind `msm:script` (folder `script`, schema extension `msm:script`, no registry, no preview, the brief's default data) lowering to `msm/<ns>/script/<path>.ts` (layer `msm`, `language: 'typescript'`, UTF-8 lines joined with `\n` plus a trailing newline, no schema); `lowering/paths.ts` copy (`ScriptingLoweringError`, `splitResourceLocation`, `scriptPath`), `lowering/script.ts` (`lowerScript`, `scriptText`, `SCRIPT_LANGUAGE`).
+- Validators (`src/validators.ts`): `scripting.unknown-handler` (warning, at `/events/<e>/actions/<i>/handler` of an `msm:block`, `msm:item` or `msm:entity`), `scripting.duplicate-handler` (warning, on every script involved, at `/lines/<n>` with the id's `range`), `scripting.empty-script` (info, `/lines`). `findHandlerDefinitions` is the textual check (`msm.actions.define("<id>"` or `'<id>'`, whitespace allowed, across lines), exported for the Studio.
+- Templates (category "Scripts"): Block interaction script (composter use cancelled, bone meal given), Entity hurt script (iron golem heals half and shows hearts), Scheduled effect script (clock: five chimes through an `msm.schedule` chain), Action handler script (defines the new script's own id; the description explains the `run_script` pairing).
+- blocks-items and entities validators: their walks only follow `trigger_event`, so `run_script` was never reported; the module docs now say so and each test file gains a case with `run_script` handlers that look like (undeclared) events.
+- Tests: `plugin.test.ts` (7), `templates.test.ts` (each template validates against `msm:script` per target, the validators report nothing, the lowered `.ts` parses and type-checks against `MSM_RUNTIME_TYPINGS`), `lowering.golden.test.ts` (goldens `test/fixtures/mc-26.3/expected/script/{default,ore_glow,empty}.json`), `validators.test.ts` per code. `test/support.ts` holds the schema index, `syntaxErrors` and `typeCheck` (moved out of `typings.test.ts`). Scripting 38 tests, blocks-items 46, entities 38; `tsc -b`, `biome ci .` and check-deps clean.
+- `packages/plugins/CLAUDE.md`: scripting row and the Phase 6 counts sentence (59 kinds, 116 templates).
+
+Decisions:
+- Goldens are JSON (`path`, `layer`, `language`, `schema: null`, `text`), not `.ts` files: the package `tsconfig` includes `test/`, so `.ts` goldens would be compiled.
+- Handler ids are compared exactly as written (no `minecraft:` defaulting); an empty `lines` list lowers to `"\n"`, as the brief's rule gives.
+- The default data's template literal needs a `biome-ignore` for `noTemplateCurlyInString`.
+
+Next:
+- B137b: the Studio can use `findHandlerDefinitions` to offer handler ids in the `run_script` action picker.
+- B138: the library's script examples; B141: the `apiVersion` text in `packages/plugins/CLAUDE.md` still says `^0.7.0`.

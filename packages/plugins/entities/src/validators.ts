@@ -7,6 +7,8 @@
  * - `entities.unknown-event` (error): an event field of a trigger component (`msm:on_hurt`,
  *   `msm:on_death`, `msm:on_interact`, `msm:attack.on_attack`) or a `trigger_event` action
  *   naming an event the entity does not declare.
+ *   A `run_script` action (ADR 0032 D4) names a script handler, not an event, so it is never
+ *   an event reference; `scripting.unknown-handler` of `@msm/plugin-scripting` checks it.
  * - `entities.event-cycle` (error): events whose `trigger_event` actions call each other in a
  *   loop; the runtime would stop the chain at 16 levels with a logged error.
  * - `entities.unknown-model` (error): `msm:animated_model.model` is not an `msm:geo_model`

@@ -125,6 +125,31 @@ describe('entities validators', () => {
     ]);
   });
 
+  it('does not treat run_script actions as event references (ADR 0032 D4)', async () => {
+    const problems = await validate(
+      withRefs(
+        entity(
+          'example:a',
+          {
+            events: {
+              'example:x': {
+                actions: [
+                  { type: 'run_script', handler: 'example:x' },
+                  { type: 'run_script', handler: 'example:undeclared' },
+                  { type: 'trigger_event', event: 'example:y' },
+                ],
+              },
+              'example:y': { actions: [{ type: 'run_script', handler: 'example:y' }] },
+            },
+          },
+          {},
+          { 'msm:on_hurt': { event: 'example:x' } },
+        ),
+      ),
+    );
+    expect(problems).toEqual([]);
+  });
+
   it('reports event cycles, including a self-loop', async () => {
     const trigger = (event: string) => ({ actions: [{ type: 'trigger_event', event }] });
     const problems = await validate(
