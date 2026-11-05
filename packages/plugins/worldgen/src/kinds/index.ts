@@ -4,9 +4,10 @@
  * Each lowers 1:1 to a JSON file: `dimension` under `target.folders.data.dimension`, the others
  * under `target.folders.data.worldgen` plus the registry name after `worldgen/`.
  */
-import type { ElementKind } from '@msm/plugin-api';
+import type { ElementKind, TargetFacts } from '@msm/plugin-api';
 import { lowerJsonData } from '../lowering/json-data';
 import { WORLDGEN_DEFAULTS } from './defaults';
+import { noiseSettingsFor } from './per-target';
 import { kindId, WORLDGEN_PREFIX, WORLDGEN_REGISTRIES, type WorldgenRegistry } from './registries';
 
 export { VANILLA_END, VANILLA_NETHER, VANILLA_OVERWORLD } from './defaults';
@@ -17,6 +18,7 @@ export {
   WORLDGEN_REGISTRIES,
   type WorldgenRegistry,
 } from './registries';
+export { noiseSettingsFor, noiseSettingsHaveDefaultBlock } from './per-target';
 
 /**
  * Creates the kind of one registry.
@@ -25,6 +27,8 @@ export {
  * @returns The element kind.
  */
 export function worldgenKind(registry: WorldgenRegistry): ElementKind {
+  // Noise settings also get `defaultDataFor` (ADR 0036 D8): `defaultData` keeps the shape
+  // with `default_block` for hosts that do not call it.
   const schema = `resource:${registry}`;
   const lower: ElementKind['lower'] = registry.startsWith(WORLDGEN_PREFIX)
     ? (element, target) =>
@@ -35,6 +39,11 @@ export function worldgenKind(registry: WorldgenRegistry): ElementKind {
     schema,
     folder: registry,
     defaultData: structuredClone(WORLDGEN_DEFAULTS[registry]),
+    ...(registry === 'worldgen/noise_settings'
+      ? {
+          defaultDataFor: (target: TargetFacts) => noiseSettingsFor(WORLDGEN_DEFAULTS[registry], target),
+        }
+      : {}),
     ...(registry === 'dimension' || registry === 'worldgen/world_preset'
       ? { previewKind: 'climate_map' }
       : {}),

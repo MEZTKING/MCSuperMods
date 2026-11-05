@@ -42,6 +42,26 @@ export interface ElementKind<D extends Json = Json> {
    */
   defaultData?: D;
   /**
+   * Data for a newly created element of this kind on a given target, for kinds whose valid
+   * starting data differs between targets (a field one target requires and another's schema
+   * no longer has). When present, the host calls it instead of reading
+   * {@link ElementKind.defaultData} for new elements, for the `kindDefault` it passes to
+   * templates and for starters; it deep-copies the result like `defaultData`. Derive the
+   * shape from the target's facts, never from a version literal. Must be pure and
+   * deterministic in the target. May return a Promise (a sandboxed plugin's functions resolve
+   * through a worker); hosts await the result. Since 1.0.0 (ADR 0036 D8).
+   *
+   * @example
+   * ```ts
+   * defaultDataFor: (target) =>
+   *   target.worldgen.biomeAttributes ? { attributes: {} } : { effects: {} },
+   * ```
+   *
+   * @param target - The facts of the target the new element is for.
+   * @returns The new element's data, or a Promise of it.
+   */
+  defaultDataFor?: (target: TargetFacts) => MaybePromise<Json>;
+  /**
    * RFC 6901 pointers into `data` that the schema-driven form hides because lowering owns
    * them, for example `/pack/pack_format` when lowering writes the pack format from the
    * target. The fields are still validated and still visible in the raw JSON editor.

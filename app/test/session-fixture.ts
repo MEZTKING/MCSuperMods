@@ -16,7 +16,7 @@ import {
   type ProjectStarter,
 } from '@msm/plugin-api';
 import { placeholderPng } from '@msm/plugin-library';
-import { builtInTargets, targetById } from '@msm/targets';
+import { builtInTargets, defaultTargetId, targetById } from '@msm/targets';
 import { builtInPlugins } from '../src/renderer/src/plugins/built-in';
 import type { McfunctionChecker } from '../src/renderer/src/session/mcfunction-problems';
 import {
@@ -172,8 +172,9 @@ export function newSession(
   return { session, calls, platform };
 }
 
-/** The id of the default (newest) built-in target. */
-export const defaultTarget = (builtInTargets[0] as (typeof builtInTargets)[number]).target;
+/** The default built-in target for new projects (the newest `release` target, ADR 0037). */
+export const defaultTarget = (targetById(defaultTargetId) as (typeof builtInTargets)[number])
+  .target;
 
 let nodeChecker: Promise<McfunctionChecker> | null = null;
 

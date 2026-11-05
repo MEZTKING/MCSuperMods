@@ -3,6 +3,7 @@
  * constants and vanilla ids only, for the schema form to take further.
  */
 import type { ElementTemplate, Json } from '@msm/plugin-api';
+import { noiseSettingsFor } from '../kinds/per-target';
 import { ADVANCED, fixed } from './shared';
 
 /** A surface rule: bedrock at the bottom, grass and dirt on top above sea level, else stone. */
@@ -53,8 +54,16 @@ const SURFACE_RULE: Json = {
   ],
 };
 
+/**
+ * A noise settings template: `data` carries `default_block` and is shaped per target
+ * (ADR 0036 D8).
+ */
+function perTargetNoiseSettings(fields: Omit<ElementTemplate, 'data'>, data: Json): ElementTemplate {
+  return { ...fields, data: (context) => noiseSettingsFor(data, context.target) };
+}
+
 export const advancedTemplates: readonly ElementTemplate[] = [
-  fixed(
+  perTargetNoiseSettings(
     {
       id: 'noise_settings',
       kind: 'minecraft:worldgen/noise_settings',

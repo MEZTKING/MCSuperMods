@@ -31,7 +31,11 @@ export interface TemplateContext {
   projectNamespace: string;
   /** Every namespace of the open project. */
   namespaces: readonly string[];
-  /** The kind's `defaultData`, deep-copied by the host, or `undefined` when it has none. */
+  /**
+   * The kind's default data for {@link TemplateContext.target} (`defaultDataFor(target)` when
+   * the kind has it, else `defaultData`), deep-copied by the host, or `undefined` when it has
+   * neither.
+   */
   kindDefault: Json | undefined;
   /**
    * The facts of the open project's target, so a template can read them (for example

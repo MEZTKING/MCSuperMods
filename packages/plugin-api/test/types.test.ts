@@ -113,6 +113,23 @@ describe('0.2.0 additions', () => {
     expectTypeOf(kind).toEqualTypeOf<ElementKind>();
   });
 
+  it('adds an optional per-target defaultDataFor to ElementKind (1.0.0, ADR 0036 D8)', () => {
+    expectTypeOf<ElementKind['defaultDataFor']>().toEqualTypeOf<
+      ((target: TargetFacts) => MaybePromise<Json>) | undefined
+    >();
+    const kind: ElementKind = {
+      id: 'minecraft:worldgen/noise_settings',
+      schema: '::java::data::worldgen::noise_settings::NoiseGeneratorSettings',
+      folder: 'worldgen/noise_settings',
+      defaultData: { sea_level: 63 },
+      defaultDataFor: (target) => ({ sea_level: target.worldgen.featureSteps.length }),
+      lower: () => [],
+    };
+    const asyncKind: ElementKind = { ...kind, defaultDataFor: async () => ({}) };
+    expectTypeOf(kind).toEqualTypeOf<ElementKind>();
+    expectTypeOf(asyncKind).toEqualTypeOf<ElementKind>();
+  });
+
   it('adds an optional file to Problem', () => {
     expectTypeOf<Problem['file']>().toEqualTypeOf<string | undefined>();
   });

@@ -78,6 +78,8 @@ export const target: Target = {
       skyColour: 'minecraft:visual/sky_color',
       naturalMobSpawns: 'minecraft:gameplay/natural_mob_spawns',
     },
+    // noise_settings lost default_block (`until 26.4` in the vendored mcdoc; ADR 0036 D8).
+    noiseSettingsDefaultBlock: false,
   },
   // Verified 2026-11-05: meta.fabricmc.net lists Loader 0.20.1 for 26.4-snapshot-7, and
   // 0.165.4+26.4 is the newest Fabric API for 26.4 on maven.fabricmc.net (ADR 0037 D2). Loom

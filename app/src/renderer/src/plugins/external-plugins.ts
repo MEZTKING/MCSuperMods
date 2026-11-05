@@ -126,20 +126,22 @@ export function toTargetFacts(target: TargetFacts | Target): TargetFacts {
   // A built-in target: `@msm/targets` strips its hooks. Any other (tests, future targets):
   // copy the data fields.
   const builtIn = targetById(target.id)?.target === target ? targetFacts(target.id) : undefined;
-  const out: TargetFacts = builtIn ?? structuredClone({
-    id: target.id,
-    mcVersion: target.mcVersion,
-    channel: target.channel,
-    java: target.java,
-    packFormats: target.packFormats,
-    mcdocRef: target.mcdocRef,
-    mcmetaRef: target.mcmetaRef,
-    folders: target.folders,
-    dataVersion: target.dataVersion,
-    worldgen: target.worldgen,
-    ...(target.fabric === undefined ? {} : { fabric: target.fabric }),
-    ...(target.geckolib === undefined ? {} : { geckolib: target.geckolib }),
-  });
+  const out: TargetFacts =
+    builtIn ??
+    structuredClone({
+      id: target.id,
+      mcVersion: target.mcVersion,
+      channel: target.channel,
+      java: target.java,
+      packFormats: target.packFormats,
+      mcdocRef: target.mcdocRef,
+      mcmetaRef: target.mcmetaRef,
+      folders: target.folders,
+      dataVersion: target.dataVersion,
+      worldgen: target.worldgen,
+      ...(target.fabric === undefined ? {} : { fabric: target.fabric }),
+      ...(target.geckolib === undefined ? {} : { geckolib: target.geckolib }),
+    });
   facts.set(target, out);
   return out;
 }

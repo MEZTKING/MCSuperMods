@@ -144,6 +144,13 @@ export interface WorldgenFacts {
    * without it gets no attribute-based colours or spawn lists.
    */
   biomeAttributes?: BiomeAttributeFacts;
+  /**
+   * Whether noise settings (`worldgen/noise_settings`) have the `default_block` field, which
+   * is required where it exists. A target whose schema removed the field sets `false`, so the
+   * worldgen plugin's `defaultDataFor` and templates leave it out there. Absent means `true`
+   * (the field exists). Since 1.0.0 (ADR 0036 D8).
+   */
+  noiseSettingsDefaultBlock?: boolean;
 }
 
 /**

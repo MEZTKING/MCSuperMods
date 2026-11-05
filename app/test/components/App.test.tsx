@@ -6,7 +6,7 @@ import { createMemoryFileSystem } from '@msm/core';
 import { definePlugin, type ElementKind, type Plugin } from '@msm/plugin-api';
 import { SCRIPT_KIND } from '@msm/plugin-scripting';
 import { structureTemplateToNbt, writeNbt } from '@msm/plugin-structures';
-import { builtInTargets, targetById } from '@msm/targets';
+import { builtInTargets, defaultTargetId, targetById } from '@msm/targets';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -73,7 +73,7 @@ function toPath(url: URL): string {
   throw new Error(`Cannot read ${url.href} from the file system.`);
 }
 
-const defaultTarget = (builtInTargets[0] as (typeof builtInTargets)[number]).target;
+const defaultTarget = (targetById(defaultTargetId) as (typeof builtInTargets)[number]).target;
 
 const unavailable = async (): Promise<never> => {
   throw new Error('Not available in this test.');

@@ -74,6 +74,8 @@ export const target: Target = {
       skyColour: 'minecraft:visual/sky_color',
       naturalMobSpawns: 'minecraft:gameplay/natural_mob_spawns',
     },
+    // noise_settings still require default_block (vendored mcdoc; ADR 0036 D8).
+    noiseSettingsDefaultBlock: true,
   },
   // Verified 2026-11-05 against maven.fabricmc.net and the FabricMC example mod's 26.3
   // branch (ADR 0027).
