@@ -12,7 +12,7 @@ Phase 2 code complete: model, serialisation, load/save with the `SaveManifest` (
 - `src/serialise/`: deterministic JSON (`stableStringify`, `parseJson`).
 - `src/fs/`: injected `ProjectFileSystem` interface, in-memory implementation, path checks.
 - `src/io/`: layout, load (returns a `SaveManifest`), save (`createSaveManifest`; deletes only loaded files), append-only migrators for `msm.project.json` and `content/<ns>/<kind-folder>/<path>.json`.
-- `src/commands/`: command stack (Immer patches as RFC 6902 / RFC 6901 pointers, undo/redo, `coalesce` keys within a time window); `commands.*` incl. `setElementValue`, `addAsset`, `removeAsset`, `renameElement(oldId, newId, references)` (id, string and key references, text ranges; one undo step).
+- `src/commands/`: command stack (Immer patches as RFC 6902 / RFC 6901 pointers, undo/redo, `coalesce` keys within a time window, `effects` handed to subscribers on execute/undo/redo, ADR 0045); `commands.*` incl. `setElementValue`, `addAsset`, `removeAsset`, `renameElement(oldId, newId, references)` (id, string and key references, text ranges; one undo step).
 - `src/registry/`: element kind registry and `registerPlugin` (semver `apiVersion` check).
 - `src/problems/`: problem codes (incl. `lowering.merge-conflict`, `refs.rename-conflict`).
 - `src/lowering/`: `lowerProject` (unknown kind, thrown lowering and same-path conflicts become `lowering.*` error problems); `mergeOutputFiles` (ADR 0027: `OutputFile.merge` `tag`/`object`, `lowering.merge-conflict`; also used by `runExport` with `export.conflict`).
@@ -25,7 +25,7 @@ Phase 2 code complete: model, serialisation, load/save with the `SaveManifest` (
 - Deterministic serialisation: sorted keys, 2-space indent, trailing newline. JSON only.
 - Format v1 drops unknown fields on load; elements of unregistered kinds round-trip via `_unknown/<kind ns>/<kind path>`.
 - Load skips invalid element files (error problems with `Problem.file`); save deletes only files in the manifest and is never blocked (ADR 0012).
-- Asset commands change only `Asset` records; byte moves (import, trash) belong to the app session.
+- Asset commands change only `Asset` records; byte moves (import, trash, undoable writes through command `effects`) belong to the app session.
 - Every public symbol is exported from `src/index.ts`.
 - Depends on `@msm/plugin-api` and `@msm/schemas` (the reference index uses `collectReferences`).
 - A rename onto an existing id fails; the session reports `refs.rename-conflict` rather than throwing.

@@ -161,7 +161,7 @@ interface ElementKind<D extends Json = Json> {
 
 ### Command stack and undo
 
-All edits go through a command stack. A command is an Immer producer applied to the project document; Immer emits RFC 6902 JSON patches and their inverses. Undo applies the inverse patches; redo reapplies the forward patches. Patches also feed the reference index, problems panel and autosave. UI-only state (open tabs, selection, panel layout) lives in Zustand in the app and is never part of the undo history.
+All edits go through a command stack. A command is an Immer producer applied to the project document; Immer emits RFC 6902 JSON patches and their inverses. Undo applies the inverse patches; redo reapplies the forward patches. Patches also feed the reference index, problems panel and autosave. UI-only state (open tabs, selection, panel layout) lives in Zustand in the app and is never part of the undo history. A command may also carry effects outside the document (for example an asset byte write), which the stack records and hands to the host on execute, undo and redo; the session keeps the replaced bytes in `.msm/undo/` so one Undo restores files too ([ADR 0045](adr/0045-undoable-asset-writes.md)).
 
 ### References and renames
 
@@ -177,7 +177,7 @@ MyMod/
   content/<namespace>/<kind-folder>/<path>.json     # one element per file
   assets/<namespace>/...                            # raw binaries: textures, sounds, .bbmodel, .nbt
   scripts/<namespace>/*.ts                          # Tier-1 scripts
-  .msm/                                             # cache, git-ignored: generated .d.ts, thumbnails, index, trash
+  .msm/                                             # cache, git-ignored: generated .d.ts, thumbnails, index, trash, undo
 ```
 
 The kind-folder is declared by the element kind: `recipe/` for `minecraft:recipe`, `msm/block/` for `msm:block`, and so on. A ruby ore block therefore lives at `content/mymod/msm/block/ruby_ore.json`. Tag kinds use `tags/<registry>/` (`content/mymod/tags/item/gems.json` for `minecraft:tag/item`). A `minecraft:function` element stores its source as `{ "lines": [...] }`, one string per line, in `content/<namespace>/function/<path>.json`, so the project stays JSON only and diffs stay line-based; it lowers to a `.mcfunction` file ([ADR 0015](adr/0015-data-pack-element-model.md)).
@@ -210,7 +210,7 @@ The kind-folder is declared by the element kind: `recipe/` for `minecraft:recipe
 - JSON only. No YAML, no comments.
 - Two-space indentation, keys sorted on save, trailing newline. Sorted keys give stable diffs regardless of edit order.
 - Binary assets are never inlined into JSON.
-- `.msm/` is a disposable cache; deleting it never loses work. Removing an asset moves its bytes to `.msm/trash/<namespace>/<path>` so undo can restore them; the trash is emptied when a project is opened or created, never on save, so deleting `.msm/` loses at most the undo of asset removals ([ADR 0012](adr/0012-save-deletes-only-loaded-files.md)).
+- `.msm/` is a disposable cache; deleting it never loses work. Removing an asset moves its bytes to `.msm/trash/<namespace>/<path>` so undo can restore them; the trash is emptied when a project is opened or created, never on save, so deleting `.msm/` loses at most the undo of asset removals ([ADR 0012](adr/0012-save-deletes-only-loaded-files.md)). Bytes replaced by an undoable write (the Creator's Update) wait in `.msm/undo/` under the same rule ([ADR 0045](adr/0045-undoable-asset-writes.md)).
 - Format version 1 is closed: unknown fields in `msm.project.json` and in element files are dropped on load. Elements whose kind no plugin registers are kept and round-trip losslessly; they are saved under `content/<namespace>/_unknown/<kind namespace>/<kind path>/`.
 
 ### Migrations

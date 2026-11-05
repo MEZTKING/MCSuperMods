@@ -23,7 +23,7 @@ Phase 2 code complete: Resource Pack Studio plus Data Pack Studio (Recipe Studio
 - Lazy-load Monaco and the 3D preview; budgets in `tools/check-size` (DESIGN §14; renderer 16 MB, the TypeScript worker a separate `ts.worker` chunk). Extra Monaco workers register through `registerWorker` in `monaco-setup.ts`.
 - CSP: scripts `'self'` only; `style-src 'unsafe-inline'` for Monaco/Radix; `img-src data:` for thumbnails.
 - Game locations: installs write only inside the selected `gameDir` (real-path containment: game dir in instance, instance in instances root); `location.game-dir-missing` blocks install, version mismatch only warns. Launcher path and file-format facts stay in `@msm/interop` `launchers/`.
-- Asset removal moves bytes to `.msm/trash/` so undo restores them; the trash empties on open/create.
+- Asset removal moves bytes to `.msm/trash/` so undo restores them; bytes replaced through `applyChangeset({ writes })` (the Creator's Update) are kept in `.msm/undo/` and restored by the same Undo (`app.asset-write` command effects, ADR 0045); both empty on open/create.
 - Releases are Windows only (NSIS x64, unsigned); the updater is active only when packaged on Windows outside test runs. Every release needs a user-facing `CHANGELOG.md` section (`## [x.y.z] - YYYY-MM-DD`): `release.yml` uses it as the release body, and `test/components/WhatsNew.test.tsx` checks the app version has one.
 - British English in UI text and docs; no emojis. Accessibility: keyboard navigation, labelled controls.
 

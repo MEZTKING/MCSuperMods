@@ -2661,3 +2661,25 @@ Next:
 **Next**
 - B191: extend `creator-path` with the ids above (Painting opens on the Card tab; pick a PNG through `MSM_E2E_PICK_FILES`); guide labels "Card", "Choose picture…", "Remove image", "Apply effect".
 - Orchestrator: `app/CLAUDE.md` should list `creator-cards.ts`, `CreatorCards.tsx`, `CreatorImageField.tsx`; numeric base attack values per tier would need a `TargetFacts.items` addition.
+
+## 2026-11-05 — executor — B193: undoable asset byte writes, shared tags and language files merged in `addBundle`
+
+**What**
+- Core (ADR 0045): `ProjectCommand.effects` (`CommandEffect { type, data? }`, exported from `@msm/core`); the stack stores them in the history entry and passes them in `CommandEvent.effects` on `execute`, `undo` and `redo` (empty for `reset`); a command with effects but no patches is still recorded (an undo step, dirty); coalesced commands merge their effects. Tests in `command-stack.test.ts` (4).
+- Session: `applyChangeset(items, label, { writes })` validates each write as an asset import does (throws before anything is applied), keeps the current and new bytes in `.msm/undo/<generation>-<n>/before|after` (`ASSET_UNDO_DIR`), skips writes equal to the current bytes, and runs one command with the changeset's commands plus one `app.asset-write` effect per write (`ASSET_WRITE_EFFECT`). `#replayAssetWrites` (queued with the trash moves) writes `after` on execute and redo, and on undo writes `before` back or removes a file that did not exist. The result gains `written` (`<ns>:<path>`); `applyChangeset` resolves once the bytes are in place. `.msm/undo/` empties with the trash on open/create.
+- `changeset/creator-sets.ts`: `applyCreatorPlan` passes `changes.writes` to `applyChangeset` instead of importing them first, so "Update <flow>" is one undo step for elements and textures; `CreatorApplyHost` needs only `applyChangeset` (its `options` and `written` optional, so `CreatorDialog`'s `CreatorSession` still fits). `SINGLETON_KINDS`, `mergeShared` and `isMergeableKind` now live in `session/element-defaults.ts`; `creator-sets.ts` imports and re-exports them.
+- `session.addBundle`: a bundle's language files and tags whose id the project already has with the same kind are merged (`mergeShared`, in the same undo step as the additions) and listed under a new `merged` field instead of `duplicates`; nothing changes and no undo step is added when they already hold everything.
+- Tests: `test/session-asset-undo.test.ts` (6: replace and new-file writes with undo/redo byte checks, write-only step and identical writes, invalid write refused, `.msm/undo/` emptied on create, AI apply of a created texture with undo/redo bytes, Creator Gear set Update with one Undo restoring elements and every replaced texture, Redo rewriting them, Undo twice trashing the Create's textures); `project-session.test.ts` (merge test, `merged` in two expectations).
+- Docs: ADR 0045, DESIGN §4 (command stack) and §5 (`.msm/undo/`), `packages/core/CLAUDE.md`, `app/CLAUDE.md`.
+- Checks: `pnpm lint`, `pnpm typecheck` clean; core 192, app 123 files / 1180 tests pass; `pnpm build`, smoke, e2e 13/13 pass (shared tree with B190's work in progress).
+
+**Decisions**
+- Created assets keep the record rule (bytes written first, trashed on undo, restored on redo); only replacements use effects, so the two never act on one path in one command.
+- Bytes are stored on disk under `.msm/undo/` (not in memory), same lifetime rule as the trash; bytes of history entries dropped by the undo limit or a new branch stay until the next open/create.
+- `addBundle`'s `merged` lists every shared file that was merged, including ones that already held everything; the Examples dialog and App toast still read only `duplicates`, so merged files are simply no longer reported as skipped.
+- A failed byte restore reuses the `assets.trash-failed` warning code.
+
+**Next**
+- Orchestrator: B185's e2e can now expect "Undo" after an Update to restore the texture bytes.
+- Optional UI: the Examples dialog could show "Merged into existing files" from `merged`.
+- `test/creator-sets.test.ts` still imports `mergeShared` through the `creator-sets.ts` re-export; the re-export can go once nothing imports it from there.
