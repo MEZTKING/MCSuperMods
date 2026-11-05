@@ -11,6 +11,13 @@ import { describe, expect, it } from 'vitest';
 import plugin, { packMcmetaKind, resourcePackKinds, resourcePackTemplates } from '../src/index';
 import { indexesFor, loadProblems } from './support';
 
+/** The first target's facts without its hooks: a template context is plain data. */
+const {
+  javaProject: _javaProject,
+  migrateFrom: _migrateFrom,
+  ...FIRST_TARGET
+} = (builtInTargets[0] as TargetBundle).target;
+
 /** Picker order (ADR 0020, library plan section 2.1). */
 const TEMPLATE_IDS = [
   'block_model',
@@ -34,7 +41,7 @@ function contextFor(
   id: ResourceLocation,
   namespaces: readonly string[],
   kindDefault: Json | undefined,
-  target: TargetFacts = (builtInTargets[0] as TargetBundle).target,
+  target: TargetFacts = FIRST_TARGET,
 ): TemplateContext {
   const colon = id.indexOf(':');
   const namespace = id.slice(0, colon);

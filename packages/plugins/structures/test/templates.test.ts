@@ -17,6 +17,13 @@ import plugin, {
 } from '../src/index';
 import { blockingProblems, indexesFor } from './support';
 
+/** The first target's facts without its hooks: a template context is plain data. */
+const {
+  javaProject: _javaProject,
+  migrateFrom: _migrateFrom,
+  ...FIRST_TARGET
+} = (builtInTargets[0] as TargetBundle).target;
+
 /** The nine template ids, in picker order (plan D9). */
 const IDS = [
   'structure_template_platform',
@@ -42,7 +49,7 @@ const kindOf = (template: ElementTemplate) => {
 function contextFor(
   template: ElementTemplate,
   projectNamespace = 'demo',
-  target: TargetFacts = (builtInTargets[0] as TargetBundle).target,
+  target: TargetFacts = FIRST_TARGET,
 ): TemplateContext {
   const id: ResourceLocation = `${template.defaultNamespace ?? 'demo'}:${template.prefix ?? ''}${template.defaultName ?? 'sample'}`;
   const colon = id.indexOf(':');

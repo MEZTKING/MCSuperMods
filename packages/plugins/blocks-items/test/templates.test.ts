@@ -19,6 +19,13 @@ import plugin, {
 } from '../src/index';
 import { blockingProblems, element, indexesFor, sortedJson } from './support';
 
+/** The first target's facts without its hooks: a template context is plain data. */
+const {
+  javaProject: _javaProject,
+  migrateFrom: _migrateFrom,
+  ...FIRST_TARGET
+} = (builtInTargets[0] as TargetBundle).target;
+
 const UPDATE = process.env.UPDATE_GOLDENS === '1';
 
 const IDS = [
@@ -48,7 +55,7 @@ function elementId(template: ElementTemplate): ResourceLocation {
 /** The context the host builds (`app/src/renderer/src/studios/templates.ts`). */
 function contextFor(
   template: ElementTemplate,
-  target: TargetFacts = (builtInTargets[0] as TargetBundle).target,
+  target: TargetFacts = FIRST_TARGET,
 ): TemplateContext {
   const id = elementId(template);
   const colon = id.indexOf(':');

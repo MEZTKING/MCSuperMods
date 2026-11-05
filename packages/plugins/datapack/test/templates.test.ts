@@ -16,6 +16,13 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import plugin, { dataPackKinds, dataPackTemplates } from '../src/index';
 import { blockingProblems, indexesFor, PROJECT_IDS } from './support';
 
+/** The first target's facts without its hooks: a template context is plain data. */
+const {
+  javaProject: _javaProject,
+  migrateFrom: _migrateFrom,
+  ...FIRST_TARGET
+} = (builtInTargets[0] as TargetBundle).target;
+
 /** The 55 template ids, in picker order (library plan section 2.1). */
 const IDS = [
   'recipe_shaped',
@@ -112,7 +119,7 @@ function elementId(template: ElementTemplate): ResourceLocation {
 /** The context the host builds (`app/src/renderer/src/studios/templates.ts`). */
 function contextFor(
   template: ElementTemplate,
-  target: TargetFacts = (builtInTargets[0] as TargetBundle).target,
+  target: TargetFacts = FIRST_TARGET,
 ): TemplateContext {
   const id = elementId(template);
   const colon = id.indexOf(':');

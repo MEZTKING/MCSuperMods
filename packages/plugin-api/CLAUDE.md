@@ -1,6 +1,6 @@
 # packages/plugin-api — Public plugin API
 
-Phase 6 code complete. `API_VERSION` 0.8.0: `FabricFacts.gradle` (required), `Target.javaProject?: JavaProjectGenerator` (`JavaProjectInput`, `DefinitionInput`, `GeneratedFile`) and the documented `OutputFile.language` value `typescript` (ADR 0034) on top of 0.7.0: `Target.geckolib?: GeckolibFacts` (version, mod id, dependency, file name, URL, SHA-512, Modrinth version id; ADR 0030) on top of 0.6.0: `OutputFile.merge` (`tag`, `object`), `Exporter.options` (`ExporterOption`, boolean only) with `ExporterInput.options`, and `Target.fabric: FabricFacts` (incl. `minecraftDependency`) (ADR 0027) on top of 0.5.0: `ElementKind.registry`, `ProjectValidator` (`PluginContributions.validators`), `Target.dataVersion`, `Target.worldgen` (`featureSteps`; optional `biomeAttributes`, added within 0.5.0 without a bump) and the `structure`, `dimension`, `worldgen` data folders (ADR 0022) on top of the library contribution points `elementTemplates`, `projectStarters`, `examples` (`src/library.ts`; ADR 0020) on top of the Phase 2 surface (`OutputFile.language`, `Problem.range`, `Target.folders.data`; ADR 0017), IR types, `definePlugin` and shared path validation. Plugins declaring `^0.7.0` or older no longer load.
+Phase 7 (B152): `API_VERSION` 1.0.0 (ADR 0036): semver policy, `MaybePromise` returns on `lower`/`data`/`build`/`validate`, `TargetFacts` (plugin-facing, with `channel`) versus `Target` (hooks), `target` on template and bundle contexts, `supports?`, starter `parameters` and `BundleContext.values`, `MigrationChange.data`/`kind`, and a `tsup` build plus `pnpm pack` tarball. Before that, 0.8.0: `FabricFacts.gradle` (required), `Target.javaProject?: JavaProjectGenerator` (`JavaProjectInput`, `DefinitionInput`, `GeneratedFile`) and the documented `OutputFile.language` value `typescript` (ADR 0034) on top of 0.7.0: `Target.geckolib?: GeckolibFacts` (version, mod id, dependency, file name, URL, SHA-512, Modrinth version id; ADR 0030) on top of 0.6.0: `OutputFile.merge` (`tag`, `object`), `Exporter.options` (`ExporterOption`, boolean only) with `ExporterInput.options`, and `Target.fabric: FabricFacts` (incl. `minecraftDependency`) (ADR 0027) on top of 0.5.0: `ElementKind.registry`, `ProjectValidator` (`PluginContributions.validators`), `Target.dataVersion`, `Target.worldgen` (`featureSteps`; optional `biomeAttributes`, added within 0.5.0 without a bump) and the `structure`, `dimension`, `worldgen` data folders (ADR 0022) on top of the library contribution points `elementTemplates`, `projectStarters`, `examples` (`src/library.ts`; ADR 0020) on top of the Phase 2 surface (`OutputFile.language`, `Problem.range`, `Target.folders.data`; ADR 0017), IR types, `definePlugin` and shared path validation. Plugins declaring `^0.7.0` or older no longer load.
 
 ## Purpose
 
@@ -14,7 +14,8 @@ Phase 6 code complete. `API_VERSION` 0.8.0: `FabricFacts.gradle` (required), `Ta
 - `src/contributions.ts`: `ElementKind` (`defaultData`, `hiddenPaths`, `previewKind`, `registry`), `EditorContribution`, `Exporter` (`options?: ExporterOption[]`; `ExporterInput.meta`, `ExporterInput.options`), `Importer`, `Command`, `ProjectValidator` (`ValidationInput`, `ValidationRegistry`).
 - `src/library.ts`: `TemplateContext`, `ElementTemplate`, `ContentBundle`, `BundleContext`, `ProjectStarter`, `ExampleProject` (host-interpreted; `Uint8Array` for asset bytes).
 - `src/paths.ts`: `isProjectRelativePath`, `assertProjectRelativePath` (shared by core and app main).
-- `src/plugin.ts`, `src/version.ts`: `Plugin`, `definePlugin`, `API_VERSION`.
+- `src/plugin.ts`, `src/version.ts`, `src/async.ts`: `Plugin`, `definePlugin`, `API_VERSION`, `MaybePromise`.
+- `tsup.config.ts`, `tsconfig.build.json`, `README.md`: the publishable build (`dist/`); `exports` stays on `src/` for the workspace, `publishConfig` points the tarball at `dist/`.
 - `CHANGELOG.md`: every API change, with migration notes for breaking ones.
 
 ## Conventions
@@ -25,7 +26,7 @@ Phase 6 code complete. `API_VERSION` 0.8.0: `FabricFacts.gradle` (required), `Ta
 - Interfaces only; no implementations except tiny helpers such as `definePlugin`.
 - Exhaustive JSDoc on every exported symbol, because third-party authors read it.
 - JSDoc examples are version-neutral (`mc-<version>`): check-deps flags Minecraft version literals, even in comments.
-- Consumed from source in the monorepo; a tsup build is added only for publishing (Phase 7, ADR 0004).
+- Consumed from source in the monorepo; `pnpm --filter @msm/plugin-api build` and `pack:tarball` produce the published form.
 
 ## Do / Don't
 

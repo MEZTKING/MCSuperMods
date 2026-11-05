@@ -10,7 +10,11 @@ You need Windows 10 or 11 and Minecraft Java Edition 26.3, the version MCSuperMo
 2. Run it. The installer is not signed yet, so Windows SmartScreen warns on the first run: choose **More info**, then **Run anyway**.
 3. Start MCSuperMods from the Start menu.
 
-MCSuperMods updates itself: a few seconds after start-up it looks for a newer release, downloads it in the background and offers **Restart to update**. You can turn this off in **Settings → Updates**, and check by hand with **Help → Check for Updates…**.
+MCSuperMods updates itself. A few seconds after start-up, and then every six hours, it looks for a newer release. When it finds one, a banner above the toolbar says "Version X is available, downloading…" while it downloads in the background, then "Version X is ready" with **Restart to update**, and Windows shows a notification. Nothing installs until you choose **Restart to update**. Turn the automatic checks off with **Check for updates automatically** in **Settings → Updates**; **Help → Check for Updates…** works either way.
+
+**What's new.** The first time you start a new version, MCSuperMods shows what changed. Open it again with **Help → What's New…** or "What's new…" in the command palette; the update banner's **What's new** button shows the notes of the version being installed. The same notes are in [`CHANGELOG.md`](../../CHANGELOG.md).
+
+New project, New from starter, Open project and the Examples gallery's **Open as new project…** open their folder picker where you last chose a project folder.
 
 Starters and the Examples gallery come with the first release after 0.2.1. To run the very latest code instead, see [Try it](../../README.md#try-it) in the README.
 
