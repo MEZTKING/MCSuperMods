@@ -4,6 +4,7 @@
  * the real resource pack and data pack plugins live in `packages/exporters/test/library.test.ts`.
  */
 import type { ContentBundle, ExampleProject, ProjectStarter } from '@msm/plugin-api';
+import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import { COLOURS } from '../src/content/bundle';
 import {
@@ -108,8 +109,13 @@ const entries: readonly (ProjectStarter | ExampleProject)[] = [
   ...libraryExamples,
 ];
 
-const build = (entry: ProjectStarter | ExampleProject, namespace = 'demo'): ContentBundle =>
-  entry.build({ namespace, projectName: 'Demo Project' });
+const target = (builtInTargets[0] as (typeof builtInTargets)[number]).target;
+
+const build = (entry: ProjectStarter | ExampleProject, namespace = 'demo'): ContentBundle => {
+  const bundle = entry.build({ namespace, projectName: 'Demo Project', target, values: {} });
+  if (bundle instanceof Promise) throw new Error(`${entry.id} builds asynchronously.`);
+  return bundle;
+};
 
 /**
  * Every placeholder the library may produce: each pattern and the entity skin in each library

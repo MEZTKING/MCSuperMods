@@ -197,7 +197,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       async (_label, sample) => {
         const indexes = await indexesFor(bundle);
         expect(blockingProblems(indexes, sample.kind.schema, sample.data)).toEqual([]);
-        const files = sample.kind.lower(element(sample), bundle.target);
+        const files = await sample.kind.lower(element(sample), bundle.target);
         expect(files).toHaveLength(1);
         const [file] = files as [OutputFile];
         expect(file.layer).toBe('datapack');
@@ -210,7 +210,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           const bytes = file.contents as Uint8Array;
           expect([bytes[0], bytes[1]]).toEqual([0x1f, 0x8b]);
           // Deterministic: lowering twice gives the same bytes.
-          expect(sample.kind.lower(element(sample), bundle.target)[0]?.contents).toEqual(bytes);
+          expect((await sample.kind.lower(element(sample), bundle.target))[0]?.contents).toEqual(
+            bytes,
+          );
           const url = new URL(
             `${targetId}/expected/${sample.kind.folder}/${sample.name}.nbt`,
             fixturesRoot,

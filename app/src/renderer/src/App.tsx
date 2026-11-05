@@ -63,6 +63,7 @@ import { TestInMinecraftDialog, testInMinecraftMessage } from './components/Test
 import { modKey, Toolbar } from './components/Toolbar';
 import { UpdateBanner, updateCheckMessage } from './components/UpdateBanner';
 import { UsagesDialog } from './components/UsagesDialog';
+import { WhatsNewDialog } from './components/WhatsNewDialog';
 import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
@@ -160,6 +161,7 @@ type DialogState =
   | { type: 'fabric-jar' }
   | { type: 'java-project' }
   | { type: 'test-in-minecraft' }
+  | { type: 'whats-new'; version: string; notes?: string }
   | { type: 'no-minecraft'; message: string };
 
 /**
@@ -978,6 +980,38 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       () => setMessage({ kind: 'error', text: 'Could not check for updates.' }),
     );
   };
+  // What's new (B145) ------------------------------------------------------------------------
+
+  const openWhatsNew = useCallback((version: string, notes?: string): void => {
+    setDialog(
+      notes === undefined ? { type: 'whats-new', version } : { type: 'whats-new', version, notes },
+    );
+  }, []);
+  const whatsNew = (): void => {
+    bridge.app.info().then(
+      (info) => openWhatsNew(info.version),
+      () => setMessage({ kind: 'error', text: 'Could not read the app version.' }),
+    );
+  };
+  // Once after the app version changed (main decides and records the version), unless
+  // another dialog is already open.
+  useEffect(() => {
+    let live = true;
+    bridge.app
+      .whatsNewOnLaunch()
+      .then(async (show) => {
+        if (!show || !live) return;
+        const { version } = await bridge.app.info();
+        if (live) setDialog((current) => current ?? { type: 'whats-new', version });
+      })
+      .catch(() => {
+        // Not shown; Help > What's New… still works.
+      });
+    return () => {
+      live = false;
+    };
+  }, [bridge]);
+
   const browseMinecraft = useCallback(
     () => bridge.dialogs.pickDirectory({ title: 'Choose your Minecraft folder' }),
     [bridge],
@@ -1105,6 +1139,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     renameElement: renameSelected,
     commandPalette: openPalette,
     checkForUpdates,
+    whatsNew,
     clearRecentProjects: clearRecent,
   };
 
@@ -1146,6 +1181,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     // Settings opens with the Game locations list first; it holds the install target.
     chooseInstallTarget: handlers.settings,
     checkForUpdates,
+    whatsNew,
   } satisfies Record<BuiltInCommandId, Action | null>;
 
   const palette = paletteCommands(commandHandlers, session.pluginCommands, {
@@ -1296,7 +1332,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       <Toast.Provider swipeDirection="right" label="Notification">
         <div className="grid h-full grid-rows-[auto_minmax(0,1fr)_auto]">
           <div>
-            <UpdateBanner updates={bridge.updates} />
+            <UpdateBanner updates={bridge.updates} onWhatsNew={openWhatsNew} />
             <Toolbar
               hasProject={project !== null}
               canUndo={snapshot.canUndo}
@@ -1454,6 +1490,13 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               if (first !== undefined) select(first);
               return result;
             }}
+          />
+        )}
+        {dialog?.type === 'whats-new' && (
+          <WhatsNewDialog
+            version={dialog.version}
+            notes={dialog.notes}
+            onClose={() => setDialog(null)}
           />
         )}
         {dialog?.type === 'import' && project !== null && (

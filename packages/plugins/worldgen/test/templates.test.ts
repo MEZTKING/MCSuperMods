@@ -1,5 +1,11 @@
 import { readdir, readFile } from 'node:fs/promises';
-import type { ElementTemplate, Json, ResourceLocation, TemplateContext } from '@msm/plugin-api';
+import type {
+  ElementTemplate,
+  Json,
+  ResourceLocation,
+  TargetFacts,
+  TemplateContext,
+} from '@msm/plugin-api';
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, { worldgenKinds, worldgenTemplates } from '../src/index';
@@ -47,7 +53,10 @@ function elementId(template: ElementTemplate): ResourceLocation {
 }
 
 /** The context the host builds (`app/src/renderer/src/studios/templates.ts`). */
-function contextFor(template: ElementTemplate): TemplateContext {
+function contextFor(
+  template: ElementTemplate,
+  target: TargetFacts = (builtInTargets[0] as TargetBundle).target,
+): TemplateContext {
   const id = elementId(template);
   const colon = id.indexOf(':');
   const kindDefault = kindOf(template).defaultData;
@@ -58,6 +67,7 @@ function contextFor(template: ElementTemplate): TemplateContext {
     projectNamespace: 'demo',
     namespaces: ['demo'],
     kindDefault: kindDefault === undefined ? undefined : structuredClone(kindDefault),
+    target,
   };
 }
 
@@ -85,12 +95,12 @@ describe('worldgen templates', () => {
     }
   });
 
-  it('returns fresh data on every call and never mutates the context', () => {
+  it('returns fresh data on every call and never mutates the context', async () => {
     for (const template of worldgenTemplates) {
       const context = contextFor(template);
       const before = structuredClone(context);
-      const first = template.data(context);
-      const second = template.data(context);
+      const first = await template.data(context);
+      const second = await template.data(context);
       expect(second, template.id).toEqual(first);
       if (typeof first === 'object' && first !== null) expect(second).not.toBe(first);
       expect(context, template.id).toEqual(before);
@@ -166,10 +176,10 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       async (_id, template) => {
         const indexes = await indexesFor(bundle);
         const kind = kindOf(template);
-        const context = contextFor(template);
-        const data = template.data(context);
+        const context = contextFor(template, bundle.target);
+        const data = await template.data(context);
         expect(blockingProblems(indexes, kind.schema, data)).toEqual([]);
-        const files = kind.lower(
+        const files = await kind.lower(
           {
             formatVersion: 1,
             id: context.id,

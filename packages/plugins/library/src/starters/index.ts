@@ -26,7 +26,6 @@ export { recipePackBundle } from './recipe-pack';
 export { scriptedOreBundle, scriptedOreIds } from './scripted-ore';
 export { worldgenPackBundle } from './worldgen-pack';
 
-
 function starter(
   id: string,
   title: string,

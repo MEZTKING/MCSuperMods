@@ -35,6 +35,7 @@ import {
   type Project,
   type ProjectFileSystem,
   registerPlugin,
+  requireSyncResult,
   saveProject,
   utf8,
 } from '@msm/core';
@@ -46,6 +47,7 @@ import type {
   Plugin,
   Problem,
   ProjectStarter,
+  TargetFacts,
 } from '@msm/plugin-api';
 import blocksItemsPlugin from '@msm/plugin-blocks-items';
 import dataPackPlugin from '@msm/plugin-datapack';
@@ -109,6 +111,24 @@ const PLUGINS: readonly Plugin[] = [
 const PACK_KIND = 'minecraft:pack_mcmeta';
 const NOW = '2026-11-04T00:00:00.000Z';
 const DEFAULT_TARGET = builtInTargets[0]?.target.id as string;
+
+/**
+ * Builds a library starter or example for a target (the default target unless given), with
+ * every parameter at its default as the host passes them (ADR 0036). Built-ins build
+ * synchronously.
+ */
+function buildEntry(
+  entry: ProjectStarter | ExampleProject,
+  namespace: string,
+  projectName: string,
+  target: TargetFacts = (builtInTargets[0] as TargetBundle).target,
+): ContentBundle {
+  const parameters = 'parameters' in entry ? (entry.parameters ?? []) : [];
+  const values = Object.fromEntries(
+    parameters.map((parameter) => [parameter.id, parameter.default]),
+  );
+  return requireSyncResult(entry.build({ namespace, projectName, target, values }), entry.id);
+}
 
 /** The content starters mirrored under `examples/starters/`. */
 const MIRRORED_STARTERS = [
@@ -416,7 +436,7 @@ function validatorProblems(
 ): Problem[] {
   const elements = project.namespaces.flatMap((namespace) => namespace.elements);
   return VALIDATORS.flatMap((validator) =>
-    validator.validate({ elements, target, registry: registries }),
+    requireSyncResult(validator.validate({ elements, target, registry: registries }), validator.id),
   );
 }
 
@@ -570,9 +590,7 @@ const MIRROR: readonly MirrorProject[] = [
       buildProject(
         'MSM Examples',
         'msm_examples',
-        kindExamples.map((example) =>
-          example.build({ namespace: 'msm_examples', projectName: 'MSM Examples' }),
-        ),
+        kindExamples.map((example) => buildEntry(example, 'msm_examples', 'MSM Examples')),
       ),
   },
   {
@@ -582,10 +600,7 @@ const MIRROR: readonly MirrorProject[] = [
         'MSM Blocks and Items Examples',
         'msm_examples',
         behaviourExamples.map((example) =>
-          example.build({
-            namespace: 'msm_examples',
-            projectName: 'MSM Blocks and Items Examples',
-          }),
+          buildEntry(example, 'msm_examples', 'MSM Blocks and Items Examples'),
         ),
       ),
   },
@@ -596,7 +611,7 @@ const MIRROR: readonly MirrorProject[] = [
         'MSM Entity Examples',
         'msm_examples',
         entityBehaviourExamples.map((example) =>
-          example.build({ namespace: 'msm_examples', projectName: 'MSM Entity Examples' }),
+          buildEntry(example, 'msm_examples', 'MSM Entity Examples'),
         ),
       ),
   },
@@ -607,7 +622,7 @@ const MIRROR: readonly MirrorProject[] = [
         'MSM Script Examples',
         'msm_examples',
         scriptBehaviourExamples.map((example) =>
-          example.build({ namespace: 'msm_examples', projectName: 'MSM Script Examples' }),
+          buildEntry(example, 'msm_examples', 'MSM Script Examples'),
         ),
       ),
   },
@@ -616,7 +631,7 @@ const MIRROR: readonly MirrorProject[] = [
     build: () => {
       const starter = starterById(id);
       return buildProject(starter.title, 'msm_starter', [
-        starter.build({ namespace: 'msm_starter', projectName: starter.title }),
+        buildEntry(starter, 'msm_starter', starter.title),
       ]);
     },
   })),
@@ -672,7 +687,7 @@ function diskFs(root: string): ProjectFileSystem {
 function libraryScripts(): [string, string][] {
   const out: [string, string][] = [];
   for (const entry of [...libraryStarters, ...libraryExamples]) {
-    for (const element of entry.build({ namespace: 'demo', projectName: 'Demo' }).elements) {
+    for (const element of buildEntry(entry, 'demo', 'Demo').elements) {
       if (element.kind !== 'msm:script') continue;
       const lines = (element.data as { lines: string[] }).lines;
       out.push([`${entry.id} ${element.id}`, `${lines.join('\n')}\n`]);
@@ -760,7 +775,7 @@ describe('library bundles', () => {
   it('builds assets the app accepts: lower-case names inside a folder, valid PNGs', () => {
     const png = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
     for (const entry of [...libraryStarters, ...libraryExamples]) {
-      const bundle = entry.build({ namespace: 'demo', projectName: 'Demo' });
+      const bundle = buildEntry(entry, 'demo', 'Demo');
       for (const asset of bundle.assets) {
         const slash = asset.path.lastIndexOf('/');
         expect(slash, asset.path).toBeGreaterThan(0);
@@ -786,7 +801,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       'starter %s loads, validates and exports with zero problems',
       async (_starterId, starter) => {
         const built = await buildProject('Library Test', 'demo', [
-          starter.build({ namespace: 'demo', projectName: 'Library Test' }),
+          buildEntry(starter, 'demo', 'Library Test', bundle.target),
         ]);
         const files = await checkProject(bundle, context, built);
         if (starter.layers.includes('resourcepack') && starter.category !== 'blank') {
@@ -801,7 +816,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     it.each(libraryExamples.map((example) => [example.id, example] as const))(
       'example %s loads, validates and exports with zero problems',
       async (_exampleId, example) => {
-        const bundleData = example.build({ namespace: 'demo', projectName: 'Library Test' });
+        const bundleData = buildEntry(example, 'demo', 'Library Test', bundle.target);
         for (const entry of bundleData.elements) {
           expect(entry.tags, entry.id).toContain('example');
         }
@@ -813,7 +828,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
 
     it('the Custom ore starter adds a real ruby ore, ruby and block of ruby (ADR 0025)', async () => {
       const built = await buildProject('Ore', 'demo', [
-        starterById('custom_ore').build({ namespace: 'demo', projectName: 'Ore' }),
+        buildEntry(starterById('custom_ore'), 'demo', 'Ore', bundle.target),
       ]);
       const { resourceFiles, dataFiles, jarFiles } = await checkProject(bundle, context, built);
       const resource = bundle.target.folders.resource;
@@ -864,7 +879,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
 
     it('the Scripted ore starter exports its scripts in the Fabric mod jar only (ADRs 0031, 0032)', async () => {
       const built = await buildProject('Scripted', 'demo', [
-        starterById('scripted_ore').build({ namespace: 'demo', projectName: 'Scripted' }),
+        buildEntry(starterById('scripted_ore'), 'demo', 'Scripted', bundle.target),
       ]);
       const { resourceFiles, dataFiles, jarFiles } = await checkProject(bundle, context, built);
       for (const files of [resourceFiles, dataFiles]) {
@@ -915,7 +930,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
 
     it('the Custom mob starter adds an animated Ruby Golem; the jar nests runtime and GeckoLib (ADRs 0028, 0029)', async () => {
       const built = await buildProject('Mob', 'demo', [
-        starterById('custom_mob').build({ namespace: 'demo', projectName: 'Mob' }),
+        buildEntry(starterById('custom_mob'), 'demo', 'Mob', bundle.target),
       ]);
       const { resourceFiles, dataFiles, jarFiles } = await checkProject(bundle, context, built);
       const resource = bundle.target.folders.resource;

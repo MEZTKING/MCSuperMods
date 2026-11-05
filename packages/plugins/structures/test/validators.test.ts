@@ -81,7 +81,11 @@ function village(): Element[] {
 }
 
 const run = (elements: Element[]): Problem[] =>
-  structureValidators.flatMap((validator) => validator.validate({ elements, target, registry }));
+  structureValidators.flatMap((validator) => {
+    const problems = validator.validate({ elements, target, registry });
+    if (problems instanceof Promise) throw new Error(`${validator.id} validates asynchronously.`);
+    return problems;
+  });
 
 const codes = (problems: Problem[]) =>
   problems.map((problem) => [problem.code, problem.severity, problem.elementId, problem.path]);

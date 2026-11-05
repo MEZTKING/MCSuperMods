@@ -7,7 +7,6 @@ import type { BundleContext, ContentBundle, ExampleProject } from '@msm/plugin-a
 import { kindsOf } from '../content/bundle';
 import { PROBE_CONTEXT } from '../content/probe';
 
-
 /** The element tag of an example category: lower case, spaces as hyphens. */
 export function categoryTag(category: string): string {
   return category.toLowerCase().replace(/[^a-z0-9]+/g, '-');

@@ -1,9 +1,15 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { ElementTemplate, Json, ResourceLocation, TemplateContext } from '@msm/plugin-api';
+import type {
+  ElementTemplate,
+  Json,
+  ResourceLocation,
+  TargetFacts,
+  TemplateContext,
+} from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
-import { builtInTargets } from '@msm/targets';
+import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, {
   displayName,
@@ -36,7 +42,10 @@ function elementId(template: ElementTemplate): ResourceLocation {
 }
 
 /** The context the host builds (`app/src/renderer/src/studios/templates.ts`). */
-function contextFor(template: ElementTemplate): TemplateContext {
+function contextFor(
+  template: ElementTemplate,
+  target: TargetFacts = (builtInTargets[0] as TargetBundle).target,
+): TemplateContext {
   const id = elementId(template);
   const colon = id.indexOf(':');
   return {
@@ -46,6 +55,7 @@ function contextFor(template: ElementTemplate): TemplateContext {
     projectNamespace: 'demo',
     namespaces: ['demo'],
     kindDefault: structuredClone(entityKind.defaultData),
+    target,
   };
 }
 
@@ -69,19 +79,19 @@ describe('entities templates', () => {
     ]);
   });
 
-  it('returns fresh data on every call and never mutates the context', () => {
+  it('returns fresh data on every call and never mutates the context', async () => {
     for (const template of entitiesTemplates) {
       const context = contextFor(template);
       const before = structuredClone(context);
-      const first = template.data(context);
-      const second = template.data(context);
+      const first = await template.data(context);
+      const second = await template.data(context);
       expect(second, template.id).toEqual(first);
       expect(second).not.toBe(first);
       expect(context, template.id).toEqual(before);
     }
   });
 
-  it('uses only vanilla ids or ids derived from the new element id', () => {
+  it('uses only vanilla ids or ids derived from the new element id', async () => {
     for (const template of entitiesTemplates) {
       const context = {
         ...contextFor(template),
@@ -90,7 +100,7 @@ describe('entities templates', () => {
         path: 'own',
         projectNamespace: 'zz',
       };
-      const text = JSON.stringify(template.data(context))
+      const text = JSON.stringify(await template.data(context))
         .replaceAll(/"msm:[a-z_]+":/g, '')
         .replaceAll(/"zz:(entity|item)\/own(_[a-z_]+)?"/g, '');
       expect(text, template.id).not.toMatch(
@@ -127,20 +137,24 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       '%s validates, lowers to a valid definition and reports only the missing model files',
       async (id) => {
         const template = entitiesTemplates.find((entry) => entry.id === id) as ElementTemplate;
-        const context = contextFor(template);
-        const data = template.data(context);
+        const context = contextFor(template, bundle.target);
+        const data = await template.data(context);
         const indexes = await indexesFor(bundle);
         expect(blockingProblems(indexes, entityKind.schema, data)).toEqual([]);
         const created = element(entityKind.id, context.id, data);
-        const problems = entitiesValidators.flatMap((validator) =>
-          validator.validate({
-            elements: [created],
-            target: bundle.target,
-            registry: indexes.registries,
-          }),
-        );
+        const problems = (
+          await Promise.all(
+            entitiesValidators.map((validator) =>
+              validator.validate({
+                elements: [created],
+                target: bundle.target,
+                registry: indexes.registries,
+              }),
+            ),
+          )
+        ).flat();
         expect(problems.map((problem) => problem.code)).toEqual(EXPECTED_CODES);
-        const files = entityKind.lower(created, bundle.target);
+        const files = await entityKind.lower(created, bundle.target);
         const definition = files[0];
         expect(definition?.schema).toBe(MSM_SCHEMA_REFS.entityDefinition);
         for (const file of files) {

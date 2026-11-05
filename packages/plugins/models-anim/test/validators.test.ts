@@ -9,9 +9,11 @@ const bundle = builtInTargets[0] as TargetBundle;
 
 function validate(elements: Element[]): Problem[] {
   const registry = createRegistryIndex({ vanilla: {} });
-  return modelsAnimValidators.flatMap((validator) =>
-    validator.validate({ elements, target: bundle.target, registry }),
-  );
+  return modelsAnimValidators.flatMap((validator) => {
+    const problems = validator.validate({ elements, target: bundle.target, registry });
+    if (problems instanceof Promise) throw new Error(`${validator.id} validates asynchronously.`);
+    return problems;
+  });
 }
 
 const summary = (problems: Problem[]) =>

@@ -2067,3 +2067,38 @@ Next:
 
 **Next**
 - B159: seams, `default_mc`, `versions/26.3.properties`, jar naming for both, CI matrix. B160: `newestRuntimeJar` picks by mtime among `msm_runtime-*.jar`, so a `+mc26.4` jar built after the 26.3 one would be staged as the only runtime; resolve per target. Client check of the 26.4 entity renderer registration once a 26.4 GeckoLib exists. MSM mcdoc could later accept any `block_sound_set` id on 26.4.
+
+## 2026-11-05 — executor — B150 plugin sandbox spike (renderer)
+
+**What**
+- CSP in `app/src/renderer/index.html`: `default-src 'self'; script-src 'self'; worker-src 'self' blob:; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'`.
+- `app/src/renderer/src/plugins/sandbox/` (spike quality, B154 replaces): `protocol.ts`, `worker-bootstrap.ts` (`workerBootstrap(strip, names)` serialised with `toString()`; `defineMsmPlugin`; request dispatch for `lower`/`data`/`build`/`validate`/`run`/`import`/`call`; JSON-or-`Uint8Array` result check; registry snapshot cache by key), `host.ts` (`createPluginWorker(code, { strip, spawn, startDeadlineMs })` → `{ ready, state, call(method, args, deadlineMs, hooks), terminate() }`, `SandboxError` with `plugin.*` codes, sink paths checked with `assertProjectRelativePath`), `spike-plugin.js` (kind `spike:note`, template, example, validator, exporter with two sink writes, importer), `probe-plugin.js`, `worker-entry.ts` (`?worker&url` experiment only), `vite-imports.d.ts`, `spike.ts` (`window.__msmSandboxSpike`). `main.tsx` imports `spike.ts` lazily only when the preload reports `isE2e` (`MSM_E2E_PROJECT_DIR` set).
+- `app/test/plugins-sandbox.test.ts` (7 tests over a `node:vm` stand-in worker); `app/e2e/sandbox-spike.spec.ts` (temporary).
+- Probe table (file: document = production; dev = `http://localhost:5173`; scheme = `msm-app://app`):
+
+| Probe | CSP only, file: | CSP only, dev / scheme | With bootstrap deletions, file: |
+|---|---|---|---|
+| `fetch('https://example.com')` | TypeError: Failed to fetch | same | TypeError: fetch is not a function |
+| `fetch('file:///etc/hostname')` | **status 200** | TypeError: Failed to fetch | TypeError: fetch is not a function |
+| `XMLHttpRequest` https / file: | NetworkError / **status 200** | NetworkError / NetworkError | not a constructor |
+| `new WebSocket('wss://…')`, `EventSource` | error event, no exception | same | not a constructor |
+| `importScripts(blob:)` / `(local file)` | NetworkError / **loaded** | NetworkError / NetworkError | importScripts is not a function |
+| `import(blob:)` | Failed to fetch dynamically imported module | same | same |
+| `import(local .js)`, `import(local .json)` | **evaluated / read** | Failed to fetch dynamically imported module | **evaluated / read** |
+| `eval`, `new Function` | EvalError (`'unsafe-eval'` not allowed) | same | same |
+| `indexedDB`, `caches`, `navigator.storage` | present (indexedDB opens) | present | undefined |
+| `self.msm`, `window`, `document`, `require`, `process` | undefined | undefined | undefined |
+| endless loop | terminated at 500–502 ms, UI ticking, next worker answers | same | — |
+
+- Main-process `protocol.handle('file')` and `webRequest.onBeforeRequest` stop the document's `fetch('file:…')` but not the worker's.
+- Measurements: `lower` (2.1 kB element) mean 0.08–0.12 ms, p95 0.2 ms over 1,000; `validate` with the 885 kB 26.3 registry snapshot mean 8.6–9.2 ms, cached key 0.6–0.8 ms; start-up 13–18 ms mean; ten idle workers +17 MB renderer working set (178.2 → 195.4 MB, back to 178.5 MB after terminate). `app.asar` 25,110,810 → 25,144,903 bytes (+34 kB; 24.0 MB of 25 MB).
+- Checks (in a scratch worktree of the WIP commit plus these files, because the shared working tree had B152's in-progress `mc-26.4` copy still named `@msm/target-mc-26.3`, which broke `pnpm build`): `pnpm build`; smoke; `xvfb-run -a pnpm --filter @msm/app e2e` 12/12 (eleven Phase 6 specs plus the spike); the spike spec also against the dev server and under the `msm-app` scheme (plus smoke, golden, datapack, scripting under the scheme); app Vitest 86 files, 841 tests; Biome clean on the touched files; no new type errors in them (other `tsc -b` errors belong to the in-flight B152/B145 work).
+- Findings appended to the Status section of ADR 0035.
+
+**Decisions**
+- Bootstrap text by `Function.prototype.toString()` (works minified, no request); `?raw` gives TypeScript, `?worker&url` needs a fetch.
+- The e2e hook needed an e2e flag in the renderer: one `isE2e` line in `src/preload/index.ts` and `MsmBridge` (`src/shared/platform.ts`), plus the lazy import in `main.tsx` (outside the brief's Owns list; spike-only, B154 removes).
+- The spike spec asserts the file: gap as found (so it stays green and visible) and asserts full refusal automatically when the document is not on file:.
+
+**Next**
+- Orchestrator: decide the D1 amendment: serve the renderer from a privileged custom scheme (`standard`, `secure`, `supportFetchAPI`) in `main/window.ts` before external plugins load; then B154 builds on the worker (go), keeps the deletions for storage, deletes `worker-entry.ts`, `vite-imports.d.ts`, the `isE2e` hook and the spike spec.

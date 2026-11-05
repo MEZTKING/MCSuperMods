@@ -170,7 +170,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     it.each(SAMPLES.map((sample) => [sample.name, sample] as const))(
       '%s',
       async (_label, sample) => {
-        const files = entityKind.lower(
+        const files = await entityKind.lower(
           element(entityKind.id, sample.id, sample.data),
           bundle.target,
         );
@@ -182,7 +182,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           expect(problems(file.schema, file.contents as Json), file.path).toEqual([]);
         }
         expect(
-          entityKind.lower(element(entityKind.id, sample.id, sample.data), bundle.target),
+          await entityKind.lower(element(entityKind.id, sample.id, sample.data), bundle.target),
         ).toEqual(files);
 
         const actual = sortedJson(files.map(recorded));

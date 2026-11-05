@@ -3,9 +3,10 @@ import type {
   ElementTemplate,
   Json,
   ResourceLocation,
+  TargetFacts,
   TemplateContext,
 } from '@msm/plugin-api';
-import { builtInTargets } from '@msm/targets';
+import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, { packMcmetaKind, resourcePackKinds, resourcePackTemplates } from '../src/index';
 import { indexesFor, loadProblems } from './support';
@@ -33,6 +34,7 @@ function contextFor(
   id: ResourceLocation,
   namespaces: readonly string[],
   kindDefault: Json | undefined,
+  target: TargetFacts = (builtInTargets[0] as TargetBundle).target,
 ): TemplateContext {
   const colon = id.indexOf(':');
   const namespace = id.slice(0, colon);
@@ -44,6 +46,7 @@ function contextFor(
     projectNamespace: own ?? (namespace === 'minecraft' ? 'my_project' : namespace),
     namespaces: [...namespaces],
     kindDefault: kindDefault === undefined ? undefined : structuredClone(kindDefault),
+    target,
   };
 }
 
@@ -107,10 +110,10 @@ describe('resource pack templates', () => {
     expect(byId.get('pack')).toMatchObject({ defaultName: 'pack' });
   });
 
-  it('derives references from the element id and the project namespace only', () => {
+  it('derives references from the element id and the project namespace only', async () => {
     for (const template of resourcePackTemplates) {
       const id = sampleId(template, 'element_ns');
-      const data = template.data(
+      const data = await template.data(
         contextFor(id, ['project_ns', 'element_ns'], kindOf(template).defaultData),
       );
       const allowed = new Set(['minecraft', 'element_ns', 'project_ns']);
@@ -156,11 +159,13 @@ describe('resource pack templates', () => {
           if (template === undefined) throw new Error(`missing ${templateId}`);
           const kind = kindOf(template);
           const id = sampleId(template);
-          const data = template.data(contextFor(id, ['demo'], kind.defaultData));
+          const data = await template.data(
+            contextFor(id, ['demo'], kind.defaultData, bundle.target),
+          );
           const indexes = await indexesFor(bundle);
           expect(loadProblems(indexes, kind.schema ?? '', data)).toEqual([]);
 
-          const files = kind.lower(element(id, kind.id, data), bundle.target);
+          const files = await kind.lower(element(id, kind.id, data), bundle.target);
           const layers =
             kind.id === packMcmetaKind.id ? ['resourcepack', 'datapack'] : ['resourcepack'];
           expect(files.map((file) => file.layer)).toEqual(layers);

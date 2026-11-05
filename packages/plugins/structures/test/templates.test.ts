@@ -1,5 +1,11 @@
 import { readdir, readFile } from 'node:fs/promises';
-import type { ElementTemplate, Json, ResourceLocation, TemplateContext } from '@msm/plugin-api';
+import type {
+  ElementTemplate,
+  Json,
+  ResourceLocation,
+  TargetFacts,
+  TemplateContext,
+} from '@msm/plugin-api';
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, {
@@ -33,7 +39,11 @@ const kindOf = (template: ElementTemplate) => {
 };
 
 /** The context the host builds for a new element `demo:sample`. */
-function contextFor(template: ElementTemplate, projectNamespace = 'demo'): TemplateContext {
+function contextFor(
+  template: ElementTemplate,
+  projectNamespace = 'demo',
+  target: TargetFacts = (builtInTargets[0] as TargetBundle).target,
+): TemplateContext {
   const id: ResourceLocation = `${template.defaultNamespace ?? 'demo'}:${template.prefix ?? ''}${template.defaultName ?? 'sample'}`;
   const colon = id.indexOf(':');
   const kindDefault = kindOf(template).defaultData;
@@ -44,6 +54,7 @@ function contextFor(template: ElementTemplate, projectNamespace = 'demo'): Templ
     projectNamespace,
     namespaces: [...NAMESPACES],
     kindDefault: kindDefault === undefined ? undefined : structuredClone(kindDefault),
+    target,
   };
 }
 
@@ -64,12 +75,12 @@ describe('structures templates', () => {
     }
   });
 
-  it('returns fresh data on every call and never mutates the context', () => {
+  it('returns fresh data on every call and never mutates the context', async () => {
     for (const template of structureTemplates) {
       const context = contextFor(template);
       const before = structuredClone(context);
-      const first = template.data(context);
-      const second = template.data(context);
+      const first = await template.data(context);
+      const second = await template.data(context);
       expect(second, template.id).toEqual(first);
       expect(second).not.toBe(first);
       expect(context, template.id).toEqual(before);
@@ -84,29 +95,33 @@ describe('structures templates', () => {
     }
   });
 
-  it('chains by name: a template, pool, structure and set made under one id pass the validators', () => {
+  it('chains by name: a template, pool, structure and set made under one id pass the validators', async () => {
     const kinds: Record<string, string> = {
       structure_template_path: 'minecraft:structure_template',
       template_pool: 'minecraft:worldgen/template_pool',
       structure_jigsaw: 'minecraft:worldgen/structure',
       structure_set_random_spread: 'minecraft:worldgen/structure_set',
     };
-    const elements = Object.entries(kinds).map(([templateId, kind]) => {
-      const template = structureTemplates.find((entry) => entry.id === templateId);
-      if (template === undefined) throw new Error(templateId);
-      return {
-        formatVersion: 1,
-        id: 'demo:sample' as const,
-        kind,
-        data: template.data(contextFor(template)),
-        meta: { createdAt: '2026-01-01T00:00:00.000Z' },
-      };
-    });
+    const elements = await Promise.all(
+      Object.entries(kinds).map(async ([templateId, kind]) => {
+        const template = structureTemplates.find((entry) => entry.id === templateId);
+        if (template === undefined) throw new Error(templateId);
+        return {
+          formatVersion: 1,
+          id: 'demo:sample' as const,
+          kind,
+          data: await template.data(contextFor(template)),
+          meta: { createdAt: '2026-01-01T00:00:00.000Z' },
+        };
+      }),
+    );
     const target = (builtInTargets[0] as TargetBundle).target;
     const registry = { has: () => true, ids: () => [] };
-    const problems = structureValidators.flatMap((validator) =>
-      validator.validate({ elements, target, registry }),
-    );
+    const problems = (
+      await Promise.all(
+        structureValidators.map((validator) => validator.validate({ elements, target, registry })),
+      )
+    ).flat();
     expect(problems).toEqual([]);
   });
 
@@ -128,10 +143,10 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       async (_id, template) => {
         const indexes = await indexesFor(bundle);
         const kind = kindOf(template);
-        const context = contextFor(template);
-        const data = template.data(context);
+        const context = contextFor(template, 'demo', bundle.target);
+        const data = await template.data(context);
         expect(blockingProblems(indexes, kind.schema, data)).toEqual([]);
-        const files = kind.lower(
+        const files = await kind.lower(
           {
             formatVersion: 1,
             id: context.id,

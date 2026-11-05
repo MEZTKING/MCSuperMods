@@ -1,6 +1,6 @@
 import { createMemoryFileSystem, requireSyncResult } from '@msm/core';
-import { builtInTargets } from '@msm/targets';
 import { dataPackTemplates } from '@msm/plugin-datapack';
+import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import { createCompletionSource } from '../src/renderer/src/studios/completions';
 import {

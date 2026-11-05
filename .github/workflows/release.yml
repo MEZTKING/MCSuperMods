@@ -3,7 +3,8 @@
 # artefact, and macOS is out of scope.
 #
 # Runs on `v*` tags and manually. On a tag the workflow creates one DRAFT GitHub Release of
-# MEZTKING/MCSuperMods named after the version in app/package.json, then electron-builder
+# MEZTKING/MCSuperMods named after the version in app/package.json, with the CHANGELOG.md
+# section for that version as its body, then electron-builder
 # publishes into it (ADR 0018): the installer, its `.blockmap` and `latest.yml`, which a last
 # step checks. The maintainer reviews and
 # publishes the draft by hand; the in-app updater only sees published releases.
@@ -66,6 +67,23 @@ jobs:
             echo "::error::Tag ${RELEASE_TAG} does not match app/package.json version ${version}. Tag v${version} instead."
             exit 1
           fi
+      # The release body is the CHANGELOG.md section for the version (`## [<version>] - <date>`),
+      # so electron-updater's release notes and the in-app "What's new" carry the same text. A
+      # missing or empty section stops the run before anything is tagged or built.
+      - name: Extract the release notes from CHANGELOG.md
+        if: env.RELEASE_TAG != ''
+        shell: bash
+        run: |
+          version=$(node -p "require('./app/package.json').version")
+          awk -v heading="## [${version}]" '
+            /^## / { if (found) exit; if (index($0, heading) == 1) { found = 1; next } }
+            found && !/^\[[^]]+\]: / { print }
+          ' CHANGELOG.md > release-notes.md
+          if ! grep -q '[^[:space:]]' release-notes.md; then
+            echo "::error::CHANGELOG.md has no section '## [${version}] - <date>' with text. Add one before releasing."
+            exit 1
+          fi
+          cat release-notes.md
       # Manual release runs create the tag on the checked-out commit. An existing tag must
       # already point at that commit; the workflow never moves a tag.
       - name: Create the tag (manual release runs)
@@ -143,7 +161,7 @@ jobs:
             echo "Deleting leftover draft ${id} for ${RELEASE_TAG}"
             gh api -X DELETE "repos/${GH_REPO}/releases/${id}"
           done
-          gh release create "${RELEASE_TAG}" --draft --title "${version}" --notes "MCSuperMods ${version}" --verify-tag
+          gh release create "${RELEASE_TAG}" --draft --title "${version}" --notes-file release-notes.md --verify-tag
       - name: Build the installer
         shell: bash
         run: pnpm --filter @msm/app exec electron-builder --publish never

@@ -330,7 +330,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     it.each(SAMPLES.map((sample) => [`${sample.kind.id} ${sample.name}`, sample] as const))(
       '%s',
       async (_label, sample) => {
-        const files = sample.kind.lower(element(sample), bundle.target);
+        const files = await sample.kind.lower(element(sample), bundle.target);
         expect(files).toHaveLength(1);
         const [file] = files;
         if (file === undefined) throw new Error('no output');

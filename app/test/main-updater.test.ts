@@ -7,6 +7,7 @@ import {
   STARTUP_CHECK_DELAY_MS,
   sanitiseUpdateReason,
   statusForEvent,
+  UPDATE_CHECK_INTERVAL_MS,
   UPDATE_OFFLINE_MESSAGE,
   UPDATE_REASON_MAX,
   type UpdaterGate,
@@ -61,6 +62,7 @@ function setup(options: { gate?: UpdaterGate; autoCheck?: boolean } = {}) {
     autoCheckEnabled: vi.fn(async () => options.autoCheck ?? true),
     broadcast: (status: UpdateStatus) => sent.push(status),
     closeWindows: vi.fn(),
+    notify: vi.fn(),
     log: vi.fn(),
     schedule: (callback: () => void, delayMs: number) => scheduled.push({ callback, delayMs }),
   };
@@ -156,6 +158,10 @@ describe('createUpdater', () => {
     expect(fake.autoInstallOnAppQuit).toBe(false);
     await vi.waitFor(() => expect(updater.status).toEqual({ state: 'not-available' }));
     expect(sent).toEqual([{ state: 'checking' }, { state: 'not-available' }]);
+    // And again every six hours.
+    await vi.waitFor(() =>
+      expect(scheduled.map((entry) => entry.delayMs)).toEqual([UPDATE_CHECK_INTERVAL_MS]),
+    );
   });
 
   it('skips the start-up check when the setting is off, but still checks manually', async () => {
@@ -182,8 +188,8 @@ describe('createUpdater', () => {
     expect(sent).toEqual([
       { state: 'checking' },
       { state: 'available', version: '0.2.0' },
-      { state: 'downloading', percent: 10 },
-      { state: 'downloading', percent: 75 },
+      { state: 'downloading', percent: 10, version: '0.2.0' },
+      { state: 'downloading', percent: 75, version: '0.2.0' },
       { state: 'downloaded', version: '0.2.0' },
     ]);
     // Downloaded, but nothing installs until the user asks.
@@ -238,6 +244,91 @@ describe('createUpdater', () => {
     const [a, b] = await Promise.all([updater.check(), updater.check()]);
     expect(a).toEqual(b);
     expect(fake.checks).toBe(1);
+  });
+
+  // B145 root cause: only one check ran, a few seconds after start-up. A release published
+  // later (the usual case: drafts are published by hand while the app is open) was found only
+  // by Help > Check for Updates. The fix checks again every six hours, without a click.
+  it('finds a release published after start-up without a manual check (B145)', async () => {
+    const { fake, sent, scheduled, deps, updater } = setup();
+    // At start-up only a draft exists, which the updater cannot see.
+    fake.failWith = updaterError(
+      'Unable to find latest version on GitHub',
+      'ERR_UPDATER_LATEST_VERSION_NOT_FOUND',
+    );
+    updater.scheduleStartupCheck();
+    const runTick = async (): Promise<void> => {
+      const tick = scheduled.shift();
+      if (tick === undefined) throw new Error('No check was scheduled.');
+      tick.callback();
+      await vi.waitFor(() => expect(scheduled).toHaveLength(1));
+    };
+    await runTick();
+    expect(updater.status).toEqual({ state: 'not-available', reason: 'no-published-release' });
+    // The next automatic check is six hours later.
+    expect(scheduled.map((entry) => entry.delayMs)).toEqual([UPDATE_CHECK_INTERVAL_MS]);
+    // The maintainer publishes the release meanwhile.
+    fake.failWith = null;
+    fake.script = [
+      [
+        'update-available',
+        { version: '0.7.0', releaseNotes: '<h3>Added</h3><ul><li>Things</li></ul>' },
+      ],
+      ['download-progress', { percent: 50 }],
+      ['update-downloaded', { version: '0.7.0' }],
+    ];
+    await runTick();
+    expect(fake.checks).toBe(2);
+    const notes = '### Added\n\n- Things';
+    expect(sent).toContainEqual({ state: 'available', version: '0.7.0', notes });
+    expect(sent).toContainEqual({ state: 'downloading', percent: 50, version: '0.7.0' });
+    // The feed's notes carry over to `downloaded` for the banner's What's new.
+    expect(updater.status).toEqual({ state: 'downloaded', version: '0.7.0', notes });
+    expect(deps.notify).toHaveBeenCalledExactlyOnceWith('0.7.0');
+    // Later ticks do not check again (or notify again) once downloaded.
+    await runTick();
+    expect(fake.checks).toBe(2);
+    expect(deps.notify).toHaveBeenCalledOnce();
+    // Background errors never reached the banner as anything but statuses it ignores.
+    expect(sent.filter((status) => status.state === 'error')).toEqual([]);
+  });
+
+  it('reads the setting at every automatic tick', async () => {
+    let enabled = false;
+    const { fake, scheduled, deps, updater } = setup();
+    deps.autoCheckEnabled.mockImplementation(async () => enabled);
+    updater.scheduleStartupCheck(1, 2);
+    const runTick = async (): Promise<void> => {
+      scheduled.shift()?.callback();
+      await vi.waitFor(() => expect(scheduled).toHaveLength(1));
+    };
+    await runTick();
+    expect(fake.checks).toBe(0);
+    expect(scheduled[0]?.delayMs).toBe(2);
+    enabled = true;
+    await runTick();
+    expect(fake.checks).toBe(1);
+  });
+
+  it('does not start a check while an update is available but not yet downloading', async () => {
+    const { fake, updater } = setup();
+    fake.script = [['update-available', { version: '0.7.0' }]];
+    expect(await updater.check()).toEqual({ state: 'available', version: '0.7.0' });
+    expect(await updater.check()).toEqual({ state: 'available', version: '0.7.0' });
+    expect(fake.checks).toBe(1);
+  });
+
+  it('keeps notifying failures out of the way', async () => {
+    const { fake, deps, updater } = setup();
+    deps.notify.mockImplementation(() => {
+      throw new Error('notifications blocked');
+    });
+    fake.script = [['update-downloaded', { version: '0.7.0' }]];
+    expect(await updater.check()).toEqual({ state: 'downloaded', version: '0.7.0' });
+    expect(deps.log).toHaveBeenCalledWith(
+      'MSM updates: the notification failed.',
+      expect.any(Error),
+    );
   });
 
   it('reports a failure to start the installer', async () => {

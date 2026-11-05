@@ -175,7 +175,11 @@ describe('syncMcmeta', () => {
     const files = upstream();
     files['version.json'] = { id: snapshot, data_pack_version: 1 };
     const requests: string[] = [];
-    const source = await syncMcmeta({ version: snapshot, out, fetchFile: fakeFetch(files, requests) });
+    const source = await syncMcmeta({
+      version: snapshot,
+      out,
+      fetchFile: fakeFetch(files, requests),
+    });
     expect(source.refs).toEqual(mcmetaRefs(snapshot));
     expect(requests[0]).toContain(`${snapshot}-summary`);
   });

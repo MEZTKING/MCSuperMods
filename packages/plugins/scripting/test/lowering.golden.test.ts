@@ -54,7 +54,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     it.each(SAMPLES.map((sample) => [sample.name, sample] as const))(
       '%s matches the golden',
       async (name, sample) => {
-        const files = scriptKind.lower(
+        const files = await scriptKind.lower(
           element('msm:script', sample.id, sample.data),
           bundle.target,
         );

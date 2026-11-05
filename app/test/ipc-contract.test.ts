@@ -13,6 +13,7 @@ import {
   isUpdateStatus,
   SCRIPT_MAX_SOURCE_LENGTH,
   SCRIPT_MAX_TYPINGS_LENGTH,
+  UPDATE_NOTES_MAX,
   type UpdateStatus,
   updateStatusSchema,
 } from '../src/shared/ipc-contract';
@@ -76,7 +77,7 @@ const samples: Record<
   { request: [unknown, unknown]; response: [unknown, unknown] }
 > = {
   [InvokeChannels.projectPickDirectory]: {
-    request: [{ title: 'Pick', mustBeEmpty: true }, { title: 3 }],
+    request: [{ title: 'Pick', mustBeEmpty: true, purpose: 'project' }, { title: 3 }],
     response: [null, 42],
   },
   [InvokeChannels.projectOpenRoot]: {
@@ -427,6 +428,17 @@ const samples: Record<
     request: [undefined, {}],
     response: [undefined, 'yes'],
   },
+  [InvokeChannels.updatesCurrent]: {
+    request: [undefined, {}],
+    response: [
+      { state: 'downloaded', version: '0.7.0', notes: '### Added\n\n- Things' },
+      { state: 'downloaded', version: '0.7.0', notes: 'x'.repeat(UPDATE_NOTES_MAX + 1) },
+    ],
+  },
+  [InvokeChannels.appWhatsNewOnLaunch]: {
+    request: [undefined, { force: true }],
+    response: [true, 'yes'],
+  },
 };
 
 describe('IPC contract', () => {
@@ -562,7 +574,10 @@ describe('IPC contract', () => {
       { state: 'not-available' },
       { state: 'not-available', reason: 'no-published-release' },
       { state: 'downloading', percent: 42 },
+      { state: 'downloading', percent: 42, version: '1.2.3' },
       { state: 'downloaded', version: '1.2.3' },
+      { state: 'available', version: '1.2.3', notes: '- New' },
+      { state: 'downloaded', version: '1.2.3', notes: '- New' },
       { state: 'error', message: 'offline' },
       { state: 'disabled', reason: 'unsupported-platform' },
     ];
@@ -577,6 +592,9 @@ describe('IPC contract', () => {
       { state: 'downloading', percent: Number.NaN },
       { state: 'disabled', reason: 'tuesday' },
       { state: 'not-available', reason: 'tuesday' },
+      { state: 'available', version: '1.2.3', notes: 7 },
+      { state: 'downloaded', version: '1.2.3', notes: 'x'.repeat(UPDATE_NOTES_MAX + 1) },
+      { state: 'downloading', percent: 1, version: 2 },
     ];
     for (const status of invalid) {
       expect(isUpdateStatus(status)).toBe(false);
@@ -589,6 +607,7 @@ describe('IPC contract', () => {
     expect(isMenuCommand('save')).toBe(true);
     expect(isMenuCommand('newProjectFromStarter')).toBe(true);
     expect(isMenuCommand('examples')).toBe(true);
+    expect(isMenuCommand('whatsNew')).toBe(true);
     expect(isMenuCommand('format-disk')).toBe(false);
     expect(isMenuCommand(1)).toBe(false);
     expect(isMenuCommand('clearRecentProjects')).toBe(true);

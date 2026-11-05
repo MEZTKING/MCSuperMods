@@ -7,8 +7,8 @@ import {
   ElementKindRegistry,
   lowerProject,
   lowerProjectAsync,
-  type Project,
   ProblemCodes,
+  type Project,
   type ResourceLocation,
   requireSyncResult,
 } from '../src/index';
@@ -192,10 +192,7 @@ describe('lowerProject with asynchronous kinds', () => {
       ['error', 'lowering.async-not-supported'],
       ['error', 'lowering.async-not-supported'],
     ]);
-    expect(result.problems.map((problem) => problem.elementId)).toEqual([
-      'a:later',
-      'a:rejected',
-    ]);
+    expect(result.problems.map((problem) => problem.elementId)).toEqual(['a:later', 'a:rejected']);
     expect(result.problems[0]?.message).toContain('a:later');
     expect(result.problems[0]?.message).toContain('test:async');
   });

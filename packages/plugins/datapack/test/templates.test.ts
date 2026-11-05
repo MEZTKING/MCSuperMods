@@ -1,5 +1,11 @@
 import { readdir, readFile } from 'node:fs/promises';
-import type { ElementTemplate, Json, ResourceLocation, TemplateContext } from '@msm/plugin-api';
+import type {
+  ElementTemplate,
+  Json,
+  ResourceLocation,
+  TargetFacts,
+  TemplateContext,
+} from '@msm/plugin-api';
 import {
   createMcfunctionService,
   defaultFunctionUri,
@@ -104,7 +110,10 @@ function elementId(template: ElementTemplate): ResourceLocation {
 }
 
 /** The context the host builds (`app/src/renderer/src/studios/templates.ts`). */
-function contextFor(template: ElementTemplate): TemplateContext {
+function contextFor(
+  template: ElementTemplate,
+  target: TargetFacts = (builtInTargets[0] as TargetBundle).target,
+): TemplateContext {
   const id = elementId(template);
   const colon = id.indexOf(':');
   const namespace = id.slice(0, colon);
@@ -117,6 +126,7 @@ function contextFor(template: ElementTemplate): TemplateContext {
     projectNamespace: own ?? (namespace === 'minecraft' ? 'my_project' : namespace),
     namespaces: [...NAMESPACES],
     kindDefault: kindDefault === undefined ? undefined : structuredClone(kindDefault),
+    target,
   };
 }
 
@@ -265,11 +275,11 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       async (_id, template) => {
         const indexes = await indexesFor(bundle);
         const kind = kindOf(template);
-        const context = contextFor(template);
-        const data = template.data(context);
+        const context = contextFor(template, bundle.target);
+        const data = await template.data(context);
         expect(blockingProblems(indexes, kind.schema, data)).toEqual([]);
 
-        const files = kind.lower(
+        const files = await kind.lower(
           {
             formatVersion: 1,
             id: context.id,

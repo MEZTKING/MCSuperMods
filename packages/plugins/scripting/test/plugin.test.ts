@@ -92,10 +92,10 @@ describe('@msm/plugin-scripting', () => {
     expect(scriptPath('a', 'b/c')).toBe('msm/a/script/b/c.ts');
   });
 
-  it('is the kind lowering and deterministic', () => {
+  it('is the kind lowering and deterministic', async () => {
     const script = element('msm:script', 'demo:x', { lines: ['é'] });
-    const first = scriptKind.lower(script, firstTarget);
-    expect(scriptKind.lower(script, firstTarget)).toEqual(first);
+    const first = await scriptKind.lower(script, firstTarget);
+    expect(await scriptKind.lower(script, firstTarget)).toEqual(first);
     expect(Array.from(first[0]?.contents as Uint8Array)).toEqual([0xc3, 0xa9, 0x0a]);
   });
 

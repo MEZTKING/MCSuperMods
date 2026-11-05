@@ -62,6 +62,33 @@ describe('ProjectSession: projects', () => {
     expect(session.snapshot.problems.filter((problem) => problem.severity === 'error')).toEqual([]);
   });
 
+  it('asks for project folders with the project purpose, so main remembers the folder (B145)', async () => {
+    const fs = createMemoryFileSystem();
+    const { session, calls } = newLibrarySession(fs);
+    await session.newProject();
+    await session.newProject({ starter: fakeStarter });
+    await session.newProject({ bundle: fakeExample });
+    await session.openProject();
+    expect(calls.pickDirectory).toEqual([
+      {
+        title: 'Choose an empty folder for the new project',
+        mustBeEmpty: true,
+        purpose: 'project',
+      },
+      {
+        title: 'Choose an empty folder for the new project',
+        mustBeEmpty: true,
+        purpose: 'project',
+      },
+      {
+        title: 'Choose an empty folder for the new project',
+        mustBeEmpty: true,
+        purpose: 'project',
+      },
+      { title: 'Open an MSM project', purpose: 'project' },
+    ]);
+  });
+
   it('derives the first namespace from the folder name', async () => {
     expect(namespaceFromFolderName('My Pack!')).toBe('my_pack');
     expect(namespaceFromFolderName('---')).toBe('my_project');

@@ -781,9 +781,13 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
 
     it('passes every project validator with no problems at all', async () => {
       const elements = elementsOf(await loadSample());
-      const found = VALIDATORS.flatMap((validator) =>
-        validator.validate({ elements, target, registry: context.registries }),
-      );
+      const found = (
+        await Promise.all(
+          VALIDATORS.map((validator) =>
+            validator.validate({ elements, target, registry: context.registries }),
+          ),
+        )
+      ).flat();
       expect(found).toEqual([]);
     });
 

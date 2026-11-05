@@ -86,7 +86,12 @@ const meta = { msmVersion: '0.3.0', plugins: ['msm.datapack', 'msm.structures', 
 async function buildSample(): Promise<MemoryFileSystem> {
   const starter = libraryStarters.find((entry) => entry.id === STARTER);
   if (starter === undefined) throw new Error(`No starter ${STARTER}`);
-  const bundle = starter.build({ namespace: NAMESPACE, projectName: PROJECT_NAME });
+  const bundle = await starter.build({
+    namespace: NAMESPACE,
+    projectName: PROJECT_NAME,
+    target: (builtInTargets[0] as (typeof builtInTargets)[number]).target,
+    values: {},
+  });
   const project = createEmptyProject(PROJECT_NAME, {
     targets: [builtInTargets[0]?.target.id as string],
     plugins: PLUGINS.filter((plugin) => (plugin.contributes.elementKinds ?? []).length > 0).map(
@@ -322,9 +327,13 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
 
     it('passes every project validator with no problems at all', async () => {
       const elements = elementsOf(await loadSample());
-      const found = VALIDATORS.flatMap((validator) =>
-        validator.validate({ elements, target, registry: context.registries }),
-      );
+      const found = (
+        await Promise.all(
+          VALIDATORS.map((validator) =>
+            validator.validate({ elements, target, registry: context.registries }),
+          ),
+        )
+      ).flat();
       expect(found).toEqual([]);
     });
 
@@ -343,13 +352,19 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         id: `${NAMESPACE}:amber_woods_copy`,
         data: data as unknown as Element['data'],
       };
-      const found = VALIDATORS.flatMap((validator) =>
-        validator.validate({
-          elements: [...elements, copy],
-          target,
-          registry: context.registries,
-        }),
-      ).filter((problem) => problem.severity === 'error');
+      const found = (
+        await Promise.all(
+          VALIDATORS.map((validator) =>
+            validator.validate({
+              elements: [...elements, copy],
+              target,
+              registry: context.registries,
+            }),
+          ),
+        )
+      )
+        .flat()
+        .filter((problem) => problem.severity === 'error');
       expect(found.map((problem) => problem.code)).toEqual(['worldgen.feature-order']);
       expect(found[0]?.elementId).toBe(copy.id);
     });

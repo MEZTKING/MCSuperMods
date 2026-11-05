@@ -12,9 +12,13 @@ async function validate(elements: Element[], withTextures = true): Promise<Probl
   const registry: ValidationInput['registry'] = withTextures
     ? registries
     : createRegistryIndex({ vanilla: {} });
-  return entitiesValidators.flatMap((validator) =>
-    validator.validate({ elements, target: bundle.target, registry }),
-  );
+  return (
+    await Promise.all(
+      entitiesValidators.map((validator) =>
+        validator.validate({ elements, target: bundle.target, registry }),
+      ),
+    )
+  ).flat();
 }
 
 const summary = (problems: Problem[]) =>

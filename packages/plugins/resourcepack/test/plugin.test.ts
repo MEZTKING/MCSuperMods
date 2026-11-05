@@ -108,7 +108,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
 
     it('lowers the default pack metadata to valid JSON for both packs', async () => {
       const indexes = await indexesFor(bundle);
-      const files = packMcmetaKind.lower(
+      const files = await packMcmetaKind.lower(
         element(packMcmetaKind.id, 'example:pack', packMcmetaKind.defaultData ?? {}),
         bundle.target,
       );
@@ -132,10 +132,10 @@ describe('lowering', () => {
     );
   });
 
-  it('produces one resource pack file and does not share data with the element', () => {
+  it('produces one resource pack file and does not share data with the element', async () => {
     const data = { 'block.example.ruby': 'Ruby' };
     const input = element(langKind.id, 'example:en_us', data);
-    const files = langKind.lower(input, firstTarget);
+    const files = await langKind.lower(input, firstTarget);
     expect(files).toHaveLength(1);
     expect(files[0]?.layer).toBe('resourcepack');
     expect(files[0]?.contents).toEqual(data);
@@ -164,10 +164,10 @@ describe('lowering', () => {
     },
   );
 
-  it('overwrites pack formats from the target without mutating the element', () => {
+  it('overwrites pack formats from the target without mutating the element', async () => {
     const data = { pack: { description: 'x', pack_format: 1, supported_formats: [1, 2] } };
     const input = element(packMcmetaKind.id, 'example:pack', data);
-    const [file] = packMcmetaKind.lower(input, firstTarget);
+    const [file] = await packMcmetaKind.lower(input, firstTarget);
     const { major, minor } = firstTarget.packFormats.resource;
     expect(file?.path).toBe('pack.mcmeta');
     expect(file?.contents).toEqual({
@@ -182,9 +182,9 @@ describe('lowering', () => {
     expect(data.pack.supported_formats).toEqual([1, 2]);
   });
 
-  it('lowers pack metadata once per pack, each with its own formats', () => {
+  it('lowers pack metadata once per pack, each with its own formats', async () => {
     const data = { pack: { description: 'Both packs' } };
-    const files = packMcmetaKind.lower(
+    const files = await packMcmetaKind.lower(
       element(packMcmetaKind.id, 'example:pack', data),
       firstTarget,
     );
@@ -214,8 +214,8 @@ describe('lowering', () => {
     expect(files[0]?.contents).not.toBe(files[1]?.contents);
   });
 
-  it('adds a pack object when the data has none and rejects non-object data', () => {
-    const [file] = packMcmetaKind.lower(
+  it('adds a pack object when the data has none and rejects non-object data', async () => {
+    const [file] = await packMcmetaKind.lower(
       element(packMcmetaKind.id, 'example:pack', {}),
       firstTarget,
     );

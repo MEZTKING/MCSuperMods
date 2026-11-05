@@ -174,7 +174,9 @@ const updateLogFile = () => {
   return updateLog;
 };
 
-let updateNotification: Notification | null = null;
+// Shown notifications stay referenced until closed, so their click handler survives
+// garbage collection.
+const updateNotifications = new Set<Notification>();
 
 const updater = createUpdater({
   gate: { isPackaged: app.isPackaged, platform: process.platform, env: process.env },
@@ -206,8 +208,8 @@ const updater = createUpdater({
       window.show();
       window.focus();
     });
-    // Kept referenced so the click handler survives garbage collection.
-    updateNotification = notification;
+    updateNotifications.add(notification);
+    notification.on('close', () => updateNotifications.delete(notification));
     notification.show();
   },
   // Each window's close handler shows the unsaved-changes prompt when needed (window.ts).

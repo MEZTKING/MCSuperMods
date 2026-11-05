@@ -90,7 +90,11 @@ const registry: ValidationInput['registry'] = { has: () => true, ids: () => [] }
 /** Runs every validator and returns the problems with the given code. */
 function run(elements: Element[], code: string): Problem[] {
   return worldgenValidators
-    .flatMap((validator) => validator.validate({ elements, target, registry }))
+    .flatMap((validator) => {
+      const problems = validator.validate({ elements, target, registry });
+      if (problems instanceof Promise) throw new Error(`${validator.id} validates asynchronously.`);
+      return problems;
+    })
     .filter((problem) => problem.code === code);
 }
 
@@ -312,7 +316,7 @@ describe('worldgen validators', () => {
     });
   });
 
-  it('reports nothing for a clean project', () => {
+  it('reports nothing for a clean project', async () => {
     const elements = [
       biome('demo:forest', { [ORES]: ['demo:ruby_ore'] }),
       placed('demo:ruby_ore'),
@@ -322,7 +326,11 @@ describe('worldgen validators', () => {
       tag('minecraft:tag/worldgen/world_preset', 'minecraft:normal', ['demo:world']),
     ];
     expect(
-      worldgenValidators.flatMap((validator) => validator.validate({ elements, target, registry })),
+      (
+        await Promise.all(
+          worldgenValidators.map((validator) => validator.validate({ elements, target, registry })),
+        )
+      ).flat(),
     ).toEqual([]);
   });
 });

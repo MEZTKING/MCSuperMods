@@ -50,10 +50,15 @@ export function htmlToMarkdown(html: string): string {
   let text = html
     .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '')
     .replace(/<!--[\s\S]*?-->/g, '')
-    .replace(/\r\n?/g, '\n');
+    .replace(/\r\n?/g, '\n')
+    // Whitespace around block tags is layout in the source, not text.
+    .replace(/\s*(<\/?(?:li|ul|ol|p|div|br|h[1-6])\b[^>]*>)\s*/gi, '$1');
   text = text
     .replace(/<h([1-6])\b[^>]*>([\s\S]*?)<\/h\1\s*>/gi, (_whole, level: string, inner: string) => {
-      const heading = inner.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+      const heading = inner
+        .replace(/<[^>]*>/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
       return `\n\n${'#'.repeat(Number(level))} ${heading}\n\n`;
     })
     .replace(

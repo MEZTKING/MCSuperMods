@@ -173,7 +173,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       const kind = kinds().find((entry) => entry.id === kindId) as ElementKind;
       const indexes = await indexesFor(bundle);
       expect(blockingProblems(indexes, kind.schema, kind.defaultData as Json)).toEqual([]);
-      const files = kind.lower(
+      const files = await kind.lower(
         element(
           kind.id,
           kindId === 'msm:mod' ? 'demo:mod' : 'demo:sample',

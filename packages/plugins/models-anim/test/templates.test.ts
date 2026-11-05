@@ -3,9 +3,10 @@ import type {
   ElementTemplate,
   Json,
   ResourceLocation,
+  TargetFacts,
   TemplateContext,
 } from '@msm/plugin-api';
-import { builtInTargets } from '@msm/targets';
+import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, {
   ANIMATION_KIND,
@@ -36,7 +37,10 @@ function elementId(template: ElementTemplate): ResourceLocation {
 }
 
 /** The context the host builds (`app/src/renderer/src/studios/templates.ts`). */
-function contextFor(template: ElementTemplate): TemplateContext {
+function contextFor(
+  template: ElementTemplate,
+  target: TargetFacts = (builtInTargets[0] as TargetBundle).target,
+): TemplateContext {
   const id = elementId(template);
   const colon = id.indexOf(':');
   const kindDefault = kindOf(template).defaultData;
@@ -47,12 +51,20 @@ function contextFor(template: ElementTemplate): TemplateContext {
     projectNamespace: 'demo',
     namespaces: ['demo'],
     kindDefault: kindDefault === undefined ? undefined : structuredClone(kindDefault),
+    target,
   };
 }
 
-const created = (template: ElementTemplate): Element => {
-  const context = contextFor(template);
-  return element(template.kind, context.id, template.data(context));
+/** A template's data; built-in templates return it directly. */
+function dataOf(template: ElementTemplate, context: TemplateContext): Json {
+  const data = template.data(context);
+  if (data instanceof Promise) throw new Error(`${template.id} returns its data asynchronously.`);
+  return data;
+}
+
+const created = (template: ElementTemplate, target?: TargetFacts): Element => {
+  const context = contextFor(template, target);
+  return element(template.kind, context.id, dataOf(template, context));
 };
 
 /** The bone names of a geo model template's first geometry. */
@@ -132,7 +144,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       async (id) => {
         const template = templateById(id);
         const kind = kindOf(template);
-        const subject = created(template);
+        const subject = created(template, bundle.target);
         const indexes = await indexesFor(bundle);
         expect(blockingProblems(indexes, kind.schema, subject.data)).toEqual([]);
         // Animations are checked next to the biped model whose bones they move.
@@ -142,18 +154,23 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
                 element(
                   GEO_MODEL_KIND,
                   'demo:entity/biped',
-                  templateById('msm_geo_model_biped').data(
-                    contextFor(templateById('msm_geo_model_biped')),
+                  dataOf(
+                    templateById('msm_geo_model_biped'),
+                    contextFor(templateById('msm_geo_model_biped'), bundle.target),
                   ),
                 ),
                 subject,
               ]
             : [subject];
-        const problems = modelsAnimValidators.flatMap((validator) =>
-          validator.validate({ elements, target: bundle.target, registry: indexes.registries }),
-        );
+        const problems = (
+          await Promise.all(
+            modelsAnimValidators.map((validator) =>
+              validator.validate({ elements, target: bundle.target, registry: indexes.registries }),
+            ),
+          )
+        ).flat();
         expect(problems).toEqual([]);
-        const files = kind.lower(subject, bundle.target);
+        const files = await kind.lower(subject, bundle.target);
         expect(files).toHaveLength(1);
         for (const file of files) {
           expect(file.schema).toBe(kind.schema);

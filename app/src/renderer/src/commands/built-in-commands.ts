@@ -42,6 +42,7 @@ export const BUILT_IN_COMMAND_IDS = [
   'settings',
   'chooseInstallTarget',
   'examples',
+  'whatsNew',
   'checkForUpdates',
 ] as const;
 
@@ -81,6 +82,7 @@ export const BUILT_IN_COMMANDS: Readonly<
   settings: { title: 'Settings…' },
   chooseInstallTarget: { title: 'Choose install target…' },
   examples: { title: 'Examples…' },
+  whatsNew: { title: "What's new…" },
   checkForUpdates: { title: 'Check for updates' },
 };
 

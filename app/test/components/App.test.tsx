@@ -134,6 +134,8 @@ interface Harness {
   revealed: string[];
   /** What `updates.check()` resolves to. */
   updateCheck: UpdateStatus;
+  /** What `app.whatsNewOnLaunch()` resolves to (default `false`). */
+  whatsNewOnLaunch?: boolean;
   /** Sends an update status to the renderer's subscribers. */
   pushUpdate(status: UpdateStatus): void;
   session: ProjectSession;
@@ -195,12 +197,15 @@ const blockedTestStatus: TestInMinecraftStatus = {
   canCreateInstance: true,
 };
 
-async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise<Harness> {
+async function renderApp(
+  options: { plugins?: readonly Plugin[]; whatsNewOnLaunch?: boolean } = {},
+): Promise<Harness> {
   let listener: ((command: MenuCommand) => void) | null = null;
   let recentListener: ((root: string) => void) | null = null;
   const updateListeners = new Set<(status: UpdateStatus) => void>();
   const harness = {
     updateCheck: { state: 'not-available' },
+    whatsNewOnLaunch: options.whatsNewOnLaunch ?? false,
     pushUpdate: (status: UpdateStatus) => {
       act(() => {
         for (const listener of updateListeners) listener(status);
@@ -238,7 +243,10 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
     },
   } as Omit<Harness, 'session'> as Harness;
   const platform: PlatformAdapter = {
-    app: { info: async () => ({ version: '0.1.0-test', electron: '0', platform: 'test' }) },
+    app: {
+      info: async () => ({ version: '0.1.0-test', electron: '0', platform: 'test' }),
+      whatsNewOnLaunch: async () => harness.whatsNewOnLaunch ?? false,
+    },
     dialogs: {
       pickDirectory: async ({ title }) =>
         title.includes('folder') && !title.includes('project')
@@ -377,6 +385,7 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
     thumbnails: { get: unavailable },
     updates: {
       check: async () => harness.updateCheck,
+      current: async () => ({ state: 'idle' }),
       install: async () => {
         harness.installs.push('update');
       },
@@ -529,9 +538,46 @@ describe('App menu commands', () => {
     expect(text.closest('li')?.className ?? '').toMatch(/max-w-\[min\(420px,90vw\)\]/);
     expect(screen.queryByTestId('update-banner')).toBeNull();
     harness.pushUpdate({ state: 'downloaded', version: '9.9.9' });
-    expect(await screen.findByText('Version 9.9.9 is ready to install.')).toBeTruthy();
+    expect(await screen.findByText('Version 9.9.9 is ready \u2014')).toBeTruthy();
     await userEvent.setup().click(screen.getByTestId('update-install'));
     expect(harness.installs).toEqual(['update']);
+  });
+
+  it("opens What's new from the menu, the palette and the update banner", async () => {
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    expect(screen.queryByTestId('whats-new-dialog')).toBeNull();
+    await harness.menu('whatsNew');
+    const dialog = await screen.findByTestId('whats-new-dialog');
+    expect(within(dialog).getByText("What's new in MCSuperMods 0.1.0-test")).toBeTruthy();
+    // The test version has no changelog section.
+    expect(await within(dialog).findByTestId('whats-new-missing')).toBeTruthy();
+    await user.click(within(dialog).getByTestId('whats-new-close'));
+    expect(screen.queryByTestId('whats-new-dialog')).toBeNull();
+
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    await user.click(within(palette).getByTestId('command-whatsNew'));
+    await user.click(
+      within(await screen.findByTestId('whats-new-dialog')).getByTestId('whats-new-close'),
+    );
+
+    harness.pushUpdate({
+      state: 'available',
+      version: '9.9.9',
+      notes: '### Added\n\n- **Shiny** things <script>alert(1)</script>',
+    });
+    await user.click(await screen.findByRole('button', { name: "What's new" }));
+    const notes = await screen.findByTestId('whats-new-dialog');
+    expect(within(notes).getByText("What's new in MCSuperMods 9.9.9")).toBeTruthy();
+    expect(within(notes).getByText('Shiny').tagName).toBe('STRONG');
+    expect(within(notes).getByText(/<script>alert\(1\)<\/script>/)).toBeTruthy();
+    expect(notes.querySelector('script')).toBeNull();
+  });
+
+  it("shows What's new by itself once after the version changed", async () => {
+    await renderApp({ whatsNewOnLaunch: true });
+    expect(await screen.findByTestId('whats-new-dialog')).toBeTruthy();
   });
 
   it('exports the resource pack and refuses an empty data pack with the reason', async () => {

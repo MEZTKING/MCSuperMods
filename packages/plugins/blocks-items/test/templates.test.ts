@@ -1,8 +1,14 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { ElementTemplate, Json, ResourceLocation, TemplateContext } from '@msm/plugin-api';
-import { builtInTargets } from '@msm/targets';
+import type {
+  ElementTemplate,
+  Json,
+  ResourceLocation,
+  TargetFacts,
+  TemplateContext,
+} from '@msm/plugin-api';
+import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, {
   blocksItemsKinds,
@@ -40,7 +46,10 @@ function elementId(template: ElementTemplate): ResourceLocation {
 }
 
 /** The context the host builds (`app/src/renderer/src/studios/templates.ts`). */
-function contextFor(template: ElementTemplate): TemplateContext {
+function contextFor(
+  template: ElementTemplate,
+  target: TargetFacts = (builtInTargets[0] as TargetBundle).target,
+): TemplateContext {
   const id = elementId(template);
   const colon = id.indexOf(':');
   const kindDefault = kindOf(template).defaultData;
@@ -51,6 +60,7 @@ function contextFor(template: ElementTemplate): TemplateContext {
     projectNamespace: 'demo',
     namespaces: ['demo'],
     kindDefault: kindDefault === undefined ? undefined : structuredClone(kindDefault),
+    target,
   };
 }
 
@@ -71,23 +81,23 @@ describe('blocks-items templates', () => {
     }
   });
 
-  it('returns fresh data on every call and never mutates the context', () => {
+  it('returns fresh data on every call and never mutates the context', async () => {
     for (const template of blocksItemsTemplates) {
       const context = contextFor(template);
       const before = structuredClone(context);
-      const first = template.data(context);
-      const second = template.data(context);
+      const first = await template.data(context);
+      const second = await template.data(context);
       expect(second, template.id).toEqual(first);
       expect(second).not.toBe(first);
       expect(context, template.id).toEqual(before);
     }
   });
 
-  it('uses only vanilla ids or ids derived from the new element id', () => {
+  it('uses only vanilla ids or ids derived from the new element id', async () => {
     for (const template of blocksItemsTemplates) {
       const context = { ...contextFor(template), id: 'zz:own' as const, projectNamespace: 'zz' };
       // Component keys (`"msm:breakable":`) are format names, not ids.
-      const text = JSON.stringify(template.data(context))
+      const text = JSON.stringify(await template.data(context))
         .replaceAll(/"msm:[a-z_]+":/g, '')
         .replaceAll(/"zz:own(_[a-z]+)?"/g, '');
       expect(text, template.id).not.toMatch(/"(?!minecraft:)[a-z0-9_.-]+:[a-z0-9_./-]+"/);
@@ -111,21 +121,23 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       '%s validates, passes the validators and lowers cleanly',
       async (id) => {
         const template = blocksItemsTemplates.find((entry) => entry.id === id) as ElementTemplate;
-        const context = contextFor(template);
-        const data = template.data(context);
+        const context = contextFor(template, bundle.target);
+        const data = await template.data(context);
         const kind = kindOf(template);
         const indexes = await indexesFor(bundle);
         expect(blockingProblems(indexes, kind.schema, data)).toEqual([]);
         const created = element(kind.id, context.id, data);
-        const problems = blocksItemsValidators.flatMap((validator) =>
-          validator.validate({
-            elements: [created],
-            target: bundle.target,
-            registry: indexes.registries,
-          }),
+        const problems = await Promise.all(
+          blocksItemsValidators.map((validator) =>
+            validator.validate({
+              elements: [created],
+              target: bundle.target,
+              registry: indexes.registries,
+            }),
+          ),
         );
-        expect(problems).toEqual([]);
-        const files = kind.lower(created, bundle.target);
+        expect(problems.flat()).toEqual([]);
+        const files = await kind.lower(created, bundle.target);
         for (const file of files) {
           if (file.schema === undefined) continue;
           expect(blockingProblems(indexes, file.schema, file.contents as Json), file.path).toEqual(

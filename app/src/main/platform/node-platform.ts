@@ -323,10 +323,7 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
   };
 
   // Project folder pickers open where the last project folder was chosen (B145).
-  const pickDirectory: MainPlatform['dialogs']['pickDirectory'] = async ({
-    purpose,
-    ...opts
-  }) => {
+  const pickDirectory: MainPlatform['dialogs']['pickDirectory'] = async ({ purpose, ...opts }) => {
     if (purpose !== 'project') return deps.dialogs.pickDirectory(opts);
     let defaultPath: string | null = null;
     try {

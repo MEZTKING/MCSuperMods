@@ -12,9 +12,12 @@ async function validate(elements: Element[], withTags = true): Promise<Problem[]
   const registry: ValidationInput['registry'] = withTags
     ? registries
     : createRegistryIndex({ vanilla: {} });
-  return blocksItemsValidators.flatMap((validator) =>
-    validator.validate({ elements, target: bundle.target, registry }),
+  const results = await Promise.all(
+    blocksItemsValidators.map((validator) =>
+      validator.validate({ elements, target: bundle.target, registry }),
+    ),
   );
+  return results.flat();
 }
 
 const codes = (problems: Problem[]): string[] => problems.map((problem) => problem.code);

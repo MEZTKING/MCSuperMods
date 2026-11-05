@@ -1,5 +1,11 @@
-import type { ElementTemplate, Json, ResourceLocation, TemplateContext } from '@msm/plugin-api';
-import { builtInTargets } from '@msm/targets';
+import type {
+  ElementTemplate,
+  Json,
+  ResourceLocation,
+  TargetFacts,
+  TemplateContext,
+} from '@msm/plugin-api';
+import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, {
   findHandlerDefinitions,
@@ -24,7 +30,10 @@ function elementId(template: ElementTemplate): ResourceLocation {
 }
 
 /** The context the host builds (`app/src/renderer/src/studios/templates.ts`). */
-function contextFor(template: ElementTemplate): TemplateContext {
+function contextFor(
+  template: ElementTemplate,
+  target: TargetFacts = (builtInTargets[0] as TargetBundle).target,
+): TemplateContext {
   const id = elementId(template);
   const colon = id.indexOf(':');
   return {
@@ -34,6 +43,7 @@ function contextFor(template: ElementTemplate): TemplateContext {
     projectNamespace: 'demo',
     namespaces: ['demo'],
     kindDefault: structuredClone(scriptKind.defaultData),
+    target,
   };
 }
 
@@ -60,19 +70,19 @@ describe('scripting templates', () => {
     expect(scriptingTemplates[3]?.description).toContain('run_script');
   });
 
-  it('returns fresh data on every call and never mutates the context', () => {
+  it('returns fresh data on every call and never mutates the context', async () => {
     for (const template of scriptingTemplates) {
       const context = contextFor(template);
       const before = structuredClone(context);
-      const first = template.data(context);
-      const second = template.data(context);
+      const first = await template.data(context);
+      const second = await template.data(context);
       expect(second, template.id).toEqual(first);
       expect(second).not.toBe(first);
       expect(context, template.id).toEqual(before);
     }
   });
 
-  it('uses only vanilla ids or the new element id', () => {
+  it('uses only vanilla ids or the new element id', async () => {
     for (const template of scriptingTemplates) {
       const context = {
         ...contextFor(template),
@@ -81,7 +91,7 @@ describe('scripting templates', () => {
         path: 'own',
         projectNamespace: 'zz',
       };
-      const text = textOf(template.data(context))
+      const text = textOf(await template.data(context))
         .replaceAll('"msm:runtime"', '')
         .replaceAll('"zz:own"', '');
       expect(text, template.id).not.toMatch(/"(?!minecraft:)[a-z0-9_.-]+:[a-z0-9_./-]+"/);
@@ -96,15 +106,22 @@ describe('scripting templates', () => {
     expect(findHandlerDefinitions(data.lines).map((d) => d.handler)).toEqual(['mod:fx/sparkle']);
   });
 
-  it.each(IDS.map((id) => [id] as const))('%s parses and type-checks against the typings', (id) => {
-    const template = scriptingTemplates.find((entry) => entry.id === id) as ElementTemplate;
-    const created = element(scriptKind.id, 'demo:sample', template.data(contextFor(template)));
-    const [file] = scriptKind.lower(created, builtInTargets[0]?.target as never);
-    const text = new TextDecoder().decode(file?.contents as Uint8Array);
-    expect(text).toBe(textOf(created.data));
-    expect(syntaxErrors(text)).toEqual([]);
-    expect(typeCheck(text)).toEqual([]);
-  });
+  it.each(IDS.map((id) => [id] as const))(
+    '%s parses and type-checks against the typings',
+    async (id) => {
+      const template = scriptingTemplates.find((entry) => entry.id === id) as ElementTemplate;
+      const created = element(
+        scriptKind.id,
+        'demo:sample',
+        await template.data(contextFor(template)),
+      );
+      const [file] = await scriptKind.lower(created, builtInTargets[0]?.target as never);
+      const text = new TextDecoder().decode(file?.contents as Uint8Array);
+      expect(text).toBe(textOf(created.data));
+      expect(syntaxErrors(text)).toEqual([]);
+      expect(typeCheck(text)).toEqual([]);
+    },
+  );
 });
 
 describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const))(
@@ -114,20 +131,24 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       '%s validates and the validators report nothing',
       async (id) => {
         const template = scriptingTemplates.find((entry) => entry.id === id) as ElementTemplate;
-        const context = contextFor(template);
-        const data = template.data(context);
+        const context = contextFor(template, bundle.target);
+        const data = await template.data(context);
         const indexes = await indexesFor(bundle);
         expect(blockingProblems(indexes, scriptKind.schema, data)).toEqual([]);
         const created = element(scriptKind.id, context.id, data);
-        const problems = scriptingValidators.flatMap((validator) =>
-          validator.validate({
-            elements: [created],
-            target: bundle.target,
-            registry: indexes.registries,
-          }),
-        );
+        const problems = (
+          await Promise.all(
+            scriptingValidators.map((validator) =>
+              validator.validate({
+                elements: [created],
+                target: bundle.target,
+                registry: indexes.registries,
+              }),
+            ),
+          )
+        ).flat();
         expect(problems).toEqual([]);
-        const files = scriptKind.lower(created, bundle.target);
+        const files = await scriptKind.lower(created, bundle.target);
         expect(files.map((file) => [file.path, file.layer, file.language])).toEqual([
           ['msm/demo/script/sample.ts', 'msm', 'typescript'],
         ]);

@@ -175,7 +175,7 @@ test('a blob: worker is constrained by the CSP and the proxy round-trips', async
   // (the dev server, or a custom app scheme) the CSP refuses file: URLs as well.
   const fileOrigin = findings.documentUrl.startsWith('file:');
   // `import()` cannot be removed by the bootstrap, so under a file: document it still loads
-  // local files: recorded, asserted below to keep the gap visible until B154 closes it.
+  // local files (JS and JSON modules) there: excluded here, recorded in the findings.
   const strippedGap = fileOrigin
     ? new Set(['import(local file)', 'import(local JSON file)'])
     : new Set<string>();

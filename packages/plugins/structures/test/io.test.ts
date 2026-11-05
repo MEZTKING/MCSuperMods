@@ -1,4 +1,4 @@
-import type { Element, ExporterInput, OutputFile, Problem } from '@msm/plugin-api';
+import type { Element, ExporterInput, MaybePromise, OutputFile, Problem } from '@msm/plugin-api';
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import {
@@ -128,16 +128,28 @@ function exportInput(files: OutputFile[]): {
   };
 }
 
+/** Built-in kinds lower synchronously. */
+function filesOf(result: MaybePromise<OutputFile[]>): OutputFile[] {
+  if (result instanceof Promise) throw new Error('Expected a synchronous lowering.');
+  return result;
+}
+
 describe('exporters', () => {
   const lowered = [
-    ...structureTemplateKind.lower(
-      element('ex:houses/hut', structureTemplateKind.id, PIECE),
-      target,
+    ...filesOf(
+      structureTemplateKind.lower(
+        element('ex:houses/hut', structureTemplateKind.id, PIECE),
+        target,
+      ),
     ),
-    ...structureTemplateKind.lower(element('other:path', structureTemplateKind.id, PIECE), target),
-    ...templatePoolKind.lower(
-      element('ex:pool', templatePoolKind.id, templatePoolKind.defaultData),
-      target,
+    ...filesOf(
+      structureTemplateKind.lower(element('other:path', structureTemplateKind.id, PIECE), target),
+    ),
+    ...filesOf(
+      templatePoolKind.lower(
+        element('ex:pool', templatePoolKind.id, templatePoolKind.defaultData),
+        target,
+      ),
     ),
   ];
 
