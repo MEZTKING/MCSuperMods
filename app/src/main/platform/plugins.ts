@@ -19,7 +19,11 @@ import {
   PluginProblemCodes,
 } from '../../shared/ipc-channels';
 import { pluginManifestSchema } from '../../shared/ipc-contract';
-import type { ExternalPluginBundle, ExternalPluginEntry, PluginManifest } from '../../shared/platform';
+import type {
+  ExternalPluginBundle,
+  ExternalPluginEntry,
+  PluginManifest,
+} from '../../shared/platform';
 
 /** The plugins folder under the MSM home. */
 export const PLUGINS_DIR = 'plugins';
@@ -97,7 +101,10 @@ async function readContained(
   try {
     real = await realpath(target);
   } catch {
-    throw new PluginReadError(PluginProblemCodes.manifestInvalid, `${what} ${relativePath} does not exist.`);
+    throw new PluginReadError(
+      PluginProblemCodes.manifestInvalid,
+      `${what} ${relativePath} does not exist.`,
+    );
   }
   if (!isInside(realFolder, real) || real === realFolder) {
     throw new PluginReadError(
@@ -107,7 +114,10 @@ async function readContained(
   }
   const info = await stat(real);
   if (!info.isFile()) {
-    throw new PluginReadError(PluginProblemCodes.manifestInvalid, `${what} ${relativePath} is not a file.`);
+    throw new PluginReadError(
+      PluginProblemCodes.manifestInvalid,
+      `${what} ${relativePath} is not a file.`,
+    );
   }
   if (info.size > limit) {
     throw new PluginReadError(
@@ -125,7 +135,10 @@ async function readContained(
   try {
     return decoder.decode(bytes);
   } catch {
-    throw new PluginReadError(PluginProblemCodes.manifestInvalid, `${what} ${relativePath} is not UTF-8 text.`);
+    throw new PluginReadError(
+      PluginProblemCodes.manifestInvalid,
+      `${what} ${relativePath} is not UTF-8 text.`,
+    );
   }
 }
 
@@ -139,7 +152,12 @@ async function readEntry(dir: string, folder: string): Promise<ExternalPluginEnt
   });
   let text: string;
   try {
-    text = await readContained(join(dir, folder), PLUGIN_MANIFEST_FILE, PLUGIN_MANIFEST_MAX_BYTES, 'The manifest');
+    text = await readContained(
+      join(dir, folder),
+      PLUGIN_MANIFEST_FILE,
+      PLUGIN_MANIFEST_MAX_BYTES,
+      'The manifest',
+    );
   } catch (error) {
     const message =
       error instanceof PluginReadError && error.code === PluginProblemCodes.tooLarge
@@ -159,7 +177,7 @@ async function readEntry(dir: string, folder: string): Promise<ExternalPluginEnt
   if (!parsed.success) {
     const id =
       typeof json === 'object' && json !== null && typeof (json as { id?: unknown }).id === 'string'
-        ? ((json as { id: string }).id.slice(0, 64) || folder)
+        ? (json as { id: string }).id.slice(0, 64) || folder
         : folder;
     return {
       id,
@@ -238,14 +256,19 @@ export function createPluginsService(deps: PluginsServiceDeps): PluginsService {
         (candidate) => candidate.manifest !== null && candidate.manifest.id === id,
       );
       if (entry === undefined || entry.manifest === null) {
-        throw new PluginReadError(PluginProblemCodes.manifestInvalid, `No usable plugin ${id} was found.`);
+        throw new PluginReadError(
+          PluginProblemCodes.manifestInvalid,
+          `No usable plugin ${id} was found.`,
+        );
       }
       const folder = join(dir, entry.folder);
       const manifest = entry.manifest;
       const main = await readContained(folder, manifest.main, PLUGIN_MAIN_MAX_BYTES, 'The bundle');
       const schemas: string[] = [];
       for (const schema of manifest.schemas) {
-        schemas.push(await readContained(folder, schema, PLUGIN_SCHEMA_MAX_BYTES, 'The schema file'));
+        schemas.push(
+          await readContained(folder, schema, PLUGIN_SCHEMA_MAX_BYTES, 'The schema file'),
+        );
       }
       return { manifest, main, schemas };
     },

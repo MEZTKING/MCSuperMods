@@ -79,8 +79,8 @@ export function PluginsSection(props: {
     <section className="flex flex-col gap-1.5" data-testid="settings-plugins" aria-label="Plugins">
       <h3 className="mt-3 font-semibold">Plugins</h3>
       <p className="text-xs text-muted">
-        Plugins are code written by third parties. They run sandboxed, without access to your
-        files, the network or other projects, but install them only from sources you trust.
+        Plugins are code written by third parties. They run sandboxed, without access to your files,
+        the network or other projects, but install them only from sources you trust.
       </p>
       {props.plugins.length === 0 ? (
         <p className="text-sm text-muted" data-testid="settings-plugins-empty">
@@ -106,7 +106,6 @@ export function PluginsSection(props: {
                 <ul className="m-0 flex list-none flex-col gap-0.5 p-0 text-xs">
                   {plugin.problems.map((problem, index) => (
                     <li
-                      // biome-ignore lint/suspicious/noArrayIndexKey: problems have no id
                       key={index}
                       className={problem.severity === 'error' ? 'text-error' : 'text-muted'}
                     >
@@ -653,7 +652,10 @@ export function SettingsDialog(props: SettingsDialogProps) {
               Help, Check for Updates works either way.
             </p>
 
-            <PluginsSection plugins={props.plugins ?? []} onOpenFolder={props.onOpenPluginsFolder} />
+            <PluginsSection
+              plugins={props.plugins ?? []}
+              onOpenFolder={props.onOpenPluginsFolder}
+            />
 
             {error !== null && (
               <p role="alert" className="whitespace-pre-line text-error">

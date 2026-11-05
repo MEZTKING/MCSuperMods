@@ -24,11 +24,11 @@ import {
 
 export type {
   InvokeChannel,
-  PluginCapability,
-  PluginProblemCode,
   MenuCommand,
   MenuOpenRecent,
   MinecraftProgress,
+  PluginCapability,
+  PluginProblemCode,
   UpdateDisabledReason,
   UpdateStatus,
   VendoredKeyName,
@@ -409,18 +409,13 @@ export const pluginIdSchema = z
   .min(1)
   .max(64)
   .regex(PLUGIN_ID, { message: 'The id must match /^[a-z][a-z0-9.-]*$/.' })
-  .refine((id) => !id.startsWith('msm.'), { message: 'The id must not start with "msm.".' })
   .refine((id) => !RESERVED_PLUGIN_NAMESPACES.includes(pluginNamespace(id)), {
-    message: 'The id must not use the minecraft or msm namespace.',
+    message: 'The id must not start with "msm." or "minecraft." (reserved namespaces).',
   });
 
-const pluginRelativePath = z
-  .string()
-  .min(1)
-  .max(512)
-  .refine(isProjectRelativePath, {
-    message: 'The path must be relative, use "/" and stay inside the plugin folder.',
-  });
+const pluginRelativePath = z.string().min(1).max(512).refine(isProjectRelativePath, {
+  message: 'The path must be relative, use "/" and stay inside the plugin folder.',
+});
 
 /** The manifest `msm-plugin.json` (ADR 0035 D2). Unknown fields are refused. */
 export const pluginManifestSchema = z

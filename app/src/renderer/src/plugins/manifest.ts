@@ -45,8 +45,8 @@ const REQUIRED_STRINGS: Readonly<Record<PluginCapability, readonly string[]>> = 
 });
 
 /** String-array fields each supported contribution point must have. */
-const REQUIRED_STRING_ARRAYS: Readonly<Record<PluginCapability, readonly string[]>> =
-  Object.freeze({
+const REQUIRED_STRING_ARRAYS: Readonly<Record<PluginCapability, readonly string[]>> = Object.freeze(
+  {
     elementKinds: [],
     elementTemplates: [],
     projectStarters: ['layers', 'requiresKinds'],
@@ -54,7 +54,8 @@ const REQUIRED_STRING_ARRAYS: Readonly<Record<PluginCapability, readonly string[
     validators: ['kinds'],
     exporters: ['layers'],
     importers: ['extensions'],
-  });
+  },
+);
 
 /** The namespace of a plugin id: its first `.`-separated segment. */
 export function pluginIdNamespace(id: string): string {
@@ -215,7 +216,10 @@ export type SchemaCheck =
  * plugin id's first segment. Anything else is `plugin.refused` (a plugin cannot replace or
  * extend vanilla or MSM types).
  */
-export function parsePluginSchemas(manifest: PluginManifest, texts: readonly string[]): SchemaCheck {
+export function parsePluginSchemas(
+  manifest: PluginManifest,
+  texts: readonly string[],
+): SchemaCheck {
   const namespace = pluginIdNamespace(manifest.id);
   const symbols: VanillaMcdocSymbols[] = [];
   for (const [index, text] of texts.entries()) {

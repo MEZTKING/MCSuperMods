@@ -11,7 +11,10 @@ import {
   SANDBOX_DEADLINES,
   SandboxError,
 } from '../src/renderer/src/plugins/sandbox/host';
-import { bootstrapSource, STRIPPED_GLOBALS } from '../src/renderer/src/plugins/sandbox/worker-bootstrap';
+import {
+  bootstrapSource,
+  STRIPPED_GLOBALS,
+} from '../src/renderer/src/plugins/sandbox/worker-bootstrap';
 import { sampleBundle, vmWorkers } from './helpers/plugins-fixtures';
 
 const target = { id: 'mc-test', mcVersion: '1.0-test', packFormats: { data: 1, resource: 1 } };
@@ -54,7 +57,9 @@ describe('plugin sandbox host', () => {
     }[];
     expect(lowered[0]?.path).toBe('data/demo/function/greet_hello.mcfunction');
     expect(decode(lowered[0]?.contents)).toBe('tellraw @a {"text":"Hi"}\n');
-    await expect(worker.call('data', ['sample-greeting', { id: 'demo:n', target }])).resolves.toEqual({
+    await expect(
+      worker.call('data', ['sample-greeting', { id: 'demo:n', target }]),
+    ).resolves.toEqual({
       message: 'Hello from demo:n on mc-test',
     });
     const bundle = (await worker.call('build', [
@@ -125,7 +130,9 @@ describe('plugin sandbox host', () => {
       message: 'Error: cannot lower',
     });
     expect(worker.state).toBe('ready');
-    await expect(worker.call('lower', ['sample:greeting', element, target])).resolves.toHaveLength(1);
+    await expect(worker.call('lower', ['sample:greeting', element, target])).resolves.toHaveLength(
+      1,
+    );
     worker.terminate();
   });
 

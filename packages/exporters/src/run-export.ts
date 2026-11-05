@@ -6,7 +6,7 @@
 
 import {
   type ElementKindRegistry,
-  lowerProject,
+  lowerProjectAsync,
   type MergeEntry,
   mergeOutputFiles,
   utf8,
@@ -183,8 +183,9 @@ async function validateTextFiles(
 /**
  * Runs one export.
  *
- * 1. Lowers the project with `lowerProject` (unknown kinds, thrown lowering and lowering
- *    conflicts are errors).
+ * 1. Lowers the project with `lowerProjectAsync` (unknown kinds, thrown or rejected lowering
+ *    and lowering conflicts are errors), so kinds of sandboxed third-party plugins, whose
+ *    `lower` resolves through a worker, export like built-ins (ADR 0036 D2).
  * 2. Adds the project's assets (`assetOutputFiles`).
  * 3. Keeps only files of the exporter's layers (an `export.layer-skipped` info per skipped
  *    layer), rejects unsafe paths (`export.unsafe-path`) and merges with core's
@@ -207,7 +208,7 @@ export async function runExport(request: ExportRequest): Promise<ExportReport> {
   const { project, registry, target, schemaIndex, registries, exporter } = request;
   const problems: Problem[] = [];
 
-  const lowered = lowerProject(project, registry, target);
+  const lowered = await lowerProjectAsync(project, registry, target);
   problems.push(...lowered.problems);
   const assets = await assetOutputFiles(project, request.readAsset);
   problems.push(...assets.problems);

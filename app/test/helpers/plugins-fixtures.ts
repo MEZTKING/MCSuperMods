@@ -248,7 +248,9 @@ export function stubPluginsPlatform(plugins: StubPlugin[]): {
           const plugin = plugins.find((candidate) => candidate.manifest?.id === id);
           if (plugin === undefined || plugin.manifest === null) throw new Error(`No ${id}`);
           if (plugin.readError !== undefined) {
-            throw new Error(`Error invoking remote method 'msm:v1:plugins:read': Error: ${plugin.readError}`);
+            throw new Error(
+              `Error invoking remote method 'msm:v1:plugins:read': Error: ${plugin.readError}`,
+            );
           }
           return {
             manifest: plugin.manifest,

@@ -71,6 +71,17 @@ const testStatus = {
   canCreateInstance: true,
 };
 
+const pluginManifest = {
+  manifestVersion: 1,
+  id: 'sample.greetings',
+  name: 'Greetings',
+  version: '1.0.0',
+  apiVersion: '^1.0.0',
+  main: 'main.js',
+  schemas: ['symbols.json'],
+  capabilities: ['elementKinds', 'validators'],
+};
+
 /** One valid and one invalid request and response per channel. */
 const samples: Record<
   InvokeChannel,
@@ -438,6 +449,34 @@ const samples: Record<
   [InvokeChannels.appWhatsNewOnLaunch]: {
     request: [undefined, { force: true }],
     response: [true, 'yes'],
+  },
+  [InvokeChannels.pluginsList]: {
+    request: [undefined, { folder: 'x' }],
+    response: [
+      [
+        { id: 'sample.greetings', folder: 'greetings', manifest: pluginManifest, problems: [] },
+        {
+          id: 'broken',
+          folder: 'broken',
+          manifest: null,
+          problems: [
+            { severity: 'error', code: 'plugin.manifest-invalid', message: 'bad', path: '/id' },
+          ],
+        },
+      ],
+      [{ id: 'x', folder: 'x', manifest: { ...pluginManifest, main: '/abs.js' }, problems: [] }],
+    ],
+  },
+  [InvokeChannels.pluginsRead]: {
+    request: [{ id: 'sample.greetings' }, { id: 'msm.core' }],
+    response: [
+      { manifest: pluginManifest, main: 'defineMsmPlugin({});', schemas: ['{}'] },
+      { manifest: pluginManifest, main: 3, schemas: [] },
+    ],
+  },
+  [InvokeChannels.pluginsOpenFolder]: {
+    request: [undefined, 'path'],
+    response: [undefined, 'opened'],
   },
 };
 

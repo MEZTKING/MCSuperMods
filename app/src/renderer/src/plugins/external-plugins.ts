@@ -45,7 +45,11 @@ import type {
 } from '@msm/plugin-api';
 import type { VanillaMcdocSymbols } from '@msm/schemas';
 import { PluginProblemCodes } from '../../../shared/ipc-channels';
-import type { ExternalPluginEntry, PlatformAdapter, PluginManifest } from '../../../shared/platform';
+import type {
+  ExternalPluginEntry,
+  PlatformAdapter,
+  PluginManifest,
+} from '../../../shared/platform';
 import { apiVersionProblem, checkDescription, parsePluginSchemas } from './manifest';
 import {
   type CreatePluginWorkerOptions,
@@ -170,7 +174,8 @@ function checkOutputFiles(value: unknown, what: string): OutputFile[] {
     if (typeof file.layer !== 'string' || !OUTPUT_LAYERS.has(file.layer)) {
       throw badResult(what, `an output file with an unknown layer (${file.path})`);
     }
-    if (!('contents' in file)) throw badResult(what, `an output file without contents (${file.path})`);
+    if (!('contents' in file))
+      throw badResult(what, `an output file without contents (${file.path})`);
   }
   return value as OutputFile[];
 }
@@ -520,7 +525,9 @@ export async function loadExternalPlugins(
     const worker = createPluginWorker(bundle.main, {
       name: `msm-plugin:${manifest.id}`,
       ...(options.spawn === undefined ? {} : { spawn: options.spawn }),
-      ...(options.startDeadlineMs === undefined ? {} : { startDeadlineMs: options.startDeadlineMs }),
+      ...(options.startDeadlineMs === undefined
+        ? {}
+        : { startDeadlineMs: options.startDeadlineMs }),
     });
     let description: Awaited<PluginWorker['ready']>;
     try {
@@ -562,10 +569,11 @@ export async function loadExternalPlugins(
   // Register in folder order against the built-ins and the plugins before, as the session
   // will, so a clash refuses the later plugin and the session's registration cannot throw.
   const registry = new ElementKindRegistry();
+  const apiOptions = options.apiVersion === undefined ? {} : { apiVersion: options.apiVersion };
   const builtIns = options.builtIns ?? [];
   for (const plugin of builtIns) {
     try {
-      registerPlugin(registry, plugin, { apiVersion: options.apiVersion ?? plugin.apiVersion });
+      registerPlugin(registry, plugin, apiOptions);
     } catch {
       // A built-in that does not register here is not an external plugin's concern.
     }
@@ -592,7 +600,7 @@ export async function loadExternalPlugins(
       clash === null ? null : `${manifest.id}: ${clash} is already registered.`;
     if (refusal === null) {
       try {
-        registerPlugin(registry, facade, options.apiVersion === undefined ? {} : { apiVersion: options.apiVersion });
+        registerPlugin(registry, facade, apiOptions);
       } catch (error) {
         refusal = messageOf(error);
       }

@@ -347,7 +347,10 @@ export function createPluginWorker(
       });
     },
     terminate() {
-      stop(new SandboxError('plugin.unavailable', 'The plugin worker was terminated.'), 'terminated');
+      stop(
+        new SandboxError('plugin.unavailable', 'The plugin worker was terminated.'),
+        'terminated',
+      );
     },
     onFail(listener) {
       failListeners.add(listener);

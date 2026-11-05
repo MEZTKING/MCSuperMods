@@ -390,15 +390,12 @@ describe('ProjectSession validators', () => {
       { severity: 'warning', code: 'z', message: 'warn' },
     ];
     const lowerData = () => [{ layer: 'datapack' as const }];
-    expect(codes(await blockingValidatorErrors(problems, project, lowerData, ['datapack']))).toEqual([
-      'x',
-      'y',
-    ]);
+    expect(
+      codes(await blockingValidatorErrors(problems, project, lowerData, ['datapack'])),
+    ).toEqual(['x', 'y']);
     expect(
       codes(await blockingValidatorErrors(problems, project, lowerData, ['resourcepack'])),
-    ).toEqual([
-      'x',
-    ]);
+    ).toEqual(['x']);
   });
 });
 

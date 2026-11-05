@@ -40,18 +40,36 @@ describe('pluginManifestSchema', () => {
     expect(pluginManifestSchema.parse(valid)).toEqual(valid);
     const { schemas: _schemas, ...noSchemas } = valid;
     expect(pluginManifestSchema.parse(noSchemas).schemas).toEqual([]);
-    expect(pluginManifestSchema.parse({ ...valid, main: 'dist/main.js' }).main).toBe('dist/main.js');
+    expect(pluginManifestSchema.parse({ ...valid, main: 'dist/main.js' }).main).toBe(
+      'dist/main.js',
+    );
   });
 
   it('refuses bad ids, the msm. prefix and reserved namespaces', () => {
-    for (const id of ['Sample', '1sample', 'sample greetings', 'sample_x', '', 'msm.tools', 'msm', 'minecraft.extra']) {
+    for (const id of [
+      'Sample',
+      '1sample',
+      'sample greetings',
+      'sample_x',
+      '',
+      'msm.tools',
+      'msm',
+      'minecraft.extra',
+    ]) {
       expect(issuePaths({ ...valid, id })).toContain('id');
     }
     expect(issuePaths({ ...valid, id: 'a.b-c.d' })).toEqual([]);
   });
 
   it('refuses paths that are absolute or leave the folder', () => {
-    for (const main of ['/etc/main.js', '../main.js', 'a/../../main.js', 'C:\\main.js', 'dist\\main.js', '']) {
+    for (const main of [
+      '/etc/main.js',
+      '../main.js',
+      'a/../../main.js',
+      'C:\\main.js',
+      'dist\\main.js',
+      '',
+    ]) {
       expect(issuePaths({ ...valid, main })).toContain('main');
     }
     expect(issuePaths({ ...valid, schemas: ['../symbols.json'] })).toContain('schemas/0');
@@ -122,7 +140,9 @@ describe('plugin checks in the renderer', () => {
     expect(missing.problems.map((problem) => problem.code)).toEqual(['plugin.capability-missing']);
 
     const reserved = checkDescription(
-      description({ elementKinds: [{ ...kind, data: { ...kind.data, id: 'minecraft:greeting' } }] }),
+      description({
+        elementKinds: [{ ...kind, data: { ...kind.data, id: 'minecraft:greeting' } }],
+      }),
       sampleManifest(),
     );
     expect(reserved.problems.map((problem) => problem.code)).toEqual(['plugin.reserved-namespace']);
@@ -142,13 +162,18 @@ describe('plugin checks in the renderer', () => {
 
   it('parses schema exports and keeps them in the plugin namespace', () => {
     const ok = parsePluginSchemas(sampleManifest(), [sampleSymbols()]);
-    expect(ok.ok && Object.keys(ok.symbols[0]?.mcdoc ?? {})).toEqual(['::sample::greeting::Greeting']);
+    expect(ok.ok && Object.keys(ok.symbols[0]?.mcdoc ?? {})).toEqual([
+      '::sample::greeting::Greeting',
+    ]);
     const outside = parsePluginSchemas(sampleManifest(), [
       sampleSymbols('::java::data::loot::LootTable'),
     ]);
     expect(outside).toMatchObject({
       ok: false,
-      problem: { code: 'plugin.refused', message: expect.stringContaining('outside its namespace ::sample') },
+      problem: {
+        code: 'plugin.refused',
+        message: expect.stringContaining('outside its namespace ::sample'),
+      },
     });
     const broken = parsePluginSchemas(sampleManifest(), ['{"ref": 1}']);
     expect(broken).toMatchObject({ ok: false, problem: { code: 'plugin.refused' } });

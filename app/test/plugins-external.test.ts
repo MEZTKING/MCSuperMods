@@ -37,15 +37,28 @@ describe('loadExternalPlugins', () => {
   it('loads a plugin and builds a facade that resolves through its worker', async () => {
     const workers = vmWorkers();
     const { platform } = stubPluginsPlatform([{ manifest: sampleManifest() }]);
-    const set = await loadExternalPlugins(platform, { builtIns: builtInPlugins, spawn: workers.spawn });
+    const set = await loadExternalPlugins(platform, {
+      builtIns: builtInPlugins,
+      spawn: workers.spawn,
+    });
     expect(set.states).toEqual([
-      { id: 'sample.greetings', name: 'Greetings', version: '1.0.0', state: 'loaded', problems: [] },
+      {
+        id: 'sample.greetings',
+        name: 'Greetings',
+        version: '1.0.0',
+        state: 'loaded',
+        problems: [],
+      },
     ]);
     expect(set.symbols).toHaveLength(1);
     const plugin = set.plugins[0];
     expect(plugin?.id).toBe('sample.greetings');
     const kind = plugin?.contributes.elementKinds?.[0];
-    expect(kind).toMatchObject({ id: 'sample:greeting', folder: 'greeting', defaultData: { message: 'Hello' } });
+    expect(kind).toMatchObject({
+      id: 'sample:greeting',
+      folder: 'greeting',
+      defaultData: { message: 'Hello' },
+    });
 
     // A full target carries hook functions; the worker receives its facts only.
     const withHooks = { ...target, migrateFrom: () => ({ changes: [], problems: [] }) } as Target;
@@ -67,7 +80,12 @@ describe('loadExternalPlugins', () => {
     ).resolves.toEqual({ message: `Hello from demo:t on ${target.id}` });
 
     const example = plugin?.contributes.examples?.[0];
-    const bundle = await example?.build({ namespace: 'demo', projectName: 'Demo', target, values: {} });
+    const bundle = await example?.build({
+      namespace: 'demo',
+      projectName: 'Demo',
+      target,
+      values: {},
+    });
     expect(bundle?.elements.map((entry) => entry.id)).toEqual(['demo:hello']);
 
     set.terminate();
@@ -147,7 +165,10 @@ describe('loadExternalPlugins', () => {
         manifest: null,
         problems: [{ severity: 'error', code: 'plugin.manifest-invalid', message: 'bad' }],
       },
-      { manifest: sampleManifest(), readError: 'plugin.too-large: The bundle main.js is 5000000 bytes.' },
+      {
+        manifest: sampleManifest(),
+        readError: 'plugin.too-large: The bundle main.js is 5000000 bytes.',
+      },
     ]);
     const set = await loadExternalPlugins(platform, { spawn: vmWorkers().spawn });
     expect(set.states.map((state) => [state.id, state.name, state.state])).toEqual([
@@ -209,11 +230,23 @@ describe('loadExternalPlugins', () => {
       "folder: 'recipe'",
     );
     const { platform } = stubPluginsPlatform([
-      { folder: 'a', manifest: sampleManifest({ id: 'clash.builtin' }), main: clashingBuiltIn, schemas: [] },
+      {
+        folder: 'a',
+        manifest: sampleManifest({ id: 'clash.builtin' }),
+        main: clashingBuiltIn,
+        schemas: [],
+      },
       { folder: 'b', manifest: sampleManifest() },
-      { folder: 'c', manifest: sampleManifest({ id: 'sample.copy' }), main: sampleBundle("id: 'sample.copy',") },
+      {
+        folder: 'c',
+        manifest: sampleManifest({ id: 'sample.copy' }),
+        main: sampleBundle("id: 'sample.copy',"),
+      },
     ]);
-    const set = await loadExternalPlugins(platform, { builtIns: builtInPlugins, spawn: workers.spawn });
+    const set = await loadExternalPlugins(platform, {
+      builtIns: builtInPlugins,
+      spawn: workers.spawn,
+    });
     expect(set.states.map((state) => [state.id, state.state])).toEqual([
       ['clash.builtin', 'refused'],
       ['sample.greetings', 'loaded'],
@@ -255,7 +288,9 @@ describe('loadExternalPlugins', () => {
     expect(set.states).not.toBe(before);
     expect(set.states[0]?.state).toBe('failed');
     expect(codes(set.states[0]?.problems ?? [])).toEqual(['plugin.timeout']);
-    await expect(kind?.lower(element, target)).rejects.toMatchObject({ code: 'plugin.unavailable' });
+    await expect(kind?.lower(element, target)).rejects.toMatchObject({
+      code: 'plugin.unavailable',
+    });
   }, 10_000);
 
   it('returns the empty set without a platform service or plugins', async () => {
@@ -293,7 +328,10 @@ describe('the sample external plugin (fixtures/sample-plugin/dist)', () => {
     const { pluginManifestSchema } = await import('../src/shared/ipc-contract');
     const manifest = pluginManifestSchema.parse(JSON.parse(manifestText));
     const { platform } = stubPluginsPlatform([{ manifest, main, schemas: [symbols] }]);
-    const set = await loadExternalPlugins(platform, { builtIns: builtInPlugins, spawn: vmWorkers().spawn });
+    const set = await loadExternalPlugins(platform, {
+      builtIns: builtInPlugins,
+      spawn: vmWorkers().spawn,
+    });
     expect(set.states[0]).toMatchObject({ id: 'sample.greetings', state: 'loaded' });
     const kind = set.plugins[0]?.contributes.elementKinds?.[0];
     expect(kind?.id).toBe('sample:greeting');
