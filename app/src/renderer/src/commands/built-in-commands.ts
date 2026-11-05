@@ -1,6 +1,7 @@
 /**
  * The command palette's commands: every built-in command of the shell (the menu's commands
- * plus new element, rename, go to definition, find usages and the Raw JSON toggle) and the
+ * plus new element, rename, go to definition, find usages, the Raw JSON toggle and the AI
+ * helper's entry points) and the
  * registered plugins' `commands` contributions. Pure: the host supplies a handler per
  * available command; a command without one is left out of the palette.
  *
@@ -45,6 +46,9 @@ export const BUILT_IN_COMMAND_IDS = [
   'examples',
   'whatsNew',
   'checkForUpdates',
+  'aiHelper',
+  'aiExplainProblem',
+  'aiAskElement',
 ] as const;
 
 /** A built-in command id. */
@@ -86,6 +90,9 @@ export const BUILT_IN_COMMANDS: Readonly<
   examples: { title: 'Examples…' },
   whatsNew: { title: "What's new…" },
   checkForUpdates: { title: 'Check for updates' },
+  aiHelper: { title: 'Open AI helper', shortcut: 'Mod+Shift+A' },
+  aiExplainProblem: { title: 'Explain this problem with the AI helper' },
+  aiAskElement: { title: 'Ask the AI helper about this element' },
 };
 
 /** Handlers of the available built-in commands; a missing or `null` one is unavailable. */

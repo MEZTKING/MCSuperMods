@@ -98,7 +98,7 @@ export const READ_TOOLS = [
     group: 'read',
     input: readElementInput,
     description:
-      "Returns one element's kind, data and current problems. Data larger than 64 kB is truncated and the result says so. Reflects the project as it is, without your pending proposals (see pending_changes).",
+      "Returns one element's kind, data and current problems. Data larger than 64 kB is truncated and the result says so. Includes your pending proposals: an element you proposed reads as it would be after Apply and is marked with pending and the operation (see pending_changes for the whole list).",
   },
   {
     name: 'list_problems',

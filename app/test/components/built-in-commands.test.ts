@@ -46,6 +46,25 @@ describe('paletteCommands', () => {
     );
   });
 
+  it('offers the AI helper commands with their titles and shortcut', () => {
+    const commands = paletteCommands(
+      { aiHelper: vi.fn(), aiExplainProblem: vi.fn(), aiAskElement: vi.fn() },
+      [],
+      { modKey: 'Ctrl', onError: vi.fn() },
+    );
+    expect(commands.map((command) => [command.id, command.title, command.shortcut])).toEqual([
+      ['aiHelper', 'Open AI helper', 'Ctrl+Shift+A'],
+      ['aiExplainProblem', 'Explain this problem with the AI helper', undefined],
+      ['aiAskElement', 'Ask the AI helper about this element', undefined],
+    ]);
+    expect(
+      paletteCommands({ aiHelper: vi.fn(), aiExplainProblem: null }, [], {
+        modKey: 'Cmd',
+        onError: vi.fn(),
+      }).map((command) => command.id),
+    ).toEqual(['aiHelper']);
+  });
+
   it('offers "Export Java project…" after the Fabric mod jar', () => {
     const commands = paletteCommands(
       { exportFabricJar: vi.fn(), exportJavaProject: vi.fn(), testInMinecraft: vi.fn() },

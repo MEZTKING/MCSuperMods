@@ -12,6 +12,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -20,6 +21,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -97,6 +101,7 @@ public final class EventRunner {
                     }
                 }
                 case Action.RunScript a -> ScriptHost.runAction(owner, eventId, a.handler(), ctx);
+                case Action.ApplyEffect a -> applyEffect(owner, a, ctx);
             }
         }
     }
@@ -167,6 +172,25 @@ public final class EventRunner {
             if (!ctx.player().addItem(stack) && !stack.isEmpty()) {
                 Block.popResource(ctx.level(), ctx.player().blockPosition(), stack);
             }
+        }
+    }
+
+    /**
+     * {@code apply_effect}: {@code self} is the event's player, or the entity of an entity definition when there is
+     * no player; {@code other} is {@link EventContext#other()}. Without a living target nothing happens.
+     */
+    private static void applyEffect(Identifier owner, Action.ApplyEffect a, EventContext ctx) {
+        Optional<Holder.Reference<MobEffect>> effect = BuiltInRegistries.MOB_EFFECT.get(a.effect());
+        if (effect.isEmpty()) {
+            MsmRuntime.LOGGER.error("[{}] {}: unknown mob effect {}", MsmRuntime.MOD_ID, owner, a.effect());
+            return;
+        }
+        LivingEntity target = switch (a.target()) {
+            case SELF -> ctx.player() != null ? ctx.player() : ctx.entity() instanceof LivingEntity living ? living : null;
+            case OTHER -> ctx.other();
+        };
+        if (target != null) {
+            target.addEffect(new MobEffectInstance(effect.get(), a.ticks(), a.amplifier()));
         }
     }
 

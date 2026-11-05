@@ -31,7 +31,8 @@ import net.minecraft.resources.Identifier;
  *   <li>Event ids named by components or {@code trigger_event} must be declared.</li>
  *   <li>Entities: goals that failed on their own are errors; the entity registers without them.</li>
  *   <li>Blocks and items: {@code play_animation} actions are dropped with a warning (ADR 0028 D4).</li>
- *   <li>Items: {@code msm:armor} with {@code msm:tool} is an error; the item registers without both (ADR 0042 D1).</li>
+ *   <li>Items: two or more of {@code msm:tool}, {@code msm:armor}, {@code msm:ranged_weapon} and {@code msm:shield}
+ *       are an error; the item registers without them (ADR 0042 D1, ADR 0044 D3).</li>
  * </ol>
  */
 public final class DefinitionParser {
@@ -49,21 +50,26 @@ public final class DefinitionParser {
     public static ParseResult<ItemDefinition> parseItem(JsonElement json) {
         ParseResult<ItemDefinition> result = parse(json, ItemDefinition.KEYS, ItemComponents.KEYS, ItemDefinition.CODEC,
                 def -> new Refs(def.events(), def.components().eventReferences(), List.of()));
-        return dropToolAndArmorTogether(dropPlayAnimation(result, ItemDefinition::events, ItemDefinition::withEvents));
+        return dropExclusiveTogether(dropPlayAnimation(result, ItemDefinition::events, ItemDefinition::withEvents));
     }
 
-    /** {@code msm:armor} with {@code msm:tool} on one item: an error, and neither is applied (ADR 0042 D1). */
-    private static ParseResult<ItemDefinition> dropToolAndArmorTogether(ParseResult<ItemDefinition> result) {
+    /**
+     * More than one of {@code msm:tool}, {@code msm:armor}, {@code msm:ranged_weapon} and {@code msm:shield} on one
+     * item: an error, and none of them is applied (ADR 0042 D1, ADR 0044 D3).
+     */
+    private static ParseResult<ItemDefinition> dropExclusiveTogether(ParseResult<ItemDefinition> result) {
         if (result.definition().isEmpty()) {
             return result;
         }
         ItemDefinition def = result.definition().get();
-        if (def.components().tool().isEmpty() || def.components().armor().isEmpty()) {
+        List<String> present = def.components().exclusivePresent();
+        if (present.size() < 2) {
             return result;
         }
         List<String> errors = new ArrayList<>(result.errors());
-        errors.add("components: msm:armor and msm:tool on one item; neither is applied");
-        return new ParseResult<>(Optional.of(def.withComponents(def.components().withoutToolAndArmor())), List.copyOf(errors),
+        String names = String.join(", ", present.subList(0, present.size() - 1)) + " and " + present.getLast();
+        errors.add("components: " + names + " on one item; " + (present.size() == 2 ? "neither" : "none") + " is applied");
+        return new ParseResult<>(Optional.of(def.withComponents(def.components().withoutExclusive())), List.copyOf(errors),
                 result.warnings());
     }
 

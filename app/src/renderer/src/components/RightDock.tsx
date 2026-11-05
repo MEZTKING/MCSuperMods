@@ -1,16 +1,18 @@
-import { Box, ListChecks } from 'lucide-react';
+import { Box, ListChecks, Sparkles } from 'lucide-react';
 import { ScrollArea, Tabs } from 'radix-ui';
 import { type ReactNode, useState } from 'react';
 import { ProblemsPanel, type ProblemsPanelProps } from './ProblemsPanel';
 import { tabTriggerClass } from './ui/Button';
 
 /** The right dock's tabs. */
-export type DockTab = 'preview' | 'problems';
+export type DockTab = 'preview' | 'problems' | 'assistant';
 
 /** Props of {@link RightDock}. */
 export interface RightDockProps extends ProblemsPanelProps {
   /** The Preview tab's content; a placeholder without it. */
   preview?: ReactNode;
+  /** The AI helper tab's content (ADR 0041 D8); the tab is left out without it. */
+  assistant?: ReactNode;
   /** The selected tab when controlled. */
   tab?: DockTab;
   onTabChange?(tab: DockTab): void;
@@ -30,17 +32,24 @@ function Scrolling({ children }: { children: ReactNode }) {
   );
 }
 
-/** The right dock: Preview and Problems. */
+function dockTab(value: string, hasAssistant: boolean): DockTab {
+  if (value === 'preview') return 'preview';
+  if (value === 'assistant' && hasAssistant) return 'assistant';
+  return 'problems';
+}
+
+/** The right dock: Preview, Problems and (when given) the AI helper. */
 export function RightDock(props: RightDockProps) {
-  const { preview, onTabChange, tab: controlled, ...problems } = props;
+  const { preview, assistant, onTabChange, tab: controlled, ...problems } = props;
   const [ownTab, setOwnTab] = useState<DockTab>('problems');
-  const tab = controlled ?? ownTab;
+  const hasAssistant = assistant !== undefined;
+  const tab = dockTab(controlled ?? ownTab, hasAssistant);
   const count = props.problems.length + (props.exportProblems?.length ?? 0);
   return (
     <Tabs.Root
       value={tab}
       onValueChange={(value) => {
-        const next: DockTab = value === 'preview' ? 'preview' : 'problems';
+        const next = dockTab(value, hasAssistant);
         setOwnTab(next);
         onTabChange?.(next);
       }}
@@ -55,6 +64,16 @@ export function RightDock(props: RightDockProps) {
           <ListChecks size={14} aria-hidden />
           Problems ({count})
         </Tabs.Trigger>
+        {hasAssistant && (
+          <Tabs.Trigger
+            value="assistant"
+            className={tabTriggerClass}
+            data-testid="dock-tab-assistant"
+          >
+            <Sparkles size={14} aria-hidden />
+            AI helper
+          </Tabs.Trigger>
+        )}
       </Tabs.List>
       <Tabs.Content value="preview" className="min-h-0 flex-1" data-testid="preview-panel">
         <Scrolling>
@@ -68,6 +87,14 @@ export function RightDock(props: RightDockProps) {
           <ProblemsPanel {...problems} />
         </Scrolling>
       </Tabs.Content>
+      {hasAssistant && (
+        <Tabs.Content
+          value="assistant"
+          className="flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
+        >
+          {assistant}
+        </Tabs.Content>
+      )}
     </Tabs.Root>
   );
 }

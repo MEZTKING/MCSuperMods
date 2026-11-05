@@ -6,13 +6,21 @@ import static dev.mcsupermods.runtime.loader.MsmCodecs.TAG_ID;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.floatAtLeast;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.floatRange;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.intAtLeast;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.intRange;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.optional;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.required;
 
+import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.mcsupermods.runtime.loader.MsmCodecs;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.resources.Identifier;
@@ -23,22 +31,71 @@ public record ItemComponents(
         Optional<Tool> tool,
         Optional<Durability> durability,
         Optional<OnUse> onUse,
-        Optional<Armor> armor) {
+        Optional<Armor> armor,
+        Optional<Consumable> consumable,
+        Optional<RangedWeapon> rangedWeapon,
+        Optional<Shield> shield,
+        Optional<DeathProtection> deathProtection,
+        Map<Identifier, JsonElement> vanilla) {
 
-    public static final List<String> KEYS = List.of("msm:food", "msm:tool", "msm:durability", "msm:on_use", "msm:armor");
+    public static final List<String> KEYS = List.of("msm:food", "msm:tool", "msm:durability", "msm:on_use", "msm:armor",
+            "msm:consumable", "msm:ranged_weapon", "msm:shield", "msm:death_protection", "msm:components");
     public static final ItemComponents NONE = new ItemComponents(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-            Optional.empty());
+            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Map.of());
+
+    /**
+     * {@code msm:components} (ADR 0044 D1): vanilla data component ids to their vanilla JSON, kept as JSON here
+     * (parsing stays pure) and decoded with the component's own Codec by {@code ComponentPassthrough} at registration.
+     */
+    public static final Codec<Map<Identifier, JsonElement>> VANILLA_CODEC = Codec.unboundedMap(ID, Codec.PASSTHROUGH).xmap(
+            m -> {
+                Map<Identifier, JsonElement> out = new LinkedHashMap<>();
+                m.forEach((k, v) -> out.put(k, v.convert(JsonOps.INSTANCE).getValue()));
+                return Collections.unmodifiableMap(out);
+            },
+            m -> {
+                Map<Identifier, Dynamic<?>> out = new LinkedHashMap<>();
+                m.forEach((k, v) -> out.put(k, new Dynamic<>(JsonOps.INSTANCE, v)));
+                return out;
+            });
 
     public static final Codec<ItemComponents> CODEC = RecordCodecBuilder.create(i -> i.group(
             optional("msm:food", Food.CODEC).forGetter(ItemComponents::food),
             optional("msm:tool", Tool.CODEC).forGetter(ItemComponents::tool),
             optional("msm:durability", Durability.CODEC).forGetter(ItemComponents::durability),
             optional("msm:on_use", OnUse.CODEC).forGetter(ItemComponents::onUse),
-            optional("msm:armor", Armor.CODEC).forGetter(ItemComponents::armor)).apply(i, ItemComponents::new));
+            optional("msm:armor", Armor.CODEC).forGetter(ItemComponents::armor),
+            optional("msm:consumable", Consumable.CODEC).forGetter(ItemComponents::consumable),
+            optional("msm:ranged_weapon", RangedWeapon.CODEC).forGetter(ItemComponents::rangedWeapon),
+            optional("msm:shield", Shield.CODEC).forGetter(ItemComponents::shield),
+            optional("msm:death_protection", DeathProtection.CODEC).forGetter(ItemComponents::deathProtection),
+            optional("msm:components", VANILLA_CODEC, Map.of()).forGetter(ItemComponents::vanilla)).apply(i, ItemComponents::new));
 
-    /** These components without {@code msm:tool} and {@code msm:armor} (used when both are present, ADR 0042 D1). */
-    public ItemComponents withoutToolAndArmor() {
-        return new ItemComponents(food, Optional.empty(), durability, onUse, Optional.empty());
+    /**
+     * The mutually exclusive components present ({@code msm:armor}, {@code msm:tool}, {@code msm:ranged_weapon},
+     * {@code msm:shield}; ADR 0042 D1, ADR 0044 D3), in that order.
+     */
+    public List<String> exclusivePresent() {
+        List<String> present = new ArrayList<>();
+        if (armor.isPresent()) {
+            present.add("msm:armor");
+        }
+        if (tool.isPresent()) {
+            present.add("msm:tool");
+        }
+        if (rangedWeapon.isPresent()) {
+            present.add("msm:ranged_weapon");
+        }
+        if (shield.isPresent()) {
+            present.add("msm:shield");
+        }
+        return present;
+    }
+
+    /** These components without the mutually exclusive ones (used when more than one is present). */
+    public ItemComponents withoutExclusive() {
+        return new ItemComponents(food, Optional.empty(), durability, onUse, Optional.empty(), consumable, Optional.empty(),
+                Optional.empty(), deathProtection, vanilla);
     }
 
     /** Every event id a component names, with the component for messages. */
@@ -48,7 +105,7 @@ public record ItemComponents(
 
     /** Whether the item is damageable, which forces a stack size of 1. */
     public boolean damageable() {
-        return tool.isPresent() || armor.isPresent() || durability.isPresent();
+        return tool.isPresent() || armor.isPresent() || durability.isPresent() || rangedWeapon.isPresent() || shield.isPresent();
     }
 
     /** Makes the item edible; {@code saturation} is the vanilla saturation modifier. */
@@ -61,7 +118,7 @@ public record ItemComponents(
 
     /** Tool kinds. */
     public enum ToolType {
-        PICKAXE, AXE, SHOVEL, HOE, SWORD;
+        PICKAXE, AXE, SHOVEL, HOE, SWORD, SPEAR, MACE;
 
         public String serialName() {
             return name().toLowerCase(java.util.Locale.ROOT);
@@ -118,9 +175,9 @@ public record ItemComponents(
                 optional("attack_speed", FLOAT).forGetter(Tool::attackSpeed)).apply(i, Tool::new));
     }
 
-    /** Humanoid armour slots. */
+    /** Armour slots: four humanoid slots, and horse and wolf body armour (ADR 0044 D5). */
     public enum ArmorSlot {
-        HELMET, CHESTPLATE, LEGGINGS, BOOTS;
+        HELMET, CHESTPLATE, LEGGINGS, BOOTS, HORSE, WOLF;
 
         public String serialName() {
             return name().toLowerCase(java.util.Locale.ROOT);
@@ -178,7 +235,7 @@ public record ItemComponents(
                 required("equipment_asset", ID).forGetter(CustomArmorMaterial::equipmentAsset)).apply(i, CustomArmorMaterial::new));
     }
 
-    /** Makes the item a humanoid armour piece for a slot. */
+    /** Makes the item an armour piece for a slot (horse and wolf armour use the {@code chestplate} defence). */
     public record Armor(ArmorSlot slot, ArmorMaterialSpec material) {
         public static final Codec<Armor> CODEC = RecordCodecBuilder.create(i -> i.group(
                 required("slot", ArmorSlot.CODEC).forGetter(Armor::slot),
@@ -196,5 +253,92 @@ public record ItemComponents(
         public static final Codec<OnUse> CODEC = RecordCodecBuilder.create(i -> i.group(
                 required("event", ID).forGetter(OnUse::event),
                 optional("cooldown_ticks", intAtLeast(0), 0).forGetter(OnUse::cooldownTicks)).apply(i, OnUse::new));
+    }
+
+    /** How a consumable is used ({@code ConsumeAnimation}). */
+    public enum ConsumeAnimation {
+        EAT, DRINK, NONE;
+
+        public String serialName() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+
+        public static final Codec<ConsumeAnimation> CODEC = MsmCodecs.named("consume animation", values(), ConsumeAnimation::serialName);
+    }
+
+    /** One vanilla mob effect ({@code ConsumeEffect}): {@code chance} 0 to 1, {@code amplifier} is the level minus one. */
+    public record ConsumeEffect(Identifier effect, float seconds, int amplifier, float chance) {
+        public static final Codec<ConsumeEffect> CODEC = RecordCodecBuilder.create(i -> i.group(
+                required("effect", ID).forGetter(ConsumeEffect::effect),
+                required("seconds", floatAtLeast(0)).forGetter(ConsumeEffect::seconds),
+                optional("amplifier", intRange(0, 255), 0).forGetter(ConsumeEffect::amplifier),
+                optional("chance", floatRange(0, 1), 1.0f).forGetter(ConsumeEffect::chance)).apply(i, ConsumeEffect::new));
+
+        /** The duration in ticks (20 per second, rounded). */
+        public int ticks() {
+            return Math.round(seconds * 20);
+        }
+    }
+
+    /**
+     * Makes the item consumable (ADR 0044 D2): with {@code msm:food} it is food with these extras, alone a drink or
+     * another consumable that restores no hunger.
+     */
+    public record Consumable(
+            float seconds,
+            ConsumeAnimation animation,
+            List<ConsumeEffect> effects,
+            Optional<Identifier> sound,
+            Optional<Boolean> particles,
+            Optional<Identifier> convertsTo,
+            Optional<Float> cooldownSeconds) {
+        public static final Codec<Consumable> CODEC = RecordCodecBuilder.create(i -> i.group(
+                required("seconds", floatAtLeast(0)).forGetter(Consumable::seconds),
+                required("animation", ConsumeAnimation.CODEC).forGetter(Consumable::animation),
+                optional("effects", ConsumeEffect.CODEC.listOf(), List.of()).forGetter(Consumable::effects),
+                optional("sound", ID).forGetter(Consumable::sound),
+                optional("particles", Codec.BOOL).forGetter(Consumable::particles),
+                optional("converts_to", ID).forGetter(Consumable::convertsTo),
+                optional("cooldown_seconds", floatAtLeast(0)).forGetter(Consumable::cooldownSeconds)).apply(i, Consumable::new));
+    }
+
+    /** Ranged weapon kinds. */
+    public enum RangedWeaponType {
+        BOW, CROSSBOW;
+
+        public String serialName() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+
+        public static final Codec<RangedWeaponType> CODEC = MsmCodecs.named("ranged weapon type", values(), RangedWeaponType::serialName);
+    }
+
+    /**
+     * A bow or crossbow shooting vanilla arrows (ADR 0044 D3); {@code draw_speed}, {@code velocity} and
+     * {@code damage_multiplier} are factors on vanilla's values, {@code inaccuracy} replaces vanilla's 1.
+     */
+    public record RangedWeapon(RangedWeaponType type, float drawSpeed, float velocity, float damageMultiplier, float inaccuracy) {
+        public static final Codec<RangedWeapon> CODEC = RecordCodecBuilder.create(i -> i.group(
+                required("type", RangedWeaponType.CODEC).forGetter(RangedWeapon::type),
+                optional("draw_speed", floatRange(0.1f, 10), 1.0f).forGetter(RangedWeapon::drawSpeed),
+                optional("velocity", floatRange(0.1f, 10), 1.0f).forGetter(RangedWeapon::velocity),
+                optional("damage_multiplier", floatRange(0, 10), 1.0f).forGetter(RangedWeapon::damageMultiplier),
+                optional("inaccuracy", floatRange(0, 10), 1.0f).forGetter(RangedWeapon::inaccuracy)).apply(i, RangedWeapon::new));
+    }
+
+    /** Blocks attacks while held up (ADR 0044 D3), lowered to vanilla {@code blocks_attacks}; defaults are the vanilla shield's. */
+    public record Shield(float blockDelaySeconds, float damageReduction, float disableCooldownScale, Optional<Identifier> bypassedBy) {
+        public static final Codec<Shield> CODEC = RecordCodecBuilder.create(i -> i.group(
+                optional("block_delay_seconds", floatAtLeast(0), 0.25f).forGetter(Shield::blockDelaySeconds),
+                optional("damage_reduction", floatRange(0, 1), 1.0f).forGetter(Shield::damageReduction),
+                optional("disable_cooldown_scale", floatAtLeast(0), 1.0f).forGetter(Shield::disableCooldownScale),
+                optional("bypassed_by", TAG_ID).forGetter(Shield::bypassedBy)).apply(i, Shield::new));
+    }
+
+    /** Saves the holder from death like a totem of undying (ADR 0044 D4). */
+    public record DeathProtection(List<ConsumeEffect> effects, boolean clearEffects) {
+        public static final Codec<DeathProtection> CODEC = RecordCodecBuilder.create(i -> i.group(
+                required("effects", ConsumeEffect.CODEC.listOf()).forGetter(DeathProtection::effects),
+                optional("clear_effects", Codec.BOOL, false).forGetter(DeathProtection::clearEffects)).apply(i, DeathProtection::new));
     }
 }

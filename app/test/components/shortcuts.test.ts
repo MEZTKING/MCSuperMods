@@ -38,6 +38,12 @@ describe('shortcutFor', () => {
     expect(shortcutFor(key('N', { ctrlKey: true, shiftKey: true }))).toBeNull();
   });
 
+  it('maps Ctrl/Cmd+Shift+A to the AI helper but leaves Ctrl/Cmd+A alone', () => {
+    expect(shortcutFor(key('A', { ctrlKey: true, shiftKey: true }))).toBe('toggleAiHelper');
+    expect(shortcutFor(key('a', { metaKey: true, shiftKey: true }))).toBe('toggleAiHelper');
+    expect(shortcutFor(key('a', { ctrlKey: true }))).toBeNull();
+  });
+
   it('ignores plain keys, Alt combinations and consumed events', () => {
     expect(shortcutFor(key('s'))).toBeNull();
     expect(shortcutFor(key('s', { ctrlKey: true, altKey: true }))).toBeNull();

@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:shield": {
+      "block_delay_seconds": 0,
+      "damage_reduction": 0.5
+    }
+  },
+  "format": 1
+}

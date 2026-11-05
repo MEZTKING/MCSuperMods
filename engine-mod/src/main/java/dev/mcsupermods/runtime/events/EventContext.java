@@ -3,6 +3,7 @@ package dev.mcsupermods.runtime.events;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
@@ -15,20 +16,29 @@ import net.minecraft.world.phys.Vec3;
  * @param player the player involved, or null
  * @param entity the entity whose definition fired the event (for {@code play_animation}), or null
  * @param block  the block whose definition fired the event (for {@code run_script}), or null
+ * @param other  the other living entity of the event (the {@code apply_effect} target {@code other}, ADR 0044 D2):
+ *               the player for block and item events, the player who hurts or interacts with an entity, the
+ *               mob an entity hits; or null
  */
-public record EventContext(ServerLevel level, BlockPos base, Vec3 origin, Player player, Entity entity, BlockPos block) {
+public record EventContext(ServerLevel level, BlockPos base, Vec3 origin, Player player, Entity entity, BlockPos block,
+        LivingEntity other) {
     /** A block event: offsets from the block, effects at its centre. */
     public static EventContext forBlock(ServerLevel level, BlockPos pos, Player player) {
-        return new EventContext(level, pos.immutable(), Vec3.atCenterOf(pos), player, null, pos.immutable());
+        return new EventContext(level, pos.immutable(), Vec3.atCenterOf(pos), player, null, pos.immutable(), player);
     }
 
     /** An item event: offsets from the block below the player, effects at the player. */
     public static EventContext forItem(ServerLevel level, Player player) {
-        return new EventContext(level, player.blockPosition().below(), player.position(), player, null, null);
+        return new EventContext(level, player.blockPosition().below(), player.position(), player, null, null, player);
     }
 
     /** An entity event: offsets from the entity's block position, effects at the entity (ADR 0028 D2). */
     public static EventContext forEntity(ServerLevel level, Entity entity, Player player) {
-        return new EventContext(level, entity.blockPosition(), entity.position(), player, entity, null);
+        return forEntity(level, entity, player, player);
+    }
+
+    /** An entity event with another entity than the player, such as the mob an entity hits. */
+    public static EventContext forEntity(ServerLevel level, Entity entity, Player player, LivingEntity other) {
+        return new EventContext(level, entity.blockPosition(), entity.position(), player, entity, null, other);
     }
 }

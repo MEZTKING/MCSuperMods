@@ -22,6 +22,29 @@ import java.util.Map;
 import java.util.Optional;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.MaceItem;
+import net.minecraft.world.item.component.BlocksAttacks;
+import net.minecraft.world.item.component.ChargedProjectiles;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.component.Consumables;
+import net.minecraft.world.item.component.DeathProtection;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.UseRemainder;
+import net.minecraft.world.item.component.Weapon;
+import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
+import net.minecraft.world.item.consume_effects.ClearAllStatusEffectsConsumeEffect;
+import net.minecraft.world.item.consume_effects.ConsumeEffect;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -94,7 +117,7 @@ public final class MsmRegistrar {
                 }
                 ItemDefinition def = parsed.definition().get();
                 checkEvents(raw, def.events(), errors);
-                registerItem(raw, def, warnings);
+                registerItem(raw, def, errors, warnings);
                 items.add(raw.id());
             } catch (DefinitionException | RuntimeException e) {
                 fail(errors, raw, e);
@@ -147,6 +170,7 @@ public final class MsmRegistrar {
                     case Action.GiveItem a -> LATE.add(new LateCheck(raw.describe(), "give_item item", a.item()));
                     case Action.RunFunction a -> LATE.add(new LateCheck(raw.describe(), "run_function function", a.function()));
                     case Action.SetBlockState a -> LATE_STATES.computeIfAbsent(a.state(), s -> new ArrayList<>()).add(raw.describe());
+                    case Action.ApplyEffect a -> LATE.add(new LateCheck(raw.describe(), "apply_effect effect", a.effect()));
                     default -> {}
                 }
             }
@@ -187,11 +211,14 @@ public final class MsmRegistrar {
         settings.creativeTab().ifPresent(tab -> addToTab(raw, tab, item));
     }
 
-    private static void registerItem(RawDefinition raw, ItemDefinition def, List<String> warnings) {
+    private static void registerItem(RawDefinition raw, ItemDefinition def, List<String> errors, List<String> warnings)
+            throws DefinitionException {
         Identifier id = raw.id();
         ItemComponents c = def.components();
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
         Item.Properties props = new Item.Properties().setId(key).rarity(rarity(def.rarity()));
+        // msm:components first: MSM's own components below win on a clash (ADR 0044 D1).
+        props = ComponentPassthrough.apply(props, raw, c.vanilla(), errors);
         if (c.damageable()) {
             if (def.maxStackSize() != 1 && raw.json().has("max_stack_size")) {
                 String message = raw.describe() + ": max_stack_size " + def.maxStackSize() + " ignored; tools and items with durability stack to 1";
@@ -201,6 +228,7 @@ public final class MsmRegistrar {
         } else {
             props = props.stacksTo(def.maxStackSize());
         }
+        Optional<Consumable> consumable = c.consumable().map(spec -> consumable(raw, spec, errors, warnings));
         if (c.food().isPresent()) {
             ItemComponents.Food food = c.food().get();
             FoodProperties.Builder builder = new FoodProperties.Builder()
@@ -209,7 +237,12 @@ public final class MsmRegistrar {
             if (food.canAlwaysEat()) {
                 builder = builder.alwaysEdible();
             }
-            props = props.food(builder.build());
+            props = consumable.isPresent() ? props.food(builder.build(), consumable.get()) : props.food(builder.build());
+        } else if (consumable.isPresent()) {
+            props = props.component(DataComponents.CONSUMABLE, consumable.get());
+        }
+        if (c.consumable().isPresent()) {
+            props = consumableExtras(props, raw, c.consumable().get());
         }
         if (c.tool().isPresent()) {
             props = tool(props, id, c.tool().get());
@@ -217,11 +250,145 @@ public final class MsmRegistrar {
         if (c.armor().isPresent()) {
             props = armor(props, raw, c.armor().get(), warnings);
         }
-        if (c.durability().isPresent()) {
-            props = props.durability(c.durability().get().max()); // after tool() and armor(): overrides the material's durability
+        if (c.rangedWeapon().isPresent()) {
+            // Vanilla's bow (384) and crossbow (465) durability and enchantability.
+            props = switch (c.rangedWeapon().get().type()) {
+                case BOW -> props.durability(384).enchantable(1);
+                case CROSSBOW -> props.durability(465).enchantable(1).component(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
+            };
         }
-        MsmItem item = Registry.register(BuiltInRegistries.ITEM, key, new MsmItem(id, def, props));
-        def.creativeTab().ifPresent(tab -> addToTab(raw, tab, item));
+        if (c.shield().isPresent()) {
+            props = shield(props, raw, c.shield().get());
+        }
+        if (c.deathProtection().isPresent()) {
+            props = props.component(DataComponents.DEATH_PROTECTION, deathProtection(raw, c.deathProtection().get(), errors));
+        }
+        if (c.durability().isPresent()) {
+            props = props.durability(c.durability().get().max()); // after the others: overrides the material's durability
+        }
+        Item item;
+        if (c.rangedWeapon().isPresent()) {
+            item = switch (c.rangedWeapon().get().type()) {
+                case BOW -> new MsmBowItem(id, def, props);
+                case CROSSBOW -> new MsmCrossbowItem(id, def, props);
+            };
+        } else if (c.tool().isPresent() && c.tool().get().type() == ItemComponents.ToolType.MACE) {
+            item = new MsmMaceItem(id, def, props);
+        } else {
+            item = new MsmItem(id, def, props);
+        }
+        Item registered = Registry.register(BuiltInRegistries.ITEM, key, item);
+        def.creativeTab().ifPresent(tab -> addToTab(raw, tab, registered));
+    }
+
+    /**
+     * {@code msm:consumable} as a vanilla {@code Consumable} (ADR 0044 D2), started from vanilla's food or drink
+     * defaults; an unknown effect is an error and is skipped, an unknown sound a warning (the default sound stays).
+     */
+    static Consumable consumable(RawDefinition raw, ItemComponents.Consumable spec, List<String> errors, List<String> warnings) {
+        Consumable.Builder builder = switch (spec.animation()) {
+            case EAT -> Consumables.defaultFood();
+            case DRINK -> Consumables.defaultDrink();
+            case NONE -> Consumable.builder().animation(ItemUseAnimation.NONE);
+        };
+        builder = builder.consumeSeconds(spec.seconds()).hasConsumeParticles(spec.particles().orElse(true));
+        if (spec.sound().isPresent()) {
+            Optional<Holder.Reference<SoundEvent>> sound = BuiltInRegistries.SOUND_EVENT.get(spec.sound().get());
+            if (sound.isPresent()) {
+                builder = builder.sound(sound.get());
+            } else {
+                warn(warnings, raw.describe() + ": msm:consumable: unknown sound " + spec.sound().get() + "; the default sound is used");
+            }
+        }
+        for (ItemComponents.ConsumeEffect effect : spec.effects()) {
+            Optional<MobEffectInstance> instance = effectInstance(raw, "msm:consumable", effect, errors);
+            if (instance.isPresent()) {
+                builder = builder.onConsume(new ApplyStatusEffectsConsumeEffect(instance.get(), effect.chance()));
+            }
+        }
+        return builder.build();
+    }
+
+    /**
+     * {@code cooldown_seconds} as {@code use_cooldown}, {@code converts_to} as {@code use_remainder}; the remainder item
+     * is looked up once registries are complete (it may be another mod's or a later definition's item).
+     */
+    private static Item.Properties consumableExtras(Item.Properties props, RawDefinition raw, ItemComponents.Consumable spec) {
+        if (spec.cooldownSeconds().isPresent() && spec.cooldownSeconds().get() > 0) {
+            props = props.useCooldown(spec.cooldownSeconds().get());
+        }
+        if (spec.convertsTo().isPresent()) {
+            Identifier remainder = spec.convertsTo().get();
+            props = props.delayedComponent(DataComponents.USE_REMAINDER, provider -> {
+                Optional<Item> item = BuiltInRegistries.ITEM.getOptional(remainder);
+                if (item.isEmpty() || item.get() == Items.AIR) {
+                    MsmRuntime.LOGGER.error("[{}] {}: msm:consumable: unknown converts_to item {}; nothing is left over", MsmRuntime.MOD_ID,
+                            raw.describe(), remainder);
+                    return null;
+                }
+                return new UseRemainder(new ItemStackTemplate(item.get()));
+            });
+        }
+        return props;
+    }
+
+    /** A vanilla effect instance for an MSM {@code ConsumeEffect}; an unknown effect is an error. */
+    private static Optional<MobEffectInstance> effectInstance(RawDefinition raw, String component, ItemComponents.ConsumeEffect effect,
+            List<String> errors) {
+        Optional<Holder.Reference<MobEffect>> holder = BuiltInRegistries.MOB_EFFECT.get(effect.effect());
+        if (holder.isEmpty()) {
+            String message = raw.describe() + ": " + component + ": unknown mob effect " + effect.effect() + "; the effect is skipped";
+            errors.add(message);
+            MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, message);
+            return Optional.empty();
+        }
+        return Optional.of(new MobEffectInstance(holder.get(), effect.ticks(), effect.amplifier()));
+    }
+
+    /** {@code msm:death_protection} (ADR 0044 D4): clear all effects first when asked (as the totem does), then the effects. */
+    static DeathProtection deathProtection(RawDefinition raw, ItemComponents.DeathProtection spec, List<String> errors) {
+        List<ConsumeEffect> effects = new ArrayList<>();
+        if (spec.clearEffects()) {
+            effects.add(new ClearAllStatusEffectsConsumeEffect());
+        }
+        for (ItemComponents.ConsumeEffect effect : spec.effects()) {
+            effectInstance(raw, "msm:death_protection", effect, errors)
+                    .ifPresent(instance -> effects.add(new ApplyStatusEffectsConsumeEffect(instance, effect.chance())));
+        }
+        return new DeathProtection(List.copyOf(effects));
+    }
+
+    /**
+     * {@code msm:shield} (ADR 0044 D3) as vanilla's shield setup: {@code blocks_attacks} (a plain item with it blocks;
+     * {@code Item.use} starts using it), 336 durability, off-hand equippable without swapping, the shield sounds. The
+     * component is delayed like vanilla's because {@code bypassed_by} is a tag of the data pack registry
+     * {@code damage_type}.
+     */
+    static Item.Properties shield(Item.Properties props, RawDefinition raw, ItemComponents.Shield spec) {
+        TagKey<DamageType> bypass = TagKey.create(Registries.DAMAGE_TYPE,
+                spec.bypassedBy().orElse(Identifier.withDefaultNamespace("bypasses_shield")));
+        Holder<SoundEvent> blockSound = SoundEvents.SHIELD_BLOCK;
+        Holder<SoundEvent> breakSound = SoundEvents.SHIELD_BREAK;
+        return props.durability(336)
+                .equippableUnswappable(EquipmentSlot.OFFHAND)
+                .component(DataComponents.BREAK_SOUND, breakSound)
+                .delayedComponent(DataComponents.BLOCKS_ATTACKS, provider -> {
+                    Optional<HolderSet<DamageType>> bypassedBy = provider.lookupOrThrow(Registries.DAMAGE_TYPE).get(bypass)
+                            .map(set -> (HolderSet<DamageType>) set);
+                    if (bypassedBy.isEmpty()) {
+                        MsmRuntime.LOGGER.warn("[{}] {}: msm:shield: unknown damage type tag #{}; nothing bypasses the block",
+                                MsmRuntime.MOD_ID, raw.describe(), bypass.location());
+                    }
+                    return new BlocksAttacks(spec.blockDelaySeconds(), spec.disableCooldownScale(),
+                            List.of(new BlocksAttacks.DamageReduction(90.0f, Optional.empty(), 0.0f, spec.damageReduction())),
+                            new BlocksAttacks.ItemDamageFunction(3.0f, 1.0f, 1.0f), bypassedBy, Optional.of(blockSound),
+                            Optional.of(breakSound));
+                });
+    }
+
+    private static void warn(List<String> warnings, String message) {
+        warnings.add(message);
+        MsmRuntime.LOGGER.warn("[{}] {}", MsmRuntime.MOD_ID, message);
     }
 
     /**
@@ -230,8 +397,41 @@ public final class MsmRegistrar {
      * type, which {@code attack_damage} and {@code attack_speed} override; the material adds its
      * own damage bonus, speed, durability and drop tier.
      */
-    static Item.Properties tool(Item.Properties props, Identifier itemId, ItemComponents.Tool tool) {
-        ToolMaterial material = switch (tool.tier()) {
+    static Item.Properties tool(Item.Properties props, Identifier itemId, ItemComponents.Tool tool) throws DefinitionException {
+        ToolMaterial material = toolMaterial(itemId, tool.tier());
+        if (tool.type() == ItemComponents.ToolType.SPEAR) {
+            props = spear(props, tool, material);
+        } else if (tool.type() == ItemComponents.ToolType.MACE) {
+            props = mace(props, tool, material);
+        } else {
+            float damage = tool.attackDamage().orElse(switch (tool.type()) {
+                case PICKAXE -> 1.0f;
+                case AXE -> 6.0f;
+                case SHOVEL -> 1.5f;
+                case HOE -> -2.0f;
+                default -> 3.0f; // sword
+            });
+            float speed = tool.attackSpeed().orElse(switch (tool.type()) {
+                case PICKAXE -> -2.8f;
+                case AXE -> -3.1f;
+                case SHOVEL -> -3.0f;
+                case HOE -> -1.0f;
+                default -> -2.4f; // sword
+            });
+            props = switch (tool.type()) {
+                case PICKAXE -> props.pickaxe(material, damage, speed);
+                case AXE -> props.axe(material, damage, speed);
+                case SHOVEL -> props.shovel(material, damage, speed);
+                case HOE -> props.hoe(material, damage, speed);
+                default -> props.sword(material, damage, speed);
+            };
+        }
+        return tool.tier() instanceof ItemComponents.ToolMaterialSpec m && m.enchantmentValue() == 0 ? notEnchantable(props) : props;
+    }
+
+    /** A vanilla {@code ToolMaterial} constant by tier name, or a new one for a custom material. */
+    static ToolMaterial toolMaterial(Identifier itemId, ItemComponents.ToolTierSpec tier) {
+        return switch (tier) {
             case ItemComponents.ToolTier.WOOD -> ToolMaterial.WOOD;
             case ItemComponents.ToolTier.STONE -> ToolMaterial.STONE;
             case ItemComponents.ToolTier.COPPER -> ToolMaterial.COPPER;
@@ -244,31 +444,74 @@ public final class MsmRegistrar {
                     m.durability(),
                     m.speed(),
                     m.attackDamageBonus(),
-                    Math.max(1, m.enchantmentValue()), // vanilla rejects 0; removed again below
+                    Math.max(1, m.enchantmentValue()), // vanilla rejects 0; removed again in tool()
                     TagKey.create(Registries.ITEM, m.repairItems().orElseGet(() -> noRepairTag(itemId))));
         };
-        float damage = tool.attackDamage().orElse(switch (tool.type()) {
-            case PICKAXE -> 1.0f;
-            case AXE -> 6.0f;
-            case SHOVEL -> 1.5f;
-            case HOE -> -2.0f;
-            case SWORD -> 3.0f;
-        });
-        float speed = tool.attackSpeed().orElse(switch (tool.type()) {
-            case PICKAXE -> -2.8f;
-            case AXE -> -3.1f;
-            case SHOVEL -> -3.0f;
-            case HOE -> -1.0f;
-            case SWORD -> -2.4f;
-        });
-        props = switch (tool.type()) {
-            case PICKAXE -> props.pickaxe(material, damage, speed);
-            case AXE -> props.axe(material, damage, speed);
-            case SHOVEL -> props.shovel(material, damage, speed);
-            case HOE -> props.hoe(material, damage, speed);
-            case SWORD -> props.sword(material, damage, speed);
-        };
-        return tool.tier() instanceof ItemComponents.ToolMaterialSpec m && m.enchantmentValue() == 0 ? notEnchantable(props) : props;
+    }
+
+    /**
+     * The nine floats vanilla passes to {@code Item.Properties.spear} per tier, read from {@code Items.<clinit>} of the
+     * 26.3 jar (ADR 0044 D3): attack duration (seconds), kinetic damage multiplier, kinetic delay (seconds), dismount
+     * max duration and min speed, knockback max duration and min speed, damage max duration and min relative speed. A
+     * custom material uses iron's.
+     */
+    static final Map<ItemComponents.ToolTier, float[]> SPEAR_CONSTANTS = Map.of(
+            ItemComponents.ToolTier.WOOD, new float[] {0.65f, 0.7f, 0.75f, 5.0f, 14.0f, 10.0f, 5.1f, 15.0f, 4.6f},
+            ItemComponents.ToolTier.STONE, new float[] {0.75f, 0.82f, 0.7f, 4.5f, 13.0f, 9.0f, 5.1f, 13.75f, 4.6f},
+            ItemComponents.ToolTier.COPPER, new float[] {0.85f, 0.82f, 0.65f, 4.0f, 12.0f, 8.25f, 5.1f, 12.5f, 4.6f},
+            ItemComponents.ToolTier.IRON, new float[] {0.95f, 0.95f, 0.6f, 2.5f, 11.0f, 6.75f, 5.1f, 11.25f, 4.6f},
+            ItemComponents.ToolTier.GOLD, new float[] {0.95f, 0.7f, 0.7f, 3.5f, 13.0f, 8.5f, 5.1f, 13.75f, 4.6f},
+            ItemComponents.ToolTier.DIAMOND, new float[] {1.05f, 1.075f, 0.5f, 3.0f, 10.0f, 6.5f, 5.1f, 10.0f, 4.6f},
+            ItemComponents.ToolTier.NETHERITE, new float[] {1.15f, 1.2f, 0.4f, 2.5f, 9.0f, 5.5f, 5.1f, 8.75f, 4.6f});
+
+    /**
+     * A spear through {@code Item.Properties.spear} with the tier's vanilla constants. {@code attack_speed} sets the
+     * attack duration ({@code 1 / (attack_speed + 4)} seconds, as vanilla derives the speed modifier from it), so it must
+     * be above -4; {@code attack_damage} replaces vanilla's base of 0 (the material's bonus is still added).
+     */
+    static Item.Properties spear(Item.Properties props, ItemComponents.Tool tool, ToolMaterial material) throws DefinitionException {
+        float[] k = tool.tier() instanceof ItemComponents.ToolTier t ? SPEAR_CONSTANTS.get(t) : SPEAR_CONSTANTS.get(ItemComponents.ToolTier.IRON);
+        float duration = k[0];
+        if (tool.attackSpeed().isPresent()) {
+            float speed = tool.attackSpeed().get();
+            if (speed <= -4.0f) {
+                throw new DefinitionException("msm:tool: attack_speed of a spear must be above -4, got " + speed);
+            }
+            duration = 1.0f / (speed + 4.0f);
+        }
+        props = props.spear(material, duration, k[1], k[2], k[3], k[4], k[5], k[6], k[7], k[8]);
+        if (tool.attackDamage().isPresent()) {
+            props = props.attributes(attackAttributes(tool.attackDamage().get() + material.attackDamageBonus(), 1.0f / duration - 4.0f));
+        }
+        return props;
+    }
+
+    /**
+     * A mace as vanilla's ({@code Items.MACE}): the tier's durability, repair items and enchantment value, vanilla's
+     * mace tool rule and {@code weapon} component, and vanilla's attack values (damage 5, speed -3.4) unless
+     * {@code attack_damage} or {@code attack_speed} override them. The material's damage bonus is not added (the
+     * vanilla mace has none).
+     */
+    static Item.Properties mace(Item.Properties props, ItemComponents.Tool tool, ToolMaterial material) {
+        ItemAttributeModifiers attributes = tool.attackDamage().isEmpty() && tool.attackSpeed().isEmpty()
+                ? MaceItem.createAttributes()
+                : attackAttributes(tool.attackDamage().orElse(5.0f), tool.attackSpeed().orElse(-3.4f));
+        return props.durability(material.durability())
+                .component(DataComponents.TOOL, MaceItem.createToolProperties())
+                .repairable(material.repairItems())
+                .attributes(attributes)
+                .enchantable(material.enchantmentValue())
+                .component(DataComponents.WEAPON, new Weapon(1));
+    }
+
+    /** Main-hand attack damage and speed modifiers with vanilla's base modifier ids. */
+    private static ItemAttributeModifiers attackAttributes(float damage, float speed) {
+        return ItemAttributeModifiers.builder()
+                .add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, damage, AttributeModifier.Operation.ADD_VALUE),
+                        EquipmentSlotGroup.MAINHAND)
+                .add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, speed, AttributeModifier.Operation.ADD_VALUE),
+                        EquipmentSlotGroup.MAINHAND)
+                .build();
     }
 
     /**
@@ -282,16 +525,19 @@ public final class MsmRegistrar {
     /**
      * {@code msm:armor} through {@code Item.Properties.humanoidArmor(material, type)}, which sets
      * vanilla's {@code equippable}, {@code attribute_modifiers}, {@code max_damage},
-     * {@code repairable} and {@code enchantable} components (ADR 0042 D5).
+     * {@code repairable} and {@code enchantable} components (ADR 0042 D5), or through
+     * {@code horseArmor(material)} and {@code wolfArmor(material)} (ADR 0044 D5).
      */
     static Item.Properties armor(Item.Properties props, RawDefinition raw, ItemComponents.Armor armor, List<String> warnings) {
-        ArmorType type = switch (armor.slot()) {
-            case HELMET -> ArmorType.HELMET;
-            case CHESTPLATE -> ArmorType.CHESTPLATE;
-            case LEGGINGS -> ArmorType.LEGGINGS;
-            case BOOTS -> ArmorType.BOOTS;
+        ArmorMaterial material = armorMaterial(raw, armor.material(), warnings);
+        props = switch (armor.slot()) {
+            case HELMET -> props.humanoidArmor(material, ArmorType.HELMET);
+            case CHESTPLATE -> props.humanoidArmor(material, ArmorType.CHESTPLATE);
+            case LEGGINGS -> props.humanoidArmor(material, ArmorType.LEGGINGS);
+            case BOOTS -> props.humanoidArmor(material, ArmorType.BOOTS);
+            case HORSE -> props.horseArmor(material); // ADR 0044 D5; defence of ArmorType.BODY
+            case WOLF -> props.wolfArmor(material);
         };
-        props = props.humanoidArmor(armorMaterial(raw, armor.material(), warnings), type);
         return armor.material() instanceof ItemComponents.CustomArmorMaterial m && m.enchantmentValue() == 0 ? notEnchantable(props) : props;
     }
 
@@ -312,7 +558,7 @@ public final class MsmRegistrar {
                 defense.put(ArmorType.CHESTPLATE, m.defense().chestplate());
                 defense.put(ArmorType.LEGGINGS, m.defense().leggings());
                 defense.put(ArmorType.BOOTS, m.defense().boots());
-                defense.put(ArmorType.BODY, m.defense().chestplate()); // never used by humanoid armour
+                defense.put(ArmorType.BODY, m.defense().chestplate()); // horse and wolf armour (ADR 0044 D5)
                 Holder<SoundEvent> sound = SoundEvents.ARMOR_EQUIP_GENERIC;
                 if (m.equipSound().isPresent()) {
                     Optional<Holder.Reference<SoundEvent>> found = BuiltInRegistries.SOUND_EVENT.get(m.equipSound().get());
@@ -378,6 +624,7 @@ public final class MsmRegistrar {
         for (LateCheck check : LATE) {
             boolean known = switch (check.what()) {
                 case "give_item item" -> BuiltInRegistries.ITEM.containsKey(check.id());
+                case "apply_effect effect" -> BuiltInRegistries.MOB_EFFECT.containsKey(check.id());
                 case "run_function function" -> server.getFunctions().get(check.id()).isPresent();
                 default -> true;
             };

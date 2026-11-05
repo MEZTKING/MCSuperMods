@@ -1,8 +1,15 @@
+import { type AiModelId, type AiSettings, DEFAULT_AI_SETTINGS } from '@msm/ai';
 import { Dialog } from 'radix-ui';
-import { useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import type { MinecraftProgress } from '../../../shared/ipc-channels';
-import type { AppSettingsPatch, AppSettingsView, MinecraftStatus } from '../../../shared/platform';
+import type {
+  AiPlatform,
+  AppSettingsPatch,
+  AppSettingsView,
+  MinecraftStatus,
+} from '../../../shared/platform';
 import type { ExternalPluginState } from '../plugins/external-plugins';
+import { AiSettingsSection } from './ai/AiSettingsSection';
 import {
   type InstallTargetOption,
   installTargetName,
@@ -54,6 +61,12 @@ export interface SettingsDialogProps {
   plugins?: readonly ExternalPluginState[];
   /** Opens the plugins folder (`<msmHome>/plugins/`, created when missing). */
   onOpenPluginsFolder?: (() => Promise<void>) | undefined;
+  /** Main's AI helper services; the "AI helper" section is shown only with them (ADR 0041). */
+  ai?: AiPlatform | undefined;
+  /** Called after the AI settings or the key changed. */
+  onAiChanged?: (() => void) | undefined;
+  /** The model the open AI conversation started with, or `null` without one. */
+  aiConversationModel?: AiModelId | null;
 }
 
 /** The label of a plugin state in Settings > Plugins. */
@@ -375,6 +388,12 @@ export function SettingsDialog(props: SettingsDialogProps) {
   const autoCheckId = useId();
   const jarSource = props.jarSource ?? null;
   const manualRoots = props.manualRoots ?? [];
+  const saveSettings = props.save;
+  const loadAi = useCallback(
+    async (): Promise<AiSettings> => (await load()).ai ?? DEFAULT_AI_SETTINGS,
+    [load],
+  );
+  const saveAi = useCallback((ai: AiSettings) => saveSettings({ ai }), [saveSettings]);
 
   useEffect(() => {
     let live = true;
@@ -651,6 +670,16 @@ export function SettingsDialog(props: SettingsDialogProps) {
               downloads it in the background. It installs only when you choose Restart to update.
               Help, Check for Updates works either way.
             </p>
+
+            {props.ai !== undefined && (
+              <AiSettingsSection
+                ai={props.ai}
+                load={loadAi}
+                save={saveAi}
+                onChanged={props.onAiChanged}
+                conversationModel={props.aiConversationModel ?? null}
+              />
+            )}
 
             <PluginsSection
               plugins={props.plugins ?? []}

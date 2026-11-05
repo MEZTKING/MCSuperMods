@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:components": {
+      "minecraft:enchantments": {
+        "minecraft:sharpness": 2
+      },
+      "minecraft:glider": {}
+    }
+  },
+  "format": 1
+}

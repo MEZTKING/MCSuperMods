@@ -290,4 +290,110 @@ class DefinitionParserTest {
         assertEquals(Optional.empty(), c.tool());
         assertEquals(5, c.durability().orElseThrow().max());
     }
+
+    // ADR 0044 (B187)
+
+    @Test
+    void consumableDecodesWithDefaults() {
+        ParseResult<ItemDefinition> result = item("""
+                {"format": 1, "components": {"msm:consumable": {"seconds": 1.6, "animation": "drink",
+                  "effects": [{"effect": "minecraft:speed", "seconds": 30}, {"effect": "minecraft:regeneration", "seconds": 5,
+                  "amplifier": 1, "chance": 0.5}], "converts_to": "minecraft:glass_bottle", "cooldown_seconds": 2}}}""");
+        assertTrue(result.clean(), result.errors() + " " + result.warnings());
+        ItemComponents.Consumable c = result.definition().orElseThrow().components().consumable().orElseThrow();
+        assertEquals(ItemComponents.ConsumeAnimation.DRINK, c.animation());
+        assertEquals(new ItemComponents.ConsumeEffect(Identifier.parse("minecraft:speed"), 30, 0, 1.0f), c.effects().getFirst());
+        assertEquals(600, c.effects().getFirst().ticks());
+        assertEquals(0.5f, c.effects().get(1).chance());
+        assertEquals(Optional.empty(), c.particles());
+        assertEquals(Optional.of(Identifier.parse("minecraft:glass_bottle")), c.convertsTo());
+        assertEquals(Optional.of(2.0f), c.cooldownSeconds());
+
+        assertTrue(item("{\"format\": 1, \"components\": {\"msm:consumable\": {\"seconds\": 1, \"animation\": \"sip\"}}}")
+                .errors().getFirst().contains("animation"));
+        ParseResult<ItemDefinition> badChance = item("""
+                {"format": 1, "components": {"msm:consumable": {"seconds": 1, "animation": "eat",
+                  "effects": [{"effect": "minecraft:speed", "seconds": 1, "chance": 2}]}}}""");
+        assertTrue(badChance.errors().getFirst().contains("chance"), badChance.errors().toString());
+    }
+
+    @Test
+    void rangedWeaponShieldAndDeathProtectionDecode() {
+        ParseResult<ItemDefinition> bow = item("{\"format\": 1, \"components\": {\"msm:ranged_weapon\": {\"type\": \"bow\", \"velocity\": 1.5}}}");
+        assertTrue(bow.clean(), bow.errors().toString());
+        ItemComponents c = bow.definition().orElseThrow().components();
+        assertEquals(new ItemComponents.RangedWeapon(ItemComponents.RangedWeaponType.BOW, 1.0f, 1.5f, 1.0f, 1.0f), c.rangedWeapon().orElseThrow());
+        assertTrue(c.damageable());
+        assertTrue(item("{\"format\": 1, \"components\": {\"msm:ranged_weapon\": {\"type\": \"bow\", \"draw_speed\": 0}}}")
+                .errors().getFirst().contains("draw_speed"));
+
+        ParseResult<ItemDefinition> shield = item("{\"format\": 1, \"components\": {\"msm:shield\": {\"damage_reduction\": 0.5}}}");
+        assertTrue(shield.clean(), shield.errors().toString());
+        assertEquals(new ItemComponents.Shield(0.25f, 0.5f, 1.0f, Optional.empty()),
+                shield.definition().orElseThrow().components().shield().orElseThrow());
+        assertTrue(item("{\"format\": 1, \"components\": {\"msm:shield\": {\"bypassed_by\": \"minecraft:bypasses_shield\"}}}")
+                .errors().getFirst().contains("bypassed_by"));
+
+        ParseResult<ItemDefinition> totem = item("""
+                {"format": 1, "components": {"msm:death_protection": {"clear_effects": true,
+                  "effects": [{"effect": "minecraft:absorption", "seconds": 5, "amplifier": 1}]}}}""");
+        assertTrue(totem.clean(), totem.errors().toString());
+        assertTrue(totem.definition().orElseThrow().components().deathProtection().orElseThrow().clearEffects());
+        assertTrue(item("{\"format\": 1, \"components\": {\"msm:death_protection\": {}}}").errors().getFirst().contains("effects"));
+    }
+
+    @Test
+    void spearMaceAndBodyArmorDecode() {
+        assertEquals(ItemComponents.ToolType.SPEAR, item("{\"format\": 1, \"components\": {\"msm:tool\": {\"type\": \"spear\", \"tier\": \"iron\"}}}")
+                .definition().orElseThrow().components().tool().orElseThrow().type());
+        assertEquals(ItemComponents.ToolType.MACE, item("{\"format\": 1, \"components\": {\"msm:tool\": {\"type\": \"mace\", \"tier\": \"diamond\"}}}")
+                .definition().orElseThrow().components().tool().orElseThrow().type());
+        assertEquals(ItemComponents.ArmorSlot.HORSE, item("{\"format\": 1, \"components\": {\"msm:armor\": {\"slot\": \"horse\", \"material\": \"gold\"}}}")
+                .definition().orElseThrow().components().armor().orElseThrow().slot());
+        assertEquals(ItemComponents.ArmorSlot.WOLF, item("{\"format\": 1, \"components\": {\"msm:armor\": {\"slot\": \"wolf\", \"material\": \"armadillo_scute\"}}}")
+                .definition().orElseThrow().components().armor().orElseThrow().slot());
+    }
+
+    @Test
+    void vanillaComponentsAreKeptAsJson() {
+        ParseResult<ItemDefinition> result = item("""
+                {"format": 1, "components": {"msm:components": {"minecraft:glider": {}, "use_cooldown": {"seconds": 2}}}}""");
+        assertTrue(result.clean(), result.errors() + " " + result.warnings());
+        var vanilla = result.definition().orElseThrow().components().vanilla();
+        assertEquals(List.of(Identifier.parse("minecraft:glider"), Identifier.parse("minecraft:use_cooldown")), List.copyOf(vanilla.keySet()));
+        assertEquals(JsonParser.parseString("{\"seconds\": 2}"), vanilla.get(Identifier.parse("minecraft:use_cooldown")));
+        assertTrue(item("{\"format\": 1, \"components\": {\"msm:components\": {\"Bad Id\": {}}}}").errors().getFirst()
+                .contains("msm:components"));
+    }
+
+    @Test
+    void exclusiveComponentsDropTogether() {
+        ParseResult<ItemDefinition> result = item("""
+                {"format": 1, "components": {"msm:ranged_weapon": {"type": "crossbow"}, "msm:shield": {},
+                  "msm:tool": {"type": "sword", "tier": "iron"}, "msm:food": {"nutrition": 1, "saturation": 0}}}""");
+        assertEquals(List.of("components: msm:tool, msm:ranged_weapon and msm:shield on one item; none is applied"), result.errors());
+        ItemComponents c = result.definition().orElseThrow().components();
+        assertEquals(List.of(), c.exclusivePresent());
+        assertTrue(c.food().isPresent());
+        ParseResult<ItemDefinition> two = item("""
+                {"format": 1, "components": {"msm:armor": {"slot": "helmet", "material": "iron"}, "msm:shield": {}}}""");
+        assertEquals(List.of("components: msm:armor and msm:shield on one item; neither is applied"), two.errors());
+    }
+
+    @Test
+    void applyEffectDecodes() {
+        ParseResult<ItemDefinition> result = item("""
+                {"format": 1, "components": {"msm:on_use": {"event": "x:zap"}}, "events": {"x:zap": {"actions": [
+                  {"type": "apply_effect", "effect": "minecraft:speed", "seconds": 2.5},
+                  {"type": "apply_effect", "effect": "minecraft:glowing", "seconds": 1, "amplifier": 2, "target": "other"}]}}}""");
+        assertTrue(result.clean(), result.errors() + " " + result.warnings());
+        List<Action> actions = result.definition().orElseThrow().events().get(Identifier.parse("x:zap")).orElseThrow().actions();
+        assertEquals(new Action.ApplyEffect(Identifier.parse("minecraft:speed"), 2.5f, 0, Action.EffectTarget.SELF), actions.getFirst());
+        assertEquals(50, ((Action.ApplyEffect) actions.getFirst()).ticks());
+        assertEquals(Action.EffectTarget.OTHER, ((Action.ApplyEffect) actions.get(1)).target());
+        ParseResult<ItemDefinition> bad = item("""
+                {"format": 1, "events": {"x:zap": {"actions": [{"type": "apply_effect", "effect": "minecraft:speed", "seconds": 1,
+                  "target": "everyone"}]}}}""");
+        assertTrue(bad.errors().getFirst().contains("target"), bad.errors().toString());
+    }
 }

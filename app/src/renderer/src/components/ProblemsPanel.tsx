@@ -1,5 +1,5 @@
 import type { Problem } from '@msm/core';
-import { CircleAlert, FolderSearch, Info, TriangleAlert } from 'lucide-react';
+import { CircleAlert, FolderSearch, Info, Sparkles, TriangleAlert } from 'lucide-react';
 import { iconButtonClass } from './ui/Button';
 
 function SeverityIcon({ severity }: { severity: Problem['severity'] }) {
@@ -23,6 +23,11 @@ export interface ProblemsPanelProps {
   onNavigate?(problem: Problem & { elementId: NonNullable<Problem['elementId']> }): void;
   /** Reveals a project file (`file` is project-relative) in the OS file manager. */
   onReveal?(file: string): void;
+  /**
+   * Asks the AI helper to explain a live problem (ADR 0041 D8); each row then has an "Explain"
+   * button (`problem-explain-<n>`, `n` the row's index). Hidden when absent.
+   */
+  onExplain?(problem: Problem): void;
 }
 
 const LINE_PATH = /^\/lines\/(\d+)$/;
@@ -62,8 +67,12 @@ function ProblemRow(props: {
   onDisk: boolean;
   onNavigate: ProblemsPanelProps['onNavigate'];
   onReveal: ProblemsPanelProps['onReveal'];
+  /** Explains this problem with the AI helper; no button when absent. */
+  onExplain?: (() => void) | undefined;
+  /** The `problem-explain-<n>` test id of the Explain button. */
+  explainTestId?: string;
 }) {
-  const { problem, onNavigate, onReveal } = props;
+  const { problem, onNavigate, onReveal, onExplain } = props;
   const elementId = problem.elementId;
   const file = problem.file;
   return (
@@ -105,6 +114,19 @@ function ProblemRow(props: {
           <FolderSearch size={14} aria-hidden />
         </button>
       )}
+      {onExplain !== undefined && (
+        <button
+          type="button"
+          className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded px-1 text-xs text-muted hover:bg-bg hover:text-text"
+          data-testid={props.explainTestId}
+          aria-label={`Explain: ${problem.message}`}
+          title="Explain this problem with the AI helper"
+          onClick={onExplain}
+        >
+          <Sparkles size={12} aria-hidden />
+          Explain
+        </button>
+      )}
     </li>
   );
 }
@@ -115,6 +137,7 @@ export function ProblemsPanel({
   exportProblems = [],
   onNavigate,
   onReveal,
+  onExplain,
 }: ProblemsPanelProps) {
   const total = problems.length + exportProblems.length;
   return (
@@ -131,6 +154,8 @@ export function ProblemsPanel({
               onDisk={problem.elementId === undefined}
               onNavigate={onNavigate}
               onReveal={onReveal}
+              onExplain={onExplain === undefined ? undefined : () => onExplain(problem)}
+              explainTestId={`problem-explain-${index}`}
             />
           ))}
         </ul>

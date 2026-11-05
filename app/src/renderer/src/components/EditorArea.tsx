@@ -1,5 +1,5 @@
 import type { Element, Json, ResourceLocation } from '@msm/core';
-import { Braces, FormInput } from 'lucide-react';
+import { Braces, FormInput, Sparkles } from 'lucide-react';
 import { ScrollArea, Tabs } from 'radix-ui';
 import { type ReactNode, useState } from 'react';
 import { RawJsonPanel } from './RawJsonPanel';
@@ -17,6 +17,11 @@ export interface EditorAreaProps {
   /** The selected tab when controlled. */
   tab?: EditorTab;
   onTabChange?(tab: EditorTab): void;
+  /**
+   * Asks the AI helper about the element (ADR 0041 D8); the header then has an "Ask AI" button
+   * (`editor-ask-ai`). Hidden when absent.
+   */
+  onAskAi?(id: ResourceLocation): void;
 }
 
 /**
@@ -24,7 +29,7 @@ export interface EditorAreaProps {
  * element's `meta.notes` (a copied example's explanation) in a collapsible, read-only Notes
  * callout above them.
  */
-export function EditorArea({ element, onApply, form, tab, onTabChange }: EditorAreaProps) {
+export function EditorArea({ element, onApply, form, tab, onTabChange, onAskAi }: EditorAreaProps) {
   const [ownTab, setOwnTab] = useState<EditorTab>('form');
   const current = tab ?? ownTab;
 
@@ -62,6 +67,18 @@ export function EditorArea({ element, onApply, form, tab, onTabChange }: EditorA
         <span className="ml-auto truncate text-xs text-muted">
           <code className="font-mono">{element.id}</code> ({element.kind})
         </span>
+        {onAskAi !== undefined && (
+          <button
+            type="button"
+            className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted hover:bg-bg hover:text-text"
+            data-testid="editor-ask-ai"
+            title="Ask the AI helper about this element"
+            onClick={() => onAskAi(element.id)}
+          >
+            <Sparkles size={12} aria-hidden />
+            Ask AI
+          </button>
+        )}
       </div>
       {notes !== undefined && notes.trim() !== '' && (
         <details

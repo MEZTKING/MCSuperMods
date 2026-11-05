@@ -3,6 +3,7 @@ package dev.mcsupermods.runtime.events;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.ID;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.floatAtLeast;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.intAtLeast;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.intRange;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.optional;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.required;
 
@@ -28,7 +29,8 @@ public sealed interface Action {
         PLAY_SOUND("play_sound", PlaySound.CODEC),
         TRIGGER_EVENT("trigger_event", TriggerEvent.CODEC),
         PLAY_ANIMATION("play_animation", PlayAnimation.CODEC),
-        RUN_SCRIPT("run_script", RunScript.CODEC);
+        RUN_SCRIPT("run_script", RunScript.CODEC),
+        APPLY_EFFECT("apply_effect", ApplyEffect.CODEC);
 
         public final String serialName;
         final MapCodec<? extends Action> codec;
@@ -148,6 +150,42 @@ public sealed interface Action {
         @Override
         public Type type() {
             return Type.RUN_SCRIPT;
+        }
+    }
+
+    /** Who an {@code apply_effect} action affects ({@code EffectTarget}). */
+    enum EffectTarget {
+        /** The event's player; in an entity definition without a player, the entity itself. */
+        SELF,
+        /** The other entity of the event ({@link EventContext#other()}). */
+        OTHER;
+
+        public String serialName() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+
+        public static final Codec<EffectTarget> CODEC = MsmCodecs.named("effect target", values(), EffectTarget::serialName);
+    }
+
+    /**
+     * Gives a vanilla mob effect (ADR 0044 D2) for {@code seconds} at level {@code amplifier + 1}; without a living
+     * entity to affect it does nothing.
+     */
+    record ApplyEffect(Identifier effect, float seconds, int amplifier, EffectTarget target) implements Action {
+        static final MapCodec<ApplyEffect> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+                required("effect", ID).forGetter(ApplyEffect::effect),
+                required("seconds", floatAtLeast(0)).forGetter(ApplyEffect::seconds),
+                optional("amplifier", intRange(0, 255), 0).forGetter(ApplyEffect::amplifier),
+                optional("target", EffectTarget.CODEC, EffectTarget.SELF).forGetter(ApplyEffect::target)).apply(i, ApplyEffect::new));
+
+        /** The duration in ticks (20 per second, rounded). */
+        public int ticks() {
+            return Math.round(seconds * 20);
+        }
+
+        @Override
+        public Type type() {
+            return Type.APPLY_EFFECT;
         }
     }
 }

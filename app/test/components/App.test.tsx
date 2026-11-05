@@ -11,6 +11,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { App, focusedLocation } from '../../src/renderer/src/App';
+import { useAiPanelStore } from '../../src/renderer/src/components/ai/ai-controller';
 import {
   FABRIC_JAR_GECKOLIB_NOTE,
   GECKOLIB_DOWNLOAD_MESSAGE,
@@ -24,6 +25,7 @@ import { BLOCKBENCH_IMPORT_NOTE } from '../../src/renderer/src/components/Import
 import { builtInPlugins } from '../../src/renderer/src/plugins/built-in';
 import type { McfunctionChecker } from '../../src/renderer/src/session/mcfunction-problems';
 import { type ExportResult, ProjectSession } from '../../src/renderer/src/session/project-session';
+import { useAiStore } from '../../src/renderer/src/store/ai-store';
 import { useUiStore } from '../../src/renderer/src/store/ui-store';
 import {
   MSM_CONTENT_NOTE,
@@ -31,6 +33,7 @@ import {
 } from '../../src/renderer/src/studios/export-state';
 import type { MenuCommand, UpdateStatus } from '../../src/shared/ipc-channels';
 import type {
+  AiPlatform,
   AppSettingsPatch,
   GameLocationView,
   LauncherSettings,
@@ -40,6 +43,7 @@ import type {
   TestInMinecraftStatus,
   WorldInfo,
 } from '../../src/shared/platform';
+import { fakeAi } from './ai-fixtures';
 import { fakeLibraryPlugin } from './library-fixtures';
 
 /** Reports line 1 of any source containing `bogus` as a parse error. */
@@ -200,7 +204,7 @@ const blockedTestStatus: TestInMinecraftStatus = {
 };
 
 async function renderApp(
-  options: { plugins?: readonly Plugin[]; whatsNewOnLaunch?: boolean } = {},
+  options: { plugins?: readonly Plugin[]; whatsNewOnLaunch?: boolean; ai?: AiPlatform } = {},
 ): Promise<Harness> {
   let listener: ((command: MenuCommand) => void) | null = null;
   let recentListener: ((root: string) => void) | null = null;
@@ -420,6 +424,7 @@ async function renderApp(
       },
     },
     fs: createMemoryFileSystem(),
+    ...(options.ai === undefined ? {} : { ai: options.ai }),
   };
   const session = new ProjectSession(platform, {
     plugins: options.plugins ?? builtInPlugins,
@@ -459,6 +464,8 @@ const toast = (text: RegExp | string) => screen.findByText(text);
 
 beforeEach(() => {
   window.msmNoMonaco = true;
+  useAiStore.setState({ conversations: {} });
+  useAiPanelStore.setState({ keyStatus: null, settings: null, models: {}, drafts: {} });
   useUiStore.setState({
     snapshot: null,
     selectedId: null,
@@ -1499,5 +1506,76 @@ describe('App Fabric mod jar with entities', () => {
     await userEvent.setup().click(await screen.findByTestId('fabric-jar-dialog-submit'));
     await toast(/^Exported the Fabric mod jar to /);
     expect(harness.saved).toHaveLength(1);
+  });
+});
+
+describe('App AI helper (ADR 0041 D8)', () => {
+  it('toggles the AI helper tab from the menu and the toolbar', async () => {
+    const harness = await renderApp({ ai: fakeAi() });
+    expect(screen.getByTestId('dock-tab-assistant').textContent).toBe('AI helper');
+    await harness.menu('toggleAiHelper');
+    expect(useUiStore.getState().rightDock).toBe('assistant');
+    expect(await screen.findByTestId('ai-input')).toBeTruthy();
+    await harness.menu('toggleAiHelper');
+    expect(useUiStore.getState().rightDock).toBe('problems');
+    await userEvent.setup().click(screen.getByTestId('toolbar-ai-helper'));
+    expect(useUiStore.getState().rightDock).toBe('assistant');
+  });
+
+  it('lists the three AI helper commands in the palette', async () => {
+    const harness = await renderApp({ ai: fakeAi() });
+    addFunction(harness, ['say bogus']);
+    await act(() => harness.session.flushValidation());
+    await waitFor(() => expect(useAiPanelStore.getState().keyStatus?.set).toBe(true));
+    act(() => useUiStore.getState().select('demo:greet'));
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    expect(within(palette).getByTestId('command-aiHelper').textContent).toContain('Open AI helper');
+    expect(within(palette).getByTestId('command-aiExplainProblem').textContent).toContain(
+      'Explain this problem with the AI helper',
+    );
+    expect(within(palette).getByTestId('command-aiAskElement').textContent).toContain(
+      'Ask the AI helper about this element',
+    );
+  });
+
+  it('hides "Explain this problem" without a key', async () => {
+    const harness = await renderApp({ ai: fakeAi({ set: false, tail: null }) });
+    addFunction(harness, ['say bogus']);
+    await act(() => harness.session.flushValidation());
+    await waitFor(() => expect(useAiPanelStore.getState().keyStatus?.set).toBe(false));
+    act(() => useUiStore.getState().select('demo:greet'));
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    expect(within(palette).getByTestId('command-aiHelper')).toBeTruthy();
+    expect(within(palette).queryByTestId('command-aiExplainProblem')).toBeNull();
+  });
+
+  it('opens the panel with the context block from "Explain" on a problem', async () => {
+    const harness = await renderApp({ ai: fakeAi() });
+    addFunction(harness, ['say bogus']);
+    await act(() => harness.session.flushValidation());
+    const panel = screen.getByTestId('problems-panel');
+    await waitFor(() =>
+      expect(
+        within(panel)
+          .getAllByTestId('problem-row')
+          .some((row) => row.dataset.code === 'mcfunction.parse'),
+      ).toBe(true),
+    );
+    const index = within(panel)
+      .getAllByTestId('problem-row')
+      .findIndex((row) => row.dataset.code === 'mcfunction.parse');
+    await userEvent.setup().click(screen.getByTestId(`problem-explain-${index}`));
+    expect(useUiStore.getState().rightDock).toBe('assistant');
+    const context = await screen.findByTestId('ai-context');
+    expect(context.textContent).toContain('Problem mcfunction.parse on demo:greet');
+    expect(context.textContent).toContain('Expected a command.');
+  });
+
+  it('has no AI helper tab or toolbar button without the AI services', async () => {
+    await renderApp();
+    expect(screen.queryByTestId('dock-tab-assistant')).toBeNull();
+    expect(screen.queryByTestId('toolbar-ai-helper')).toBeNull();
   });
 });

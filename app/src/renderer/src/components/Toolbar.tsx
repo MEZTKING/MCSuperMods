@@ -12,6 +12,7 @@ import {
   Redo2,
   Save,
   Settings,
+  Sparkles,
   Trash2,
   Undo2,
 } from 'lucide-react';
@@ -108,6 +109,8 @@ export interface ToolbarProps {
   /** Installs the data pack into a world (the host shows the world picker). */
   onInstallData?(): void;
   onSettings?(): void;
+  /** Opens or closes the AI helper tab in the right dock (ADR 0041 D8); hidden without it. */
+  onAiHelper?(): void;
   /**
    * Where installs go. When given (also as `null`), the Install menu opens with a sentence
    * naming the target; `null` means none is chosen or found.
@@ -695,9 +698,18 @@ export function Toolbar(props: ToolbarProps) {
         ]}
       />
       {separator}
+      {props.onAiHelper !== undefined && (
+        <ToolButton
+          label="AI helper"
+          tip="Ask the AI helper about your project or have it build content"
+          testId="toolbar-ai-helper"
+          icon={<Sparkles size={iconSize} aria-hidden />}
+          onClick={props.onAiHelper}
+        />
+      )}
       <ToolButton
         label="Settings"
-        tip="Game locations, vanilla assets and updates"
+        tip="Game locations, vanilla assets, updates and the AI helper"
         testId="toolbar-settings"
         icon={<Settings size={iconSize} aria-hidden />}
         onClick={props.onSettings}

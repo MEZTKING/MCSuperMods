@@ -11,7 +11,8 @@
       "dev.mcsupermods.runtime.gametest.MsmSpikeGameTest",
       "dev.mcsupermods.runtime.gametest.MsmRuntimeGameTest",
       "dev.mcsupermods.runtime.gametest.MsmEntityGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmScriptGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmScriptGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmGearGameTest"
     ]
   },
   "depends": {

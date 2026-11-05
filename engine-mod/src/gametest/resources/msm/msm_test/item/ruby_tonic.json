@@ -1,0 +1,23 @@
+{
+  "components": {
+    "msm:consumable": {
+      "animation": "drink",
+      "converts_to": "minecraft:glass_bottle",
+      "cooldown_seconds": 3,
+      "effects": [
+        {
+          "amplifier": 1,
+          "effect": "minecraft:speed",
+          "seconds": 30
+        },
+        {
+          "effect": "minecraft:regeneration",
+          "seconds": 5
+        }
+      ],
+      "seconds": 1
+    }
+  },
+  "format": 1,
+  "max_stack_size": 16
+}

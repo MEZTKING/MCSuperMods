@@ -1,4 +1,10 @@
-import type { Json, Element as ProjectElement, Reference, ResourceLocation } from '@msm/core';
+import type {
+  Json,
+  Problem,
+  Element as ProjectElement,
+  Reference,
+  ResourceLocation,
+} from '@msm/core';
 import type { Target } from '@msm/plugin-api';
 import { Toast, Tooltip } from 'radix-ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -20,6 +26,8 @@ import {
   paletteCommands,
   referenceAt,
 } from './commands/built-in-commands';
+import { AiPanel } from './components/ai/AiPanel';
+import { AiController, useAiPanelStore } from './components/ai/ai-controller';
 import { CommandPalette, type PaletteCommand } from './components/CommandPalette';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { EditorArea } from './components/EditorArea';
@@ -136,6 +144,7 @@ const menuEquivalent = {
   redo: 'redo',
   renameElement: 'renameElement',
   commandPalette: 'commandPalette',
+  toggleAiHelper: 'toggleAiHelper',
 } as const satisfies Record<string, MenuCommand>;
 
 /** Whether an export report was blocked because the GeckoLib jar could not be had. */
@@ -455,6 +464,40 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         : snapshot.problems.filter((problem) => problem.elementId === selected.id),
     [snapshot.problems, selected],
   );
+
+  // AI helper (ADR 0041) ------------------------------------------------------------------
+
+  const aiController = useMemo(
+    () =>
+      bridge.ai === undefined
+        ? null
+        : new AiController({ session, ai: bridge.ai, loadSettings: () => session.getSettings() }),
+    [session, bridge],
+  );
+  useEffect(() => {
+    if (aiController === null) return undefined;
+    const detach = aiController.attach();
+    void aiController.refresh();
+    return detach;
+  }, [aiController]);
+  const aiKeySet = useAiPanelStore((state) => state.keyStatus?.set === true);
+  const aiConversationModel = useAiPanelStore((state) =>
+    snapshot.root === null ? null : (state.models[snapshot.root] ?? null),
+  );
+  // The problem the user last went to from Problems; "Explain this problem" uses it while it
+  // belongs to the selected element, else the selected element's first problem.
+  const [lastProblem, setLastProblem] = useState<Problem | null>(null);
+  const selectedProblem =
+    (lastProblem !== null &&
+    lastProblem.elementId === selected?.id &&
+    selectedProblems.some(
+      (problem) =>
+        problem.code === lastProblem.code &&
+        problem.path === lastProblem.path &&
+        problem.message === lastProblem.message,
+    )
+      ? lastProblem
+      : selectedProblems[0]) ?? null;
 
   // Export and install --------------------------------------------------------------------
 
@@ -1155,8 +1198,12 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       }
       setDialog({ type: 'upgrade-target' });
     },
-    // ADR 0041: the AI helper panel arrives with B173; the Creator (B184) after it.
-    toggleAiHelper: () => {},
+    toggleAiHelper: () => {
+      if (aiController === null)
+        setMessage({ kind: 'error', text: 'The AI helper is not available.' });
+      else aiController.toggle();
+    },
+    // ADR 0043: the Creator arrives with B184.
     creator: () => {},
   };
 
@@ -1200,6 +1247,15 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     chooseInstallTarget: handlers.settings,
     checkForUpdates,
     whatsNew,
+    aiHelper: aiController === null ? null : () => aiController.open(),
+    aiExplainProblem:
+      aiController === null || !aiKeySet || selectedProblem === null
+        ? null
+        : () => aiController.explainProblem(selectedProblem),
+    aiAskElement:
+      aiController === null || selected === null
+        ? null
+        : () => aiController.askAboutElement(selected.id),
   } satisfies Record<BuiltInCommandId, Action | null>;
 
   const palette = paletteCommands(commandHandlers, session.pluginCommands, {
@@ -1394,6 +1450,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               onInstall={installResource}
               onInstallData={installData}
               onSettings={handlers.settings}
+              {...(aiController === null ? {} : { onAiHelper: () => aiController.toggle() })}
               installTarget={installTarget}
               installTargets={installTargets}
               onChooseInstallTarget={(id) => void chooseInstallTarget(id)}
@@ -1426,6 +1483,9 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               onApply={(id: ResourceLocation, data: Json) =>
                 run('Apply', () => session.setElementData(id, data))
               }
+              {...(aiController === null
+                ? {}
+                : { onAskAi: (id: ResourceLocation) => aiController.askAboutElement(id) })}
             />
             <RightDock
               problems={snapshot.problems}
@@ -1433,10 +1493,19 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               tab={rightDock}
               onTabChange={setRightDock}
               preview={preview}
-              onNavigate={(problem) =>
-                navigateTo(problem.elementId, problem.path ?? null, problem.range ?? null)
-              }
+              onNavigate={(problem) => {
+                setLastProblem(problem);
+                navigateTo(problem.elementId, problem.path ?? null, problem.range ?? null);
+              }}
               onReveal={reveal}
+              {...(aiController === null
+                ? {}
+                : {
+                    assistant: (
+                      <AiPanel controller={aiController} onOpenSettings={handlers.settings} />
+                    ),
+                    onExplain: (problem: Problem) => aiController.explainProblem(problem),
+                  })}
             />
           </main>
           <StatusBar snapshot={snapshot} target={project === null ? null : target} />
@@ -1717,6 +1786,9 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             onRemoveLauncherRoot={removeLauncherRoot}
             plugins={session.externalPlugins}
             onOpenPluginsFolder={bridge.plugins?.openFolder}
+            ai={bridge.ai}
+            onAiChanged={() => void aiController?.refresh()}
+            aiConversationModel={aiConversationModel}
           />
         )}
       </Toast.Provider>

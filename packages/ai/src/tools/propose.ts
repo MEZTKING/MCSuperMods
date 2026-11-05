@@ -9,7 +9,25 @@ import { elementDataSchema, kindIdSchema, namespaceSchema, resourceIdSchema } fr
  * The placeholder texture patterns of the library's generator (`PlaceholderPattern` in
  * `@msm/plugin-library`); kept in step by hand because `@msm/ai` may not depend on plugins.
  */
-export const PLACEHOLDER_PATTERN_NAMES = ['plain', 'ore', 'gem', 'disc', 'egg', 'sword'] as const;
+export const PLACEHOLDER_PATTERN_NAMES = [
+  'plain',
+  'ore',
+  'gem',
+  'disc',
+  'egg',
+  'sword',
+  'pickaxe',
+  'axe',
+  'shovel',
+  'hoe',
+  'helmet',
+  'chestplate',
+  'leggings',
+  'boots',
+  'ingot',
+  'armor_layer_1',
+  'armor_layer_2',
+] as const;
 
 /** Most elements one `create_elements` call may propose. */
 export const CREATE_ELEMENTS_MAX = 64;
@@ -51,7 +69,7 @@ export const createTextureInput = z.object({
   pattern: z
     .enum(PLACEHOLDER_PATTERN_NAMES)
     .describe(
-      'The placeholder pattern: plain, ore (speckles on stone), gem, disc, egg (spawn egg) or sword.',
+      'The placeholder pattern: plain, ore (speckles on stone), gem, disc, egg (spawn egg), sword, pickaxe, axe, shovel, hoe, helmet, chestplate, leggings, boots, ingot (all 16x16), or armor_layer_1 and armor_layer_2 (64x32 worn armour layers, under textures/entity/equipment/humanoid and humanoid_leggings).',
     ),
   colour: z
     .string()

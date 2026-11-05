@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:components": {
+      "minecraft:jukebox_playable": "minecraft:13",
+      "minecraft:provides_trim_material": "minecraft:diamond"
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

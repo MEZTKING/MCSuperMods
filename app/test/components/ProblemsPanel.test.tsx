@@ -66,3 +66,28 @@ describe('ProblemsPanel', () => {
     expect(state.activeTab).toBe('form');
   });
 });
+
+describe('ProblemsPanel Explain (ADR 0041 D8)', () => {
+  it('offers Explain on each live problem when onExplain is given', async () => {
+    const onExplain = vi.fn();
+    render(
+      <ProblemsPanel
+        problems={[schemaProblem, diskProblem]}
+        exportProblems={[exportProblem]}
+        onExplain={onExplain}
+      />,
+    );
+    await userEvent.setup().click(screen.getByTestId('problem-explain-1'));
+    expect(onExplain).toHaveBeenCalledWith(diskProblem);
+    expect(screen.getByTestId('problem-explain-0').textContent).toBe('Explain');
+    // Export problems are output files, not project content.
+    expect(
+      within(screen.getByTestId('export-problems')).queryByRole('button', { name: /^Explain/ }),
+    ).toBeNull();
+  });
+
+  it('hides Explain without onExplain', () => {
+    render(<ProblemsPanel problems={[schemaProblem]} />);
+    expect(screen.queryByTestId('problem-explain-0')).toBeNull();
+  });
+});

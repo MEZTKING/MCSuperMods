@@ -5,6 +5,7 @@ import dev.mcsupermods.runtime.events.EventContext;
 import dev.mcsupermods.runtime.events.EventRunner;
 import dev.mcsupermods.runtime.loader.ItemDefinition;
 import java.util.Optional;
+import java.util.function.Supplier;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -15,9 +16,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 /**
- * Driver class for every {@code msm/<ns>/item/*.json} definition. Food, tool and durability are
- * vanilla data components set on the properties by {@link MsmRegistrar}; this class handles
- * {@code msm:on_use}.
+ * Driver class for {@code msm/<ns>/item/*.json} definitions (bows, crossbows and maces use
+ * {@link MsmBowItem}, {@link MsmCrossbowItem} and {@link MsmMaceItem}). Food, consumables, tools,
+ * armour, shields, death protection and durability are vanilla data components set on the
+ * properties by {@link MsmRegistrar}; this class handles {@code msm:on_use}.
  */
 public class MsmItem extends Item {
     private final Identifier id;
@@ -43,9 +45,19 @@ public class MsmItem extends Item {
      */
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
+        return useWithEvent(id, definition, level, player, hand, () -> super.use(level, player, hand));
+    }
+
+    /**
+     * The {@code msm:on_use} handling shared by every MSM item class ({@code MsmItem}, {@code MsmBowItem},
+     * {@code MsmCrossbowItem}, {@code MsmMaceItem}): on cooldown the use fails; otherwise the event fires, the cooldown
+     * starts and the vanilla use ({@code vanillaUse}) follows, a {@code PASS} turning into {@code SUCCESS}.
+     */
+    static InteractionResult useWithEvent(Identifier id, ItemDefinition definition, Level level, Player player, InteractionHand hand,
+            Supplier<InteractionResult> vanillaUse) {
         Optional<ItemComponents.OnUse> onUse = definition.components().onUse();
         if (onUse.isEmpty()) {
-            return super.use(level, player, hand);
+            return vanillaUse.get();
         }
         ItemStack stack = player.getItemInHand(hand);
         if (player.getCooldowns().isOnCooldown(stack)) {
@@ -57,7 +69,7 @@ public class MsmItem extends Item {
         if (onUse.get().cooldownTicks() > 0) {
             player.getCooldowns().addCooldown(stack, onUse.get().cooldownTicks());
         }
-        InteractionResult vanilla = super.use(level, player, hand);
+        InteractionResult vanilla = vanillaUse.get();
         return vanilla == InteractionResult.PASS ? InteractionResult.SUCCESS : vanilla;
     }
 }

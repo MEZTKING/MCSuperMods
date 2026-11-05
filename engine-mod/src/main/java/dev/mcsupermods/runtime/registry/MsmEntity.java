@@ -122,7 +122,8 @@ public class MsmEntity extends PathfinderMob implements AnimationTarget {
             EntityDefinition def = definition();
             def.components().animatedModel().attack().ifPresent(a -> playAnimation(EntityDefinition.TRIGGERED_CONTROLLER, a));
             def.components().attack().flatMap(EntityComponents.Attack::onAttack)
-                    .ifPresent(e -> fire(level, e, target instanceof Player p ? p : null));
+                    .ifPresent(e -> EventRunner.fire(definitionId(), def.events(), e, EventContext.forEntity(level, this,
+                            target instanceof Player p ? p : null, target instanceof LivingEntity living ? living : null)));
         }
         return hit;
     }

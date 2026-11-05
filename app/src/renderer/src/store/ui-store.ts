@@ -23,7 +23,7 @@ export interface StatusMessage {
 export type EditorTab = 'form' | 'json';
 
 /** The right dock's tabs. */
-export type RightDockTab = 'preview' | 'problems';
+export type RightDockTab = 'preview' | 'problems' | 'assistant';
 
 /** What the UI knows about the Minecraft installation and asset extraction. */
 export interface MinecraftUiState {
