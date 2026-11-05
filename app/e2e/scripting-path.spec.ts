@@ -169,6 +169,8 @@ test('scripting: template, Monaco TypeScript, problems, Fabric jar with ES5 scri
   const first = await launchApp({ reuse: folders });
   launches.push(first);
   const { window } = first;
+  window.on('console', (m) => console.log('CONSOLE', m.type(), m.text().slice(0, 400)));
+  window.on('pageerror', (e) => console.log('PAGEERR', String(e).slice(0, 400)));
   await window.waitForLoadState('domcontentloaded');
 
   await window.getByTestId('toolbar-new-project').click();
@@ -218,6 +220,7 @@ test('scripting: template, Monaco TypeScript, problems, Fabric jar with ES5 scri
   await window.keyboard.press('Control+Space');
   await window.waitForTimeout(3000);
   await window.screenshot({ path: join(outputDir, 'dbg2.png') });
+  console.log('DBG2', await window.evaluate(() => { const d = (globalThis as any).document; return [...d.querySelectorAll('[class*=suggest]')].map((e: any) => e.className).join(' | '); }));
   await expect(suggest).toBeVisible({ timeout: 30_000 });
   await expect(suggest.locator('.monaco-list-row', { hasText: 'events' }).first()).toBeVisible({
     timeout: 30_000,

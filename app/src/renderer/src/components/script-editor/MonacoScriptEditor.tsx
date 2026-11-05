@@ -1,4 +1,7 @@
 import TypeScriptWorker from 'monaco-editor/language/typescript/ts.worker?worker';
+// Registers the `typescript` language id (tokeniser); without it the model is plain text and
+// the language features below never start (they wait for `onLanguage('typescript')`).
+import 'monaco-editor/languages/definitions/typescript/register';
 import * as typescriptLanguage from 'monaco-editor/languages/features/typescript/register';
 import { useEffect, useRef } from 'react';
 import { toMarkers } from '../function-editor/monaco-mcfunction';
