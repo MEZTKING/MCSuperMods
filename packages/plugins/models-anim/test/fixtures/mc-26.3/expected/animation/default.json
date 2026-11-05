@@ -1,0 +1,37 @@
+[
+  {
+    "contents": {
+      "animations": {
+        "idle": {
+          "animation_length": 2,
+          "bones": {
+            "body": {
+              "position": {
+                "0.0": [
+                  0,
+                  0,
+                  0
+                ],
+                "1.0": [
+                  0,
+                  0.5,
+                  0
+                ],
+                "2.0": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            }
+          },
+          "loop": true
+        }
+      },
+      "format_version": "1.8.0"
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/geckolib/animations/entity/sample.animation.json",
+    "schema": "msm:animation"
+  }
+]

@@ -1,0 +1,19 @@
+[
+  {
+    "contents": {
+      "format_version": "1.12",
+      "minecraft:geometry": [
+        {
+          "description": {
+            "identifier": "geometry.old",
+            "texture_height": 16,
+            "texture_width": 16
+          }
+        }
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/geckolib/models/entity/old.geo.json",
+    "schema": "msm:geo_model"
+  }
+]
