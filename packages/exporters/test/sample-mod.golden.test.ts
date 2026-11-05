@@ -407,7 +407,8 @@ function projectIds(project: Project): Record<string, string[]> {
   for (const element of elementsOf(project)) {
     const name = registry.get(element.kind)?.registry;
     if (name === undefined) {
-      if (element.kind.startsWith('minecraft:')) add(element.kind.slice('minecraft:'.length), element.id);
+      if (element.kind.startsWith('minecraft:'))
+        add(element.kind.slice('minecraft:'.length), element.id);
       continue;
     }
     add(name, element.id);
@@ -624,7 +625,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       const definitions = paths.filter((path) => path.startsWith('msm/'));
       expect(definitions).toEqual(
         [
-          ...EXPECTED_BLOCKS.map((entry) => `msm/${NAMESPACE}/block/${entry.id.split(':')[1]}.json`),
+          ...EXPECTED_BLOCKS.map(
+            (entry) => `msm/${NAMESPACE}/block/${entry.id.split(':')[1]}.json`,
+          ),
           ...SAMPLE_ELEMENTS.filter((entry) => entry.kind === 'msm:item').map(
             (entry) => `msm/${NAMESPACE}/item/${entry.id.split(':')[1]}.json`,
           ),

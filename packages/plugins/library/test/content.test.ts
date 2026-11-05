@@ -7,6 +7,7 @@ import type { ContentBundle, ExampleProject, ProjectStarter } from '@msm/plugin-
 import { describe, expect, it } from 'vitest';
 import { COLOURS } from '../src/content/bundle';
 import {
+  behaviourExamples,
   categoryTag,
   kindExamples,
   libraryExamples,
@@ -32,8 +33,8 @@ const STARTER_IDS = [
 ];
 
 /**
- * The 52 kinds of the built-in resource pack, data pack, structures and worldgen plugins, in
- * per-kind example order.
+ * The 55 kinds of the built-in resource pack, data pack, structures, worldgen and blocks and
+ * items plugins, in per-kind example order.
  */
 const KIND_IDS = [
   'minecraft:model',
@@ -88,6 +89,9 @@ const KIND_IDS = [
   'minecraft:worldgen/block_state_provider',
   'minecraft:worldgen/material_condition',
   'minecraft:worldgen/material_rule',
+  'msm:block',
+  'msm:item',
+  'msm:mod',
 ];
 
 const entries: readonly (ProjectStarter | ExampleProject)[] = [
@@ -146,24 +150,47 @@ describe('project starters', () => {
     }
   });
 
-  it('describes the Custom ore starter as a reskin until Phase 4', () => {
-    const ore = libraryStarters.find((starter) => starter.id === 'custom_ore');
-    expect(ore?.description).toMatch(/reskin/);
-    expect(ore?.description).toMatch(/Phase 4/);
-    const ids = build(ore as ProjectStarter).elements.map((entry) => `${entry.kind} ${entry.id}`);
-    expect(ids).toEqual(
-      expect.arrayContaining([
-        'minecraft:block_definition minecraft:emerald_ore',
-        'minecraft:item_definition minecraft:emerald',
-        'minecraft:lang minecraft:en_us',
-        'minecraft:loot_table minecraft:blocks/emerald_ore',
-        'minecraft:model demo:block/ruby_ore',
-        'minecraft:recipe demo:ruby_block',
-        'minecraft:tag/item demo:gems',
-        'minecraft:advancement demo:root',
-        'minecraft:advancement demo:get_ruby',
-      ]),
-    );
+  it('builds the Custom ore starter from real blocks and items, with no vanilla overrides', () => {
+    const ore = libraryStarters.find((starter) => starter.id === 'custom_ore') as ProjectStarter;
+    expect(ore.description).toMatch(/Fabric mod jar/);
+    expect(ore.layers).toEqual(['resourcepack', 'datapack', 'msm']);
+    const bundle = build(ore);
+    const ids = bundle.elements.map((entry) => `${entry.kind} ${entry.id}`);
+    expect(ids).toEqual([
+      'minecraft:pack_mcmeta demo:pack',
+      'msm:mod demo:mod',
+      'msm:block demo:ruby_ore',
+      'minecraft:loot_table demo:blocks/ruby_ore',
+      'msm:item demo:ruby',
+      'msm:block demo:ruby_block',
+      'minecraft:model demo:block/ruby_ore',
+      'minecraft:model demo:block/ruby_block',
+      'minecraft:model demo:item/ruby',
+      'minecraft:recipe demo:ruby_block_from_rubies',
+      'minecraft:recipe demo:ruby_from_block',
+      'minecraft:recipe demo:ruby_from_smelting',
+      'minecraft:tag/item demo:gems',
+      'minecraft:advancement demo:root',
+      'minecraft:advancement demo:get_ruby',
+    ]);
+    const rubyOre = bundle.elements.find((entry) => entry.id === 'demo:ruby_ore');
+    expect(rubyOre?.data).toMatchObject({
+      loot: 'demo:blocks/ruby_ore',
+      components: {
+        'msm:breakable': { tool: 'pickaxe', min_tier: 'iron' },
+        'msm:light_emitter': { level: 3 },
+      },
+    });
+    const loot = bundle.elements.find((entry) => entry.id === 'demo:blocks/ruby_ore');
+    expect(JSON.stringify(loot?.data)).toContain('"name":"demo:ruby"');
+    expect(bundle.elements.find((entry) => entry.kind === 'msm:mod')?.data).toMatchObject({
+      mod_id: 'demo',
+    });
+    expect(bundle.assets.map((asset) => asset.path)).toEqual([
+      'textures/block/ruby_ore.png',
+      'textures/block/ruby_block.png',
+      'textures/item/ruby.png',
+    ]);
   });
 
   it('plays the vanilla cat record in the music disc starter, with no bundled sound', () => {
@@ -189,14 +216,18 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 52 per-kind examples, one per built-in kind, and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(52);
+  it('has 55 per-kind examples, one per built-in kind, 2 behaviour examples and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(55);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
     );
     expect(starterExamples.every((example) => example.category === STARTERS_CATEGORY)).toBe(true);
-    expect(libraryExamples).toHaveLength(56);
+    expect(behaviourExamples.map((example) => example.id)).toEqual([
+      'example_msm_tool',
+      'example_msm_event_chain',
+    ]);
+    expect(libraryExamples).toHaveLength(61);
   });
 
   it('reuses the starter builders for the starter projects', () => {

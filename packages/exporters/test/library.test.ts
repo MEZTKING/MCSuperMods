@@ -1,13 +1,16 @@
 /**
  * Cross-plugin check of the library's starters and examples (ADR 0020, plan D6): every
  * bundle is built into a project the way the app's session does it (`newProject`), saved,
- * reloaded with the real resource pack, data pack and library plugins, validated element by
- * element with the project's own registry ids, and exported as a resource pack and a data
- * pack with every function checked by the offline mcfunction service. Zero problems
- * (errors or warnings, so no unknown ids) are allowed, for every built-in target.
+ * reloaded with the real built-in plugins (resource pack, data pack, structures, worldgen,
+ * blocks and items, library), validated element by element with the project's own registry
+ * ids, and exported as a resource pack and a data pack with every function checked by the
+ * offline mcfunction service; projects with `msm:` elements are also exported as a Fabric mod
+ * jar (separate runtime, so no runtime jar is needed). Zero problems (errors or warnings, so
+ * no unknown ids) are allowed, for every built-in target.
  *
  * The `examples/` folder at the repository root mirrors the library as ordinary MSM
- * projects: `examples/all-kinds/` (every per-kind example in one project) and
+ * projects: `examples/all-kinds/` (every per-kind example in one project),
+ * `examples/blocks-items/` (the blocks and items behaviour examples) and
  * `examples/starters/<starter id>/` (each content starter). It is a golden: set
  * `UPDATE_GOLDENS=1` to rewrite it from the current library.
  */
@@ -37,8 +40,14 @@ import type {
   Problem,
   ProjectStarter,
 } from '@msm/plugin-api';
+import blocksItemsPlugin from '@msm/plugin-blocks-items';
 import dataPackPlugin from '@msm/plugin-datapack';
-import libraryPlugin, { kindExamples, libraryExamples, libraryStarters } from '@msm/plugin-library';
+import libraryPlugin, {
+  behaviourExamples,
+  kindExamples,
+  libraryExamples,
+  libraryStarters,
+} from '@msm/plugin-library';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
 import structuresPlugin from '@msm/plugin-structures';
 import worldgenPlugin from '@msm/plugin-worldgen';
@@ -57,7 +66,13 @@ import {
 } from '@msm/schemas/mcfunction';
 import { builtInTargets, readVendoredJson, type TargetBundle } from '@msm/targets';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { createZipSink, dataPackExporter, resourcePackExporter, runExport } from '../src/index';
+import {
+  createFabricContentJarExporter,
+  createZipSink,
+  dataPackExporter,
+  resourcePackExporter,
+  runExport,
+} from '../src/index';
 
 const update = process.env.UPDATE_GOLDENS === '1';
 
@@ -70,6 +85,7 @@ const PLUGINS: readonly Plugin[] = [
   dataPackPlugin,
   structuresPlugin,
   worldgenPlugin,
+  blocksItemsPlugin,
   libraryPlugin,
 ];
 const PACK_KIND = 'minecraft:pack_mcmeta';
@@ -217,7 +233,10 @@ const NON_DATA_KINDS = new Set([
 
 /**
  * A copy of the app's `projectRegistryIds` (the app cannot be imported here): a registered
- * kind's ids go to `ElementKind.registry`, else to the kind id without `minecraft:`.
+ * kind's ids go to `ElementKind.registry`, else to the kind id without `minecraft:`. An
+ * `msm:block` with a block item (any `item` but `false`) also registers that item under the
+ * block's id, so its id goes to `item` too (the app does not do this yet; see the B94 and B98
+ * reports).
  */
 function projectRegistryIds(project: Project): Record<string, string[]> {
   const ids: Record<string, string[]> = { model: [], sound: [], sound_event: [], texture: [] };
@@ -230,6 +249,14 @@ function projectRegistryIds(project: Project): Record<string, string[]> {
     for (const element of namespace.elements) {
       const kind = registry.get(element.kind);
       const name = kind?.registry ?? element.kind.replace(/^minecraft:/, '');
+      if (
+        element.kind === 'msm:block' &&
+        typeof element.data === 'object' &&
+        element.data !== null &&
+        (element.data as { item?: unknown }).item !== false
+      ) {
+        add('item', element.id);
+      }
       if (name === 'model') add('model', element.id);
       else if (name === 'sounds' && typeof element.data === 'object' && element.data !== null) {
         for (const key of Object.keys(element.data)) {
@@ -368,6 +395,7 @@ async function exportProblems(
   registries: RegistryIndex,
   ids: Record<string, string[]>,
   exporter: Exporter,
+  options: Record<string, Json> = {},
 ): Promise<{ problems: Problem[]; ok: boolean; files: string[] }> {
   const functionIds = mcfunctionIds(project, ids);
   const report = await runExport({
@@ -380,6 +408,7 @@ async function exportProblems(
     sink: createZipSink(),
     readAsset: (namespace, path) => fs.readFile(`assets/${namespace}/${path}`),
     meta,
+    options,
     async validateText(file) {
       if (file.language !== 'mcfunction') return [];
       const source = utf8.decode(file.contents as Uint8Array).replace(/\n$/, '');
@@ -400,12 +429,24 @@ async function exportProblems(
   return { problems: report.problems, ok: report.ok, files: report.files };
 }
 
-/** Builds, reloads, validates and exports one project; expects zero problems throughout. */
+/** The Fabric mod jar exporter, with no runtime to nest (the test sets `separateRuntime`). */
+const contentJarExporter = createFabricContentJarExporter();
+
+/** Whether a project has elements of `msm:` kinds, which only the Fabric mod jar carries. */
+const hasMsmElements = (project: Project): boolean =>
+  project.namespaces.some((namespace) =>
+    namespace.elements.some((element) => element.kind.startsWith('msm:')),
+  );
+
+/**
+ * Builds, reloads, validates and exports one project; expects zero problems throughout.
+ * `jarFiles` is empty for a project without `msm:` elements.
+ */
 async function checkProject(
   bundle: TargetBundle,
   context: TargetContext,
   built: BuiltProject,
-): Promise<{ resourceFiles: string[]; dataFiles: string[] }> {
+): Promise<{ resourceFiles: string[]; dataFiles: string[]; jarFiles: string[] }> {
   const project = await reload(built.fs);
   const ids = projectRegistryIds(project);
   const registries = createRegistryIndex({ vanilla: context.vanilla, project: ids });
@@ -427,7 +468,23 @@ async function checkProject(
     expect(report.ok).toBe(true);
     results.push(report.files);
   }
-  return { resourceFiles: results[0] ?? [], dataFiles: results[1] ?? [] };
+  let jarFiles: string[] = [];
+  if (hasMsmElements(project)) {
+    const report = await exportProblems(
+      bundle,
+      context,
+      built.fs,
+      project,
+      registries,
+      ids,
+      contentJarExporter,
+      { separateRuntime: true },
+    );
+    expect(report.problems.filter((problem) => problem.severity !== 'info')).toEqual([]);
+    expect(report.ok).toBe(true);
+    jarFiles = report.files;
+  }
+  return { resourceFiles: results[0] ?? [], dataFiles: results[1] ?? [], jarFiles };
 }
 
 // Mirror -------------------------------------------------------------------------------------
@@ -452,6 +509,20 @@ const MIRROR: readonly MirrorProject[] = [
         'msm_examples',
         kindExamples.map((example) =>
           example.build({ namespace: 'msm_examples', projectName: 'MSM Examples' }),
+        ),
+      ),
+  },
+  {
+    folder: 'blocks-items',
+    build: () =>
+      buildProject(
+        'MSM Blocks and Items Examples',
+        'msm_examples',
+        behaviourExamples.map((example) =>
+          example.build({
+            namespace: 'msm_examples',
+            projectName: 'MSM Blocks and Items Examples',
+          }),
         ),
       ),
   },
@@ -583,31 +654,55 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       },
     );
 
-    it('the Custom ore starter reskins emerald ore (ADR 0020, D4)', async () => {
+    it('the Custom ore starter adds a real ruby ore, ruby and block of ruby (ADR 0025)', async () => {
       const built = await buildProject('Ore', 'demo', [
         starterById('custom_ore').build({ namespace: 'demo', projectName: 'Ore' }),
       ]);
-      const { resourceFiles, dataFiles } = await checkProject(bundle, context, built);
+      const { resourceFiles, dataFiles, jarFiles } = await checkProject(bundle, context, built);
       const resource = bundle.target.folders.resource;
       const data = bundle.target.folders.data;
-      expect(resourceFiles).toEqual(
+      const assets = [
+        `assets/demo/${resource.textures}/block/ruby_ore.png`,
+        `assets/demo/${resource.textures}/block/ruby_block.png`,
+        `assets/demo/${resource.textures}/item/ruby.png`,
+        `assets/demo/${resource.block_definition}/ruby_ore.json`,
+        `assets/demo/${resource.block_definition}/ruby_block.json`,
+        `assets/demo/${resource.item_definition}/ruby_ore.json`,
+        `assets/demo/${resource.item_definition}/ruby_block.json`,
+        `assets/demo/${resource.item_definition}/ruby.json`,
+        `assets/demo/${resource.lang}/en_us.json`,
+      ];
+      const datafiles = [
+        `data/demo/${data.loot_table}/blocks/ruby_ore.json`,
+        `data/demo/${data.loot_table}/blocks/ruby_block.json`,
+        `data/demo/${data.recipe}/ruby_block_from_rubies.json`,
+        `data/demo/${data.recipe}/ruby_from_block.json`,
+        `data/demo/${data.recipe}/ruby_from_smelting.json`,
+        `data/demo/${data.advancement}/root.json`,
+        `data/demo/${data.advancement}/get_ruby.json`,
+        `data/minecraft/${data.tags}/block/mineable/pickaxe.json`,
+        `data/minecraft/${data.tags}/block/needs_iron_tool.json`,
+      ];
+      expect(resourceFiles).toEqual(expect.arrayContaining([...assets, 'pack.mcmeta']));
+      expect(dataFiles).toEqual(expect.arrayContaining([...datafiles, 'pack.mcmeta']));
+      // Nothing is overridden in the minecraft namespace of the resource pack any more.
+      expect(resourceFiles.some((path) => path.startsWith('assets/minecraft/'))).toBe(false);
+      // The vanilla packs leave the runtime definitions out; the mod jar carries everything.
+      for (const files of [resourceFiles, dataFiles]) {
+        expect(files.some((path) => path.startsWith('msm/'))).toBe(false);
+        expect(files).not.toContain('fabric.mod.json');
+      }
+      expect(jarFiles).toEqual(
         expect.arrayContaining([
-          `assets/demo/${resource.textures}/block/ruby_ore.png`,
-          `assets/minecraft/${resource.block_definition}/emerald_ore.json`,
-          `assets/minecraft/${resource.item_definition}/emerald.json`,
-          `assets/minecraft/${resource.lang}/en_us.json`,
-          'pack.mcmeta',
+          ...assets,
+          ...datafiles,
+          'msm/demo/block/ruby_ore.json',
+          'msm/demo/block/ruby_block.json',
+          'msm/demo/item/ruby.json',
+          'fabric.mod.json',
         ]),
       );
-      expect(dataFiles).toEqual(
-        expect.arrayContaining([
-          `data/minecraft/${data.loot_table}/blocks/emerald_ore.json`,
-          `data/demo/${data.recipe}/ruby_block.json`,
-          `data/demo/${data.advancement}/root.json`,
-          `data/demo/${data.advancement}/get_ruby.json`,
-          'pack.mcmeta',
-        ]),
-      );
+      expect(jarFiles).not.toContain('pack.mcmeta');
     });
 
     it.each(MIRROR.map((entry) => [entry.folder, entry] as const))(

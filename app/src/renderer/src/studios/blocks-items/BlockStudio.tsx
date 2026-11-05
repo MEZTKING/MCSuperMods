@@ -86,7 +86,11 @@ export function BlockStudio(props: StudioProps) {
           allowEmpty
           testId="block-hardness"
           onCommit={(value) =>
-            set([...breakablePath, 'hardness'], value, typingKey('/components/msm:breakable/hardness'))
+            set(
+              [...breakablePath, 'hardness'],
+              value,
+              typingKey('/components/msm:breakable/hardness'),
+            )
           }
         />
         <NumberField
@@ -126,8 +130,8 @@ export function BlockStudio(props: StudioProps) {
         onChange={(checked) => set([...breakablePath, 'requires_tool'], checked ? true : undefined)}
       />
       <p className="text-muted text-xs">
-        Empty fields use the defaults: hardness 1.5, resistance 6. A tool or minimum tier also
-        makes the right tool required.
+        Empty fields use the defaults: hardness 1.5, resistance 6. A tool or minimum tier also makes
+        the right tool required.
       </p>
       {['hardness', 'resistance', 'tool', 'min_tier', 'requires_tool'].map((key) => (
         <ProblemsAt key={key} problems={problems} pointer={pointerOf([...breakablePath, key])} />
@@ -174,19 +178,29 @@ export function BlockStudio(props: StudioProps) {
     data.loot === 'self' ? 'self' : typeof data.loot === 'string' ? 'table' : 'none';
   const dropsSection = (
     <Section title="Drops" testId="block-drops">
-      <SelectField
-        label="Drops"
-        value={drops}
-        choices={['self', 'table', 'none']}
-        testId="block-drops-mode"
-        onChange={(value) => {
-          if (value === drops) return;
-          if (value === 'self') set(['loot'], 'self');
-          else if (value === 'table') set(['loot'], '');
-          else set(['loot'], undefined);
-        }}
-      />
-      <p className="text-muted text-xs">{DROPS_LABELS[drops]}</p>
+      <div role="radiogroup" aria-label="Drops" className="flex flex-wrap gap-3 text-sm">
+        {(['self', 'table', 'none'] as const).map((mode) => (
+          <label key={mode} className="flex items-center gap-1">
+            <input
+              type="radio"
+              name={`block-drops-${element.id}`}
+              data-testid={`block-drops-${mode}`}
+              checked={drops === mode}
+              onChange={() => {
+                if (mode === drops) return;
+                if (mode === 'self') set(['loot'], 'self');
+                else if (mode === 'table') set(['loot'], '');
+                else set(['loot'], undefined);
+              }}
+            />
+            {DROPS_LABELS[mode]}
+          </label>
+        ))}
+      </div>
+      <p className="text-muted text-xs">
+        "None" generates no loot table, so the block drops nothing unless the game already has a
+        loot table for its id.
+      </p>
       {drops === 'table' && (
         <IdField
           label="Loot table"

@@ -7,7 +7,15 @@
  * loot tables, tags, recipes and advancements.
  */
 import type { BundleContext, ContentBundle } from '@msm/plugin-api';
-import { COLOURS, element, KINDS, modIdFromNamespace, packElement, rl, texture } from '../content/bundle';
+import {
+  COLOURS,
+  element,
+  KINDS,
+  modIdFromNamespace,
+  packElement,
+  rl,
+  texture,
+} from '../content/bundle';
 
 export function customOreBundle({ namespace, projectName }: BundleContext): ContentBundle {
   const ore = rl(namespace, 'ruby_ore');
@@ -144,7 +152,7 @@ export function customOreBundle({ namespace, projectName }: BundleContext): Cont
           key: { R: ruby },
           result: { id: block, count: 1 },
         },
-        'Nine rubies make a block of ruby. Element ids are unique across kinds, so the recipe cannot share the block\'s id ruby_block and has a name of its own.',
+        "Nine rubies make a block of ruby. Element ids are unique across kinds, so the recipe cannot share the block's id ruby_block and has a name of its own.",
       ),
       element(
         rl(namespace, 'ruby_from_block'),

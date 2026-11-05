@@ -6,6 +6,7 @@
     "@msm/schemas",
     "@msm/core",
     "@msm/targets",
+    "@msm/plugin-blocks-items",
     "@msm/plugin-datapack",
     "@msm/plugin-library",
     "@msm/plugin-resourcepack",

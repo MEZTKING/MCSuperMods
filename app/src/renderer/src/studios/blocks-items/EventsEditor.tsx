@@ -274,7 +274,9 @@ function EventEditor(props: {
                   </button>
                 </div>
               </div>
-              <ProblemList problems={problems.filter((problem) => isWithin(problem.path, pointer))} />
+              <ProblemList
+                problems={problems.filter((problem) => isWithin(problem.path, pointer))}
+              />
             </li>
           );
         })}
@@ -328,8 +330,8 @@ export function EventsEditor({ element, problems, suggest, onChange }: EventsEdi
   return (
     <Section title="Events" testId="msm-events">
       <p className="text-muted text-xs">
-        Events run their actions in order on the server. Triggers and "Trigger event" actions
-        pick events from this list.
+        Events run their actions in order on the server. Triggers and "Trigger event" actions pick
+        events from this list.
       </p>
       {events.length === 0 && <p className="text-muted text-xs">No events.</p>}
       <ul className="flex flex-col gap-2">
