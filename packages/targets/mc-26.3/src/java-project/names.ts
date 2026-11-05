@@ -140,7 +140,11 @@ export class NameTable {
    * @param derived - Turns a candidate into every name it implies (including itself).
    * @param separator - Put between the base and the counter on a clash.
    */
-  take(base: string, derived: (name: string) => string[] = (name) => [name], separator = '_'): string {
+  take(
+    base: string,
+    derived: (name: string) => string[] = (name) => [name],
+    separator = '_',
+  ): string {
     let candidate = base;
     for (let n = 2; derived(candidate).some((name) => this.used.has(name)); n++) {
       candidate = `${base}${separator}${n}`;

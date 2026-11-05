@@ -11,9 +11,24 @@
  */
 
 import type { DefinitionInput } from '@msm/plugin-api';
-import { type Events, eventMethod, eventMethods, fireCall, readEvents, usesActions } from './actions';
+import {
+  type Events,
+  eventMethod,
+  eventMethods,
+  fireCall,
+  readEvents,
+  usesActions,
+} from './actions';
 import { classPath, type GenerationContext, packageOf } from './context';
-import { identifierExpression, indent, JavaFile, javaFloat, javaInt, javaString, trimBlank } from './java';
+import {
+  identifierExpression,
+  indent,
+  JavaFile,
+  javaFloat,
+  javaInt,
+  javaString,
+  trimBlank,
+} from './java';
 import { className, constantName, NameTable, splitId } from './names';
 import { checkFormat, type Reader, readDefinition } from './read';
 
@@ -65,7 +80,13 @@ export const SOUND_TYPES = [
 export const RARITIES = ['common', 'uncommon', 'rare', 'epic'] as const;
 
 const BLOCK_KEYS = ['format', 'sound_type', 'loot_table', 'item', 'components', 'events'];
-const BLOCK_COMPONENTS = ['msm:breakable', 'msm:light_emitter', 'msm:on_interact', 'msm:on_step', 'msm:redstone'];
+const BLOCK_COMPONENTS = [
+  'msm:breakable',
+  'msm:light_emitter',
+  'msm:on_interact',
+  'msm:on_step',
+  'msm:redstone',
+];
 
 /** A parsed block definition. */
 interface BlockSpec {
@@ -73,7 +94,9 @@ interface BlockSpec {
   readonly reader: Reader;
   readonly soundType: string;
   readonly lootTable: string | undefined;
-  readonly item: { creativeTab: string | undefined; maxStackSize: number; rarity: string } | undefined;
+  readonly item:
+    | { creativeTab: string | undefined; maxStackSize: number; rarity: string }
+    | undefined;
   readonly hardness: number;
   readonly resistance: number;
   readonly requiresTool: boolean;
@@ -133,20 +156,34 @@ function readBlock(input: DefinitionInput): BlockSpec {
     requiresTool: breakable?.boolean('requires_tool', false) ?? false,
     light: light?.requiredInteger('level'),
     events,
-    onInteract: interact === undefined ? undefined : eventMethod(interact, events, interact.requiredString('event')),
+    onInteract:
+      interact === undefined
+        ? undefined
+        : eventMethod(interact, events, interact.requiredString('event')),
     onStep:
       step === undefined
         ? undefined
-        : { method: eventMethod(step, events, step.requiredString('event')), cooldown: step.integer('cooldown_ticks', 0) },
+        : {
+            method: eventMethod(step, events, step.requiredString('event')),
+            cooldown: step.integer('cooldown_ticks', 0),
+          },
     emit: redstone?.integer('emit', 0) ?? 0,
-    onPowered: powered === undefined || redstone === undefined ? undefined : eventMethod(redstone, events, powered),
-    onUnpowered: unpowered === undefined || redstone === undefined ? undefined : eventMethod(redstone, events, unpowered),
+    onPowered:
+      powered === undefined || redstone === undefined
+        ? undefined
+        : eventMethod(redstone, events, powered),
+    onUnpowered:
+      unpowered === undefined || redstone === undefined
+        ? undefined
+        : eventMethod(redstone, events, unpowered),
   };
 }
 
 /** Whether the block needs its own class (events reachable from a component, or redstone). */
 function needsClass(spec: BlockSpec): boolean {
-  return spec.onInteract !== undefined || spec.onStep !== undefined || spec.emit > 0 || tracksPower(spec);
+  return (
+    spec.onInteract !== undefined || spec.onStep !== undefined || spec.emit > 0 || tracksPower(spec)
+  );
 }
 
 function tracksPower(spec: BlockSpec): boolean {
@@ -158,12 +195,18 @@ function tracksPower(spec: BlockSpec): boolean {
  *
  * @returns The simple name of the registration class, or `undefined`.
  */
-export function generateBlocks(context: GenerationContext, classNames: NameTable): string | undefined {
+export function generateBlocks(
+  context: GenerationContext,
+  classNames: NameTable,
+): string | undefined {
   const { blocks } = context.input;
   if (blocks.length === 0) return undefined;
   const specs = blocks.map(readBlock);
   const fields = new NameTable();
-  const file = new JavaFile(context.input.javaPackage, 'the msm/<namespace>/block/*.json definitions');
+  const file = new JavaFile(
+    context.input.javaPackage,
+    'the msm/<namespace>/block/*.json definitions',
+  );
   const registry = file.use('net.minecraft.core.Registry');
   const builtIn = file.use('net.minecraft.core.registries.BuiltInRegistries');
   const registries = file.use('net.minecraft.core.registries.Registries');
@@ -176,7 +219,12 @@ export function generateBlocks(context: GenerationContext, classNames: NameTable
   const tabs: string[] = [];
   for (const spec of specs) {
     const { path } = splitId(spec.input.id);
-    const field = fields.take(constantName(path), (name) => [name, `${name}_KEY`, `${name}_ITEM`, `${name}_ITEM_KEY`]);
+    const field = fields.take(constantName(path), (name) => [
+      name,
+      `${name}_KEY`,
+      `${name}_ITEM`,
+      `${name}_ITEM_KEY`,
+    ]);
     let type = blockType;
     if (needsClass(spec)) {
       const name = classNames.take(className(path, 'Block'), (n) => [`block.${n}`], '');
@@ -189,7 +237,8 @@ export function generateBlocks(context: GenerationContext, classNames: NameTable
       `        .strength(${javaFloat(spec.hardness)}, ${javaFloat(spec.resistance)})`,
       `        .sound(${soundType}.${spec.soundType})`,
     ];
-    if (spec.light !== undefined) props.push(`        .lightLevel(state -> ${javaInt(spec.light)})`);
+    if (spec.light !== undefined)
+      props.push(`        .lightLevel(state -> ${javaInt(spec.light)})`);
     if (spec.requiresTool) props.push('        .requiresCorrectToolForDrops()');
     if (spec.lootTable !== undefined) {
       const optional = file.use('java.util.Optional');
@@ -203,7 +252,7 @@ export function generateBlocks(context: GenerationContext, classNames: NameTable
       `/** {@code ${spec.input.id}} (${spec.input.path}). */`,
       `public static final ${resourceKey}<${blockType}> ${field}_KEY = ${resourceKey}.create(${registries}.BLOCK, ${identifierExpression(file, spec.input.id)});`,
       `public static final ${type} ${field} = ${registry}.register(${builtIn}.BLOCK, ${field}_KEY, new ${type}(${props[0]}`,
-      ...props.slice(1).map((line) => `    ${line}`),
+      ...props.slice(1),
     );
     if (spec.item !== undefined) {
       const item = file.use('net.minecraft.world.item.Item');
@@ -217,7 +266,8 @@ export function generateBlocks(context: GenerationContext, classNames: NameTable
         `        .stacksTo(${javaInt(spec.item.maxStackSize)})`,
         `        .rarity(${rarity}.${spec.item.rarity})));`,
       );
-      if (spec.item.creativeTab !== undefined) tabs.push(tabLine(file, spec.item.creativeTab, `${field}_ITEM`));
+      if (spec.item.creativeTab !== undefined)
+        tabs.push(tabLine(file, spec.item.creativeTab, `${field}_ITEM`));
     }
   }
   const lines = [
@@ -253,15 +303,22 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
   const file = new JavaFile(javaPackage, spec.input.path);
   const blockType = file.use('net.minecraft.world.level.block.Block');
   const properties = file.use('net.minecraft.world.level.block.state.BlockBehaviour', 'Properties');
-  const actions = usesActions(spec.events) ? file.use(`${context.input.javaPackage}.Actions`) : 'Actions';
+  const actions = usesActions(spec.events)
+    ? file.use(`${context.input.javaPackage}.Actions`)
+    : 'Actions';
   if (usesActions(spec.events)) context.usesActions = true;
   const power = tracksPower(spec);
 
   const members: string[] = [];
-  if (spec.events.byId.size > 0) members.push(`private static final String OWNER = ${javaString(spec.input.id)};`);
+  if (spec.events.byId.size > 0)
+    members.push(`private static final String OWNER = ${javaString(spec.input.id)};`);
   if (power) {
-    const booleanProperty = file.use('net.minecraft.world.level.block.state.properties.BooleanProperty');
-    const blockStateProperties = file.use('net.minecraft.world.level.block.state.properties.BlockStateProperties');
+    const booleanProperty = file.use(
+      'net.minecraft.world.level.block.state.properties.BooleanProperty',
+    );
+    const blockStateProperties = file.use(
+      'net.minecraft.world.level.block.state.properties.BlockStateProperties',
+    );
     if (members.length > 0) members.push('');
     members.push(
       '/** The last seen neighbour power, for the msm:redstone events. */',
@@ -281,7 +338,8 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
     );
   }
   members.push('', `public ${name}(${properties} properties) {`, '    super(properties);');
-  if (power) members.push('    registerDefaultState(stateDefinition.any().setValue(POWERED, false));');
+  if (power)
+    members.push('    registerDefaultState(stateDefinition.any().setValue(POWERED, false));');
   members.push('}');
 
   if (power) {
@@ -364,12 +422,20 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
     const fire = (method: string | undefined): string[] =>
       method === undefined
         ? []
-        : [`    ${fireCall(method, `server, pos.immutable(), ${vec3()}.atCenterOf(pos), null, null`)}`];
+        : [
+            `    ${fireCall(method, `server, pos.immutable(), ${vec3()}.atCenterOf(pos), null, null`)}`,
+          ];
     const powered = fire(spec.onPowered);
     const unpowered = fire(spec.onUnpowered);
     const branch: string[] = [];
     if (powered.length > 0 && unpowered.length > 0) {
-      branch.push('if (powered) {', ...indent(powered.map((l) => l.trimStart())), '} else {', ...indent(unpowered.map((l) => l.trimStart())), '}');
+      branch.push(
+        'if (powered) {',
+        ...indent(powered.map((l) => l.trimStart())),
+        '} else {',
+        ...indent(unpowered.map((l) => l.trimStart())),
+        '}',
+      );
     } else if (powered.length > 0) {
       branch.push('if (powered) {', ...indent(powered.map((l) => l.trimStart())), '}');
     } else {

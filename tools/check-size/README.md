@@ -15,14 +15,16 @@ Thresholds are the `BUDGETS` constant in `index.ts` (binary units: 1 MB = 1024 �
 | Budget | Threshold | Why |
 |---|---|---|
 | `app.asar` in `app/dist/<platform>-unpacked/resources/` | ≤ 25 MB | Everything MSM ships besides Electron itself: main, preload, renderer and their bundled dependencies. About 10 MB at Phase 1. |
-| Renderer output, `app/out/renderer/` in total | ≤ 8 MB | Keeps Monaco and the deepslate preview lazy and stops accidental bundling. About 5.6 MB at Phase 1, of which Monaco is most. |
+| Renderer output, `app/out/renderer/` in total | ≤ 16 MB | Keeps Monaco and the deepslate preview lazy and stops accidental bundling. About 5.6 MB at Phase 1, of which Monaco is most; raised from 8 MB in Phase 6 for the lazy Monaco TypeScript worker of the Script Studio, about 7 MB on its own (ADR 0031 D6). |
+| Monaco TypeScript worker | a separate chunk | A renderer file whose name contains `ts.worker` must exist: the worker loads only with the script editor, never with the main bundle. |
 | Any `*.json` in `app/out/renderer/` | ≤ 100 kB each | Vendored target data (mcdoc symbols, registries) is read by main, not bundled into the renderer. |
 
 ## Reported only
 
 - **Unpacked app total.** About 284 MB on Linux at Phase 1, of which the Electron binary is about 224 MB. MSM does not control that, so the Phase 1 plan's "unpacked app < 150 MB" cannot pass and is not enforced.
 - **Largest renderer files**, to spot regressions before they hit the budget.
-- **Main-process output**: the size of `app/out/main/index.js` and the `app/out/main` total. From Phase 2 the main process bundles the Spyglass mcfunction service (ADR 0014), so this is watched, but it counts against the asar budget only.
+- **Main-process output**: the size of `app/out/main/index.js`, the `app/out/main` total and its five largest files. From Phase 2 the main process bundles the Spyglass mcfunction service (ADR 0014) and from Phase 6 the lazy TypeScript transpiler chunk (ADR 0031), so this is watched, but it counts against the asar budget only.
+- **TypeScript worker chunk**: the file name and size of the Monaco TypeScript worker.
 
 ## Installer budget
 

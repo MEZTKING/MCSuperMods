@@ -36,6 +36,7 @@ import {
 } from '../blocks-items/blocks-items-model';
 import { EventsEditor } from '../blocks-items/EventsEditor';
 import { CheckField, EventSelect, ProblemsAt, TextField } from '../blocks-items/parts';
+import { projectHandlers } from '../scripting/script-model';
 import { useStructureStudioHost } from '../structures/host';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
@@ -832,6 +833,7 @@ export function EntityStudio(props: StudioProps) {
         suggest={suggest}
         onChange={onChange}
         animations={names}
+        handlers={projectHandlers(project)}
         triggers={triggers}
       />
     </section>

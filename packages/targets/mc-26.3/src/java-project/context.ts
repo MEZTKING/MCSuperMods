@@ -20,7 +20,11 @@ export interface GenerationContext {
 }
 
 /** The file path of a class in a sub-package (`''` for the mod package itself). */
-export function classPath(context: GenerationContext, subPackage: string, simpleName: string): string {
+export function classPath(
+  context: GenerationContext,
+  subPackage: string,
+  simpleName: string,
+): string {
   return subPackage === ''
     ? `${context.javaRoot}/${simpleName}.java`
     : `${context.javaRoot}/${subPackage.replaceAll('.', '/')}/${simpleName}.java`;
@@ -28,5 +32,7 @@ export function classPath(context: GenerationContext, subPackage: string, simple
 
 /** The fully qualified name of a sub-package. */
 export function packageOf(context: GenerationContext, subPackage: string): string {
-  return subPackage === '' ? context.input.javaPackage : `${context.input.javaPackage}.${subPackage}`;
+  return subPackage === ''
+    ? context.input.javaPackage
+    : `${context.input.javaPackage}.${subPackage}`;
 }

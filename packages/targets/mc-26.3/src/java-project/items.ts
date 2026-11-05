@@ -9,10 +9,25 @@
  */
 
 import type { DefinitionInput } from '@msm/plugin-api';
-import { type Events, eventMethod, eventMethods, fireCall, readEvents, usesActions } from './actions';
+import {
+  type Events,
+  eventMethod,
+  eventMethods,
+  fireCall,
+  readEvents,
+  usesActions,
+} from './actions';
 import { RARITIES, tabLine } from './blocks';
 import { classPath, type GenerationContext, packageOf } from './context';
-import { identifierExpression, indent, JavaFile, javaFloat, javaInt, javaString, trimBlank } from './java';
+import {
+  identifierExpression,
+  indent,
+  JavaFile,
+  javaFloat,
+  javaInt,
+  javaString,
+  trimBlank,
+} from './java';
 import { className, constantName, NameTable, splitId } from './names';
 import { checkFormat, readDefinition } from './read';
 
@@ -82,7 +97,10 @@ function readItem(input: DefinitionInput): ItemSpec {
     onUse:
       onUse === undefined
         ? undefined
-        : { method: eventMethod(onUse, events, onUse.requiredString('event')), cooldown: onUse.integer('cooldown_ticks', 0) },
+        : {
+            method: eventMethod(onUse, events, onUse.requiredString('event')),
+            cooldown: onUse.integer('cooldown_ticks', 0),
+          },
     events,
   };
 }
@@ -92,12 +110,18 @@ function readItem(input: DefinitionInput): ItemSpec {
  *
  * @returns The simple name of the registration class, or `undefined`.
  */
-export function generateItems(context: GenerationContext, classNames: NameTable): string | undefined {
+export function generateItems(
+  context: GenerationContext,
+  classNames: NameTable,
+): string | undefined {
   const { items } = context.input;
   if (items.length === 0) return undefined;
   const specs = items.map(readItem);
   const fields = new NameTable();
-  const file = new JavaFile(context.input.javaPackage, 'the msm/<namespace>/item/*.json definitions');
+  const file = new JavaFile(
+    context.input.javaPackage,
+    'the msm/<namespace>/item/*.json definitions',
+  );
   const registry = file.use('net.minecraft.core.Registry');
   const builtIn = file.use('net.minecraft.core.registries.BuiltInRegistries');
   const registries = file.use('net.minecraft.core.registries.Registries');
@@ -120,7 +144,9 @@ export function generateItems(context: GenerationContext, classNames: NameTable)
     const damageable = spec.tool !== undefined || spec.durability !== undefined;
     if (damageable) {
       if (spec.input.definition.max_stack_size !== undefined && spec.maxStackSize !== 1) {
-        props.push(`        // max_stack_size ${spec.maxStackSize} ignored: tools and items with durability stack to 1.`);
+        props.push(
+          `        // max_stack_size ${spec.maxStackSize} ignored: tools and items with durability stack to 1.`,
+        );
       }
     } else {
       props.push(`        .stacksTo(${javaInt(spec.maxStackSize)})`);
@@ -141,7 +167,9 @@ export function generateItems(context: GenerationContext, classNames: NameTable)
       props.push(`        .${method}(${toolMaterial}.${spec.tool.tier}, ${damage}, ${speed})`);
     }
     if (spec.durability !== undefined) {
-      props.push(`        .durability(${javaInt(spec.durability)}) // after the tool: overrides the tier's durability`);
+      props.push(
+        `        .durability(${javaInt(spec.durability)}) // after the tool: overrides the tier's durability`,
+      );
     }
     const last = props.length - 1;
     props[last] = closeLine(props[last] as string, '));');
@@ -175,7 +203,9 @@ export function generateItems(context: GenerationContext, classNames: NameTable)
 export function closeLine(line: string, suffix: string): string {
   const comment = line.indexOf(' // ');
   if (line.trimStart().startsWith('//')) return line; // a comment-only line cannot close
-  return comment < 0 ? `${line}${suffix}` : `${line.slice(0, comment)}${suffix}${line.slice(comment)}`;
+  return comment < 0
+    ? `${line}${suffix}`
+    : `${line.slice(0, comment)}${suffix}${line.slice(comment)}`;
 }
 
 function writeItemClass(context: GenerationContext, spec: ItemSpec, name: string): void {
@@ -188,7 +218,9 @@ function writeItemClass(context: GenerationContext, spec: ItemSpec, name: string
   const level = file.use('net.minecraft.world.level.Level');
   const player = file.use('net.minecraft.world.entity.player.Player');
   const serverLevel = file.use('net.minecraft.server.level.ServerLevel');
-  const actions = usesActions(spec.events) ? file.use(`${context.input.javaPackage}.Actions`) : 'Actions';
+  const actions = usesActions(spec.events)
+    ? file.use(`${context.input.javaPackage}.Actions`)
+    : 'Actions';
   if (usesActions(spec.events)) context.usesActions = true;
 
   const members = [
@@ -209,13 +241,19 @@ function writeItemClass(context: GenerationContext, spec: ItemSpec, name: string
     `        ${fireCall(onUse.method, 'server, player.blockPosition().below(), player.position(), player, null')}`,
     '    }',
   ];
-  if (onUse.cooldown > 0) members.push(`    player.getCooldowns().addCooldown(stack, ${javaInt(onUse.cooldown)});`);
+  if (onUse.cooldown > 0)
+    members.push(`    player.getCooldowns().addCooldown(stack, ${javaInt(onUse.cooldown)});`);
   members.push(
     `    ${interactionResult} vanilla = super.use(level, player, hand);`,
     `    return vanilla == ${interactionResult}.PASS ? ${interactionResult}.SUCCESS : vanilla;`,
     '}',
     ...eventMethods(file, spec.events, 'item', actions),
   );
-  const lines = [`/** The item {@code ${spec.input.id}}. */`, `public class ${name} extends ${itemType} {`, ...indent(members), '}'];
+  const lines = [
+    `/** The item {@code ${spec.input.id}}. */`,
+    `public class ${name} extends ${itemType} {`,
+    ...indent(members),
+    '}',
+  ];
   context.files.push({ path: classPath(context, 'item', name), contents: file.render(lines) });
 }

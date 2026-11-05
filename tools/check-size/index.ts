@@ -8,12 +8,16 @@
  * Enforced (thresholds in {@link BUDGETS}, rationale in README.md):
  *
  * 1. `app.asar` in the unpacked build is at most 25 MB.
- * 2. The renderer output (`app/out/renderer`) is at most 8 MB in total.
+ * 2. The renderer output (`app/out/renderer`) is at most 16 MB in total (ADR 0031 D6: the
+ *    lazy Monaco TypeScript worker is about 7 MB on its own).
  * 3. No `*.json` file in the renderer output is larger than 100 kB (vendored data belongs in
  *    main, not in the renderer bundle).
+ * 4. The Monaco TypeScript worker is a chunk of its own (a file whose name contains
+ *    `ts.worker`), so it loads only with the script editor.
  *
- * Reported only: the largest renderer chunks, the main-process bundle (`app/out/main/index.js`
- * and the `app/out/main` total) and the unpacked app total (dominated by the Electron binary,
+ * Reported only: the largest renderer chunks, the main-process bundle (`app/out/main/index.js`,
+ * the `app/out/main` total and its largest chunks, such as the lazy TypeScript service) and
+ * the unpacked app total (dominated by the Electron binary,
  * which MSM does not control). The 150 MB installer budget is checked on the
  * Windows installer in `.github/workflows/release.yml`.
  */
@@ -27,7 +31,7 @@ const KB = 1024;
 /** Size thresholds in bytes. */
 export const BUDGETS = {
   asarBytes: 25 * MB,
-  rendererBytes: 8 * MB,
+  rendererBytes: 16 * MB,
   rendererJsonBytes: 100 * KB,
 } as const;
 
@@ -86,6 +90,17 @@ export function formatBytes(bytes: number): string {
   return `${bytes} B`;
 }
 
+/** The Monaco TypeScript worker's file name marker (Vite names `?worker` chunks after it). */
+export const TS_WORKER_MARKER = 'ts.worker';
+
+/** The renderer files that hold the Monaco TypeScript worker. */
+export function typescriptWorkerChunks(files: readonly FileSize[]): FileSize[] {
+  return files.filter((file) => {
+    const name = file.path.slice(file.path.lastIndexOf('/') + 1);
+    return name.includes(TS_WORKER_MARKER) && name.endsWith('.js');
+  });
+}
+
 /** Returns one message per broken budget or missing input; empty when everything passes. */
 export function checkBudgets(measured: Measurements, budgets: Budgets = BUDGETS): string[] {
   const violations: string[] = [];
@@ -111,6 +126,11 @@ export function checkBudgets(measured: Measurements, budgets: Budgets = BUDGETS)
           `Renderer JSON ${file.path} is ${formatBytes(file.bytes)}, over the ${formatBytes(budgets.rendererJsonBytes)} per-file budget.`,
         );
       }
+    }
+    if (typescriptWorkerChunks(measured.rendererFiles).length === 0) {
+      violations.push(
+        `No separate Monaco TypeScript worker chunk (a file named *${TS_WORKER_MARKER}*.js) in app/out/renderer: the script editor's worker must stay lazy.`,
+      );
     }
   }
   return violations;
@@ -160,13 +180,22 @@ export function report(measured: Measurements, budgets: Budgets = BUDGETS): stri
     for (const file of summary.largest) {
       lines.push(`  ${formatBytes(file.bytes).padStart(9)}  ${file.path}`);
     }
+    const workers = typescriptWorkerChunks(measured.rendererFiles);
+    lines.push(
+      workers.length === 0
+        ? 'TypeScript worker chunk: missing'
+        : `TypeScript worker chunk: ${workers.map((file) => `${file.path} (${formatBytes(file.bytes)})`).join(', ')}`,
+    );
   }
   if (measured.mainFiles !== null) {
     const entry = measured.mainFiles.find((file) => file.path === 'index.js');
     const total = summarise(measured.mainFiles, 0).totalBytes;
     lines.push(
-      `Main output: index.js ${entry === undefined ? 'missing' : formatBytes(entry.bytes)}, ${formatBytes(total)} in total (reported only)`,
+      `Main output: index.js ${entry === undefined ? 'missing' : formatBytes(entry.bytes)}, ${formatBytes(total)} in total (reported only), largest files:`,
     );
+    for (const file of summarise(measured.mainFiles, 5).largest) {
+      lines.push(`  ${formatBytes(file.bytes).padStart(9)}  ${file.path}`);
+    }
   }
   if (measured.asarBytes !== null) {
     lines.push(

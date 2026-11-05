@@ -32,6 +32,13 @@ import {
   GECKOLIB_TEST_DOWNLOAD_MESSAGE,
 } from './components/ExportFabricJarDialog';
 import {
+  ExportJavaProjectDialog,
+  FOLDER_NOT_EMPTY_CODE,
+  JAVA_PROJECT_REVEAL_LABEL,
+  type JavaProjectSessionMembers,
+  javaProjectWrittenMessage,
+} from './components/ExportJavaProjectDialog';
+import {
   type FunctionCaret,
   GO_TO_DEFINITION_EVENT,
   monacoCaret,
@@ -93,6 +100,8 @@ import {
   userFacingExportProblems,
 } from './studios/export-state';
 import type { CompleteFunction } from './studios/FunctionEditor';
+import { DEFAULT_SCRIPT_STUDIO_HOST, ScriptStudioHostContext } from './studios/scripting/host';
+import { projectScripts } from './studios/scripting/script-model';
 import { type StructureStudioHost, StructureStudioHostContext } from './studios/structures/host';
 import { templatesFor } from './studios/templates';
 import { useSchemaContext } from './studios/use-schema-context';
@@ -150,6 +159,7 @@ type DialogState =
   | { type: 'usages'; id: ResourceLocation; usages: readonly Reference[] }
   | { type: 'worlds'; worlds: readonly WorldInfo[] }
   | { type: 'fabric-jar' }
+  | { type: 'java-project' }
   | { type: 'test-in-minecraft' }
   | { type: 'no-minecraft'; message: string };
 
@@ -236,6 +246,12 @@ function targetWarnings(status: MinecraftStatus | null): string[] {
 
 /** A zero-argument action that also reports its own errors. */
 type Action = () => void;
+
+/**
+ * The menu command of File > "Export Java Project…" (the Phase 6 plan's id). Listed here as
+ * well as in `MENU_COMMANDS`, so the handler table holds it whether or not main sends it yet.
+ */
+const EXPORT_JAVA_PROJECT_COMMAND = 'exportJavaProject';
 
 /** The application shell: toolbar, sidebar, editor (Form and Raw JSON), Preview and Problems. */
 export function App({ session, bridge }: { session: ProjectSession; bridge: MsmBridge }) {
@@ -582,6 +598,52 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     }
   };
 
+  /** Runs the Java project export (ADR 0033), which asks for the folder, and reports it. */
+  const runJavaProjectExport = async (): Promise<void> => {
+    const javaSession: ProjectSession & JavaProjectSessionMembers = session;
+    if (javaSession.exportJavaProject === undefined) {
+      setMessage({ kind: 'error', text: 'Java project export is not available in this build.' });
+      return;
+    }
+    setExporting(true);
+    try {
+      const result = await javaSession.exportJavaProject();
+      setExportProblems(userFacingExportProblems(result.problems));
+      if (!result.ok) {
+        setRightDock('problems');
+        const errors = errorCount(result.problems);
+        const notEmpty = result.problems.find((problem) => problem.code === FOLDER_NOT_EMPTY_CODE);
+        setMessage({
+          kind: 'error',
+          text:
+            notEmpty?.message ??
+            `Export blocked by ${errors} error(s); nothing was written. See Problems.`,
+        });
+        return;
+      }
+      if (result.cancelled === true || result.location === undefined) return;
+      const location = result.location;
+      const warnings = result.problems.filter((problem) => problem.severity === 'warning').length;
+      const suffix = warnings > 0 ? ` ${warnings} warning(s), see Problems.` : '';
+      setMessage({
+        kind: 'info',
+        text: `${javaProjectWrittenMessage(location)}.${suffix}`,
+        action: {
+          label: JAVA_PROJECT_REVEAL_LABEL,
+          run: () => {
+            bridge.shell.showItemInFolder(location).catch((error: unknown) => {
+              setMessage({ kind: 'error', text: `Reveal failed: ${messageOf(error)}` });
+            });
+          },
+        },
+      });
+    } catch (error) {
+      setMessage({ kind: 'error', text: `Export failed: ${messageOf(error)}` });
+    } finally {
+      setExporting(false);
+    }
+  };
+
   /** Runs Test in Minecraft (ADR 0026 D5) and reports the outcome. */
   const runTestInMinecraft = async (): Promise<void> => {
     setExporting(true);
@@ -669,6 +731,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       void runPackExport('resource', 'install', () => session.exportPack('resource', 'install')),
   );
   const exportFabricJar = guarded(fabricJarReason, () => setDialog({ type: 'fabric-jar' }));
+  // The eject generates code from every layer, so every error blocks it, as for the jar.
+  const exportJavaProject = guarded(fabricJarReason, () => setDialog({ type: 'java-project' }));
   const testInMinecraft = guarded(fabricJarReason, () => setDialog({ type: 'test-in-minecraft' }));
   const exportStructures = guarded(
     structureExportReason,
@@ -1014,7 +1078,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     return () => document.removeEventListener(GO_TO_DEFINITION_EVENT, onRequest);
   }, []);
 
-  const handlers: Record<MenuCommand, Action> = {
+  const handlers: Record<MenuCommand | typeof EXPORT_JAVA_PROJECT_COMMAND, Action> = {
     new: () => void openWith('New project', () => session.newProject()),
     newProjectFromStarter: () => setDialog({ type: 'new-project' }),
     examples: () => setDialog({ type: 'examples' }),
@@ -1039,6 +1103,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     exportStructures,
     exportSchematics,
     exportFabricJar,
+    [EXPORT_JAVA_PROJECT_COMMAND]: exportJavaProject,
     testInMinecraft,
     settings: () => {
       setDialog({ type: 'settings' });
@@ -1079,6 +1144,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     exportStructures: structureExportReason === null ? exportStructures : null,
     exportSchematics: structureExportReason === null ? exportSchematics : null,
     exportFabricJar: fabricJarReason === null ? exportFabricJar : null,
+    exportJavaProject: fabricJarReason === null ? exportJavaProject : null,
     testInMinecraft: fabricJarReason === null ? testInMinecraft : null,
     renameElement: selected === null ? null : renameSelected,
     goToDefinition: selected === null ? null : () => goToDefinition(),
@@ -1198,21 +1264,29 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     openElement: (id) => select(id),
   };
 
+  const scriptTypings = (session as ProjectSession & JavaProjectSessionMembers).scriptTypings;
+  const scriptHost = useMemo(
+    () => (scriptTypings === undefined ? DEFAULT_SCRIPT_STUDIO_HOST : { typings: scriptTypings }),
+    [scriptTypings],
+  );
+
   const form =
     project !== null && selected !== null ? (
       <StructureStudioHostContext.Provider value={structureHost}>
-        <ElementForm
-          complete={completeFunction}
-          project={project}
-          element={selected}
-          kind={selectedKind}
-          problems={selectedProblems}
-          schema={schema}
-          onChange={editValue}
-          focusPointer={selectedPointer}
-          {...(selectedRange === null ? {} : { focusColumn: selectedRange.start })}
-          onFocused={clearPointer}
-        />
+        <ScriptStudioHostContext.Provider value={scriptHost}>
+          <ElementForm
+            complete={completeFunction}
+            project={project}
+            element={selected}
+            kind={selectedKind}
+            problems={selectedProblems}
+            schema={schema}
+            onChange={editValue}
+            focusPointer={selectedPointer}
+            {...(selectedRange === null ? {} : { focusColumn: selectedRange.start })}
+            onFocused={clearPointer}
+          />
+        </ScriptStudioHostContext.Provider>
       </StructureStudioHostContext.Provider>
     ) : undefined;
 
@@ -1273,6 +1347,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               onExportSchematics={exportSchematics}
               fabricJarExportDisabledReason={fabricJarReason}
               onExportFabricJar={exportFabricJar}
+              onExportJavaProject={exportJavaProject}
               onTestInMinecraft={testInMinecraft}
               onInstall={installResource}
               onInstallData={installData}
@@ -1485,6 +1560,16 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             onExport={(values) => {
               setDialog(null);
               void runFabricJarExport(values);
+            }}
+          />
+        )}
+        {dialog?.type === 'java-project' && (
+          <ExportJavaProjectDialog
+            scripts={projectScripts(project).map((script) => script.id)}
+            onClose={() => setDialog(null)}
+            onExport={() => {
+              setDialog(null);
+              void runJavaProjectExport();
             }}
           />
         )}

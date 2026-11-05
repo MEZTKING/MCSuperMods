@@ -10,16 +10,20 @@ import type { DefinitionInput, Json, JsonObject } from '@msm/plugin-api';
 
 /** Reads fields of one JSON object of a definition. */
 export class Reader {
+  readonly definition: DefinitionInput;
+  readonly value: JsonObject;
+  readonly where: string;
+
   /**
    * @param definition - The definition being read, named in error messages.
    * @param value - The object read.
    * @param where - The object's location inside the definition, for messages.
    */
-  constructor(
-    readonly definition: DefinitionInput,
-    readonly value: JsonObject,
-    readonly where: string,
-  ) {}
+  constructor(definition: DefinitionInput, value: JsonObject, where: string) {
+    this.definition = definition;
+    this.value = value;
+    this.where = where;
+  }
 
   /** Throws an error naming the definition and the location. */
   fail(message: string): never {
@@ -154,5 +158,6 @@ export function readDefinition(definition: DefinitionInput): Reader {
 /** Fails unless `format` is 1. */
 export function checkFormat(reader: Reader): void {
   const format = reader.requiredNumber('format');
-  if (format !== 1) reader.fail(`format ${format} is not the definition format this generator reads (1)`);
+  if (format !== 1)
+    reader.fail(`format ${format} is not the definition format this generator reads (1)`);
 }

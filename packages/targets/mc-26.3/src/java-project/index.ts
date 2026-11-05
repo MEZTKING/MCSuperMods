@@ -39,7 +39,10 @@ export interface JavaEntrypoints {
  * naming the definition when one cannot be generated (an unknown component, action or goal,
  * an undeclared event).
  */
-export function generateJavaProject(input: JavaProjectInput): { files: GeneratedFile[]; entrypoints: JavaEntrypoints } {
+export function generateJavaProject(input: JavaProjectInput): {
+  files: GeneratedFile[];
+  entrypoints: JavaEntrypoints;
+} {
   const context: GenerationContext = {
     input,
     javaRoot: `src/main/java/${input.javaPackage.replaceAll('.', '/')}`,
@@ -59,7 +62,10 @@ export function generateJavaProject(input: JavaProjectInput): { files: Generated
   const main = generateMod(context, registrations);
   const client = entities === undefined ? undefined : generateClient(context, entities.entities);
   if (context.usesActions) {
-    context.files.push({ path: `${context.javaRoot}/Actions.java`, contents: actionsJava(input.javaPackage, input.modId) });
+    context.files.push({
+      path: `${context.javaRoot}/Actions.java`,
+      contents: actionsJava(input.javaPackage, input.modId),
+    });
   }
   if (context.usesFollowGoal) {
     context.files.push({

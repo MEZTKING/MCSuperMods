@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { createMemoryFileSystem } from '@msm/core';
 import { definePlugin, type ElementKind, type Plugin } from '@msm/plugin-api';
+import scriptingPlugin, { SCRIPT_KIND } from '@msm/plugin-scripting';
 import { structureTemplateToNbt, writeNbt } from '@msm/plugin-structures';
 import { builtInTargets, targetById } from '@msm/targets';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
@@ -14,11 +15,16 @@ import {
   FABRIC_JAR_GECKOLIB_NOTE,
   GECKOLIB_DOWNLOAD_MESSAGE,
 } from '../../src/renderer/src/components/ExportFabricJarDialog';
+import {
+  FOLDER_NOT_EMPTY_CODE,
+  JAVA_PROJECT_DIALOG_NOTE,
+  type JavaProjectSessionMembers,
+} from '../../src/renderer/src/components/ExportJavaProjectDialog';
 import { registerCaretReader } from '../../src/renderer/src/components/function-editor/caret';
 import { BLOCKBENCH_IMPORT_NOTE } from '../../src/renderer/src/components/ImportFilesDialog';
 import { builtInPlugins } from '../../src/renderer/src/plugins/built-in';
 import type { McfunctionChecker } from '../../src/renderer/src/session/mcfunction-problems';
-import { ProjectSession } from '../../src/renderer/src/session/project-session';
+import { type ExportResult, ProjectSession } from '../../src/renderer/src/session/project-session';
 import { useUiStore } from '../../src/renderer/src/store/ui-store';
 import {
   MSM_CONTENT_NOTE,
@@ -125,6 +131,8 @@ const unstartedLocation: GameLocationView = {
 
 interface Harness {
   menu(command: MenuCommand): Promise<void>;
+  /** Every path `shell.showItemInFolder` was asked to reveal. */
+  revealed: string[];
   /** What `updates.check()` resolves to. */
   updateCheck: UpdateStatus;
   /** Sends an update status to the renderer's subscribers. */
@@ -199,6 +207,7 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
         for (const listener of updateListeners) listener(status);
       });
     },
+    revealed: [],
     saved: [],
     runtimeJar: null,
     geckolibJar: null,
@@ -246,7 +255,11 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
         return `/exports/${defaultName}`;
       },
     },
-    shell: { showItemInFolder: unavailable },
+    shell: {
+      showItemInFolder: async (path) => {
+        harness.revealed.push(path);
+      },
+    },
     targets: {
       readVendored: async (targetId, key) => {
         const bundle = targetById(targetId);
@@ -876,6 +889,133 @@ describe('App Fabric mod jar export', () => {
     await act(() => harness.session.flushValidation());
     await harness.menu('exportResourcePack');
     await screen.findByText((content) => content.includes(MSM_CONTENT_NOTE));
+  });
+});
+
+describe('App Java project export', () => {
+  /** The built-in plugins with `@msm/plugin-scripting`, whether or not they list it yet. */
+  const withScripting: readonly Plugin[] = builtInPlugins.some(
+    (plugin) => plugin.id === scriptingPlugin.id,
+  )
+    ? builtInPlugins
+    : [...builtInPlugins, scriptingPlugin];
+
+  /** Replaces the session's Java project export with a stub returning `result`. */
+  function stubJavaExport(harness: Harness, result: ExportResult) {
+    const calls: (string | undefined)[] = [];
+    const members = harness.session as ProjectSession & JavaProjectSessionMembers;
+    members.exportJavaProject = async (folder?: string) => {
+      calls.push(folder);
+      return result;
+    };
+    return calls;
+  }
+
+  async function openFromPalette(harness: Harness) {
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    const command = within(palette).getByTestId('command-exportJavaProject');
+    expect(command.textContent).toContain('Export Java project…');
+    await userEvent.setup().click(command);
+    return screen.findByTestId('java-project-dialog');
+  }
+
+  it('opens the dialog from the palette, exports and offers Reveal', async () => {
+    const harness = await renderApp();
+    const calls = stubJavaExport(harness, {
+      ok: true,
+      problems: [],
+      files: ['build.gradle.kts'],
+      location: '/exports/java/demo_mod',
+    });
+    const dialog = await openFromPalette(harness);
+    expect(within(dialog).getByTestId('java-project-note').textContent).toBe(
+      JAVA_PROJECT_DIALOG_NOTE,
+    );
+    expect(within(dialog).queryByTestId('java-project-scripts-note')).toBeNull();
+    await userEvent.setup().click(within(dialog).getByTestId('java-project-dialog-submit'));
+    await toast('Java project written to /exports/java/demo_mod.');
+    expect(calls).toEqual([undefined]);
+    expect(screen.queryByTestId('java-project-dialog')).toBeNull();
+    const reveal = screen.getByTestId('status-toast-action');
+    expect(reveal.textContent).toBe('Reveal');
+    await userEvent.setup().click(reveal);
+    expect(harness.revealed).toEqual(['/exports/java/demo_mod']);
+  });
+
+  it('opens from the toolbar Export menu and stays quiet when the folder pick is cancelled', async () => {
+    const harness = await renderApp();
+    const calls = stubJavaExport(harness, { ok: true, problems: [], files: [], cancelled: true });
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('toolbar-export-menu'));
+    await user.click(await screen.findByTestId('export-java-project'));
+    await user.click(await screen.findByTestId('java-project-dialog-submit'));
+    await waitFor(() => expect(calls).toHaveLength(1));
+    expect(useUiStore.getState().message).toBeNull();
+  });
+
+  it('says why a non-empty folder blocks the export', async () => {
+    const harness = await renderApp();
+    const message = 'The folder /exports/java/demo_mod already exists and is not empty.';
+    stubJavaExport(harness, {
+      ok: false,
+      problems: [{ code: FOLDER_NOT_EMPTY_CODE, severity: 'error', message }],
+      files: [],
+    });
+    const dialog = await openFromPalette(harness);
+    await userEvent.setup().click(within(dialog).getByTestId('java-project-dialog-submit'));
+    await waitFor(() => expect(screen.getByTestId('status-toast-text').textContent).toBe(message));
+  });
+
+  it('lists the scripts it leaves out', async () => {
+    const harness = await renderApp({ plugins: withScripting });
+    stubJavaExport(harness, { ok: true, problems: [], files: [] });
+    act(() => {
+      harness.session.addElement({
+        id: 'demo:glow',
+        kind: SCRIPT_KIND,
+        data: { lines: ['msm.log.info("hi");'] },
+      });
+    });
+    await act(() => harness.session.flushValidation());
+    const dialog = await openFromPalette(harness);
+    expect(within(dialog).getByTestId('java-project-scripts-note').textContent).toBe(
+      'This script is not included in the Java project: demo:glow.',
+    );
+  });
+
+  it('is gated by errors like the Fabric mod jar', async () => {
+    const harness = await renderApp();
+    const calls = stubJavaExport(harness, { ok: true, problems: [], files: [] });
+    addFunction(harness, ['bogus here']);
+    await act(() => harness.session.flushValidation());
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    expect(within(palette).queryByTestId('command-exportJavaProject')).toBeNull();
+    await userEvent.setup().keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByTestId('command-palette')).toBeNull());
+    // File > "Export Java Project…" (main's menu command) reports the reason.
+    await harness.menu('exportJavaProject' as MenuCommand);
+    await toast('Fix 1 error first (see Problems).');
+    expect(screen.queryByTestId('java-project-dialog')).toBeNull();
+    expect(calls).toEqual([]);
+  });
+
+  it('edits a script in the Script Studio', async () => {
+    const harness = await renderApp({ plugins: withScripting });
+    act(() => {
+      harness.session.addElement({
+        id: 'demo:glow',
+        kind: SCRIPT_KIND,
+        data: { lines: ['msm.actions.define("demo:glow", (e) => {});'] },
+      });
+      useUiStore.getState().select('demo:glow');
+    });
+    const studio = await screen.findByTestId('script-studio');
+    expect(within(studio).getByTestId('script-summary-handler').textContent).toBe(
+      'Handler demo:glow',
+    );
+    expect(screen.getByText('Scripts')).toBeTruthy();
   });
 });
 

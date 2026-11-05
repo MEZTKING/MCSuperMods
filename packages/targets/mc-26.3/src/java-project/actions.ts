@@ -65,7 +65,8 @@ export function readEvents(definition: Reader): Events {
     for (const action of actions) {
       if (action.requiredString('type') === 'trigger_event') {
         const target = action.requiredString('event');
-        if (!byId.has(target)) action.fail(`trigger_event names event ${target}, which is not declared in events`);
+        if (!byId.has(target))
+          action.fail(`trigger_event names event ${target}, which is not declared in events`);
       }
     }
   }
@@ -80,7 +81,9 @@ export function readEvents(definition: Reader): Events {
  * @param id - The event id.
  */
 export function eventMethod(reader: Reader, events: Events, id: string): string {
-  return events.methods.get(id) ?? reader.fail(`names event ${id}, which is not declared in events`);
+  return (
+    events.methods.get(id) ?? reader.fail(`names event ${id}, which is not declared in events`)
+  );
 }
 
 /** Whether any action of the events needs the `Actions` helper class. */
@@ -100,7 +103,10 @@ export function playAnimations(events: Events): [string, string][] {
   for (const actions of events.byId.values()) {
     for (const action of actions) {
       if (action.requiredString('type') === 'play_animation') {
-        out.push([action.string('controller', TRIGGERED_CONTROLLER), action.requiredString('animation')]);
+        out.push([
+          action.string('controller', TRIGGERED_CONTROLLER),
+          action.requiredString('animation'),
+        ]);
       }
     }
   }
@@ -125,7 +131,12 @@ export function fireCall(method: string, args: string): string {
  * @param kind - The owner's kind; only entities play animations.
  * @param actionsClass - The simple name of the `Actions` helper class as seen from `file`.
  */
-export function eventMethods(file: JavaFile, events: Events, kind: EventOwnerKind, actionsClass: string): string[] {
+export function eventMethods(
+  file: JavaFile,
+  events: Events,
+  kind: EventOwnerKind,
+  actionsClass: string,
+): string[] {
   if (events.byId.size === 0) return [];
   const serverLevel = file.use('net.minecraft.server.level.ServerLevel');
   const blockPos = file.use('net.minecraft.core.BlockPos');
@@ -151,25 +162,36 @@ export function eventMethods(file: JavaFile, events: Events, kind: EventOwnerKin
   return lines;
 }
 
-function actionLines(action: Reader, events: Events, kind: EventOwnerKind, actions: string): string[] {
+function actionLines(
+  action: Reader,
+  events: Events,
+  kind: EventOwnerKind,
+  actions: string,
+): string[] {
   const type = action.requiredString('type');
   switch (type) {
     case 'run_function':
       action.onlyKeys(['type', 'function'], 'run_function field');
-      return [`${actions}.runFunction(OWNER, level, origin, player, ${javaString(action.requiredString('function'))});`];
+      return [
+        `${actions}.runFunction(OWNER, level, origin, player, ${javaString(action.requiredString('function'))});`,
+      ];
     case 'spawn_particle': {
       action.onlyKeys(['type', 'particle', 'count', 'spread', 'speed'], 'spawn_particle field');
       const particle = javaString(action.requiredString('particle'));
       const count = javaInt(action.integer('count', 1));
       const spread = javaFloat(action.number('spread', 0));
       const speed = javaFloat(action.number('speed', 0));
-      return [`${actions}.spawnParticle(OWNER, level, origin, ${particle}, ${count}, ${spread}, ${speed});`];
+      return [
+        `${actions}.spawnParticle(OWNER, level, origin, ${particle}, ${count}, ${spread}, ${speed});`,
+      ];
     }
     case 'set_block_state': {
       action.onlyKeys(['type', 'state', 'offset'], 'set_block_state field');
       const state = javaString(action.requiredString('state'));
       const offset = offsetOf(action);
-      return [`${actions}.setBlockState(OWNER, level, base, ${state}, ${offset.map(javaInt).join(', ')});`];
+      return [
+        `${actions}.setBlockState(OWNER, level, base, ${state}, ${offset.map(javaInt).join(', ')});`,
+      ];
     }
     case 'give_item':
       action.onlyKeys(['type', 'item', 'count'], 'give_item field');
@@ -192,8 +214,11 @@ function actionLines(action: Reader, events: Events, kind: EventOwnerKind, actio
       action.onlyKeys(['type', 'animation', 'controller'], 'play_animation field');
       const animation = action.requiredString('animation');
       const controller = action.string('controller', TRIGGERED_CONTROLLER);
-      if (kind === 'entity') return [`triggerAnim(${javaString(controller)}, ${javaString(animation)});`];
-      return [`// play_animation '${animation.replace(/[\r\n]/g, ' ')}' left out: only entities with GeckoLib play animations.`];
+      if (kind === 'entity')
+        return [`triggerAnim(${javaString(controller)}, ${javaString(animation)});`];
+      return [
+        `// play_animation '${animation.replace(/[\r\n]/g, ' ')}' left out: only entities with GeckoLib play animations.`,
+      ];
     }
     default:
       return action.fail(`action type '${type}' cannot be ejected`);
@@ -203,7 +228,11 @@ function actionLines(action: Reader, events: Events, kind: EventOwnerKind, actio
 function offsetOf(action: Reader): [number, number, number] {
   const raw = action.value.offset;
   if (raw === undefined) return [0, 0, 0];
-  if (!Array.isArray(raw) || raw.length !== 3 || raw.some((n) => typeof n !== 'number' || !Number.isInteger(n))) {
+  if (
+    !Array.isArray(raw) ||
+    raw.length !== 3 ||
+    raw.some((n) => typeof n !== 'number' || !Number.isInteger(n))
+  ) {
     return action.fail('offset must be three integers');
   }
   return raw as [number, number, number];

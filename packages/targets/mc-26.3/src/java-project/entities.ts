@@ -24,14 +24,32 @@ import {
 } from './actions';
 import { tabLine } from './blocks';
 import { classPath, type GenerationContext, packageOf } from './context';
-import { identifierExpression, indent, JavaFile, javaFloat, javaInt, javaString, trimBlank } from './java';
+import {
+  identifierExpression,
+  indent,
+  JavaFile,
+  javaFloat,
+  javaInt,
+  javaString,
+  trimBlank,
+} from './java';
 import { className, constantName, NameTable, splitId } from './names';
 import { checkFormat, type Reader, readDefinition } from './read';
 
 /** The GeckoLib controller that loops `idle` and `walk`. */
 export const MAIN_CONTROLLER = 'msm_main';
 
-const ENTITY_KEYS = ['format', 'category', 'size', 'eye_height', 'loot_table', 'spawn_egg', 'spawn', 'components', 'events'];
+const ENTITY_KEYS = [
+  'format',
+  'category',
+  'size',
+  'eye_height',
+  'loot_table',
+  'spawn_egg',
+  'spawn',
+  'components',
+  'events',
+];
 const ENTITY_COMPONENTS = [
   'msm:animated_model',
   'msm:health',
@@ -53,7 +71,12 @@ const CATEGORIES = [
   'misc',
 ] as const;
 const PLACEMENTS = ['on_ground', 'in_water', 'in_lava', 'no_restrictions'] as const;
-const HEIGHTMAPS = ['motion_blocking_no_leaves', 'motion_blocking', 'world_surface', 'ocean_floor'] as const;
+const HEIGHTMAPS = [
+  'motion_blocking_no_leaves',
+  'motion_blocking',
+  'world_surface',
+  'ocean_floor',
+] as const;
 const RULES = ['mob', 'monster', 'surface_monster', 'any_light_monster', 'always'] as const;
 const GOAL_TYPES = ['wander', 'look_at_player', 'look_around', 'melee_attack', 'flee', 'follow'];
 
@@ -88,7 +111,13 @@ interface EntitySpec {
     transitionTicks: number;
   };
   readonly maxHealth: number;
-  readonly movement: { speed: number; followRange: number; knockbackResistance: number; swims: boolean; fireImmune: boolean };
+  readonly movement: {
+    speed: number;
+    followRange: number;
+    knockbackResistance: number;
+    swims: boolean;
+    fireImmune: boolean;
+  };
   readonly attack: { damage: number; knockback: number; onAttack: string | undefined } | undefined;
   readonly goals: Reader[];
   readonly onHurt: string | undefined;
@@ -124,7 +153,10 @@ function readEntity(input: DefinitionInput): EntitySpec {
   }
 
   const rawSpawn = reader.object('spawn');
-  rawSpawn?.onlyKeys(['biomes', 'weight', 'min_group', 'max_group', 'placement', 'heightmap', 'rule'], 'spawn key');
+  rawSpawn?.onlyKeys(
+    ['biomes', 'weight', 'min_group', 'max_group', 'placement', 'heightmap', 'rule'],
+    'spawn key',
+  );
   const spawn: Spawn | undefined =
     rawSpawn === undefined
       ? undefined
@@ -140,14 +172,20 @@ function readEntity(input: DefinitionInput): EntitySpec {
   if (rawSpawn !== undefined && !rawSpawn.has('biomes')) rawSpawn.fail('biomes is missing');
 
   const model = components.requiredObject('msm:animated_model');
-  model.onlyKeys(['model', 'animations', 'texture', 'scale', 'idle', 'walk', 'attack', 'transition_ticks'], 'msm:animated_model field');
+  model.onlyKeys(
+    ['model', 'animations', 'texture', 'scale', 'idle', 'walk', 'attack', 'transition_ticks'],
+    'msm:animated_model field',
+  );
   const modelId = model.requiredString('model');
   const texture = splitId(model.requiredString('texture'));
 
   const health = components.object('msm:health');
   health?.onlyKeys(['max'], 'msm:health field');
   const movement = components.object('msm:movement');
-  movement?.onlyKeys(['speed', 'follow_range', 'knockback_resistance', 'swims', 'fire_immune'], 'msm:movement field');
+  movement?.onlyKeys(
+    ['speed', 'follow_range', 'knockback_resistance', 'swims', 'fire_immune'],
+    'msm:movement field',
+  );
   const attack = components.object('msm:attack');
   attack?.onlyKeys(['damage', 'knockback', 'on_attack'], 'msm:attack field');
   const aiGoals = components.object('msm:ai_goals');
@@ -225,11 +263,16 @@ export function generateEntities(
   const { entities } = context.input;
   if (entities.length === 0) return undefined;
   if (!context.input.geckolib) {
-    throw new Error('Entities render through GeckoLib, but the project has no GeckoLib (JavaProjectInput.geckolib is false).');
+    throw new Error(
+      'Entities render through GeckoLib, but the project has no GeckoLib (JavaProjectInput.geckolib is false).',
+    );
   }
   const specs = entities.map(readEntity);
   const fields = new NameTable();
-  const file = new JavaFile(context.input.javaPackage, 'the msm/<namespace>/entity/*.json definitions');
+  const file = new JavaFile(
+    context.input.javaPackage,
+    'the msm/<namespace>/entity/*.json definitions',
+  );
   const registry = file.use('net.minecraft.core.Registry');
   const builtIn = file.use('net.minecraft.core.registries.BuiltInRegistries');
   const registries = file.use('net.minecraft.core.registries.Registries');
@@ -243,14 +286,20 @@ export function generateEntities(
   let needsEggHelper = false;
   for (const spec of specs) {
     const { path } = splitId(spec.input.id);
-    const field = fields.take(constantName(path), (name) => [name, `${name}_KEY`, `${name}_SPAWN_EGG`]);
+    const field = fields.take(constantName(path), (name) => [
+      name,
+      `${name}_KEY`,
+      `${name}_SPAWN_EGG`,
+    ]);
     const entityClass = classNames.take(className(path, 'Entity'), (n) => [`entity.${n}`], '');
     const modelClass = classNames.take(className(path, 'Model'), (n) => [`client.entity.${n}`], '');
     names.push({ spec, field, entityClass, modelClass });
     writeEntityClass(context, spec, entityClass);
     const type = file.use(`${packageOf(context, 'entity')}.${entityClass}`);
 
-    const fabricEntityType = file.use('net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityType');
+    const fabricEntityType = file.use(
+      'net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityType',
+    );
     const placementTypes = file.use('net.minecraft.world.entity.SpawnPlacementTypes');
     const heightmap = file.use('net.minecraft.world.level.levelgen.Heightmap', 'Types');
     const placement = spec.spawn?.placement ?? 'ON_GROUND';
@@ -261,7 +310,8 @@ export function generateEntities(
       `                .spawnPlacement(${placementTypes}.${placement}, ${heightmap}.${heightmapType}, ${ruleExpression(file, spec.spawn?.rule ?? 'mob')}))`,
       `        .sized(${javaFloat(spec.width)}, ${javaFloat(spec.height)})`,
     ];
-    if (spec.eyeHeight !== undefined) builder.push(`        .eyeHeight(${javaFloat(spec.eyeHeight)})`);
+    if (spec.eyeHeight !== undefined)
+      builder.push(`        .eyeHeight(${javaFloat(spec.eyeHeight)})`);
     if (spec.movement.fireImmune) builder.push('        .fireImmune()');
     builder.push(`        .build(${field}_KEY));`);
     body.push(
@@ -275,7 +325,9 @@ export function generateEntities(
     if (spec.spawnEgg !== undefined) {
       needsEggHelper = true;
       const spawnEggItem = file.use('net.minecraft.world.item.SpawnEggItem');
-      body.push(`public static final ${spawnEggItem} ${field}_SPAWN_EGG = registerSpawnEgg(${javaString(`${spec.input.id}_spawn_egg`)}, ${field});`);
+      body.push(
+        `public static final ${spawnEggItem} ${field}_SPAWN_EGG = registerSpawnEgg(${javaString(`${spec.input.id}_spawn_egg`)}, ${field});`,
+      );
       register.push(tabLine(file, spec.spawnEgg.creativeTab, `${field}_SPAWN_EGG`));
     }
     if (spec.spawn !== undefined) register.push(...spawnLines(file, spec, field));
@@ -347,7 +399,9 @@ function spawnLines(file: JavaFile, spec: EntitySpec, field: string): string[] {
   for (const entry of spawn.biomes) {
     if (entry.startsWith('#')) {
       const tagKey = file.use('net.minecraft.tags.TagKey');
-      parts.push(`${selectors}.tag(${tagKey}.create(${registries}.BIOME, ${identifierExpression(file, entry.slice(1))}))`);
+      parts.push(
+        `${selectors}.tag(${tagKey}.create(${registries}.BIOME, ${identifierExpression(file, entry.slice(1))}))`,
+      );
     } else {
       const resourceKey = file.use('net.minecraft.resources.ResourceKey');
       keys.push(`${resourceKey}.create(${registries}.BIOME, ${identifierExpression(file, entry)})`);
@@ -403,7 +457,8 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   if (usesHelper) context.usesActions = true;
 
   const members: string[] = [];
-  if (spec.events.byId.size > 0) members.push(`private static final String OWNER = ${javaString(spec.input.id)};`);
+  if (spec.events.byId.size > 0)
+    members.push(`private static final String OWNER = ${javaString(spec.input.id)};`);
 
   // Goals: static type predicates, built before any instance (registerGoals runs in the Mob constructor).
   const goalLines: string[] = [];
@@ -413,11 +468,15 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
     const predicate = file.use('java.util.function.Predicate');
     const livingEntity = file.use('net.minecraft.world.entity.LivingEntity');
     const name = predicateFields.take(field);
-    predicates.push(`private static final ${predicate}<${livingEntity}> ${name} = ofTypes(${ids.map(javaString).join(', ')});`);
+    predicates.push(
+      `private static final ${predicate}<${livingEntity}> ${name} = ofTypes(${ids.map(javaString).join(', ')});`,
+    );
     return name;
   };
   if (spec.movement.swims) {
-    goalLines.push(`goalSelector.addGoal(0, new ${file.use('net.minecraft.world.entity.ai.goal.FloatGoal')}(this));`);
+    goalLines.push(
+      `goalSelector.addGoal(0, new ${file.use('net.minecraft.world.entity.ai.goal.FloatGoal')}(this));`,
+    );
   }
   spec.goals.forEach((goal, n) => {
     const type = goal.requiredString('type');
@@ -436,28 +495,43 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
         goal.onlyKeys(['type', 'priority', 'distance'], 'look_at_player field');
         const lookGoal = file.use('net.minecraft.world.entity.ai.goal.LookAtPlayerGoal');
         const player = file.use('net.minecraft.world.entity.player.Player');
-        goalLines.push(`goalSelector.addGoal(${priority}, new ${lookGoal}(this, ${player}.class, ${javaFloat(goal.number('distance', 8))}));`);
+        goalLines.push(
+          `goalSelector.addGoal(${priority}, new ${lookGoal}(this, ${player}.class, ${javaFloat(goal.number('distance', 8))}));`,
+        );
         break;
       }
       case 'look_around':
         goal.onlyKeys(['type', 'priority'], 'look_around field');
-        goalLines.push(`goalSelector.addGoal(${priority}, new ${file.use('net.minecraft.world.entity.ai.goal.RandomLookAroundGoal')}(this));`);
+        goalLines.push(
+          `goalSelector.addGoal(${priority}, new ${file.use('net.minecraft.world.entity.ai.goal.RandomLookAroundGoal')}(this));`,
+        );
         break;
       case 'melee_attack': {
-        goal.onlyKeys(['type', 'priority', 'speed', 'targets', 'must_see', 'retaliate'], 'melee_attack field');
+        goal.onlyKeys(
+          ['type', 'priority', 'speed', 'targets', 'must_see', 'retaliate'],
+          'melee_attack field',
+        );
         if (spec.attack === undefined) {
-          goalLines.push(`// melee_attack (goal ${n + 1}) left out: without msm:attack the goal does nothing (as msm_runtime).`);
+          goalLines.push(
+            `// melee_attack (goal ${n + 1}) left out: without msm:attack the goal does nothing (as msm_runtime).`,
+          );
           break;
         }
         const meleeGoal = file.use('net.minecraft.world.entity.ai.goal.MeleeAttackGoal');
-        goalLines.push(`goalSelector.addGoal(${priority}, new ${meleeGoal}(this, ${javaFloat(goal.number('speed', 1))}, true));`);
+        goalLines.push(
+          `goalSelector.addGoal(${priority}, new ${meleeGoal}(this, ${javaFloat(goal.number('speed', 1))}, true));`,
+        );
         if (goal.boolean('retaliate', false)) {
-          goalLines.push(`targetSelector.addGoal(1, new ${file.use('net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal')}(this));`);
+          goalLines.push(
+            `targetSelector.addGoal(1, new ${file.use('net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal')}(this));`,
+          );
         }
         const targets = goal.strings('targets', []);
         if (targets.length > 0) {
           const field = ofTypes(`MELEE_TARGETS_${n + 1}`, targets);
-          const targetGoal = file.use('net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal');
+          const targetGoal = file.use(
+            'net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal',
+          );
           const livingEntity = file.use('net.minecraft.world.entity.LivingEntity');
           goalLines.push(
             `targetSelector.addGoal(2, new ${targetGoal}<>(this, ${livingEntity}.class, ${goal.boolean('must_see', true)},`,
@@ -467,7 +541,10 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
         break;
       }
       case 'flee': {
-        goal.onlyKeys(['type', 'priority', 'from', 'distance', 'speed', 'sprint_speed'], 'flee field');
+        goal.onlyKeys(
+          ['type', 'priority', 'from', 'distance', 'speed', 'sprint_speed'],
+          'flee field',
+        );
         if (!goal.has('from')) goal.fail('from is missing');
         const field = ofTypes(`FLEE_FROM_${n + 1}`, goal.strings('from', []));
         const avoidGoal = file.use('net.minecraft.world.entity.ai.goal.AvoidEntityGoal');
@@ -479,7 +556,10 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
         break;
       }
       case 'follow': {
-        goal.onlyKeys(['type', 'priority', 'entities', 'speed', 'stop_distance', 'range'], 'follow field');
+        goal.onlyKeys(
+          ['type', 'priority', 'entities', 'speed', 'stop_distance', 'range'],
+          'follow field',
+        );
         if (!goal.has('entities')) goal.fail('entities is missing');
         context.usesFollowGoal = true;
         const field = ofTypes(`FOLLOW_${n + 1}`, goal.strings('entities', []));
@@ -541,10 +621,14 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
     const entity = file.use('net.minecraft.world.entity.Entity');
     const inner: string[] = [];
     if (spec.model.attack !== undefined) {
-      inner.push(`triggerAnim(${javaString(TRIGGERED_CONTROLLER)}, ${javaString(spec.model.attack)});`);
+      inner.push(
+        `triggerAnim(${javaString(TRIGGERED_CONTROLLER)}, ${javaString(spec.model.attack)});`,
+      );
     }
     if (spec.attack?.onAttack !== undefined) {
-      inner.push(fireCall(spec.attack.onAttack, fireArgs(`target instanceof ${player()} p ? p : null`)));
+      inner.push(
+        fireCall(spec.attack.onAttack, fireArgs(`target instanceof ${player()} p ? p : null`)),
+      );
     }
     members.push(
       '',
@@ -607,7 +691,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
     const registries = file.use('net.minecraft.core.registries.Registries');
     members.push(
       '',
-      '/** The definition\'s loot_table instead of the default entities/<path>. */',
+      "/** The definition's loot_table instead of the default entities/<path>. */",
       '@Override',
       `protected void dropFromLootTable(${serverLevel()} level, ${damageSource()} source, boolean playerKill) {`,
       `    dropFromLootTable(level, source, playerKill, ${resourceKey}.create(${registries}.LOOT_TABLE, ${identifierExpression(file, spec.lootTable)}));`,
@@ -616,12 +700,16 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   }
 
   // GeckoLib controllers, as MsmGeoEntity.registerControllers.
-  const controllerRegistrar = file.use('com.geckolib.animatable.manager.AnimatableManager', 'ControllerRegistrar');
+  const controllerRegistrar = file.use(
+    'com.geckolib.animatable.manager.AnimatableManager',
+    'ControllerRegistrar',
+  );
   const animationController = file.use('com.geckolib.animation.AnimationController');
   const rawAnimation = file.use('com.geckolib.animation.RawAnimation');
   const playState = file.use('com.geckolib.animation.object.PlayState');
   const triggers = triggerable(spec);
-  const loop = (value: string | undefined) => (value === undefined ? 'null' : `${rawAnimation}.begin().thenLoop(${javaString(value)})`);
+  const loop = (value: string | undefined) =>
+    value === undefined ? 'null' : `${rawAnimation}.begin().thenLoop(${javaString(value)})`;
   const controllers: string[] = [
     `${rawAnimation} idle = ${loop(spec.model.idle)};`,
     `${rawAnimation} walk = ${loop(spec.model.walk)};`,
@@ -631,19 +719,27 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
     '});',
   ];
   for (const anim of triggers.get(MAIN_CONTROLLER) ?? []) {
-    controllers.push(`main.triggerableAnim(${javaString(anim)}, ${rawAnimation}.begin().thenPlay(${javaString(anim)}));`);
+    controllers.push(
+      `main.triggerableAnim(${javaString(anim)}, ${rawAnimation}.begin().thenPlay(${javaString(anim)}));`,
+    );
   }
   controllers.push('controllers.add(main);');
   const controllerNames = new NameTable();
   controllerNames.reserve('main', 'idle', 'walk', 'controllers');
   for (const [controller, anims] of triggers) {
     if (controller === MAIN_CONTROLLER) continue;
-    const variable = controllerNames.take(controller === TRIGGERED_CONTROLLER ? 'triggered' : 'controller', (v) => [v], '');
+    const variable = controllerNames.take(
+      controller === TRIGGERED_CONTROLLER ? 'triggered' : 'controller',
+      (v) => [v],
+      '',
+    );
     controllers.push(
       `${animationController}<${name}> ${variable} = new ${animationController}<>(${javaString(controller)}, 0, test -> ${playState}.STOP);`,
     );
     for (const anim of anims) {
-      controllers.push(`${variable}.triggerableAnim(${javaString(anim)}, ${rawAnimation}.begin().thenPlay(${javaString(anim)}));`);
+      controllers.push(
+        `${variable}.triggerableAnim(${javaString(anim)}, ${rawAnimation}.begin().thenPlay(${javaString(anim)}));`,
+      );
     }
     controllers.push(`controllers.add(${variable});`);
   }

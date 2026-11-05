@@ -325,3 +325,30 @@ describe('Toolbar Fabric mod jar export', () => {
     );
   });
 });
+
+describe('Toolbar Java project export', () => {
+  it('offers the Fabric Java project (eject) after the Fabric mod jar', async () => {
+    const onExportJavaProject = vi.fn();
+    renderToolbar(props({ onExportFabricJar: vi.fn(), onExportJavaProject }));
+    await userEvent.setup().click(screen.getByTestId('toolbar-export-menu'));
+    const entry = await screen.findByTestId('export-java-project');
+    expect(entry.textContent).toBe('Fabric Java project (eject)…');
+    const items = screen.getAllByRole('menuitem').map((item) => item.getAttribute('data-testid'));
+    expect(items.indexOf('export-java-project')).toBe(items.indexOf('export-fabric-jar') + 1);
+    fireEvent.click(entry);
+    expect(onExportJavaProject).toHaveBeenCalledOnce();
+  });
+
+  it('disables the Java project export with the Fabric mod jar reason', async () => {
+    renderToolbar(
+      props({
+        onExportJavaProject: vi.fn(),
+        fabricJarExportDisabledReason: 'Fix 2 errors first (see Problems).',
+      }),
+    );
+    await userEvent.setup().click(screen.getByTestId('toolbar-export-menu'));
+    const reason = await screen.findByTestId('export-java-project-reason');
+    expect(reason.textContent).toBe('Fix 2 errors first (see Problems).');
+    expect(screen.getByTestId('export-java-project').getAttribute('aria-disabled')).toBe('true');
+  });
+});

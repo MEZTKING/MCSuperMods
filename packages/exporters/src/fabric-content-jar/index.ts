@@ -21,6 +21,7 @@ import type {
   Json,
   JsonObject,
   OutputFile,
+  Problem,
 } from '@msm/plugin-api';
 import { outputFileBytes } from '../contents';
 import { EXPORT_MANIFEST_FILE, exportManifest } from '../manifest';
@@ -97,6 +98,86 @@ export interface FabricContentJarOptions {
    * and the runtime is nested. A throw counts as missing.
    */
   loadGeckolibJar?: () => Promise<Uint8Array | undefined>;
+  /**
+   * Transpiles one script (an `msm`-layer file with `language: 'typescript'`, ADR 0031 D5)
+   * to the ES5 CommonJS JavaScript the runtime's Rhino runs. Returns the JavaScript, or the
+   * problems that stopped it (syntax errors). Called once per script, in path order; `name`
+   * is the script's path in the jar. Without it, a project with scripts reports
+   * `export.transpiler-missing` and writes nothing. Since Phase 6.
+   */
+  transpileScript?: (source: string, name: string) => Promise<ScriptTranspileResult>;
+}
+
+/** What {@link FabricContentJarOptions.transpileScript} returns. */
+export type ScriptTranspileResult = { js: string } | { problems: Problem[] };
+
+/** Whether a lowered file is a script the content jar transpiles. */
+export function isScriptFile(file: OutputFile): boolean {
+  return file.layer === 'msm' && file.language === 'typescript';
+}
+
+/** The jar path of a transpiled script: the script's path with `.js` for `.ts`. */
+export function transpiledScriptPath(path: string): string {
+  return path.endsWith('.ts') ? `${path.slice(0, -'.ts'.length)}.js` : `${path}.js`;
+}
+
+/**
+ * Transpiles every script; returns the `.js` files, or `undefined` after reporting why the
+ * export must stop.
+ */
+async function transpileScripts(
+  scripts: readonly OutputFile[],
+  transpile: FabricContentJarOptions['transpileScript'],
+  problems: ExporterInput['problems'],
+): Promise<OutputFile[] | undefined> {
+  if (scripts.length === 0) return [];
+  if (transpile === undefined) {
+    problems.report({
+      severity: 'error',
+      code: ExportProblemCodes.transpilerMissing,
+      message: `The project has ${scripts.length} script(s), but this host cannot transpile scripts, so no mod jar was built.`,
+    });
+    return undefined;
+  }
+  const out: OutputFile[] = [];
+  let failed = false;
+  for (const script of [...scripts].sort((a, b) => comparePaths(a.path, b.path))) {
+    const source = utf8.decode(outputFileBytes(script));
+    let result: ScriptTranspileResult;
+    try {
+      result = await transpile(source, script.path);
+    } catch (error) {
+      problems.report({
+        severity: 'error',
+        code: ExportProblemCodes.scriptTranspileFailed,
+        file: script.path,
+        message: `${script.path} could not be transpiled: ${error instanceof Error ? error.message : String(error)}`,
+      });
+      failed = true;
+      continue;
+    }
+    if ('problems' in result) {
+      for (const problem of result.problems) {
+        problems.report({ ...problem, file: problem.file ?? script.path });
+      }
+      if (!result.problems.some((problem) => problem.severity === 'error')) {
+        problems.report({
+          severity: 'error',
+          code: ExportProblemCodes.scriptTranspileFailed,
+          file: script.path,
+          message: `${script.path} could not be transpiled.`,
+        });
+      }
+      failed = true;
+      continue;
+    }
+    out.push({
+      path: transpiledScriptPath(script.path),
+      contents: utf8.encode(result.js),
+      layer: 'msm',
+    });
+  }
+  return failed ? undefined : out;
 }
 
 /**
@@ -309,6 +390,12 @@ async function loadRuntime(
  * `export.no-geckolib-target`; when nesting without GeckoLib bytes,
  * `export.geckolib-missing`; both write nothing. Projects without entities are unaffected.
  *
+ * Scripts (`msm`-layer files with `language: 'typescript'`) are transpiled with the factory's
+ * `transpileScript` and written as `.js` at the same path; the `.ts` is not written. Without
+ * a transpiler: `export.transpiler-missing`; a failed transpile reports its problems with the
+ * script's path; both write nothing. Jars with scripts depend on `msm_runtime` at
+ * `runtimeVersion` (the app's version, 0.6.0 or later), which runs them.
+ *
  * @param options - Where the runtime and GeckoLib jars come from, and the runtime version.
  */
 export function createFabricContentJarExporter(options: FabricContentJarOptions = {}): Exporter {
@@ -336,6 +423,14 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
         });
         return;
       }
+      // Scripts first: a syntax error stops the export before any jar is read.
+      const transpiled = await transpileScripts(
+        input.files.filter(isScriptFile),
+        options.transpileScript,
+        input.problems,
+      );
+      if (transpiled === undefined) return;
+
       const runtimeVersion = options.runtimeVersion ?? input.meta.msmVersion;
       const nest = input.options[SEPARATE_RUNTIME_OPTION] !== true;
       const entities = needsGeckolib(input.files);
@@ -384,6 +479,7 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
           provided = file;
           continue;
         }
+        if (isScriptFile(file)) continue; // replaced by its transpiled .js below
         const where = placement(file);
         if (where === 'reserved') {
           input.problems.report({
@@ -400,6 +496,7 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
         }
         files.push(file);
       }
+      files.push(...transpiled);
       if (outside > 0) {
         input.problems.report({
           severity: 'info',

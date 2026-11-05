@@ -4,7 +4,9 @@
  * Provides the export pipeline (`runExport`, with an injected `validateText` hook for text
  * outputs such as `mcfunction`), deterministic zips, output sinks and the vanilla pack
  * exporters: `resourcePackExporter` (`vanilla-packs`, alias `vanillaPacksExporter`) and
- * `dataPackExporter` (`vanilla-packs-data`).
+ * `dataPackExporter` (`vanilla-packs-data`), the Fabric content jar (`fabric-content-jar`,
+ * with script transpilation through an injected `transpileScript`) and the Java project eject
+ * (`java-project`, whose Java sources come from the target's `javaProject` generator).
  *
  * A combined export is two runs, not a third exporter: the host runs `resourcePackExporter`
  * and `dataPackExporter` into two zip sinks in one folder, named by `combinedFileNames`.
@@ -29,12 +31,24 @@ export {
   FABRIC_MOD_JSON_FILE,
   type FabricContentJarOptions,
   FabricContentJarProblemCodes,
+  isScriptFile,
   MSM_RUNTIME_MOD_ID,
   nestedRuntimePath,
   RESERVED_MOD_IDS,
   SEPARATE_RUNTIME_OPTION,
+  type ScriptTranspileResult,
   sanitiseModId,
+  transpiledScriptPath,
 } from './fabric-content-jar/index';
+export {
+  createJavaProjectExporter,
+  type GradleWrapper,
+  JAVA_PROJECT_EXPORTER_ID,
+  JAVA_PROJECT_MOD_JSON,
+  type JavaProjectOptions,
+  javaPackageFor,
+  modClassNameFor,
+} from './java-project/index';
 export { EXPORT_MANIFEST_FILE, EXPORT_MANIFEST_FORMAT_VERSION, exportManifest } from './manifest';
 export { type ExportProblemCode, ExportProblemCodes } from './problem-codes';
 export {

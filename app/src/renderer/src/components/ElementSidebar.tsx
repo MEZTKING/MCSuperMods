@@ -41,10 +41,14 @@ export const ENTITIES_GROUP = 'Entities';
 /** The heading geo models and animation sets (`msm:geo_model`, `msm:animation`) are grouped under. */
 export const MODELS_ANIM_GROUP = 'Models and animations';
 
+/** The heading runtime scripts (`msm:script`) are grouped under (after "Models and animations"). */
+export const SCRIPTS_GROUP = 'Scripts';
+
 const WORLDGEN_KIND_PREFIX = 'minecraft:worldgen/';
 const DIMENSION_KIND = 'minecraft:dimension';
 const STRUCTURE_TEMPLATE_KIND = 'minecraft:structure_template';
 const ENTITY_KIND = 'msm:entity';
+const SCRIPT_KIND = 'msm:script';
 
 /** The label shown before the name in the {@link MODELS_ANIM_GROUP} group, per kind. */
 const MODELS_ANIM_LABELS: Readonly<Record<string, string>> = {
@@ -74,6 +78,7 @@ export function groupOf(kind: string): string {
   if (kind === STRUCTURE_TEMPLATE_KIND) return STRUCTURES_GROUP;
   if (kind === ENTITY_KIND) return ENTITIES_GROUP;
   if (MODELS_ANIM_LABELS[kind] !== undefined) return MODELS_ANIM_GROUP;
+  if (kind === SCRIPT_KIND) return SCRIPTS_GROUP;
   return kind;
 }
 
@@ -90,8 +95,9 @@ function rowRegistry(group: string, kind: string): string | undefined {
  * (`minecraft:tag/<registry>`) goes into one {@link TAGS_GROUP} group, every worldgen kind
  * (`minecraft:worldgen/<registry>` and `minecraft:dimension`) into one
  * {@link WORLDGEN_GROUP} group, structure templates into {@link STRUCTURES_GROUP}, custom
- * entities into {@link ENTITIES_GROUP} and geo models and animation sets into
- * {@link MODELS_ANIM_GROUP}; shared groups are ordered by kind and then id.
+ * entities into {@link ENTITIES_GROUP}, geo models and animation sets into
+ * {@link MODELS_ANIM_GROUP} and scripts into {@link SCRIPTS_GROUP}; shared groups are ordered
+ * by kind and then id. Groups sort by heading, so "Scripts" follows "Models and animations".
  */
 export function groupByKind(namespace: Namespace): [kind: string, elements: Element[]][] {
   const groups = new Map<string, Element[]>();

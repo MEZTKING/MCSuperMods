@@ -18,10 +18,16 @@ import { geoModelBaseJava } from './templates/geo-model-base-java';
  *
  * @returns The fully qualified client entrypoint class.
  */
-export function generateClient(context: GenerationContext, entities: readonly EntityNames[]): string {
+export function generateClient(
+  context: GenerationContext,
+  entities: readonly EntityNames[],
+): string {
   const clientPackage = packageOf(context, 'client');
   const modelPackage = packageOf(context, 'client.entity');
-  context.files.push({ path: classPath(context, 'client.entity', 'GeoModelBase'), contents: geoModelBaseJava(modelPackage) });
+  context.files.push({
+    path: classPath(context, 'client.entity', 'GeoModelBase'),
+    contents: geoModelBaseJava(modelPackage),
+  });
 
   const name = `${context.input.modClassName}Client`;
   const file = new JavaFile(clientPackage, 'the msm/<namespace>/entity/*.json definitions');
@@ -71,5 +77,8 @@ function writeModel(context: GenerationContext, entity: EntityNames): void {
     '    }',
     '}',
   ];
-  context.files.push({ path: classPath(context, 'client.entity', entity.modelClass), contents: file.render(lines) });
+  context.files.push({
+    path: classPath(context, 'client.entity', entity.modelClass),
+    contents: file.render(lines),
+  });
 }

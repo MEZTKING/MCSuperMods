@@ -96,6 +96,11 @@ export interface ToolbarProps {
   fabricJarExportDisabledReason?: string | null;
   /** Opens the Fabric mod jar export dialog. */
   onExportFabricJar?(): void;
+  /**
+   * Opens the Export Java project dialog (the eject; disabled for the same reason as the
+   * Fabric mod jar).
+   */
+  onExportJavaProject?(): void;
   /** Opens the Test in Minecraft dialog (disabled for the same reason as the Fabric mod jar). */
   onTestInMinecraft?(): void;
   /** Installs the resource pack into the resourcepacks folder. */
@@ -598,7 +603,7 @@ export function Toolbar(props: ToolbarProps) {
       <ToolMenu
         label=""
         ariaLabel="Export options"
-        tip="Export the resource pack, the data pack, both or a Fabric mod jar, or test the mod in Minecraft"
+        tip="Export the resource pack, the data pack, both, a Fabric mod jar or a Fabric Java project, or test the mod in Minecraft"
         testId="toolbar-export-menu"
         icon={<ChevronDown size={iconSize} aria-hidden />}
         disabled={!props.hasProject || busy}
@@ -626,6 +631,12 @@ export function Toolbar(props: ToolbarProps) {
             testId: 'export-fabric-jar',
             reason: busyReason ?? fabricJarReason,
             onSelect: props.onExportFabricJar,
+          },
+          {
+            label: 'Fabric Java project (eject)…',
+            testId: 'export-java-project',
+            reason: busyReason ?? fabricJarReason,
+            onSelect: props.onExportJavaProject,
           },
           {
             label: 'Test in Minecraft…',

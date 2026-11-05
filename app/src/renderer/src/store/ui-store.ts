@@ -15,6 +15,8 @@ import type { SessionSnapshot } from '../session/project-session';
 export interface StatusMessage {
   kind: 'info' | 'error';
   text: string;
+  /** A button shown with the message (for example "Reveal" after an export). */
+  action?: { label: string; run(): void } | undefined;
 }
 
 /** The editor area's tabs. */

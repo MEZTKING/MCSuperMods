@@ -1,0 +1,161 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "avoid_water": true,
+          "speed": 1.0,
+          "type": "wander"
+        },
+        {
+          "distance": 8.0,
+          "type": "look_at_player"
+        },
+        {
+          "type": "look_around"
+        },
+        {
+          "must_see": true,
+          "priority": 1,
+          "retaliate": true,
+          "speed": 1.2,
+          "targets": [
+            "minecraft:player"
+          ],
+          "type": "melee_attack"
+        },
+        {
+          "distance": 6.0,
+          "from": [
+            "minecraft:creeper",
+            "msm_test:no_such_mob"
+          ],
+          "speed": 1.0,
+          "sprint_speed": 1.2,
+          "type": "flee"
+        },
+        {
+          "entities": [
+            "minecraft:cow"
+          ],
+          "range": 16.0,
+          "speed": 1.0,
+          "stop_distance": 2.0,
+          "type": "follow"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "animations": "msm_test:entity/golem_animations",
+      "attack": "attack",
+      "idle": "idle",
+      "model": "msm_test:entity/golem",
+      "scale": 1.5,
+      "texture": "msm_test:entity/golem",
+      "transition_ticks": 4,
+      "walk": "walk"
+    },
+    "msm:attack": {
+      "damage": 4.0,
+      "knockback": 0.5,
+      "on_attack": "msm_test:thump"
+    },
+    "msm:health": {
+      "max": 30.0
+    },
+    "msm:movement": {
+      "fire_immune": true,
+      "follow_range": 24.0,
+      "knockback_resistance": 0.2,
+      "speed": 0.28,
+      "swims": true
+    },
+    "msm:on_death": {
+      "event": "msm_test:shatter"
+    },
+    "msm:on_hurt": {
+      "event": "msm_test:ouch"
+    },
+    "msm:on_interact": {
+      "event": "msm_test:pat"
+    }
+  },
+  "events": {
+    "msm_test:ouch": {
+      "actions": [
+        {
+          "count": 3,
+          "particle": "minecraft:crit",
+          "type": "spawn_particle"
+        },
+        {
+          "animation": "flinch",
+          "type": "play_animation"
+        }
+      ]
+    },
+    "msm_test:pat": {
+      "actions": [
+        {
+          "count": 2,
+          "item": "minecraft:diamond",
+          "type": "give_item"
+        },
+        {
+          "event": "msm_test:ouch",
+          "type": "trigger_event"
+        }
+      ]
+    },
+    "msm_test:shatter": {
+      "actions": [
+        {
+          "offset": [
+            0,
+            1,
+            0
+          ],
+          "state": "minecraft:gold_block",
+          "type": "set_block_state"
+        }
+      ]
+    },
+    "msm_test:thump": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.iron_golem.attack",
+          "type": "play_sound"
+        },
+        {
+          "animation": "slam",
+          "controller": "msm_triggered",
+          "type": "play_animation"
+        }
+      ]
+    }
+  },
+  "eye_height": 1.4,
+  "format": 1,
+  "loot_table": "msm_test:entities/kitchen_sink_custom",
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  },
+  "spawn": {
+    "biomes": [
+      "#minecraft:is_forest",
+      "minecraft:plains",
+      "msm_test:no_such_biome"
+    ],
+    "heightmap": "motion_blocking_no_leaves",
+    "max_group": 2,
+    "min_group": 1,
+    "placement": "on_ground",
+    "rule": "mob",
+    "weight": 6
+  },
+  "spawn_egg": {
+    "creative_tab": "minecraft:spawn_eggs"
+  }
+}

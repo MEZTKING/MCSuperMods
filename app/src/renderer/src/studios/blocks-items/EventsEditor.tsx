@@ -1,8 +1,9 @@
 /**
  * The events editor shared by the Block, Item and Entity Studios (B97, B118): add, rename and
  * remove events, and edit each event's ordered action list (add, remove, reorder, change type,
- * and the fields of the six format v1 actions with their ADR 0025 D4 defaults; entity events
- * also offer `play_animation`, ADR 0028).
+ * and the fields of the format v1 actions with their ADR 0025 D4 defaults, including
+ * `run_script` with its handler picked from the project's scripts or typed, ADR 0032 D4;
+ * entity events also offer `play_animation`, ADR 0028).
  *
  * Renaming rewrites the references in trigger components and `trigger_event` actions in one
  * edit (one undo step); removing an event leaves its references, which the
@@ -50,6 +51,8 @@ export interface EventsEditorProps {
   onChange(pointer: string, value: Json | undefined, options?: ChangeOptions): void;
   /** Animation names `play_animation` offers (the entity's animation set). */
   animations?: readonly string[];
+  /** Handler ids `run_script` offers (defined by the project's scripts). */
+  handlers?: readonly string[];
   /** Trigger fields shown above the events (for example an entity's On hurt). */
   triggers?: ReactNode;
 }
@@ -63,6 +66,7 @@ function ActionFieldEditor(props: {
   name: string;
   events: readonly string[];
   animations: readonly string[];
+  handlers: readonly string[];
   suggest(registry: string, prefix: string): string[];
   set(key: string, value: Json | undefined, coalesce?: string): void;
 }) {
@@ -156,7 +160,52 @@ function ActionFieldEditor(props: {
           onChange={(next) => set(field.key, next ?? '')}
         />
       );
+    case 'handler':
+      return <HandlerField label={label} value={value} handlers={props.handlers} set={set} />;
   }
+}
+
+/** Shown under a `run_script` handler when no script defines a handler yet. */
+export const NO_HANDLERS_NOTE =
+  'No script defines a handler yet: add msm.actions.define("<id>", (e) => { ... }) to a script.';
+
+/**
+ * A `run_script` handler: a select over the handlers the project's scripts define, plus a
+ * text field for an id no script defines yet (the `scripting.unknown-handler` warning then
+ * says so).
+ */
+function HandlerField(props: {
+  label: string;
+  value: Json | undefined;
+  handlers: readonly string[];
+  set(key: string, value: Json | undefined): void;
+}) {
+  const { label, handlers, set } = props;
+  const current = typeof props.value === 'string' ? props.value : '';
+  return (
+    <>
+      <SelectField
+        label={label}
+        value={current === '' ? undefined : current}
+        choices={handlers}
+        emptyLabel="(choose a handler)"
+        onChange={(next) => set('handler', next ?? '')}
+      />
+      <div className="flex min-w-48 flex-col gap-0.5 text-xs">
+        <span className="text-muted" aria-hidden>
+          {label} id
+        </span>
+        <IdInput
+          value={current}
+          label={`${label} id`}
+          placeholder="mymod:handler"
+          className="font-mono"
+          onCommit={(text) => set('handler', text.trim())}
+        />
+      </div>
+      {handlers.length === 0 && <span className="text-muted text-xs">{NO_HANDLERS_NOTE}</span>}
+    </>
+  );
 }
 
 function EventEditor(props: {
@@ -166,6 +215,7 @@ function EventEditor(props: {
   events: readonly string[];
   actions: readonly ActionSpec[];
   animations: readonly string[];
+  handlers: readonly string[];
   problems: readonly FormProblem[];
   suggest(registry: string, prefix: string): string[];
   onChange: EventsEditorProps['onChange'];
@@ -256,6 +306,7 @@ function EventEditor(props: {
                     name={actionName}
                     events={events}
                     animations={props.animations}
+                    handlers={props.handlers}
                     suggest={props.suggest}
                     set={set}
                   />
@@ -337,6 +388,7 @@ export function EventsEditor({
   suggest,
   onChange,
   animations = [],
+  handlers = [],
   triggers,
 }: EventsEditorProps) {
   const events = eventNames(element.data);
@@ -373,6 +425,7 @@ export function EventsEditor({
             events={events}
             actions={actions}
             animations={animations}
+            handlers={handlers}
             problems={problems}
             suggest={suggest}
             onChange={onChange}

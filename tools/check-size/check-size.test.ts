@@ -12,6 +12,7 @@ import {
   measure,
   report,
   summarise,
+  typescriptWorkerChunks,
 } from './index.ts';
 
 const MB = 1024 * 1024;
@@ -20,6 +21,7 @@ const passing: Measurements = {
   asarBytes: 10 * MB,
   rendererFiles: [
     { path: 'assets/index.js', bytes: 500_000 },
+    { path: 'assets/ts.worker-AbC123.js', bytes: 7 * MB },
     { path: 'index.html', bytes: 900 },
   ],
   mainFiles: [{ path: 'index.js', bytes: 4 * MB }],
@@ -63,7 +65,8 @@ describe('checkBudgets', () => {
       checkBudgets({
         asarBytes: BUDGETS.asarBytes,
         rendererFiles: [
-          { path: 'a.js', bytes: BUDGETS.rendererBytes - BUDGETS.rendererJsonBytes },
+          { path: 'a.js', bytes: BUDGETS.rendererBytes - BUDGETS.rendererJsonBytes - 10 },
+          { path: 'assets/ts.worker-x.js', bytes: 10 },
           { path: 'data.json', bytes: BUDGETS.rendererJsonBytes },
         ],
         mainFiles: null,
@@ -82,16 +85,33 @@ describe('checkBudgets', () => {
     const violations = checkBudgets({
       ...passing,
       rendererFiles: [
-        { path: 'assets/big.js', bytes: 8 * MB },
+        { path: 'assets/big.js', bytes: 16 * MB },
+        { path: 'assets/ts.worker-x.js', bytes: 1024 },
         { path: 'assets/registries.json', bytes: 200 * 1024 },
         { path: 'assets/small.json', bytes: 1024 },
         { path: 'assets/big.js.map.txt', bytes: 200 * 1024 },
       ],
     });
     expect(violations).toEqual([
-      expect.stringMatching(/^Renderer output is 8\.4 MB/),
+      expect.stringMatching(/^Renderer output is 16\.4 MB/),
       expect.stringMatching(/^Renderer JSON assets\/registries\.json is 200\.0 kB/),
     ]);
+  });
+
+  it('has a 16 MB renderer budget for the lazy TypeScript worker (ADR 0031 D6)', () => {
+    expect(BUDGETS.rendererBytes).toBe(16 * MB);
+  });
+
+  it('requires the Monaco TypeScript worker as a separate chunk', () => {
+    expect(typescriptWorkerChunks(passing.rendererFiles ?? [])).toEqual([
+      { path: 'assets/ts.worker-AbC123.js', bytes: 7 * MB },
+    ]);
+    expect(typescriptWorkerChunks([{ path: 'assets/ts.worker.css', bytes: 1 }])).toEqual([]);
+    const violations = checkBudgets({
+      ...passing,
+      rendererFiles: [{ path: 'assets/index.js', bytes: 500_000 }],
+    });
+    expect(violations).toEqual([expect.stringContaining('TypeScript worker')]);
   });
 
   it('reports missing inputs', () => {
@@ -120,6 +140,7 @@ describe('measure and report', () => {
     mkdirSync(renderer, { recursive: true });
     mkdirSync(resources, { recursive: true });
     writeFileSync(join(renderer, 'index.js'), 'x'.repeat(300));
+    writeFileSync(join(renderer, 'ts.worker-1.js'), 'x'.repeat(100));
     writeFileSync(join(renderer, '..', 'index.html'), 'x'.repeat(20));
     writeFileSync(join(resources, 'app.asar'), 'x'.repeat(1000));
     const main = join(root, 'app', 'out', 'main');
@@ -133,6 +154,7 @@ describe('measure and report', () => {
       asarBytes: 1000,
       rendererFiles: [
         { path: 'assets/index.js', bytes: 300 },
+        { path: 'assets/ts.worker-1.js', bytes: 100 },
         { path: 'index.html', bytes: 20 },
       ],
       mainFiles: [
@@ -145,9 +167,13 @@ describe('measure and report', () => {
     expect(checkBudgets(measured)).toEqual([]);
 
     const lines = report(measured);
-    expect(lines[0]).toBe('Renderer output: 320 B (budget 8.0 MB), largest files:');
+    expect(lines[0]).toBe('Renderer output: 420 B (budget 16.0 MB), largest files:');
+    expect(lines).toContain('TypeScript worker chunk: assets/ts.worker-1.js (100 B)');
     expect(lines).toContain('app.asar: 1000 B (budget 25.0 MB)');
-    expect(lines).toContain('Main output: index.js 2.0 kB, 3.0 kB in total (reported only)');
+    expect(lines).toContain(
+      'Main output: index.js 2.0 kB, 3.0 kB in total (reported only), largest files:',
+    );
+    expect(lines).toContain('     1.0 kB  chunks/lazy.js');
     expect(lines.at(-1)).toMatch(/^Unpacked app: 5\.9 kB/);
   });
 

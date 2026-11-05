@@ -55,6 +55,34 @@ export const ExportProblemCodes = {
    * `pack.mcmeta`) was left out.
    */
   outsideJarFolders: 'export.outside-jar-folders',
+  /**
+   * Fabric content jar: the project has scripts (`language: 'typescript'` files in the `msm`
+   * layer) but the host supplied no `transpileScript`. Nothing is written.
+   */
+  transpilerMissing: 'export.transpiler-missing',
+  /**
+   * Fabric content jar: a script could not be transpiled (the transpiler threw or returned
+   * no problem that explains the failure). Nothing is written. Problems the transpiler
+   * returns keep their own codes.
+   */
+  scriptTranspileFailed: 'export.script-transpile-failed',
+  /** Java project: the target has no Java generator (`Target.javaProject`). Nothing is written. */
+  noJavaProjectTarget: 'export.no-java-project-target',
+  /**
+   * Java project: the target's generator threw, or a definition is not a JSON object.
+   * Nothing is written.
+   */
+  javaGenerationFailed: 'export.java-generation-failed',
+  /**
+   * Java project: a script, or a definition event's `run_script` action, is left out of the
+   * eject (ADR 0033 D1). One warning per script and per event; the export goes ahead.
+   */
+  scriptsNotEjected: 'export.scripts-not-ejected',
+  /**
+   * Java project: the host supplied no Gradle wrapper, so the project is written without
+   * `gradlew` and the wrapper jar. Info; the export goes ahead.
+   */
+  gradleWrapperMissing: 'export.gradle-wrapper-missing',
   /** The exporter threw while packaging. Some files may already have been written. */
   failed: 'export.failed',
 } as const;

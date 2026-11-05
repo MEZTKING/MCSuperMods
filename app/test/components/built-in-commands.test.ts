@@ -46,6 +46,19 @@ describe('paletteCommands', () => {
     );
   });
 
+  it('offers "Export Java project…" after the Fabric mod jar', () => {
+    const commands = paletteCommands(
+      { exportFabricJar: vi.fn(), exportJavaProject: vi.fn(), testInMinecraft: vi.fn() },
+      [],
+      { modKey: 'Ctrl', onError: vi.fn() },
+    );
+    expect(commands.map((command) => [command.id, command.title])).toEqual([
+      ['exportFabricJar', 'Export Fabric mod jar…'],
+      ['exportJavaProject', 'Export Java project…'],
+      ['testInMinecraft', 'Test in Minecraft…'],
+    ]);
+  });
+
   it('reports plugin command failures', async () => {
     const onError = vi.fn();
     const [thrown, rejected] = paletteCommands(

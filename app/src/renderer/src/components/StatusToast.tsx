@@ -5,7 +5,8 @@ import { iconButtonClass } from './ui/Button';
 
 /**
  * Shows the store's status message as a Radix toast (announced politely to screen readers).
- * Errors stay longer than information. Needs a `Toast.Provider` above it.
+ * Errors stay longer than information; a message with an action shows its button. Needs a
+ * `Toast.Provider` above it.
  */
 export function StatusToast() {
   const message = useUiStore((state) => state.message);
@@ -32,6 +33,16 @@ export function StatusToast() {
           >
             {message.text}
           </Toast.Description>
+          {message.action !== undefined && (
+            <Toast.Action
+              altText={message.action.label}
+              className="shrink-0 rounded border border-border px-2 py-0.5 text-sm hover:bg-bg"
+              data-testid="status-toast-action"
+              onClick={message.action.run}
+            >
+              {message.action.label}
+            </Toast.Action>
+          )}
           <Toast.Close className={iconButtonClass} aria-label="Dismiss">
             <X size={14} aria-hidden />
           </Toast.Close>

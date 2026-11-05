@@ -42,9 +42,10 @@ export interface ActionField {
   /**
    * `id`: a registry id (with {@link registry}); `text`: free text; `int`/`float`: a number;
    * `offset`: three integers; `event`: an event of the same element; `animation`: an
-   * animation name offered by the host (the entity's animation set).
+   * animation name offered by the host (the entity's animation set); `handler`: a script
+   * handler id (`msm.actions.define`), offered from the project's scripts or typed.
    */
-  type: 'id' | 'text' | 'int' | 'float' | 'offset' | 'event' | 'animation';
+  type: 'id' | 'text' | 'int' | 'float' | 'offset' | 'event' | 'animation' | 'handler';
   /** The registry suggestions come from, for `id` fields. */
   registry?: string;
   /** Whether the field must be set. */
@@ -60,7 +61,10 @@ export interface ActionSpec {
   fields: readonly ActionField[];
 }
 
-/** The six actions of format v1 with their fields and defaults (ADR 0025 D4). */
+/**
+ * The actions of format v1 with their fields and defaults: the six of ADR 0025 D4 plus
+ * `run_script` (ADR 0032 D4), which calls a handler a script defines.
+ */
 export const ACTIONS: readonly ActionSpec[] = Object.freeze([
   {
     type: 'play_sound',
@@ -115,6 +119,11 @@ export const ACTIONS: readonly ActionSpec[] = Object.freeze([
     label: 'Trigger event',
     fields: [{ key: 'event', label: 'Event', type: 'event', required: true }],
   },
+  {
+    type: 'run_script',
+    label: 'Run script',
+    fields: [{ key: 'handler', label: 'Handler', type: 'handler', required: true }],
+  },
 ] satisfies ActionSpec[]);
 
 /** `play_animation` (ADR 0028), which only entity events may use. */
@@ -127,7 +136,7 @@ export const PLAY_ANIMATION_ACTION: ActionSpec = Object.freeze({
   ],
 } satisfies ActionSpec);
 
-/** The actions entity events offer: the six of format v1 plus `play_animation`. */
+/** The actions entity events offer: those of format v1 plus `play_animation`. */
 export const ENTITY_ACTIONS: readonly ActionSpec[] = Object.freeze([
   ...ACTIONS,
   PLAY_ANIMATION_ACTION,

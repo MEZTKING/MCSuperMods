@@ -16,6 +16,7 @@
 import type { Json } from '@msm/core';
 import { useState } from 'react';
 import { typingKey } from '../../forms/context';
+import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
 import { AdvancedToggle, Section } from '../worldgen/parts';
@@ -395,7 +396,13 @@ export function BlockStudio(props: StudioProps) {
       {dropsSection}
       {itemSection}
       {behaviour}
-      <EventsEditor element={element} problems={problems} suggest={suggest} onChange={onChange} />
+      <EventsEditor
+        element={element}
+        problems={problems}
+        suggest={suggest}
+        onChange={onChange}
+        handlers={projectHandlers(project)}
+      />
     </section>
   );
 }
