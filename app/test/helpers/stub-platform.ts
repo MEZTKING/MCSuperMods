@@ -55,6 +55,11 @@ export function stubPlatformServices(): Pick<
       run: unavailable,
       pickLauncherProgram: unavailable,
     },
-    updates: { check: unavailable, install: unavailable, onStatus: () => () => {} },
+    updates: {
+      check: unavailable,
+      install: unavailable,
+      current: async () => ({ state: 'idle' }),
+      onStatus: () => () => {},
+    },
   };
 }

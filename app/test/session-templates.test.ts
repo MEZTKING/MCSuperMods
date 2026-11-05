@@ -1,4 +1,5 @@
-import { createMemoryFileSystem } from '@msm/core';
+import { createMemoryFileSystem, requireSyncResult } from '@msm/core';
+import { builtInTargets } from '@msm/targets';
 import { dataPackTemplates } from '@msm/plugin-datapack';
 import { describe, expect, it } from 'vitest';
 import { createCompletionSource } from '../src/renderer/src/studios/completions';
@@ -9,6 +10,8 @@ import {
   templatesFor,
 } from '../src/renderer/src/studios/templates';
 import { newLibrarySession, newSession } from './session-fixture';
+
+const target = (builtInTargets[0] as (typeof builtInTargets)[number]).target;
 
 async function openSession() {
   const fs = createMemoryFileSystem();
@@ -61,7 +64,7 @@ describe('data pack templates (from the data pack plugin)', () => {
     });
     const id = templateElementId(tick, tick.defaultNamespace ?? '', tick.defaultName ?? '');
     expect(id).toBe('minecraft:tick');
-    expect(tick.data(templateContext(id, ['demo', 'minecraft'], undefined))).toEqual({
+    expect(tick.data(templateContext(id, ['demo', 'minecraft'], undefined, target))).toEqual({
       values: ['demo:tick'],
     });
     expect(projectNamespace('minecraft:tick', ['minecraft', 'zeta'])).toBe('zeta');
@@ -85,12 +88,16 @@ describe('data pack templates (from the data pack plugin)', () => {
       session.addElement({
         id,
         kind: template.kind,
-        data: template.data(
-          templateContext(
-            id,
-            session.snapshot.project?.namespaces.map((entry) => entry.name) ?? [],
-            kind?.defaultData,
+        data: requireSyncResult(
+          template.data(
+            templateContext(
+              id,
+              session.snapshot.project?.namespaces.map((entry) => entry.name) ?? [],
+              kind?.defaultData,
+              session.target,
+            ),
           ),
+          template.id,
         ),
       });
       created.push(id);
@@ -189,12 +196,14 @@ describe('plugin templates (ADR 0020)', () => {
     expect(withUnknown.at(-1)).toMatchObject({ id: 'kind:example:thing', category: 'Other' });
     const note = templates.find((template) => template.id === 'note');
     if (note === undefined) throw new Error('missing');
-    expect(note.data(templateContext('minecraft:x', ['minecraft', 'demo'], undefined))).toEqual({
+    expect(
+      note.data(templateContext('minecraft:x', ['minecraft', 'demo'], undefined, session.target)),
+    ).toEqual({
       text: 'Hello from demo',
     });
 
     const kindDefault = { values: ['a'] };
-    const context = templateContext('demo:block/ore', ['demo'], kindDefault);
+    const context = templateContext('demo:block/ore', ['demo'], kindDefault, target);
     expect(context).toEqual({
       id: 'demo:block/ore',
       namespace: 'demo',
@@ -202,6 +211,7 @@ describe('plugin templates (ADR 0020)', () => {
       projectNamespace: 'demo',
       namespaces: ['demo'],
       kindDefault: { values: ['a'] },
+      target,
     });
     expect(context.kindDefault).not.toBe(kindDefault);
   });

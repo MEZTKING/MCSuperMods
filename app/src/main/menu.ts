@@ -151,6 +151,7 @@ export function installMenu(recent: readonly RecentProject[] = []): void {
       label: 'Help',
       submenu: [
         { label: 'Examples…', click: () => send('examples') },
+        { label: "What's New…", click: () => send('whatsNew') },
         { type: 'separator' },
         { label: 'Check for Updates…', click: () => send('checkForUpdates') },
       ],

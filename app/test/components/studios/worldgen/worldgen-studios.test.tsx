@@ -4,7 +4,7 @@
  * Biome Studio and Placed Feature Studio (B80) over the real schema of the first built-in
  * target, plus the pure helpers they share.
  */
-import type { Element, Json, Project } from '@msm/core';
+import { type Element, type Json, type Project, requireSyncResult } from '@msm/core';
 import type { ElementKind, Target, TemplateContext } from '@msm/plugin-api';
 import worldgenPlugin from '@msm/plugin-worldgen';
 import type { RegistryIndex, SchemaIndex } from '@msm/schemas';
@@ -56,8 +56,9 @@ function templateData(templateId: string, id = 'demo:sample'): Json {
     projectNamespace: 'demo',
     namespaces: ['demo'],
     kindDefault: undefined,
+    target: bundle.target,
   };
-  return template.data(context);
+  return requireSyncResult(template.data(context), templateId);
 }
 
 function projectWith(...elements: Element[]): Project {

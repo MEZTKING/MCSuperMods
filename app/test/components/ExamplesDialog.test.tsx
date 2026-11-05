@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import type { ExampleProject } from '@msm/plugin-api';
+import { builtInTargets } from '@msm/targets';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -9,6 +10,8 @@ import {
   exampleMatches,
 } from '../../src/renderer/src/components/ExamplesDialog';
 import { fakeExample } from './library-fixtures';
+
+const target = (builtInTargets[0] as (typeof builtInTargets)[number]).target;
 
 afterEach(cleanup);
 
@@ -52,6 +55,7 @@ function renderGallery(
     <ExamplesDialog
       examples={EXAMPLES}
       namespaces={namespaces}
+      target={target}
       onCopy={onCopy}
       onOpenAsProject={onOpenAsProject}
       onClose={onClose}

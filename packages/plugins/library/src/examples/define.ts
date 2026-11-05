@@ -5,8 +5,8 @@
  */
 import type { BundleContext, ContentBundle, ExampleProject } from '@msm/plugin-api';
 import { kindsOf } from '../content/bundle';
+import { PROBE_CONTEXT } from '../content/probe';
 
-const PROBE: BundleContext = { namespace: 'probe', projectName: 'Probe' };
 
 /** The element tag of an example category: lower case, spaces as hyphens. */
 export function categoryTag(category: string): string {
@@ -45,7 +45,7 @@ export function defineExample(input: ExampleInput): ExampleProject {
     description: input.description,
     kind: input.kind,
     category: input.category,
-    requiresKinds: kindsOf(build(PROBE)).sort(),
+    requiresKinds: kindsOf(build(PROBE_CONTEXT)).sort(),
     build,
   };
   if (input.tags !== undefined) entry.tags = [...input.tags];

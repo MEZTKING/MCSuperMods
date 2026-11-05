@@ -7,7 +7,7 @@
  * templates and every member of their root dispatchers, with every section expanded, must
  * not show more JSON fallbacks than the recorded baseline.
  */
-import type { Json } from '@msm/core';
+import { type Json, requireSyncResult } from '@msm/core';
 import worldgenPlugin from '@msm/plugin-worldgen';
 import type { RegistryIndex, SchemaIndex, SchemaNode } from '@msm/schemas';
 import { builtInTargets } from '@msm/targets';
@@ -129,14 +129,18 @@ for (const bundle of builtInTargets) {
         );
         expect(templates.length).toBeGreaterThan(0);
         for (const template of templates) {
-          const data = template.data({
-            id: 'demo:sample',
-            namespace: 'demo',
-            path: 'sample',
-            projectNamespace: 'demo',
-            namespaces: ['demo'],
-            kindDefault: undefined,
-          });
+          const data = requireSyncResult(
+            template.data({
+              id: 'demo:sample',
+              namespace: 'demo',
+              path: 'sample',
+              projectNamespace: 'demo',
+              namespaces: ['demo'],
+              kindDefault: undefined,
+              target: bundle.target,
+            }),
+            template.id,
+          );
           for (const at of renderExpanded(root, data, registries)) {
             failures.push(`${template.id}: ${at}`);
           }

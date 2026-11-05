@@ -3,6 +3,7 @@
  */
 import type { BundleContext, ContentBundle, OutputLayer, ProjectStarter } from '@msm/plugin-api';
 import { kindsOf } from '../content/bundle';
+import { PROBE_CONTEXT } from '../content/probe';
 import { customBiomeBundle } from './custom-biome';
 import { customMobBundle } from './custom-mob';
 import { customOreBundle } from './custom-ore';
@@ -25,8 +26,6 @@ export { recipePackBundle } from './recipe-pack';
 export { scriptedOreBundle, scriptedOreIds } from './scripted-ore';
 export { worldgenPackBundle } from './worldgen-pack';
 
-/** The namespace used to work out a bundle's kinds; any valid namespace gives the same set. */
-const PROBE: BundleContext = { namespace: 'probe', projectName: 'Probe' };
 
 function starter(
   id: string,
@@ -42,7 +41,7 @@ function starter(
     description,
     category,
     layers,
-    requiresKinds: kindsOf(build(PROBE)).sort(),
+    requiresKinds: kindsOf(build(PROBE_CONTEXT)).sort(),
     build,
   });
 }

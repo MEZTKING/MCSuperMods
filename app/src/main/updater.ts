@@ -6,8 +6,13 @@
  * - Active only in the installed Windows app: `app.isPackaged`, `win32`, and not a smoke or
  *   end-to-end run (`MSM_SMOKE`, any `MSM_E2E_*`). Otherwise every status is `disabled`.
  * - electron-updater is loaded lazily, on the first check, so inactive runs never load it.
- * - A start-up check runs a few seconds after the window has loaded, when the
- *   `updates.autoCheck` setting is on. Manual checks (Help menu, command palette) always run.
+ * - A start-up check runs a few seconds after the window has loaded, then every six hours,
+ *   each when the `updates.autoCheck` setting is on (read at every tick). Manual checks (Help
+ *   menu, command palette) always run. A check never starts while an update is available,
+ *   downloading or downloaded.
+ * - When a download finishes, `notify` runs once per version (the native OS notification).
+ * - `available` and `downloaded` carry the release notes as Markdown ({@link releaseNotesOf});
+ *   `downloading` carries the version being downloaded.
  * - Updates download automatically; installing happens only when the user asks
  *   ({@link Updater.install}), after every window has closed through the unsaved-changes
  *   prompt. Nothing installs on an ordinary quit.
@@ -25,6 +30,7 @@ import {
   type UpdateDisabledReason,
   type UpdateStatus,
 } from '../shared/ipc-channels';
+import { releaseNotesOf } from './release-notes';
 
 /** The events of electron-updater's `autoUpdater` this module listens to. */
 export type AutoUpdaterEvent =
@@ -74,6 +80,8 @@ export interface UpdaterDeps {
   broadcast(status: UpdateStatus): void;
   /** Starts closing every window; each goes through the unsaved-changes prompt. */
   closeWindows(): void;
+  /** Shows a native notification that `version` has downloaded (once per version). */
+  notify?(version: string): void;
   log(message: string, error?: unknown): void;
   /** Defaults to the global `setTimeout`. */
   schedule?(callback: () => void, delayMs: number): void;
@@ -85,8 +93,11 @@ export interface Updater {
   readonly status: UpdateStatus;
   /** Whether the user asked to install and the windows are closing. */
   readonly installRequested: boolean;
-  /** Runs the start-up check after `delayMs`, when active and `updates.autoCheck` is on. */
-  scheduleStartupCheck(delayMs?: number): void;
+  /**
+   * Runs the start-up check after `delayMs` and then every `intervalMs`, each when active and
+   * `updates.autoCheck` is on.
+   */
+  scheduleStartupCheck(delayMs?: number, intervalMs?: number): void;
   /** Checks now; resolves to the status once the check has finished. Never rejects. */
   check(): Promise<UpdateStatus>;
   /**
@@ -103,6 +114,8 @@ export interface Updater {
 
 /** The start-up check's default delay after the window has loaded. */
 export const STARTUP_CHECK_DELAY_MS = 5_000;
+/** The time between automatic checks after the start-up check: six hours. */
+export const UPDATE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 
 /** The message shown when GitHub could not be reached. */
 export const UPDATE_OFFLINE_MESSAGE =
@@ -259,14 +272,22 @@ export function statusForEvent(event: AutoUpdaterEvent, payload: unknown): Updat
   switch (event) {
     case 'checking-for-update':
       return { state: 'checking' };
-    case 'update-available':
-      return { state: 'available', version: versionOf(payload) };
+    case 'update-available': {
+      const notes = releaseNotesOf(payload);
+      return notes === undefined
+        ? { state: 'available', version: versionOf(payload) }
+        : { state: 'available', version: versionOf(payload), notes };
+    }
     case 'update-not-available':
       return { state: 'not-available' };
     case 'download-progress':
       return { state: 'downloading', percent: percentOf(payload) };
-    case 'update-downloaded':
-      return { state: 'downloaded', version: versionOf(payload) };
+    case 'update-downloaded': {
+      const notes = releaseNotesOf(payload);
+      return notes === undefined
+        ? { state: 'downloaded', version: versionOf(payload) }
+        : { state: 'downloaded', version: versionOf(payload), notes };
+    }
     case 'error':
       return statusForError(payload);
   }
@@ -294,16 +315,39 @@ export function createUpdater(deps: UpdaterDeps): Updater {
   let loaded: AutoUpdaterLike | null = null;
   let installRequested = false;
   let running: Promise<UpdateStatus> | null = null;
+  // The update being fetched (from `update-available`), for the download statuses.
+  let pending: { version: string; notes?: string } | null = null;
+  const notified = new Set<string>();
 
   const setStatus = (proposed: UpdateStatus): void => {
     // Belt and braces: nothing long may cross IPC.
-    const next: UpdateStatus =
+    let next: UpdateStatus =
       proposed.state === 'error' && proposed.message.length > UPDATE_STATUS_MESSAGE_MAX
         ? { state: 'error', message: proposed.message.slice(0, UPDATE_STATUS_MESSAGE_MAX) }
         : proposed;
+    if (next.state === 'available') {
+      pending = next.notes === undefined ? { version: next.version } : { ...next };
+    } else if (next.state === 'downloading' && pending !== null) {
+      next = { ...next, version: pending.version };
+    } else if (
+      next.state === 'downloaded' &&
+      next.notes === undefined &&
+      pending?.notes !== undefined &&
+      (pending.version === next.version || next.version === 'unknown')
+    ) {
+      next = { ...next, notes: pending.notes };
+    }
     if (sameStatus(status, next)) return;
     status = next;
     deps.broadcast(next);
+    if (next.state === 'downloaded' && !notified.has(next.version)) {
+      notified.add(next.version);
+      try {
+        deps.notify?.(next.version);
+      } catch (error) {
+        deps.log('MSM updates: the notification failed.', error);
+      }
+    }
   };
 
   const ensureLoaded = (): Promise<AutoUpdaterLike> => {
@@ -340,8 +384,14 @@ export function createUpdater(deps: UpdaterDeps): Updater {
 
   const check = async (): Promise<UpdateStatus> => {
     if (status.state === 'disabled') return status;
-    // A download in progress or finished needs no new check.
-    if (status.state === 'downloading' || status.state === 'downloaded') return status;
+    // A download about to start, in progress or finished needs no new check.
+    if (
+      status.state === 'available' ||
+      status.state === 'downloading' ||
+      status.state === 'downloaded'
+    ) {
+      return status;
+    }
     if (running !== null) return running;
     running = runCheck().finally(() => {
       running = null;
@@ -356,18 +406,23 @@ export function createUpdater(deps: UpdaterDeps): Updater {
     get installRequested() {
       return installRequested;
     },
-    scheduleStartupCheck(delayMs = STARTUP_CHECK_DELAY_MS) {
+    scheduleStartupCheck(delayMs = STARTUP_CHECK_DELAY_MS, intervalMs = UPDATE_CHECK_INTERVAL_MS) {
       if (status.state === 'disabled') {
         deps.log(`MSM updates: inactive (${status.reason}).`);
         return;
       }
       const schedule = deps.schedule ?? ((callback, ms) => void setTimeout(callback, ms));
-      schedule(() => {
+      // Each tick reads the setting again (it can change while the app runs), checks when it
+      // is on and schedules the next tick. Errors stay in the log (the banner ignores them).
+      const tick = (): void => {
         void deps
           .autoCheckEnabled()
           .catch(() => true)
-          .then((enabled) => (enabled ? check() : undefined));
-      }, delayMs);
+          .then((enabled) => (enabled ? check() : undefined))
+          .catch((error: unknown) => deps.log('MSM updates: the automatic check failed.', error))
+          .finally(() => schedule(tick, intervalMs));
+      };
+      schedule(tick, delayMs);
     },
     check,
     async install() {

@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { dataPackTemplates } from '@msm/plugin-datapack';
 import { resourcePackKinds, resourcePackTemplates } from '@msm/plugin-resourcepack';
+import { builtInTargets } from '@msm/targets';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -17,6 +18,8 @@ import {
   templatesFor as hostTemplatesFor,
   templateElementId,
 } from '../../src/renderer/src/studios/templates';
+
+const target = (builtInTargets[0] as (typeof builtInTargets)[number]).target;
 
 afterEach(() => {
   cleanup();
@@ -40,6 +43,7 @@ function renderDialog(onSubmit = vi.fn<(input: NewElementInput) => void>()) {
       namespaces={['demo', 'other']}
       templates={templatesFor(kinds.map((kind) => kind.id))}
       kindDefault={kindDefault}
+      target={target}
       onCancel={vi.fn()}
       onSubmit={onSubmit}
     />,
@@ -202,6 +206,7 @@ describe('NewElementDialog default namespace', () => {
         namespaces={['demo']}
         templates={templatesFor(dataKinds)}
         kindDefault={() => ({ values: [] })}
+        target={target}
         onCancel={vi.fn()}
         onSubmit={onSubmit}
       />,
@@ -227,6 +232,7 @@ describe('NewElementDialog default namespace', () => {
         namespaces={['demo']}
         templates={templatesFor(['minecraft:tag/function', 'minecraft:function'])}
         kindDefault={() => undefined}
+        target={target}
         onCancel={vi.fn()}
         onSubmit={vi.fn()}
       />,
@@ -248,6 +254,7 @@ describe('NewElementDialog fallback namespace', () => {
         namespaces={namespaces}
         templates={templatesFor(dataKinds)}
         kindDefault={() => undefined}
+        target={target}
         onCancel={vi.fn()}
         onSubmit={onSubmit}
       />,

@@ -752,6 +752,7 @@ export class ProjectSession {
     const path = await this.#platform.dialogs.pickDirectory({
       title: 'Choose an empty folder for the new project',
       mustBeEmpty: true,
+      purpose: 'project',
     });
     if (path === null) return { ok: false, cancelled: true };
     const name = baseName(path);
@@ -868,7 +869,10 @@ export class ProjectSession {
    */
   async openProject(): Promise<OpenOutcome> {
     if (!(await this.#confirmDiscard())) return { ok: false, cancelled: true };
-    const path = await this.#platform.dialogs.pickDirectory({ title: 'Open an MSM project' });
+    const path = await this.#platform.dialogs.pickDirectory({
+      title: 'Open an MSM project',
+      purpose: 'project',
+    });
     if (path === null) return { ok: false, cancelled: true };
     const opened = await this.#platform.project.openRoot(path);
     if (!opened.ok) return opened;

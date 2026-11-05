@@ -34,6 +34,8 @@ import { stubPlatformServices } from './helpers/stub-platform';
 /** What the fake platform recorded. */
 export interface PlatformCalls {
   confirms: string[];
+  /** Every `dialogs.pickDirectory` request, in order. */
+  pickDirectory: Parameters<PlatformAdapter['dialogs']['pickDirectory']>[0][];
   saved: { defaultName: string; data: Uint8Array }[];
   installed: { fileName: string; data: Uint8Array }[];
   vendoredReads: string[];
@@ -65,6 +67,7 @@ export interface FakePlatformOptions {
 export function fakePlatform(fs: MemoryFileSystem, options: FakePlatformOptions = {}) {
   const calls: PlatformCalls = {
     confirms: [],
+    pickDirectory: [],
     saved: [],
     installed: [],
     vendoredReads: [],
@@ -77,10 +80,16 @@ export function fakePlatform(fs: MemoryFileSystem, options: FakePlatformOptions 
   const directory = options.directory ?? '/projects/demo';
   const platform: PlatformAdapter = {
     ...stubs,
-    app: { info: async () => ({ version: '0.1.0-test', electron: '0', platform: 'test' }) },
+    app: {
+      info: async () => ({ version: '0.1.0-test', electron: '0', platform: 'test' }),
+      whatsNewOnLaunch: async () => false,
+    },
     dialogs: {
       ...stubs.dialogs,
-      pickDirectory: async () => directory,
+      pickDirectory: async (opts) => {
+        calls.pickDirectory.push(opts);
+        return directory;
+      },
       confirmDiscard: async (message) => {
         calls.confirms.push(message);
         return options.discard ?? true;

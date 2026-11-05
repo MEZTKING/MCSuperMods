@@ -58,6 +58,7 @@ test('a blob: worker is constrained by the CSP and the proxy round-trips', async
   // to compare the CSP there; the launcher fixture strips that variable.
   const devUrl = process.env.MSM_SPIKE_DEV_URL;
   if (devUrl !== undefined && devUrl !== '') {
+    await window.waitForLoadState('load');
     await app.evaluate(async ({ BrowserWindow }, url) => {
       await BrowserWindow.getAllWindows()[0]?.loadURL(url);
     }, devUrl);
@@ -169,24 +170,34 @@ test('a blob: worker is constrained by the CSP and the proxy round-trips', async
   mkdirSync(outputDir, { recursive: true });
   writeFileSync(join(outputDir, 'sandbox-spike.json'), `${JSON.stringify(findings, null, 2)}\n`);
 
-  // With the bootstrap: everything is refused.
-  for (const result of refusals(stripped, new Set())) {
+  // A file: document makes 'self' match every file: URL, and worker requests bypass both
+  // `protocol.handle('file')` and `webRequest` in main (ADR 0035 Status). Under a non-file origin
+  // (the dev server, or a custom app scheme) the CSP refuses file: URLs as well.
+  const fileOrigin = findings.documentUrl.startsWith('file:');
+  // `import()` cannot be removed by the bootstrap, so under a file: document it still loads
+  // local files: recorded, asserted below to keep the gap visible until B154 closes it.
+  const strippedGap = fileOrigin
+    ? new Set(['import(local file)', 'import(local JSON file)'])
+    : new Set<string>();
+  for (const result of refusals(stripped, strippedGap)) {
     expect(REFUSED.has(result.outcome), `${result.name}: ${result.outcome} ${result.detail}`).toBe(
       true,
     );
   }
-  // The CSP alone refuses the network, blob: script loading and eval, but not file: URLs when
-  // the document itself is a file: URL ('self' matches them): see ADR 0035 Status.
-  for (const result of refusals(cspOnly, new Set([...STORAGE, ...FILE_PROBES]))) {
+  // The CSP alone refuses the network, blob: scripts and eval; file: URLs only off a file: origin.
+  const cspGap = fileOrigin ? new Set([...STORAGE, ...FILE_PROBES]) : STORAGE;
+  for (const result of refusals(cspOnly, cspGap)) {
     expect(REFUSED.has(result.outcome), `${result.name}: ${result.outcome} ${result.detail}`).toBe(
       true,
     );
   }
-  // The CSP plus the main-process file: guard: everything but storage is refused.
-  for (const result of refusals(guarded, STORAGE)) {
-    expect(REFUSED.has(result.outcome), `${result.name}: ${result.outcome} ${result.detail}`).toBe(
-      true,
-    );
+  if (fileOrigin) {
+    for (const name of FILE_PROBES) {
+      const result = cspOnly.find((probe) => probe.name === name);
+      expect(result?.outcome, `${name} (CSP only, file: document)`).toBe('resolved');
+      // The main-process file: guard does not see worker requests.
+      expect(guarded.find((probe) => probe.name === name)?.outcome).toBe('resolved');
+    }
   }
   expect(cspOnly.find((result) => result.name === 'typeof fetch')?.detail).toBe('function');
 

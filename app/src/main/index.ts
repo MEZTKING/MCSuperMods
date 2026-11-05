@@ -9,7 +9,7 @@
 
 import { join } from 'node:path';
 import { nodeEnv } from '@msm/interop/node';
-import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, Notification, nativeImage, shell } from 'electron';
 import { EventChannels } from '../shared/ipc-channels';
 import { applyE2eHooks, readE2eHooks } from './e2e-hooks';
 import { registerIpc } from './ipc';
@@ -17,22 +17,31 @@ import { installMenu } from './menu';
 import { createNodePlatform, type NativeDialogs } from './platform/node-platform';
 import { resolveMsmHome } from './platform/settings';
 import { createUpdateLog } from './update-log';
-import { type AutoUpdaterLike, createUpdater } from './updater';
+import { type AutoUpdaterLike, createUpdater, updateDisabledReason } from './updater';
 import { createMainWindow } from './window';
 
 const smoke = process.env.MSM_SMOKE === '1';
+
+/** Whether this is a smoke or end-to-end run (the updater's `test-run` rule). */
+function isTestRun(env: NodeJS.ProcessEnv): boolean {
+  return updateDisabledReason({ isPackaged: true, platform: 'win32', env }) === 'test-run';
+}
 
 function focusedWindow(): BrowserWindow | null {
   return BrowserWindow.getFocusedWindow();
 }
 
 const electronDialogs: NativeDialogs = {
-  async pickDirectory({ title, mustBeEmpty }) {
+  async pickDirectory({ title, mustBeEmpty, defaultPath }) {
     const parent = focusedWindow();
     const properties: Electron.OpenDialogOptions['properties'] = mustBeEmpty
       ? ['openDirectory', 'createDirectory', 'promptToCreate']
       : ['openDirectory'];
-    const options: Electron.OpenDialogOptions = { title, properties };
+    const options: Electron.OpenDialogOptions = {
+      title,
+      properties,
+      ...(defaultPath === undefined ? {} : { defaultPath }),
+    };
     const result =
       parent === null
         ? await dialog.showOpenDialog(options)
@@ -120,6 +129,8 @@ const platform = createNodePlatform({
   resizePng,
   msmHome: resolveMsmHome(process.env, app.getPath('home')),
   installEnv: nodeEnv(),
+  // "What's new" never opens by itself in smoke and end-to-end runs.
+  suppressWhatsNew: isTestRun(process.env),
   // The menu exists only once the app is ready; before that the start-up read installs it.
   onRecentChanged: (recent) => {
     if (app.isReady()) installMenu(recent);
@@ -163,6 +174,8 @@ const updateLogFile = () => {
   return updateLog;
 };
 
+let updateNotification: Notification | null = null;
+
 const updater = createUpdater({
   gate: { isPackaged: app.isPackaged, platform: process.platform, env: process.env },
   // Loaded on the first check only, so runs where the updater is inactive never load it.
@@ -177,6 +190,25 @@ const updater = createUpdater({
         window.webContents.send(EventChannels.updatesStatus, status);
       }
     }
+  },
+  // A native notification once the update has downloaded, where the OS supports them;
+  // clicking it brings the window (and its "Restart to update" banner) forward.
+  notify(version) {
+    if (!Notification.isSupported()) return;
+    const notification = new Notification({
+      title: 'MCSuperMods update ready',
+      body: `Version ${version} has downloaded. Restart MCSuperMods to update.`,
+    });
+    notification.on('click', () => {
+      const [window] = BrowserWindow.getAllWindows();
+      if (window === undefined) return;
+      if (window.isMinimized()) window.restore();
+      window.show();
+      window.focus();
+    });
+    // Kept referenced so the click handler survives garbage collection.
+    updateNotification = notification;
+    notification.show();
   },
   // Each window's close handler shows the unsaved-changes prompt when needed (window.ts).
   closeWindows() {

@@ -13,6 +13,7 @@ import {
   type Json,
   type Project,
   type ResourceLocation,
+  requireSyncResult,
 } from '@msm/core';
 import type { ElementKind, TemplateContext } from '@msm/plugin-api';
 import entitiesPlugin from '@msm/plugin-entities';
@@ -71,8 +72,9 @@ function templateData(templateId: string, id = 'demo:gloom'): Json {
     projectNamespace: 'demo',
     namespaces: ['demo'],
     kindDefault: undefined,
+    target,
   };
-  return template.data(context);
+  return requireSyncResult(template.data(context), templateId);
 }
 
 const GEO = element('demo:entity/gloom', 'msm:geo_model', {
