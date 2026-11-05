@@ -33,9 +33,9 @@ win:
       arch:
         - x64
   # Auto-update (ADR 0018): electron-updater with the GitHub provider. `pnpm dist` passes
-  # `--publish never`; the release workflow passes `--publish always`, which uploads the
-  # installer, its `.blockmap` and `latest.yml` to a draft release that the maintainer
-  # publishes by hand. The updater only sees published releases. The packaged app reads this
+  # `--publish never`, and so does the release workflow, which then uploads the installer,
+  # its `.blockmap` and `latest.yml` to one draft release (electron-builder's own parallel
+  # uploads split them over two drafts). `publish-release.yml` publishes the draft. The updater only sees published releases. The packaged app reads this
   # configuration as `resources/app-update.yml`.
   publish:
     provider: github

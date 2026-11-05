@@ -122,9 +122,10 @@ jobs:
           echo "Staged ${jars[0]} as app/build/runtime/msm_runtime.jar"
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      # electron-builder uploads the installer and its `.blockmap` in parallel; when no release
-      # exists for the tag, both uploads create one and the assets end up split across two
-      # drafts (seen on v0.2.2). Creating the draft once first means it only ever finds it.
+      # One draft per tag. electron-builder's own parallel uploads split assets over two drafts
+      # (seen on v0.2.2 and v0.6.0), so it builds without publishing and the files are uploaded
+      # here. A re-run first deletes leftover unpublished drafts for the tag; a published
+      # release for the tag stops the run.
       - name: Create the draft release
         if: env.RELEASE_TAG != ''
         shell: bash
@@ -133,24 +134,31 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           version=$(node -p "require('./app/package.json').version")
-          count=$(gh release list --limit 100 --json tagName --jq "[.[] | select(.tagName == \"${RELEASE_TAG}\")] | length")
-          if [ "$count" -gt 1 ]; then
-            echo "::error::$count releases already exist for ${RELEASE_TAG}; delete the extra drafts and re-run."
+          releases=$(gh api "repos/${GH_REPO}/releases?per_page=100" --jq "[.[] | select(.tag_name == \"${RELEASE_TAG}\") | {id, draft}]")
+          if [ "$(jq '[.[] | select(.draft == false)] | length' <<< "$releases")" -gt 0 ]; then
+            echo "::error::${RELEASE_TAG} is already published; pick a new version."
             exit 1
           fi
-          if [ "$count" -eq 0 ]; then
-            gh release create "${RELEASE_TAG}" --draft --title "${version}" --notes "MCSuperMods ${version}" --verify-tag
-          fi
-      - name: Build the installer (and upload it to the draft release on tags)
+          for id in $(jq -r '.[].id' <<< "$releases"); do
+            echo "Deleting leftover draft ${id} for ${RELEASE_TAG}"
+            gh api -X DELETE "repos/${GH_REPO}/releases/${id}"
+          done
+          gh release create "${RELEASE_TAG}" --draft --title "${version}" --notes "MCSuperMods ${version}" --verify-tag
+      - name: Build the installer
+        shell: bash
+        run: pnpm --filter @msm/app exec electron-builder --publish never
+      - name: Upload the installer to the draft release
+        if: env.RELEASE_TAG != ''
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          if [ -n "$RELEASE_TAG" ]; then
-            pnpm --filter @msm/app exec electron-builder --publish always
-          else
-            pnpm --filter @msm/app exec electron-builder --publish never
-          fi
+          version=$(node -p "require('./app/package.json').version")
+          gh release upload "${RELEASE_TAG}" \
+            "app/dist/MCSuperMods-${version}-win-x64.exe" \
+            "app/dist/MCSuperMods-${version}-win-x64.exe.blockmap" \
+            app/dist/latest.yml --clobber
       # The updater needs all three files on one release: the installer, its `.blockmap` and
       # `latest.yml`. Upload `latest.yml` again if it is missing; fail on anything else.
       - name: Check the draft release assets
