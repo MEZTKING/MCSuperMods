@@ -30,7 +30,8 @@ export const blockTemplates: readonly ElementTemplate[] = [
     kind: BLOCK_KIND,
     category: CATEGORY,
     title: 'Glowing ore',
-    description: 'An ore that gives off light and drops itself only when mined with an iron pickaxe or better.',
+    description:
+      'An ore that gives off light and drops itself only when mined with an iron pickaxe or better.',
     data: (context) => ({
       format: 1,
       model: 'minecraft:block/emerald_ore',
@@ -49,7 +50,8 @@ export const blockTemplates: readonly ElementTemplate[] = [
     kind: BLOCK_KIND,
     category: CATEGORY,
     title: 'Interactive block',
-    description: 'A block that chimes when used and sparkles when stepped on, with one event triggering another.',
+    description:
+      'A block that chimes when used and sparkles when stepped on, with one event triggering another.',
     data: (context) => {
       const use = ownEvent(context, 'use');
       const sparkle = ownEvent(context, 'sparkle');
@@ -74,7 +76,9 @@ export const blockTemplates: readonly ElementTemplate[] = [
             ],
           },
           [sparkle]: {
-            actions: [{ type: 'spawn_particle', particle: 'minecraft:glow', count: 12, spread: 0.4 }],
+            actions: [
+              { type: 'spawn_particle', particle: 'minecraft:glow', count: 12, spread: 0.4 },
+            ],
           },
         },
       };

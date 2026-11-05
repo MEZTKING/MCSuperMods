@@ -24,6 +24,7 @@
     "@msm/exporters": "workspace:*",
     "@msm/interop": "workspace:*",
     "@msm/plugin-api": "workspace:*",
+    "@msm/plugin-blocks-items": "workspace:*",
     "@msm/plugin-datapack": "workspace:*",
     "@msm/plugin-library": "workspace:*",
     "@msm/plugin-resourcepack": "workspace:*",

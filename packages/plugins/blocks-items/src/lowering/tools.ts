@@ -24,7 +24,8 @@ export const TOOL_TIERS = Object.freeze([
 /** A tool tier name. */
 export type ToolTier = (typeof TOOL_TIERS)[number];
 
-const isToolTier = (tier: string): tier is ToolTier => (TOOL_TIERS as readonly string[]).includes(tier);
+const isToolTier = (tier: string): tier is ToolTier =>
+  (TOOL_TIERS as readonly string[]).includes(tier);
 
 /**
  * The tier's name in vanilla tag ids, which say `wooden` where the format says `wood`.

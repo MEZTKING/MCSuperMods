@@ -4,8 +4,7 @@
       "depends": {
         "fabric-api": "*",
         "fabricloader": ">=0.20.1",
-        "minecraft": "~26.3",
-        "msm_runtime": "*"
+        "minecraft": "~26.3"
       },
       "environment": "*",
       "id": "my_mod",

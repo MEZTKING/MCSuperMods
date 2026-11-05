@@ -83,7 +83,11 @@ describe('blocks-items validators', () => {
     const trigger = (event: string) => ({ actions: [{ type: 'trigger_event', event }] });
     const problems = await validate([
       block('demo:a', {
-        events: { 'demo:x': trigger('demo:y'), 'demo:y': trigger('demo:x'), 'demo:z': trigger('demo:x') },
+        events: {
+          'demo:x': trigger('demo:y'),
+          'demo:y': trigger('demo:x'),
+          'demo:z': trigger('demo:x'),
+        },
       }),
       item('demo:b', { events: { 'demo/self': trigger('demo/self') } }),
     ]);

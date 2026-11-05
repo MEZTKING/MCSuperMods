@@ -5,7 +5,12 @@
 
 export { blockDefinition, DEFINITION_FORMAT, dropsItselfLootTable, lowerBlock } from './block';
 export { itemDefinition, lowerItem } from './item';
-export { FABRIC_MOD_JSON, fabricModJson, lowerMod, RUNTIME_DEPENDENCY, RUNTIME_MOD_ID } from './mod';
+export {
+  FABRIC_MOD_JSON,
+  fabricModJson,
+  lowerMod,
+  RUNTIME_MOD_ID,
+} from './mod';
 export {
   BlocksItemsLoweringError,
   definitionPath,

@@ -10,19 +10,14 @@ export const FABRIC_MOD_JSON = 'fabric.mod.json';
 /** The runtime mod's id, a dependency of every content jar. */
 export const RUNTIME_MOD_ID = 'msm_runtime';
 
-/**
- * The `msm_runtime` version range written here. The content-jar exporter knows the runtime
- * version and may narrow it to `>=<version>` (ADR 0026 D2).
- */
-export const RUNTIME_DEPENDENCY = '*';
-
 const OPTIONAL_STRINGS = ['name', 'description'] as const;
 
 /**
  * Builds `fabric.mod.json` from mod metadata: `schemaVersion` 1, `id`, `version`, `name`,
  * `description`, `authors`, `license` (from `licence`), `environment` `*`, and `depends` on
  * Fabric Loader (`>=` the target's loader), Minecraft (the target's dependency range),
- * Fabric API and `msm_runtime`.
+ * Fabric API. `msm_runtime` is left out: the content-jar exporter knows the runtime version and
+ * adds `>=<version>` (ADR 0026 D2).
  *
  * @param element - An `msm:mod` element.
  * @param target - The target; must carry {@link Target.fabric}.
@@ -60,7 +55,6 @@ export function fabricModJson(element: Element, target: Target): JsonObject {
     fabricloader: `>=${fabric.loader}`,
     minecraft: fabric.minecraftDependency,
     'fabric-api': '*',
-    [RUNTIME_MOD_ID]: RUNTIME_DEPENDENCY,
   };
   return json;
 }

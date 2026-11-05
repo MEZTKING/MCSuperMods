@@ -1,3 +1,6 @@
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { ElementTemplate, Json, ResourceLocation, TemplateContext } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
@@ -9,9 +12,6 @@ import plugin, {
   modIdFromNamespace,
 } from '../src/index';
 import { blockingProblems, element, indexesFor, sortedJson } from './support';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 const UPDATE = process.env.UPDATE_GOLDENS === '1';
 
@@ -131,9 +131,17 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           );
         }
         const actual = sortedJson(
-          files.map((file) => ({ contents: file.contents, layer: file.layer, merge: file.merge, path: file.path })),
+          files.map((file) => ({
+            contents: file.contents,
+            layer: file.layer,
+            merge: file.merge,
+            path: file.path,
+          })),
         );
-        const url = new URL(`./fixtures/${targetId}/expected/templates/${id}.json`, import.meta.url);
+        const url = new URL(
+          `./fixtures/${targetId}/expected/templates/${id}.json`,
+          import.meta.url,
+        );
         if (UPDATE) {
           await mkdir(dirname(fileURLToPath(url)), { recursive: true });
           await writeFile(url, actual);

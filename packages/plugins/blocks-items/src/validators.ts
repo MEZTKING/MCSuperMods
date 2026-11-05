@@ -124,7 +124,10 @@ function unknownEvents(elements: readonly Element[]): Problem[] {
 }
 
 /** Strongly connected components with more than one node or a self-loop, each sorted. */
-function cycles(nodes: readonly string[], edges: ReadonlyMap<string, ReadonlySet<string>>): string[][] {
+function cycles(
+  nodes: readonly string[],
+  edges: ReadonlyMap<string, ReadonlySet<string>>,
+): string[][] {
   let counter = 0;
   const index = new Map<string, number>();
   const low = new Map<string, number>();

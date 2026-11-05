@@ -325,6 +325,9 @@ importers:
       '@msm/plugin-api':
         specifier: workspace:*
         version: link:../packages/plugin-api
+      '@msm/plugin-blocks-items':
+        specifier: workspace:*
+        version: link:../packages/plugins/blocks-items
       '@msm/plugin-datapack':
         specifier: workspace:*
         version: link:../packages/plugins/datapack

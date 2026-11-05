@@ -44,6 +44,7 @@ describe('ProjectSession: projects', () => {
       'msm.datapack',
       'msm.structures',
       'msm.worldgen',
+      'msm.blocks-items',
     ]);
     expect(project?.plugins).not.toContain('msm.library');
     expect(project?.namespaces.map((namespace) => namespace.name)).toEqual(['demo']);

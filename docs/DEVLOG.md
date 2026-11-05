@@ -1247,3 +1247,23 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - Move the four codes into `ExportProblemCodes`; update `packages/exporters/CLAUDE.md`; golden test on `fixtures/sample-mod/` once it exists; B96 wires `loadRuntimeJar` in `app/main`.
+
+---
+
+## 2026-11-05 — executor — B94 @msm/plugin-blocks-items
+
+**What**
+- New `packages/plugins/blocks-items/` (scaffolded with `tools/new-plugin`, plugin id `msm.blocks-items`): kinds `msm:block` (folder `block`, registry `block`), `msm:item` (`item`, registry `item`) and `msm:mod` (`mod`).
+- Lowering: block runtime definition `msm/<ns>/block/<path>.json` (editor fields stripped, `tool`/`min_tier` set `requires_tool: true` unless set explicitly, a `loot` id becomes `loot_table`), single-variant blockstate, block item model definition (not with `"item": false`), `block.<ns>.<path>` lang key (`merge: 'object'`), `mineable/<tool>` and needs-tier block tags (`merge: 'tag'`), drops-itself loot table for `"loot": "self"`. Item definition, item model definition and `item.<ns>.<path>`. `fabric.mod.json` (layer `msm`) with `fabricloader`, `minecraft`, `fabric-api` and `msm_runtime` depends from `Target.fabric`.
+- Six `blocks-items.*` validators (missing model, unknown event, event cycle, bad mod id, unknown tool tier, item collision); seven templates; goldens of every sample and template per target; tag names checked against the vendored block tags.
+- Registered in the app's built-in plugin list; `packages/plugins/CLAUDE.md` updated (`^0.6.0`, the new plugin).
+
+**Decisions**
+- A tier is known to a target when it has `minecraft:incorrect_for_<tier>_tool` (`wood` is `wooden` in tag ids). Needs tags by mining level: wood and gold none, stone and copper `needs_stone_tool`, iron `needs_iron_tool`, diamond and netherite `needs_diamond_tool` (vanilla has no copper or netherite needs tag).
+- `"loot": "self"` on a block with `"item": false` generates no loot table (nothing to drop).
+- Vanilla pack exporters already package only their own layer, so `msm` files never reach them; no exporter change.
+
+**Next**
+- Host: a block's item shares its id, but the registry index only puts `msm:block` ids in `block`, so a generated loot table naming a project block's item gets a `schema.unknown-id` warning at export.
+- B95/orchestrator: lowering writes `msm_runtime: "*"`, and the content-jar exporter only fills `>=<version>` when the key is absent.
+- B98: add the plugin to `packages/exporters/test/library.test.ts` (changes every `examples/` `msm.project.json` plugin list).

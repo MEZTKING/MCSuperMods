@@ -5,13 +5,13 @@
 import type { Element, Json, JsonObject, OutputFile, Target } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
 import {
+  assetPath,
   BlocksItemsLoweringError,
   dataPath,
   definitionPath,
   descriptionKey,
   isRecord,
   splitResourceLocation,
-  assetPath,
 } from './paths';
 import {
   BLOCK_STATE_SCHEMA,
@@ -166,7 +166,8 @@ export function lowerBlock(element: Element, target: Target): OutputFile[] {
       langFile(target, namespace, descriptionKey('block', namespace, path), fields.displayName),
     );
   }
-  if (fields.tool !== undefined) files.push(blockTagFile(target, `mineable/${fields.tool}`, element.id));
+  if (fields.tool !== undefined)
+    files.push(blockTagFile(target, `mineable/${fields.tool}`, element.id));
   const needs = fields.minTier === undefined ? undefined : needsTierTag(fields.minTier);
   if (needs !== undefined) files.push(blockTagFile(target, needs, element.id));
   if (fields.loot === 'self' && fields.hasItem) {

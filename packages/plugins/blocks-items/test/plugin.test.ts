@@ -174,13 +174,19 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       const indexes = await indexesFor(bundle);
       expect(blockingProblems(indexes, kind.schema, kind.defaultData as Json)).toEqual([]);
       const files = kind.lower(
-        element(kind.id, kindId === 'msm:mod' ? 'demo:mod' : 'demo:sample', kind.defaultData as Json),
+        element(
+          kind.id,
+          kindId === 'msm:mod' ? 'demo:mod' : 'demo:sample',
+          kind.defaultData as Json,
+        ),
         bundle.target,
       );
       expect(files.length).toBeGreaterThan(0);
       for (const file of files) {
         if (file.schema === undefined) continue;
-        expect(blockingProblems(indexes, file.schema, file.contents as Json), file.path).toEqual([]);
+        expect(blockingProblems(indexes, file.schema, file.contents as Json), file.path).toEqual(
+          [],
+        );
       }
     });
   },

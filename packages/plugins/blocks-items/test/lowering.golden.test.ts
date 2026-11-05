@@ -204,9 +204,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           if (file.schema === undefined) continue;
           expect(problems(file.schema, file.contents as Json), file.path).toEqual([]);
         }
-        expect(sample.kind.lower(element(sample.kind.id, sample.id, sample.data), bundle.target)).toEqual(
-          files,
-        );
+        expect(
+          sample.kind.lower(element(sample.kind.id, sample.id, sample.data), bundle.target),
+        ).toEqual(files);
 
         const actual = sortedJson(files.map(recorded));
         const url = fixtureUrl(targetId, sample);
