@@ -9,4 +9,4 @@
  * include it for the plugin to load. Breaking changes bump the major version and are listed
  * with migration notes in `CHANGELOG.md`.
  */
-export const API_VERSION = '0.5.0' as const;
+export const API_VERSION = '0.6.0' as const;

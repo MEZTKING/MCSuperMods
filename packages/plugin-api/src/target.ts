@@ -150,6 +150,23 @@ export interface BiomeAttributeFacts {
 }
 
 /**
+ * Fabric toolchain versions of a target. Since 0.6.0 (`minecraftDependency` is new in 0.6.0).
+ */
+export interface FabricFacts {
+  /** Fabric Loader version, for example `0.<minor>.<patch>`. */
+  loader: string;
+  /** Fabric API version, as published on the Fabric Maven, for example `0.<n>.<n>+<game version>`. */
+  api: string;
+  /** Fabric Loom (Gradle plugin) version. */
+  loom: string;
+  /**
+   * The version range written as the `minecraft` dependency in `fabric.mod.json`, for example
+   * `~<game version>`.
+   */
+  minecraftDependency: string;
+}
+
+/**
  * One Minecraft version's facts, contributed by a `@msm/target-mc-<version>` package.
  *
  * This interface is the documented home of every target field.
@@ -199,15 +216,11 @@ export interface Target {
   dataVersion: number;
   /** World generation facts. Required since 0.5.0. */
   worldgen: WorldgenFacts;
-  /** Fabric toolchain versions. Required from Phase 4. */
-  fabric?: {
-    /** Fabric Loader version. */
-    loader: string;
-    /** Fabric API version. */
-    api: string;
-    /** Fabric Loom (Gradle plugin) version. */
-    loom: string;
-  };
+  /**
+   * Fabric toolchain versions, used by the content jar exporter and the Java eject. Optional,
+   * since a future non-Fabric target may lack it; every MSM target from Phase 4 sets it.
+   */
+  fabric?: FabricFacts;
   /** GeckoLib version. Required when a project uses animated entities (Phase 5). */
   geckolib?: string;
   /**

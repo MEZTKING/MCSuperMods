@@ -7,6 +7,7 @@
 import type { Element, OutputFile, Problem, Project, Target } from '@msm/plugin-api';
 import { ProblemCodes } from '../problems/codes';
 import type { ElementKindRegistry } from '../registry/element-kind-registry';
+import { type MergeEntry, mergeOutputFiles } from './merge-outputs';
 
 /** The result of {@link lowerProject}. */
 export interface LowerResult {
@@ -25,9 +26,12 @@ function compare(a: string, b: string): number {
  *
  * Elements are lowered in namespace order and then id order. An element whose kind is not
  * registered yields a `lowering.unknown-kind` error; a `lower` call that throws yields a
- * `lowering.failed` error with the thrown message and contributes no files. When two files
- * share a layer and path, the first is kept and a `lowering.conflict` error names both
- * elements. Files are returned as produced (including `schema`), sorted by layer then path.
+ * `lowering.failed` error with the thrown message and contributes no files. Files that share
+ * a layer and path go through {@link mergeOutputFiles}: they merge when all declare the same
+ * `merge` mode (a disagreeing key is a `lowering.merge-conflict` error); otherwise the first
+ * is kept and a `lowering.conflict` error names both elements. Files are returned as produced
+ * (including `schema`) or merged, sorted by layer then path; merge problems follow the
+ * per-element problems.
  *
  * @param project - The project to lower.
  * @param registry - The kind registry.
@@ -40,33 +44,21 @@ export function lowerProject(
   target: Target,
 ): LowerResult {
   const problems: Problem[] = [];
-  const owners = new Map<string, { file: OutputFile; elementId: string }>();
+  const entries: MergeEntry[] = [];
 
   const namespaces = [...project.namespaces].sort((a, b) => compare(a.name, b.name));
   for (const namespace of namespaces) {
     const elements = [...namespace.elements].sort((a, b) => compare(a.id, b.id));
     for (const element of elements) {
       for (const file of lowerElement(element, registry, target, problems)) {
-        const key = `${file.layer}\u0000${file.path}`;
-        const owner = owners.get(key);
-        if (owner !== undefined) {
-          problems.push({
-            severity: 'error',
-            code: ProblemCodes.loweringConflict,
-            elementId: element.id,
-            file: file.path,
-            message: `${element.id} and ${owner.elementId} both produce ${file.layer} file ${file.path}; only the output of ${owner.elementId} was kept.`,
-          });
-          continue;
-        }
-        owners.set(key, { file, elementId: element.id });
+        entries.push({ file, source: element.id, elementId: element.id });
       }
     }
   }
 
-  const files = [...owners.values()]
-    .map((owner) => owner.file)
-    .sort((a, b) => compare(a.layer, b.layer) || compare(a.path, b.path));
+  const merged = mergeOutputFiles(entries);
+  problems.push(...merged.problems);
+  const files = merged.files;
   return { files, problems };
 }
 

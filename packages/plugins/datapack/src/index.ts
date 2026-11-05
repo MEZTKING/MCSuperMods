@@ -14,7 +14,7 @@ export { dataPackTemplates } from './templates';
 
 export default definePlugin({
   id: 'msm.datapack',
-  apiVersion: '^0.5.0',
+  apiVersion: '^0.6.0',
   contributes: {
     elementKinds: [...dataPackKinds],
     elementTemplates: [...dataPackTemplates],

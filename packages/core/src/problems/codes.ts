@@ -26,8 +26,16 @@ export const ProblemCodes = {
   loweringUnknownKind: 'lowering.unknown-kind',
   /** A kind's `lower` function threw. The element contributes no output files. */
   loweringFailed: 'lowering.failed',
-  /** Two output files share a layer and path. The first element's file is kept. */
+  /**
+   * Two output files share a layer and path and cannot merge (no `merge`, mixed modes or
+   * differing schemas). The first element's file is kept.
+   */
   loweringConflict: 'lowering.conflict',
+  /**
+   * Two mergeable output files (`OutputFile.merge`) at one path disagree: the same key has
+   * different values, or contents do not have the merge mode's shape. The first value is kept.
+   */
+  loweringMergeConflict: 'lowering.merge-conflict',
   /** A rename's new id is already used by another element. Nothing is renamed. */
   refsRenameConflict: 'refs.rename-conflict',
 } as const;

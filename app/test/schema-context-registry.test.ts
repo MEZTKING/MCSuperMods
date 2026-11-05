@@ -19,7 +19,7 @@ const kind = (id: string, folder: string, registry?: string): ElementKind => ({
 
 const phase3Plugin = definePlugin({
   id: 'test.phase3',
-  apiVersion: '^0.5.0',
+  apiVersion: '^0.6.0',
   contributes: {
     elementKinds: [
       kind('minecraft:structure_template', 'structure', 'structure'),

@@ -1157,3 +1157,23 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - New session: housekeeping (release-age excludes), watch the first manual release run, then plan Phase 4 starting with the registry-freeze spike.
+
+---
+
+## 2026-11-05 — executor — B91 plugin API 0.6.0, core merge, Target.fabric
+
+**What**
+- `@msm/plugin-api` 0.6.0 (ADR 0027 D1–D4): `OutputFile.merge` (`OutputMergeMode` `tag` | `object`), `ExporterOption`, `Exporter.options`, `ExporterInput.options`, `FabricFacts` with `minecraftDependency`; CHANGELOG with migration notes.
+- `@msm/core`: `mergeOutputFiles` (`src/lowering/merge-outputs.ts`) used by `lowerProject`; problem code `lowering.merge-conflict`.
+- `@msm/exporters`: `runExport` merges through `mergeOutputFiles` (conflict code `export.conflict`) and passes `options` filled by `resolveExporterOptions`.
+- `mc-26.3`: `fabric` = loader 0.20.1, API 0.165.2+26.3, Loom 1.19.3, `minecraftDependency` `~26.3` (verify at implementation).
+- Built-in plugins, `tools/new-plugin` and test fixtures declare `^0.6.0`; `minecraft:lang` outputs `merge: 'object'`, tag kinds `merge: 'tag'` (no golden changed).
+
+**Decisions**
+- Unmergeable groups keep the first file and report every later file (unchanged behaviour); merge problems now follow the per-element lowering problems rather than interleaving.
+- Merged `object` keys are written sorted; tag `replace` is `true` if any, `false` if only `false` was written, absent otherwise. Non-id tag entries dedupe by value.
+- Exporter options: undeclared ids dropped, ill-typed values fall back to the default.
+
+**Next**
+- B94/B95 can rely on merge and options; B96 renders `Exporter.options` in the dialog.
+- `packages/plugins/CLAUDE.md` still says `^0.5.0` (outside B91 ownership).

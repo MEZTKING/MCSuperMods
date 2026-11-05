@@ -1,6 +1,7 @@
 /**
  * `minecraft:tag/<registry>`: a tag of one registry (`data/<ns>/<tags>/<registry>/<path>.json`),
- * validated against the per-registry schema reference `tag:<registry>` (ADR 0015).
+ * validated against the per-registry schema reference `tag:<registry>` (ADR 0015). Outputs
+ * declare `merge: 'tag'`, so several elements may contribute to one tag file (ADR 0027).
  */
 import type { ElementKind } from '@msm/plugin-api';
 import { lowerJsonData } from '../lowering/json-data';
@@ -37,7 +38,11 @@ export function tagKind(registry: string): ElementKind {
     schema,
     folder: `tags/${registry}`,
     defaultData: { replace: false, values: [] },
-    lower: (element, target) => lowerJsonData(element, target, 'tags', schema, registry),
+    lower: (element, target) =>
+      lowerJsonData(element, target, 'tags', schema, registry).map((file) => ({
+        ...file,
+        merge: 'tag',
+      })),
   };
 }
 

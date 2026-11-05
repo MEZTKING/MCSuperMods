@@ -21,7 +21,12 @@ export {
 export { outputFileBytes } from './contents';
 export { EXPORT_MANIFEST_FILE, EXPORT_MANIFEST_FORMAT_VERSION, exportManifest } from './manifest';
 export { type ExportProblemCode, ExportProblemCodes } from './problem-codes';
-export { type ExportReport, type ExportRequest, runExport } from './run-export';
+export {
+  type ExportReport,
+  type ExportRequest,
+  resolveExporterOptions,
+  runExport,
+} from './run-export';
 export { createFileSystemSink, createMemorySink, createZipSink } from './sinks';
 export {
   combinedFileNames,

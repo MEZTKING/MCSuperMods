@@ -19,7 +19,8 @@ export type OutputLayer = 'resourcepack' | 'datapack' | 'msm';
  * One file produced by lowering an element.
  *
  * Exporters merge every element's output files; two files with the same `layer` and `path`
- * are a conflict and stop the export.
+ * are a conflict and stop the export, unless every one of them declares the same
+ * {@link OutputFile.merge} mode.
  */
 export interface OutputFile {
   /** POSIX path relative to the root of the layer, for example `data/my_mod/recipe/ruby.json`. */
@@ -46,7 +47,31 @@ export interface OutputFile {
    * A file with a `language` carries its text as UTF-8 bytes in {@link OutputFile.contents}.
    */
   language?: string;
+  /**
+   * How this file combines with other files at the same `layer` and `path`. Since 0.6.0.
+   *
+   * Files at one path merge instead of conflicting only when every one of them declares the
+   * same mode and the same {@link OutputFile.schema}; a file without `merge` that meets any
+   * other file at its path is still a conflict.
+   *
+   * - `tag`: the contents are a tag file `{ replace?, values }`. The merged file holds the
+   *   union of `values` in first-seen order (a value written as a string and as `{ id }`
+   *   counts once) and `replace: true` when any input says so.
+   * - `object`: the contents are a flat JSON object, such as a language file. Keys are
+   *   merged; the same key with different values is a `lowering.merge-conflict` error.
+   *
+   * Merging contents are {@link Json} values (or UTF-8 JSON bytes).
+   */
+  merge?: OutputMergeMode;
 }
+
+/**
+ * How files sharing a layer and path combine; see {@link OutputFile.merge}. Since 0.6.0.
+ *
+ * - `tag`: union of tag `values`.
+ * - `object`: flat key merge.
+ */
+export type OutputMergeMode = 'tag' | 'object';
 
 /**
  * Where an exporter writes. Paths are POSIX, relative to the export root.

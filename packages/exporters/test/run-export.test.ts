@@ -1,5 +1,5 @@
 import { utf8 } from '@msm/core';
-import type { Exporter, Problem } from '@msm/plugin-api';
+import type { Exporter, ExporterInput, Json, Problem } from '@msm/plugin-api';
 import { validateJson } from '@msm/schemas';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
@@ -9,6 +9,7 @@ import {
   type ExportRequest,
   exportManifest,
   packFileName,
+  resolveExporterOptions,
   runExport,
   vanillaPacksExporter,
 } from '../src/index';
@@ -301,6 +302,129 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         'lowering.unknown-kind',
       ]);
       expect(req.sink.files().size).toBe(0);
+    });
+
+    it('merges mergeable lowered files and validates the merged file', async () => {
+      const lang = `assets/ruby/${target.folders.resource.lang}/en_us.json`;
+      const schema = '::java::assets::lang::Lang';
+      const req = await request({
+        project: project([
+          raw('ruby:b', {
+            path: lang,
+            layer: 'resourcepack',
+            json: { 'item.ruby.b': 'B' },
+            schema,
+            merge: 'object',
+          }),
+          raw('ruby:a', {
+            path: lang,
+            layer: 'resourcepack',
+            json: { 'item.ruby.a': 'A' },
+            schema,
+            merge: 'object',
+          }),
+        ]),
+      });
+      const report = await runExport(req);
+      expect(errors(report.problems)).toEqual([]);
+      expect(report.ok).toBe(true);
+      expect(JSON.parse(text(req.sink.files().get(lang)))).toEqual({
+        'item.ruby.a': 'A',
+        'item.ruby.b': 'B',
+      });
+      const captured: ExporterInput[] = [];
+      const capture: Exporter = {
+        id: 'capture',
+        displayName: 'Capture',
+        layers: ['resourcepack'],
+        async run(input) {
+          captured.push(input);
+        },
+      };
+      const second = await runExport({ ...req, exporter: capture });
+      expect(second.ok).toBe(true);
+      const file = captured[0]?.files.find((entry) => entry.path === lang);
+      expect(file?.contents).toEqual({ 'item.ruby.a': 'A', 'item.ruby.b': 'B' });
+      expect(file?.merge).toBe('object');
+    });
+
+    it('blocks the export on a merge conflict', async () => {
+      const tag = `data/ruby/${target.folders.data.tags}/block/x.json`;
+      const req = await request({
+        exporter: { ...vanillaPacksExporter, layers: ['datapack'] },
+        project: project([
+          raw('ruby:a', {
+            path: 'assets/ruby/x.json',
+            layer: 'resourcepack',
+            json: { k: 'a' },
+            merge: 'object',
+          }),
+          raw('ruby:b', {
+            path: 'assets/ruby/x.json',
+            layer: 'resourcepack',
+            json: { k: 'b' },
+            merge: 'object',
+          }),
+          raw('ruby:c', { path: tag, layer: 'datapack', json: { values: [] }, merge: 'tag' }),
+          raw('ruby:d', { path: tag, layer: 'datapack', json: { values: [] } }),
+        ]),
+      });
+      const report = await runExport(req);
+      expect(report.ok).toBe(false);
+      expect(codes(errors(report.problems))).toEqual([
+        'lowering.merge-conflict',
+        'lowering.conflict',
+      ]);
+      expect(req.sink.files().size).toBe(0);
+    });
+
+    it('passes exporter options with defaults filled in', async () => {
+      const captured: Record<string, Json>[] = [];
+      const optioned: Exporter = {
+        id: 'optioned',
+        displayName: 'Optioned',
+        layers: ['resourcepack'],
+        options: [
+          { id: 'separateRuntime', label: 'Separate runtime', type: 'boolean', default: false },
+          { id: 'compress', label: 'Compress', type: 'boolean', default: true },
+          { id: 'verbose', label: 'Verbose', type: 'boolean', default: false },
+        ],
+        async run(input) {
+          captured.push(input.options);
+        },
+      };
+      const plain: Exporter = {
+        id: 'plain',
+        displayName: 'Plain',
+        layers: ['resourcepack'],
+        async run(input) {
+          captured.push(input.options);
+        },
+      };
+      await runExport(await request({ project: project([]), exporter: optioned }));
+      await runExport(
+        await request({
+          project: project([]),
+          exporter: optioned,
+          options: { separateRuntime: true, compress: 'yes', unknown: true },
+        }),
+      );
+      await runExport(await request({ project: project([]), exporter: plain, options: { a: 1 } }));
+      expect(captured).toEqual([
+        { separateRuntime: false, compress: true, verbose: false },
+        { separateRuntime: true, compress: true, verbose: false },
+        {},
+      ]);
+    });
+
+    it('resolves exporter options directly', () => {
+      expect(resolveExporterOptions(undefined)).toEqual({});
+      expect(
+        resolveExporterOptions(
+          [{ id: 'a', label: 'A', description: 'An option.', type: 'boolean', default: true }],
+          { a: false },
+        ),
+      ).toEqual({ a: false });
     });
 
     it('leaves out files of layers the exporter does not package', async () => {

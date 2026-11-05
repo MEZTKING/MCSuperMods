@@ -73,5 +73,14 @@ export const target: Target = {
       naturalMobSpawns: 'minecraft:gameplay/natural_mob_spawns',
     },
   },
-  // fabric and geckolib are not set until Phase 4/5 (verify at implementation then).
+  // Verified 2026-11-05 against maven.fabricmc.net and the FabricMC example mod's 26.3
+  // branch (ADR 0027).
+  fabric: {
+    loader: '0.20.1',
+    api: '0.165.2+26.3',
+    loom: '1.19.3',
+    // minecraftDependency: the fabric.mod.json range (verify at implementation).
+    minecraftDependency: '~26.3',
+  },
+  // geckolib is not set until Phase 5 (verify at implementation then).
 };

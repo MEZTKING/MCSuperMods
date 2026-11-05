@@ -4,9 +4,16 @@
  * @packageDocumentation
  */
 
-import { type ElementKindRegistry, lowerProject, utf8 } from '@msm/core';
+import {
+  type ElementKindRegistry,
+  lowerProject,
+  type MergeEntry,
+  mergeOutputFiles,
+  utf8,
+} from '@msm/core';
 import {
   type Exporter,
+  type ExporterOption,
   isProjectRelativePath,
   type Json,
   type OutputFile,
@@ -42,6 +49,12 @@ export interface ExportRequest {
   /** Reads one project asset's bytes, given its namespace and asset path. */
   readAsset(namespace: string, path: string): Promise<Uint8Array>;
   meta: { msmVersion: string; plugins: string[] };
+  /**
+   * The user's values for the exporter's declared options ({@link Exporter.options}), keyed
+   * by option id. Missing or ill-typed values fall back to each option's default (see
+   * {@link resolveExporterOptions}); ids the exporter does not declare are ignored.
+   */
+  options?: Record<string, Json>;
 }
 
 /** The outcome of one export run. */
@@ -54,9 +67,25 @@ export interface ExportReport {
   files: string[];
 }
 
-/** A file's merge key: layer and path. */
-function fileKey(file: OutputFile): string {
-  return `${file.layer}\u0000${file.path}`;
+/**
+ * The option values an exporter receives: one entry per declared option, holding the given
+ * value when it has the option's type and the option's default otherwise. Undeclared ids
+ * are dropped.
+ *
+ * @param declared - The exporter's options, if any.
+ * @param given - The values the host or user supplied.
+ * @returns The values keyed by option id.
+ */
+export function resolveExporterOptions(
+  declared: readonly ExporterOption[] | undefined,
+  given: Readonly<Record<string, Json>> = {},
+): Record<string, Json> {
+  const options: Record<string, Json> = {};
+  for (const option of declared ?? []) {
+    const value = Object.hasOwn(given, option.id) ? given[option.id] : undefined;
+    options[option.id] = typeof value === 'boolean' ? value : option.default;
+  }
+  return options;
 }
 
 /** The JSON value to validate, or a problem when bytes are not UTF-8 JSON. */
@@ -158,8 +187,9 @@ async function validateTextFiles(
  *    conflicts are errors).
  * 2. Adds the project's assets (`assetOutputFiles`).
  * 3. Keeps only files of the exporter's layers (an `export.layer-skipped` info per skipped
- *    layer), rejects unsafe paths (`export.unsafe-path`) and merges: an asset at a path a
- *    lowered file already uses is an `export.conflict` error.
+ *    layer), rejects unsafe paths (`export.unsafe-path`) and merges with core's
+ *    `mergeOutputFiles`: an asset at a path a lowered file already uses is an
+ *    `export.conflict` error.
  * 4. Validates every file that names a `schema` against the schema index. Schema errors
  *    block; warnings pass through.
  *    4b. Checks every file with a `language` through `request.validateText`; its error
@@ -167,7 +197,7 @@ async function validateTextFiles(
  *    `export.language-unchecked` info per language; a throwing checker is
  *    `export.text-validation-failed`.
  * 5. When any error was found, returns `ok: false` without writing anything. Otherwise runs
- *    the exporter, which writes to the sink; an exporter error problem or a throw makes the
+ *    the exporter with `options` resolved by {@link resolveExporterOptions}, which writes to the sink; an exporter error problem or a throw makes the
  *    report not ok.
  *
  * @param request - The project, target, exporter, sink and host facts.
@@ -184,33 +214,31 @@ export async function runExport(request: ExportRequest): Promise<ExportReport> {
 
   const layers = new Set(exporter.layers);
   const skipped = new Map<string, number>();
-  const merged = new Map<string, OutputFile>();
-  for (const file of [...lowered.files, ...assets.files]) {
-    if (!layers.has(file.layer)) {
-      skipped.set(file.layer, (skipped.get(file.layer) ?? 0) + 1);
-      continue;
+  const entries: MergeEntry[] = [];
+  const sources: [OutputFile[], string][] = [
+    [lowered.files, 'the lowered project'],
+    [assets.files, 'a project asset'],
+  ];
+  for (const [list, source] of sources) {
+    for (const file of list) {
+      if (!layers.has(file.layer)) {
+        skipped.set(file.layer, (skipped.get(file.layer) ?? 0) + 1);
+        continue;
+      }
+      if (!isProjectRelativePath(file.path)) {
+        problems.push({
+          severity: 'error',
+          code: ExportProblemCodes.unsafePath,
+          file: file.path,
+          message: `Output path ${JSON.stringify(file.path)} is not a safe relative path; it must not be absolute or contain backslashes, empty, "." or ".." segments.`,
+        });
+        continue;
+      }
+      entries.push({ file, source });
     }
-    if (!isProjectRelativePath(file.path)) {
-      problems.push({
-        severity: 'error',
-        code: ExportProblemCodes.unsafePath,
-        file: file.path,
-        message: `Output path ${JSON.stringify(file.path)} is not a safe relative path; it must not be absolute or contain backslashes, empty, "." or ".." segments.`,
-      });
-      continue;
-    }
-    const key = fileKey(file);
-    if (merged.has(key)) {
-      problems.push({
-        severity: 'error',
-        code: ExportProblemCodes.conflict,
-        file: file.path,
-        message: `More than one output file has the ${file.layer} path ${file.path}.`,
-      });
-      continue;
-    }
-    merged.set(key, file);
   }
+  const merged = mergeOutputFiles(entries, { conflictCode: ExportProblemCodes.conflict });
+  problems.push(...merged.problems);
   for (const [layer, count] of [...skipped].sort((a, b) => comparePaths(a[0], b[0]))) {
     problems.push({
       severity: 'info',
@@ -219,7 +247,7 @@ export async function runExport(request: ExportRequest): Promise<ExportReport> {
     });
   }
 
-  const files = [...merged.values()].sort(
+  const files = [...merged.files].sort(
     (a, b) => comparePaths(a.layer, b.layer) || comparePaths(a.path, b.path),
   );
   for (const file of files) problems.push(...validateFile(file, schemaIndex, registries));
@@ -246,6 +274,7 @@ export async function runExport(request: ExportRequest): Promise<ExportReport> {
       sink,
       problems: { report: (problem) => problems.push(problem) },
       meta: request.meta,
+      options: resolveExporterOptions(exporter.options, request.options),
     });
   } catch (error) {
     problems.push({

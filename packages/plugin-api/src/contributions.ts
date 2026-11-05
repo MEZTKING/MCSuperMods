@@ -96,6 +96,30 @@ export interface ExporterInput {
     /** Ids of the plugins the project requires. */
     plugins: string[];
   };
+  /**
+   * The value of every option the exporter declares in {@link Exporter.options}, keyed by
+   * {@link ExporterOption.id}. The host fills in each option's default when the user chose
+   * no value, so every declared id is present. Empty when the exporter declares no options.
+   * Since 0.6.0.
+   */
+  options: Record<string, Json>;
+}
+
+/**
+ * One user-facing option of an {@link Exporter}, rendered by the host's export dialog.
+ * Only boolean options exist in 0.6.0. Since 0.6.0.
+ */
+export interface ExporterOption {
+  /** Option id, unique within the exporter; the key in {@link ExporterInput.options}. */
+  id: string;
+  /** Label shown in the export dialog, in British English. */
+  label: string;
+  /** Optional longer explanation shown with the option, in British English. */
+  description?: string;
+  /** The option's value type. */
+  type: 'boolean';
+  /** The value used when the user chose none. */
+  default: boolean;
 }
 
 /**
@@ -108,6 +132,11 @@ export interface Exporter {
   displayName: string;
   /** The output layers this exporter packages. */
   layers: OutputLayer[];
+  /**
+   * Options the user can set in the export dialog; their values arrive in
+   * {@link ExporterInput.options}. Since 0.6.0.
+   */
+  options?: ExporterOption[];
   /**
    * Packages the files. Output must be deterministic: stable ordering and fixed timestamps.
    *

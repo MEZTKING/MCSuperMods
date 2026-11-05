@@ -42,7 +42,7 @@ const firstTarget = (builtInTargets[0] as TargetBundle).target;
 describe('@msm/plugin-datapack', () => {
   it('declares its id and API range', () => {
     expect(plugin.id).toBe('msm.datapack');
-    expect(plugin.apiVersion).toBe('^0.5.0');
+    expect(plugin.apiVersion).toBe('^0.6.0');
     expect(Object.isFrozen(plugin)).toBe(true);
   });
 
@@ -85,6 +85,7 @@ describe('@msm/plugin-datapack', () => {
     expect(file?.path).toBe(
       `data/example/${firstTarget.folders.data.tags}/worldgen/biome/hot.json`,
     );
+    expect(file?.merge).toBe('tag');
   });
 
   it('lowers generic kinds into the target folder of their registry', () => {

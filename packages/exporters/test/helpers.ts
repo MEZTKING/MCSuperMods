@@ -6,6 +6,7 @@ import type {
   Json,
   OutputFile,
   OutputLayer,
+  OutputMergeMode,
   Project,
   ResourceLocation,
 } from '@msm/plugin-api';
@@ -95,6 +96,7 @@ export interface RawData {
   text?: string;
   schema?: string;
   language?: string;
+  merge?: OutputMergeMode;
 }
 
 /** Lowers to exactly the file its data describes, for edge cases. */
@@ -111,6 +113,7 @@ export const rawKind: ElementKind = {
     };
     if (data.schema !== undefined) file.schema = data.schema;
     if (data.language !== undefined) file.language = data.language;
+    if (data.merge !== undefined) file.merge = data.merge;
     return [file];
   },
 };

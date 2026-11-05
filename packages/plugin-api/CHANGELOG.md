@@ -2,6 +2,21 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 0.6.0 — 2026-11-05
+
+Mergeable outputs, exporter options and Fabric target facts (ADR 0027). `API_VERSION` is `0.6.0`. Built-in plugins declare `^0.6.0`.
+
+- `OutputFile.merge?: OutputMergeMode` (`'tag' | 'object'`): outputs at the same layer and path merge instead of conflicting when every one of them declares the same mode and the same `schema`. `tag` merges tag files (union of `values` in first-seen order; a string and an `{ id }` entry with the same id count once; `replace: true` when any input says so). `object` merges flat JSON objects such as language files; the same key with different values is a `lowering.merge-conflict` error naming both elements. A file without `merge` meeting any other file at its path, mixed modes and differing schemas stay conflicts. The host merges (`@msm/core` `mergeOutputFiles`), so exporters receive merged files. The `minecraft:lang` and `minecraft:tag/<registry>` kinds of the built-in plugins declare `merge`.
+- `ExporterOption` (`{ id, label, description?, type: 'boolean', default: boolean }`) and `Exporter.options?: ExporterOption[]`: options the export dialog renders. Only booleans in 0.6.0.
+- `ExporterInput.options: Record<string, Json>`: the value of every declared option, with defaults filled in by the host; empty when the exporter declares none.
+- `FabricFacts` and `Target.fabric?: FabricFacts`: `loader`, `api`, `loom` and the new `minecraftDependency` (the `minecraft` range written into `fabric.mod.json`). Still optional on the type.
+
+### Migration from 0.5.0
+
+- Plugins only need the range change: declare `^0.6.0`. Plugins declaring `^0.5.0` no longer load, because `0.6.0` is outside a `^0.5.0` range (0.x minors are breaking under semver).
+- Code that builds an `ExporterInput` itself (tests, hosts) must pass `options` (`{}` when the exporter declares none).
+- A target that sets `fabric` must add `minecraftDependency`.
+
 ## 0.5.0 — 2026-11-04
 
 Structures and worldgen surface (ADR 0022). `API_VERSION` is `0.5.0`. Built-in plugins declare `^0.5.0`.

@@ -88,7 +88,7 @@ const fakeExporter: Exporter = {
 
 const testPlugin: Plugin = definePlugin({
   id: 'test.fakes',
-  apiVersion: '^0.5.0',
+  apiVersion: '^0.6.0',
   contributes: {
     importers: [fakeImporter],
     validators: [fakeValidator],

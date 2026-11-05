@@ -8,6 +8,16 @@ async function readJson(relative: string): Promise<Record<string, unknown>> {
 }
 
 describe('target mc-26.3', () => {
+  it('sets the Fabric toolchain versions', () => {
+    expect(target.fabric).toEqual({
+      loader: '0.20.1',
+      api: '0.165.2+26.3',
+      loom: '1.19.3',
+      minecraftDependency: '~26.3',
+    });
+    expect(target.fabric?.api.endsWith(`+${target.mcVersion}`)).toBe(true);
+  });
+
   it('derives its id from the Minecraft version', () => {
     expect(target.id).toBe(`mc-${target.mcVersion}`);
   });

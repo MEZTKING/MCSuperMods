@@ -11,6 +11,7 @@ export type {
   ElementKind,
   Exporter,
   ExporterInput,
+  ExporterOption,
   ImportedFile,
   Importer,
   ImportResult,
@@ -31,7 +32,7 @@ export type {
   TemplateContext,
 } from './library';
 export type { Asset, Element, ElementMeta, Namespace, Project } from './model';
-export type { OutputFile, OutputLayer, OutputSink } from './output';
+export type { OutputFile, OutputLayer, OutputMergeMode, OutputSink } from './output';
 export { assertProjectRelativePath, isProjectRelativePath } from './paths';
 export type { Plugin } from './plugin';
 export { definePlugin, PluginDefinitionError } from './plugin';
@@ -39,6 +40,7 @@ export type { Problem, ProblemReporter, ProblemSeverity } from './problems';
 export type {
   BiomeAttributeFacts,
   DataFolderKey,
+  FabricFacts,
   MigrationChange,
   MigrationReport,
   PackFormat,

@@ -516,7 +516,7 @@ describe('App menu commands', () => {
     };
     const plugin = definePlugin({
       id: 'test.scripts',
-      apiVersion: '^0.5.0',
+      apiVersion: '^0.6.0',
       contributes: { elementKinds: [scriptKind] },
     });
     const harness = await renderApp({ plugins: [...builtInPlugins, plugin] });

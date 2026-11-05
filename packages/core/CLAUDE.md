@@ -14,8 +14,8 @@ Phase 2 code complete: model, serialisation, load/save with the `SaveManifest` (
 - `src/io/`: layout, load (returns a `SaveManifest`), save (`createSaveManifest`; deletes only loaded files), append-only migrators for `msm.project.json` and `content/<ns>/<kind-folder>/<path>.json`.
 - `src/commands/`: command stack (Immer patches as RFC 6902 / RFC 6901 pointers, undo/redo, `coalesce` keys within a time window); `commands.*` incl. `setElementValue`, `addAsset`, `removeAsset`, `renameElement(oldId, newId, references)` (id, string and key references, text ranges; one undo step).
 - `src/registry/`: element kind registry and `registerPlugin` (semver `apiVersion` check).
-- `src/problems/`: problem codes (incl. `refs.rename-conflict`).
-- `src/lowering/`: `lowerProject` (unknown kind, thrown lowering and same-path conflicts become `lowering.*` error problems).
+- `src/problems/`: problem codes (incl. `lowering.merge-conflict`, `refs.rename-conflict`).
+- `src/lowering/`: `lowerProject` (unknown kind, thrown lowering and same-path conflicts become `lowering.*` error problems); `mergeOutputFiles` (ADR 0027: `OutputFile.merge` `tag`/`object`, `lowering.merge-conflict`; also used by `runExport` with `export.conflict`).
 - `src/refs/`: `buildReferenceIndex(project, resolveSchema, textReferences?)` over `collectReferences` from `@msm/schemas` (`Reference` with `key?` for map keys, `range?` for text), `collectTextReferences` (exact id tokens in function lines, registry `''`), `normaliseReferenceId`.
 - `test/fixtures/`: golden projects; the root `biome.json` excludes `**/test/fixtures`.
 

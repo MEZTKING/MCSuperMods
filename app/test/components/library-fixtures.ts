@@ -85,7 +85,7 @@ const noteKind: ElementKind = {
 /** A plugin contributing the fakes, plus a starter and an example the host hides. */
 export const fakeLibraryPlugin: Plugin = definePlugin({
   id: 'test.library',
-  apiVersion: '^0.5.0',
+  apiVersion: '^0.6.0',
   contributes: {
     elementKinds: [noteKind],
     elementTemplates: [

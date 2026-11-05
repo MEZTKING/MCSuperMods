@@ -37,6 +37,8 @@ export type { SaveManifest, SaveOptions, SaveResult } from './io/save';
 export { createSaveManifest, saveProject } from './io/save';
 export type { LowerResult } from './lowering/lower-project';
 export { lowerProject } from './lowering/lower-project';
+export type { MergeEntry, MergeOptions, MergeOutputResult } from './lowering/merge-outputs';
+export { mergeOutputFiles } from './lowering/merge-outputs';
 export * from './model/index';
 export type { ProblemCode } from './problems/codes';
 export { ProblemCodes } from './problems/codes';

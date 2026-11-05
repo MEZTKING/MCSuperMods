@@ -20,7 +20,8 @@ Checked on 2026-11-04.
 | `dataVersion` | `5023` | mcmeta `version.json` (`data_version`), tag `26.3-summary`; asserted by `test/target.test.ts`; checked 2026-11-04 |
 | `worldgen.featureSteps` | `raw_generation`, `lakes`, `local_modifications`, `underground_structures`, `surface_structures`, `strongholds`, `underground_ores`, `underground_decoration`, `fluid_springs`, `vegetal_decoration`, `top_layer_modification` (11, in game order) | vendored vanilla-mcdoc `::java::data::worldgen::DecorationStep` enum (values in declaration order, which follows the game's decoration step enum); asserted by `test/target.test.ts`; checked 2026-11-04 |
 | `worldgen.biomeAttributes` | colours `minecraft:visual/sky_color`, `minecraft:visual/fog_color`, `minecraft:visual/water_fog_color` (sky first is `skyColour`); `naturalMobSpawns` `minecraft:gameplay/natural_mob_spawns`. The biome `effects.sky_color`, `fog_color` and `water_fog_color` fields are `until 1.21.11`; spawns moved from `spawners`/`spawn_costs` into the attribute in 26.3 | vendored vanilla-mcdoc: `minecraft:environment_attribute` dispatcher (colour members are `RGBColorAttribute`; `gameplay/natural_mob_spawns` is `MergeableAttribute<NaturalMobSpawns>`, `since 26.3`), `::java::data::worldgen::biome::BiomeEffects` field gates; mcmeta `registries.json` `environment_attribute`; asserted by `test/target.test.ts`; checked 2026-11-04 |
-| Fabric Loader, Fabric API, Loom | not set (Phase 4) | (verify at implementation) |
+| `fabric` (Loader, Fabric API, Loom) | loader `0.20.1`, API `0.165.2+26.3`, Loom `1.19.3` | meta.fabricmc.net `/v2/versions/loader/26.3`, maven.fabricmc.net `fabric-api` metadata and Loom plugin markers, FabricMC example mod branch `26.3`; checked 2026-11-05 (ADR 0027) |
+| `fabric.minecraftDependency` | `~26.3` | (verify at implementation) |
 | GeckoLib | not set (Phase 5) | (verify at implementation) |
 
 ## Vendored data

@@ -114,7 +114,7 @@ describe('0.4.0 library contribution points', () => {
     expectTypeOf<PluginContributions['examples']>().toEqualTypeOf<ExampleProject[] | undefined>();
     const plugin = definePlugin({
       id: 'test.library',
-      apiVersion: '^0.5.0',
+      apiVersion: '^0.6.0',
       contributes: {
         elementTemplates: [template],
         projectStarters: [starter],

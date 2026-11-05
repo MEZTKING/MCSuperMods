@@ -123,6 +123,7 @@ function exportInput(files: OutputFile[]): {
       sink,
       problems: { report: (problem) => void problems.push(problem) },
       meta: { msmVersion: '0.0.0', plugins: ['msm.structures'] },
+      options: {},
     },
   };
 }

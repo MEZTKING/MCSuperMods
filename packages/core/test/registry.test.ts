@@ -53,9 +53,9 @@ describe('ElementKindRegistry', () => {
 
 describe('registerPlugin', () => {
   it('accepts a compatible apiVersion range', () => {
-    expect(API_VERSION).toBe('0.5.0');
+    expect(API_VERSION).toBe('0.6.0');
     const registry = new ElementKindRegistry();
-    registerPlugin(registry, testPlugin('^0.5.0'));
+    registerPlugin(registry, testPlugin('^0.6.0'));
     expect(registry.all().map((kind) => kind.id)).toEqual(['test:thing', 'test:nested']);
   });
 
@@ -67,7 +67,7 @@ describe('registerPlugin', () => {
 
   it('rejects a plugin still declaring the previous minor range', () => {
     const registry = new ElementKindRegistry();
-    expect(() => registerPlugin(registry, testPlugin('^0.3.0'))).toThrow(PluginCompatibilityError);
+    expect(() => registerPlugin(registry, testPlugin('^0.5.0'))).toThrow(PluginCompatibilityError);
     expect(registry.all()).toEqual([]);
   });
 
@@ -88,7 +88,7 @@ describe('registerPlugin', () => {
     registry.register(nestedKind);
     const plugin = definePlugin({
       id: 'test.partial',
-      apiVersion: '^0.5.0',
+      apiVersion: '^0.6.0',
       contributes: {
         elementKinds: [{ ...thingKind, id: 'test:fresh', folder: 'fresh' }, nestedKind],
       },
@@ -101,7 +101,7 @@ describe('registerPlugin', () => {
     const registry = new ElementKindRegistry();
     const plugin = definePlugin({
       id: 'test.library',
-      apiVersion: '^0.5.0',
+      apiVersion: '^0.6.0',
       contributes: {
         elementTemplates: [
           {
@@ -124,7 +124,7 @@ describe('registerPlugin', () => {
 
   it('accepts plugins without element kinds', () => {
     const registry = new ElementKindRegistry();
-    registerPlugin(registry, definePlugin({ id: 'empty', apiVersion: '^0.5.0', contributes: {} }));
+    registerPlugin(registry, definePlugin({ id: 'empty', apiVersion: '^0.6.0', contributes: {} }));
     expect(registry.all()).toEqual([]);
   });
 });

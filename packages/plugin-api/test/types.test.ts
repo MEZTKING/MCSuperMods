@@ -3,9 +3,13 @@ import type {
   DataFolderKey,
   Element,
   ElementKind,
+  Exporter,
   ExporterInput,
+  ExporterOption,
+  FabricFacts,
   Json,
   OutputFile,
+  OutputMergeMode,
   PluginContributions,
   Problem,
   Project,
@@ -62,9 +66,7 @@ describe('IR and output types', () => {
   });
 
   it('keeps fabric and geckolib optional on Target', () => {
-    expectTypeOf<Target['fabric']>().toEqualTypeOf<
-      { loader: string; api: string; loom: string } | undefined
-    >();
+    expectTypeOf<Target['fabric']>().toEqualTypeOf<FabricFacts | undefined>();
     expectTypeOf<Target['geckolib']>().toEqualTypeOf<string | undefined>();
   });
 });
@@ -225,5 +227,36 @@ describe('0.5.0 additions', () => {
     expectTypeOf<Target['dataVersion']>().toEqualTypeOf<number>();
     expectTypeOf<Target['worldgen']>().toEqualTypeOf<WorldgenFacts>();
     expectTypeOf<WorldgenFacts['featureSteps']>().toEqualTypeOf<readonly string[]>();
+  });
+});
+
+describe('0.6.0 additions', () => {
+  it('adds an optional merge mode to OutputFile', () => {
+    expectTypeOf<OutputFile['merge']>().toEqualTypeOf<OutputMergeMode | undefined>();
+    expectTypeOf<OutputMergeMode>().toEqualTypeOf<'tag' | 'object'>();
+    const file: OutputFile = {
+      path: 'data/example/tags/block/a.json',
+      contents: { values: [] },
+      layer: 'datapack',
+      merge: 'tag',
+    };
+    expectTypeOf(file).toEqualTypeOf<OutputFile>();
+  });
+
+  it('adds exporter options', () => {
+    expectTypeOf<Exporter['options']>().toEqualTypeOf<ExporterOption[] | undefined>();
+    expectTypeOf<ExporterInput['options']>().toEqualTypeOf<Record<string, Json>>();
+    expectTypeOf<ExporterOption['type']>().toEqualTypeOf<'boolean'>();
+    expectTypeOf<ExporterOption['default']>().toEqualTypeOf<boolean>();
+    expectTypeOf<ExporterOption['description']>().toEqualTypeOf<string | undefined>();
+  });
+
+  it('types the Fabric facts of a target', () => {
+    expectTypeOf<FabricFacts>().toEqualTypeOf<{
+      loader: string;
+      api: string;
+      loom: string;
+      minecraftDependency: string;
+    }>();
   });
 });

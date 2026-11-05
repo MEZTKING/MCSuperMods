@@ -67,7 +67,7 @@ function registrationProblems(): string[] {
 describe('@msm/plugin-worldgen', () => {
   it('declares its id and API range', () => {
     expect(plugin.id).toBe('msm.worldgen');
-    expect(plugin.apiVersion).toBe('^0.5.0');
+    expect(plugin.apiVersion).toBe('^0.6.0');
     expect(Object.isFrozen(plugin)).toBe(true);
   });
 
