@@ -156,4 +156,6 @@ Press **Ctrl+Shift+P** to open the command palette and type part of a command's 
 - [Structures](structures.md) and [Worldgen](worldgen.md): jigsaw structures, custom biomes and World Types.
 - [Blocks and items](blocks-and-items.md): exporting the Fabric mod jar and the separate runtime for modpacks.
 - [Entities and models](entities-and-models.md): animated mobs. Create a project from the **Custom mob** starter (a Ruby Golem with its model, animations and spawn egg), or import a model with **File → Import Blockbench Model…** and give it a body and behaviour in the Entity Studio; the Fabric mod jar then carries GeckoLib too.
-- The [roadmap](../ROADMAP.md): what comes after entities.
+- [Scripting](scripting.md): behaviour in TypeScript. Create a project from the **Scripted ore** starter, or add a script from the **Block interaction script** template under **Scripts** in **Add element**; the Script Studio completes `msm.` as you type, and the Fabric mod jar carries the scripts into the game.
+- [Eject to a Java project](eject.md): **File → Export Java Project…** writes a standalone Fabric Gradle project with generated Java that no longer needs `msm_runtime`, for when you want to carry on in code.
+- The [roadmap](../ROADMAP.md): what comes after scripting.

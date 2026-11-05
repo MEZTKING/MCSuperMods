@@ -4,11 +4,11 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (112) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (12) | **New from starter…** | A new project, already filled |
-| **Examples** (66) | **Help → Examples…** | A commented project or element to open or copy |
+| **Element templates** (116) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (13) | **New from starter…** | A new project, already filled |
+| **Examples** (69) | **Help → Examples…** | A commented project or element to open or copy |
 
-Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities and models and animations plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](../adr/0020-templates-starters-examples.md)).
+Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, and scripting plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](../adr/0020-templates-starters-examples.md)).
 
 No starter or example contains Mojang files. Textures are small placeholder images that MCSuperMods draws itself; the music disc plays a track from your own copy of the game.
 
@@ -283,6 +283,17 @@ The model templates put `entity/` in front of the name you type.
 |---|---|---|---|
 | Idle and walk animations | `msm_animation_idle_walk` | `msm:animation` | An idle bob and a walk cycle swinging the arms and legs of the biped model; name it `<name>_animations` (the template adds `entity/`). |
 
+#### Scripts
+
+Scripts (`msm:script`) are TypeScript that the `msm_runtime` mod runs in the game, so they too exist only in the **Fabric mod jar** export; the Java project export leaves them out (see [Scripting](scripting.md)). The templates use only vanilla ids: change the block, item and entity ids to your own.
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Block interaction script | `msm_script_block_interaction` | `msm:script` | Right-clicking a composter with the main hand no longer composts and gives bone meal instead. |
+| Entity hurt script | `msm_script_entity_hurt` | `msm:script` | An iron golem heals half of every hit back and shows heart particles. |
+| Scheduled effect script | `msm_script_scheduled_effect` | `msm:script` | Using a clock plays five rising chimes with particles, half a second apart, with `msm.schedule`. |
+| Action handler script | `msm_script_action_handler` | `msm:script` | A named handler for the "Run script" (`run_script`) action, using the script's own id as the handler id. |
+
 ## Project starters
 
 A starter creates a whole project in an empty folder. Open the list in any of these ways:
@@ -309,15 +320,17 @@ The **New project** dialog groups the starters (Blank, Packs, Themed content) an
 | Jigsaw village-style structure | `jigsaw_structure` | data | A small hamlet built by jigsaw blocks: a centre hut, streets that follow the terrain and lamp posts, with four template pools, a structure set and a biome tag that places it in forests. |
 | Custom biome with a jigsaw structure | `worldgen_pack` | resource, data | Both worldgen starters in one project: Amber Woods and its World Type, and hamlets that generate in Amber Woods and in every vanilla forest. |
 | Custom mob | `custom_mob` | resource, data, mod | An animated Ruby Golem that wanders forests, fights back when hit, drops emeralds and bursts into sparks when it dies: its GeckoLib model, idle, walk and attack animations, skin, spawn egg, loot table, a death function and the mod metadata. |
+| Scripted ore | `scripted_ore` | resource, data, mod | The Custom ore starter with three scripts: sneak-using ruby ore gives a bonus ruby, standing on a block of ruby heals you through a `run_script` action, and joining players are greeted. |
 
-Four starters need a word of explanation:
+Five starters need a word of explanation:
 
 - **Custom ore needs the Fabric mod jar.** Its ore, ruby and Block of Ruby are new blocks and items (`msm:block`, `msm:item`), which a resource or data pack cannot add. Export the **Fabric mod jar** and install it with Fabric Loader and Fabric API; the jar carries the `msm_runtime` mod inside unless you choose a separate runtime. The resource and data pack exports still work but hold only the models, textures, names, loot tables, tags, recipes and advancements, which do nothing without the blocks and items. Nothing in the `minecraft` namespace is changed: emerald ore stays emerald ore.
 - **Custom mob needs the Fabric mod jar with GeckoLib.** The Ruby Golem is a new mob (`msm:entity`), drawn by the GeckoLib mod from its model (`msm:geo_model`) and animations (`msm:animation`). Export the **Fabric mod jar**: it nests `msm_runtime` and GeckoLib, which MCSuperMods downloads once (see [Entities and models](entities-and-models.md#export-the-mod-jar-and-geckolib)). Replace the placeholder skin by importing a Blockbench model of your own and choosing it in the Entity Studio.
+- **Scripted ore needs the Fabric mod jar too.** Its scripts (`msm:script`) run inside the game through `msm_runtime`, so they work only in the Fabric mod jar; the Java project export leaves them out. The Block of Ruby's step event calls the `guard` handler of a script through a `run_script` action (see [Scripting](scripting.md)).
 - **The music disc plays a vanilla track.** MCSuperMods bundles no audio, so the sound event points at the game's own `records/cat` file. The disc itself is the vanilla `music_disc_13` item carrying the new song and a name, drawn with the starter's own disc model; the `give_disc` function gives it to you (`/function <namespace>:give_disc`), because a pack cannot add a new item to the creative inventory.
 - **A custom biome needs its own World Type.** A data pack cannot add a biome to the normal overworld, so the Custom biome starters add a World Type that lists the new biome. Choose it when creating a new world; existing worlds keep their biomes, although the hamlets of the jigsaw starters do appear in new chunks of an existing world.
 
-The [Getting started](getting-started.md) guide walks through the Custom ore starter (as a Fabric mod jar) and the Functions starter in Minecraft; the [Worldgen](worldgen.md) guide walks through the worldgen starters. [Blocks and items](blocks-and-items.md) explains the Fabric mod jar export and its separate runtime option, and [Entities and models](entities-and-models.md) the Custom mob starter's kinds.
+The [Getting started](getting-started.md) guide walks through the Custom ore starter (as a Fabric mod jar) and the Functions starter in Minecraft; the [Worldgen](worldgen.md) guide walks through the worldgen starters. [Blocks and items](blocks-and-items.md) explains the Fabric mod jar export and its separate runtime option, [Entities and models](entities-and-models.md) the Custom mob starter's kinds, and [Scripting](scripting.md) the Scripted ore starter's scripts.
 
 ## Examples gallery
 
@@ -356,9 +369,15 @@ The entity examples and the Custom mob starter use `msm:entity`, `msm:geo_model`
 - **Hostile mob** shows `melee_attack` with `targets`, `msm:attack` whose `on_attack` event uses `play_animation`, and the spawn rule `monster`.
 - **Natural spawning** shows `spawn` with a biome tag (`#`) and a biome id together.
 
+The script examples use `msm:script`, which runs only in the Fabric mod jar (see [Scripting](scripting.md)):
+
+- **Script: block interaction** shows `msm.events.on("block.interact", ...)` with `e.cancel()` and `e.player.give(...)`.
+- **Script: scheduled effects** shows `msm.schedule`: each step of the spiral schedules the next one.
+- **Script: action handler** shows how a block event calls a script: the Chime Block's use event has a `run_script` action, and the script defines that handler with `msm.actions.define`.
+
 ### All examples
 
-There is one example for each of the 58 element kinds, four more behaviour examples (blocks and items: a tool and an event chain; entities: a hostile mob and natural spawning), plus four themed starters listed again under **Starters**. The three worldgen starters and the Custom mob starter have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 59 element kinds, six more behaviour examples (blocks and items: a tool and an event chain; entities: a hostile mob and natural spawning; scripts: scheduled effects and an action handler), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob starter and the Scripted ore starter have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -424,6 +443,9 @@ There is one example for each of the 58 element kinds, four more behaviour examp
 | Idle and walk animations | `example_msm_animation` | Entity animations | `msm:animation` | An idle bob and a walk cycle that swings the arms and legs of a biped model, shown on a small mob. |
 | Hostile mob | `example_msm_hostile_mob` | Entities | `msm:entity` | A monster that chases and hits players, fights back when hurt and spawns in the dark. |
 | Natural spawning | `example_msm_natural_spawn` | Entities | `msm:entity` | A creature that spawns on its own in forests and plains, using a biome tag and a biome id. |
+| Script: block interaction | `example_msm_script` | Scripts | `msm:script` | A script that cancels using a lodestone with an empty hand and gives the player a compass instead. |
+| Script: scheduled effects | `example_msm_script_schedule` | Scripts | `msm:script` | A script that turns using an amethyst shard into a rising spiral of particles over two seconds, one `msm.schedule` step after another. |
+| Script: action handler | `example_msm_script_action` | Scripts | `msm:script` | A chime block whose use event runs a script through a `run_script` action, and the script that defines that handler. |
 | Custom ore project | `starter_custom_ore` | Starters | `msm:block` | The Custom ore starter: a real ruby ore block, the ruby item and a block of ruby, with loot, recipes, a tag, advancements and the mod metadata. |
 | Recipe pack project | `starter_recipe_pack` | Starters | `minecraft:recipe` | The Recipe pack starter: one recipe of each common type and an advancement. |
 | Custom music disc project | `starter_music_disc` | Starters | `minecraft:jukebox_song` | The Custom music disc starter: a jukebox song, its disc model and texture. |
@@ -435,9 +457,10 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 
 | Folder | Namespace | Contents |
 |---|---|---|
-| `examples/all-kinds/` | `msm_examples` | The 58 per-kind examples in one project |
+| `examples/all-kinds/` | `msm_examples` | The 59 per-kind examples in one project |
 | `examples/blocks-items/` | `msm_examples` | The two blocks and items behaviour examples (Sturdy pickaxe, Beacon stone) |
 | `examples/entities/` | `msm_examples` | The two entity behaviour examples (Hostile mob, Natural spawning), each with its model, animations and textures |
+| `examples/scripts/` | `msm_examples` | The two script behaviour examples (Script: scheduled effects, Script: action handler) |
 | `examples/starters/custom_ore/` | `msm_starter` | The Custom ore starter |
 | `examples/starters/recipe_pack/` | `msm_starter` | The Recipe pack starter |
 | `examples/starters/music_disc/` | `msm_starter` | The Custom music disc starter |
@@ -446,6 +469,7 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 | `examples/starters/jigsaw_structure/` | `msm_starter` | The Jigsaw village-style structure starter |
 | `examples/starters/worldgen_pack/` | `msm_starter` | The Custom biome with a jigsaw structure starter (also saved as `fixtures/sample-worldgen/`) |
 | `examples/starters/custom_mob/` | `msm_starter` | The Custom mob starter |
+| `examples/starters/scripted_ore/` | `msm_starter` | The Scripted ore starter |
 
 Copy a folder somewhere else before opening it, so your edits do not change the repository. See [examples/README.md](../../examples/README.md).
 
@@ -467,4 +491,4 @@ The `examples/` folder is generated from `packages/plugins/library/src/`; do not
 UPDATE_GOLDENS=1 pnpm --filter @msm/exporters exec vitest run test/library.test.ts
 ```
 
-`packages/exporters/test/library.test.ts` fails in CI when the folder drifts from the library. It also builds every starter and example for each supported version, saves and reloads it, validates every element and function, and exports both packs with zero problems; projects with blocks, items, entities or mod metadata are also exported as a Fabric mod jar with zero problems. Template tests live with each plugin (`packages/plugins/<plugin>/test/templates.test.ts` for `resourcepack`, `datapack`, `structures`, `worldgen`, `blocks-items`, `models-anim` and `entities`).
+`packages/exporters/test/library.test.ts` fails in CI when the folder drifts from the library. It also builds every starter and example for each supported version, saves and reloads it, validates every element and function, and exports both packs with zero problems; projects with blocks, items, entities, scripts or mod metadata are also exported as a Fabric mod jar with zero problems, and every script type-checks against the runtime typings. Template tests live with each plugin (`packages/plugins/<plugin>/test/templates.test.ts` for `resourcepack`, `datapack`, `structures`, `worldgen`, `blocks-items`, `models-anim`, `entities` and `scripting`).

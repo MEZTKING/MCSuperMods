@@ -45,7 +45,7 @@ An event is a named list of actions that run in order on the server. A block or 
 
 The arrow buttons reorder the actions and the cross removes one. Renaming an event updates every trigger and action that uses it.
 
-The six actions:
+The actions:
 
 | Action | What it does |
 |---|---|
@@ -55,6 +55,7 @@ The six actions:
 | `set_block_state` | Places a block, for example `minecraft:glowstone` or `minecraft:oak_log[axis=x]`, at an **Offset** from the block (for items: from the block under the player). |
 | `give_item` | Gives the player an item, optionally several. Nothing happens when no player is involved, for example for redstone. |
 | `trigger_event` | Runs another event of the same block or item. Chains stop after 16 steps. |
+| `run_script` | Calls a handler that one of the project's scripts defines with `msm.actions.define`; pick it in the handler list or type its id. See [Scripting](scripting.md#run_script-from-the-events-editor). Scripts are not part of the Java project export. |
 
 **Problems** reports an event a trigger or `trigger_event` names but the element does not have (removing an event leaves its uses in place, so this is how you find them), and events that trigger each other in a loop. Both are errors.
 

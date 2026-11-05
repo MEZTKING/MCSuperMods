@@ -22,6 +22,9 @@ import 'monaco-editor/features/hover/register';
 import 'monaco-editor/features/indentation/register';
 import 'monaco-editor/features/linesOperations/register';
 import 'monaco-editor/features/suggest/register';
+// `features/suggest/register` only adds inline completions in Monaco 0.57; the suggest widget
+// (the completion list) is its own contribution.
+import 'monaco-editor/editor/contrib/suggest/browser/suggestController';
 import 'monaco-editor/features/wordOperations/register';
 import EditorWorker from 'monaco-editor/editor/editor.worker?worker';
 import JsonWorker from 'monaco-editor/language/json/json.worker?worker';
