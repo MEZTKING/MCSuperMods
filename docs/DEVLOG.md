@@ -1335,3 +1335,23 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 **Next**
 - A shared `studios/shared/` for pickers, sections and the go-to host would remove the cross-area imports (orchestrator decision).
 - B101: e2e and guide page can use the test ids `block-studio`, `item-studio`, `msm-events`.
+
+---
+
+## 2026-11-05 — executor — B98 Custom ore starter, Phase 4 examples, examples/ mirror
+
+**What**
+- `packages/plugins/library`: the Custom ore starter is now real Phase 4 content: `msm:block` `ruby_ore` (pickaxe, iron tier, light 3, `loot` pointing at the loot table element `blocks/ruby_ore` that drops 1–2 `ruby` with Fortune), `msm:item` `ruby`, `msm:block` `ruby_block` (`loot: "self"`), three models, three placeholder textures, recipes `ruby_block_from_rubies`, `ruby_from_block`, `ruby_from_smelting`, the `gems` tag, both advancements and an `msm:mod` element; layers `resourcepack`, `datapack`, `msm`. No `minecraft` overrides remain.
+- New examples (`src/examples/blocks-items.ts`): per-kind `example_msm_block` (Switch lamp: `on_interact` + `msm:redstone`, `set_block_state` to a lit twin), `example_msm_item` (Sparkle berries: food + `on_use` particles), `example_msm_mod`; behaviour examples `example_msm_tool` (Sturdy pickaxe + recipe) and `example_msm_event_chain` (Beacon stone: `trigger_event` then `run_function`). `KINDS` gains the `msm:` kinds; `modIdFromNamespace` copied into `content/bundle.ts` (the library may not import the plugin).
+- `packages/exporters/test/library.test.ts`: registers `@msm/plugin-blocks-items`; exports projects with `msm:` elements as a Fabric mod jar too (`separateRuntime`), zero problems; new mirror folder `examples/blocks-items/`; the reskin test replaced. `examples/` regenerated (every `msm.project.json` lists `msm.blocks-items`).
+- Guide: 106 templates (Blocks, Items, Mod tables), 61 examples, the mod-jar explanation; `examples/README.md`.
+- Counts: 11 starters, 61 examples (55 per kind, 2 behaviour, 4 starter projects).
+
+**Decisions**
+- The test's copy of `projectRegistryIds` puts an `msm:block` with a block item into `item` as well, so recipes and loot naming `ruby_block` validate; the app does not do this yet.
+- The recipe could not keep the id `ruby_block` (element ids are unique across kinds); it is `ruby_block_from_rubies`.
+
+**Next**
+- B101: `app/e2e/library-path.spec.ts` asserts the old reskin (see the B98 report).
+- App: `dataRegistryIds` skips non-`minecraft:` kinds, so `msm:item`/`msm:block` ids are unknown to the app's validation; block items should count as items.
+- Status lines (root and `packages/plugins/CLAUDE.md`: 56 examples, 99 templates) and `docs/guide/getting-started.md` (Custom ore walkthrough, README "Custom ore reskins emerald ore") need updating by their owners.
