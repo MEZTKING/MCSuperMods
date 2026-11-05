@@ -329,7 +329,11 @@ describe('every starter and example', () => {
   });
 });
 
-const WORLDGEN_KINDS = new Set(KIND_IDS.slice(KIND_IDS.indexOf('minecraft:structure_template')));
+const WORLDGEN_KIND_IDS = KIND_IDS.slice(
+  KIND_IDS.indexOf('minecraft:structure_template'),
+  KIND_IDS.indexOf('minecraft:worldgen/material_rule') + 1,
+);
+const WORLDGEN_KINDS = new Set(WORLDGEN_KIND_IDS);
 
 /** Every string in `value` with its object key, depth first. */
 function strings(value: unknown, key = ''): { key: string; text: string }[] {
@@ -381,7 +385,7 @@ describe('structure and worldgen content', () => {
       'custom_biome',
       'jigsaw_structure',
       'worldgen_pack',
-      ...KIND_IDS.slice(KIND_IDS.indexOf('minecraft:structure_template')).map((kind) => {
+      ...WORLDGEN_KIND_IDS.map((kind) => {
         const example = kindExamples.find((entry) => entry.kind === kind);
         return example?.id;
       }),
