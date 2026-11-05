@@ -7,6 +7,7 @@ import {
   defaultOptionValues,
   ExporterOptionFields,
   ExportFabricJarDialog,
+  FABRIC_JAR_GECKOLIB_NOTE,
 } from '../../src/renderer/src/components/ExportFabricJarDialog';
 
 afterEach(cleanup);
@@ -14,8 +15,8 @@ afterEach(cleanup);
 const options: ExporterOption[] = [
   {
     id: 'separateRuntime',
-    label: 'Separate runtime (for modpacks)',
-    description: 'Leave msm_runtime out of the jar.',
+    label: 'Separate runtime and GeckoLib (for modpacks)',
+    description: 'Leave msm_runtime and GeckoLib out of the jar.',
     type: 'boolean',
     default: false,
   },
@@ -27,10 +28,10 @@ describe('ExporterOptionFields', () => {
     render(
       <ExporterOptionFields options={options} values={{ compact: true }} onChange={vi.fn()} />,
     );
-    const separate = screen.getByLabelText('Separate runtime (for modpacks)') as HTMLInputElement;
+    const separate = screen.getByLabelText('Separate runtime and GeckoLib (for modpacks)') as HTMLInputElement;
     expect(separate.type).toBe('checkbox');
     expect(separate.checked).toBe(false);
-    expect(screen.getByText('Leave msm_runtime out of the jar.').id).toBe(
+    expect(screen.getByText('Leave msm_runtime and GeckoLib out of the jar.').id).toBe(
       separate.getAttribute('aria-describedby'),
     );
     const compact = screen.getByLabelText('Compact output') as HTMLInputElement;
@@ -55,7 +56,7 @@ describe('ExportFabricJarDialog', () => {
     const onExport = vi.fn();
     render(<ExportFabricJarDialog options={options} onExport={onExport} onClose={vi.fn()} />);
     const user = userEvent.setup();
-    await user.click(screen.getByLabelText('Separate runtime (for modpacks)'));
+    await user.click(screen.getByLabelText('Separate runtime and GeckoLib (for modpacks)'));
     await user.click(screen.getByTestId('fabric-jar-dialog-submit'));
     expect(onExport).toHaveBeenCalledWith({ separateRuntime: true, compact: true });
   });
@@ -69,5 +70,18 @@ describe('ExportFabricJarDialog', () => {
     expect(onExport).toHaveBeenCalledWith({ separateRuntime: false, compact: true });
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('explains the one-off GeckoLib download only when the project has entities', () => {
+    const { rerender } = render(
+      <ExportFabricJarDialog options={options} onExport={vi.fn()} onClose={vi.fn()} />,
+    );
+    expect(screen.queryByTestId('fabric-jar-geckolib-note')).toBeNull();
+    rerender(
+      <ExportFabricJarDialog options={options} hasEntities onExport={vi.fn()} onClose={vi.fn()} />,
+    );
+    expect(screen.getByTestId('fabric-jar-geckolib-note').textContent).toBe(
+      FABRIC_JAR_GECKOLIB_NOTE,
+    );
   });
 });

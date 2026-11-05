@@ -88,3 +88,115 @@ describe('ProjectSession.exportFabricJar', () => {
     expect(result.location).toBeUndefined();
   });
 });
+
+const geckolibBytes = new Uint8Array([0x50, 0x4b, 0x05, 0x06, 9, 9, 9]);
+
+/** A session whose project has one entity with its geo model and animation set. */
+async function openEntitySession(geckolibJar: Uint8Array | null) {
+  const fs = createMemoryFileSystem();
+  const { session, platform, calls } = newSession(fs);
+  const geckolibRequests: string[] = [];
+  platform.exports = {
+    ...platform.exports,
+    runtimeJar: async () => runtimeBytes,
+    geckolibJar: async (targetId) => {
+      geckolibRequests.push(targetId);
+      return geckolibJar;
+    },
+  };
+  await session.newProject();
+  session.addElement({
+    id: 'demo:entity/gloom',
+    kind: 'msm:geo_model',
+    data: {
+      format_version: '1.12.0',
+      'minecraft:geometry': [
+        {
+          description: { identifier: 'geometry.gloom', texture_width: 64, texture_height: 64 },
+          bones: [{ name: 'body', pivot: [0, 0, 0] }],
+        },
+      ],
+    },
+  });
+  session.addElement({
+    id: 'demo:entity/gloom_animations',
+    kind: 'msm:animation',
+    data: {
+      format_version: '1.8.0',
+      animations: { idle: { loop: true, animation_length: 1, bones: {} } },
+    },
+  });
+  session.addElement({
+    id: 'demo:gloom',
+    kind: 'msm:entity',
+    data: {
+      format: 1,
+      category: 'monster',
+      size: { width: 0.6, height: 1.8 },
+      spawn_egg: false,
+      components: {
+        'msm:animated_model': {
+          model: 'demo:entity/gloom',
+          animations: 'demo:entity/gloom_animations',
+          texture: 'demo:entity/gloom',
+          idle: 'idle',
+        },
+      },
+    },
+  });
+  return { session, calls, geckolibRequests };
+}
+
+describe('ProjectSession.exportFabricJar with entities (GeckoLib)', () => {
+  it('asks main for the target’s GeckoLib jar and nests it', async () => {
+    const { session, calls, geckolibRequests } = await openEntitySession(geckolibBytes);
+    const result = await session.exportFabricJar();
+    expect(
+      result.problems.filter((problem) => problem.severity === 'error'),
+      JSON.stringify(result.problems),
+    ).toEqual([]);
+    expect(result.ok).toBe(true);
+    expect(geckolibRequests).toEqual([session.target.id]);
+    const saved = calls.saved[0];
+    if (saved === undefined) throw new Error('unreachable');
+    const entries = unzipSync(saved.data);
+    const facts = session.target.geckolib;
+    if (facts === undefined) throw new Error('The default target has no GeckoLib facts.');
+    expect(entries[`META-INF/jars/${facts.fileName}`]).toEqual(geckolibBytes);
+    expect((modJson(entries).depends as Record<string, unknown>)[facts.modId]).toBe(
+      facts.dependency,
+    );
+    expect(entries['msm/demo/entity/gloom.json']).toBeDefined();
+  });
+
+  it('stops with export.geckolib-missing when main cannot supply the jar', async () => {
+    const { session, calls } = await openEntitySession(null);
+    const result = await session.exportFabricJar();
+    expect(result.ok).toBe(false);
+    expect(result.problems.map((problem) => problem.code)).toContain(
+      'export.geckolib-missing',
+    );
+    expect(calls.saved).toHaveLength(0);
+  });
+
+  it('never asks for GeckoLib with the separate runtime and GeckoLib option', async () => {
+    const { session, calls, geckolibRequests } = await openEntitySession(null);
+    const result = await session.exportFabricJar({ [SEPARATE_RUNTIME_OPTION]: true });
+    expect(result.ok).toBe(true);
+    expect(geckolibRequests).toEqual([]);
+    const saved = calls.saved[0];
+    if (saved === undefined) throw new Error('unreachable');
+    const entries = unzipSync(saved.data);
+    expect(Object.keys(entries).some((path) => path.startsWith('META-INF/jars/'))).toBe(false);
+  });
+
+  it('nests GeckoLib for Test in Minecraft too', async () => {
+    const { session, geckolibRequests } = await openEntitySession(null);
+    const result = await session.testInMinecraft();
+    expect(result.ok).toBe(false);
+    expect(geckolibRequests).toEqual([session.target.id]);
+    expect(result.problems.map((problem) => problem.code)).toContain(
+      'export.geckolib-missing',
+    );
+  });
+});

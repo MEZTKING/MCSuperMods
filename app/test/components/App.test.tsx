@@ -10,7 +10,12 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { App, focusedLocation } from '../../src/renderer/src/App';
+import {
+  FABRIC_JAR_GECKOLIB_NOTE,
+  GECKOLIB_DOWNLOAD_MESSAGE,
+} from '../../src/renderer/src/components/ExportFabricJarDialog';
 import { registerCaretReader } from '../../src/renderer/src/components/function-editor/caret';
+import { BLOCKBENCH_IMPORT_NOTE } from '../../src/renderer/src/components/ImportFilesDialog';
 import { builtInPlugins } from '../../src/renderer/src/plugins/built-in';
 import type { McfunctionChecker } from '../../src/renderer/src/session/mcfunction-problems';
 import { ProjectSession } from '../../src/renderer/src/session/project-session';
@@ -158,6 +163,8 @@ interface Harness {
   menuOpenRecent(root: string): Promise<void>;
   /** What the "pick files" dialog returns. */
   pickedFiles: { name: string; path: string; data: Uint8Array }[];
+  /** The options of every `dialogs.pickFiles` call. */
+  pickRequests: { title: string; filters?: { name: string; extensions: string[] }[] }[];
   /** The folder of every export folder write. */
   writtenFolders: string[];
   /** What `testInMinecraft.status` returns. */
@@ -210,6 +217,7 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
     recent: [],
     openedRecent: [],
     pickedFiles: [],
+    pickRequests: [],
     writtenFolders: [],
     testStatus: blockedTestStatus,
     testRuns: [],
@@ -229,7 +237,10 @@ async function renderApp(options: { plugins?: readonly Plugin[] } = {}): Promise
           ? harness.pickedDirectory
           : '/projects/demo',
       confirmDiscard: async () => true,
-      pickFiles: async () => harness.pickedFiles,
+      pickFiles: async (options) => {
+        harness.pickRequests.push(options);
+        return harness.pickedFiles;
+      },
       saveFile: async ({ defaultName }) => {
         harness.saved.push({ defaultName });
         return `/exports/${defaultName}`;
@@ -1122,3 +1133,109 @@ describe('App install targets', () => {
     );
   });
 });
+
+const encodeJson = (value: unknown) => new TextEncoder().encode(JSON.stringify(value));
+
+/** A minimal Bedrock geometry file as Blockbench exports it. */
+const GLOOM_GEO = {
+  format_version: '1.12.0',
+  'minecraft:geometry': [
+    {
+      description: { identifier: 'geometry.gloom', texture_width: 64, texture_height: 64 },
+      bones: [{ name: 'body', pivot: [0, 0, 0] }],
+    },
+  ],
+};
+
+describe('App Blockbench import', () => {
+  it('imports from File > Import Blockbench Model… and reports refused files', async () => {
+    const harness = await renderApp();
+    harness.pickedFiles = [
+      { name: 'Gloom.geo.json', path: '/picked/Gloom.geo.json', data: encodeJson(GLOOM_GEO) },
+      { name: 'notes.json', path: '/picked/notes.json', data: encodeJson({}) },
+    ];
+    await harness.menu('importBlockbench');
+    const dialog = await screen.findByTestId('import-files-dialog');
+    expect(within(dialog).getByRole('heading', { name: 'Import Blockbench model' })).toBeTruthy();
+    const listed = within(dialog).getByTestId('import-files-importers').textContent ?? '';
+    expect(listed).toContain('Blockbench model (.bbmodel, .geo.json, .animation.json)');
+    expect(listed).not.toContain('.schem');
+    expect(within(dialog).getByTestId('import-files-note').textContent).toBe(
+      BLOCKBENCH_IMPORT_NOTE,
+    );
+    const user = userEvent.setup();
+    await user.click(within(dialog).getByRole('button', { name: 'Choose files…' }));
+    await toast('Imported 1 element(s).');
+    expect(harness.pickRequests.at(-1)).toEqual({
+      title: 'Import Blockbench models',
+      filters: [
+        {
+          name: 'Blockbench model (.bbmodel, .geo.json, .animation.json)',
+          extensions: ['bbmodel', 'json'],
+        },
+      ],
+    });
+    expect(await within(dialog).findByText(/notes\.json is not a Blockbench model/)).toBeTruthy();
+    expect(useUiStore.getState().selectedId).toBe('demo:entity/gloom');
+    expect(harness.session.snapshot.undoLabel).toBe('Import 1 file');
+  });
+
+  it('keeps Blockbench out of the structure import and offers both in the palette', async () => {
+    const harness = await renderApp();
+    await harness.menu('importStructure');
+    const dialog = await screen.findByTestId('import-files-dialog');
+    expect(within(dialog).getByTestId('import-files-importers').textContent).not.toContain(
+      'Blockbench',
+    );
+    await userEvent.setup().click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    expect(within(palette).getByTestId('command-importBlockbench').textContent).toContain(
+      'Import Blockbench model…',
+    );
+    expect(within(palette).getByTestId('command-importStructure')).toBeTruthy();
+  });
+});
+
+describe('App Fabric mod jar with entities', () => {
+  function addEntity(harness: Harness) {
+    act(() => {
+      harness.session.addElement({ id: 'demo:entity/gloom', kind: 'msm:geo_model', data: GLOOM_GEO });
+      harness.session.addElement({
+        id: 'demo:gloom',
+        kind: 'msm:entity',
+        data: {
+          format: 1,
+          category: 'monster',
+          size: { width: 0.6, height: 1.8 },
+          spawn_egg: false,
+          components: {
+            'msm:animated_model': { model: 'demo:entity/gloom', texture: 'demo:entity/gloom' },
+          },
+        },
+      });
+    });
+  }
+
+  it('notes the GeckoLib download in the dialog and explains a failed download', async () => {
+    const harness = await renderApp();
+    harness.runtimeJar = new Uint8Array([1, 2, 3]);
+    addEntity(harness);
+    await act(() => harness.session.flushValidation());
+    await harness.menu('exportFabricJar');
+    const dialog = await screen.findByTestId('fabric-jar-dialog');
+    expect(within(dialog).getByTestId('fabric-jar-geckolib-note').textContent).toBe(
+      FABRIC_JAR_GECKOLIB_NOTE,
+    );
+    await userEvent.setup().click(within(dialog).getByTestId('fabric-jar-dialog-submit'));
+    await toast(GECKOLIB_DOWNLOAD_MESSAGE);
+    expect(harness.saved).toHaveLength(0);
+
+    harness.geckolibJar = new Uint8Array([4, 5, 6]);
+    await harness.menu('exportFabricJar');
+    await userEvent.setup().click(await screen.findByTestId('fabric-jar-dialog-submit'));
+    await toast(/^Exported the Fabric mod jar to /);
+    expect(harness.saved).toHaveLength(1);
+  });
+});
+

@@ -2,9 +2,9 @@
 import type { Element, Project } from '@msm/plugin-api';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AnimationTransport } from '../src/renderer/src/preview/geo/AnimationTransport';
-import { parseAnimations } from '../src/renderer/src/preview/geo/keyframes';
-import { isPreviewKind, PreviewPanel } from '../src/renderer/src/preview/PreviewPanel';
+import { AnimationTransport } from '../../../src/renderer/src/preview/geo/AnimationTransport';
+import { parseAnimations } from '../../../src/renderer/src/preview/geo/keyframes';
+import { isPreviewKind, PreviewPanel } from '../../../src/renderer/src/preview/PreviewPanel';
 
 afterEach(cleanup);
 

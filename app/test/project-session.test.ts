@@ -45,6 +45,8 @@ describe('ProjectSession: projects', () => {
       'msm.structures',
       'msm.worldgen',
       'msm.blocks-items',
+      'msm.models-anim',
+      'msm.entities',
     ]);
     expect(project?.plugins).not.toContain('msm.library');
     expect(project?.namespaces.map((namespace) => namespace.name)).toEqual(['demo']);

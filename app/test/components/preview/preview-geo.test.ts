@@ -7,7 +7,7 @@ import {
   boxUvRects,
   modelBounds,
   VERTICES_PER_FACE,
-} from '../src/renderer/src/preview/geo/geometry';
+} from '../../../src/renderer/src/preview/geo/geometry';
 import {
   animationNotices,
   CATMULLROM_NOTICE,
@@ -16,8 +16,8 @@ import {
   parseAnimations,
   playbackTime,
   samplePose,
-} from '../src/renderer/src/preview/geo/keyframes';
-import { isGeoPreviewKind, resolveGeoScene } from '../src/renderer/src/preview/geo/subject';
+} from '../../../src/renderer/src/preview/geo/keyframes';
+import { isGeoPreviewKind, resolveGeoScene } from '../../../src/renderer/src/preview/geo/subject';
 
 const geometry = (bones: unknown[], width = 64, height = 64) => ({
   format_version: '1.12.0',

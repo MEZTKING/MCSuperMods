@@ -1,4 +1,5 @@
 import { createMemoryFileSystem, type Element, type Problem } from '@msm/core';
+import { blockbenchImporter } from '@msm/interop';
 import {
   definePlugin,
   type Exporter,
@@ -14,10 +15,13 @@ import {
 import { describe, expect, it } from 'vitest';
 import { builtInPlugins } from '../src/renderer/src/plugins/built-in';
 import {
+  BLOCKBENCH_IMPORTER_ID,
   collectImporters,
   fileExtension,
+  HOST_IMPORTER_PLUGIN_ID,
   importerFileFilters,
   importerFor,
+  isBlockbenchImporter,
 } from '../src/renderer/src/session/importers';
 import { SessionProblemCodes } from '../src/renderer/src/session/project-session';
 import {
@@ -127,7 +131,7 @@ const codes = (problems: readonly Problem[]) => problems.map((problem) => proble
 
 describe('importer helpers', () => {
   it('picks importers by lower-case extension and builds picker filters', () => {
-    const importers = collectImporters(builtInPlugins);
+    const importers = collectImporters(builtInPlugins, undefined, []);
     expect(importers.map((entry) => entry.importer.id)).toEqual([
       'structure-nbt',
       'sponge-schematic',
@@ -141,6 +145,80 @@ describe('importer helpers', () => {
       { name: 'Structure template (.nbt)', extensions: ['nbt'] },
       { name: 'Sponge schematic (.schem)', extensions: ['schem'] },
     ]);
+  });
+
+  it('registers the Blockbench importer as a host importer after the plugin importers', () => {
+    const importers = collectImporters(builtInPlugins);
+    expect(importers.map((entry) => [entry.pluginId, entry.importer.id])).toEqual([
+      ['msm.structures', 'structure-nbt'],
+      ['msm.structures', 'sponge-schematic'],
+      [HOST_IMPORTER_PLUGIN_ID, BLOCKBENCH_IMPORTER_ID],
+    ]);
+    expect(importers.filter(isBlockbenchImporter)).toHaveLength(1);
+    for (const name of ['Golem.bbmodel', 'golem.geo.json', 'golem.animation.json', 'x.JSON']) {
+      expect(importerFor(importers, name)?.importer.id).toBe('blockbench');
+    }
+    expect(importerFor(importers, 'hut.nbt')?.importer.id).toBe('structure-nbt');
+    // A plugin importer with the same id wins over the host's.
+    const shadow = { ...blockbenchImporter, displayName: 'Plugin Blockbench' };
+    const plugin = definePlugin({
+      id: 'test.shadow',
+      apiVersion: '^0.7.0',
+      contributes: { importers: [shadow] },
+    });
+    const shadowed = collectImporters([plugin]);
+    expect(shadowed.map((entry) => entry.importer.displayName)).toEqual(['Plugin Blockbench']);
+  });
+});
+
+/** A minimal Bedrock geometry file as Blockbench exports it. */
+const GEO_JSON = {
+  format_version: '1.12.0',
+  'minecraft:geometry': [
+    {
+      description: { identifier: 'geometry.golem', texture_width: 64, texture_height: 64 },
+      bones: [
+        {
+          name: 'body',
+          pivot: [0, 0, 0],
+          cubes: [{ origin: [-4, 0, -4], size: [8, 8, 8], uv: [0, 0] }],
+        },
+      ],
+    },
+  ],
+};
+
+/** A minimal animation file as Blockbench exports it. */
+const ANIMATION_JSON = {
+  format_version: '1.8.0',
+  animations: {
+    idle: { loop: true, animation_length: 1, bones: { body: { rotation: [0, 0, 0] } } },
+  },
+};
+
+describe('ProjectSession.importFiles with the Blockbench host importer', () => {
+  it('imports .geo.json and .animation.json as one undo step and refuses other .json', async () => {
+    const { session } = await openSession({ plugins: builtInPlugins });
+    const result = await session.importFiles(
+      [
+        { name: 'Golem.geo.json', data: encode(JSON.stringify(GEO_JSON)) },
+        { name: 'golem.animation.json', data: encode(JSON.stringify(ANIMATION_JSON)) },
+        { name: 'notes.json', data: encode('{}') },
+      ],
+      'demo',
+    );
+    expect(result.imported).toEqual(['demo:entity/golem', 'demo:entity/golem_animations']);
+    expect(codes(result.problems.filter((problem) => problem.severity === 'error'))).toEqual([
+      'blockbench.not-a-model',
+    ]);
+    const kinds = () =>
+      session.snapshot.project?.namespaces[0]?.elements
+        .filter((element) => element.id.startsWith('demo:entity/'))
+        .map((element) => element.kind) ?? [];
+    expect(kinds()).toEqual(['msm:geo_model', 'msm:animation']);
+    expect(session.snapshot.undoLabel).toBe('Import 2 files');
+    session.undo();
+    expect(kinds()).toEqual([]);
   });
 });
 
