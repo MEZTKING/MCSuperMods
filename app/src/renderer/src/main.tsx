@@ -14,6 +14,10 @@ if (container === null) throw new Error('Missing #root element');
 const msm = bridge();
 // Headless smoke runs skip Monaco (see `MsmBridge.isSmoke`).
 if (msm.isSmoke === true) window.msmNoMonaco = true;
+// Plugin sandbox spike (B150): an e2e-only hook in a lazy chunk; B154 removes it.
+if (msm.isE2e === true) {
+  void import('./plugins/sandbox/spike').then(({ installSandboxSpike }) => installSandboxSpike());
+}
 // Function sources are checked by the Spyglass service in main (ADR 0014), for the target
 // of the open project at call time.
 const session: ProjectSession = new ProjectSession(

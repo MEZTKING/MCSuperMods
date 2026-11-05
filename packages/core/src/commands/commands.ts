@@ -559,4 +559,33 @@ export const commands = {
       },
     };
   },
+
+  /**
+   * Replaces the project's target ids (`/targets` in `msm.project.json`), for example when the
+   * user upgrades the project to another target. One undo step; never coalesced, so two
+   * consecutive target changes stay two steps.
+   *
+   * @param targets - The new target ids, first the primary one, for example `['mc-<version>']`.
+   * @throws Error If the list is empty, holds an empty or non-string id, or names an id twice
+   *   (immediately).
+   */
+  setTargets(targets: readonly string[]): ProjectCommand {
+    if (targets.length === 0) throw new Error('A project needs at least one target.');
+    for (const id of targets) {
+      if (typeof id !== 'string' || id.trim() === '') {
+        throw new Error(`Invalid target id ${JSON.stringify(id)}.`);
+      }
+    }
+    if (new Set(targets).size !== targets.length) {
+      throw new Error(`Target ids must be unique: ${JSON.stringify(targets)}.`);
+    }
+    const copy = [...targets];
+    return {
+      id: 'core.set-targets',
+      label: `Change target to ${copy.join(', ')}`,
+      apply(draft) {
+        draft.targets = [...copy];
+      },
+    };
+  },
 };

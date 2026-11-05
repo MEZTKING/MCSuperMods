@@ -1,0 +1,48 @@
+import type { TargetFacts } from '@msm/plugin-api';
+
+/** A version-neutral target for lowering tests. */
+export const testTarget: TargetFacts = {
+  id: 'mc-test',
+  mcVersion: 'test',
+  channel: 'release',
+  java: 25,
+  packFormats: { resource: { major: 1, minor: 0 }, data: { major: 1, minor: 0 } },
+  mcdocRef: '0'.repeat(40),
+  mcmetaRef: 'test',
+  folders: {
+    resource: {
+      model: 'models',
+      block_definition: 'blockstates',
+      item_definition: 'items',
+      lang: 'lang',
+      sounds_file: 'sounds.json',
+      textures: 'textures',
+      atlases: 'atlases',
+      font: 'font',
+    },
+    data: {
+      recipe: 'recipe',
+      loot_table: 'loot_table',
+      advancement: 'advancement',
+      predicate: 'predicate',
+      item_modifier: 'item_modifier',
+      function: 'function',
+      tags: 'tags',
+      enchantment: 'enchantment',
+      damage_type: 'damage_type',
+      dimension_type: 'dimension_type',
+      chat_type: 'chat_type',
+      jukebox_song: 'jukebox_song',
+      banner_pattern: 'banner_pattern',
+      painting_variant: 'painting_variant',
+      trim_material: 'trim_material',
+      trim_pattern: 'trim_pattern',
+      dialog: 'dialog',
+      structure: 'structure',
+      dimension: 'dimension',
+      worldgen: 'worldgen',
+    },
+  },
+  dataVersion: 1,
+  worldgen: { featureSteps: ['raw_generation'] },
+};

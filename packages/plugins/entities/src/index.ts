@@ -16,7 +16,7 @@ export { ENTITIES_PROBLEM_CODES, entitiesValidators } from './validators';
 
 export default definePlugin({
   id: 'msm.entities',
-  apiVersion: '^0.8.0',
+  apiVersion: '^1.0.0',
   contributes: {
     elementKinds: [...entitiesKinds],
     elementTemplates: [...entitiesTemplates],

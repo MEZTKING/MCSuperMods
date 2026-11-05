@@ -54,7 +54,7 @@ export { libraryStarters, scriptedOreIds } from './starters/index';
 
 const plugin: Readonly<Plugin> = definePlugin({
   id: 'msm.library',
-  apiVersion: '^0.8.0',
+  apiVersion: '^1.0.0',
   contributes: {
     projectStarters: [...libraryStarters],
     examples: [...libraryExamples],

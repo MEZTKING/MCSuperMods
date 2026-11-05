@@ -36,6 +36,11 @@ export const ProblemCodes = {
    * different values, or contents do not have the merge mode's shape. The first value is kept.
    */
   loweringMergeConflict: 'lowering.merge-conflict',
+  /**
+   * A kind's `lower` function returned a Promise to the synchronous `lowerProject`. The
+   * element contributes no output files; hosts lower such projects with `lowerProjectAsync`.
+   */
+  loweringAsyncNotSupported: 'lowering.async-not-supported',
   /** A rename's new id is already used by another element. Nothing is renamed. */
   refsRenameConflict: 'refs.rename-conflict',
 } as const;

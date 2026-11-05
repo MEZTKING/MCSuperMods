@@ -507,4 +507,9 @@ export interface MsmBridge extends PlatformAdapter {
    * `window.msmNoMonaco` so headless smoke runs skip Monaco. Optional so test doubles may omit it.
    */
   readonly isSmoke?: boolean;
+  /**
+   * `true` when the app runs under the e2e hooks (`MSM_E2E_PROJECT_DIR` set). The renderer then
+   * installs test-only hooks such as `window.__msmSandboxSpike` (B150). Optional for test doubles.
+   */
+  readonly isE2e?: boolean;
 }

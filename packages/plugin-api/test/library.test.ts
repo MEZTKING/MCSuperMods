@@ -6,12 +6,16 @@ import {
   type ElementTemplate,
   type ExampleProject,
   type Json,
+  type MaybePromise,
   type OutputLayer,
   type PluginContributions,
   type ProjectStarter,
   type ResourceLocation,
+  type StarterParameter,
+  type TargetFacts,
   type TemplateContext,
 } from '../src/index';
+import { testTarget } from './target-fixture';
 
 const template: ElementTemplate = {
   id: 'block_model',
@@ -71,8 +75,11 @@ describe('0.4.0 library contribution points', () => {
       projectNamespace: string;
       namespaces: readonly string[];
       kindDefault: Json | undefined;
+      target: TargetFacts;
     }>();
-    expectTypeOf<ElementTemplate['data']>().toEqualTypeOf<(context: TemplateContext) => Json>();
+    expectTypeOf<ElementTemplate['data']>().toEqualTypeOf<
+      (context: TemplateContext) => MaybePromise<Json>
+    >();
     expectTypeOf<ElementTemplate['prefix']>().toEqualTypeOf<string | undefined>();
   });
 
@@ -84,6 +91,7 @@ describe('0.4.0 library contribution points', () => {
       projectNamespace: 'demo',
       namespaces: ['demo'],
       kindDefault: undefined,
+      target: testTarget,
     };
     expect(template.data(context)).toEqual({
       parent: 'minecraft:block/cube_all',
@@ -91,15 +99,20 @@ describe('0.4.0 library contribution points', () => {
     });
   });
 
-  it('types starters and examples as bundle builders', () => {
+  it('types starters and examples as bundle builders', async () => {
     expectTypeOf<ProjectStarter['category']>().toEqualTypeOf<'blank' | 'pack' | 'content'>();
     expectTypeOf<ProjectStarter['layers']>().toEqualTypeOf<OutputLayer[]>();
     expectTypeOf<ProjectStarter['build']>().toEqualTypeOf<
-      (context: BundleContext) => ContentBundle
+      (context: BundleContext) => MaybePromise<ContentBundle>
     >();
     expectTypeOf<ExampleProject['build']>().toEqualTypeOf<ProjectStarter['build']>();
     expectTypeOf<ContentBundle['assets'][number]['bytes']>().toEqualTypeOf<Uint8Array>();
-    const built = example.build({ namespace: 'demo', projectName: 'Demo' });
+    const built = await example.build({
+      namespace: 'demo',
+      projectName: 'Demo',
+      target: testTarget,
+      values: {},
+    });
     expect(built.elements.map((element) => element.id)).toEqual(['demo:greet']);
     expect(built.assets[0]?.path).toBe('textures/item/ruby.png');
   });
@@ -114,7 +127,7 @@ describe('0.4.0 library contribution points', () => {
     expectTypeOf<PluginContributions['examples']>().toEqualTypeOf<ExampleProject[] | undefined>();
     const plugin = definePlugin({
       id: 'test.library',
-      apiVersion: '^0.8.0',
+      apiVersion: '^1.0.0',
       contributes: {
         elementTemplates: [template],
         projectStarters: [starter],
@@ -122,5 +135,88 @@ describe('0.4.0 library contribution points', () => {
       },
     });
     expect(plugin.contributes.projectStarters?.[0]?.id).toBe('function_starter');
+  });
+});
+
+describe('1.0.0 library additions', () => {
+  it('passes the target and parameter values to bundles', async () => {
+    expectTypeOf<BundleContext['target']>().toEqualTypeOf<TargetFacts>();
+    expectTypeOf<BundleContext['values']>().toEqualTypeOf<Readonly<Record<string, Json>>>();
+    expectTypeOf<TemplateContext['target']>().toEqualTypeOf<TargetFacts>();
+    const sized: ProjectStarter = {
+      ...starter,
+      parameters: [
+        { id: 'name', label: 'Name', type: 'string', default: 'ruby', pattern: '^[a-z_]+$' },
+        { id: 'count', label: 'Count', type: 'number', default: 8, min: 1, max: 32, step: 1 },
+        { id: 'glow', label: 'Glows', type: 'boolean', default: false, group: 'Look' },
+        { id: 'tint', label: 'Tint', type: 'colour', default: '#d01a3c', group: 'Look' },
+        {
+          id: 'tool',
+          label: 'Tool',
+          type: 'choice',
+          default: 'pickaxe',
+          choices: [
+            { value: 'pickaxe', label: 'Pickaxe' },
+            { value: 'shovel', label: 'Shovel' },
+          ],
+        },
+      ],
+      build: async ({ namespace, values }) => ({
+        elements: [
+          {
+            id: `${namespace}:${String(values.name)}`,
+            kind: 'minecraft:function',
+            data: { lines: [`say ${String(values.count)}`] },
+          },
+        ],
+        assets: [],
+      }),
+    };
+    const built = await sized.build({
+      namespace: 'demo',
+      projectName: 'Demo',
+      target: testTarget,
+      values: { name: 'opal', count: 3, glow: false, tint: '#ffffff', tool: 'shovel' },
+    });
+    expect(built.elements[0]).toMatchObject({ id: 'demo:opal', data: { lines: ['say 3'] } });
+    expect(sized.parameters?.map((parameter) => parameter.type)).toEqual([
+      'string',
+      'number',
+      'boolean',
+      'colour',
+      'choice',
+    ]);
+  });
+
+  it('narrows a starter parameter by its type', () => {
+    const describe = (parameter: StarterParameter): string => {
+      switch (parameter.type) {
+        case 'string':
+          return `${parameter.default}/${parameter.pattern ?? ''}`;
+        case 'number':
+          return String(parameter.default + (parameter.min ?? 0));
+        case 'boolean':
+          return parameter.default ? 'yes' : 'no';
+        case 'colour':
+          return parameter.default;
+        case 'choice':
+          return parameter.choices.map((choice) => choice.value).join(',');
+      }
+    };
+    expect(describe({ id: 'a', label: 'A', type: 'number', default: 2, min: 1 })).toBe('3');
+    expectTypeOf<StarterParameter['group']>().toEqualTypeOf<string | undefined>();
+  });
+
+  it('adds optional supports gates to templates, starters and examples', () => {
+    expectTypeOf<ElementTemplate['supports']>().toEqualTypeOf<
+      ((target: TargetFacts) => boolean) | undefined
+    >();
+    expectTypeOf<ProjectStarter['supports']>().toEqualTypeOf<ElementTemplate['supports']>();
+    expectTypeOf<ExampleProject['supports']>().toEqualTypeOf<ElementTemplate['supports']>();
+    const gated: ElementTemplate = {
+      ...template,
+      supports: (target) => target.geckolib !== undefined,
+    };
+    expect(gated.supports?.(testTarget)).toBe(false);
   });
 });

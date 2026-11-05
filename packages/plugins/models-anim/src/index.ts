@@ -16,7 +16,7 @@ export { MODELS_ANIM_PROBLEM_CODES, modelsAnimValidators } from './validators';
 
 export default definePlugin({
   id: 'msm.models-anim',
-  apiVersion: '^0.8.0',
+  apiVersion: '^1.0.0',
   contributes: {
     elementKinds: [...modelsAnimKinds],
     elementTemplates: [...modelsAnimTemplates],

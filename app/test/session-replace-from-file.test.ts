@@ -35,7 +35,7 @@ const fakeImporter: Importer = {
 
 const testPlugin: Plugin = definePlugin({
   id: 'test.replace',
-  apiVersion: '^0.8.0',
+  apiVersion: '^1.0.0',
   contributes: { importers: [fakeImporter] },
 });
 

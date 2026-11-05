@@ -36,7 +36,7 @@ const minimal = (extra: Record<string, unknown> = {}): Json =>
 describe('@msm/plugin-entities', () => {
   it('declares its id and API range', () => {
     expect(plugin.id).toBe('msm.entities');
-    expect(plugin.apiVersion).toBe('^0.8.0');
+    expect(plugin.apiVersion).toBe('^1.0.0');
     const [major, minor] = API_VERSION.split('.');
     expect(plugin.apiVersion).toBe(`^${major}.${minor}.0`);
     expect(Object.isFrozen(plugin)).toBe(true);

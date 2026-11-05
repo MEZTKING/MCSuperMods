@@ -23,7 +23,7 @@ export {
 
 export default definePlugin({
   id: 'msm.scripting',
-  apiVersion: '^0.8.0',
+  apiVersion: '^1.0.0',
   contributes: {
     elementKinds: [...scriptingKinds],
     elementTemplates: [...scriptingTemplates],

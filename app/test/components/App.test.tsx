@@ -603,7 +603,7 @@ describe('App menu commands', () => {
     };
     const plugin = definePlugin({
       id: 'test.scripts',
-      apiVersion: '^0.8.0',
+      apiVersion: '^1.0.0',
       contributes: { elementKinds: [scriptKind] },
     });
     const harness = await renderApp({ plugins: [...builtInPlugins, plugin] });

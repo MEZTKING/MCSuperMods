@@ -1,4 +1,4 @@
-import { describe, expectTypeOf, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import type {
   DataFolderKey,
   DefinitionInput,
@@ -14,6 +14,9 @@ import type {
   JavaProjectInput,
   Json,
   JsonObject,
+  MaybePromise,
+  MigrationChange,
+  MigrationReport,
   OutputFile,
   OutputMergeMode,
   PluginContributions,
@@ -22,10 +25,13 @@ import type {
   ProjectValidator,
   ResourceFolderKey,
   Target,
+  TargetChannel,
+  TargetFacts,
   ValidationInput,
   ValidationRegistry,
   WorldgenFacts,
 } from '../src/index';
+import { testTarget } from './target-fixture';
 
 describe('IR and output types', () => {
   it('parameterises Element by its data', () => {
@@ -210,9 +216,9 @@ describe('0.5.0 additions', () => {
   it('types project validators', () => {
     expectTypeOf<ProjectValidator['kinds']>().toEqualTypeOf<readonly string[]>();
     expectTypeOf<ProjectValidator['validate']>().parameter(0).toEqualTypeOf<ValidationInput>();
-    expectTypeOf<ProjectValidator['validate']>().returns.toEqualTypeOf<Problem[]>();
+    expectTypeOf<ProjectValidator['validate']>().returns.toEqualTypeOf<MaybePromise<Problem[]>>();
     expectTypeOf<ValidationInput['elements']>().toEqualTypeOf<readonly Element[]>();
-    expectTypeOf<ValidationInput['target']>().toEqualTypeOf<Target>();
+    expectTypeOf<ValidationInput['target']>().toEqualTypeOf<TargetFacts>();
     expectTypeOf<ValidationInput['registry']>().toEqualTypeOf<ValidationRegistry>();
     expectTypeOf<ValidationRegistry['ids']>().returns.toEqualTypeOf<readonly string[]>();
     expectTypeOf<PluginContributions['validators']>().toEqualTypeOf<
@@ -310,5 +316,73 @@ describe('0.8.0 additions', () => {
       generate: (input) => [{ path: `src/main/java/${input.modClassName}.java`, contents: '' }],
     };
     expectTypeOf(generator.generate).returns.toEqualTypeOf<GeneratedFile[]>();
+  });
+});
+
+describe('1.0.0 additions', () => {
+  it('splits target facts from target hooks', () => {
+    expectTypeOf<Target>().toExtend<TargetFacts>();
+    expectTypeOf<TargetFacts>().not.toHaveProperty('migrateFrom');
+    expectTypeOf<TargetFacts>().not.toHaveProperty('javaProject');
+    expectTypeOf<TargetFacts['channel']>().toEqualTypeOf<TargetChannel>();
+    expectTypeOf<TargetChannel>().toEqualTypeOf<'release' | 'snapshot'>();
+    expectTypeOf<Target['migrateFrom']>().toEqualTypeOf<
+      ((previous: Target, project: Project) => MigrationReport) | undefined
+    >();
+    const target: Target = { ...testTarget, migrateFrom: () => ({ changes: [], problems: [] }) };
+    const facts: TargetFacts = target;
+    expect(facts.channel).toBe('release');
+  });
+
+  it('gives plugin-facing functions the target facts', () => {
+    expectTypeOf<ElementKind['lower']>().parameter(1).toEqualTypeOf<TargetFacts>();
+    expectTypeOf<ExporterInput['target']>().toEqualTypeOf<Target>();
+  });
+
+  it('accepts kinds and validators that return Promises', async () => {
+    expectTypeOf<MaybePromise<number>>().toEqualTypeOf<number | Promise<number>>();
+    expectTypeOf<ElementKind['lower']>().returns.toEqualTypeOf<MaybePromise<OutputFile[]>>();
+    const kind: ElementKind = {
+      id: 'example:async',
+      schema: '::example::Async',
+      folder: 'async',
+      lower: async (element, target) => [
+        { path: `${target.id}/${element.id}.json`, contents: element.data, layer: 'datapack' },
+      ],
+    };
+    const validator: ProjectValidator = {
+      id: 'example.async',
+      kinds: ['example:async'],
+      validate: async () => [],
+    };
+    const element: Element = {
+      formatVersion: 1,
+      id: 'example:a',
+      kind: 'example:async',
+      data: {},
+      meta: { createdAt: '2026-11-05T00:00:00.000Z' },
+    };
+    expect(await kind.lower(element, testTarget)).toEqual([
+      { path: 'mc-test/example:a.json', contents: {}, layer: 'datapack' },
+    ]);
+    expect(
+      await validator.validate({
+        elements: [element],
+        target: testTarget,
+        registry: { has: () => false, ids: () => [] },
+      }),
+    ).toEqual([]);
+  });
+
+  it('adds optional data and kind to migration changes', () => {
+    expectTypeOf<MigrationChange['data']>().toEqualTypeOf<Json | undefined>();
+    expectTypeOf<MigrationChange['kind']>().toEqualTypeOf<'update' | 'remove' | undefined>();
+    const change: MigrationChange = {
+      elementId: 'example:a',
+      description: 'Replaced a removed id.',
+      kind: 'update',
+      data: { a: 1 },
+    };
+    expectTypeOf(change).toEqualTypeOf<MigrationChange>();
   });
 });

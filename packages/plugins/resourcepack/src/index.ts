@@ -13,7 +13,7 @@ export * from './templates';
 
 export default definePlugin({
   id: 'msm.resourcepack',
-  apiVersion: '^0.8.0',
+  apiVersion: '^1.0.0',
   contributes: {
     elementKinds: [...resourcePackKinds],
     elementTemplates: [...resourcePackTemplates],

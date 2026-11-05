@@ -42,7 +42,7 @@ const firstTarget = (builtInTargets[0] as TargetBundle).target;
 describe('@msm/plugin-datapack', () => {
   it('declares its id and API range', () => {
     expect(plugin.id).toBe('msm.datapack');
-    expect(plugin.apiVersion).toBe('^0.8.0');
+    expect(plugin.apiVersion).toBe('^1.0.0');
     expect(Object.isFrozen(plugin)).toBe(true);
   });
 

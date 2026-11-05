@@ -13,6 +13,7 @@ import { fixedNow } from './helpers/kinds';
 const target: Target = {
   id: 'mc-test',
   mcVersion: 'test',
+  channel: 'release',
   java: 25,
   packFormats: { resource: { major: 1, minor: 0 }, data: { major: 1, minor: 0 } },
   mcdocRef: '0'.repeat(40),
