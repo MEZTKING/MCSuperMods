@@ -1432,3 +1432,21 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - Wave 4: B100 Test in Minecraft (`@msm/interop` `fabric/`, `mods/.msm-installed.json`), B101 `blocks-items-path` e2e and the guide page; then B102 close (version 0.4.0, `mod_version`, ADRs accepted).
+
+---
+
+## 2026-11-05 — executor — B101 blocks-items e2e and guide page
+
+**What**
+- New `app/e2e/blocks-items-path.spec.ts` (eighth spec): blank project `glow_e2e`; `msm:block` `sun_stone` from "Simple block" and `msm:item` `honey_bun` from "Food item" through the template picker; Block Studio display name, hardness 4, tool (cleared and set back to pickaxe), minimum tier iron, light level 9; "Has a block item" unticked and ticked again; event `glow_e2e:chime` with a `play_sound` action picked for "On interact". Removing the event gives one `blocks-items.unknown-event` error (asserted by `data-code`), the toolbar "Fabric mod (.jar)…" entry is disabled with "Fix 1 error" and the palette hides the command; undo restores it. The jar is exported through the palette with "Separate runtime (for modpacks)" and checked (definition values, editor fields stripped, `requires_tool`, item definition and item model definitions, lang keys, `mineable/pickaxe` and `needs_iron_tool` tags, loot table, `fabric.mod.json` depends `msm_runtime` and no `jars`, no `META-INF/jars/`); the resource pack zip has no `msm/` or `fabric.mod.json`; a second launch reopens with zero problems and the edits kept. Zips are read only once they parse (export writes are not atomic).
+- `docs/guide/blocks-and-items.md` rewritten from the stub: creating blocks and items, Block Studio and Item Studio sections, events and the six actions, drops, display names, export, separate runtime, installing into a Fabric game, a "Test in Minecraft" section (coming with this release, ADR 0026 D5 in user terms), troubleshooting with the `[msm_runtime]` summary line. Guide index row and the `app/CLAUDE.md` e2e list updated.
+- Timings: full e2e 8/8 three runs in a row, 37.1 s, 36.4 s, 37.1 s; the new spec 7.3–7.8 s.
+
+**Decisions**
+- The unknown event reference is made by removing the event a trigger uses (the UI offers only declared events), which is also the case the guide describes.
+- "Simple block" rather than "Glowing ore", so the minimum tier and light level are real edits.
+
+**Next**
+- `datapack-path.spec.ts` (and probably others) reads a zip as soon as it appears; one run failed with "invalid zip data". Poll until it parses, as the new spec does, or make export writes atomic in main.
+- Ticking "Has a block item" again drops the earlier stack size, rarity and creative tab (sets `item` absent); the guide says so. Keeping the old object would be friendlier.
+- Orchestrator: align the guide's "Test in Minecraft" labels with B100.
