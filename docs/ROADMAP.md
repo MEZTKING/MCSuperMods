@@ -22,7 +22,7 @@ This is the phased delivery plan for MCSuperMods (MSM). The orchestrator updates
 | 4 | Engine Mod + Blocks/Items (v0.4) | `msm_runtime` mod, `msm/` definition loader, components/events v1, Block & Item Studios, Fabric content-jar exporter, Test in Minecraft (managed Prism instance) | A custom block with custom behaviour works in-game from one exported jar | 8–10 wk |
 | 5 | Entities, Models, Animation (v0.5) | `msm:entity` + AI goal components, GeckoLib integration, Blockbench `.bbmodel` + animation import, spawn rules/eggs | A Blockbench-animated custom mob spawns, moves, attacks | 8–10 wk |
 | 6 | Scripting & Eject (v0.6) | Rhino scripting (TypeScript transpiled to ES5), TS typings, Monaco script editor, export-as-Java-project with parity GameTests | Script-driven behaviour runs; ejected project builds with Gradle and matches runtime behaviour | 6–8 wk |
-| 7 | 1.0 | Third-party plugin loading, templates/wizards, second target (26.4 or whatever is current), docs site (auto-update moved to Phase 2) | Two targets supported; external plugin works; release | 6–8 wk |
+| 7 | 1.0 | Third-party plugin loading, templates/wizards, second target (26.4 or whatever is current), docs site (auto-update moved to Phase 2); add-ons pulled ahead of 1.0 at the user's request (v0.7): the AI helper, armour and custom tool materials, the Creator | Two targets supported; external plugin works; release | 6–8 wk, plus 3–4 wk for the v0.7 add-ons |
 
 Total: roughly 43–58 focused weeks.
 
@@ -438,6 +438,28 @@ Open the platform and harden it for release: third-party plugins, a second Minec
 - [x] Auto-update: delivered in Phase 2 with `electron-updater` and the GitHub provider ([ADR 0018](adr/0018-auto-update.md)).
 - [ ] Contribution guidelines published (the licence was settled as MIT on 2026-11-04).
 
+### Phase 7 add-on — AI helper (v0.7.0)
+
+Pulled ahead of the remaining Phase 7 work by the user on 2026-11-05 ("add that first"); it was a post-1.0 idea. Design: [Editors and UX](DESIGN.md#8-editors-and-ux) "AI helper", [ADR 0041](adr/0041-ai-helper.md); working plan [AI-HELPER-PLAN.md](AI-HELPER-PLAN.md) (briefs B170–B175). B160–B162 wait for it.
+
+- [ ] `@msm/ai`: protocol, tool catalogue, agent loop over a `ModelClient` seam, budgets, scripted client, SDK adapter (B170).
+- [ ] Main: `safeStorage` key store, `AppSettings.ai`, the AI service and `msm:v1:ai:*` IPC, View > AI Helper (B171).
+- [ ] Renderer: tool executor, the pending changeset, `session.checkProject`, `session.applyChangeset` as one undo step (B172).
+- [ ] UI: the "AI helper" dock tab, chat and build modes, plan and checkpoint decisions, changeset review with Apply, run limits, usage and cost, Settings "AI helper", "Explain this problem", "Ask about this element" (B173).
+- [ ] Tests: scripted build scenario exporting with zero problems, e2e `ai-path` (B174).
+- [ ] Guide page `ai-helper.md`, CHANGELOG, release 0.7.0 (B175).
+
+### Phase 7 add-on — Armour, custom tool materials and the Creator (v0.7.0, or v0.8.0 if late)
+
+User request of 2026-11-05: beginners should see in real time what they make, with almost no coding, including whole gear sets, and still be able to adjust anything by hand. Design: [ADR 0042](adr/0042-armour-and-custom-tool-materials.md) (format), [ADR 0043](adr/0043-creator-guided-flows.md) (Creator); working plan [CREATOR-PLAN.md](CREATOR-PLAN.md) (B180–B185).
+
+- [ ] `msm:armor` component, custom `ToolMaterial` tiers and attack overrides in the definition format, the `minecraft:equipment` kind, validators, target facts (B180).
+- [ ] Runtime support with GameTests on 26.3 and 26.4 (B181); eject generator, `fixtures/sample-mod` helmet and custom-tier pickaxe, parity tests (B182).
+- [ ] Library: placeholder silhouettes and armour layers, flows Gear set, Simple block, Food, Scripted behaviour; `creator` on Custom ore and Custom mob; the `set` parameter (B183).
+- [ ] Creator dialog with a live preview (items, blocks, recipes, armour, stats, elements), Create as one undo step, Edit in Creator with the kept-edits rule (B184).
+- [ ] Scenario test, e2e `creator-path`, guide `creator.md`, armour in `blocks-and-items.md` (B185).
+- Follow-up: blocks that *require* a custom tier (`min_tier` as a tag); a stored generator version in `meta.creator` if generator fixes make old sets look edited.
+
 ### Exit criteria
 
 Two targets supported; an external plugin works; 1.0 released.
@@ -459,7 +481,7 @@ Not committed; each needs an ADR before work starts.
 - **Collaboration**: shared projects beyond git, such as live co-editing.
 - **Marketplace**: discovery and install for third-party plugins and templates.
 - **Pre-26.1 vanilla export**: 1.21.x pack export via a target plugin, using existing mcdoc schemas.
-- **AI assistant (user request, 2026-11-04)**: optional help from a large language model, starting with the Claude API using the user's own API key. Candidate uses: drafting elements from a description ("a ruby ore that drops 1–3 rubies"), explaining and fixing validation or mcfunction problems, writing and commenting functions, and suggesting recipes, loot tables and advancements. Design constraints: every change goes through the command stack as one undoable step and passes `validateJson` and the mcfunction checker before it is applied; the user reviews a diff first; the key is stored with Electron `safeStorage` and calls run in the main process; the feature is off by default and the app stays fully usable without it; the model id is chosen at implementation from the then-current Claude models (verify at implementation). Needs an ADR (privacy, cost display, offline behaviour, tool-use design) before work starts; may be pulled ahead of 1.0 if the user asks.
+- **AI assistant (user request, 2026-11-04)**: moved ahead of 1.0 on 2026-11-05 as the "AI helper" add-on of Phase 7 ([ADR 0041](adr/0041-ai-helper.md)). Later ideas for it: persisted conversations with their own retention rules, a base URL setting for proxies, server-side compaction for very long build runs, a stored generator version in Creator metadata.
 
 ## Milestone Log
 
