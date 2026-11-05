@@ -14,6 +14,8 @@
     { "path": "../plugins/resourcepack" },
     { "path": "../plugins/datapack" },
     { "path": "../plugins/library" },
-    { "path": "../plugins/blocks-items" }
+    { "path": "../plugins/blocks-items" },
+    { "path": "../plugins/entities" },
+    { "path": "../plugins/models-anim" }
   ]
 }

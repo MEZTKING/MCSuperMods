@@ -12,7 +12,12 @@ import type {
   Json,
   ResourceLocation,
 } from '@msm/plugin-api';
-import { type PlaceholderPattern, placeholderPng, type Rgb } from '../assets/png';
+import {
+  type PlaceholderPattern,
+  placeholderPng,
+  placeholderSkinPng,
+  type Rgb,
+} from '../assets/png';
 
 /** Element kind ids used by the library's bundles. */
 export const KINDS = Object.freeze({
@@ -71,6 +76,9 @@ export const KINDS = Object.freeze({
   block: 'msm:block',
   item: 'msm:item',
   mod: 'msm:mod',
+  entity: 'msm:entity',
+  geoModel: 'msm:geo_model',
+  animation: 'msm:animation',
 } as const);
 
 /** Ruby red, gem blue and the other placeholder colours the library uses. */
@@ -115,6 +123,14 @@ export function texture(
     path: `textures/${path}.png`,
     bytes: placeholderPng(pattern, colour === undefined ? {} : { colour }),
   };
+}
+
+/**
+ * A generated 64x64 two-tone entity skin at `textures/<path>.png` of `namespace` (texture id
+ * `<namespace>:<path>`), for models over a 64x64 texture.
+ */
+export function skinTexture(namespace: string, path: string, colour: Rgb): ContentBundleAsset {
+  return { namespace, path: `textures/${path}.png`, bytes: placeholderSkinPng({ colour }) };
 }
 
 /** Reserved mod ids (ADR 0026 D2). */

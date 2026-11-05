@@ -1623,3 +1623,24 @@ Decisions:
 
 Next:
 - B118 registers `blockbenchImporter` as a host importer. B119/B120: add `@msm/schemas` as a dev dependency of `@msm/interop` (or check the converter output in an exporter test) so the schema validation runs in CI.
+
+## 2026-11-05 — executor — B119 Custom mob starter, entity examples, examples/ mirror
+
+What:
+- `packages/plugins/library`: starter `custom_mob` "Custom mob" (`starters/custom-mob.ts`, category content): `msm:mod`, `msm:entity` `<ns>:ruby_golem` (creature, 0.9 x 1.6, health 30, speed 0.28, `msm:attack` damage 4 with `on_attack` playing `minecraft:entity.iron_golem.attack`, goals `melee_attack` (`retaliate`, no `targets`), `wander`, `look_at_player`, `look_around`, spawn in `#minecraft:is_forest` weight 6 group 1–2, spawn egg texture `<ns>:item/ruby_golem_spawn_egg`, `msm:on_death` spawning `minecraft:crit` and running `<ns>:golem/death`, `loot_table` `<ns>:entities/ruby_golem` dropping 0–2 emeralds, `scale` 0.8), `msm:geo_model` `<ns>:entity/ruby_golem` (biped, 64x64), `msm:animation` `<ns>:entity/ruby_golem_animations` (`idle`, `walk`, `attack`), two placeholder textures; notes on every element.
+- `src/assets/png.ts`: pattern `egg` (16x16 speckled egg) and `placeholderSkinPng`/`placeholderSkinPixels` (64x64 two-tone checker of 4-pixel cells, `PLACEHOLDER_SKIN_SIZE`); `content/bundle.ts` gains the three kinds and `skinTexture`; `content/entities.ts` copies the biped and cube creature geometry and their animations (the library may not import models-anim).
+- Examples (`src/examples/entities.ts`): per-kind `example_msm_entity` (Wandering creature), `example_msm_geo_model` (Cube creature model), `example_msm_animation` (Idle and walk animations); behaviour `example_msm_hostile_mob` (Hostile mob: `monster`, `melee_attack` with `targets`, `msm:attack` with `play_animation`, rule `monster`) and `example_msm_natural_spawn` (Natural spawning: a biome tag and a biome id). Each is a complete mob (entity, model, animations, skin, egg texture when it has an egg). Exported as `entityBehaviourExamples`.
+- `packages/exporters/test/library.test.ts`: registers `@msm/plugin-entities` and `@msm/plugin-models-anim`; the registry-id copy adds `<id>_spawn_egg` to `item` and `<ns>:item/<path>_spawn_egg` to `model` for entities with an egg (texture); the content jar exporter has stub runtime and GeckoLib loaders, and a new Custom mob test exports the jar nested and checks both nested jars, `fabric.mod.json` (GeckoLib dependency, `jars`), the entity definition and the lang keys; mirror folders `examples/entities/` and `examples/starters/custom_mob/`; `exportProblems` uses a memory sink.
+- Packages: `@msm/plugin-entities` and `@msm/plugin-models-anim` are dev dependencies of `@msm/exporters`, `@msm/schemas` of `@msm/interop` (package.json, tsconfig references, lockfile; `layers.json` already allowed them).
+- `examples/` regenerated (every `msm.project.json` also lists `msm.entities` and `msm.models-anim`); `examples/README.md` rows.
+- Counts: 12 starters, 66 examples (58 per kind, 4 behaviour, 4 starter projects; the Custom mob starter is not a gallery entry, matching the planned 66).
+
+Decisions:
+- Starter layers are `resourcepack`, `datapack`, `msm` (the brief says msm and resource, but the loot table and function are data pack files).
+- The golem's `melee_attack` is listed first, so its default priority beats wandering (the brief's list order would make it the lowest priority).
+- Example titles drop the "Entity:" style prefix of the brief, like the other gallery titles; categories match the templates ("Entities", "Entity models", "Entity animations").
+- Entity behaviour examples get their own mirror folder `examples/entities/`; `behaviourExamples` stays the blocks and items pair.
+
+Next:
+- B118: register the two plugins in the app (until then the app hides the Custom mob starter and the five examples); the app's `dataRegistryIds` needs the same spawn egg item and model ids as the test copy. App tests `project-session` (plugin list) and `session-importers-validators` (importer ids) currently fail from B118's in-progress work, not from this brief.
+- B121: guide counts (12 starters, 66 examples) and the example titles above. B122: status lines.

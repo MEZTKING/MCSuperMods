@@ -9,11 +9,13 @@ import { COLOURS } from '../src/content/bundle';
 import {
   behaviourExamples,
   categoryTag,
+  entityBehaviourExamples,
   kindExamples,
   libraryExamples,
   libraryStarters,
   PLACEHOLDER_PATTERNS,
   placeholderPng,
+  placeholderSkinPng,
   STARTERS_CATEGORY,
   starterExamples,
 } from '../src/index';
@@ -30,11 +32,12 @@ const STARTER_IDS = [
   'custom_biome',
   'jigsaw_structure',
   'worldgen_pack',
+  'custom_mob',
 ];
 
 /**
- * The 55 kinds of the built-in resource pack, data pack, structures, worldgen and blocks and
- * items plugins, in per-kind example order.
+ * The 58 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
+ * items, entities and models and animations plugins, in per-kind example order.
  */
 const KIND_IDS = [
   'minecraft:model',
@@ -92,6 +95,9 @@ const KIND_IDS = [
   'msm:block',
   'msm:item',
   'msm:mod',
+  'msm:entity',
+  'msm:geo_model',
+  'msm:animation',
 ];
 
 const entries: readonly (ProjectStarter | ExampleProject)[] = [
@@ -102,17 +108,23 @@ const entries: readonly (ProjectStarter | ExampleProject)[] = [
 const build = (entry: ProjectStarter | ExampleProject, namespace = 'demo'): ContentBundle =>
   entry.build({ namespace, projectName: 'Demo Project' });
 
-/** Every placeholder the library may produce: each pattern in each library colour. */
-const PLACEHOLDERS = new Set(
-  PLACEHOLDER_PATTERNS.flatMap((pattern) =>
+/**
+ * Every placeholder the library may produce: each pattern and the entity skin in each library
+ * colour.
+ */
+const PLACEHOLDERS = new Set([
+  ...PLACEHOLDER_PATTERNS.flatMap((pattern) =>
     Object.values(COLOURS).map((colour) =>
       Buffer.from(placeholderPng(pattern, { colour })).toString('hex'),
     ),
   ),
-);
+  ...Object.values(COLOURS).map((colour) =>
+    Buffer.from(placeholderSkinPng({ colour })).toString('hex'),
+  ),
+]);
 
 describe('project starters', () => {
-  it('lists the eleven starters in order', () => {
+  it('lists the twelve starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -122,6 +134,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
+      'content',
       'content',
       'content',
       'content',
@@ -193,6 +206,60 @@ describe('project starters', () => {
     ]);
   });
 
+  it('builds the Custom mob starter: an animated Ruby Golem with its model, loot and egg', () => {
+    const mob = libraryStarters.find((starter) => starter.id === 'custom_mob') as ProjectStarter;
+    expect(mob.category).toBe('content');
+    expect(mob.description).toMatch(/Fabric mod jar/);
+    expect(mob.layers).toEqual(['resourcepack', 'datapack', 'msm']);
+    const bundle = build(mob);
+    expect(bundle.elements.map((entry) => `${entry.kind} ${entry.id}`)).toEqual([
+      'minecraft:pack_mcmeta demo:pack',
+      'msm:mod demo:mod',
+      'msm:entity demo:ruby_golem',
+      'msm:geo_model demo:entity/ruby_golem',
+      'msm:animation demo:entity/ruby_golem_animations',
+      'minecraft:loot_table demo:entities/ruby_golem',
+      'minecraft:function demo:golem/death',
+    ]);
+    const golem = bundle.elements.find((entry) => entry.id === 'demo:ruby_golem');
+    expect(golem?.data).toMatchObject({
+      category: 'creature',
+      size: { width: 0.9, height: 1.6 },
+      loot_table: 'demo:entities/ruby_golem',
+      spawn: { biomes: ['#minecraft:is_forest'], weight: 6, min_group: 1, max_group: 2 },
+      spawn_egg: { texture: 'demo:item/ruby_golem_spawn_egg' },
+      components: {
+        'msm:health': { max: 30 },
+        'msm:movement': { speed: 0.28 },
+        'msm:attack': { damage: 4, on_attack: 'demo:ruby_golem_attack' },
+        'msm:animated_model': {
+          model: 'demo:entity/ruby_golem',
+          animations: 'demo:entity/ruby_golem_animations',
+          texture: 'demo:entity/ruby_golem',
+        },
+        'msm:on_death': { event: 'demo:ruby_golem_death' },
+      },
+    });
+    expect(JSON.parse(JSON.stringify(golem?.data ?? {})).components['msm:ai_goals'].goals).toEqual([
+      { type: 'melee_attack', retaliate: true },
+      { type: 'wander' },
+      { type: 'look_at_player' },
+      { type: 'look_around' },
+    ]);
+    const animations = bundle.elements.find((entry) => entry.kind === 'msm:animation');
+    expect(Object.keys(JSON.parse(JSON.stringify(animations?.data ?? {})).animations)).toEqual([
+      'idle',
+      'walk',
+      'attack',
+    ]);
+    const loot = bundle.elements.find((entry) => entry.kind === 'minecraft:loot_table');
+    expect(JSON.stringify(loot?.data)).toContain('"name":"minecraft:emerald"');
+    expect(bundle.assets.map((asset) => asset.path)).toEqual([
+      'textures/entity/ruby_golem.png',
+      'textures/item/ruby_golem_spawn_egg.png',
+    ]);
+  });
+
   it('plays the vanilla cat record in the music disc starter, with no bundled sound', () => {
     const disc = libraryStarters.find((starter) => starter.id === 'music_disc');
     const bundle = build(disc as ProjectStarter);
@@ -216,8 +283,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 55 per-kind examples, one per built-in kind, 2 behaviour examples and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(55);
+  it('has 58 per-kind examples, one per built-in kind, 4 behaviour examples and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(58);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -227,7 +294,11 @@ describe('examples', () => {
       'example_msm_tool',
       'example_msm_event_chain',
     ]);
-    expect(libraryExamples).toHaveLength(61);
+    expect(entityBehaviourExamples.map((example) => example.id)).toEqual([
+      'example_msm_hostile_mob',
+      'example_msm_natural_spawn',
+    ]);
+    expect(libraryExamples).toHaveLength(66);
   });
 
   it('reuses the starter builders for the starter projects', () => {

@@ -23,6 +23,7 @@
     "fflate": "catalog:"
   },
   "devDependencies": {
+    "@msm/schemas": "workspace:*",
     "@types/node": "catalog:",
     "vitest": "catalog:"
   }

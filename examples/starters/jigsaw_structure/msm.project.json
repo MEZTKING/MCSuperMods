@@ -9,7 +9,9 @@
     "msm.datapack",
     "msm.structures",
     "msm.worldgen",
-    "msm.blocks-items"
+    "msm.blocks-items",
+    "msm.entities",
+    "msm.models-anim"
   ],
   "settings": {},
   "targets": [

@@ -1,0 +1,55 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 1,
+            "type": "wander"
+          },
+          {
+            "distance": 6,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/wanderer_animations",
+        "idle": "idle",
+        "model": "msm_examples:entity/wanderer",
+        "texture": "msm_examples:entity/wanderer",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 12
+      },
+      "msm:movement": {
+        "speed": 0.22
+      }
+    },
+    "display_name": "Wanderer",
+    "format": 1,
+    "size": {
+      "height": 0.9,
+      "width": 0.9
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/wanderer_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:wanderer",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new mob, registered as an entity type in the Fabric mod jar. category creature makes it a peaceful animal-like mob, and size is its hitbox in blocks. msm:ai_goals lists what it does, highest priority first: wander strolls about, look_at_player turns its head to players within 6 blocks and look_around glances about. msm:animated_model names the GeckoLib model, animation set and texture, and which animations play while standing and walking. The spawn egg appears in the Spawn Eggs creative tab with its own texture.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

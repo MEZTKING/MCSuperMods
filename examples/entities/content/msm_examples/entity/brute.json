@@ -1,0 +1,93 @@
+{
+  "data": {
+    "category": "monster",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "retaliate": true,
+            "speed": 1.1,
+            "targets": [
+              "minecraft:player"
+            ],
+            "type": "melee_attack"
+          },
+          {
+            "speed": 0.8,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/brute_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_examples:entity/brute",
+        "texture": "msm_examples:entity/brute",
+        "walk": "walk"
+      },
+      "msm:attack": {
+        "damage": 5,
+        "knockback": 0.5,
+        "on_attack": "msm_examples:brute_hit"
+      },
+      "msm:health": {
+        "max": 24
+      },
+      "msm:movement": {
+        "follow_range": 32,
+        "speed": 0.23
+      }
+    },
+    "display_name": "Brute",
+    "events": {
+      "msm_examples:brute_hit": {
+        "actions": [
+          {
+            "sound": "minecraft:entity.zombie.attack_iron_door",
+            "type": "play_sound"
+          },
+          {
+            "animation": "attack",
+            "type": "play_animation"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "size": {
+      "height": 1.95,
+      "width": 0.6
+    },
+    "spawn": {
+      "biomes": [
+        "#minecraft:is_overworld"
+      ],
+      "max_group": 2,
+      "min_group": 1,
+      "rule": "monster",
+      "weight": 40
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/brute_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:brute",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A hostile mob. category monster puts it with the zombies: it despawns far from players and does not spawn on Peaceful. melee_attack with targets minecraft:player hunts players it can see, and retaliate makes it fight back against anything that hurts it. msm:attack sets the damage of each hit (5, two and a half hearts) and fires msm_examples:brute_hit, which plays a sound and the attack animation. The spawn rule monster spawns it only in the dark, anywhere in the overworld (#minecraft:is_overworld).",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

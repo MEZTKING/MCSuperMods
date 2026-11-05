@@ -1,0 +1,163 @@
+{
+  "data": {
+    "animations": {
+      "idle": {
+        "animation_length": 2,
+        "bones": {
+          "body": {
+            "position": {
+              "0.0": [
+                0,
+                0,
+                0
+              ],
+              "1.0": [
+                0,
+                0.5,
+                0
+              ],
+              "2.0": [
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "left_arm": {
+            "rotation": {
+              "0.0": [
+                0,
+                0,
+                0
+              ],
+              "1.0": [
+                0,
+                0,
+                -3
+              ],
+              "2.0": [
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "right_arm": {
+            "rotation": {
+              "0.0": [
+                0,
+                0,
+                0
+              ],
+              "1.0": [
+                0,
+                0,
+                3
+              ],
+              "2.0": [
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        "loop": true
+      },
+      "walk": {
+        "animation_length": 1,
+        "bones": {
+          "left_arm": {
+            "rotation": {
+              "0.0": [
+                25,
+                0,
+                0
+              ],
+              "0.5": [
+                -25,
+                0,
+                0
+              ],
+              "1.0": [
+                25,
+                0,
+                0
+              ]
+            }
+          },
+          "left_leg": {
+            "rotation": {
+              "0.0": [
+                -30,
+                0,
+                0
+              ],
+              "0.5": [
+                30,
+                0,
+                0
+              ],
+              "1.0": [
+                -30,
+                0,
+                0
+              ]
+            }
+          },
+          "right_arm": {
+            "rotation": {
+              "0.0": [
+                -25,
+                0,
+                0
+              ],
+              "0.5": [
+                25,
+                0,
+                0
+              ],
+              "1.0": [
+                -25,
+                0,
+                0
+              ]
+            }
+          },
+          "right_leg": {
+            "rotation": {
+              "0.0": [
+                30,
+                0,
+                0
+              ],
+              "0.5": [
+                -30,
+                0,
+                0
+              ],
+              "1.0": [
+                30,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        "loop": true
+      }
+    },
+    "format_version": "1.8.0"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:entity/marcher_animations",
+  "kind": "msm:animation",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A GeckoLib animation set: named animations that move bones of the geo model. Each animation has a length in seconds and loop true repeats it. Under bones, each bone name has rotation, position or scale channels, keyed by time in seconds; values between keyframes are blended linearly. walk swings the legs and arms 30 and 25 degrees about x, the opposite way on each side, once a second. The entity plays idle while standing and walk while moving.",
+    "tags": [
+      "example",
+      "entity-animations"
+    ]
+  }
+}

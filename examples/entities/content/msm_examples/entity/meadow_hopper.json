@@ -1,0 +1,72 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "distance": 8,
+            "from": [
+              "minecraft:wolf",
+              "minecraft:fox"
+            ],
+            "speed": 1,
+            "sprint_speed": 1.4,
+            "type": "flee"
+          },
+          {
+            "type": "wander"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/meadow_hopper_animations",
+        "idle": "idle",
+        "model": "msm_examples:entity/meadow_hopper",
+        "texture": "msm_examples:entity/meadow_hopper",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 8
+      },
+      "msm:movement": {
+        "speed": 0.3
+      }
+    },
+    "display_name": "Meadow Hopper",
+    "format": 1,
+    "size": {
+      "height": 0.8,
+      "width": 0.8
+    },
+    "spawn": {
+      "biomes": [
+        "#minecraft:is_forest",
+        "minecraft:plains"
+      ],
+      "heightmap": "motion_blocking_no_leaves",
+      "max_group": 4,
+      "min_group": 2,
+      "placement": "on_ground",
+      "rule": "mob",
+      "weight": 10
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/meadow_hopper_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:meadow_hopper",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Natural spawning. spawn.biomes mixes a biome tag (#minecraft:is_forest, every forest) and a single biome (minecraft:plains); the mob spawns in all of them. weight is its share among the other creatures of those biomes: cows and sheep have 12 and pigs 10, so 10 makes it about as common as pigs. Groups have two to four hoppers. placement on_ground, heightmap motion_blocking_no_leaves and rule mob are the defaults, written out here: on solid ground, under the open sky or tree tops, with the usual light check.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "retaliate": true,
+            "type": "melee_attack"
+          },
+          {
+            "type": "wander"
+          },
+          {
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_starter:entity/ruby_golem_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_starter:entity/ruby_golem",
+        "scale": 0.8,
+        "texture": "msm_starter:entity/ruby_golem",
+        "walk": "walk"
+      },
+      "msm:attack": {
+        "damage": 4,
+        "on_attack": "msm_starter:ruby_golem_attack"
+      },
+      "msm:health": {
+        "max": 30
+      },
+      "msm:movement": {
+        "speed": 0.28
+      },
+      "msm:on_death": {
+        "event": "msm_starter:ruby_golem_death"
+      }
+    },
+    "display_name": "Ruby Golem",
+    "events": {
+      "msm_starter:ruby_golem_attack": {
+        "actions": [
+          {
+            "sound": "minecraft:entity.iron_golem.attack",
+            "type": "play_sound"
+          }
+        ]
+      },
+      "msm_starter:ruby_golem_death": {
+        "actions": [
+          {
+            "count": 12,
+            "particle": "minecraft:crit",
+            "spread": 0.5,
+            "type": "spawn_particle"
+          },
+          {
+            "function": "msm_starter:golem/death",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "loot_table": "msm_starter:entities/ruby_golem",
+    "size": {
+      "height": 1.6,
+      "width": 0.9
+    },
+    "spawn": {
+      "biomes": [
+        "#minecraft:is_forest"
+      ],
+      "max_group": 2,
+      "min_group": 1,
+      "weight": 6
+    },
+    "spawn_egg": {
+      "texture": "msm_starter:item/ruby_golem_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_golem",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new mob. It is a creature with a 0.9 by 1.6 block hitbox, 30 health (15 hearts) and a walking speed of 0.28. Its goals run in list order: melee_attack with retaliate and no targets means it only fights back when hurt, hitting for 4 damage (msm:attack) and firing msm_starter:ruby_golem_attack; otherwise it wanders and looks about. It spawns naturally in every forest (#minecraft:is_forest) in groups of one or two, has a spawn egg with its own texture, drops the loot table msm_starter:entities/ruby_golem, and its death event spawns sparks and runs a function. msm:animated_model names the GeckoLib model, animation set and texture; scale 0.8 shrinks the two-block biped model to the hitbox. Export the Fabric mod jar to try it in game."
+  }
+}

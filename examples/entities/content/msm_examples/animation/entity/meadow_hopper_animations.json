@@ -1,0 +1,106 @@
+{
+  "data": {
+    "animations": {
+      "idle": {
+        "animation_length": 3,
+        "bones": {
+          "body": {
+            "scale": {
+              "0.0": [
+                1,
+                1,
+                1
+              ],
+              "1.5": [
+                1.02,
+                1.04,
+                1.02
+              ],
+              "3.0": [
+                1,
+                1,
+                1
+              ]
+            }
+          },
+          "head": {
+            "rotation": {
+              "0.0": [
+                0,
+                0,
+                0
+              ],
+              "1.5": [
+                5,
+                0,
+                0
+              ],
+              "3.0": [
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        "loop": true
+      },
+      "walk": {
+        "animation_length": 0.8,
+        "bones": {
+          "body": {
+            "rotation": {
+              "0.0": [
+                0,
+                0,
+                -4
+              ],
+              "0.4": [
+                0,
+                0,
+                4
+              ],
+              "0.8": [
+                0,
+                0,
+                -4
+              ]
+            }
+          },
+          "head": {
+            "rotation": {
+              "0.0": [
+                0,
+                -6,
+                0
+              ],
+              "0.4": [
+                0,
+                6,
+                0
+              ],
+              "0.8": [
+                0,
+                -6,
+                0
+              ]
+            }
+          }
+        },
+        "loop": true
+      }
+    },
+    "format_version": "1.8.0"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:entity/meadow_hopper_animations",
+  "kind": "msm:animation",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Idle and walk animations of the meadow hopper.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "type": "wander"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/cube_critter_animations",
+        "idle": "idle",
+        "model": "msm_examples:entity/cube_critter",
+        "texture": "msm_examples:entity/cube_critter",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 8
+      }
+    },
+    "display_name": "Cube Critter",
+    "format": 1,
+    "size": {
+      "height": 0.9,
+      "width": 0.9
+    },
+    "spawn_egg": false
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:cube_critter",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A small mob that shows the cube creature model in game. It has no spawn egg; summon it with /summon.",
+    "tags": [
+      "example",
+      "entity-models"
+    ]
+  }
+}

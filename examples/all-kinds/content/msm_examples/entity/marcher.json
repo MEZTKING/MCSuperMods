@@ -1,0 +1,45 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "type": "wander"
+          },
+          {
+            "type": "look_at_player"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/marcher_animations",
+        "idle": "idle",
+        "model": "msm_examples:entity/marcher",
+        "texture": "msm_examples:entity/marcher",
+        "walk": "walk"
+      },
+      "msm:movement": {
+        "speed": 0.25
+      }
+    },
+    "display_name": "Marcher",
+    "format": 1,
+    "size": {
+      "height": 1.95,
+      "width": 0.6
+    },
+    "spawn_egg": false
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:marcher",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A small biped that shows the idle and walk animations in game. It has no spawn egg; summon it with /summon.",
+    "tags": [
+      "example",
+      "entity-animations"
+    ]
+  }
+}

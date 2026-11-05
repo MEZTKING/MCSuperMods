@@ -2,15 +2,18 @@
  * Cross-plugin check of the library's starters and examples (ADR 0020, plan D6): every
  * bundle is built into a project the way the app's session does it (`newProject`), saved,
  * reloaded with the real built-in plugins (resource pack, data pack, structures, worldgen,
- * blocks and items, library), validated element by element with the project's own registry
- * ids, and exported as a resource pack and a data pack with every function checked by the
- * offline mcfunction service; projects with `msm:` elements are also exported as a Fabric mod
- * jar (separate runtime, so no runtime jar is needed). Zero problems (errors or warnings, so
- * no unknown ids) are allowed, for every built-in target.
+ * blocks and items, entities, models and animations, library), validated element by element
+ * with the project's own registry ids, and exported as a resource pack and a data pack with
+ * every function checked by the offline mcfunction service; projects with `msm:` elements are
+ * also exported as a Fabric mod jar (separate runtime, so no runtime or GeckoLib jar is
+ * needed; the Custom mob starter is also exported with stub runtime and GeckoLib jars
+ * nested). Zero problems (errors or warnings, so no unknown ids) are allowed, for every
+ * built-in target.
  *
  * The `examples/` folder at the repository root mirrors the library as ordinary MSM
  * projects: `examples/all-kinds/` (every per-kind example in one project),
- * `examples/blocks-items/` (the blocks and items behaviour examples) and
+ * `examples/blocks-items/` (the blocks and items behaviour examples), `examples/entities/`
+ * (the entity behaviour examples) and
  * `examples/starters/<starter id>/` (each content starter). It is a golden: set
  * `UPDATE_GOLDENS=1` to rewrite it from the current library.
  */
@@ -42,12 +45,15 @@ import type {
 } from '@msm/plugin-api';
 import blocksItemsPlugin from '@msm/plugin-blocks-items';
 import dataPackPlugin from '@msm/plugin-datapack';
+import entitiesPlugin from '@msm/plugin-entities';
 import libraryPlugin, {
   behaviourExamples,
+  entityBehaviourExamples,
   kindExamples,
   libraryExamples,
   libraryStarters,
 } from '@msm/plugin-library';
+import modelsAnimPlugin from '@msm/plugin-models-anim';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
 import structuresPlugin from '@msm/plugin-structures';
 import worldgenPlugin from '@msm/plugin-worldgen';
@@ -66,10 +72,12 @@ import {
 } from '@msm/schemas/mcfunction';
 import { builtInTargets, readVendoredJson, type TargetBundle } from '@msm/targets';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { nestedGeckolibPath } from '../src/fabric-content-jar/index';
 import {
   createFabricContentJarExporter,
-  createZipSink,
+  createMemorySink,
   dataPackExporter,
+  nestedRuntimePath,
   resourcePackExporter,
   runExport,
 } from '../src/index';
@@ -86,6 +94,8 @@ const PLUGINS: readonly Plugin[] = [
   structuresPlugin,
   worldgenPlugin,
   blocksItemsPlugin,
+  entitiesPlugin,
+  modelsAnimPlugin,
   libraryPlugin,
 ];
 const PACK_KIND = 'minecraft:pack_mcmeta';
@@ -101,6 +111,7 @@ const MIRRORED_STARTERS = [
   'custom_biome',
   'jigsaw_structure',
   'worldgen_pack',
+  'custom_mob',
 ];
 
 function kindRegistry(): ElementKindRegistry {
@@ -236,7 +247,10 @@ const NON_DATA_KINDS = new Set([
  * kind's ids go to `ElementKind.registry`, else to the kind id without `minecraft:`; a kind
  * of another namespace counts only with a plain registry name (no `:`). An element in the
  * `block` registry also registers its block item under the same id (any `item` but `false`),
- * so its id goes to `item` too.
+ * so its id goes to `item` too. An element in the `entity_type` registry with a spawn egg
+ * (any `spawn_egg` but `false`) registers the item `<id>_spawn_egg`, and an egg with a
+ * texture also gets the generated item model `<ns>:item/<path>_spawn_egg` (as lowering
+ * writes it).
  */
 function projectRegistryIds(project: Project): Record<string, string[]> {
   const ids: Record<string, string[]> = { model: [], sound: [], sound_event: [], texture: [] };
@@ -257,6 +271,17 @@ function projectRegistryIds(project: Project): Record<string, string[]> {
         (element.data as { item?: unknown }).item !== false
       ) {
         add('item', element.id);
+      }
+      if (name === 'entity_type' && typeof element.data === 'object' && element.data !== null) {
+        const egg = (element.data as { spawn_egg?: unknown }).spawn_egg;
+        if (egg !== undefined && egg !== false) {
+          add('item', `${element.id}_spawn_egg`);
+          const texture = (egg as { texture?: unknown }).texture;
+          if (typeof texture === 'string' && texture !== '') {
+            const path = element.id.slice(element.id.indexOf(':') + 1);
+            add('model', `${namespace.name}:item/${path}_spawn_egg`);
+          }
+        }
       }
       if (name === 'model') add('model', element.id);
       else if (name === 'sounds' && typeof element.data === 'object' && element.data !== null) {
@@ -397,8 +422,14 @@ async function exportProblems(
   ids: Record<string, string[]>,
   exporter: Exporter,
   options: Record<string, Json> = {},
-): Promise<{ problems: Problem[]; ok: boolean; files: string[] }> {
+): Promise<{
+  problems: Problem[];
+  ok: boolean;
+  files: string[];
+  contents: Map<string, Uint8Array>;
+}> {
   const functionIds = mcfunctionIds(project, ids);
+  const sink = createMemorySink();
   const report = await runExport({
     project,
     registry,
@@ -406,7 +437,7 @@ async function exportProblems(
     schemaIndex: context.schemaIndex,
     registries,
     exporter,
-    sink: createZipSink(),
+    sink,
     readAsset: (namespace, path) => fs.readFile(`assets/${namespace}/${path}`),
     meta,
     options,
@@ -427,11 +458,21 @@ async function exportProblems(
       );
     },
   });
-  return { problems: report.problems, ok: report.ok, files: report.files };
+  return { problems: report.problems, ok: report.ok, files: report.files, contents: sink.files() };
 }
 
-/** The Fabric mod jar exporter, with no runtime to nest (the test sets `separateRuntime`). */
-const contentJarExporter = createFabricContentJarExporter();
+/** Stand-ins for the runtime and GeckoLib jars, nested only by the Custom mob starter test. */
+const STUB_RUNTIME_JAR = utf8.encode('PK stub msm_runtime jar');
+const STUB_GECKOLIB_JAR = utf8.encode('PK stub GeckoLib jar');
+
+/**
+ * The Fabric mod jar exporter. Most exports set `separateRuntime`, so nothing is nested; the
+ * stub loaders serve the Custom mob starter test, which nests both jars.
+ */
+const contentJarExporter = createFabricContentJarExporter({
+  loadRuntimeJar: async () => STUB_RUNTIME_JAR,
+  loadGeckolibJar: async () => STUB_GECKOLIB_JAR,
+});
 
 /** Whether a project has elements of `msm:` kinds, which only the Fabric mod jar carries. */
 const hasMsmElements = (project: Project): boolean =>
@@ -524,6 +565,17 @@ const MIRROR: readonly MirrorProject[] = [
             namespace: 'msm_examples',
             projectName: 'MSM Blocks and Items Examples',
           }),
+        ),
+      ),
+  },
+  {
+    folder: 'entities',
+    build: () =>
+      buildProject(
+        'MSM Entity Examples',
+        'msm_examples',
+        entityBehaviourExamples.map((example) =>
+          example.build({ namespace: 'msm_examples', projectName: 'MSM Entity Examples' }),
         ),
       ),
   },
@@ -704,6 +756,88 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         ]),
       );
       expect(jarFiles).not.toContain('pack.mcmeta');
+    });
+
+    it('the Custom mob starter adds an animated Ruby Golem; the jar nests runtime and GeckoLib (ADRs 0028, 0029)', async () => {
+      const built = await buildProject('Mob', 'demo', [
+        starterById('custom_mob').build({ namespace: 'demo', projectName: 'Mob' }),
+      ]);
+      const { resourceFiles, dataFiles, jarFiles } = await checkProject(bundle, context, built);
+      const resource = bundle.target.folders.resource;
+      const data = bundle.target.folders.data;
+      const assets = [
+        `assets/demo/${resource.textures}/entity/ruby_golem.png`,
+        `assets/demo/${resource.textures}/item/ruby_golem_spawn_egg.png`,
+        'assets/demo/geckolib/models/entity/ruby_golem.geo.json',
+        'assets/demo/geckolib/animations/entity/ruby_golem_animations.animation.json',
+        `assets/demo/${resource.item_definition}/ruby_golem_spawn_egg.json`,
+        `assets/demo/${resource.model}/item/ruby_golem_spawn_egg.json`,
+        `assets/demo/${resource.lang}/en_us.json`,
+      ];
+      const datafiles = [
+        `data/demo/${data.loot_table}/entities/ruby_golem.json`,
+        `data/demo/${data.function}/golem/death.mcfunction`,
+      ];
+      expect(resourceFiles).toEqual(expect.arrayContaining([...assets, 'pack.mcmeta']));
+      expect(dataFiles).toEqual(expect.arrayContaining([...datafiles, 'pack.mcmeta']));
+      expect(jarFiles).toEqual(
+        expect.arrayContaining([
+          ...assets,
+          ...datafiles,
+          'msm/demo/entity/ruby_golem.json',
+          'fabric.mod.json',
+        ]),
+      );
+      expect(jarFiles.some((path) => path.startsWith('META-INF/jars/'))).toBe(false);
+
+      // Nested: the stub runtime and GeckoLib jars go into META-INF/jars/.
+      const geckolib = bundle.target.geckolib;
+      if (geckolib === undefined) throw new Error(`${bundle.target.id} lacks GeckoLib facts`);
+      const project = await reload(built.fs);
+      const ids = projectRegistryIds(project);
+      const registries = createRegistryIndex({ vanilla: context.vanilla, project: ids });
+      const nested = await exportProblems(
+        bundle,
+        context,
+        built.fs,
+        project,
+        registries,
+        ids,
+        contentJarExporter,
+      );
+      expect(nested.problems.filter((problem) => problem.severity !== 'info')).toEqual([]);
+      expect(nested.ok).toBe(true);
+      const geckolibPath = nestedGeckolibPath(geckolib);
+      const runtimePath = nestedRuntimePath(meta.msmVersion);
+      expect(nested.contents.get(geckolibPath)).toEqual(STUB_GECKOLIB_JAR);
+      expect(nested.contents.get(runtimePath)).toEqual(STUB_RUNTIME_JAR);
+      const json = (path: string): Record<string, unknown> =>
+        JSON.parse(utf8.decode(nested.contents.get(path) as Uint8Array));
+      const modJson = json('fabric.mod.json');
+      expect(modJson).toMatchObject({
+        id: 'demo',
+        depends: { [geckolib.modId]: geckolib.dependency },
+      });
+      expect(modJson.jars).toEqual(
+        expect.arrayContaining([{ file: runtimePath }, { file: geckolibPath }]),
+      );
+      expect(json('msm/demo/entity/ruby_golem.json')).toMatchObject({
+        format: 1,
+        category: 'creature',
+        loot_table: 'demo:entities/ruby_golem',
+        spawn_egg: {},
+        components: {
+          'msm:animated_model': {
+            model: 'demo:entity/ruby_golem',
+            animations: 'demo:entity/ruby_golem_animations',
+            texture: 'demo:entity/ruby_golem',
+          },
+        },
+      });
+      expect(json(`assets/demo/${resource.lang}/en_us.json`)).toMatchObject({
+        'entity.demo.ruby_golem': 'Ruby Golem',
+        'item.demo.ruby_golem_spawn_egg': 'Ruby Golem Spawn Egg',
+      });
     });
 
     it.each(MIRROR.map((entry) => [entry.folder, entry] as const))(

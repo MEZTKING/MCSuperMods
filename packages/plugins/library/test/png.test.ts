@@ -5,9 +5,12 @@ import {
   encodePng,
   PLACEHOLDER_PATTERNS,
   PLACEHOLDER_SIZE,
+  PLACEHOLDER_SKIN_SIZE,
   type PlaceholderPattern,
   placeholderPixels,
   placeholderPng,
+  placeholderSkinPixels,
+  placeholderSkinPng,
 } from '../src/index';
 
 const sha256 = (bytes: Uint8Array): string => createHash('sha256').update(bytes).digest('hex');
@@ -53,11 +56,15 @@ const PINNED: Record<PlaceholderPattern, string> = {
   ore: '1ac06b1c99f1e7dc187b47b4851ad9700f5fc8711417bf63ff07d47b14a89215',
   gem: '875d1b156d354c2310f5167f3fa6803eea063b38adc7b35d501a1882e5482c28',
   disc: 'a8c7d397e6b78ba544c7657e79cb03363ace66f202c081bf5619edb3acfb0b95',
+  egg: '249b1b90e8fba88bfd0018b3e38633b244d57185834bdafba9a6259cd532e724',
 };
 
+/** SHA-256 of the entity skin in the default colour. */
+const PINNED_SKIN = '224f2f4715ddc13cad76f34fd7555f720a9149052645c23f4c28c102c2ff4fd5';
+
 describe('placeholder textures', () => {
-  it('has four patterns', () => {
-    expect(PLACEHOLDER_PATTERNS).toEqual(['plain', 'ore', 'gem', 'disc']);
+  it('has five patterns', () => {
+    expect(PLACEHOLDER_PATTERNS).toEqual(['plain', 'ore', 'gem', 'disc', 'egg']);
   });
 
   it.each(PLACEHOLDER_PATTERNS)('encodes %s as a valid 16x16 RGBA PNG', (pattern) => {
@@ -81,6 +88,30 @@ describe('placeholder textures', () => {
     expect(alpha('gem')).toContain(0);
     expect(alpha('disc')).toContain(0);
     expect(alpha('disc')).toContain(255);
+    expect(alpha('egg')).toContain(0);
+    expect(alpha('egg')).toContain(255);
+  });
+
+  it('encodes the entity skin as an opaque two-tone 64x64 PNG and pins its bytes', () => {
+    const png = placeholderSkinPng();
+    const decoded = decode(png);
+    expect(decoded.width).toBe(PLACEHOLDER_SKIN_SIZE);
+    expect(decoded.height).toBe(PLACEHOLDER_SKIN_SIZE);
+    expect(decoded.rgba).toEqual(placeholderSkinPixels());
+    const pixel = (x: number, y: number) => {
+      const at = (y * PLACEHOLDER_SKIN_SIZE + x) * 4;
+      return [...decoded.rgba.subarray(at, at + 4)];
+    };
+    const alpha = [...decoded.rgba].filter((_, index) => index % 4 === 3);
+    expect(alpha.every((value) => value === 255)).toBe(true);
+    const tones = new Set(
+      Array.from({ length: PLACEHOLDER_SKIN_SIZE }, (_, x) => pixel(x, 0).join(',')),
+    );
+    expect(tones.size).toBe(2);
+    expect(pixel(0, 0)).not.toEqual(pixel(4, 0));
+    expect(pixel(0, 0)).toEqual(pixel(4, 4));
+    expect(sha256(png)).toBe(PINNED_SKIN);
+    expect(sha256(placeholderSkinPng({ colour: [32, 180, 72] }))).not.toBe(PINNED_SKIN);
   });
 
   it('tints by colour', () => {

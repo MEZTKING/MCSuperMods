@@ -1,0 +1,15 @@
+{
+  "data": {
+    "lines": [
+      "playsound minecraft:entity.iron_golem.death neutral @a ~ ~ ~ 1 1.2",
+      "particle minecraft:poof ~ ~1 ~ 0.4 0.6 0.4 0.02 16"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:golem/death",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The function the death event runs, at the golem as it dies: a deeper death sound and a puff of smoke."
+  }
+}

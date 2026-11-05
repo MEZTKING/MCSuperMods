@@ -483,9 +483,15 @@ importers:
       '@msm/plugin-datapack':
         specifier: workspace:*
         version: link:../plugins/datapack
+      '@msm/plugin-entities':
+        specifier: workspace:*
+        version: link:../plugins/entities
       '@msm/plugin-library':
         specifier: workspace:*
         version: link:../plugins/library
+      '@msm/plugin-models-anim':
+        specifier: workspace:*
+        version: link:../plugins/models-anim
       '@msm/plugin-resourcepack':
         specifier: workspace:*
         version: link:../plugins/resourcepack
@@ -517,6 +523,9 @@ importers:
         specifier: 'catalog:'
         version: 0.8.3
     devDependencies:
+      '@msm/schemas':
+        specifier: workspace:*
+        version: link:../schemas
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.2

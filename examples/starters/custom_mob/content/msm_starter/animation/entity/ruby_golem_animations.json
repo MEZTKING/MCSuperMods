@@ -1,0 +1,203 @@
+{
+  "data": {
+    "animations": {
+      "attack": {
+        "animation_length": 0.5,
+        "bones": {
+          "left_arm": {
+            "rotation": {
+              "0.0": [
+                0,
+                0,
+                0
+              ],
+              "0.2": [
+                -100,
+                0,
+                0
+              ],
+              "0.5": [
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "right_arm": {
+            "rotation": {
+              "0.0": [
+                0,
+                0,
+                0
+              ],
+              "0.2": [
+                -100,
+                0,
+                0
+              ],
+              "0.5": [
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        "loop": false
+      },
+      "idle": {
+        "animation_length": 2,
+        "bones": {
+          "body": {
+            "position": {
+              "0.0": [
+                0,
+                0,
+                0
+              ],
+              "1.0": [
+                0,
+                0.5,
+                0
+              ],
+              "2.0": [
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "left_arm": {
+            "rotation": {
+              "0.0": [
+                0,
+                0,
+                0
+              ],
+              "1.0": [
+                0,
+                0,
+                -3
+              ],
+              "2.0": [
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "right_arm": {
+            "rotation": {
+              "0.0": [
+                0,
+                0,
+                0
+              ],
+              "1.0": [
+                0,
+                0,
+                3
+              ],
+              "2.0": [
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        "loop": true
+      },
+      "walk": {
+        "animation_length": 1,
+        "bones": {
+          "left_arm": {
+            "rotation": {
+              "0.0": [
+                25,
+                0,
+                0
+              ],
+              "0.5": [
+                -25,
+                0,
+                0
+              ],
+              "1.0": [
+                25,
+                0,
+                0
+              ]
+            }
+          },
+          "left_leg": {
+            "rotation": {
+              "0.0": [
+                -30,
+                0,
+                0
+              ],
+              "0.5": [
+                30,
+                0,
+                0
+              ],
+              "1.0": [
+                -30,
+                0,
+                0
+              ]
+            }
+          },
+          "right_arm": {
+            "rotation": {
+              "0.0": [
+                -25,
+                0,
+                0
+              ],
+              "0.5": [
+                25,
+                0,
+                0
+              ],
+              "1.0": [
+                -25,
+                0,
+                0
+              ]
+            }
+          },
+          "right_leg": {
+            "rotation": {
+              "0.0": [
+                30,
+                0,
+                0
+              ],
+              "0.5": [
+                -30,
+                0,
+                0
+              ],
+              "1.0": [
+                30,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        "loop": true
+      }
+    },
+    "format_version": "1.8.0"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:entity/ruby_golem_animations",
+  "kind": "msm:animation",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The animation set the entity plays: idle while standing, walk while moving and attack when it hits. Each animation moves bones of the geo model by name with keyframes in seconds."
+  }
+}

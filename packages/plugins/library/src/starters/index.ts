@@ -4,6 +4,7 @@
 import type { BundleContext, ContentBundle, OutputLayer, ProjectStarter } from '@msm/plugin-api';
 import { kindsOf } from '../content/bundle';
 import { customBiomeBundle } from './custom-biome';
+import { customMobBundle } from './custom-mob';
 import { customOreBundle } from './custom-ore';
 import { functionStarterBundle } from './function-starter';
 import { jigsawStructureBundle } from './jigsaw-structure';
@@ -13,6 +14,7 @@ import { recipePackBundle } from './recipe-pack';
 import { worldgenPackBundle } from './worldgen-pack';
 
 export { customBiomeBundle, customBiomeContent, customBiomeIds } from './custom-biome';
+export { customMobBundle } from './custom-mob';
 export { customOreBundle } from './custom-ore';
 export { functionStarterBundle } from './function-starter';
 export { hamletIds, jigsawStructureBundle, jigsawStructureContent } from './jigsaw-structure';
@@ -134,5 +136,13 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     'content',
     BOTH,
     worldgenPackBundle,
+  ),
+  starter(
+    'custom_mob',
+    'Custom mob',
+    'An animated Ruby Golem that wanders forests, fights back when hit and drops emeralds: its GeckoLib model, animations, texture and spawn egg, a loot table, a death function and the mod metadata. New mobs need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    customMobBundle,
   ),
 ]);

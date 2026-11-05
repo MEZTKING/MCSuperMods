@@ -1,5 +1,6 @@
 /**
- * Deterministic 16x16 placeholder textures for starters and examples (ADR 0020, D3).
+ * Deterministic placeholder textures for starters and examples (ADR 0020, D3): 16x16 block
+ * and item patterns, and a 64x64 two-tone checker for entity models.
  *
  * Every pixel comes from integer maths: no randomness, no Minecraft texture is read or
  * copied, and the work is original (CC0). The PNG encoder is self-contained and writes
@@ -22,9 +23,10 @@ export type Rgb = readonly [number, number, number];
  * - `plain`: a flat colour with a one-pixel bevel;
  * - `ore`: coloured specks on grey stone (block texture);
  * - `gem`: a cut gem on a transparent background (item texture);
- * - `disc`: a music disc with a coloured label (item texture).
+ * - `disc`: a music disc with a coloured label (item texture);
+ * - `egg`: a speckled spawn egg on a transparent background (item texture).
  */
-export type PlaceholderPattern = 'plain' | 'ore' | 'gem' | 'disc';
+export type PlaceholderPattern = 'plain' | 'ore' | 'gem' | 'disc' | 'egg';
 
 /** Every pattern, in documentation order. */
 export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze([
@@ -32,6 +34,7 @@ export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze
   'ore',
   'gem',
   'disc',
+  'egg',
 ]);
 
 /** Options for {@link placeholderPng}. */
@@ -160,11 +163,41 @@ function disc(palette: Palette): Pixel {
   };
 }
 
+/** Spot centres of the egg pattern. */
+const EGG_SPOTS: readonly (readonly [number, number])[] = [
+  [6, 5],
+  [9, 8],
+  [5, 10],
+  [9, 12],
+];
+
+function egg(palette: Palette): Pixel {
+  const cx = 7.5;
+  const cy = 8;
+  const inside = (x: number, y: number): boolean => {
+    // A little narrower at the top, like an egg.
+    const rx = y < cy ? 4.6 : 5.4;
+    return ((x - cx) / rx) ** 2 + ((y - cy) / 6.4) ** 2 <= 1;
+  };
+  return (x, y) => {
+    if (!inside(x, y)) return CLEAR;
+    if (!inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1)) {
+      return palette.dark;
+    }
+    for (const [sx, sy] of EGG_SPOTS) {
+      if (Math.abs(x - sx) + Math.abs(y - sy) <= 1) return palette.deep;
+    }
+    if (x < cx - 1 && y < cy - 2) return palette.shine;
+    return palette.light;
+  };
+}
+
 const PATTERNS: Readonly<Record<PlaceholderPattern, (palette: Palette) => Pixel>> = {
   plain,
   ore,
   gem,
   disc,
+  egg,
 };
 
 /**
@@ -200,6 +233,43 @@ export function placeholderPng(
   options: PlaceholderOptions = {},
 ): Uint8Array {
   return encodePng(placeholderPixels(pattern, options), PLACEHOLDER_SIZE, PLACEHOLDER_SIZE);
+}
+
+// Entity skins ----------------------------------------------------------------------------
+
+/** Edge length of the entity skin placeholder, matching the 64x64 model templates. */
+export const PLACEHOLDER_SKIN_SIZE = 64;
+
+/** Side of one checker cell of the skin placeholder, in pixels. */
+const SKIN_CELL = 4;
+
+/**
+ * The RGBA pixels of a 64x64 entity skin placeholder: a two-tone checker of 4-pixel cells
+ * (the colour and a darker shade), fully opaque, so a model preview shows how each cube's
+ * faces map onto the texture.
+ *
+ * @param options - The main colour.
+ */
+export function placeholderSkinPixels(options: PlaceholderOptions = {}): Uint8Array {
+  const palette = paletteOf(options.colour ?? DEFAULT_COLOUR);
+  const size = PLACEHOLDER_SKIN_SIZE;
+  const rgba = new Uint8Array(size * size * 4);
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const odd = (Math.floor(x / SKIN_CELL) + Math.floor(y / SKIN_CELL)) % 2 === 1;
+      rgba.set(odd ? palette.dark : palette.light, (y * size + x) * 4);
+    }
+  }
+  return rgba;
+}
+
+/**
+ * A byte-stable 64x64 RGBA PNG of the entity skin placeholder.
+ *
+ * @param options - The main colour.
+ */
+export function placeholderSkinPng(options: PlaceholderOptions = {}): Uint8Array {
+  return encodePng(placeholderSkinPixels(options), PLACEHOLDER_SKIN_SIZE, PLACEHOLDER_SKIN_SIZE);
 }
 
 // PNG encoding ----------------------------------------------------------------------------
