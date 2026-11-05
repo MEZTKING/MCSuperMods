@@ -21,9 +21,9 @@ import type {
   RootResult,
 } from '../../shared/platform';
 import { createExportsService } from './exports';
+import { createGeckolibJarService } from './geckolib-jar';
 import { createLocationResolver } from './locations';
 import { createMcfunctionBroker } from './mcfunction';
-import { createGeckolibJarService } from './geckolib-jar';
 import { createMinecraftService, type MinecraftService } from './minecraft';
 import { type RuntimeJarLocation, readRuntimeJar } from './runtime-jar';
 import { createScopedFileSystem, isWithin, type ScopedFileSystem } from './scoped-fs';

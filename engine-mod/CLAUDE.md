@@ -1,6 +1,6 @@
 # engine-mod/ — Fabric runtime mod
 
-Status: Phase 4 code complete, awaiting the in-game check (`fixtures/sample-mod/README.md`). Runtime v1 (B93): Codec loader for ADR 0025 format 1 (ADRs 0024–0026 accepted), every Phase 4 block and item component and all six actions; 46 JUnit tests over the shared corpus and 18 GameTests pass in `./gradlew build`; CI job `engine-mod` also starts a headless server with the sample mod (`tools/run-fabric-server`), which proved the scan inside a production jar. `mod_version` 0.4.0 equals `app/package.json` (`app/test/runtime-version.test.ts`). Entities and scripting come later. This file describes intent and conventions.
+Status: Phase 4 code complete, awaiting the in-game check (`fixtures/sample-mod/README.md`). Runtime v1 (B93) reads ADR 0025 format 1 blocks and items; Phase 5 entities (B113, ADR 0028): Codecs for `msm/<ns>/entity/*.json`, `MsmEntity` with six goal types, triggers, `play_animation`, spawn eggs, natural spawns, GeckoLib bridge. 78 JUnit tests over the shared corpus and 38 GameTests pass in `./gradlew build`, also with `-PwithoutGeckolib` (entities then log one error each and register nothing). CI job `engine-mod` also starts a headless server (`tools/run-fabric-server`). `mod_version` 0.4.0 equals `app/package.json` (`app/test/runtime-version.test.ts`). Scripting comes later. This file describes intent and conventions.
 
 ## Purpose
 
@@ -10,13 +10,15 @@ Status: Phase 4 code complete, awaiting the in-game check (`fixtures/sample-mod/
 
 - `build.gradle.kts`, `gradle.properties` (versions), `settings.gradle.kts` — Gradle, Kotlin DSL.
 - `src/main/java/dev/mcsupermods/runtime/`
-  - `loader/` — `DefinitionScanner` (scan `msm/` in all mods), `DefinitionParser` (pure; format, warnings, Codecs), `MsmCodecs`, `StrictJsonOps`, `BlockDefinition`, `ItemDefinition`.
-  - `components/` — component records and Codecs, aligned with `packages/schemas/mcdoc/msm/`.
-  - `events/` — `Action` (dispatch on `type`), `Events` (per-event decoding), `EventRunner` (depth 16).
-  - `registry/` — `MsmRegistrar`, driver classes `MsmBlock`, `MsmItem` (`MsmEntity` in Phase 5).
-  - Later: `scripting/` (Rhino, Tier 1), `client/` (GeckoLib bridge, optional).
+  - `loader/` — `DefinitionScanner` (scan `msm/` in all mods), `DefinitionParser` (pure; format, warnings, Codecs), `MsmCodecs`, `StrictJsonOps`, `BlockDefinition`, `ItemDefinition`, `EntityDefinition`.
+  - `components/` — component records and Codecs aligned with `packages/schemas/mcdoc/msm/`; `Goal` (dispatch on `type`, decoded one by one).
+  - `events/` — `Action` (dispatch on `type`), `Events` (per-event decoding), `EventRunner` (depth 16), `AnimationTarget`.
+  - `registry/` — `MsmRegistrar`, `MsmEntityRegistrar`, driver classes `MsmBlock`, `MsmItem`, `MsmEntity`; GeckoLib only in `MsmGeoEntity` behind `GeckolibEntities` (touched after `isModLoaded("geckolib")`).
+  - `goals/` — `FollowTypesGoal`. `client/` — `MsmRuntimeClient` (client entrypoint), `GeckolibRenderers`, `MsmGeoModel`.
+  - Later: `scripting/` (Rhino, Tier 1).
 - `src/test/` — JUnit 5 over `../packages/schemas/mcdoc/msm/conformance/definition/`.
-- `src/gametest/` — Fabric GameTests; `resources/msm/msm_test/` holds the kitchen-sink definitions.
+- `src/gametest/` — Fabric GameTests; `resources/msm/msm_test/` holds the kitchen-sink definitions, `assets/msm_test/geckolib/` a test model, `data/msm_runtime_gametest/gametest/structure/arena.snbt` the movement arena.
+- GeckoLib (ADR 0029 D6): Modrinth Maven `exclusiveContent`; `compileOnly` + `gametestCompileOnly` + `localRuntime`; never in the jar, only `suggests` in `fabric.mod.json`.
 
 ## Conventions
 
@@ -38,7 +40,7 @@ Status: Phase 4 code complete, awaiting the in-game check (`fixtures/sample-mod/
 
 - `JAVA_HOME=<jdk 25> ./gradlew build` (runs JUnit and the GameTests)
 - `./gradlew test` (JUnit only; the corpus test reads the schemas package in place)
-- `./gradlew runGameTest` (headless GameTest server) / `./gradlew runClient`
+- `./gradlew runGameTest` (headless GameTest server; `-PwithoutGeckolib` runs without GeckoLib) / `./gradlew runClient`
 
 ## Read next
 

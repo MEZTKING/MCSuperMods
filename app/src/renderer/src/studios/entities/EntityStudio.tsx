@@ -232,14 +232,14 @@ export function EntityStudio(props: StudioProps) {
   const at = (path: readonly (string | number)[]) => (
     <ProblemsAt problems={problems} pointer={pointerOf(path)} />
   );
-  const hasErrorAt = (path: readonly (string | number)[]) => {
-    const pointer = pointerOf(path);
-    return problems.some((problem) => problem.path === pointer && problem.severity === 'error');
-  };
 
   if (advanced) {
     return (
-      <section aria-label="Entity Studio" data-testid="entity-studio" className="flex flex-col gap-3">
+      <section
+        aria-label="Entity Studio"
+        data-testid="entity-studio"
+        className="flex flex-col gap-3"
+      >
         <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="entity-advanced-toggle" />
         {props.form}
       </section>
@@ -347,7 +347,9 @@ export function EntityStudio(props: StudioProps) {
         />
         <SelectField
           label="Texture"
-          value={typeof model.texture === 'string' && model.texture !== '' ? model.texture : undefined}
+          value={
+            typeof model.texture === 'string' && model.texture !== '' ? model.texture : undefined
+          }
           choices={textures}
           emptyLabel="(choose a texture)"
           testId="entity-texture"
@@ -402,7 +404,11 @@ export function EntityStudio(props: StudioProps) {
           onCommit={(value) =>
             value === undefined
               ? set(['components', 'msm:health'], undefined)
-              : set(['components', 'msm:health', 'max'], value, typingKey('/components/msm:health/max'))
+              : set(
+                  ['components', 'msm:health', 'max'],
+                  value,
+                  typingKey('/components/msm:health/max'),
+                )
           }
         />
         <NumberField
@@ -522,7 +528,11 @@ export function EntityStudio(props: StudioProps) {
         </p>
       )}
       {['damage', 'knockback', 'on_attack'].map((key) => (
-        <ProblemsAt key={key} problems={problems} pointer={pointerOf(['components', 'msm:attack', key])} />
+        <ProblemsAt
+          key={key}
+          problems={problems}
+          pointer={pointerOf(['components', 'msm:attack', key])}
+        />
       ))}
     </Section>
   );
@@ -538,10 +548,12 @@ export function EntityStudio(props: StudioProps) {
   const behaviour = (
     <Section title="Behaviour" testId="entity-behaviour">
       <p className="text-muted text-xs">
-        Goals run in priority order: the first goal that can run wins. Move a goal up to make it more
-        important.
+        Goals run in priority order: the first goal that can run wins. Move a goal up to make it
+        more important.
       </p>
-      {goals.length === 0 && <p className="text-muted text-xs">No goals: the entity stands still.</p>}
+      {goals.length === 0 && (
+        <p className="text-muted text-xs">No goals: the entity stands still.</p>
+      )}
       <ol className="flex flex-col gap-2">
         {goals.map((goal, index) => {
           const pointer = pointerOf([...GOALS_PATH, index]);
@@ -687,6 +699,15 @@ export function EntityStudio(props: StudioProps) {
     </Section>
   );
 
+  /** Sets one egg field; an absent `spawn_egg` becomes an object first. */
+  const setEgg = (key: string, value: Json | undefined, coalesce?: string) => {
+    if (data.spawn_egg === undefined) {
+      if (value !== undefined) set(['spawn_egg'], { [key]: value } satisfies JsonObject);
+      return;
+    }
+    set(['spawn_egg', key], value, coalesce);
+  };
+
   const hasEgg = data.spawn_egg !== false;
   const egg = asObject(data.spawn_egg);
   const eggSection = (
@@ -726,7 +747,9 @@ export function EntityStudio(props: StudioProps) {
             label="Egg display name"
             value={egg.display_name}
             testId="entity-egg-display-name"
-            onCommit={(value) => setEgg('display_name', value, typingKey('/spawn_egg/display_name'))}
+            onCommit={(value) =>
+              setEgg('display_name', value, typingKey('/spawn_egg/display_name'))
+            }
           />
         </div>
       ) : (
@@ -734,8 +757,8 @@ export function EntityStudio(props: StudioProps) {
       )}
       <p className="text-muted text-xs">
         The egg is the item {element.id}_spawn_egg, listed in the Spawn Eggs tab unless another tab
-        is chosen. Without a texture it has no item model; without a name it is called
-        "&lt;display name&gt; Spawn Egg".
+        is chosen. Without a texture it has no item model; without a name it is called "&lt;display
+        name&gt; Spawn Egg".
       </p>
       {at(['spawn_egg'])}
       {['creative_tab', 'texture', 'display_name'].map((key) => (
@@ -743,15 +766,6 @@ export function EntityStudio(props: StudioProps) {
       ))}
     </Section>
   );
-  /** Sets one egg field; an absent `spawn_egg` becomes an object first. */
-  function setEgg(key: string, value: Json | undefined, coalesce?: string) {
-    if (data.spawn_egg === undefined) {
-      if (value !== undefined) set(['spawn_egg'], { [key]: value } satisfies JsonObject);
-      return;
-    }
-    set(['spawn_egg', key], value, coalesce);
-  }
-
   const trigger = (component: string, label: string, testId: string) => (
     <EventSelect
       label={label}
@@ -787,7 +801,7 @@ export function EntityStudio(props: StudioProps) {
       <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="entity-advanced-toggle" />
       <ProblemsAt problems={problems} pointer="" />
       {at(['components'])}
-      {hasErrorAt([...MODEL_PATH]) && at([...MODEL_PATH])}
+      {at([...MODEL_PATH])}
       {identity}
       {appearance}
       {stats}
