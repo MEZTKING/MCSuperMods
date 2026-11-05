@@ -43,3 +43,33 @@ export function checkerPng(
     chunk('IEND', Buffer.alloc(0)),
   ]);
 }
+
+/** Encodes a `width`×`height` PNG with a vertical gradient between two RGBA colours. */
+export function gradientPng(
+  width: number,
+  height: number,
+  top: readonly [number, number, number, number],
+  bottom: readonly [number, number, number, number],
+): Buffer {
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(width, 0);
+  header.writeUInt32BE(height, 4);
+  header[8] = 8; // bit depth
+  header[9] = 6; // colour type: RGBA
+  const rows: Buffer[] = [];
+  for (let y = 0; y < height; y++) {
+    const t = height === 1 ? 0 : y / (height - 1);
+    const colour = top.map((value, index) =>
+      Math.round(value + ((bottom[index] ?? value) - value) * t),
+    );
+    const row = Buffer.alloc(1 + width * 4); // leading filter byte 0
+    for (let x = 0; x < width; x++) row.set(colour, 1 + x * 4);
+    rows.push(row);
+  }
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk('IHDR', header),
+    chunk('IDAT', deflateSync(Buffer.concat(rows))),
+    chunk('IEND', Buffer.alloc(0)),
+  ]);
+}
