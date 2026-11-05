@@ -1,0 +1,18 @@
+{
+  "components": {
+    "msm:on_use": {
+      "event": "mymod:cast"
+    }
+  },
+  "events": {
+    "mymod:cast": {
+      "actions": [
+        {
+          "handler": "mymod:cast_spell",
+          "type": "run_script"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

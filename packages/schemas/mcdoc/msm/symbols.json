@@ -130,6 +130,11 @@
           "desc": "Triggers a GeckoLib animation on the event's entity (entity definitions only; ADR 0028 D4).",
           "identifier": "PlayAnimation",
           "value": "play_animation"
+        },
+        {
+          "desc": "Calls a script handler defined with `msm.actions.define` (ADR 0032 D4).",
+          "identifier": "RunScript",
+          "value": "run_script"
         }
       ]
     },
@@ -280,6 +285,19 @@
                 }
               }
             ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::RunScript": {
+      "fields": [
+        {
+          "desc": "The handler id, a resource location such as `mymod:open_vault`.",
+          "key": "handler",
+          "kind": "pair",
+          "type": {
             "kind": "string"
           }
         }
@@ -3814,6 +3832,10 @@
         "kind": "reference",
         "path": "::msm::action::RunFunction"
       },
+      "run_script": {
+        "kind": "reference",
+        "path": "::msm::action::RunScript"
+      },
       "set_block_state": {
         "kind": "reference",
         "path": "::msm::action::SetBlockState"
@@ -3854,5 +3876,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:18c84432dafa0836aa28de41586ff9abe4b8f7895bc261cb274afc0ae35ba126"
+  "ref": "msm-mcdoc:sha256:1c25e87bc1acaf0f4a69bfc5146f921cb98b4682bff059e0cb70736288995bfa"
 }

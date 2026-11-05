@@ -1,0 +1,22 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "mymod:open"
+    }
+  },
+  "events": {
+    "mymod:open": {
+      "actions": [
+        {
+          "handler": "mymod:open_vault",
+          "type": "run_script"
+        },
+        {
+          "sound": "minecraft:block.chest.open",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

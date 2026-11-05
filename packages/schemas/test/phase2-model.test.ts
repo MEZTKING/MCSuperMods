@@ -301,4 +301,15 @@ describe('schema references', () => {
     expect(() => index.resolveSchemaRef('::t::Absent')).toThrow(SchemaNotFoundError);
     expect(index.resolveSchemaRef('::t::Left').kind).toBe('number');
   });
+
+  it('resolves msm:script as a frozen lines struct like msm:function', () => {
+    const script = index.resolveSchemaRef('msm:script');
+    expect(script).toBe(BUILT_IN_EXTENSIONS['msm:script']);
+    expect(script).toEqual(BUILT_IN_EXTENSIONS['msm:function']);
+    expect(codes({ lines: ['import { msm } from "msm:runtime";', ''] }, script)).toEqual([]);
+    expect(codes({}, script)).toEqual(['/lines schema.missing-field']);
+    expect(codes({ lines: [1] }, script)).toEqual(['/lines/0 schema.type-mismatch']);
+    expect(codes({ lines: [], extra: true }, script)).toEqual(['/extra schema.unknown-field']);
+    expect(Object.isFrozen(script)).toBe(true);
+  });
 });

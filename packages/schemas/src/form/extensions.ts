@@ -98,6 +98,9 @@ function structureTemplate(): SchemaNode {
  * TypeScript until compiled MSM mcdoc replaces them behind the same references (Phase 4).
  *
  * - `msm:function`: an mcfunction source stored as one string per line (`{ "lines": [...] }`).
+ * - `msm:script`: a TypeScript script source stored the same way (`{ "lines": [...] }`; ADR 0032
+ *   D3). Like `msm:function` it is an extension, not an MSM mcdoc type, so it is not in
+ *   `MSM_SCHEMA_REFS`: the app resolves the `msm:script` reference through `resolveSchemaRef`.
  * - `msm:structure_template`: a structure template stored as JSON and lowered to a vanilla
  *   structure `.nbt` file (ADR 0021): `size` `[x, y, z]`, `palette` block-state strings,
  *   `blocks` `[x, y, z, paletteIndex]` tuples, optional `block_entities` and `entities` with
@@ -105,6 +108,11 @@ function structureTemplate(): SchemaNode {
  */
 export const BUILT_IN_EXTENSIONS: Readonly<Record<string, SchemaNode>> = frozen({
   'msm:function': {
+    kind: 'struct',
+    fields: [{ key: 'lines', optional: false, type: { kind: 'list', item: { kind: 'string' } } }],
+    spreads: [],
+  },
+  'msm:script': {
     kind: 'struct',
     fields: [{ key: 'lines', optional: false, type: { kind: 'list', item: { kind: 'string' } } }],
     spreads: [],

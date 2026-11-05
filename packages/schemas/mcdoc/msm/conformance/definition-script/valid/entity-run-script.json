@@ -1,0 +1,31 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/ruby_golem",
+      "texture": "mymod:entity/ruby_golem"
+    },
+    "msm:on_hurt": {
+      "event": "mymod:hurt"
+    }
+  },
+  "events": {
+    "mymod:hurt": {
+      "actions": [
+        {
+          "handler": "mymod:golem_hurt",
+          "type": "run_script"
+        },
+        {
+          "animation": "flinch",
+          "type": "play_animation"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  }
+}

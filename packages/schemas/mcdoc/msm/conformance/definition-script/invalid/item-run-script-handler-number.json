@@ -1,0 +1,13 @@
+{
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "handler": 7,
+          "type": "run_script"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

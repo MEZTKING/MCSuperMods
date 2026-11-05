@@ -1,0 +1,10 @@
+{
+  "block-run-script-no-handler.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:x/actions/0/handler"
+  },
+  "item-run-script-handler-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/events/mymod:x/actions/0/handler"
+  }
+}

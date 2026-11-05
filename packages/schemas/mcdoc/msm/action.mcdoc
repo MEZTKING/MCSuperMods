@@ -18,6 +18,8 @@ enum(string) ActionType {
 	TriggerEvent = "trigger_event",
 	/// Triggers a GeckoLib animation on the event's entity (entity definitions only; ADR 0028 D4).
 	PlayAnimation = "play_animation",
+	/// Calls a script handler defined with `msm.actions.define` (ADR 0032 D4).
+	RunScript = "run_script",
 }
 
 /// One action of an event, selected by `type`.
@@ -92,4 +94,13 @@ dispatch msm:action[play_animation] to struct PlayAnimation {
 	animation: string,
 	/// The GeckoLib controller that plays it; defaults to `msm_triggered`.
 	controller?: string,
+}
+
+/// Calls the script handler defined by `msm.actions.define` with the event context: owner
+/// definition id, event id, position, and the block, entity and player when present (ADR 0032
+/// D4). An undefined handler is logged once per handler id when the event runs; runtimes older
+/// than 0.6.0 reject the action as an unknown type.
+dispatch msm:action[run_script] to struct RunScript {
+	/// The handler id, a resource location such as `mymod:open_vault`.
+	handler: string,
 }

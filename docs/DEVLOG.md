@@ -1780,3 +1780,19 @@ Next:
 **Next**
 - Orchestrator: fill `TESTS`/`SIZE` in the Milestone Log from the clean-worktree run; commit, push, CI, fast-forward `main`; release 0.5.0 with the user's go-ahead; Phase 6 plan.
 - User: in-game check `fixtures/sample-mob/README.md` (and the earlier phases').
+
+## 2026-11-05 — executor — B135 MSM mcdoc: run_script, msm:script, corpus
+
+**What**
+- `packages/schemas/mcdoc/msm/action.mcdoc`: `ActionType.RunScript = "run_script"` and `dispatch msm:action[run_script] to struct RunScript { handler: string }` (ADR 0032 D4; a resource location, a plain string like the other ids without a registry). `symbols.json` regenerated: 92 types (was 91).
+- `src/form/extensions.ts`: built-in extension `msm:script` (`{ lines: string[] }`, the same node as `msm:function`). `MSM_SCHEMA_REFS` lists MSM mcdoc types only, not extensions, so it is unchanged; the app resolves `msm:script` through `resolveSchemaRef` as it does `msm:function`.
+- Corpus: new group `conformance/definition-script/` (valid `block-run-script.json`, `item-run-script.json`, `entity-run-script.json`; invalid `block-run-script-no-handler.json` (`/events/mymod:x/actions/0/handler` `schema.missing-field`), `item-run-script-handler-number.json` (same path, `schema.type-mismatch`); own `expected-errors.json`). Counts: definition 20 valid / 42 invalid (unchanged), definition-script 3 / 2, element 14 / 14, geometry 5 / 9, animation 5 / 8.
+- Tests: the conformance test reads the new group and its action-coverage check takes the union of `definition/` and `definition-script/`; `msm:action` keys now include `run_script`; `phase2-model.test.ts` checks `msm:script`. `@msm/schemas` 293 tests, `@msm/tools` 80, `@msm/target-mc-26.3` 72, all green.
+
+**Decisions**
+- The run_script cases live in `definition-script/`, not `definition/` as the brief says: the runtime's `ConformanceCorpusTest` reads `definition/` and the current Codecs reject `run_script` (valid cases would fail, invalid ones would not mention `handler`), so `./gradlew build` would break while B130 owns engine-mod. B133 moves the five files into `definition/` (merging `expected-errors.json`) when the Codec lands, and drops the group from the TypeScript test.
+- Added a valid `item-run-script.json` beyond the brief, because the existing coverage test requires every non-entity action in a valid item definition.
+
+**Next**
+- B133: Codec `Action.RunScript(handler)`, then `git mv` `definition-script/{valid,invalid}/*` into `definition/`, merge the two `expected-errors.json`, delete `definition-script/` and its entry in `GROUPS`/`SCHEMAS` of `packages/schemas/test/msm-conformance.test.ts` (or have the JUnit test read both folders).
+- B137b: the Events editor action lists in `blocks-items-model.ts` are hard-coded and need `run_script`.
