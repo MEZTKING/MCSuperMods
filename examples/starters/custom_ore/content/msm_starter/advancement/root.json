@@ -18,7 +18,7 @@
       "description": "Pick up any gem",
       "frame": "task",
       "icon": {
-        "id": "minecraft:emerald"
+        "id": "msm_starter:ruby"
       },
       "show_toast": false,
       "title": "Gem Collector"

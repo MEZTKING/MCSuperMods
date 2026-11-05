@@ -1,0 +1,25 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "R": "msm_starter:ruby"
+    },
+    "pattern": [
+      "RRR",
+      "RRR",
+      "RRR"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_starter:ruby_block"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_block_from_rubies",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Nine rubies make a block of ruby. Element ids are unique across kinds, so the recipe cannot share the block's id ruby_block and has a name of its own."
+  }
+}

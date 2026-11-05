@@ -15,7 +15,7 @@ import { builtInPlugins } from '../../src/renderer/src/plugins/built-in';
 import type { McfunctionChecker } from '../../src/renderer/src/session/mcfunction-problems';
 import { ProjectSession } from '../../src/renderer/src/session/project-session';
 import { useUiStore } from '../../src/renderer/src/store/ui-store';
-import { NO_DATA_PACK_CONTENT } from '../../src/renderer/src/studios/export-state';
+import { MSM_CONTENT_NOTE, NO_DATA_PACK_CONTENT } from '../../src/renderer/src/studios/export-state';
 import type { MenuCommand, UpdateStatus } from '../../src/shared/ipc-channels';
 import type {
   AppSettingsPatch,
@@ -732,6 +732,82 @@ describe('App function problems', () => {
     // The menu's export reports the blocking error instead of exporting.
     await harness.menu('exportDataPack');
     await toast('Fix 1 error first (see Problems).');
+  });
+});
+
+describe('App Fabric mod jar export', () => {
+  /** A valid `msm:block` (the "Simple block" template's data). */
+  function addBlock(harness: Harness) {
+    act(() => {
+      harness.session.addElement({
+        id: 'demo:ruby_block',
+        kind: 'msm:block',
+        data: {
+          format: 1,
+          model: 'minecraft:block/stone',
+          display_name: 'Ruby Block',
+          sound_type: 'stone',
+          loot: 'self',
+          item: { creative_tab: 'minecraft:building_blocks' },
+          components: { 'msm:breakable': { hardness: 1.5, resistance: 6, tool: 'pickaxe' } },
+        },
+      });
+    });
+  }
+
+  it('opens the dialog from the menu and passes the chosen option to the export', async () => {
+    const harness = await renderApp();
+    await harness.menu('exportFabricJar');
+    const dialog = await screen.findByTestId('fabric-jar-dialog');
+    const user = userEvent.setup();
+    await user.click(within(dialog).getByLabelText('Separate runtime (for modpacks)'));
+    await user.click(within(dialog).getByTestId('fabric-jar-dialog-submit'));
+    await toast(/^Exported the Fabric mod jar to \/exports\/.+\.jar\./);
+    expect(harness.saved).toHaveLength(1);
+    expect(harness.saved[0]?.defaultName).toMatch(/^[a-z][a-z0-9_-]+\.jar$/);
+    expect(screen.queryByTestId('fabric-jar-dialog')).toBeNull();
+  });
+
+  it('blocks the export when the runtime jar is missing and the runtime is nested', async () => {
+    const harness = await renderApp();
+    await harness.menu('exportFabricJar');
+    await userEvent.setup().click(await screen.findByTestId('fabric-jar-dialog-submit'));
+    await toast('Export blocked by 1 error(s); nothing was written. See Problems.');
+    expect(harness.saved).toHaveLength(0);
+  });
+
+  it('nests the runtime jar the platform supplies', async () => {
+    const harness = await renderApp();
+    harness.runtimeJar = new Uint8Array([1, 2, 3]);
+    await harness.menu('exportFabricJar');
+    await userEvent.setup().click(await screen.findByTestId('fabric-jar-dialog-submit'));
+    await toast(/^Exported the Fabric mod jar to /);
+    expect(harness.saved).toHaveLength(1);
+  });
+
+  it('is gated by errors in any layer and offered in the palette and the Export menu', async () => {
+    const harness = await renderApp();
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    expect(within(palette).getByTestId('command-exportFabricJar')).toBeTruthy();
+    await userEvent.setup().keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByTestId('command-palette')).toBeNull());
+    addFunction(harness, ['bogus here']);
+    await act(() => harness.session.flushValidation());
+    await harness.menu('exportFabricJar');
+    await toast('Fix 1 error first (see Problems).');
+    expect(screen.queryByTestId('fabric-jar-dialog')).toBeNull();
+  });
+
+  it('notes on a vanilla pack export that blocks and items need the Fabric jar', async () => {
+    const harness = await renderApp();
+    await harness.menu('exportResourcePack');
+    const plain = await toast(/^Exported to /);
+    expect(plain.textContent).not.toContain(MSM_CONTENT_NOTE);
+    addBlock(harness);
+    await act(() => harness.session.flushValidation());
+    await harness.menu('exportResourcePack');
+    await screen.findByText((content) => content.includes(MSM_CONTENT_NOTE));
   });
 });
 

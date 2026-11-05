@@ -210,3 +210,22 @@ export function fabricJarExportDisabledReason(
  */
 export const MSM_CONTENT_NOTE =
   'Blocks and items are not part of resource or data packs; use Export Fabric mod jar for them.';
+
+/**
+ * Whether any element of `project` lowers to an `msm` layer file (blocks, items, the mod
+ * element). Elements that fail to lower are not counted: their errors already show.
+ *
+ * @param project - The open project.
+ * @param lower - Lowers one element through its kind.
+ */
+export function hasMsmOutput(project: Project, lower: LowerElement): boolean {
+  return project.namespaces.some((namespace) =>
+    namespace.elements.some((element) => {
+      try {
+        return lower(element).some((file) => file.layer === 'msm');
+      } catch {
+        return false;
+      }
+    }),
+  );
+}

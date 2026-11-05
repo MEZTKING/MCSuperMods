@@ -1,0 +1,13 @@
+{
+  "data": {
+    "pack": {
+      "description": ""
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:pack",
+  "kind": "minecraft:pack_mcmeta",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z"
+  }
+}

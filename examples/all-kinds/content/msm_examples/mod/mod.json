@@ -1,0 +1,23 @@
+{
+  "data": {
+    "authors": [
+      "Your name"
+    ],
+    "description": "Blocks and items made with MCSuperMods.",
+    "licence": "MIT",
+    "mod_id": "msm_examples",
+    "name": "MSM Examples",
+    "version": "0.1.0"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:mod",
+  "kind": "msm:mod",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "One per project: it becomes fabric.mod.json in the Fabric mod jar. mod_id names the mod to Fabric and must be unique among installed mods: a lower-case letter, then letters, digits, _ or -. version is shown in the mod list; raise it with each release. Without this element the jar gets a mod id derived from the project name.",
+    "tags": [
+      "example",
+      "mod"
+    ]
+  }
+}

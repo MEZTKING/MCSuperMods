@@ -4,11 +4,11 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (99) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Element templates** (106) | **Add element** (Ctrl+N) | One new element with useful starting content |
 | **Project starters** (11) | **New from starter…** | A new project, already filled |
-| **Examples** (56) | **Help → Examples…** | A commented project or element to open or copy |
+| **Examples** (61) | **Help → Examples…** | A commented project or element to open or copy |
 
-Templates come from the resource pack, data pack, structures and worldgen plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](../adr/0020-templates-starters-examples.md)).
+Templates come from the resource pack, data pack, structures, worldgen and blocks and items plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](../adr/0020-templates-starters-examples.md)).
 
 No starter or example contains Mojang files. Textures are small placeholder images that MCSuperMods draws itself; the music disc plays a track from your own copy of the game.
 
@@ -234,6 +234,30 @@ The id is the template's identifier (the app uses it as `template-<id>` in tests
 | Material condition: above sea level | `material_condition` | `minecraft:worldgen/material_condition` | True at and above y 63; use it in surface rules. |
 | Material rule: grass and dirt | `material_rule` | `minecraft:worldgen/material_rule` | A surface rule that places bedrock at the bottom and grass over dirt on top. |
 
+#### Blocks
+
+New blocks, items and the mod metadata exist only in the **Fabric mod jar** export; the resource and data pack exports leave them out and carry only their models, names, loot tables and tags (see [New blocks and items need the mod jar](#new-blocks-and-items-need-the-mod-jar)).
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Simple block | `msm_block_simple` | `msm:block` | A stone-like building block that drops itself and is mined with a pickaxe. |
+| Glowing ore | `msm_block_glowing_ore` | `msm:block` | An ore that gives off light and drops itself only when mined with an iron pickaxe or better. |
+| Interactive block | `msm_block_interactive` | `msm:block` | A block that chimes when used and sparkles when stepped on, with one event triggering another. |
+
+#### Items
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Food item | `msm_item_food` | `msm:item` | Something to eat that restores hunger, shown with the bread model. |
+| Tool item | `msm_item_tool` | `msm:item` | An iron-tier pickaxe with durability, shown with the iron pickaxe model. |
+| Magic wand | `msm_item_wand` | `msm:item` | An item that plays a sound and spawns particles when used, once a second. |
+
+#### Mod
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Mod metadata | `msm_mod` | `msm:mod` | The name, version and licence of the Fabric mod; one per project. Its name is always `mod`, and the mod id comes from the namespace. |
+
 ## Project starters
 
 A starter creates a whole project in an empty folder. Open the list in any of these ways:
@@ -252,7 +276,7 @@ The **New project** dialog groups the starters (Blank, Packs, Themed content) an
 | Resource pack | `resource_pack` | resource | The vanilla stick gets a new model, a placeholder texture and an English name. |
 | Data pack | `data_pack` | data | A load message, a `greet` function and one crafting recipe. |
 | Resource and data pack | `combined` | resource, data | Both of the above in one project. |
-| Custom ore | `custom_ore` | resource, data | Emerald ore becomes "Ruby Ore" and the emerald becomes "Ruby": textures, models, a loot table, a Block of Ruby recipe, a `gems` item tag and two advancements. |
+| Custom ore | `custom_ore` | resource, data, mod | A real Ruby Ore block that drops one or two rubies when mined with an iron pickaxe or better, the Ruby item and a Block of Ruby: textures, models, a loot table, three recipes, a `gems` item tag, two advancements and the mod metadata. |
 | Recipe pack | `recipe_pack` | data | Shaped, shapeless, smelting, blasting and stonecutting recipes, an item tag used as an ingredient, a crafting advancement and a load message. |
 | Custom music disc | `music_disc` | resource, data | A jukebox song, its sound event, a disc model and texture, and a `give_disc` function. |
 | Functions | `function_starter` | data | `load` and `tick` functions wired to `#minecraft:load` and `#minecraft:tick`, a jump scoreboard, a `greet` function and a function tag of your own. |
@@ -262,11 +286,11 @@ The **New project** dialog groups the starters (Blank, Packs, Themed content) an
 
 Three starters need a word of explanation:
 
-- **Custom ore is a reskin.** A resource or data pack cannot add new blocks or items, so until real blocks arrive in Phase 4 the starter changes how emerald ore and the emerald look, what they are called and what the ore drops. In any world where the packs are enabled, emerald ore *is* ruby ore. Phase 4 adds a starter with a real new ore block.
+- **Custom ore needs the Fabric mod jar.** Its ore, ruby and Block of Ruby are new blocks and items (`msm:block`, `msm:item`), which a resource or data pack cannot add. Export the **Fabric mod jar** and install it with Fabric Loader and Fabric API; the jar carries the `msm_runtime` mod inside unless you choose a separate runtime. The resource and data pack exports still work but hold only the models, textures, names, loot tables, tags, recipes and advancements, which do nothing without the blocks and items. Nothing in the `minecraft` namespace is changed: emerald ore stays emerald ore.
 - **The music disc plays a vanilla track.** MCSuperMods bundles no audio, so the sound event points at the game's own `records/cat` file. The disc itself is the vanilla `music_disc_13` item carrying the new song and a name, drawn with the starter's own disc model; the `give_disc` function gives it to you (`/function <namespace>:give_disc`), because a pack cannot add a new item to the creative inventory.
 - **A custom biome needs its own World Type.** A data pack cannot add a biome to the normal overworld, so the Custom biome starters add a World Type that lists the new biome. Choose it when creating a new world; existing worlds keep their biomes, although the hamlets of the jigsaw starters do appear in new chunks of an existing world.
 
-The [Getting started](getting-started.md) guide walks through the Custom ore and Functions starters in Minecraft; the [Worldgen](worldgen.md) guide walks through the worldgen starters.
+The [Getting started](getting-started.md) guide walks through the Functions starter in Minecraft (its Custom ore steps still describe the earlier emerald ore reskin); the [Worldgen](worldgen.md) guide walks through the worldgen starters.
 
 ## Examples gallery
 
@@ -286,11 +310,22 @@ Every element in an example carries notes: three to six sentences naming each fi
 | **Open as new project…** | Asks for an empty folder and creates a new project from the example, like a starter. Works with no project open. | To explore an example on its own, or start from it. |
 | **Copy into my project** | Adds the example's elements and placeholder files to the open project, in the namespace chosen under **Copy into namespace**. | To reuse one example inside your own work. |
 
-Copying needs an open project with a namespace of its own (the button explains why when it is disabled). The whole copy is one step: **Undo** ("Copy example …") removes it again. Elements whose ids already exist in the project are skipped and listed, never overwritten; so are placeholder files that already exist. Examples that change vanilla content (Custom ore overrides `minecraft:emerald_ore`, for example) also add elements in the `minecraft` namespace.
+Copying needs an open project with a namespace of its own (the button explains why when it is disabled). The whole copy is one step: **Undo** ("Copy example …") removes it again. Elements whose ids already exist in the project are skipped and listed, never overwritten; so are placeholder files that already exist. Examples that change vanilla content (the Resource pack starter's stick, for example) also add elements in the `minecraft` namespace.
+
+### New blocks and items need the mod jar
+
+The blocks and items examples and the Custom ore starter use the `msm:block`, `msm:item` and `msm:mod` kinds. Try them in game with the **Fabric mod jar** export, not the pack exports. Their behaviour is written as components and events:
+
+- **Switch lamp** shows `msm:on_interact` and `msm:redstone`: using the lamp, or powering it, runs an event whose `set_block_state` action swaps it for a lit twin block, and the lit lamp swaps back. An action cannot change a block's own properties, so the lit state is a second block with no item of its own.
+- **Sparkle berries** shows `msm:food` with `msm:on_use`: the use event spawns particles and plays a sound, then eating starts as usual.
+- **Sturdy pickaxe** shows `msm:tool` and `msm:durability`, with a recipe whose result is the project item.
+- **Beacon stone** shows an event chain: the use event plays a sound and runs `trigger_event`, and the second event spawns particles and runs a function with `run_function`. Chains nest at most 16 events deep, and an event that triggers itself is reported as a cycle.
+
+Event ids are namespaced strings of your own (`<namespace>:lamp_turn_on`); each block or item declares its events under `events`, and its components name them.
 
 ### All examples
 
-There is one example for each of the 52 element kinds, plus four themed starters listed again under **Starters**. The three worldgen starters have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 55 element kinds, two more blocks and items examples (a tool and an event chain), plus four themed starters listed again under **Starters**. The three worldgen starters have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -346,7 +381,12 @@ There is one example for each of the 52 element kinds, plus four themed starters
 | Block state provider | `example_block_state_provider` | Worldgen (advanced) | `minecraft:worldgen/block_state_provider` | Picks stone, andesite or cobblestone by weight. |
 | Material condition | `example_material_condition` | Worldgen (advanced) | `minecraft:worldgen/material_condition` | True at and above y 63; a building block of surface rules. |
 | Material rule | `example_material_rule` | Worldgen (advanced) | `minecraft:worldgen/material_rule` | A surface rule: bedrock at the bottom, grass over dirt on top. |
-| Custom ore project | `starter_custom_ore` | Starters | `minecraft:block_definition` | The Custom ore starter: emerald ore reskinned as ruby ore, with loot, a recipe, a tag and advancements. |
+| Switch lamp | `example_msm_block` | Blocks | `msm:block` | A custom block that lights up when used or powered by redstone, by swapping itself for a lit twin. |
+| Sparkle berries | `example_msm_item` | Items | `msm:item` | A custom food item that sparkles and chimes when you start eating it. |
+| Mod metadata | `example_msm_mod` | Mod | `msm:mod` | The name, version, authors and licence of the Fabric mod jar. |
+| Sturdy pickaxe | `example_msm_tool` | Items | `msm:item` | A custom iron-tier pickaxe with extra durability and a crafting recipe. |
+| Beacon stone | `example_msm_event_chain` | Blocks | `msm:block` | A block whose use event triggers a second event that spawns particles and runs a function. |
+| Custom ore project | `starter_custom_ore` | Starters | `msm:block` | The Custom ore starter: a real ruby ore block, the ruby item and a block of ruby, with loot, recipes, a tag, advancements and the mod metadata. |
 | Recipe pack project | `starter_recipe_pack` | Starters | `minecraft:recipe` | The Recipe pack starter: one recipe of each common type and an advancement. |
 | Custom music disc project | `starter_music_disc` | Starters | `minecraft:jukebox_song` | The Custom music disc starter: a jukebox song, its disc model and texture. |
 | Functions project | `starter_function_starter` | Starters | `minecraft:function` | The Functions starter: load and tick functions, a scoreboard and function tags. |
@@ -357,7 +397,8 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 
 | Folder | Namespace | Contents |
 |---|---|---|
-| `examples/all-kinds/` | `msm_examples` | The 52 per-kind examples in one project |
+| `examples/all-kinds/` | `msm_examples` | The 55 per-kind examples in one project |
+| `examples/blocks-items/` | `msm_examples` | The two blocks and items behaviour examples (Sturdy pickaxe, Beacon stone) |
 | `examples/starters/custom_ore/` | `msm_starter` | The Custom ore starter |
 | `examples/starters/recipe_pack/` | `msm_starter` | The Recipe pack starter |
 | `examples/starters/music_disc/` | `msm_starter` | The Custom music disc starter |
@@ -370,7 +411,7 @@ Copy a folder somewhere else before opening it, so your edits do not change the 
 
 ## Replacing the placeholders
 
-**Textures.** Starters and examples draw 16×16 placeholder textures: ore specks, a gem, a disc or a plain colour. To use your own, paint a PNG with the same file name and choose **Import assets** on the toolbar. Pick the namespace and **Block textures** or **Item textures**, then the file. Importing a file with an existing name replaces the placeholder; the models keep pointing at it. For the Custom ore starter these are `ruby_ore.png` (block textures) and `ruby.png` (item textures); for the music disc, `my_song_disc.png` (item textures).
+**Textures.** Starters and examples draw 16×16 placeholder textures: ore specks, a gem, a disc or a plain colour. To use your own, paint a PNG with the same file name and choose **Import assets** on the toolbar. Pick the namespace and **Block textures** or **Item textures**, then the file. Importing a file with an existing name replaces the placeholder; the models keep pointing at it. For the Custom ore starter these are `ruby_ore.png` and `ruby_block.png` (block textures) and `ruby.png` (item textures); for the Switch lamp, `lamp.png` and `lamp_lit.png` (block textures); for the music disc, `my_song_disc.png` (item textures).
 
 **The music disc sound.** Export your track as Ogg Vorbis (`.ogg`; Audacity can do this), then:
 
@@ -386,4 +427,4 @@ The `examples/` folder is generated from `packages/plugins/library/src/`; do not
 UPDATE_GOLDENS=1 pnpm --filter @msm/exporters exec vitest run test/library.test.ts
 ```
 
-`packages/exporters/test/library.test.ts` fails in CI when the folder drifts from the library. It also builds every starter and example for each supported version, saves and reloads it, validates every element and function, and exports both packs with zero problems. Template tests live with each plugin (`packages/plugins/<plugin>/test/templates.test.ts` for `resourcepack`, `datapack`, `structures` and `worldgen`).
+`packages/exporters/test/library.test.ts` fails in CI when the folder drifts from the library. It also builds every starter and example for each supported version, saves and reloads it, validates every element and function, and exports both packs with zero problems; projects with blocks, items or mod metadata are also exported as a Fabric mod jar with zero problems. Template tests live with each plugin (`packages/plugins/<plugin>/test/templates.test.ts` for `resourcepack`, `datapack`, `structures`, `worldgen` and `blocks-items`).

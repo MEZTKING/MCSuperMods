@@ -1,0 +1,18 @@
+{
+  "formatVersion": 1,
+  "name": "MSM Blocks and Items Examples",
+  "namespaces": [
+    "msm_examples"
+  ],
+  "plugins": [
+    "msm.resourcepack",
+    "msm.datapack",
+    "msm.structures",
+    "msm.worldgen",
+    "msm.blocks-items"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

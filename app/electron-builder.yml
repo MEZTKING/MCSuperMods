@@ -13,6 +13,13 @@ files:
   - out/**
   - package.json
 artifactName: ${productName}-${version}-${os}-${arch}.${ext}
+# The msm_runtime jar the Fabric content jar nests (ADR 0026 D4), read by the packaged app
+# from `resources/runtime/msm_runtime.jar`. `scripts/stage-runtime.mjs` (run by `dist` and
+# `dist:dir`) copies it from `engine-mod/build/libs/`; when it is absent electron-builder
+# warns "file source doesn't exist" and packages the app without it.
+extraResources:
+  - from: build/runtime/msm_runtime.jar
+    to: runtime/msm_runtime.jar
 
 # Release target: Windows installer, unsigned until the user supplies signing credentials.
 win:

@@ -8,7 +8,8 @@
     "msm.resourcepack",
     "msm.datapack",
     "msm.structures",
-    "msm.worldgen"
+    "msm.worldgen",
+    "msm.blocks-items"
   ],
   "settings": {},
   "targets": [

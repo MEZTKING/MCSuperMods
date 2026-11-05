@@ -1,0 +1,30 @@
+{
+  "data": {
+    "category": "equipment",
+    "key": {
+      "I": "minecraft:iron_block",
+      "S": "minecraft:stick"
+    },
+    "pattern": [
+      "III",
+      " S ",
+      " S "
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_examples:sturdy_pickaxe"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:craft_sturdy_pickaxe",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Three iron blocks on two sticks craft the pickaxe. A recipe can name a project item as its result like any vanilla item.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

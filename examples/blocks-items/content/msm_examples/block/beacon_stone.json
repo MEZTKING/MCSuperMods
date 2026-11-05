@@ -1,0 +1,65 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2,
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:light_emitter": {
+        "level": 5
+      },
+      "msm:on_interact": {
+        "event": "msm_examples:beacon_stone_activate"
+      }
+    },
+    "display_name": "Beacon Stone",
+    "events": {
+      "msm_examples:beacon_stone_activate": {
+        "actions": [
+          {
+            "sound": "minecraft:block.beacon.activate",
+            "type": "play_sound"
+          },
+          {
+            "event": "msm_examples:beacon_stone_flare",
+            "type": "trigger_event"
+          }
+        ]
+      },
+      "msm_examples:beacon_stone_flare": {
+        "actions": [
+          {
+            "count": 20,
+            "particle": "minecraft:end_rod",
+            "speed": 0.05,
+            "spread": 0.5,
+            "type": "spawn_particle"
+          },
+          {
+            "function": "msm_examples:beacon_stone/flare",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "model": "minecraft:block/lodestone",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:beacon_stone",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An event chain. Using the block fires msm_examples:beacon_stone_activate, which plays a sound and then triggers msm_examples:beacon_stone_flare with trigger_event. That event spawns particles and runs the function msm_examples:beacon_stone/flare as the player. Chains may nest up to 16 events deep, and an event that triggers itself is reported as a cycle. It reuses the vanilla lodestone model.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

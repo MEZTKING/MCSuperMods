@@ -274,3 +274,28 @@ describe('Toolbar more exports', () => {
     expect(screen.getByTestId('export-schematics').getAttribute('aria-disabled')).toBe('true');
   });
 });
+
+describe('Toolbar Fabric mod jar export', () => {
+  it('offers the Fabric mod jar in the Export menu', async () => {
+    const onExportFabricJar = vi.fn();
+    renderToolbar(props({ onExportZip: vi.fn(), onExportFabricJar }));
+    await userEvent.setup().click(screen.getByTestId('toolbar-export-menu'));
+    const entry = await screen.findByTestId('export-fabric-jar');
+    expect(entry.textContent).toBe('Fabric mod (.jar)…');
+    fireEvent.click(entry);
+    expect(onExportFabricJar).toHaveBeenCalledOnce();
+  });
+
+  it('shows why the Fabric mod jar export is disabled', async () => {
+    renderToolbar(
+      props({
+        onExportFabricJar: vi.fn(),
+        fabricJarExportDisabledReason: 'Fix 2 errors first (see Problems).',
+      }),
+    );
+    await userEvent.setup().click(screen.getByTestId('toolbar-export-menu'));
+    const reason = await screen.findByTestId('export-fabric-jar-reason');
+    expect(reason.textContent).toBe('Fix 2 errors first (see Problems).');
+    expect(screen.getByTestId('export-fabric-jar').getAttribute('aria-disabled')).toBe('true');
+  });
+});

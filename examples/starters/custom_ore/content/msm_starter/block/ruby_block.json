@@ -1,0 +1,27 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 5,
+        "min_tier": "iron",
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Block of Ruby",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "model": "msm_starter:block/ruby_block",
+    "sound_type": "metal"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_block",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A storage block for nine rubies. \"loot\": \"self\" generates a loot table that drops the block itself. Its block item shares its id, so recipes refer to it by the block id."
+  }
+}

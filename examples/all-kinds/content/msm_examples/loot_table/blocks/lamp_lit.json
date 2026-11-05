@@ -1,0 +1,30 @@
+{
+  "data": {
+    "pools": [
+      {
+        "condition": {
+          "type": "minecraft:survives_explosion"
+        },
+        "entries": [
+          {
+            "name": "msm_examples:lamp",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:block"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:blocks/lamp_lit",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The lit lamp has no item of its own, so breaking it drops the unlit lamp.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

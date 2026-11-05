@@ -13,8 +13,9 @@
     "preview": "electron-vite preview",
     "smoke": "electron-vite build && node scripts/smoke.mjs",
     "test": "vitest run",
-    "dist": "electron-builder --publish never",
-    "dist:dir": "electron-builder --dir --publish never",
+    "dist": "node scripts/stage-runtime.mjs && electron-builder --publish never",
+    "dist:dir": "node scripts/stage-runtime.mjs && electron-builder --dir --publish never",
+    "stage-runtime": "node scripts/stage-runtime.mjs",
     "e2e": "playwright test -c e2e/playwright.config.ts",
     "smoke:packaged": "node scripts/smoke-packaged.mjs",
     "make-icon": "node scripts/make-icon.mjs"

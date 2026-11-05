@@ -1,0 +1,49 @@
+{
+  "data": {
+    "components": {
+      "msm:food": {
+        "can_always_eat": true,
+        "nutrition": 2,
+        "saturation": 0.3
+      },
+      "msm:on_use": {
+        "cooldown_ticks": 10,
+        "event": "msm_examples:sparkle_berries_sparkle"
+      }
+    },
+    "creative_tab": "minecraft:food_and_drinks",
+    "display_name": "Sparkle Berries",
+    "events": {
+      "msm_examples:sparkle_berries_sparkle": {
+        "actions": [
+          {
+            "count": 10,
+            "particle": "minecraft:glow",
+            "spread": 0.5,
+            "type": "spawn_particle"
+          },
+          {
+            "pitch": 1.5,
+            "sound": "minecraft:block.amethyst_block.chime",
+            "type": "play_sound"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 64,
+    "model": "minecraft:item/glow_berries",
+    "rarity": "uncommon"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sparkle_berries",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A custom item. msm:food makes it edible: nutrition is hunger restored, saturation how long that lasts, and can_always_eat allows eating on a full stomach. msm:on_use fires msm_examples:sparkle_berries_sparkle when the player uses the item, and eating then starts as usual. cooldown_ticks greys the item out for half a second after each use. It reuses the vanilla glow berries model, so it needs no texture.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

@@ -78,6 +78,7 @@ import {
   exportDisabledReason,
   fabricJarExportDisabledReason,
   hasLayerOutput,
+  hasMsmOutput,
   installDisabledReason,
   installTargetOption,
   layerProblems,
@@ -448,7 +449,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   );
   // Blocks, items and the mod element lower to the `msm` layer, which only the jar carries.
   const hasMsmContent = useMemo(
-    () => project !== null && hasLayerOutput(project, 'msm', lowerForTarget),
+    () => project !== null && hasMsmOutput(project, lowerForTarget),
     [project, lowerForTarget],
   );
   // Errors block per pack: an error in an element that lowers only to the data pack leaves

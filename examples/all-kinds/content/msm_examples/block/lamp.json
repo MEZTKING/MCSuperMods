@@ -1,0 +1,50 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.3,
+        "resistance": 0.3
+      },
+      "msm:on_interact": {
+        "event": "msm_examples:lamp_turn_on"
+      },
+      "msm:redstone": {
+        "on_powered": "msm_examples:lamp_turn_on"
+      }
+    },
+    "display_name": "Switch Lamp",
+    "events": {
+      "msm_examples:lamp_turn_on": {
+        "actions": [
+          {
+            "pitch": 1.2,
+            "sound": "minecraft:block.lever.click",
+            "type": "play_sound"
+          },
+          {
+            "state": "msm_examples:lamp_lit",
+            "type": "set_block_state"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:redstone_blocks"
+    },
+    "loot": "self",
+    "model": "msm_examples:block/lamp",
+    "sound_type": "glass"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:lamp",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A custom block with behaviour. Using it (msm:on_interact) or powering it with redstone (on_powered of msm:redstone) fires the event msm_examples:lamp_turn_on. The event's actions run in order: a click, then set_block_state replaces the lamp with the lit lamp. An action cannot change a block's own properties, so a second block stands for the lit state. Export the Fabric mod jar to try it in game.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

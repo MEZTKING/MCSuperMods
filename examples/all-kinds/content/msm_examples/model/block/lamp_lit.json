@@ -1,0 +1,19 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_examples:block/lamp_lit"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:block/lamp_lit",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The lit lamp: a full cube drawn from textures/block/lamp_lit.png.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

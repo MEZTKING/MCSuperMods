@@ -8,8 +8,8 @@
  * 1. Downloads, into a cache folder, the Fabric server launcher for the game, loader and the
  *    latest stable installer (meta.fabricmc.net `/v2/versions/loader/<game>/<loader>/<installer>/server/jar`)
  *    and Fabric API from maven.fabricmc.net, checked against its published SHA-1.
- * 2. Prepares a run folder: `eula.txt`, `server.properties` (offline, a free port, a flat
- *    world), a fresh `mods/` holding Fabric API and the content jar (plus `--extra` jars), and
+ * 2. Prepares a run folder: `eula.txt`, `server.properties` (offline, a free port, no
+ *    structures), a fresh `mods/` holding Fabric API and the content jar (plus `--extra` jars), and
  *    no world or logs from earlier runs. The launcher downloads the game server and libraries
  *    into the run folder on first start and reuses them afterwards.
  * 3. Starts `java -jar fabric-server-launch.jar nogui`, waits for `Done (`, sends `stop` and
@@ -220,7 +220,7 @@ const DONE = /\bDone \(\d/;
 const LOAD_FAILURE =
   /Failed to load|Mod resolution failed|Incompatible mods? found|Some of your mods are incompatible/;
 const RUNTIME_FRAME = /\bat dev\.mcsupermods\./;
-const MOD_LIST = /Loading \d+ mods:|^\s+- (msm_runtime|fabric-api|fabricloader|minecraft)\b|\\-- msm_runtime/;
+const MOD_LIST = /Loading \d+ mods:|^\s+(?:- |\\-- )(?:msm|fabric-api |fabricloader |minecraft )/;
 
 /**
  * Checks a server log against the expectations of {@link Options}.
@@ -304,7 +304,6 @@ export function serverProperties(port: number): string {
   return [
     'online-mode=false',
     `server-port=${port}`,
-    'level-type=minecraft\\:flat',
     'generate-structures=false',
     'spawn-protection=0',
     'max-players=1',

@@ -1,0 +1,51 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.3,
+        "resistance": 0.3
+      },
+      "msm:light_emitter": {
+        "level": 15
+      },
+      "msm:on_interact": {
+        "event": "msm_examples:lamp_turn_off"
+      },
+      "msm:redstone": {
+        "on_unpowered": "msm_examples:lamp_turn_off"
+      }
+    },
+    "display_name": "Lit Switch Lamp",
+    "events": {
+      "msm_examples:lamp_turn_off": {
+        "actions": [
+          {
+            "pitch": 0.8,
+            "sound": "minecraft:block.lever.click",
+            "type": "play_sound"
+          },
+          {
+            "state": "msm_examples:lamp",
+            "type": "set_block_state"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": false,
+    "loot": "msm_examples:blocks/lamp_lit",
+    "model": "msm_examples:block/lamp_lit",
+    "sound_type": "glass"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:lamp_lit",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The lit twin: full light, no block item (\"item\": false) and a loot table that drops the unlit lamp. Using it, or taking its redstone power away, swaps it back. A lamp lit by hand stays lit until used again.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

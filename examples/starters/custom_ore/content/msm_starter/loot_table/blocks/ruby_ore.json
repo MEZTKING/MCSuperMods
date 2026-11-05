@@ -22,20 +22,21 @@
                 "type": "minecraft:apply_bonus"
               }
             ],
-            "name": "minecraft:emerald",
+            "name": "msm_starter:ruby",
             "type": "minecraft:item"
           }
         ],
         "rolls": 1
       }
     ],
+    "random_sequence": "msm_starter:blocks/ruby_ore",
     "type": "minecraft:block"
   },
   "formatVersion": 1,
-  "id": "minecraft:blocks/emerald_ore",
+  "id": "msm_starter:blocks/ruby_ore",
   "kind": "minecraft:loot_table",
   "meta": {
     "createdAt": "2026-11-04T00:00:00.000Z",
-    "notes": "Replaces what emerald ore drops: one or two rubies, more with Fortune, nothing when blown up. This simple table has no Silk Touch branch, so the ore never drops itself."
+    "notes": "What ruby ore drops: one or two rubies, more with Fortune, nothing when blown up. The ore block names this table in its loot field. This simple table has no Silk Touch branch, so the ore never drops itself."
   }
 }

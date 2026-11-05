@@ -2,14 +2,14 @@
   "formatVersion": 1,
   "name": "Custom ore",
   "namespaces": [
-    "minecraft",
     "msm_starter"
   ],
   "plugins": [
     "msm.resourcepack",
     "msm.datapack",
     "msm.structures",
-    "msm.worldgen"
+    "msm.worldgen",
+    "msm.blocks-items"
   ],
   "settings": {},
   "targets": [

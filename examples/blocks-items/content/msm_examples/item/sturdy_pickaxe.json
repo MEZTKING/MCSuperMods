@@ -1,0 +1,30 @@
+{
+  "data": {
+    "components": {
+      "msm:durability": {
+        "max": 750
+      },
+      "msm:tool": {
+        "tier": "iron",
+        "type": "pickaxe"
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "display_name": "Sturdy Pickaxe",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "minecraft:item/iron_pickaxe",
+    "rarity": "uncommon"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sturdy_pickaxe",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "msm:tool makes the item a pickaxe of the iron tier: it mines what an iron pickaxe mines, as fast. msm:durability overrides the tier durability (250 for iron) with 750 uses. Tools never stack, so max_stack_size is 1. It reuses the vanilla iron pickaxe model.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

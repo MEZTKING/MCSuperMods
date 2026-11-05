@@ -1,0 +1,19 @@
+{
+  "data": {
+    "category": "misc",
+    "cookingtime": 200,
+    "experience": 1,
+    "ingredient": "msm_starter:ruby_ore",
+    "result": {
+      "id": "msm_starter:ruby"
+    },
+    "type": "minecraft:smelting"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_from_smelting",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Smelting ruby ore (picked up with Silk Touch from another mod, or from the creative menu) gives a ruby."
+  }
+}
