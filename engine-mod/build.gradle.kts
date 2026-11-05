@@ -120,6 +120,19 @@ tasks.processResources {
     }
 }
 
+// B151 spike overlay (ADR 0038 D2; B159 replaces it with seams): with -Pmc, src/mc/<mc>/java joins the
+// main source set and each file it holds replaces the file of the same relative path in src/main/java.
+val overlayDir = mc?.let { layout.projectDirectory.dir("src/mc/$it/java").asFile }
+if (overlayDir != null && overlayDir.isDirectory) {
+    val sharedDir = layout.projectDirectory.dir("src/main/java").asFile.absolutePath + File.separator
+    val replaced: Set<String> =
+        overlayDir.walkTopDown().filter { it.isFile }.map { it.relativeTo(overlayDir).invariantSeparatorsPath }.toSet()
+    sourceSets.main { java.srcDir(overlayDir) }
+    val shadowed = Spec<FileTreeElement> { it.file.absolutePath.startsWith(sharedDir) && it.relativePath.pathString in replaced }
+    tasks.compileJava { exclude(shadowed) }
+    tasks.named<Jar>("sourcesJar") { exclude(shadowed) }
+}
+
 tasks.withType<JavaCompile>().configureEach {
     options.release = 25
     options.encoding = "UTF-8"
