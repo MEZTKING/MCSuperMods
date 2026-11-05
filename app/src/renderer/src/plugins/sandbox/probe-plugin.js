@@ -12,7 +12,9 @@ const settleWithin = (promise, ms) =>
       (value) => ({ outcome: 'resolved', detail: String(value) }),
       (error) => ({ outcome: 'rejected', detail: describe(error) }),
     ),
-    new Promise((resolve) => setTimeout(() => resolve({ outcome: 'pending', detail: `no answer in ${ms} ms` }), ms)),
+    new Promise((resolve) =>
+      setTimeout(() => resolve({ outcome: 'pending', detail: `no answer in ${ms} ms` }), ms),
+    ),
   ]);
 
 async function probe(name, run) {
@@ -24,8 +26,10 @@ async function probe(name, run) {
   }
 }
 
-const valueOf = (value) =>
-  value === undefined ? { outcome: 'undefined', detail: 'undefined' } : { outcome: 'value', detail: typeof value };
+const presence = (value) =>
+  value === undefined
+    ? { outcome: 'undefined', detail: 'undefined' }
+    : { outcome: 'value', detail: typeof value };
 
 function socket(url) {
   const ws = new WebSocket(url);
@@ -63,11 +67,16 @@ defineMsmPlugin({
   apiVersion: '^1.0.0',
   contributes: {},
   async probes(options) {
-    const documentUrl = options && typeof options.documentUrl === 'string' ? options.documentUrl : '';
+    const documentUrl =
+      options && typeof options.documentUrl === 'string' ? options.documentUrl : '';
     const results = [
       await probe('typeof fetch', () => ({ outcome: 'value', detail: typeof fetch })),
-      await probe("fetch('https://example.com')", () => settleWithin(fetch('https://example.com'), 3000)),
-      await probe("fetch('file:///etc/hostname')", () => settleWithin(fetch('file:///etc/hostname'), 3000)),
+      await probe("fetch('https://example.com')", () =>
+        settleWithin(fetch('https://example.com'), 3000),
+      ),
+      await probe("fetch('file:///etc/hostname')", () =>
+        settleWithin(fetch('file:///etc/hostname'), 3000),
+      ),
       await probe('fetch(document URL)', () => settleWithin(fetch(documentUrl), 3000)),
       await probe("new WebSocket('wss://example.com')", () => socket('wss://example.com')),
       await probe("XMLHttpRequest('https://example.com')", () => xhr('https://example.com')),
@@ -77,12 +86,13 @@ defineMsmPlugin({
         return { outcome: 'resolved', detail: `loaded=${self.__msmProbeLoaded === true}` };
       }),
       await probe('import(blobUrl)', () => settleWithin(import(blobUrl()), 3000)),
-      await probe("eval('1')", () => ({ outcome: 'resolved', detail: String((0, eval)('1')) })),
+      // biome-ignore lint/security/noGlobalEval: probes that the CSP refuses eval in the worker.
+      await probe("eval('1')", () => ({ outcome: 'resolved', detail: String(eval('1')) })),
       await probe("new Function('return 1')", () => ({
         outcome: 'resolved',
         detail: String(new Function('return 1')()),
       })),
-      await probe('indexedDB', () => valueOf(self.indexedDB)),
+      await probe('indexedDB', () => presence(self.indexedDB)),
       await probe("indexedDB.open('x')", () => {
         const request = self.indexedDB.open('msm-probe');
         return new Promise((resolve) => {
@@ -91,14 +101,19 @@ defineMsmPlugin({
           setTimeout(() => resolve({ outcome: 'pending', detail: 'no event' }), 3000);
         });
       }),
-      await probe('caches', () => valueOf(self.caches)),
-      await probe('navigator.storage', () => valueOf(self.navigator.storage)),
-      await probe('self.msm', () => valueOf(self.msm)),
-      await probe('window', () => valueOf(typeof window === 'undefined' ? undefined : window)),
-      await probe('document', () => valueOf(typeof document === 'undefined' ? undefined : document)),
-      await probe('require', () => valueOf(typeof require === 'undefined' ? undefined : require)),
-      await probe('process', () => valueOf(typeof process === 'undefined' ? undefined : process)),
-      await probe('location.href', () => ({ outcome: 'value', detail: String(self.location.href) })),
+      await probe('caches', () => presence(self.caches)),
+      await probe('navigator.storage', () => presence(self.navigator.storage)),
+      await probe('self.msm', () => presence(self.msm)),
+      await probe('window', () => presence(typeof window === 'undefined' ? undefined : window)),
+      await probe('document', () =>
+        presence(typeof document === 'undefined' ? undefined : document),
+      ),
+      await probe('require', () => presence(typeof require === 'undefined' ? undefined : require)),
+      await probe('process', () => presence(typeof process === 'undefined' ? undefined : process)),
+      await probe('location.href', () => ({
+        outcome: 'value',
+        detail: String(self.location.href),
+      })),
       await probe('origin', () => ({ outcome: 'value', detail: String(self.origin) })),
     ];
     return results;

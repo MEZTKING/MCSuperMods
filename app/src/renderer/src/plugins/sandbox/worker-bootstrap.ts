@@ -59,7 +59,11 @@ export function workerBootstrap(strip: boolean, stripped: readonly string[]): vo
       object = Object.getPrototypeOf(object) as Obj | null;
     }
     try {
-      Object.defineProperty(target, name, { value: undefined, configurable: false, writable: false });
+      Object.defineProperty(target, name, {
+        value: undefined,
+        configurable: false,
+        writable: false,
+      });
     } catch {
       // Already non-configurable on the object itself.
     }
@@ -221,7 +225,11 @@ export function workerBootstrap(strip: boolean, stripped: readonly string[]): vo
   void Promise.resolve().then(() => {
     delete scope.defineMsmPlugin;
     if (plugin === null) {
-      post({ type: 'fatal', code: 'plugin.crashed', message: 'The bundle never called defineMsmPlugin.' });
+      post({
+        type: 'fatal',
+        code: 'plugin.crashed',
+        message: 'The bundle never called defineMsmPlugin.',
+      });
       return;
     }
     const contributes: Record<string, { data: unknown; functions: string[] }[]> = {};

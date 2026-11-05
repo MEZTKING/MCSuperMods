@@ -51,7 +51,12 @@ export interface PluginWorker {
   /** `starting`, `ready`, `failed` (timeout or crash; the worker is gone) or `terminated`. */
   readonly state: 'starting' | 'ready' | 'failed' | 'terminated';
   /** Sends one request; rejects with a {@link SandboxError} on a deadline, crash or bad result. */
-  call(method: SandboxMethod, args: unknown[], deadlineMs: number, hooks?: CallHooks): Promise<unknown>;
+  call(
+    method: SandboxMethod,
+    args: unknown[],
+    deadlineMs: number,
+    hooks?: CallHooks,
+  ): Promise<unknown>;
   /** Stops the worker; pending calls reject with `plugin.unavailable`. */
   terminate(): void;
 }
@@ -99,7 +104,9 @@ export function createPluginWorker(
   code: string,
   options: CreatePluginWorkerOptions = {},
 ): PluginWorker {
-  const worker = (options.spawn ?? spawnBlobWorker)(`${bootstrapSource(options.strip ?? true)}${code}\n`);
+  const worker = (options.spawn ?? spawnBlobWorker)(
+    `${bootstrapSource(options.strip ?? true)}${code}\n`,
+  );
   const pending = new Map<number, Pending>();
   let nextId = 1;
   let state: PluginWorker['state'] = 'starting';
@@ -120,7 +127,9 @@ export function createPluginWorker(
     rejectReady(error);
     for (const entry of pending.values()) {
       clearTimeout(entry.timer);
-      entry.reject(nextState === 'failed' ? error : new SandboxError('plugin.unavailable', error.message));
+      entry.reject(
+        nextState === 'failed' ? error : new SandboxError('plugin.unavailable', error.message),
+      );
     }
     pending.clear();
   };
@@ -135,7 +144,10 @@ export function createPluginWorker(
     if (message.op === 'writeFile') {
       const [path, contents] = message.args;
       if (typeof path !== 'string' || !(contents instanceof Uint8Array)) {
-        settle(message.id, new SandboxError('plugin.bad-result', 'writeFile needs a path and bytes.'));
+        settle(
+          message.id,
+          new SandboxError('plugin.bad-result', 'writeFile needs a path and bytes.'),
+        );
         return;
       }
       try {
@@ -184,7 +196,10 @@ export function createPluginWorker(
     }
   });
   worker.addEventListener('error', (event) => {
-    fail(new SandboxError('plugin.crashed', event.message ?? 'The plugin worker crashed.'), 'failed');
+    fail(
+      new SandboxError('plugin.crashed', event.message ?? 'The plugin worker crashed.'),
+      'failed',
+    );
   });
 
   return {
@@ -194,7 +209,9 @@ export function createPluginWorker(
     },
     call(method, args, deadlineMs, hooks) {
       if (state === 'failed' || state === 'terminated') {
-        return Promise.reject(new SandboxError('plugin.unavailable', 'The plugin worker is not running.'));
+        return Promise.reject(
+          new SandboxError('plugin.unavailable', 'The plugin worker is not running.'),
+        );
       }
       const id = nextId++;
       return new Promise<unknown>((resolve, reject) => {
@@ -210,7 +227,10 @@ export function createPluginWorker(
       });
     },
     terminate() {
-      fail(new SandboxError('plugin.unavailable', 'The plugin worker was terminated.'), 'terminated');
+      fail(
+        new SandboxError('plugin.unavailable', 'The plugin worker was terminated.'),
+        'terminated',
+      );
     },
   };
 }

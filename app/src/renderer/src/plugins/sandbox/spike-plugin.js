@@ -97,9 +97,15 @@ defineMsmPlugin({
           await input.sink.writeFile('notes.txt', encoder.encode(lines));
           await input.sink.writeFile(
             'meta/index.json',
-            encoder.encode(JSON.stringify({ project: input.projectName, count: input.files.length })),
+            encoder.encode(
+              JSON.stringify({ project: input.projectName, count: input.files.length }),
+            ),
           );
-          input.problems.report({ severity: 'info', code: 'spike.exported', message: 'Two files.' });
+          input.problems.report({
+            severity: 'info',
+            code: 'spike.exported',
+            message: 'Two files.',
+          });
         },
       },
     ],

@@ -44,10 +44,11 @@ function timing(samples: number[]): Timing {
 /** The newest target's facts as plain data (no hooks), as a worker receives them. */
 function targetFacts(): Record<string, unknown> {
   const target = builtInTargets[builtInTargets.length - 1];
-  const { migrateFrom: _migrate, javaProject: _java, ...facts } = target as unknown as Record<
-    string,
-    unknown
-  >;
+  const {
+    migrateFrom: _migrate,
+    javaProject: _java,
+    ...facts
+  } = target as unknown as Record<string, unknown>;
   return JSON.parse(JSON.stringify(facts)) as Record<string, unknown>;
 }
 
@@ -72,7 +73,14 @@ const spike = {
     const worker = createPluginWorker(probePluginSource, { strip: options.strip });
     try {
       await worker.ready;
-      return (await worker.call('call', ['probes', { documentUrl: (globalThis as unknown as { location: { href: string } }).location.href }], 60_000)) as ProbeResult[];
+      return (await worker.call(
+        'call',
+        [
+          'probes',
+          { documentUrl: (globalThis as unknown as { location: { href: string } }).location.href },
+        ],
+        60_000,
+      )) as ProbeResult[];
     } finally {
       worker.terminate();
     }
@@ -98,7 +106,11 @@ const spike = {
     clearInterval(ticker);
     const next = createPluginWorker(spikePluginSource);
     await next.ready;
-    const nextWorkerLower = await next.call('lower', ['spike:note', noteElement('after'), targetFacts()], 2000);
+    const nextWorkerLower = await next.call(
+      'lower',
+      ['spike:note', noteElement('after'), targetFacts()],
+      2000,
+    );
     next.terminate();
     return { code, elapsedMs, uiTicks, stateAfter: worker.state, nextWorkerLower };
   },
@@ -157,7 +169,8 @@ const spike = {
         ],
         120_000,
         {
-          writeFile: (path, contents) => writes.push({ path, text: new TextDecoder().decode(contents) }),
+          writeFile: (path, contents) =>
+            writes.push({ path, text: new TextDecoder().decode(contents) }),
           report: (problem) => reports.push(problem),
         },
       );
@@ -195,7 +208,8 @@ const spike = {
     const worker = createPluginWorker(spikePluginSource);
     try {
       await worker.ready;
-      for (let i = 0; i < 20; i++) await worker.call('lower', ['spike:note', element, target], 2000);
+      for (let i = 0; i < 20; i++)
+        await worker.call('lower', ['spike:note', element, target], 2000);
       const samples: number[] = [];
       for (let i = 0; i < count; i++) {
         const start = performance.now();

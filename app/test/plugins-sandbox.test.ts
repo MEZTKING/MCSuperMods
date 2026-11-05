@@ -70,7 +70,13 @@ function vmWorker(globals: Record<string, unknown> = {}): {
 }
 
 const target = { id: 'mc-26.3', mcVersion: '26.3', packFormats: { data: 101, resource: 80 } };
-const element = { formatVersion: 1, id: 'demo:hello', kind: 'spike:note', data: { text: 'Hi' }, meta: {} };
+const element = {
+  formatVersion: 1,
+  id: 'demo:hello',
+  kind: 'spike:note',
+  data: { text: 'Hi' },
+  meta: {},
+};
 
 describe('plugin sandbox host (spike)', () => {
   it('describes the plugin and round-trips every contribution function', async () => {
@@ -108,9 +114,14 @@ describe('plugin sandbox host (spike)', () => {
 
     const problems = await worker.call(
       'validate',
-      ['spike.empty-note', { elements: [{ ...element, data: { text: '' } }], target }, 'k1', {
-        item: ['minecraft:stone'],
-      }],
+      [
+        'spike.empty-note',
+        { elements: [{ ...element, data: { text: '' } }], target },
+        'k1',
+        {
+          item: ['minecraft:stone'],
+        },
+      ],
       5000,
     );
     expect(problems).toEqual([
@@ -169,9 +180,11 @@ describe('plugin sandbox host (spike)', () => {
     expect((error as SandboxError).code).toBe('plugin.timeout');
     expect(fake.terminated()).toBe(true);
     expect(worker.state).toBe('failed');
-    await expect(worker.call('lower', ['spike:note', element, target], 2000)).rejects.toMatchObject({
-      code: 'plugin.unavailable',
-    });
+    await expect(worker.call('lower', ['spike:note', element, target], 2000)).rejects.toMatchObject(
+      {
+        code: 'plugin.unavailable',
+      },
+    );
   });
 
   it('rejects sink paths outside the export root', async () => {
@@ -209,7 +222,11 @@ describe('plugin sandbox host (spike)', () => {
     ]);
     const kept = createPluginWorker(probe, { spawn: vmWorker().spawn, strip: false });
     await kept.ready;
-    await expect(kept.call('call', ['seen'], 1000)).resolves.toEqual(['function', 'object', 'object']);
+    await expect(kept.call('call', ['seen'], 1000)).resolves.toEqual([
+      'function',
+      'object',
+      'object',
+    ]);
   });
 
   it('serialises a self-contained bootstrap', () => {
@@ -217,6 +234,8 @@ describe('plugin sandbox host (spike)', () => {
     expect(source.startsWith('(')).toBe(true);
     expect(source).toContain('"fetch"');
     // The function must not reference module-level bindings.
-    expect(() => runInContext(`${source}`, createContext({ postMessage() {}, addEventListener() {} }))).not.toThrow();
+    expect(() =>
+      runInContext(`${source}`, createContext({ postMessage() {}, addEventListener() {} })),
+    ).not.toThrow();
   });
 });

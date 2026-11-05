@@ -52,15 +52,28 @@ test('a blob: worker is constrained by the CSP and the proxy round-trips', async
   );
   const cspViolations: string[] = [];
   window.on('console', (message) => {
-    if (/Content Security Policy|Refused to/i.test(message.text())) cspViolations.push(message.text());
+    if (/Content Security Policy|Refused to/i.test(message.text()))
+      cspViolations.push(message.text());
   });
 
-  const imports = await window.evaluate(() => (globalThis as unknown as Hooked).__msmSandboxSpike.bootstrapImports();
-  const stripped = await window.evaluate(() => (globalThis as unknown as Hooked).__msmSandboxSpike.runProbes({ strip: true });
-  const cspOnly = await window.evaluate(() => (globalThis as unknown as Hooked).__msmSandboxSpike.runProbes({ strip: false });
-  const loop = await window.evaluate(() => (globalThis as unknown as Hooked).__msmSandboxSpike.endlessLoop();
-  const roundTrip = await window.evaluate(() => (globalThis as unknown as Hooked).__msmSandboxSpike.roundTrip();
-  const lower = await window.evaluate(() => (globalThis as unknown as Hooked).__msmSandboxSpike.measureLower(1000, 2048);
+  const imports = await window.evaluate(() =>
+    (globalThis as unknown as Hooked).__msmSandboxSpike.bootstrapImports(),
+  );
+  const stripped = await window.evaluate(() =>
+    (globalThis as unknown as Hooked).__msmSandboxSpike.runProbes({ strip: true }),
+  );
+  const cspOnly = await window.evaluate(() =>
+    (globalThis as unknown as Hooked).__msmSandboxSpike.runProbes({ strip: false }),
+  );
+  const loop = await window.evaluate(() =>
+    (globalThis as unknown as Hooked).__msmSandboxSpike.endlessLoop(),
+  );
+  const roundTrip = await window.evaluate(() =>
+    (globalThis as unknown as Hooked).__msmSandboxSpike.roundTrip(),
+  );
+  const lower = await window.evaluate(() =>
+    (globalThis as unknown as Hooked).__msmSandboxSpike.measureLower(1000, 2048),
+  );
   const registry = JSON.parse(
     readFileSync(
       join(appDir, '..', 'packages', 'targets', 'mc-26.3', 'vendor', 'mcmeta', 'registries.json'),
@@ -71,12 +84,14 @@ test('a blob: worker is constrained by the CSP and the proxy round-trips', async
     (value) => (globalThis as unknown as Hooked).__msmSandboxSpike.measureValidate(value, 5),
     registry,
   );
-  const startup = await window.evaluate(() => (globalThis as unknown as Hooked).__msmSandboxSpike.measureStartup(10);
+  const startup = await window.evaluate(() =>
+    (globalThis as unknown as Hooked).__msmSandboxSpike.measureStartup(10),
+  );
   const memoryBeforeKb = await rendererMemoryKb(app);
-  await window.evaluate(() => (globalThis as unknown as Hooked).__msmSandboxSpike.startWorkers(10);
+  await window.evaluate(() => (globalThis as unknown as Hooked).__msmSandboxSpike.startWorkers(10));
   await window.waitForTimeout(1000);
   const memoryWithTenKb = await rendererMemoryKb(app);
-  await window.evaluate(() => (globalThis as unknown as Hooked).__msmSandboxSpike.stopWorkers();
+  await window.evaluate(() => (globalThis as unknown as Hooked).__msmSandboxSpike.stopWorkers());
   await window.waitForTimeout(1000);
   const memoryAfterStopKb = await rendererMemoryKb(app);
 
@@ -98,11 +113,15 @@ test('a blob: worker is constrained by the CSP and the proxy round-trips', async
 
   // With the bootstrap: everything is refused.
   for (const result of refusals(stripped, new Set())) {
-    expect(REFUSED.has(result.outcome), `${result.name}: ${result.outcome} ${result.detail}`).toBe(true);
+    expect(REFUSED.has(result.outcome), `${result.name}: ${result.outcome} ${result.detail}`).toBe(
+      true,
+    );
   }
   // The CSP alone: the network, script loading and eval are refused by the browser.
   for (const result of refusals(cspOnly, STORAGE)) {
-    expect(REFUSED.has(result.outcome), `${result.name}: ${result.outcome} ${result.detail}`).toBe(true);
+    expect(REFUSED.has(result.outcome), `${result.name}: ${result.outcome} ${result.detail}`).toBe(
+      true,
+    );
   }
   expect(cspOnly.find((result) => result.name === 'typeof fetch')?.detail).toBe('function');
 
@@ -111,7 +130,9 @@ test('a blob: worker is constrained by the CSP and the proxy round-trips', async
   expect(loop.stateAfter).toBe('failed');
   expect(loop.elapsedMs).toBeLessThan(1500);
   expect(loop.uiTicks).toBeGreaterThan(3);
-  expect(loop.nextWorkerLower).toEqual([expect.objectContaining({ path: 'data/spike/note/hello.json' })]);
+  expect(loop.nextWorkerLower).toEqual([
+    expect.objectContaining({ path: 'data/spike/note/hello.json' }),
+  ]);
 
   // Every contribution function crosses the boundary.
   expect(roundTrip.writes).toEqual([
