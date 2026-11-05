@@ -11,7 +11,7 @@ The ROADMAP names the second target as "26.4 or whatever is current"; DESIGN §9
 - Fabric: Loader 0.20.1 is stable and listed for `26.4-snapshot-7` on `meta.fabricmc.net`; Fabric API for 26.4 runs `0.162.1+26.4` … **`0.165.4+26.4`** (its POM names `fabric-gametest-api-v1` 4.0.44, `fabric-events-interaction-v0` 5.3.15); Loom 1.19.3 is the latest release (1.20.0-alpha.4 pre-release); the Fabric example mod has no `26.4` branch and its `26.3` branch uses `loom_version=1.19-SNAPSHOT`.
 - GeckoLib on Modrinth (Fabric): 5.5.7 for 26.3 only; nothing for 26.4 snapshots; 5.5.5 for 26.2.
 - vanilla-mcdoc: the `generated` branch's `symbols.json` is at ref `1a674539af7150444db0e2fa8fc46318f91ed86b`; the 26.3 target's vendored export (`0ca060a4…`, 2026-11-04) already carries 46 `26.4` gates, so one tree describes both versions; `compareGameVersions('26.4-snapshot-7', '26.4')` is `1`, so `since="26.4"` gates admit the snapshot and `until="26.4"` gates exclude it.
-- A target's vendored data is about 5.4 MB (mcdoc symbols 3.5 MB, mcmeta 1.9 MB), bundled into `out/main/vendor/` and the asar (13.4 MB of 25 MB at Phase 5).
+- A target's vendored data is about 5.4 MB (mcdoc symbols 3.5 MB, mcmeta 1.9 MB), bundled into `out/main/vendor/` and the asar, which is 23.9 MB of its 25 MB budget at Phase 6 close (the TypeScript transpiler in main took it from 13 MB).
 
 ## Decision
 
@@ -28,7 +28,7 @@ The ROADMAP names the second target as "26.4 or whatever is current"; DESIGN §9
 ## Consequences
 
 - Two targets in `builtInTargets` means every per-target test (71 plugin test files, the exporters' library tests) runs twice; entries that cannot validate on 26.4 declare `supports` ([ADR 0036](0036-plugin-api-1.0-and-compatibility-policy.md) D4) rather than failing, and the sample-mob export on 26.4 is expected to report `export.no-geckolib-target`.
-- The asar grows by about 5.4 MB; the 25 MB budget is expected to hold (B153 records the number and raises it to 32 MB with a README note only if needed).
+- The asar grows by about 5.4 MB to about 29 MB, so the `app.asar` budget in `tools/check-size` rises from 25 MB to 32 MB with its README row rewritten (B153 records the measured number). Moving the vendored data out of the asar into `extraResources` is the recorded next step if the asar keeps growing (reserve B166); the 150 MB installer budget is not at risk.
 - Snapshot churn: the 26.4 package is refreshed by re-running the two sync scripts and the target tests; a weekly refresh is not promised, and the guide says that the snapshot target follows the latest snapshot MSM was built against.
 - Resolves DESIGN Open Question 1 as far as 26.x goes (Loom's non-remapping variant is the plain `net.fabricmc.fabric-loom` plugin on unobfuscated jars) and records Open Question 3's status (GeckoLib lags snapshots; the fallback renderer stays unbuilt).
 
