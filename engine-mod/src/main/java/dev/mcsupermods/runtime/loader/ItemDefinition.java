@@ -32,6 +32,11 @@ public record ItemDefinition(
             optional("components", ItemComponents.CODEC, ItemComponents.NONE).forGetter(ItemDefinition::components),
             optional("events", Events.CODEC, Events.NONE).forGetter(ItemDefinition::events)).apply(i, ItemDefinition::new));
 
+    /** This definition with other components. */
+    public ItemDefinition withComponents(ItemComponents other) {
+        return new ItemDefinition(format, maxStackSize, rarity, creativeTab, other, events);
+    }
+
     /** This definition with other events. */
     public ItemDefinition withEvents(Events other) {
         return new ItemDefinition(format, maxStackSize, rarity, creativeTab, components, other);

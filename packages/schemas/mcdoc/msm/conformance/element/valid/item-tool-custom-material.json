@@ -1,0 +1,21 @@
+{
+  "components": {
+    "msm:tool": {
+      "attack_damage": 1.5,
+      "attack_speed": -2.6,
+      "tier": {
+        "attack_damage_bonus": 3,
+        "durability": 1200,
+        "enchantment_value": 12,
+        "incorrect_blocks_for_drops": "#minecraft:incorrect_for_diamond_tool",
+        "speed": 8.5
+      },
+      "type": "pickaxe"
+    }
+  },
+  "creative_tab": "minecraft:tools_and_utilities",
+  "display_name": "Ruby Pickaxe",
+  "format": 1,
+  "max_stack_size": 1,
+  "model": "mymod:item/ruby_pickaxe"
+}

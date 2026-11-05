@@ -8,6 +8,7 @@ packages:
   - fixtures/sample-plugin
 
 catalog:
+  "@anthropic-ai/sdk": 1.1.0
   "@biomejs/biome": 2.6.4
   "@spyglassmc/core": 0.4.57
   "@spyglassmc/java-edition": 0.3.70

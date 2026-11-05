@@ -248,6 +248,38 @@ export interface ChoiceStarterParameter extends StarterParameterBase {
 }
 
 /**
+ * A parameter whose value is a subset of a fixed list, for example which pieces of a gear set
+ * to make; the wizard renders it as a list of checkboxes. Its value in
+ * {@link BundleContext.values} is a `string[]` of the chosen {@link choices}' values, in the
+ * order of {@link choices}. Since 1.1.0 (ADR 0043 D1).
+ *
+ * @example
+ * ```ts
+ * const pieces: SetStarterParameter = {
+ *   id: 'pieces',
+ *   label: 'Pieces',
+ *   type: 'set',
+ *   choices: [
+ *     { value: 'sword', label: 'Sword' },
+ *     { value: 'helmet', label: 'Helmet' },
+ *   ],
+ *   default: ['sword', 'helmet'],
+ *   min: 1,
+ * };
+ * ```
+ */
+export interface SetStarterParameter extends StarterParameterBase {
+  /** The parameter's value type. */
+  type: 'set';
+  /** The values chosen when the user chose none; each one of the {@link choices}' values. */
+  default: string[];
+  /** The allowed values, in display order, with their labels in British English. */
+  choices: { value: string; label: string }[];
+  /** The fewest values the user may choose; absent means none is required (0). */
+  min?: number;
+}
+
+/**
  * One question a parameterised {@link ProjectStarter} asks; the host renders the parameters
  * as a multi-step wizard (ADR 0040) and passes the answers in {@link BundleContext.values}.
  * Since 1.0.0.
@@ -266,7 +298,8 @@ export type StarterParameter =
   | NumberStarterParameter
   | BooleanStarterParameter
   | ColourStarterParameter
-  | ChoiceStarterParameter;
+  | ChoiceStarterParameter
+  | SetStarterParameter;
 
 /**
  * One entry of the host's "New project" starter list.

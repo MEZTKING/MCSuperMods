@@ -174,13 +174,83 @@ struct Food {
 	can_always_eat?: boolean,
 }
 
+/// A custom tool material (ADR 0042 D3), the fields of the vanilla `ToolMaterial` record.
+struct ToolMaterial {
+	durability: int @ 1..,
+	/// Mining speed multiplier (iron is 6).
+	speed: float @ 0..,
+	/// Added to each tool type's base attack damage (iron is 2).
+	attack_damage_bonus: float,
+	enchantment_value: int @ 0..,
+	/// The block tag this material cannot mine for drops, such as `#minecraft:incorrect_for_iron_tool`.
+	incorrect_blocks_for_drops: #[id(registry="block", tags="required")] string,
+	/// An item tag whose members repair the tool.
+	repair_items?: #[id(registry="item", tags="required")] string,
+}
+
 /// Makes the item a tool.
 struct Tool {
 	type: ToolType,
-	tier: ToolTier,
+	/// A vanilla tier by name, or a custom material.
+	tier: (ToolTier | ToolMaterial),
+	/// Overrides the type's base attack damage (sword 3, axe 6, pickaxe 1, shovel 1.5, hoe -2).
+	attack_damage?: float,
+	/// Overrides the type's base attack speed (sword -2.4, axe -3.1, pickaxe -2.8, shovel -3.0, hoe -1.0).
+	attack_speed?: float,
 }
 
-/// Gives the item durability; forces `max_stack_size` to 1.
+/// The slot an armour piece is worn in.
+enum(string) ArmorSlot {
+	Helmet = "helmet",
+	Chestplate = "chestplate",
+	Leggings = "leggings",
+	Boots = "boots",
+}
+
+/// Vanilla armour materials by name (checked against the target's `armorMaterials` facts).
+enum(string) ArmorMaterialName {
+	Leather = "leather",
+	Copper = "copper",
+	Chainmail = "chainmail",
+	Iron = "iron",
+	Gold = "gold",
+	Diamond = "diamond",
+	Netherite = "netherite",
+	TurtleScute = "turtle_scute",
+	ArmadilloScute = "armadillo_scute",
+}
+
+/// A custom armour material (ADR 0042 D1), the fields of the vanilla `ArmorMaterial` record.
+struct ArmorMaterial {
+	/// Base durability; each slot multiplies it as vanilla does (helmet 11, chestplate 16, leggings 15, boots 13; verify at implementation).
+	durability: int @ 1..,
+	/// Armour points per slot.
+	defense: struct ArmorDefense {
+		helmet: int @ 0..,
+		chestplate: int @ 0..,
+		leggings: int @ 0..,
+		boots: int @ 0..,
+	},
+	enchantment_value: int @ 0..,
+	toughness: float @ 0..,
+	knockback_resistance: float @ 0..1,
+	/// Defaults to the generic armour equip sound.
+	equip_sound?: #[id="sound_event"] string,
+	/// An item tag whose members repair the piece.
+	repair_items?: #[id(registry="item", tags="required")] string,
+	/// The equipment asset (`assets/<ns>/equipment/<name>.json`) drawn when worn.
+	equipment_asset: #[id="equipment"] string,
+}
+
+/// Makes the item an armour piece (ADR 0042 D1).
+struct Armor {
+	slot: ArmorSlot,
+	/// A vanilla material by name, or a custom material.
+	material: (ArmorMaterialName | ArmorMaterial),
+}
+
+/// Gives the item durability (on a tool or armour piece it overrides the material's); forces
+/// `max_stack_size` to 1.
 struct Durability {
 	/// Uses before the item breaks.
 	max: int @ 1..,
@@ -198,6 +268,8 @@ struct OnUse {
 struct ItemComponents {
 	"msm:food"?: Food,
 	"msm:tool"?: Tool,
+	/// An armour piece; not together with `msm:tool` (checked by the validators).
+	"msm:armor"?: Armor,
 	"msm:durability"?: Durability,
 	"msm:on_use"?: OnUse,
 }

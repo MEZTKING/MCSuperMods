@@ -127,12 +127,20 @@
     "code": "schema.type-mismatch",
     "path": "/events/mymod:x/actions"
   },
+  "item-armor-bad-slot.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:armor/slot"
+  },
+  "item-armor-material-missing-asset.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:armor/material/equipment_asset"
+  },
   "item-bad-rarity.json": {
     "code": "schema.invalid-enum",
     "path": "/rarity"
   },
   "item-bad-tool-tier.json": {
-    "code": "schema.invalid-enum",
+    "code": "schema.no-union-match",
     "path": "/components/msm:tool/tier"
   },
   "item-bad-tool-type.json": {
@@ -170,6 +178,10 @@
   "item-stack-zero.json": {
     "code": "schema.out-of-range",
     "path": "/max_stack_size"
+  },
+  "item-tool-material-negative-speed.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:tool/tier/speed"
   },
   "item-trigger-event-not-string.json": {
     "code": "schema.type-mismatch",

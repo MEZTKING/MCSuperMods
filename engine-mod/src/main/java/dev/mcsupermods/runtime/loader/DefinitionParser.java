@@ -31,6 +31,7 @@ import net.minecraft.resources.Identifier;
  *   <li>Event ids named by components or {@code trigger_event} must be declared.</li>
  *   <li>Entities: goals that failed on their own are errors; the entity registers without them.</li>
  *   <li>Blocks and items: {@code play_animation} actions are dropped with a warning (ADR 0028 D4).</li>
+ *   <li>Items: {@code msm:armor} with {@code msm:tool} is an error; the item registers without both (ADR 0042 D1).</li>
  * </ol>
  */
 public final class DefinitionParser {
@@ -48,7 +49,22 @@ public final class DefinitionParser {
     public static ParseResult<ItemDefinition> parseItem(JsonElement json) {
         ParseResult<ItemDefinition> result = parse(json, ItemDefinition.KEYS, ItemComponents.KEYS, ItemDefinition.CODEC,
                 def -> new Refs(def.events(), def.components().eventReferences(), List.of()));
-        return dropPlayAnimation(result, ItemDefinition::events, ItemDefinition::withEvents);
+        return dropToolAndArmorTogether(dropPlayAnimation(result, ItemDefinition::events, ItemDefinition::withEvents));
+    }
+
+    /** {@code msm:armor} with {@code msm:tool} on one item: an error, and neither is applied (ADR 0042 D1). */
+    private static ParseResult<ItemDefinition> dropToolAndArmorTogether(ParseResult<ItemDefinition> result) {
+        if (result.definition().isEmpty()) {
+            return result;
+        }
+        ItemDefinition def = result.definition().get();
+        if (def.components().tool().isEmpty() || def.components().armor().isEmpty()) {
+            return result;
+        }
+        List<String> errors = new ArrayList<>(result.errors());
+        errors.add("components: msm:armor and msm:tool on one item; neither is applied");
+        return new ParseResult<>(Optional.of(def.withComponents(def.components().withoutToolAndArmor())), List.copyOf(errors),
+                result.warnings());
     }
 
     public static ParseResult<EntityDefinition> parseEntity(JsonElement json) {

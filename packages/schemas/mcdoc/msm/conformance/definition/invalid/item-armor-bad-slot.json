@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": "iron",
+      "slot": "gloves"
+    }
+  },
+  "format": 1
+}

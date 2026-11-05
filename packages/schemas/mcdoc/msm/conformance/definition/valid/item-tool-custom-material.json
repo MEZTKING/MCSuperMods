@@ -1,0 +1,16 @@
+{
+  "components": {
+    "msm:tool": {
+      "tier": {
+        "attack_damage_bonus": 3.0,
+        "durability": 1200,
+        "enchantment_value": 12,
+        "incorrect_blocks_for_drops": "#minecraft:incorrect_for_diamond_tool",
+        "repair_items": "#mymod:ruby_repair",
+        "speed": 8.5
+      },
+      "type": "pickaxe"
+    }
+  },
+  "format": 1
+}

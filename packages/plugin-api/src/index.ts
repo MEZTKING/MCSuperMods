@@ -34,6 +34,7 @@ export type {
   ExampleProject,
   NumberStarterParameter,
   ProjectStarter,
+  SetStarterParameter,
   StarterParameter,
   StarterParameterBase,
   StringStarterParameter,

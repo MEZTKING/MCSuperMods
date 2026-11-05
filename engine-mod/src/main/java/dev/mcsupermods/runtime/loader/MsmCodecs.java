@@ -33,6 +33,52 @@ public final class MsmCodecs {
             },
             Identifier::toString);
 
+    /**
+     * A tag id such as {@code #minecraft:incorrect_for_iron_tool}, decoded without the {@code #}.
+     * The leading {@code #} is optional, so both spellings of a tag-only mcdoc string are read.
+     */
+    public static final Codec<Identifier> TAG_ID = Codec.STRING.comapFlatMap(
+            s -> {
+                Identifier id = Identifier.tryParse(s.startsWith("#") ? s.substring(1) : s);
+                return id == null ? DataResult.error(() -> "invalid tag id '" + s + "'") : DataResult.success(id);
+            },
+            id -> "#" + id);
+
+    /** An mcdoc {@code float}: any finite number. */
+    public static final Codec<Float> FLOAT = Codec.FLOAT.validate(f -> Float.isFinite(f)
+            ? DataResult.success(f)
+            : DataResult.error(() -> "not a finite number: " + f));
+
+    /**
+     * An mcdoc union of a string enum and a struct, such as {@code (ToolTier | ToolMaterial)}: a
+     * JSON string decodes with {@code name}, anything else with {@code object}, so each error
+     * comes from the branch the value was meant for.
+     */
+    @SuppressWarnings("unchecked")
+    public static <S, A extends S, B extends S> Codec<S> nameOrObject(Class<A> nameType, Codec<A> name, Codec<B> object) {
+        return new Codec<>() {
+            @Override
+            public <T> DataResult<Pair<S, T>> decode(DynamicOps<T> ops, T input) {
+                if (ops.getStringValue(input).isSuccess()) {
+                    return name.decode(ops, input).map(p -> p.mapFirst(a -> (S) a));
+                }
+                return object.decode(ops, input).map(p -> p.mapFirst(b -> (S) b));
+            }
+
+            @Override
+            public <T> DataResult<T> encode(S input, DynamicOps<T> ops, T prefix) {
+                return nameType.isInstance(input)
+                        ? name.encode(nameType.cast(input), ops, prefix)
+                        : object.encode((B) input, ops, prefix);
+            }
+
+            @Override
+            public String toString() {
+                return "NameOrObject[" + name + ", " + object + "]";
+            }
+        };
+    }
+
     /** mcdoc {@code int @ min..max}. */
     public static Codec<Integer> intRange(int min, int max) {
         return INT.validate(i -> i >= min && i <= max

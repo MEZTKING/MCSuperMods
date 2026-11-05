@@ -980,6 +980,329 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::Armor": {
+      "fields": [
+        {
+          "key": "slot",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ArmorSlot"
+          }
+        },
+        {
+          "desc": "A vanilla material by name, or a custom material.",
+          "key": "material",
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "reference",
+                "path": "::msm::definition::ArmorMaterialName"
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::definition::ArmorMaterial"
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::ArmorDefense": {
+      "fields": [
+        {
+          "key": "helmet",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "key": "chestplate",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "key": "leggings",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "key": "boots",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::ArmorMaterial": {
+      "fields": [
+        {
+          "desc": "Base durability; each slot multiplies it as vanilla does (helmet 11, chestplate 16, leggings 15, boots 13; verify at implementation).",
+          "key": "durability",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Armour points per slot.",
+          "key": "defense",
+          "kind": "pair",
+          "type": {
+            "fields": [
+              {
+                "key": "helmet",
+                "kind": "pair",
+                "type": {
+                  "kind": "int",
+                  "valueRange": {
+                    "kind": 0,
+                    "min": 0
+                  }
+                }
+              },
+              {
+                "key": "chestplate",
+                "kind": "pair",
+                "type": {
+                  "kind": "int",
+                  "valueRange": {
+                    "kind": 0,
+                    "min": 0
+                  }
+                }
+              },
+              {
+                "key": "leggings",
+                "kind": "pair",
+                "type": {
+                  "kind": "int",
+                  "valueRange": {
+                    "kind": 0,
+                    "min": 0
+                  }
+                }
+              },
+              {
+                "key": "boots",
+                "kind": "pair",
+                "type": {
+                  "kind": "int",
+                  "valueRange": {
+                    "kind": 0,
+                    "min": 0
+                  }
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        },
+        {
+          "key": "enchantment_value",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "key": "toughness",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "key": "knockback_resistance",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Defaults to the generic armour equip sound.",
+          "key": "equip_sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "An item tag whose members repair the piece.",
+          "key": "repair_items",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "required"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The equipment asset (`assets/<ns>/equipment/<name>.json`) drawn when worn.",
+          "key": "equipment_asset",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "equipment"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::ArmorMaterialName": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Leather",
+          "value": "leather"
+        },
+        {
+          "identifier": "Copper",
+          "value": "copper"
+        },
+        {
+          "identifier": "Chainmail",
+          "value": "chainmail"
+        },
+        {
+          "identifier": "Iron",
+          "value": "iron"
+        },
+        {
+          "identifier": "Gold",
+          "value": "gold"
+        },
+        {
+          "identifier": "Diamond",
+          "value": "diamond"
+        },
+        {
+          "identifier": "Netherite",
+          "value": "netherite"
+        },
+        {
+          "identifier": "TurtleScute",
+          "value": "turtle_scute"
+        },
+        {
+          "identifier": "ArmadilloScute",
+          "value": "armadillo_scute"
+        }
+      ]
+    },
+    "::msm::definition::ArmorSlot": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Helmet",
+          "value": "helmet"
+        },
+        {
+          "identifier": "Chestplate",
+          "value": "chestplate"
+        },
+        {
+          "identifier": "Leggings",
+          "value": "leggings"
+        },
+        {
+          "identifier": "Boots",
+          "value": "boots"
+        }
+      ]
+    },
     "::msm::definition::Attack": {
       "fields": [
         {
@@ -2005,6 +2328,16 @@
           }
         },
         {
+          "desc": "An armour piece; not together with `msm:tool` (checked by the validators).",
+          "key": "msm:armor",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Armor"
+          }
+        },
+        {
           "key": "msm:durability",
           "kind": "pair",
           "optional": true,
@@ -2753,11 +3086,151 @@
           }
         },
         {
+          "desc": "A vanilla tier by name, or a custom material.",
           "key": "tier",
           "kind": "pair",
           "type": {
-            "kind": "reference",
-            "path": "::msm::definition::ToolTier"
+            "kind": "union",
+            "members": [
+              {
+                "kind": "reference",
+                "path": "::msm::definition::ToolTier"
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::definition::ToolMaterial"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "Overrides the type's base attack damage (sword 3, axe 6, pickaxe 1, shovel 1.5, hoe -2).",
+          "key": "attack_damage",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float"
+          }
+        },
+        {
+          "desc": "Overrides the type's base attack speed (sword -2.4, axe -3.1, pickaxe -2.8, shovel -3.0, hoe -1.0).",
+          "key": "attack_speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::ToolMaterial": {
+      "fields": [
+        {
+          "key": "durability",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Mining speed multiplier (iron is 6).",
+          "key": "speed",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Added to each tool type's base attack damage (iron is 2).",
+          "key": "attack_damage_bonus",
+          "kind": "pair",
+          "type": {
+            "kind": "float"
+          }
+        },
+        {
+          "key": "enchantment_value",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "The block tag this material cannot mine for drops, such as `#minecraft:incorrect_for_iron_tool`.",
+          "key": "incorrect_blocks_for_drops",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "block"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "required"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "An item tag whose members repair the tool.",
+          "key": "repair_items",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "required"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
           }
         }
       ],
@@ -3876,5 +4349,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:1c25e87bc1acaf0f4a69bfc5146f921cb98b4682bff059e0cb70736288995bfa"
+  "ref": "msm-mcdoc:sha256:a98fcc3b151e1a6d145835dd2b8caf4f2850bd5df99dd1670def4f7eef878430"
 }

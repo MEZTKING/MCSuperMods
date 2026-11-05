@@ -1,0 +1,26 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": {
+        "defense": {
+          "boots": 3,
+          "chestplate": 8,
+          "helmet": 3,
+          "leggings": 6
+        },
+        "durability": 33,
+        "enchantment_value": 10,
+        "equipment_asset": "mymod:ruby",
+        "knockback_resistance": 0,
+        "repair_items": "#mymod:ruby_repair",
+        "toughness": 2
+      },
+      "slot": "helmet"
+    }
+  },
+  "creative_tab": "minecraft:combat",
+  "display_name": "Ruby Helmet",
+  "format": 1,
+  "max_stack_size": 1,
+  "model": "mymod:item/ruby_helmet"
+}

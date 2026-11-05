@@ -1,0 +1,27 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": {
+        "defense": {
+          "boots": 3,
+          "chestplate": 8,
+          "helmet": 3,
+          "leggings": 6
+        },
+        "durability": 33,
+        "enchantment_value": 10,
+        "equip_sound": "minecraft:item.armor.equip_diamond",
+        "equipment_asset": "mymod:ruby",
+        "knockback_resistance": 0.1,
+        "repair_items": "#mymod:ruby_repair",
+        "toughness": 2.0
+      },
+      "slot": "chestplate"
+    },
+    "msm:durability": {
+      "max": 600
+    }
+  },
+  "format": 1,
+  "rarity": "uncommon"
+}

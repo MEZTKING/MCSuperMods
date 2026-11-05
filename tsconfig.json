@@ -5,6 +5,7 @@
     { "path": "app/tsconfig.web.json" },
     { "path": "docs/site" },
     { "path": "fixtures/sample-plugin" },
+    { "path": "packages/ai" },
     { "path": "packages/core" },
     { "path": "packages/exporters" },
     { "path": "packages/interop" },

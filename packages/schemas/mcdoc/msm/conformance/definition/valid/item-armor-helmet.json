@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": "iron",
+      "slot": "helmet"
+    }
+  },
+  "creative_tab": "minecraft:combat",
+  "format": 1,
+  "max_stack_size": 1
+}

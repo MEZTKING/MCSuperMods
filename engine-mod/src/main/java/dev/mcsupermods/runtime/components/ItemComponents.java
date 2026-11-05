@@ -1,7 +1,10 @@
 package dev.mcsupermods.runtime.components;
 
 import static dev.mcsupermods.runtime.loader.MsmCodecs.ID;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.FLOAT;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.TAG_ID;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.floatAtLeast;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.floatRange;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.intAtLeast;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.optional;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.required;
@@ -19,16 +22,24 @@ public record ItemComponents(
         Optional<Food> food,
         Optional<Tool> tool,
         Optional<Durability> durability,
-        Optional<OnUse> onUse) {
+        Optional<OnUse> onUse,
+        Optional<Armor> armor) {
 
-    public static final List<String> KEYS = List.of("msm:food", "msm:tool", "msm:durability", "msm:on_use");
-    public static final ItemComponents NONE = new ItemComponents(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+    public static final List<String> KEYS = List.of("msm:food", "msm:tool", "msm:durability", "msm:on_use", "msm:armor");
+    public static final ItemComponents NONE = new ItemComponents(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+            Optional.empty());
 
     public static final Codec<ItemComponents> CODEC = RecordCodecBuilder.create(i -> i.group(
             optional("msm:food", Food.CODEC).forGetter(ItemComponents::food),
             optional("msm:tool", Tool.CODEC).forGetter(ItemComponents::tool),
             optional("msm:durability", Durability.CODEC).forGetter(ItemComponents::durability),
-            optional("msm:on_use", OnUse.CODEC).forGetter(ItemComponents::onUse)).apply(i, ItemComponents::new));
+            optional("msm:on_use", OnUse.CODEC).forGetter(ItemComponents::onUse),
+            optional("msm:armor", Armor.CODEC).forGetter(ItemComponents::armor)).apply(i, ItemComponents::new));
+
+    /** These components without {@code msm:tool} and {@code msm:armor} (used when both are present, ADR 0042 D1). */
+    public ItemComponents withoutToolAndArmor() {
+        return new ItemComponents(food, Optional.empty(), durability, onUse, Optional.empty());
+    }
 
     /** Every event id a component names, with the component for messages. */
     public Stream<String[]> eventReferences() {
@@ -37,7 +48,7 @@ public record ItemComponents(
 
     /** Whether the item is damageable, which forces a stack size of 1. */
     public boolean damageable() {
-        return tool.isPresent() || durability.isPresent();
+        return tool.isPresent() || armor.isPresent() || durability.isPresent();
     }
 
     /** Makes the item edible; {@code saturation} is the vanilla saturation modifier. */
@@ -59,8 +70,13 @@ public record ItemComponents(
         public static final Codec<ToolType> CODEC = MsmCodecs.named("tool type", values(), ToolType::serialName);
     }
 
+    /** A tool tier: a vanilla {@link ToolTier} by name or a custom {@link ToolMaterialSpec} (ADR 0042 D3). */
+    public sealed interface ToolTierSpec permits ToolTier, ToolMaterialSpec {
+        Codec<ToolTierSpec> CODEC = MsmCodecs.nameOrObject(ToolTier.class, ToolTier.CODEC, ToolMaterialSpec.CODEC);
+    }
+
     /** Tool tiers; each maps onto a vanilla {@code ToolMaterial} constant of the same name. */
-    public enum ToolTier {
+    public enum ToolTier implements ToolTierSpec {
         WOOD, STONE, COPPER, IRON, DIAMOND, GOLD, NETHERITE;
 
         public String serialName() {
@@ -70,11 +86,103 @@ public record ItemComponents(
         public static final Codec<ToolTier> CODEC = MsmCodecs.named("tool tier", values(), ToolTier::serialName);
     }
 
-    /** Makes the item a tool of a kind and tier. */
-    public record Tool(ToolType type, ToolTier tier) {
+    /**
+     * A custom tool material ({@code ::msm::definition::ToolMaterial}); the runtime builds a
+     * vanilla {@code ToolMaterial} from it. Tags are ids without the leading {@code #}.
+     */
+    public record ToolMaterialSpec(
+            int durability,
+            float speed,
+            float attackDamageBonus,
+            int enchantmentValue,
+            Identifier incorrectBlocksForDrops,
+            Optional<Identifier> repairItems) implements ToolTierSpec {
+        public static final Codec<ToolMaterialSpec> CODEC = RecordCodecBuilder.create(i -> i.group(
+                required("durability", intAtLeast(1)).forGetter(ToolMaterialSpec::durability),
+                required("speed", floatAtLeast(0)).forGetter(ToolMaterialSpec::speed),
+                required("attack_damage_bonus", FLOAT).forGetter(ToolMaterialSpec::attackDamageBonus),
+                required("enchantment_value", intAtLeast(0)).forGetter(ToolMaterialSpec::enchantmentValue),
+                required("incorrect_blocks_for_drops", TAG_ID).forGetter(ToolMaterialSpec::incorrectBlocksForDrops),
+                optional("repair_items", TAG_ID).forGetter(ToolMaterialSpec::repairItems)).apply(i, ToolMaterialSpec::new));
+    }
+
+    /**
+     * Makes the item a tool of a kind and tier; {@code attack_damage} and {@code attack_speed}
+     * override the type's base values (the material's bonus is still added to the damage).
+     */
+    public record Tool(ToolType type, ToolTierSpec tier, Optional<Float> attackDamage, Optional<Float> attackSpeed) {
         public static final Codec<Tool> CODEC = RecordCodecBuilder.create(i -> i.group(
                 required("type", ToolType.CODEC).forGetter(Tool::type),
-                required("tier", ToolTier.CODEC).forGetter(Tool::tier)).apply(i, Tool::new));
+                required("tier", ToolTierSpec.CODEC).forGetter(Tool::tier),
+                optional("attack_damage", FLOAT).forGetter(Tool::attackDamage),
+                optional("attack_speed", FLOAT).forGetter(Tool::attackSpeed)).apply(i, Tool::new));
+    }
+
+    /** Humanoid armour slots. */
+    public enum ArmorSlot {
+        HELMET, CHESTPLATE, LEGGINGS, BOOTS;
+
+        public String serialName() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+
+        public static final Codec<ArmorSlot> CODEC = MsmCodecs.named("armor slot", values(), ArmorSlot::serialName);
+    }
+
+    /** An armour material: a vanilla {@link ArmorMaterialName} or a {@link CustomArmorMaterial} (ADR 0042 D1). */
+    public sealed interface ArmorMaterialSpec permits ArmorMaterialName, CustomArmorMaterial {
+        Codec<ArmorMaterialSpec> CODEC = MsmCodecs.nameOrObject(ArmorMaterialName.class, ArmorMaterialName.CODEC, CustomArmorMaterial.CODEC);
+    }
+
+    /** Vanilla armour materials; each maps onto the {@code ArmorMaterials} constant of the same name. */
+    public enum ArmorMaterialName implements ArmorMaterialSpec {
+        LEATHER, COPPER, CHAINMAIL, IRON, GOLD, DIAMOND, NETHERITE, TURTLE_SCUTE, ARMADILLO_SCUTE;
+
+        public String serialName() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+
+        public static final Codec<ArmorMaterialName> CODEC = MsmCodecs.named("armor material", values(), ArmorMaterialName::serialName);
+    }
+
+    /** Defence points per slot. */
+    public record Defense(int helmet, int chestplate, int leggings, int boots) {
+        public static final Codec<Defense> CODEC = RecordCodecBuilder.create(i -> i.group(
+                required("helmet", intAtLeast(0)).forGetter(Defense::helmet),
+                required("chestplate", intAtLeast(0)).forGetter(Defense::chestplate),
+                required("leggings", intAtLeast(0)).forGetter(Defense::leggings),
+                required("boots", intAtLeast(0)).forGetter(Defense::boots)).apply(i, Defense::new));
+    }
+
+    /**
+     * A custom armour material ({@code ::msm::definition::ArmorMaterial}). {@code durability} is
+     * the base that each slot multiplies (helmet 11, chestplate 16, leggings 15, boots 13).
+     */
+    public record CustomArmorMaterial(
+            int durability,
+            Defense defense,
+            int enchantmentValue,
+            float toughness,
+            float knockbackResistance,
+            Optional<Identifier> equipSound,
+            Optional<Identifier> repairItems,
+            Identifier equipmentAsset) implements ArmorMaterialSpec {
+        public static final Codec<CustomArmorMaterial> CODEC = RecordCodecBuilder.create(i -> i.group(
+                required("durability", intAtLeast(1)).forGetter(CustomArmorMaterial::durability),
+                required("defense", Defense.CODEC).forGetter(CustomArmorMaterial::defense),
+                required("enchantment_value", intAtLeast(0)).forGetter(CustomArmorMaterial::enchantmentValue),
+                required("toughness", floatAtLeast(0)).forGetter(CustomArmorMaterial::toughness),
+                required("knockback_resistance", floatRange(0, 1)).forGetter(CustomArmorMaterial::knockbackResistance),
+                optional("equip_sound", ID).forGetter(CustomArmorMaterial::equipSound),
+                optional("repair_items", TAG_ID).forGetter(CustomArmorMaterial::repairItems),
+                required("equipment_asset", ID).forGetter(CustomArmorMaterial::equipmentAsset)).apply(i, CustomArmorMaterial::new));
+    }
+
+    /** Makes the item a humanoid armour piece for a slot. */
+    public record Armor(ArmorSlot slot, ArmorMaterialSpec material) {
+        public static final Codec<Armor> CODEC = RecordCodecBuilder.create(i -> i.group(
+                required("slot", ArmorSlot.CODEC).forGetter(Armor::slot),
+                required("material", ArmorMaterialSpec.CODEC).forGetter(Armor::material)).apply(i, Armor::new));
     }
 
     /** Uses before the item breaks. */
