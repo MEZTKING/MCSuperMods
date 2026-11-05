@@ -9,7 +9,12 @@ import type {
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, { worldgenKinds, worldgenTemplates } from '../src/index';
-import { blockingProblems, indexesFor, withoutKnownGap } from './support';
+import {
+  blockingProblems,
+  indexesFor,
+  noiseSettingsHasDefaultBlock,
+  withoutKnownGap,
+} from './support';
 
 /** The first target's facts without its hooks: a template context is plain data. */
 const {
@@ -176,6 +181,23 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         placement: [],
       });
       expect(problems.map((problem) => problem.code)).toContain('schema.unknown-id');
+    });
+
+    it('noise_settings has default_block exactly where the target schema has it (known gap)', async () => {
+      const indexes = await indexesFor(bundle);
+      const template = worldgenTemplates.find((entry) => entry.id === 'noise_settings');
+      if (template === undefined) throw new Error('no noise_settings template');
+      const kind = kindOf(template);
+      const data = await template.data(contextFor(template, bundle.target));
+      expect(data).toHaveProperty('default_block');
+      const problems = blockingProblems(indexes, kind.schema, data);
+      if (noiseSettingsHasDefaultBlock(indexes)) {
+        expect(problems).toEqual([]);
+      } else {
+        expect(problems.map((problem) => [problem.code, problem.path])).toEqual([
+          ['schema.unknown-field', '/default_block'],
+        ]);
+      }
     });
 
     it.each(worldgenTemplates.map((template) => [template.id, template] as const))(
