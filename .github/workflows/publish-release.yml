@@ -1,0 +1,52 @@
+# Publishes a draft GitHub Release made by release.yml (Actions > Publish release > Run workflow).
+# The user allowed the main session to publish releases on 2026-11-05; before that, drafts
+# were published by hand (ADR 0018). The run refuses unless the draft for the tag exists, is
+# the only release for that tag, and holds exactly the installer, its `.blockmap` and
+# `latest.yml`, which the in-app updater needs.
+name: Publish release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish, without the v (for example 0.3.0)."
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      TAG: v${{ inputs.version }}
+    steps:
+      - name: Check and publish the draft
+        shell: bash
+        run: |
+          set -euo pipefail
+          releases=$(gh api "repos/${GH_REPO}/releases?per_page=100" --jq "[.[] | select(.tag_name == \"${TAG}\")]")
+          count=$(jq 'length' <<<"$releases")
+          if [ "$count" -ne 1 ]; then
+            echo "::error::Expected one release for ${TAG}, found ${count}."
+            exit 1
+          fi
+          if [ "$(jq -r '.[0].draft' <<<"$releases")" != "true" ]; then
+            echo "${TAG} is already published."
+            exit 0
+          fi
+          assets=$(jq -r '.[0].assets[].name' <<<"$releases" | sort)
+          echo "Assets:"; echo "$assets"
+          exe=$(grep -c '\.exe$' <<<"$assets" || true)
+          map=$(grep -c '\.exe\.blockmap$' <<<"$assets" || true)
+          yml=$(grep -cx 'latest.yml' <<<"$assets" || true)
+          total=$(grep -c . <<<"$assets" || true)
+          if [ "$exe" -ne 1 ] || [ "$map" -ne 1 ] || [ "$yml" -ne 1 ] || [ "$total" -ne 3 ]; then
+            echo "::error::The ${TAG} draft must hold exactly the .exe, .exe.blockmap and latest.yml."
+            exit 1
+          fi
+          id=$(jq -r '.[0].id' <<<"$releases")
+          gh api -X PATCH "repos/${GH_REPO}/releases/${id}" -F draft=false -f make_latest=true >/dev/null
+          echo "Published ${TAG}."

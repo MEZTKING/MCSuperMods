@@ -71,7 +71,7 @@ Rewritten 2026-11-05 by the main session that runs Phase 4 (Waves 0–2), for th
 - The session's git proxy rejects tag and branch-delete pushes (403). Trigger releases with the GitHub MCP `actions_run_trigger` (`release.yml`, ref `main`, inputs `version`, `commit`) only with the user's explicit go-ahead each time (given on 2026-11-05 for 0.3.0).
 - A manual run can tag only commits whose `.github/workflows/` match `main` (otherwise HTTP 403); release from the `main` tip.
 - `.github/workflows/release.yml`: on a `v*` tag, or a manual run with a `version`, it guards tag = `app/package.json` version, creates the tag (manual runs; never moves an existing tag), creates one draft release first (parallel uploads once split assets over two drafts), runs `electron-builder --publish always`, checks the draft has exactly the `.exe`, `.exe.blockmap` and `latest.yml`, and checks the 150 MB installer budget.
-- The user publishes drafts by hand; the in-app updater only sees published releases. Bump the version in `app/package.json` in the commit to be released.
+- Drafts are published by hand or, with the user's go-ahead (given 2026-11-05: "full permission"), by triggering `publish-release.yml` (input `version`), which checks the three assets first. The in-app updater only sees published releases. Bump the version in `app/package.json` in the commit to be released.
 
 ## Environment notes
 
