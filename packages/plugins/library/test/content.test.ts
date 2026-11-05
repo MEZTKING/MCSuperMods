@@ -28,6 +28,7 @@ const STARTER_IDS = [
   'data_pack',
   'combined',
   'custom_ore',
+  'custom-sword',
   'recipe_pack',
   'music_disc',
   'function_starter',
@@ -133,7 +134,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the thirteen starters in order', () => {
+  it('lists the fourteen starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -143,6 +144,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
+      'content',
       'content',
       'content',
       'content',
@@ -268,6 +270,55 @@ describe('project starters', () => {
       'textures/entity/ruby_golem.png',
       'textures/item/ruby_golem_spawn_egg.png',
     ]);
+  });
+
+  it('builds the Custom sword starter: an msm:item sword with a handheld model, recipe and name', () => {
+    const sword = libraryStarters.find((starter) => starter.id === 'custom-sword') as ProjectStarter;
+    expect(sword.title).toBe('Custom sword');
+    expect(sword.category).toBe('content');
+    expect(sword.description).toMatch(/Fabric mod jar/);
+    expect(sword.layers).toEqual(['resourcepack', 'datapack', 'msm']);
+    expect(sword.requiresKinds).toEqual([
+      'minecraft:lang',
+      'minecraft:model',
+      'minecraft:pack_mcmeta',
+      'minecraft:recipe',
+      'msm:item',
+      'msm:mod',
+    ]);
+    const bundle = build(sword);
+    expect(bundle.elements.map((entry) => `${entry.kind} ${entry.id}`)).toEqual([
+      'minecraft:pack_mcmeta demo:pack',
+      'msm:mod demo:mod',
+      'msm:item demo:ruby_sword',
+      'minecraft:model demo:item/ruby_sword',
+      'minecraft:lang demo:en_us',
+      'minecraft:recipe demo:ruby_sword_from_emerald',
+    ]);
+    expect(bundle.elements.find((entry) => entry.id === 'demo:ruby_sword')?.data).toMatchObject({
+      model: 'demo:item/ruby_sword',
+      max_stack_size: 1,
+      components: {
+        'msm:tool': { type: 'sword', tier: 'diamond' },
+        'msm:durability': { max: 1561 },
+      },
+    });
+    expect(bundle.elements.find((entry) => entry.id === 'demo:item/ruby_sword')?.data).toEqual({
+      parent: 'minecraft:item/handheld',
+      textures: { layer0: 'demo:item/ruby_sword' },
+    });
+    expect(bundle.elements.find((entry) => entry.id === 'demo:en_us')?.data).toEqual({
+      'item.demo.ruby_sword': 'Ruby Sword',
+    });
+    expect(
+      bundle.elements.find((entry) => entry.id === 'demo:ruby_sword_from_emerald')?.data,
+    ).toMatchObject({
+      type: 'minecraft:crafting_shaped',
+      pattern: ['I', 'I', 'S'],
+      key: { I: 'minecraft:emerald', S: 'minecraft:stick' },
+      result: { id: 'demo:ruby_sword', count: 1 },
+    });
+    expect(bundle.assets.map((asset) => asset.path)).toEqual(['textures/item/ruby_sword.png']);
   });
 
   it('builds the Scripted ore starter: the Custom ore content plus three scripts', () => {

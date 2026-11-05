@@ -57,14 +57,31 @@ const PINNED: Record<PlaceholderPattern, string> = {
   gem: '875d1b156d354c2310f5167f3fa6803eea063b38adc7b35d501a1882e5482c28',
   disc: 'a8c7d397e6b78ba544c7657e79cb03363ace66f202c081bf5619edb3acfb0b95',
   egg: '249b1b90e8fba88bfd0018b3e38633b244d57185834bdafba9a6259cd532e724',
+  sword: 'SWORD_HASH',
 };
 
 /** SHA-256 of the entity skin in the default colour. */
 const PINNED_SKIN = '224f2f4715ddc13cad76f34fd7555f720a9149052645c23f4c28c102c2ff4fd5';
 
 describe('placeholder textures', () => {
-  it('has five patterns', () => {
-    expect(PLACEHOLDER_PATTERNS).toEqual(['plain', 'ore', 'gem', 'disc', 'egg']);
+  it('has six patterns', () => {
+    expect(PLACEHOLDER_PATTERNS).toEqual(['plain', 'ore', 'gem', 'disc', 'egg', 'sword']);
+  });
+
+  it('draws the egg spots in the accent colour, by default a darker shade of the colour', () => {
+    const colour: [number, number, number] = [196, 28, 52];
+    expect(placeholderPng('egg', { colour, accent: [139, 20, 37] })).toEqual(
+      placeholderPng('egg', { colour }),
+    );
+    const spotted = placeholderPixels('egg', { colour, accent: [0, 0, 255] });
+    const pixels = [...Array(spotted.length / 4).keys()].map((index) =>
+      [...spotted.subarray(index * 4, index * 4 + 4)].join(','),
+    );
+    expect(pixels).toContain('0,0,255,255');
+    // Other patterns ignore the accent.
+    expect(placeholderPng('gem', { colour, accent: [0, 0, 255] })).toEqual(
+      placeholderPng('gem', { colour }),
+    );
   });
 
   it.each(PLACEHOLDER_PATTERNS)('encodes %s as a valid 16x16 RGBA PNG', (pattern) => {
@@ -90,6 +107,8 @@ describe('placeholder textures', () => {
     expect(alpha('disc')).toContain(255);
     expect(alpha('egg')).toContain(0);
     expect(alpha('egg')).toContain(255);
+    expect(alpha('sword')).toContain(0);
+    expect(alpha('sword')).toContain(255);
   });
 
   it('encodes the entity skin as an opaque two-tone 64x64 PNG and pins its bytes', () => {
