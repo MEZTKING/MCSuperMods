@@ -1,0 +1,19 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// block.interact: a player uses the spark ore with the main hand.",
+      "msm.events.on(\"block.interact\", (e) => {",
+      "  if (e.block.id !== \"msm_sample_script:spark_ore\" || e.hand !== \"main\") return;",
+      "  msm.log.info(\"block.interact: \" + e.player.name + \" used spark ore at \" + e.block.pos);",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:on_block_interact",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

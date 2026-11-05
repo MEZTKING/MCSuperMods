@@ -357,6 +357,47 @@ describe('--no-runtime', () => {
   });
 });
 
+describe('analyseLog with scripts', () => {
+  const LOADED = '[10:04:03] [Server thread/INFO]: [msm_runtime] loaded 11 script(s); 0 error(s)';
+  const SCRIPT_INFO =
+    '[10:04:06] [Server thread/INFO]: [msm_runtime] msm_sample_script:on_server_started: server.started';
+  const expectScripts = { ...expect3, expectScripts: 11 };
+
+  it("passes with the loaded line and keeps it and the scripts' log lines", () => {
+    const analysis = analyseLog([REGISTERED, LOADED, SCRIPT_INFO, DONE], expectScripts);
+    expect(analysis.failures).toEqual([]);
+    expect(analysis.scripts).toBe(11);
+    expect(analysis.keyLines).toEqual([REGISTERED, LOADED, SCRIPT_INFO, DONE]);
+  });
+
+  it('fails on a wrong count, script errors, a missing or a repeated line', () => {
+    const wrong = LOADED.replace('11 script', '10 script').replace('0 error', '2 error');
+    expect(analyseLog([REGISTERED, wrong, DONE], expectScripts).failures).toEqual([
+      'expected 11 script(s), the runtime loaded 10',
+      'the runtime reported 2 script error(s)',
+    ]);
+    expect(analyseLog([REGISTERED, DONE], expectScripts).failures).toEqual([
+      'no "[msm_runtime] loaded S script(s); E error(s)" line',
+    ]);
+    expect(analyseLog([REGISTERED, LOADED, LOADED, DONE], expectScripts).failures).toEqual([
+      'the runtime reported loading its scripts twice',
+    ]);
+  });
+
+  it('leaves the line optional without expectScripts, and skips it with --no-runtime', () => {
+    expect(analyseLog([REGISTERED, DONE], expect3).failures).toEqual([]);
+    expect(analyseLog([DONE], { ...expectScripts, noRuntime: true }).failures).toEqual([]);
+  });
+
+  it('still fails on a script error logged by the runtime', () => {
+    const error =
+      '[10:04:03] [Server thread/ERROR]: [msm_runtime] script msm_sample_script:util: syntax error (msm/msm_sample_script/script/util.js#5)';
+    expect(analyseLog([REGISTERED, LOADED, error, DONE], expectScripts).failures).toEqual([
+      `runtime error: ${error.trim()}`,
+    ]);
+  });
+});
+
 describe('parseArgs for GameTests and scripts', () => {
   const facts = { minecraft: '1.0', loader: '0.1.0', fabricApi: '0.2.0+1.0' };
 
@@ -387,6 +428,37 @@ describe('parseArgs for GameTests and scripts', () => {
       /--report needs --gametest/,
     );
     expect(() => parseArgs(['--jar', 'a.jar', '--expect-scripts', 'x'], facts)).toThrow(/whole/);
+  });
+
+  it('reads --gametest-filter, only with --gametest, and passes it to the JVM', () => {
+    expect(
+      parseArgs(
+        [
+          '--jar',
+          'a.jar',
+          '--gametest',
+          't.jar',
+          '--gametest-filter',
+          'msm_parity_tests:sample_mod_*',
+        ],
+        facts,
+      ),
+    ).toMatchObject({ gametestFilter: 'msm_parity_tests:sample_mod_*' });
+    expect(parseArgs(['--jar', 'a.jar', '--gametest', 't.jar'], facts).gametestFilter).toBe(
+      undefined,
+    );
+    expect(() => parseArgs(['--jar', 'a.jar', '--gametest-filter', 'x:*'], facts)).toThrow(
+      /--gametest-filter needs --gametest/,
+    );
+    expect(serverArguments('2G', 'l.jar', '/w/r.xml', 'x:y_*')).toEqual([
+      '-Xmx2G',
+      '-Dfabric-api.gametest=true',
+      '-Dfabric-api.gametest.report-file=/w/r.xml',
+      '-Dfabric-api.gametest.filter=x:y_*',
+      '-jar',
+      'l.jar',
+      'nogui',
+    ]);
   });
 
   it('puts the report in the run folder by default and passes it to the JVM', () => {

@@ -1,0 +1,19 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "import { id } from \"./util\";",
+      "",
+      "// server.started: logs once the server has started; uses the util module.",
+      "msm.events.on(\"server.started\", (e) => {",
+      "  msm.log.info(\"server.started: runtime \" + msm.version + \" in \" + e.world.dimension + \", handler \" + id(\"spark\"));",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:on_server_started",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

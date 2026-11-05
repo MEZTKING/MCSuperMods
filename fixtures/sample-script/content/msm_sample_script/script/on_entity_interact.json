@@ -1,0 +1,19 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// entity.interact: a player uses an entity (fires once per hand).",
+      "msm.events.on(\"entity.interact\", (e) => {",
+      "  if (e.hand !== \"main\") return;",
+      "  msm.log.info(\"entity.interact: \" + e.player.name + \" used \" + e.entity.type);",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:on_entity_interact",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

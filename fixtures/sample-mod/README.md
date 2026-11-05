@@ -11,6 +11,8 @@ A kitchen-sink MCSuperMods project for the Fabric content jar (ADR 0026 D6), nam
 
 CI's `engine-mod` job then builds `msm_runtime` with Gradle, exports this project with the real runtime nested, and starts a headless Fabric dedicated server with it (`tools/run-fabric-server`). The server must log `[msm_runtime] registered 3 block(s) and 6 item(s) from 7 definition file(s); 0 error(s), 0 warning(s)` and nothing else from the runtime at warning or error level. The jar is kept as the workflow artefact `msm-sample-mod`.
 
+The same job also exports this project as a Java project (ADR 0033; `sample-mod.java.golden.test.ts` with `MSM_SAMPLE_MOD_JAVA_OUT`), builds it with its own `./gradlew build`, and runs the behaviour-parity GameTests of `engine-mod/parity/` (`SampleModParityTest`: every block's light, hardness, resistance, tool requirement, sound type, loot table and block item; the items' food, tool, durability, rarity and stack size; the ruby ore's and ruby apple's function (its `say` line), the chime block's glowstone from stepping (with the per-entity cooldown) and from redstone, its zero signal, and the wand's rubies and cooldown) twice: on the content jar with `msm_runtime` and on the ejected jar without it (`tools/run-fabric-server --gametest ... --gametest-filter 'msm_parity_tests:sample_mod_*'`, `--no-runtime` for the ejected jar). The same tests passing on both is the parity check; the ejected jars and the GameTest reports are kept as the artefacts `msm-ejected-jars` and `parity-gametest-reports`.
+
 The entity counterpart, an animated GeckoLib mob checked the same way, is `fixtures/sample-mob/` (see its README).
 
 ## Contents

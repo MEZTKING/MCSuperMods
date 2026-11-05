@@ -1,0 +1,19 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// item.use: a player uses a spark gem.",
+      "msm.events.on(\"item.use\", (e) => {",
+      "  if (e.item.id !== \"msm_sample_script:spark_gem\") return;",
+      "  msm.log.info(\"item.use: \" + e.player.name + \" used \" + e.item.count + \" spark gem(s)\");",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:on_item_use",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

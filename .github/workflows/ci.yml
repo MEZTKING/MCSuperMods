@@ -110,6 +110,98 @@ jobs:
           --facts "$RUNNER_TEMP/sample-mob/fabric-facts.json"
           --work "$RUNNER_TEMP/fabric-server-mob"
           --cache ~/.cache/msm-fabric-server
+      # Phase 6 (B139): scripts on a real server, the Java project eject built with Gradle, and
+      # the behaviour-parity GameTests run against both the content jar and the ejected jar.
+      - name: Export the sample script with the real runtime
+        run: |
+          MSM_SAMPLE_SCRIPT_OUT="$RUNNER_TEMP/sample-script" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-script.golden.test.ts
+          test -f "$RUNNER_TEMP/sample-script/msm_sample_script.jar"
+          cat "$RUNNER_TEMP/sample-script/fabric-facts.json"
+      # Reuses the sample mod's run folder (the game server is already there); the facts'
+      # expectScripts makes "[msm_runtime] loaded S script(s); 0 error(s)" required.
+      - name: Headless Fabric server check (sample script, scripts loaded)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-script/msm_sample_script.jar"
+          --facts "$RUNNER_TEMP/sample-script/fabric-facts.json"
+          --work "$RUNNER_TEMP/fabric-server"
+          --cache ~/.cache/msm-fabric-server
+      - name: Build the parity GameTests
+        working-directory: engine-mod
+        run: |
+          ./gradlew -p parity build --no-daemon
+          mapfile -t jars < <(ls "$GITHUB_WORKSPACE"/engine-mod/parity/build/libs/msm_parity_tests-*.jar | grep -v -e '-sources\.jar$')
+          if [ "${#jars[@]}" -ne 1 ]; then
+            echo "::error::Expected one msm_parity_tests jar, found ${#jars[@]}: ${jars[*]}"
+            exit 1
+          fi
+          echo "MSM_PARITY_JAR=${jars[0]}" >> "$GITHUB_ENV"
+      - name: Export the sample mod and the sample mob as Java projects
+        run: |
+          MSM_SAMPLE_MOD_JAVA_OUT="$RUNNER_TEMP/java/sample-mod" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-mod.java.golden.test.ts
+          MSM_SAMPLE_MOB_JAVA_OUT="$RUNNER_TEMP/java/sample-mob" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-mob.java.golden.test.ts
+          test -x "$RUNNER_TEMP/java/sample-mod/gradlew"
+          test -x "$RUNNER_TEMP/java/sample-mob/gradlew"
+      # Each written project builds with its own wrapper; the Gradle cache above holds the 26.3
+      # artefacts. Loom's "(kSxHvs99) is not valid semver" line for the nested GeckoLib is harmless.
+      - name: Build the ejected sample mod
+        working-directory: ${{ runner.temp }}/java/sample-mod
+        run: ./gradlew build --no-daemon
+      - name: Build the ejected sample mob
+        working-directory: ${{ runner.temp }}/java/sample-mob
+        run: ./gradlew build --no-daemon
+      - name: Find the ejected jars
+        run: |
+          for sample in mod mob; do
+            mapfile -t jars < <(ls "$RUNNER_TEMP/java/sample-$sample"/build/libs/msm_sample_$sample-*.jar | grep -v -e '-sources\.jar$')
+            if [ "${#jars[@]}" -ne 1 ]; then
+              echo "::error::Expected one ejected sample-$sample jar, found ${#jars[@]}: ${jars[*]}"
+              exit 1
+            fi
+            echo "Ejected sample-$sample jar: ${jars[0]}"
+            echo "MSM_EJECTED_${sample^^}_JAR=${jars[0]}" >> "$GITHUB_ENV"
+          done
+      # The four parity runs share one run folder (the game server is downloaded once); each
+      # writes its own report. The filter picks the sample's tests from the one parity jar.
+      - name: Parity GameTests (sample mod, content jar)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-mod/msm_sample_mod.jar"
+          --facts "$RUNNER_TEMP/sample-mod/fabric-facts.json"
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_mod_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-mod-content.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
+      - name: Parity GameTests (sample mod, ejected jar)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_MOD_JAR"
+          --facts "$RUNNER_TEMP/sample-mod/fabric-facts.json" --no-runtime
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_mod_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-mod-ejected.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
+      - name: Parity GameTests (sample mob, content jar)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-mob/msm_sample_mob.jar"
+          --facts "$RUNNER_TEMP/sample-mob/fabric-facts.json"
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_mob_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-mob-content.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
+      - name: Parity GameTests (sample mob, ejected jar)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_MOB_JAR"
+          --facts "$RUNNER_TEMP/sample-mob/fabric-facts.json" --no-runtime
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_mob_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-mob-ejected.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
       - if: always()
         uses: actions/upload-artifact@v7
         with:
@@ -122,6 +214,26 @@ jobs:
           name: msm-sample-mob
           path: ${{ runner.temp }}/sample-mob/msm_sample_mob.jar
           if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: msm-sample-script
+          path: ${{ runner.temp }}/sample-script/msm_sample_script.jar
+          if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: msm-ejected-jars
+          path: |
+            ${{ runner.temp }}/java/sample-mod/build/libs/*.jar
+            ${{ runner.temp }}/java/sample-mob/build/libs/*.jar
+          if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: parity-gametest-reports
+          path: ${{ runner.temp }}/parity-reports
+          if-no-files-found: ignore
       - if: failure()
         uses: actions/upload-artifact@v7
         with:
@@ -133,4 +245,6 @@ jobs:
             ${{ runner.temp }}/fabric-server/crash-reports
             ${{ runner.temp }}/fabric-server-mob/run-fabric-server.log
             ${{ runner.temp }}/fabric-server-mob/crash-reports
+            ${{ runner.temp }}/fabric-server-parity/run-fabric-server.log
+            ${{ runner.temp }}/fabric-server-parity/crash-reports
           if-no-files-found: ignore

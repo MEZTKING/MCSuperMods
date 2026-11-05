@@ -1,0 +1,19 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// entity.hurt: an entity other than a player is hurt by a player.",
+      "msm.events.on(\"entity.hurt\", (e) => {",
+      "  if (e.entity.isPlayer || e.attacker === undefined || !e.attacker.isPlayer) return;",
+      "  msm.log.info(\"entity.hurt: \" + e.entity.type + \" took \" + e.amount + \" from \" + e.attacker.name);",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:on_entity_hurt",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

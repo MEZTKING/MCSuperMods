@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "name": "MSM Sample Script",
+  "namespaces": [
+    "msm_sample_script"
+  ],
+  "plugins": [
+    "msm.resourcepack",
+    "msm.datapack",
+    "msm.blocks-items",
+    "msm.scripting"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

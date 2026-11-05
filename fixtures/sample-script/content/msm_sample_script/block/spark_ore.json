@@ -1,0 +1,49 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "iron",
+        "resistance": 3,
+        "tool": "pickaxe"
+      },
+      "msm:light_emitter": {
+        "level": 7
+      },
+      "msm:on_interact": {
+        "event": "msm_sample_script:spark"
+      }
+    },
+    "display_name": "Spark Ore",
+    "events": {
+      "msm_sample_script:spark": {
+        "actions": [
+          {
+            "sound": "minecraft:block.amethyst_block.chime",
+            "type": "play_sound",
+            "volume": 1
+          },
+          {
+            "handler": "msm_sample_script:spark",
+            "type": "run_script"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks",
+      "max_stack_size": 64,
+      "rarity": "common"
+    },
+    "loot": "self",
+    "model": "minecraft:block/redstone_ore",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:spark_ore",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

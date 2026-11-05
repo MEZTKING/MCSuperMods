@@ -1,0 +1,23 @@
+{
+  "data": {
+    "lines": [
+      "// Shared helpers. Scripts that import this file load it with require(\"./util\"); the",
+      "// runtime evaluates it once, so this line is logged once.",
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "export const MOD = \"msm_sample_script\";",
+      "",
+      "export function id(path: string): string {",
+      "  return MOD + \":\" + path;",
+      "}",
+      "",
+      "msm.log.info(\"util loaded\");"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:util",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

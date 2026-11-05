@@ -17,7 +17,8 @@
  * 4. Passes when the log has `Done (`, the runtime's `registered N block(s) and M item(s) ...;
  *    E error(s), W warning(s)` line with E = 0 (and W = 0 unless `--allow-warnings`), the
  *    expected counts when given, the `registered K entity type(s)` line with K as expected
- *    when `expectEntities` is given, no other `[msm_runtime]` warning or error, no GeckoLib
+ *    when `expectEntities` is given, the `loaded S script(s); 0 error(s)` line with S as expected
+ *    when `expectScripts` is given, no other `[msm_runtime]` warning or error, no GeckoLib
  *    error (nor warning unless `--allow-warnings`), no `Failed to load`, no mod resolution
  *    failure and no stack frame from `dev.mcsupermods` or `com.geckolib`.
  *
@@ -36,8 +37,12 @@
  * The facts file is what `packages/exporters/test/sample-mod.golden.test.ts` and
  * `sample-mob.golden.test.ts` write next to the sample jar: `minecraft`, `loader`,
  * `fabricApi` (from the target's Fabric facts), the optional `expectBlocks`, `expectItems`,
- * `expectEntities`, `expectScripts` (accepted, not yet checked), and `geckolib` (`fileName`, `url`, `sha512` from the target's GeckoLib
- * facts). Flags override it.
+ * `expectEntities`, `expectScripts` and `geckolib` (`fileName`, `url`, `sha512` from the
+ * target's GeckoLib facts). Flags override it.
+ *
+ * `--gametest-filter <selector>` runs only the GameTests matching a test selector (Fabric API's
+ * `fabric-api.gametest.filter`, Minecraft's resource selector: `*` and `?` wildcards, such as
+ * `msm_parity_tests:sample_mod_*`), so one test jar can hold the tests of several samples.
  *
  * GeckoLib: a content jar with entities nests GeckoLib (ADR 0029 D4), so by default the tool
  * relies on the nested copy and downloads nothing. `--separate-geckolib` (for a jar exported
@@ -53,7 +58,7 @@ import { createWriteStream, existsSync } from 'node:fs';
 import { copyFile, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { homedir, tmpdir } from 'node:os';
-import { basename, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
 
@@ -69,10 +74,12 @@ export interface Options {
   expectBlocks: number | undefined;
   expectItems: number | undefined;
   expectEntities: number | undefined;
-  /** Scripts the runtime must report (B139 adds the check; parsed and accepted now). */
+  /** Script files the runtime must report loading, with no script error. */
   expectScripts: number | undefined;
   /** A GameTest mod jar: run Fabric API's production GameTest server instead of a plain start. */
   gametest: string | undefined;
+  /** Only the GameTests matching this selector run (`fabric-api.gametest.filter`). */
+  gametestFilter: string | undefined;
   /** Where the GameTest report goes (default `<work>/gametest-report.xml`). */
   report: string | undefined;
   /** No `msm_runtime` in the run (an ejected jar): skip the registration checks. */
@@ -121,9 +128,12 @@ export const USAGE = `Usage: node tools/run-fabric-server/index.ts --jar <conten
   --expect-blocks <n>   blocks the runtime must report
   --expect-items <n>    items the runtime must report
   --expect-entities <n> entity types the runtime must report
-  --expect-scripts <n>  scripts the runtime must report (accepted; checked from B139)
+  --expect-scripts <n>  script files the runtime must report loading, with 0 errors
   --gametest <jar>      run the GameTests of this mod jar on a production GameTest server
                         (adds Fabric API's fabric-gametest-api-v1 module to mods/)
+  --gametest-filter <selector>
+                        run only the GameTests matching this selector (* and ? wildcards,
+                        such as msm_parity_tests:sample_mod_*)
   --report <file>       GameTest report file (default: <work>/gametest-report.xml)
   --no-runtime          the jar has no msm_runtime (an ejected project): skip the
                         registration checks and fail on any [msm_runtime] line
@@ -194,6 +204,7 @@ export function parseArgs(
     'expect-entities',
     'expect-scripts',
     'gametest',
+    'gametest-filter',
     'report',
     'work',
     'cache',
@@ -220,6 +231,9 @@ export function parseArgs(
   if (flags.has('report') && !flags.has('gametest')) {
     throw new Error('--report needs --gametest');
   }
+  if (flags.has('gametest-filter') && !flags.has('gametest')) {
+    throw new Error('--gametest-filter needs --gametest');
+  }
   if (separateGeckolib && facts.geckolib === undefined) {
     throw new Error('--separate-geckolib needs the geckolib entry of the --facts file');
   }
@@ -238,6 +252,7 @@ export function parseArgs(
     expectScripts:
       scripts === undefined ? facts.expectScripts : integer('--expect-scripts', scripts),
     gametest: flags.get('gametest'),
+    gametestFilter: flags.get('gametest-filter'),
     report: flags.get('report'),
     noRuntime,
     geckolib: facts.geckolib,
@@ -324,6 +339,8 @@ export interface Analysis {
   items: number | undefined;
   /** Entity types from the `registered K entity type(s)` line. */
   entities: number | undefined;
+  /** Script files from the `loaded S script(s); E error(s)` line. */
+  scripts: number | undefined;
   files: number | undefined;
   errors: number | undefined;
   warnings: number | undefined;
@@ -336,6 +353,10 @@ export interface Analysis {
 const REGISTERED =
   /\[msm_runtime\] registered (\d+) block\(s\) and (\d+) item\(s\) from (\d+) definition file\(s\); (\d+) error\(s\)(?:, (\d+) warning\(s\))?/;
 const ENTITIES = /\[msm_runtime\] registered (\d+) entity type\(s\)/;
+/** `ScriptHost`'s load line: S counts every script file found, E the load-time errors. */
+const SCRIPTS = /\[msm_runtime\] loaded (\d+) script\(s\); (\d+) error\(s\)/;
+/** A script's own `msm.log` line (`[msm_runtime] <script id>: <message>`), shown as a key line. */
+const SCRIPT_LOG = /\[msm_runtime\] [a-z0-9_.-]+:[a-z0-9_./-]+: /;
 const LEVEL = /\/(WARN|ERROR|FATAL)\]/;
 /**
  * A line about GeckoLib. The dedicated server's console pattern has no logger name, so
@@ -366,7 +387,7 @@ const MOD_LIST =
 export function analyseLog(
   lines: readonly string[],
   expect: Pick<Options, 'expectBlocks' | 'expectItems' | 'allowWarnings'> &
-    Partial<Pick<Options, 'expectEntities' | 'noRuntime'>> & {
+    Partial<Pick<Options, 'expectEntities' | 'expectScripts' | 'noRuntime'>> & {
       /** A GameTest run: the server exits after the tests and never logs `Done (`. */
       gametest?: boolean;
     },
@@ -377,6 +398,7 @@ export function analyseLog(
   let done = false;
   let registered: RegExpExecArray | undefined;
   let entities: number | undefined;
+  let scripts: RegExpExecArray | undefined;
   for (const line of lines) {
     if (DONE.test(line)) {
       done = true;
@@ -405,7 +427,14 @@ export function analyseLog(
       keyLines.push(line);
       continue;
     }
-    if (MOD_LIST.test(line)) keyLines.push(line);
+    const scriptMatch = SCRIPTS.exec(line);
+    if (scriptMatch !== null) {
+      if (scripts !== undefined) failures.push('the runtime reported loading its scripts twice');
+      scripts = scriptMatch;
+      keyLines.push(line);
+      continue;
+    }
+    if (MOD_LIST.test(line) || SCRIPT_LOG.test(line)) keyLines.push(line);
     const level = LEVEL.exec(line)?.[1];
     if (line.includes('[msm_runtime]') && level !== undefined) {
       keyLines.push(line);
@@ -461,6 +490,18 @@ export function analyseLog(
       );
     }
   }
+  if (expect.expectScripts !== undefined && !noRuntime) {
+    if (scripts === undefined) {
+      failures.push('no "[msm_runtime] loaded S script(s); E error(s)" line');
+    } else {
+      const loaded = Number(scripts[1]);
+      const scriptErrors = Number(scripts[2]);
+      if (loaded !== expect.expectScripts) {
+        failures.push(`expected ${expect.expectScripts} script(s), the runtime loaded ${loaded}`);
+      }
+      if (scriptErrors !== 0) failures.push(`the runtime reported ${scriptErrors} script error(s)`);
+    }
+  }
   return {
     ok: failures.length === 0,
     failures,
@@ -468,6 +509,7 @@ export function analyseLog(
     blocks,
     items,
     entities,
+    scripts: scripts === undefined ? undefined : Number(scripts[1]),
     files: count(3),
     errors,
     warnings,
@@ -686,13 +728,22 @@ export function reportPath(options: Pick<Options, 'report' | 'workDir'>): string
 
 /**
  * The server's command line after `java`: `-Xmx`, the GameTest properties when `report` is
- * given, `-jar <launcher> nogui`.
+ * given (with `fabric-api.gametest.filter` when `filter` is), `-jar <launcher> nogui`.
  */
-export function serverArguments(memory: string, launcher: string, report?: string): string[] {
+export function serverArguments(
+  memory: string,
+  launcher: string,
+  report?: string,
+  filter?: string,
+): string[] {
   const gametest =
     report === undefined
       ? []
-      : ['-Dfabric-api.gametest=true', `-Dfabric-api.gametest.report-file=${report}`];
+      : [
+          '-Dfabric-api.gametest=true',
+          `-Dfabric-api.gametest.report-file=${report}`,
+          ...(filter === undefined ? [] : [`-Dfabric-api.gametest.filter=${filter}`]),
+        ];
   return [`-Xmx${memory}`, ...gametest, '-jar', launcher, 'nogui'];
 }
 
@@ -735,7 +786,10 @@ async function prepare(options: Options): Promise<{ launcher: string; runDir: st
     await rm(join(runDir, stale), { recursive: true, force: true });
   }
   await mkdir(join(runDir, 'mods'));
-  if (options.gametest !== undefined) await rm(reportPath(options), { force: true });
+  if (options.gametest !== undefined) {
+    await mkdir(dirname(reportPath(options)), { recursive: true });
+    await rm(reportPath(options), { force: true });
+  }
   await writeFile(join(runDir, 'eula.txt'), 'eula=true\n');
   await writeFile(join(runDir, 'server.properties'), serverProperties(await freePort()));
   for (const jar of modJars) await copyFile(jar, join(runDir, 'mods', basename(jar)));
@@ -757,6 +811,7 @@ async function runServer(
     options.memory,
     launcher,
     gametest ? reportPath(options) : undefined,
+    gametest ? options.gametestFilter : undefined,
   );
   log(`starting ${options.java} ${args.join(' ')} in ${runDir}`);
   const child = spawn(options.java, args, {
@@ -850,9 +905,10 @@ async function main(): Promise<number> {
   }
   if (analysis.ok) {
     const entities = analysis.entities === undefined ? '' : `, ${analysis.entities} entity type(s)`;
+    const scripts = analysis.scripts === undefined ? '' : `, ${analysis.scripts} script(s)`;
     const runtime = options.noRuntime
       ? 'no msm_runtime'
-      : `${analysis.blocks} block(s), ${analysis.items} item(s)${entities} from ${analysis.files} definition file(s); 0 errors`;
+      : `${analysis.blocks} block(s), ${analysis.items} item(s)${entities}${scripts} from ${analysis.files} definition file(s); 0 errors`;
     const tests =
       analysis.gametests === undefined ? '' : `; ${analysis.gametests.length} GameTest(s) passed`;
     log(`PASS: ${runtime}${tests}`);

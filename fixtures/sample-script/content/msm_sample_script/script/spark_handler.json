@@ -1,0 +1,22 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "import { id } from \"./util\";",
+      "",
+      "// The action handler that the spark ore's run_script action calls (event msm_sample_script:spark).",
+      "msm.actions.define(\"msm_sample_script:spark\", (e) => {",
+      "  msm.log.info(\"action \" + id(\"spark\") + \": \" + e.owner + \" \" + e.event + \" at \" + e.pos);",
+      "  if (e.player !== undefined) {",
+      "    e.player.give(id(\"spark_gem\"), 1);",
+      "  }",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:spark_handler",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

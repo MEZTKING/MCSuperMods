@@ -1,0 +1,19 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// entity.death: an entity other than a player is killed by a player.",
+      "msm.events.on(\"entity.death\", (e) => {",
+      "  if (e.entity.isPlayer || e.attacker === undefined || !e.attacker.isPlayer) return;",
+      "  msm.log.info(\"entity.death: \" + e.attacker.name + \" killed \" + e.entity.type);",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:on_entity_death",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

@@ -18,6 +18,8 @@ CI's `engine-mod` job then builds `msm_runtime` with Gradle, exports this projec
 
 (the spawn egg is the one item) and nothing from the runtime or GeckoLib at warning or error level. The jar is kept as the workflow artefact `msm-sample-mob`. The server has no renderer, so how the mob looks and animates is left to the in-game check below.
 
+The same job also exports this project as a Java project (ADR 0033; `sample-mob.java.golden.test.ts` with `MSM_SAMPLE_MOB_JAVA_OUT`, GeckoLib nested by Loom), builds it with its own `./gradlew build`, and runs the behaviour-parity GameTests of `engine-mod/parity/` (`SampleMobParityTest`: the entity type's category, size, eye height and fire immunity, its attributes and loot table, the spawn egg and `SpawnEggItem.getType`, the natural spawn in forests and plains (weight 5, groups of 1 to 2) and not in deserts, walking to a target, the first melee hit on a pig taking exactly 5 health, and on death the function's `say` line and the glowstone dust drop) twice: on the content jar with `msm_runtime` and on the ejected jar without it (`--gametest-filter 'msm_parity_tests:sample_mob_*'`, `--no-runtime` for the ejected jar). The same tests passing on both is the parity check; the reports are kept as the artefact `parity-gametest-reports`.
+
 ## Contents
 
 | Element | Kind | What it shows |

@@ -1,0 +1,21 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// server.tick: runs every tick (costly), so this script logs only the first one.",
+      "var logged = false;",
+      "msm.events.on(\"server.tick\", (e) => {",
+      "  if (logged) return;",
+      "  logged = true;",
+      "  msm.log.info(\"server.tick: first tick \" + e.tick);",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:on_server_tick",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}
