@@ -1,0 +1,32 @@
+{
+  "data": {
+    "pools": [
+      {
+        "bonus_rolls": 0,
+        "entries": [
+          {
+            "modifier": {
+              "count": {
+                "max": 3,
+                "min": 1,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:glowstone_dust",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "random_sequence": "msm_sample_mob:entities/glow_golem",
+    "type": "minecraft:entity"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mob:entities/glow_golem",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

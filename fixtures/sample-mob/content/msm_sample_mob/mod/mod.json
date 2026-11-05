@@ -1,0 +1,18 @@
+{
+  "data": {
+    "authors": [
+      "MCSuperMods"
+    ],
+    "description": "Kitchen-sink sample: an animated mob with every entity component and goal.",
+    "licence": "MIT",
+    "mod_id": "msm_sample_mob",
+    "name": "MSM Sample Mob",
+    "version": "1.0.0"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mob:mod",
+  "kind": "msm:mod",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "must_see": true,
+            "priority": 1,
+            "retaliate": true,
+            "speed": 1.1,
+            "targets": [
+              "minecraft:zombie"
+            ],
+            "type": "melee_attack"
+          },
+          {
+            "distance": 6,
+            "from": [
+              "minecraft:creeper"
+            ],
+            "speed": 1,
+            "sprint_speed": 1.3,
+            "type": "flee"
+          },
+          {
+            "entities": [
+              "minecraft:player"
+            ],
+            "range": 12,
+            "speed": 1,
+            "stop_distance": 3,
+            "type": "follow"
+          },
+          {
+            "avoid_water": true,
+            "speed": 0.8,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_mob:entity/glow_golem_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_sample_mob:entity/glow_golem",
+        "scale": 1,
+        "texture": "msm_sample_mob:entity/glow_golem",
+        "transition_ticks": 4,
+        "walk": "walk"
+      },
+      "msm:attack": {
+        "damage": 5,
+        "knockback": 0.5,
+        "on_attack": "msm_sample_mob:swing"
+      },
+      "msm:health": {
+        "max": 40
+      },
+      "msm:movement": {
+        "fire_immune": true,
+        "follow_range": 24,
+        "knockback_resistance": 0.4,
+        "speed": 0.25,
+        "swims": true
+      },
+      "msm:on_death": {
+        "event": "msm_sample_mob:fade"
+      },
+      "msm:on_hurt": {
+        "event": "msm_sample_mob:hurt"
+      },
+      "msm:on_interact": {
+        "event": "msm_sample_mob:greet"
+      }
+    },
+    "display_name": "Glow Golem",
+    "events": {
+      "msm_sample_mob:fade": {
+        "actions": [
+          {
+            "count": 12,
+            "particle": "minecraft:end_rod",
+            "spread": 0.5,
+            "type": "spawn_particle"
+          },
+          {
+            "function": "msm_sample_mob:golem/glow_burst",
+            "type": "run_function"
+          }
+        ]
+      },
+      "msm_sample_mob:greet": {
+        "actions": [
+          {
+            "animation": "wave",
+            "controller": "msm_triggered",
+            "type": "play_animation"
+          },
+          {
+            "pitch": 1.2,
+            "sound": "minecraft:block.amethyst_block.chime",
+            "type": "play_sound"
+          }
+        ]
+      },
+      "msm_sample_mob:hurt": {
+        "actions": [
+          {
+            "count": 6,
+            "particle": "minecraft:glow",
+            "spread": 0.4,
+            "type": "spawn_particle"
+          }
+        ]
+      },
+      "msm_sample_mob:swing": {
+        "actions": [
+          {
+            "sound": "minecraft:entity.iron_golem.attack",
+            "type": "play_sound"
+          }
+        ]
+      }
+    },
+    "eye_height": 1.6,
+    "format": 1,
+    "loot_table": "msm_sample_mob:entities/glow_golem",
+    "size": {
+      "height": 1.9,
+      "width": 0.8
+    },
+    "spawn": {
+      "biomes": [
+        "#minecraft:is_forest",
+        "minecraft:plains"
+      ],
+      "heightmap": "motion_blocking_no_leaves",
+      "max_group": 2,
+      "min_group": 1,
+      "placement": "on_ground",
+      "rule": "mob",
+      "weight": 5
+    },
+    "spawn_egg": {
+      "creative_tab": "minecraft:spawn_eggs",
+      "display_name": "Glow Golem Spawn Egg",
+      "texture": "msm_sample_mob:item/glow_golem_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mob:glow_golem",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

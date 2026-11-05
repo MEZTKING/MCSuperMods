@@ -67,7 +67,15 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Export the sample mod with the real runtime
+      # Restored before the exports: the sample-mob export downloads GeckoLib into this cache
+      # (from the target's GeckoLib facts, SHA-512 checked) when it is missing.
+      # The key names GeckoLib so caches saved before it was added are not reused.
+      - name: Cache Fabric server and GeckoLib downloads
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/msm-fabric-server
+          key: fabric-server-geckolib-${{ hashFiles('packages/targets/*/src/target.ts') }}
+      - name: Find the msm_runtime jar
         run: |
           mapfile -t jars < <(ls "$GITHUB_WORKSPACE"/engine-mod/build/libs/msm_runtime-*.jar | grep -v -e '-sources\.jar$' -e '-dev\.jar$')
           if [ "${#jars[@]}" -ne 1 ]; then
@@ -75,27 +83,44 @@ jobs:
             exit 1
           fi
           echo "Runtime jar: ${jars[0]}"
-          MSM_RUNTIME_JAR="${jars[0]}" MSM_SAMPLE_MOD_OUT="$RUNNER_TEMP/sample-mod" \
+          echo "MSM_RUNTIME_JAR=${jars[0]}" >> "$GITHUB_ENV"
+      - name: Export the sample mod with the real runtime
+        run: |
+          MSM_SAMPLE_MOD_OUT="$RUNNER_TEMP/sample-mod" \
             pnpm --filter @msm/exporters exec vitest run test/sample-mod.golden.test.ts
           test -f "$RUNNER_TEMP/sample-mod/msm_sample_mod.jar"
           cat "$RUNNER_TEMP/sample-mod/fabric-facts.json"
-      - name: Cache Fabric server downloads
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/msm-fabric-server
-          key: fabric-server-${{ hashFiles('packages/targets/*/src/target.ts') }}
-      - name: Headless Fabric server check
+      - name: Export the sample mob with the real runtime and GeckoLib
+        run: |
+          MSM_GECKOLIB_JAR="$HOME/.cache/msm-fabric-server/geckolib.jar" MSM_SAMPLE_MOB_OUT="$RUNNER_TEMP/sample-mob" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-mob.golden.test.ts
+          test -f "$RUNNER_TEMP/sample-mob/msm_sample_mob.jar"
+          cat "$RUNNER_TEMP/sample-mob/fabric-facts.json"
+      - name: Headless Fabric server check (sample mod)
         run: >-
           node tools/run-fabric-server/index.ts
           --jar "$RUNNER_TEMP/sample-mod/msm_sample_mod.jar"
           --facts "$RUNNER_TEMP/sample-mod/fabric-facts.json"
           --work "$RUNNER_TEMP/fabric-server"
           --cache ~/.cache/msm-fabric-server
+      - name: Headless Fabric server check (sample mob, GeckoLib nested)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-mob/msm_sample_mob.jar"
+          --facts "$RUNNER_TEMP/sample-mob/fabric-facts.json"
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
       - if: always()
         uses: actions/upload-artifact@v7
         with:
           name: msm-sample-mod
           path: ${{ runner.temp }}/sample-mod/msm_sample_mod.jar
+          if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: msm-sample-mob
+          path: ${{ runner.temp }}/sample-mob/msm_sample_mob.jar
           if-no-files-found: ignore
       - if: failure()
         uses: actions/upload-artifact@v7
@@ -106,4 +131,6 @@ jobs:
             engine-mod/build/reports/tests
             ${{ runner.temp }}/fabric-server/run-fabric-server.log
             ${{ runner.temp }}/fabric-server/crash-reports
+            ${{ runner.temp }}/fabric-server-mob/run-fabric-server.log
+            ${{ runner.temp }}/fabric-server-mob/crash-reports
           if-no-files-found: ignore

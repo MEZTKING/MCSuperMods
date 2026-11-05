@@ -1715,3 +1715,31 @@ Next:
 - B121: e2e and guide from the labels above; the Blockbench picker filter is `bbmodel`/`json`, so `MSM_E2E_PICK_FILES` works with any of the three suffixes.
 - `@msm/exporters` `FabricContentJarProblemCodes` lacks `geckolibMissing` and `noGeckolibTarget` (tests use the literal code); worth adding in an exporters brief.
 - Toolbar Export menu has no Blockbench entry (menu and palette only, like Test in Minecraft).
+
+## 2026-11-05 — executor — B120 sample-mob fixture, golden, headless server check with entities and GeckoLib
+
+What:
+- `fixtures/sample-mob/` (`msm_sample_mob`): `msm:mod`, entity `glow_golem` (every entity component, all six goal types, `msm:on_hurt`, `msm:on_death`, `msm:on_interact`, `msm:attack.on_attack`, `play_animation` `wave`, natural spawn from `#minecraft:is_forest` and `minecraft:plains` with every spawn field, spawn egg with texture and name), biped geo model, animation set `idle`/`walk`/`attack`/`wave` (idle, walk and attack named explicitly), the two placeholder textures (library `placeholderSkinPng`, `placeholderPng('egg')`), function `golem/glow_burst`, loot table `entities/glow_golem`; hand-written README with the in-game check.
+- `packages/exporters/test/sample-mob.golden.test.ts` (8 tests, 1 skipped without env): fixture equals the saved elements and assets, zero element, validator and mcfunction problems, content jar with stub runtime and GeckoLib nested, SHA-256 pinned in two time zones (`test/fixtures/mc-26.3/sample-mob-jar.sha256`), entity definition, geo model and animations valid against their MSM schemas, `fabric.mod.json` depends on `geckolib` and lists both nested jars. With `MSM_RUNTIME_JAR`, `MSM_GECKOLIB_JAR`, `MSM_SAMPLE_MOB_OUT` it writes the real jar and `fabric-facts.json` (`expectBlocks` 0, `expectItems` 1, `expectEntities` 1, `geckolib { fileName, url, sha512 }`); a missing or mismatching `MSM_GECKOLIB_JAR` is downloaded from `Target.geckolib` and SHA-512 checked.
+- `tools/run-fabric-server`: facts `expectEntities` and `geckolib`, flags `--expect-entities` and `--separate-geckolib`; pass rule adds the `registered K entity type(s)` line (required only with `expectEntities`, once), GeckoLib WARN lines fail unless `--allow-warnings`, GeckoLib ERROR lines and `com.geckolib` stack frames always fail; mod list key lines include `|-- ` nested entries; `geckolibCachePath`. 5 new unit tests (15 in all).
+- CI `engine-mod`: the download cache (key now `fabric-server-geckolib-…`) is restored before the exports; runtime jar found once into `MSM_RUNTIME_JAR`; sample-mob export with `MSM_GECKOLIB_JAR` in the tool's cache; server check on both samples (separate work folders); artefact `msm-sample-mob`; mob logs on failure.
+- Local end-to-end (real `msm_runtime-0.4.0.jar` from `./gradlew build`, "All 38 required tests passed"; real GeckoLib 5.5.7 nested): PASS.
+  ```
+  	- msm_sample_mob 1.0.0
+  	   |-- geckolib 5.5.7
+  	   \-- msm_runtime 0.4.0
+  [main/INFO]: [msm_runtime] registered 0 block(s) and 1 item(s) from 1 definition file(s); 0 error(s), 0 warning(s)
+  [main/INFO]: [msm_runtime] registered 1 entity type(s)
+  [Server thread/INFO]: Done (3.422s)! For help, type "help"
+  PASS: 0 block(s), 1 item(s), 1 entity type(s) from 1 definition file(s); 0 errors
+  ```
+  The sample-mod check still passes (3 blocks, 6 items, `registered 0 entity type(s)`), and `--separate-geckolib` downloaded GeckoLib (SHA-512 checked) and passed. GeckoLib logs nothing at all on the dedicated server.
+
+Decisions:
+- The tool relies on the nested GeckoLib by default; the facts' `geckolib` is used only by `--separate-geckolib` (for separate-runtime jars). CI's real GeckoLib comes from the golden test downloading into the tool's cache, so the facts stay the single source of the URL and hash.
+- The server console shows no logger names, so GeckoLib warnings are recognised by lines naming `geckolib` (case-insensitive).
+- `msm:mod` needs `@msm/plugin-blocks-items` registered in the mob golden too.
+
+Next:
+- `sample-mod.golden.test.ts` (outside B120) could write `expectEntities: 0` so the sample-mod check also pins the entity line.
+- The user runs the in-game check in `fixtures/sample-mob/README.md`; B122 records the CI proxy.

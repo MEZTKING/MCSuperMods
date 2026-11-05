@@ -16,12 +16,21 @@
  *    waits for the process to end (killed after `--timeout`).
  * 4. Passes when the log has `Done (`, the runtime's `registered N block(s) and M item(s) ...;
  *    E error(s), W warning(s)` line with E = 0 (and W = 0 unless `--allow-warnings`), the
- *    expected counts when given, no other `[msm_runtime]` warning or error, no
- *    `Failed to load`, no mod resolution failure and no stack frame from `dev.mcsupermods`.
+ *    expected counts when given, the `registered K entity type(s)` line with K as expected
+ *    when `expectEntities` is given, no other `[msm_runtime]` warning or error, no GeckoLib
+ *    error (nor warning unless `--allow-warnings`), no `Failed to load`, no mod resolution
+ *    failure and no stack frame from `dev.mcsupermods` or `com.geckolib`.
  *
- * The facts file is what `packages/exporters/test/sample-mod.golden.test.ts` writes next to
- * the sample jar: `minecraft`, `loader`, `fabricApi` (from the target's Fabric facts) and the
- * optional `expectBlocks`, `expectItems`. Flags override it.
+ * The facts file is what `packages/exporters/test/sample-mod.golden.test.ts` and
+ * `sample-mob.golden.test.ts` write next to the sample jar: `minecraft`, `loader`,
+ * `fabricApi` (from the target's Fabric facts), the optional `expectBlocks`, `expectItems`,
+ * `expectEntities`, and `geckolib` (`fileName`, `url`, `sha512` from the target's GeckoLib
+ * facts). Flags override it.
+ *
+ * GeckoLib: a content jar with entities nests GeckoLib (ADR 0029 D4), so by default the tool
+ * relies on the nested copy and downloads nothing. `--separate-geckolib` (for a jar exported
+ * with the separate runtime and GeckoLib option) downloads the jar named by the facts into
+ * the cache, checks its SHA-512 and puts it in `mods/`.
  *
  * Downloads are untrusted data: written to disk and run only as the Fabric server they claim
  * to be, in a folder of their own.
@@ -47,12 +56,25 @@ export interface Options {
   installer: string | undefined;
   expectBlocks: number | undefined;
   expectItems: number | undefined;
+  expectEntities: number | undefined;
+  /** GeckoLib download facts; used only with {@link Options.separateGeckolib}. */
+  geckolib: GeckolibFacts | undefined;
+  /** Download GeckoLib and put it in `mods/` beside the content jar. */
+  separateGeckolib: boolean;
   allowWarnings: boolean;
   workDir: string;
   cacheDir: string;
   java: string;
   timeoutSeconds: number;
   memory: string;
+}
+
+/** The GeckoLib jar the facts file names (from the target's GeckoLib facts). */
+export interface GeckolibFacts {
+  fileName: string;
+  url: string;
+  /** SHA-512 as 128 lower-case hex characters. */
+  sha512: string;
 }
 
 /** The facts file written next to the sample jar. */
@@ -62,11 +84,14 @@ export interface FactsFile {
   fabricApi?: string;
   expectBlocks?: number;
   expectItems?: number;
+  expectEntities?: number;
+  geckolib?: GeckolibFacts;
 }
 
 export const USAGE = `Usage: node tools/run-fabric-server/index.ts --jar <content jar> [options]
 
-  --facts <file>        fabric-facts.json (minecraft, loader, fabricApi, expectBlocks, expectItems)
+  --facts <file>        fabric-facts.json (minecraft, loader, fabricApi, expectBlocks,
+                        expectItems, expectEntities, geckolib)
   --minecraft <ver>     game version (overrides the facts file)
   --loader <ver>        Fabric Loader version
   --fabric-api <ver>    Fabric API version as on maven.fabricmc.net
@@ -74,7 +99,10 @@ export const USAGE = `Usage: node tools/run-fabric-server/index.ts --jar <conten
   --extra <jar>         another jar for mods/ (repeatable), such as a separate msm_runtime
   --expect-blocks <n>   blocks the runtime must report
   --expect-items <n>    items the runtime must report
-  --allow-warnings      pass with runtime warnings
+  --expect-entities <n> entity types the runtime must report
+  --separate-geckolib   download GeckoLib (facts file's geckolib) into mods/, for a jar
+                        exported without it nested
+  --allow-warnings      pass with runtime and GeckoLib warnings
   --work <dir>          run folder (default: <tmp>/msm-fabric-server)
   --cache <dir>         download cache (default: ~/.cache/msm-fabric-server)
   --java <path>         java executable (default: $JAVA_HOME/bin/java, else java)
@@ -104,10 +132,15 @@ export function parseArgs(
   const flags = new Map<string, string>();
   const extra: string[] = [];
   let allowWarnings = false;
+  let separateGeckolib = false;
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i] as string;
     if (arg === '--allow-warnings') {
       allowWarnings = true;
+      continue;
+    }
+    if (arg === '--separate-geckolib') {
+      separateGeckolib = true;
       continue;
     }
     if (!arg.startsWith('--')) throw new Error(`Unexpected argument ${arg}\n\n${USAGE}`);
@@ -126,6 +159,7 @@ export function parseArgs(
     'installer',
     'expect-blocks',
     'expect-items',
+    'expect-entities',
     'work',
     'cache',
     'java',
@@ -146,6 +180,10 @@ export function parseArgs(
   };
   const blocks = flags.get('expect-blocks');
   const items = flags.get('expect-items');
+  const entities = flags.get('expect-entities');
+  if (separateGeckolib && facts.geckolib === undefined) {
+    throw new Error('--separate-geckolib needs the geckolib entry of the --facts file');
+  }
   const javaHome = env.JAVA_HOME;
   return {
     jar,
@@ -156,6 +194,10 @@ export function parseArgs(
     installer: flags.get('installer'),
     expectBlocks: blocks === undefined ? facts.expectBlocks : integer('--expect-blocks', blocks),
     expectItems: items === undefined ? facts.expectItems : integer('--expect-items', items),
+    expectEntities:
+      entities === undefined ? facts.expectEntities : integer('--expect-entities', entities),
+    geckolib: facts.geckolib,
+    separateGeckolib,
     allowWarnings,
     workDir: flags.get('work') ?? join(tmpdir(), 'msm-fabric-server'),
     cacheDir: flags.get('cache') ?? join(homedir(), '.cache', 'msm-fabric-server'),
@@ -206,6 +248,8 @@ export interface Analysis {
   done: boolean;
   blocks: number | undefined;
   items: number | undefined;
+  /** Entity types from the `registered K entity type(s)` line. */
+  entities: number | undefined;
   files: number | undefined;
   errors: number | undefined;
   warnings: number | undefined;
@@ -215,12 +259,20 @@ export interface Analysis {
 
 const REGISTERED =
   /\[msm_runtime\] registered (\d+) block\(s\) and (\d+) item\(s\) from (\d+) definition file\(s\); (\d+) error\(s\)(?:, (\d+) warning\(s\))?/;
+const ENTITIES = /\[msm_runtime\] registered (\d+) entity type\(s\)/;
 const LEVEL = /\/(WARN|ERROR|FATAL)\]/;
+/**
+ * A line about GeckoLib. The dedicated server's console pattern has no logger name, so
+ * GeckoLib's warnings are recognised by naming it (its messages, Mixin and access widener
+ * notices name `geckolib`).
+ */
+const GECKOLIB = /geckolib/i;
 const DONE = /\bDone \(\d/;
 const LOAD_FAILURE =
   /Failed to load|Mod resolution failed|Incompatible mods? found|Some of your mods are incompatible/;
-const RUNTIME_FRAME = /\bat dev\.mcsupermods\./;
-const MOD_LIST = /Loading \d+ mods:|^\s+(?:- |\\-- )(?:msm|fabric-api |fabricloader |minecraft )/;
+const RUNTIME_FRAME = /\bat (?:dev\.mcsupermods|com\.geckolib)\./;
+const MOD_LIST =
+  /Loading \d+ mods:|^\s+(?:- |\\-- |\|-- )(?:msm|geckolib |fabric-api |fabricloader |minecraft )/;
 
 /**
  * Checks a server log against the expectations of {@link Options}.
@@ -230,12 +282,14 @@ const MOD_LIST = /Loading \d+ mods:|^\s+(?:- |\\-- )(?:msm|fabric-api |fabricloa
  */
 export function analyseLog(
   lines: readonly string[],
-  expect: Pick<Options, 'expectBlocks' | 'expectItems' | 'allowWarnings'>,
+  expect: Pick<Options, 'expectBlocks' | 'expectItems' | 'allowWarnings'> &
+    Partial<Pick<Options, 'expectEntities'>>,
 ): Analysis {
   const failures: string[] = [];
   const keyLines: string[] = [];
   let done = false;
   let registered: RegExpExecArray | undefined;
+  let entities: number | undefined;
   for (const line of lines) {
     if (DONE.test(line)) {
       done = true;
@@ -248,12 +302,24 @@ export function analyseLog(
       keyLines.push(line);
       continue;
     }
+    const entityMatch = ENTITIES.exec(line);
+    if (entityMatch !== null) {
+      if (entities !== undefined) failures.push('the runtime reported its entity types twice');
+      entities = Number(entityMatch[1]);
+      keyLines.push(line);
+      continue;
+    }
     if (MOD_LIST.test(line)) keyLines.push(line);
     const level = LEVEL.exec(line)?.[1];
     if (line.includes('[msm_runtime]') && level !== undefined) {
       keyLines.push(line);
       if (level !== 'WARN' || !expect.allowWarnings) {
         failures.push(`runtime ${level.toLowerCase()}: ${line.trim()}`);
+      }
+    } else if (GECKOLIB.test(line) && level !== undefined) {
+      keyLines.push(line);
+      if (level !== 'WARN' || !expect.allowWarnings) {
+        failures.push(`GeckoLib ${level.toLowerCase()}: ${line.trim()}`);
       }
     }
     if (LOAD_FAILURE.test(line)) {
@@ -286,12 +352,22 @@ export function analyseLog(
       failures.push(`expected ${expect.expectItems} item(s), the runtime registered ${items}`);
     }
   }
+  if (expect.expectEntities !== undefined) {
+    if (entities === undefined) {
+      failures.push('no "[msm_runtime] registered K entity type(s)" line');
+    } else if (entities !== expect.expectEntities) {
+      failures.push(
+        `expected ${expect.expectEntities} entity type(s), the runtime registered ${entities}`,
+      );
+    }
+  }
   return {
     ok: failures.length === 0,
     failures,
     done,
     blocks,
     items,
+    entities,
     files: count(3),
     errors,
     warnings,
@@ -331,27 +407,46 @@ async function download(url: string, path: string): Promise<void> {
   await rename(temporary, path);
 }
 
-async function sha1(path: string): Promise<string> {
-  return createHash('sha1')
+async function digest(algorithm: 'sha1' | 'sha512', path: string): Promise<string> {
+  return createHash(algorithm)
     .update(await readFile(path))
     .digest('hex');
 }
 
-/** Downloads `url` to `path` unless it is cached; checks `expectedSha1` when given. */
-async function cached(url: string, path: string, expectedSha1?: string): Promise<void> {
-  if (existsSync(path) && (expectedSha1 === undefined || (await sha1(path)) === expectedSha1)) {
+/** An expected checksum: SHA-1 (Fabric's Maven) or SHA-512 (GeckoLib's facts). */
+interface Checksum {
+  algorithm: 'sha1' | 'sha512';
+  hex: string;
+}
+
+/** Downloads `url` to `path` unless it is cached; checks `expected` when given. */
+async function cached(url: string, path: string, expected?: Checksum): Promise<void> {
+  if (
+    existsSync(path) &&
+    (expected === undefined || (await digest(expected.algorithm, path)) === expected.hex)
+  ) {
     log(`cached ${basename(path)}`);
     return;
   }
   log(`downloading ${url}`);
   await download(url, path);
-  if (expectedSha1 !== undefined) {
-    const actual = await sha1(path);
-    if (actual !== expectedSha1) {
+  if (expected !== undefined) {
+    const actual = await digest(expected.algorithm, path);
+    if (actual !== expected.hex) {
       await rm(path, { force: true });
-      throw new Error(`${url}: SHA-1 ${actual} does not match the published ${expectedSha1}`);
+      const name = expected.algorithm === 'sha1' ? 'SHA-1' : 'SHA-512';
+      throw new Error(`${url}: ${name} ${actual} does not match the expected ${expected.hex}`);
     }
   }
+}
+
+/** Where `--separate-geckolib` caches GeckoLib: its own file name, so versions never clash. */
+export function geckolibCachePath(cacheDir: string, geckolib: GeckolibFacts): string {
+  const name = basename(geckolib.fileName);
+  if (name !== geckolib.fileName || !name.endsWith('.jar')) {
+    throw new Error(`geckolib.fileName must be a plain .jar file name, got ${geckolib.fileName}`);
+  }
+  return join(cacheDir, name);
 }
 
 async function freePort(): Promise<number> {
@@ -380,7 +475,16 @@ async function prepare(options: Options): Promise<{ launcher: string; runDir: st
     throw new Error(`GET ${apiUrl}.sha1 returned HTTP ${apiSha1Response.status}`);
   const apiSha1 = (await apiSha1Response.text()).trim().split(/\s+/)[0] as string;
   const apiJar = join(options.cacheDir, `fabric-api-${options.fabricApi}.jar`);
-  await cached(apiUrl, apiJar, apiSha1);
+  await cached(apiUrl, apiJar, { algorithm: 'sha1', hex: apiSha1 });
+
+  const modJars = [apiJar, resolve(options.jar), ...options.extra.map((jar) => resolve(jar))];
+  if (options.separateGeckolib) {
+    const geckolib = options.geckolib;
+    if (geckolib === undefined) throw new Error('--separate-geckolib needs geckolib facts');
+    const geckolibJar = geckolibCachePath(options.cacheDir, geckolib);
+    await cached(geckolib.url, geckolibJar, { algorithm: 'sha512', hex: geckolib.sha512 });
+    modJars.push(geckolibJar);
+  }
 
   const runDir = resolve(options.workDir);
   await mkdir(runDir, { recursive: true });
@@ -390,10 +494,7 @@ async function prepare(options: Options): Promise<{ launcher: string; runDir: st
   await mkdir(join(runDir, 'mods'));
   await writeFile(join(runDir, 'eula.txt'), 'eula=true\n');
   await writeFile(join(runDir, 'server.properties'), serverProperties(await freePort()));
-  await copyFile(apiJar, join(runDir, 'mods', basename(apiJar)));
-  for (const jar of [options.jar, ...options.extra]) {
-    await copyFile(resolve(jar), join(runDir, 'mods', basename(jar)));
-  }
+  for (const jar of modJars) await copyFile(jar, join(runDir, 'mods', basename(jar)));
   const runLauncher = join(runDir, 'fabric-server-launch.jar');
   await copyFile(launcher, runLauncher);
   return { launcher: runLauncher, runDir };
@@ -476,8 +577,9 @@ async function main(): Promise<number> {
   log('key lines:');
   for (const line of analysis.keyLines) process.stdout.write(`  ${line}\n`);
   if (analysis.ok) {
+    const entities = analysis.entities === undefined ? '' : `, ${analysis.entities} entity type(s)`;
     log(
-      `PASS: ${analysis.blocks} block(s), ${analysis.items} item(s) from ${analysis.files} definition file(s); 0 errors`,
+      `PASS: ${analysis.blocks} block(s), ${analysis.items} item(s)${entities} from ${analysis.files} definition file(s); 0 errors`,
     );
     return 0;
   }

@@ -11,6 +11,8 @@ A kitchen-sink MCSuperMods project for the Fabric content jar (ADR 0026 D6), nam
 
 CI's `engine-mod` job then builds `msm_runtime` with Gradle, exports this project with the real runtime nested, and starts a headless Fabric dedicated server with it (`tools/run-fabric-server`). The server must log `[msm_runtime] registered 3 block(s) and 6 item(s) from 7 definition file(s); 0 error(s), 0 warning(s)` and nothing else from the runtime at warning or error level. The jar is kept as the workflow artefact `msm-sample-mod`.
 
+The entity counterpart, an animated GeckoLib mob checked the same way, is `fixtures/sample-mob/` (see its README).
+
 ## Contents
 
 | Element | Kind | What it shows |
