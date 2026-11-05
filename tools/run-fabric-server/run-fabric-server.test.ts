@@ -25,7 +25,9 @@ describe('analyseLog', () => {
     const analysis = analyseLog([...MODS, REGISTERED, OFFLINE, DONE], expect3);
     expect(analysis.failures).toEqual([]);
     expect(analysis.ok).toBe(true);
-    expect([analysis.blocks, analysis.items, analysis.files, analysis.errors]).toEqual([3, 6, 7, 0]);
+    expect([analysis.blocks, analysis.items, analysis.files, analysis.errors]).toEqual([
+      3, 6, 7, 0,
+    ]);
     expect(analysis.keyLines).toEqual([...MODS, REGISTERED, DONE]);
   });
 

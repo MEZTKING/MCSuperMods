@@ -33,3 +33,77 @@ jobs:
       - run: pnpm --filter @msm/app dist:dir
       - run: xvfb-run -a pnpm --filter @msm/app smoke:packaged
       - run: node tools/check-size/index.ts
+
+  # The msm_runtime Fabric mod (ADR 0024, ADR 0026 D6): JUnit and GameTests through
+  # `./gradlew build`, then the kitchen-sink sample (fixtures/sample-mod) exported with the real
+  # runtime nested and started on a headless Fabric dedicated server (tools/run-fabric-server).
+  # Action versions: setup-java and cache v6 (checked 2026-11-05).
+  engine-mod:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      # A full checkout: the JUnit corpus test reads packages/schemas/mcdoc/msm/conformance/
+      # relative to engine-mod/, so both folders must stay side by side.
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+      - name: Cache Gradle
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('engine-mod/*.gradle.kts', 'engine-mod/gradle.properties', 'engine-mod/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+      - name: Build msm_runtime (JUnit and GameTests)
+        working-directory: engine-mod
+        run: ./gradlew build --no-daemon
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Export the sample mod with the real runtime
+        run: |
+          mapfile -t jars < <(ls "$GITHUB_WORKSPACE"/engine-mod/build/libs/msm_runtime-*.jar | grep -v -e '-sources\.jar$' -e '-dev\.jar$')
+          if [ "${#jars[@]}" -ne 1 ]; then
+            echo "::error::Expected one msm_runtime jar in engine-mod/build/libs, found ${#jars[@]}: ${jars[*]}"
+            exit 1
+          fi
+          echo "Runtime jar: ${jars[0]}"
+          MSM_RUNTIME_JAR="${jars[0]}" MSM_SAMPLE_MOD_OUT="$RUNNER_TEMP/sample-mod" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-mod.golden.test.ts
+          test -f "$RUNNER_TEMP/sample-mod/msm_sample_mod.jar"
+          cat "$RUNNER_TEMP/sample-mod/fabric-facts.json"
+      - name: Cache Fabric server downloads
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/msm-fabric-server
+          key: fabric-server-${{ hashFiles('packages/targets/*/src/target.ts') }}
+      - name: Headless Fabric server check
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-mod/msm_sample_mod.jar"
+          --facts "$RUNNER_TEMP/sample-mod/fabric-facts.json"
+          --work "$RUNNER_TEMP/fabric-server"
+          --cache ~/.cache/msm-fabric-server
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: msm-sample-mod
+          path: ${{ runner.temp }}/sample-mod/msm_sample_mod.jar
+          if-no-files-found: ignore
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: engine-mod-logs
+          path: |
+            engine-mod/build/run/gameTest/logs
+            engine-mod/build/reports/tests
+            ${{ runner.temp }}/fabric-server/run-fabric-server.log
+            ${{ runner.temp }}/fabric-server/crash-reports
+          if-no-files-found: ignore

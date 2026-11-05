@@ -1355,3 +1355,43 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 - B101: `app/e2e/library-path.spec.ts` asserts the old reskin (see the B98 report).
 - App: `dataRegistryIds` skips non-`minecraft:` kinds, so `msm:item`/`msm:block` ids are unknown to the app's validation; block items should count as items.
 - Status lines (root and `packages/plugins/CLAUDE.md`: 56 examples, 99 templates) and `docs/guide/getting-started.md` (Custom ore walkthrough, README "Custom ore reskins emerald ore") need updating by their owners.
+
+---
+
+## 2026-11-05 — executor — B99 CI and release for engine-mod, headless server check, sample-mod
+
+**What**
+- `fixtures/sample-mod/`: kitchen-sink project `msm_sample_mod` (an `msm:mod`, blocks `ruby_ore`, `chime_block`, `glow_stone` without item, items `ruby`, `ruby_wand`, `ruby_pickaxe`, `ruby_apple`, function `ruby/shimmer`, loot table `blocks/ruby_ore_rich`): every Phase 4 component and all six actions, vanilla models only. README with the in-game check (Prism or official launcher, Fabric Loader, Fabric API, what to look for).
+- `packages/exporters/test/sample-mod.golden.test.ts` (7 tests, 1 skipped without env): fixture equals the element list saved (`UPDATE_GOLDENS=1`), zero element, validator and mcfunction problems, content jar with a stub runtime, SHA-256 pinned in two time zones (`test/fixtures/mc-26.3/sample-mod-jar.sha256`), the seven `msm/` definitions present and valid against `msm:block_definition` / `msm:item_definition`. With `MSM_RUNTIME_JAR` and `MSM_SAMPLE_MOD_OUT` it writes the jar with the real runtime (version read from the runtime's `fabric.mod.json`) plus `fabric-facts.json` from `Target.fabric`.
+- `tools/run-fabric-server/` (10 unit tests): downloads the Fabric server launcher (meta.fabricmc.net `/v2/versions/loader/<game>/<loader>/<installer>/server/jar`, latest stable installer, 1.1.2 today) and Fabric API (maven.fabricmc.net, SHA-1 checked), runs a headless dedicated server, stops on `Done (`, asserts the runtime registration line, counts, 0 errors and warnings, and no other `[msm_runtime]` WARN/ERROR, `Failed to load`, resolution failure or `dev.mcsupermods` stack frame.
+- Local end-to-end run with the real `msm_runtime-0.0.1-spike.jar` from `./gradlew build`: PASS, `[msm_runtime] registered 3 block(s) and 6 item(s) from 7 definition file(s); 0 error(s), 0 warning(s)`, mod list `msm_sample_mod 1.0.0` with nested `\-- msm_runtime 0.0.1-spike`. This settles the open point of ADR 0024 D4: scanning `msm/` inside a production jar (nested runtime, content jar as a zip file system) works. A copy with an unknown `run_function` fails on the runtime's after-start warning, as intended.
+- CI: new job `engine-mod` (Temurin 25, `~/.gradle` cache, full checkout so `packages/schemas` stays beside `engine-mod`): `./gradlew build`, sample jar with the real runtime, `tools/run-fabric-server`; jar uploaded as artefact `msm-sample-mod`, logs on failure. The `ci` job is unchanged. Release: JDK 25, `./gradlew build`, runtime staged as `app/build/runtime/msm_runtime.jar` before `pnpm build` and electron-builder.
+
+**Decisions**
+- Version facts reach CI only through `fabric-facts.json` written by the test from the target, so neither the workflow nor the tool names a game version.
+- The tool stops the server on `Done (`; the runtime's `SERVER_STARTED` checks still log before shutdown, so late warnings are caught.
+- No flat world: `level-type=flat` with empty generator settings logs an unrelated `No key layers` error.
+- `@msm/plugin-blocks-items` is loaded in the golden test by a source URL, because `@msm/exporters` does not list it as a dev dependency (package.json, layers.json, tsconfig references and the lockfile are outside B99).
+
+**Next**
+- Lockfile owner (B98 or the orchestrator): add `@msm/plugin-blocks-items` to `@msm/exporters` devDependencies, `layers.json` and the tsconfig references, then replace the dynamic import in `sample-mod.golden.test.ts` with a static one.
+- B96: electron-builder `extraResources` should take `app/build/runtime/msm_runtime.jar` (what the release workflow stages), or the workflow follows `scripts/stage-runtime.mjs` once it exists.
+- Orchestrator: record the production-jar result in ADR 0024 D4 at acceptance; the user runs the in-game check in `fixtures/sample-mod/README.md`.
+
+---
+
+## 2026-11-05 — executor — B96 app export wiring for the Fabric content jar
+
+**What**
+- Main: `platform/runtime-jar.ts` finds the `msm_runtime` jar (packaged `resources/runtime/msm_runtime.jar`; from source the newest `engine-mod/build/libs/msm_runtime-*.jar` by modification time, skipping `-sources`/`-dev`); new IPC `msm:v1:exports:runtimeJar` (`PlatformAdapter.exports.runtimeJar()`, `Uint8Array | null`). Menu File > "Export Fabric Mod Jar…" (`exportFabricJar` menu command).
+- Renderer: `ProjectSession.exportFabricJar(options)` and `fabricJarOptions` (content-jar exporter built with `loadRuntimeJar` over IPC; runtime version defaults to the app version), saved as `contentJarFileName(<mod id from fabric.mod.json>)`; `ExportFabricJarDialog` with generic `ExporterOptionFields`; Export menu "Fabric mod (.jar)…", palette "Export Fabric mod jar…"; every error blocks it; vanilla pack exports add `MSM_CONTENT_NOTE` when the project has `msm` layer output.
+- Packaging: `scripts/stage-runtime.mjs` (run by `dist` and `dist:dir`, also `pnpm --filter @msm/app stage-runtime`, `--require` fails without a jar) copies the jar to `app/build/runtime/msm_runtime.jar`; `electron-builder.yml` `extraResources` ships it as `runtime/msm_runtime.jar`. electron-builder only warns when the file is missing.
+
+**Decisions**
+- The exporter runs in the renderer like the other exporters; only the jar bytes cross IPC.
+- The staging script removes a previously staged jar when no build output exists, so an old runtime is never shipped, and warns when the jar name does not carry the app version (ADR 0026 D4).
+
+**Next**
+- B99: release workflow builds `engine-mod` before `pnpm --filter @msm/app dist` and may run `stage-runtime --require`.
+- B101/B98: `e2e/library-path.spec.ts` still expects the old Custom ore starter elements (fails since B98's starter rewrite).
+- `docs/guide/`: document "Export Fabric mod jar" and the "Separate runtime (for modpacks)" option.

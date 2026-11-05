@@ -369,15 +369,15 @@ async function freePort(): Promise<number> {
 async function prepare(options: Options): Promise<{ launcher: string; runDir: string }> {
   await mkdir(options.cacheDir, { recursive: true });
   const installer =
-    options.installer ??
-    latestStableInstaller(await (await fetch(INSTALLER_VERSIONS_URL)).json());
+    options.installer ?? latestStableInstaller(await (await fetch(INSTALLER_VERSIONS_URL)).json());
   const launcherName = `fabric-server-mc.${options.minecraft}-loader.${options.loader}-launcher.${installer}.jar`;
   const launcher = join(options.cacheDir, launcherName);
   await cached(serverLauncherUrl(options.minecraft, options.loader, installer), launcher);
 
   const apiUrl = fabricApiUrl(options.fabricApi);
   const apiSha1Response = await fetch(`${apiUrl}.sha1`);
-  if (!apiSha1Response.ok) throw new Error(`GET ${apiUrl}.sha1 returned HTTP ${apiSha1Response.status}`);
+  if (!apiSha1Response.ok)
+    throw new Error(`GET ${apiUrl}.sha1 returned HTTP ${apiSha1Response.status}`);
   const apiSha1 = (await apiSha1Response.text()).trim().split(/\s+/)[0] as string;
   const apiJar = join(options.cacheDir, `fabric-api-${options.fabricApi}.jar`);
   await cached(apiUrl, apiJar, apiSha1);
@@ -407,7 +407,9 @@ async function runServer(
 ): Promise<{ lines: string[]; code: number | null; timedOut: boolean }> {
   const lines: string[] = [];
   const output = createWriteStream(join(runDir, 'run-fabric-server.log'));
-  log(`starting ${options.java} -Xmx${options.memory} -jar ${basename(launcher)} nogui in ${runDir}`);
+  log(
+    `starting ${options.java} -Xmx${options.memory} -jar ${basename(launcher)} nogui in ${runDir}`,
+  );
   const child = spawn(options.java, [`-Xmx${options.memory}`, '-jar', launcher, 'nogui'], {
     cwd: runDir,
     stdio: ['pipe', 'pipe', 'pipe'],
@@ -452,7 +454,8 @@ export async function runCheck(options: Options): Promise<Analysis> {
   const { launcher, runDir } = await prepare(options);
   const { lines, code, timedOut } = await runServer(options, launcher, runDir);
   const analysis = analyseLog(lines, options);
-  if (timedOut) analysis.failures.push(`the server did not stop within ${options.timeoutSeconds} s`);
+  if (timedOut)
+    analysis.failures.push(`the server did not stop within ${options.timeoutSeconds} s`);
   else if (code !== 0) analysis.failures.push(`the server exited with status ${String(code)}`);
   analysis.ok = analysis.failures.length === 0;
   return analysis;

@@ -14,7 +14,8 @@
 #   and uploads to a draft exactly as a tag push does. No local `git tag` is needed. A tag made
 #   with GITHUB_TOKEN does not start a second run.
 # - without a version: build only, no tag, no release; files kept as a workflow artefact.
-# Action versions: checkout, setup-node and upload-artifact v7 (Node 24; checked 2026-11-04).
+# Action versions: checkout, setup-node and upload-artifact v7 (Node 24; checked 2026-11-04);
+# setup-java and cache v6 (checked 2026-11-05).
 name: Release
 
 on:
@@ -89,6 +90,36 @@ jobs:
           else
             echo "${RELEASE_TAG} already at $sha"
           fi
+      # The msm_runtime jar the app nests in Fabric content jars (ADR 0026 D4): built with JDK 25
+      # (JUnit and GameTests included) and staged as app/build/runtime/msm_runtime.jar before
+      # electron-builder packages the app.
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+      - name: Cache Gradle
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('engine-mod/*.gradle.kts', 'engine-mod/gradle.properties', 'engine-mod/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+      - name: Build msm_runtime
+        working-directory: engine-mod
+        shell: bash
+        run: ./gradlew build --no-daemon
+      - name: Stage the runtime jar for the app
+        shell: bash
+        run: |
+          mapfile -t jars < <(ls engine-mod/build/libs/msm_runtime-*.jar | grep -v -e '-sources\.jar$' -e '-dev\.jar$')
+          if [ "${#jars[@]}" -ne 1 ]; then
+            echo "::error::Expected one msm_runtime jar in engine-mod/build/libs, found ${#jars[@]}: ${jars[*]}"
+            exit 1
+          fi
+          mkdir -p app/build/runtime
+          cp "${jars[0]}" app/build/runtime/msm_runtime.jar
+          echo "Staged ${jars[0]} as app/build/runtime/msm_runtime.jar"
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       # electron-builder uploads the installer and its `.blockmap` in parallel; when no release
