@@ -1743,3 +1743,22 @@ Decisions:
 Next:
 - `sample-mod.golden.test.ts` (outside B120) could write `expectEntities: 0` so the sample-mod check also pins the entity line.
 - The user runs the in-game check in `fixtures/sample-mob/README.md`; B122 records the CI proxy.
+
+## 2026-11-05 — executor — B121 e2e entities-path and the guide
+
+What:
+- `app/e2e/entities-path.spec.ts` (ninth spec): blank project `mob_e2e`; palette "Import Blockbench model…" with `assets/two_bones.bbmodel` (copy of the B116 fixture; an 8x8 PNG is embedded at run time from `png.ts`); geo model, animation set (sidebar "Models and animations") and `textures/entity/two_bones.png` appear; "Monster" template as `mob_e2e:gloom` (sidebar "Entities"); Entity Studio: display name, health 30 then 24, model, animation set, texture, idle and attack cleared, walk `animation.two_bones.walk`, a `flee` goal added and removed, spawn egg off and on with an egg texture; removing the geo model gives one `entities.unknown-model` error, "Fabric mod (.jar)…" disabled with "Fix 1 error", palette command hidden; undo clears it; preview: `preview-geo-canvas` and `preview-geo-transport` visible, "No animation (rest pose)" first, walk picked, play toggles `aria-pressed` and "Play animation"/"Pause animation" both ways; jar exported through the palette with "Separate runtime and GeckoLib (for modpacks)" (GeckoLib note shown): entity definition values (no `display_name`, `spawn_egg` `{}`, health 24, animated model ids and names, goal order), `geckolib/models/entity/two_bones.geo.json`, `geckolib/animations/entity/two_bones_animations.animation.json`, texture, no `.bbmodel`, egg item definition and model (`layer0`), lang keys, `fabric.mod.json` depends on `msm_runtime` and `geckolib`, no `jars`, no `META-INF/jars/`; reopen with zero problems and the edits kept.
+- `app/e2e/fixtures.ts`: `LaunchOptions.args` (extra Electron/Chromium switches); the spec passes `--use-angle=swiftshader --enable-unsafe-swiftshader`, so the geo canvas mounts under xvfb (the screenshot shows the textured model mid-walk). No pixels asserted.
+- Guide: new `docs/guide/entities-and-models.md` (Blockbench import, Entity Studio sections, goals, spawning, spawn eggs, events and `play_animation`, preview and its limits, export and GeckoLib, in-game check linking `fixtures/sample-mob/README.md`, troubleshooting); `README.md` index row; `templates-and-examples.md` counts (112 templates, 12 starters, 66 examples, 58 kinds), Entities / Entity models / Entity animations template tables, Custom mob starter row and note, five example rows, `examples/entities/` and `examples/starters/custom_mob/`; `blocks-and-items.md` heading and mentions relabelled "Separate runtime and GeckoLib (for modpacks)"; `getting-started.md` relabelled option, stale counts (112 templates, 66 examples) and an "Entities and models" paragraph in Where next.
+- `README.md`: Phase 5 status, starters (12, Custom mob), templates (112), examples (66), new "Animated mobs" section, known limitations (preview Molang/catmullrom, one-off GeckoLib download), relabelled option, guide link, GeckoLib (MIT) note under Licence. `app/CLAUDE.md` e2e line (nine specs).
+- Counts confirmed from the plugins' contributions: 58 kinds, 112 templates, 12 starters, 66 examples.
+- Checks: `npx tsc -b` and `npx biome ci .` clean, check-deps OK; `xvfb-run -a pnpm --filter @msm/app e2e` 9/9 three runs in a row (49.7 s, 49.0 s, 49.9 s; entities-path 9.5 s, 9.2 s, 9.7 s).
+
+Decisions:
+- The e2e asset drops the fixture's one Molang/catmullrom keyframe (now linear, x 1): otherwise the preview's info problem would make "reopen with zero problems" fail. The guide still explains those notices.
+- GeckoLib is never downloaded in e2e: the separate option skips nesting, and no hook was needed.
+- Every bold UI label in the new guide page was grepped against `app/src` and the plugins; the only misses are menu paths written with arrows, Blockbench and Prism labels, and the templated goal labels ("Goal 2 speed", "Move Goal 2 up" from `Goal ${n}`).
+
+Next:
+- B122: status lines and Milestone Log; the guide index line in `docs/CLAUDE.md` should list `entities-and-models.md`.
+- The Entity Studio's "New goal type" list shows raw types (`flee`, `melee_attack`); the goal labels would read better (app follow-up).
