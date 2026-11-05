@@ -19,11 +19,15 @@ import {
   type ResourceFolders,
 } from '../../../src/renderer/src/preview/model-chain';
 
-const FOLDERS = {
+const FOLDERS: ResourceFolders = {
+  atlases: 'atlases',
+  block_definition: 'blockstates',
+  font: 'font',
+  item_definition: 'items',
+  lang: 'lang',
+  model: 'models',
+  sounds_file: 'sounds.json',
   textures: 'textures',
-  models: 'models',
-  blockstates: 'blockstates',
-  items: 'items',
 };
 
 const TEXTURE = new Uint8Array([137, 80, 78, 71, 1, 2, 3]);
