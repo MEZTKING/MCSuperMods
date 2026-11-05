@@ -168,4 +168,15 @@ describe('syncMcmeta', () => {
     ).rejects.toThrow(/--version/);
     expect(requests).toEqual([]);
   });
+
+  it('accepts a snapshot version and checks its id', async () => {
+    out = await mkdtemp(join(tmpdir(), 'msm-sync-mcmeta-'));
+    const snapshot = '99.1-snapshot-2'; // msm-allow-version
+    const files = upstream();
+    files['version.json'] = { id: snapshot, data_pack_version: 1 };
+    const requests: string[] = [];
+    const source = await syncMcmeta({ version: snapshot, out, fetchFile: fakeFetch(files, requests) });
+    expect(source.refs).toEqual(mcmetaRefs(snapshot));
+    expect(requests[0]).toContain(`${snapshot}-summary`);
+  });
 });

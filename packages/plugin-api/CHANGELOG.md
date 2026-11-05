@@ -2,6 +2,38 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.0.0 — unreleased
+
+The first stable API (ADR 0036). `API_VERSION` is `1.0.0`. Built-in plugins and `tools/new-plugin` declare `^1.0.0`. The package gains a publishable build (`tsup`: `dist/index.js` ES module, `dist/index.cjs`, `dist/index.d.ts`) and a tarball attached to every release.
+
+### Compatibility policy
+
+From 1.0.0 the package follows semver as plugin authors expect:
+
+- 1.x releases only add optional fields and new contribution points. A plugin written for 1.0 keeps loading in every 1.x host.
+- A change that removes or narrows anything (a member, a union, a parameter type, a return type a host relies on) is 2.0.0, with a migration note here.
+- A deprecated member stays for at least one minor release and is marked `@deprecated` with its replacement.
+- The host keeps the semver check: `registerPlugin` refuses a plugin whose `apiVersion` range excludes `API_VERSION` (`Plugin <id> requires plugin API <range>, but this build provides <version>`); for external plugins the manifest's `apiVersion` is checked before any plugin code runs (ADR 0035).
+
+### Changes
+
+- `MaybePromise<T>` (`T | Promise<T>`). `ElementKind.lower`, `ElementTemplate.data`, `ProjectStarter.build`, `ExampleProject.build` and `ProjectValidator.validate` return a `MaybePromise`, so a sandboxed plugin whose functions resolve through a worker can return a Promise. Built-ins keep returning values; hosts await every result. `@msm/core` adds `lowerProjectAsync`; the synchronous `lowerProject` reports a Promise result as `lowering.async-not-supported`.
+- `TargetFacts`: the data fields of a target (`id`, `mcVersion`, `channel`, `java`, `packFormats`, `mcdocRef`, `mcmetaRef`, `folders`, `dataVersion`, `worldgen`, `fabric?`, `geckolib?`). `Target extends TargetFacts` adds the hooks `javaProject?` and `migrateFrom?`. Plugin-facing functions receive a `TargetFacts`: `ElementKind.lower(element, target)`, `ValidationInput.target`, `TemplateContext.target`, `BundleContext.target`. `ExporterInput.target` stays a full `Target`.
+- `TargetFacts.channel: TargetChannel` (`'release' | 'snapshot'`, required): snapshot targets are shown with a badge and are never the default for new projects.
+- `TemplateContext.target` and `BundleContext.target` (required): templates, starters and examples read target facts (for example `target.worldgen` or `target.geckolib`) instead of hard-coding a version.
+- `supports?(target: TargetFacts): boolean` on `ElementTemplate`, `ProjectStarter` and `ExampleProject`: the host hides an entry that returns `false` for the project's target; an entry without it must work on every target.
+- `ProjectStarter.parameters?: StarterParameter[]` and `BundleContext.values: Readonly<Record<string, Json>>` (required; every declared parameter present, defaults filled in by the host; empty for starters without parameters and for examples). `StarterParameter` is a union of `StringStarterParameter` (`pattern?`, `maxLength?`), `NumberStarterParameter` (`min?`, `max?`, `step?`), `BooleanStarterParameter`, `ColourStarterParameter` (`#rrggbb`) and `ChoiceStarterParameter` (`choices`), each with `id`, `label`, `description?`, `default` and `group?` (the wizard step, ADR 0040). `build` must be pure in `values` as it is in `namespace`.
+- `MigrationChange.data?: Json` (the element's new data; absent means informational) and `MigrationChange.kind?: 'update' | 'remove'`. `Target.migrateFrom` stays pure: it returns the report and never mutates the project; the host applies the changes as one undo step.
+- Packaging: `exports` keeps pointing at `src/` inside the workspace (TypeScript project references and Vitest resolve the source); `publishConfig` points the packed package at `dist/` (`exports` with `import` and `require` conditions, `main`, `module`, `types`), with `files`, `repository`, `homepage` and `publishConfig.access: public`. `pnpm --filter @msm/plugin-api build` writes `dist/`; `pnpm --filter @msm/plugin-api pack:tarball` writes `dist/msm-plugin-api-<version>.tgz`.
+
+### Migration from 0.8.0
+
+- Declare `^1.0.0`. Plugins declaring `^0.8.0` no longer load, because `1.0.0` is outside a `^0.8.0` range.
+- Code that calls `lower`, `data`, `build` or `validate` must await the result (or, where only built-ins can reach the call, handle a Promise explicitly). Implementations need no change: returning a value is still valid.
+- A target must set `channel`.
+- A function typed against `Target` that only reads data can take a `TargetFacts`; a `Target` is assignable to `TargetFacts`, so callers need no change.
+- Hosts that build a `TemplateContext` or a `BundleContext` (the app, library tests, the `examples/` mirror) must pass `target`, and bundles must pass `values` (`{}` for starters without parameters and for examples).
+
 ## 0.8.0 — 2026-11-05
 
 Gradle fact, Java project generator and the `typescript` output language (ADR 0034). `API_VERSION` is `0.8.0`. Built-in plugins and `tools/new-plugin` declare `^0.8.0`.

@@ -1,0 +1,16 @@
+{
+  "build_time": "2026-11-03T13:06:42+00:00",
+  "data_pack_version": 126,
+  "data_pack_version_minor": 0,
+  "data_version": 5127,
+  "id": "26.4-snapshot-7",
+  "name": "26.4 Snapshot 7",
+  "protocol_version": 1073742169,
+  "release_target": null,
+  "release_time": "2026-11-03T13:08:56+00:00",
+  "resource_pack_version": 102,
+  "resource_pack_version_minor": 0,
+  "sha1": "6be84ec668c4c843c87f80f2a8efa3095f2989d2",
+  "stable": false,
+  "type": "snapshot"
+}

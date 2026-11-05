@@ -149,8 +149,11 @@ export interface SyncMcmetaOptions {
 
 export async function syncMcmeta(options: SyncMcmetaOptions): Promise<McmetaSource> {
   const log = options.log ?? (() => {});
-  if (!/^[0-9]+(\.[0-9]+)*$/.test(options.version)) {
-    throw new Error(`--version must look like 26.3 or 26.3.1, got ${options.version}`);
+  // Releases (26.3, 26.3.1) and development versions (26.4-snapshot-7, 26.4-pre-1, 26.4-rc-1).
+  if (!/^[0-9]+(\.[0-9]+)*(-(snapshot|pre|rc)-[0-9]+)?$/.test(options.version)) {
+    throw new Error(
+      `--version must look like 26.3, 26.3.1 or 26.4-snapshot-7, got ${options.version}`,
+    );
   }
   const refs = mcmetaRefs(options.version);
   const fetchFile = options.fetchFile ?? fetchGitHubFile;

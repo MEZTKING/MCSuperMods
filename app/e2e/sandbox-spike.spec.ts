@@ -7,6 +7,7 @@
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { expect, test } from 'playwright/test';
 import type { ProbeResult, SandboxSpike } from '../src/renderer/src/plugins/sandbox/spike';
 import { appDir, type LaunchedApp, launchApp, outputDir } from './fixtures';
@@ -27,6 +28,13 @@ test.afterEach(async () => {
 const INFORMATIONAL = new Set(['typeof fetch', 'location.href', 'origin', 'fetch(document URL)']);
 /** Storage is not governed by the CSP: refused only with the bootstrap's deletions. */
 const STORAGE = new Set(['indexedDB', "indexedDB.open('x')", 'caches', 'navigator.storage']);
+/** file: URLs outside the app: allowed by `'self'` when the document is itself a file: URL. */
+const FILE_PROBES = new Set([
+  "fetch('file:///etc/hostname')",
+  "XMLHttpRequest('file:///etc/hostname')",
+  'importScripts(local file)',
+  'import(local file)',
+]);
 const REFUSED = new Set(['threw', 'rejected', 'undefined']);
 
 function refusals(results: ProbeResult[], skip: ReadonlySet<string>): ProbeResult[] {
@@ -45,6 +53,18 @@ test('a blob: worker is constrained by the CSP and the proxy round-trips', async
   test.setTimeout(180_000);
   launched = await launchApp();
   const { app, window } = launched;
+  // Optional: point the window at electron-vite's dev server (`ELECTRON_RENDERER_URL` behaviour)
+  // to compare the CSP there; the launcher fixture strips that variable.
+  const devUrl = process.env.MSM_SPIKE_DEV_URL;
+  if (devUrl !== undefined && devUrl !== '') {
+    await app.evaluate(async ({ BrowserWindow }, url) => {
+      await BrowserWindow.getAllWindows()[0]?.loadURL(url);
+    }, devUrl);
+  }
+  // A local script outside the app folder, for the `importScripts`/`import()` file probes.
+  const fileScriptPath = join(launched.msmHome, 'probe-script.js');
+  writeFileSync(fileScriptPath, 'self.__msmFileLoaded = true;\n');
+  const fileScript = pathToFileURL(fileScriptPath).href;
   await window.waitForFunction(
     () => (globalThis as { __msmSandboxSpike?: unknown }).__msmSandboxSpike !== undefined,
     undefined,
@@ -59,11 +79,42 @@ test('a blob: worker is constrained by the CSP and the proxy round-trips', async
   const imports = await window.evaluate(() =>
     (globalThis as unknown as Hooked).__msmSandboxSpike.bootstrapImports(),
   );
-  const stripped = await window.evaluate(() =>
-    (globalThis as unknown as Hooked).__msmSandboxSpike.runProbes({ strip: true }),
+  const stripped = await window.evaluate(
+    (value) =>
+      (globalThis as unknown as Hooked).__msmSandboxSpike.runProbes({
+        strip: true,
+        fileScript: value,
+      }),
+    fileScript,
   );
-  const cspOnly = await window.evaluate(() =>
-    (globalThis as unknown as Hooked).__msmSandboxSpike.runProbes({ strip: false }),
+  const cspOnly = await window.evaluate(
+    (value) =>
+      (globalThis as unknown as Hooked).__msmSandboxSpike.runProbes({
+        strip: false,
+        fileScript: value,
+      }),
+    fileScript,
+  );
+  // A main-process guard: cancel every file: request outside the renderer's own folder.
+  const rendererRoot = await window.evaluate(
+    () =>
+      new URL('.', (globalThis as unknown as { location: { href: string } }).location.href).href,
+  );
+  await app.evaluate(({ session }, root) => {
+    session.defaultSession.webRequest.onBeforeRequest(
+      { urls: ['file://*/*'] },
+      (details, callback) => {
+        callback({ cancel: !details.url.startsWith(root) });
+      },
+    );
+  }, rendererRoot);
+  const guarded = await window.evaluate(
+    (value) =>
+      (globalThis as unknown as Hooked).__msmSandboxSpike.runProbes({
+        strip: false,
+        fileScript: value,
+      }),
+    fileScript,
   );
   const loop = await window.evaluate(() =>
     (globalThis as unknown as Hooked).__msmSandboxSpike.endlessLoop(),
@@ -99,7 +150,11 @@ test('a blob: worker is constrained by the CSP and the proxy round-trips', async
     electron: await app.evaluate(() => process.versions.electron),
     chrome: await app.evaluate(() => process.versions.chrome),
     imports,
-    probes: { stripped, cspOnly },
+    documentUrl: await window.evaluate(
+      () => (globalThis as unknown as { location: { href: string } }).location.href,
+    ),
+    rendererRoot,
+    probes: { stripped, cspOnly, guarded },
     loop,
     roundTrip,
     lower,
@@ -117,8 +172,15 @@ test('a blob: worker is constrained by the CSP and the proxy round-trips', async
       true,
     );
   }
-  // The CSP alone: the network, script loading and eval are refused by the browser.
-  for (const result of refusals(cspOnly, STORAGE)) {
+  // The CSP alone refuses the network, blob: script loading and eval, but not file: URLs when
+  // the document itself is a file: URL ('self' matches them): see ADR 0035 Status.
+  for (const result of refusals(cspOnly, new Set([...STORAGE, ...FILE_PROBES]))) {
+    expect(REFUSED.has(result.outcome), `${result.name}: ${result.outcome} ${result.detail}`).toBe(
+      true,
+    );
+  }
+  // The CSP plus the main-process file: guard: everything but storage is refused.
+  for (const result of refusals(guarded, STORAGE)) {
     expect(REFUSED.has(result.outcome), `${result.name}: ${result.outcome} ${result.detail}`).toBe(
       true,
     );

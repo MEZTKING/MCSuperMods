@@ -1,0 +1,26 @@
+{
+  "fetchedAt": "2026-11-05T20:21:16.782Z",
+  "files": [
+    {
+      "name": "blocks.json",
+      "path": "blocks/data.min.json"
+    },
+    {
+      "name": "commands.json",
+      "path": "commands/data.min.json"
+    },
+    {
+      "name": "registries.json",
+      "path": "registries/data.min.json"
+    },
+    {
+      "name": "version.json",
+      "path": "version.json"
+    }
+  ],
+  "refs": {
+    "registries": "26.4-snapshot-7-registries",
+    "summary": "26.4-snapshot-7-summary"
+  },
+  "repository": "https://github.com/misode/mcmeta"
+}

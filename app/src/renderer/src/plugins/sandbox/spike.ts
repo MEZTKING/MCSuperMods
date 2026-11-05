@@ -43,7 +43,7 @@ function timing(samples: number[]): Timing {
 
 /** The newest target's facts as plain data (no hooks), as a worker receives them. */
 function targetFacts(): Record<string, unknown> {
-  const target = builtInTargets[builtInTargets.length - 1];
+  const target = builtInTargets[builtInTargets.length - 1]?.target;
   const {
     migrateFrom: _migrate,
     javaProject: _java,
@@ -69,7 +69,7 @@ const running: PluginWorker[] = [];
 
 const spike = {
   /** Runs every probe in a fresh worker; `strip: false` leaves only the CSP in place. */
-  async runProbes(options: { strip: boolean }): Promise<ProbeResult[]> {
+  async runProbes(options: { strip: boolean; fileScript?: string }): Promise<ProbeResult[]> {
     const worker = createPluginWorker(probePluginSource, { strip: options.strip });
     try {
       await worker.ready;
@@ -77,7 +77,10 @@ const spike = {
         'call',
         [
           'probes',
-          { documentUrl: (globalThis as unknown as { location: { href: string } }).location.href },
+          {
+            documentUrl: (globalThis as unknown as { location: { href: string } }).location.href,
+            fileScript: options.fileScript ?? '',
+          },
         ],
         60_000,
       )) as ProbeResult[];

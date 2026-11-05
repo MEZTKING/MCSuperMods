@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:food": {
+      "can_always_eat": true,
+      "nutrition": 5,
+      "saturation": 0.6
+    }
+  },
+  "creative_tab": "minecraft:food_and_drinks",
+  "format": 1,
+  "max_stack_size": 32
+}

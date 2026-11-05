@@ -59,6 +59,11 @@ function source(url) {
   });
 }
 
+const read = (url) =>
+  fetch(url).then((response) =>
+    response.text().then((text) => `status ${response.status}, ${text.length} characters`),
+  );
+
 const blobUrl = () =>
   URL.createObjectURL(new Blob(['self.__msmProbeLoaded = true;'], { type: 'text/javascript' }));
 
@@ -69,15 +74,17 @@ defineMsmPlugin({
   async probes(options) {
     const documentUrl =
       options && typeof options.documentUrl === 'string' ? options.documentUrl : '';
+    // A local script outside the app folder, written by the e2e spec.
+    const fileScript = options && typeof options.fileScript === 'string' ? options.fileScript : '';
     const results = [
       await probe('typeof fetch', () => ({ outcome: 'value', detail: typeof fetch })),
       await probe("fetch('https://example.com')", () =>
-        settleWithin(fetch('https://example.com'), 3000),
+        settleWithin(read('https://example.com'), 3000),
       ),
       await probe("fetch('file:///etc/hostname')", () =>
-        settleWithin(fetch('file:///etc/hostname'), 3000),
+        settleWithin(read('file:///etc/hostname'), 3000),
       ),
-      await probe('fetch(document URL)', () => settleWithin(fetch(documentUrl), 3000)),
+      await probe('fetch(document URL)', () => settleWithin(read(documentUrl), 3000)),
       await probe("new WebSocket('wss://example.com')", () => socket('wss://example.com')),
       await probe("XMLHttpRequest('https://example.com')", () => xhr('https://example.com')),
       await probe("EventSource('https://example.com')", () => source('https://example.com')),
@@ -85,6 +92,12 @@ defineMsmPlugin({
         importScripts(blobUrl());
         return { outcome: 'resolved', detail: `loaded=${self.__msmProbeLoaded === true}` };
       }),
+      await probe("XMLHttpRequest('file:///etc/hostname')", () => xhr('file:///etc/hostname')),
+      await probe('importScripts(local file)', () => {
+        importScripts(fileScript);
+        return { outcome: 'resolved', detail: `loaded=${self.__msmFileLoaded === true}` };
+      }),
+      await probe('import(local file)', () => settleWithin(import(fileScript), 3000)),
       await probe('import(blobUrl)', () => settleWithin(import(blobUrl()), 3000)),
       // biome-ignore lint/security/noGlobalEval: probes that the CSP refuses eval in the worker.
       await probe("eval('1')", () => ({ outcome: 'resolved', detail: String(eval('1')) })),

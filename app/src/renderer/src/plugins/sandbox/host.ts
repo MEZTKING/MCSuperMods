@@ -25,15 +25,16 @@ export interface WorkerLike {
 
 /** A failed call: `code` is one of the plan's `plugin.*` codes. */
 export class SandboxError extends Error {
+  /** The `plugin.*` code. */
+  readonly code: string;
+
   /**
    * @param code - `plugin.timeout`, `plugin.crashed`, `plugin.bad-result` or `plugin.unavailable`.
    * @param message - What happened.
    */
-  constructor(
-    readonly code: string,
-    message: string,
-  ) {
+  constructor(code: string, message: string) {
     super(message);
+    this.code = code;
     this.name = 'SandboxError';
   }
 }

@@ -1,0 +1,16 @@
+{
+  "name": "@msm/site",
+  "version": "0.0.0",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "vitepress": "2.0.0-alpha.21"
+  }
+}

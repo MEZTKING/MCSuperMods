@@ -1,0 +1,20 @@
+{
+  "name": "@msm/sample-plugin",
+  "version": "0.0.0",
+  "description": "The sample external MCSuperMods plugin: a greeting kind, built the way a third-party plugin is.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.ts",
+    "test": "vitest run --passWithNoTests"
+  },
+  "devDependencies": {
+    "@msm/plugin-api": "workspace:*",
+    "@spyglassmc/mcdoc-cli": "catalog:",
+    "@types/node": "catalog:",
+    "esbuild": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -13,3 +13,6 @@ test-results/
 .gradle/
 build/
 run/
+# VitePress (docs/site)
+docs/site/.vitepress/cache/
+docs/site/.vitepress/dist/

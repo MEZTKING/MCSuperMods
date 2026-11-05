@@ -22,5 +22,7 @@
   "@msm/schemas": ["@msm/plugin-api"],
   "@msm/target-*": ["@msm/plugin-api", "@msm/schemas", "@msm/core"],
   "@msm/targets": ["@msm/plugin-api", "@msm/schemas", "@msm/target-*"],
-  "@msm/tools": ["*"]
+  "@msm/tools": ["*"],
+  "@msm/site": [],
+  "@msm/sample-plugin": ["@msm/plugin-api"]
 }

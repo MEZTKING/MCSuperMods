@@ -4,6 +4,8 @@ packages:
   - packages/plugins/*
   - packages/targets/*
   - tools
+  - docs/site
+  - fixtures/sample-plugin
 
 catalog:
   "@biomejs/biome": 2.6.4
@@ -28,6 +30,7 @@ catalog:
   electron-builder: 26.18.0
   electron-updater: 6.8.11
   electron-vite: 6.0.0
+  esbuild: 0.28.2
   fflate: 0.8.3
   gl-matrix: 3.4.4
   happy-dom: 21.0.4
@@ -40,6 +43,7 @@ catalog:
   react-dom: 19.3.1
   semver: 7.8.6
   tailwindcss: 4.3.4
+  tsup: 9.0.0
   turbo: 2.11.10
   typescript: 6.0.3
   vite: 8.3.5
@@ -51,3 +55,4 @@ catalog:
 allowBuilds:
   electron: true
   electron-winstaller: false
+  esbuild: false

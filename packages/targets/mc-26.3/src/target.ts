@@ -8,6 +8,7 @@ import { javaProjectGenerator } from './java-project/index';
 export const target: Target = {
   id: 'mc-26.3',
   mcVersion: '26.3',
+  channel: 'release',
   java: 25,
   packFormats: {
     resource: { major: 97, minor: 1 },

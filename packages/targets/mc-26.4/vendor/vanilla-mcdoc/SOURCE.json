@@ -1,0 +1,7 @@
+{
+  "fetchedAt": "2026-11-05T20:21:29.586Z",
+  "mode": "build",
+  "ref": "1a674539af7150444db0e2fa8fc46318f91ed86b",
+  "repository": "https://github.com/SpyglassMC/vanilla-mcdoc",
+  "tool": "@spyglassmc/mcdoc-cli@0.1.63"
+}
