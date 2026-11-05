@@ -4,7 +4,7 @@ MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla p
 
 ## Directory map
 
-- `docs/` — DESIGN.md (authoritative), ROADMAP.md, DEVLOG.md, `adr/`, `guide/` (user guide)
+- `docs/` — DESIGN.md (authoritative), ROADMAP.md, DEVLOG.md, HANDOFF.md (current state for the next main session), `adr/`, `guide/` (user guide)
 - `app/` — `@msm/app`, Electron shell (`main/`, `preload/`, `renderer/`)
 - `packages/core/` — `@msm/core`, IR, project load/save, command stack, lowering driver
 - `packages/schemas/` — `@msm/schemas`, mcdoc adapter, `validateJson`; `@msm/schemas/mcfunction` (offline Spyglass)
@@ -58,7 +58,7 @@ Read only the one for the area you work in, plus docs/DESIGN.md sections it link
 
 ## Every session
 
-- Read the latest `docs/DEVLOG.md` entry first.
+- Main sessions: read `docs/HANDOFF.md` first. Everyone: read the latest `docs/DEVLOG.md` entry.
 - Append an entry at the end: `## YYYY-MM-DD — <agent> — <topic>`, then What / Decisions / Next.
 
 ## Commands

@@ -1144,3 +1144,16 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 
 **Next**
 - Releases: v0.2.3 at 56885610ca9f, v0.2.4 at 6d48c71104d4, then v0.3.0 at `main`, each via Run workflow.
+
+---
+
+## 2026-11-05 — main session — handover to a new session
+
+**What**
+- `docs/HANDOFF.md` (new): state, what waits on the user, due housekeeping, user decisions, rules, the phase-running and verification procedure, releases, environment notes, Phase 3 lessons. Linked from the root `CLAUDE.md` and `docs/CLAUDE.md`.
+
+**Decisions**
+- A new main session continues the project from `main`; this session stops here.
+
+**Next**
+- New session: housekeeping (release-age excludes), watch the first manual release run, then plan Phase 4 starting with the registry-freeze spike.
