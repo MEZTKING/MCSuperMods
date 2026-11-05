@@ -208,6 +208,7 @@ describe('ProjectSession: live problems', () => {
     ).toEqual([]);
   });
 
+  // 20 s: under a full parallel turbo run the debounced validation can take more than the default 5 s.
   it('validates after the debounce without an explicit flush', async () => {
     const { session } = newSession(createMemoryFileSystem());
     await session.newProject();
@@ -221,7 +222,7 @@ describe('ProjectSession: live problems', () => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     await session.flushValidation();
     expect(session.problemsFor('demo:block/bad').some((p) => p.severity === 'error')).toBe(true);
-  });
+  }, 20_000);
 
   it('drops problems of removed elements', async () => {
     const { session } = newSession(createMemoryFileSystem());

@@ -1762,3 +1762,21 @@ Decisions:
 Next:
 - B122: status lines and Milestone Log; the guide index line in `docs/CLAUDE.md` should list `entities-and-models.md`.
 - The Entity Studio's "New goal type" list shows raw types (`flee`, `melee_attack`); the goal labels would read better (app follow-up).
+
+## 2026-11-05 — executor — B122 Phase 5 close
+
+**What**
+- Follow-ups folded in: `entities.melee-without-attack` (warning, once per entity at the first `melee_attack` goal when there is no `msm:attack`; validator `msm.entities.melee-without-attack`, 10 codes in 8 validators) with a test; Entity Studio "New goal type" shows the goal labels (Wander, Look at player, …) through a local `GoalTypeSelect` (values stay the goal types; unit test asserts the options); `FabricContentJarProblemCodes` gains `geckolibMissing` and `noGeckolibTarget`; `sample-mod.golden.test.ts` writes `expectEntities: 0` (the local server run passed with `0 entity type(s)`); mcdoc `GoalType` doc comment says an unknown goal is dropped with an error and the entity still registers; `symbols.json` regenerated (91 types, only `ref` changed).
+- Version 0.5.0 in `app/package.json` and `engine-mod/gradle.properties` `mod_version`.
+- Docs: ADRs 0028–0030 accepted (0028: v1 runtime rules: nothing registers without GeckoLib, goal drop rule, `on_hurt` only on survival, no animation defaults, `EntityRenderers.register`; 0029: licence, CI headless check, Blockbench 5.0 layout and keyframes, preview rotation convention, download cache; 0030: implementation); DESIGN §7, §8, §9, §10, §11, §13, §16, §17 (19 numbered H2s kept; every `DESIGN.md#`/`ROADMAP.md#` link resolves); ROADMAP Phase 5 ticks with briefs, Status, follow-ups, exit-criteria proxy, Milestone Log row with `TESTS`/`SIZE` placeholders, Phase 7 starter line, Phase 4 follow-up label; `docs/PHASE5-PLAN.md` deleted and its links (ADRs 0028–0030, `mc-26.3/CHANGES.md`, HANDOFF) replaced; HANDOFF rewritten with Phase 5 lessons; root, `docs/`, `app/`, `engine-mod/` and six package `CLAUDE.md` status lines (root 68 lines, scoped at most 54); `docs/CLAUDE.md` guide list adds `entities-and-models.md`; guide goal-type wording and the new warning; README Phase 5 status with 0.5.0 and the GeckoLib licence citation (Modrinth page and the jar's `LICENSE.txt`).
+- Counts verified from the plugins' contributions: 58 kinds, 112 templates, 12 starters, 66 examples (`examples/README.md` unchanged).
+- Checks (working tree, not a clean worktree, since nothing is committed): tsc, Biome, check-deps, `build-msm-mcdoc --check` clean; 17/17 test tasks, 2,245 passed, 2 skipped (one earlier full run had a 5 s timeout in `project-session.test.ts` under load; it passed alone and in the next full run); `pnpm build`, smoke, e2e 9/9 twice (47.1 s, 47.8 s); `./gradlew clean build` twice and `-PwithoutGeckolib` once, 78 JUnit tests and "All 38 required tests passed" each; `stage-runtime --require`, `dist:dir`, `smoke:packaged`; check-size: renderer 6.1 MB of 8.0 MB, app.asar 13.4 MB of 25 MB, main `index.js` 517.4 kB; local headless servers: sample mod PASS (3 blocks, 6 items, 0 entity types), sample mob PASS (0 blocks, 1 item, 1 entity type, GeckoLib 5.5.7 and `msm_runtime` 0.5.0 nested).
+
+**Decisions**
+- The goal picker is a local select in `EntityStudio.tsx` rather than a `labels` prop on the shared `SelectField` in `studios/structures/pickers.tsx`, to stay inside the entities Studio.
+- The `FabricContentJarProblemCodes` alias stays deprecated but complete: it now lists every content-jar code.
+- The phase plan's facts table survives in git history; the ADRs say so instead of linking a deleted file.
+
+**Next**
+- Orchestrator: fill `TESTS`/`SIZE` in the Milestone Log from the clean-worktree run; commit, push, CI, fast-forward `main`; release 0.5.0 with the user's go-ahead; Phase 6 plan.
+- User: in-game check `fixtures/sample-mob/README.md` (and the earlier phases').
