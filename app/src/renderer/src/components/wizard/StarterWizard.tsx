@@ -156,7 +156,13 @@ export function StarterWizard(props: StarterWizardProps) {
 
   const title = isLast ? CREATE_STEP_TITLE : (current?.title ?? CREATE_STEP_TITLE);
   return (
-    <form onSubmit={submit} className="flex flex-col gap-1.5" aria-labelledby={headingId}>
+    // noValidate: the wizard shows its own messages under the fields (ADR 0040 D1).
+    <form
+      noValidate
+      onSubmit={submit}
+      className="flex flex-col gap-1.5"
+      aria-labelledby={headingId}
+    >
       <p className="text-xs text-muted" data-testid="wizard-progress">
         Step {firstStep + index} of {total}
       </p>
