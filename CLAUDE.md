@@ -1,6 +1,6 @@
 # MCSuperMods
 
-MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 4 code complete, awaiting in-game checks; Phase 5 next (plan to write first). Phase 4 (Engine Mod + Blocks/Items; ADRs 0024–0027; v0.4.0): plugin-api 0.6.0, MSM mcdoc, `msm_runtime` v1, `@msm/plugin-blocks-items`, `fabric-content-jar`, Block/Item Studios, Export Fabric mod jar, Test in Minecraft, real Custom ore starter, CI headless server check. Done before: Phases 0–3 (awaiting in-game checks), two add-ons (launcher support, ADR 0019; templates and samples library, ADR 0020). 55 kinds in all. Library: 106 templates (resourcepack 14, datapack 55, structures 9, worldgen 21, blocks-items 7), 11 starters, 61 examples. Releases: Windows only (MIT; README "Releasing"). Toolchain: Node 24, pnpm 12.
+MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 5 code complete, awaiting in-game checks; Phase 6 (Scripting & Eject) next (plan to write first). Phase 5 (Entities, Models, Animation; ADRs 0028–0030; v0.5.0): plugin-api 0.7.0 (`GeckolibFacts`), `msm_runtime` entities (`MsmEntity`, six goals, spawn eggs, natural spawns, GeckoLib 5.5.7 bridge), `@msm/plugin-entities`, `@msm/plugin-models-anim`, Blockbench import (`@msm/interop`), Entity Studio, own WebGL geo preview, GeckoLib nested in the content jar, Custom mob starter, CI headless check of `fixtures/sample-mob/`. Done before: Phases 0–4 (awaiting in-game checks; Phase 4 Engine Mod + Blocks/Items, v0.4.0), two add-ons (launcher support, ADR 0019; templates and samples library, ADR 0020). 58 kinds in all. Library: 112 templates (resourcepack 14, datapack 55, structures 9, worldgen 21, blocks-items 7, models-anim 3, entities 3), 12 starters, 66 examples. Releases: Windows only (MIT; README "Releasing"). Toolchain: Node 24, pnpm 12.
 
 ## Directory map
 
@@ -9,13 +9,13 @@ MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla p
 - `packages/core/` — `@msm/core`, IR, project load/save, command stack, lowering driver
 - `packages/schemas/` — `@msm/schemas`, mcdoc adapter, `validateJson`; `@msm/schemas/mcfunction` (offline Spyglass)
 - `packages/plugin-api/` — `@msm/plugin-api`, public interfaces only
-- `packages/plugins/` — `@msm/plugin-<name>`: `resourcepack`, `datapack`, `structures`, `worldgen`, `blocks-items` (kinds, templates, validators), `library` (starters, examples); more planned (entities from Phase 5)
+- `packages/plugins/` — `@msm/plugin-<name>`: `resourcepack`, `datapack`, `structures`, `worldgen`, `blocks-items`, `models-anim`, `entities` (kinds, templates, validators), `library` (starters, examples); `scripting` planned (Phase 6)
 - `packages/exporters/` — `@msm/exporters`, vanilla-packs (resource, data, combined), fabric-content-jar; later java-project
 - `packages/targets/` — `@msm/target-*`, one folder per MC version (`mc-26.3/`), plus the `@msm/targets` aggregator (`all/`)
-- `packages/interop/` — `@msm/interop`, Minecraft installation, launcher instances, `level.dat` world names, Fabric test installs (`fabric/`); Blockbench later
+- `packages/interop/` — `@msm/interop`, Minecraft installation, launcher instances, `level.dat` world names, Fabric test installs (`fabric/`), Blockbench import (`blockbench/`)
 - `engine-mod/` — `msm_runtime` Fabric mod (Gradle, Java 25)
-- `tools/` — dev scripts: check-deps, check-size, sync-mcdoc, sync-mcmeta, new-plugin, run-fabric-server
-- `fixtures/sample-resourcepack/`, `sample-datapack/`, `sample-worldgen/`, `sample-mod/` — sample projects for the in-game checks
+- `tools/` — dev scripts: check-deps, check-size, sync-mcdoc, sync-mcmeta, build-msm-mcdoc, new-plugin, run-fabric-server
+- `fixtures/sample-resourcepack/`, `sample-datapack/`, `sample-worldgen/`, `sample-mod/`, `sample-mob/` — sample projects for the in-game checks
 - `examples/` — generated mirror of the library's starters and examples (golden; `UPDATE_GOLDENS=1`)
 - `.claude/agents/` — `orchestrator.md`, `executor.md`
 

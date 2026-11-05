@@ -299,7 +299,7 @@ Known gaps of the v0.4 design; none blocks the Phase 4 exit criterion.
 - [ ] 3D block preview in the Block Studio.
 - [ ] Settings control for the launcher program (today `launcherPrograms` is set only through "Choose launcher program…" in the Test in Minecraft dialog).
 - [ ] Real-launcher Windows check of Test in Minecraft (Prism picking up a just-created instance, `--launch` from the installed program).
-- [ ] `msm_runtime` as its own release asset for modpack makers who use "Separate runtime (for modpacks)".
+- [ ] `msm_runtime` as its own release asset for modpack makers who use "Separate runtime and GeckoLib (for modpacks)" (the label since Phase 5).
 - [ ] Prism and MultiMC program paths on macOS and Linux (Flatpak wrapper, Scoop on Windows) checked on real machines.
 
 ### Exit criteria
@@ -320,23 +320,46 @@ Phase 2 (mcfunction export, loot tables). Phase 3 is not required.
 
 ### Scope
 
-Custom mobs: entity definitions with AI goal components, Blockbench model and animation import, and GeckoLib rendering. Design references: [Behaviour Model (Components and Events)](DESIGN.md#11-behaviour-model-components-and-events), [Interop (Blockbench, NBT, Minecraft Installation)](DESIGN.md#13-interop-blockbench-nbt-minecraft-installation), [Engine Mod (Runtime)](DESIGN.md#10-engine-mod-runtime).
+Custom mobs: entity definitions with AI goal components, Blockbench model and animation import, and GeckoLib rendering. Design references: [Behaviour Model (Components and Events)](DESIGN.md#11-behaviour-model-components-and-events), [Interop (Blockbench, NBT, Minecraft Installation)](DESIGN.md#13-interop-blockbench-nbt-minecraft-installation), [Engine Mod (Runtime)](DESIGN.md#10-engine-mod-runtime), [Editors and UX](DESIGN.md#8-editors-and-ux); decisions in [ADR 0028](adr/0028-entity-definition-format-v1.md) (entity definition format v1, the entities plugin, `MsmEntity`), [ADR 0029](adr/0029-model-animation-pipeline.md) (GeckoLib, Blockbench import, geo and animation kinds, preview) and [ADR 0030](adr/0030-plugin-api-0.7.md) (plugin API 0.7.0). Release version 0.5.0.
+
+Status: code complete on 2026-11-05 (briefs B110–B122); in-game check pending (`fixtures/sample-mob/README.md`).
 
 ### Deliverables
 
-- [ ] `msm_runtime`: `MsmEntity` driver class and entity registration at init.
-- [ ] Entity components: health, movement, AI goals subset, attack, animations.
-- [ ] `msm:animated_model` component isolating GeckoLib 5.5+ (26.3 build: verify at implementation).
-- [ ] `@msm/interop` `blockbench/`: `.bbmodel` import to Java block/item models and to GeckoLib geo + animation JSON, with format version check.
-- [ ] `@msm/plugin-entities`: `msm:entity` kind, spawn rules and spawn eggs.
-- [ ] `@msm/plugin-models-anim`: model and animation asset kinds with preview playback.
-- [ ] Entity Studio view.
-- [ ] Content-jar exporter nests GeckoLib only when the project uses animated entities.
-- [ ] GameTest coverage for spawning, movement and attack.
+- [x] Entity and GeckoLib spike (B110): registration through Fabric's `createMob`, natural spawns reaching 26.3's `natural_mob_spawns` attribute, GeckoLib 5.5.7 from the Modrinth Maven on the non-remapping Loom, GeckoLib's resource keys, the headless server with GeckoLib ([ADR 0028](adr/0028-entity-definition-format-v1.md) and [ADR 0029](adr/0029-model-animation-pipeline.md) Status).
+- [x] `msm_runtime`: `MsmEntity` driver class and entity registration at init, spawn eggs, natural spawns, the GeckoLib bridge behind `isModLoaded` and the `client` entrypoint (B113).
+- [x] Entity components: `msm:health`, `msm:movement`, `msm:attack`, `msm:ai_goals` (`wander`, `look_at_player`, `look_around`, `melee_attack`, `flee`, `follow`), `msm:on_hurt`, `msm:on_death`, `msm:on_interact`, action `play_animation`; MSM mcdoc and the shared conformance corpus (B112, B113).
+- [x] `msm:animated_model` component isolating GeckoLib 5.5.7 (the 26.3 build; facts in the target, B111; runtime bridge, B113).
+- [x] `@msm/interop` `blockbench/`: `.bbmodel` (4.x and 5.x layouts) to GeckoLib geo and animation JSON with a format version check, `.geo.json` and `.animation.json` pass-through, registered by the app as a host importer (B116, B118). Java block and item `.bbmodel` conversion moved to the follow-ups.
+- [x] `@msm/plugin-entities`: `msm:entity` kind, spawn rules and spawn eggs, eight validators (ten codes), three templates (B115; `entities.melee-without-attack` at B122).
+- [x] `@msm/plugin-models-anim`: `msm:geo_model` and `msm:animation` kinds, four validators (five codes), three templates (B114), with preview playback in the app's own WebGL renderer (B117).
+- [x] Entity Studio view, File > "Import Blockbench Model…", sidebar groups, GeckoLib download in main (B118).
+- [x] Content-jar exporter nests GeckoLib only when the project has entities, with "Separate runtime and GeckoLib (for modpacks)" (B111); plugin API 0.7.0 with `GeckolibFacts` (B111).
+- [x] GameTest coverage for spawning, movement and attack: 38 GameTests (registration, attributes, eggs, each goal, each trigger, `play_animation`, natural spawns) and 78 JUnit tests in `./gradlew build`, also with `-PwithoutGeckolib` (B113).
+- [x] Custom mob starter (the Ruby Golem) and five entity examples with the `examples/entities/` and `examples/starters/custom_mob/` mirrors (B119).
+- [x] `fixtures/sample-mob/` with a SHA-256 golden and the CI headless server check with the runtime and GeckoLib nested (B120).
+- [x] e2e `entities-path` (ninth spec) and the guide page `docs/guide/entities-and-models.md` (B121).
+- [x] B122: close: ROADMAP ticks, Milestone Log, ADRs 0028–0030 accepted, version 0.5.0 (app and `msm_runtime`), docs and scoped CLAUDE.md status lines.
+- [ ] User check: in-game on Windows with 26.3, the steps in `fixtures/sample-mob/README.md` (see [Exit criteria](#exit-criteria-5)).
+
+### Phase 5 follow-ups
+
+Known gaps of the v0.5 design; none blocks the Phase 5 exit criterion.
+
+- [ ] Molang subset in the preview (`query.anim_time`, `query.life_time`, arithmetic, `math.sin`/`math.cos`), so Blockbench's common idle expressions play (reserve brief B124).
+- [ ] `catmullrom` interpolation in the preview (plays as linear today).
+- [ ] Client render check in CI (reserve brief B123): a Fabric client GameTest or `runClient` under `xvfb` that spawns the sample mob and screenshots it; the session container has no OpenGL or Vulkan backend, so it needs another runner.
+- [ ] GeckoLib items and armour (animated item models), and mobs without a GeckoLib model (a vanilla-model fallback) if users ask.
+- [ ] Java block and item `.bbmodel` import into `minecraft:block_model` / `minecraft:item_model` elements (Blockbench exports these itself today).
+- [ ] A 3D spawn egg and item preview in the Entity Studio.
+- [ ] GeckoLib shipped inside the installer, for offline first exports, if users ask (MIT permits it).
+- [ ] Toolbar Export menu entry for Blockbench import (menu and palette only today).
 
 ### Exit criteria
 
 A Blockbench-animated custom mob spawns, moves and attacks.
+
+CI cannot draw the client, so an automated proxy proves the content first: the GameTests in `./gradlew build` spawn every goal type's mob, walk it, make it attack a player and a listed mob type, flee and follow, fire each trigger and check natural spawns in the listed biomes; `fixtures/sample-mob/` exports with zero problems and a pinned SHA-256, and a headless 26.3 Fabric server with Fabric API and the jar (real runtime and GeckoLib 5.5.7 nested) logs `registered 1 entity type(s)` with no runtime or GeckoLib warning or error; the `entities-path` e2e spec imports a Blockbench model, drives the Entity Studio and the animated preview through export gating and the jar export. The user then checks in-game on Windows (steps in `fixtures/sample-mob/README.md`), which also covers rendering and animation.
 
 ### Estimate
 
@@ -387,7 +410,7 @@ Open the platform and harden it for release: third-party plugins, a second Minec
 - [ ] `@msm/plugin-api` 1.0 with `apiVersion` compatibility checks.
 - [ ] `tools/new-plugin` scaffold and a sample external plugin.
 - [ ] Second target package (26.4 or whatever is current) with migration hooks and an "upgrade project target" command.
-- [ ] Templates and wizards (custom ore, custom sword, custom mob). The Phase 2 add-on delivered the template, starter and examples library ([ADR 0020](adr/0020-templates-starters-examples.md)); what remains is the wizards, the real `msm:block` ore starter replacing the emerald-ore reskin (Phase 4), and the custom sword and custom mob starters once Phases 4 and 5 provide their kinds.
+- [ ] Templates and wizards (custom ore, custom sword, custom mob). The Phase 2 add-on delivered the template, starter and examples library ([ADR 0020](adr/0020-templates-starters-examples.md)), Phase 4 the real `msm:block` Custom ore starter and Phase 5 the Custom mob starter (the animated Ruby Golem); what remains is the wizards and the custom sword starter.
 - [ ] Documentation site (user guide under `docs/guide/`).
 - [x] Auto-update: delivered in Phase 2 with `electron-updater` and the GitHub provider ([ADR 0018](adr/0018-auto-update.md)).
 - [ ] Contribution guidelines published (the licence was settled as MIT on 2026-11-04).
@@ -424,3 +447,4 @@ Not committed; each needs an ADR before work starts.
 | 2026-11-04 | Phase 2 code complete — pending in-game checks and first release | plugin-api 0.3.0, Node 24 and pnpm 12, `@msm/plugin-datapack` (14 kinds including eight tag kinds, plus ten schema-form kinds), `@msm/schemas/mcfunction` (offline Spyglass in main, with mcdoc symbols for JSON and NBT inside commands), reference index and one-step rename, data pack and combined export, install into a world, Recipe Studio, Tag editor, Function editor, command palette, animated texture preview, in-app auto-update; data pack golden-path e2e; ADRs 0014–0018. 1,037 tests (app 397, core 152, schemas 142, exporters 73, tools 60, datapack 57, plugin-api 44, mc-26.3 40, interop 32, resourcepack 28, targets aggregator 12). Sizes: `app.asar` 12.7 MB, renderer 5.7 MB, main `index.js` 266.2 kB (7.0 MB under `out/main`). Untagged: waiting on the user's first-release steps. Manual in-game checks (Phase 1 and Phase 2) pending. |
 | 2026-11-04 | Phase 3 code complete — pending in-game check | v0.3.0. plugin-api 0.5.0 (`ProjectValidator`, `ElementKind.registry`, `Target.dataVersion`, `Target.worldgen`), `@msm/plugin-structures` (five kinds, deepslate NBT codec with our own SNBT printer, `.nbt` and Sponge `.schem` import and export) and `@msm/plugin-worldgen` (fourteen kinds), three worldgen tag kinds (52 kinds in all), ten project validators gating export, 99 templates, 11 starters and 56 examples, `fixtures/sample-worldgen/` with SHA-256 golden and chain walk, Structure, Template Pool, Biome and Placed Feature Studios, structure 3D preview and climate map, world names from `level.dat`, recent projects; e2e `worldgen-path` (seven specs); ADRs 0021–0023. Tests: 1,719 across 14 packages (app 626, core 154, exporters 170, schemas 152, datapack 131, worldgen 89, target 69, interop 65, tools 60, structures 56, plugin-api 51, resourcepack 48, library 36, targets 12); seven e2e specs in 26.9 s. Sizes: app.asar 13.2 MB (budget 25 MB), build output 7.2 MB, lazy worldgen preview chunk 158.8 kB. Untagged: the user pushes `v0.3.0`. Manual in-game checks (Phases 1–3) pending. |
 | 2026-11-05 | Phase 4 code complete — pending in-game check | v0.4.0. plugin-api 0.6.0 (`OutputFile.merge`, exporter options, `Target.fabric`), MSM mcdoc v1 with a shared conformance corpus, `msm_runtime` v1 (Codecs, nine components, six actions; Loom 1.19.3, Loader 0.20.1, Fabric API 0.165.2+26.3; 46 JUnit tests and 18 GameTests in `./gradlew build`), `@msm/plugin-blocks-items` (`msm:block`, `msm:item`, `msm:mod`; 55 kinds in all), `fabric-content-jar` exporter with nested or separate runtime, Block and Item Studios, Export Fabric mod jar, Test in Minecraft (`@msm/interop` `fabric/`), real Custom ore starter, 106 templates, 11 starters and 61 examples, `fixtures/sample-mod/` with SHA-256 golden and the CI headless server check; e2e `blocks-items-path` (eight specs); ADRs 0024–0027. Tests: 15 packages, 1,978 passed (1 skipped) in the clean-worktree run, e2e 8/8 (38.1 s), 46 JUnit and 18 GameTests. Sizes: renderer 6.0 MB of 8.0 MB, app.asar 13.3 MB of 25 MB, main `index.js` 513.6 kB. Untagged: released through `release.yml` with the user's go-ahead. Manual in-game checks (Phases 1–4) pending. |
+| 2026-11-05 | Phase 5 code complete — pending in-game check | v0.5.0. plugin-api 0.7.0 (`Target.geckolib: GeckolibFacts`), MSM mcdoc for entities, Bedrock geometry and animations with `play_animation`, `msm_runtime` 0.5 (`MsmEntity`, six goal types, spawn eggs, natural spawns, GeckoLib 5.5.7 bridge and client entrypoint; 78 JUnit tests and 38 GameTests in `./gradlew build`, also with `-PwithoutGeckolib`), `@msm/plugin-entities` (`msm:entity`) and `@msm/plugin-models-anim` (`msm:geo_model`, `msm:animation`; 58 kinds in all), Blockbench import in `@msm/interop` (4.x and 5.x) as a host importer, Entity Studio, own WebGL geo preview with playback, content jar nesting GeckoLib (downloaded once, SHA-512 checked), Custom mob starter, 112 templates, 12 starters and 66 examples, `fixtures/sample-mob/` with SHA-256 golden and the CI headless server check (runtime and GeckoLib nested); e2e `entities-path` (nine specs); ADRs 0028–0030. Tests: 17 packages, TESTS in the clean-worktree run. Sizes: SIZE. Untagged: released through `release.yml` with the user's go-ahead. Manual in-game checks (Phases 1–5) pending. |

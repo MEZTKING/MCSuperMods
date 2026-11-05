@@ -284,7 +284,7 @@ export default definePlugin({
 | `editors` | React component for a kind, receiving `(element, schemaNode, commands)` | Block Studio |
 | `exporters` | Packaging of `OutputFile[]` | `vanilla-packs`; `structure-nbt`, `sponge-schematic` (`msm.structures`) |
 | `targets` | Version facts and migration hooks | `mc-26.3` |
-| `importers` | File type to elements/assets; the host picks one by file extension and inserts the result as one undo step | `.bbmodel`; `.nbt`, `.schem` (`msm.structures`) |
+| `importers` | File type to elements/assets; the host picks one by file extension and inserts the result as one undo step; the app adds host importers next to the plugins' ([ADR 0029](adr/0029-model-animation-pipeline.md) D3) | `.nbt`, `.schem` (`msm.structures`); `.bbmodel`, `.geo.json`, `.animation.json` (host importer `blockbench` from `@msm/interop`) |
 | `commands` | Palette entries and refactors | "New block from template" |
 | `schemas` | Extra mcdoc files | MSM component definitions |
 | `elementTemplates` | Entries of the New element picker for the plugin's own kinds: id, kind, category, name hints and a pure `data(context)` | "Shaped recipe", "Block model (cube all)" |
@@ -292,9 +292,11 @@ export default definePlugin({
 | `examples` | Examples gallery entries: the kind taught, category, tags, `requiresKinds` and a commented content bundle | "Loot table: block drops" |
 | `validators` | Cross-element checks over the whole project: an id, the kinds read and a pure `validate(input)` returning problems; the host re-runs them when those kinds change and merges the problems ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)) | Feature order across biomes, structure set spacing |
 
-Templates, starters and examples live in plugins; the app is only the picker. A template creates one element of a kind its own plugin registers and references only vanilla ids, ids derived from its own id, or the project root advancement. A starter or example builds a self-contained content bundle (elements with optional `meta.notes`, plus generated assets, never Mojang assets) that may span any registered kinds; the host adds a `pack` element when the bundle has none and inserts the elements as one undo step. The resource-pack, data-pack, structures and worldgen plugins carry the templates for their kinds (99 in total after Phase 3); the built-in `@msm/plugin-library` (`msm.library`) carries the starters, the examples and the placeholder-texture generator ([ADR 0020](adr/0020-templates-starters-examples.md)).
+Templates, starters and examples live in plugins; the app is only the picker. A template creates one element of a kind its own plugin registers and references only vanilla ids, ids derived from its own id, or the project root advancement. A starter or example builds a self-contained content bundle (elements with optional `meta.notes`, plus generated assets, never Mojang assets) that may span any registered kinds; the host adds a `pack` element when the bundle has none and inserts the elements as one undo step. The kind plugins carry the templates for their kinds (99 in total after Phase 3, 106 after Phase 4, 112 after Phase 5); the built-in `@msm/plugin-library` (`msm.library`) carries the starters, the examples and the placeholder-texture generator ([ADR 0020](adr/0020-templates-starters-examples.md)).
 
 Phase 3 adds two built-ins ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)): `@msm/plugin-structures` (`msm.structures`: structure templates, template pools, structures, structure sets and processor lists, with the `.nbt` and `.schem` importers and exporters of [ADR 0021](adr/0021-structure-templates-and-nbt.md)) and `@msm/plugin-worldgen` (`msm.worldgen`: biomes, configured and placed features, dimensions, world presets and nine schema-form worldgen kinds). Both contribute validators; `@msm/plugin-datapack` adds the worldgen tag kinds and keeps `minecraft:dimension_type`.
+
+Phase 4 adds `@msm/plugin-blocks-items` (`msm.blocks-items`: `msm:block`, `msm:item`, `msm:mod`; [ADR 0025](adr/0025-msm-definition-format-v1.md)). Phase 5 adds two more ([ADR 0028](adr/0028-entity-definition-format-v1.md), [ADR 0029](adr/0029-model-animation-pipeline.md)): `@msm/plugin-models-anim` (`msm.models-anim`: `msm:geo_model` and `msm:animation`, lowered to GeckoLib's `assets/<ns>/geckolib/` files, four validators with five `models-anim.*` codes) and `@msm/plugin-entities` (`msm.entities`: `msm:entity`, lowered to `msm/<ns>/entity/` plus language keys and the spawn egg's item files, eight validators with ten `entities.*` codes). Plugin API 0.7.0 turns `Target.geckolib` into `GeckolibFacts` ([ADR 0030](adr/0030-plugin-api-0.7.md)). The Blockbench importer lives in `@msm/interop` and is registered by the app as a host importer, because plugins may depend only on `@msm/plugin-api` and `@msm/schemas`.
 
 ### Loading model
 
@@ -325,7 +327,7 @@ Both paths edit the same element through the same command stack, so switching be
 | 2 | Recipe Studio, Tag editor, Function editor (Monaco + Spyglass); Loot Table and Advancement Studios are the schema form plus templates in v0.2 ([ADR 0015](adr/0015-data-pack-element-model.md)); New project starters and the Examples gallery (add-on, [ADR 0020](adr/0020-templates-starters-examples.md)) |
 | 3 | Structure Studio (size, palette, jigsaw table, "Replace from file…", structure exports), Template Pool Studio (pieces table, Connections panel with each jigsaw's target pool marked project, vanilla or missing, "Used by"), Biome Studio (climate, colour pickers, feature lists per decoration step named from the target, spawners), Feature Studio as the Placed Feature Studio (feature picker, ordered placement modifiers, "Used in"); configured features and the other worldgen kinds are the schema form plus templates. Studios register per area (`studios/<area>/studios.tsx`) instead of in one shared file ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)) |
 | 4 | Block Studio, Item Studio |
-| 5 | Entity Studio, Animation preview |
+| 5 | Entity Studio (identity and hitbox, appearance with model, animation set, texture and animation names, stats, melee attack, ordered goal list, natural spawning, spawn egg, events with `play_animation`); geo model and animation preview with playback ([ADR 0029](adr/0029-model-animation-pipeline.md) D5); File > "Import Blockbench Model…". Geo models and animation sets are the schema form and the Raw JSON tab |
 | 6 | Script editor |
 
 ### Templates, starters and examples
@@ -333,7 +335,7 @@ Both paths edit the same element through the same command stack, so switching be
 Content comes from plugins ([Plugin System](#7-plugin-system)); the app only presents it ([ADR 0020](adr/0020-templates-starters-examples.md)).
 
 - **New element.** The picker groups templates under category headings (Models, Blockstates, Recipes, Loot tables, Tags and so on) and has a filter box. Every built-in kind has at least one template with starting content that validates against the current target; a third-party kind without templates gets a generic entry built from its `defaultData`.
-- **New project.** Toolbar "New" and File > New Project… still create a blank project directly. The split arrow on "New", File > New Project from Starter… and the palette open the New project dialog, which lists starters grouped as blank, pack and content, with layer badges; submitting asks for an empty folder and builds the starter there with the namespace derived from the folder name. Since Phase 4 the Custom ore starter is a real `msm:block` ruby ore with its item, loot table, recipes and `msm:mod` element, exported as a Fabric mod jar (before Phase 4 it reskinned emerald ore).
+- **New project.** Toolbar "New" and File > New Project… still create a blank project directly. The split arrow on "New", File > New Project from Starter… and the palette open the New project dialog, which lists starters grouped as blank, pack and content, with layer badges; submitting asks for an empty folder and builds the starter there with the namespace derived from the folder name. Since Phase 4 the Custom ore starter is a real `msm:block` ruby ore with its item, loot table, recipes and `msm:mod` element, exported as a Fabric mod jar (before Phase 4 it reskinned emerald ore). Phase 5 adds the Custom mob starter: an animated Ruby Golem (`msm:entity`, its geo model, animation set, placeholder skin and spawn egg texture, loot table and death function).
 - **Examples gallery.** Help > Examples… and the palette open a gallery of one commented example per built-in kind plus the content starters, with search over title, kind, category and tags, a kind filter and a detail pane showing the notes. "Open as new project" builds the example into a new folder; "Copy into my project" adds it to the open project under a chosen namespace as one undo step, reporting ids that already exist.
 - **Notes callout.** An element with `meta.notes` (every copied example) shows them in a collapsible, read-only Notes callout above its editor.
 
@@ -343,15 +345,18 @@ Every plugin command is reachable from a keyboard-driven palette (create, rename
 
 ### Preview panel
 
-Misode's `deepslate` renders block and item models with its own WebGL renderer ([ADR 0010](adr/0010-preview-with-deepslate.md)); later phases extend the preview to structures, worldgen and imported Blockbench entities, adding three.js only if a phase needs it. Parent models resolve through project elements, then the extracted vanilla cache (section 13), then a small set of MSM-authored fallback parents (`msm:block/cube_all`, `msm:item/generated` and others) written from scratch for preview only and never exported. Without a client jar, missing textures render as deepslate's missing-texture checker and a banner links to the Minecraft folder setting; without WebGL, the panel shows a message and the rest of the app works.
+Misode's `deepslate` renders block and item models with its own WebGL renderer ([ADR 0010](adr/0010-preview-with-deepslate.md)); later phases extend the preview to structures and worldgen (deepslate) and to Blockbench entities (the app's own WebGL renderer, Phase 5); three.js is not used. Parent models resolve through project elements, then the extracted vanilla cache (section 13), then a small set of MSM-authored fallback parents (`msm:block/cube_all`, `msm:item/generated` and others) written from scratch for preview only and never exported. Without a client jar, missing textures render as deepslate's missing-texture checker and a banner links to the Minecraft folder setting; without WebGL, the panel shows a message and the rest of the app works.
 
 From Phase 3 ([ADR 0023](adr/0023-structure-and-climate-previews.md)) the panel has two more modes. **Structure mode** (`previewKind: 'structure'`) renders a structure template with deepslate's `StructureRenderer`, a grid and an orbit camera fitted to its size, preparing resources for every palette block through the same model chain; block entities, entities and biome tints are not drawn. The **climate map** (`previewKind: 'climate_map'`, for dimensions and world presets with an explicit `multi_noise` biome source) is a 2D canvas outside the WebGL gate: two of the six climate parameters on the axes, sliders for the rest, each cell coloured by the biome `Climate.Parameters.find` selects. A noise-sampled biome or terrain map is not built in v0.3 ([Open Question 15](#18-open-questions)).
+
+From Phase 5 ([ADR 0029](adr/0029-model-animation-pipeline.md) D5) **geo mode** (`previewKind` `geo_model`, `animation`, `entity`) draws Bedrock geometry with the app's own raw WebGL renderer (`preview/geo/`, gl-matrix, a lazy chunk): cubes with box or per-face UV, inflate and mirror, the bone hierarchy with Blockbench's rotation order and signs, the project texture or a checker, an orbit camera and a grid. An animation picker, play and pause and a time slider play keyframes linearly; `catmullrom` plays as linear and Molang strings as 0, each with an info notice; the game is the reference. An animation set plays on the geo model whose bones it matches, and an entity shows its model, texture and idle animation at its scale.
 
 ### "Test in Minecraft"
 
 - **Phase 1:** export the resource pack and copy it into the user's `resourcepacks` folder; the user enables it in-game.
 - **Phase 2:** export the data pack and copy it into a chosen world's `datapacks` folder; the user runs `/reload`.
 - **Phase 4:** File > "Test in Minecraft…" (also in the Export menu and the palette) installs the current content jar, with `msm_runtime` nested, into a Fabric location and launches Prism or MultiMC, or creates a managed Prism test instance ([Interop](#13-interop-blockbench-nbt-minecraft-installation)).
+- **Phase 5:** a project with entities also nests GeckoLib in that jar (downloaded once, [ADR 0029](adr/0029-model-animation-pipeline.md) D4); nothing else changes.
 
 ### Error surfacing
 
@@ -384,7 +389,8 @@ interface Target {
   };
   fabric?: { loader: string; api: string; loom: string; minecraftDependency: string };
                               // Phase 4 (ADR 0027); 26.3: loader 0.20.1, API 0.165.2+26.3, Loom 1.19.3, "~26.3" (verified 2026-11-05)
-  geckolib?: string;          // required from Phase 5; 5.5+ line (verify at implementation)
+  geckolib?: GeckolibFacts;   // Phase 5 (ADR 0030): version, modId, dependency, fileName, url, sha512, modrinthVersionId;
+                              // 26.3: GeckoLib 5.5.7, ">=5.5.7", Modrinth CDN jar (verified 2026-11-05)
   migrateFrom?(previous: Target, project: Project): MigrationReport;
 }
 
@@ -400,10 +406,10 @@ Support policy: the current release (26.3) and the previous one (26.2) at launch
 | Exporter | Output | Phase |
 |---|---|---|
 | `vanilla-packs` | Resource pack `.zip` (Phase 1), data pack `.zip`, or both zips in a folder the user picks (Phase 2; [ADR 0015](adr/0015-data-pack-element-model.md)) | 1–2 |
-| `fabric-content-jar` | Jar with `assets/`, `data/`, `msm/`, `fabric.mod.json`; `msm_runtime` nested by default, or left out with the "Separate runtime (for modpacks)" option ([ADR 0026](adr/0026-fabric-content-jar.md)); GeckoLib nested when used (Phase 5) | 4 (exists) |
+| `fabric-content-jar` | Jar with `assets/`, `data/`, `msm/`, `fabric.mod.json`; `msm_runtime` nested by default, or left out with the "Separate runtime and GeckoLib (for modpacks)" option ([ADR 0026](adr/0026-fabric-content-jar.md)); projects with entities also depend on GeckoLib and nest its jar unless that option is on ([ADR 0029](adr/0029-model-animation-pipeline.md) D4) | 4–5 (exists) |
 | `java-project` | Standalone Gradle project with generated Java (eject) | 6 |
 
-The content jar exporter lives in `@msm/exporters` (`src/fabric-content-jar/`), writes the same deterministic zip as the packs, takes its Fabric facts from `Target.fabric` and receives the runtime jar bytes from its host (`createFabricContentJarExporter({ loadRuntimeJar })`), so it has no file access. Exporters declare boolean options that the export dialog renders ([ADR 0027](adr/0027-plugin-api-0.6.md)). Files several elements contribute to (language files, tags) declare `OutputFile.merge` and are merged in step 3; other files meeting at one path are conflicts.
+The content jar exporter lives in `@msm/exporters` (`src/fabric-content-jar/`), writes the same deterministic zip as the packs, takes its Fabric facts from `Target.fabric` and receives the runtime and GeckoLib jar bytes from its host (`createFabricContentJarExporter({ loadRuntimeJar, loadGeckolibJar })`), so it has no file access. GeckoLib is loaded only when the project has an `msm/<ns>/entity/` file; without it the export fails with `export.geckolib-missing`, and for a target without GeckoLib facts with `export.no-geckolib-target`. The app's main process caches GeckoLib under `<userData>/downloads/geckolib/`, downloading it once from `Target.geckolib.url` with a SHA-512 check. Exporters declare boolean options that the export dialog renders ([ADR 0027](adr/0027-plugin-api-0.6.md)). Files several elements contribute to (language files, tags) declare `OutputFile.merge` and are merged in step 3; other files meeting at one path are conflicts.
 
 ### Pipeline
 
@@ -430,6 +436,7 @@ Verified on 2026-11-05 ([ADR 0024](adr/0024-runtime-registration-spike.md)):
 - **Fabric Loom, the 26.1+ non-remapping variant**: plugin id `net.fabricmc.fabric-loom`, release 1.19.3. Minecraft is `com.mojang:minecraft:26.3` with no mappings line; dependencies use plain `implementation`, not `modImplementation`.
 - **Fabric Loader 0.20.1 and Fabric API 0.165.2+26.3** for 26.3; the same facts live in the target's `fabric` block for the exporter.
 - **Mojang names only.** 26.1+ ships unobfuscated and Fabric no longer maintains Yarn for it; we use no Yarn and no Parchment.
+- **GeckoLib 5.5.7** (Phase 5, [ADR 0029](adr/0029-model-animation-pipeline.md) D6) from the Modrinth Maven (`maven.modrinth:geckolib:<version id>`, an `exclusiveContent` repository): `compileOnly` and `gametestCompileOnly` for compilation and `localRuntime` for the run tasks (`-PwithoutGeckolib` leaves it off); the built runtime jar contains no GeckoLib class and only `suggests` it.
 - **Fabric API modules used:** creative tabs through `fabric-creative-tab-api-v1` (`CreativeModeTabEvents.modifyOutputEvent`, keys built with `ResourceKey.create(Registries.CREATIVE_MODE_TAB, id)`); GameTests through `fabric-gametest-api-v1` (annotation `net.fabricmc.fabric.api.gametest.v1.GameTest`, entry point `fabric-gametest`, Loom `fabricApi { configureTests {} }`, task `runGameTest`, which `./gradlew build` runs). `Block.Properties` and `Item.Properties` need `setId(ResourceKey)` before construction.
 
 ### The registry freeze
@@ -444,6 +451,8 @@ During initialisation the runtime iterates `FabricLoader.getAllMods()`, calls `f
 
 Each definition is registered through a generic **driver class**: `MsmBlock`, `MsmItem` or `MsmEntity` (Phase 5). The driver holds a list of parsed **components** and dispatches game callbacks (use, step, break, tick, attack) to them. Behaviour is never hardcoded per definition, and the runtime does not use reflection on definitions. Definitions are parsed with Codecs aligned with the MSM mcdoc schemas (strict JSON types; a shared conformance corpus is checked by both the app's `validateJson` and the runtime's JUnit tests). The definition format v1 and the runtime's load rules are in [ADR 0025](adr/0025-msm-definition-format-v1.md).
 
+`MsmEntity extends PathfinderMob` ([ADR 0028](adr/0028-entity-definition-format-v1.md) D5) takes its attributes from the components and its goals from `msm:ai_goals`, and dispatches `doHurtTarget`, `hurtServer`, `die` and `mobInteract` to the trigger components. Entity types are built with Fabric's `FabricEntityType.Builder.createMob` (default attributes and spawn placement), spawn eggs are `SpawnEggItem`s counted as items, and natural spawns go through `BiomeModifications.addSpawn`, which reaches 26.3's `natural_mob_spawns` biome attribute. GeckoLib is bridged by a separate class group (`registry/MsmGeoEntity`, `registry/GeckolibEntities`, `client/MsmGeoModel`, `client/GeckolibRenderers`) touched only after `FabricLoader.isModLoaded("geckolib")`; without GeckoLib every entity definition logs one error and registers nothing, while blocks and items still load. The runtime's **`client` entrypoint** (`client/MsmRuntimeClient`) registers a `GeoEntityRenderer` per entity type through vanilla `EntityRenderers.register` (opened by Fabric API's transitive access wideners); `environment` stays `*`. The log keeps the Phase 4 line and adds `[msm_runtime] registered K entity type(s)`.
+
 ### Frozen versus reloadable data
 
 | Data | Where it lives | Reloadable |
@@ -456,7 +465,7 @@ Anything that can be reloadable stays in the ordinary data pack inside the conte
 
 ### Distribution
 
-The exporter produces a **content jar** whose `fabric.mod.json` depends on `msm_runtime`. By default the runtime jar is **nested** in the content jar via the `"jars"` field, so users ship one file. A "separate runtime" checkbox omits nesting for modpack makers who want one shared runtime. The runtime carries the app's version (`engine-mod/gradle.properties` `mod_version` equals `app/package.json`, checked by a test), is built by `engine-mod/` Gradle and ships with the app as `runtime/msm_runtime.jar`; content jars depend on `msm_runtime >=<version>` ([ADR 0026](adr/0026-fabric-content-jar.md)). CI starts a headless Fabric dedicated server with the kitchen-sink sample (`tools/run-fabric-server`, `fixtures/sample-mod/`) and fails on any runtime error or warning.
+The exporter produces a **content jar** whose `fabric.mod.json` depends on `msm_runtime`. By default the runtime jar is **nested** in the content jar via the `"jars"` field, so users ship one file. A "separate runtime" checkbox omits nesting for modpack makers who want one shared runtime. The runtime carries the app's version (`engine-mod/gradle.properties` `mod_version` equals `app/package.json`, checked by a test), is built by `engine-mod/` Gradle and ships with the app as `runtime/msm_runtime.jar`; content jars depend on `msm_runtime >=<version>` ([ADR 0026](adr/0026-fabric-content-jar.md)). Projects with entities also depend on GeckoLib, nested by default and left out with the same option ([ADR 0029](adr/0029-model-animation-pipeline.md) D4). CI starts a headless Fabric dedicated server with the kitchen-sink sample (`tools/run-fabric-server`, `fixtures/sample-mod/`) and, from Phase 5, with `fixtures/sample-mob/` (runtime and GeckoLib nested), and fails on any runtime error or warning or any GeckoLib warning or error.
 
 ### Mixin policy
 
@@ -469,8 +478,8 @@ Testing uses JUnit 5 for parsing and Fabric **GameTest** for behaviour (section 
 We borrow Bedrock's proven idea: a block, item or entity definition is a bag of **components** plus **events** that chain **actions**. This gives beginners real behaviour without code.
 
 - **Components** are named capabilities with parameters: `msm:light_emitter`, `msm:breakable`, `msm:on_interact`, `msm:food`.
-- **Events** are named lists of actions, triggered by trigger components (`msm:on_interact`, `msm:on_step`) or by other events.
-- **Actions** are the primitive verbs: `run_function`, `spawn_particle`, `set_block_state`, `give_item`, `play_sound`, `trigger_event`.
+- **Events** are named lists of actions, triggered by trigger components (`msm:on_interact`, `msm:on_step`; for entities also `msm:on_hurt`, `msm:on_death` and `msm:attack.on_attack`) or by other events.
+- **Actions** are the primitive verbs: `run_function`, `spawn_particle`, `set_block_state`, `give_item`, `play_sound`, `trigger_event`, and from Phase 5 `play_animation` (entities only).
 
 `run_function` calls an mcfunction in the bundled data pack, which gives beginners the full vanilla command surface for free and means the action vocabulary can stay small. Component and action vocabularies are defined once in MSM mcdoc and consumed by both the app and the runtime.
 
@@ -508,9 +517,9 @@ On export this lowers to `msm/mymod/block/ruby_ore.json` (the runtime definition
 |---|---|---|
 | 4 | Blocks | `msm:light_emitter`, `msm:breakable` (hardness, tool, tier), drops via vanilla loot table, `msm:on_interact`, `msm:on_step`, `msm:redstone` (emit, react) |
 | 4 | Items | `msm:food`, `msm:tool` (tier), `msm:durability`, `msm:on_use` (use actions) |
-| 5 | Entities | `msm:health`, `msm:movement`, `msm:ai_goals` (vanilla goal subset: wander, look, melee attack, flee, follow), `msm:attack`, `msm:animated_model` |
+| 5 | Entities | `msm:health`, `msm:movement`, `msm:ai_goals` (goal subset `wander`, `look_at_player`, `look_around`, `melee_attack`, `flee`, `follow`), `msm:attack`, `msm:animated_model` (required; GeckoLib), `msm:on_hurt`, `msm:on_death`, `msm:on_interact`; plus `spawn` rules and `spawn_egg` |
 
-A new component's MSM mcdoc and runtime implementation land in the same change. The Phase 4 components and the six actions are implemented in `msm_runtime` v1 and edited in the Block and Item Studios; action fields, defaults and the runtime rules (dropped events, chain depth 16, strict types, `"item": false`) are in [ADR 0025](adr/0025-msm-definition-format-v1.md).
+A new component's MSM mcdoc and runtime implementation land in the same change. The Phase 4 components and the six actions are implemented in `msm_runtime` v1 and edited in the Block and Item Studios; action fields, defaults and the runtime rules (dropped events, chain depth 16, strict types, `"item": false`) are in [ADR 0025](adr/0025-msm-definition-format-v1.md). The Phase 5 entity components, implemented in `msm_runtime` 0.5 and edited in the Entity Studio, are in [ADR 0028](adr/0028-entity-definition-format-v1.md): goals run in list order unless `priority` says otherwise, an undecodable goal is dropped with an error, `msm:on_hurt` fires only when the mob survives, and `play_animation` (`{ "animation", "controller"? }`, controller `msm_triggered` by default) triggers a GeckoLib animation on the event's entity; in block and item definitions it is dropped at load with a warning.
 
 ## 12. Scripting and Escape Hatches
 
@@ -569,12 +578,13 @@ All importers implement the plugin-api `Importer` interface and produce IR eleme
 
 ### Blockbench
 
-`.bbmodel` import:
+Built in Phase 5 as `@msm/interop` `blockbench/` ([ADR 0029](adr/0029-model-animation-pipeline.md) D3), registered by the app as the host importer `blockbench` (File > "Import Blockbench Model…", palette "Import Blockbench model…"):
 
-- **Java block/item model format:** geometry and UVs become `minecraft:block_model` / `minecraft:item_model` elements plus texture assets.
-- **Entity/animated format:** geometry becomes GeckoLib geo JSON and animations become GeckoLib animation JSON, referenced by an `msm:animated_model` component.
+- **Entity/animated format:** `convertBbmodel` turns a `.bbmodel` (format `4.x` and `5.x`; other versions warn) into one Bedrock geometry file (`msm:geo_model`, id `<ns>:entity/<name>`), one animation file when it has animations (`msm:animation`, `<ns>:entity/<name>_animations`) and its embedded PNGs (`textures/entity/<name>.png`), applying Blockbench's own Bedrock export conventions (x mirrored, rotations x and y negated, per-face UV with up and down flipped). Blockbench 5.0 files store groups in a top-level `groups` array and keyframes in Blockbench's orientation; both layouts are read. Cubes only; bezier keyframes become linear and sound, particle and timeline channels are left out, each with a problem. An `msm:entity` references the results through `msm:animated_model`.
+- **Pass-through:** Blockbench's own `.geo.json` (geometry `1.12.0` to `1.21.x`) and `.animation.json` (`1.8.0`, `1.10.0`) exports are taken as they are after a format check; the guide recommends this path when a converted model looks wrong.
+- **Java block/item model format:** not converted in v0.5 (Blockbench exports Java models itself); the importer says so (follow-up).
 
-We import only documented `.bbmodel` fields and warn on unknown format versions. The original `.bbmodel` is kept as an asset and never modified.
+We import only documented `.bbmodel` fields and warn on unknown format versions. The original `.bbmodel` is kept as the asset `blockbench/<name>.bbmodel`, never modified and never exported.
 
 ### Structures
 
@@ -704,9 +714,10 @@ plugin-api  <-  schemas  <-  core  <-  plugins / exporters / targets / interop  
 | mcfunction conformance | `@msm/schemas/mcfunction` over the vendored command data, in the target packages | Parse, check and lint results for known-good and known-bad commands; every exported `.mcfunction`, including the sample data pack, has zero errors ([ADR 0014](adr/0014-mcfunction-diagnostics-with-spyglass.md)). |
 | Library | Vitest in the owning plugins and `@msm/exporters` | Every element template validates with zero errors and zero unknown ids for each target, as does its lowered file; every starter and example bundle is built into a memory project with the real plugins, reloaded, exported as resource and data packs with zero problems (functions through the mcfunction checker) for each target; the `examples/` mirror equals the generated projects (`UPDATE_GOLDENS=1` rewrites it) ([ADR 0020](adr/0020-templates-starters-examples.md)). |
 | Engine mod logic | JUnit 5 | Definition parsing, component graph construction. |
-| Engine mod behaviour | Fabric GameTest | Components and events in a running server. |
-| End to end (mod) | CI headless server | From Phase 4, a "kitchen-sink" sample project is exported and loaded; load errors fail CI. |
-| App | Vitest + happy-dom; Playwright for Electron | Component tests; golden-path e2e (new project, block model, texture, export zip, reopen), data pack, launcher, library and worldgen e2e specs, and smoke runs of the built and packaged app under xvfb. |
+| Engine mod behaviour | Fabric GameTest | Components and events in a running server; from Phase 5 entity registration, attributes, spawn eggs, each AI goal (walk, look, melee attack, flee, follow), each trigger, `play_animation` and natural spawns, with and without GeckoLib (`-PwithoutGeckolib`). |
+| Entities and models | Vitest in the owning packages | Entity lowering and template goldens and every `entities.*` validator code; geo model and animation lowering and `models-anim.*` codes; Blockbench conversion goldens (a 5.0 fixture, its 4.10 rewrite converting identically) and pass-through checks; the MSM mcdoc corpus for entities, geometry and animations; the preview's baker, keyframe evaluator and subjects; `fixtures/sample-mob/` exports with zero problems, a pinned jar SHA-256 and schema-valid definitions, geometry and animations ([ADR 0028](adr/0028-entity-definition-format-v1.md), [ADR 0029](adr/0029-model-animation-pipeline.md)). |
+| End to end (mod) | CI headless server | From Phase 4, a "kitchen-sink" sample project is exported and loaded; load errors fail CI. From Phase 5 `fixtures/sample-mob/` is loaded too, with the real runtime and GeckoLib nested, and must log one entity type with no runtime or GeckoLib warning. |
+| App | Vitest + happy-dom; Playwright for Electron | Component tests; golden-path e2e (new project, block model, texture, export zip, reopen), data pack, launcher, library, worldgen, blocks-items and entities e2e specs (the entities spec mounts the WebGL preview under SwiftShader), and smoke runs of the built and packaged app under xvfb. |
 
 CI runs from Phase 0: Biome, type checks and unit tests on every push.
 
@@ -719,7 +730,7 @@ CI runs from Phase 0: Biome, type checks and unit tests on every push.
 | 3 | Registry freeze limits runtime registration | Medium | High | Prototype in Phase 4 week 1 before building editors; fall back to code generation (Tier 2) if dynamic registration hits limits. | Spike fails to register a block from `msm/` cleanly. Resolved: the Phase 4 spike passed ([ADR 0024](adr/0024-runtime-registration-spike.md)). |
 | 4 | Scope creep ("anything possible") | High | High | MVP is resource packs only; each phase ships a usable version; non-goals written down. | A phase exceeds its estimate by 50%. |
 | 5 | Shipping Mojang assets | Low | High | Never bundle; extract from the user's client jar at runtime; previews degrade gracefully. | Any export or installer contains vanilla assets. |
-| 6 | GeckoLib API churn | Medium | Medium | Isolate behind the `msm:animated_model` component; MIT licence permits nesting; own minimal renderer is the fallback. | GeckoLib lags a supported target by more than one release. |
+| 6 | GeckoLib API churn | Medium | Medium | Isolate behind the `msm:animated_model` component; MIT licence permits nesting; own minimal renderer is the fallback. | GeckoLib lags a supported target by more than one release. Status (Phase 5): GeckoLib 5.5.7 exists for Fabric 26.3, so the fallback stays unbuilt; its Java API is confined to the runtime's bridge classes and its version, file name, URL and hash to the target ([ADR 0029](adr/0029-model-animation-pipeline.md), [ADR 0030](adr/0030-plugin-api-0.7.md)). |
 | 7 | Electron bundle size and memory | Medium | Low | 150 MB budget; asar; lazy-load Monaco and the 3D preview. | Installer exceeds budget. |
 | 8 | Solo bus factor | High | High | Docs-first repo, DEVLOG per session, ADRs, CI from Phase 0. | Two sessions without a DEVLOG entry. |
 | 9 | Blockbench format drift | Medium | Low | Import only documented `.bbmodel` fields; version-check and warn. | Unknown format version seen in the wild. |

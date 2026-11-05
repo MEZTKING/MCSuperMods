@@ -87,8 +87,9 @@ describe('@msm/plugin-entities', () => {
       'msm.entities.textures',
       'msm.entities.group-range',
       'msm.entities.goal-needs-targets',
+      'msm.entities.melee-without-attack',
     ]);
-    expect(entitiesValidators).toHaveLength(7);
+    expect(entitiesValidators).toHaveLength(8);
   });
 
   it('rejects unsafe ids and non-object data', () => {

@@ -66,7 +66,7 @@ const withRefs = (...elements: Element[]): Element[] => [geoModel, animationSet,
 
 describe('entities validators', () => {
   it('lists every code it reports', () => {
-    expect(ENTITIES_PROBLEM_CODES).toHaveLength(9);
+    expect(ENTITIES_PROBLEM_CODES).toHaveLength(10);
   });
 
   it('accepts a clean project', async () => {
@@ -299,6 +299,7 @@ describe('entities validators', () => {
           {},
           {},
           {
+            'msm:attack': { damage: 1 },
             'msm:ai_goals': {
               goals: [
                 { type: 'wander' },
@@ -316,6 +317,29 @@ describe('entities validators', () => {
       ['entities.goal-needs-targets', 'warning', 'example:a', '/components/msm:ai_goals/goals/1'],
       ['entities.goal-needs-targets', 'warning', 'example:a', '/components/msm:ai_goals/goals/2'],
     ]);
+  });
+
+  it('warns about a melee attack goal without msm:attack, once per entity', async () => {
+    const goals = {
+      'msm:ai_goals': {
+        goals: [
+          { type: 'wander' },
+          { type: 'melee_attack', retaliate: true },
+          { type: 'melee_attack', targets: ['minecraft:player'] },
+        ],
+      },
+    };
+    const problems = await validate(
+      withRefs(
+        entity('example:a', {}, {}, goals),
+        entity('example:b', {}, {}, { ...goals, 'msm:attack': { damage: 2 } }),
+        entity('example:c', {}, {}, { 'msm:ai_goals': { goals: [{ type: 'wander' }] } }),
+      ),
+    );
+    expect(summary(problems)).toEqual([
+      ['entities.melee-without-attack', 'warning', 'example:a', '/components/msm:ai_goals/goals/1'],
+    ]);
+    expect(problems[0]?.message).toContain('"msm:attack"');
   });
 
   it('ignores elements of other kinds and tolerates malformed data', async () => {
@@ -339,6 +363,7 @@ describe('entities validators', () => {
       'entities.event-cycle',
       'entities.goal-needs-targets',
       'entities.group-range',
+      'entities.melee-without-attack',
       'entities.missing-texture',
       'entities.unknown-animation-name',
       'entities.unknown-animations',

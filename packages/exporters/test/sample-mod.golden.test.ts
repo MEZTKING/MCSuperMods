@@ -710,6 +710,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         await writeFile(join(outDir as string, `${NAMESPACE}.jar`), jar);
         const facts = {
           expectBlocks: EXPECTED_BLOCKS.length,
+          expectEntities: 0,
           expectItems: EXPECTED_ITEM_COUNT,
           fabricApi: fabric.api,
           java: target.java,

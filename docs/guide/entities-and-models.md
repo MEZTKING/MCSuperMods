@@ -45,7 +45,7 @@ Selecting an entity opens the Entity Studio. Empty fields use the defaults. **Ad
 
 ## Goals
 
-Goals are what the mob decides to do. They are listed in priority order: the first goal in the list that can run right now wins, and the others wait. Move a goal up with its arrow button (**Move Goal 2 up**, for example) to make it more important, and remove it with the cross. To add one, choose its type in **New goal type** (the list shows the types, such as `flee`) and choose **Add goal**; it goes to the end of the list. Each goal's fields are labelled with its number, for example **Goal 2 speed**.
+Goals are what the mob decides to do. They are listed in priority order: the first goal in the list that can run right now wins, and the others wait. Move a goal up with its arrow button (**Move Goal 2 up**, for example) to make it more important, and remove it with the cross. To add one, choose its type in **New goal type** (for example **Flee**) and choose **Add goal**; it goes to the end of the list. Each goal's fields are labelled with its number, for example **Goal 2 speed**.
 
 | Goal | Type | What it does |
 |---|---|---|
@@ -56,7 +56,7 @@ Goals are what the mob decides to do. They are listed in priority order: the fir
 | **Flee** | `flee` | Runs from the entity types in **Runs from** when they come within its distance, at its speed, and at its sprint speed when they are close. |
 | **Follow** | `follow` | Follows the entity types in **Follows** within its range and stops its stop distance away. |
 
-A typical monster lists **Melee attack** first, then **Wander**, **Look at player** and **Look around**; a timid critter lists **Flee** first. A melee goal with neither targets nor **Fights back when hurt** never attacks, and **Problems** warns about it.
+A typical monster lists **Melee attack** first, then **Wander**, **Look at player** and **Look around**; a timid critter lists **Flee** first. A melee goal with neither targets nor **Fights back when hurt** never attacks, and neither does a melee goal without **Attacks in melee**; **Problems** warns about both.
 
 ## Spawning
 

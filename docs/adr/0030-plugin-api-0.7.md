@@ -22,7 +22,7 @@ interface GeckolibFacts {
 }
 ```
 
-The field stays optional on the type (a target may lack a GeckoLib build); the exporter reports `export.no-geckolib-target` when a project with entities is exported for such a target. The 26.3 target sets the values verified on 2026-11-05 (`docs/PHASE5-PLAN.md`).
+The field stays optional on the type (a target may lack a GeckoLib build); the exporter reports `export.no-geckolib-target` when a project with entities is exported for such a target. The 26.3 target sets the values verified on 2026-11-05 (the Phase 5 plan's facts table, removed at phase close; the target's `CHANGES.md` records the source).
 
 **D2. Version.** `API_VERSION` `0.7.0`; every built-in plugin and `tools/new-plugin` declare `^0.7.0`; `CHANGELOG.md` notes that 0.6 plugins need only the range change unless they read `Target.geckolib`.
 
@@ -34,4 +34,4 @@ The field stays optional on the type (a target may lack a GeckoLib build); the e
 
 ## Status
 
-Proposed (2026-11-05). Implemented by B111; accepted at Phase 5 close.
+Accepted (2026-11-05, Phase 5 close, B122). Implemented by B111: `GeckolibFacts` and `API_VERSION` `0.7.0` in `@msm/plugin-api`, every built-in plugin and `tools/new-plugin` on `^0.7.0`, the 26.3 target's GeckoLib 5.5.7 facts. The app's GeckoLib download (B118) and CI's headless check (B120) read the URL and SHA-512 from the target only, so no source outside `packages/targets` names GeckoLib's version, URL or hash, apart from `engine-mod/gradle.properties` (the runtime's build-time dependency). No further API change was needed in Phase 5.

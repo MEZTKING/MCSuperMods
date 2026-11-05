@@ -353,6 +353,16 @@ describe('Entity Studio', () => {
       (componentsOf(data())['msm:ai_goals'] as { goals: { type: string }[] }).goals;
     expect(goals().map((goal) => goal.type)).toEqual(['wander', 'look_at_player', 'look_around']);
 
+    const picker = screen.getByTestId('entity-new-goal-type') as HTMLSelectElement;
+    expect(screen.getByLabelText('New goal type')).toBe(picker);
+    expect([...picker.options].map((option) => [option.value, option.textContent])).toEqual([
+      ['wander', 'Wander'],
+      ['look_at_player', 'Look at player'],
+      ['look_around', 'Look around'],
+      ['melee_attack', 'Melee attack'],
+      ['flee', 'Flee'],
+      ['follow', 'Follow'],
+    ]);
     fireEvent.change(screen.getByTestId('entity-new-goal-type'), { target: { value: 'flee' } });
     fireEvent.click(screen.getByTestId('entity-add-goal'));
     expect(goals().at(-1)).toEqual({ type: 'flee', from: ['minecraft:player'] });

@@ -460,6 +460,8 @@ describe('problem codes', () => {
     expect(FabricContentJarProblemCodes).toEqual({
       noFabricTarget: ExportProblemCodes.noFabricTarget,
       runtimeMissing: ExportProblemCodes.runtimeMissing,
+      geckolibMissing: ExportProblemCodes.geckolibMissing,
+      noGeckolibTarget: ExportProblemCodes.noGeckolibTarget,
       invalidModJson: ExportProblemCodes.invalidModJson,
       outsideJarFolders: ExportProblemCodes.outsideJarFolders,
     });

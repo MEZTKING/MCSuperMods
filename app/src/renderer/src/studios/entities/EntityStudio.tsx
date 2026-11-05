@@ -21,9 +21,9 @@
 
 import type { Json } from '@msm/core';
 import { ArrowDown, ArrowUp, ExternalLink, Plus, X } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Button, iconButtonClass } from '../../components/ui/Button';
-import { type FormProblem, isWithin, ProblemList } from '../../forms';
+import { type FormProblem, inputClass, isWithin, ProblemList } from '../../forms';
 import { typingKey } from '../../forms/context';
 import {
   asObject,
@@ -83,6 +83,31 @@ function GoToButton(props: { label: string; id: string; exists: boolean }) {
 }
 
 /** One goal of the ordered goal list: its fields and the move and remove buttons. */
+/** The goal type picker for "Add goal": the values are goal types, the options their labels. */
+function GoalTypeSelect(props: { value: string; onChange(type: string): void }) {
+  const id = useId();
+  return (
+    <div className="flex min-w-0 flex-col gap-0.5 text-xs">
+      <label htmlFor={id} className="text-muted">
+        New goal type
+      </label>
+      <select
+        id={id}
+        className={inputClass}
+        data-testid="entity-new-goal-type"
+        value={props.value}
+        onChange={(event) => props.onChange(event.target.value)}
+      >
+        {GOALS.map((entry) => (
+          <option key={entry.type} value={entry.type}>
+            {entry.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 function GoalRow(props: {
   goal: Json;
   index: number;
@@ -581,15 +606,7 @@ export function EntityStudio(props: StudioProps) {
         })}
       </ol>
       <div className="flex items-end gap-1">
-        <SelectField
-          label="New goal type"
-          value={newGoalType}
-          choices={GOALS.map((entry) => entry.type)}
-          testId="entity-new-goal-type"
-          onChange={(type) => {
-            if (type !== undefined) setNewGoalType(type);
-          }}
-        />
+        <GoalTypeSelect value={newGoalType} onChange={setNewGoalType} />
         <Button
           className="text-xs"
           aria-label="Add goal"

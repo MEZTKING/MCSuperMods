@@ -4,7 +4,7 @@
 
 Phase 5 ([ROADMAP](../ROADMAP.md)) adds custom mobs: entity definitions with health, movement, a subset of vanilla AI goals, attacks, animations, natural spawning and spawn eggs ([Behaviour Model](../DESIGN.md#11-behaviour-model-components-and-events), [Engine Mod](../DESIGN.md#10-engine-mod-runtime)). [ADR 0025](0025-msm-definition-format-v1.md) fixed the definition format for blocks and items (format 1, components plus events, strict Codecs aligned with MSM mcdoc, a shared conformance corpus) and [ADR 0024](0024-runtime-registration-spike.md) proved init-time registration on 26.3. Entities extend the same format so the app, the schemas and the runtime can again be built in parallel.
 
-Facts that shape the format (verified 2026-11-05, see `docs/PHASE5-PLAN.md`):
+Facts that shape the format (verified 2026-11-05 in the Phase 5 plan's facts table, a working document removed at phase close; it stays in git history and `DEVLOG.md` records its sources):
 
 - An entity type is built with `EntityType.Builder.of(factory, MobCategory).sized(w, h).build(ResourceKey)` and registered in `BuiltInRegistries.ENTITY_TYPE`; vanilla's `SpawnPlacements.register` is private, so default attributes and spawn placement go through Fabric API's `FabricEntityType.Builder.createMob(...)`.
 - Vanilla AI goals are classes with fixed constructor parameters (speed, distance, target class); the target class is a Java class, not an entity type, so type-selected targets need a predicate.
@@ -88,7 +88,16 @@ Defaults and rules:
 
 ## Status
 
-Proposed (2026-11-05). Findings of the spike (B110) are appended here before Wave 1; accepted at Phase 5 close.
+Accepted (2026-11-05, Phase 5 close, B122). Implemented by B112 (MSM mcdoc and corpus), B113 (runtime v1), B115 (plugin), B118 (Entity Studio) and B120 (headless check). The decisions stand as written above, with these rules settled by the runtime v1 (B113):
+
+- **Without GeckoLib, D5 registers nothing.** Every entity definition needs `msm:animated_model`, so a runtime started without the `geckolib` mod logs one error per entity definition and registers no entity type and no spawn egg; blocks and items still load. (The B110 spike registered a plain `MsmEntity` in that case; v1 does not.)
+- **Goals that do not decode are dropped with an error.** A goal of an unknown `type` or with a bad field is dropped and logged as an error naming the definition; the entity still registers with its other goals, as events are dropped (ADR 0025). The corpus marks such files invalid, so it is an error, not the warning the Consequences above first said; the mcdoc `GoalType` doc comment says the same.
+- **`msm:on_hurt` fires only when the mob survives the hit**; a lethal hit fires `msm:on_death` alone. `melee_attack` without `msm:attack` adds no goals (the validator `entities.melee-without-attack` warns, and `entities.goal-needs-targets` warns about a melee goal without targets or `retaliate`).
+- **`idle`, `walk` and `attack` have no runtime defaults**: an absent name plays nothing (the plugin's templates and the Custom mob starter fill them in).
+- Entity events play sounds in `SoundSource.NEUTRAL` (blocks and items keep `BLOCKS`).
+- **Renderer registration** uses vanilla `EntityRenderers.register`, reachable through Fabric API's transitive access wideners, instead of Fabric's `EntityRendererRegistry`, which is `@Deprecated` in fabric-rendering-v1 27.2.0. Checked with `runClient` under `xvfb-run` and a probe content jar: the renderer registers without an access error; drawing needs the in-game check (the container has no render backend).
+- Log lines: the Phase 4 line is unchanged and `[msm_runtime] registered K entity type(s)` follows it (GameTest server: 6 blocks, 11 items, then 9 entity types; the sample mob on the headless server: 0 blocks, 1 item, then 1 entity type).
+- Tests: 78 JUnit tests (conformance corpus and parser) and 38 GameTests in `./gradlew build`, including registration, attributes, the egg, each goal, each trigger, `play_animation` in entities and its drop in blocks, and natural spawns; `-PwithoutGeckolib` runs the same suite and checks that no entity registers.
 
 Spike findings (B110, 2026-11-05; `engine-mod` with a Gson spike parser, GameTests `MsmEntitySpikeGameTest`, 26 of 26 required GameTests and 46 JUnit tests pass, with and without GeckoLib on the run classpath):
 

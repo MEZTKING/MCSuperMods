@@ -1,6 +1,6 @@
 # docs/ — design docs, roadmap, devlog, ADRs
 
-Active since Phase 0; Phases 2 to 4 code complete, awaiting the in-game checks; launcher and templates and samples library add-ons done; Phase 3 (Structures & Worldgen) delivered as briefs B70–B83 (ADRs 0001–0023, all accepted; B84 in reserve); Phase 4 (Engine Mod + Blocks/Items) code complete, awaiting the in-game check (B90–B102; ADRs 0024–0027 accepted); Phase 5 next; user guide in `guide/`. This file describes conventions.
+Active since Phase 0; Phases 2 to 4 code complete, awaiting the in-game checks; launcher and templates and samples library add-ons done; Phase 3 (Structures & Worldgen) delivered as briefs B70–B83 (ADRs 0001–0023, all accepted; B84 in reserve); Phase 4 (Engine Mod + Blocks/Items) code complete, awaiting the in-game check (B90–B102; ADRs 0024–0027 accepted); Phase 5 (Entities, Models, Animation) code complete, awaiting the in-game check (B110–B122; ADRs 0028–0030 accepted); Phase 6 next (plan first); user guide in `guide/`. This file describes conventions.
 
 ## Purpose
 
@@ -13,7 +13,7 @@ Holds the project's design record: the authoritative design, the delivery plan, 
 - `DEVLOG.md`: append-only session log, newest entry at the bottom.
 - `HANDOFF.md`: where the project stands and how the work is run, for the next main session; rewritten (not appended) at each handover.
 - `adr/NNNN-title.md`: one file per architecture decision, sections Context / Decision / Consequences / Status.
-- `guide/`: the user guide (`README.md` index, `getting-started.md`, `structures.md`, `worldgen.md`, `templates-and-examples.md`, `blocks-and-items.md`); task-oriented, matches shipped UI labels.
+- `guide/`: the user guide (`README.md` index, `getting-started.md`, `structures.md`, `worldgen.md`, `templates-and-examples.md`, `blocks-and-items.md`, `entities-and-models.md`); task-oriented, matches shipped UI labels.
 
 ## Conventions
 

@@ -71,6 +71,8 @@ export const RESERVED_MOD_IDS: readonly string[] = Object.freeze([
 export const FabricContentJarProblemCodes = {
   noFabricTarget: ExportProblemCodes.noFabricTarget,
   runtimeMissing: ExportProblemCodes.runtimeMissing,
+  geckolibMissing: ExportProblemCodes.geckolibMissing,
+  noGeckolibTarget: ExportProblemCodes.noGeckolibTarget,
   invalidModJson: ExportProblemCodes.invalidModJson,
   outsideJarFolders: ExportProblemCodes.outsideJarFolders,
 } as const;

@@ -328,7 +328,7 @@ struct Attack {
 	on_attack?: string,
 }
 
-/// The kind of an AI goal. An unknown kind is dropped with a warning by the runtime.
+/// The kind of an AI goal. The runtime drops a goal of an unknown kind with an error; the entity still registers.
 enum(string) GoalType {
 	/// Strolls about (`WaterAvoidingRandomStrollGoal` or `RandomStrollGoal`).
 	Wander = "wander",

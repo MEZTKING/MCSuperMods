@@ -24,6 +24,9 @@
  *   cannot compare the two).
  * - `entities.goal-needs-targets` (warning): a `melee_attack` goal without `targets` and
  *   without `retaliate` never attacks.
+ * - `entities.melee-without-attack` (warning): an `msm:ai_goals` list with a `melee_attack`
+ *   goal but no `msm:attack` component; the runtime then adds no melee goals and the mob never
+ *   attacks (ADR 0028 D2). Reported once per entity, at the first `melee_attack` goal.
  *
  * The event checks are a copy of the blocks-items ones, because plugins cannot import each
  * other.
@@ -51,6 +54,7 @@ export const ENTITIES_PROBLEM_CODES = Object.freeze([
   'entities.egg-texture-missing',
   'entities.group-range',
   'entities.goal-needs-targets',
+  'entities.melee-without-attack',
 ] as const);
 
 const ANIMATED_MODEL = 'msm:animated_model';
@@ -376,6 +380,27 @@ function goalsWithoutTargets(elements: readonly Element[]): Problem[] {
   return problems;
 }
 
+function meleeWithoutAttack(elements: readonly Element[]): Problem[] {
+  const problems: Problem[] = [];
+  for (const element of entities(elements)) {
+    const components = componentsOf(element);
+    if (record(components?.['msm:attack']) !== undefined) continue;
+    const goals = record(components?.['msm:ai_goals'])?.goals;
+    if (!Array.isArray(goals)) continue;
+    const index = goals.findIndex((goal) => record(goal)?.type === 'melee_attack');
+    if (index < 0) continue;
+    problems.push({
+      severity: 'warning',
+      code: 'entities.melee-without-attack',
+      elementId: element.id,
+      path: pointer('components', 'msm:ai_goals', 'goals', index),
+      message:
+        'This mob has a melee attack goal but no "msm:attack" component, so the game leaves the goal out and the mob never attacks. Add "msm:attack" with a damage value, or remove the goal.',
+    });
+  }
+  return problems;
+}
+
 const REFERENCE_KINDS = [ENTITY_KIND, GEO_MODEL_KIND, ANIMATION_KIND] as const;
 
 export const entitiesValidators: readonly ProjectValidator[] = Object.freeze([
@@ -416,5 +441,10 @@ export const entitiesValidators: readonly ProjectValidator[] = Object.freeze([
     id: 'msm.entities.goal-needs-targets',
     kinds: [ENTITY_KIND],
     validate: ({ elements }) => goalsWithoutTargets(elements),
+  },
+  {
+    id: 'msm.entities.melee-without-attack',
+    kinds: [ENTITY_KIND],
+    validate: ({ elements }) => meleeWithoutAttack(elements),
   },
 ] satisfies ProjectValidator[]);
