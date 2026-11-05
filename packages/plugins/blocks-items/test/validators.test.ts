@@ -29,7 +29,7 @@ const item = (id: `${string}:${string}`, data: Record<string, unknown>): Element
 
 describe('blocks-items validators', () => {
   it('lists every code it reports', () => {
-    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(7);
+    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(10);
   });
 
   it('accepts a clean project', async () => {
@@ -166,5 +166,128 @@ describe('blocks-items validators', () => {
     expect(problems.map((p) => [p.code, p.elementId])).toEqual([
       ['blocks-items.item-collision', 'demo:ruby'],
     ]);
+  });
+
+  describe('armour and custom tool materials (ADR 0042)', () => {
+    const customMaterial = (asset: string) => ({
+      durability: 20,
+      defense: { helmet: 2, chestplate: 6, leggings: 5, boots: 2 },
+      enchantment_value: 10,
+      toughness: 0,
+      knockback_resistance: 0,
+      equipment_asset: asset,
+    });
+    const equipment = (id: `${string}:${string}`): Element =>
+      element('minecraft:equipment', id, {
+        layers: { humanoid: [{ texture: id }], humanoid_leggings: [{ texture: id }] },
+      });
+
+    it('accepts vanilla and custom armour, custom tool materials and attack overrides', async () => {
+      const problems = await validate([
+        item('demo:iron_cap', { components: { 'msm:armor': { slot: 'helmet', material: 'iron' } } }),
+        item('demo:ruby_chestplate', {
+          components: {
+            'msm:armor': { slot: 'chestplate', material: customMaterial('demo:ruby') },
+            'msm:durability': { max: 400 },
+          },
+        }),
+        item('demo:steel_boots', {
+          components: { 'msm:armor': { slot: 'boots', material: customMaterial('chainmail') } },
+        }),
+        equipment('demo:ruby'),
+        item('demo:ruby_pickaxe', {
+          components: {
+            'msm:tool': {
+              type: 'pickaxe',
+              tier: {
+                durability: 900,
+                speed: 8,
+                attack_damage_bonus: 3,
+                enchantment_value: 12,
+                incorrect_blocks_for_drops: '#minecraft:incorrect_for_diamond_tool',
+              },
+              attack_speed: -2.6,
+            },
+          },
+        }),
+      ]);
+      expect(problems).toEqual([]);
+    });
+
+    it('reports an armour material the target does not have', async () => {
+      const problems = await validate([
+        item('demo:a', { components: { 'msm:armor': { slot: 'helmet', material: 'mithril' } } }),
+      ]);
+      expect(problems.map((p) => [p.code, p.severity, p.elementId, p.path])).toEqual([
+        ['blocks-items.unknown-armor-material', 'error', 'demo:a', '/components/msm:armor/material'],
+      ]);
+      expect(problems[0]?.message).toContain('"turtle_scute"');
+    });
+
+    it('skips the armour material check for a target without the fact', async () => {
+      const { registries } = await indexesFor(bundle);
+      const { items: _items, ...facts } = bundle.target;
+      const input: ValidationInput = {
+        elements: [
+          item('demo:a', { components: { 'msm:armor': { slot: 'helmet', material: 'mithril' } } }),
+        ],
+        target: facts,
+        registry: registries,
+      };
+      const results = await Promise.all(blocksItemsValidators.map((v) => v.validate(input)));
+      expect(codes(results.flat())).toEqual([]);
+    });
+
+    it('warns about an equipment asset that is neither a project element nor vanilla', async () => {
+      const problems = await validate([
+        item('demo:a', {
+          components: { 'msm:armor': { slot: 'leggings', material: customMaterial('demo:ruby') } },
+        }),
+        equipment('demo:sapphire'),
+      ]);
+      expect(problems.map((p) => [p.code, p.severity, p.elementId, p.path])).toEqual([
+        [
+          'blocks-items.unknown-equipment-asset',
+          'warning',
+          'demo:a',
+          '/components/msm:armor/material/equipment_asset',
+        ],
+      ]);
+      expect(await validate([item('demo:a', { components: { 'msm:armor': { slot: 'leggings', material: customMaterial('demo:ruby') } } })], false)).toEqual([]);
+    });
+
+    it('reports armour and a tool on one item', async () => {
+      const problems = await validate([
+        item('demo:a', {
+          components: {
+            'msm:armor': { slot: 'helmet', material: 'iron' },
+            'msm:tool': { type: 'sword', tier: 'iron' },
+          },
+        }),
+      ]);
+      expect(problems.map((p) => [p.code, p.severity, p.elementId, p.path])).toEqual([
+        ['blocks-items.component-conflict', 'error', 'demo:a', '/components/msm:armor'],
+      ]);
+    });
+
+    it('does not check a custom tool material against the tier tags', async () => {
+      const problems = await validate([
+        item('demo:a', {
+          components: {
+            'msm:tool': {
+              type: 'axe',
+              tier: {
+                durability: 10,
+                speed: 2,
+                attack_damage_bonus: 0,
+                enchantment_value: 1,
+                incorrect_blocks_for_drops: '#demo:incorrect_for_bronze_tool',
+              },
+            },
+          },
+        }),
+      ]);
+      expect(codes(problems)).toEqual([]);
+    });
   });
 });

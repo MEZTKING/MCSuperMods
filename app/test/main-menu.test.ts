@@ -35,6 +35,21 @@ describe('File menu', () => {
     file[jar + 1]?.click?.();
     expect(sent.at(-1)).toBe('exportJavaProject');
   });
+
+  it('offers "Upgrade Project Target…" right after "Open Recent" (ADR 0037 D4)', () => {
+    installMenu();
+    const template = templates.at(-1) as {
+      label?: string;
+      submenu?: { label?: string; click?: () => void }[];
+    }[];
+    const file = template.find((entry) => entry.label === 'File')?.submenu ?? [];
+    const labels = file.map((item) => item.label);
+    const recent = labels.indexOf('Open Recent');
+    expect(recent).toBeGreaterThan(-1);
+    expect(labels[recent + 1]).toBe('Upgrade Project Target…');
+    file[recent + 1]?.click?.();
+    expect(sent.at(-1)).toBe('upgradeTarget');
+  });
 });
 
 describe('Open Recent menu', () => {

@@ -60,7 +60,7 @@ describe('@msm/plugin-blocks-items', () => {
     ]);
   });
 
-  it('contributes its templates and the six validators', () => {
+  it('contributes its templates and the nine validators', () => {
     expect(plugin.contributes.elementTemplates?.map((t) => t.id)).toEqual(
       blocksItemsTemplates.map((t) => t.id),
     );
@@ -71,8 +71,11 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.mod-id',
       'msm.blocks-items.tool-tier',
       'msm.blocks-items.item-collision',
+      'msm.blocks-items.armor-material',
+      'msm.blocks-items.equipment-asset',
+      'msm.blocks-items.component-conflict',
     ]);
-    expect(blocksItemsValidators).toHaveLength(6);
+    expect(blocksItemsValidators).toHaveLength(9);
   });
 
   it('rejects unsafe ids and non-object data', () => {
