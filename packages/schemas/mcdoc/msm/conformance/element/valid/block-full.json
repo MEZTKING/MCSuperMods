@@ -1,0 +1,47 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 1.5,
+      "min_tier": "stone",
+      "requires_tool": true,
+      "resistance": 1.5,
+      "tool": "pickaxe"
+    },
+    "msm:light_emitter": {
+      "level": 10
+    },
+    "msm:on_interact": {
+      "event": "mymod:chime"
+    },
+    "msm:on_step": {
+      "cooldown_ticks": 10,
+      "event": "mymod:chime"
+    },
+    "msm:redstone": {
+      "emit": 0,
+      "on_powered": "mymod:chime",
+      "on_unpowered": "mymod:chime"
+    }
+  },
+  "display_name": "Crystal",
+  "events": {
+    "mymod:chime": {
+      "actions": [
+        {
+          "sound": "minecraft:block.amethyst_block.chime",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:natural_blocks",
+    "max_stack_size": 16,
+    "rarity": "rare"
+  },
+  "loot": "self",
+  "loot_table": "mymod:blocks/crystal",
+  "model": "mymod:block/crystal",
+  "sound_type": "amethyst"
+}

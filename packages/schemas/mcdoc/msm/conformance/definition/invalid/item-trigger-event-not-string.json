@@ -1,0 +1,13 @@
+{
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "event": 7,
+          "type": "trigger_event"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

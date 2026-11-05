@@ -1,0 +1,25 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": -1.0,
+      "resistance": 3600000.0
+    },
+    "msm:light_emitter": {
+      "level": 15
+    },
+    "msm:on_step": {
+      "cooldown_ticks": 0,
+      "event": "mymod:empty"
+    }
+  },
+  "events": {
+    "mymod:empty": {
+      "actions": []
+    }
+  },
+  "format": 1,
+  "item": {
+    "max_stack_size": 1,
+    "rarity": "epic"
+  }
+}

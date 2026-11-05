@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:food": {
+      "saturation": 0.6
+    }
+  },
+  "format": 1
+}

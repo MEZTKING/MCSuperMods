@@ -1,0 +1,13 @@
+{
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "power": 4,
+          "type": "explode"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

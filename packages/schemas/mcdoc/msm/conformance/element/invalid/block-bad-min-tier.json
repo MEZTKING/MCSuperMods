@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:breakable": {
+      "min_tier": "obsidian",
+      "tool": "pickaxe"
+    }
+  },
+  "format": 1
+}

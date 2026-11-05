@@ -1,0 +1,83 @@
+// MSM definition format v1: event actions (ADR 0025 D4).
+// Shared by the app (`@msm/schemas`) and the `msm_runtime` mod; the conformance corpus in
+// `conformance/` binds both sides. Regenerate `symbols.json` with `node tools/build-msm-mcdoc/index.ts`.
+
+/// The kind of an action. An unknown kind is a load-time error for the definition.
+enum(string) ActionType {
+	/// Runs a data pack function at the event position.
+	RunFunction = "run_function",
+	/// Spawns particles at the block centre or the player's position.
+	SpawnParticle = "spawn_particle",
+	/// Places a block state relative to the event block.
+	SetBlockState = "set_block_state",
+	/// Gives the player an item; does nothing without a player.
+	GiveItem = "give_item",
+	/// Plays a sound at the event position.
+	PlaySound = "play_sound",
+	/// Runs another event of the same definition.
+	TriggerEvent = "trigger_event",
+}
+
+/// One action of an event, selected by `type`.
+struct Action {
+	/// What the action does.
+	type: ActionType,
+	...msm:action[[type]],
+}
+
+/// A named event: actions run in order on the logical server.
+struct Event {
+	/// Actions to run, in order.
+	actions: [Action],
+}
+
+/// Runs a data pack function as the player when there is one, with permission level 2.
+dispatch msm:action[run_function] to struct RunFunction {
+	/// The function to run.
+	function: #[id="function"] string,
+}
+
+/// Sends particles from the server to nearby players.
+dispatch msm:action[spawn_particle] to struct SpawnParticle {
+	/// A particle type without options. Defaults are `count` 1, `spread` 0 and `speed` 0.
+	particle: #[id="particle_type"] string,
+	/// How many particles to spawn.
+	count?: int @ 1..,
+	/// Random offset from the position, in blocks.
+	spread?: float @ 0..,
+	/// Particle speed.
+	speed?: float @ 0..,
+}
+
+/// Places a block state relative to the event block, or to the block below the player for
+/// item events.
+dispatch msm:action[set_block_state] to struct SetBlockState {
+	/// A block state such as `minecraft:oak_stairs[facing=north]`.
+	state: string,
+	/// Offset `[x, y, z]` from the event block; defaults to `[0, 0, 0]`.
+	offset?: [int, int, int],
+}
+
+/// Gives the player an item stack.
+dispatch msm:action[give_item] to struct GiveItem {
+	/// The item to give.
+	item: #[id="item"] string,
+	/// How many to give; defaults to 1.
+	count?: int @ 1..,
+}
+
+/// Plays a sound event at the event position.
+dispatch msm:action[play_sound] to struct PlaySound {
+	/// The sound event to play.
+	sound: #[id="sound_event"] string,
+	/// Volume; defaults to 1.
+	volume?: float @ 0..,
+	/// Pitch; defaults to 1.
+	pitch?: float @ 0..,
+}
+
+/// Runs another event of the same definition. Chains nest at most 16 deep.
+dispatch msm:action[trigger_event] to struct TriggerEvent {
+	/// An event id declared in this definition's `events`.
+	event: string,
+}

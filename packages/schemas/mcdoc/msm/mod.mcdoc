@@ -1,0 +1,18 @@
+// MSM mod metadata, the singleton `msm:mod` element (ADR 0025 D6). Lowers to `fabric.mod.json`.
+
+/// Mod metadata.
+struct Mod {
+	/// Fabric mod id: a lower-case letter, then 1 to 63 of `a-z`, `0-9`, `_` and `-`
+	/// (`^[a-z][a-z0-9_-]{1,63}$`; mcdoc checks the length, the plugin validator the pattern).
+	mod_id: string @ 2..64,
+	/// Mod version, preferably semantic (`1.0.0`).
+	version: string,
+	/// Display name.
+	name?: string,
+	/// One-line description.
+	description?: string,
+	/// Author names.
+	authors?: [string],
+	/// Licence identifier, such as `MIT`; written as Fabric's `license`.
+	licence?: string,
+}

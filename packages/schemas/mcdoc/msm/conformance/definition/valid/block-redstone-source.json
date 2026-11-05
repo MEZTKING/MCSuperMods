@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:redstone": {
+      "emit": 15
+    }
+  },
+  "format": 1,
+  "sound_type": "metal"
+}

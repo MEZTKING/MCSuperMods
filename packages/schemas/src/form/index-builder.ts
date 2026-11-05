@@ -1,3 +1,4 @@
+import { MSM_SCHEMA_ALIASES, mergeMsmSymbols } from '../msm/symbols';
 import type { VanillaMcdocSymbols } from '../symbols/parse';
 import type { RawMcdocType } from '../symbols/raw-types';
 import { BUILT_IN_EXTENSIONS } from './extensions';
@@ -58,7 +59,9 @@ export interface SchemaIndex {
    * - `resource:<category>`, a member of the `minecraft:resource` dispatcher;
    * - `tag:<registry>`, the tag file template `::java::data::tag::Tag` instantiated with
    *   entries that are `<registry>` ids (`#` tag references included); memoised per registry;
-   * - any other key of `BUILT_IN_EXTENSIONS` or `options.extensions`, e.g. `msm:function`.
+   * - any other key of `BUILT_IN_EXTENSIONS` or `options.extensions`, e.g. `msm:function`;
+   * - an MSM schema reference (`MSM_SCHEMA_REFS`, e.g. `msm:block`), resolved to its
+   *   `::msm::...` type path.
    * Throws `SchemaNotFoundError` when the reference cannot be resolved.
    */
   resolveSchemaRef(ref: string): SchemaNode;
@@ -96,12 +99,17 @@ function collectTypeParams(types: Iterable<unknown>): Set<string> {
 
 const hasOwn = (record: object, key: string): boolean => Object.hasOwn(record, key);
 
-/** Builds a schema index over `symbols` for one game version. Nodes are normalised lazily. */
+/**
+ * Builds a schema index over `vanillaSymbols` for one game version. Nodes are normalised
+ * lazily. MSM's own mcdoc types (`::msm::...`, dispatchers `msm:...`; ADR 0025 D7) are merged
+ * in, so they resolve on every index whatever the target.
+ */
 export function createSchemaIndex(
-  symbols: VanillaMcdocSymbols,
+  vanillaSymbols: VanillaMcdocSymbols,
   options: SchemaIndexOptions,
 ): SchemaIndex {
   const { mcVersion } = options;
+  const symbols = mergeMsmSymbols(vanillaSymbols);
   const extensions: Readonly<Record<string, SchemaNode>> = {
     ...BUILT_IN_EXTENSIONS,
     ...options.extensions,
@@ -399,6 +407,8 @@ export function createSchemaIndex(
     if (ref.startsWith(TAG_REF_PREFIX)) return tagSchema(ref, ref.slice(TAG_REF_PREFIX.length));
     const extension = hasOwn(extensions, ref) ? extensions[ref] : undefined;
     if (extension !== undefined) return extension;
+    const msmPath = hasOwn(MSM_SCHEMA_ALIASES, ref) ? MSM_SCHEMA_ALIASES[ref] : undefined;
+    if (msmPath !== undefined) return resolvePath(msmPath);
     // Kept for exports whose paths do not start with `::`.
     return resolvePath(ref);
   };

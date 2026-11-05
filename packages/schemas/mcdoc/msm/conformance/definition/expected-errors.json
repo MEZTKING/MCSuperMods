@@ -1,0 +1,102 @@
+{
+  "block-action-missing-type.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:x/actions/0/type"
+  },
+  "block-bad-sound-type.json": {
+    "code": "schema.invalid-enum",
+    "path": "/sound_type"
+  },
+  "block-emit-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:redstone/emit"
+  },
+  "block-event-missing-actions.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:x/actions"
+  },
+  "block-format-2.json": {
+    "code": "schema.invalid-literal",
+    "path": "/format"
+  },
+  "block-hardness-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:breakable/hardness"
+  },
+  "block-item-stack-100.json": {
+    "code": "schema.out-of-range",
+    "path": "/item/max_stack_size"
+  },
+  "block-light-16.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:light_emitter/level"
+  },
+  "block-missing-format.json": {
+    "code": "schema.missing-field",
+    "path": "/format"
+  },
+  "block-offset-length.json": {
+    "code": "schema.invalid-length",
+    "path": "/events/mymod:x/actions/0/offset"
+  },
+  "block-play-sound-missing-sound.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:x/actions/0/sound"
+  },
+  "block-step-cooldown-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:on_step/cooldown_ticks"
+  },
+  "block-unknown-action.json": {
+    "code": "schema.invalid-enum",
+    "path": "/events/mymod:x/actions/0/type"
+  },
+  "item-actions-not-list.json": {
+    "code": "schema.type-mismatch",
+    "path": "/events/mymod:x/actions"
+  },
+  "item-bad-rarity.json": {
+    "code": "schema.invalid-enum",
+    "path": "/rarity"
+  },
+  "item-bad-tool-tier.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:tool/tier"
+  },
+  "item-bad-tool-type.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:tool/type"
+  },
+  "item-durability-zero.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:durability/max"
+  },
+  "item-food-missing-nutrition.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:food/nutrition"
+  },
+  "item-give-count-zero.json": {
+    "code": "schema.out-of-range",
+    "path": "/events/mymod:x/actions/0/count"
+  },
+  "item-on-use-missing-event.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:on_use/event"
+  },
+  "item-particle-count-fraction.json": {
+    "code": "schema.not-integer",
+    "path": "/events/mymod:x/actions/0/count"
+  },
+  "item-run-function-missing-function.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:x/actions/0/function"
+  },
+  "item-stack-zero.json": {
+    "code": "schema.out-of-range",
+    "path": "/max_stack_size"
+  },
+  "item-trigger-event-not-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/events/mymod:x/actions/0/event"
+  }
+}

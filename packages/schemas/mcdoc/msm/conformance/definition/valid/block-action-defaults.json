@@ -1,0 +1,47 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "mymod:all"
+    }
+  },
+  "events": {
+    "mymod:all": {
+      "actions": [
+        {
+          "function": "mymod:tick",
+          "type": "run_function"
+        },
+        {
+          "particle": "minecraft:flame",
+          "type": "spawn_particle"
+        },
+        {
+          "state": "minecraft:oak_stairs[facing=north,half=top]",
+          "type": "set_block_state"
+        },
+        {
+          "item": "minecraft:diamond",
+          "type": "give_item"
+        },
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        },
+        {
+          "event": "mymod:other",
+          "type": "trigger_event"
+        }
+      ]
+    },
+    "mymod:other": {
+      "actions": [
+        {
+          "count": 64,
+          "item": "minecraft:stick",
+          "type": "give_item"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

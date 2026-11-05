@@ -1,0 +1,85 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 3.0,
+      "requires_tool": true,
+      "resistance": 3.0
+    },
+    "msm:light_emitter": {
+      "level": 4
+    },
+    "msm:on_interact": {
+      "event": "mymod:shimmer"
+    },
+    "msm:on_step": {
+      "cooldown_ticks": 20,
+      "event": "mymod:hum"
+    },
+    "msm:redstone": {
+      "emit": 0,
+      "on_powered": "mymod:glow",
+      "on_unpowered": "mymod:hum"
+    }
+  },
+  "events": {
+    "mymod:glow": {
+      "actions": [
+        {
+          "particle": "minecraft:glow",
+          "type": "spawn_particle"
+        }
+      ]
+    },
+    "mymod:hum": {
+      "actions": [
+        {
+          "sound": "minecraft:block.beacon.ambient",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:shimmer": {
+      "actions": [
+        {
+          "function": "mymod:shimmer",
+          "type": "run_function"
+        },
+        {
+          "count": 8,
+          "particle": "minecraft:end_rod",
+          "speed": 0.02,
+          "spread": 0.5,
+          "type": "spawn_particle"
+        },
+        {
+          "offset": [0, 1, 0],
+          "state": "minecraft:amethyst_block",
+          "type": "set_block_state"
+        },
+        {
+          "count": 2,
+          "item": "minecraft:amethyst_shard",
+          "type": "give_item"
+        },
+        {
+          "pitch": 1.2,
+          "sound": "minecraft:block.amethyst_block.chime",
+          "type": "play_sound",
+          "volume": 0.8
+        },
+        {
+          "event": "mymod:glow",
+          "type": "trigger_event"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:building_blocks",
+    "max_stack_size": 64,
+    "rarity": "uncommon"
+  },
+  "loot_table": "mymod:blocks/ruby_ore",
+  "sound_type": "amethyst"
+}

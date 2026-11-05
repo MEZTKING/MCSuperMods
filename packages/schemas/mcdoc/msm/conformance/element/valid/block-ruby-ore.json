@@ -1,0 +1,31 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 3.0,
+      "min_tier": "iron",
+      "resistance": 3.0,
+      "tool": "pickaxe"
+    },
+    "msm:light_emitter": {
+      "level": 4
+    },
+    "msm:on_interact": {
+      "event": "mymod:shimmer"
+    }
+  },
+  "display_name": "Ruby Ore",
+  "events": {
+    "mymod:shimmer": {
+      "actions": [
+        {
+          "sound": "minecraft:block.amethyst_block.chime",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "loot": "self",
+  "model": "mymod:block/ruby_ore",
+  "sound_type": "stone"
+}

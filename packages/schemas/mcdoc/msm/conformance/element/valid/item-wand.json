@@ -1,0 +1,25 @@
+{
+  "components": {
+    "msm:durability": {
+      "max": 64
+    },
+    "msm:on_use": {
+      "event": "mymod:zap"
+    }
+  },
+  "display_name": "Wand",
+  "events": {
+    "mymod:zap": {
+      "actions": [
+        {
+          "count": 12,
+          "particle": "minecraft:electric_spark",
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1,
+  "model": "mymod:item/wand"
+}

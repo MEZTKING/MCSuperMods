@@ -1,0 +1,14 @@
+{
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "count": 1.5,
+          "particle": "minecraft:flame",
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

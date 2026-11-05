@@ -1177,3 +1177,23 @@ Recommendation: do the in-game checks (Phase 1 stick, Phase 2 data pack) before 
 **Next**
 - B94/B95 can rely on merge and options; B96 renders `Exporter.options` in the dialog.
 - `packages/plugins/CLAUDE.md` still says `^0.5.0` (outside B91 ownership).
+
+---
+
+## 2026-11-05 — executor — B92 MSM mcdoc v1 and the conformance corpus
+
+**What**
+- `packages/schemas/mcdoc/msm/`: `action.mcdoc` (enum `ActionType`, dispatcher `msm:action` with the six D4 actions), `definition.mcdoc` (`::msm::definition::Block` / `Item`, components, enums), `element.mcdoc` (`::msm::element::Block` / `Item`), `mod.mcdoc` (`::msm::Mod`), generated `symbols.json`.
+- `tools/build-msm-mcdoc/`: runs `@spyglassmc/mcdoc-cli export` over a temporary copy, checks references, stamps a source-hash `ref`, formats with Biome; `--check`; test fails on a stale export.
+- `createSchemaIndex` merges the MSM symbols into every index; `MSM_SCHEMA_REFS` (`msm:block`, `msm:item`, `msm:mod`, `msm:block_definition`, `msm:item_definition`) and `MSM_TYPE_PATHS` exported.
+- Conformance corpus: `conformance/definition/` (9 valid, 25 invalid) and `conformance/element/` (9 valid, 10 invalid), `expected-errors.json` per group; `test/msm-conformance.test.ts` also checks every action type and every schema field is used by a valid file.
+
+**Decisions**
+- mcdoc-cli exports a local folder (no `BUILT_IN_EXTENSIONS` fallback, ADR 0025 unchanged).
+- `mod.mcdoc` is its folder's module in mcdoc, so the type is `::msm::Mod`, not `::msm::mod::Mod`.
+- mcdoc has no `null`: `"item": null` (D2, no block item) cannot be expressed; `item` is an optional `BlockItem` until the orchestrator decides.
+- `mod_id` is length-checked (2..64) in mcdoc; the pattern stays with the plugin validator.
+
+**Next**
+- Orchestrator: decide the "no block item" encoding (ADR 0025 D2); add the `build-msm-mcdoc` row to `tools/README.md`.
+- B93 reads the corpus in JUnit (skip `expected-errors.json`; the prefix selects block or item); B94 uses `MSM_SCHEMA_REFS`.

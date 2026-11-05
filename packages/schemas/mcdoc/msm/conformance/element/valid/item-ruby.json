@@ -1,0 +1,7 @@
+{
+  "creative_tab": "minecraft:ingredients",
+  "display_name": "Ruby",
+  "format": 1,
+  "model": "mymod:item/ruby",
+  "rarity": "uncommon"
+}

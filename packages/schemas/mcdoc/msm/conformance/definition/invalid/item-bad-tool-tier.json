@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:tool": {
+      "tier": "mithril",
+      "type": "axe"
+    }
+  },
+  "format": 1
+}

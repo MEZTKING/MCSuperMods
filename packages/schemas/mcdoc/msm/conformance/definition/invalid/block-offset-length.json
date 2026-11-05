@@ -1,0 +1,14 @@
+{
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "offset": [0, 1],
+          "state": "minecraft:stone",
+          "type": "set_block_state"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

@@ -1,0 +1,42 @@
+{
+  "block-bad-min-tier.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:breakable/min_tier"
+  },
+  "block-breakable-sword.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:breakable/tool"
+  },
+  "block-display-name-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/display_name"
+  },
+  "block-loot-number.json": {
+    "code": "schema.no-union-match",
+    "path": "/loot"
+  },
+  "item-missing-format.json": {
+    "code": "schema.missing-field",
+    "path": "/format"
+  },
+  "item-model-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/model"
+  },
+  "mod-authors-not-list.json": {
+    "code": "schema.type-mismatch",
+    "path": "/authors"
+  },
+  "mod-id-too-short.json": {
+    "code": "schema.invalid-length",
+    "path": "/mod_id"
+  },
+  "mod-missing-id.json": {
+    "code": "schema.missing-field",
+    "path": "/mod_id"
+  },
+  "mod-missing-version.json": {
+    "code": "schema.missing-field",
+    "path": "/version"
+  }
+}

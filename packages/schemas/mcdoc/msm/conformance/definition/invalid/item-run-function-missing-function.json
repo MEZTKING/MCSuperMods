@@ -1,0 +1,12 @@
+{
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "type": "run_function"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

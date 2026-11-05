@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:food": {
+      "nutrition": 0,
+      "saturation": 0.0
+    }
+  },
+  "format": 1,
+  "max_stack_size": 99
+}

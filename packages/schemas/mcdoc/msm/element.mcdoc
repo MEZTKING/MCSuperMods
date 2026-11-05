@@ -1,0 +1,55 @@
+// MSM element data for `msm:block` and `msm:item` (ADR 0025 D5): the runtime definition plus
+// editor-only fields that lower to ordinary pack files.
+
+use super::definition::BlockBehaviourComponents
+use super::definition::BlockCommon
+use super::definition::Breakable as DefinitionBreakable
+use super::definition::ItemCommon
+use super::definition::ToolTier
+
+/// A tool whose mineable tag a block joins.
+enum(string) BlockTool {
+	Pickaxe = "pickaxe",
+	Axe = "axe",
+	Shovel = "shovel",
+	Hoe = "hoe",
+}
+
+/// `msm:breakable` in element data: `tool` and `min_tier` lower to the mineable and
+/// needs-tier tags and to `requires_tool: true`.
+struct Breakable {
+	...DefinitionBreakable,
+	/// The tool that mines the block quickly.
+	tool?: BlockTool,
+	/// The lowest tool tier that gets drops.
+	min_tier?: ToolTier,
+}
+
+/// Block components in element data.
+struct BlockComponents {
+	"msm:breakable"?: Breakable,
+	...BlockBehaviourComponents,
+}
+
+/// `msm:block` element data.
+struct Block {
+	...BlockCommon,
+	/// Block model, lowered to a single-variant blockstate and the block item definition.
+	model?: #[id="model"] string,
+	/// Display name, lowered to the `block.<ns>.<path>` language key.
+	display_name?: string,
+	/// `"self"` generates a loot table that drops the block; an id points at a loot table
+	/// element; absent means no generated table.
+	loot?: ("self" | #[id="loot_table"] string),
+	/// Behaviour components.
+	components?: BlockComponents,
+}
+
+/// `msm:item` element data.
+struct Item {
+	...ItemCommon,
+	/// Item model, lowered to the item definition.
+	model?: #[id="model"] string,
+	/// Display name, lowered to the `item.<ns>.<path>` language key.
+	display_name?: string,
+}

@@ -1,0 +1,224 @@
+// MSM definition format v1: the runtime definitions of blocks and items (ADR 0025 D2, D3).
+// Lowering writes these to `msm/<ns>/block/<path>.json` and `msm/<ns>/item/<path>.json`.
+
+use super::action::Event
+
+/// A vanilla `SoundType` constant in lower case (verify the list at implementation).
+enum(string) SoundType {
+	Stone = "stone",
+	Wood = "wood",
+	Gravel = "gravel",
+	Grass = "grass",
+	Metal = "metal",
+	Glass = "glass",
+	Wool = "wool",
+	Sand = "sand",
+	Snow = "snow",
+	Ladder = "ladder",
+	Anvil = "anvil",
+	SlimeBlock = "slime_block",
+	HoneyBlock = "honey_block",
+	CoralBlock = "coral_block",
+	Bamboo = "bamboo",
+	BambooWood = "bamboo_wood",
+	CherryWood = "cherry_wood",
+	NetherWood = "nether_wood",
+	Netherrack = "netherrack",
+	NetherBricks = "nether_bricks",
+	NetherOre = "nether_ore",
+	Basalt = "basalt",
+	BoneBlock = "bone_block",
+	SoulSand = "soul_sand",
+	SoulSoil = "soul_soil",
+	Amethyst = "amethyst",
+	AmethystCluster = "amethyst_cluster",
+	Calcite = "calcite",
+	Tuff = "tuff",
+	Deepslate = "deepslate",
+	DeepslateBricks = "deepslate_bricks",
+	DeepslateTiles = "deepslate_tiles",
+	PolishedDeepslate = "polished_deepslate",
+	Copper = "copper",
+	Mud = "mud",
+	MudBricks = "mud_bricks",
+	PackedMud = "packed_mud",
+	Moss = "moss",
+	Lantern = "lantern",
+	Sculk = "sculk",
+}
+
+/// Item rarity, which colours the item name.
+enum(string) Rarity {
+	Common = "common",
+	Uncommon = "uncommon",
+	Rare = "rare",
+	Epic = "epic",
+}
+
+/// A tool kind.
+enum(string) ToolType {
+	Pickaxe = "pickaxe",
+	Axe = "axe",
+	Shovel = "shovel",
+	Hoe = "hoe",
+	Sword = "sword",
+}
+
+/// A tool tier (verify the list at implementation; validators check it against the target).
+enum(string) ToolTier {
+	Wood = "wood",
+	Stone = "stone",
+	Copper = "copper",
+	Iron = "iron",
+	Diamond = "diamond",
+	Gold = "gold",
+	Netherite = "netherite",
+}
+
+/// The block item registered with a block.
+struct BlockItem {
+	/// The creative tab that lists the item; absent means none.
+	creative_tab?: #[id="creative_mode_tab"] string,
+	/// Maximum stack size; defaults to 64.
+	max_stack_size?: int @ 1..99,
+	/// Defaults to `common`.
+	rarity?: Rarity,
+}
+
+/// Fields every block definition and block element share.
+struct BlockCommon {
+	/// Definition format; this is version 1.
+	format: 1,
+	/// Sounds for breaking, placing and stepping; defaults to `stone`.
+	sound_type?: SoundType,
+	/// Drops; absent means the vanilla default for the block id.
+	loot_table?: #[id="loot_table"] string,
+	/// The block item; absent means a stack size of 64 in no creative tab.
+	item?: BlockItem,
+	/// Events that components and actions refer to, by id.
+	events?: struct BlockEvents {
+		[string]: Event,
+	},
+}
+
+/// How hard the block is to break. Absent means hardness 1.5, resistance 6 and no tool needed.
+struct Breakable {
+	/// Mining time factor; -1 makes the block unbreakable.
+	hardness?: float @ -1..,
+	/// Explosion resistance.
+	resistance?: float @ 0..,
+	/// Whether the block drops nothing unless mined with the right tool.
+	requires_tool?: boolean,
+}
+
+/// Makes the block emit light.
+struct LightEmitter {
+	/// Light level, 0 to 15.
+	level: int @ 0..15,
+}
+
+/// Fires an event when a player uses the block.
+struct OnInteract {
+	/// An event id declared in `events`.
+	event: string,
+}
+
+/// Fires an event when an entity steps on the block.
+struct OnStep {
+	/// An event id declared in `events`.
+	event: string,
+	/// Minimum ticks between two firings; defaults to 0.
+	cooldown_ticks?: int @ 0..,
+}
+
+/// Redstone behaviour.
+struct Redstone {
+	/// Constant signal strength the block emits, 0 to 15; defaults to 0.
+	emit?: int @ 0..15,
+	/// Event fired when the block becomes powered.
+	on_powered?: string,
+	/// Event fired when the block stops being powered.
+	on_unpowered?: string,
+}
+
+/// Block components other than `msm:breakable`, shared with the element data.
+struct BlockBehaviourComponents {
+	"msm:light_emitter"?: LightEmitter,
+	"msm:on_interact"?: OnInteract,
+	"msm:on_step"?: OnStep,
+	"msm:redstone"?: Redstone,
+}
+
+/// Runtime block components.
+struct BlockComponents {
+	"msm:breakable"?: Breakable,
+	...BlockBehaviourComponents,
+}
+
+/// A block definition, `msm/<ns>/block/<path>.json`.
+struct Block {
+	...BlockCommon,
+	/// Behaviour components.
+	components?: BlockComponents,
+}
+
+/// Makes the item edible.
+struct Food {
+	/// Hunger points restored.
+	nutrition: int @ 0..,
+	/// Saturation modifier.
+	saturation: float @ 0..,
+	/// Whether the item can be eaten when the player is not hungry.
+	can_always_eat?: boolean,
+}
+
+/// Makes the item a tool.
+struct Tool {
+	type: ToolType,
+	tier: ToolTier,
+}
+
+/// Gives the item durability; forces `max_stack_size` to 1.
+struct Durability {
+	/// Uses before the item breaks.
+	max: int @ 1..,
+}
+
+/// Fires an event when a player uses the item.
+struct OnUse {
+	/// An event id declared in `events`.
+	event: string,
+	/// Ticks before the item can be used again; defaults to 0.
+	cooldown_ticks?: int @ 0..,
+}
+
+/// Runtime item components.
+struct ItemComponents {
+	"msm:food"?: Food,
+	"msm:tool"?: Tool,
+	"msm:durability"?: Durability,
+	"msm:on_use"?: OnUse,
+}
+
+/// Fields every item definition and item element share.
+struct ItemCommon {
+	/// Definition format; this is version 1.
+	format: 1,
+	/// Maximum stack size; defaults to 64.
+	max_stack_size?: int @ 1..99,
+	/// Defaults to `common`.
+	rarity?: Rarity,
+	/// The creative tab that lists the item; absent means none.
+	creative_tab?: #[id="creative_mode_tab"] string,
+	/// Behaviour components.
+	components?: ItemComponents,
+	/// Events that components refer to, by id.
+	events?: struct ItemEvents {
+		[string]: Event,
+	},
+}
+
+/// An item definition, `msm/<ns>/item/<path>.json`.
+struct Item {
+	...ItemCommon,
+}

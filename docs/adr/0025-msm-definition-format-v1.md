@@ -21,7 +21,7 @@ Facts that shape the format:
   "format": 1,
   "sound_type": "stone",                // vanilla SoundType constant, lower-case (verify the list at implementation)
   "loot_table": "mymod:blocks/ruby_ore", // optional; omitted means the vanilla default for the block id
-  "item": { "creative_tab": "minecraft:building_blocks", "max_stack_size": 64, "rarity": "common" }, // optional; null = no block item
+  "item": { "creative_tab": "minecraft:building_blocks", "max_stack_size": 64, "rarity": "common" }, // optional; false = no block item
   "components": {
     "msm:breakable": { "hardness": 3.0, "resistance": 3.0, "requires_tool": true },
     "msm:light_emitter": { "level": 4 },
@@ -35,7 +35,7 @@ Facts that shape the format:
 }
 ```
 
-Defaults: `msm:breakable` absent means hardness 1.5, resistance 6.0, no tool needed; `item` absent means a block item with stack size 64 in no creative tab. `msm:redstone.emit` (0–15) makes the block a constant signal source; `on_powered` and `on_unpowered` fire on neighbour-update transitions of `hasNeighborSignal`.
+Defaults: `msm:breakable` absent means hardness 1.5, resistance 6.0, no tool needed; `item` absent means a block item with stack size 64 in no creative tab; `"item": false` means no block item (mcdoc has no null type, so `false` replaces the `null` of the first draft; the schema change lands with B93). `msm:redstone.emit` (0–15) makes the block a constant signal source; `on_powered` and `on_unpowered` fire on neighbour-update transitions of `hasNeighborSignal`.
 
 **D3. Item definition v1** (`::msm::definition::Item`):
 
@@ -72,7 +72,7 @@ Events run on the logical server only. An unknown action type is a load-time err
 
 **D6. Mod metadata.** A singleton kind `msm:mod` (kind folder `mod`, conventional id `<ns>:mod`) holds `mod_id` (Fabric rule `^[a-z][a-z0-9_-]{1,63}$`), `version`, `name`, `description`, `authors`, `licence` (written as Fabric's `license`). It lowers to `fabric.mod.json` in layer `msm` with the target's Fabric dependencies; the content-jar exporter adds `jars` ([ADR 0026](0026-fabric-content-jar.md)) and synthesises a default from the project name when the project has no `msm:mod`.
 
-**D7. MSM mcdoc.** The types live as mcdoc source in `packages/schemas/mcdoc/msm/` (`definition.mcdoc`, `element.mcdoc`, `action.mcdoc`, `mod.mcdoc`), using vanilla id attributes (`#[id="sound_event"]`, `#[id="particle_type"]`, `#[id="block"]`, `#[id="item"]`, `#[id="function"]`, `#[id="loot_table"]`, `#[id="model"]`). `tools/build-msm-mcdoc` runs `@spyglassmc/mcdoc-cli export` over that folder (as `tools/sync-mcdoc` does for vanilla) into a checked-in `symbols.json`; a test fails when the source and the export disagree. `createSchemaIndex` merges the MSM symbols with the target's vanilla symbols; the MSM types are version-independent and live in `@msm/schemas`, not in a target. A shared conformance corpus, `packages/schemas/mcdoc/msm/conformance/{valid,invalid}/*.json`, is checked by `validateJson` in TypeScript and by the runtime's JUnit tests, which keeps the Java Codecs aligned with the mcdoc. If `mcdoc-cli` cannot export a local folder, the types fall back to `BUILT_IN_EXTENSIONS` and the corpus still binds both sides (record the fallback in this ADR).
+**D7. MSM mcdoc.** The types live as mcdoc source in `packages/schemas/mcdoc/msm/` (`definition.mcdoc`, `element.mcdoc`, `action.mcdoc`, `mod.mcdoc`), using vanilla id attributes (`#[id="sound_event"]`, `#[id="particle_type"]`, `#[id="block"]`, `#[id="item"]`, `#[id="function"]`, `#[id="loot_table"]`, `#[id="model"]`). `tools/build-msm-mcdoc` runs `@spyglassmc/mcdoc-cli export` over that folder (as `tools/sync-mcdoc` does for vanilla) into a checked-in `symbols.json`; a test fails when the source and the export disagree. `createSchemaIndex` merges the MSM symbols with the target's vanilla symbols; the MSM types are version-independent and live in `@msm/schemas`, not in a target. The mod metadata type is `::msm::Mod`, because `mod.mcdoc` is its folder's own module in mcdoc. `mod_id`'s pattern cannot be written in mcdoc, so the schema checks length only and the plugin validator checks the pattern. A shared conformance corpus, `packages/schemas/mcdoc/msm/conformance/{definition,element}/{valid,invalid}/*.json` (expected errors in one `expected-errors.json` per group), is checked by `validateJson` in TypeScript and by the runtime's JUnit tests, which keeps the Java Codecs aligned with the mcdoc. If `mcdoc-cli` cannot export a local folder, the types fall back to `BUILT_IN_EXTENSIONS` and the corpus still binds both sides (record the fallback in this ADR).
 
 **D8. The plugin.** `@msm/plugin-blocks-items` (plugin id `msm.blocks-items`, created with `tools/new-plugin`) contributes `msm:block` (kind folder `block`), `msm:item` (`item`) and `msm:mod` (`mod`), their lowering, validators (`blocks-items.*`: missing model, unknown event in an `event` field or `trigger_event`, an event cycle, a bad `mod_id`, a tool tier the target does not know, an `msm:item` id that collides with a block's item) and templates. Lowered vanilla files take folder names from the target. The vanilla pack exporters skip layer `msm`, and the export dialog says that blocks and items need the Fabric content jar.
 

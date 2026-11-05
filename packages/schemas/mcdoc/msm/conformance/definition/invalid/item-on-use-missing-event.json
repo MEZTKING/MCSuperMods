@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:on_use": {
+      "cooldown_ticks": 10
+    }
+  },
+  "format": 1
+}

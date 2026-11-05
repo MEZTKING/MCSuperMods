@@ -1,0 +1,59 @@
+{
+  "components": {
+    "msm:durability": {
+      "max": 250
+    },
+    "msm:on_use": {
+      "cooldown_ticks": 40,
+      "event": "mymod:zap"
+    },
+    "msm:tool": {
+      "tier": "copper",
+      "type": "pickaxe"
+    }
+  },
+  "creative_tab": "minecraft:tools_and_utilities",
+  "events": {
+    "mymod:glow": {
+      "actions": []
+    },
+    "mymod:zap": {
+      "actions": [
+        {
+          "function": "mymod:shimmer",
+          "type": "run_function"
+        },
+        {
+          "count": 8,
+          "particle": "minecraft:end_rod",
+          "speed": 0.02,
+          "spread": 0.5,
+          "type": "spawn_particle"
+        },
+        {
+          "offset": [0, 1, 0],
+          "state": "minecraft:amethyst_block",
+          "type": "set_block_state"
+        },
+        {
+          "count": 2,
+          "item": "minecraft:amethyst_shard",
+          "type": "give_item"
+        },
+        {
+          "pitch": 1.2,
+          "sound": "minecraft:block.amethyst_block.chime",
+          "type": "play_sound",
+          "volume": 0.8
+        },
+        {
+          "event": "mymod:glow",
+          "type": "trigger_event"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1,
+  "rarity": "rare"
+}

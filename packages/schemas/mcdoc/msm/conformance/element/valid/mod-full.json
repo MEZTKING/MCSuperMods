@@ -1,0 +1,8 @@
+{
+  "authors": ["Alex", "Sam"],
+  "description": "Adds rubies.",
+  "licence": "MIT",
+  "mod_id": "ruby-mod_2",
+  "name": "Ruby Mod",
+  "version": "1.0.0"
+}

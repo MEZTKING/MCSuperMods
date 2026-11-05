@@ -1,0 +1,17 @@
+{
+  "components": {
+    "msm:breakable": {
+      "tool": "axe"
+    },
+    "msm:redstone": {
+      "emit": 7
+    }
+  },
+  "display_name": "Lamp",
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:redstone_blocks"
+  },
+  "loot": "mymod:blocks/lamp_drops",
+  "model": "mymod:block/lamp"
+}

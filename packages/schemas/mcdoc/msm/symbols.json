@@ -1,0 +1,1477 @@
+{
+  "mcdoc": {
+    "::msm::Mod": {
+      "fields": [
+        {
+          "desc": "Fabric mod id: a lower-case letter, then 1 to 63 of `a-z`, `0-9`, `_` and `-`\n(`^[a-z][a-z0-9_-]{1,63}$`; mcdoc checks the length, the plugin validator the pattern).",
+          "key": "mod_id",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 2
+            }
+          }
+        },
+        {
+          "desc": "Mod version, preferably semantic (`1.0.0`).",
+          "key": "version",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Display name.",
+          "key": "name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "One-line description.",
+          "key": "description",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Author names.",
+          "key": "authors",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "string"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Licence identifier, such as `MIT`; written as Fabric's `license`.",
+          "key": "licence",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::Action": {
+      "fields": [
+        {
+          "desc": "What the action does.",
+          "key": "type",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::ActionType"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["type"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:action"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::ActionType": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Runs a data pack function at the event position.",
+          "identifier": "RunFunction",
+          "value": "run_function"
+        },
+        {
+          "desc": "Spawns particles at the block centre or the player's position.",
+          "identifier": "SpawnParticle",
+          "value": "spawn_particle"
+        },
+        {
+          "desc": "Places a block state relative to the event block.",
+          "identifier": "SetBlockState",
+          "value": "set_block_state"
+        },
+        {
+          "desc": "Gives the player an item; does nothing without a player.",
+          "identifier": "GiveItem",
+          "value": "give_item"
+        },
+        {
+          "desc": "Plays a sound at the event position.",
+          "identifier": "PlaySound",
+          "value": "play_sound"
+        },
+        {
+          "desc": "Runs another event of the same definition.",
+          "identifier": "TriggerEvent",
+          "value": "trigger_event"
+        }
+      ]
+    },
+    "::msm::action::Event": {
+      "fields": [
+        {
+          "desc": "Actions to run, in order.",
+          "key": "actions",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::action::Action"
+            },
+            "kind": "list"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::GiveItem": {
+      "fields": [
+        {
+          "desc": "The item to give.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "How many to give; defaults to 1.",
+          "key": "count",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::PlaySound": {
+      "fields": [
+        {
+          "desc": "The sound event to play.",
+          "key": "sound",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Volume; defaults to 1.",
+          "key": "volume",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Pitch; defaults to 1.",
+          "key": "pitch",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::RunFunction": {
+      "fields": [
+        {
+          "desc": "The function to run.",
+          "key": "function",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "function"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::SetBlockState": {
+      "fields": [
+        {
+          "desc": "A block state such as `minecraft:oak_stairs[facing=north]`.",
+          "key": "state",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Offset `[x, y, z]` from the event block; defaults to `[0, 0, 0]`.",
+          "key": "offset",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "items": [
+              {
+                "kind": "int"
+              },
+              {
+                "kind": "int"
+              },
+              {
+                "kind": "int"
+              }
+            ],
+            "kind": "tuple"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::SpawnParticle": {
+      "fields": [
+        {
+          "desc": "A particle type without options. Defaults are `count` 1, `spread` 0 and `speed` 0.",
+          "key": "particle",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "particle_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "How many particles to spawn.",
+          "key": "count",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Random offset from the position, in blocks.",
+          "key": "spread",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Particle speed.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::TriggerEvent": {
+      "fields": [
+        {
+          "desc": "An event id declared in this definition's `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Block": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BlockCommon"
+          }
+        },
+        {
+          "desc": "Behaviour components.",
+          "key": "components",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BlockComponents"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::BlockBehaviourComponents": {
+      "fields": [
+        {
+          "key": "msm:light_emitter",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::LightEmitter"
+          }
+        },
+        {
+          "key": "msm:on_interact",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnInteract"
+          }
+        },
+        {
+          "key": "msm:on_step",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnStep"
+          }
+        },
+        {
+          "key": "msm:redstone",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Redstone"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::BlockCommon": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "desc": "Sounds for breaking, placing and stepping; defaults to `stone`.",
+          "key": "sound_type",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::SoundType"
+          }
+        },
+        {
+          "desc": "Drops; absent means the vanilla default for the block id.",
+          "key": "loot_table",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "loot_table"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The block item; absent means a stack size of 64 in no creative tab.",
+          "key": "item",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BlockItem"
+          }
+        },
+        {
+          "desc": "Events that components and actions refer to, by id.",
+          "key": "events",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "reference",
+                  "path": "::msm::action::Event"
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::BlockComponents": {
+      "fields": [
+        {
+          "key": "msm:breakable",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Breakable"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BlockBehaviourComponents"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::BlockEvents": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::Event"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::BlockItem": {
+      "fields": [
+        {
+          "desc": "The creative tab that lists the item; absent means none.",
+          "key": "creative_tab",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "creative_mode_tab"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Maximum stack size; defaults to 64.",
+          "key": "max_stack_size",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 99,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `common`.",
+          "key": "rarity",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Rarity"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Breakable": {
+      "fields": [
+        {
+          "desc": "Mining time factor; -1 makes the block unbreakable.",
+          "key": "hardness",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": -1
+            }
+          }
+        },
+        {
+          "desc": "Explosion resistance.",
+          "key": "resistance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Whether the block drops nothing unless mined with the right tool.",
+          "key": "requires_tool",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Durability": {
+      "fields": [
+        {
+          "desc": "Uses before the item breaks.",
+          "key": "max",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Food": {
+      "fields": [
+        {
+          "desc": "Hunger points restored.",
+          "key": "nutrition",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Saturation modifier.",
+          "key": "saturation",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Whether the item can be eaten when the player is not hungry.",
+          "key": "can_always_eat",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Item": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ItemCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::ItemCommon": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "desc": "Maximum stack size; defaults to 64.",
+          "key": "max_stack_size",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 99,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `common`.",
+          "key": "rarity",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Rarity"
+          }
+        },
+        {
+          "desc": "The creative tab that lists the item; absent means none.",
+          "key": "creative_tab",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "creative_mode_tab"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Behaviour components.",
+          "key": "components",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ItemComponents"
+          }
+        },
+        {
+          "desc": "Events that components refer to, by id.",
+          "key": "events",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "reference",
+                  "path": "::msm::action::Event"
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::ItemComponents": {
+      "fields": [
+        {
+          "key": "msm:food",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Food"
+          }
+        },
+        {
+          "key": "msm:tool",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Tool"
+          }
+        },
+        {
+          "key": "msm:durability",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Durability"
+          }
+        },
+        {
+          "key": "msm:on_use",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnUse"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::ItemEvents": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::Event"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::LightEmitter": {
+      "fields": [
+        {
+          "desc": "Light level, 0 to 15.",
+          "key": "level",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 15,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::OnInteract": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::OnStep": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Minimum ticks between two firings; defaults to 0.",
+          "key": "cooldown_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::OnUse": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Ticks before the item can be used again; defaults to 0.",
+          "key": "cooldown_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Rarity": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Common",
+          "value": "common"
+        },
+        {
+          "identifier": "Uncommon",
+          "value": "uncommon"
+        },
+        {
+          "identifier": "Rare",
+          "value": "rare"
+        },
+        {
+          "identifier": "Epic",
+          "value": "epic"
+        }
+      ]
+    },
+    "::msm::definition::Redstone": {
+      "fields": [
+        {
+          "desc": "Constant signal strength the block emits, 0 to 15; defaults to 0.",
+          "key": "emit",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 15,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Event fired when the block becomes powered.",
+          "key": "on_powered",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Event fired when the block stops being powered.",
+          "key": "on_unpowered",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::SoundType": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Stone",
+          "value": "stone"
+        },
+        {
+          "identifier": "Wood",
+          "value": "wood"
+        },
+        {
+          "identifier": "Gravel",
+          "value": "gravel"
+        },
+        {
+          "identifier": "Grass",
+          "value": "grass"
+        },
+        {
+          "identifier": "Metal",
+          "value": "metal"
+        },
+        {
+          "identifier": "Glass",
+          "value": "glass"
+        },
+        {
+          "identifier": "Wool",
+          "value": "wool"
+        },
+        {
+          "identifier": "Sand",
+          "value": "sand"
+        },
+        {
+          "identifier": "Snow",
+          "value": "snow"
+        },
+        {
+          "identifier": "Ladder",
+          "value": "ladder"
+        },
+        {
+          "identifier": "Anvil",
+          "value": "anvil"
+        },
+        {
+          "identifier": "SlimeBlock",
+          "value": "slime_block"
+        },
+        {
+          "identifier": "HoneyBlock",
+          "value": "honey_block"
+        },
+        {
+          "identifier": "CoralBlock",
+          "value": "coral_block"
+        },
+        {
+          "identifier": "Bamboo",
+          "value": "bamboo"
+        },
+        {
+          "identifier": "BambooWood",
+          "value": "bamboo_wood"
+        },
+        {
+          "identifier": "CherryWood",
+          "value": "cherry_wood"
+        },
+        {
+          "identifier": "NetherWood",
+          "value": "nether_wood"
+        },
+        {
+          "identifier": "Netherrack",
+          "value": "netherrack"
+        },
+        {
+          "identifier": "NetherBricks",
+          "value": "nether_bricks"
+        },
+        {
+          "identifier": "NetherOre",
+          "value": "nether_ore"
+        },
+        {
+          "identifier": "Basalt",
+          "value": "basalt"
+        },
+        {
+          "identifier": "BoneBlock",
+          "value": "bone_block"
+        },
+        {
+          "identifier": "SoulSand",
+          "value": "soul_sand"
+        },
+        {
+          "identifier": "SoulSoil",
+          "value": "soul_soil"
+        },
+        {
+          "identifier": "Amethyst",
+          "value": "amethyst"
+        },
+        {
+          "identifier": "AmethystCluster",
+          "value": "amethyst_cluster"
+        },
+        {
+          "identifier": "Calcite",
+          "value": "calcite"
+        },
+        {
+          "identifier": "Tuff",
+          "value": "tuff"
+        },
+        {
+          "identifier": "Deepslate",
+          "value": "deepslate"
+        },
+        {
+          "identifier": "DeepslateBricks",
+          "value": "deepslate_bricks"
+        },
+        {
+          "identifier": "DeepslateTiles",
+          "value": "deepslate_tiles"
+        },
+        {
+          "identifier": "PolishedDeepslate",
+          "value": "polished_deepslate"
+        },
+        {
+          "identifier": "Copper",
+          "value": "copper"
+        },
+        {
+          "identifier": "Mud",
+          "value": "mud"
+        },
+        {
+          "identifier": "MudBricks",
+          "value": "mud_bricks"
+        },
+        {
+          "identifier": "PackedMud",
+          "value": "packed_mud"
+        },
+        {
+          "identifier": "Moss",
+          "value": "moss"
+        },
+        {
+          "identifier": "Lantern",
+          "value": "lantern"
+        },
+        {
+          "identifier": "Sculk",
+          "value": "sculk"
+        }
+      ]
+    },
+    "::msm::definition::Tool": {
+      "fields": [
+        {
+          "key": "type",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ToolType"
+          }
+        },
+        {
+          "key": "tier",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ToolTier"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::ToolTier": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Wood",
+          "value": "wood"
+        },
+        {
+          "identifier": "Stone",
+          "value": "stone"
+        },
+        {
+          "identifier": "Copper",
+          "value": "copper"
+        },
+        {
+          "identifier": "Iron",
+          "value": "iron"
+        },
+        {
+          "identifier": "Diamond",
+          "value": "diamond"
+        },
+        {
+          "identifier": "Gold",
+          "value": "gold"
+        },
+        {
+          "identifier": "Netherite",
+          "value": "netherite"
+        }
+      ]
+    },
+    "::msm::definition::ToolType": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Pickaxe",
+          "value": "pickaxe"
+        },
+        {
+          "identifier": "Axe",
+          "value": "axe"
+        },
+        {
+          "identifier": "Shovel",
+          "value": "shovel"
+        },
+        {
+          "identifier": "Hoe",
+          "value": "hoe"
+        },
+        {
+          "identifier": "Sword",
+          "value": "sword"
+        }
+      ]
+    },
+    "::msm::element::Block": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BlockCommon"
+          }
+        },
+        {
+          "desc": "Block model, lowered to a single-variant blockstate and the block item definition.",
+          "key": "model",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "model"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Display name, lowered to the `block.<ns>.<path>` language key.",
+          "key": "display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "`\"self\"` generates a loot table that drops the block; an id points at a loot table\nelement; absent means no generated table.",
+          "key": "loot",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "self"
+                }
+              },
+              {
+                "attributes": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "loot_table"
+                      }
+                    }
+                  }
+                ],
+                "kind": "string"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "Behaviour components.",
+          "key": "components",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BlockComponents"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::BlockComponents": {
+      "fields": [
+        {
+          "key": "msm:breakable",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::Breakable"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BlockBehaviourComponents"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::BlockTool": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Pickaxe",
+          "value": "pickaxe"
+        },
+        {
+          "identifier": "Axe",
+          "value": "axe"
+        },
+        {
+          "identifier": "Shovel",
+          "value": "shovel"
+        },
+        {
+          "identifier": "Hoe",
+          "value": "hoe"
+        }
+      ]
+    },
+    "::msm::element::Breakable": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Breakable"
+          }
+        },
+        {
+          "desc": "The tool that mines the block quickly.",
+          "key": "tool",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BlockTool"
+          }
+        },
+        {
+          "desc": "The lowest tool tier that gets drops.",
+          "key": "min_tier",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ToolTier"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::Item": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ItemCommon"
+          }
+        },
+        {
+          "desc": "Item model, lowered to the item definition.",
+          "key": "model",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "model"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Display name, lowered to the `item.<ns>.<path>` language key.",
+          "key": "display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    }
+  },
+  "mcdoc/dispatcher": {
+    "msm:action": {
+      "give_item": {
+        "kind": "reference",
+        "path": "::msm::action::GiveItem"
+      },
+      "play_sound": {
+        "kind": "reference",
+        "path": "::msm::action::PlaySound"
+      },
+      "run_function": {
+        "kind": "reference",
+        "path": "::msm::action::RunFunction"
+      },
+      "set_block_state": {
+        "kind": "reference",
+        "path": "::msm::action::SetBlockState"
+      },
+      "spawn_particle": {
+        "kind": "reference",
+        "path": "::msm::action::SpawnParticle"
+      },
+      "trigger_event": {
+        "kind": "reference",
+        "path": "::msm::action::TriggerEvent"
+      }
+    }
+  },
+  "ref": "msm-mcdoc:sha256:bae388ae72bdfa3c144d8f0a6faa619dbc86c1490d0d2bc062c3758533e4d573"
+}

@@ -1,0 +1,13 @@
+{
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "type": "play_sound",
+          "volume": 1.0
+        }
+      ]
+    }
+  },
+  "format": 1
+}

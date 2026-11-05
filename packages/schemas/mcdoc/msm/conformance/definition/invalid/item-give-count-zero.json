@@ -1,0 +1,14 @@
+{
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "count": 0,
+          "item": "minecraft:apple",
+          "type": "give_item"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

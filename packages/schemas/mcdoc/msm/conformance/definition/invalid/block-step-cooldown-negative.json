@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:on_step": {
+      "cooldown_ticks": -5,
+      "event": "mymod:x"
+    }
+  },
+  "events": {
+    "mymod:x": {
+      "actions": []
+    }
+  },
+  "format": 1
+}

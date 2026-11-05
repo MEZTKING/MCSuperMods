@@ -30,6 +30,13 @@ export type {
   SchemaNodeKind,
 } from './form/schema-node';
 export {
+  MSM_SCHEMA_ALIASES,
+  MSM_SCHEMA_REFS,
+  MSM_TYPE_PATHS,
+  mergeMsmSymbols,
+  msmMcdocSymbols,
+} from './msm/symbols';
+export {
   createRegistryIndex,
   type RegistryIndex,
   type RegistryIndexInput,

@@ -1,0 +1,37 @@
+{
+  "components": {
+    "msm:durability": {
+      "max": 100
+    },
+    "msm:food": {
+      "can_always_eat": true,
+      "nutrition": 6,
+      "saturation": 1.2
+    },
+    "msm:on_use": {
+      "cooldown_ticks": 20,
+      "event": "mymod:sparkle"
+    },
+    "msm:tool": {
+      "tier": "diamond",
+      "type": "sword"
+    }
+  },
+  "creative_tab": "minecraft:food_and_drinks",
+  "display_name": "Crystal Apple",
+  "events": {
+    "mymod:sparkle": {
+      "actions": [
+        {
+          "count": 4,
+          "particle": "minecraft:end_rod",
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1,
+  "model": "mymod:item/crystal_apple",
+  "rarity": "epic"
+}

@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:redstone": {
+      "emit": -1
+    }
+  },
+  "format": 1
+}
