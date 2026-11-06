@@ -14,7 +14,7 @@
 import type { Element, Problem, Project, ResourceLocation } from '@msm/core';
 import { outputFileBytes } from '@msm/exporters';
 import type { OutputFile, Target } from '@msm/plugin-api';
-import type { McfunctionCompletion, McfunctionProblem } from '@msm/schemas/mcfunction';
+import type { McfunctionCompletion, McfunctionProblem } from '../../../shared/platform';
 import { dataRegistryIds } from './schema-context';
 
 export type { McfunctionCompletion, McfunctionProblem };

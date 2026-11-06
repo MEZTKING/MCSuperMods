@@ -122,7 +122,27 @@
       }
     },
     {
-      "includes": ["app/src/renderer/**"],
+      "includes": ["app/src/preload/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@anthropic-ai/sdk", "@anthropic-ai/sdk/*", "@msm/ai/sdk"],
+                    "message": "the Claude SDK runs only in main, ADR 0041 D2"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["app/src/renderer/**", "src/**"],
       "linter": {
         "rules": {
           "style": {
@@ -133,23 +153,7 @@
                   {
                     "group": ["@spyglassmc/*", "@msm/schemas/mcfunction"],
                     "message": "Spyglass runs in the main process only (ADR 0014); call the mcfunction IPC instead"
-                  }
-                ]
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "includes": ["app/src/preload/**", "app/src/renderer/**", "src/**"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noRestrictedImports": {
-              "level": "error",
-              "options": {
-                "patterns": [
+                  },
                   {
                     "group": ["@anthropic-ai/sdk", "@anthropic-ai/sdk/*", "@msm/ai/sdk"],
                     "message": "the Claude SDK runs only in main, ADR 0041 D2"

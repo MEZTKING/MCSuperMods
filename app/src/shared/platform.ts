@@ -12,6 +12,10 @@ import type { ProjectFileSystem } from '@msm/core';
 // Type-only: the service itself runs in main (ADR 0014); these are plain MSM shapes.
 import type { Problem } from '@msm/plugin-api';
 import type { McfunctionCompletion, McfunctionProblem } from '@msm/schemas/mcfunction';
+
+/** The mcfunction IPC's payload types, for the renderer (which may not import Spyglass). */
+export type { McfunctionCompletion, McfunctionProblem };
+
 import type {
   MenuCommand,
   MinecraftProgress,
