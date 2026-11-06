@@ -6,9 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-06
+
+MCSuperMods 1.0: everything from 0.7.0, with the plugin platform and the second Minecraft version finished and documented. Projects from 0.7.0 open unchanged.
+
 ### Added
 
-- Work on version 1.0 continues: guide pages for plugins and Minecraft versions, more automated tests, and the 1.0 release.
+- Guide pages for plugins and for Minecraft versions (including Upgrade Project Target), and automated tests that load a sample plugin and upgrade a project to the snapshot target.
 - Exporters from third-party plugins are offered under **More exports** in the menu next to **Export .zip**.
 
 ### Fixed
