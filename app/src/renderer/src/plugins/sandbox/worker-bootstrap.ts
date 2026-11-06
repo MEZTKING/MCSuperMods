@@ -212,6 +212,13 @@ export function workerBootstrap(stripped: readonly string[], keep: number): void
       }
       case 'import':
         return invoke(contribution('importers', args[0]), 'import', [args[1], args[2]]);
+      case 'supports': {
+        // Templates, starters and examples: whether the entry works on one target.
+        const entry = contribution(String(args[0]), args[1]);
+        return typeof entry.supports === 'function'
+          ? invoke(entry, 'supports', [args[2]]) === true
+          : true;
+      }
       default:
         throw new Error(`Unknown method ${String(request.method)}.`);
     }

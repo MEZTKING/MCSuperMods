@@ -92,6 +92,41 @@ describe('loadExternalPlugins', () => {
     expect(workers.terminated()).toBe(1);
   });
 
+  it('answers supports() of starters from the worker, once per known target', async () => {
+    const starter = `projectStarters: [{
+      id: 'sample-only-first',
+      title: 'Only on the first target',
+      description: 'A starter for one target.',
+      category: 'Sample',
+      layers: ['datapack'],
+      requiresKinds: [],
+      supports(target) { return target.id === '${target.id}'; },
+      build() { return { elements: [], assets: [] }; },
+    }],`;
+    const other = { ...target, id: 'mc-other' };
+    const { platform } = stubPluginsPlatform([
+      {
+        manifest: sampleManifest({
+          capabilities: [...sampleManifest().capabilities, 'projectStarters'],
+        }),
+        main: sampleBundle('', starter),
+      },
+    ]);
+    const set = await loadExternalPlugins(platform, {
+      builtIns: builtInPlugins,
+      spawn: vmWorkers().spawn,
+      targets: [target, other],
+    });
+    expect(codes(set.states[0]?.problems ?? [])).toEqual([]);
+    const contributes = set.plugins[0]?.contributes;
+    const entry = contributes?.projectStarters?.[0];
+    expect(entry?.supports?.(target)).toBe(true);
+    expect(entry?.supports?.(other)).toBe(false);
+    // Entries without supports() stay without it (supported everywhere).
+    expect(contributes?.elementTemplates?.[0]?.supports).toBeUndefined();
+    set.terminate();
+  });
+
   it('sends a registry snapshot once per registry object', async () => {
     const workers = vmWorkers();
     const { platform } = stubPluginsPlatform([{ manifest: sampleManifest() }]);

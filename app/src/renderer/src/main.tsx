@@ -20,7 +20,10 @@ async function start(root: HTMLElement): Promise<void> {
   // Third-party plugins (ADR 0035) start in sandboxed workers before the session exists, so
   // their kinds register after the built-ins; a plugin that does not start within 10 s is
   // `plugin.timeout`. Without a plugins folder this is one IPC round trip.
-  const external = await loadExternalPlugins(msm, { builtIns: builtInPlugins });
+  const external = await loadExternalPlugins(msm, {
+    builtIns: builtInPlugins,
+    targets: builtInTargets.map((entry) => entry.target),
+  });
   // Function sources are checked by the Spyglass service in main (ADR 0014), for the target
   // of the open project at call time.
   const session: ProjectSession = new ProjectSession(

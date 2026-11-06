@@ -6,7 +6,7 @@
  */
 
 /** Methods the host may call on a plugin worker; each names one contribution function. */
-export type SandboxMethod = 'lower' | 'data' | 'build' | 'validate' | 'run' | 'import';
+export type SandboxMethod = 'lower' | 'data' | 'build' | 'validate' | 'run' | 'import' | 'supports';
 
 /**
  * The arguments of each method. `point` and `id` name the contribution; the rest are the

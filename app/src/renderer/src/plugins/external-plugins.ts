@@ -100,6 +100,46 @@ export interface LoadExternalPluginsOptions {
   spawn?: CreatePluginWorkerOptions['spawn'];
   /** Start deadline (default 10 s, then `plugin.timeout`). */
   startDeadlineMs?: number;
+  /**
+   * The targets the host knows. Entries with `supports(target)` are asked once per target at
+   * start-up (the call is synchronous for the host, so the answers are kept); without targets
+   * such entries count as supported everywhere.
+   */
+  targets?: readonly TargetFacts[];
+}
+
+/** The library points whose entries may declare `supports(target)`. */
+const SUPPORTS_POINTS = ['elementTemplates', 'projectStarters', 'examples'] as const;
+
+/**
+ * Asks the worker, once per target, which targets each template, starter and example with a
+ * `supports` function works on. A failing call counts as not supported. Keys are
+ * `<point>:<id>`.
+ */
+export async function supportedTargetsOf(
+  points: Partial<Record<keyof PluginContributions, ContributionDescription[]>>,
+  worker: PluginWorker,
+  targets: readonly TargetFacts[],
+): Promise<Map<string, ReadonlySet<string>>> {
+  const out = new Map<string, ReadonlySet<string>>();
+  for (const point of SUPPORTS_POINTS) {
+    for (const entry of points[point] ?? []) {
+      if (!entry.functions.includes('supports')) continue;
+      const id = String(entry.data.id);
+      const supported = new Set<string>();
+      for (const target of targets) {
+        try {
+          if ((await worker.call('supports', [point, id, toTargetFacts(target)])) === true) {
+            supported.add(target.id);
+          }
+        } catch {
+          // Not supported on this target.
+        }
+      }
+      out.set(`${point}:${id}`, supported);
+    }
+  }
+  return out;
 }
 
 /** An empty set (no plugins folder, or no platform support). */
@@ -262,8 +302,16 @@ export function buildFacade(
   manifest: PluginManifest,
   points: Partial<Record<keyof PluginContributions, ContributionDescription[]>>,
   worker: PluginWorker,
+  supported: ReadonlyMap<string, ReadonlySet<string>> = new Map(),
 ): Plugin {
   const sentKeys = new Set<string>();
+  /** `supports` from {@link supportedTargetsOf}, or nothing when the entry has none. */
+  const supportsOf = (point: string, id: string) => {
+    const targets = supported.get(`${point}:${id}`);
+    return targets === undefined
+      ? {}
+      : { supports: (target: TargetFacts): boolean => targets.has(target.id) };
+  };
   const contributes: PluginContributions = {};
 
   const kinds = points.elementKinds;
@@ -289,6 +337,7 @@ export function buildFacade(
       const id = String(entry.data.id);
       return {
         ...(dataOf(entry) as Omit<ElementTemplate, 'data'>),
+        ...supportsOf('elementTemplates', id),
         async data(context: TemplateContext): Promise<Json> {
           const value = await worker.call('data', [
             id,
@@ -319,7 +368,11 @@ export function buildFacade(
       const data = dataOf(entry) as Omit<ProjectStarter, 'build'> & {
         parameters?: StarterParameter[];
       };
-      return { ...data, build: bundleBuilder('projectStarters', id) };
+      return {
+        ...data,
+        ...supportsOf('projectStarters', id),
+        build: bundleBuilder('projectStarters', id),
+      };
     });
   }
 
@@ -329,6 +382,7 @@ export function buildFacade(
       const id = String(entry.data.id);
       return {
         ...(dataOf(entry) as Omit<ExampleProject, 'build'>),
+        ...supportsOf('examples', id),
         build: bundleBuilder('examples', id),
       };
     });
@@ -600,7 +654,8 @@ export async function loadExternalPlugins(
       states.push(item.state);
       continue;
     }
-    const facade = buildFacade(manifest, points, worker);
+    const supported = await supportedTargetsOf(points, worker, options.targets ?? []);
+    const facade = buildFacade(manifest, points, worker, supported);
     const clash = clashOf(taken, facade);
     let refusal: string | null =
       clash === null ? null : `${manifest.id}: ${clash} is already registered.`;

@@ -13,6 +13,7 @@ In plugin API 1.x a plugin can contribute:
 | Element kinds | New elements in the element list. Their **Form** tab is drawn from the plugin's data definitions (mcdoc), like the forms of vanilla elements, and **Raw JSON** works as usual. Each kind lowers to ordinary pack or mod files when you export. |
 | Element templates | Entries in **Add element**, grouped under the plugin's own categories. |
 | Project starters, including wizards | Entries in the **New project** dialog; a starter with questions carries the **Wizard** badge. |
+| Minecraft versions per entry | A template, starter or example may say which Minecraft versions it works on (`supports`). MCSuperMods asks the plugin once at start-up for every version it knows and hides the entry on the others. |
 | Examples | Entries in **Help → Examples…**, to open as a new project or copy into yours. |
 | Validators | Errors and warnings in **Problems**, checked while you edit. |
 | Importers | New file types in **File → Import Structure…**, which picks the importer by file extension. |

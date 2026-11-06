@@ -31,7 +31,7 @@ Rewritten 2026-11-06 at the 1.0 close (B162), for the next main session. Read th
 
 - Move `@anthropic-ai/sdk` from 1.1.0 to 1.4.0 or newer after 2026-11-16 (two-week rule); verify Haiku 5.5 cache prices and `max_tokens: 16` for the key test "(verify at implementation)".
 - Fix the renderer Biome override paths (`app/src/renderer/biome.json` reads root override globs relative to itself, so the Spyglass ban never applied; fixing it flags a type import in `session/mcfunction-problems.ts`).
-- Follow-ups: bow/crossbow pull animation ignores `draw_speed`; vanilla-tier weapon numbers in the Creator Stats need `TargetFacts`; optional `ArmorDefense.body`; validator for passthrough components holding data-pack holders; painting pictures are not rescaled; music disc flow has no audio import; Examples dialog does not show `merged`; `supports?` of external plugin entries is not passed through the worker.
+- Follow-ups: bow/crossbow pull animation ignores `draw_speed`; vanilla-tier weapon numbers in the Creator Stats need `TargetFacts`; optional `ArmorDefense.body`; validator for passthrough components holding data-pack holders; painting pictures are not rescaled; music disc flow has no audio import.
 - Plugin exporters run with default options (`runPluginExporter` passes none) and are only in the toolbar menu, not File > More Exports or the palette; the sample plugin has no exporter, so `plugins-path` does not click one.
 - `release.yml` still builds only `--filter=@msm/app...`; since the Windows fix the full build would work too, so the filter is optional.
 - `app.asar` is 30.1 MB of its 32 MB budget (reserve idea: vendored target data outside the asar, ROADMAP follow-ups).

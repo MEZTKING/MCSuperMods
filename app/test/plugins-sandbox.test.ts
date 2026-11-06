@@ -240,6 +240,7 @@ describe('plugin sandbox host', () => {
       build: 5000,
       import: 30_000,
       run: 120_000,
+      supports: 1000,
     });
   });
 });

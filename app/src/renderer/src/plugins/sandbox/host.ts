@@ -32,6 +32,7 @@ export const SANDBOX_DEADLINES: Readonly<Record<SandboxMethod, number>> = Object
   build: 5000,
   import: 30_000,
   run: 120_000,
+  supports: 1000,
 });
 
 /** How long a plugin may take to report `ready` (plan B154: 10 s, then `plugin.timeout`). */
