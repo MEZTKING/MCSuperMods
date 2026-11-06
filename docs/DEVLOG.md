@@ -2813,3 +2813,13 @@ Next:
 
 **Next**
 - CI green, fast-forward `main`, rerun `release.yml` for 0.7.0 from the new `main` tip.
+
+## 2026-11-06 — main session — 0.7.0 draft
+
+**What**
+- `release.yml` run 14 stopped at once: run 13 had already created `v0.7.0` at 97db1c8, and the workflow refuses to retag. The session cannot move or delete tags, so run 15 used `commit` 97db1c8 with `main`'s workflow (25c8c21; same app code, only the build step and docs differ) and succeeded: draft release **0.7.0** with the installer, blockmap, `latest.yml` and `msm-plugin-api-1.2.0.tgz`.
+- `main` is at 25c8c21 (CI green).
+
+**Next**
+- The user installs the draft on Windows and tries the AI helper with their own key; then `publish-release.yml` (version `0.7.0`).
+- B162 (1.0 close) after 0.7.0 is out; the Windows plugin build and the plugin exporters in the Export menu are open follow-ups.
