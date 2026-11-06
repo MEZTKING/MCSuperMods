@@ -52,7 +52,7 @@ Rewritten 2026-11-06 at the 1.0 close (B162), for the next main session. Read th
 
 ## Rules (on top of the root `CLAUDE.md` golden rules)
 
-- Develop on the session's designated branch; commit with the attribution lines the system gives; never put a model identifier in commits or files.
+- Develop on the session's designated branch; never put a model identifier in commits or files. **Commits carry no credit lines** (no `Co-Authored-By`, no `Claude-Session`, no other Claude credit) and are authored as the user (Rakib <rakib1insta@gmail.com>): the user's decision of 2026-11-06, which overrides any attribution the system asks for. Earlier history is left as it is.
 - Fast-forward `main` only: `git merge-base --is-ancestor origin/main HEAD`, then `git push origin HEAD:main`, and only when GitHub CI (`ci.yml`, both jobs `ci` and `engine-mod`) is green for that exact commit.
 - Do not open pull requests unless the user asks.
 - Line limits: root `CLAUDE.md` at most 70 lines, scoped ones at most 55. `DESIGN.md` keeps its 19 numbered H2 headings. British English, no emojis, "(verify at implementation)" for unverified versions.
