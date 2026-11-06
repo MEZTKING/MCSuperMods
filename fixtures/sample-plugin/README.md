@@ -10,6 +10,7 @@
 | Template | `sample-greeting` | "Greeting" in the "Greetings" group of Add element: a gold "Hello from <name>!". |
 | Example | `sample-greeting-example` | "Welcome greeting" in the Examples gallery: `<ns>:welcome` in aqua. |
 | Validator | `sample.empty-message` | A warning on `/message` for a greeting whose message is empty or only spaces. |
+| Exporter | `sample-greeting-list` | "Greeting list into a folder…" under More exports (and the palette): asks for the option "Sort by function id" (on by default), then writes `greetings.txt` with one line per greeting function, `<function id>: <command>`; nothing when the project has no greetings. |
 
 The kind has no custom editor (external plugins cannot add editors in 1.0): the app draws the schema-driven form from `dist/symbols.json`, which the build exports from `mcdoc/greeting.mcdoc`.
 

@@ -340,7 +340,7 @@ const samples: Record<
   [InvokeChannels.exportsWriteFiles]: {
     request: [
       { folder: '/tmp/out', files: [{ name: 'pack-data.zip', data: bytes }] },
-      { folder: '/tmp/out', files: [{ name: 'nested/pack.zip', data: bytes }] },
+      { folder: '/tmp/out', files: [{ name: '../pack.zip', data: bytes }] },
     ],
     response: [{ paths: ['/tmp/out/pack-data.zip'] }, { paths: [''] }],
   },
@@ -810,19 +810,26 @@ describe('IPC contract', () => {
     expect(request.safeParse({ folder: '/exports', files: [] }).success).toBe(false);
   });
 
-  it('accepts pack zips and namespaced structure paths as export file names', () => {
-    for (const name of ['demo-data.zip', 'demo/hut.nbt', 'demo/a/b.c_d-1.schem']) {
+  it('accepts pack zips and safe relative paths as export file names', () => {
+    for (const name of [
+      'demo-data.zip',
+      'demo/hut.nbt',
+      'demo/a/b.c_d-1.schem',
+      'greetings.txt',
+      'Demo/report.json',
+    ]) {
       expect(isExportFileName(name)).toBe(true);
     }
     for (const name of [
-      'hut.nbt',
-      'nested/pack.zip',
       '../demo/hut.nbt',
       'demo/../hut.nbt',
       'demo/./hut.nbt',
-      'Demo/hut.nbt',
-      'demo/hut.json',
+      'demo/.hidden',
       '/demo/hut.nbt',
+      'demo//hut.nbt',
+      'demo\\hut.nbt',
+      'demo/hut nbt',
+      `${'a/'.repeat(16)}b.txt`,
       `demo/${'a'.repeat(260)}.nbt`,
     ]) {
       expect(isExportFileName(name)).toBe(false);

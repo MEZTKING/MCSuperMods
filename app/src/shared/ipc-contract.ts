@@ -122,21 +122,19 @@ export const MCFUNCTION_MAX_COMPLETION_LIMIT = 10_000;
 export const EXPORT_MAX_FILES = 4096;
 
 /**
- * A structure file a plugin exporter writes into an export folder: `<namespace>/<path>.nbt`
- * or `.schem`, lower-case resource location characters, `/`-separated.
- */
-export const STRUCTURE_EXPORT_FILE = /^[a-z0-9_.-]+(?:\/[a-z0-9_.-]+)+\.(?:nbt|schem)$/;
-
-/**
- * Whether `name` may be written into an export folder: a single pack zip name, or a
- * {@link STRUCTURE_EXPORT_FILE} path without `.` or `..` segments. At most 255 characters.
+ * Whether `name` may be written into an export folder: a single pack zip name, or a relative
+ * `/`-separated path (structure files, or whatever a plugin exporter writes) of at most
+ * {@link EXPORT_TREE_MAX_DEPTH} segments, each matching {@link EXPORT_TREE_SEGMENT} and not
+ * starting with `.` (so no `.`, `..` or hidden files). At most 255 characters. Main also
+ * checks the real path stays inside the picked folder.
  */
 export function isExportFileName(name: string): boolean {
   if (name.length > 255) return false;
   if (PACK_FILE_NAME.test(name)) return true;
+  const segments = name.split('/');
   return (
-    STRUCTURE_EXPORT_FILE.test(name) &&
-    name.split('/').every((segment) => segment !== '.' && segment !== '..')
+    segments.length <= EXPORT_TREE_MAX_DEPTH &&
+    segments.every((segment) => EXPORT_TREE_SEGMENT.test(segment) && !segment.startsWith('.'))
   );
 }
 

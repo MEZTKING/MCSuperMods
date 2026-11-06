@@ -102,6 +102,7 @@ describe('sample.greetings', () => {
       'elementKinds',
       'elementTemplates',
       'examples',
+      'exporters',
       'validators',
     ]);
   });
@@ -172,6 +173,53 @@ describe('sample.greetings', () => {
       ['warning', 'sample.empty-message', 'demo:blank', '/message'],
       ['warning', 'sample.empty-message', 'demo:missing', '/message'],
     ]);
+  });
+
+  it('exports every greeting function into greetings.txt, sorted unless told otherwise', async () => {
+    const exporter = plugin.contributes.exporters?.[0];
+    expect(exporter?.id).toBe('sample-greeting-list');
+    const bytes = (text: string) => new TextEncoder().encode(text);
+    const files: OutputFile[] = [
+      {
+        path: 'data/demo/function/greet_zed.mcfunction',
+        contents: bytes('tellraw @a {"text": "Z"}\n'),
+        layer: 'datapack',
+      },
+      {
+        path: 'data/demo/function/greet_abe.mcfunction',
+        contents: bytes('tellraw @a {"text": "A"}\n'),
+        layer: 'datapack',
+      },
+      {
+        path: 'data/demo/function/other.mcfunction',
+        contents: bytes('say hi\n'),
+        layer: 'datapack',
+      },
+    ];
+    const run = async (options: Record<string, boolean>) => {
+      const written = new Map<string, string>();
+      await exporter?.run({
+        projectName: 'demo',
+        target: TARGET as never,
+        files,
+        sink: {
+          writeFile: async (path, contents) =>
+            void written.set(path, new TextDecoder().decode(contents)),
+        },
+        problems: { report: () => undefined },
+        meta: { msmVersion: 'test', plugins: [] },
+        options,
+      });
+      return written;
+    };
+    expect((await run({ sorted: true })).get('greetings.txt')).toBe(
+      'demo:greet_abe: tellraw @a {"text": "A"}\ndemo:greet_zed: tellraw @a {"text": "Z"}\n',
+    );
+    expect((await run({ sorted: false })).get('greetings.txt')?.startsWith('demo:greet_zed')).toBe(
+      true,
+    );
+    files.splice(0, 2);
+    expect((await run({ sorted: true })).size).toBe(0);
   });
 
   it('matches its manifest: id, API range and one capability per contribution point', () => {

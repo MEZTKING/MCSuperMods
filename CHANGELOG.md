@@ -15,7 +15,7 @@ MCSuperMods 1.0: everything from 0.7.0, with the plugin platform and the second 
 ### Added
 
 - Guide pages for plugins and for Minecraft versions (including Upgrade Project Target), and automated tests that load a sample plugin and upgrade a project to the snapshot target.
-- Exporters from third-party plugins are offered under **More exports** in the menu next to **Export .zip**.
+- Exporters from third-party plugins are offered under **More exports** in the menu next to **Export .zip** and in the command palette; one with options asks for them first.
 
 ### Fixed
 

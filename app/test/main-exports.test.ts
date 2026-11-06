@@ -66,7 +66,7 @@ describe('export folder writes', () => {
   it('refuses bad and duplicate names before writing anything', async () => {
     const s = service();
     const folder = (await s.pickFolder('Export')) as string;
-    for (const name of ['../a.zip', 'a/b.zip', 'a.txt', '.zip/../x.zip']) {
+    for (const name of ['../a.zip', 'a/../b.zip', '.hidden', '.zip/../x.zip']) {
       await expect(
         s.writeFiles(folder, [
           { name: 'ok.zip', data: new Uint8Array() },
@@ -107,15 +107,15 @@ describe('export folder writes', () => {
     expect(await readdir(join(folder, 'demo'))).toEqual(['hut.nbt', 'village']);
   });
 
-  it('refuses structure paths that are not namespaced, safe and lower-case', async () => {
+  it('refuses paths that are not safe and relative', async () => {
     const s = service();
     const folder = (await s.pickFolder('Export')) as string;
     for (const name of [
-      'hut.nbt',
+      '/hut.nbt',
       '../demo/hut.nbt',
       'demo/../hut.nbt',
-      'Demo/hut.nbt',
-      'demo/hut.json',
+      'demo/.hut.nbt',
+      'demo hut.nbt',
       'demo//hut.nbt',
     ]) {
       await expect(s.writeFiles(folder, [{ name, data: new Uint8Array() }])).rejects.toThrow(

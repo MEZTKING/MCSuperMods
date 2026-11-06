@@ -13,7 +13,7 @@
  *    panel shows a `plugin.unavailable` error on the element and the exports are disabled.
  */
 
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { defaultTargetId, targetById } from '@msm/targets';
@@ -186,6 +186,27 @@ test('plugins: the sample plugin loads, its kind has a schema form and exports',
     ),
   ) as { values?: string[] };
   expect(loadTag.values).toEqual([`${namespace}:greet_hello`]);
+
+  // The plugin's exporter is under More exports; its option is asked in a dialog, and the
+  // file is written by the plugin's worker into the picked folder (MSM_E2E_OUT_DIR).
+  await window.getByTestId('toolbar-export-menu').click();
+  // Keyboard, as in worldgen-path: moving the pointer into the submenu can close it.
+  const more = window.getByTestId('export-more');
+  await expect(more).toBeVisible();
+  await more.focus();
+  await window.keyboard.press('ArrowRight');
+  const pluginExport = window.getByTestId('export-plugin-sample-greeting-list');
+  await expect(pluginExport).toHaveText('Greeting list into a folder…');
+  await pluginExport.focus();
+  await window.keyboard.press('Enter');
+  const exportDialog = window.getByTestId('plugin-export-dialog');
+  await expect(exportDialog.getByTestId('exporter-option-sorted')).toBeChecked();
+  await exportDialog.getByRole('button', { name: 'Export…' }).click();
+  const listFile = join(folders.outDir, 'greetings.txt');
+  await expect.poll(() => existsSync(listFile), { timeout: 20_000 }).toBe(true);
+  expect(readFileSync(listFile, 'utf8')).toBe(
+    `${namespace}:greet_hello: tellraw @a {"text": ${JSON.stringify(MESSAGE)}, "color": "gold"}\n`,
+  );
 
   await window.screenshot({ path: join(outputDir, 'plugins-path.png') });
   await window.getByTestId('toolbar-save').click();

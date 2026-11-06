@@ -64,6 +64,7 @@ import {
 } from './components/install-target';
 import { NewElementDialog, NewNamespaceDialog } from './components/NewElementDialog';
 import { NewProjectDialog } from './components/NewProjectDialog';
+import { PluginExportDialog } from './components/PluginExportDialog';
 import { RenameElementDialog } from './components/RenameElementDialog';
 import { RightDock } from './components/RightDock';
 import { SettingsDialog } from './components/SettingsDialog';
@@ -174,6 +175,7 @@ type DialogState =
   | { type: 'usages'; id: ResourceLocation; usages: readonly Reference[] }
   | { type: 'worlds'; worlds: readonly WorldInfo[] }
   | { type: 'fabric-jar' }
+  | { type: 'plugin-export'; exporterId: string }
   | { type: 'java-project' }
   | { type: 'test-in-minecraft' }
   | { type: 'upgrade-target' }
@@ -731,10 +733,14 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   };
 
   /** Runs a plugin exporter (structure files) into a folder and reports the outcome. */
-  const runFolderExport = async (exporterId: string, what: string): Promise<void> => {
+  const runFolderExport = async (
+    exporterId: string,
+    what: string,
+    options?: Record<string, Json>,
+  ): Promise<void> => {
     setExporting(true);
     try {
-      const result = await session.runPluginExporter(exporterId);
+      const result = await session.runPluginExporter(exporterId, undefined, options);
       setExportProblems(userFacingExportProblems(result.problems));
       if (!result.ok) {
         setRightDock('problems');
@@ -819,7 +825,12 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         id: exporter.id,
         label: `${exporter.displayName} into a folder…`,
         reason,
-        onSelect: guarded(reason, () => void runFolderExport(exporter.id, 'file(s)')),
+        // Declared options are asked first; otherwise the export runs at once.
+        onSelect: guarded(reason, () =>
+          (exporter.options ?? []).length > 0
+            ? setDialog({ type: 'plugin-export', exporterId: exporter.id })
+            : void runFolderExport(exporter.id, 'file(s)'),
+        ),
       };
     });
   const installData = guarded(dataInstallReason, () => {
@@ -1325,10 +1336,21 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     creator: project === null ? null : handlers.creator,
   } satisfies Record<BuiltInCommandId, Action | null>;
 
-  const palette = paletteCommands(commandHandlers, session.pluginCommands, {
-    modKey,
-    onError: (title, error) => setMessage({ kind: 'error', text: `${title}: ${messageOf(error)}` }),
-  });
+  const palette = [
+    ...paletteCommands(commandHandlers, session.pluginCommands, {
+      modKey,
+      onError: (title, error) =>
+        setMessage({ kind: 'error', text: `${title}: ${messageOf(error)}` }),
+    }),
+    // The available plugin exporters of "More exports", as for the structure exports.
+    ...pluginExports
+      .filter((entry) => entry.reason === null)
+      .map((entry) => ({
+        id: `export-plugin:${entry.id}`,
+        title: `Export ${entry.label}`,
+        run: entry.onSelect,
+      })),
+  ];
 
   const dispatch = (command: MenuCommand, source: CommandSource): void => {
     if (deduper.shouldRun(command, source)) handlers[command]();
@@ -1806,6 +1828,24 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             void runPackExport('data', 'install', () => session.installDataPack(world.dir));
           }}
         />
+        {dialog?.type === 'plugin-export' &&
+          (() => {
+            const exporter = session.pluginExporters.find(
+              (entry) => entry.id === dialog.exporterId,
+            );
+            if (exporter === undefined) return null;
+            return (
+              <PluginExportDialog
+                displayName={exporter.displayName}
+                options={exporter.options ?? []}
+                onClose={() => setDialog(null)}
+                onExport={(values) => {
+                  setDialog(null);
+                  void runFolderExport(exporter.id, 'file(s)', values);
+                }}
+              />
+            );
+          })()}
         {dialog?.type === 'fabric-jar' && (
           <ExportFabricJarDialog
             options={session.fabricJarOptions}

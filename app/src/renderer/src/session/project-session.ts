@@ -2131,9 +2131,15 @@ export class ProjectSession {
    *
    * @param exporterId - The id of a registered plugin exporter.
    * @param folder - A folder already picked in this session.
+   * @param options - Values for the exporter's declared options, keyed by option id;
+   *   missing ones take their default.
    * @throws Error If no project is open.
    */
-  async runPluginExporter(exporterId: string, folder?: string): Promise<ExportResult> {
+  async runPluginExporter(
+    exporterId: string,
+    folder?: string,
+    options: Record<string, Json> = {},
+  ): Promise<ExportResult> {
     const exporter = this.#exporters.find((entry) => entry.id === exporterId);
     if (exporter === undefined) {
       return {
@@ -2149,7 +2155,7 @@ export class ProjectSession {
       };
     }
     const sink = createMemorySink();
-    const { report } = await this.#runPipeline(exporter, sink);
+    const { report } = await this.#runPipeline(exporter, sink, options);
     if (!report.ok) return report;
     const written = sink.files();
     if (written.size === 0) return report;

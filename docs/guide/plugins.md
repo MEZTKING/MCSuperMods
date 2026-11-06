@@ -16,7 +16,7 @@ In plugin API 1.x a plugin can contribute:
 | Examples | Entries in **Help → Examples…**, to open as a new project or copy into yours. |
 | Validators | Errors and warnings in **Problems**, checked while you edit. |
 | Importers | New file types in **File → Import Structure…**, which picks the importer by file extension. |
-| Exporters | Entries under **More exports** in the menu next to **Export .zip**, named "<exporter name> into a folder…". Each writes its files into a folder you choose; errors in the layers it packages block it, like any export. |
+| Exporters | Entries under **More exports** in the menu next to **Export .zip**, named "<exporter name> into a folder…", and in the command palette as "Export <exporter name> into a folder…". An exporter with options asks for them first; then it writes its files into a folder you choose. Errors in the layers it packages block it, like any export. The sample plugin's **Greeting list** writes `greetings.txt`. |
 
 A plugin cannot add its own editors or Studio views, its own commands or menu entries, or new Minecraft versions. Its kinds always use the generic form. A plugin that tries to contribute editors, commands or targets still loads, with a `plugin.capability-unsupported` warning, and those parts are ignored.
 

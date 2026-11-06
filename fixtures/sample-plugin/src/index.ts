@@ -4,8 +4,8 @@
  * It contributes one element kind, `sample:greeting` (`{ message, colour? }`), which lowers to
  * a data pack function that greets every player with `tellraw` and to an entry in the
  * `minecraft:load` function tag, so the greeting runs whenever the world loads. It also
- * contributes a "New element" template, an example for the Examples gallery and a validator
- * that warns about an empty message.
+ * contributes a "New element" template, an example for the Examples gallery, a validator
+ * that warns about an empty message and an exporter that writes every greeting into a text file.
  *
  * Like every external plugin it imports nothing but `@msm/plugin-api`, and esbuild bundles that
  * into `dist/main.js` (see `build.ts`). The app runs the bundle in a sandboxed worker
@@ -17,6 +17,7 @@ import {
   type ElementKind,
   type ElementTemplate,
   type ExampleProject,
+  type Exporter,
   type Json,
   type OutputFile,
   type Problem,
@@ -151,6 +152,38 @@ export const emptyMessageValidator: ProjectValidator = {
   },
 };
 
+/**
+ * Writes `greetings.txt`: one line per greeting function in the data pack, `<function id>:
+ * <command>`. Writes nothing when the project has no greetings, so the host reports that
+ * there was nothing to export.
+ */
+export const greetingListExporter: Exporter = {
+  id: 'sample-greeting-list',
+  displayName: 'Greeting list',
+  layers: ['datapack'],
+  options: [
+    {
+      id: 'sorted',
+      label: 'Sort by function id',
+      description: 'Otherwise the greetings keep the order of the exported files.',
+      type: 'boolean',
+      default: true,
+    },
+  ],
+  async run({ files, sink, options }) {
+    const lines: string[] = [];
+    for (const file of files) {
+      const match = /^data\/([^/]+)\/[^/]+\/(greet_[^/]+)\.mcfunction$/.exec(file.path);
+      if (match === null || !(file.contents instanceof Uint8Array)) continue;
+      const command = new TextDecoder().decode(file.contents).trim();
+      lines.push(`${match[1]}:${match[2]}: ${command}`);
+    }
+    if (lines.length === 0) return;
+    if (options.sorted !== false) lines.sort();
+    await sink.writeFile('greetings.txt', new TextEncoder().encode(`${lines.join('\n')}\n`));
+  },
+};
+
 export default definePlugin({
   id: 'sample.greetings',
   apiVersion: '^1.0.0',
@@ -159,5 +192,6 @@ export default definePlugin({
     elementTemplates: [greetingTemplate],
     examples: [greetingExample],
     validators: [emptyMessageValidator],
+    exporters: [greetingListExporter],
   },
 });
