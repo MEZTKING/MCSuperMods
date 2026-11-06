@@ -70,7 +70,10 @@ if (schemas.length > 0) {
   const hash = createHash('sha256');
   const work = await mkdtemp(join(tmpdir(), 'msm-plugin-mcdoc-'));
   try {
-    const source = join(work, 'src');
+    // Spyglass lowercases a Windows drive letter when it normalises a file URI but compares
+    // roots case-sensitively, so a folder on `D:` would match no root and export no types;
+    // the source path (for `--source`) and its URL use the lowercase form from the start.
+    const source = join(work, 'src').replace(/^[A-Z]:/, (drive) => drive.toLowerCase());
     await mkdir(join(source, namespace), { recursive: true });
     for (const name of names) {
       const text = (await readFile(join(root, 'mcdoc', name), 'utf8')).replaceAll('\r\n', '\n');
