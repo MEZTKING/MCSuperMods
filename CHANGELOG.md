@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+Nothing yet.
+
 ## [1.0.0] - 2026-11-06
 
 MCSuperMods 1.0: everything from 0.7.0, with the plugin platform and the second Minecraft version finished and documented. Projects from 0.7.0 open unchanged.
