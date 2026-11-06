@@ -156,6 +156,7 @@ function aiTestPlatform(): PlatformAdapter {
       status: unavailable,
       createInstance: unavailable,
       run: unavailable,
+      runModpack: unavailable,
       pickLauncherProgram: unavailable,
     },
     updates: {

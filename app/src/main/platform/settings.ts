@@ -94,6 +94,12 @@ export interface SettingsStore {
    * (`false` on a brand-new install). Main only.
    */
   recordSeenVersion(version: string): Promise<{ previous: string | null; existed: boolean }>;
+  /** The remembered modpack folders (ADR 0046 D2), in the order added. Main only. */
+  modpackRoots(): Promise<string[]>;
+  /** Remembers a modpack folder (absolute); a known one is not added twice. */
+  addModpackRoot(root: string): Promise<string[]>;
+  /** Forgets a modpack folder. */
+  removeModpackRoot(root: string): Promise<string[]>;
 }
 
 /** Launcher programs chosen by hand (absolute paths), stored as `launcherPrograms`. */
@@ -123,7 +129,11 @@ type StoredSettings = Required<AppSettings> & {
   launcherPrograms: LauncherPrograms;
   lastProjectParent: string | null;
   lastSeenVersion: string | null;
+  modpacks: string[];
 };
+
+/** The most modpacks the app remembers. */
+export const MODPACKS_MAX = 256;
 
 const LAUNCHER_LISTS = ['prismDataDirs', 'multimcRoots', 'curseForgeRoots'] as const;
 
@@ -218,6 +228,7 @@ const defaults = (): StoredSettings => ({
   launcherPrograms: emptyPrograms(),
   lastProjectParent: null,
   lastSeenVersion: null,
+  modpacks: [],
 });
 
 /** The longest stored version string (`lastSeenVersion`). */
@@ -295,6 +306,23 @@ function folderKey(path: string, caseInsensitive: boolean): string {
  * normalises roots, keeps the first of duplicate roots and at most
  * {@link RECENT_PROJECTS_MAX} entries.
  */
+function cleanModpackRoots(values: unknown, caseInsensitive: boolean): string[] {
+  if (!Array.isArray(values)) return [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const value of values) {
+    if (typeof value !== 'string' || value === '' || value.includes('\0') || !isAbsolute(value)) {
+      continue;
+    }
+    const key = folderKey(value, caseInsensitive);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(normaliseFolder(value));
+    if (out.length >= MODPACKS_MAX) break;
+  }
+  return out;
+}
+
 function cleanRecent(values: unknown, caseInsensitive: boolean): RecentProject[] {
   if (!Array.isArray(values)) return [];
   const seen = new Set<string>();
@@ -385,6 +413,7 @@ export function createSettingsStore(deps: {
       launcherPrograms: cleanPrograms(record.launcherPrograms),
       lastProjectParent: cleanProgram(record.lastProjectParent),
       lastSeenVersion: cleanVersion(record.lastSeenVersion),
+      modpacks: cleanModpackRoots(record.modpacks, caseInsensitive),
     };
   };
 
@@ -399,6 +428,7 @@ export function createSettingsStore(deps: {
       launcherPrograms: nextPrograms,
       lastProjectParent: nextParent,
       lastSeenVersion: nextSeen,
+      modpacks: nextModpacks,
       ai: nextAi,
       ...base
     } = next;
@@ -410,6 +440,7 @@ export function createSettingsStore(deps: {
       launcherPrograms?: Partial<LauncherPrograms>;
       lastProjectParent?: string;
       lastSeenVersion?: string;
+      modpacks?: string[];
     } = {
       ...base,
       ...(hasManualRoots(nextLaunchers) ? { launchers: nextLaunchers } : {}),
@@ -419,6 +450,7 @@ export function createSettingsStore(deps: {
       ...(Object.keys(programs).length === 0 ? {} : { launcherPrograms: programs }),
       ...(nextParent === null ? {} : { lastProjectParent: nextParent }),
       ...(nextSeen === null ? {} : { lastSeenVersion: nextSeen }),
+      ...(nextModpacks.length === 0 ? {} : { modpacks: nextModpacks }),
     };
     // Sorted keys, 2-space indent; written to a temporary file and renamed into place.
     const text = sortedJson(stored);
@@ -439,6 +471,7 @@ export function createSettingsStore(deps: {
         launcherPrograms: _programs,
         lastProjectParent: _parent,
         lastSeenVersion: _seen,
+        modpacks: _modpacks,
         ...settings
       } = await read();
       return { ...settings, detectedMinecraftDir: await detected() };
@@ -474,6 +507,7 @@ export function createSettingsStore(deps: {
         launcherPrograms: current.launcherPrograms,
         lastProjectParent: current.lastProjectParent,
         lastSeenVersion: current.lastSeenVersion,
+        modpacks: current.modpacks,
       };
       await write(next);
     },
@@ -559,6 +593,25 @@ export function createSettingsStore(deps: {
       const next = cleanVersion(version);
       if (next !== null && next !== previous) await write({ ...current, lastSeenVersion: next });
       return { previous, existed };
+    },
+    async modpackRoots() {
+      return (await read()).modpacks;
+    },
+    async addModpackRoot(root) {
+      if (!isAbsolute(root)) throw new Error('A modpack folder must be an absolute path.');
+      const current = await read();
+      const modpacks = cleanModpackRoots([...current.modpacks, root], caseInsensitive);
+      if (modpacks.length !== current.modpacks.length) await write({ ...current, modpacks });
+      return modpacks;
+    },
+    async removeModpackRoot(root) {
+      const current = await read();
+      const key = isAbsolute(root) ? folderKey(root, caseInsensitive) : null;
+      const modpacks = current.modpacks.filter(
+        (entry) => folderKey(entry, caseInsensitive) !== key,
+      );
+      if (modpacks.length !== current.modpacks.length) await write({ ...current, modpacks });
+      return modpacks;
     },
   };
 }

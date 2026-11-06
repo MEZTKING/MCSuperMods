@@ -15,8 +15,11 @@
 import { spawn } from 'node:child_process';
 import { realpath } from 'node:fs/promises';
 import { dirname, isAbsolute, normalize } from 'node:path';
+import type { ModpackMod } from '@msm/core';
+import { isModrinthCdnUrl } from '@msm/core';
 import {
   cachedFabricApi,
+  contentJarModsFileName,
   createManagedInstance,
   type Downloader,
   defaultPrismDataDirs,
@@ -28,6 +31,7 @@ import {
   type GameLocation,
   type InstallFileSystem,
   installContentJar,
+  installExtraMod,
   isManagedInstance,
   isPathInside,
   type LauncherProgramEnv,
@@ -35,6 +39,7 @@ import {
   locationPathKey,
   managedInstanceName,
   readMmcConfig,
+  removeUnlistedInstalls,
   type Sha512,
   webCryptoSha512,
 } from '@msm/interop';
@@ -42,6 +47,7 @@ import { targetById } from '@msm/targets';
 import type {
   FileFilter,
   LaunchableLauncher,
+  ModpackTestResult,
   TestInMinecraftResult,
   TestInMinecraftStatus,
 } from '../../shared/platform';
@@ -53,6 +59,11 @@ export interface TestInMinecraftService {
   status(targetId: string): Promise<TestInMinecraftStatus>;
   createInstance(targetId: string): Promise<TestInMinecraftStatus>;
   run(targetId: string, modId: string, data: Uint8Array): Promise<TestInMinecraftResult>;
+  runModpack(
+    targetId: string,
+    jars: readonly { modId: string; data: Uint8Array }[],
+    mods: readonly ModpackMod[],
+  ): Promise<ModpackTestResult>;
   pickLauncherProgram(launcher: LaunchableLauncher): Promise<string | null>;
 }
 
@@ -211,6 +222,60 @@ export function createTestInMinecraftService(deps: TestInMinecraftDeps): TestInM
     return mods;
   };
 
+  /** Starts the launcher when the location allows it; otherwise says how to start the game. */
+  const launch = async (
+    readiness: ReturnType<typeof fabricReadiness>,
+    status: TestInMinecraftStatus,
+    selected: GameLocation,
+  ): Promise<{ launched: boolean; note: string | null }> => {
+    if (readiness.mode === 'install-only') return { launched: false, note: readiness.note };
+    const launcher = selected.ref.launcher === 'multimc' ? 'multimc' : 'prism';
+    const program = status.launcherProgram;
+    if (program === null) {
+      return {
+        launched: false,
+        note: `${LAUNCHER_NAMES[launcher]} was not found, so it was not started. Start "${selected.displayName}" from it, or choose its program in the Test in Minecraft dialog.`,
+      };
+    }
+    try {
+      await spawnLauncher(program, launchArguments(selected.ref, deps.env));
+      return { launched: true, note: null };
+    } catch (error) {
+      return {
+        launched: false,
+        note: `${LAUNCHER_NAMES[launcher]} could not be started (${messageOf(error)}). Start "${selected.displayName}" from it.`,
+      };
+    }
+  };
+
+  /**
+   * A modpack's extra mod from the download cache (`<cache>/modrinth/<sha512 prefix>/<file>`),
+   * downloaded once from Modrinth's CDN and checked against the pinned SHA-512 (ADR 0046 D5).
+   */
+  const cachedModrinthFile = async (mod: ModpackMod): Promise<Uint8Array> => {
+    if (!isModrinthCdnUrl(mod.url)) {
+      throw new Error(`${mod.title} does not come from Modrinth's download server.`);
+    }
+    const folder = `${deps.cacheDir}/modrinth/${mod.sha512.slice(0, 16)}`;
+    const path = `${folder}/${mod.fileName}`;
+    if (await fs.exists(path)) {
+      const cached = await fs.readFile(path);
+      if ((await sha512(cached)) === mod.sha512) return cached;
+    }
+    let bytes: Uint8Array;
+    try {
+      bytes = await download(mod.url);
+    } catch (error) {
+      throw new Error(`${mod.title} could not be downloaded: ${messageOf(error)}`);
+    }
+    if ((await sha512(bytes)) !== mod.sha512) {
+      throw new Error(`The download of ${mod.title} does not match its pinned checksum.`);
+    }
+    await fs.mkdirp(folder);
+    await fs.writeFile(path, bytes);
+    return bytes;
+  };
+
   return {
     async status(targetId) {
       return (await computeStatus(targetId)).status;
@@ -255,25 +320,44 @@ export function createTestInMinecraftService(deps: TestInMinecraftDeps): TestInM
         launched: false,
         note: null,
       };
-      if (readiness.mode === 'install-only') return { ...result, note: readiness.note };
+      return { ...result, ...(await launch(readiness, status, selected)) };
+    },
 
-      const launcher = selected.ref.launcher === 'multimc' ? 'multimc' : 'prism';
-      const program = status.launcherProgram;
-      if (program === null) {
-        return {
-          ...result,
-          note: `${LAUNCHER_NAMES[launcher]} was not found, so it was not started. Start "${selected.displayName}" from it, or choose its program in the Test in Minecraft dialog.`,
-        };
+    async runModpack(targetId, jars, mods) {
+      const facts = factsFor(targetId);
+      const { status, selected } = await computeStatus(targetId);
+      const readiness = fabricReadiness(selected, facts);
+      if (readiness.mode === 'blocked' || selected === null) {
+        throw new Error(status.reason ?? 'No game location is selected.');
       }
-      try {
-        await spawnLauncher(program, launchArguments(selected.ref, deps.env));
-        return { ...result, launched: true };
-      } catch (error) {
-        return {
-          ...result,
-          note: `${LAUNCHER_NAMES[launcher]} could not be started (${messageOf(error)}). Start "${selected.displayName}" from it.`,
-        };
+      const modsDir = await checkedModsDir(selected, readiness.modsDir);
+      const installDeps = { fs, sha512 };
+      // Every extra mod is fetched (or read from the cache) before anything is written.
+      const extras: { mod: ModpackMod; bytes: Uint8Array }[] = [];
+      for (const mod of mods) extras.push({ mod, bytes: await cachedModrinthFile(mod) });
+      const api = await ensureFabricApi(installDeps, modsDir, facts.api, () =>
+        cachedFabricApi({ fs, cacheDir: deps.cacheDir, download, sha512 }, facts.api),
+      );
+      const installed: string[] = [];
+      for (const jar of jars) {
+        await installContentJar(installDeps, modsDir, jar.modId, jar.data);
+        installed.push(contentJarModsFileName(jar.modId));
       }
+      for (const { mod, bytes } of extras) {
+        await installExtraMod(installDeps, modsDir, mod.fileName, mod.projectId, bytes);
+        installed.push(mod.fileName);
+      }
+      const removed = await removeUnlistedInstalls(installDeps, modsDir, new Set(installed));
+      const result: ModpackTestResult = {
+        modsDir: normalize(modsDir),
+        installed: [...installed].sort(),
+        removed,
+        fabricApi: api.state,
+        fabricApiFile: api.file,
+        launched: false,
+        note: null,
+      };
+      return { ...result, ...(await launch(readiness, status, selected)) };
     },
 
     async pickLauncherProgram(launcher) {

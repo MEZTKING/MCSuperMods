@@ -146,7 +146,24 @@ const bridge: MsmBridge = {
     check: (source, name, typings) =>
       ipcRenderer.invoke(InvokeChannels.scriptingCheck, { source, name, typings }),
   },
+  modpacks: {
+    list: () => ipcRenderer.invoke(InvokeChannels.modpacksList),
+    create: (name, targetId) =>
+      ipcRenderer.invoke(InvokeChannels.modpacksCreate, { name, targetId }),
+    addExisting: () => ipcRenderer.invoke(InvokeChannels.modpacksAddExisting),
+    forget: (root) => ipcRenderer.invoke(InvokeChannels.modpacksForget, { root }),
+    read: (root) => ipcRenderer.invoke(InvokeChannels.modpacksRead, { root }),
+    write: (root, modpack) => ipcRenderer.invoke(InvokeChannels.modpacksWrite, { root, modpack }),
+    addProject: (root, projectRoot) =>
+      ipcRenderer.invoke(InvokeChannels.modpacksAddProject, { root, projectRoot }),
+    readProject: (root, path) =>
+      ipcRenderer.invoke(InvokeChannels.modpacksReadProject, { root, path }),
+    lookupMod: (input, gameVersion) =>
+      ipcRenderer.invoke(InvokeChannels.modpacksLookupMod, { input, gameVersion }),
+  },
   testInMinecraft: {
+    runModpack: (targetId, jars, mods) =>
+      ipcRenderer.invoke(InvokeChannels.testInMinecraftRunModpack, { targetId, jars, mods }),
     status: (targetId) => ipcRenderer.invoke(InvokeChannels.testInMinecraftStatus, { targetId }),
     createInstance: (targetId) =>
       ipcRenderer.invoke(InvokeChannels.testInMinecraftCreateInstance, { targetId }),

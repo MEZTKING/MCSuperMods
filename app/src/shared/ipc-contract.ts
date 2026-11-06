@@ -320,6 +320,55 @@ const gameLocationView = z
 /** A Fabric mod id (`fabric.mod.json` `id`): a lower-case letter, then 1 to 63 of `a-z0-9_-`. */
 export const FABRIC_MOD_ID = /^[a-z][a-z0-9_-]{1,63}$/;
 const fabricModId = z.string().regex(FABRIC_MOD_ID);
+
+/** The most member jars or extra mods one modpack call carries (ADR 0046). */
+const MODPACK_IPC_MAX = 512;
+const modpackText = z.string().min(1).max(256);
+const modpackMod = z
+  .object({
+    projectId: modpackText,
+    versionId: modpackText,
+    title: modpackText,
+    fileName,
+    url: z.string().max(2048),
+    sha1: z.string().regex(/^[0-9a-f]{40}$/),
+    sha512: z.string().regex(/^[0-9a-f]{128}$/),
+    size: z.number().int().positive(),
+  })
+  .strict();
+/** A modpack's shape; main validates it fully with `parseModpack` before writing. */
+const modpackShape = z
+  .object({
+    formatVersion: z.literal(1),
+    name: modpackText,
+    version: modpackText,
+    summary: modpackText.optional(),
+    targetId,
+    projects: z
+      .array(z.object({ path: z.string().min(1).max(1024) }).strict())
+      .max(MODPACK_IPC_MAX),
+    mods: z.array(modpackMod).max(MODPACK_IPC_MAX),
+  })
+  .strict();
+const modpackView = z
+  .object({
+    root: absolutePath,
+    modpack: modpackShape,
+    members: z
+      .array(
+        z
+          .object({
+            path: z.string().min(1).max(1024),
+            root: absolutePath,
+            found: z.boolean(),
+            name: z.string().max(256).nullable(),
+            targetId: z.string().max(128).nullable(),
+          })
+          .strict(),
+      )
+      .max(MODPACK_IPC_MAX),
+  })
+  .strict();
 const shortVersion = z.string().min(1).max(128);
 /** {@link TestInMinecraftStatus} as a schema. */
 const testInMinecraftStatus = z
@@ -774,6 +823,73 @@ export const ipcContract = {
         fabricApiFile: fileName,
         launched: z.boolean(),
         note: z.string().max(1024).nullable(),
+      })
+      .strict(),
+  },
+  [InvokeChannels.testInMinecraftRunModpack]: {
+    request: z
+      .object({
+        targetId,
+        jars: z.array(z.object({ modId: fabricModId, data: bytes }).strict()).max(MODPACK_IPC_MAX),
+        mods: z.array(modpackMod).max(MODPACK_IPC_MAX),
+      })
+      .strict(),
+    response: z
+      .object({
+        modsDir: absolutePath,
+        installed: z.array(fileName).max(MODPACK_IPC_MAX * 2),
+        removed: z.array(fileName).max(4096),
+        fabricApi: z.enum(['installed', 'present', 'user-copy']),
+        fabricApiFile: fileName,
+        launched: z.boolean(),
+        note: z.string().max(1024).nullable(),
+      })
+      .strict(),
+  },
+  [InvokeChannels.modpacksList]: {
+    request: noRequest,
+    response: z
+      .array(
+        z.object({ root: absolutePath, name: modpackText.nullable(), found: z.boolean() }).strict(),
+      )
+      .max(256),
+  },
+  [InvokeChannels.modpacksCreate]: {
+    request: z.object({ name: z.string().max(256), targetId }).strict(),
+    response: modpackView.nullable(),
+  },
+  [InvokeChannels.modpacksAddExisting]: { request: noRequest, response: modpackView.nullable() },
+  [InvokeChannels.modpacksForget]: {
+    request: z.object({ root: absolutePath }).strict(),
+    response: z.undefined(),
+  },
+  [InvokeChannels.modpacksRead]: {
+    request: z.object({ root: absolutePath }).strict(),
+    response: modpackView,
+  },
+  [InvokeChannels.modpacksWrite]: {
+    request: z.object({ root: absolutePath, modpack: modpackShape }).strict(),
+    response: modpackView,
+  },
+  [InvokeChannels.modpacksAddProject]: {
+    request: z.object({ root: absolutePath, projectRoot: absolutePath.nullable() }).strict(),
+    response: modpackView.nullable(),
+  },
+  [InvokeChannels.modpacksReadProject]: {
+    request: z.object({ root: absolutePath, path: z.string().min(1).max(1024) }).strict(),
+    response: z
+      .array(z.object({ path: z.string().min(1).max(1024), data: bytes }).strict())
+      .max(20_000),
+  },
+  [InvokeChannels.modpacksLookupMod]: {
+    request: z
+      .object({ input: z.string().min(1).max(512), gameVersion: z.string().min(1).max(64) })
+      .strict(),
+    response: z
+      .object({
+        file: modpackMod,
+        versionNumber: z.string().max(256),
+        requiredProjects: z.array(z.string().max(64)).max(256),
       })
       .strict(),
   },

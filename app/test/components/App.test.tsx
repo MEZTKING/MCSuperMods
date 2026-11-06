@@ -391,6 +391,7 @@ async function renderApp(
           note: null,
         };
       },
+      runModpack: unavailable,
       pickLauncherProgram: unavailable,
     },
     thumbnails: { get: unavailable },

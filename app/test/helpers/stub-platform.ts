@@ -53,6 +53,7 @@ export function stubPlatformServices(): Pick<
       status: unavailable,
       createInstance: unavailable,
       run: unavailable,
+      runModpack: unavailable,
       pickLauncherProgram: unavailable,
     },
     updates: {

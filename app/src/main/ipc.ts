@@ -136,6 +136,29 @@ export function createIpcHandlers(
       platform.testInMinecraft.createInstance(req.targetId),
     [InvokeChannels.testInMinecraftRun]: (req) =>
       platform.testInMinecraft.run(req.targetId, req.modId, req.data),
+    [InvokeChannels.testInMinecraftRunModpack]: (req) =>
+      platform.testInMinecraft.runModpack(req.targetId, req.jars, req.mods),
+    [InvokeChannels.modpacksList]: () => platform.modpacks.list(),
+    [InvokeChannels.modpacksCreate]: (req) => platform.modpacks.create(req.name, req.targetId),
+    [InvokeChannels.modpacksAddExisting]: () => platform.modpacks.addExisting(),
+    [InvokeChannels.modpacksForget]: async (req) => {
+      await platform.modpacks.forget(req.root);
+      return undefined;
+    },
+    [InvokeChannels.modpacksRead]: (req) => platform.modpacks.read(req.root),
+    [InvokeChannels.modpacksWrite]: (req) => {
+      const { summary, ...modpack } = req.modpack;
+      return platform.modpacks.write(
+        req.root,
+        summary === undefined ? modpack : { ...modpack, summary },
+      );
+    },
+    [InvokeChannels.modpacksAddProject]: (req) =>
+      platform.modpacks.addProject(req.root, req.projectRoot),
+    [InvokeChannels.modpacksReadProject]: (req) =>
+      platform.modpacks.readProject(req.root, req.path),
+    [InvokeChannels.modpacksLookupMod]: (req) =>
+      platform.modpacks.lookupMod(req.input, req.gameVersion),
     [InvokeChannels.testInMinecraftPickLauncherProgram]: (req) =>
       platform.testInMinecraft.pickLauncherProgram(req.launcher),
     [InvokeChannels.thumbnailsGet]: (req) => platform.thumbnails.get(req.assetPath, req.size),

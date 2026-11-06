@@ -28,6 +28,7 @@ import { type GradleWrapperLocation, readGradleWrapper } from './gradle-wrapper'
 import { createLocationResolver } from './locations';
 import { createMcfunctionBroker } from './mcfunction';
 import { createMinecraftService, type MinecraftService } from './minecraft';
+import { createModpackService, type ModpackService } from './modpacks';
 import { type RuntimeJarLocation, readRuntimeJar, runtimeVersionKey } from './runtime-jar';
 import { createScopedFileSystem, isWithin, type ScopedFileSystem } from './scoped-fs';
 import { createScriptingService, type ScriptingService } from './scripting';
@@ -163,9 +164,10 @@ export interface NodePlatformDeps {
  * updater (`../updater.ts`) and `ai` by the AI service (`../ai/ai-service.ts`), not by the Node
  * platform.
  */
-export interface MainPlatform extends Omit<PlatformAdapter, 'updates' | 'ai'> {
+export interface MainPlatform extends Omit<PlatformAdapter, 'updates' | 'ai' | 'modpacks'> {
   minecraft: MinecraftService;
   settings: SettingsStore;
+  modpacks: ModpackService;
 }
 
 /**
@@ -257,6 +259,13 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
       ? {}
       : { spawnLauncher: testOptions.spawnLauncher }),
     pickProgram: async (opts) => (await deps.dialogs.openFiles(opts))[0] ?? null,
+  });
+  const modpacks = createModpackService({
+    settings,
+    pickDirectory: (opts) => deps.dialogs.pickDirectory(opts),
+    writeFileAtomic: (path, data) => writeFileAtomic(path, data),
+    caseInsensitive: deps.installEnv.platform === 'win32' || deps.installEnv.platform === 'darwin',
+    ...(testOptions.download === undefined ? {} : { download: testOptions.download }),
   });
   const now = deps.now ?? (() => new Date().toISOString());
 
@@ -443,6 +452,7 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     },
     scripting: deps.scripting ?? createScriptingService(),
     testInMinecraft,
+    modpacks,
     thumbnails: createThumbnailService({ projectFs: active, resizePng: deps.resizePng }),
     project: {
       openRoot,

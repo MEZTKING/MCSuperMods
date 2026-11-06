@@ -8,7 +8,7 @@
 
 // Type-only: the AI helper's protocol (ADR 0041); the SDK itself runs only in main.
 import type { AiEvent, AiKeyTestResult, AiSettings, AiStartRequest, AiToolResult } from '@msm/ai';
-import type { ProjectFileSystem } from '@msm/core';
+import type { Modpack, ModpackMod, ProjectFileSystem } from '@msm/core';
 // Type-only: the service itself runs in main (ADR 0014); these are plain MSM shapes.
 import type { Problem } from '@msm/plugin-api';
 import type { McfunctionCompletion, McfunctionProblem } from '@msm/schemas/mcfunction';
@@ -272,6 +272,64 @@ export interface TestInMinecraftResult {
   launched: boolean;
   /** How to start the game when it was not launched; otherwise `null`. */
   note: string | null;
+}
+
+/** What a modpack test run did (ADR 0046 D5). */
+export interface ModpackTestResult {
+  /** The `mods/` folder written to. */
+  modsDir: string;
+  /** File names installed or kept: the member jars and the extra mods, sorted. */
+  installed: string[];
+  /** Jars MSM installed earlier that are not in this modpack and were removed, sorted. */
+  removed: string[];
+  fabricApi: 'installed' | 'present' | 'user-copy';
+  fabricApiFile: string;
+  launched: boolean;
+  note: string | null;
+}
+
+/** One remembered modpack (ADR 0046 D2). */
+export interface ModpackListEntry {
+  /** The modpack folder (absolute). */
+  root: string;
+  /** Its name, or `null` when the file is missing or unreadable. */
+  name: string | null;
+  /** Whether the folder still holds a readable `msm.modpack.json`. */
+  found: boolean;
+}
+
+/** One member project as main sees it on disk. */
+export interface ModpackMemberView {
+  /** The path as written in the modpack. */
+  path: string;
+  /** The resolved project folder (absolute). */
+  root: string;
+  /** Whether it holds `msm.project.json`. */
+  found: boolean;
+  /** The project's name and target id from `msm.project.json`, when readable. */
+  name: string | null;
+  targetId: string | null;
+}
+
+/** A modpack read from disk, with its members resolved. */
+export interface ModpackView {
+  root: string;
+  modpack: Modpack;
+  members: ModpackMemberView[];
+}
+
+/** A pinned Modrinth file plus what its version requires, for "Add mod from Modrinth…". */
+export interface ModrinthModLookup {
+  file: ModpackMod;
+  versionNumber: string;
+  /** Project ids the version requires, for the user to add. */
+  requiredProjects: string[];
+}
+
+/** One file of a member project's read-only snapshot (project-relative POSIX path). */
+export interface ProjectSnapshotFile {
+  path: string;
+  data: Uint8Array;
 }
 
 /**
@@ -561,6 +619,31 @@ export interface PlatformAdapter {
    * location's `mods/` folder and starts Prism Launcher or MultiMC on it. Fabric versions come
    * from the target named by `targetId`.
    */
+  /**
+   * Modpacks (ADR 0046): the remembered list, the modpack files, member snapshots for builds
+   * and Modrinth lookups. Optional so that older test doubles may omit it.
+   */
+  modpacks?: {
+    list(): Promise<ModpackListEntry[]>;
+    /** Asks for a new, empty folder, writes a new modpack there and remembers it; `null` when cancelled. */
+    create(name: string, targetId: string): Promise<ModpackView | null>;
+    /** Asks for a folder holding `msm.modpack.json` and remembers it; `null` when cancelled. */
+    addExisting(): Promise<ModpackView | null>;
+    /** Forgets a modpack (its files stay). */
+    forget(root: string): Promise<void>;
+    read(root: string): Promise<ModpackView>;
+    /** Writes the modpack file (validated) and returns the new view. */
+    write(root: string, modpack: Modpack): Promise<ModpackView>;
+    /**
+     * Adds a project: `projectRoot` (an open or recent project) or, when `null`, one the user
+     * picks. The member path is relative to the modpack when possible. `null` when cancelled.
+     */
+    addProject(root: string, projectRoot: string | null): Promise<ModpackView | null>;
+    /** The read-only snapshot of member `path` (`msm.project.json`, `content/`, `assets/`). */
+    readProject(root: string, path: string): Promise<ProjectSnapshotFile[]>;
+    /** Looks a mod up on Modrinth for `gameVersion` and pins its newest Fabric file. */
+    lookupMod(input: string, gameVersion: string): Promise<ModrinthModLookup>;
+  };
   testInMinecraft: {
     /** What a run would do with the selected location. */
     status(targetId: string): Promise<TestInMinecraftStatus>;
@@ -575,6 +658,16 @@ export interface PlatformAdapter {
      * when the location allows it.
      */
     run(targetId: string, modId: string, data: Uint8Array): Promise<TestInMinecraftResult>;
+    /**
+     * Installs every member jar as `mods/<modId>.jar` and every extra mod (downloaded once,
+     * SHA-512 checked), removes jars MSM installed that are not in the modpack, makes sure
+     * Fabric API is present and starts the launcher when the location allows it (ADR 0046 D5).
+     */
+    runModpack(
+      targetId: string,
+      jars: { modId: string; data: Uint8Array }[],
+      mods: ModpackMod[],
+    ): Promise<ModpackTestResult>;
     /** Asks for a launcher program and stores it; returns its path, or `null` when cancelled. */
     pickLauncherProgram(launcher: LaunchableLauncher): Promise<string | null>;
   };

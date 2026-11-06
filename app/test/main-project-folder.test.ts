@@ -126,6 +126,29 @@ describe('settings store: lastProjectParent and lastSeenVersion', () => {
     expect(await store().recordSeenVersion('0.7.0')).toEqual({ previous: '0.6.0', existed: true });
     expect((await settingsFile()).lastSeenVersion).toBe('0.7.0');
   });
+
+  it('remembers modpack folders once, cleans junk and keeps them out of the renderer view', async () => {
+    expect(await store().addModpackRoot(join(temp, 'packs', 'a'))).toEqual([
+      join(temp, 'packs', 'a'),
+    ]);
+    expect(await store().addModpackRoot(join(temp, 'packs', 'a/'))).toHaveLength(1);
+    await store().addModpackRoot(join(temp, 'packs', 'b'));
+    await expect(store().addModpackRoot('relative')).rejects.toThrow(/absolute/);
+    expect((await settingsFile()).modpacks).toEqual([
+      join(temp, 'packs', 'a'),
+      join(temp, 'packs', 'b'),
+    ]);
+    expect(await store().get()).not.toHaveProperty('modpacks');
+    await store().set({ updates: { autoCheck: false } });
+    expect(await store().removeModpackRoot(join(temp, 'packs', 'a'))).toEqual([
+      join(temp, 'packs', 'b'),
+    ]);
+    await writeFile(
+      join(msmHome(), 'settings.json'),
+      JSON.stringify({ modpacks: ['rel', 7, join(temp, 'x')] }),
+    );
+    expect(await store().modpackRoots()).toEqual([join(temp, 'x')]);
+  });
 });
 
 describe('The launch notice', () => {

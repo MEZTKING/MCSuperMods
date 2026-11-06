@@ -97,6 +97,29 @@ const aiStart = {
   limits: { maxToolTurns: 10, maxOutputTokens: 50_000, taskBudget: true },
 };
 
+const sampleMod = {
+  projectId: 'AANobbMI',
+  versionId: 'VERSION1',
+  title: 'Sodium',
+  fileName: 'sodium.jar',
+  url: 'https://cdn.modrinth.com/data/AANobbMI/versions/VERSION1/sodium.jar',
+  sha1: 'a'.repeat(40),
+  sha512: 'b'.repeat(128),
+  size: 42,
+};
+const sampleView = {
+  root: '/m/pack',
+  modpack: {
+    formatVersion: 1,
+    name: 'Pack',
+    version: '1.0.0',
+    targetId: 'mc-26.3',
+    projects: [{ path: '../ruby' }],
+    mods: [sampleMod],
+  },
+  members: [{ path: '../ruby', root: '/m/ruby', found: true, name: 'Ruby', targetId: 'mc-26.3' }],
+};
+
 /** One valid and one invalid request and response per channel. */
 const samples: Record<
   InvokeChannel,
@@ -407,6 +430,72 @@ const samples: Record<
   [InvokeChannels.testInMinecraftCreateInstance]: {
     request: [{ targetId: 'mc-26.3' }, {}],
     response: [{ ...testStatus, location: prismLocation, mode: 'launch' }, null],
+  },
+  [InvokeChannels.testInMinecraftRunModpack]: {
+    request: [
+      { targetId: 'mc-26.3', jars: [{ modId: 'ruby_mod', data: bytes }], mods: [sampleMod] },
+      { targetId: 'mc-26.3', jars: [{ modId: '../evil', data: bytes }], mods: [] },
+    ],
+    response: [
+      {
+        modsDir: '/p/mods',
+        installed: ['ruby_mod.jar', 'sodium.jar'],
+        removed: [],
+        fabricApi: 'present',
+        fabricApiFile: 'fabric-api-0.165.2+26.3.jar',
+        launched: false,
+        note: null,
+      },
+      { modsDir: '/p/mods', installed: ['../x.jar'] },
+    ],
+  },
+  [InvokeChannels.modpacksList]: {
+    request: [undefined, { all: true }],
+    response: [[{ root: '/m/pack', name: 'Pack', found: true }], [{ root: '' }]],
+  },
+  [InvokeChannels.modpacksCreate]: {
+    request: [{ name: 'Pack', targetId: 'mc-26.3' }, { name: 'Pack' }],
+    response: [sampleView, { root: '/m/pack' }],
+  },
+  [InvokeChannels.modpacksAddExisting]: {
+    request: [undefined, { root: '/m' }],
+    response: [null, { root: 3 }],
+  },
+  [InvokeChannels.modpacksForget]: {
+    request: [{ root: '/m/pack' }, { root: '' }],
+    response: [undefined, 'gone'],
+  },
+  [InvokeChannels.modpacksRead]: {
+    request: [{ root: '/m/pack' }, {}],
+    response: [sampleView, { ...sampleView, modpack: { ...sampleView.modpack, formatVersion: 2 } }],
+  },
+  [InvokeChannels.modpacksWrite]: {
+    request: [
+      { root: '/m/pack', modpack: sampleView.modpack },
+      { root: '/m/pack', modpack: { ...sampleView.modpack, extra: true } },
+    ],
+    response: [sampleView, null],
+  },
+  [InvokeChannels.modpacksAddProject]: {
+    request: [{ root: '/m/pack', projectRoot: null }, { root: '/m/pack' }],
+    response: [null, { members: [] }],
+  },
+  [InvokeChannels.modpacksReadProject]: {
+    request: [
+      { root: '/m/pack', path: '../ruby' },
+      { root: '/m/pack', path: '' },
+    ],
+    response: [[{ path: 'msm.project.json', data: bytes }], [{ path: 'x', data: 'text' }]],
+  },
+  [InvokeChannels.modpacksLookupMod]: {
+    request: [
+      { input: 'sodium', gameVersion: '26.3' },
+      { input: '', gameVersion: '26.3' },
+    ],
+    response: [
+      { file: sampleMod, versionNumber: '0.6.2', requiredProjects: ['P7dR8mSH'] },
+      { file: { ...sampleMod, sha512: 'x' }, versionNumber: '0.6.2', requiredProjects: [] },
+    ],
   },
   [InvokeChannels.testInMinecraftRun]: {
     request: [
