@@ -20,6 +20,8 @@ export interface CopyExampleResult {
   duplicates: readonly string[];
   assets: readonly string[];
   skippedAssets: readonly string[];
+  /** Language files and tags the project already had, merged with the example's. */
+  merged?: readonly string[];
 }
 
 /** Props of {@link ExamplesDialog}. */
@@ -100,12 +102,25 @@ function plural(count: number, word: string): string {
   return `${count} ${word}${count === 1 ? '' : 's'}`;
 }
 
+/** How many existing language files and tags a copy merged into, as words (`''` for none). */
+export function mergedPhrase(merged: readonly string[] | undefined): string {
+  const count = merged?.length ?? 0;
+  if (count === 0) return '';
+  return count === 1
+    ? 'an existing language file or tag'
+    : `${count} existing language files or tags`;
+}
+
 /** The summary sentence of a copy result. */
 export function copySummary(result: CopyExampleResult, namespace: string): string {
+  const merged = mergedPhrase(result.merged);
   if (result.added.length === 0 && result.assets.length === 0) {
-    return `Nothing was added to ${namespace}: the project already has everything in this example.`;
+    return merged === ''
+      ? `Nothing was added to ${namespace}: the project already has everything in this example.`
+      : `No new elements or assets for ${namespace}; the example's entries were merged into ${merged}.`;
   }
-  return `Added ${plural(result.added.length, 'element')} and ${plural(result.assets.length, 'asset')} to ${namespace}.`;
+  const added = `Added ${plural(result.added.length, 'element')} and ${plural(result.assets.length, 'asset')} to ${namespace}`;
+  return merged === '' ? `${added}.` : `${added}, and merged its entries into ${merged}.`;
 }
 
 /** The gallery dialog. */

@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   type CopyExampleResult,
+  copySummary,
   ExamplesDialog,
   exampleMatches,
 } from '../../src/renderer/src/components/ExamplesDialog';
@@ -153,5 +154,18 @@ describe('ExamplesDialog', () => {
     );
     await userEvent.setup().click(screen.getByTestId('examples-copy'));
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('No project is open.'));
+  });
+});
+
+describe('copySummary with merged files', () => {
+  const base = { added: ['demo:a'], duplicates: [], assets: [], skippedAssets: [] };
+  it('names merged language files and tags', () => {
+    expect(copySummary(base, 'demo')).toBe('Added 1 element and 0 assets to demo.');
+    expect(copySummary({ ...base, merged: ['demo:en_us'] }, 'demo')).toBe(
+      'Added 1 element and 0 assets to demo, and merged its entries into an existing language file or tag.',
+    );
+    expect(copySummary({ ...base, added: [], merged: ['demo:en_us', 'demo:logs'] }, 'demo')).toBe(
+      "No new elements or assets for demo; the example's entries were merged into 2 existing language files or tags.",
+    );
   });
 });

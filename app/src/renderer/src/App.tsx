@@ -34,7 +34,7 @@ import { ConfirmDialog } from './components/ConfirmDialog';
 import { CreatorDialog, type CreatorEditRequest } from './components/creator/CreatorDialog';
 import { EditorArea } from './components/EditorArea';
 import { ElementSidebar } from './components/ElementSidebar';
-import { ExamplesDialog } from './components/ExamplesDialog';
+import { ExamplesDialog, mergedPhrase } from './components/ExamplesDialog';
 import {
   ExportFabricJarDialog,
   GECKOLIB_DOWNLOAD_MESSAGE,
@@ -1695,10 +1695,12 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               });
               if (result.assets.length > 0) setAssetRevision((revision) => revision + 1);
               const skipped = result.duplicates.length + result.skippedAssets.length;
+              const merged = mergedPhrase(result.merged);
               setMessage({
                 kind: 'info',
                 text:
                   `Copied "${example.title}" into ${namespace}: ${result.added.length} element(s), ${result.assets.length} asset(s)` +
+                  (merged === '' ? '' : `; merged into ${merged}`) +
                   (skipped > 0 ? `; ${skipped} already in the project and skipped.` : '.'),
               });
               const first = result.added[0];
