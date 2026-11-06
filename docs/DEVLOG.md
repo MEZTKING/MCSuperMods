@@ -2846,3 +2846,16 @@ Next:
 
 **Next**
 - B162 (1.0 close); publish 0.7.0 after the user's test.
+
+## 2026-11-06 — main session — B162: 1.0 close (prepared, not released)
+
+**What**
+- The user had not tested the 0.7.0 draft yet and chose "prepare 1.0, don't release". B162 done without a release build: `app/package.json` and `engine-mod/gradle.properties` `mod_version` 1.0.0 (plugin API stays 1.2.0); CHANGELOG `## [1.0.0] - 2026-11-06` (the B161 items, the Windows plugin fix, plugin exporters) with a line kept under Unreleased (the What's New test needs one).
+- ROADMAP: Phase 7 deliverables ticked, "Follow-ups after 1.0" (the former reserve briefs B163–B166 and the plugin exporter gaps), Milestone Log row with the clean-run numbers. DESIGN: §16 App row (15 spec files, 19 tests, the Windows job), §17 risk 1 status, §18 questions 1 (Loom resolved) and 3 (GeckoLib stays for 1.x, `export.no-geckolib-target` as fallback), §14 size note. README status and phase table, root, `docs/`, `app/` and `engine-mod/` `CLAUDE.md` status lines; `PHASE7-PLAN.md` deleted; HANDOFF rewritten. ADRs 0035–0045 were already Accepted.
+- Clean-worktree run: tsc, Biome, check-deps, `build-msm-mcdoc --check` clean; 21 turbo tasks, 3,907 passed (42 skipped); build, smoke, e2e 19/19 (1.7 min), `dist:dir`, `smoke:packaged`, check-size (renderer 13.3 MB, app.asar 30.1 MB of 32 MB). No JDK in this container: Gradle builds, server checks and parity come from CI.
+
+**Decisions**
+- Release order is the user's: 1.0.0 directly (recommended; `main` is 1.0.0) or publish the 0.7.0 draft first; a 0.7.x patch can no longer come from `main`.
+
+**Next**
+- Ask the user; then `release.yml` for 1.0.0 and, after their Windows test, `publish-release.yml`.

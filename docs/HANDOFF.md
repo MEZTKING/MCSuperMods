@@ -1,40 +1,41 @@
 # Session handoff
 
-Rewritten 2026-11-06 after the combined 0.7.0 work, for the next main session. Read this, then the root `CLAUDE.md`, then the last six `DEVLOG.md` entries. `DESIGN.md` is authoritative; this file only says where things stand and how the work has been run. Rewrite it (do not append history; history goes in `DEVLOG.md`) when you hand over again.
+Rewritten 2026-11-06 at the 1.0 close (B162), for the next main session. Read this, then the root `CLAUDE.md`, then the last six `DEVLOG.md` entries. `DESIGN.md` is authoritative; this file only says where things stand and how the work has been run. Rewrite it (do not append history; history goes in `DEVLOG.md`) when you hand over again.
 
-## Start here (updated 2026-11-06, after the handover session)
+## Start here
 
-The work was handed over to a new session (branch `ccr-ddf2517d-9p4cej`), which did steps 2 and 3a below. Everything needed is in the repository.
-
-- **Code:** `main` holds all of it (fast-forwarded only after green CI). Start a fresh branch from `main`.
-- **Access for a new account:** the repository is public (`MEZTKING/MCSuperMods`), but pushing, running workflows and releasing need write access granted by the owner on GitHub, and the Claude GitHub app on the repository for the new account. Without write access a session can only read, build and test.
-- **Do first, in order:**
-  1. Ask the user whether the 0.7.0 draft passed their Windows test (step 1 of "Waiting on the user"; on 2026-11-06 they had not tested it yet). If yes, trigger `publish-release.yml` with `version` `0.7.0` (GitHub MCP `actions_run_trigger`, ref `main`) and check that the release is published with four assets. If they report a problem, fix it on a branch, then CI, `main`, and a new patch version (`0.7.1`: CHANGELOG section, `app/package.json`, `engine-mod/gradle.properties` `mod_version`) because the `v0.7.0` tag cannot be moved from the session.
-  2. Done: CI job `windows-plugin` builds the sample plugin on `windows-latest`; the drive-letter fix is in both build scripts (DEVLOG 2026-11-06 "Windows plugin build").
-  3. Done: plugin exporters other than the structure ones are under "More exports" in the toolbar Export menu. Next: B162 (1.0 close, `PHASE7-PLAN.md`); if 0.7.0 is still unpublished then, release 1.0.0 directly or publish 0.7.0 first, as the user prefers.
-- **What needs the user's own Windows PC:** only the real-key AI helper test (their Anthropic key stays on their machine; `safeStorage` refuses Linux `basic_text` by design) and the in-game checks. A cloud session never needs the key.
+- **Code:** `main` holds everything, fast-forwarded only after green CI. Start a fresh branch from `main`.
+- **Access for a new account:** the repository is public (`MEZTKING/MCSuperMods`). Pushing, running workflows and releasing need write access from the owner and the Claude GitHub app on the repository. Without them a session can only read, build and test.
+- **State:** Phase 7 is code complete and `main` is at version **1.0.0** (app and `mod_version`; plugin API 1.2.0). **No 1.0.0 release has been built:** the user chose "prepare 1.0, don't release" (2026-11-06). 0.7.0 is still an unpublished draft that the user has not tested yet.
+- **Do first:** ask the user which release they want next, then follow "Releases" below:
+  - **1.0.0 directly** (recommended, since `main` is already 1.0.0): trigger `release.yml` (ref `main`, `version` `1.0.0`, `commit` = the `main` tip), let the user test the draft on Windows (step 1 of "Waiting on the user"), then `publish-release.yml` with `1.0.0`. The 0.7.0 draft can then be left as it is or deleted by the user (the session proxy cannot delete releases).
+  - **0.7.0 first:** after the user's test, `publish-release.yml` with `0.7.0` (the draft is already built). A 0.7.x fix cannot come from `main` any more (it is 1.0.0): fold any fix into 1.0.0 instead.
+- **What needs the user's own Windows PC:** only the real-key AI helper test (the key stays on their machine; `safeStorage` refuses Linux `basic_text` by design) and the in-game checks. A cloud session never needs the key.
 
 ## Where things stand
 
-- **0.7.0 is a draft release** (`release.yml` run 15, 2026-11-06, tag `v0.7.0` at 97db1c8, built with `main`'s workflow at 25c8c21; the two commits differ only in `release.yml` and docs). Publish with `publish-release.yml` (version `0.7.0`) after the user's real-key test. The tag was made by the failed run 13; the proxy cannot move tags, so a manual rerun must pass `commit` 97db1c8. It combines everything since 0.6.1: third-party plugin loading in a sandbox (B154, `msm-app://` scheme, ADR 0035), starter wizards (B156), a second target `mc-26.4` (snapshot) with "Upgrade Project Target…" and a runtime jar per target (B152, B160), the AI helper (B170–B174, ADR 0041), armour and custom tool materials (B180–B182, ADR 0042), the Creator with live preview (B183–B185, B190, ADR 0043), weapons, consumables, totems, body armour and the vanilla component passthrough (B186–B189, B191, ADR 0044), undoable asset writes (B193, ADR 0045), fixes (B192) and the plugin-only data pack fix (CHANGELOG "Fixed"). App and `mod_version` 0.7.0; plugin API 1.2.0; 61 kinds, 125 templates, 24 starters, 71 examples; runtime 78 GameTests; parity 17 tests.
-- **Phase 7 (1.0):** B161 is done (after the 0.7.0 code, docs and tests only: e2e `plugins-path` with three tests and `targets-path`, guides `plugins.md` and `targets.md`; 15 e2e spec files, 19 tests). **Remaining: B162** (1.0 close and release, `PHASE7-PLAN.md`); B162's DESIGN and README items were largely done by B175 and B161, so it is mostly versions to 1.0.0, ROADMAP ticks, ADR statuses, CHANGELOG, HANDOFF and deleting the plan.
+- **1.0.0 (prepared, not released):** everything in 0.7.0 plus B161 (e2e `plugins-path` and `targets-path`, guides `plugins.md` and `targets.md`), the plugin-only data pack fix, the `windows-plugin` CI job with the drive-letter fix for external plugin builds (Spyglass lowercases `D:` in normalised URIs but compares roots case-sensitively), and plugin exporters under "More exports". CHANGELOG has `## [1.0.0] - 2026-11-06`; change the date to the release day before triggering `release.yml` if it differs. ROADMAP Phase 7 is ticked, with a Milestone Log row and "Follow-ups after 1.0" (the former reserve briefs B163–B166). `PHASE7-PLAN.md` is deleted.
+- **0.7.0 draft:** `release.yml` run 15, tag `v0.7.0` at 97db1c8; four assets; unpublished.
+- Counts: 61 kinds, 125 templates, 24 starters, 71 examples; 3,907 tests (42 skipped) in 21 turbo tasks; e2e 15 spec files, 19 tests; runtime 78 required GameTests; parity 17 sample-mod tests and 7 sample-mob tests.
 - The AI helper has only run against the scripted model client and a local SSE stub.
 - All phases still await the user's in-game checks; the user confirmed in game (2026-11-05): the ruby golem renders with its texture, ruby blocks, the scripted welcome message, the "Red Gold" advancement.
 
 ## Waiting on the user
 
-1. **0.7.0 release:** install the draft's installer on Windows, save an Anthropic API key in Settings > "AI helper", Test key, and run one small build in the AI helper; then go-ahead for `publish-release.yml`.
-2. **In-game checks** of the new sample mod items (ruby helmet, custom-tier ruby pickaxe mining obsidian, ruby bow, ruby tonic, ruby charm, ruby horse armour; `fixtures/sample-mod/README.md`) and a Creator Gear set.
-3. Earlier pending checks: Blockbench comparison, Test in Minecraft with Prism, old drafts and stale branches to delete (the session proxy refuses deletes).
+1. **Release go-ahead (1.0.0 or 0.7.0):** install the draft's installer on Windows, save an Anthropic API key in Settings > "AI helper", Test key, and run one small build in the AI helper; then `publish-release.yml`.
+2. **In-game checks** of the sample mod items (ruby helmet, custom-tier ruby pickaxe mining obsidian, ruby bow, ruby tonic, ruby charm, ruby horse armour; `fixtures/sample-mod/README.md`) and a Creator Gear set.
+3. GitHub Pages source set to "GitHub Actions" (for the docs site); the npm token decision for publishing `@msm/plugin-api`; the 26.4 re-pin when Mojang releases 26.4.
+4. Earlier pending checks: Blockbench comparison, Test in Minecraft with Prism, old drafts and stale branches to delete (the session proxy refuses deletes).
 
 ## Housekeeping
 
 - Move `@anthropic-ai/sdk` from 1.1.0 to 1.4.0 or newer after 2026-11-16 (two-week rule); verify Haiku 5.5 cache prices and `max_tokens: 16` for the key test "(verify at implementation)".
 - Fix the renderer Biome override paths (`app/src/renderer/biome.json` reads root override globs relative to itself, so the Spyglass ban never applied; fixing it flags a type import in `session/mcfunction-problems.ts`).
 - Follow-ups: bow/crossbow pull animation ignores `draw_speed`; vanilla-tier weapon numbers in the Creator Stats need `TargetFacts`; optional `ArmorDefense.body`; validator for passthrough components holding data-pack holders; painting pictures are not rescaled; music disc flow has no audio import; Examples dialog does not show `merged`; `supports?` of external plugin entries is not passed through the worker.
-- Plugin exporters run with default options (`runPluginExporter` passes none) and are not in File > More Exports or the command palette, only in the toolbar menu; the sample plugin has no exporter, so `plugins-path` does not click one.
-- `release.yml` still builds only `--filter=@msm/app...`; the sample plugin builds on Windows again, so that filter is optional now.
-- `app.asar` is 30.1 MB of its 32 MB budget.
+- Plugin exporters run with default options (`runPluginExporter` passes none) and are only in the toolbar menu, not File > More Exports or the palette; the sample plugin has no exporter, so `plugins-path` does not click one.
+- `release.yml` still builds only `--filter=@msm/app...`; since the Windows fix the full build would work too, so the filter is optional.
+- `app.asar` is 30.1 MB of its 32 MB budget (reserve idea: vendored target data outside the asar, ROADMAP follow-ups).
+- The session container had no JDK 25: Gradle results come from CI (`engine-mod` matrix). Install Temurin 25 from `api.adoptium.net` if a local Gradle run is needed.
 
 ## User decisions to respect
 
@@ -46,6 +47,7 @@ The work was handed over to a new session (branch `ccr-ddf2517d-9p4cej`), which 
 - **AI helper first** (2026-11-05, overriding the earlier post-1.0 note): bring-your-own Anthropic key, default model `claude-opus-5-5`, it must build entire content from one prompt (plan, batches, checks, one-step Apply).
 - **Beginner Creator** with a realtime preview, whole gear sets, and manual adjustment of anything; armour was an example, other fitting types were added (ADR 0044).
 - Defaults chosen by the main session and not objected to: AI run limits chat 24 turns / 100k output tokens, build 150 / 600k; `msm:armor` spelling; the 0.8.0 work shipped inside 0.7.0.
+- 2026-11-06: "Prepare 1.0, don't release": B162 done on `main`, but no 1.0.0 release build until the user has tested a build on Windows.
 - Full permission to merge and release; push to `main` only after CI is green on the exact commit; "keep going, don't stop".
 
 ## Rules (on top of the root `CLAUDE.md` golden rules)
@@ -98,6 +100,11 @@ The work was handed over to a new session (branch `ccr-ddf2517d-9p4cej`), which 
 - Playwright: use the pre-installed Chromium; headless app runs need `xvfb-run -a`. Native Electron menus cannot be clicked in e2e: drive commands through the palette or the toolbar. Monaco completion lists need the suggest controller contribution (`monaco-setup.ts`); the TypeScript language needs `languages/definitions/typescript/register`.
 - `dist:dir` and the packaged smoke need a built runtime: `cd engine-mod && ./gradlew build`, then `node app/scripts/stage-runtime.mjs --require` (it also stages the Gradle wrapper).
 - The user is on Windows with Node 26 (engines `>=24 <27`), PowerShell; README "Try it" covers their setup.
+
+## 1.0 close lessons
+
+- **Reproduce on the runner that fails.** The Windows-only plugin build bug took one CI job to reproduce (push the job alone first, then the fix, so the red run proves the test) and one reading of the dependency's URI code to fix; guessing on Linux would not have found it.
+- **The What's New test wants a non-empty Unreleased section** as well as the app version's section; keep a line under `## [Unreleased]` after cutting a release section.
 
 ## 0.7.0 lessons
 
