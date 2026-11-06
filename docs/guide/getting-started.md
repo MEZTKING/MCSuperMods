@@ -2,7 +2,7 @@
 
 This guide takes you from installing MCSuperMods to seeing your own content in Minecraft. You make a small Fabric mod with a new "Ruby Ore" block from the **Custom ore** starter, look at it with the Studios and the preview, export it as a Fabric mod jar and try it in the game, and then build a data pack from the **Functions** starter.
 
-You need Windows 10 or 11 and Minecraft Java Edition 26.3, the version MCSuperMods currently targets. You do not need to write JSON or code.
+You need Windows 10 or 11 and Minecraft Java Edition 26.3, the release MCSuperMods targets by default (it can also target the 26.4 snapshot; see [Minecraft versions](targets.md)). You do not need to write JSON or code.
 
 ## 1. Install MCSuperMods
 
@@ -39,8 +39,11 @@ Close Settings.
 ## 3. Create a project from the Custom ore starter
 
 1. Click the small arrow next to **New** on the toolbar and choose **New from starter…** (or **File → New Project from Starter…**).
-2. The **New project** dialog lists the starters under Blank, Packs and Themed content. Choose **Custom ore**; its badges show that it fills a resource pack, a data pack and the Fabric mod jar.
-3. Choose **Choose folder and create** and create a new, empty folder, for example `Documents\MCSuperMods\ruby_ore`. The folder name becomes your project's **namespace**, the prefix of every id in it: here `ruby_ore`.
+2. The **New project** dialog lists the 24 starters under Blank, Packs and Themed content. Choose **Custom ore**. Its badges show that it fills a resource pack, a data pack and the Fabric mod jar, and the **Wizard** badge means it asks a few questions before it creates the project. The dialog shows "Step 1 of 4"; choose **Next**.
+3. **Custom ore: Ore** (step 2) asks for the **Gem name** (`Ruby`), its **Colour**, the **Pickaxe needed** to mine it (**Iron pickaxe**) and whether to **Add a storage block**. Keep the answers for this guide (the steps below assume Ruby) and choose **Next**.
+4. **Custom ore: Drops** (step 3) asks for the **Fewest gems per ore** and **Most gems per ore** (1 and 2). Choose **Next**.
+5. The last step, **Custom ore: Choose folder and create**, sums up your answers and has the **Minecraft version** select. Keep **Minecraft 26.3**: it is the release target, and [Minecraft versions](targets.md) explains the snapshot. **Back** returns to any earlier step.
+6. Choose **Choose folder and create** and create a new, empty folder, for example `Documents\MCSuperMods\ruby_ore`. The folder name becomes your project's **namespace**, the prefix of every id in it: here `ruby_ore`.
 
 The project opens and is already saved. The Custom ore starter adds real new content: a **Ruby Ore** block, a **Ruby** item and a **Block of Ruby**. A resource or data pack cannot add blocks or items, so these exist only in the **Fabric mod jar** export (step 8). Nothing in Minecraft itself is changed: emerald ore stays emerald ore.
 
@@ -138,7 +141,7 @@ Functions are lists of commands the game runs. This starter sets up the usual wi
    - stand on a gold block: you run faster;
    - `/function my_functions:greet` says hello; `/function #my_functions:all` runs every function in your tag.
 
-The [templates list](templates-and-examples.md#all-templates) has 112 element templates to start from: recipes, loot tables, advancements, predicates, enchantments, dialogs and more. The Recipe pack and Custom music disc starters, and the 66 commented examples under **Help → Examples…**, are described in [Templates, starters and examples](templates-and-examples.md).
+The [templates list](templates-and-examples.md#all-templates) has 125 element templates to start from: recipes, loot tables, advancements, predicates, enchantments, dialogs and more. The other starters, and the 71 commented examples under **Help → Examples…**, are described in [Templates, starters and examples](templates-and-examples.md).
 
 ## Command palette and shortcuts
 
@@ -164,5 +167,7 @@ Press **Ctrl+Shift+P** to open the command palette and type part of a command's 
 - [Entities and models](entities-and-models.md): animated mobs. Create a project from the **Custom mob** starter (a Ruby Golem with its model, animations and spawn egg), or import a model with **File → Import Blockbench Model…** and give it a body and behaviour in the Entity Studio; the Fabric mod jar then carries GeckoLib too.
 - [Scripting](scripting.md): behaviour in TypeScript. Create a project from the **Scripted ore** starter, or add a script from the **Block interaction script** template under **Scripts** in **Add element**; the Script Studio completes `msm.` as you type, and the Fabric mod jar carries the scripts into the game.
 - [Eject to a Java project](eject.md): **File → Export Java Project…** writes a standalone Fabric Gradle project with generated Java that no longer needs `msm_runtime`, for when you want to carry on in code.
+- [Minecraft versions](targets.md): the 26.3 release and 26.4 snapshot targets, choosing one for a new project and **File → Upgrade Project Target…**.
+- [Plugins](plugins.md): content kinds made by other people, installed into the plugins folder and listed under **Settings → Plugins**.
 - [The AI helper](ai-helper.md): an optional assistant with your own Anthropic API key that explains problems, answers questions and builds content from a description, always as changes you review and apply in one undoable step.
 - The [roadmap](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/ROADMAP.md): what comes after scripting.

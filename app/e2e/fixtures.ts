@@ -6,7 +6,8 @@
  * @packageDocumentation
  */
 
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -47,6 +48,41 @@ export interface LaunchOptions {
 }
 
 const CLOSE_TIMEOUT_MS = 10_000;
+
+/** The sample external plugin's build output (`fixtures/sample-plugin/dist/`, ADR 0035). */
+export const samplePluginDist = resolve(appDir, '..', 'fixtures', 'sample-plugin', 'dist');
+
+/**
+ * Makes sure `fixtures/sample-plugin/dist/` exists: `pnpm build` builds it through turbo; a
+ * local run without it builds the plugin once with its own `build.ts`.
+ */
+export function ensureSamplePluginBuilt(): void {
+  if (existsSync(join(samplePluginDist, 'msm-plugin.json'))) return;
+  execFileSync(process.execPath, ['build.ts'], {
+    cwd: dirname(samplePluginDist),
+    stdio: 'inherit',
+  });
+}
+
+/**
+ * Installs a plugin the way a user does: copies `fromDir` (a plugin's `dist/` folder) into
+ * `<msmHome>/plugins/<folder>/`, then writes `files` over it (to vary the manifest or the
+ * bundle). Call it before {@link launchApp}: plugins load at start-up.
+ *
+ * @returns The plugin folder.
+ */
+export function installPlugin(
+  msmHome: string,
+  folder: string,
+  fromDir: string | null,
+  files: Readonly<Record<string, string>> = {},
+): string {
+  const dir = join(msmHome, 'plugins', folder);
+  mkdirSync(dir, { recursive: true });
+  if (fromDir !== null) cpSync(fromDir, dir, { recursive: true });
+  for (const [name, text] of Object.entries(files)) writeFileSync(join(dir, name), text);
+  return dir;
+}
 
 /** Launches the built app (`out/main/index.js`) in e2e mode. */
 export async function launchApp(options: LaunchOptions = {}): Promise<LaunchedApp> {

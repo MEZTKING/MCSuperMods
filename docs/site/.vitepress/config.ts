@@ -53,6 +53,8 @@ export default defineConfig({
           { text: 'Scripting', link: '/scripting' },
           { text: 'Eject to a Java project', link: '/eject' },
           { text: 'The AI helper', link: '/ai-helper' },
+          { text: 'Minecraft versions', link: '/targets' },
+          { text: 'Plugins', link: '/plugins' },
         ],
       },
       {

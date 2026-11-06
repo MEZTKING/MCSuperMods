@@ -313,11 +313,11 @@ A starter creates a whole project in an empty folder. Open the list in any of th
 - **File → New Project from Starter…**;
 - the command palette (Ctrl+Shift+P): "New project from starter…".
 
-The **New project** dialog groups the starters (Blank, Packs, Themed content) and shows which packs each one fills. Choose one, then **Choose folder and create**, and pick an empty folder. The folder name becomes the project's namespace: a folder called `Ruby Ore` gives the namespace `ruby_ore`. The project is saved straight away.
+The **New project** dialog groups the starters (Blank, Packs, Themed content) and shows which packs each one fills. Choose one, pick the **Minecraft version** (the newest release unless you choose a snapshot; see [Minecraft versions](targets.md)), then **Choose folder and create**, and pick an empty folder. The folder name becomes the project's namespace: a folder called `Ruby Ore` gives the namespace `ruby_ore`. The project is saved straight away.
 
 **New** on its own (and **File → New Project…**, Ctrl+Shift+N) still creates a blank project directly.
 
-Starters with questions (a name, a colour, a tier and so on) ask them in the dialog before creating the project. Those marked "Creator: <group>" in the table are also **Creator flows**: **Create…** on the toolbar runs the same flow inside the project you have open, with a live preview and **Edit in Creator** afterwards (see [The Creator](creator.md)).
+Starters with questions (a name, a colour, a tier and so on) carry the **Wizard** badge and ask them in the dialog, one step per group of questions (**Next** and **Back**), before creating the project; the **Minecraft version** select is then on the last step, which sums up your answers. **Custom sword**, for example, asks for the **Sword name**, **Blade colour**, **Material tier**, **Durability** and **Crafting ingredient**. The **Custom mob** starter needs GeckoLib and is offered only for targets that have it (not the 26.4 snapshot). Those marked "Creator: <group>" in the table are also **Creator flows**: **Create…** on the toolbar runs the same flow inside the project you have open, with a live preview and **Edit in Creator** afterwards (see [The Creator](creator.md)).
 
 | Starter | id | Packs | What it contains |
 |---|---|---|---|

@@ -122,7 +122,16 @@ Privacy: nothing is sent until you press **Send**. Then your message, the conver
 
 ## Plugins
 
-MCSuperMods loads plugins made by other people from `.msm/plugins/<folder>/` in your home folder, each in a sandbox without network, file or storage access; **Settings → Plugins** shows whether each loaded, was refused or failed, and **Open plugins folder** opens the folder (changes take effect after a restart). Plugins can add element kinds with forms, templates, starters, examples, validators, exporters and importers. To write one, see [`tools/new-plugin`](tools/new-plugin/README.md) and the sample in [`fixtures/sample-plugin`](fixtures/sample-plugin/README.md); the plugin API package is attached to every release as `msm-plugin-api-<version>.tgz`.
+MCSuperMods loads plugins made by other people from `.msm/plugins/<folder>/` in your home folder, each in a sandbox without network, file or storage access; **Settings → Plugins** shows whether each loaded, was refused or failed, and **Open plugins folder** opens the folder (changes take effect after a restart). Plugins can add element kinds with forms, templates, starters, examples, validators, exporters and importers. To write one, see [`tools/new-plugin`](tools/new-plugin/README.md) and the sample in [`fixtures/sample-plugin`](fixtures/sample-plugin/README.md); the plugin API package is attached to every release as `msm-plugin-api-<version>.tgz`. The [Plugins](docs/guide/plugins.md) guide covers installing, the Settings states, trust, the manifest and troubleshooting.
+
+## Supported Minecraft versions
+
+| Target | Minecraft | Channel | Notes |
+|---|---|---|---|
+| `mc-26.3` | 26.3 | release | The default for new projects. |
+| `mc-26.4` | 26.4-snapshot-7 | snapshot | Mobs cannot be exported for it until GeckoLib has a 26.4 build; no Java project export. |
+
+MCSuperMods supports the current Minecraft release and the next version's snapshots. A snapshot target stays on the snapshot it was built against until a later MCSuperMods release moves it, to a newer snapshot or to the release when Mojang ships it; it does not follow every snapshot. Choose the version in the **New project** dialog and move a project with **File → Upgrade Project Target…** (one undoable step); see [Minecraft versions](docs/guide/targets.md).
 
 ## Using Prism Launcher or the CurseForge app
 
@@ -187,7 +196,7 @@ So one installed copy of a version, in any launcher, is enough. **Settings → V
 - The Creator's armour preview is an approximation of the worn look; the game is the reference. Base attack damage and speed of vanilla tiers are described in words, not numbers.
 - Items with armour, custom tool materials, weapons, consumables and totems have no section of their own in the Item Studio yet: edit them in **Advanced (all fields)** or **Raw JSON**, or make them with the Creator.
 - The 26.4 target is a snapshot: its facts can change until 26.4 is released, mobs cannot be exported for it (no GeckoLib for 26.4 yet) and it has no Java project export.
-- Plugins cannot add their own editors, commands or Minecraft versions, and changes to the plugins folder need a restart.
+- Plugins cannot add their own editors, commands or Minecraft versions (their kinds use the generic form), and changes to the plugins folder need a restart. Exporters from plugins are not listed in the Export menu yet.
 - Scripts run on the server only, with Rhino's ES5 language level (MCSuperMods transpiles TypeScript down to it); `require("./other")` loads only scripts of the same mod and namespace, and what it returns is untyped (`any`) in the editor.
 
 ## How it works
@@ -217,7 +226,7 @@ Full plan with checklists: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Documentation
 
-- [User guide](docs/guide/README.md): [getting started](docs/guide/getting-started.md), [structures](docs/guide/structures.md), [worldgen](docs/guide/worldgen.md), [blocks and items](docs/guide/blocks-and-items.md), [the Creator](docs/guide/creator.md), [entities and models](docs/guide/entities-and-models.md), [scripting](docs/guide/scripting.md), [eject to a Java project](docs/guide/eject.md), [the AI helper](docs/guide/ai-helper.md) and [templates, starters and examples](docs/guide/templates-and-examples.md).
+- [User guide](docs/guide/README.md): [getting started](docs/guide/getting-started.md), [structures](docs/guide/structures.md), [worldgen](docs/guide/worldgen.md), [blocks and items](docs/guide/blocks-and-items.md), [the Creator](docs/guide/creator.md), [entities and models](docs/guide/entities-and-models.md), [scripting](docs/guide/scripting.md), [eject to a Java project](docs/guide/eject.md), [the AI helper](docs/guide/ai-helper.md), [Minecraft versions](docs/guide/targets.md), [plugins](docs/guide/plugins.md) and [templates, starters and examples](docs/guide/templates-and-examples.md). The same guide is published as a site at <https://meztking.github.io/MCSuperMods/>.
 - [docs/DESIGN.md](docs/DESIGN.md): the authoritative design document.
 - [docs/ROADMAP.md](docs/ROADMAP.md): phased delivery plan and milestone log.
 - [docs/DEVLOG.md](docs/DEVLOG.md): session-by-session development log.
@@ -275,7 +284,7 @@ Releasing without git: instead of step 4, open **Actions > Release > Run workflo
 
 ## Contributing
 
-Not open for contributions yet while the architecture settles. Issues with ideas, questions or use cases are welcome.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for building from source, the rules a change must follow, branches and pull requests, and adding a Minecraft target. Issues with ideas, questions or use cases are welcome.
 
 ## Licence
 
