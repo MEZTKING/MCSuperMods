@@ -2927,3 +2927,11 @@ Next:
 
 **Next**
 - CI, `main`; release 1.1.0 (modpacks, modes, centre preview, painting) after the user's tests.
+
+## 2026-11-06 — main session — 1.0.0 published
+
+**What**
+- The user installed the 1.0.0 draft on Windows, tested the AI helper with their key and confirmed it works. `publish-release.yml` (version `1.0.0`, run 5) published it as the latest release with `MCSuperMods-1.0.0-win-x64.exe`, its blockmap, `latest.yml` and `msm-plugin-api-1.2.0.tgz`; the in-app updater now offers it.
+
+**Next**
+- 1.1.0: version bump (`app/package.json`, `mod_version`), CHANGELOG `[1.1.0]` from `[Unreleased]`, `release.yml`, the user's test, publish.
