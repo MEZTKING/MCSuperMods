@@ -492,7 +492,8 @@ User request of 2026-11-06: "modpack support, so everything you make can be orga
 - [x] Renderer: scratch-session member builds (`session.createScratch`, `loadSnapshot`, `buildContentJar`), the Modpacks dialog (File → Modpacks…, palette), Export modpack (.mrpack)…, Test modpack in Minecraft.
 - [x] e2e `modpacks-path` (palette, New modpack… in its own folder through `MSM_E2E_MODPACK_DIR`, Add open project written as `../project`, rename, a build through the member snapshot).
 - [ ] The user imports an exported `.mrpack` into Prism and the Modrinth app (verify `hashes.sha1` and `fileSize` there) and tests a modpack in game.
-- Follow-ups: "Update mods" after a Minecraft version change; CurseForge export; server packs.
+- [x] **Update mods** re-pins every Modrinth mod for the modpack's Minecraft version (after a version change or for newer releases).
+- Follow-ups: CurseForge export; server packs.
 
 ### Exit criteria
 

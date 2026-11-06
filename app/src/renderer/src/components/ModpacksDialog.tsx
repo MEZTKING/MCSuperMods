@@ -172,6 +172,54 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
       });
     });
 
+  /**
+   * Switches the Minecraft version; pinned mods are files for the old version, so the
+   * message points at Update mods (ADR 0046 D6).
+   */
+  const changeTarget = (targetId: string): Promise<void> =>
+    run('Saving…', async () => {
+      if (view === null) return;
+      show(await modpacks.write(view.root, { ...view.modpack, targetId }));
+      await refreshList();
+      if (view.modpack.mods.length > 0) {
+        setMessage({
+          kind: 'info',
+          text: 'The Minecraft version changed: choose Update mods to get the matching version of each Modrinth mod.',
+        });
+      }
+    });
+
+  /** Looks every pinned mod up again for the modpack's Minecraft version. */
+  const updateMods = (): Promise<void> =>
+    run('Updating mods…', async () => {
+      if (view === null) return;
+      const gameVersion = targetOf(view)?.mcVersion ?? view.modpack.targetId;
+      const mods = [];
+      const missing: string[] = [];
+      let changed = 0;
+      for (const [index, mod] of view.modpack.mods.entries()) {
+        setBusy(`Updating ${mod.title} (${index + 1} of ${view.modpack.mods.length})…`);
+        try {
+          const lookup = await modpacks.lookupMod(mod.projectId, gameVersion);
+          if (lookup.file.versionId !== mod.versionId) changed += 1;
+          mods.push(lookup.file);
+        } catch {
+          // Kept as it is: the user decides whether to remove it.
+          missing.push(mod.title);
+          mods.push(mod);
+        }
+      }
+      show(await modpacks.write(view.root, { ...view.modpack, mods }));
+      setMessage({
+        kind: missing.length === 0 ? 'info' : 'error',
+        text:
+          `${changed} mod(s) updated.` +
+          (missing.length === 0
+            ? ''
+            : ` No version for this Minecraft version was found for: ${missing.join(', ')}. Remove them or try again later.`),
+      });
+    });
+
   const addMod = (): Promise<void> =>
     run('Looking up on Modrinth…', async () => {
       if (view === null) return;
@@ -321,9 +369,7 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
                     className={fieldClass}
                     value={view.modpack.targetId}
                     disabled={busy !== null}
-                    onChange={(event) =>
-                      void save({ ...view.modpack, targetId: event.target.value })
-                    }
+                    onChange={(event) => void changeTarget(event.target.value)}
                   >
                     {props.targets.map((target) => (
                       <option key={target.id} value={target.id}>
@@ -458,6 +504,15 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
                     >
                       Add mod
                     </Button>
+                    {view.modpack.mods.length > 0 && (
+                      <Button
+                        data-testid="modpack-update-mods"
+                        disabled={busy !== null}
+                        onClick={() => void updateMods()}
+                      >
+                        Update mods
+                      </Button>
+                    )}
                   </div>
                 </section>
 

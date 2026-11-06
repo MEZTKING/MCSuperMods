@@ -36,6 +36,8 @@ A modpack can include mods other people made, from [Modrinth](https://modrinth.c
 
 If the mod needs other mods, the message names their Modrinth projects: add those too. Fabric API is always included, so you never need to add it. **Remove** takes a mod out again.
 
+A mod is pinned to the file made for one Minecraft version. After you change the modpack's **Minecraft version**, choose **Update mods**: MCSuperMods looks each mod up again and pins the newest file for the new version. Mods that have no such file yet are named in the message and kept as they are; remove them or try again later. **Update mods** also picks up newer releases of your mods at any time.
+
 ## Export modpack (.mrpack)…
 
 **Export modpack (.mrpack)…** builds every project's mod jar and saves `<name>-<version>.mrpack`. Nothing is written when a project has errors, is missing, is made for another Minecraft version, or clashes with another project's mod id: the problems are listed under the buttons.

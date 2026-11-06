@@ -108,6 +108,29 @@ describe('ModpacksDialog', () => {
     ]);
   });
 
+  it('updates pinned mods for the Minecraft version and names the ones without a version', async () => {
+    const api = renderDialog();
+    const user = userEvent.setup();
+    await user.click(await screen.findByTestId('modpack-new'));
+    await user.type(await screen.findByTestId('modpack-mod-input'), 'sodium');
+    await user.click(screen.getByTestId('modpack-add-mod'));
+    await screen.findByText('Sodium');
+    vi.mocked(api.lookupMod).mockImplementation(async () => ({
+      file: { ...sodium, versionId: 'VERSION2' },
+      versionNumber: '0.7.0',
+      requiredProjects: [],
+    }));
+    await user.click(screen.getByTestId('modpack-update-mods'));
+    await waitFor(() =>
+      expect(screen.getByTestId('modpack-message').textContent).toBe('1 mod(s) updated.'),
+    );
+    expect(api.lookupMod).toHaveBeenLastCalledWith('AANobbMI', expect.any(String));
+    vi.mocked(api.lookupMod).mockRejectedValue(new Error('none'));
+    await user.click(screen.getByTestId('modpack-update-mods'));
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Sodium'));
+    expect(within(screen.getByTestId('modpack-mods')).getByText('Sodium')).toBeTruthy();
+  });
+
   it('shows lookup errors', async () => {
     renderDialog();
     const user = userEvent.setup();
