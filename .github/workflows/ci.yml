@@ -34,6 +34,27 @@ jobs:
       - run: xvfb-run -a pnpm --filter @msm/app smoke:packaged
       - run: node tools/check-size/index.ts
 
+  # The external plugin build on Windows: `fixtures/sample-plugin/build.ts` runs the same steps
+  # that `tools/new-plugin --external` writes for plugin authors, whose machines are mostly
+  # Windows (drive-letter file URLs, `\` paths).
+  windows-plugin:
+    runs-on: windows-latest
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter @msm/sample-plugin...
+      - run: pnpm --filter @msm/sample-plugin build
+      - name: Check the schema export
+        shell: bash
+        run: |
+          node -e 'const s = JSON.parse(require("node:fs").readFileSync("fixtures/sample-plugin/dist/symbols.json", "utf8")); const n = Object.keys(s.mcdoc).length; console.log(`${n} type(s)`); if (n === 0) process.exit(1);'
+
   # The msm_runtime Fabric mod (ADR 0024, ADR 0026 D6), once per Minecraft version (ADR 0038 D5):
   # JUnit and GameTests through `./gradlew build -Pmc=<mc>`, then the samples exported for target
   # mc-<mc> with that runtime nested and started on a headless Fabric dedicated server
