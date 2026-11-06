@@ -2748,3 +2748,14 @@ Next:
 **Next**
 - CI green on the branch tip, fast-forward `main`, trigger `release.yml` (0.7.0), then `publish-release.yml` after the user's go-ahead.
 - Phase 7: B161, then B162 (1.0 close).
+
+## 2026-11-06 — main session — CI fix: creator-path jar export
+
+**What**
+- CI's `ci` job failed `creator-path` (both tests): its `exportJar` helper nested the runtime, and that job builds no `msm_runtime` jar, so the dialog refused ("The msm_runtime jar cannot be nested"). Locally the built jars hid it. The helper now checks "Separate runtime and GeckoLib (for modpacks)", like `blocks-items-path`, `entities-path` and `scripting-path`. Reproduced and checked with `engine-mod/build/libs` moved aside: 2 passed.
+
+**Decisions**
+- Nesting the runtime stays covered by the packaged smoke and the release build, not by e2e.
+
+**Next**
+- CI green, then fast-forward `main` and the 0.7.0 draft.

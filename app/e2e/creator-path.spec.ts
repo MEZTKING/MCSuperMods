@@ -110,13 +110,17 @@ async function expectNoErrors(window: Page): Promise<void> {
   await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
 }
 
-/** Exports the Fabric mod jar through the palette (runtime bundled) and reads it. */
+/**
+ * Exports the Fabric mod jar through the palette and reads it. The runtime and GeckoLib stay
+ * separate: CI's `ci` job builds no runtime jar to nest.
+ */
 async function exportJar(window: Page, outDir: string, known: readonly string[] = []) {
   const palette = await openPalette(window, 'fabric mod jar');
   await palette.getByTestId('command-exportFabricJar').click();
   await expect(palette).toBeHidden();
   const dialog = window.getByTestId('fabric-jar-dialog');
   await expect(dialog).toBeVisible();
+  await dialog.getByTestId('exporter-option-separateRuntime').check();
   await dialog.getByTestId('fabric-jar-dialog-submit').click();
   await expect(dialog).toBeHidden();
   return newZip(outDir, '.jar', known);
