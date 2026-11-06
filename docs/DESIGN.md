@@ -319,6 +319,8 @@ The default editor for any kind is the schema-driven form, so adding a vanilla k
 
 ### Two paths over one model
 
+[ADR 0047](adr/0047-easy-and-advanced-mode.md) puts the two paths behind a view mode: **Easy** (Creator sets and friendly groups first, technical files under More, the form only) and **Advanced** (every group with kind ids, Raw JSON); the sidebar can be searched and folded in both, and a live preview sits beside the form for items, blocks, armour looks and armour items (a figure with a clickable parts list), recipes, models, structures and mobs. **New project with the AI helper…** starts a project from a description.
+
 - **Beginner path: Studio views.** Curated forms over the IR with sensible defaults, live 3D preview and a "Test in Minecraft" button.
 - **Power-user path.** Every element has a **Raw JSON** tab (Monaco with schema diagnostics), the command palette, scripts and eject-to-Java.
 

@@ -1,5 +1,5 @@
 import type { Element, Json, ResourceLocation } from '@msm/core';
-import { Braces, FormInput, Sparkles, WandSparkles } from 'lucide-react';
+import { Braces, Eye, EyeOff, FormInput, Sparkles, WandSparkles } from 'lucide-react';
 import { ScrollArea, Tabs } from 'radix-ui';
 import { type ReactNode, useState } from 'react';
 import { RawJsonPanel } from './RawJsonPanel';
@@ -36,6 +36,12 @@ export interface EditorAreaProps {
   hideRawJson?: boolean;
   /** Opens the AI helper's Build mode; with no element selected the editor offers it. */
   onBuildWithAi?(): void;
+  /** The live preview of the selected element, shown beside the form (ADR 0047 D4). */
+  preview?: ReactNode;
+  /** Whether the preview pane is shown (default true when a preview is given). */
+  previewShown?: boolean;
+  /** Shows or hides the preview pane. */
+  onTogglePreview?(): void;
 }
 
 /**
@@ -54,6 +60,9 @@ export function EditorArea({
   onOpenCreator,
   hideRawJson = false,
   onBuildWithAi,
+  preview,
+  previewShown = true,
+  onTogglePreview,
 }: EditorAreaProps) {
   const [ownTab, setOwnTab] = useState<EditorTab>('form');
   const current = hideRawJson ? 'form' : (tab ?? ownTab);
@@ -131,6 +140,19 @@ export function EditorArea({
             Edit in Creator
           </button>
         )}
+        {preview !== undefined && onTogglePreview !== undefined && (
+          <button
+            type="button"
+            className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted hover:bg-bg hover:text-text"
+            data-testid="editor-toggle-preview"
+            aria-pressed={previewShown}
+            title={previewShown ? 'Hide the live preview' : 'Show the live preview beside the form'}
+            onClick={onTogglePreview}
+          >
+            {previewShown ? <EyeOff size={12} aria-hidden /> : <Eye size={12} aria-hidden />}
+            Preview
+          </button>
+        )}
         {onAskAi !== undefined && (
           <button
             type="button"
@@ -161,24 +183,41 @@ export function EditorArea({
           </p>
         </details>
       )}
-      <Tabs.Content value="form" className="min-h-0 flex-1">
-        <ScrollArea.Root className="size-full overflow-hidden">
-          <ScrollArea.Viewport className="size-full">
-            <div className="p-2">
-              {form ?? <p className="text-muted">No form is available for this element.</p>}
-            </div>
-          </ScrollArea.Viewport>
-          <ScrollArea.Scrollbar
-            orientation="vertical"
-            className="flex w-2 touch-none p-0.5 select-none"
+      <div
+        className={
+          preview !== undefined && previewShown
+            ? 'grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1fr)]'
+            : 'flex min-h-0 flex-1 flex-col'
+        }
+      >
+        <Tabs.Content value="form" className="min-h-0 flex-1">
+          <ScrollArea.Root className="size-full overflow-hidden">
+            <ScrollArea.Viewport className="size-full">
+              <div className="p-2">
+                {form ?? <p className="text-muted">No form is available for this element.</p>}
+              </div>
+            </ScrollArea.Viewport>
+            <ScrollArea.Scrollbar
+              orientation="vertical"
+              className="flex w-2 touch-none p-0.5 select-none"
+            >
+              <ScrollArea.Thumb className="relative flex-1 rounded-full bg-border" />
+            </ScrollArea.Scrollbar>
+          </ScrollArea.Root>
+        </Tabs.Content>
+        <Tabs.Content value="json" className="min-h-0 flex-1">
+          <RawJsonPanel key={element.id} element={element} onApply={onApply} />
+        </Tabs.Content>
+        {preview !== undefined && previewShown && (
+          <aside
+            aria-label="Live preview"
+            data-testid="editor-preview"
+            className="min-h-0 overflow-auto border-l border-border p-2"
           >
-            <ScrollArea.Thumb className="relative flex-1 rounded-full bg-border" />
-          </ScrollArea.Scrollbar>
-        </ScrollArea.Root>
-      </Tabs.Content>
-      <Tabs.Content value="json" className="min-h-0 flex-1">
-        <RawJsonPanel key={element.id} element={element} onApply={onApply} />
-      </Tabs.Content>
+            {preview}
+          </aside>
+        )}
+      </div>
     </Tabs.Root>
   );
 }

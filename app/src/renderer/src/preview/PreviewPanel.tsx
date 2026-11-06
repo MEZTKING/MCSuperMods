@@ -14,7 +14,10 @@
 
 import type { Element, Project } from '@msm/plugin-api';
 import { lazy, Suspense, useMemo, useState } from 'react';
+import { RecipeGridView } from '../components/recipe-grid/RecipeGridView';
 import { Button } from '../components/ui/Button';
+import { ArmourPreviewView } from './ArmourPreviewView';
+import { armourPreviewOf } from './armour-preview';
 import type { PreviewKind, PreviewSubject } from './asset-source';
 import { isGeoPreviewKind, resolveGeoScene } from './geo/subject';
 import {
@@ -64,6 +67,29 @@ export interface PreviewPanelProps {
   onSetup(): void;
   /** Test hook: overrides WebGL detection. */
   webgl?: boolean;
+  /** Moves the form to a field (RFC 6901 pointer), for the armour parts list. */
+  onJumpTo?(pointer: string): void;
+}
+
+/** Kinds whose `model` field the panel previews (custom items and blocks, ADR 0047 D4). */
+const MODEL_FIELD_KINDS: ReadonlySet<string> = new Set(['msm:item', 'msm:block']);
+
+/**
+ * The model a custom item or block shows: the project's model element of that id, or a stand-in
+ * whose parent is the (vanilla) model, previewed under the element's own id.
+ */
+export function modelFieldSubject(element: Element, project: Project): PreviewSubject | null {
+  if (!MODEL_FIELD_KINDS.has(element.kind)) return null;
+  const data = element.data;
+  const model =
+    typeof data === 'object' && data !== null && !Array.isArray(data) ? data.model : undefined;
+  if (typeof model !== 'string' || model === '') return null;
+  const own = project.namespaces
+    .flatMap((namespace) => namespace.elements)
+    .find((entry) => entry.kind === 'minecraft:model' && entry.id === model);
+  return own === undefined
+    ? { previewKind: 'model', id: element.id, data: { parent: model } }
+    : { previewKind: 'model', id: own.id, data: own.data };
 }
 
 /** Shows a 3D preview of the selected model, blockstate or item definition. */
@@ -78,11 +104,39 @@ export function PreviewPanel(props: PreviewPanelProps) {
   const kind = isPreviewKind(previewKind) ? previewKind : null;
   const subject = useMemo<PreviewSubject | null>(
     () =>
-      element === null || kind === null || kind === 'climate_map'
+      element === null
         ? null
-        : { data: element.data, id: element.id, previewKind: kind },
-    [element, kind],
+        : kind === null
+          ? modelFieldSubject(element, project)
+          : kind === 'climate_map'
+            ? null
+            : { data: element.data, id: element.id, previewKind: kind },
+    [element, kind, project],
   );
+  const armour = useMemo(
+    () => (element === null ? null : armourPreviewOf(element, project)),
+    [element, project],
+  );
+  const extras =
+    element === null ? null : (
+      <>
+        {armour !== null && (
+          <ArmourPreviewView
+            preview={armour}
+            folders={folders}
+            readProjectAsset={props.readProjectAsset}
+            vanilla={vanilla}
+            webgl={webgl}
+            {...(props.onJumpTo === undefined ? {} : { onJumpTo: props.onJumpTo })}
+          />
+        )}
+        {element.kind === 'minecraft:recipe' && (
+          <div data-testid="preview-recipe">
+            <RecipeGridView recipe={element.data} label={element.id} />
+          </div>
+        )}
+      </>
+    );
 
   if (subject !== null && isGeoPreviewKind(subject.previewKind)) {
     const scene = resolveGeoScene(project, {
@@ -137,10 +191,12 @@ export function PreviewPanel(props: PreviewPanelProps) {
         </div>
       ) : null}
       {subject === null ? (
-        <p className="text-sm text-muted">
-          Select a model, blockstate, item definition, structure template, dimension, geo model,
-          animation set or entity to preview it.
-        </p>
+        armour === null && element?.kind !== 'minecraft:recipe' ? (
+          <p className="text-sm text-muted">
+            Select an item, block, armour look, recipe, model, blockstate, item definition,
+            structure template, dimension, geo model, animation set or entity to preview it.
+          </p>
+        ) : null
       ) : !webgl ? (
         <p role="status" className="text-sm text-muted">
           Preview unavailable: WebGL is disabled.
@@ -158,6 +214,7 @@ export function PreviewPanel(props: PreviewPanelProps) {
           />
         </Suspense>
       )}
+      {extras}
     </section>
   );
 }

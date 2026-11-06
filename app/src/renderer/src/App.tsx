@@ -1561,8 +1561,23 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         readProjectAsset={readProjectAsset}
         vanilla={vanilla}
         onSetup={() => setDialog({ type: 'settings' })}
+        onJumpTo={(pointer) => {
+          if (selected !== null) navigateTo(selected.id, pointer, null);
+        }}
       />
     ) : undefined;
+  // The live preview sits beside the form when shown (ADR 0047 D4); the dock then points there
+  // instead of drawing a second canvas.
+  const centrePreview = usePreferences((state) => state.centrePreview);
+  const dockPreview =
+    preview !== undefined && centrePreview && selected !== null ? (
+      <p className="text-sm text-muted" data-testid="dock-preview-in-centre">
+        The live preview is beside the form. Use Preview in the editor's header to move it back
+        here.
+      </p>
+    ) : (
+      preview
+    );
 
   return (
     <Tooltip.Provider delayDuration={400}>
@@ -1662,13 +1677,16 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               {...(project === null ? {} : { onOpenCreator: handlers.creator })}
               {...(aiController === null ? {} : { onBuildWithAi: buildWithAi })}
               hideRawJson={uiMode === 'easy'}
+              {...(preview === undefined ? {} : { preview })}
+              previewShown={centrePreview}
+              onTogglePreview={() => usePreferences.getState().toggleCentrePreview()}
             />
             <RightDock
               problems={snapshot.problems}
               exportProblems={exportProblems}
               tab={rightDock}
               onTabChange={setRightDock}
-              preview={preview}
+              preview={dockPreview}
               onNavigate={(problem) => {
                 setLastProblem(problem);
                 navigateTo(problem.elementId, problem.path ?? null, problem.range ?? null);

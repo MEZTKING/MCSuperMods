@@ -97,8 +97,10 @@ test('new project, block model, texture, export zip, reopen', async () => {
   await expect(exportButton).toBeEnabled();
 
   // Preview screenshot (WebGL may be unavailable under xvfb; the panel itself is captured).
+  // The live preview is beside the form (ADR 0047 D4); the dock's tab points there.
   await window.getByTestId('dock-tab-preview').click();
-  const previewPanel = window.getByTestId('preview-panel');
+  await expect(window.getByTestId('dock-preview-in-centre')).toBeVisible();
+  const previewPanel = window.getByTestId('editor-preview');
   await expect(previewPanel).toBeVisible();
   await previewPanel.screenshot({ path: join(outputDir, 'golden-path-preview.png') });
 

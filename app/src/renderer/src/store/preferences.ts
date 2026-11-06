@@ -16,6 +16,7 @@ const STORAGE_KEY = 'msm.preferences.v1';
 interface StoredPreferences {
   mode?: UiMode;
   collapsed?: string[];
+  centrePreview?: boolean;
 }
 
 /** The preferences store's shape. */
@@ -25,6 +26,9 @@ export interface PreferencesState {
   modeChosen: boolean;
   /** Sidebar group keys (`<namespace>/<group>`) the user collapsed. */
   collapsed: ReadonlySet<string>;
+  /** Whether the editor shows the live preview beside the form (ADR 0047 D4). */
+  centrePreview: boolean;
+  toggleCentrePreview(): void;
   setMode(mode: UiMode): void;
   toggleCollapsed(key: string): void;
 }
@@ -40,11 +44,15 @@ function readStored(): StoredPreferences {
   }
 }
 
-function writeStored(state: Pick<PreferencesState, 'mode' | 'collapsed'>): void {
+function writeStored(state: Pick<PreferencesState, 'mode' | 'collapsed' | 'centrePreview'>): void {
   try {
     globalThis.localStorage?.setItem(
       STORAGE_KEY,
-      JSON.stringify({ mode: state.mode, collapsed: [...state.collapsed].sort() }),
+      JSON.stringify({
+        mode: state.mode,
+        collapsed: [...state.collapsed].sort(),
+        centrePreview: state.centrePreview,
+      }),
     );
   } catch {
     // Storage is unavailable: preferences last for this run only.
@@ -61,6 +69,11 @@ export const usePreferences = create<PreferencesState>((set, get) => ({
       ? stored.collapsed.filter((key) => typeof key === 'string')
       : [],
   ),
+  centrePreview: stored.centrePreview !== false,
+  toggleCentrePreview() {
+    set({ centrePreview: !get().centrePreview });
+    writeStored(get());
+  },
   setMode(mode) {
     set({ mode, modeChosen: true });
     writeStored(get());

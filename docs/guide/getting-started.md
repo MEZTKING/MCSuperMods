@@ -75,7 +75,7 @@ Try a few edits (the steps below assume the starter's names, so undo the first e
 
 ## 5. Preview
 
-Select `ruby_ore:block/ruby_ore` and open the **Preview** tab on the right: the block turns in 3D with the ruby ore texture. If the preview says "Vanilla assets not found — set your Minecraft folder.", go back to step 2 and extract the vanilla assets.
+Select `ruby_ore:block/ruby_ore`: the live preview beside the form shows the block turning in 3D with the ruby ore texture, and it redraws as you edit. Items and blocks preview their model, armour looks and armour pieces show on a figure (tick parts to show them, expand a part to see its texture, **Edit** jumps to its field), recipes show their crafting grid. **Preview** in the editor's header hides the pane or shows it again; while it is hidden the **Preview** tab on the right shows the same view. If the preview says "Vanilla assets not found — set your Minecraft folder.", go back to step 2 and extract the vanilla assets.
 
 To use your own texture, paint a 16×16 PNG named `ruby_ore.png`, choose **Import assets** on the toolbar, pick the namespace `ruby_ore` and **Block textures (textures/block)**, then the file. It replaces the placeholder and the preview updates. `ruby.png` goes into **Item textures (textures/item)** the same way. See [Replacing the placeholders](templates-and-examples.md#replacing-the-placeholders).
 
@@ -142,6 +142,19 @@ Functions are lists of commands the game runs. This starter sets up the usual wi
    - `/function my_functions:greet` says hello; `/function #my_functions:all` runs every function in your tag.
 
 The [templates list](templates-and-examples.md#all-templates) has 125 element templates to start from: recipes, loot tables, advancements, predicates, enchantments, dialogs and more. The other starters, and the 71 commented examples under **Help → Examples…**, are described in [Templates, starters and examples](templates-and-examples.md).
+
+## Easy and Advanced mode
+
+MCSuperMods has two ways to show a project. Switch with the mode button on the toolbar (it reads **Easy mode** or **Advanced mode**), **View → Switch Easy / Advanced Mode** or the command palette. A new install starts in Easy mode.
+
+- **Easy mode** lists what you made first: each set from the Creator under its name (for example "Ruby (Gear set)"), then items, blocks, recipes and the rest under plain names. The files behind them (models, item looks, block states, pack and mod settings, names and text) are folded under **More**. The editor shows the form only.
+- **Advanced mode** lists every group with its kind id next to the name and offers **Raw JSON**.
+
+In both modes the box at the top of the list searches names and kinds, and a click on a group's heading folds or unfolds it; MCSuperMods remembers which groups you folded.
+
+## Start with the AI helper
+
+**New project with the AI helper…** (the arrow next to **New**, **File**, the Welcome or the empty editor area) asks what your mod should add, makes a new project in a folder you choose and starts the AI helper's Build mode with your description. See [The AI helper](ai-helper.md); it needs your own Anthropic API key.
 
 ## Command palette and shortcuts
 

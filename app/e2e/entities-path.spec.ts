@@ -276,8 +276,8 @@ test('entities: Blockbench import, Monster template, Entity Studio, unknown mode
   await window.getByTestId(`element-row-${ENTITY_ID}`).click();
   await expect(studio).toBeVisible();
   await expect(studio.getByTestId('entity-model')).toHaveValue(MODEL_ID);
-  await window.getByTestId('dock-tab-preview').click();
-  const preview = window.getByTestId('preview-panel');
+  // The live preview is beside the form (ADR 0047 D4).
+  const preview = window.getByTestId('editor-preview');
   await expect(preview).toBeVisible();
   await expect(preview.getByTestId('preview-geo-canvas')).toBeVisible();
   await expect(preview.getByTestId('preview-geo-transport')).toBeVisible();

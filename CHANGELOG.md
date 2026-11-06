@@ -8,6 +8,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **Easy and Advanced mode**: Easy mode (the default for new installs) lists what you made first, sets from the Creator under their own names, and folds the technical files away; Advanced mode shows everything and Raw JSON. Switch on the toolbar or under **View**.
+- **Easier navigation**: search the element list, fold groups, and read plain group names such as Items, Recipes and Armour looks.
+- **Live preview beside the form** for items, blocks, armour (on a figure, with parts you can show, hide and jump to), recipes, models, structures and mobs, redrawn as you edit.
+- **New project with the AI helper…**: describe your mod and the AI helper builds it in a new project.
+- Custom bows and crossbows show the pull while drawn or charged, as vanilla ones do, and the Creator draws the frames.
 - **Modpacks** (**File → Modpacks…**): group your projects into modpacks, add mods from Modrinth by name or link, export a modpack as a Modrinth `.mrpack` for Prism Launcher or the Modrinth app, and test all its mods together in Minecraft. Projects stay in their own folders; one project can be in several modpacks.
 
 ## [1.0.0] - 2026-11-06

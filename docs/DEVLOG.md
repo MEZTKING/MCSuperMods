@@ -2907,3 +2907,14 @@ Next:
 
 **Next**
 - The user's feedback (2026-11-06, with a screenshot of the AI helper building a mace): better or customisable art, easier navigation, make "start a new project with AI" obvious, a live preview while editing armour and similar elements with expandable, clickable parts, and an Easy / Advanced mode.
+
+## 2026-11-06 — main session — ADR 0047: Easy and Advanced mode, navigation, AI start, centre live preview
+
+**What**
+- ADR 0047 from the user's feedback (screenshot of the app with the AI helper building a mace). Built: view preferences in local storage (`store/preferences.ts`: mode, collapsed groups, `centrePreview`; a new install starts in Easy); sidebar search, collapsible groups with friendly names and counts (kind ids in Advanced), Creator sets first and technical groups under More in Easy; Raw JSON hidden in Easy; toolbar mode switch, View menu and palette entries.
+- **New project with the AI helper…** (`AiStartDialog`: description and ideas, then New project, Build mode, send) from the New menu, File menu, palette, Welcome and the empty editor; without a key it points to Settings.
+- The user asked for the live preview in the centre and "not just for armour but all things related": `EditorArea` shows the preview beside the form (header **Preview** toggle, remembered); `PreviewPanel` now previews custom items and blocks through their `model`, armour looks and armour items (`preview/armour-preview.ts` model, `ArmourPreviewView`: the Creator's humanoid figure, parts list with show/hide, expand to texture, **Edit** jumps to the field) and recipes (`RecipeGridView`); the dock's Preview tab points to the centre while it is shown. e2e `golden-path` and `entities-path` look in the centre.
+- Tests: sidebar navigation, AI start dialog, armour preview model; 20 e2e pass.
+
+**Next**
+- Customisable art: the in-app pixel texture editor (ADR 0047 D5) and better placeholder shading.
