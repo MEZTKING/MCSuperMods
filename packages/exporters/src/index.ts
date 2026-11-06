@@ -52,6 +52,14 @@ export {
   modClassNameFor,
 } from './java-project/index';
 export { EXPORT_MANIFEST_FILE, EXPORT_MANIFEST_FORMAT_VERSION, exportManifest } from './manifest';
+export {
+  createMrpack,
+  MRPACK_INDEX_FILE,
+  type MrpackDownload,
+  type MrpackInput,
+  mrpackFileName,
+  mrpackIndex,
+} from './modpack/mrpack';
 export { type ExportProblemCode, ExportProblemCodes } from './problem-codes';
 export {
   type ExportReport,

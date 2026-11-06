@@ -206,6 +206,28 @@ export interface FabricFacts {
    * project. Required since 0.8.0 (ADR 0034).
    */
   gradle: string;
+  /**
+   * The Fabric API jar as published on Modrinth, for modpack exports that list it as a
+   * download (`.mrpack`). The same bytes as on the Fabric Maven. Since 1.3.0 (ADR 0046 D7);
+   * a target without it cannot export a `.mrpack`.
+   */
+  apiModrinth?: ModrinthFileFacts;
+}
+
+/** One file of a Modrinth project version. Since 1.3.0 (ADR 0046). */
+export interface ModrinthFileFacts {
+  /** The Modrinth version id (8 characters). */
+  versionId: string;
+  /** The file's name, for example `fabric-api-<version>.jar`. */
+  fileName: string;
+  /** Its `https://cdn.modrinth.com/` download URL. */
+  url: string;
+  /** SHA-1 as 40 lower-case hex characters. */
+  sha1: string;
+  /** SHA-512 as 128 lower-case hex characters. */
+  sha512: string;
+  /** Size in bytes. */
+  size: number;
 }
 
 /**

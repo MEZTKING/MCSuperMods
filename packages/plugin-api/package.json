@@ -1,6 +1,6 @@
 {
   "name": "@msm/plugin-api",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "The public plugin API of MCSuperMods, the desktop mod maker for Minecraft Java.",
   "license": "MIT",
   "private": true,

@@ -103,6 +103,17 @@ export const target: Target = {
   fabric: {
     loader: '0.20.1',
     api: '0.165.4+26.4',
+    // apiModrinth: verified 2026-11-06 against the Modrinth API (project P7dR8mSH); its SHA-512
+    // equals the Fabric Maven .sha512 of the same version (ADR 0046 D7).
+    apiModrinth: {
+      versionId: 'Nl1jzKeV',
+      fileName: 'fabric-api-0.165.4+26.4.jar',
+      url: 'https://cdn.modrinth.com/data/P7dR8mSH/versions/Nl1jzKeV/fabric-api-0.165.4%2B26.4.jar',
+      sha1: '0278ce4be6e1068cac25bbc8aab30ae5ebef0929',
+      sha512:
+        '22cc60830cd50017b6406199fda38c44648ae6313da838c17b7c53b42cbb7753f560573ebe0b37fb33ad879ea3c28a05dd286c23715d23ff4008cd35049930c0',
+      size: 1739107,
+    },
     loom: '1.19.3',
     // minecraftDependency: Fabric Loader reports the snapshot as `26.4-alpha.7`; B151 found
     // that this range loads on the 26.4-snapshot-7 server (`~26.4` does not) and it also

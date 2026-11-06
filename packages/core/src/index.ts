@@ -43,6 +43,18 @@ export type { MergeEntry, MergeOptions, MergeOutputResult } from './lowering/mer
 export { mergeOutputFiles } from './lowering/merge-outputs';
 export { AsyncResultError, requireSyncResult } from './lowering/sync-result';
 export * from './model/index';
+export type { Modpack, ModpackMod, ModpackProject } from './modpack/modpack';
+export {
+  createModpack,
+  isModpackProjectPath,
+  isModrinthCdnUrl,
+  MODPACK_FILE,
+  MODPACK_FORMAT_VERSION,
+  MODPACK_MAX_ENTRIES,
+  ModpackFormatError,
+  parseModpack,
+  serialiseModpack,
+} from './modpack/modpack';
 export type { ProblemCode } from './problems/codes';
 export { ProblemCodes } from './problems/codes';
 export type { Reference, ReferenceIndex } from './refs/reference-index';

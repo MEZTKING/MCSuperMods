@@ -68,6 +68,7 @@ export type {
   JavaProjectInput,
   MigrationChange,
   MigrationReport,
+  ModrinthFileFacts,
   PackFormat,
   ResourceFolderKey,
   Target,

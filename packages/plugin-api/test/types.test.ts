@@ -17,6 +17,7 @@ import type {
   MaybePromise,
   MigrationChange,
   MigrationReport,
+  ModrinthFileFacts,
   OutputFile,
   OutputMergeMode,
   PluginContributions,
@@ -287,6 +288,7 @@ describe('0.6.0 additions', () => {
       loom: string;
       minecraftDependency: string;
       gradle: string;
+      apiModrinth?: ModrinthFileFacts;
     }>();
   });
 });

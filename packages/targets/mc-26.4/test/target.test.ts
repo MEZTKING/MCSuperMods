@@ -18,7 +18,16 @@ describe('target mc-26.4', () => {
       loom: '1.19.3',
       minecraftDependency: '>=26.4- <26.5-',
       gradle: '9.8.2',
+      apiModrinth: expect.any(Object),
     });
+    // The Modrinth copy of Fabric API (ADR 0046 D7) is the same version as the Maven one.
+    const file = target.fabric?.apiModrinth;
+    expect(file?.fileName).toBe(`fabric-api-${target.fabric?.api}.jar`);
+    expect(file?.url).toBe(
+      `https://cdn.modrinth.com/data/P7dR8mSH/versions/${file?.versionId}/${encodeURIComponent(file?.fileName ?? '')}`,
+    );
+    expect(file?.sha1).toMatch(/^[0-9a-f]{40}$/);
+    expect(file?.sha512).toMatch(/^[0-9a-f]{128}$/);
     // Fabric API builds name the version line, not the snapshot.
     expect(target.fabric?.api.endsWith(`+${runtimeVersion}`)).toBe(true);
   });

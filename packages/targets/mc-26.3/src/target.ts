@@ -97,6 +97,17 @@ export const target: Target = {
   fabric: {
     loader: '0.20.1',
     api: '0.165.2+26.3',
+    // apiModrinth: verified 2026-11-06 against the Modrinth API (project P7dR8mSH); its SHA-512
+    // equals the Fabric Maven .sha512 of the same version (ADR 0046 D7).
+    apiModrinth: {
+      versionId: 'nJlcvFfj',
+      fileName: 'fabric-api-0.165.2+26.3.jar',
+      url: 'https://cdn.modrinth.com/data/P7dR8mSH/versions/nJlcvFfj/fabric-api-0.165.2%2B26.3.jar',
+      sha1: '2e364989e3f6efb97e1dbd12d80d835c7ab8c26c',
+      sha512:
+        '21ce87863ed73c4c871e072f13c5a7b00bd148a098c5064a5f381479d1ddd7c54b0f40ef7d17ce2ae5712deb647c5fcaf12cb72fb663fe8d958188e870b33de0',
+      size: 1779306,
+    },
     loom: '1.19.3',
     // minecraftDependency: the fabric.mod.json range (verify at implementation).
     minecraftDependency: '~26.3',
