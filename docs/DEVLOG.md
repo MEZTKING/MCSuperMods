@@ -2759,3 +2759,11 @@ Next:
 
 **Next**
 - CI green, then fast-forward `main` and the 0.7.0 draft.
+
+## 2026-11-06 — main session — CI fix: flaky archer GameTests
+
+**What**
+- CI `engine-mod (26.4)` on de6caeb failed `bowShootsFasterArrows` and `crossbowDamageMultiplier` ("arrows shot by ruby_bow to be 1: was 0"); the same tests passed for 26.3 in that run, for 26.4 in run 302 and locally (78/78 both versions). The mock player logs in at (0, 0, 0), a chunk nothing keeps loaded, so the freshly shot arrow could land in an unloaded section the entity search does not see. `MsmGearGameTest.archer` now snaps the player into the test area (`AT`), as `MsmEntityGameTest` does. Local: `runGameTest` 78/78 for 26.4 and 26.3.
+
+**Next**
+- CI green, fast-forward `main`, the 0.7.0 draft. B161 is running (executor).

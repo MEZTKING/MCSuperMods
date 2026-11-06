@@ -42,6 +42,7 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Gear, weapons and consumables (ADR 0044, B187) on the definitions in {@code msm/msm_test/item/}: ranged weapons,
@@ -85,6 +86,9 @@ public class MsmGearGameTest {
 
     private static Player archer(GameTestHelper helper) {
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        // In the test area: the mock player logs in at (0, 0, 0), a chunk nothing keeps loaded,
+        // where a fresh arrow may not be found (flaky on CI).
+        player.snapTo(helper.absoluteVec(Vec3.atBottomCenterOf(AT)));
         player.getInventory().setItem(9, new ItemStack(Items.ARROW, 32)); // not the selected slot, which holds the weapon
         return player;
     }
