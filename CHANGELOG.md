@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [1.1.0] - 2026-11-06
+
+Easier to use, a live preview beside the form, painting, and modpacks. Projects from 1.0.0 open unchanged; your current view stays as it was until you switch to Easy mode.
+
 ### Added
 
 - **Easy and Advanced mode**: Easy mode (the default for new installs) lists what you made first, sets from the Creator under their own names, and folds the technical files away; Advanced mode shows everything and Raw JSON. Switch on the toolbar or under **View**.
@@ -13,8 +19,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Live preview beside the form** for items, blocks, armour (on a figure, with parts you can show, hide and jump to), recipes, models, structures and mobs, redrawn as you edit.
 - **New project with the AI helper…**: describe your mod and the AI helper builds it in a new project.
 - **Paint textures** inside MCSuperMods: the brush on a texture's row opens a pixel editor with pencil, eraser, fill, colour picker, zoom and undo; saving is one undoable step.
-- Custom bows and crossbows show the pull while drawn or charged, as vanilla ones do, and the Creator draws the frames.
-- **Modpacks** (**File → Modpacks…**): group your projects into modpacks, add mods from Modrinth by name or link, export a modpack as a Modrinth `.mrpack` for Prism Launcher or the Modrinth app, and test all its mods together in Minecraft. Projects stay in their own folders; one project can be in several modpacks.
+- Custom bows and crossbows show the pull while drawn or charged, as vanilla ones do, and the Creator draws the frames. A warning names any pulling model a bow or crossbow of your own is missing.
+- **Modpacks** (**File → Modpacks…**): group your projects into modpacks, add mods from Modrinth by name or link, export a modpack as a Modrinth `.mrpack` for Prism Launcher or the Modrinth app, and test all its mods together in Minecraft. Projects stay in their own folders; one project can be in several modpacks. **Update mods** fetches the right version of each Modrinth mod after you change the modpack's Minecraft version.
+- Plugins can say which Minecraft versions their templates, starters and examples work on, and MCSuperMods hides them on the others.
 
 ## [1.0.0] - 2026-11-06
 
