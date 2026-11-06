@@ -483,6 +483,17 @@ The user's follow-up of 2026-11-05 ("armour was only an example; add others that
 - [x] Flows: Weapon, Consumable, Totem, Enchantment, Painting, Music disc item; Gear set pieces spear, mace, bow, crossbow, shield, horse and wolf armour, and `trim_material` (B189); Creator previews and the image field (B190); tests and guide (B191); painting variant tags (B192); release with 0.7.0 (B175).
 - Deferred to post-1.0 with reasons in ADR 0044 D8: trident-style throwables and custom projectiles, custom status effects, armour trim patterns, banner patterns, gliders.
 
+### Add-on after 1.0 — Modpacks (planned v1.1.0)
+
+User request of 2026-11-06: "modpack support, so everything you make can be organised", meaning both collections of projects and real modpacks. Design: [ADR 0046](adr/0046-modpacks.md) (accepted), DESIGN [Targets and Exporters](DESIGN.md#9-targets-and-exporters) "Modpacks".
+
+- [x] `msm.modpack.json` model in `@msm/core` (`parseModpack`, `serialiseModpack`); `FabricFacts.apiModrinth` (plugin API 1.3.0) verified for 26.3 and the 26.4 snapshot; `createMrpack` in `@msm/exporters`; Modrinth lookups and extra-mod installs in `@msm/interop`.
+- [x] Main: remembered modpacks in settings, the modpack service (create, add existing, forget, read, write, add project, member snapshots, Modrinth lookup), `testInMinecraft.runModpack` with the download cache.
+- [x] Renderer: scratch-session member builds (`session.createScratch`, `loadSnapshot`, `buildContentJar`), the Modpacks dialog (File → Modpacks…, palette), Export modpack (.mrpack)…, Test modpack in Minecraft.
+- [x] e2e `modpacks-path` (palette, New modpack… in its own folder through `MSM_E2E_MODPACK_DIR`, Add open project written as `../project`, rename, a build through the member snapshot).
+- [ ] The user imports an exported `.mrpack` into Prism and the Modrinth app (verify `hashes.sha1` and `fileSize` there) and tests a modpack in game.
+- Follow-ups: "Update mods" after a Minecraft version change; CurseForge export; server packs.
+
 ### Exit criteria
 
 Two targets supported; an external plugin works; 1.0 released.

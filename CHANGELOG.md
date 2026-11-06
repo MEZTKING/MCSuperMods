@@ -6,7 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **Modpacks** (**File → Modpacks…**): group your projects into modpacks, add mods from Modrinth by name or link, export a modpack as a Modrinth `.mrpack` for Prism Launcher or the Modrinth app, and test all its mods together in Minecraft. Projects stay in their own folders; one project can be in several modpacks.
 
 ## [1.0.0] - 2026-11-06
 

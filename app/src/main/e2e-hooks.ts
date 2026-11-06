@@ -9,6 +9,8 @@
  * - `MSM_E2E_PICK_FILES` (optional): absolute paths separated by the platform's path-list
  *   delimiter (`:` on Linux and macOS, `;` on Windows); `pickFiles` returns these files.
  *   When unset, `pickFiles` returns nothing.
+ * - `MSM_E2E_MODPACK_DIR` (absolute, optional): folder pickers whose title names a modpack
+ *   return this folder instead of `MSM_E2E_PROJECT_DIR` (ADR 0046).
  * - `confirmDiscard` answers "discard" without a dialog.
  *
  * Independently of those, `MSM_E2E_AI_SCRIPT` (absolute path to an `AiModelScript` JSON file,
@@ -32,6 +34,7 @@ export interface E2eHooks {
   projectDir: string;
   outDir: string | null;
   pickFiles: string[];
+  modpackDir: string | null;
 }
 
 /** Reads the e2e settings from the environment, or `null` when e2e mode is off. */
@@ -47,10 +50,15 @@ export function readE2eHooks(env: Readonly<Record<string, string | undefined>>):
   for (const path of pickFiles) {
     if (!isAbsolute(path)) throw new Error('MSM_E2E_PICK_FILES must list absolute paths.');
   }
+  const modpackDir = env.MSM_E2E_MODPACK_DIR;
+  if (modpackDir !== undefined && modpackDir !== '' && !isAbsolute(modpackDir)) {
+    throw new Error('MSM_E2E_MODPACK_DIR must be an absolute path.');
+  }
   return {
     projectDir,
     outDir: outDir === undefined || outDir === '' ? null : outDir,
     pickFiles,
+    modpackDir: modpackDir === undefined || modpackDir === '' ? null : modpackDir,
   };
 }
 
@@ -58,7 +66,8 @@ export function readE2eHooks(env: Readonly<Record<string, string | undefined>>):
 export function applyE2eHooks(dialogs: NativeDialogs, hooks: E2eHooks | null): NativeDialogs {
   if (hooks === null) return dialogs;
   return {
-    pickDirectory: async () => hooks.projectDir,
+    pickDirectory: async ({ title }) =>
+      hooks.modpackDir !== null && /modpack/i.test(title) ? hooks.modpackDir : hooks.projectDir,
     pickExportFolder: async () => hooks.outDir,
     confirmDiscard: async () => true,
     openFiles: async () => [...hooks.pickFiles],

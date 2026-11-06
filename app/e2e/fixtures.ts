@@ -29,6 +29,8 @@ export interface LaunchedApp {
   outDir: string;
   /** `MSM_HOME`: settings and the asset cache. */
   msmHome: string;
+  /** `MSM_E2E_MODPACK_DIR`: returned by the modpack folder pickers (ADR 0046). */
+  modpackDir: string;
   /** Closes the app (killing it if it does not exit) and removes the temporary folders. */
   close(): Promise<void>;
 }
@@ -102,6 +104,8 @@ export async function launchApp(options: LaunchOptions = {}): Promise<LaunchedAp
   env.MSM_E2E_PROJECT_DIR = projectDir;
   env.MSM_E2E_OUT_DIR = outDir;
   env.MSM_HOME = msmHome;
+  const modpackDir = join(temp, 'modpack');
+  env.MSM_E2E_MODPACK_DIR = modpackDir;
   const delimiter = process.platform === 'win32' ? ';' : ':';
   if (options.pickFiles !== undefined) env.MSM_E2E_PICK_FILES = options.pickFiles.join(delimiter);
   if (options.aiScript !== undefined) env.MSM_E2E_AI_SCRIPT = options.aiScript;
@@ -120,6 +124,7 @@ export async function launchApp(options: LaunchOptions = {}): Promise<LaunchedAp
     projectDir,
     outDir,
     msmHome,
+    modpackDir,
     async close() {
       const child = app.process();
       let timer: NodeJS.Timeout | undefined;

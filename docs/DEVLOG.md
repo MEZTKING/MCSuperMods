@@ -2874,3 +2874,24 @@ Next:
 
 **Next**
 - CI, `main`, the 1.0.0 draft release; then modpacks (ADR 0046) for 1.1.
+
+## 2026-11-06 — main session — 1.0.0 draft build, modpacks (ADR 0046)
+
+**What**
+- `main` fast-forwarded to 94e4ad5 (CI run 324 green) and `release.yml` triggered for 1.0.0 with that commit: a draft only, not published (the user tests first).
+- Modpacks, the user's "both" (collections and real modpacks), designed in ADR 0046 and built:
+  - `@msm/core` `modpack.ts`: `msm.modpack.json` (name, version, summary, `targetId`, member `projects` by path, pinned Modrinth `mods`), `parseModpack` (validates, drops unknown keys, refuses duplicates), `serialiseModpack`.
+  - Plugin API 1.3.0: `FabricFacts.apiModrinth?: ModrinthFileFacts`, filled for 26.3 (`nJlcvFfj`) and the 26.4 snapshot (`Nl1jzKeV`); their SHA-512 equal the Fabric Maven `.sha512` (checked 2026-11-06).
+  - `@msm/exporters` `createMrpack`, `mrpackIndex`, `mrpackFileName`; `@msm/interop` `resolveModrinthMod`, `modrinthProjectRef`, `installExtraMod` (role `extra`), `removeUnlistedInstalls`.
+  - Main: settings `modpacks` (remembered roots), `platform/modpacks.ts` (list, create, add existing, forget, read, write, add project relatively, member snapshots of listed members only, `msm.project.json` + `content/` + `assets/`, links skipped, size limits; Modrinth lookups), `testInMinecraft.runModpack` (all jars, cached and SHA-512-checked extra mods, earlier MSM jars removed), ten IPC channels with zod schemas.
+  - Renderer: `session.createScratch(fs)`, `loadSnapshot`, `buildContentJar`, `openPath`, `dispose`; `modpacks/build.ts` (`buildModpackJars` with `modpack.*` problems, `modpackMrpack`); `ModpacksDialog` (File > Modpacks…, palette "Modpacks…").
+  - Tests: core, exporters, interop, main service, settings, contract, Test in Minecraft, builder (the real `fixtures/sample-mod` built in a scratch session into an `.mrpack`), dialog, e2e `modpacks-path` (new hook `MSM_E2E_MODPACK_DIR`). 20 e2e tests pass locally.
+  - Docs: DESIGN §9 "Modpacks", ROADMAP add-on, guide `modpacks.md` (sidebar, index, README), CHANGELOG Unreleased.
+- Prism's `.mrpack` reader (`ModrinthInstanceCreationTask.cpp`, `develop`) was the source for the format; the Modrinth support article and docs refused automated fetches.
+
+**Decisions**
+- Member jars nest the runtime and GeckoLib as for a single project (Fabric's jar-in-jar keeps one copy); only Fabric API and extra mods are `.mrpack` downloads.
+- Modpack work targets app 1.1.0; `main` stays 1.0.0 until that release.
+
+**Next**
+- CI and `main`; the user tests the 1.0.0 draft, then imports an exported `.mrpack` in Prism or the Modrinth app; then a 1.1.0 release with modpacks.

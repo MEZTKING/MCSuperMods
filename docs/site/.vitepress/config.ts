@@ -56,6 +56,7 @@ export default defineConfig({
           { text: 'The AI helper', link: '/ai-helper' },
           { text: 'Minecraft versions', link: '/targets' },
           { text: 'Plugins', link: '/plugins' },
+          { text: 'Modpacks', link: '/modpacks' },
         ],
       },
       {
