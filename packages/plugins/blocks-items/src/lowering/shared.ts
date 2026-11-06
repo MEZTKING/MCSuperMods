@@ -50,6 +50,88 @@ export function itemDefinitionFile(
   };
 }
 
+/** A bow or crossbow and how fast it draws, for {@link rangedItemDefinitionFile}. */
+export interface RangedPull {
+  type: 'bow' | 'crossbow';
+  /** `msm:ranged_weapon` `draw_speed` (1 is vanilla). */
+  drawSpeed: number;
+}
+
+/** Rounds to 4 decimals so the lowered JSON stays short and stable. */
+const round4 = (value: number): number => Math.round(value * 10_000) / 10_000;
+
+/**
+ * The item model definition of a bow or crossbow that shows the pull like vanilla's, from
+ * `target.items.rangedPull`, with the models `<model>_pulling_0`…`_2` (and for a crossbow
+ * `<model>_arrow` and `<model>_firework`). The draw speed scales the bow's use-duration scale
+ * and divides the crossbow's pull thresholds, so the animation keeps pace with the runtime.
+ * Without the facts this is {@link itemDefinitionFile}.
+ */
+export function rangedItemDefinitionFile(
+  target: Target,
+  namespace: string,
+  path: string,
+  model: string,
+  pull: RangedPull,
+): OutputFile {
+  const facts = target.items?.rangedPull;
+  if (facts === undefined) return itemDefinitionFile(target, namespace, path, model);
+  const plain = (id: string) => ({ type: 'minecraft:model', model: id });
+  const speed = pull.drawSpeed > 0 ? pull.drawSpeed : 1;
+  const pulling =
+    pull.type === 'bow'
+      ? {
+          type: 'minecraft:range_dispatch',
+          property: facts.bow.useDuration,
+          scale: round4(facts.bow.scale * speed),
+          entries: facts.bow.thresholds.map((threshold, index) => ({
+            threshold,
+            model: plain(`${model}_pulling_${index + 1}`),
+          })),
+          fallback: plain(`${model}_pulling_0`),
+        }
+      : {
+          type: 'minecraft:range_dispatch',
+          property: facts.crossbow.pull,
+          entries: facts.crossbow.thresholds.map((threshold, index) => ({
+            threshold: round4(threshold / speed),
+            model: plain(`${model}_pulling_${index + 1}`),
+          })),
+          fallback: plain(`${model}_pulling_0`),
+        };
+  const drawn = {
+    type: 'minecraft:condition',
+    property: facts.usingItem,
+    on_false: plain(model),
+    on_true: pulling,
+  };
+  return {
+    path: assetPath(target, 'item_definition', namespace, path),
+    contents: {
+      model:
+        pull.type === 'bow'
+          ? drawn
+          : {
+              type: 'minecraft:select',
+              property: facts.crossbow.chargeType,
+              cases: [
+                { when: facts.crossbow.arrow, model: plain(`${model}_arrow`) },
+                { when: facts.crossbow.rocket, model: plain(`${model}_firework`) },
+              ],
+              fallback: drawn,
+            },
+    },
+    layer: 'resourcepack',
+    schema: ITEM_DEFINITION_SCHEMA,
+  };
+}
+
+/** The models a bow or crossbow item definition names besides its own model. */
+export function rangedPullModels(model: string, type: 'bow' | 'crossbow'): string[] {
+  const pulling = [0, 1, 2].map((index) => `${model}_pulling_${index}`);
+  return type === 'bow' ? pulling : [...pulling, `${model}_arrow`, `${model}_firework`];
+}
+
 /** A non-empty string, or `undefined`. */
 export const nonEmptyString = (value: unknown): string | undefined =>
   typeof value === 'string' && value.length > 0 ? value : undefined;

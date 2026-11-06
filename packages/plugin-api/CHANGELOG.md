@@ -6,6 +6,7 @@ All changes to the `@msm/plugin-api` surface. The package follows semver; every 
 
 Modpacks (ADR 0046). `API_VERSION` is `1.3.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
 
+- `ItemFacts.rangedPull?: RangedPullFacts` (`usingItem`, `bow` `{ useDuration, scale, thresholds }`, `crossbow` `{ pull, thresholds, chargeType, arrow, rocket }`): how vanilla's bow and crossbow item definitions show the pull, so custom ones animate the same way scaled by their draw speed.
 - `FabricFacts.apiModrinth?: ModrinthFileFacts` (`versionId`, `fileName`, `url`, `sha1`, `sha512`, `size`): the target's Fabric API jar on Modrinth, which a modpack export lists as a download (ADR 0046 D7).
 
 ### Migration from 1.2.0

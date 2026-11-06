@@ -29,7 +29,28 @@ const item = (id: `${string}:${string}`, data: Record<string, unknown>): Element
 
 describe('blocks-items validators', () => {
   it('lists every code it reports', () => {
-    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(10);
+    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(11);
+  });
+
+  it('warns when a custom bow or crossbow model has no pulling models', async () => {
+    const bow = { components: { 'msm:ranged_weapon': { type: 'bow' } } };
+    const crossbow = { components: { 'msm:ranged_weapon': { type: 'crossbow' } } };
+    const model = (id: `${string}:${string}`) =>
+      element('minecraft:model', id, { parent: 'minecraft:item/bow' } as never);
+    const problems = await validate([
+      item('demo:vanilla_bow', { ...bow, model: 'minecraft:item/bow' }),
+      item('demo:ruby_bow', { ...bow, model: 'demo:item/ruby_bow' }),
+      model('demo:item/ruby_bow_pulling_0'),
+      model('demo:item/ruby_bow_pulling_1'),
+      model('demo:item/ruby_bow_pulling_2'),
+      item('demo:ruby_crossbow', { ...crossbow, model: 'demo:item/ruby_crossbow' }),
+      model('demo:item/ruby_crossbow_pulling_0'),
+    ]);
+    const pull = problems.filter((problem) => problem.code === 'blocks-items.missing-pull-model');
+    expect(pull.map((problem) => problem.elementId)).toEqual(['demo:ruby_crossbow']);
+    expect(pull[0]?.message).toContain(
+      'demo:item/ruby_crossbow_pulling_1, demo:item/ruby_crossbow_pulling_2, demo:item/ruby_crossbow_arrow, demo:item/ruby_crossbow_firework',
+    );
   });
 
   it('accepts a clean project', async () => {

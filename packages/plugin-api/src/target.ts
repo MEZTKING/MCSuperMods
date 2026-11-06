@@ -181,6 +181,37 @@ export interface ItemFacts {
    * name against this list.
    */
   armorMaterials: readonly string[];
+  /**
+   * How the target's vanilla bow and crossbow item definitions show the pull, so a custom bow
+   * or crossbow can animate the same way (scaled by its draw speed). Without it they show one
+   * model. Since 1.3.0.
+   */
+  rangedPull?: RangedPullFacts;
+}
+
+/** The pull animation facts of vanilla's `items/bow.json` and `items/crossbow.json`. Since 1.3.0. */
+export interface RangedPullFacts {
+  /** The boolean property that is true while the item is in use, for example `minecraft:using_item`. */
+  usingItem: string;
+  bow: {
+    /** The numeric property counting use ticks, for example `minecraft:use_duration`. */
+    useDuration: string;
+    /** The `range_dispatch` scale of vanilla's bow. */
+    scale: number;
+    /** The thresholds of the `_pulling_1` and `_pulling_2` models. */
+    thresholds: readonly [number, number];
+  };
+  crossbow: {
+    /** The numeric pull property, for example `minecraft:crossbow/pull`. */
+    pull: string;
+    /** The thresholds of the `_pulling_1` and `_pulling_2` models. */
+    thresholds: readonly [number, number];
+    /** The select property of the loaded charge, for example `minecraft:charge_type`. */
+    chargeType: string;
+    /** Its cases for an arrow and a firework rocket. */
+    arrow: string;
+    rocket: string;
+  };
 }
 
 /**

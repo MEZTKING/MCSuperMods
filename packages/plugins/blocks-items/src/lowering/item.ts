@@ -11,7 +11,14 @@ import {
   isRecord,
   splitResourceLocation,
 } from './paths';
-import { ITEM_TAG_SCHEMA, itemDefinitionFile, langFile, nonEmptyString } from './shared';
+import {
+  ITEM_TAG_SCHEMA,
+  itemDefinitionFile,
+  langFile,
+  nonEmptyString,
+  type RangedPull,
+  rangedItemDefinitionFile,
+} from './shared';
 import { weaponItemTags } from './weapons';
 
 const ITEM_EDITOR_FIELDS = ['model', 'display_name'] as const;
@@ -38,6 +45,19 @@ export function itemDefinition(element: Element): JsonObject {
   for (const field of ITEM_EDITOR_FIELDS) delete definition[field];
   definition.format = DEFINITION_FORMAT;
   return definition;
+}
+
+/** The bow or crossbow of `msm:ranged_weapon` and its draw speed, or `null`. */
+export function rangedPullOf(data: JsonObject): RangedPull | null {
+  const components = data.components;
+  if (typeof components !== 'object' || components === null || Array.isArray(components))
+    return null;
+  const ranged = (components as JsonObject)['msm:ranged_weapon'];
+  if (typeof ranged !== 'object' || ranged === null || Array.isArray(ranged)) return null;
+  const type = (ranged as JsonObject).type;
+  if (type !== 'bow' && type !== 'crossbow') return null;
+  const speed = (ranged as JsonObject).draw_speed;
+  return { type, drawSpeed: typeof speed === 'number' && speed > 0 ? speed : 1 };
 }
 
 /** An item tag file under `data/minecraft/tags/item/`, declared `merge: 'tag'`. */
@@ -75,7 +95,14 @@ export function lowerItem(element: Element, target: Target): OutputFile[] {
     },
   ];
   const model = nonEmptyString(data.model);
-  if (model !== undefined) files.push(itemDefinitionFile(target, namespace, path, model));
+  const pull = rangedPullOf(data);
+  if (model !== undefined) {
+    files.push(
+      pull === null
+        ? itemDefinitionFile(target, namespace, path, model)
+        : rangedItemDefinitionFile(target, namespace, path, model, pull),
+    );
+  }
   const displayName = nonEmptyString(data.display_name);
   if (displayName !== undefined) {
     files.push(langFile(target, namespace, descriptionKey('item', namespace, path), displayName));

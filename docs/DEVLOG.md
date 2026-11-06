@@ -2895,3 +2895,15 @@ Next:
 
 **Next**
 - CI and `main`; the user tests the 1.0.0 draft, then imports an exported `.mrpack` in Prism or the Modrinth app; then a 1.1.0 release with modpacks.
+
+## 2026-11-06 — main session — follow-ups: Update mods, external supports(), bow and crossbow pull
+
+**What**
+- Modpacks: **Update mods** re-pins every Modrinth mod for the modpack's Minecraft version; changing the version says so.
+- External plugins: `supports(target)` of templates, starters and examples is answered by the worker once per known target at start-up (sandbox method `supports`, 1 s deadline; `loadExternalPlugins({ targets })`), so the facade answers synchronously.
+- Bows and crossbows: custom ones had no pull animation at all (every `msm:item` got a plain item definition; the old follow-up wording was wrong, gameplay already honoured `draw_speed`). Plugin API 1.3.0 adds `ItemFacts.rangedPull` (verified against mcmeta `26.3-assets` and `26.4-snapshot-7-assets` `items/bow.json` and `crossbow.json`); `msm:item` with `msm:ranged_weapon` lowers to vanilla's shape with `<model>_pulling_0..2` (crossbow also `_arrow`, `_firework`), the bow's use-duration scale times `draw_speed` and the crossbow's pull thresholds divided by it. New warning `blocks-items.missing-pull-model`; the Weapon and Gear set flows add the frame models and eight derived placeholder patterns (`bow_pulling_0..2`, `crossbow_pulling_0..2`, `crossbow_arrow`, `crossbow_firework`, drawn from the bow and crossbow masks with a pulled string and an arrow or rocket). Goldens updated (blocks-items, library patterns, sample-mod jar and Java tree SHA-256).
+- JDK 25 (Temurin 25.0.5+8) installed at `/root/jdk/jdk-25.0.5+8` in this container.
+- Painting picture rescaling was set aside: plugins may not depend on a PNG decoder, the game stretches the picture either way, and the Creator already warns when the proportions do not fit.
+
+**Next**
+- The user's feedback (2026-11-06, with a screenshot of the AI helper building a mace): better or customisable art, easier navigation, make "start a new project with AI" obvious, a live preview while editing armour and similar elements with expandable, clickable parts, and an Easy / Advanced mode.

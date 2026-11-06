@@ -64,12 +64,13 @@ describe('@msm/plugin-blocks-items', () => {
     ]);
   });
 
-  it('contributes its templates and the nine validators', () => {
+  it('contributes its templates and the ten validators', () => {
     expect(plugin.contributes.elementTemplates?.map((t) => t.id)).toEqual(
       blocksItemsTemplates.map((t) => t.id),
     );
     expect(plugin.contributes.validators?.map((v) => v.id)).toEqual([
       'msm.blocks-items.missing-model',
+      'msm.blocks-items.missing-pull-model',
       'msm.blocks-items.unknown-event',
       'msm.blocks-items.event-cycle',
       'msm.blocks-items.mod-id',
@@ -79,7 +80,7 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.equipment-asset',
       'msm.blocks-items.component-conflict',
     ]);
-    expect(blocksItemsValidators).toHaveLength(9);
+    expect(blocksItemsValidators).toHaveLength(10);
   });
 
   it('rejects unsafe ids and non-object data', () => {

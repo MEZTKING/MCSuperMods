@@ -82,7 +82,7 @@ const PINNED: Partial<Record<PlaceholderPattern, string>> = {
 const PINNED_SKIN = '224f2f4715ddc13cad76f34fd7555f720a9149052645c23f4c28c102c2ff4fd5';
 
 describe('placeholder textures', () => {
-  it('has twenty-nine patterns', () => {
+  it('has thirty-seven patterns', () => {
     expect(PLACEHOLDER_PATTERNS).toEqual([
       'plain',
       'ore',
@@ -102,7 +102,15 @@ describe('placeholder textures', () => {
       'armor_layer_1',
       'armor_layer_2',
       'bow',
+      'bow_pulling_0',
+      'bow_pulling_1',
+      'bow_pulling_2',
       'crossbow',
+      'crossbow_pulling_0',
+      'crossbow_pulling_1',
+      'crossbow_pulling_2',
+      'crossbow_arrow',
+      'crossbow_firework',
       'shield',
       'spear',
       'mace',

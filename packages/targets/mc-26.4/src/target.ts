@@ -96,6 +96,19 @@ export const target: Target = {
       'netherite',
       'armadillo_scute',
     ],
+    // rangedPull: verified 2026-11-06 against mcmeta's 26.4-snapshot-7-assets assets/minecraft/items/bow.json
+    // and crossbow.json.
+    rangedPull: {
+      usingItem: 'minecraft:using_item',
+      bow: { useDuration: 'minecraft:use_duration', scale: 0.05, thresholds: [0.65, 0.9] },
+      crossbow: {
+        pull: 'minecraft:crossbow/pull',
+        thresholds: [0.58, 1.0],
+        chargeType: 'minecraft:charge_type',
+        arrow: 'arrow',
+        rocket: 'rocket',
+      },
+    },
   },
   // Verified 2026-11-05: meta.fabricmc.net lists Loader 0.20.1 for 26.4-snapshot-7, and
   // 0.165.4+26.4 is the newest Fabric API for 26.4 on maven.fabricmc.net (ADR 0037 D2). Loom

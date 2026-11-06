@@ -21,8 +21,56 @@
   {
     "contents": {
       "model": {
-        "model": "minecraft:item/crossbow",
-        "type": "minecraft:model"
+        "cases": [
+          {
+            "model": {
+              "model": "minecraft:item/crossbow_arrow",
+              "type": "minecraft:model"
+            },
+            "when": "arrow"
+          },
+          {
+            "model": {
+              "model": "minecraft:item/crossbow_firework",
+              "type": "minecraft:model"
+            },
+            "when": "rocket"
+          }
+        ],
+        "fallback": {
+          "on_false": {
+            "model": "minecraft:item/crossbow",
+            "type": "minecraft:model"
+          },
+          "on_true": {
+            "entries": [
+              {
+                "model": {
+                  "model": "minecraft:item/crossbow_pulling_1",
+                  "type": "minecraft:model"
+                },
+                "threshold": 0.3867
+              },
+              {
+                "model": {
+                  "model": "minecraft:item/crossbow_pulling_2",
+                  "type": "minecraft:model"
+                },
+                "threshold": 0.6667
+              }
+            ],
+            "fallback": {
+              "model": "minecraft:item/crossbow_pulling_0",
+              "type": "minecraft:model"
+            },
+            "property": "minecraft:crossbow/pull",
+            "type": "minecraft:range_dispatch"
+          },
+          "property": "minecraft:using_item",
+          "type": "minecraft:condition"
+        },
+        "property": "minecraft:charge_type",
+        "type": "minecraft:select"
       }
     },
     "layer": "resourcepack",

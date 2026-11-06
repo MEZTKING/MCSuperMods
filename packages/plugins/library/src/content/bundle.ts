@@ -205,6 +205,41 @@ export function modElement(namespace: string, projectName: string, description: 
   );
 }
 
+/**
+ * The pulling frames of a bow or crossbow item model `<ns>:item/<path>`: models
+ * `<path>_pulling_0`…`_2` (and for a crossbow `_arrow` and `_firework`) whose parents are the
+ * vanilla frames, each with a tinted placeholder texture. The item's definition shows them
+ * while it is drawn or loaded (`msm:ranged_weapon`).
+ */
+export function rangedPullFrames(
+  namespace: string,
+  path: string,
+  type: 'bow' | 'crossbow',
+  colour: Rgb,
+): { elements: ContentBundleElement[]; assets: ContentBundleAsset[] } {
+  const frames =
+    type === 'bow'
+      ? ['pulling_0', 'pulling_1', 'pulling_2']
+      : ['pulling_0', 'pulling_1', 'pulling_2', 'arrow', 'firework'];
+  const elements: ContentBundleElement[] = [];
+  const assets: ContentBundleAsset[] = [];
+  for (const frame of frames) {
+    const model = rl(namespace, `item/${path}_${frame}`);
+    elements.push(
+      element(
+        model,
+        KINDS.model,
+        { parent: `minecraft:item/${type}_${frame}`, textures: { layer0: model } },
+        `The ${frame.replace('_', ' ')} frame the ${type} shows while it is ${type === 'bow' ? 'drawn' : frame.startsWith('pulling') ? 'charged' : 'loaded'}, drawn from textures/item/${path}_${frame}.png.`,
+      ),
+    );
+    assets.push(
+      texture(namespace, `item/${path}_${frame}`, `${type}_${frame}` as PlaceholderPattern, colour),
+    );
+  }
+  return { elements, assets };
+}
+
 /** A flat (`generated`) or other item model `<namespace>:item/<path>` drawn from its own texture. */
 export function itemModel(namespace: string, path: string, parent: string, notes: string) {
   const model = rl(namespace, `item/${path}`);

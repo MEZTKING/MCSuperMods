@@ -36,6 +36,10 @@
  *   ADR 0044 D1: MSM's own component wins). The message names the two components.
  * - `blocks-items.item-collision` (error): an `msm:item` with the id of an `msm:block` that
  *   registers its own block item (`item` is not `false`).
+ * - `blocks-items.missing-pull-model` (warning): a bow or crossbow whose own (non-vanilla)
+ *   model has no `<model>_pulling_0`…`_2` (and for a crossbow `_arrow`, `_firework`) model
+ *   element, which its item definition shows while it is drawn. Only when the target has
+ *   `items.rangedPull`.
  */
 import type {
   Element,
@@ -46,7 +50,9 @@ import type {
   ValidationRegistry,
 } from '@msm/plugin-api';
 import { BLOCK_KIND, ITEM_KIND, MOD_KIND } from './kinds';
+import { rangedPullOf } from './lowering/item';
 import { isRecord } from './lowering/paths';
+import { rangedPullModels } from './lowering/shared';
 import { incorrectForTierTag, toolTierName } from './lowering/tools';
 
 /** Kind id of equipment assets, contributed by `@msm/plugin-resourcepack` (ADR 0042 D2). */
@@ -79,6 +85,7 @@ export const BLOCKS_ITEMS_PROBLEM_CODES = Object.freeze([
   'blocks-items.unknown-armor-material',
   'blocks-items.unknown-equipment-asset',
   'blocks-items.component-conflict',
+  'blocks-items.missing-pull-model',
 ] as const);
 
 /**
@@ -491,6 +498,33 @@ function itemCollisions(elements: readonly Element[]): Problem[] {
   return problems;
 }
 
+/** Kind id of models, contributed by `@msm/plugin-resourcepack`. */
+const MODEL_KIND = 'minecraft:model';
+
+function missingPullModels(elements: readonly Element[]): Problem[] {
+  const models = new Set<string>(
+    elements.filter((element) => element.kind === MODEL_KIND).map((element) => element.id),
+  );
+  const problems: Problem[] = [];
+  for (const element of elements) {
+    if (element.kind !== ITEM_KIND) continue;
+    const data = dataOf(element);
+    const model = data.model;
+    const pull = rangedPullOf(data);
+    if (pull === null || typeof model !== 'string' || model.startsWith('minecraft:')) continue;
+    const missing = rangedPullModels(model, pull.type).filter((id) => !models.has(id));
+    if (missing.length === 0) continue;
+    problems.push({
+      severity: 'warning',
+      code: 'blocks-items.missing-pull-model',
+      elementId: element.id,
+      path: '/model',
+      message: `This ${pull.type} shows ${missing.join(', ')} while it is ${pull.type === 'bow' ? 'drawn' : 'charged or loaded'}, but the project has no such model, so it would show the missing-model cube. Add those models (for example copies of "${model}" with pulled-string textures), or use a vanilla ${pull.type} model.`,
+    });
+  }
+  return problems;
+}
+
 const DEFINITION_KINDS = [BLOCK_KIND, ITEM_KIND] as const;
 
 export const blocksItemsValidators: readonly ProjectValidator[] = Object.freeze([
@@ -498,6 +532,12 @@ export const blocksItemsValidators: readonly ProjectValidator[] = Object.freeze(
     id: 'msm.blocks-items.missing-model',
     kinds: DEFINITION_KINDS,
     validate: ({ elements }) => missingModels(elements),
+  },
+  {
+    id: 'msm.blocks-items.missing-pull-model',
+    kinds: [ITEM_KIND, MODEL_KIND],
+    validate: ({ elements, target }) =>
+      target.items?.rangedPull === undefined ? [] : missingPullModels(elements),
   },
   {
     id: 'msm.blocks-items.unknown-event',

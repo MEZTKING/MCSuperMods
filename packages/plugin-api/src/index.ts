@@ -70,6 +70,7 @@ export type {
   MigrationReport,
   ModrinthFileFacts,
   PackFormat,
+  RangedPullFacts,
   ResourceFolderKey,
   Target,
   TargetChannel,

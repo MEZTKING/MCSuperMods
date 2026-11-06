@@ -43,6 +43,7 @@ import {
   KINDS,
   modIdFromNamespace,
   packElement,
+  rangedPullFrames,
   rl,
   texture,
 } from '../content/bundle';
@@ -1102,6 +1103,11 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
       recipeOf(id, piece, false),
     );
     assets.push(texture(namespace, `item/${name.id}_${piece.value}`, piece.value, colour));
+    if (piece.value === 'bow' || piece.value === 'crossbow') {
+      const frames = rangedPullFrames(namespace, `${name.id}_${piece.value}`, piece.value, colour);
+      add(...frames.elements);
+      assets.push(...frames.assets);
+    }
   }
 
   // Horse and wolf armour ---------------------------------------------------------------------

@@ -25,6 +25,7 @@ import {
   modElement,
   PACK_NOTES,
   packElement,
+  rangedPullFrames,
   rl,
   texture,
 } from '../content/bundle';
@@ -348,6 +349,11 @@ export function weaponBundle(context: BundleContext): ContentBundle {
       `The English name: item.${namespace}.${name.id} is its translation key.`,
     ),
   ];
+  const pullFrames =
+    type.value === 'bow' || type.value === 'crossbow'
+      ? rangedPullFrames(namespace, name.id, type.value, colour)
+      : { elements: [], assets: [] };
+  elements.push(...pullFrames.elements);
   if (ingredient !== undefined && ingredient.value !== 'none') {
     const key: JsonObject = { X: ingredient.value };
     for (const symbol of Object.keys(KEYS).sort()) {
@@ -380,6 +386,9 @@ export function weaponBundle(context: BundleContext): ContentBundle {
   }
   return {
     elements,
-    assets: [texture(namespace, `item/${name.id}`, type.value as PlaceholderPattern, colour)],
+    assets: [
+      texture(namespace, `item/${name.id}`, type.value as PlaceholderPattern, colour),
+      ...pullFrames.assets,
+    ],
   };
 }

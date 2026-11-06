@@ -68,7 +68,15 @@ export type PlaceholderPattern =
   | 'armor_layer_1'
   | 'armor_layer_2'
   | 'bow'
+  | 'bow_pulling_0'
+  | 'bow_pulling_1'
+  | 'bow_pulling_2'
   | 'crossbow'
+  | 'crossbow_pulling_0'
+  | 'crossbow_pulling_1'
+  | 'crossbow_pulling_2'
+  | 'crossbow_arrow'
+  | 'crossbow_firework'
   | 'shield'
   | 'spear'
   | 'mace'
@@ -100,7 +108,15 @@ export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze
   'armor_layer_1',
   'armor_layer_2',
   'bow',
+  'bow_pulling_0',
+  'bow_pulling_1',
+  'bow_pulling_2',
   'crossbow',
+  'crossbow_pulling_0',
+  'crossbow_pulling_1',
+  'crossbow_pulling_2',
+  'crossbow_arrow',
+  'crossbow_firework',
   'shield',
   'spear',
   'mace',
@@ -307,6 +323,10 @@ const GRIP: Rgba = [104, 72, 40, 255];
 const GRIP_DARK: Rgba = [72, 48, 24, 255];
 /** Bow strings and bottle glass. */
 const STRING: Rgba = [218, 222, 226, 255];
+/** Arrowheads on drawn bows and loaded crossbows. */
+const ARROW_HEAD: Rgba = [168, 172, 178, 255];
+/** The firework rocket on a crossbow loaded with one. */
+const ROCKET: Rgba = [196, 52, 44, 255];
 
 /**
  * A sword from the bottom-left grip to the top-right tip along the diagonal `x + y = 15`: a
@@ -862,11 +882,110 @@ function maskPattern(mask: Mask): (palette: Palette) => Pixel {
         return GRIP_DARK;
       case 'w':
         return STRING;
+      case 'a':
+        return ARROW_HEAD;
+      case 'r':
+        return ROCKET;
       default:
         return CLEAR;
     }
   };
 }
+
+/** A mask as a mutable grid of characters. */
+const gridOf = (mask: Mask): string[][] => mask.map((row) => [...row]);
+const maskOf = (grid: readonly string[][]): Mask => grid.map((row) => row.join(''));
+
+/**
+ * Draws a line of `char` from (x0, y0) to (x1, y1) (Bresenham). With `over` false only empty
+ * pixels are drawn, so a string passes behind the limbs and the grip.
+ */
+function drawLine(
+  grid: string[][],
+  from: readonly [number, number],
+  to: readonly [number, number],
+  char: string,
+  over: boolean,
+): void {
+  let [x, y] = from;
+  const [x1, y1] = to;
+  const dx = Math.abs(x1 - x);
+  const dy = -Math.abs(y1 - y);
+  const sx = x < x1 ? 1 : -1;
+  const sy = y < y1 ? 1 : -1;
+  let error = dx + dy;
+  for (;;) {
+    const row = grid[y];
+    if (row !== undefined && x >= 0 && x < row.length && (over || row[x] === '.')) row[x] = char;
+    if (x === x1 && y === y1) return;
+    const doubled = 2 * error;
+    if (doubled >= dy) {
+      error += dy;
+      x += sx;
+    }
+    if (doubled <= dx) {
+      error += dx;
+      y += sy;
+    }
+  }
+}
+
+/**
+ * A pulling or loaded frame derived from a bow or crossbow mask: the string is redrawn from
+ * both tips to `nock`, and with `head` an arrow (or a rocket) lies from the nock to the head.
+ */
+function pulledMask(
+  base: Mask,
+  tips: readonly [readonly [number, number], readonly [number, number]],
+  nock: readonly [number, number],
+  head?: { at: readonly [number, number]; char: 'a' | 'r' },
+): Mask {
+  const grid = gridOf(base.map((row) => row.replaceAll('w', '.')));
+  drawLine(grid, tips[0], nock, 'w', false);
+  drawLine(grid, tips[1], nock, 'w', false);
+  if (head !== undefined) {
+    drawLine(grid, nock, head.at, 'g', true);
+    const [hx, hy] = head.at;
+    for (const [x, y] of [
+      [hx, hy],
+      [hx - 1, hy],
+      [hx, hy + 1],
+      ...(head.char === 'r' ? [[hx + 1, hy - 1] as const, [hx - 1, hy + 1] as const] : []),
+    ] as const) {
+      const row = grid[y];
+      if (row !== undefined && x >= 0 && x < row.length) row[x] = head.char;
+    }
+  }
+  return maskOf(grid);
+}
+
+/** The bow's string tips; the grip is top left, so a drawn string moves to the bottom right. */
+const BOW_TIPS = [
+  [12, 2],
+  [2, 12],
+] as const;
+/** The crossbow's string tips; a pulled string moves down its stock to the bottom left. */
+const CROSSBOW_TIPS = [
+  [6, 2],
+  [13, 9],
+] as const;
+
+/** Bow pulling frames 0 to 2 (vanilla `bow_pulling_<n>`), each drawn further back. */
+const BOW_PULLING: readonly Mask[] = [0, 1, 2].map((n) =>
+  pulledMask(BOW, BOW_TIPS, [8 + n, 8 + n], { at: [4 + n, 4 + n], char: 'a' }),
+);
+/** Crossbow pulling frames 0 to 2, then loaded with an arrow and with a firework rocket. */
+const CROSSBOW_PULLING: readonly Mask[] = [0, 1, 2].map((n) =>
+  pulledMask(CROSSBOW, CROSSBOW_TIPS, [6 - n, 9 + n]),
+);
+const CROSSBOW_ARROW: Mask = pulledMask(CROSSBOW, CROSSBOW_TIPS, [4, 11], {
+  at: [12, 3],
+  char: 'a',
+});
+const CROSSBOW_FIREWORK: Mask = pulledMask(CROSSBOW, CROSSBOW_TIPS, [4, 11], {
+  at: [12, 3],
+  char: 'r',
+});
 
 const PATTERNS: Readonly<Record<PlaceholderPattern, (palette: Palette) => Pixel>> = {
   plain,
@@ -887,7 +1006,15 @@ const PATTERNS: Readonly<Record<PlaceholderPattern, (palette: Palette) => Pixel>
   armor_layer_1: maskPattern(ARMOR_LAYER_1),
   armor_layer_2: maskPattern(ARMOR_LAYER_2),
   bow: maskPattern(BOW),
+  bow_pulling_0: maskPattern(BOW_PULLING[0] as Mask),
+  bow_pulling_1: maskPattern(BOW_PULLING[1] as Mask),
+  bow_pulling_2: maskPattern(BOW_PULLING[2] as Mask),
   crossbow: maskPattern(CROSSBOW),
+  crossbow_pulling_0: maskPattern(CROSSBOW_PULLING[0] as Mask),
+  crossbow_pulling_1: maskPattern(CROSSBOW_PULLING[1] as Mask),
+  crossbow_pulling_2: maskPattern(CROSSBOW_PULLING[2] as Mask),
+  crossbow_arrow: maskPattern(CROSSBOW_ARROW),
+  crossbow_firework: maskPattern(CROSSBOW_FIREWORK),
   shield: maskPattern(SHIELD),
   spear: maskPattern(SPEAR),
   mace: maskPattern(MACE),
