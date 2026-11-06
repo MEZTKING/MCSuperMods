@@ -2804,3 +2804,12 @@ Next:
 
 **Next**
 - CI green on this commit, then fast-forward `main` and the 0.7.0 draft; B162 (1.0 close) after the user has tried 0.7.0.
+
+## 2026-11-06 — main session — release run fix: build only the app on Windows
+
+**What**
+- `release.yml` run 13 (0.7.0, commit 97db1c8) failed in `pnpm build`: `@msm/sample-plugin#build` threw "build: the mcdoc export has no types" on the Windows runner (Linux CI builds it fine). The installer needs neither the sample plugin nor the docs site, so the release build step is now `pnpm exec turbo run build --filter=@msm/app...` (19 tasks in the dry run: the app and its workspace dependencies).
+- The Windows failure itself matters for plugin authors (the scaffold writes the same build steps) and is recorded in HANDOFF housekeeping: needs a Windows CI job to reproduce, likely the mcdoc-cli dependency URL (`file:///D:/…`) not matching the `--source` path.
+
+**Next**
+- CI green, fast-forward `main`, rerun `release.yml` for 0.7.0 from the new `main` tip.

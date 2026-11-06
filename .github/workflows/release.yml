@@ -147,7 +147,9 @@ jobs:
       # wrapper is missing). electron-builder ships build/runtime/ as resources/runtime/.
       - name: Stage the runtime jars for the app
         run: node app/scripts/stage-runtime.mjs --require
-      - run: pnpm build
+      # Only the app and what it depends on: the docs site and the sample plugin are not in the
+      # installer (and the sample plugin's mcdoc export fails on Windows, see DEVLOG 2026-11-06).
+      - run: pnpm exec turbo run build --filter=@msm/app...
       # The plugin API tarball for third-party plugin authors (ADR 0036): the tsup build in
       # packages/plugin-api/dist/, packed with `publishConfig` pointing at it.
       - name: Pack the plugin API tarball
