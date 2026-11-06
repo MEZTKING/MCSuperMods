@@ -2767,3 +2767,26 @@ Next:
 
 **Next**
 - CI green, fast-forward `main`, the 0.7.0 draft. B161 is running (executor).
+
+## 2026-11-06 — executor — B161: e2e plugins-path and targets-path, guide pages
+
+**What**
+- `app/e2e/plugins-path.spec.ts` (fourteenth spec, three tests): the sample plugin copied from `fixtures/sample-plugin/dist/` into `<msmHome>/plugins/greetings/` is **Loaded** in Settings > Plugins; New element offers `template-sample-greeting` in `template-group-greetings`; the generic form shows `message` and `colour`; the data pack (from the Data pack starter) holds `data/<ns>/function/greet_hello.mcfunction` with the exact `tellraw` line and a merged `minecraft:load` tag listing both `<ns>:greet_hello` and the starter's `<ns>:load` (folder names from `@msm/targets`). A manifest with `apiVersion: "^0.8.0"` is **Refused** with `plugin.api-incompatible` and no Greetings template. A hand-written bundle (`sample.spinner`, reusing the sample's `symbols.json`) whose `lower` loops is stopped at the 2 s `lower` deadline: Problems shows one `plugin.unavailable` error on the element, the data and resource pack exports are disabled ("Fix N error(s)"), and Settings shows **Failed** with `plugin.timeout`.
+- `app/e2e/targets-path.spec.ts` (fifteenth spec): Custom ore wizard ("Step 1 of 4", `param-ore_name` = Amber, the default target kept in `new-project-target`), status bar `project-target` = `defaultTargetId`, resource pack before the upgrade, palette "Upgrade project target…", the snapshot target (first `channel: 'snapshot'` in `builtInTargets`) with its badge, preview "0 changes, 0 problems.", Upgrade, toast and status bar badge, zip name `-<snapshot id>.zip` and `pack_format`/`min_format`/`max_format` from the target, Undo back to the release (zip name and format checked again).
+- `app/e2e/fixtures.ts`: `samplePluginDist`, `ensureSamplePluginBuilt()` (builds with `node build.ts` only when `dist/` is missing), `installPlugin(msmHome, folder, fromDir, files)`.
+- Guide: new `plugins.md` and `targets.md`; `README.md` index rows, sidebar entries "Minecraft versions" and "Plugins" after "The AI helper"; `getting-started.md` (the Custom ore wizard step by step with the **Wizard** badge and **Minecraft version**, 24 starters, 125 templates and 71 examples in step 10, two "Where next" items, the version sentence); `templates-and-examples.md` (wizard steps, Minecraft version, Custom sword's questions, Custom mob only with GeckoLib).
+- README: "Supported Minecraft versions" table and policy (no snapshot cadence promised), links to both guide pages and the site URL, Contributing points to `CONTRIBUTING.md`, the plugin limitation notes that plugin exporters have no menu entry. `app/CLAUDE.md` e2e line: fifteen spec files (52 lines).
+
+**Checks**: `pnpm lint`, `pnpm typecheck` clean; `pnpm --filter @msm/app build`; `xvfb-run -a pnpm --filter @msm/app e2e --trace off` three times in a row, 19 tests in 15 spec files each: 101 s, 97 s, 99 s (Playwright 1.7 / 1.6 / 1.6 min); plugins-path 2.5 + 1.2 + 4.1 s, targets-path 2.2 s; `pnpm --filter @msm/site build` passes with the two pages; every bold label in the two new pages grepped against `app/src` and the plugin sources.
+
+**Decisions**
+- CI needs no change: `@msm/sample-plugin` has a `build` script and is in the workspace, so `turbo run build` (`pnpm build`) builds it before e2e (`turbo run build --dry=json` lists `@msm/sample-plugin#build`).
+- The timeout case asserts what ships: `plugin.timeout` appears in Settings; the Problems panel shows `plugin.unavailable` (not `plugin.timeout`), which is what blocks export (ADR 0035 D4). The loop costs about 2 s (the `lower` deadline), so the full case runs in about 4 s.
+- The plugin project uses the Data pack starter because a project whose only data content comes from an external plugin cannot export a data pack (below).
+- The guide states that third-party exporters cannot be run from the app yet, instead of listing them as a working contribution.
+
+**Next**
+- App bug: render-time layer checks ignore async (external plugin) kinds. `app/src/renderer/src/App.tsx:507-516` (`lowerForTarget` returns `[]` for a promise) feeds `hasDataPack` (`App.tsx:522-523`, `hasLayerOutput` in `studios/export-state.ts:146`), so a blank project with only a `sample:greeting` element has "Export data pack" disabled with "The project has no data pack content yet…" (reproduced in e2e). The same discarded promise (`App.tsx:511`) runs a worker call on every render and leaves a rejected promise unhandled when the plugin times out.
+- App gap: plugin `exporters` register (`session.pluginExporters`, `runPluginExporter`) but the Export menu lists only the two structure exporters (`Toolbar.tsx` "More exports", `App.tsx:785`, `App.tsx:789`), so a third-party exporter cannot be run.
+- `engine-mod/src/gametest/java/.../MsmGearGameTest.java` was already modified in the shared tree; not touched by this brief.
+- B162: 1.0 close.
