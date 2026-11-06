@@ -15,5 +15,6 @@ export * from './blockbench/index';
 export * from './fabric/index';
 export * from './launchers/index';
 export * from './minecraft-install/index';
+export * from './modrinth/index';
 export * from './nbt/index';
 export { PngFormatError, type PngHeader, readPngHeader } from './png';

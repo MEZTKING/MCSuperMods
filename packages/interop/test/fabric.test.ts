@@ -13,6 +13,7 @@ import {
   type GameLocation,
   INSTALLED_RECORD_FILE,
   installContentJar,
+  installExtraMod,
   isFabricApiFileName,
   launchArguments,
   launcherProgramCandidates,
@@ -20,6 +21,7 @@ import {
   managedInstanceName,
   parseChecksumFile,
   readInstalledRecord,
+  removeUnlistedInstalls,
   webCryptoSha512,
 } from '../src/index';
 import { MemoryInstallFileSystem } from './helpers/memory-install-fs';
@@ -350,5 +352,54 @@ describe('launching', () => {
       '--launch',
       'X',
     ]);
+  });
+});
+
+describe('modpack installs (ADR 0046 D5)', () => {
+  it('installs extra mods under their own name and skips unchanged copies', async () => {
+    const fs = new MemoryInstallFileSystem();
+    const first = await installExtraMod(
+      { fs, sha512 },
+      MODS,
+      'sodium.jar',
+      'AANobbMI',
+      bytes('s1'),
+    );
+    expect(first.written).toBe(true);
+    const again = await installExtraMod(
+      { fs, sha512 },
+      MODS,
+      'sodium.jar',
+      'AANobbMI',
+      bytes('s1'),
+    );
+    expect(again.written).toBe(false);
+    expect((await readInstalledRecord(fs, MODS)).files['sodium.jar']).toMatchObject({
+      role: 'extra',
+      id: 'AANobbMI',
+    });
+    fs.seed(`${MODS}/lithium.jar`, 'user copy');
+    await expect(
+      installExtraMod({ fs, sha512 }, MODS, 'lithium.jar', 'gvQqBUqZ', bytes('l1')),
+    ).rejects.toMatchObject({ code: 'fabric.foreign-file' });
+    await expect(
+      installExtraMod({ fs, sha512 }, MODS, '../x.jar', 'gvQqBUqZ', bytes('x')),
+    ).rejects.toMatchObject({ code: 'fabric.bad-file-name' });
+  });
+
+  it('removes only its own jars that the modpack no longer lists', async () => {
+    const fs = new MemoryInstallFileSystem();
+    fs.seed(`${MODS}/user.jar`, 'user mod');
+    await installContentJar({ fs, sha512 }, MODS, 'ruby', bytes('r'));
+    await installContentJar({ fs, sha512 }, MODS, 'golem', bytes('g'));
+    await installExtraMod({ fs, sha512 }, MODS, 'sodium.jar', 'AANobbMI', bytes('s'));
+    await installContentJar({ fs, sha512 }, MODS, 'edited', bytes('e'));
+    fs.seed(`${MODS}/edited.jar`, 'changed by the user');
+    const removed = await removeUnlistedInstalls({ fs, sha512 }, MODS, new Set(['ruby.jar']));
+    expect(removed).toEqual(['golem.jar', 'sodium.jar']);
+    expect(await fs.exists(`${MODS}/ruby.jar`)).toBe(true);
+    expect(await fs.exists(`${MODS}/user.jar`)).toBe(true);
+    expect(text(await fs.readFile(`${MODS}/edited.jar`))).toBe('changed by the user');
+    expect(Object.keys((await readInstalledRecord(fs, MODS)).files)).toEqual(['ruby.jar']);
   });
 });

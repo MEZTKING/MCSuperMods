@@ -14,7 +14,8 @@ import { FABRIC_MOD_ID, FabricTestError, type Sha512, stableJson } from './types
 export const INSTALLED_RECORD_FILE = '.msm-installed.json';
 
 /** What an installed file is. */
-export type InstalledRole = 'content' | 'fabric-api';
+/** `extra`: a modpack's mod from Modrinth (ADR 0046 D5). */
+export type InstalledRole = 'content' | 'fabric-api' | 'extra';
 
 /** One file the app installed. */
 export interface InstalledFile {
@@ -58,7 +59,7 @@ export async function readInstalledRecord(
         !isModFileName(name) ||
         record === null ||
         typeof record !== 'object' ||
-        (record.role !== 'content' && record.role !== 'fabric-api') ||
+        (record.role !== 'content' && record.role !== 'fabric-api' && record.role !== 'extra') ||
         typeof record.sha512 !== 'string' ||
         typeof record.id !== 'string'
       ) {
@@ -237,4 +238,72 @@ export async function ensureFabricApi(
   record.files[wanted] = { role: 'fabric-api', sha512: jar.sha512, id: version };
   await writeInstalledRecord(deps.fs, modsDir, record);
   return { state: 'installed', file: wanted, replaced: stale.length > 0 };
+}
+
+/**
+ * Writes a modpack's extra mod (ADR 0046 D5) into `modsDir` under its own file name, recorded
+ * with role `extra` and its Modrinth project id. Replaces only the app's own copy; a file of
+ * that name the app did not install stops the install with `fabric.foreign-file`. Skips the
+ * write when the app's copy already has these bytes.
+ */
+export async function installExtraMod(
+  deps: ModsInstallDeps,
+  modsDir: string,
+  fileName: string,
+  projectId: string,
+  bytes: Uint8Array,
+): Promise<{ path: string; written: boolean }> {
+  if (!isModFileName(fileName)) {
+    throw new FabricTestError(
+      'fabric.bad-file-name',
+      `${JSON.stringify(fileName)} is not a jar file name.`,
+    );
+  }
+  await deps.fs.mkdirp(modsDir);
+  const record = await readInstalledRecord(deps.fs, modsDir);
+  const state = await ownership(deps, modsDir, record, fileName);
+  if (state === 'foreign') {
+    throw new FabricTestError(
+      'fabric.foreign-file',
+      `The mods folder already holds ${fileName}, which MCSuperMods did not install. Remove or rename it, then try again.`,
+    );
+  }
+  const path = joinInstallPath(modsDir, fileName);
+  const sha512 = await deps.sha512(bytes);
+  if (state === 'ours' && record.files[fileName]?.sha512 === sha512)
+    return { path, written: false };
+  if (state === 'ours') await deps.fs.remove(path);
+  await deps.fs.writeFile(path, bytes);
+  record.files[fileName] = { role: 'extra', sha512, id: projectId };
+  await writeInstalledRecord(deps.fs, modsDir, record);
+  return { path, written: true };
+}
+
+/**
+ * Removes content jars and extra mods the app installed earlier that are not in `keep` (file
+ * names in `modsDir`), for example another project's jar left by an earlier test. Only files
+ * the app recorded whose bytes are unchanged are removed; Fabric API and user files stay.
+ *
+ * @returns The removed file names, sorted.
+ */
+export async function removeUnlistedInstalls(
+  deps: ModsInstallDeps,
+  modsDir: string,
+  keep: ReadonlySet<string>,
+): Promise<string[]> {
+  const record = await readInstalledRecord(deps.fs, modsDir);
+  const removed: string[] = [];
+  let dropped = false;
+  for (const [name, entry] of Object.entries(record.files)) {
+    if (entry.role === 'fabric-api' || keep.has(name)) continue;
+    // A file the user changed is theirs now: its record goes, the file stays.
+    if ((await ownership(deps, modsDir, record, name)) === 'ours') {
+      await deps.fs.remove(joinInstallPath(modsDir, name));
+      removed.push(name);
+    }
+    delete record.files[name];
+    dropped = true;
+  }
+  if (dropped) await writeInstalledRecord(deps.fs, modsDir, record);
+  return removed.sort();
 }

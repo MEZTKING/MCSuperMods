@@ -23,6 +23,7 @@ export type Sha512 = (bytes: Uint8Array) => Promise<string>;
 export type FabricTestErrorCode =
   | 'fabric.bad-mod-id'
   | 'fabric.bad-version'
+  | 'fabric.bad-file-name'
   | 'fabric.foreign-file'
   | 'fabric.instance-not-managed'
   | 'fabric.download-failed'

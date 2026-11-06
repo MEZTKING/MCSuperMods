@@ -39,9 +39,11 @@ export {
   type InstalledRecord,
   type InstalledRole,
   installContentJar,
+  installExtraMod,
   isFabricApiFileName,
   type ModsInstallDeps,
   readInstalledRecord,
+  removeUnlistedInstalls,
 } from './mods-install';
 export {
   assertSafeVersion,
