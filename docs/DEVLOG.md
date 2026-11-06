@@ -2823,3 +2823,12 @@ Next:
 **Next**
 - The user installs the draft on Windows and tries the AI helper with their own key; then `publish-release.yml` (version `0.7.0`).
 - B162 (1.0 close) after 0.7.0 is out; the Windows plugin build and the plugin exporters in the Export menu are open follow-ups.
+
+## 2026-11-06 — main session — paused for a handover
+
+**What**
+- The user paused the work so that another session, possibly on another account, can take over. HANDOFF gained "Paused here: start here" (publish 0.7.0 after the user's Windows test, or a 0.7.1 fix; a Windows CI job for the plugin build; the plugin exporters in the Export menu; then B162) and the access a new account needs (write access to the repository and the Claude GitHub app). "Where things stand" now records B161 as done.
+- A personal Windows machine is not needed for the remaining engineering: GitHub's `windows-latest` runner can reproduce the plugin build bug. Only the real-key AI helper test and the in-game checks need the user's own PC.
+
+**Next**
+- See HANDOFF "Paused here".
