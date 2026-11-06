@@ -72,6 +72,27 @@ test('new project, block model, texture, export zip, reopen', async () => {
     window.getByTestId(`asset-row-${NAMESPACE}:textures/block/${TEXTURE_NAME}.png`),
   ).toBeVisible();
 
+  // Paint over it in the texture editor (ADR 0047 D5): fill the top-left pixel's area red.
+  const paintedPath = join(
+    folders.projectDir,
+    'assets',
+    NAMESPACE,
+    'textures',
+    'block',
+    `${TEXTURE_NAME}.png`,
+  );
+  const before = readFileSync(paintedPath);
+  await window.getByTestId(`asset-paint-${NAMESPACE}:textures/block/${TEXTURE_NAME}.png`).click();
+  const painter = window.getByTestId('texture-editor');
+  const canvas = painter.getByTestId('texture-canvas');
+  await expect(canvas).toBeVisible();
+  await painter.getByTestId('texture-colour').fill('#ff0000');
+  await painter.getByTestId('texture-tool-fill').click();
+  await canvas.click({ position: { x: 4, y: 4 } });
+  await painter.getByTestId('texture-save').click();
+  await expect(painter).toBeHidden();
+  await expect.poll(() => readFileSync(paintedPath).equals(before)).toBe(false);
+
   // Point textures.all at the imported texture, through the form.
   await window.getByTestId(`element-row-${ELEMENT_ID}`).click();
   await window.getByTestId('editor-tab-form').click();
@@ -124,7 +145,10 @@ test('new project, block model, texture, export zip, reopen', async () => {
   expect(model.parent).toBe('minecraft:block/cube_all');
   expect(model.textures?.all).toBe(TEXTURE_REF);
   expect(
-    Buffer.from(files[`assets/${NAMESPACE}/textures/block/${TEXTURE_NAME}.png`] ?? []).equals(png),
+    // The painted picture, not the imported one.
+    Buffer.from(files[`assets/${NAMESPACE}/textures/block/${TEXTURE_NAME}.png`] ?? []).equals(
+      readFileSync(paintedPath),
+    ),
   ).toBe(true);
 
   await window.screenshot({ path: join(outputDir, 'golden-path.png') });

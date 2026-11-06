@@ -2918,3 +2918,12 @@ Next:
 
 **Next**
 - Customisable art: the in-app pixel texture editor (ADR 0047 D5) and better placeholder shading.
+
+## 2026-11-06 — main session — ADR 0047 D5: texture painting
+
+**What**
+- `components/texture-editor/`: `pixels.ts` (RGBA images, `setPixel`, `floodFill`, `paletteOf`, hex, `PixelHistory`) and `TextureEditorDialog` (pencil, eraser, fill, eyedropper, colour input and the texture's palette, zoom 4–32, grid, undo and redo with Ctrl+Z / Ctrl+Shift+Z; PNG decoded and encoded with a canvas through `data:` URLs, which the CSP allows). The brush on PNG asset rows (`AssetActions.onPaint`) opens it; Save goes through `applyChangeset([], 'Paint <path>', { writes })`, so one app Undo restores the old bytes (ADR 0045). e2e `golden-path` paints the imported texture and checks the export carries the painted file.
+- Placeholder shading was left as it is: the masks already shade edges, and painting covers "customisable".
+
+**Next**
+- CI, `main`; release 1.1.0 (modpacks, modes, centre preview, painting) after the user's tests.

@@ -73,7 +73,6 @@ export function ArmourPreviewView(props: ArmourPreviewViewProps) {
     return () => {
       live = false;
     };
-    // biome-ignore lint/correctness/useExhaustiveDependencies: textureKey summarises the parts.
   }, [textureKey, props.readProjectAsset, props.vanilla]);
 
   const humanoid = preview.parts.filter((part) => HUMANOID_PIECES.has(part.id));

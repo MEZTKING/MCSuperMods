@@ -74,6 +74,7 @@ import { StatusBar } from './components/StatusBar';
 import { StatusToast } from './components/StatusToast';
 import { TestInMinecraftDialog, testInMinecraftMessage } from './components/TestInMinecraftDialog';
 import { modKey, Toolbar, type ToolbarPluginExport } from './components/Toolbar';
+import { TextureEditorDialog } from './components/texture-editor/TextureEditorDialog';
 import { UpdateBanner, updateCheckMessage } from './components/UpdateBanner';
 import { UpgradeTargetDialog } from './components/UpgradeTargetDialog';
 import { UsagesDialog } from './components/UsagesDialog';
@@ -187,6 +188,7 @@ type DialogState =
   | { type: 'welcome' }
   | { type: 'modpacks' }
   | { type: 'ai-start' }
+  | { type: 'paint'; namespace: string; path: string; bytes: Uint8Array }
   | { type: 'no-minecraft'; message: string };
 
 /**
@@ -1651,6 +1653,16 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 onImport: (namespace) => setDialog({ type: 'import', namespace }),
                 onRemove: (namespace, path) => setDialog({ type: 'remove-asset', namespace, path }),
                 onReveal: (namespace, path) => reveal(`assets/${namespace}/${path}`),
+                onPaint: (namespace, path) => {
+                  session.readAsset(namespace, path).then(
+                    (bytes) => setDialog({ type: 'paint', namespace, path, bytes }),
+                    (error: unknown) =>
+                      setMessage({
+                        kind: 'error',
+                        text: `Cannot open ${path}: ${messageOf(error)}`,
+                      }),
+                  );
+                },
                 thumbnail,
                 revision: assetRevision,
               }}
@@ -1854,6 +1866,23 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             onOpenProject={(root) => {
               setDialog(null);
               void openWith('Open project', () => session.openPath(root));
+            }}
+            onClose={() => setDialog(null)}
+          />
+        )}
+        {dialog?.type === 'paint' && (
+          <TextureEditorDialog
+            name={`${dialog.namespace}:${dialog.path}`}
+            bytes={dialog.bytes}
+            onSave={async (bytes) => {
+              await session.applyChangeset([], `Paint ${dialog.path}`, {
+                writes: [{ namespace: dialog.namespace, path: dialog.path, bytes }],
+              });
+              setAssetRevision((revision) => revision + 1);
+              setMessage({
+                kind: 'info',
+                text: `Painted ${dialog.path}. Undo restores the old picture.`,
+              });
             }}
             onClose={() => setDialog(null)}
           />

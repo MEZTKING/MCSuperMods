@@ -1,5 +1,5 @@
 import type { Asset } from '@msm/core';
-import { FileAudio, FileImage, FolderSearch, ImageUp, Trash2 } from 'lucide-react';
+import { FileAudio, FileImage, FolderSearch, ImageUp, Paintbrush, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { iconButtonClass } from './ui/Button';
 
@@ -11,6 +11,8 @@ export interface AssetActions {
   onRemove?(namespace: string, path: string): void;
   /** Reveals an asset in the OS file manager. */
   onReveal?(namespace: string, path: string): void;
+  /** Opens a PNG texture in the pixel editor (ADR 0047 D5). */
+  onPaint?(namespace: string, path: string): void;
   /** Loads a PNG thumbnail for a project-relative asset path (`assets/<ns>/...png`). */
   thumbnail?(assetPath: string, size: number): Promise<Uint8Array>;
   /** Changes when asset bytes may have changed (re-import), so thumbnails reload. */
@@ -86,6 +88,18 @@ function AssetRow(props: { namespace: string; asset: Asset; actions: AssetAction
       <span className="w-0 min-w-0 flex-1 truncate" title={asset.path}>
         {asset.path}
       </span>
+      {isImage && actions.onPaint !== undefined && (
+        <button
+          type="button"
+          className={iconButtonClass}
+          aria-label={`Paint ${name}`}
+          title="Paint this texture"
+          data-testid={`asset-paint-${name}`}
+          onClick={() => actions.onPaint?.(namespace, asset.path)}
+        >
+          <Paintbrush size={14} aria-hidden />
+        </button>
+      )}
       {actions.onReveal !== undefined && (
         <button
           type="button"

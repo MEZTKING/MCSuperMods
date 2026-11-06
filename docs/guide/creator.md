@@ -84,7 +84,7 @@ Change what you like: another colour, another tier, a piece more or less. **Crea
 
 ## Replacing the placeholders
 
-The Creator draws simple placeholder textures in the colour you choose. To use your own, paint a PNG with the same file name and choose **Import assets** on the toolbar, as in [Replacing the placeholders](templates-and-examples.md#replacing-the-placeholders). An imported texture counts as your edit, so **Edit in Creator** keeps it. The worn armour layers are 64 by 32 pixels in the vanilla armour layout (`humanoid` for the helmet, chestplate and boots, `humanoid_leggings` for the leggings).
+The Creator draws simple placeholder textures in the colour you choose. To change one inside MCSuperMods, choose the brush (**Paint this texture**) on its row under the namespace's assets: the texture editor has a pencil, an eraser, a fill bucket, a colour picker and the texture's own colours, zoom, and undo and redo (Ctrl+Z, Ctrl+Shift+Z). **Save** writes it, and one **Edit → Undo** brings the old picture back. To use a picture made elsewhere, paint a PNG with the same file name and choose **Import assets** on the toolbar, as in [Replacing the placeholders](templates-and-examples.md#replacing-the-placeholders). An imported texture counts as your edit, so **Edit in Creator** keeps it. The worn armour layers are 64 by 32 pixels in the vanilla armour layout (`humanoid` for the helmet, chestplate and boots, `humanoid_leggings` for the leggings).
 
 ## The AI helper uses the same flows
 
