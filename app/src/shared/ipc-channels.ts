@@ -135,6 +135,7 @@ export const MENU_COMMANDS = [
   'checkForUpdates',
   'whatsNew',
   'firstMod',
+  'modpacks',
   'examples',
   'clearRecentProjects',
   'upgradeTarget',

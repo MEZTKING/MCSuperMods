@@ -118,6 +118,7 @@ import {
   FUNCTION_KIND,
   functionLines,
   type McfunctionChecker,
+  mcfunctionCheckerFromPlatform,
   mcfunctionProjectIds,
   mcfunctionTextValidator,
 } from './mcfunction-problems';
@@ -764,7 +765,11 @@ export class ProjectSession {
    * @param platform - Host services; `platform.fs` is scoped to the open root.
    * @param options - Plugins, targets, clock and validation debounce.
    */
+  /** The options this session was made with, for {@link createScratch}. */
+  readonly #options: ProjectSessionOptions;
+
   constructor(platform: PlatformAdapter, options: ProjectSessionOptions = {}) {
+    this.#options = options;
     this.#platform = platform;
     this.#fs = platform.fs;
     this.#now = options.now;
@@ -1307,6 +1312,17 @@ export class ProjectSession {
   async openRecent(root: string): Promise<OpenOutcome> {
     if (!(await this.#confirmDiscard())) return { ok: false, cancelled: true };
     const opened = await this.#platform.project.openRecent(root);
+    if (!opened.ok) return opened;
+    return this.#loadOpened(root);
+  }
+
+  /**
+   * Opens the project at `root` (for example a modpack member), with the same unsaved-changes
+   * guard and outcome as {@link openProject}.
+   */
+  async openPath(root: string): Promise<OpenOutcome> {
+    if (!(await this.#confirmDiscard())) return { ok: false, cancelled: true };
+    const opened = await this.#platform.project.openRoot(root);
     if (!opened.ok) return opened;
     return this.#loadOpened(root);
   }
@@ -2170,6 +2186,73 @@ export class ProjectSession {
     return { ...report, location: chosen };
   }
 
+  /** Closes the project without touching main (for scratch sessions); timers stop. */
+  dispose(): void {
+    this.#close();
+  }
+
+  /**
+   * A new session with this session's plugins, targets and services over another file system
+   * (a modpack member's snapshot, ADR 0046 D3). Its function checks follow its own target.
+   * Dispose it when done.
+   */
+  createScratch(fs: ProjectFileSystem): ProjectSession {
+    const { mcfunction: _own, ...options } = this.#options;
+    const platform = { ...this.#platform, fs };
+    const scratch: ProjectSession = new ProjectSession(platform, {
+      ...options,
+      ...(this.#platform.mcfunction === undefined
+        ? {}
+        : {
+            mcfunction: mcfunctionCheckerFromPlatform(
+              this.#platform.mcfunction,
+              () => scratch.target.id,
+            ),
+          }),
+    });
+    return scratch;
+  }
+
+  /**
+   * Builds the content jar in memory (no dialog): the report, the mod id the jar declares and,
+   * when nothing blocked, its bytes. Used by the jar export and by modpack builds (ADR 0046
+   * D3).
+   *
+   * @param options - Values for {@link fabricJarOptions}; missing ones take their default.
+   * @throws Error If no project is open.
+   */
+  async buildContentJar(
+    options: Record<string, Json> = {},
+  ): Promise<{ report: ExportResult; modId: string; data?: Uint8Array }> {
+    const sink = createMemorySink();
+    const { report, project } = await this.#runPipeline(this.#contentJarExporter, sink, options);
+    const written = sink.files();
+    const modId =
+      modIdOf(written.get(FABRIC_MOD_JSON_FILE)) ?? sanitiseModId(project.name) ?? 'mod';
+    if (!report.ok) return { report, modId };
+    const data = createZipBytes([...written].map(([path, bytes]) => ({ path, data: bytes })));
+    return { report, modId, data };
+  }
+
+  /**
+   * Loads the project in this session's file system without opening a folder in main: for a
+   * modpack member's read-only snapshot, whose session is built over a memory file system
+   * (ADR 0046 D3). Nothing is written back.
+   *
+   * @param label - Shown as the project root (the member's path).
+   */
+  async loadSnapshot(label: string): Promise<OpenOutcome> {
+    try {
+      const { project, problems, manifest } = await loadProject(this.#fs, this.registry);
+      this.#adopt(label, project, problems, manifest);
+      await this.#fillKindDefaults(this.#currentTarget());
+      return { ok: true };
+    } catch (error) {
+      this.#close();
+      return { ok: false, reason: messageOf(error) };
+    }
+  }
+
   /**
    * Exports the Fabric mod jar (`fabric-content-jar`, ADR 0026) and asks where to save it as
    * `<mod id>.jar`. Every error problem blocks, as for the packs; nothing is asked or written
@@ -2180,14 +2263,11 @@ export class ProjectSession {
    * @throws Error If no project is open.
    */
   async exportFabricJar(options: Record<string, Json> = {}): Promise<ExportResult> {
-    const sink = createMemorySink();
-    const { report, project } = await this.#runPipeline(this.#contentJarExporter, sink, options);
-    if (!report.ok) return report;
-    const written = sink.files();
-    const fileName = contentJarFileName(
-      modIdOf(written.get(FABRIC_MOD_JSON_FILE)) ?? sanitiseModId(project.name) ?? 'mod',
-    );
-    const data = createZipBytes([...written].map(([path, bytes]) => ({ path, data: bytes })));
+    const built = await this.buildContentJar(options);
+    if (built.data === undefined) return built.report;
+    const { report } = built;
+    const fileName = contentJarFileName(built.modId);
+    const data = built.data;
     const location = await this.#platform.dialogs.saveFile({
       title: 'Export Fabric mod jar',
       defaultName: fileName,

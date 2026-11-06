@@ -14,7 +14,7 @@ function input(overrides: Partial<MrpackInput> = {}): MrpackInput {
   return {
     name: 'Ruby pack',
     version: '1.0.0',
-    minecraft: '26.3',
+    minecraft: '9.9-msm-test',
     fabricLoader: '0.20.1',
     downloads: [fabricApi],
     jars: [
@@ -35,7 +35,7 @@ describe('mrpack', () => {
     ]);
     expect(files['overrides/mods/ruby_mod.jar']).toEqual(new Uint8Array([1, 2, 3]));
     expect(JSON.parse(strFromU8(files['modrinth.index.json'] ?? new Uint8Array()))).toEqual({
-      dependencies: { 'fabric-loader': '0.20.1', minecraft: '26.3' },
+      dependencies: { 'fabric-loader': '0.20.1', minecraft: '9.9-msm-test' },
       files: [
         {
           downloads: [fabricApi.url],

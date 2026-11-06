@@ -50,7 +50,7 @@ export interface Modpack {
   /** Free text, for example `1.0.0`; the `.mrpack` `versionId`. */
   version: string;
   summary?: string;
-  /** The Minecraft target every member must use, for example `mc-26.3`. */
+  /** The Minecraft target every member must use, for example `mc-<version>`. */
   targetId: string;
   projects: ModpackProject[];
   mods: ModpackMod[];

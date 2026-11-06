@@ -84,6 +84,7 @@ export function installMenu(recent: readonly RecentProject[] = []): void {
         { label: 'New Project from Starter…', click: () => send('newProjectFromStarter') },
         // ADR 0043: opens the Creator.
         { label: 'Create…', click: () => send('creator') },
+        { label: 'Modpacks…', click: () => send('modpacks') },
         { label: 'Open Project…', accelerator: 'CmdOrCtrl+O', click: () => send('open') },
         {
           label: 'Open Recent',

@@ -22,6 +22,7 @@
     "src/renderer/src/session/scripting-problems.ts",
     "src/renderer/src/plugins",
     "src/renderer/src/changeset",
+    "src/renderer/src/modpacks",
     "src/renderer/src/ai",
     "src/renderer/src/store/ai-store.ts",
     "src/renderer/src/components/wizard/wizard-model.ts",

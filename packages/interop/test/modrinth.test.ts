@@ -55,7 +55,11 @@ describe('Modrinth lookups', () => {
       },
       'https://api.modrinth.com/v2/project/AANobbMI/version?': [sodiumVersion],
     });
-    const result = await resolveModrinthMod(download, 'https://modrinth.com/mod/sodium', '26.3');
+    const result = await resolveModrinthMod(
+      download,
+      'https://modrinth.com/mod/sodium',
+      '9.9-msm-test',
+    );
     expect(result.file).toEqual({
       projectId: 'AANobbMI',
       versionId: 'VERSION1',
@@ -69,13 +73,13 @@ describe('Modrinth lookups', () => {
     expect(result.versionNumber).toBe('0.6.2+mc26.3');
     expect(result.requiredProjects).toEqual(['P7dR8mSH']);
     expect(decodeURIComponent(asked[1] ?? '')).toContain(
-      'loaders=["fabric"]&game_versions=["26.3"]',
+      'loaders=["fabric"]&game_versions=["9.9-msm-test"]',
     );
   });
 
   it('explains unknown projects, non-mods and missing versions', async () => {
     const none = fakeModrinth({});
-    await expect(resolveModrinthMod(none.download, 'nope', '26.3')).rejects.toThrow(
+    await expect(resolveModrinthMod(none.download, 'nope', '9.9-msm-test')).rejects.toThrow(
       'Modrinth has no such project.',
     );
     const pack = fakeModrinth({
@@ -85,16 +89,18 @@ describe('Modrinth lookups', () => {
         project_type: 'resourcepack',
       },
     });
-    await expect(resolveModrinthMod(pack.download, 'faithful', '26.3')).rejects.toThrow(
+    await expect(resolveModrinthMod(pack.download, 'faithful', '9.9-msm-test')).rejects.toThrow(
       /not a mod/,
     );
     const old = fakeModrinth({
       'https://api.modrinth.com/v2/project/old': { id: 'OLD', title: 'Old', project_type: 'mod' },
       'https://api.modrinth.com/v2/project/OLD/version?': [],
     });
-    await expect(resolveModrinthMod(old.download, 'old', '26.3')).rejects.toBeInstanceOf(
+    await expect(resolveModrinthMod(old.download, 'old', '9.9-msm-test')).rejects.toBeInstanceOf(
       ModrinthLookupError,
     );
-    await expect(resolveModrinthMod(old.download, 'two words', '26.3')).rejects.toThrow(/Enter/);
+    await expect(resolveModrinthMod(old.download, 'two words', '9.9-msm-test')).rejects.toThrow(
+      /Enter/,
+    );
   });
 });

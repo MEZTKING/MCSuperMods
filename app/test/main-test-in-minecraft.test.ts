@@ -178,6 +178,54 @@ describe('Test in Minecraft service', () => {
     expect(result.jarPath).toContain(join(`MCSuperMods Test (${VERSION})`, 'minecraft', 'mods'));
   });
 
+  it('tests a modpack: every jar, the extra mods (cached, checked) and earlier jars removed', async () => {
+    await select('fabric-inst');
+    const mods = join(prism.instanceDir('fabric-inst'), 'minecraft', 'mods');
+    await mkdir(mods, { recursive: true });
+    await writeFile(join(mods, 'user-mod.jar'), 'mine');
+    await service.run('t', 'old_project', new Uint8Array([9]));
+    const extra = {
+      projectId: 'AANobbMI',
+      versionId: 'VERSION1',
+      title: 'Sodium',
+      fileName: 'sodium.jar',
+      url: 'https://cdn.modrinth.com/data/AANobbMI/versions/VERSION1/sodium.jar',
+      sha1: 'a'.repeat(40),
+      sha512: createHash('sha512').update(API_JAR).digest('hex'),
+      size: API_JAR.byteLength,
+    };
+    const jars = [
+      { modId: 'ruby', data: new Uint8Array([1]) },
+      { modId: 'golem', data: new Uint8Array([2]) },
+    ];
+    const result = await service.runModpack('t', jars, [extra]);
+    expect(ipcContract[InvokeChannels.testInMinecraftRunModpack].response.parse(result)).toEqual(
+      result,
+    );
+    expect(result).toMatchObject({
+      installed: ['golem.jar', 'ruby.jar', 'sodium.jar'],
+      removed: ['old_project.jar'],
+      fabricApi: 'present',
+    });
+    expect((await readdir(mods)).sort()).toEqual([
+      '.msm-installed.json',
+      'fabric-api-0.1.0+9.9.jar',
+      'golem.jar',
+      'ruby.jar',
+      'sodium.jar',
+      'user-mod.jar',
+    ]);
+    const before = downloads.filter((url) => url === extra.url).length;
+    await service.runModpack('t', jars, [extra]);
+    expect(downloads.filter((url) => url === extra.url).length).toBe(before);
+    await expect(
+      service.runModpack('t', jars, [{ ...extra, fileName: 'x.jar', sha512: 'c'.repeat(128) }]),
+    ).rejects.toThrow(/does not match its pinned checksum/);
+    await expect(
+      service.runModpack('t', jars, [{ ...extra, url: 'https://example.com/x.jar' }]),
+    ).rejects.toThrow(/Modrinth/);
+  });
+
   it('settings never leak launcher programs into the renderer view', async () => {
     await settings.setLauncherProgram('multimc', join(temp, 'MultiMC'));
     const view = await settings.get();

@@ -62,6 +62,7 @@ import {
   type ManualLauncher,
   type ManualLauncherRoot,
 } from './components/install-target';
+import { ModpacksDialog } from './components/ModpacksDialog';
 import { NewElementDialog, NewNamespaceDialog } from './components/NewElementDialog';
 import { NewProjectDialog } from './components/NewProjectDialog';
 import { PluginExportDialog } from './components/PluginExportDialog';
@@ -182,6 +183,7 @@ type DialogState =
   | { type: 'upgrade-target' }
   | { type: 'whats-new'; version: string; notes?: string }
   | { type: 'welcome' }
+  | { type: 'modpacks' }
   | { type: 'no-minecraft'; message: string };
 
 /**
@@ -1269,6 +1271,13 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     checkForUpdates,
     whatsNew,
     firstMod: () => setDialog({ type: 'welcome' }),
+    modpacks: () => {
+      if (bridge.modpacks === undefined) {
+        setMessage({ kind: 'error', text: 'Modpacks are not available.' });
+        return;
+      }
+      setDialog({ type: 'modpacks' });
+    },
     clearRecentProjects: clearRecent,
     upgradeTarget: () => {
       if (project === null) {
@@ -1332,6 +1341,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     checkForUpdates,
     whatsNew,
     firstMod: handlers.firstMod,
+    modpacks: handlers.modpacks,
     aiHelper: aiController === null ? null : () => aiController.open(),
     aiExplainProblem:
       aiController === null || !aiKeySet || selectedProblem === null
@@ -1747,6 +1757,22 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               const first = result.created[0];
               if (first !== undefined) select(first);
             }}
+          />
+        )}
+        {dialog?.type === 'modpacks' && bridge.modpacks !== undefined && (
+          <ModpacksDialog
+            session={session}
+            modpacks={bridge.modpacks}
+            testInMinecraft={bridge.testInMinecraft}
+            saveFile={bridge.dialogs.saveFile}
+            targets={session.availableTargets}
+            currentProjectRoot={snapshot.root}
+            defaultTargetId={project === null ? (session.defaultTargetId ?? '') : session.target.id}
+            onOpenProject={(root) => {
+              setDialog(null);
+              void openWith('Open project', () => session.openPath(root));
+            }}
+            onClose={() => setDialog(null)}
           />
         )}
         {dialog?.type === 'welcome' && (

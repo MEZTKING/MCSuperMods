@@ -20,7 +20,7 @@ const mod = {
 };
 
 function pack(overrides: Partial<Modpack> = {}): Modpack {
-  return { ...createModpack('My pack', 'mc-26.3'), ...overrides };
+  return { ...createModpack('My pack', 'mc-9.9-msm-test'), ...overrides };
 }
 
 describe('modpack files', () => {
@@ -41,14 +41,14 @@ describe('modpack files', () => {
       formatVersion: 1,
       name: 'A',
       version: '1',
-      targetId: 'mc-26.3',
+      targetId: 'mc-9.9-msm-test',
       extra: true,
     });
     expect(parseModpack(text)).toEqual({
       formatVersion: 1,
       name: 'A',
       version: '1',
-      targetId: 'mc-26.3',
+      targetId: 'mc-9.9-msm-test',
       projects: [],
       mods: [],
     });
