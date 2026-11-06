@@ -48,6 +48,7 @@ export default defineConfig({
           { text: 'Structures', link: '/structures' },
           { text: 'Worldgen', link: '/worldgen' },
           { text: 'Blocks and items', link: '/blocks-and-items' },
+          { text: 'The Creator', link: '/creator' },
           { text: 'Entities and models', link: '/entities-and-models' },
           { text: 'Scripting', link: '/scripting' },
           { text: 'Eject to a Java project', link: '/eject' },

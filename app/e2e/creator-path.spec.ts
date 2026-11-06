@@ -8,14 +8,23 @@
  *    changes the colour, the Elements tab lists the sword under "Kept your edits", and "Create"
  *    ("Update Gear set") keeps the sword's 9 while the helmet's texture bytes change (read from
  *    the project folder). The Fabric mod jar holds `msm/sapphire/item/sapphire_helmet.json` and
- *    `assets/sapphire/equipment/sapphire_armor.json`. Undo twice restores the blank project: the
- *    first Undo puts back the old texture bytes (ADR 0045), the second removes the set.
+ *    `assets/sapphire/equipment/sapphire_armor.json`. Undo restores the blank project: the first
+ *    Undo ("Update Gear set") puts back the old texture bytes (ADR 0045), the second the sword's
+ *    hand edit, the third ("Create Gear set") removes the set and its textures.
  * 2. Painting and Weapon: the Painting flow opens on the Card tab, "Choose picture…" takes a PNG
  *    through `MSM_E2E_PICK_FILES`, "Create" writes it unchanged into the project; the Weapon flow
  *    as a bow shows its Stats; both export in the Fabric mod jar and packs with no errors.
  */
 
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
@@ -26,7 +35,17 @@ import { gradientPng } from './png';
 /** The project folder name; a blank project's namespace is derived from it. */
 const NAMESPACE = 'sapphire';
 const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] as const;
-const PIECES = ['sword', 'pickaxe', 'axe', 'shovel', 'hoe', 'helmet', 'chestplate', 'leggings', 'boots'];
+const PIECES = [
+  'sword',
+  'pickaxe',
+  'axe',
+  'shovel',
+  'hoe',
+  'helmet',
+  'chestplate',
+  'leggings',
+  'boots',
+];
 const id = (path: string) => `${NAMESPACE}:${path}`;
 
 let base: string | undefined;
@@ -191,7 +210,9 @@ test('Creator: Gear set create, kept edits on Edit in Creator, jar export, undo'
   await expect(dialog.getByTestId(`creator-element-${id('sapphire_hoe')}`)).toHaveCount(0);
   await dialog.getByTestId('creator-create').click();
   await expect(dialog).toBeHidden();
-  await expect(window.getByText(/^Create Gear set: \d+ element\(s\) and file\(s\) changed/)).toBeVisible();
+  await expect(
+    window.getByText(/^Create Gear set: \d+ element\(s\) and file\(s\) changed/),
+  ).toBeVisible();
 
   for (const piece of PIECES.filter((entry) => entry !== 'hoe')) {
     await expect(window.getByTestId(`element-row-${id(`sapphire_${piece}`)}`)).toBeVisible();
@@ -212,13 +233,19 @@ test('Creator: Gear set create, kept edits on Edit in Creator, jar export, undo'
   await applyRawJson(window, sword);
   await save(window);
   expect(
-    (savedData(folders.projectDir, 'item', 'sapphire_sword') as typeof sword).components[
-      'msm:tool'
-    ]?.attack_damage,
+    (savedData(folders.projectDir, 'item', 'sapphire_sword') as typeof sword).components['msm:tool']
+      ?.attack_damage,
   ).toBe(9);
 
   // Edit in Creator on the helmet: another colour; the sword is kept.
-  const helmetTexture = join(folders.projectDir, 'assets', NAMESPACE, 'textures', 'item', 'sapphire_helmet.png');
+  const helmetTexture = join(
+    folders.projectDir,
+    'assets',
+    NAMESPACE,
+    'textures',
+    'item',
+    'sapphire_helmet.png',
+  );
   const helmetBefore = readFileSync(helmetTexture);
   await window.getByTestId(`element-row-${id('sapphire_helmet')}`).click();
   await window.getByTestId('editor-edit-in-creator').click();
@@ -231,18 +258,19 @@ test('Creator: Gear set create, kept edits on Edit in Creator, jar export, undo'
   await expect(kept.getByTestId(`creator-kept-${id('sapphire_sword')}`)).toBeVisible();
   await expect(edit.getByTestId(`creator-overwrite-${id('sapphire_sword')}`)).not.toBeChecked();
   await expect(
-    edit.getByRole('region', { name: 'Will be replaced' }).getByTestId(
-      `creator-element-${id('textures/item/sapphire_helmet.png')}`,
-    ),
+    edit
+      .getByRole('region', { name: 'Will be replaced' })
+      .getByTestId(`creator-element-${id('textures/item/sapphire_helmet.png')}`),
   ).toBeVisible();
   await edit.getByTestId('creator-create').click();
   await expect(edit).toBeHidden();
-  await expect(window.getByText(/^Update Gear set: \d+ element\(s\) and file\(s\) changed/)).toBeVisible();
+  await expect(
+    window.getByText(/^Update Gear set: \d+ element\(s\) and file\(s\) changed/),
+  ).toBeVisible();
   await save(window);
   expect(
-    (savedData(folders.projectDir, 'item', 'sapphire_sword') as typeof sword).components[
-      'msm:tool'
-    ]?.attack_damage,
+    (savedData(folders.projectDir, 'item', 'sapphire_sword') as typeof sword).components['msm:tool']
+      ?.attack_damage,
   ).toBe(9);
   const helmetAfter = readFileSync(helmetTexture);
   expect(helmetAfter.equals(helmetBefore)).toBe(false);
@@ -317,9 +345,18 @@ test('Creator: Painting with a picked PNG and a bow from the Weapon flow', async
   await expect(painting.getByTestId('creator-painting-fit')).toBeVisible();
   await painting.getByTestId('creator-create').click();
   await expect(painting).toBeHidden();
-  await expect(window.getByText(/^Create Painting: \d+ element\(s\) and file\(s\) changed/)).toBeVisible();
+  await expect(
+    window.getByText(/^Create Painting: \d+ element\(s\) and file\(s\) changed/),
+  ).toBeVisible();
   await expect(window.getByTestId(`element-row-${id('ruby_sunset')}`)).toBeVisible();
-  const paintingTexture = join(folders.projectDir, 'assets', NAMESPACE, 'textures', 'painting', 'ruby_sunset.png');
+  const paintingTexture = join(
+    folders.projectDir,
+    'assets',
+    NAMESPACE,
+    'textures',
+    'painting',
+    'ruby_sunset.png',
+  );
   expect(readFileSync(paintingTexture).equals(picture)).toBe(true);
 
   // Weapon: a bow, with its stats.
@@ -331,7 +368,9 @@ test('Creator: Painting with a picked PNG and a bow from the Weapon flow', async
   await expect(weapon.getByTestId(`creator-stats-${id('sapphire_bow')}`)).toBeVisible();
   await weapon.getByTestId('creator-create').click();
   await expect(weapon).toBeHidden();
-  await expect(window.getByText(/^Create Weapon: \d+ element\(s\) and file\(s\) changed/)).toBeVisible();
+  await expect(
+    window.getByText(/^Create Weapon: \d+ element\(s\) and file\(s\) changed/),
+  ).toBeVisible();
   await expect(window.getByTestId(`element-row-${id('sapphire_bow')}`)).toBeVisible();
   await expectNoErrors(window);
 

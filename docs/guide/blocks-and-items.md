@@ -31,9 +31,11 @@ Selecting an item opens the Item Studio, with **Advanced (all fields)** and **Ra
 
 - **Item**: **Model**, **Display name**, **Stack size** (1 to 99), **Rarity** and **Creative tab**. Items with durability always stack to 1.
 - **Food**: tick **Edible** to make the item food, with **Nutrition** (hunger points restored), **Saturation** and **Can always eat** (eat even when not hungry).
-- **Tool and durability**: tick **Tool** and choose a **Tool type** (pickaxe, axe, shovel, hoe or sword) and **Tool tier**. Tick **Durability** and set **Uses** for an item that wears out.
+- **Tool and durability**: tick **Tool** and choose a **Tool type** (pickaxe, axe, shovel, hoe, sword, spear or mace) and **Tool tier**. Tick **Durability** and set **Uses** for an item that wears out.
 - **Behaviour**: **On use** runs an event when a player uses the item (right-click), at most once per **Use cooldown (ticks)**.
 - **Events**: as for blocks.
+
+Armour, custom tool materials, weapons, consumables and totems have no section of their own in the Item Studio yet: edit them in **Advanced (all fields)** or **Raw JSON**, or let the [Creator](creator.md) make them (see [Armour](#armour) and the sections after it).
 
 ## Events and actions
 
@@ -55,6 +57,7 @@ The actions:
 | `set_block_state` | Places a block, for example `minecraft:glowstone` or `minecraft:oak_log[axis=x]`, at an **Offset** from the block (for items: from the block under the player). |
 | `give_item` | Gives the player an item, optionally several. Nothing happens when no player is involved, for example for redstone. |
 | `trigger_event` | Runs another event of the same block or item. Chains stop after 16 steps. |
+| `apply_effect` | Gives a vanilla mob effect, for example `minecraft:speed`, for a number of **seconds** at an **amplifier** (0 is level I). **Target** `self` (the default) is the player of the event; `other` is the other entity of the event, such as the mob an entity hits. Needs the runtime of MCSuperMods 0.8.0 or later. |
 | `run_script` | Calls a handler that one of the project's scripts defines with `msm.actions.define`; pick it in the handler list or type its id. See [Scripting](scripting.md#run_script-from-the-events-editor). Scripts are not part of the Java project export. |
 
 **Problems** reports an event a trigger or `trigger_event` names but the element does not have (removing an event leaves its uses in place, so this is how you find them), and events that trigger each other in a loop. Both are errors.
@@ -68,6 +71,57 @@ A block with a **Minimum tier** drops nothing when mined with a weaker tool, wha
 ## Display names
 
 **Display name** becomes the English name in the game (the language key `block.<namespace>.<name>` or `item.<namespace>.<name>`). Without a display name the game shows that key itself. To translate the names, add a **Language file** element (category **Text**) for each other language with the same keys.
+
+## Armour
+
+An item with the `msm:armor` component is an armour piece. Its **slot** is `helmet`, `chestplate`, `leggings`, `boots`, `horse` (horse armour) or `wolf` (wolf armour), and its **material** is either a vanilla material by name or a material of your own:
+
+- the vanilla names are `leather`, `copper`, `chainmail`, `iron`, `gold`, `diamond`, `netherite`, `turtle_scute` and `armadillo_scute`. The piece then has that material's armour points, durability, sounds and worn look;
+- a material of your own has `durability` (each slot multiplies it as vanilla does: helmet 11, chestplate 16, leggings 15, boots 13), armour points per slot in `defense` (horse and wolf armour use the `chestplate` value), `enchantment_value` (0 means it cannot be enchanted), `toughness`, `knockback_resistance` (0 to 1), an optional `equip_sound` and `repair_items` (an item tag such as `#<namespace>:sapphire_repair_materials`), and `equipment_asset`, the equipment element that draws the piece when worn.
+
+The quickest start is the **Armour piece (helmet)** template (an iron helmet) in **Add element** under **Items**, or a [Gear set](creator.md#the-flows) from the Creator, which writes everything below for you.
+
+**The equipment element and its textures.** How worn armour looks is an `equipment` element in the resource pack (**Equipment (humanoid armour)** under **Models**), exported as `assets/<namespace>/equipment/<name>.json`. Its `layers` point at textures by id: `humanoid` for the helmet, chestplate and boots, `humanoid_leggings` for the leggings, and `horse_body` or `wolf_body` for horse and wolf armour. A texture id `<namespace>:sapphire` in the `humanoid` layer is the file `textures/entity/equipment/humanoid/sapphire.png`; import it with **Import assets**. The humanoid layers are 64 by 32 pixels in the vanilla armour layout. A Gear set names its equipment element `<material>_armor`, for example `sapphire_armor`.
+
+An armour piece also needs the vanilla item tag of its slot (`minecraft:head_armor`, `chest_armor`, `leg_armor` or `foot_armor`) for enchantments and armour trims to apply; the Gear set adds these.
+
+**Problems** reports as errors a vanilla material name the project's Minecraft version does not know (`blocks-items.unknown-armor-material`) and an item that is armour and a tool, ranged weapon or shield at once (`blocks-items.component-conflict`). An `equipment_asset` that is neither an equipment element of the project nor a vanilla one, or horse or wolf armour whose equipment element lacks the `horse_body` or `wolf_body` layer, is a warning (`blocks-items.unknown-equipment-asset`): the piece works but is invisible when worn.
+
+**In the game**: put the piece on in a creative world. The armour bar shows its points, the worn look comes from the equipment element, and an anvil with an item of `repair_items` repairs it.
+
+## Custom tool materials
+
+The `msm:tool` component's **tier** is either a vanilla tier by name (`wood`, `stone`, `copper`, `iron`, `gold`, `diamond`, `netherite`) or a tool material of your own, with:
+
+- `durability`, `speed` (mining speed; iron is 6), `attack_damage_bonus` (added to the tool type's base damage; iron is 2) and `enchantment_value` (iron is 14; 0 means it cannot be enchanted);
+- `incorrect_blocks_for_drops`, the block tag the material cannot mine for drops. This is what "mines like" means: `#minecraft:incorrect_for_iron_tool` mines what an iron tool mines, `#minecraft:incorrect_for_diamond_tool` what a diamond tool mines, and so on for `wooden`, `stone`, `copper` and `netherite`. The Creator's **Mines like** field picks this tag;
+- optionally `repair_items`, an item tag whose items repair the tool on an anvil.
+
+`attack_damage` and `attack_speed` on the tool override the tool type's base values (sword 3 and -2.4, axe 6 and -3.1, pickaxe 1 and -2.8, shovel 1.5 and -3.0, hoe -2 and -1.0) for any tier. The **Tool with a custom material** template is a pickaxe that mines what iron mines, a little faster.
+
+**In the game**: mine a block of the next tier up (for example diamond ore with a material that mines like iron): it breaks without drops. Mine one the material allows: it drops as usual.
+
+## Weapons
+
+- **Swords, spears and maces** are tools: `msm:tool` with type `sword`, `spear` or `mace` and a tier or custom material. A spear has vanilla's spear attacks and joins the `minecraft:spears` tag, so spear enchantments apply; a mace has vanilla's smash attack. Template **Spear**.
+- **Bows and crossbows** use `msm:ranged_weapon` with `type` `bow` or `crossbow` and the factors `draw_speed` (how fast it draws or charges), `velocity` (arrow speed), `damage_multiplier` and `inaccuracy`, all 1 for vanilla. They shoot vanilla arrows. Give them `msm:durability` too (a vanilla bow has 384 uses, a crossbow 465). Template **Bow**.
+- **Shields** use `msm:shield`: `block_delay_seconds` (raised for this long before blocking; vanilla 0.25), `damage_reduction` (0 to 1; 1 blocks everything), `disable_cooldown_scale` (how long an axe hit disables it) and `bypassed_by` (a damage type tag that goes through). Template **Shield**; its model is a placeholder until you add your own.
+
+An item can be only one of armour, tool, ranged weapon and shield. The Creator's **Weapon** flow makes any of them with a texture, model and recipe.
+
+**In the game**: compare the weapon with its vanilla counterpart: the bow's draw time and arrow speed, the shield blocking a hit, the spear's charge attack.
+
+## Consumables and totems
+
+- **Food with effects and drinks**: `msm:consumable` sets how long using the item takes (`seconds`; vanilla food and potions 1.6), the `animation` (`eat`, `drink` or `none`), `effects` (each a mob effect with `seconds`, an optional `amplifier` and `chance`), an optional `sound`, `particles`, `converts_to` (the item left over, such as `minecraft:glass_bottle`) and `cooldown_seconds`. With `msm:food` too it is food that also gives effects; alone it is a drink that restores no hunger. Template **Drink**.
+- **Charms**: an item that gives effects each time it is used and is not used up is an `msm:on_use` trigger whose event has `apply_effect` actions, with a cooldown. The Creator's **Consumable** flow makes one when **Kind** is **Charm**.
+- **Totems**: `msm:death_protection` saves its holder from death when held in either hand, like a totem of undying, gives its `effects` and, with `clear_effects`, first removes the holder's other effects. Template **Totem**.
+
+**In the game**: eat or drink the item and watch the effects appear; for a totem, hold it in survival and take fatal damage (`/damage @s 100`).
+
+## Vanilla components
+
+For anything the components above do not cover, `msm:components` passes vanilla item data components through by id, in their vanilla JSON form, for example `"minecraft:glider": {}` or `"minecraft:use_cooldown": { "seconds": 2 }`. **Problems** checks each one against the project's Minecraft version. MCSuperMods' own components win: setting the same thing twice (for example `msm:food` and `minecraft:food`) is an error. Components that point into a data pack registry work only for `minecraft:jukebox_playable`, `minecraft:provides_trim_material` and `minecraft:trim` (the Music disc flow and the Gear set's trim material use them); others are refused when the game loads.
 
 ## Export a Fabric mod jar
 

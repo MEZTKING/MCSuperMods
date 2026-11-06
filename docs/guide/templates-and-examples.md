@@ -4,9 +4,9 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (116) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (13) | **New from starter…** | A new project, already filled |
-| **Examples** (69) | **Help → Examples…** | A commented project or element to open or copy |
+| **Element templates** (125) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (24) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
+| **Examples** (71) | **Help → Examples…** | A commented project or element to open or copy |
 
 Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, and scripting plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
 
@@ -39,6 +39,7 @@ The id is the template's identifier (the app uses it as `template-<id>` in tests
 | Cross block model | `model_block_cross` | `minecraft:model` | Two crossed planes, as used by flowers, saplings and other plants. (name starts with `block/`) |
 | Item model | `item_model` | `minecraft:model` | A flat item drawn from one texture. (name starts with `item/`) |
 | Handheld item model | `model_item_handheld` | `minecraft:model` | A flat item held like a tool or weapon (angled in the hand). (name starts with `item/`) |
+| Equipment (humanoid armour) | `equipment-humanoid` | `minecraft:equipment` | How armour of one material looks when worn: textures `entity/equipment/humanoid/<name>` and `entity/equipment/humanoid_leggings/<name>`. |
 
 #### Blockstates
 
@@ -252,6 +253,15 @@ New blocks, items and the mod metadata exist only in the **Fabric mod jar** expo
 | Food item | `msm_item_food` | `msm:item` | Something to eat that restores hunger, shown with the bread model. |
 | Tool item | `msm_item_tool` | `msm:item` | An iron-tier pickaxe with durability, shown with the iron pickaxe model. |
 | Magic wand | `msm_item_wand` | `msm:item` | An item that plays a sound and spawns particles when used, once a second. |
+| Tool with a custom material | `msm_item_tool_custom_material` | `msm:item` | A pickaxe of its own material: faster than iron, mines what iron mines and is repaired with iron ingots. |
+| Armour piece (helmet) | `msm_item_armor_helmet` | `msm:item` | An iron helmet: armour points, durability and the worn look come from the iron material. |
+| Spear | `msm_item_spear` | `msm:item` | An iron spear with vanilla's spear attacks; it joins the spears tag, so spear enchantments apply. |
+| Bow | `msm_item_bow` | `msm:item` | A bow that draws faster and shoots harder-hitting vanilla arrows, shown with the bow model. |
+| Shield | `msm_item_shield` | `msm:item` | Blocks attacks while raised, like a shield. The vanilla shield model draws nothing as a plain item model, so it shows the turtle scute until you add your own. |
+| Drink | `msm_item_drink` | `msm:item` | A potion-like drink that gives speed and regeneration and leaves a glass bottle, shown with the honey bottle model. |
+| Totem | `msm_item_totem` | `msm:item` | Saves its holder from death like a totem of undying and gives regeneration, absorption and fire resistance. |
+
+Armour, custom tool materials, weapons, consumables and totems are explained in [Blocks and items](blocks-and-items.md#armour).
 
 #### Mod
 
@@ -307,23 +317,36 @@ The **New project** dialog groups the starters (Blank, Packs, Themed content) an
 
 **New** on its own (and **File → New Project…**, Ctrl+Shift+N) still creates a blank project directly.
 
+Starters with questions (a name, a colour, a tier and so on) ask them in the dialog before creating the project. Those marked "Creator: <group>" in the table are also **Creator flows**: **Create…** on the toolbar runs the same flow inside the project you have open, with a live preview and **Edit in Creator** afterwards (see [The Creator](creator.md)).
+
 | Starter | id | Packs | What it contains |
 |---|---|---|---|
 | Blank project | `blank` | resource, data | Only `pack.mcmeta`. Add elements yourself. |
 | Resource pack | `resource_pack` | resource | The vanilla stick gets a new model, a placeholder texture and an English name. |
 | Data pack | `data_pack` | data | A load message, a `greet` function and one crafting recipe. |
 | Resource and data pack | `combined` | resource, data | Both of the above in one project. |
-| Custom ore | `custom_ore` | resource, data, mod | A real Ruby Ore block that drops one or two rubies when mined with an iron pickaxe or better, the Ruby item and a Block of Ruby: textures, models, a loot table, three recipes, a `gems` item tag, two advancements and the mod metadata. |
+| Custom ore (Creator: Blocks) | `custom_ore` | resource, data, mod | A real Ruby Ore block that drops one or two rubies when mined with an iron pickaxe or better, the Ruby item and a Block of Ruby: textures, models, a loot table, three recipes, a `gems` item tag, two advancements and the mod metadata. |
+| Custom sword | `custom-sword` | resource, data, mod | A new sword with its own name, colour, tier and durability: a handheld texture and model, a crafting recipe, its English name and the mod metadata. |
+| Gear set (Creator: Gear) | `gear-set` | resource, data, mod | Tools and armour of one new material: a sword, pickaxe, axe, shovel and hoe, a helmet, chestplate, leggings and boots (optionally a spear, mace, bow, crossbow, shield, horse armour and wolf armour), the material from a new ore or as an ingot (optionally an armour trim material), recipes or smithing upgrades, the worn armour look and the vanilla tags. |
+| Simple block (Creator: Blocks) | `simple-block` | resource, data, mod | One new block with its own name, colour, hardness, tool, light level and drops, a texture and model, and an optional recipe. |
+| Food (Creator: Food) | `food` | resource, data, mod | A new food with its own name, colour, hunger and saturation, a texture and model, and an optional recipe. |
+| Weapon (Creator: Gear) | `weapon` | resource, data, mod | One sword, spear, mace, bow, crossbow or shield with its own name, colour and stats, a texture and model, and an optional recipe. |
+| Consumable (Creator: Food) | `consumable` | resource, data, mod | A food with effects, a potion-like drink or a charm that gives effects when used, with a texture, model and optional recipe. |
+| Totem (Creator: Gear) | `totem` | resource, data, mod | An item that saves its holder from death like a totem of undying and gives the effects you choose, with a texture, model and optional recipe. |
+| Enchantment (Creator: Gear) | `enchantment` | data | A new enchantment: what it goes on, its highest level, how rare it is and what it does, offered at the enchanting table. |
+| Painting (Creator: Blocks) | `painting` | resource, data | A new painting with its title, author, size and your own picture (or a placeholder landscape), in the `minecraft:placeable` tag. |
+| Music disc (Creator: Blocks) | `music-disc-item` | resource, data, mod | A new jukebox song and a music disc that plays it: a real disc item in the Fabric mod jar, or music disc 13 with a new look in vanilla packs. |
 | Recipe pack | `recipe_pack` | data | Shaped, shapeless, smelting, blasting and stonecutting recipes, an item tag used as an ingredient, a crafting advancement and a load message. |
 | Custom music disc | `music_disc` | resource, data | A jukebox song, its sound event, a disc model and texture, and a `give_disc` function. |
 | Functions | `function_starter` | data | `load` and `tick` functions wired to `#minecraft:load` and `#minecraft:tick`, a jump scoreboard, a `greet` function and a function tag of your own. |
 | Custom biome | `custom_biome` | resource, data | The Amber Woods biome with its own tree and copper ore, and a World Type of its own that lists it beside a few vanilla biomes (**More → World Type** when creating a world). |
 | Jigsaw village-style structure | `jigsaw_structure` | data | A small hamlet built by jigsaw blocks: a centre hut, streets that follow the terrain and lamp posts, with four template pools, a structure set and a biome tag that places it in forests. |
 | Custom biome with a jigsaw structure | `worldgen_pack` | resource, data | Both worldgen starters in one project: Amber Woods and its World Type, and hamlets that generate in Amber Woods and in every vanilla forest. |
-| Custom mob | `custom_mob` | resource, data, mod | An animated Ruby Golem that wanders forests, fights back when hit, drops emeralds and bursts into sparks when it dies: its GeckoLib model, idle, walk and attack animations, skin, spawn egg, loot table, a death function and the mod metadata. |
+| Custom mob (Creator: Mobs) | `custom_mob` | resource, data, mod | An animated Ruby Golem that wanders forests, fights back when hit, drops emeralds and bursts into sparks when it dies: its GeckoLib model, idle, walk and attack animations, skin, spawn egg, loot table, a death function and the mod metadata. |
 | Scripted ore | `scripted_ore` | resource, data, mod | The Custom ore starter with three scripts: sneak-using ruby ore gives a bonus ruby, standing on a block of ruby heals you through a `run_script` action, and joining players are greeted. |
+| Scripted behaviour (Creator: Scripts) | `scripted-item` | resource, mod | An item that runs a script when used: it heals you, launches you upward, strikes lightning where you look or gives you an effect. The script opens in the Script Studio. |
 
-Five starters need a word of explanation:
+Five starters need a word of explanation (and every starter with mod content needs the Fabric mod jar, as Custom ore does):
 
 - **Custom ore needs the Fabric mod jar.** Its ore, ruby and Block of Ruby are new blocks and items (`msm:block`, `msm:item`), which a resource or data pack cannot add. Export the **Fabric mod jar** and install it with Fabric Loader and Fabric API; the jar carries the `msm_runtime` mod inside unless you choose a separate runtime. The resource and data pack exports still work but hold only the models, textures, names, loot tables, tags, recipes and advancements, which do nothing without the blocks and items. Nothing in the `minecraft` namespace is changed: emerald ore stays emerald ore.
 - **Custom mob needs the Fabric mod jar with GeckoLib.** The Ruby Golem is a new mob (`msm:entity`), drawn by the GeckoLib mod from its model (`msm:geo_model`) and animations (`msm:animation`). Export the **Fabric mod jar**: it nests `msm_runtime` and GeckoLib, which MCSuperMods downloads once (see [Entities and models](entities-and-models.md#export-the-mod-jar-and-geckolib)). Replace the placeholder skin by importing a Blockbench model of your own and choosing it in the Entity Studio.
@@ -378,7 +401,7 @@ The script examples use `msm:script`, which runs only in the Fabric mod jar (see
 
 ### All examples
 
-There is one example for each of the 59 element kinds, six more behaviour examples (blocks and items: a tool and an event chain; entities: a hostile mob and natural spawning; scripts: scheduled effects and an action handler), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob starter and the Scripted ore starter have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 61 element kinds, six more behaviour examples (blocks and items: a tool and an event chain; entities: a hostile mob and natural spawning; scripts: scheduled effects and an action handler), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -388,6 +411,7 @@ There is one example for each of the 59 element kinds, six more behaviour exampl
 | Language file | `example_lang` | Text | `minecraft:lang` | English names for your content, and a renamed vanilla item. |
 | Sound events | `example_sounds` | Sounds | `minecraft:sounds` | A new sound event that plays vanilla sound files at random. |
 | Pack metadata | `example_pack_mcmeta` | Pack | `minecraft:pack_mcmeta` | The pack.mcmeta description shown in the pack lists. |
+| Worn armour look | `example_equipment` | Models | `minecraft:equipment` | An equipment asset: how armour of one material looks on a player. |
 | Shaped recipe with a named result | `example_recipe` | Recipes | `minecraft:recipe` | A crafting recipe whose result carries a custom name and lore. |
 | Chest loot table | `example_loot_table` | Loot tables | `minecraft:loot_table` | A treasure table with weighted entries and a rare bonus roll. |
 | Advancement tab | `example_advancement` | Advancements | `minecraft:advancement` | A root advancement with its own tab and a child that rewards experience. |
@@ -459,7 +483,7 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 
 | Folder | Namespace | Contents |
 |---|---|---|
-| `examples/all-kinds/` | `msm_examples` | The 59 per-kind examples in one project |
+| `examples/all-kinds/` | `msm_examples` | The 61 per-kind examples in one project |
 | `examples/blocks-items/` | `msm_examples` | The two blocks and items behaviour examples (Sturdy pickaxe, Beacon stone) |
 | `examples/entities/` | `msm_examples` | The two entity behaviour examples (Hostile mob, Natural spawning), each with its model, animations and textures |
 | `examples/scripts/` | `msm_examples` | The two script behaviour examples (Script: scheduled effects, Script: action handler) |
@@ -472,6 +496,17 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 | `examples/starters/worldgen_pack/` | `msm_starter` | The Custom biome with a jigsaw structure starter (also saved as `fixtures/sample-worldgen/`) |
 | `examples/starters/custom_mob/` | `msm_starter` | The Custom mob starter |
 | `examples/starters/scripted_ore/` | `msm_starter` | The Scripted ore starter |
+| `examples/starters/custom-sword/` | `msm_starter` | The Custom sword starter |
+| `examples/starters/gear-set/` | `msm_starter` | The Gear set starter |
+| `examples/starters/simple-block/` | `msm_starter` | The Simple block starter |
+| `examples/starters/food/` | `msm_starter` | The Food starter |
+| `examples/starters/weapon/` | `msm_starter` | The Weapon starter |
+| `examples/starters/consumable/` | `msm_starter` | The Consumable starter |
+| `examples/starters/totem/` | `msm_starter` | The Totem starter |
+| `examples/starters/enchantment/` | `msm_starter` | The Enchantment starter |
+| `examples/starters/painting/` | `msm_starter` | The Painting starter |
+| `examples/starters/music-disc-item/` | `msm_starter` | The Music disc starter |
+| `examples/starters/scripted-item/` | `msm_starter` | The Scripted behaviour starter |
 
 Copy a folder somewhere else before opening it, so your edits do not change the repository. See [examples/README.md](https://github.com/MEZTKING/MCSuperMods/blob/main/examples/README.md).
 

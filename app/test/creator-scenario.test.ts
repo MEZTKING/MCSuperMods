@@ -33,7 +33,6 @@ import {
   planCreate,
   reopenPlan,
 } from '../src/renderer/src/changeset/creator-sets';
-import { rawValuesFromStored } from '../src/renderer/src/components/creator/creator-model';
 import { pngDataUrl, toValues } from '../src/renderer/src/components/wizard/wizard-model';
 import type { ProjectSession } from '../src/renderer/src/session/project-session';
 import { newSession } from './session-fixture';
@@ -64,7 +63,10 @@ function flowOf(session: ProjectSession, id: string): ProjectStarter {
 }
 
 /** The flow's default values with `overrides`, as the dialog converts them. */
-function valuesOf(flow: ProjectStarter, overrides: Record<string, Json> = {}): Record<string, Json> {
+function valuesOf(
+  flow: ProjectStarter,
+  overrides: Record<string, Json> = {},
+): Record<string, Json> {
   return { ...(toValues(flow.parameters, {}) as Record<string, Json>), ...overrides };
 }
 
@@ -107,10 +109,8 @@ function reopen(
 ): Promise<CreatorPlan> {
   const meta = elementOf(session, elementId)?.meta.creator;
   if (meta === undefined) throw new Error(`${elementId} has no meta.creator.`);
-  const stored = toValues(
-    flow.parameters,
-    rawValuesFromStored(flow.parameters, meta.values),
-  ) as Record<string, Json>;
+  // The stored values over the flow's defaults (the dialog reads them the same way).
+  const stored = valuesOf(flow, meta.values as Record<string, Json>);
   return reopenPlan({
     project: project(session),
     flow,
@@ -288,7 +288,12 @@ describe('Creator scenario: Gear set', () => {
     );
 
     // Reopened with the same values nothing changes; another colour replaces the textures.
-    const same = await reopen(session, flowOf(session, 'gear-set'), `${NAMESPACE}:topaz_helmet`, {});
+    const same = await reopen(
+      session,
+      flowOf(session, 'gear-set'),
+      `${NAMESPACE}:topaz_helmet`,
+      {},
+    );
     expect(same.mode).toBe('update');
     // Every piece is untouched and unchanged (its change only re-stamps the stored values);
     // the project's own pack.mcmeta stays a conflict, as at Create.
