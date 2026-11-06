@@ -86,6 +86,8 @@ The **Problems** tab on the right shows a count, for example **Problems (0)**. M
 
 Try it: in `ruby_ore:ruby_block_from_rubies`, change the result id to `ruby_ore:rubyy`. A problem about the unknown id appears; undo the change (Ctrl+Z) and it goes away.
 
+Not sure what a problem means? If you have added an Anthropic API key under **Settings → AI helper**, each problem row has an **Explain** button that asks the optional [AI helper](ai-helper.md) to explain it and propose a fix, which you review before anything changes. The helper can also answer questions about your project and build whole content from one description; MCSuperMods works fully without it.
+
 ## 7. Save
 
 Press **Save** on the toolbar or Ctrl+S. The project is a folder of small JSON files (one per element) plus your textures, so it works well with Git and backups. Open it again later with **Open** (Ctrl+O).
@@ -162,4 +164,5 @@ Press **Ctrl+Shift+P** to open the command palette and type part of a command's 
 - [Entities and models](entities-and-models.md): animated mobs. Create a project from the **Custom mob** starter (a Ruby Golem with its model, animations and spawn egg), or import a model with **File → Import Blockbench Model…** and give it a body and behaviour in the Entity Studio; the Fabric mod jar then carries GeckoLib too.
 - [Scripting](scripting.md): behaviour in TypeScript. Create a project from the **Scripted ore** starter, or add a script from the **Block interaction script** template under **Scripts** in **Add element**; the Script Studio completes `msm.` as you type, and the Fabric mod jar carries the scripts into the game.
 - [Eject to a Java project](eject.md): **File → Export Java Project…** writes a standalone Fabric Gradle project with generated Java that no longer needs `msm_runtime`, for when you want to carry on in code.
+- [The AI helper](ai-helper.md): an optional assistant with your own Anthropic API key that explains problems, answers questions and builds content from a description, always as changes you review and apply in one undoable step.
 - The [roadmap](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/ROADMAP.md): what comes after scripting.

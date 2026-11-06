@@ -1,6 +1,6 @@
 # docs/ — design docs, roadmap, devlog, ADRs
 
-Active since Phase 0; Phases 2 to 4 code complete, awaiting the in-game checks; launcher and templates and samples library add-ons done; Phase 3 (Structures & Worldgen) delivered as briefs B70–B83 (ADRs 0001–0023, all accepted; B84 in reserve); Phase 4 (Engine Mod + Blocks/Items) code complete, awaiting the in-game check (B90–B102; ADRs 0024–0027 accepted); Phase 5 (Entities, Models, Animation) code complete, awaiting the in-game check (B110–B122; ADRs 0028–0030 accepted); Phase 6 (Scripting & Eject) code complete, awaiting the in-game check (B130–B141; ADRs 0031–0034 accepted, ADR 0003 partly superseded by ADR 0031; B142–B144 in reserve); Phase 7 (1.0) next (plan first); user guide in `guide/`. This file describes conventions.
+Active since Phase 0; Phases 2 to 4 code complete, awaiting the in-game checks; launcher and templates and samples library add-ons done; Phase 3 (Structures & Worldgen) delivered as briefs B70–B83 (ADRs 0001–0023, all accepted; B84 in reserve); Phase 4 (Engine Mod + Blocks/Items) code complete, awaiting the in-game check (B90–B102; ADRs 0024–0027 accepted); Phase 5 (Entities, Models, Animation) code complete, awaiting the in-game check (B110–B122; ADRs 0028–0030 accepted); Phase 6 (Scripting & Eject) code complete, awaiting the in-game check (B130–B141; ADRs 0031–0034 accepted, ADR 0003 partly superseded by ADR 0031; B142–B144 in reserve); Phase 7 (1.0) under way (`PHASE7-PLAN.md`: B150–B160 done, B161 and B162 left; ADRs 0035–0040 accepted); add-ons released as v0.7.0 (2026-11-06): AI helper, armour and custom tool materials, gear, weapons and consumables, the Creator, undoable asset writes (ADRs 0041–0045 accepted; their plans closed into DESIGN, ROADMAP and the ADRs); user guide in `guide/`, built as a site by `site/` (VitePress, ADR 0039). This file describes conventions.
 
 ## Purpose
 
@@ -13,7 +13,7 @@ Holds the project's design record: the authoritative design, the delivery plan, 
 - `DEVLOG.md`: append-only session log, newest entry at the bottom.
 - `HANDOFF.md`: where the project stands and how the work is run, for the next main session; rewritten (not appended) at each handover.
 - `adr/NNNN-title.md`: one file per architecture decision, sections Context / Decision / Consequences / Status.
-- `guide/`: the user guide (`README.md` index, `getting-started.md`, `structures.md`, `worldgen.md`, `templates-and-examples.md`, `blocks-and-items.md`, `entities-and-models.md`, `scripting.md`, `eject.md`); task-oriented, matches shipped UI labels.
+- `guide/`: the user guide (`README.md` index, `getting-started.md`, `structures.md`, `worldgen.md`, `templates-and-examples.md`, `blocks-and-items.md`, `creator.md`, `entities-and-models.md`, `scripting.md`, `eject.md`, `ai-helper.md`; each page also needs a sidebar entry in `site/.vitepress/config.ts`); task-oriented, matches shipped UI labels.
 
 ## Conventions
 

@@ -34,6 +34,6 @@ The ROADMAP names the second target as "26.4 or whatever is current"; DESIGN §9
 
 ## Status
 
-Proposed (2026-11-05). B152 creates the package, B153 integrates and migrates, B160 builds the command; the release re-pin is reserve B163. Accepted at Phase 7 close.
+**Accepted (2026-11-06, shipped in 0.7.0).** B152 created the package, B153 integrated and migrated it (the full removed-id table is wider than the plan's facts: also `model` `block/cube_top`, `sound_event` `intentionally_empty`, two entity type tags and eight GUI sprites; `javaProject` removed from 26.4 because `SoundType` is gone), B160 built the Upgrade project target command, dialog and status bar badge. The release re-pin is reserve B163.
 
 B151 findings (2026-11-05): on a 26.4-snapshot-7 Fabric dedicated server (Loader 0.20.1, Fabric API 0.165.4+26.4) Fabric Loader reports the game as `26.4-alpha.7`. A content jar with `"minecraft": ">=26.4- <26.5-"` loads (so does `>=26.4-` and `~26.4-`); `~26.4` fails mod resolution ("requires any version between 26.4 (inclusive) and 26.5- (exclusive) … only the wrong version is present: 26.4-alpha.7"). `minecraftDependency` `>=26.4- <26.5-` is confirmed; it also admits the 26.4 release, so the re-pin (B163) need not change it. Loom 1.19.3 handles the snapshot (no per-version Loom needed). The runtime's `msm:sound_type` `amethyst` maps to the 26.4 `block_sound_set` `minecraft:amethyst_block` (see ADR 0038).

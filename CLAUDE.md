@@ -1,21 +1,21 @@
 # MCSuperMods
 
-MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Current MC target 26.3. Status: Phase 6 code complete, awaiting in-game checks; Phase 7 (1.0) next (plan to write first). Phase 6 (Scripting & Eject; ADRs 0031–0034; v0.6.0): plugin-api 0.8.0 (`FabricFacts.gradle`, `Target.javaProject`), `msm_runtime` scripting (Rhino 1.9.2 nested, script API v1, `run_script`), `@msm/plugin-scripting` (script API JSON, generated typings), TypeScript to ES5 in main (not esbuild), Script Studio with Monaco TypeScript, `java-project` eject with the 26.3 Java generator, Scripted ore starter, CI checks of `fixtures/sample-script/`, the ejected samples' Gradle builds and the parity GameTests. Done before: Phases 0–5 (awaiting in-game checks; Phase 5 Entities, Models, Animation, v0.5.0), two add-ons (launcher support, ADR 0019; templates and samples library, ADR 0020). 59 kinds in all. Library: 116 templates (resourcepack 14, datapack 55, structures 9, worldgen 21, blocks-items 7, models-anim 3, entities 3, scripting 4), 13 starters, 69 examples. Releases: Windows only (MIT; README "Releasing"). Toolchain: Node 24, pnpm 12.
+MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla pack export). Targets: 26.3 (default) and 26.4-snapshot-7. Status: v0.7.0 (2026-11-06), Phases 0–6 code complete and awaiting in-game checks; Phase 7 (1.0) under way: done B150–B160 (plugin API 1.0, third-party plugins in a sandboxed worker under `msm-app://`, second target with Upgrade project target, per-target runtime jars, starter wizards, docs site, `tools/new-plugin --external`), left B161 (e2e, guide pages) and B162 (1.0 close; `docs/PHASE7-PLAN.md`). Add-ons pulled into 0.7.0 (ADRs 0041–0045): the AI helper (`@msm/ai`, bring-your-own key), armour and custom tool materials, gear, weapons and consumables (`msm:components` passthrough, `apply_effect`), the Creator (flows are starters with `creator`; live preview; `meta.creator` reopen rule), undoable asset writes. plugin-api 1.2.0 (built-ins declare `^1.0.0`). 61 kinds in all. Library: 125 templates (resourcepack 15, datapack 56, structures 9, worldgen 21, blocks-items 14, models-anim 3, entities 3, scripting 4), 24 starters, 71 examples. Releases: Windows only (MIT; README "Releasing"). Toolchain: Node 24, pnpm 12.
 
 ## Directory map
 
-- `docs/` — DESIGN.md (authoritative), ROADMAP.md, DEVLOG.md, HANDOFF.md (current state for the next main session), `adr/`, `guide/` (user guide)
+- `docs/` — DESIGN.md (authoritative), ROADMAP.md, DEVLOG.md, HANDOFF.md (current state for the next main session), `adr/`, `guide/` (user guide), `site/` (VitePress docs site)
 - `app/` — `@msm/app`, Electron shell (`main/`, `preload/`, `renderer/`)
 - `packages/core/` — `@msm/core`, IR, project load/save, command stack, lowering driver
 - `packages/schemas/` — `@msm/schemas`, mcdoc adapter, `validateJson`; `@msm/schemas/mcfunction` (offline Spyglass)
-- `packages/plugin-api/` — `@msm/plugin-api`, public interfaces only
+- `packages/plugin-api/` — `@msm/plugin-api`, public interfaces only; `packages/ai/` — `@msm/ai`, AI helper protocol, tools, loop (`./sdk`: the Claude SDK, main only)
 - `packages/plugins/` — `@msm/plugin-<name>`: `resourcepack`, `datapack`, `structures`, `worldgen`, `blocks-items`, `models-anim`, `entities` (kinds, templates, validators), `scripting` (kinds, templates, validators), `library` (starters, examples)
 - `packages/exporters/` — `@msm/exporters`, vanilla-packs (resource, data, combined), fabric-content-jar, java-project (eject)
-- `packages/targets/` — `@msm/target-*`, one folder per MC version (`mc-26.3/`), plus the `@msm/targets` aggregator (`all/`)
+- `packages/targets/` — `@msm/target-*`, one folder per MC version (`mc-26.3/`, `mc-26.4/`), plus the `@msm/targets` aggregator (`all/`)
 - `packages/interop/` — `@msm/interop`, Minecraft installation, launcher instances, `level.dat` world names, Fabric test installs (`fabric/`), Blockbench import (`blockbench/`)
-- `engine-mod/` — `msm_runtime` Fabric mod (Gradle, Java 25); `parity/` behaviour-parity GameTest mod (separate build)
+- `engine-mod/` — `msm_runtime` Fabric mod (Gradle, Java 25; `-Pmc=<version>` from `versions/`); `parity/` behaviour-parity GameTest mod (separate build)
 - `tools/` — dev scripts: check-deps, check-size, sync-mcdoc, sync-mcmeta, build-msm-mcdoc, new-plugin, run-fabric-server
-- `fixtures/sample-resourcepack/`, `sample-datapack/`, `sample-worldgen/`, `sample-mod/`, `sample-mob/`, `sample-script/` — sample projects for the in-game checks
+- `fixtures/sample-resourcepack/`, `sample-datapack/`, `sample-worldgen/`, `sample-mod/`, `sample-mob/`, `sample-script/` — sample projects for the in-game checks; `sample-plugin/` — sample external plugin
 - `examples/` — generated mirror of the library's starters and examples (golden; `UPDATE_GOLDENS=1`)
 - `.claude/agents/` — `orchestrator.md`, `executor.md`
 

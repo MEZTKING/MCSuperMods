@@ -26,4 +26,4 @@ The user guide is eight Markdown pages plus an index under `docs/guide/`, writte
 
 ## Status
 
-Proposed (2026-11-05). Scaffolded by B152, built by B158; accepted at Phase 7 close.
+**Accepted (2026-11-06).** Scaffolded by B152, built by B158 (VitePress 2.0.0-alpha.21 built the guide, so the 1.6.4 fallback was not needed; dead links fail the build; `docs.yml` deploys on push to `main` once the repository owner sets Pages to "GitHub Actions"). Later pages (`creator.md`, `ai-helper.md`) joined the sidebar; B161 adds the plugins and targets pages.

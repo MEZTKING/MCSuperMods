@@ -52,6 +52,7 @@ export default defineConfig({
           { text: 'Entities and models', link: '/entities-and-models' },
           { text: 'Scripting', link: '/scripting' },
           { text: 'Eject to a Java project', link: '/eject' },
+          { text: 'The AI helper', link: '/ai-helper' },
         ],
       },
       {

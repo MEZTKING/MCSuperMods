@@ -417,14 +417,21 @@ export async function reopenPlan(input: ReopenInput): Promise<CreatorPlan> {
     };
     const before = await previousData(own);
     if (before !== undefined && sameJson(own.data, before)) {
+      const unchanged = sameJson(own.data, entry.data);
+      // An unchanged element whose stored values already match needs no change at all, so
+      // reopening without edits offers nothing to Create and adds no undo step.
+      const sameStamp = sameJson(
+        own.meta.creator as unknown as Json,
+        creatorMeta(stamp, entry.id) as unknown as Json,
+      );
       entries.push({
         key: own.id,
         kind: own.kind,
         ...renamed,
-        status: sameJson(own.data, entry.data) ? 'unchanged' : 'replace',
+        status: unchanged ? 'unchanged' : 'replace',
         current: own.data,
         next: entry.data,
-        change: replace,
+        ...(unchanged && sameStamp ? {} : { change: replace }),
       });
       continue;
     }

@@ -129,7 +129,7 @@ export const MENU_COMMANDS = [
   'upgradeTarget',
   // ADR 0041 D8: View > "AI Helper".
   'toggleAiHelper',
-  // Reserved for the Creator (CREATOR-PLAN B184): File > "Create…"; ignored until then.
+  // ADR 0043: File > "Create…" opens the Creator.
   'creator',
 ] as const;
 

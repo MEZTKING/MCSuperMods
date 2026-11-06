@@ -1,6 +1,6 @@
 # MCSuperMods user guide
 
-How to use MCSuperMods to make resource packs, data packs and Fabric mods with new blocks, items and animated mobs, including structures and custom biomes, for Minecraft Java Edition, without writing JSON or code; and, when you want to, with TypeScript scripts or as a Java project.
+How to use MCSuperMods to make resource packs, data packs and Fabric mods with new blocks, items and animated mobs, including structures and custom biomes, for Minecraft Java Edition, without writing JSON or code; and, when you want to, with TypeScript scripts, as a Java project or with the help of an AI assistant.
 
 | Guide | What it covers |
 |---|---|
@@ -12,6 +12,7 @@ How to use MCSuperMods to make resource packs, data packs and Fabric mods with n
 | [Entities and models](entities-and-models.md) | Importing a Blockbench model (`.bbmodel`, `.geo.json`, `.animation.json`), the Entity Studio, goals in plain words, natural spawning (biome tags and ids, weight), spawn eggs, events and `play_animation`, the animated preview and its limits, the Fabric mod jar with GeckoLib (nested by default, the one-off download, the separate option), the in-game check, troubleshooting |
 | [Scripting](scripting.md) | What scripts can do, the Script Studio and its TypeScript editor, the `msm` API and its nine events, `run_script` from the Events editor, the typings in `.msm/`, how scripts are transpiled to ES5, limits (no Java, the 2 second budget, server side only, no saved data yet), the in-game check, troubleshooting with the `[msm_runtime]` script lines |
 | [Eject to a Java project](eject.md) | When to eject, Export Java project and its dialog, what the generated Fabric Gradle project contains, building it with JDK 25, what is not included (scripts), one-way, GeckoLib and licences |
+| [The AI helper](ai-helper.md) | The optional assistant with your own Anthropic API key: getting a key, Settings → AI helper, what is sent and when, Chat mode, Explain and Ask AI, Build mode with its plan, reviewing and applying proposed changes, run limits, usage and cost, troubleshooting |
 | [Templates, starters and examples](templates-and-examples.md) | All 125 element templates by category (including structures, worldgen, blocks and items, armour and weapons, entities, models and animations, scripts), the 24 project starters (and which are Creator flows), the 71 examples and the Examples gallery, copying versus opening an example, why new blocks, items and mobs need the Fabric mod jar, replacing placeholder textures and the music disc sound |
 
 More help:

@@ -25,7 +25,7 @@
 
 ## Status
 
-Proposed (2026-11-05). B151 (spike) records the compile errors against 26.4-snapshot-7, the seams needed, whether Loom 1.19.3 accepts the snapshot and which `minecraft` range loads on the snapshot server; B159 implements D1–D3 and D5; B160 implements D4. Accepted at Phase 7 close.
+**Accepted (2026-11-06, shipped in 0.7.0).** B159 implemented D1–D3 and D5 (`versions/<mc>.properties`, seams in `src/mc/<mc>/`, jars `msm_runtime-<mod_version>+mc<mc>.jar`, CI matrix, parity `-Pmc`); B160 implemented D4 (`runtime-jar.ts` per target, `stage-runtime.mjs` staging `msm_runtime-mc-<mc>.jar`, `extraResources` folder, `release.yml` building every version). Originally: proposed (2026-11-05). B151 (spike) records the compile errors against 26.4-snapshot-7, the seams needed, whether Loom 1.19.3 accepts the snapshot and which `minecraft` range loads on the snapshot server; B159 implements D1–D3 and D5; B160 implements D4. Accepted at Phase 7 close.
 
 B151 findings (2026-11-05, 26.4-snapshot-7):
 

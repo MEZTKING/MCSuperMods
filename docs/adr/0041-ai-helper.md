@@ -48,10 +48,19 @@ No file system, shell, network, install or export tools. Every tool result is JS
 - The app stays fully usable without a key; the helper is off until a key is set, and every change it proposes passes the same validation gate as hand-made content before it is shown and again after Apply.
 - Project content (element JSON, ids, problems, template and target data, script typings) is sent to Anthropic when the user sends a message; asset bytes, file paths and the key never are. The guide and the Settings section say so.
 - Cost is the user's: the panel shows tokens and an approximate price per run, and limits stop runaway runs.
-- B160–B162 of the Phase 7 plan wait for the helper's briefs (B170–B175, [AI-HELPER-PLAN.md](../AI-HELPER-PLAN.md)) and the sibling Creator plan ([CREATOR-PLAN.md](../CREATOR-PLAN.md)); B160 then builds on the helper's `App.tsx`, `shared/` and `main/` changes.
+- B160–B162 of the Phase 7 plan wait for the helper's briefs (B170–B175, AI helper plan, closed with 0.7.0) and the sibling Creator plan (closed with 0.7.0); B160 then builds on the helper's `App.tsx`, `shared/` and `main/` changes.
 - The changeset, review and single-undo Apply are shared with the Creator ([ADR 0043](0043-creator-guided-flows.md)), which is the second front end of the same generator layer (starters with parameters).
 - Resolves [DESIGN Open Question 14](../DESIGN.md#18-open-questions).
 
 ## Status
 
-Proposed (2026-11-05). Implemented by B170–B175; accepted with the 0.7.0 release. Findings to record here: the SDK version pinned and whether `client.beta.messages.stream` accepts `betas`, `fallbacks: 'default'` and `output_config.task_budget` as written; the measured chunk size and `app.asar`; whether a local HTTP stub can exercise the real adapter.
+**Accepted (2026-11-06, shipped in 0.7.0).** Implemented by B170 (`@msm/ai`), B171 (main), B172 (renderer logic), B173 (UI), B174 (scenario tests, e2e `ai-path`), B175 (guide `docs/guide/ai-helper.md`, release).
+
+Findings:
+
+- *SDK.* `@anthropic-ai/sdk` pinned to **1.1.0** (the newest at least two weeks old on 2026-11-05; 1.4.0 has the same beta Messages surface for this use; move up after 2026-11-16). Verified against the installed types: `client.beta.messages.stream(params, { signal })` takes `betas`, `fallbacks: 'default'`, `output_config: { effort, task_budget: { type: 'tokens', total } }`, top-level `cache_control`, `thinking: { type: 'adaptive', display: 'summarized' }` and `eager_input_streaming` per tool; `betas` go in the `anthropic-beta` header. SDK 1.x sends the key as `Authorization: Bearer` and reads `ANTHROPIC_BASE_URL`/`ANTHROPIC_AUTH_TOKEN` unless pinned, so the adapter pins `baseURL`, `authToken: null` and `webhookKey: null`. A local `node:http` SSE stub with a dummy key exercises the real adapter in a unit test.
+- *JSON Schema.* `z.toJSONSchema` output needed small edits: no `$schema`, no `propertyNames`, no zod safe-integer bounds, `additionalProperties: false` on objects with properties.
+- *Loop and executor.* Whole-turn commits keep the conversation valid after cancel; unparseable eager tool JSON is retried twice. Tool calls of one turn run one at a time in arrival order (B174), so parallel calls see each other's proposals; `add_starter` drops a starter's `pack.mcmeta` and `msm:mod` when the project already has one, and stamps `meta.creator` for Creator flows (B192, ADR 0043 D5). `run_checks` includes an in-memory lowering pass for `lowering.conflict` and `lowering.merge-conflict` (B192).
+- *Key store.* The asynchronous `safeStorage` API (the synchronous one is deprecated in Electron 45.2.2); the Linux `basic_text` backend counts as unavailable, so D1's refusal holds there.
+- *Size.* `ai-client` chunk 315,407 + 38,959 + 293 bytes minified; `app.asar` 30.0 MB of 32 MB after B174 (see the ROADMAP Milestone Log for the release run); `out/renderer` contains no `api.anthropic.com`.
+- *Not done in v1:* the real model has not been exercised by an automated test (scripted client only; a manual run with a real key is the user's check before relying on it); conversations are not persisted; no base URL setting.

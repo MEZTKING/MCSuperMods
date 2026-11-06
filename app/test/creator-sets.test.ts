@@ -231,6 +231,37 @@ describe('creator-sets (ADR 0043 D3, D4)', () => {
     );
   });
 
+  it('reopens with unchanged values as a no-op: no change items, no writes, no undo step', async () => {
+    const { session, flow } = await openProject();
+    const stored = valuesOf(flow, {});
+    await createSet(session, flow, stored);
+    const undoLabel = session.snapshot.undoLabel;
+    const before = session.snapshot.project;
+    const plan = await reopen(session, flow, stored, stored);
+    expect(statusOf(plan, 'demo:ruby_helmet')).toBe('unchanged');
+    expect(plan.entries.find((entry) => entry.key === 'demo:ruby_helmet')?.change).toBeUndefined();
+    const changes = creatorChanges(plan);
+    expect(changes.items).toEqual([]);
+    expect(changes.writes).toEqual([]);
+    const result = await applyCreatorPlan(session, changes, creatorLabel(plan, flow.title));
+    expect(result).toEqual({ applied: 0, skipped: 0, written: 0 });
+    expect(session.snapshot.undoLabel).toBe(undoLabel);
+    expect(session.snapshot.project).toBe(before);
+  });
+
+  it('re-stamps an unchanged piece when only its stored values change', async () => {
+    const { session, flow } = await openProject();
+    const stored = valuesOf(flow, {});
+    await createSet(session, flow, stored);
+    // A new colour leaves the helmet's element data as it was (only its texture changes).
+    const plan = await reopen(session, flow, stored, valuesOf(flow, { colour: '#2050e0' }));
+    const helmet = plan.entries.find((entry) => entry.key === 'demo:ruby_helmet');
+    expect(helmet?.status).toBe('unchanged');
+    expect(helmet?.change).toBeDefined();
+    await applyCreatorPlan(session, creatorChanges(plan), creatorLabel(plan, flow.title));
+    expect(element(session, 'demo:ruby_helmet')?.meta.creator?.values.colour).toBe('#2050e0');
+  });
+
   it('keeps an edited piece the new values no longer make unless overwritten', async () => {
     const { session, flow } = await openProject();
     const stored = valuesOf(flow, {});

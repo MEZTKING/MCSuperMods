@@ -1,6 +1,6 @@
 # engine-mod/ — Fabric runtime mod
 
-Status: Phases 4 to 6 code complete, awaiting the in-game checks (`fixtures/sample-mod/README.md`, `fixtures/sample-mob/README.md`, `fixtures/sample-script/README.md`). Runtime v1 (B93) reads ADR 0025 format 1 blocks and items; Phase 5 entities (B113, ADR 0028): Codecs for `msm/<ns>/entity/*.json`, `MsmEntity` with six goal types, triggers, `play_animation`, spawn eggs, natural spawns, GeckoLib bridge. Phase 6 scripting (B130, B133; ADRs 0031, 0032): Rhino 1.9.2 nested (`include`), script API v1 with nine events, `run_script` action, global `require` in the contract (`ScriptApi.FUNCTIONS`, B141); `parity/` (B131, B139; ADR 0033) is a separate GameTest build run against content and ejected jars; 138 JUnit tests (corpus, parser and the script API contract) and 78 GameTests (22 scripting, 6 armour and tool materials, 12 gear in `MsmGearGameTest`) pass in `./gradlew build`, also with `-PwithoutGeckolib` (entities then log one error each and register nothing). CI job `engine-mod` also starts headless servers (`tools/run-fabric-server`) with the sample mod, the sample mob (runtime and GeckoLib nested) and the sample script, builds the ejected samples and runs the parity GameTests four times; `parity/gradle.properties` Fabric facts must equal this folder's (`tools/check-deps`). `mod_version` 0.6.0 equals `app/package.json` (`app/test/runtime-version.test.ts`). This file describes intent and conventions.
+Status: v0.7.0; Phases 4 to 6 and the 0.7.0 gear (armour, custom tool materials, weapons, consumables, totems, passthrough; ADRs 0042, 0044) code complete, awaiting the in-game checks (`fixtures/sample-mod/README.md`, `fixtures/sample-mob/README.md`, `fixtures/sample-script/README.md`). Runtime v1 (B93) reads ADR 0025 format 1 blocks and items; Phase 5 entities (B113, ADR 0028): Codecs for `msm/<ns>/entity/*.json`, `MsmEntity` with six goal types, triggers, `play_animation`, spawn eggs, natural spawns, GeckoLib bridge. Phase 6 scripting (B130, B133; ADRs 0031, 0032): Rhino 1.9.2 nested (`include`), script API v1 with nine events, `run_script` action, global `require` in the contract (`ScriptApi.FUNCTIONS`, B141); `parity/` (B131, B139; ADR 0033) is a separate GameTest build run against content and ejected jars; 138 JUnit tests (corpus, parser and the script API contract) and 78 GameTests (22 scripting, 6 armour and tool materials, 12 gear in `MsmGearGameTest`) pass in `./gradlew build`, also with `-PwithoutGeckolib` (entities then log one error each and register nothing). CI job `engine-mod` also starts headless servers (`tools/run-fabric-server`) with the sample mod, the sample mob (runtime and GeckoLib nested) and the sample script, builds the ejected samples and runs the parity GameTests four times; `parity/gradle.properties` Fabric facts must equal this folder's (`tools/check-deps`). Built per Minecraft version (26.3, 26.4-snapshot-7; ADR 0038). `mod_version` 0.7.0 equals `app/package.json` (`app/test/runtime-version.test.ts`). This file describes intent and conventions.
 
 ## Purpose
 
@@ -38,21 +38,16 @@ Status: Phases 4 to 6 code complete, awaiting the in-game checks (`fixtures/samp
 
 ## Do / Don't
 
-- Do keep the runtime free of any app dependency; it must work with hand-written `msm/` files.
-- Don't hardcode content.
-- Don't add Kotlin.
+- Do keep the runtime free of any app dependency; it must work with hand-written `msm/` files. Don't hardcode content. Don't add Kotlin.
 
 ## Commands
 
 - `JAVA_HOME=<jdk 25> ./gradlew build` (default version, runs JUnit and the GameTests); `./gradlew build -Pmc=26.4` for another version (the jars of both stay side by side in `build/libs/`)
-- `./gradlew test` (JUnit only; the corpus test reads the schemas package in place)
-- `./gradlew runGameTest` (headless GameTest server; `-PwithoutGeckolib` runs without GeckoLib) / `./gradlew runClient`; both take `-Pmc`
+- `./gradlew test` (JUnit only; the corpus test reads the schemas package in place); `./gradlew runGameTest` (headless GameTest server; `-PwithoutGeckolib` runs without GeckoLib) / `./gradlew runClient`; both take `-Pmc`
 - `./gradlew -p parity build [-Pmc=<mc>]` (the parity GameTest jar)
 - CI job `engine-mod` is a matrix over the versions (`.github/workflows/ci.yml`; keep it equal to `versions/`)
 
 ## Read next
 
-- [10. Engine Mod (Runtime)](../docs/DESIGN.md#10-engine-mod-runtime)
-- [11. Behaviour Model](../docs/DESIGN.md#11-behaviour-model-components-and-events)
-- [12. Scripting and Escape Hatches](../docs/DESIGN.md#12-scripting-and-escape-hatches)
+- [10. Engine Mod (Runtime)](../docs/DESIGN.md#10-engine-mod-runtime), [11. Behaviour Model](../docs/DESIGN.md#11-behaviour-model-components-and-events), [12. Scripting and Escape Hatches](../docs/DESIGN.md#12-scripting-and-escape-hatches)
 - ROADMAP: Phase 4 onwards (`../docs/ROADMAP.md`)

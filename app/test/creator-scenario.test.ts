@@ -295,13 +295,14 @@ describe('Creator scenario: Gear set', () => {
       {},
     );
     expect(same.mode).toBe('update');
-    // Every piece is untouched and unchanged (its change only re-stamps the stored values);
+    // Every piece is untouched and unchanged, so there is nothing to apply (no re-stamp);
     // the project's own pack.mcmeta stays a conflict, as at Create.
     expect(
       same.entries
         .filter((entry) => entry.status !== 'unchanged')
         .map((entry) => `${entry.key} ${entry.status}`),
     ).toEqual([`${NAMESPACE}:pack conflict`]);
+    expect(creatorChanges(same).items).toEqual([]);
     expect(creatorChanges(same).writes).toEqual([]);
     const recoloured = await reopen(
       session,

@@ -42,4 +42,4 @@ An optional `group?: string` on each parameter names the wizard step it is shown
 
 ## Status
 
-Proposed (2026-11-05). Implemented by B152 (package, core driver, built-in ranges), used by B153, B154, B156 and B160; accepted at Phase 7 close.
+**Accepted (2026-11-06, shipped in 0.7.0).** Implemented by B152 (package, core driver, built-in ranges), used by B153, B154, B156 and B160. D8 (`ElementKind.defaultDataFor`, `WorldgenFacts.noiseSettingsDefaultBlock`) by B156 and B160. Later additive minors under the D1 policy: 1.1.0 (ADRs 0042, 0043) and 1.2.0 (ADR 0044); the package version equals `API_VERSION` (1.2.0) and its tarball `msm-plugin-api-1.2.0.tgz` is attached to the 0.7.0 release (B160's `release.yml`). npm publishing stays a user decision (reserve B164).

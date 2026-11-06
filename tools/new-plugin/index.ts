@@ -24,6 +24,23 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+/** The `@msm/plugin-api` package version, which names the release tarball. */
+const PLUGIN_API_PACKAGE_VERSION = (
+  JSON.parse(
+    readFileSync(
+      join(
+        dirname(fileURLToPath(import.meta.url)),
+        '..',
+        '..',
+        'packages',
+        'plugin-api',
+        'package.json',
+      ),
+      'utf8',
+    ),
+  ) as { version: string }
+).version;
+
 /** Valid plugin folder names: lower-case, starting with a letter. */
 export const PLUGIN_NAME_PATTERN = /^[a-z][a-z0-9-]*$/;
 
@@ -691,7 +708,7 @@ A plugin for [MCSuperMods](https://github.com/MEZTKING/MCSuperMods), made with \
 \`@msm/plugin-api\` is not on npm yet. Until it is, download \`msm-plugin-api-<version>.tgz\` from the MCSuperMods Releases page, put it next to this folder and point the dependency at it:
 
 \`\`\`sh
-pnpm add -D ../msm-plugin-api-1.0.0.tgz   # or: npm install -D ../msm-plugin-api-1.0.0.tgz
+pnpm add -D ../msm-plugin-api-${PLUGIN_API_PACKAGE_VERSION}.tgz   # or: npm install -D ../msm-plugin-api-${PLUGIN_API_PACKAGE_VERSION}.tgz
 \`\`\`
 
 Then install the rest with \`pnpm install\` (or \`npm install\`).

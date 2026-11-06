@@ -26,4 +26,4 @@ Every default reproduces today's output byte for byte, so the `examples/` mirror
 
 ## Status
 
-Proposed (2026-11-05). Implemented by B156; accepted at Phase 7 close.
+**Accepted (2026-11-06, shipped in 0.7.0).** Implemented by B156 (the multi-step New project dialog, Custom ore, Custom mob and Custom sword parameters) and wired by B160 (target choice, `session.newProject({ starterId, targetId, values })`). Where byte-for-byte defaults and D2 differed, the defaults won: `drop_max` defaults to 2 (today's loot), the egg colours are two parameters (`egg_colour`, `egg_spot_colour`), and the sword asks for `tool_tier` instead of attack damage and speed (the MSM item derives them from the tier). ADR 0043 builds the Creator on the same starters (`creator` flag, `set` and `image` parameters).

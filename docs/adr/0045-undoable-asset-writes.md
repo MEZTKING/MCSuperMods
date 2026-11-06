@@ -21,4 +21,4 @@ The command stack ([DESIGN §4](../DESIGN.md#command-stack-and-undo)) records Im
 
 ## Status
 
-Accepted (2026-11-05). Implemented by B193.
+Accepted (2026-11-05). Implemented by B193; shipped in 0.7.0 (2026-11-06).

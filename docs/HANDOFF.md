@@ -1,41 +1,38 @@
 # Session handoff
 
-Rewritten 2026-11-05 at Phase 6 close (B141), for the next main session. Read this, then the root `CLAUDE.md`, then the last four `DEVLOG.md` entries. `DESIGN.md` is authoritative; this file only says where things stand and how the work has been run. Update this file (do not append history to it; history goes in `DEVLOG.md`) when you hand over again.
+Rewritten 2026-11-06 after the combined 0.7.0 work, for the next main session. Read this, then the root `CLAUDE.md`, then the last six `DEVLOG.md` entries. `DESIGN.md` is authoritative; this file only says where things stand and how the work has been run. Rewrite it (do not append history; history goes in `DEVLOG.md`) when you hand over again.
 
 ## Where things stand
 
-- **Phase 6 (Scripting & Eject) is code complete** (briefs B130–B141; ADRs 0031–0034 accepted; ADR 0003 partly superseded by ADR 0031). App version **0.6.0**, `engine-mod` `mod_version` 0.6.0 (kept equal by `app/test/runtime-version.test.ts`, which also checks the version is at least the script runtime minimum 0.6.0). **v0.6.0 is not released yet**: release it with the user's go-ahead (see Releases) once the branch is verified and `main` is fast-forwarded. v0.5.0 was not released either, as far as this file knows: check the Releases page first.
-- Phases 0–6 are code complete; every phase still awaits the user's in-game checks.
-- 18 packages; plugin-api 0.8.0 (`FabricFacts.gradle`, `Target.javaProject`); 59 kinds, 116 templates, 13 starters, 69 examples; eleven e2e specs; `engine-mod/` `./gradlew build` runs 90 JUnit tests and 60 GameTests (also with `-PwithoutGeckolib`); `./gradlew -p parity build` builds the parity GameTest mod. CI job `engine-mod` starts headless 26.3 servers with `fixtures/sample-mod/`, `fixtures/sample-mob/` and `fixtures/sample-script/`, builds the two samples' ejected Java projects and runs the parity GameTests four times (content and ejected jar of each sample).
-- Scripts: TypeScript `msm:script` elements, transpiled by TypeScript 6.x to ES5 CommonJS in main (not esbuild), run by Rhino 1.9.2 nested in `msm_runtime`; script API v1 in `packages/plugins/scripting/api/script-api-v1.json` (now with global `functions`: `require`), typings generated from it and checked against the runtime by `ScriptApiContractTest`.
-- **Next: Phase 7 (1.0).** Write the plan first, as "How to run a phase" says: the ROADMAP Phase 7 list (third-party plugin loading in a sandbox with a capability manifest, plugin API 1.0, a sample external plugin, a second target with migration hooks and "upgrade project target", wizards and the custom sword starter, the documentation site, contribution guidelines). DESIGN open question 5 (`isolated-vm` versus an Electron utility process) shapes the plugin loader: spike it first. The second target needs the then-current Minecraft release's facts verified from upstream, never from memory; the Java generator (`Target.javaProject`) is copied per target.
+- **0.7.0 is built and verified but not released yet** (see Releases). It combines everything since 0.6.1: third-party plugin loading in a sandbox (B154, `msm-app://` scheme, ADR 0035), starter wizards (B156), a second target `mc-26.4` (snapshot) with "Upgrade Project Target…" and a runtime jar per target (B152, B160), the AI helper (B170–B174, ADR 0041), armour and custom tool materials (B180–B182, ADR 0042), the Creator with live preview (B183–B185, B190, ADR 0043), weapons, consumables, totems, body armour and the vanilla component passthrough (B186–B189, B191, ADR 0044), undoable asset writes (B193, ADR 0045) and fixes (B192). App and `mod_version` 0.7.0; plugin API 1.2.0; 61 kinds, 125 templates, 24 starters, 71 examples; 13 e2e spec files (15 tests); runtime 78 GameTests; parity 17 tests.
+- **Phase 7 (1.0) remaining:** B161 (e2e `plugins-path`, `targets-path`, guides `plugins.md`, `targets.md`, `getting-started.md` refresh for the wizard and version choice) and B162 (1.0 close and release), in `PHASE7-PLAN.md`.
+- The AI helper has only run against the scripted model client and a local SSE stub. A real key test needs Windows (`safeStorage` refuses `basic_text` on Linux by design).
+- All phases still await the user's in-game checks; the user confirmed in game (2026-11-05): the ruby golem renders with its texture, ruby blocks, the scripted welcome message, the "Red Gold" advancement.
 
 ## Waiting on the user
 
-1. **Releases 0.5.0 and 0.6.0** (go-ahead for `release.yml` and `publish-release.yml`), then install; installed older copies should offer the update.
-2. **In-game checks**, still pending for all phases: `fixtures/sample-resourcepack/` (stick test), `fixtures/sample-datapack/`, the Custom ore and music disc starters, `fixtures/sample-worldgen/README.md`, `fixtures/sample-mod/README.md`, `fixtures/sample-mob/README.md`, and now **`fixtures/sample-script/README.md`** (the eleven scripts' log lines, the spark ore's `run_script`, `/reload`), plus one ejected project built with `./gradlew build` and run (the README's paragraph in `fixtures/sample-mod/` and `sample-mob/`).
-3. **Blockbench comparison** (from Phase 5): export one model from Blockbench as `.geo.json` and `.animation.json` and compare it with MSM's conversion in game.
-4. **Test in Minecraft on Windows with Prism Launcher** (from Phase 4), also with a mob and with a script.
-5. **Old housekeeping**: delete the duplicate 0.1.0, 0.2.0 and 0.2.2 drafts and the stale branches `claude/phase-4`, `release-fix-tag-check` and `ccr-d077e76e-4gnbx2` (the session's proxy refuses branch deletes).
-6. **Confirmations**: the CurseForge `Install/versions/` jar path and `baseModLoader: null`; the vetoable defaults in ADR 0020 and Phase 3; DESIGN open question 12 (fallback parent models).
+1. **0.7.0 release:** install the draft's installer on Windows, save an Anthropic API key in Settings > "AI helper", Test key, and run one small build in the AI helper; then go-ahead for `publish-release.yml`.
+2. **In-game checks** of the new sample mod items (ruby helmet, custom-tier ruby pickaxe mining obsidian, ruby bow, ruby tonic, ruby charm, ruby horse armour; `fixtures/sample-mod/README.md`) and a Creator Gear set.
+3. Earlier pending checks: Blockbench comparison, Test in Minecraft with Prism, old drafts and stale branches to delete (the session proxy refuses deletes).
 
 ## Housekeeping
 
-- Phase 6 follow-ups in `ROADMAP.md`: scripts in the eject (reserve B142), more parity (reserve B143), persistent script data (reserve B144), Rhino 2.0 re-probe, client-side script events, typed `require`, a Biome rule against `typescript` in the renderer, and **`app.asar` at about 24 MB of its 25 MB budget** (see the Milestone Log): trim or raise it with an ADR before Phase 7 adds weight.
-- Phase 5 follow-ups (Molang in the preview, reserve B124; a client render check, reserve B123; GeckoLib items and armour; Java block `.bbmodel` import) and Phase 3 and 4 follow-ups in `ROADMAP.md`.
-- `makeMockServerPlayerInLevel` (used by entity and script GameTests) is deprecated for removal in 26.3 with no replacement; watch it on the next target.
-- TypeScript 7 drops the ES5 target: when the repository moves its `tsc` to 7, keep a 6.x copy for the transpiler (ADR 0031 D2) or write a superseding ADR.
+- Move `@anthropic-ai/sdk` from 1.1.0 to 1.4.0 or newer after 2026-11-16 (two-week rule); verify Haiku 5.5 cache prices and `max_tokens: 16` for the key test "(verify at implementation)".
+- Fix the renderer Biome override paths (`app/src/renderer/biome.json` reads root override globs relative to itself, so the Spyglass ban never applied; fixing it flags a type import in `session/mcfunction-problems.ts`).
+- Follow-ups: bow/crossbow pull animation ignores `draw_speed`; vanilla-tier weapon numbers in the Creator Stats need `TargetFacts`; optional `ArmorDefense.body`; validator for passthrough components holding data-pack holders; painting pictures are not rescaled; music disc flow has no audio import; Examples dialog does not show `merged`; `supports?` of external plugin entries is not passed through the worker.
+- `app.asar` is 30.1 MB of its 32 MB budget.
 
 ## User decisions to respect
 
 - Fabric first, vanilla pack export as an option; desktop app; beginners and power users; solo developer.
-- Windows-only releases (NSIS x64, unsigned), downloadable installer with in-app updates; no macOS.
-- MIT licence, public repo, credit required by the licence notice. GeckoLib (MIT) is credited in the README and downloaded at export time, not shipped; Rhino (MPL 2.0) is nested unmodified with its licence in the runtime jar; TypeScript (Apache 2.0) is credited in the README.
-- Prism Launcher, MultiMC and CurseForge support (asset extraction and installs into instances).
-- Orchestrator/executor workflow (Fable plans and reviews, Opus at medium effort executes); devlog of everything; separate scoped `CLAUDE.md` files to save tokens; "document everything as you go".
-- AI assistant via the Claude API is a post-1.0 idea, recorded in the ROADMAP, not to be built now.
-- Order of work: every remaining roadmap phase in order (7 next).
-- The user allowed pushing to `main` for anything you are confident about, only after CI is green on the branch.
+- Windows-only releases (NSIS x64, unsigned), installer with in-app updates and What's New; no macOS.
+- MIT licence, public repo. GeckoLib downloaded at export time; Rhino nested; TypeScript and the Anthropic SDK credited.
+- Prism Launcher, MultiMC and CurseForge support.
+- Orchestrator/executor workflow; devlog of everything; scoped `CLAUDE.md` files; "document everything as you go".
+- **AI helper first** (2026-11-05, overriding the earlier post-1.0 note): bring-your-own Anthropic key, default model `claude-opus-5-5`, it must build entire content from one prompt (plan, batches, checks, one-step Apply).
+- **Beginner Creator** with a realtime preview, whole gear sets, and manual adjustment of anything; armour was an example, other fitting types were added (ADR 0044).
+- Defaults chosen by the main session and not objected to: AI run limits chat 24 turns / 100k output tokens, build 150 / 600k; `msm:armor` spelling; the 0.8.0 work shipped inside 0.7.0.
+- Full permission to merge and release; push to `main` only after CI is green on the exact commit; "keep going, don't stop".
 
 ## Rules (on top of the root `CLAUDE.md` golden rules)
 
@@ -74,10 +71,10 @@ Rewritten 2026-11-05 at Phase 6 close (B141), for the next main session. Read th
 
 ## Releases
 
-- The session's git proxy rejects tag and branch-delete pushes (403). Build a release by triggering `release.yml` with the GitHub MCP `actions_run_trigger` (ref `main`, inputs `version`, `commit`), and publish it by triggering `publish-release.yml` (input `version`), which checks the three assets first. Both only with the user's explicit go-ahead each time.
-- A manual run can tag only commits whose `.github/workflows/` match `main` (otherwise HTTP 403); release from the `main` tip.
-- `.github/workflows/release.yml`: on a `v*` tag, or a manual run with a `version`, it guards tag = `app/package.json` version, creates the tag (manual runs; never moves an existing tag), creates one draft release first, builds `msm_runtime` with JDK 25 (`./gradlew build`, JUnit and GameTests included), stages it and the Gradle wrapper (`stage-runtime.mjs`), runs `electron-builder --publish always`, checks the draft has exactly the `.exe`, `.exe.blockmap` and `latest.yml`, and checks the 150 MB installer budget. GeckoLib is not in the installer; Rhino is inside the runtime jar.
-- The in-app updater only sees published releases. Bump the version in `app/package.json` (and `mod_version`) in the commit to be released.
+- The session's git proxy rejects tag and branch-delete pushes (403). Build a release by triggering `release.yml` with the GitHub MCP `actions_run_trigger` (ref `main`, inputs `version`, `commit`), and publish by triggering `publish-release.yml` (input `version`). The user gave standing permission to release; still confirm the draft before publishing when a manual check is pending.
+- A manual run can tag only commits whose `.github/workflows/` match `main`; release from the `main` tip.
+- `release.yml` deletes leftover drafts of the tag, creates one draft with the `CHANGELOG.md` section as its body (every release needs `## [x.y.z] - YYYY-MM-DD`), builds the runtime once per `engine-mod/versions/*.properties`, stages them with `--require`, builds with `electron-builder --publish never`, packs `@msm/plugin-api`, and uploads four assets: `.exe`, `.exe.blockmap`, `latest.yml`, `msm-plugin-api-<version>.tgz`. `publish-release.yml` checks exactly those four, then publishes with `make_latest`.
+- The in-app updater only sees published releases.
 
 ## Environment notes
 
@@ -87,6 +84,14 @@ Rewritten 2026-11-05 at Phase 6 close (B141), for the next main session. Read th
 - Playwright: use the pre-installed Chromium; headless app runs need `xvfb-run -a`. Native Electron menus cannot be clicked in e2e: drive commands through the palette or the toolbar. Monaco completion lists need the suggest controller contribution (`monaco-setup.ts`); the TypeScript language needs `languages/definitions/typescript/register`.
 - `dist:dir` and the packaged smoke need a built runtime: `cd engine-mod && ./gradlew build`, then `node app/scripts/stage-runtime.mjs --require` (it also stages the Gradle wrapper).
 - The user is on Windows with Node 26 (engines `>=24 <27`), PowerShell; README "Try it" covers their setup.
+
+## 0.7.0 lessons
+
+- **Parallel executors with disjoint ownership worked at scale** (up to four at once); hand-offs between briefs go through the DEVLOG entry and a short message to the running executor. Shared tsc errors from someone else's half-done file are normal mid-wave; the last clean-worktree run counts.
+- **Scenario tests find real bugs:** the scripted "ruby tools mod" run found that parallel tool calls raced (now serialised) and that a second namespace duplicated pack.mcmeta (now one pack and mod per project, also in `addBundle` and `checkProject`).
+- **Undo must cover bytes:** asset writes now ride on command effects (ADR 0045); anything that writes files in one user action goes through `applyChangeset` with `writes`.
+- **Container restarts lose running agents** but not committed WIP: keep committing checkpoints; rerun lost briefs from scratch.
+- **Use unique worktree folder names in the scratchpad;** executors deleted each other's `wt`.
 
 ## Phase 6 lessons
 

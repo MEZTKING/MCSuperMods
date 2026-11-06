@@ -38,7 +38,7 @@ Until `@msm/plugin-api` is on npm, point the dependency at the release tarball, 
 
 ```sh
 cd <dir>
-pnpm add -D ../msm-plugin-api-1.0.0.tgz
+pnpm add -D ../msm-plugin-api-1.2.0.tgz
 pnpm test && pnpm check && pnpm build
 ```
 

@@ -8,7 +8,26 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- Work on version 1.0 has started: loading plugins made by other people, more templates and wizards, a second Minecraft version and a documentation site.
+- Work on version 1.0 continues: guide pages for plugins and Minecraft versions, more automated tests, and the 1.0 release.
+
+## [0.7.0] - 2026-11-06
+
+### Added
+
+- **AI helper.** An optional assistant in a third tab next to **Preview** and **Problems** (toolbar **AI helper**, **View → AI Helper** or Ctrl+Shift+A). It uses your own Anthropic API key, which you add under **Settings → AI helper**; MCSuperMods keeps it encrypted and usage is billed to your Anthropic account. In **Chat** it answers questions about your project and proposes small edits; in **Build** it makes whole content from one prompt, showing a plan first (**Build all**, **Step through** or **Revise**). Nothing changes until you review the proposed changes, keep or drop each one, and press **Apply**; one Undo takes everything back. Each run has limits you can change under **Run limits**, a **Stop** button and a line with the tokens used and the approximate cost. **Explain** on a problem and **Ask AI** in the editor start a question with the context filled in. The app works as before without a key. See the new guide page "AI helper".
+- **The Creator.** **Create…** on the toolbar (also **File → Create…**) makes a finished piece of content from a few questions, with a live preview of the items, blocks, recipes, worn armour and stats as you type: a **Gear set** of tools and armour from one material, a **Weapon**, a **Consumable**, a **Totem**, an **Enchantment**, a **Painting** (with your own picture), a **Music disc**, a **Simple block**, a **Food**, **Custom ore**, a **Custom mob** or a **Scripted behaviour** item. **Create** adds everything in one undoable step. **Edit in Creator** reopens a set with the same answers and keeps the pieces you changed by hand unless you choose **Overwrite**.
+- **Armour.** Helmets, chestplates, leggings and boots with a vanilla or your own armour material, and the new **equipment** element for how armour looks when worn.
+- **Custom tool materials.** Tools with your own durability, mining speed, attack bonus and enchantability, mining like a chosen vanilla tier, and optional attack damage and speed.
+- **Weapons, consumables and totems.** Spears, maces, bows, crossbows and shields; food and drinks with effects, items with a cooldown, and totems that save their holder from death; horse and wolf armour. The Events editor has a new **Apply effect** action. These, and other vanilla item components, are set in the Item Studio's **Advanced (all fields)** or **Raw JSON**, or made by the Creator.
+- **Starter wizards.** **Custom ore**, **Custom mob** and the new **Custom sword** starter ask a few questions (name, colour, tier and more) in a step-by-step **New project** dialog before they create the project.
+- **A second Minecraft version.** New projects can target Minecraft 26.4 (a snapshot) as well as 26.3: choose it under **Minecraft version** in the **New project** dialog. **File → Upgrade Project Target…** moves a project to another version and shows what changes first; the status bar shows the project's version. Mobs cannot be exported for 26.4 yet, because GeckoLib has no build for it.
+- **Plugins made by other people.** MCSuperMods loads plugins from `.msm/plugins` in your home folder, in a sandbox without network or file access. **Settings → Plugins** lists them as loaded, refused or failed, with **Open plugins folder**; changes take effect after restarting MCSuperMods. Each release now carries the plugin API package (`msm-plugin-api-1.2.0.tgz` for this one) for plugin authors.
+- More content: 125 element templates (armour, weapons, drinks, totems, equipment and painting variant tags among them), 24 project starters and 71 examples.
+
+### Changed
+
+- **Help → Examples…** and starters copied into a project now add missing lines to language files and tags that already exist, instead of skipping them, and never add a second `pack.mcmeta` or mod element.
+- The toolbar buttons Undo, Redo, Add namespace, Import assets, AI helper and Settings show icons only (their names appear as tooltips), so the toolbar fits on one line.
 
 ## [0.6.1] - 2026-11-05
 
@@ -115,7 +134,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Export a resource pack as a `.zip`, or install it straight into your Minecraft `resourcepacks` folder.
 - Windows installer (unsigned, so Windows SmartScreen warns on the first run).
 
-[Unreleased]: https://github.com/MEZTKING/MCSuperMods/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/MEZTKING/MCSuperMods/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/MEZTKING/MCSuperMods/releases/tag/v0.7.0
+[0.6.1]: https://github.com/MEZTKING/MCSuperMods/releases/tag/v0.6.1
 [0.6.0]: https://github.com/MEZTKING/MCSuperMods/releases/tag/v0.6.0
 [0.5.0]: https://github.com/MEZTKING/MCSuperMods/releases/tag/v0.5.0
 [0.4.0]: https://github.com/MEZTKING/MCSuperMods/releases/tag/v0.4.0

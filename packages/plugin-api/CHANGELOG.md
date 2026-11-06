@@ -2,7 +2,7 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
-## 1.2.0 — unreleased
+## 1.2.0 — 2026-11-06
 
 Gear, weapons and consumables (ADR 0044). `API_VERSION` is `1.2.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
 
@@ -12,7 +12,7 @@ Gear, weapons and consumables (ADR 0044). `API_VERSION` is `1.2.0`. Additive: pl
 
 None. Hosts that switch over `StarterParameter['type']` must handle `'image'`; a starter declaring an image parameter must build a placeholder for `null`.
 
-## 1.1.0 — unreleased
+## 1.1.0 — 2026-11-06
 
 Armour facts and the Creator (ADRs 0042, 0043). `API_VERSION` is `1.1.0`. Additive: every change is an optional field or a new type, so plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
 
@@ -25,7 +25,7 @@ Armour facts and the Creator (ADRs 0042, 0043). `API_VERSION` is `1.1.0`. Additi
 
 None. Hosts that switch over `CreatorGroup` or over `StarterParameter['type']` must handle every member (`'set'` is new).
 
-## 1.0.0 — unreleased
+## 1.0.0 — 2026-11-06
 
 The first stable API (ADR 0036). `API_VERSION` is `1.0.0`. Built-in plugins and `tools/new-plugin` declare `^1.0.0`. The package gains a publishable build (`tsup`: `dist/index.js` ES module, `dist/index.cjs`, `dist/index.d.ts`) and a tarball attached to every release.
 
