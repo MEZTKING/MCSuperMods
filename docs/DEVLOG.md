@@ -2790,3 +2790,17 @@ Next:
 - App gap: plugin `exporters` register (`session.pluginExporters`, `runPluginExporter`) but the Export menu lists only the two structure exporters (`Toolbar.tsx` "More exports", `App.tsx:785`, `App.tsx:789`), so a third-party exporter cannot be run.
 - `engine-mod/src/gametest/java/.../MsmGearGameTest.java` was already modified in the shared tree; not touched by this brief.
 - B162: 1.0 close.
+
+## 2026-11-06 — main session — B161 review; fix: plugin-only data packs
+
+**What**
+- Reviewed and committed B161 (e2e `plugins-path` with three tests and `targets-path`; guides `plugins.md`, `targets.md`; getting-started and templates pages; README; sidebar). 15 spec files, 19 tests.
+- Fixed B161's first app finding: `App.tsx` `lowerForTarget` dropped every asynchronous (sandboxed plugin) lowering, so a project whose only data pack content was a plugin element could not export its data pack, every render started a worker `lower` call, and a timed-out call left an unhandled rejection. New `session/render-lowering.ts` `createRenderLowering(onSettled)`: synchronous results pass through; a Promise starts once per element object, counts as no files while it runs, keeps its files once settled, and a failure is thrown on later calls (so `hasLayerOutput` counts the element as content and the export shows the errors); a settled lowering bumps a counter that re-runs the checks; a new cache per session and target. Test `app/test/render-lowering.test.ts` (3); `plugins-path` test 1 now starts from a blank project (the greeting is the only data content) and asserts the load tag is exactly the greeting. CHANGELOG 0.7.0 "Fixed".
+- Checks: `pnpm lint`, `pnpm typecheck`, app Vitest 125 files / 1,196 tests, `plugins-path` 3/3.
+
+**Decisions**
+- The fix goes into 0.7.0 (not yet released); the release waits for one more CI run.
+- B161's second finding (plugin exporters are registered but the Export menu lists only the built-in structure exporters) is a follow-up for B162 or later; `docs/guide/plugins.md` and the README already say so.
+
+**Next**
+- CI green on this commit, then fast-forward `main` and the 0.7.0 draft; B162 (1.0 close) after the user has tried 0.7.0.

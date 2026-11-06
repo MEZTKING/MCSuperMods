@@ -91,6 +91,7 @@ import type {
   PackKind,
   ProjectSession,
 } from './session/project-session';
+import { createRenderLowering } from './session/render-lowering';
 import { kindRegistry } from './session/schema-context';
 import { type CommandSource, createCommandDeduper, shortcutFor } from './shortcuts';
 import { useUiStore } from './store/ui-store';
@@ -504,16 +505,26 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
 
   // Export and install --------------------------------------------------------------------
 
+  // A kind that lowers asynchronously (a sandboxed plugin, ADR 0035) is lowered once per
+  // element version; the checks below run again when it settles. Export lowers everything
+  // with the asynchronous driver.
+  const [renderLoweringRound, setRenderLoweringRound] = useState(0);
+  const renderLowering = useMemo(
+    // A new session (registry) or target starts a fresh cache.
+    () =>
+      session !== null && target !== null
+        ? createRenderLowering(() => setRenderLoweringRound((n) => n + 1))
+        : null,
+    [session, target],
+  );
+  // renderLoweringRound: a settled asynchronous lowering re-runs the checks that use this.
   const lowerForTarget = useCallback(
     (element: ProjectElement) => {
       const kind = session.registry.get(element.kind);
-      if (kind === undefined || target === null) return [];
-      const files = kind.lower(element, target);
-      // A kind that lowers asynchronously (a sandboxed plugin, ADR 0036) adds no layers to
-      // these render-time checks; export lowers it with the asynchronous driver.
-      return Array.isArray(files) ? files : [];
+      if (kind === undefined || target === null || renderLowering === null) return [];
+      return renderLowering(element, () => kind.lower(element, target));
     },
-    [session, target],
+    [session, target, renderLowering, renderLoweringRound],
   );
   const layers = useMemo(
     () => (project === null ? null : elementLayers(project, lowerForTarget)),

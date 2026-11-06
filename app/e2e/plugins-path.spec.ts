@@ -136,14 +136,9 @@ test('plugins: the sample plugin loads, its kind has a schema form and exports',
   await expect(row.locator('li')).toHaveCount(0);
   await closeSettings(window);
 
-  // A data pack project (its load tag merges with the greeting's entry).
-  await window.getByTestId('toolbar-new-menu').click();
-  await window.getByTestId('toolbar-new-from-starter').click();
-  const newProject = window.getByTestId('new-project-dialog');
-  await expect(newProject).toBeVisible();
-  await newProject.getByTestId('starter-picker').getByTestId('starter-data_pack').check();
-  await newProject.getByTestId('new-project-dialog-submit').click();
-  await expect(newProject).toBeHidden();
+  // A blank project: the greeting is its only data pack content, so the data pack export
+  // must see the plugin's (asynchronous) lowering.
+  await window.getByTestId('toolbar-new-project').click();
   await expect(window.getByTestId(`element-row-${namespace}:pack`)).toBeVisible();
 
   // New element offers the plugin's template under its own category.
@@ -190,9 +185,7 @@ test('plugins: the sample plugin loads, its kind has a schema form and exports',
       files[`data/minecraft/${tagsFolder}/${functionFolder}/load.json`] ?? new Uint8Array(),
     ),
   ) as { values?: string[] };
-  expect(loadTag.values).toContain(`${namespace}:greet_hello`);
-  // The starter's own load function stays in the merged tag.
-  expect(loadTag.values).toContain(`${namespace}:load`);
+  expect(loadTag.values).toEqual([`${namespace}:greet_hello`]);
 
   await window.screenshot({ path: join(outputDir, 'plugins-path.png') });
   await window.getByTestId('toolbar-save').click();

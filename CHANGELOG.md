@@ -29,6 +29,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Help → Examples…** and starters copied into a project now add missing lines to language files and tags that already exist, instead of skipping them, and never add a second `pack.mcmeta` or mod element.
 - The toolbar buttons Undo, Redo, Add namespace, Import assets, AI helper and Settings show icons only (their names appear as tooltips), so the toolbar fits on one line.
 
+### Fixed
+
+- A project whose only data pack content comes from a plugin's element (for example the sample **Greeting**) can now export its data pack; before, **Export** said the project had no data pack content.
+
 ## [0.6.1] - 2026-11-05
 
 ### Added

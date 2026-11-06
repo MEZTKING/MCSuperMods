@@ -15,6 +15,7 @@
     "src/renderer/src/session/element-defaults.ts",
     "src/renderer/src/session/mcfunction-problems.ts",
     "src/renderer/src/session/references.ts",
+    "src/renderer/src/session/render-lowering.ts",
     "src/renderer/src/session/schema-context.ts",
     "src/renderer/src/session/importers.ts",
     "src/renderer/src/session/validator-problems.ts",
