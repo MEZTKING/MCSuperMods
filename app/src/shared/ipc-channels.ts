@@ -136,6 +136,8 @@ export const MENU_COMMANDS = [
   'whatsNew',
   'firstMod',
   'modpacks',
+  'toggleMode',
+  'newWithAi',
   'examples',
   'clearRecentProjects',
   'upgradeTarget',

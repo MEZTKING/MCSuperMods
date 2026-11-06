@@ -84,6 +84,7 @@ export function installMenu(recent: readonly RecentProject[] = []): void {
         { label: 'New Project from Starter…', click: () => send('newProjectFromStarter') },
         // ADR 0043: opens the Creator.
         { label: 'Create…', click: () => send('creator') },
+        { label: 'New Project with the AI Helper…', click: () => send('newWithAi') },
         { label: 'Modpacks…', click: () => send('modpacks') },
         { label: 'Open Project…', accelerator: 'CmdOrCtrl+O', click: () => send('open') },
         {
@@ -157,6 +158,8 @@ export function installMenu(recent: readonly RecentProject[] = []): void {
           accelerator: 'CmdOrCtrl+Shift+A',
           click: () => send('toggleAiHelper'),
         },
+        // ADR 0047 D1.
+        { label: 'Switch Easy / Advanced Mode', click: () => send('toggleMode') },
         { type: 'separator' },
         { role: 'reload' },
         { role: 'toggleDevTools' },

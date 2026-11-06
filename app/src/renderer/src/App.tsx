@@ -27,6 +27,7 @@ import {
   paletteCommands,
   referenceAt,
 } from './commands/built-in-commands';
+import { AiStartDialog } from './components/AiStartDialog';
 import { AiPanel } from './components/ai/AiPanel';
 import { AiController, useAiPanelStore } from './components/ai/ai-controller';
 import { CommandPalette, type PaletteCommand } from './components/CommandPalette';
@@ -97,6 +98,7 @@ import type {
 import { createRenderLowering } from './session/render-lowering';
 import { kindRegistry } from './session/schema-context';
 import { type CommandSource, createCommandDeduper, shortcutFor } from './shortcuts';
+import { usePreferences } from './store/preferences';
 import { useUiStore } from './store/ui-store';
 import { ElementForm } from './studios/ElementForm';
 import {
@@ -184,6 +186,7 @@ type DialogState =
   | { type: 'whats-new'; version: string; notes?: string }
   | { type: 'welcome' }
   | { type: 'modpacks' }
+  | { type: 'ai-start' }
   | { type: 'no-minecraft'; message: string };
 
 /**
@@ -495,6 +498,18 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     return detach;
   }, [aiController]);
   const aiKeySet = useAiPanelStore((state) => state.keyStatus?.set === true);
+  // View preferences (ADR 0047): Easy or Advanced mode and the collapsed sidebar groups.
+  const uiMode = usePreferences((state) => state.mode);
+  const collapsedGroups = usePreferences((state) => state.collapsed);
+  const flowTitles = useMemo(
+    () =>
+      Object.fromEntries(
+        session.library.starters
+          .filter((starter) => starter.creator !== undefined)
+          .map((starter) => [starter.id, starter.title]),
+      ),
+    [session],
+  );
   const aiConversationModel = useAiPanelStore((state) =>
     snapshot.root === null ? null : (state.models[snapshot.root] ?? null),
   );
@@ -1104,6 +1119,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       .then(async (notice) => {
         if (notice === null || !live) return;
         if (notice === 'welcome') {
+          // A brand-new install starts in Easy mode unless a mode was already chosen.
+          if (!usePreferences.getState().modeChosen) usePreferences.getState().setMode('easy');
           setDialog((current) => current ?? { type: 'welcome' });
           return;
         }
@@ -1233,6 +1250,41 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     });
   };
 
+  /** Build mode of the AI helper: for the open project, or a new one (ADR 0047 D3). */
+  const buildWithAi = (): void => {
+    if (aiController === null) {
+      setMessage({ kind: 'error', text: 'The AI helper is not available.' });
+      return;
+    }
+    if (project !== null) {
+      aiController.open();
+      aiController.setMode('build');
+      return;
+    }
+    setDialog({ type: 'ai-start' });
+  };
+  const startWithAi = async (description: string): Promise<void> => {
+    setDialog(null);
+    if (aiController === null) return;
+    await openWith('New project', () => session.newProject());
+    if (session.snapshot.project === null) return;
+    aiController.open();
+    aiController.setMode('build');
+    void aiController.send(description);
+  };
+  const toggleMode = (): void => {
+    const next = usePreferences.getState().mode === 'easy' ? 'advanced' : 'easy';
+    usePreferences.getState().setMode(next);
+    if (next === 'easy') setActiveTab('form');
+    setMessage({
+      kind: 'info',
+      text:
+        next === 'easy'
+          ? 'Easy mode: your content first; technical files are under More, and Raw JSON is hidden.'
+          : 'Advanced mode: every element, kind ids and Raw JSON.',
+    });
+  };
+
   const handlers: Record<MenuCommand, Action> = {
     new: () => void openWith('New project', () => session.newProject()),
     newProjectFromStarter: () => setDialog({ type: 'new-project' }),
@@ -1271,6 +1323,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     checkForUpdates,
     whatsNew,
     firstMod: () => setDialog({ type: 'welcome' }),
+    toggleMode,
+    newWithAi: buildWithAi,
     modpacks: () => {
       if (bridge.modpacks === undefined) {
         setMessage({ kind: 'error', text: 'Modpacks are not available.' });
@@ -1342,6 +1396,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     whatsNew,
     firstMod: handlers.firstMod,
     modpacks: handlers.modpacks,
+    toggleMode,
+    newWithAi: aiController === null ? null : buildWithAi,
     aiHelper: aiController === null ? null : () => aiController.open(),
     aiExplainProblem:
       aiController === null || !aiKeySet || selectedProblem === null
@@ -1532,6 +1588,9 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               onNew={handlers.new}
               onNewFromStarter={handlers.newProjectFromStarter}
               onExamples={handlers.examples}
+              {...(aiController === null ? {} : { onNewWithAi: buildWithAi })}
+              mode={uiMode}
+              onToggleMode={toggleMode}
               onCreator={handlers.creator}
               onOpen={handlers.open}
               recentProjects={recentProjects}
@@ -1583,6 +1642,10 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               recentProjects={recentProjects}
               onOpenRecent={openRecent}
               onRemoveRecent={removeRecent}
+              mode={uiMode}
+              collapsed={collapsedGroups}
+              onToggleGroup={(key) => usePreferences.getState().toggleCollapsed(key)}
+              flowTitles={flowTitles}
             />
             <EditorArea
               element={selected}
@@ -1597,6 +1660,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 : { onAskAi: (id: ResourceLocation) => aiController.askAboutElement(id) })}
               onEditInCreator={editInCreator}
               {...(project === null ? {} : { onOpenCreator: handlers.creator })}
+              {...(aiController === null ? {} : { onBuildWithAi: buildWithAi })}
+              hideRawJson={uiMode === 'easy'}
             />
             <RightDock
               problems={snapshot.problems}
@@ -1775,6 +1840,17 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             onClose={() => setDialog(null)}
           />
         )}
+        {dialog?.type === 'ai-start' && (
+          <AiStartDialog
+            keySet={aiKeySet}
+            onStart={(description) => void startWithAi(description)}
+            onOpenSettings={() => {
+              setDialog(null);
+              handlers.settings();
+            }}
+            onClose={() => setDialog(null)}
+          />
+        )}
         {dialog?.type === 'welcome' && (
           <WelcomeDialog
             hasProject={project !== null}
@@ -1784,6 +1860,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               handlers.new();
             }}
             onCreator={handlers.creator}
+            {...(aiController === null ? {} : { onBuildWithAi: buildWithAi })}
             onClose={() => setDialog(null)}
           />
         )}

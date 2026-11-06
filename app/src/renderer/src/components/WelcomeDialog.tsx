@@ -44,6 +44,8 @@ export interface WelcomeDialogProps {
   onNewProject(): void;
   /** Opens the Creator; offered only with a project open. */
   onCreator?(): void;
+  /** Starts a project the AI helper builds from a description (ADR 0047 D3). */
+  onBuildWithAi?(): void;
   onClose(): void;
 }
 
@@ -52,6 +54,7 @@ export function WelcomeDialog({
   onSettings,
   onNewProject,
   onCreator,
+  onBuildWithAi,
   onClose,
 }: WelcomeDialogProps) {
   return (
@@ -87,6 +90,11 @@ export function WelcomeDialog({
         ) : (
           <Button data-testid="welcome-new-project" onClick={onNewProject}>
             New project…
+          </Button>
+        )}
+        {onBuildWithAi !== undefined && (
+          <Button data-testid="welcome-build-with-ai" onClick={onBuildWithAi}>
+            Or describe a mod and let the AI helper build it…
           </Button>
         )}
       </div>

@@ -6,6 +6,7 @@ import {
   FolderOpen,
   FolderPlus,
   Gamepad2,
+  Gauge,
   ImageUp,
   PackageOpen,
   Plus,
@@ -62,6 +63,12 @@ export interface ToolbarProps {
   onNewFromStarter?(): void;
   /** Opens the Examples gallery (the "New" split arrow). */
   onExamples?(): void;
+  /** Starts a new project built by the AI helper (ADR 0047 D3); hidden without it. */
+  onNewWithAi?(): void;
+  /** The view mode; with {@link ToolbarProps.onToggleMode} the toolbar shows a switch. */
+  mode?: 'easy' | 'advanced';
+  /** Switches between Easy and Advanced mode (ADR 0047 D1). */
+  onToggleMode?(): void;
   onOpen(): void;
   /** Recent projects for the "Open" split arrow, newest first. */
   recentProjects?: readonly RecentProjectView[];
@@ -535,6 +542,16 @@ export function Toolbar(props: ToolbarProps) {
             reason: null,
             onSelect: props.onExamples,
           },
+          ...(props.onNewWithAi === undefined
+            ? []
+            : [
+                {
+                  label: 'New project with the AI helper…',
+                  testId: 'toolbar-new-with-ai',
+                  reason: null,
+                  onSelect: props.onNewWithAi,
+                },
+              ]),
         ]}
       />
       <ToolButton
@@ -755,6 +772,19 @@ export function Toolbar(props: ToolbarProps) {
           iconOnly
           icon={<Sparkles size={iconSize} aria-hidden />}
           onClick={props.onAiHelper}
+        />
+      )}
+      {props.onToggleMode !== undefined && (
+        <ToolButton
+          label={props.mode === 'easy' ? 'Easy mode' : 'Advanced mode'}
+          tip={
+            props.mode === 'easy'
+              ? 'Easy mode: your content first, technical files folded away. Click for Advanced mode.'
+              : 'Advanced mode: every element and Raw JSON. Click for Easy mode.'
+          }
+          testId="toolbar-mode"
+          icon={<Gauge size={iconSize} aria-hidden />}
+          onClick={props.onToggleMode}
         />
       )}
       <ToolButton

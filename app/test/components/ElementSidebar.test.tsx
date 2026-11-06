@@ -7,6 +7,10 @@ import { element, sampleProject } from './fixtures';
 
 afterEach(cleanup);
 
+/** A group heading's label (its first span), without the kind id and the count. */
+const headingLabel = (heading: HTMLElement): string | null =>
+  heading.querySelector('button span')?.textContent ?? heading.textContent;
+
 describe('ElementSidebar', () => {
   it('asks for a project when none is open', () => {
     render(
@@ -83,10 +87,8 @@ describe('ElementSidebar', () => {
       />,
     );
     const demo = screen.getByRole('region', { name: 'Namespace demo' });
-    const kinds = within(demo)
-      .getAllByRole('heading', { level: 3 })
-      .map((heading) => heading.textContent);
-    expect(kinds).toEqual(['minecraft:block_definition', 'minecraft:model', 'Assets']);
+    const kinds = within(demo).getAllByRole('heading', { level: 3 }).map(headingLabel);
+    expect(kinds).toEqual(['Block states', 'Models', 'Assets']);
 
     const models = within(demo).getByRole('region', { name: 'demo minecraft:model' });
     expect(
@@ -143,9 +145,7 @@ describe('ElementSidebar tags', () => {
       <ElementSidebar project={project} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
     );
     const region = screen.getByRole('region', { name: 'Namespace demo' });
-    const headings = within(region)
-      .getAllByRole('heading', { level: 3 })
-      .map((heading) => heading.textContent);
+    const headings = within(region).getAllByRole('heading', { level: 3 }).map(headingLabel);
     expect(headings.filter((text) => text?.includes('tag'))).toEqual([]);
     expect(headings).toContain('Tags');
     const tags = within(region).getByRole('region', { name: 'demo Tags' });
@@ -175,9 +175,7 @@ describe('ElementSidebar worldgen and structures', () => {
       <ElementSidebar project={project} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
     );
     const region = screen.getByRole('region', { name: 'Namespace demo' });
-    const headings = within(region)
-      .getAllByRole('heading', { level: 3 })
-      .map((heading) => heading.textContent);
+    const headings = within(region).getAllByRole('heading', { level: 3 }).map(headingLabel);
     expect(headings).toEqual(expect.arrayContaining(['Structures', 'Tags', 'Worldgen']));
     expect(
       headings.filter((text) => text?.includes('worldgen') || text?.includes('dimension')),
@@ -212,9 +210,7 @@ describe('ElementSidebar entities and models', () => {
       <ElementSidebar project={project} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
     );
     const region = screen.getByRole('region', { name: 'Namespace demo' });
-    const headings = within(region)
-      .getAllByRole('heading', { level: 3 })
-      .map((heading) => heading.textContent);
+    const headings = within(region).getAllByRole('heading', { level: 3 }).map(headingLabel);
     expect(headings).toEqual(expect.arrayContaining(['Entities', 'Models and animations']));
     expect(headings.filter((text) => text?.startsWith('msm:'))).toEqual([]);
     const entities = within(region).getByRole('region', { name: 'demo Entities' });
@@ -225,5 +221,75 @@ describe('ElementSidebar entities and models', () => {
         .getAllByRole('button', { name: /^demo:/ })
         .map((row) => row.textContent),
     ).toEqual(['animationentity/gloom_animations', 'modelentity/gloom']);
+  });
+});
+
+describe('ElementSidebar navigation (ADR 0047)', () => {
+  function projectWithSet() {
+    const project = sampleProject();
+    const demo = project.namespaces[0];
+    if (demo === undefined) throw new Error('no namespace');
+    const creator = (generatedId: string) => ({
+      flowId: 'msm.library.gear-set',
+      setId: 'set-1',
+      values: { material_name: 'Ruby' },
+      generatedId,
+    });
+    demo.elements.push(
+      {
+        ...element('demo:ruby_sword', 'msm:item'),
+        meta: { createdAt: '', creator: creator('demo:ruby_sword') },
+      },
+      {
+        ...element('demo:item/ruby_sword', 'minecraft:model'),
+        meta: { createdAt: '', creator: creator('demo:item/ruby_sword') },
+      },
+      element('demo:wand', 'msm:item'),
+      element('demo:mod', 'msm:mod'),
+    );
+    return project;
+  }
+
+  it('filters by search and collapses groups', async () => {
+    const onToggleGroup = vi.fn();
+    render(
+      <ElementSidebar
+        project={projectWithSet()}
+        selectedId={null}
+        onSelect={vi.fn()}
+        onRemove={vi.fn()}
+        collapsed={new Set(['demo/msm:mod'])}
+        onToggleGroup={onToggleGroup}
+      />,
+    );
+    // A collapsed group shows its heading and count but no rows.
+    expect(screen.queryByRole('button', { name: 'demo:mod' })).toBeNull();
+    await userEvent.setup().click(screen.getByTestId('group-toggle-demo-msm:mod'));
+    expect(onToggleGroup).toHaveBeenCalledWith('demo/msm:mod');
+    await userEvent.setup().type(screen.getByTestId('sidebar-search'), 'wand');
+    expect(screen.getByRole('button', { name: 'demo:wand' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'demo:ruby_sword' })).toBeNull();
+  });
+
+  it('shows Creator sets first and folds technical groups under More in Easy mode', async () => {
+    render(
+      <ElementSidebar
+        project={projectWithSet()}
+        selectedId={null}
+        onSelect={vi.fn()}
+        onRemove={vi.fn()}
+        mode="easy"
+        flowTitles={{ 'msm.library.gear-set': 'Gear set' }}
+      />,
+    );
+    const region = screen.getByRole('region', { name: 'Namespace demo' });
+    const labels = within(region).getAllByRole('heading', { level: 3 }).map(headingLabel);
+    expect(labels[0]).toBe('Ruby (Gear set)');
+    expect(labels).toContain('Items');
+    expect(labels).not.toContain('Mod settings');
+    expect(within(region).getByTestId('group-toggle-demo-more').textContent).toContain('More');
+    // The set holds both of its elements, the model included.
+    const set = within(region).getByRole('region', { name: 'demo set:set-1' });
+    expect(within(set).getAllByRole('listitem')).toHaveLength(2);
   });
 });

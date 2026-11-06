@@ -32,6 +32,10 @@ export interface EditorAreaProps {
    * with the Creator" (`editor-open-creator`).
    */
   onOpenCreator?(): void;
+  /** Hides the Raw JSON tab (Easy mode, ADR 0047 D1). */
+  hideRawJson?: boolean;
+  /** Opens the AI helper's Build mode; with no element selected the editor offers it. */
+  onBuildWithAi?(): void;
 }
 
 /**
@@ -48,9 +52,11 @@ export function EditorArea({
   onAskAi,
   onEditInCreator,
   onOpenCreator,
+  hideRawJson = false,
+  onBuildWithAi,
 }: EditorAreaProps) {
   const [ownTab, setOwnTab] = useState<EditorTab>('form');
-  const current = tab ?? ownTab;
+  const current = hideRawJson ? 'form' : (tab ?? ownTab);
 
   if (element === null) {
     return (
@@ -59,6 +65,17 @@ export function EditorArea({
         className="flex min-h-0 flex-col items-center justify-center gap-1 p-4"
       >
         <p className="text-muted">Select an element to edit it, or add one with Add element.</p>
+        {onBuildWithAi !== undefined && (
+          <button
+            type="button"
+            data-testid="editor-build-with-ai"
+            className="inline-flex cursor-pointer items-center gap-1 rounded px-1.5 py-0.5 text-sm text-accent underline-offset-2 hover:underline"
+            onClick={onBuildWithAi}
+          >
+            <Sparkles size={14} aria-hidden />
+            or describe what to make and let the AI helper build it
+          </button>
+        )}
         {onOpenCreator !== undefined && (
           <button
             type="button"
@@ -92,10 +109,12 @@ export function EditorArea({
             <FormInput size={14} aria-hidden />
             Form
           </Tabs.Trigger>
-          <Tabs.Trigger value="json" className={tabTriggerClass} data-testid="editor-tab-json">
-            <Braces size={14} aria-hidden />
-            Raw JSON
-          </Tabs.Trigger>
+          {!hideRawJson && (
+            <Tabs.Trigger value="json" className={tabTriggerClass} data-testid="editor-tab-json">
+              <Braces size={14} aria-hidden />
+              Raw JSON
+            </Tabs.Trigger>
+          )}
         </Tabs.List>
         <span className="ml-auto truncate text-xs text-muted">
           <code className="font-mono">{element.id}</code> ({element.kind})

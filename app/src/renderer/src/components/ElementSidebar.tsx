@@ -1,6 +1,7 @@
 import type { Element, Namespace, Project, ResourceLocation } from '@msm/core';
-import { Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Search, Trash2 } from 'lucide-react';
 import { ScrollArea } from 'radix-ui';
+import { useState } from 'react';
 import type { RecentProjectView } from '../../../shared/platform';
 import { type AssetActions, AssetList } from './AssetList';
 import { buttonClass, iconButtonClass } from './ui/Button';
@@ -19,9 +20,113 @@ export interface ElementSidebarProps {
   onOpenRecent?(root: string): void;
   /** Removes a recent project from the list by its root. */
   onRemoveRecent?(root: string): void;
+  /** Easy groups by Creator set and folds technical groups; Advanced shows kind ids (ADR 0047). */
+  mode?: 'easy' | 'advanced';
+  /** Collapsed group keys (`<namespace>/<group>`). */
+  collapsed?: ReadonlySet<string>;
+  /** Collapses or expands a group. */
+  onToggleGroup?(key: string): void;
+  /** Creator flow titles by flow id, for naming sets in Easy mode. */
+  flowTitles?: Readonly<Record<string, string>>;
+}
+
+/** Friendly sidebar headings per kind (ADR 0047 D2); other kinds show their id. */
+export const GROUP_LABELS: Readonly<Record<string, string>> = {
+  'msm:item': 'Items',
+  'msm:block': 'Blocks',
+  'msm:mod': 'Mod settings',
+  'minecraft:model': 'Models',
+  'minecraft:item_definition': 'Item looks',
+  'minecraft:block_definition': 'Block states',
+  'minecraft:equipment': 'Armour looks',
+  'minecraft:lang': 'Names and text',
+  'minecraft:pack_mcmeta': 'Pack settings',
+  'minecraft:recipe': 'Recipes',
+  'minecraft:loot_table': 'Loot tables',
+  'minecraft:advancement': 'Advancements',
+  'minecraft:function': 'Functions',
+  'minecraft:predicate': 'Predicates',
+  'minecraft:item_modifier': 'Item modifiers',
+  'minecraft:sounds': 'Sounds',
+  'minecraft:font': 'Fonts',
+  'minecraft:atlas': 'Texture atlases',
+  'minecraft:enchantment': 'Enchantments',
+  'minecraft:painting_variant': 'Paintings',
+  'minecraft:jukebox_song': 'Music',
+  'minecraft:trim_material': 'Trim materials',
+};
+
+/** Groups Easy mode folds under "More": the files behind content (ADR 0047 D1). */
+export const TECHNICAL_GROUPS: ReadonlySet<string> = new Set([
+  'msm:mod',
+  'minecraft:model',
+  'minecraft:item_definition',
+  'minecraft:block_definition',
+  'minecraft:lang',
+  'minecraft:pack_mcmeta',
+  'minecraft:atlas',
+  'minecraft:font',
+]);
+
+/** The heading of a group: its friendly label, or the group key itself. */
+export function groupLabel(group: string): string {
+  return GROUP_LABELS[group] ?? group;
+}
+
+/** Whether `element` matches a sidebar search (id, kind or friendly group, case-insensitive). */
+export function matchesSearch(element: Element, query: string): boolean {
+  const text = query.trim().toLowerCase();
+  if (text === '') return true;
+  return [element.id, element.kind, groupLabel(groupOf(element.kind))].some((value) =>
+    value.toLowerCase().includes(text),
+  );
+}
+
+/** One Creator set in Easy mode: its key, label and elements. */
+export interface CreatorSetGroup {
+  setId: string;
+  label: string;
+  elements: Element[];
+}
+
+/**
+ * The Creator sets of a namespace (elements sharing `meta.creator.setId`), labelled "<name>
+ * (<flow title>)" from the set's `*_name` value, in label order.
+ */
+export function creatorSets(
+  elements: readonly Element[],
+  flowTitles: Readonly<Record<string, string>> = {},
+): CreatorSetGroup[] {
+  const sets = new Map<string, CreatorSetGroup>();
+  for (const element of elements) {
+    const creator = element.meta?.creator;
+    if (creator === undefined) continue;
+    let set = sets.get(creator.setId);
+    if (set === undefined) {
+      const nameKey = Object.keys(creator.values)
+        .sort()
+        .find((key) => key === 'name' || key.endsWith('_name'));
+      const name = nameKey === undefined ? undefined : creator.values[nameKey];
+      const flow = flowTitles[creator.flowId] ?? creator.flowId.replace(/^.*[.:]/, '');
+      set = {
+        setId: creator.setId,
+        label: typeof name === 'string' && name !== '' ? `${name} (${flow})` : flow,
+        elements: [],
+      };
+      sets.set(creator.setId, set);
+    }
+    set.elements.push(element);
+  }
+  return [...sets.values()]
+    .map((set) => ({
+      ...set,
+      elements: [...set.elements].sort((a, b) => a.id.localeCompare(b.id)),
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
 }
 
 const NO_ASSET_ACTIONS: AssetActions = {};
+const NO_COLLAPSED: ReadonlySet<string> = new Set();
 
 /** The prefix of tag kinds (`minecraft:tag/<registry>`), which share one "Tags" group. */
 const TAG_KIND_PREFIX = 'minecraft:tag/';
@@ -166,44 +271,169 @@ function ElementRow(props: {
   );
 }
 
+/** A collapsible group heading with its rows. */
+function GroupSection(props: {
+  namespace: string;
+  group: string;
+  label: string;
+  subtitle?: string | undefined;
+  elements: readonly Element[];
+  selectedId: ResourceLocation | null;
+  collapsed: boolean;
+  onToggle(): void;
+  onSelect(id: ResourceLocation): void;
+  onRemove(id: ResourceLocation): void;
+  /** The label before each row's name (Tags, Worldgen, Models and animations). */
+  rowLabel?: ((element: Element) => string | undefined) | undefined;
+}) {
+  const Chevron = props.collapsed ? ChevronRight : ChevronDown;
+  return (
+    <section aria-label={`${props.namespace} ${props.group}`} className="ml-1">
+      <h3 className={headingClass}>
+        <button
+          type="button"
+          className="flex w-full cursor-pointer items-center gap-1 text-left"
+          aria-expanded={!props.collapsed}
+          data-testid={`group-toggle-${props.namespace}-${props.group}`}
+          onClick={props.onToggle}
+          title={props.subtitle}
+        >
+          <Chevron size={12} aria-hidden />
+          <span>{props.label}</span>
+          {props.subtitle !== undefined && (
+            <span className="ml-1 font-normal normal-case tracking-normal opacity-70">
+              {props.subtitle}
+            </span>
+          )}
+          <span className="ml-auto font-normal tracking-normal" aria-hidden>
+            {props.elements.length}
+          </span>
+        </button>
+      </h3>
+      {!props.collapsed && (
+        <ul className="flex flex-col gap-0.5">
+          {props.elements.map((element) => (
+            <ElementRow
+              key={element.id}
+              element={element}
+              selected={element.id === props.selectedId}
+              tagRegistry={props.rowLabel?.(element)}
+              onSelect={props.onSelect}
+              onRemove={props.onRemove}
+            />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 function NamespaceSection(props: {
   namespace: Namespace;
   selectedId: ResourceLocation | null;
   onSelect(id: ResourceLocation): void;
   onRemove(id: ResourceLocation): void;
   assetActions: AssetActions;
+  mode: 'easy' | 'advanced';
+  query: string;
+  collapsed: ReadonlySet<string>;
+  onToggleGroup(key: string): void;
+  flowTitles: Readonly<Record<string, string>>;
 }) {
-  const { namespace } = props;
-  const groups = groupByKind(namespace);
+  const { namespace, mode } = props;
+  const visible = namespace.elements.filter((element) => matchesSearch(element, props.query));
+  const searching = props.query.trim() !== '';
+  const keyOf = (group: string) => `${namespace.name}/${group}`;
+  const section = (
+    group: string,
+    label: string,
+    elements: readonly Element[],
+    subtitle?: string,
+    rowLabel?: (element: Element) => string | undefined,
+  ) => (
+    <GroupSection
+      key={group}
+      namespace={namespace.name}
+      group={group}
+      label={label}
+      subtitle={subtitle}
+      elements={elements}
+      selectedId={props.selectedId}
+      // A search shows every match, whatever is collapsed.
+      collapsed={!searching && props.collapsed.has(keyOf(group))}
+      onToggle={() => props.onToggleGroup(keyOf(group))}
+      onSelect={props.onSelect}
+      onRemove={props.onRemove}
+      rowLabel={rowLabel}
+    />
+  );
+
+  let body: React.ReactNode;
+  if (visible.length === 0) {
+    body = <p className={emptyClass}>{searching ? 'Nothing matches.' : 'No elements.'}</p>;
+  } else if (mode === 'advanced') {
+    body = groupByKind({ ...namespace, elements: visible }).map(([kind, elements]) =>
+      section(
+        kind,
+        groupLabel(kind),
+        elements,
+        GROUP_LABELS[kind] === undefined ? undefined : kind,
+        (element) => rowRegistry(kind, element.kind),
+      ),
+    );
+  } else {
+    const sets = creatorSets(visible, props.flowTitles);
+    const inSets = new Set(sets.flatMap((set) => set.elements.map((element) => element.id)));
+    const rest = visible.filter((element) => !inSets.has(element.id));
+    const groups = groupByKind({ ...namespace, elements: rest });
+    const main = groups.filter(([kind]) => !TECHNICAL_GROUPS.has(kind));
+    const technical = groups.filter(([kind]) => TECHNICAL_GROUPS.has(kind));
+    const moreCount = technical.reduce((sum, [, elements]) => sum + elements.length, 0);
+    // "More" starts folded; its key in the set means the user opened it.
+    const moreOpen = searching || props.collapsed.has(keyOf('more'));
+    body = (
+      <>
+        {sets.map((set) => section(`set:${set.setId}`, set.label, set.elements))}
+        {main.map(([kind, elements]) =>
+          section(kind, groupLabel(kind), elements, undefined, (element) =>
+            rowRegistry(kind, element.kind),
+          ),
+        )}
+        {moreCount > 0 && (
+          <section aria-label={`${namespace.name} more`} className="mt-2">
+            <button
+              type="button"
+              className={`${headingClass} flex w-full cursor-pointer items-center gap-1 text-left`}
+              aria-expanded={moreOpen}
+              data-testid={`group-toggle-${namespace.name}-more`}
+              onClick={() => props.onToggleGroup(keyOf('more'))}
+            >
+              {moreOpen ? (
+                <ChevronDown size={12} aria-hidden />
+              ) : (
+                <ChevronRight size={12} aria-hidden />
+              )}
+              <span>More ({moreCount} technical)</span>
+            </button>
+            {moreOpen &&
+              technical.map(([kind, elements]) => section(kind, groupLabel(kind), elements))}
+          </section>
+        )}
+      </>
+    );
+  }
+
   return (
     <section aria-label={`Namespace ${namespace.name}`} className="mb-3">
       <h2 className="mt-2 mb-1 font-semibold">{namespace.name}</h2>
-      {groups.length === 0 ? (
-        <p className={emptyClass}>No elements.</p>
-      ) : (
-        groups.map(([kind, elements]) => (
-          <section key={kind} aria-label={`${namespace.name} ${kind}`} className="ml-1">
-            <h3 className={headingClass}>{kind}</h3>
-            <ul className="flex flex-col gap-0.5">
-              {elements.map((element) => (
-                <ElementRow
-                  key={element.id}
-                  element={element}
-                  selected={element.id === props.selectedId}
-                  tagRegistry={rowRegistry(kind, element.kind)}
-                  onSelect={props.onSelect}
-                  onRemove={props.onRemove}
-                />
-              ))}
-            </ul>
-          </section>
-        ))
+      {body}
+      {(mode === 'advanced' || !searching) && (
+        <AssetList
+          namespace={namespace.name}
+          assets={namespace.assets}
+          actions={props.assetActions}
+        />
       )}
-      <AssetList
-        namespace={namespace.name}
-        assets={namespace.assets}
-        actions={props.assetActions}
-      />
     </section>
   );
 }
@@ -283,11 +513,30 @@ export function ElementSidebar({
   recentProjects = [],
   onOpenRecent,
   onRemoveRecent,
+  mode = 'advanced',
+  collapsed = NO_COLLAPSED,
+  onToggleGroup = () => undefined,
+  flowTitles = {},
 }: ElementSidebarProps) {
+  const [query, setQuery] = useState('');
   return (
     <ScrollArea.Root className="min-h-0 overflow-hidden border-r border-border">
       <ScrollArea.Viewport className="size-full">
         <nav aria-label="Elements" className="p-2">
+          {project !== null && project.namespaces.length > 0 && (
+            <label className="mb-1 flex items-center gap-1 rounded border border-border bg-bg px-2 py-1">
+              <Search size={14} aria-hidden className="text-muted" />
+              <span className="sr-only">Search elements</span>
+              <input
+                type="search"
+                data-testid="sidebar-search"
+                className="min-w-0 flex-1 bg-transparent outline-none"
+                placeholder="Search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+              />
+            </label>
+          )}
           {project === null ? (
             <>
               <p className={emptyClass}>No project is open. Use New or Open.</p>
@@ -308,6 +557,11 @@ export function ElementSidebar({
                 onSelect={onSelect}
                 onRemove={onRemove}
                 assetActions={assetActions}
+                mode={mode}
+                query={query}
+                collapsed={collapsed}
+                onToggleGroup={onToggleGroup}
+                flowTitles={flowTitles}
               />
             ))
           )}
