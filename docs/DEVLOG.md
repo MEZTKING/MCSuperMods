@@ -2832,3 +2832,17 @@ Next:
 
 **Next**
 - See HANDOFF "Paused here".
+
+## 2026-11-06 — main session — Windows plugin build, plugin exporters in the Export menu
+
+**What**
+- New CI job `windows-plugin` (`windows-latest`): installs `@msm/sample-plugin...`, builds it and checks `dist/symbols.json` has types. Run 316 (commit 3ae86be, job alone) reproduced "build: the mcdoc export has no types".
+- Cause: Spyglass `normalizeUri` lowercases a Windows drive letter (`file:///d:/…`), but `getRelativeUriFromBase` compares path parts case-sensitively with the roots, which keep `D:` (from `pathToFileURL`). No file matched a root, so no module was bound. Fix: the build steps lowercase the drive letter of the temporary source folder before using it for `--source` and the dependency URL (`fixtures/sample-plugin/build.ts` and `tools/new-plugin` `EXTERNAL_BUILD_STEPS`, kept identical by the test). Run 317 (68d3ccb): all four jobs green; `main` fast-forwarded to 68d3ccb.
+- Toolbar Export menu: "More exports" lists every registered plugin exporter other than `structure-nbt` and `sponge-schematic` as "<display name> into a folder…" (test id `export-plugin-<id>`), run through `session.runPluginExporter`. Each is blocked by errors in the layers it packages (`exporterProblems` in `studios/export-state.ts`). Unit tests in `Toolbar.test.tsx` and `ExportControls.test.tsx`; guide `plugins.md` and CHANGELOG "Unreleased" updated.
+- The user has not yet tested the 0.7.0 draft on Windows; it stays a draft.
+
+**Decisions**
+- Plugin exporters only in the toolbar menu for now (no native menu or palette entries, which are static lists); options use their defaults.
+
+**Next**
+- B162 (1.0 close); publish 0.7.0 after the user's test.

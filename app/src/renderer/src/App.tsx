@@ -70,7 +70,7 @@ import { SettingsDialog } from './components/SettingsDialog';
 import { StatusBar } from './components/StatusBar';
 import { StatusToast } from './components/StatusToast';
 import { TestInMinecraftDialog, testInMinecraftMessage } from './components/TestInMinecraftDialog';
-import { modKey, Toolbar } from './components/Toolbar';
+import { modKey, Toolbar, type ToolbarPluginExport } from './components/Toolbar';
 import { UpdateBanner, updateCheckMessage } from './components/UpdateBanner';
 import { UpgradeTargetDialog } from './components/UpgradeTargetDialog';
 import { UsagesDialog } from './components/UsagesDialog';
@@ -102,6 +102,7 @@ import {
   elementLayers,
   errorCount,
   exportDisabledReason,
+  exporterProblems,
   fabricJarExportDisabledReason,
   hasLayerOutput,
   hasMsmOutput,
@@ -259,6 +260,9 @@ function targetWarnings(status: MinecraftStatus | null): string[] {
   const warnings = status.warnings ?? status.target?.warnings ?? [];
   return warnings.map((warning) => warning.message);
 }
+
+/** The structure exporters, which the Export menu lists under their own labels. */
+const STRUCTURE_EXPORTER_IDS: ReadonlySet<string> = new Set(['structure-nbt', 'sponge-schematic']);
 
 /** A zero-argument action that also reports its own errors. */
 type Action = () => void;
@@ -799,6 +803,25 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     structureExportReason,
     () => void runFolderExport('sponge-schematic', 'schematic(s)'),
   );
+  // The other plugin exporters (an external plugin's, say) under "More exports"; the
+  // structure exporters have their own entries above. Errors in the layers an exporter
+  // packages block it.
+  const pluginExports: ToolbarPluginExport[] = session.pluginExporters
+    .filter((exporter) => !STRUCTURE_EXPORTER_IDS.has(exporter.id))
+    .map((exporter) => {
+      const reason = exportDisabledReason(
+        project !== null,
+        layers === null
+          ? snapshot.problems
+          : exporterProblems(snapshot.problems, layers, exporter.layers),
+      );
+      return {
+        id: exporter.id,
+        label: `${exporter.displayName} into a folder…`,
+        reason,
+        onSelect: guarded(reason, () => void runFolderExport(exporter.id, 'file(s)')),
+      };
+    });
   const installData = guarded(dataInstallReason, () => {
     session.listWorlds().then(
       (worlds) => setDialog({ type: 'worlds', worlds }),
@@ -1488,6 +1511,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               structureExportDisabledReason={structureExportReason}
               onExportStructures={exportStructures}
               onExportSchematics={exportSchematics}
+              pluginExports={pluginExports}
               fabricJarExportDisabledReason={fabricJarReason}
               onExportFabricJar={exportFabricJar}
               onExportJavaProject={exportJavaProject}

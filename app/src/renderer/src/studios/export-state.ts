@@ -135,6 +135,26 @@ export function layerProblems(
 }
 
 /**
+ * The problems that block a plugin exporter that packages `exporterLayers`: those of the
+ * project as a whole and those of elements that lower to at least one of those layers.
+ *
+ * @param problems - The project's live problems.
+ * @param layers - {@link elementLayers} of the project.
+ * @param exporterLayers - The exporter's `layers`.
+ */
+export function exporterProblems(
+  problems: readonly Problem[],
+  layers: ReadonlyMap<string, ReadonlySet<OutputLayer>>,
+  exporterLayers: readonly OutputLayer[],
+): Problem[] {
+  return problems.filter((problem) => {
+    if (problem.elementId === undefined) return true;
+    const produced = layers.get(problem.elementId);
+    return produced === undefined || exporterLayers.some((layer) => produced.has(layer));
+  });
+}
+
+/**
  * Whether any element of `project` (other than `pack.mcmeta`, which every pack gets) lowers
  * to a file of `layer`. An element that fails to lower counts as content, so its errors
  * still surface when the export runs.

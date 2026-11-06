@@ -2,16 +2,16 @@
 
 Rewritten 2026-11-06 after the combined 0.7.0 work, for the next main session. Read this, then the root `CLAUDE.md`, then the last six `DEVLOG.md` entries. `DESIGN.md` is authoritative; this file only says where things stand and how the work has been run. Rewrite it (do not append history; history goes in `DEVLOG.md`) when you hand over again.
 
-## Paused here (2026-11-06): start here
+## Start here (updated 2026-11-06, after the handover session)
 
-The work was paused on purpose by the user so that another session, possibly on another account, can take over. Everything needed is in the repository; nothing lives only in the old session.
+The work was handed over to a new session (branch `ccr-ddf2517d-9p4cej`), which did steps 2 and 3a below. Everything needed is in the repository.
 
-- **Code:** `main` holds all of it (fast-forwarded only after green CI). The old working branch `ccr-f6800165-ug2dvi` equals `main`; start a fresh branch from `main`.
+- **Code:** `main` holds all of it (fast-forwarded only after green CI). Start a fresh branch from `main`.
 - **Access for a new account:** the repository is public (`MEZTKING/MCSuperMods`), but pushing, running workflows and releasing need write access granted by the owner on GitHub, and the Claude GitHub app on the repository for the new account. Without write access a session can only read, build and test.
 - **Do first, in order:**
-  1. Ask the user whether the 0.7.0 draft passed their Windows test (step 1 of "Waiting on the user"). If yes, trigger `publish-release.yml` with `version` `0.7.0` (GitHub MCP `actions_run_trigger`, ref `main`) and check that the release is published with four assets. If they report a problem, fix it on a branch, then CI, `main`, and a new patch version (`0.7.1`: CHANGELOG section, `app/package.json`, `engine-mod/gradle.properties` `mod_version`) because the `v0.7.0` tag cannot be moved from the session.
-  2. Add a Windows CI job (`runs-on: windows-latest`) that runs `pnpm --filter @msm/sample-plugin build`, reproduce "the mcdoc export has no types", fix `fixtures/sample-plugin/build.ts` and the identical steps in `tools/new-plugin` (a test keeps them equal). No personal Windows machine is needed for this; GitHub's runner is enough.
-  3. Offer the plugin exporters in the Export menu (Housekeeping), then B162 (1.0 close, `PHASE7-PLAN.md`).
+  1. Ask the user whether the 0.7.0 draft passed their Windows test (step 1 of "Waiting on the user"; on 2026-11-06 they had not tested it yet). If yes, trigger `publish-release.yml` with `version` `0.7.0` (GitHub MCP `actions_run_trigger`, ref `main`) and check that the release is published with four assets. If they report a problem, fix it on a branch, then CI, `main`, and a new patch version (`0.7.1`: CHANGELOG section, `app/package.json`, `engine-mod/gradle.properties` `mod_version`) because the `v0.7.0` tag cannot be moved from the session.
+  2. Done: CI job `windows-plugin` builds the sample plugin on `windows-latest`; the drive-letter fix is in both build scripts (DEVLOG 2026-11-06 "Windows plugin build").
+  3. Done: plugin exporters other than the structure ones are under "More exports" in the toolbar Export menu. Next: B162 (1.0 close, `PHASE7-PLAN.md`); if 0.7.0 is still unpublished then, release 1.0.0 directly or publish 0.7.0 first, as the user prefers.
 - **What needs the user's own Windows PC:** only the real-key AI helper test (their Anthropic key stays on their machine; `safeStorage` refuses Linux `basic_text` by design) and the in-game checks. A cloud session never needs the key.
 
 ## Where things stand
@@ -32,8 +32,8 @@ The work was paused on purpose by the user so that another session, possibly on 
 - Move `@anthropic-ai/sdk` from 1.1.0 to 1.4.0 or newer after 2026-11-16 (two-week rule); verify Haiku 5.5 cache prices and `max_tokens: 16` for the key test "(verify at implementation)".
 - Fix the renderer Biome override paths (`app/src/renderer/biome.json` reads root override globs relative to itself, so the Spyglass ban never applied; fixing it flags a type import in `session/mcfunction-problems.ts`).
 - Follow-ups: bow/crossbow pull animation ignores `draw_speed`; vanilla-tier weapon numbers in the Creator Stats need `TargetFacts`; optional `ArmorDefense.body`; validator for passthrough components holding data-pack holders; painting pictures are not rescaled; music disc flow has no audio import; Examples dialog does not show `merged`; `supports?` of external plugin entries is not passed through the worker.
-- **Plugin build on Windows:** `fixtures/sample-plugin/build.ts` (the same steps `tools/new-plugin --external` writes for plugin authors) fails on the Windows runner with "the mcdoc export has no types" (release run 13, 2026-11-06); mcdoc-cli likely does not match the `file:///D:/…` dependency URL against the `--source` path. Not reproducible on Linux: add a Windows CI job that builds the sample plugin, then fix. `release.yml` now builds only `--filter=@msm/app...`.
-- Plugin exporters are registered but not offered in the Export menu (B161 finding; `Toolbar.tsx` "More exports" lists only the structure exporters).
+- Plugin exporters run with default options (`runPluginExporter` passes none) and are not in File > More Exports or the command palette, only in the toolbar menu; the sample plugin has no exporter, so `plugins-path` does not click one.
+- `release.yml` still builds only `--filter=@msm/app...`; the sample plugin builds on Windows again, so that filter is optional now.
 - `app.asar` is 30.1 MB of its 32 MB budget.
 
 ## User decisions to respect

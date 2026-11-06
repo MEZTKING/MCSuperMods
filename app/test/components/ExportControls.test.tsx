@@ -10,6 +10,7 @@ import {
   dataInstallDisabledReason,
   elementLayers,
   exportDisabledReason,
+  exporterProblems,
   hasLayerOutput,
   installDisabledReason,
   layerProblems,
@@ -187,6 +188,14 @@ describe('per-pack export gating', () => {
       expect(reasons([problem])).toEqual({ resource: blocked, data: blocked });
     }
     expect(layers.get('demo:pack')).toEqual(new Set(['resourcepack', 'datapack']));
+  });
+
+  it('a plugin exporter is blocked by errors in any layer it packages', () => {
+    const problems = [errorOf('demo:fn'), errorOf('demo:model')];
+    expect(exporterProblems(problems, layers, ['datapack'])).toEqual([errorOf('demo:fn')]);
+    expect(exporterProblems(problems, layers, ['resourcepack', 'datapack'])).toEqual(problems);
+    expect(exporterProblems([error], layers, ['msm'])).toEqual([error]);
+    expect(exporterProblems(problems, layers, ['msm'])).toEqual([]);
   });
 
   it('hides the layer-skipped info of single-pack exports from the user', () => {

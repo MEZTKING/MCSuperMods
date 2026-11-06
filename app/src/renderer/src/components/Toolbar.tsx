@@ -94,6 +94,11 @@ export interface ToolbarProps {
   onExportStructures?(): void;
   /** Exports every structure template as a Sponge schematic (`.schem`) into a folder. */
   onExportSchematics?(): void;
+  /**
+   * Further plugin exporters (built-in or external), offered under "More exports" after the
+   * structure exports, each with its own disabled reason.
+   */
+  pluginExports?: readonly ToolbarPluginExport[];
   /** Why "Fabric mod (.jar)…" is disabled, or `null` when it is enabled. */
   fabricJarExportDisabledReason?: string | null;
   /** Opens the Fabric mod jar export dialog. */
@@ -123,6 +128,17 @@ export interface ToolbarProps {
   installTargets?: readonly InstallTargetOption[];
   /** Makes the target with this id the install target. */
   onChooseInstallTarget?(id: string): void;
+}
+
+/** A plugin exporter offered under "More exports". */
+export interface ToolbarPluginExport {
+  /** The exporter id; the entry's test id is `export-plugin-<id>`. */
+  id: string;
+  /** The menu label, for example `Greetings into a folder…`. */
+  label: string;
+  /** Why it is disabled, or `null`. */
+  reason: string | null;
+  onSelect(): void;
 }
 
 /** One entry of a toolbar menu. */
@@ -691,6 +707,12 @@ export function Toolbar(props: ToolbarProps) {
               reason: busyReason ?? structureReason,
               onSelect: props.onExportSchematics,
             },
+            ...(props.pluginExports ?? []).map((entry) => ({
+              label: entry.label,
+              testId: `export-plugin-${entry.id}`,
+              reason: busyReason ?? entry.reason,
+              onSelect: entry.onSelect,
+            })),
           ],
         }}
       />

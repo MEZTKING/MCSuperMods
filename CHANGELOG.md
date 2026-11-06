@@ -9,6 +9,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Added
 
 - Work on version 1.0 continues: guide pages for plugins and Minecraft versions, more automated tests, and the 1.0 release.
+- Exporters from third-party plugins are offered under **More exports** in the menu next to **Export .zip**.
+
+### Fixed
+
+- Building a plugin made with `tools/new-plugin --external` on Windows failed with "the mcdoc export has no types"; the build steps now work on any drive.
 
 ## [0.7.0] - 2026-11-06
 

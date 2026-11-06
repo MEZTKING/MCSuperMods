@@ -273,6 +273,35 @@ describe('Toolbar more exports', () => {
     expect(reason.textContent).toBe('Fix 1 error first (see Problems).');
     expect(screen.getByTestId('export-schematics').getAttribute('aria-disabled')).toBe('true');
   });
+
+  it('offers the other plugin exporters after the structure exports', async () => {
+    const onSelect = vi.fn();
+    renderToolbar(
+      props({
+        onExportStructures: vi.fn(),
+        pluginExports: [
+          { id: 'greetings', label: 'Greetings into a folder…', reason: null, onSelect },
+          {
+            id: 'blocked',
+            label: 'Blocked into a folder…',
+            reason: 'Fix 1 error first (see Problems).',
+            onSelect: vi.fn(),
+          },
+        ],
+      }),
+    );
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('toolbar-export-menu'));
+    await user.click(screen.getByTestId('export-more'));
+    const entry = await screen.findByTestId('export-plugin-greetings');
+    expect(entry.textContent).toBe('Greetings into a folder…');
+    expect(screen.getByTestId('export-plugin-blocked').getAttribute('aria-disabled')).toBe('true');
+    expect(screen.getByTestId('export-plugin-blocked-reason').textContent).toBe(
+      'Fix 1 error first (see Problems).',
+    );
+    fireEvent.click(entry);
+    expect(onSelect).toHaveBeenCalledOnce();
+  });
 });
 
 describe('Toolbar Fabric mod jar export', () => {
