@@ -14,11 +14,13 @@ MCSuperMods 1.0: everything from 0.7.0, with the plugin platform and the second 
 
 ### Added
 
+- **Your first mod**: a welcome on the first start that walks you through making a ruby tools and armour mod and testing it in Minecraft, with a matching guide page. Open it again with **Help → Your First Mod…**.
 - Guide pages for plugins and for Minecraft versions (including Upgrade Project Target), and automated tests that load a sample plugin and upgrade a project to the snapshot target.
 - Exporters from third-party plugins are offered under **More exports** in the menu next to **Export .zip** and in the command palette; one with options asks for them first.
 
 ### Fixed
 
+- Copying an example now says when it merged entries into language files or tags the project already had.
 - Building a plugin made with `tools/new-plugin --external` on Windows failed with "the mcdoc export has no types"; the build steps now work on any drive.
 
 ## [0.7.0] - 2026-11-06

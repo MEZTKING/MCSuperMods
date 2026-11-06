@@ -164,6 +164,7 @@ export function installMenu(recent: readonly RecentProject[] = []): void {
     {
       label: 'Help',
       submenu: [
+        { label: 'Your First Mod…', click: () => send('firstMod') },
         { label: 'Examples…', click: () => send('examples') },
         { label: "What's New…", click: () => send('whatsNew') },
         { type: 'separator' },

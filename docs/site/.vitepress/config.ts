@@ -44,6 +44,7 @@ export default defineConfig({
         text: 'Guide',
         items: [
           { text: 'Overview', link: '/' },
+          { text: 'Your first mod', link: '/first-mod' },
           { text: 'Getting started', link: '/getting-started' },
           { text: 'Structures', link: '/structures' },
           { text: 'Worldgen', link: '/worldgen' },

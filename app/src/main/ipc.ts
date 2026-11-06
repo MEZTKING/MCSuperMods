@@ -87,7 +87,7 @@ export function createIpcHandlers(
     [InvokeChannels.fsMkdirp]: (req) => platform.fs.mkdirp(req.path),
     [InvokeChannels.fsRemove]: (req) => platform.fs.remove(req.path),
     [InvokeChannels.appInfo]: () => platform.app.info(),
-    [InvokeChannels.appWhatsNewOnLaunch]: () => platform.app.whatsNewOnLaunch(),
+    [InvokeChannels.appLaunchNotice]: () => platform.app.launchNotice(),
     [InvokeChannels.dialogConfirmDiscard]: (req) => platform.dialogs.confirmDiscard(req.message),
     [InvokeChannels.dialogPickFiles]: (req) => platform.dialogs.pickFiles(req),
     [InvokeChannels.dialogSaveFile]: (req) => platform.dialogs.saveFile(req),

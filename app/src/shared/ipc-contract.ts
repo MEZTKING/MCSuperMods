@@ -793,7 +793,10 @@ export const ipcContract = {
   [InvokeChannels.updatesCheck]: { request: noRequest, response: updateStatusSchema },
   [InvokeChannels.updatesInstall]: { request: noRequest, response: voidResponse },
   [InvokeChannels.updatesCurrent]: { request: noRequest, response: updateStatusSchema },
-  [InvokeChannels.appWhatsNewOnLaunch]: { request: noRequest, response: z.boolean() },
+  [InvokeChannels.appLaunchNotice]: {
+    request: noRequest,
+    response: z.enum(['welcome', 'whats-new']).nullable(),
+  },
   [InvokeChannels.pluginsList]: {
     request: noRequest,
     response: z.array(externalPluginEntry).max(PLUGINS_MAX),

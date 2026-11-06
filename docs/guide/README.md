@@ -4,6 +4,7 @@ How to use MCSuperMods to make resource packs, data packs and Fabric mods with n
 
 | Guide | What it covers |
 |---|---|
+| [Your first mod](first-mod.md) | Start here if you are new: a ruby tools and armour mod from the Creator's Gear set in seven steps, tested in Minecraft with Test in Minecraft and exported as a Fabric mod jar; the same steps as the in-app **Welcome** |
 | [Getting started](getting-started.md) | Install, first launch and Settings → Game locations, a first mod from the Custom ore starter wizard, forms and Studios, preview, problems, saving, exporting the Fabric mod jar and trying it in Minecraft, a data pack from the Functions starter, the command palette and keyboard shortcuts |
 | [Structures](structures.md) | Importing a structure (`.nbt`, `.schem`), the Structure Studio, jigsaw blocks in the game, template pools and connections, making a structure generate (structure set, biome tag, existing and new worlds), exporting structures as `.nbt` and `.schem` |
 | [Worldgen](worldgen.md) | The worldgen starters, how a custom biome reaches a world (world preset and World Type), the Biome Studio, configured and placed features, steps and the feature order rule, the climate map, the in-game check |

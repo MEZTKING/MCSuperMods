@@ -75,6 +75,7 @@ import { modKey, Toolbar, type ToolbarPluginExport } from './components/Toolbar'
 import { UpdateBanner, updateCheckMessage } from './components/UpdateBanner';
 import { UpgradeTargetDialog } from './components/UpgradeTargetDialog';
 import { UsagesDialog } from './components/UsagesDialog';
+import { WelcomeDialog } from './components/WelcomeDialog';
 import { WhatsNewDialog } from './components/WhatsNewDialog';
 import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
@@ -180,6 +181,7 @@ type DialogState =
   | { type: 'test-in-minecraft' }
   | { type: 'upgrade-target' }
   | { type: 'whats-new'; version: string; notes?: string }
+  | { type: 'welcome' }
   | { type: 'no-minecraft'; message: string };
 
 /**
@@ -1091,14 +1093,18 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       () => setMessage({ kind: 'error', text: 'Could not read the app version.' }),
     );
   };
-  // Once after the app version changed (main decides and records the version), unless
-  // another dialog is already open.
+  // The Welcome on a brand-new install, or What's new once after the app version changed
+  // (main decides and records the version), unless another dialog is already open.
   useEffect(() => {
     let live = true;
     bridge.app
-      .whatsNewOnLaunch()
-      .then(async (show) => {
-        if (!show || !live) return;
+      .launchNotice()
+      .then(async (notice) => {
+        if (notice === null || !live) return;
+        if (notice === 'welcome') {
+          setDialog((current) => current ?? { type: 'welcome' });
+          return;
+        }
         const { version } = await bridge.app.info();
         if (live) setDialog((current) => current ?? { type: 'whats-new', version });
       })
@@ -1262,6 +1268,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     commandPalette: openPalette,
     checkForUpdates,
     whatsNew,
+    firstMod: () => setDialog({ type: 'welcome' }),
     clearRecentProjects: clearRecent,
     upgradeTarget: () => {
       if (project === null) {
@@ -1324,6 +1331,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     chooseInstallTarget: handlers.settings,
     checkForUpdates,
     whatsNew,
+    firstMod: handlers.firstMod,
     aiHelper: aiController === null ? null : () => aiController.open(),
     aiExplainProblem:
       aiController === null || !aiKeySet || selectedProblem === null
@@ -1739,6 +1747,18 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               const first = result.created[0];
               if (first !== undefined) select(first);
             }}
+          />
+        )}
+        {dialog?.type === 'welcome' && (
+          <WelcomeDialog
+            hasProject={project !== null}
+            onSettings={handlers.settings}
+            onNewProject={() => {
+              setDialog(null);
+              handlers.new();
+            }}
+            onCreator={handlers.creator}
+            onClose={() => setDialog(null)}
           />
         )}
         {dialog?.type === 'whats-new' && (

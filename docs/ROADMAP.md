@@ -448,7 +448,8 @@ Briefs B150–B162 (the working plan was closed at 1.0; history in DEVLOG). B150
 - npm publishing of `@msm/plugin-api` (was B164): with an `NPM_TOKEN` secret from the user, `publish-release.yml` adds `npm publish --provenance --access public` of the tarball.
 - External schema-form editors (was B165): a `formModels` contribution (field order, labels, hidden paths, previews) so a plugin can shape the generic form without React.
 - Vendored target data outside the asar (was B166): `extraResources` per target package, read from `process.resourcesPath` when packaged; brings the asar budget back to 25 MB. Only when the asar nears its 32 MB budget or the user asks.
-- Plugin exporters in File > More Exports and the command palette, with their options; the 26.3 mcdoc re-pin to the 26.4 ref for one shared tree; a plugin marketplace (an idea).
+- Dimensions a beginner can enter (user idea, 2026-11-06, left for later): a "Dimension" Creator flow (biomes, sky, terrain style) with a travel item built from a function, or a real custom portal block (new runtime code, GameTests and parity tests).
+- Plugin exporters in File > More Exports (the palette and options are done); the 26.3 mcdoc re-pin to the 26.4 ref for one shared tree; a plugin marketplace (an idea).
 
 ### Phase 7 add-on — AI helper (v0.7.0)
 

@@ -410,16 +410,19 @@ export interface AiPlatform {
   onEvent(listener: (runId: string, event: AiEvent) => void): () => void;
 }
 
+/** What the app shows by itself when it starts ({@link PlatformAdapter.app}). */
+export type LaunchNotice = 'welcome' | 'whats-new' | null;
+
 /** Host services for the renderer. */
 export interface PlatformAdapter {
   app: {
     info(): Promise<{ version: string; electron: string; platform: string }>;
     /**
-     * Whether to show "What's new" on this launch: `true` once after the app version changed
-     * since the last launch. Records the running version. A brand-new install (no settings
-     * yet) and test runs get `false`.
+     * What to show by itself on this launch: `'welcome'` on a brand-new install (no settings
+     * yet), `'whats-new'` once after the app version changed since the last launch, else
+     * `null` (also in test runs). Records the running version.
      */
-    whatsNewOnLaunch(): Promise<boolean>;
+    launchNotice(): Promise<LaunchNotice>;
   };
   dialogs: {
     /**

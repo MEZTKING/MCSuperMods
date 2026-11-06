@@ -2859,3 +2859,18 @@ Next:
 
 **Next**
 - Ask the user; then `release.yml` for 1.0.0 and, after their Windows test, `publish-release.yml`.
+
+## 2026-11-06 — main session — 1.0 polish: Biome ban, plugin exporters, Welcome and first-mod guide
+
+**What**
+- Biome: the renderer's nested config read the root override globs relative to itself, and a later override's `noRestrictedImports` options replaced the earlier one's, so the Spyglass ban never applied in the renderer. One renderer override (`app/src/renderer/**` and `src/**`) now holds both bans; the mcfunction payload types are re-exported from `shared/platform.ts`.
+- Plugin exporters: options through `runPluginExporter` and `PluginExportDialog`; palette entries "Export <name> into a folder…". The e2e found that export folder writes accepted only pack zips and structure files, so no other plugin exporter could ever write: `isExportFileName` now accepts any safe relative path (export-tree segments, no leading-dot segments, depth 16); main's real-path containment is unchanged. The sample plugin gained "Greeting list" (`greetings.txt`, option "Sort by function id"), exported through the worker in `plugins-path`.
+- Examples: copy summary and toast name merged language files and tags.
+- Welcome: `app.whatsNewOnLaunch` became `app.launchNotice` (`'welcome' | 'whats-new' | null`, channel `msm:v1:app:launchNotice`): a brand-new install gets `WelcomeDialog` (five steps, Open Settings, New project or Create something, a link to the guide page); Help > Your First Mod… and the palette reopen it. Guide page `first-mod.md` (sidebar, index, README).
+- The user asked for modpack support ("both": collections to organise projects, and a collection exported or tested as a real modpack) and a first-time guide; dimensions with travel were left as a ROADMAP idea.
+
+**Decisions**
+- Existing installs do not see the Welcome after updating (only a missing settings file counts as new); Help reopens it.
+
+**Next**
+- CI, `main`, the 1.0.0 draft release; then modpacks (ADR 0046) for 1.1.

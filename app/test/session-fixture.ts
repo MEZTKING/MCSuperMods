@@ -82,7 +82,7 @@ export function fakePlatform(fs: MemoryFileSystem, options: FakePlatformOptions 
     ...stubs,
     app: {
       info: async () => ({ version: '0.1.0-test', electron: '0', platform: 'test' }),
-      whatsNewOnLaunch: async () => false,
+      launchNotice: async () => null,
     },
     dialogs: {
       ...stubs.dialogs,

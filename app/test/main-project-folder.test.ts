@@ -4,8 +4,8 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   createNodePlatform,
+  launchNoticeFor,
   type NativeDialogs,
-  shouldShowWhatsNew,
 } from '../src/main/platform/node-platform';
 import { createSettingsStore } from '../src/main/platform/settings';
 
@@ -128,34 +128,37 @@ describe('settings store: lastProjectParent and lastSeenVersion', () => {
   });
 });
 
-describe("What's new on launch", () => {
-  it('is silent on a brand-new install, then shows once after each version change', async () => {
-    expect(await platform({ version: '0.7.0' }).app.whatsNewOnLaunch()).toBe(false);
-    expect(await platform({ version: '0.7.0' }).app.whatsNewOnLaunch()).toBe(false);
-    expect(await platform({ version: '0.8.0' }).app.whatsNewOnLaunch()).toBe(true);
-    expect(await platform({ version: '0.8.0' }).app.whatsNewOnLaunch()).toBe(false);
+describe('The launch notice', () => {
+  it('welcomes a brand-new install, then shows What is new once after each version change', async () => {
+    expect(await platform({ version: '0.7.0' }).app.launchNotice()).toBe('welcome');
+    expect(await platform({ version: '0.7.0' }).app.launchNotice()).toBe(null);
+    expect(await platform({ version: '0.8.0' }).app.launchNotice()).toBe('whats-new');
+    expect(await platform({ version: '0.8.0' }).app.launchNotice()).toBe(null);
   });
 
   it('shows after an update from a version that did not record one', async () => {
     await mkdir(msmHome(), { recursive: true });
     await writeFile(join(msmHome(), 'settings.json'), '{"updates":{"autoCheck":true}}\n');
-    expect(await platform().app.whatsNewOnLaunch()).toBe(true);
+    expect(await platform().app.launchNotice()).toBe('whats-new');
   });
 
   it('never shows by itself in test runs, but still records the version', async () => {
-    await platform({ version: '0.6.0' }).app.whatsNewOnLaunch();
-    expect(
-      await platform({ version: '0.7.0', suppressWhatsNew: true }).app.whatsNewOnLaunch(),
-    ).toBe(false);
+    expect(await platform({ version: '0.6.0', suppressWhatsNew: true }).app.launchNotice()).toBe(
+      null,
+    );
+    expect(await platform({ version: '0.7.0', suppressWhatsNew: true }).app.launchNotice()).toBe(
+      null,
+    );
     expect((await settingsFile()).lastSeenVersion).toBe('0.7.0');
   });
 
   it('decides from the stored facts', () => {
     const base = { previous: '0.6.0', existed: true, current: '0.7.0', suppressed: false };
-    expect(shouldShowWhatsNew(base)).toBe(true);
-    expect(shouldShowWhatsNew({ ...base, current: '0.6.0' })).toBe(false);
-    expect(shouldShowWhatsNew({ ...base, existed: false, previous: null })).toBe(false);
-    expect(shouldShowWhatsNew({ ...base, previous: null })).toBe(true);
-    expect(shouldShowWhatsNew({ ...base, suppressed: true })).toBe(false);
+    expect(launchNoticeFor(base)).toBe('whats-new');
+    expect(launchNoticeFor({ ...base, current: '0.6.0' })).toBe(null);
+    expect(launchNoticeFor({ ...base, existed: false, previous: null })).toBe('welcome');
+    expect(launchNoticeFor({ ...base, previous: null })).toBe('whats-new');
+    expect(launchNoticeFor({ ...base, suppressed: true })).toBe(null);
+    expect(launchNoticeFor({ ...base, existed: false, suppressed: true })).toBe(null);
   });
 });

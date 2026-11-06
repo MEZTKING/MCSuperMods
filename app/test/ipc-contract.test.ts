@@ -461,9 +461,9 @@ const samples: Record<
       { state: 'downloaded', version: '0.7.0', notes: 'x'.repeat(UPDATE_NOTES_MAX + 1) },
     ],
   },
-  [InvokeChannels.appWhatsNewOnLaunch]: {
+  [InvokeChannels.appLaunchNotice]: {
     request: [undefined, { force: true }],
-    response: [true, 'yes'],
+    response: ['welcome', 'yes'],
   },
   [InvokeChannels.pluginsList]: {
     request: [undefined, { folder: 'x' }],

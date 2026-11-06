@@ -16,6 +16,7 @@ import { createNodeInstallFileSystem } from '@msm/interop/node';
 import { targetById } from '@msm/targets';
 import type {
   FileFilter,
+  LaunchNotice,
   PlatformAdapter,
   RecentProject,
   RecentProjectView,
@@ -121,7 +122,7 @@ export interface NodePlatformDeps {
   /** ISO 8601 timestamp source for the asset cache and the recent-projects list. */
   now?(): string;
   /**
-   * When true, `app.whatsNewOnLaunch()` always answers `false` (smoke and end-to-end runs);
+   * When true, `app.launchNotice()` always answers `null` (smoke and end-to-end runs);
    * the running version is still recorded.
    */
   suppressWhatsNew?: boolean;
@@ -168,18 +169,20 @@ export interface MainPlatform extends Omit<PlatformAdapter, 'updates' | 'ai'> {
 }
 
 /**
- * Whether "What's new" shows on this launch: once after the version changed, never on a
- * brand-new install (no settings file yet) or when suppressed (test runs). A settings file
- * without `lastSeenVersion` comes from an earlier version and counts as a change.
+ * What shows by itself on this launch: the Welcome on a brand-new install (no settings file
+ * yet), "What's new" once after the version changed, nothing when suppressed (test runs). A
+ * settings file without `lastSeenVersion` comes from an earlier version and counts as a
+ * change.
  */
-export function shouldShowWhatsNew(facts: {
+export function launchNoticeFor(facts: {
   previous: string | null;
   existed: boolean;
   current: string;
   suppressed: boolean;
-}): boolean {
-  if (facts.suppressed || !facts.existed) return false;
-  return facts.previous !== facts.current;
+}): LaunchNotice {
+  if (facts.suppressed) return null;
+  if (!facts.existed) return 'welcome';
+  return facts.previous !== facts.current ? 'whats-new' : null;
 }
 
 async function statOrNull(path: string): Promise<Awaited<ReturnType<typeof stat>> | null> {
@@ -357,17 +360,17 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
   return {
     app: {
       info: deps.info,
-      async whatsNewOnLaunch() {
+      async launchNotice() {
         try {
           const { version } = await deps.info();
           const seen = await settings.recordSeenVersion(version);
-          return shouldShowWhatsNew({
+          return launchNoticeFor({
             ...seen,
             current: version,
             suppressed: deps.suppressWhatsNew === true,
           });
         } catch {
-          return false;
+          return null;
         }
       },
     },

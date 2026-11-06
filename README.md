@@ -226,7 +226,7 @@ Full plan with checklists: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Documentation
 
-- [User guide](docs/guide/README.md): [getting started](docs/guide/getting-started.md), [structures](docs/guide/structures.md), [worldgen](docs/guide/worldgen.md), [blocks and items](docs/guide/blocks-and-items.md), [the Creator](docs/guide/creator.md), [entities and models](docs/guide/entities-and-models.md), [scripting](docs/guide/scripting.md), [eject to a Java project](docs/guide/eject.md), [the AI helper](docs/guide/ai-helper.md), [Minecraft versions](docs/guide/targets.md), [plugins](docs/guide/plugins.md) and [templates, starters and examples](docs/guide/templates-and-examples.md). The same guide is published as a site at <https://meztking.github.io/MCSuperMods/>.
+- [User guide](docs/guide/README.md): [your first mod](docs/guide/first-mod.md) (start here), [getting started](docs/guide/getting-started.md), [structures](docs/guide/structures.md), [worldgen](docs/guide/worldgen.md), [blocks and items](docs/guide/blocks-and-items.md), [the Creator](docs/guide/creator.md), [entities and models](docs/guide/entities-and-models.md), [scripting](docs/guide/scripting.md), [eject to a Java project](docs/guide/eject.md), [the AI helper](docs/guide/ai-helper.md), [Minecraft versions](docs/guide/targets.md), [plugins](docs/guide/plugins.md) and [templates, starters and examples](docs/guide/templates-and-examples.md). The same guide is published as a site at <https://meztking.github.io/MCSuperMods/>.
 - [docs/DESIGN.md](docs/DESIGN.md): the authoritative design document.
 - [docs/ROADMAP.md](docs/ROADMAP.md): phased delivery plan and milestone log.
 - [docs/DEVLOG.md](docs/DEVLOG.md): session-by-session development log.

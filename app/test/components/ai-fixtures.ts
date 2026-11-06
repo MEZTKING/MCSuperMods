@@ -113,7 +113,7 @@ function aiTestPlatform(): PlatformAdapter {
   return {
     app: {
       info: async () => ({ version: '0.1.0-test', electron: '0', platform: 'test' }),
-      whatsNewOnLaunch: async () => false,
+      launchNotice: async () => null,
     },
     dialogs: {
       pickDirectory: async () => '/projects/demo',

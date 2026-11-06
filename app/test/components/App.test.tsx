@@ -37,6 +37,7 @@ import type {
   AppSettingsPatch,
   GameLocationView,
   LauncherSettings,
+  LaunchNotice,
   MsmBridge,
   PlatformAdapter,
   RecentProjectView,
@@ -138,8 +139,8 @@ interface Harness {
   revealed: string[];
   /** What `updates.check()` resolves to. */
   updateCheck: UpdateStatus;
-  /** What `app.whatsNewOnLaunch()` resolves to (default `false`). */
-  whatsNewOnLaunch?: boolean;
+  /** What `app.launchNotice()` resolves to (default `null`). */
+  launchNotice?: LaunchNotice;
   /** Sends an update status to the renderer's subscribers. */
   pushUpdate(status: UpdateStatus): void;
   session: ProjectSession;
@@ -204,14 +205,14 @@ const blockedTestStatus: TestInMinecraftStatus = {
 };
 
 async function renderApp(
-  options: { plugins?: readonly Plugin[]; whatsNewOnLaunch?: boolean; ai?: AiPlatform } = {},
+  options: { plugins?: readonly Plugin[]; launchNotice?: LaunchNotice; ai?: AiPlatform } = {},
 ): Promise<Harness> {
   let listener: ((command: MenuCommand) => void) | null = null;
   let recentListener: ((root: string) => void) | null = null;
   const updateListeners = new Set<(status: UpdateStatus) => void>();
   const harness = {
     updateCheck: { state: 'not-available' },
-    whatsNewOnLaunch: options.whatsNewOnLaunch ?? false,
+    launchNotice: options.launchNotice ?? null,
     pushUpdate: (status: UpdateStatus) => {
       act(() => {
         for (const listener of updateListeners) listener(status);
@@ -252,7 +253,7 @@ async function renderApp(
   const platform: PlatformAdapter = {
     app: {
       info: async () => ({ version: '0.1.0-test', electron: '0', platform: 'test' }),
-      whatsNewOnLaunch: async () => harness.whatsNewOnLaunch ?? false,
+      launchNotice: async () => harness.launchNotice ?? null,
     },
     dialogs: {
       pickDirectory: async ({ title }) =>
@@ -589,8 +590,22 @@ describe('App menu commands', () => {
   });
 
   it("shows What's new by itself once after the version changed", async () => {
-    await renderApp({ whatsNewOnLaunch: true });
+    await renderApp({ launchNotice: 'whats-new' });
     expect(await screen.findByTestId('whats-new-dialog')).toBeTruthy();
+  });
+
+  it('welcomes a new install with the first-mod steps, and reopens from Help', async () => {
+    const harness = await renderApp({ launchNotice: 'welcome' });
+    const welcome = await screen.findByTestId('welcome-dialog');
+    expect(within(welcome).getByText('Welcome to MCSuperMods')).toBeTruthy();
+    expect(within(welcome).getByTestId('welcome-steps').querySelectorAll('li')).toHaveLength(5);
+    expect(within(welcome).getByTestId('welcome-guide-link').getAttribute('href')).toBe(
+      'https://meztking.github.io/MCSuperMods/first-mod',
+    );
+    fireEvent.click(within(welcome).getByRole('button', { name: 'Got it' }));
+    await waitFor(() => expect(screen.queryByTestId('welcome-dialog')).toBeNull());
+    await harness.menu('firstMod');
+    expect(await screen.findByTestId('welcome-dialog')).toBeTruthy();
   });
 
   it('exports the resource pack and refuses an empty data pack with the reason', async () => {

@@ -21,7 +21,7 @@ import type { AiPlatform, MsmBridge } from '../shared/platform';
 const bridge: MsmBridge = {
   app: {
     info: () => ipcRenderer.invoke(InvokeChannels.appInfo),
-    whatsNewOnLaunch: () => ipcRenderer.invoke(InvokeChannels.appWhatsNewOnLaunch),
+    launchNotice: () => ipcRenderer.invoke(InvokeChannels.appLaunchNotice),
   },
   dialogs: {
     pickDirectory: (opts) => ipcRenderer.invoke(InvokeChannels.projectPickDirectory, opts),
