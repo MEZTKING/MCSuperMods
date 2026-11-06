@@ -2735,3 +2735,16 @@ Next:
 - `tools/new-plugin/index.ts` still writes `msm-plugin-api-1.0.0.tgz` into the scaffolded README (and its test may pin it); move it to `<version>` or 1.2.0.
 - B161: `getting-started.md` still shows the one-step New project dialog; the e2e specs `plugins-path` and `targets-path` become the fourteenth and fifteenth files.
 - A manual run of the AI helper with a real Anthropic key before relying on it (only the scripted client is tested).
+
+## 2026-11-06 — main session — 0.7.0 release follow-ups and handoff
+
+**What**
+- Cleared B175's leftovers: the stale comments in `app/src/shared/ipc-channels.ts` and `app/src/main/menu.ts` now say the Creator handles File > "Create…" (ADR 0043); `tools/new-plugin/index.ts` reads the `@msm/plugin-api` package version and writes `msm-plugin-api-<version>.tgz` into the scaffolded README instead of the fixed 1.0.0 (`@msm/tools` 138 tests pass; `tsc -b` clean).
+- Rewrote `docs/HANDOFF.md` for 0.7.0: where things stand, what waits on the user (real-key AI helper test on Windows, in-game checks of the new gear), housekeeping (SDK upgrade after 2026-11-16, renderer Biome override paths, gear follow-ups), user decisions (AI helper first, the Creator, combined 0.7.0), the four-asset release flow and 0.7.0 lessons.
+
+**Decisions**
+- 0.7.0 goes out as a draft first; it is published only after the user has tried the AI helper with their own key on Windows.
+
+**Next**
+- CI green on the branch tip, fast-forward `main`, trigger `release.yml` (0.7.0), then `publish-release.yml` after the user's go-ahead.
+- Phase 7: B161, then B162 (1.0 close).
