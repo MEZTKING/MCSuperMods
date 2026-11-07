@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [1.2.0] - 2026-11-07
+
 ### Added
 
 - **New texture…**: paint a texture from a blank picture, sized for an item, a block, an armour layer or a painting. Undo removes it again.

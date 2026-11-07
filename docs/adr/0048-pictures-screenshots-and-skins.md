@@ -18,4 +18,4 @@ On 2026-11-07 the user asked for "a system that a user can take a screenshot and
 
 ## Status
 
-Accepted (2026-11-07) by the user's request; for the release after 1.1.0.
+Accepted (2026-11-07) by the user's request; for app 1.2.0.

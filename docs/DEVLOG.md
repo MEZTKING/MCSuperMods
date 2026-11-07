@@ -2953,3 +2953,9 @@ What: the user asked to turn a screenshot into a working file and to import text
 Tests: `image-convert.test.ts`, library `parameters.test.ts` (skin), exporters `library.test.ts` alternatives with skins, AI `loop.test.ts`; e2e `picture-path.spec.ts` (legacy skin from the picker, pasted screenshot, Undo) and a pasted screenshot in `ai-path` explain.
 Decisions: no PNG decoding in the plugin; legacy skins use mirrored cubes instead of conversion there. Pictures stay in the conversation and are resent with later messages.
 Next: publish 1.1.0 once the user's Windows test passes; these changes go into the release after it.
+
+## 2026-11-07 — main session — Prepare 1.2.0
+
+What: app `package.json` and `engine-mod` `mod_version` 1.2.0; CHANGELOG `[1.2.0] - 2026-11-07` (New texture…, Picture to texture, player skins on mobs, screenshots for the AI helper, better placeholder art); status lines in the CLAUDE.md files, README, ADR 0048 status, ROADMAP row and HANDOFF state.
+Decisions: 1.2.0 is drafted on top of the unpublished 1.1.0 draft; publishing 1.2.0 alone delivers both.
+Next: draft via `release.yml` after green CI; publish only after the user's Windows test.
