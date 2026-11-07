@@ -1,8 +1,14 @@
+import { readFile } from 'node:fs/promises';
 import type { Element, Problem, ValidationInput } from '@msm/plugin-api';
 import { createRegistryIndex } from '@msm/schemas';
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
-import { BLOCKS_ITEMS_PROBLEM_CODES, blocksItemsValidators, RESERVED_MOD_IDS } from '../src/index';
+import {
+  BLOCKS_ITEMS_PROBLEM_CODES,
+  blocksItemsValidators,
+  DELAYED_PASSTHROUGH_COMPONENTS,
+  RESERVED_MOD_IDS,
+} from '../src/index';
 import { element, indexesFor } from './support';
 
 const bundle = builtInTargets[0] as TargetBundle;
@@ -29,7 +35,7 @@ const item = (id: `${string}:${string}`, data: Record<string, unknown>): Element
 
 describe('blocks-items validators', () => {
   it('lists every code it reports', () => {
-    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(11);
+    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(12);
   });
 
   it('warns when a custom bow or crossbow model has no pulling models', async () => {
@@ -51,6 +57,46 @@ describe('blocks-items validators', () => {
     expect(pull[0]?.message).toContain(
       'demo:item/ruby_crossbow_pulling_1, demo:item/ruby_crossbow_pulling_2, demo:item/ruby_crossbow_arrow, demo:item/ruby_crossbow_firework',
     );
+  });
+
+  it('warns about passthrough components that name data pack entries the runtime cannot wait for', async () => {
+    const problems = await validate([
+      item('demo:book', {
+        components: {
+          'msm:components': {
+            'minecraft:stored_enchantments': { 'minecraft:sharpness': 1 },
+            jukebox_playable: 'minecraft:cat',
+            'minecraft:max_damage': 10,
+          },
+        },
+      }),
+    ]);
+    const found = problems.filter(
+      (problem) => problem.code === 'blocks-items.passthrough-needs-data-pack',
+    );
+    expect(found.map((problem) => problem.path)).toEqual([
+      '/components/msm:components/minecraft:stored_enchantments',
+    ]);
+    expect(found[0]?.severity).toBe('warning');
+    expect(found[0]?.message).toContain('"jukebox_playable"');
+  });
+
+  it('mirrors the runtime list of late passthrough components', async () => {
+    const java = await readFile(
+      new URL(
+        '../../../../engine-mod/src/main/java/dev/mcsupermods/runtime/registry/ComponentPassthrough.java',
+        import.meta.url,
+      ),
+      'utf8',
+    );
+    const delayed = java.slice(
+      java.indexOf('DELAYED = Set.of('),
+      java.indexOf(');', java.indexOf('DELAYED = Set.of(')),
+    );
+    const ids = [...delayed.matchAll(/withDefaultNamespace\("([a-z_/]+)"\)/g)].map(
+      (match) => match[1],
+    );
+    expect([...ids].sort()).toEqual([...DELAYED_PASSTHROUGH_COMPONENTS]);
   });
 
   it('accepts a clean project', async () => {

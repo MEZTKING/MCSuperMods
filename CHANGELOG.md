@@ -9,7 +9,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Added
 
 - **Your own song on a music disc**: the Music disc flow's **Song file** takes an `.ogg`; the disc plays it and the jukebox's playing time comes from the file.
-- Plugin API 1.4.0: `audio` starter parameters (`AudioStarterParameter`).
+- Plugin API 1.4.0: `audio` starter parameters (`AudioStarterParameter`) and `ItemFacts.dataPackComponents`.
+- **Problems** warns about an `msm:components` entry (such as `minecraft:enchantments`) that names a data pack entry the game cannot apply when it loads items.
 
 ## [1.2.0] - 2026-11-07
 

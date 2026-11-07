@@ -187,6 +187,14 @@ export interface ItemFacts {
    * model. Since 1.3.0.
    */
   rangedPull?: RangedPullFacts;
+  /**
+   * The data components (unprefixed ids, for example `enchantments`) whose value names an
+   * element or tag of a data pack registry (an enchantment, a jukebox song, a trim material, a
+   * mob variant). The runtime can apply such an `msm:components` entry only late, for a fixed
+   * list, so the `blocks-items.passthrough-needs-data-pack` validator warns about the others.
+   * Since 1.4.0 (ADR 0050).
+   */
+  dataPackComponents?: readonly string[];
 }
 
 /** The pull animation facts of vanilla's `items/bow.json` and `items/crossbow.json`. Since 1.3.0. */

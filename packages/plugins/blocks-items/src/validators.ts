@@ -36,6 +36,11 @@
  *   ADR 0044 D1: MSM's own component wins). The message names the two components.
  * - `blocks-items.item-collision` (error): an `msm:item` with the id of an `msm:block` that
  *   registers its own block item (`item` is not `false`).
+ * - `blocks-items.passthrough-needs-data-pack` (warning): an `msm:components` entry for a
+ *   vanilla component whose value names a data pack registry entry (the target's
+ *   `items.dataPackComponents`) that the runtime cannot apply late ({@link
+ *   DELAYED_PASSTHROUGH_COMPONENTS}): the game logs an error at load and the item has no such
+ *   component (ADR 0050). Only when the target has `items.dataPackComponents`.
  * - `blocks-items.missing-pull-model` (warning): a bow or crossbow whose own (non-vanilla)
  *   model has no `<model>_pulling_0`…`_2` (and for a crossbow `_arrow`, `_firework`) model
  *   element, which its item definition shows while it is drawn. Only when the target has
@@ -86,7 +91,21 @@ export const BLOCKS_ITEMS_PROBLEM_CODES = Object.freeze([
   'blocks-items.unknown-equipment-asset',
   'blocks-items.component-conflict',
   'blocks-items.missing-pull-model',
+  'blocks-items.passthrough-needs-data-pack',
 ] as const);
+
+/**
+ * The `msm:components` entries the runtime decodes once data packs are loaded (ADR 0044 D1;
+ * `ComponentPassthrough.DELAYED` in `engine-mod`), so they may name data pack registry entries.
+ */
+export const DELAYED_PASSTHROUGH_COMPONENTS: readonly string[] = Object.freeze([
+  'blocks_attacks',
+  'damage_resistant',
+  'damage_type',
+  'jukebox_playable',
+  'provides_trim_material',
+  'trim',
+]);
 
 /**
  * Item components of which an item may have at most one (ADR 0044 D3): the runtime builds a
@@ -462,6 +481,31 @@ function componentConflicts(elements: readonly Element[]): Problem[] {
   return problems;
 }
 
+function passthroughNeedsDataPack(
+  elements: readonly Element[],
+  dataPackComponents: readonly string[],
+): Problem[] {
+  const needs = new Set(dataPackComponents);
+  const problems: Problem[] = [];
+  for (const element of elements) {
+    if (element.kind !== ITEM_KIND) continue;
+    const passthrough = record(record(dataOf(element).components)?.['msm:components']);
+    if (passthrough === undefined) continue;
+    for (const key of Object.keys(passthrough).sort()) {
+      const id = vanillaComponentId(key);
+      if (!needs.has(id) || DELAYED_PASSTHROUGH_COMPONENTS.includes(id)) continue;
+      problems.push({
+        severity: 'warning',
+        code: 'blocks-items.passthrough-needs-data-pack',
+        elementId: element.id,
+        path: pointer('components', 'msm:components', key),
+        message: `"${key}" names an entry of a data pack registry (an enchantment, a variant or a pattern), which the game does not know yet when it registers items: the runtime logs an error and the item gets no "${id}". Only ${DELAYED_PASSTHROUGH_COMPONENTS.map((entry) => `"${entry}"`).join(', ')} can wait for the data packs. Give the item this through a loot table, a recipe result or a command instead.`,
+      });
+    }
+  }
+  return problems;
+}
+
 function missingModels(elements: readonly Element[]): Problem[] {
   const problems: Problem[] = [];
   for (const element of definitions(elements)) {
@@ -538,6 +582,14 @@ export const blocksItemsValidators: readonly ProjectValidator[] = Object.freeze(
     kinds: [ITEM_KIND, MODEL_KIND],
     validate: ({ elements, target }) =>
       target.items?.rangedPull === undefined ? [] : missingPullModels(elements),
+  },
+  {
+    id: 'msm.blocks-items.passthrough-needs-data-pack',
+    kinds: [ITEM_KIND],
+    validate: ({ elements, target }) => {
+      const facts = target.items?.dataPackComponents;
+      return facts === undefined ? [] : passthroughNeedsDataPack(elements, facts);
+    },
   },
   {
     id: 'msm.blocks-items.unknown-event',

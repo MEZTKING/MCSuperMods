@@ -96,6 +96,35 @@ export const target: Target = {
       'netherite',
       'armadillo_scute',
     ],
+    // dataPackComponents (ADR 0050): data components whose value names a data pack registry
+    // entry, derived 2026-11-07 from this target's vendored vanilla-mcdoc; the targets tests
+    // derive it again from the mcdoc and must agree.
+    dataPackComponents: [
+      'banner_patterns',
+      'blocks_attacks',
+      'cat/sound_variant',
+      'cat/variant',
+      'chicken/sound_variant',
+      'chicken/variant',
+      'cow/sound_variant',
+      'cow/variant',
+      'damage_resistant',
+      'damage_type',
+      'enchantments',
+      'frog/variant',
+      'instrument',
+      'jukebox_playable',
+      'painting/variant',
+      'pig/sound_variant',
+      'pig/variant',
+      'provides_banner_patterns',
+      'provides_trim_material',
+      'stored_enchantments',
+      'trim',
+      'wolf/sound_variant',
+      'wolf/variant',
+      'zombie_nautilus/variant',
+    ],
     // rangedPull: verified 2026-11-06 against mcmeta's 26.4-snapshot-7-assets assets/minecraft/items/bow.json
     // and crossbow.json.
     rangedPull: {

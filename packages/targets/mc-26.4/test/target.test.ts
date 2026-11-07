@@ -191,4 +191,73 @@ describe('target mc-26.4', () => {
     }
     expect(JSON.stringify(attributes[bare(facts.naturalMobSpawns)])).toContain('NaturalMobSpawns');
   });
+  it('lists the data components that name data pack registry entries, as the mcdoc does', async () => {
+    const symbols = (await readJson('../vendor/vanilla-mcdoc/symbols.json')) as {
+      mcdoc: Record<string, unknown>;
+      'mcdoc/dispatcher': Record<string, Record<string, unknown>>;
+    };
+    // The game's data pack (dynamic) registries a data component can name (ADR 0050).
+    const dataPack = new Set([
+      'banner_pattern',
+      'cat_sound_variant',
+      'cat_variant',
+      'chicken_sound_variant',
+      'chicken_variant',
+      'cow_sound_variant',
+      'cow_variant',
+      'damage_type',
+      'enchantment',
+      'frog_variant',
+      'instrument',
+      'jukebox_song',
+      'painting_variant',
+      'pig_sound_variant',
+      'pig_variant',
+      'trim_material',
+      'trim_pattern',
+      'wolf_sound_variant',
+      'wolf_variant',
+      'zombie_nautilus_variant',
+    ]);
+    type Node = Record<string, unknown>;
+    const attribute = (node: Node, name: string): Node | undefined =>
+      (node.attributes as Node[] | undefined)?.find((entry) => entry.name === name)?.value as
+        | Node
+        | undefined;
+    const literal = (value: Node | undefined): unknown =>
+      value?.kind === 'literal' ? (value.value as Node).value : undefined;
+    const registriesOf = (node: unknown, seen: Set<string>, out: Set<string>): void => {
+      if (Array.isArray(node)) {
+        for (const entry of node) registriesOf(entry, seen, out);
+        return;
+      }
+      if (typeof node !== 'object' || node === null) return;
+      const value = node as Node;
+      if (attribute(value, 'until') !== undefined) return;
+      const id = attribute(value, 'id');
+      const named =
+        id?.kind === 'tree' ? literal((id.values as Record<string, Node>).registry) : literal(id);
+      if (typeof named === 'string') out.add(named);
+      if (value.kind === 'reference') {
+        const path = value.path as string;
+        if (seen.has(path)) return;
+        seen.add(path);
+        registriesOf(symbols.mcdoc[path], seen, out);
+        return;
+      }
+      for (const [key, child] of Object.entries(value)) {
+        if (key !== 'attributes') registriesOf(child, seen, out);
+      }
+    };
+    const components = symbols['mcdoc/dispatcher']['minecraft:data_component'] ?? {};
+    const derived = Object.entries(components)
+      .filter(([, schema]) => {
+        const out = new Set<string>();
+        registriesOf(schema, new Set(), out);
+        return [...out].some((registry) => dataPack.has(registry));
+      })
+      .map(([id]) => id)
+      .sort();
+    expect(target.items?.dataPackComponents).toEqual(derived);
+  });
 });

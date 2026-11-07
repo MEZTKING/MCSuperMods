@@ -122,7 +122,7 @@ An item can be only one of armour, tool, ranged weapon and shield. The Creator's
 
 ## Vanilla components
 
-For anything the components above do not cover, `msm:components` passes vanilla item data components through by id, in their vanilla JSON form, for example `"minecraft:glider": {}` or `"minecraft:use_cooldown": { "seconds": 2 }`. **Problems** checks each one against the project's Minecraft version. MCSuperMods' own components win: setting the same thing twice (for example `msm:food` and `minecraft:food`) is an error. Components that point into a data pack registry work only for `minecraft:jukebox_playable`, `minecraft:provides_trim_material` and `minecraft:trim` (the Music disc flow and the Gear set's trim material use them); others are refused when the game loads.
+For anything the components above do not cover, `msm:components` passes vanilla item data components through by id, in their vanilla JSON form, for example `"minecraft:glider": {}` or `"minecraft:use_cooldown": { "seconds": 2 }`. **Problems** checks each one against the project's Minecraft version. MCSuperMods' own components win: setting the same thing twice (for example `msm:food` and `minecraft:food`) is an error. Components that point into a data pack registry work only for `minecraft:jukebox_playable`, `minecraft:provides_trim_material`, `minecraft:trim`, `minecraft:damage_resistant`, `minecraft:blocks_attacks` and `minecraft:damage_type` (the Music disc flow and the Gear set's trim material use some of them); others, such as `minecraft:enchantments` or a painting or mob variant, are refused when the game loads, and **Problems** warns about them as you write them.
 
 ## Export a Fabric mod jar
 

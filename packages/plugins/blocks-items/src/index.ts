@@ -15,6 +15,7 @@ export { blocksItemsTemplates, modIdFromNamespace } from './templates';
 export {
   BLOCKS_ITEMS_PROBLEM_CODES,
   blocksItemsValidators,
+  DELAYED_PASSTHROUGH_COMPONENTS,
   EQUIPMENT_KIND,
   EXCLUSIVE_ITEM_COMPONENTS,
   MOD_ID_PATTERN,
