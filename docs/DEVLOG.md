@@ -2970,4 +2970,5 @@ Next: release after 1.2.0 when the user wants one; other follow-ups (vanilla-tie
 
 What: `ItemFacts.dataPackComponents` (plugin API 1.4.0) in both targets, derived from the vendored vanilla-mcdoc (24 components naming data pack registries, the same for 26.3 and 26.4), with a test per target that derives it again; validator `blocks-items.passthrough-needs-data-pack` (warning) for entries outside `DELAYED_PASSTHROUGH_COMPONENTS`, which a test keeps equal to `ComponentPassthrough.DELAYED` in the runtime. Guide, CHANGELOG, ADR 0044 follow-up note, HANDOFF.
 Decisions: a warning, not an error (export still works); the set of data pack registries lives in the target tests.
-Next: vanilla-tier weapon numbers in the Creator Stats via `TargetFacts`; optional `ArmorDefense.body`.
+Also (ADR 0050 D3): `ItemFacts.vanillaTools` (`VanillaToolStats`) in both targets from misode/mcmeta's `item_components` summaries (identical for 26.3 and 26.4); `bundleStats(bundle, vanillaTools)` shows the numbers for vanilla-tier tools; tests in both targets and `creator-gear-preview`.
+Next: optional `ArmorDefense.body`; a release after 1.2.0 when the user wants one.

@@ -13,6 +13,7 @@ import type {
   ProjectStarter,
   StarterParameter,
   TargetFacts,
+  VanillaToolStats,
 } from '@msm/plugin-api';
 import type { CreatorEntryStatus } from '../../changeset/creator-sets';
 import type { ArmourPiece } from '../../preview/geo/armour';
@@ -285,7 +286,26 @@ function minesLike(tag: unknown): string | undefined {
     : `mines for drops what a ${word} tool mines`;
 }
 
-function toolLines(tool: JsonObject): string[] {
+/** Vanilla tool numbers by tier and type (`ItemFacts.vanillaTools`, ADR 0050). */
+export type VanillaTools = Readonly<Record<string, Readonly<Record<string, VanillaToolStats>>>>;
+
+/** The facts key of a tier name: `wood` and `gold` are `wooden` and `golden`. */
+const TIER_KEYS: Readonly<Record<string, string>> = { wood: 'wooden', gold: 'golden' };
+
+/** "Attack damage 6, 1.6 attacks per second, durability 250, …" for a vanilla tool. */
+function vanillaToolLine(stats: VanillaToolStats, tier: string, type: string): string {
+  const parts = [
+    `attack damage ${stats.attackDamage}`,
+    `${stats.attackSpeed} attacks per second`,
+    `durability ${stats.durability}`,
+    ...(stats.miningSpeed === undefined ? [] : [`mining speed ${stats.miningSpeed}`]),
+    `enchantability ${stats.enchantability}`,
+  ];
+  const text = parts.join(', ');
+  return `${text.charAt(0).toUpperCase()}${text.slice(1)}, as a vanilla ${tier} ${type}.`;
+}
+
+function toolLines(tool: JsonObject, vanillaTools?: VanillaTools): string[] {
   const type = typeof tool.type === 'string' ? tool.type : 'tool';
   const lines: string[] = [];
   const tier = tool.tier;
@@ -310,8 +330,18 @@ function toolLines(tool: JsonObject): string[] {
   if (damage !== undefined) lines.push(`Attack damage set to ${damage}.`);
   const speed = num(tool.attack_speed);
   if (speed !== undefined) lines.push(`Attack speed set to ${speed}.`);
-  if (damage === undefined && speed === undefined && typeof tier === 'string') {
-    lines.push(`Attack damage and speed of a vanilla ${TIER_WORDS[tier] ?? tier} ${type}.`);
+  if (typeof tier === 'string') {
+    const words = TIER_WORDS[tier] ?? tier;
+    const stats = vanillaTools?.[TIER_KEYS[tier] ?? tier]?.[type];
+    if (stats !== undefined && damage === undefined && speed === undefined) {
+      lines.push(vanillaToolLine(stats, words, type));
+    } else if (stats !== undefined) {
+      lines.push(
+        `A vanilla ${words} ${type} has attack damage ${stats.attackDamage} and ${stats.attackSpeed} attacks per second.`,
+      );
+    } else if (damage === undefined && speed === undefined) {
+      lines.push(`Attack damage and speed of a vanilla ${words} ${type}.`);
+    }
   }
   if (type === 'spear') lines.push('Attacks with a charged thrust and a quick jab.');
   if (type === 'mace') lines.push('Hits harder the further its holder falls before the hit.');
@@ -472,14 +502,15 @@ function blockLines(data: JsonObject): string[] {
 }
 
 /** The Stats tab: tools, armour, food and blocks of a bundle in words. */
-export function bundleStats(bundle: ContentBundle): StatsCard[] {
+export function bundleStats(bundle: ContentBundle, vanillaTools?: VanillaTools): StatsCard[] {
   const cards: StatsCard[] = [];
   for (const item of bundleItems(bundle)) {
     if (!isObject(item.data)) continue;
     const components = isObject(item.data.components) ? item.data.components : {};
     const lines: string[] = [];
     let effects: EffectRow[] = [];
-    if (isObject(components['msm:tool'])) lines.push(...toolLines(components['msm:tool']));
+    if (isObject(components['msm:tool']))
+      lines.push(...toolLines(components['msm:tool'], vanillaTools));
     if (isObject(components['msm:ranged_weapon'])) {
       lines.push(...rangedLines(components['msm:ranged_weapon']));
     }

@@ -50,6 +50,7 @@ import {
   CREATOR_TABS,
   type CreatorTab,
   equipmentTexturePath,
+  type VanillaTools,
 } from './creator-model';
 
 /** The effects of a Stats card as a table. */
@@ -122,6 +123,8 @@ export interface CreatorPreviewProps {
   onOverwriteChange(key: string, overwrite: boolean): void;
   tab: CreatorTab;
   onTabChange(tab: CreatorTab): void;
+  /** The target's vanilla tool numbers for the Stats tab (ADR 0050). */
+  vanillaTools?: VanillaTools | undefined;
   /** Test hook: overrides WebGL detection. */
   webgl?: boolean;
 }
@@ -340,7 +343,7 @@ export function CreatorPreview(props: CreatorPreviewProps) {
   const name = (id: string): string | undefined =>
     displayName(bundle, id, 'item') ?? displayName(bundle, id, 'block');
   const recipes = bundleRecipes(bundle);
-  const stats = bundleStats(bundle);
+  const stats = bundleStats(bundle, props.vanillaTools);
   return (
     <Tabs.Root
       value={props.tab}

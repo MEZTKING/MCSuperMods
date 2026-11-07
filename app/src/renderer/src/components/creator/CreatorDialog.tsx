@@ -479,6 +479,7 @@ export function CreatorDialog(props: CreatorDialogProps) {
                   </p>
                 ) : (
                   <CreatorPreview
+                    vanillaTools={session.target.items?.vanillaTools}
                     bundle={built.bundle}
                     revision={built.revision}
                     plan={hasErrors ? null : built.plan}

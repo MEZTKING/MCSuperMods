@@ -195,6 +195,25 @@ export interface ItemFacts {
    * Since 1.4.0 (ADR 0050).
    */
   dataPackComponents?: readonly string[];
+  /**
+   * The numbers of each vanilla tool as its tooltip shows them, by tier (`wooden`, `stone`,
+   * `copper`, `iron`, `golden`, `diamond`, `netherite`) and tool type (`sword`, `pickaxe`,
+   * `axe`, `shovel`, `hoe`, `spear`). The Creator's Stats tab shows them for a tool of a
+   * vanilla tier. Since 1.4.0 (ADR 0050).
+   */
+  vanillaTools?: Readonly<Record<string, Readonly<Record<string, VanillaToolStats>>>>;
+}
+
+/** One vanilla tool's numbers (ADR 0050). Since 1.4.0. */
+export interface VanillaToolStats {
+  /** Attack damage, the player's base of 1 included. */
+  attackDamage: number;
+  /** Attacks per second, the player's base of 4 included. */
+  attackSpeed: number;
+  durability: number;
+  /** Mining speed on the blocks it is made for; absent for swords and spears. */
+  miningSpeed?: number;
+  enchantability: number;
 }
 
 /** The pull animation facts of vanilla's `items/bow.json` and `items/crossbow.json`. Since 1.3.0. */

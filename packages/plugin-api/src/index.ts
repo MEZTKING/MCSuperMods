@@ -76,6 +76,7 @@ export type {
   Target,
   TargetChannel,
   TargetFacts,
+  VanillaToolStats,
   WorldgenFacts,
 } from './target';
 export { API_VERSION } from './version';

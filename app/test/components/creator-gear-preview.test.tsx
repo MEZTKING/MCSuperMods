@@ -193,6 +193,17 @@ describe('Creator card model', () => {
     expect(spear).toContain('A spear of the vanilla iron tier.');
     expect(spear).toContain('Attack damage and speed of a vanilla iron spear.');
     expect(spear).toContain('Breaks after 500 uses.');
+    // With the target's vanilla tool numbers (ADR 0050): the numbers instead of the words.
+    const facts = session.target.items?.vanillaTools;
+    expect(facts).toBeDefined();
+    const numbered =
+      bundleStats(await build(session, 'weapon', {}), facts).find(
+        (card) => card.id === 'demo:ruby_spear',
+      )?.lines ?? [];
+    expect(numbered).toContain(
+      'Attack damage 3, 1.05 attacks per second, durability 250, enchantability 14, as a vanilla iron spear.',
+    );
+    expect(numbered).not.toContain('Attack damage and speed of a vanilla iron spear.');
     const custom = await stat({ custom_damage: true, attack_damage: 7, attack_speed: -3 });
     expect(custom).toContain('Attack damage set to 7.');
     expect(custom).toContain('Attack speed set to -3.');

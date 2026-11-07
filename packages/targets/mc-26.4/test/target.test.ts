@@ -260,4 +260,26 @@ describe('target mc-26.4', () => {
       .sort();
     expect(target.items?.dataPackComponents).toEqual(derived);
   });
+  it('has the vanilla tool numbers for every tier and tool type', () => {
+    const tools = target.items?.vanillaTools ?? {};
+    const tiers = ['wooden', 'stone', 'copper', 'iron', 'golden', 'diamond', 'netherite'];
+    expect(Object.keys(tools)).toEqual(tiers);
+    for (const tier of tiers) {
+      expect(Object.keys(tools[tier] ?? {})).toEqual([
+        'sword',
+        'pickaxe',
+        'axe',
+        'shovel',
+        'hoe',
+        'spear',
+      ]);
+    }
+    expect(tools.iron?.sword).toEqual({
+      attackDamage: 6,
+      attackSpeed: 1.6,
+      durability: 250,
+      enchantability: 14,
+    });
+    expect(tools.diamond?.pickaxe?.miningSpeed).toBe(8);
+  });
 });

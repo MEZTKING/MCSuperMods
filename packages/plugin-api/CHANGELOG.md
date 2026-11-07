@@ -6,6 +6,7 @@ All changes to the `@msm/plugin-api` surface. The package follows semver; every 
 
 Sound files in starters (ADR 0049). `API_VERSION` is `1.4.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
 
+- `ItemFacts.vanillaTools?` with `VanillaToolStats` (`attackDamage`, `attackSpeed`, `durability`, `miningSpeed?`, `enchantability`): each vanilla tool's tooltip numbers by tier and type, for the Creator's Stats.
 - `ItemFacts.dataPackComponents?: readonly string[]`: the data components whose value names a data pack registry entry (ADR 0050), for the `msm:components` validator.
 - `AudioStarterParameter` (`type: 'audio'`, `default: null`, `maxBytes?` (absent means 8 388 608 bytes)): a sound the user picks, passed to `build` as an Ogg Vorbis `data:` URL string (`data:audio/ogg;base64,...`) or `null`. The host checks the Ogg signature, the Vorbis identification header and the size before passing it. A member of the `StarterParameter` union; the built-in Music disc flow reads it.
 
