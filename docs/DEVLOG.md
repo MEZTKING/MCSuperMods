@@ -2973,3 +2973,9 @@ Decisions: a warning, not an error (export still works); the set of data pack re
 Also (ADR 0050 D3): `ItemFacts.vanillaTools` (`VanillaToolStats`) in both targets from misode/mcmeta's `item_components` summaries (identical for 26.3 and 26.4); `bundleStats(bundle, vanillaTools)` shows the numbers for vanilla-tier tools; tests in both targets and `creator-gear-preview`.
 Also (ADR 0050 D4): optional `defense.body` in the MSM mcdoc (symbols rebuilt), the runtime `Defense` record (`Optional<Integer> body`, `bodyOrChestplate()`; JUnit constructor updated; checked by CI only, no local JDK), the 26.3 Java generator (`ArmorType.BODY`), the Creator's Stats; corpus cases `item-armor-wolf-body` and `item-armor-negative-body`; targets CHANGES rows for `vanillaTools` and `dataPackComponents`.
 Next: the ADR 0044 follow-ups are all closed; a release after 1.2.0 when the user wants one.
+
+## 2026-11-07 — main session — Prepare 1.3.0
+
+What: app `package.json` and `engine-mod` `mod_version` 1.3.0; CHANGELOG `[1.3.0] - 2026-11-07` (Music disc song files, body armour defence, tool numbers in Stats, passthrough warning, plugin API 1.4.0); status lines in the CLAUDE.md files, README, ADR 0049 and 0050 status, ROADMAP row and HANDOFF state.
+Decisions: 1.3.0 is drafted on top of the unpublished 1.1.0 and 1.2.0 drafts; publishing 1.3.0 alone delivers all three. The release attaches `msm-plugin-api-1.4.0.tgz`.
+Next: draft via `release.yml` after green CI; publish only after the user's Windows test.

@@ -18,4 +18,4 @@
 
 ## Status
 
-Accepted (2026-11-07); closes the ADR 0044 follow-ups (passthrough validator, vanilla weapon numbers, `ArmorDefense.body`).
+Accepted (2026-11-07); closes the ADR 0044 follow-ups (passthrough validator, vanilla weapon numbers, `ArmorDefense.body`); for app 1.3.0.

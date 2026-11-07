@@ -17,4 +17,4 @@ The Music disc flow (ADR 0044 D6) bundles no sound: its sound event plays the va
 
 ## Status
 
-Accepted (2026-11-07), continuing the follow-ups after 1.2.0 on the user's "Continue".
+Accepted (2026-11-07), continuing the follow-ups after 1.2.0 on the user's "Continue"; for app 1.3.0.
