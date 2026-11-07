@@ -70,7 +70,7 @@ const fixtures = join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'patt
  * `test/fixtures/patterns/` that pin every pattern. Change only with intent.
  */
 const PINNED: Partial<Record<PlaceholderPattern, string>> = {
-  plain: 'e2563b46f1e0fdeb9573b858679df99709fbc72c7b85af99151d55ea6cf1a9aa',
+  plain: '686adcd9ce1a6a5db33762b08424a13d6991cffca309a11c5bcf24f1d7883bd3',
   ore: '1ac06b1c99f1e7dc187b47b4851ad9700f5fc8711417bf63ff07d47b14a89215',
   gem: '875d1b156d354c2310f5167f3fa6803eea063b38adc7b35d501a1882e5482c28',
   disc: 'a8c7d397e6b78ba544c7657e79cb03363ace66f202c081bf5619edb3acfb0b95',

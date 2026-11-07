@@ -10,6 +10,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - **New texture…**: paint a texture from a blank picture, sized for an item, a block, an armour layer or a painting. Undo removes it again.
 
+### Changed
+
+- Better placeholder art: thicker pickaxe, axe, shovel and hoe heads with two-tone wooden handles, a panelled storage block, a shaded ingot and grain on the worn armour layers.
+
 ## [1.1.0] - 2026-11-06
 
 Easier to use, a live preview beside the form, painting, and modpacks. Projects from 1.0.0 open unchanged; your current view stays as it was until you switch to Easy mode.

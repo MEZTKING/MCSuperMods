@@ -213,12 +213,20 @@ function hash(x: number, y: number, salt: number): number {
 
 type Pixel = (x: number, y: number) => Rgba;
 
+/**
+ * A storage block: a bevelled outer edge, an inset panel with its own shadow and light edges,
+ * a little grain and a highlight in the top-left corner.
+ */
 function plain(palette: Palette): Pixel {
   const last = PLACEHOLDER_SIZE - 1;
   return (x, y) => {
     if (x === 0 || y === 0) return palette.light;
     if (x === last || y === last) return palette.deep;
-    return palette.mid;
+    const inPanel = x >= 2 && x <= last - 2 && y >= 2 && y <= last - 2;
+    if (inPanel && (x === 2 || y === 2)) return palette.deep;
+    if (inPanel && (x === last - 2 || y === last - 2)) return palette.light;
+    if ((x === 3 && y <= 5 && y >= 3) || (y === 3 && x <= 5 && x >= 3)) return palette.shine;
+    return hash(x, y, 11) % 9 === 0 ? palette.deep : palette.mid;
   };
 }
 
@@ -359,81 +367,123 @@ function sword(palette: Palette): Pixel {
  */
 type Mask = readonly string[];
 
-const PICKAXE: Mask = [
-  '................',
-  '.....xxxxxx.....',
-  '....xxxxxxxx....',
-  '...xx......xx...',
-  '..xx.......xxx..',
-  '..........h..xx.',
-  '.........h...xx.',
-  '........h....xx.',
-  '.......h.....xx.',
-  '......h......xx.',
-  '.....h.......xx.',
-  '....h.......xx..',
-  '...h.......xx...',
-  '..h........x....',
-  '.g..............',
-  '................',
-];
+/** A mask as a mutable grid of characters. */
+const gridOf = (mask: Mask): string[][] => mask.map((row) => [...row]);
+const maskOf = (grid: readonly string[][]): Mask => grid.map((row) => row.join(''));
 
-const AXE: Mask = [
-  '................',
-  '.......xxx......',
-  '......xxxxx.....',
-  '.....xxxxxxxh...',
-  '....xxxxxxxh....',
-  '.....xxxxxh.....',
-  '......xxxh......',
-  '.......xh.......',
-  '.......h........',
-  '......h.........',
-  '.....h..........',
-  '....h...........',
-  '...h............',
-  '..h.............',
-  '.g..............',
-  '................',
-];
+/**
+ * A diagonal tool from a head mask (only `x` pixels): with `mirror`, the head is made
+ * symmetric about the handle's axis (the diagonal `x + y = 15`), then a two-tone wooden
+ * handle runs from the bottom-left corner up to column `top` behind the head.
+ */
+function toolMask(head: Mask, top: number, mirror: boolean): Mask {
+  const grid = gridOf(head);
+  if (mirror) {
+    for (let y = 0; y < PLACEHOLDER_SIZE; y += 1) {
+      for (let x = 0; x < PLACEHOLDER_SIZE; x += 1) {
+        if (head[15 - x]?.[15 - y] === 'x') (grid[y] as string[])[x] = 'x';
+      }
+    }
+  }
+  for (let x = 1; x <= top; x += 1) {
+    const row = grid[15 - x] as string[];
+    if (row[x] === '.') row[x] = x === 1 ? 'g' : 'h';
+    if (x > 1 && row[x + 1] === '.') row[x + 1] = 'g';
+  }
+  return maskOf(grid);
+}
 
-const SHOVEL: Mask = [
-  '................',
-  '............xx..',
-  '...........xxxx.',
-  '..........xxxxx.',
-  '..........xxxx..',
-  '..........xxx...',
-  '.........h......',
-  '........h.......',
-  '.......h........',
-  '......h.........',
-  '.....h..........',
-  '....h...........',
-  '...h............',
-  '..h.............',
-  '.g..............',
-  '................',
-];
+const PICKAXE: Mask = toolMask(
+  [
+    '................',
+    '....xxxxx.......',
+    '..xxxxxxxxx.....',
+    '.xxx.....xxx....',
+    '.xx.......xx....',
+    '.x..............',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
+  11,
+  true,
+);
 
-const HOE: Mask = [
-  '................',
-  '................',
-  '.......xxxxxx...',
-  '.......xxxxxx...',
-  '.......x...h....',
-  '..........h.....',
-  '.........h......',
-  '........h.......',
-  '.......h........',
-  '......h.........',
-  '.....h..........',
-  '....h...........',
-  '...h............',
-  '..h.............',
-  '.g..............',
-  '................',
-];
+const AXE: Mask = toolMask(
+  [
+    '................',
+    '.....xxx........',
+    '....xxxxx.......',
+    '...xxxxxxx......',
+    '...xxxxxxxx.....',
+    '....xxxxxxxx....',
+    '.....xxxx.......',
+    '......xx........',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
+  13,
+  false,
+);
+
+const SHOVEL: Mask = toolMask(
+  [
+    '................',
+    '...........xxx..',
+    '..........xxxxx.',
+    '.........xxxxxx.',
+    '........xxxxxx..',
+    '........xxxxx...',
+    '.........xxx....',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
+  8,
+  false,
+);
+
+const HOE: Mask = toolMask(
+  [
+    '................',
+    '......xxxxxxx...',
+    '.....xxxxxxxxx..',
+    '.....xxx........',
+    '.....xx.........',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
+  13,
+  false,
+);
 
 const HELMET: Mask = [
   '................',
@@ -517,13 +567,13 @@ const INGOT: Mask = [
   '................',
   '................',
   '................',
-  '................',
-  '.....xxxxxxx....',
-  '....xssxxxxxx...',
-  '...xxxxxxxxxxx..',
-  '..xxxxxxxxxxxxx.',
-  '..xxxxxxxxxxxxx.',
-  '................',
+  '......ddddddd...',
+  '.....dllllllld..',
+  '....dlssllllldd.',
+  '...ddddddddddmd.',
+  '...dmmmmmmmmdmd.',
+  '...dmmmmmmmmdd..',
+  '...dddddddddd...',
   '................',
   '................',
   '................',
@@ -862,16 +912,18 @@ function maskPattern(mask: Mask): (palette: Palette) => Pixel {
     const row = mask[y];
     return row !== undefined && x >= 0 && x < row.length && row[x] !== '.';
   };
+  // Worn layers (wider than an item) get a little grain so their faces are not flat.
+  const grain = (mask[0]?.length ?? 0) > PLACEHOLDER_SIZE;
   return (palette) => (x, y) => {
     switch (mask[y]?.[x]) {
       case 'x':
         if (!opaque(x + 1, y) || !opaque(x, y + 1)) return palette.dark;
         if (!opaque(x - 1, y) || !opaque(x, y - 1)) return palette.light;
-        return palette.mid;
+        return grain && hash(x, y, 13) % 7 === 0 ? palette.deep : palette.mid;
       case 'd':
         return palette.dark;
       case 'm':
-        return palette.mid;
+        return grain && hash(x, y, 13) % 7 === 0 ? palette.deep : palette.mid;
       case 'l':
         return palette.light;
       case 's':
@@ -891,10 +943,6 @@ function maskPattern(mask: Mask): (palette: Palette) => Pixel {
     }
   };
 }
-
-/** A mask as a mutable grid of characters. */
-const gridOf = (mask: Mask): string[][] => mask.map((row) => [...row]);
-const maskOf = (grid: readonly string[][]): Mask => grid.map((row) => row.join(''));
 
 /**
  * Draws a line of `char` from (x0, y0) to (x1, y1) (Bresenham). With `over` false only empty
