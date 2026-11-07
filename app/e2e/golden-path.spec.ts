@@ -4,7 +4,15 @@
  * form, export to a zip, then a second launch that reopens the saved project.
  */
 
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
@@ -92,6 +100,23 @@ test('new project, block model, texture, export zip, reopen', async () => {
   await painter.getByTestId('texture-save').click();
   await expect(painter).toBeHidden();
   await expect.poll(() => readFileSync(paintedPath).equals(before)).toBe(false);
+
+  // Paint a new texture from a blank picture (New texture…), saved into textures/item.
+  await window.getByTestId(`assets-new-texture-${NAMESPACE}`).click();
+  const newTexture = window.getByTestId('new-texture-dialog');
+  await newTexture.getByTestId('new-texture-name').fill('blank_gem');
+  await newTexture.getByRole('button', { name: 'Paint…' }).click();
+  const blankPainter = window.getByTestId('texture-editor');
+  await expect(blankPainter.getByTestId('texture-canvas')).toBeVisible();
+  await blankPainter.getByTestId('texture-canvas').click({ position: { x: 20, y: 20 } });
+  await blankPainter.getByTestId('texture-save').click();
+  await expect(blankPainter).toBeHidden();
+  await expect(
+    window.getByTestId(`asset-row-${NAMESPACE}:textures/item/blank_gem.png`),
+  ).toBeVisible();
+  expect(
+    existsSync(join(folders.projectDir, 'assets', NAMESPACE, 'textures', 'item', 'blank_gem.png')),
+  ).toBe(true);
 
   // Point textures.all at the imported texture, through the form.
   await window.getByTestId(`element-row-${ELEMENT_ID}`).click();

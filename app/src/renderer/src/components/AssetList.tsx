@@ -13,6 +13,8 @@ export interface AssetActions {
   onReveal?(namespace: string, path: string): void;
   /** Opens a PNG texture in the pixel editor (ADR 0047 D5). */
   onPaint?(namespace: string, path: string): void;
+  /** Starts a new, blank texture in the pixel editor. */
+  onNewTexture?(namespace: string): void;
   /** Loads a PNG thumbnail for a project-relative asset path (`assets/<ns>/...png`). */
   thumbnail?(assetPath: string, size: number): Promise<Uint8Array>;
   /** Changes when asset bytes may have changed (re-import), so thumbnails reload. */
@@ -140,10 +142,22 @@ export function AssetList(props: {
     <section aria-label={`${namespace} assets`} className="ml-1">
       <div className="flex items-center gap-1">
         <h3 className={headingClass}>Assets</h3>
-        {actions.onImport !== undefined && (
+        {actions.onNewTexture !== undefined && (
           <button
             type="button"
             className={`${iconButtonClass} mt-2 ml-auto`}
+            aria-label={`Paint a new texture in ${namespace}`}
+            title="New texture…"
+            data-testid={`assets-new-texture-${namespace}`}
+            onClick={() => actions.onNewTexture?.(namespace)}
+          >
+            <Paintbrush size={14} aria-hidden />
+          </button>
+        )}
+        {actions.onImport !== undefined && (
+          <button
+            type="button"
+            className={`${iconButtonClass} mt-2 ${actions.onNewTexture === undefined ? 'ml-auto' : ''}`}
             aria-label={`Import textures or sounds into ${namespace}`}
             title="Import textures…"
             data-testid={`assets-import-${namespace}`}

@@ -37,8 +37,10 @@ const CLEAR: Rgba = [0, 0, 0, 0];
 export interface TextureEditorDialogProps {
   /** Shown in the title, for example `ruby_mod:textures/item/ruby.png`. */
   name: string;
-  /** The PNG to edit. */
-  bytes: Uint8Array;
+  /** The PNG to edit, or `null` for a new, transparent picture of `size`. */
+  bytes: Uint8Array | null;
+  /** The size of a new picture (used when `bytes` is `null`; 16 × 16 by default). */
+  size?: { width: number; height: number };
   /** Saves the edited PNG (the host writes it as one undoable step). */
   onSave(bytes: Uint8Array): Promise<void> | void;
   onClose(): void;
@@ -84,7 +86,7 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
   const [tool, setTool] = useState<Tool>('pencil');
   const [colour, setColour] = useState<Rgba>([200, 40, 60, 255]);
   const [zoom, setZoom] = useState(16);
-  const [dirty, setDirty] = useState(false);
+  const [dirty, setDirty] = useState(props.bytes === null);
   const [saving, setSaving] = useState(false);
   const [, setTick] = useState(0);
   const history = useRef(new PixelHistory());
@@ -94,6 +96,12 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
 
   useEffect(() => {
     let live = true;
+    if (props.bytes === null) {
+      const width = props.size?.width ?? 16;
+      const height = props.size?.height ?? 16;
+      setImage({ width, height, data: new Uint8ClampedArray(width * height * 4) });
+      return;
+    }
     decodePng(props.bytes).then(
       (decoded) => {
         if (live) setImage(decoded);
@@ -105,7 +113,7 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
     return () => {
       live = false;
     };
-  }, [props.bytes]);
+  }, [props.bytes, props.size?.width, props.size?.height]);
 
   // Redraw the zoomed canvas with a checkerboard under transparent pixels and a grid.
   useEffect(() => {

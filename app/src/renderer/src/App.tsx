@@ -74,6 +74,7 @@ import { StatusBar } from './components/StatusBar';
 import { StatusToast } from './components/StatusToast';
 import { TestInMinecraftDialog, testInMinecraftMessage } from './components/TestInMinecraftDialog';
 import { modKey, Toolbar, type ToolbarPluginExport } from './components/Toolbar';
+import { NewTextureDialog } from './components/texture-editor/NewTextureDialog';
 import { TextureEditorDialog } from './components/texture-editor/TextureEditorDialog';
 import { UpdateBanner, updateCheckMessage } from './components/UpdateBanner';
 import { UpgradeTargetDialog } from './components/UpgradeTargetDialog';
@@ -188,7 +189,14 @@ type DialogState =
   | { type: 'welcome' }
   | { type: 'modpacks' }
   | { type: 'ai-start' }
-  | { type: 'paint'; namespace: string; path: string; bytes: Uint8Array }
+  | {
+      type: 'paint';
+      namespace: string;
+      path: string;
+      bytes: Uint8Array | null;
+      size?: { width: number; height: number };
+    }
+  | { type: 'new-texture'; namespace: string }
   | { type: 'no-minecraft'; message: string };
 
 /**
@@ -1663,6 +1671,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                       }),
                   );
                 },
+                onNewTexture: (namespace) => setDialog({ type: 'new-texture', namespace }),
                 thumbnail,
                 revision: assetRevision,
               }}
@@ -1874,16 +1883,57 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
           <TextureEditorDialog
             name={`${dialog.namespace}:${dialog.path}`}
             bytes={dialog.bytes}
+            {...(dialog.size === undefined ? {} : { size: dialog.size })}
             onSave={async (bytes) => {
-              await session.applyChangeset([], `Paint ${dialog.path}`, {
-                writes: [{ namespace: dialog.namespace, path: dialog.path, bytes }],
-              });
+              const file = { namespace: dialog.namespace, path: dialog.path, bytes };
+              if (dialog.bytes === null) {
+                // A new texture: recorded as a project asset; Undo moves it to the trash.
+                const result = await session.applyChangeset(
+                  [
+                    {
+                      itemId: 'new-texture',
+                      op: 'asset',
+                      asset: file,
+                      accepted: true,
+                      problems: [],
+                    },
+                  ],
+                  `New texture ${dialog.path}`,
+                );
+                if (result.applied.length === 0)
+                  throw new Error(`${dialog.path} already exists: pick another name.`);
+              } else {
+                await session.applyChangeset([], `Paint ${dialog.path}`, { writes: [file] });
+              }
               setAssetRevision((revision) => revision + 1);
               setMessage({
                 kind: 'info',
-                text: `Painted ${dialog.path}. Undo restores the old picture.`,
+                text:
+                  dialog.bytes === null
+                    ? `Added ${dialog.namespace}:${dialog.path}. Undo removes it.`
+                    : `Painted ${dialog.path}. Undo restores the old picture.`,
               });
             }}
+            onClose={() => setDialog(null)}
+          />
+        )}
+        {dialog?.type === 'new-texture' && (
+          <NewTextureDialog
+            namespace={dialog.namespace}
+            existing={
+              project?.namespaces
+                .find((entry) => entry.name === dialog.namespace)
+                ?.assets.map((asset) => asset.path) ?? []
+            }
+            onPaint={({ kind, path }) =>
+              setDialog({
+                type: 'paint',
+                namespace: dialog.namespace,
+                path,
+                bytes: null,
+                size: { width: kind.width, height: kind.height },
+              })
+            }
             onClose={() => setDialog(null)}
           />
         )}

@@ -2935,3 +2935,9 @@ Next:
 
 **Next**
 - 1.1.0: version bump (`app/package.json`, `mod_version`), CHANGELOG `[1.1.0]` from `[Unreleased]`, `release.yml`, the user's test, publish.
+
+## 2026-11-07 — main session — New texture…
+
+What: the asset list's namespace heading has a brush (**New texture…**, `NewTextureDialog`): a name and a kind (item, block, armour layer, leggings layer, painting) fix the folder and size, and the texture editor opens on a blank picture (`bytes: null` plus `size`). Save records the PNG as a project asset through `applyChangeset` with one `asset` item, so Undo moves it to the trash. Unit test `NewTextureDialog.test.tsx`; golden-path e2e paints `textures/item/blank_gem.png`. Guide (creator) and CHANGELOG `[Unreleased]` updated.
+Decisions: a new texture uses an `asset` change item rather than `writes` (writes do not record assets, ADR 0045).
+Next: better placeholder art, an Easy-mode e2e, and publishing 1.1.0 once the user's Windows test passes.
