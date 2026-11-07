@@ -30,6 +30,7 @@ import {
 import { AiStartDialog } from './components/AiStartDialog';
 import { AiPanel } from './components/ai/AiPanel';
 import { AiController, useAiPanelStore } from './components/ai/ai-controller';
+import type { AiPicture } from './components/ai/ai-pictures';
 import { CommandPalette, type PaletteCommand } from './components/CommandPalette';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { CreatorDialog, type CreatorEditRequest } from './components/creator/CreatorDialog';
@@ -75,6 +76,7 @@ import { StatusToast } from './components/StatusToast';
 import { TestInMinecraftDialog, testInMinecraftMessage } from './components/TestInMinecraftDialog';
 import { modKey, Toolbar, type ToolbarPluginExport } from './components/Toolbar';
 import { NewTextureDialog } from './components/texture-editor/NewTextureDialog';
+import { PictureToTextureDialog } from './components/texture-editor/PictureToTextureDialog';
 import { TextureEditorDialog } from './components/texture-editor/TextureEditorDialog';
 import { UpdateBanner, updateCheckMessage } from './components/UpdateBanner';
 import { UpgradeTargetDialog } from './components/UpgradeTargetDialog';
@@ -195,8 +197,11 @@ type DialogState =
       path: string;
       bytes: Uint8Array | null;
       size?: { width: number; height: number };
+      /** The texture does not exist yet: Save adds it as a project asset. */
+      isNew?: boolean;
     }
   | { type: 'new-texture'; namespace: string }
+  | { type: 'picture'; namespace: string }
   | { type: 'no-minecraft'; message: string };
 
 /**
@@ -871,6 +876,28 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
 
   // Assets --------------------------------------------------------------------------------
 
+  /** Adds a new texture as a project asset in one undo step (Undo moves it to the trash). */
+  const addNewTexture = async (
+    namespace: string,
+    path: string,
+    bytes: Uint8Array,
+  ): Promise<void> => {
+    const result = await session.applyChangeset(
+      [
+        {
+          itemId: 'new-texture',
+          op: 'asset',
+          asset: { namespace, path, bytes },
+          accepted: true,
+          problems: [],
+        },
+      ],
+      `New texture ${path}`,
+    );
+    if (result.applied.length === 0) throw new Error(`${path} already exists: pick another name.`);
+    setAssetRevision((revision) => revision + 1);
+  };
+
   const importAssets = async (namespace: string, subfolder: string): Promise<string | null> => {
     const sounds = subfolder === 'sounds';
     let files: Awaited<ReturnType<MsmBridge['dialogs']['pickFiles']>>;
@@ -1273,14 +1300,17 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     }
     setDialog({ type: 'ai-start' });
   };
-  const startWithAi = async (description: string): Promise<void> => {
+  const startWithAi = async (
+    description: string,
+    pictures: readonly AiPicture[] = [],
+  ): Promise<void> => {
     setDialog(null);
     if (aiController === null) return;
     await openWith('New project', () => session.newProject());
     if (session.snapshot.project === null) return;
     aiController.open();
     aiController.setMode('build');
-    void aiController.send(description);
+    void aiController.send(description, [], pictures);
   };
   const toggleMode = (): void => {
     const next = usePreferences.getState().mode === 'easy' ? 'advanced' : 'easy';
@@ -1335,6 +1365,10 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     firstMod: () => setDialog({ type: 'welcome' }),
     toggleMode,
     newWithAi: buildWithAi,
+    pictureToTexture: needsNamespace(() => {
+      const namespace = selected?.id.split(':')[0] ?? project?.namespaces[0]?.name;
+      if (namespace !== undefined) setDialog({ type: 'picture', namespace });
+    }),
     modpacks: () => {
       if (bridge.modpacks === undefined) {
         setMessage({ kind: 'error', text: 'Modpacks are not available.' });
@@ -1408,6 +1442,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     modpacks: handlers.modpacks,
     toggleMode,
     newWithAi: aiController === null ? null : buildWithAi,
+    pictureToTexture: canAddElement ? handlers.pictureToTexture : null,
     aiHelper: aiController === null ? null : () => aiController.open(),
     aiExplainProblem:
       aiController === null || !aiKeySet || selectedProblem === null
@@ -1672,6 +1707,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                   );
                 },
                 onNewTexture: (namespace) => setDialog({ type: 'new-texture', namespace }),
+                onPicture: (namespace) => setDialog({ type: 'picture', namespace }),
                 thumbnail,
                 revision: assetRevision,
               }}
@@ -1886,22 +1922,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             {...(dialog.size === undefined ? {} : { size: dialog.size })}
             onSave={async (bytes) => {
               const file = { namespace: dialog.namespace, path: dialog.path, bytes };
-              if (dialog.bytes === null) {
-                // A new texture: recorded as a project asset; Undo moves it to the trash.
-                const result = await session.applyChangeset(
-                  [
-                    {
-                      itemId: 'new-texture',
-                      op: 'asset',
-                      asset: file,
-                      accepted: true,
-                      problems: [],
-                    },
-                  ],
-                  `New texture ${dialog.path}`,
-                );
-                if (result.applied.length === 0)
-                  throw new Error(`${dialog.path} already exists: pick another name.`);
+              if (dialog.bytes === null || dialog.isNew === true) {
+                await addNewTexture(dialog.namespace, dialog.path, bytes);
               } else {
                 await session.applyChangeset([], `Paint ${dialog.path}`, { writes: [file] });
               }
@@ -1909,11 +1931,48 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               setMessage({
                 kind: 'info',
                 text:
-                  dialog.bytes === null
+                  dialog.bytes === null || dialog.isNew === true
                     ? `Added ${dialog.namespace}:${dialog.path}. Undo removes it.`
                     : `Painted ${dialog.path}. Undo restores the old picture.`,
               });
             }}
+            onClose={() => setDialog(null)}
+          />
+        )}
+        {dialog?.type === 'picture' && (
+          <PictureToTextureDialog
+            namespace={dialog.namespace}
+            existing={
+              project?.namespaces
+                .find((entry) => entry.name === dialog.namespace)
+                ?.assets.map((asset) => asset.path) ?? []
+            }
+            pickPicture={async () => {
+              const [file] = await bridge.dialogs.pickFiles({
+                title: 'Choose a picture',
+                filters: [
+                  { name: 'Pictures', extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'] },
+                ],
+              });
+              return file === undefined ? null : { name: file.name, data: file.data };
+            }}
+            onAdd={async ({ path, bytes }) => {
+              await addNewTexture(dialog.namespace, path, bytes);
+              setMessage({
+                kind: 'info',
+                text: `Added ${dialog.namespace}:${path}. Undo removes it.`,
+              });
+            }}
+            onPaint={({ path, bytes, kind }) =>
+              setDialog({
+                type: 'paint',
+                namespace: dialog.namespace,
+                path,
+                bytes,
+                size: { width: kind.width, height: kind.height },
+                isNew: true,
+              })
+            }
             onClose={() => setDialog(null)}
           />
         )}
@@ -1940,7 +1999,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         {dialog?.type === 'ai-start' && (
           <AiStartDialog
             keySet={aiKeySet}
-            onStart={(description) => void startWithAi(description)}
+            onStart={(description, pictures) => void startWithAi(description, pictures)}
             onOpenSettings={() => {
               setDialog(null);
               handlers.settings();

@@ -24,6 +24,7 @@ import {
   TASK_BUDGET_MIN,
 } from './protocol';
 import type {
+  BetaImageBlockParam,
   BetaMessage,
   BetaMessageParam,
   BetaRawMessageStreamEvent,
@@ -144,7 +145,14 @@ export async function runAssistant(options: RunAssistantOptions): Promise<RunAss
   let outputErrors = 0;
   let requestSeq = 0;
 
-  const userContent: BetaTextBlockParam[] = [
+  // Pictures first, then the context and the message (ADR 0048).
+  const userContent: (BetaImageBlockParam | BetaTextBlockParam)[] = [
+    ...(request.images ?? []).map(
+      (image): BetaImageBlockParam => ({
+        type: 'image',
+        source: { type: 'base64', media_type: image.mediaType, data: image.data },
+      }),
+    ),
     ...request.contextBlocks.map((text): BetaTextBlockParam => ({ type: 'text', text })),
     { type: 'text', text: request.text },
   ];

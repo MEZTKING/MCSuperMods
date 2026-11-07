@@ -9,7 +9,6 @@
 import { Eraser, PaintBucket, Pencil, Pipette, Redo2, Undo2, ZoomIn, ZoomOut } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { pngDataUrl } from '../AssetList';
 import { Button } from '../ui/Button';
 import {
   floodFill,
@@ -22,6 +21,7 @@ import {
   setPixel,
   toHex,
 } from './pixels';
+import { decodePicture as decodePng, encodePicture as encodePng } from './png-canvas';
 
 type Tool = 'pencil' | 'eraser' | 'fill' | 'picker';
 
@@ -44,40 +44,6 @@ export interface TextureEditorDialogProps {
   /** Saves the edited PNG (the host writes it as one undoable step). */
   onSave(bytes: Uint8Array): Promise<void> | void;
   onClose(): void;
-}
-
-/** Decodes PNG bytes into RGBA pixels with an image and a canvas. */
-async function decodePng(bytes: Uint8Array): Promise<RgbaImage> {
-  const image = new Image();
-  image.src = pngDataUrl(bytes);
-  await image.decode();
-  const canvas = document.createElement('canvas');
-  canvas.width = image.naturalWidth;
-  canvas.height = image.naturalHeight;
-  const context = canvas.getContext('2d');
-  if (context === null) throw new Error('This computer cannot draw images here.');
-  context.drawImage(image, 0, 0);
-  const { data } = context.getImageData(0, 0, canvas.width, canvas.height);
-  return { width: canvas.width, height: canvas.height, data: new Uint8ClampedArray(data) };
-}
-
-/** Encodes RGBA pixels as PNG bytes. */
-function encodePng(image: RgbaImage): Uint8Array {
-  const canvas = document.createElement('canvas');
-  canvas.width = image.width;
-  canvas.height = image.height;
-  const context = canvas.getContext('2d');
-  if (context === null) throw new Error('This computer cannot draw images here.');
-  context.putImageData(
-    new ImageData(new Uint8ClampedArray(image.data), image.width, image.height),
-    0,
-    0,
-  );
-  const url = canvas.toDataURL('image/png');
-  const binary = atob(url.slice(url.indexOf(',') + 1));
-  const out = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index += 1) out[index] = binary.charCodeAt(index);
-  return out;
 }
 
 export function TextureEditorDialog(props: TextureEditorDialogProps) {

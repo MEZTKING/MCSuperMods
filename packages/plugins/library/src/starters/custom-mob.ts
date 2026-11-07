@@ -22,7 +22,9 @@ import {
 } from '../content/bundle';
 import { bipedAnimations, bipedGeometry } from '../content/entities';
 import {
+  decodePngDataUrl,
   hexFromRgb,
+  imageValue,
   NAME_MAX_LENGTH,
   NAME_PATTERN,
   nameForms,
@@ -34,6 +36,9 @@ import {
 
 /** The spawn egg's default spot colour: the ruby red at 71 per cent, as earlier versions drew it. */
 const EGG_SPOTS: Rgb = [139, 20, 37];
+
+/** The largest skin file the wizard accepts. */
+const SKIN_MAX_BYTES = 256 * 1024;
 
 /** The biome tags the wizard offers, with the words the notes use. */
 const BIOMES: readonly { tag: string; label: string; every: string; plural: string }[] = [
@@ -70,6 +75,29 @@ export const CUSTOM_MOB_PARAMETERS: readonly StarterParameter[] = Object.freeze(
     group: 'Mob',
     type: 'colour',
     default: hexFromRgb(COLOURS.ruby),
+  },
+  {
+    id: 'skin',
+    label: 'Skin',
+    description:
+      'A player skin PNG for the mob: 64 by 64 (its second layer, the hat and sleeves, shows too) or an old 64 by 32 one. Leave it empty for a placeholder in the skin colour.',
+    group: 'Mob',
+    type: 'image',
+    default: null,
+    maxBytes: SKIN_MAX_BYTES,
+    maxSize: 64,
+  },
+  {
+    id: 'arms',
+    label: 'Arms',
+    description: 'Slim arms are 3 pixels wide, for slim (Alex-style) skins.',
+    group: 'Mob',
+    type: 'choice',
+    default: 'classic',
+    choices: [
+      { value: 'classic', label: 'Classic (4 pixels)' },
+      { value: 'slim', label: 'Slim (3 pixels)' },
+    ],
   },
   {
     id: 'egg_colour',
@@ -134,6 +162,13 @@ export function customMobBundle(context: BundleContext): ContentBundle {
   const values = readValues(CUSTOM_MOB_PARAMETERS, context);
   const mob = nameForms(stringValue(values, 'mob_name'));
   const skinColour = rgbFromHex(stringValue(values, 'colour'), COLOURS.ruby);
+  const picked = decodePngDataUrl(imageValue(values, 'skin') ?? '');
+  // A 64 by 64 or a legacy 64 by 32 skin; any other size keeps the placeholder.
+  const playerSkin =
+    picked !== null && picked.width === 64 && (picked.height === 64 || picked.height === 32)
+      ? picked
+      : null;
+  const slim = stringValue(values, 'arms') === 'slim';
   const eggColour = rgbFromHex(stringValue(values, 'egg_colour'), COLOURS.ruby);
   const eggSpots = rgbFromHex(stringValue(values, 'egg_spot_colour'), EGG_SPOTS);
   const health = numberValue(values, 'health');
@@ -247,8 +282,13 @@ export function customMobBundle(context: BundleContext): ContentBundle {
       element(
         model,
         KINDS.geoModel,
-        bipedGeometry(mob.id),
-        'The GeckoLib geo model: a biped with body, head, arm and leg bones over a 64x64 texture. Replace it with your own by importing a Blockbench model; keep the bone names, or update the animations to match.',
+        bipedGeometry(mob.id, {
+          ...(playerSkin === null
+            ? {}
+            : { layout: playerSkin.height === 32 ? 'legacy' : 'modern', overlay: true }),
+          ...(slim ? { slim: true } : {}),
+        }),
+        `The GeckoLib geo model: a biped with body, head, arm and leg bones over ${playerSkin?.height === 32 ? 'an old 64x32 player skin (the left arm and leg mirror the right ones)' : playerSkin === null ? 'a 64x64 texture' : 'a 64x64 player skin, with its second layer (hat, jacket, sleeves and trousers) as slightly larger cubes'}${slim ? ', with slim 3-pixel arms' : ''}. Replace it with your own by importing a Blockbench model; keep the bone names, or update the animations to match.`,
       ),
       element(
         animations,
@@ -295,7 +335,9 @@ export function customMobBundle(context: BundleContext): ContentBundle {
       ),
     ],
     assets: [
-      skinTexture(namespace, `entity/${mob.id}`, skinColour),
+      playerSkin === null
+        ? skinTexture(namespace, `entity/${mob.id}`, skinColour)
+        : { namespace, path: `textures/entity/${mob.id}.png`, bytes: playerSkin.bytes },
       texture(namespace, `item/${mob.id}_spawn_egg`, 'egg', eggColour, eggSpots),
     ],
   };

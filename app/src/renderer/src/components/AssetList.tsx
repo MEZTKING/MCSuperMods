@@ -1,5 +1,13 @@
 import type { Asset } from '@msm/core';
-import { FileAudio, FileImage, FolderSearch, ImageUp, Paintbrush, Trash2 } from 'lucide-react';
+import {
+  FileAudio,
+  FileImage,
+  FolderSearch,
+  ImagePlus,
+  ImageUp,
+  Paintbrush,
+  Trash2,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { iconButtonClass } from './ui/Button';
 
@@ -15,6 +23,8 @@ export interface AssetActions {
   onPaint?(namespace: string, path: string): void;
   /** Starts a new, blank texture in the pixel editor. */
   onNewTexture?(namespace: string): void;
+  /** Turns a picture or screenshot into a texture (ADR 0048). */
+  onPicture?(namespace: string): void;
   /** Loads a PNG thumbnail for a project-relative asset path (`assets/<ns>/...png`). */
   thumbnail?(assetPath: string, size: number): Promise<Uint8Array>;
   /** Changes when asset bytes may have changed (re-import), so thumbnails reload. */
@@ -142,10 +152,22 @@ export function AssetList(props: {
     <section aria-label={`${namespace} assets`} className="ml-1">
       <div className="flex items-center gap-1">
         <h3 className={headingClass}>Assets</h3>
-        {actions.onNewTexture !== undefined && (
+        {actions.onPicture !== undefined && (
           <button
             type="button"
             className={`${iconButtonClass} mt-2 ml-auto`}
+            aria-label={`Turn a picture into a texture in ${namespace}`}
+            title="Picture to texture…"
+            data-testid={`assets-picture-${namespace}`}
+            onClick={() => actions.onPicture?.(namespace)}
+          >
+            <ImagePlus size={14} aria-hidden />
+          </button>
+        )}
+        {actions.onNewTexture !== undefined && (
+          <button
+            type="button"
+            className={`${iconButtonClass} mt-2 ${actions.onPicture === undefined ? 'ml-auto' : ''}`}
             aria-label={`Paint a new texture in ${namespace}`}
             title="New texture…"
             data-testid={`assets-new-texture-${namespace}`}
@@ -157,7 +179,7 @@ export function AssetList(props: {
         {actions.onImport !== undefined && (
           <button
             type="button"
-            className={`${iconButtonClass} mt-2 ${actions.onNewTexture === undefined ? 'ml-auto' : ''}`}
+            className={`${iconButtonClass} mt-2 ${actions.onNewTexture === undefined && actions.onPicture === undefined ? 'ml-auto' : ''}`}
             aria-label={`Import textures or sounds into ${namespace}`}
             title="Import textures…"
             data-testid={`assets-import-${namespace}`}

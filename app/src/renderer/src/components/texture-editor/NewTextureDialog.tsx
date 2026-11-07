@@ -27,11 +27,46 @@ export const NEW_TEXTURE_KINDS = [
     height: 32,
   },
   {
+    id: 'skin',
+    label: 'Mob skin, the player skin layout (64 × 64)',
+    folder: 'textures/entity',
+    width: 64,
+    height: 64,
+  },
+  {
+    id: 'painting_1x1',
+    label: 'Painting, 1 by 1 block (16 × 16)',
+    folder: 'textures/painting',
+    width: 16,
+    height: 16,
+  },
+  {
+    id: 'painting_2x1',
+    label: 'Painting, 2 by 1 blocks (32 × 16)',
+    folder: 'textures/painting',
+    width: 32,
+    height: 16,
+  },
+  {
     id: 'painting',
     label: 'Painting, 2 by 2 blocks (32 × 32)',
     folder: 'textures/painting',
     width: 32,
     height: 32,
+  },
+  {
+    id: 'painting_4x2',
+    label: 'Painting, 4 by 2 blocks (64 × 32)',
+    folder: 'textures/painting',
+    width: 64,
+    height: 32,
+  },
+  {
+    id: 'painting_4x4',
+    label: 'Painting, 4 by 4 blocks (64 × 64)',
+    folder: 'textures/painting',
+    width: 64,
+    height: 64,
   },
 ] as const;
 

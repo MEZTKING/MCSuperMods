@@ -35,7 +35,7 @@ Flows that make new items or blocks need the **Fabric mod jar** export ([Blocks 
 | **Music disc** | Blocks | A jukebox song with its own music disc | **Song**: **Song name**, **Artist**, **Length in seconds**, **Comparator signal**. **Disc**: **Label colour**, **Disc** (a new music disc item, or music disc 13 with a new look for vanilla packs). |
 | **Food** | Food | Something to eat | **Food**: **Food name**, **Colour**. **Eating**: **Hunger restored**, **Saturation**, **Can be eaten when not hungry**. **Recipe**: **Crafted from**. |
 | **Consumable** | Food | A food with effects, a potion-like drink or a charm | **Item**: **Name**, **Colour**, **Kind** (food, drink or charm). **Using**: **Hunger restored**, **Saturation**, **Can be eaten when not hungry**, **Seconds to eat or drink**, **Cooldown in seconds**, **Leaves a glass bottle**. **Effects**: two effects with seconds, level and chance. **Recipe**: **Crafted from**. |
-| **Custom mob** | Mobs | An animated mob with behaviour, spawning, a spawn egg and drops | **Mob**: **Mob name**, **Skin colour**, spawn egg colours. **Behaviour**: **Health**, **Walking speed**, **Behaviour**. **Spawning**: **Spawns in**. |
+| **Custom mob** | Mobs | An animated mob with behaviour, spawning, a spawn egg and drops | **Mob**: **Mob name**, **Skin colour**, **Skin** (a player skin PNG), **Arms**, spawn egg colours. **Behaviour**: **Health**, **Walking speed**, **Behaviour**. **Spawning**: **Spawns in**. |
 | **Scripted behaviour** | Scripts | An item whose use runs a script you can open and change | **Item**: **Item name**, **Colour**, **Cooldown in seconds**. **Behaviour**: **What it does when used** (heal, launch upward, strike lightning, give an effect) and its numbers. |
 
 Some notes on the Gear set:
@@ -81,6 +81,20 @@ Change what you like: another colour, another tier, a piece more or less. **Crea
 - a renamed element is still recognised and updated under its new id;
 - a piece you untick is removed when you have not changed it, and kept (under **Kept your edits**) when you have;
 - a texture you replaced with your own is kept the same way; one the new answers no longer use stays in the project (**No longer used (left in the project)**).
+
+## Use a player skin
+
+The **Custom mob** flow's **Skin** field takes a player skin: a PNG of 64 by 64 pixels, or an old one of 64 by 32. Choose **Choose picture…** and pick the file; the mob wears it, including its second layer (the hat, jacket, sleeves and trousers) on a 64 by 64 skin. For a slim (Alex-style) skin, set **Arms** to **Slim (3 pixels)**. An old 64 by 32 skin uses its right arm and leg for both sides, as the game used to. Leave the field empty for a placeholder in the **Skin colour**.
+
+## Picture to texture
+
+**File → Picture to Texture…** (also the picture button beside a namespace's assets heading, and the palette) turns a screenshot or any picture into a texture. Paste a screenshot with Ctrl+V, drop a picture on the dialog, or choose **Choose picture…** (PNG, JPEG, GIF, BMP or WebP). Pick **What it is for**: an item or a block (16 by 16), an armour layer (64 by 32), a mob skin (64 by 64) or a painting of 1 by 1 to 4 by 4 blocks. Drag over the picture to choose the part to use; the frame keeps the texture's proportions, and **Reset crop** starts again. Then:
+
+- **Smooth (photos, screenshots)** averages the pixels; **Sharp (pixel art)** keeps hard edges, for pictures that are already pixel art.
+- **Make the background transparent** removes the colour around the subject (the colour of the picture's corners), with a **Tolerance** for colours close to it.
+- **Colours** reduces the picture to at most 32, 16 or 8 colours, for a cleaner pixel-art look.
+
+The preview shows the texture as it will be saved. **Add texture** adds it to the project (one **Edit → Undo** removes it); **Touch up in the painter…** opens the texture editor on it first. A skin of 64 by 32 pixels chosen for a mob skin is converted to the 64 by 64 layout. Point a model, an equipment layer or the Creator's **Skin** and **Picture** fields at the new texture to use it.
 
 ## Replacing the placeholders
 

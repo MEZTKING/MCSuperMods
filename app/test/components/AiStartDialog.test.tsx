@@ -15,7 +15,7 @@ describe('AiStartDialog', () => {
     expect((submit as HTMLButtonElement).disabled).toBe(true);
     await user.click(screen.getByText(AI_START_IDEAS[0] as string));
     await user.click(submit);
-    expect(onStart).toHaveBeenCalledWith(AI_START_IDEAS[0]);
+    expect(onStart).toHaveBeenCalledWith(AI_START_IDEAS[0], []);
   });
 
   it('sends people without a key to Settings', async () => {

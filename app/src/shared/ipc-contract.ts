@@ -6,7 +6,13 @@
  * @packageDocumentation
  */
 
-import { aiModeSchema, aiRunLimitsSchema, aiSettingsSchema } from '@msm/ai';
+import {
+  AI_IMAGES_MAX,
+  aiImageSchema,
+  aiModeSchema,
+  aiRunLimitsSchema,
+  aiSettingsSchema,
+} from '@msm/ai';
 import { isProjectRelativePath } from '@msm/plugin-api';
 import { z } from 'zod';
 import {
@@ -536,6 +542,8 @@ const aiStartRequest = z
     mode: aiModeSchema,
     text: z.string().max(AI_TEXT_MAX),
     contextBlocks: z.array(z.string().max(AI_CONTEXT_BLOCK_MAX)).max(AI_CONTEXT_BLOCKS_MAX),
+    // Screenshots and pictures (ADR 0048), base64 within the API's size limit.
+    images: z.array(aiImageSchema.strict()).max(AI_IMAGES_MAX).optional(),
     limits: aiRunLimitsSchema.strict().optional(),
   })
   .strict();

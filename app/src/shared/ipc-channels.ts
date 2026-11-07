@@ -138,6 +138,7 @@ export const MENU_COMMANDS = [
   'modpacks',
   'toggleMode',
   'newWithAi',
+  'pictureToTexture',
   'examples',
   'clearRecentProjects',
   'upgradeTarget',

@@ -3,6 +3,7 @@ import type { ModelClient } from '../src/index';
 import {
   type AiModelScript,
   type AiSettings,
+  aiStartRequestSchema,
   type BetaMessageParam,
   createConversation,
   FALLBACK_BETA,
@@ -37,6 +38,55 @@ function toolResultsOf(message: BetaMessageParam | undefined): Array<{
 }
 
 describe('runAssistant', () => {
+  it('sends pictures before the context and the text (ADR 0048)', async () => {
+    const { client, conversation } = setup({
+      turns: [{ content: [{ type: 'text', text: 'A red sword.' }] }],
+    });
+    await runAssistant({
+      client,
+      conversation,
+      request: startRequest({
+        contextBlocks: ['<project/>'],
+        images: [{ mediaType: 'image/png', data: 'iVBORw0KGgo=' }],
+      }),
+      settings,
+      limits: limits(),
+      host: recordingHost(),
+      signal: new AbortController().signal,
+    });
+    expect(conversation.messages[0]).toEqual({
+      role: 'user',
+      content: [
+        {
+          type: 'image',
+          source: { type: 'base64', media_type: 'image/png', data: 'iVBORw0KGgo=' },
+        },
+        { type: 'text', text: '<project/>' },
+        { type: 'text', text: 'Hello' },
+      ],
+    });
+  });
+
+  it('refuses pictures that are not base64 or of another type', () => {
+    const base = startRequest({});
+    expect(
+      aiStartRequestSchema.safeParse({ ...base, images: [{ mediaType: 'image/png', data: 'a b' }] })
+        .success,
+    ).toBe(false);
+    expect(
+      aiStartRequestSchema.safeParse({
+        ...base,
+        images: [{ mediaType: 'image/tiff', data: 'AAAA' }],
+      }).success,
+    ).toBe(false);
+    expect(
+      aiStartRequestSchema.safeParse({
+        ...base,
+        images: [{ mediaType: 'image/jpeg', data: 'AAAA' }],
+      }).success,
+    ).toBe(true);
+  });
+
   it('runs a text-only turn and commits the user and assistant messages', async () => {
     const { client, conversation } = setup({
       turns: [

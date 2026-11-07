@@ -149,6 +149,12 @@ function buildEntry(
  * Alternative wizard answers (ADR 0040): every parameterised starter is also built with these,
  * and once more with {@link minimumValues}, and must validate and export with zero problems.
  */
+/** A grey player skin of height 64 or 32 as a PNG `data:` URL. */
+function skinDataUrl(height: number): string {
+  const bytes = encodePng(new Uint8Array(64 * height * 4).fill(160), 64, height);
+  return `data:image/png;base64,${Buffer.from(bytes).toString('base64')}`;
+}
+
 const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>[]>> = {
   custom_ore: [
     { ore_name: 'Amber', colour: '#de9420', drop_max: 9, tool_tier: 'diamond', make_block: false },
@@ -165,6 +171,9 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
   custom_mob: [
     { mob_name: 'Cave Troll', behaviour: 'hostile', spawn_biomes: '#minecraft:is_taiga' },
     { mob_name: 'Moss Sheep', behaviour: 'peaceful', spawn_biomes: '#minecraft:is_badlands' },
+    // A player skin (64 by 64 with its second layer, slim arms) and a legacy 64 by 32 one.
+    { mob_name: 'Skin Walker', skin: skinDataUrl(64), arms: 'slim' },
+    { mob_name: 'Old Timer', skin: skinDataUrl(32) },
   ],
   'gear-set': [
     {

@@ -2943,3 +2943,13 @@ Decisions: a new texture uses an `asset` change item rather than `writes` (write
 Also: `e2e/modes-path.spec.ts` checks Easy mode (technical elements under "More", no Raw JSON) and the switch back.
 Also: better placeholder art in `library/src/assets/png.ts` (`toolMask`: tool heads mirrored about the handle axis, two-tone handle; panelled `plain`; shaded `ingot`; grain on masks wider than 16). Pattern goldens, the `plain` pin and the `examples/` mirror regenerated.
 Next: publishing 1.1.0 once the user's Windows test passes.
+
+## 2026-11-07 — main session — Pictures, screenshots and skins (ADR 0048)
+
+What: the user asked to turn a screenshot into a working file and to import textures like skins. ADR 0048:
+- D1 Picture to texture: `components/texture-editor/image-convert.ts` (crop, `fitRect`, sharp or smooth `resizeImage`, border-connected `removeBackground`, `hardenAlpha`, median-cut `reduceColours`, `convertPicture`), `png-canvas.ts` (shared decode and encode, used by the texture editor too), `PictureToTextureDialog` (paste, drop, File > Picture to Texture…, palette `pictureToTexture`, asset heading button `assets-picture-<ns>`); `NEW_TEXTURE_KINDS` gains the mob skin and painting sizes. New assets go through `addNewTexture` (an `asset` changeset item).
+- D2 Skins: `upgradeLegacySkin` (the game's legacy limb copies); Custom mob parameters `skin` (image, 64 by 64 or 64 by 32) and `arms` (classic or slim); `bipedGeometry(name, { layout, overlay, slim })` adds inflated overlay cubes or the legacy mirrored layout. Defaults unchanged byte for byte.
+- D3 Screenshots for the AI helper: `AiStartRequest.images` (`aiImageSchema`, at most four, 5 MB each), image blocks before the text in the loop; the IPC contract bounds them; `components/ai/ai-pictures.ts` scales to 1568 px (JPEG fallback); the panel and the AI start dialog take pasted, dropped and attached pictures; the transcript shows thumbnails.
+Tests: `image-convert.test.ts`, library `parameters.test.ts` (skin), exporters `library.test.ts` alternatives with skins, AI `loop.test.ts`; e2e `picture-path.spec.ts` (legacy skin from the picker, pasted screenshot, Undo) and a pasted screenshot in `ai-path` explain.
+Decisions: no PNG decoding in the plugin; legacy skins use mirrored cubes instead of conversion there. Pictures stay in the conversation and are resent with later messages.
+Next: publish 1.1.0 once the user's Windows test passes; these changes go into the release after it.

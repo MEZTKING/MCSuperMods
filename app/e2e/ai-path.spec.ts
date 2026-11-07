@@ -31,6 +31,7 @@ import { join, resolve } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import { appDir, type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { rgbaPng } from './png';
 
 /** The project folder name; a blank project's namespace is derived from it. */
 const NAMESPACE = 'ai_e2e';
@@ -305,6 +306,10 @@ test('AI helper: explain a problem in the sample mod and apply the fix', async (
       }
     }
   }
+  // A last turn answers the pasted screenshot (ADR 0048).
+  script.turns.push({
+    content: [{ type: 'text', text: 'A red square, like a ruby block.' } as never],
+  });
   const scriptPath = join(base, 'explain.script.json');
   writeFileSync(scriptPath, JSON.stringify(script));
 
@@ -349,5 +354,28 @@ test('AI helper: explain a problem in the sample mod and apply the fix', async (
 
   await window.getByTestId('toolbar-save').click();
   await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
+
+  // A pasted screenshot goes with the next message and shows in the transcript.
+  const screenshot = [
+    ...rgbaPng(40, 30, (x, y) =>
+      x > 10 && x < 30 && y > 5 && y < 25 ? [200, 20, 40, 255] : [255, 255, 255, 255],
+    ),
+  ];
+  await window.getByTestId('dock-tab-assistant').click();
+  await panel.getByTestId('ai-input').focus();
+  await window.evaluate(`(() => {
+    const transfer = new DataTransfer();
+    transfer.items.add(new File([new Uint8Array(${JSON.stringify(screenshot)})], 'image.png', { type: 'image/png' }));
+    document.activeElement.dispatchEvent(
+      new ClipboardEvent('paste', { clipboardData: transfer, bubbles: true, cancelable: true }),
+    );
+  })()`);
+  await expect(panel.getByTestId('ai-picture-0')).toBeVisible();
+  await expect(panel.getByTestId('ai-send')).toBeEnabled();
+  await panel.getByTestId('ai-send').click();
+  await expect(transcript).toContainText('A red square, like a ruby block.');
+  await expect(transcript.locator('[data-testid$="-pictures"] img')).toHaveCount(1);
+  await expect(transcript).toContainText('What does this picture show');
+  await expect(panel.getByTestId('ai-pictures')).toHaveCount(0);
   console.log(`ai-path explain: ${((Date.now() - started) / 1000).toFixed(1)} s`);
 });

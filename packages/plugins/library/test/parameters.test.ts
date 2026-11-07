@@ -329,6 +329,50 @@ describe('wizard starters', () => {
     expect((components['msm:animated_model'] as JsonObject).attack).toBeUndefined();
   });
 
+  it('Custom mob: a player skin replaces the placeholder and shapes the model', () => {
+    const skinBytes = (height: number): Uint8Array =>
+      encodePng(new Uint8Array(64 * height * 4).fill(200), 64, height);
+    const cubes = (bundle: ContentBundle, bone: string): JsonObject[] => {
+      const geometry = data(bundle, 'demo:entity/ruby_golem') as JsonObject;
+      const model = (geometry['minecraft:geometry'] as JsonObject[])[0] as JsonObject;
+      const found = (model.bones as JsonObject[]).find((entry) => entry.name === bone);
+      return (found?.cubes ?? []) as JsonObject[];
+    };
+    const textureHeight = (bundle: ContentBundle): Json => {
+      const geometry = data(bundle, 'demo:entity/ruby_golem') as JsonObject;
+      const model = (geometry['minecraft:geometry'] as JsonObject[])[0] as JsonObject;
+      return (model.description as JsonObject).texture_height as Json;
+    };
+    const skinAsset = (bundle: ContentBundle) =>
+      bundle.assets.find((asset) => asset.path === 'textures/entity/ruby_golem.png')?.bytes;
+
+    const modern = build(starter('custom_mob'), { skin: dataUrl(skinBytes(64)), arms: 'slim' });
+    expect(skinAsset(modern)).toEqual(skinBytes(64));
+    expect(cubes(modern, 'head')).toEqual([
+      { origin: [-4, 24, -4], size: [8, 8, 8], uv: [0, 0] },
+      { origin: [-4, 24, -4], size: [8, 8, 8], uv: [32, 0], inflate: 0.5 },
+    ]);
+    expect(cubes(modern, 'right_arm')[0]).toEqual({
+      origin: [-7, 12, -2],
+      size: [3, 12, 4],
+      uv: [40, 16],
+    });
+    expect(textureHeight(modern)).toBe(64);
+
+    const legacy = build(starter('custom_mob'), { skin: dataUrl(skinBytes(32)) });
+    expect(skinAsset(legacy)).toEqual(skinBytes(32));
+    expect(textureHeight(legacy)).toBe(32);
+    expect(cubes(legacy, 'left_leg')).toEqual([
+      { origin: [-0.1, 0, -2], size: [4, 12, 4], uv: [0, 16], mirror: true },
+    ]);
+
+    // Any other size keeps the placeholder and the plain model.
+    const wrong = build(starter('custom_mob'), {
+      skin: dataUrl(encodePng(new Uint8Array(16 * 16 * 4), 16, 16)),
+    });
+    expect(wrong).toEqual(build(starter('custom_mob'), {}));
+  });
+
   it('Custom mob: the egg colours tint the spawn egg texture', () => {
     const plain = build(starter('custom_mob'), {});
     const tinted = build(starter('custom_mob'), { egg_spot_colour: '#00ff00' });

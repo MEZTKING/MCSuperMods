@@ -13,6 +13,7 @@ export type BetaTool = Anthropic.Beta.Messages.BetaTool;
 export type BetaToolUseBlock = Anthropic.Beta.Messages.BetaToolUseBlock;
 export type BetaToolResultBlockParam = Anthropic.Beta.Messages.BetaToolResultBlockParam;
 export type BetaTextBlockParam = Anthropic.Beta.Messages.BetaTextBlockParam;
+export type BetaImageBlockParam = Anthropic.Beta.Messages.BetaImageBlockParam;
 export type BetaUsage = Anthropic.Beta.Messages.BetaUsage;
 export type BetaStopReason = Anthropic.Beta.Messages.BetaStopReason;
 

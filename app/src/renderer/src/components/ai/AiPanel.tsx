@@ -1,5 +1,5 @@
 import { type AiMode, DEFAULT_AI_SETTINGS, modelInfo } from '@msm/ai';
-import { MessageSquarePlus, Send, Square, X } from 'lucide-react';
+import { ImagePlus, MessageSquarePlus, Send, Square, X } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { isRunning, limitsFor, useAiStore } from '../../store/ai-store';
 import { useUiStore } from '../../store/ui-store';
@@ -13,6 +13,7 @@ import { AiPlanView } from './AiPlanView';
 import { AiTranscript } from './AiTranscript';
 import { AiUsageLine } from './AiUsageLine';
 import { type AiController, EMPTY_DRAFT, useAiPanelStore } from './ai-controller';
+import { AI_PICTURES_MAX, pictureFilesOf, readPictures } from './ai-pictures';
 
 const MODES: readonly { mode: AiMode; label: string; tip: string }[] = [
   { mode: 'chat', label: 'Chat', tip: 'Ask questions and propose small edits' },
@@ -45,6 +46,8 @@ export function AiPanel(props: { controller: AiController; onOpenSettings(): voi
   const [confirmNew, setConfirmNew] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const [pictureError, setPictureError] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement | null>(null);
   const inputId = useId();
 
   useEffect(() => {
@@ -105,7 +108,23 @@ export function AiPanel(props: { controller: AiController; onOpenSettings(): voi
   const limits = limitsFor(conversation);
   const items = conversation.changesetItems;
   const usedModel = model ?? settings.model;
-  const canSend = !running && draft.text.trim() !== '';
+  const pictures = draft.pictures ?? [];
+  const canSend = !running && (draft.text.trim() !== '' || pictures.length > 0);
+  /** Adds pictures to the draft, up to the most one message carries. */
+  const addPictures = async (files: readonly File[]): Promise<void> => {
+    if (files.length === 0) return;
+    const room = AI_PICTURES_MAX - pictures.length;
+    const { pictures: read, errors } = await readPictures(files.slice(0, Math.max(0, room)));
+    const current = controller.draft();
+    controller.setDraft({ ...current, pictures: [...(current.pictures ?? []), ...read] });
+    setPictureError(
+      errors.length > 0
+        ? errors.join(' ')
+        : files.length > room
+          ? `At most ${AI_PICTURES_MAX} pictures go with one message.`
+          : null,
+    );
+  };
 
   const send = () => {
     if (canSend) void controller.sendDraft();
@@ -215,6 +234,42 @@ export function AiPanel(props: { controller: AiController; onOpenSettings(): voi
             </blockquote>
           </div>
         )}
+        {pictures.length > 0 && (
+          <div className="flex flex-wrap gap-1.5" data-testid="ai-pictures">
+            {pictures.map((picture, index) => (
+              <span
+                key={`${picture.name}-${index}`}
+                className="relative"
+                data-testid={`ai-picture-${index}`}
+              >
+                <img
+                  src={picture.url}
+                  alt={`To send: ${picture.name}`}
+                  className="h-14 max-w-24 rounded border border-border object-contain"
+                />
+                <button
+                  type="button"
+                  className={`${iconButtonClass} absolute -top-1 -right-1 bg-panel`}
+                  aria-label={`Remove ${picture.name}`}
+                  data-testid={`ai-picture-remove-${index}`}
+                  onClick={() =>
+                    controller.setDraft({
+                      ...draft,
+                      pictures: pictures.filter((_, other) => other !== index),
+                    })
+                  }
+                >
+                  <X size={10} aria-hidden />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+        {pictureError !== null && (
+          <p role="alert" className="text-xs text-red-500">
+            {pictureError}
+          </p>
+        )}
         <label htmlFor={inputId} className="sr-only">
           Message to the AI helper
         </label>
@@ -230,6 +285,18 @@ export function AiPanel(props: { controller: AiController; onOpenSettings(): voi
           }
           value={draft.text}
           onChange={(event) => controller.setDraft({ ...draft, text: event.target.value })}
+          onPaste={(event) => {
+            const files = pictureFilesOf(event.clipboardData.files);
+            if (files.length === 0) return;
+            event.preventDefault();
+            void addPictures(files);
+          }}
+          onDrop={(event) => {
+            const files = pictureFilesOf(event.dataTransfer.files);
+            if (files.length === 0) return;
+            event.preventDefault();
+            void addPictures(files);
+          }}
           onKeyDown={(event) => {
             if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
               event.preventDefault();
@@ -238,6 +305,28 @@ export function AiPanel(props: { controller: AiController; onOpenSettings(): voi
           }}
         />
         <div className="flex justify-end gap-1.5">
+          <input
+            ref={fileInput}
+            type="file"
+            accept="image/png,image/jpeg,image/gif,image/webp,image/bmp"
+            multiple
+            hidden
+            data-testid="ai-attach-input"
+            onChange={(event) => {
+              void addPictures(pictureFilesOf(event.target.files));
+              event.target.value = '';
+            }}
+          />
+          <Button
+            data-testid="ai-attach"
+            title="Attach a screenshot or picture (or paste one into the message)"
+            disabled={running || pictures.length >= AI_PICTURES_MAX}
+            onClick={() => fileInput.current?.click()}
+          >
+            <ImagePlus size={14} aria-hidden />
+            Picture
+          </Button>
+          <span className="flex-1" />
           {running ? (
             <Button data-testid="ai-stop" onClick={() => void controller.stop()}>
               <Square size={14} aria-hidden />

@@ -33,7 +33,14 @@ export type AiNoticeKind = AiDoneReason | 'fallback' | 'info';
 
 /** One entry of the display transcript; `seq` is unique within the conversation. */
 export type AiDisplayMessage =
-  | { seq: number; role: 'user'; text: string; contextBlocks: string[] }
+  | {
+      seq: number;
+      role: 'user';
+      text: string;
+      contextBlocks: string[];
+      /** Thumbnails (`data:` URLs) of the pictures sent with the message (ADR 0048). */
+      images?: string[];
+    }
   | { seq: number; role: 'assistant'; runId: string; text: string; thinking: string }
   | {
       seq: number;
@@ -165,8 +172,14 @@ export function addUserMessage(
   conversation: AiConversation,
   text: string,
   contextBlocks: readonly string[] = [],
+  images: readonly string[] = [],
 ): AiConversation {
-  return push(conversation, { role: 'user', text, contextBlocks: [...contextBlocks] });
+  return push(conversation, {
+    role: 'user',
+    text,
+    contextBlocks: [...contextBlocks],
+    ...(images.length > 0 ? { images: [...images] } : {}),
+  });
 }
 
 /** Adds a notice to the transcript. */
@@ -404,7 +417,12 @@ export interface AiStoreState {
   setMode(root: string, mode: AiMode): void;
   setLimits(root: string, limits: Record<AiMode, AiRunLimits>): void;
   setRunLimits(root: string, limits: AiRunLimits | null): void;
-  appendUser(root: string, text: string, contextBlocks?: readonly string[]): void;
+  appendUser(
+    root: string,
+    text: string,
+    contextBlocks?: readonly string[],
+    images?: readonly string[],
+  ): void;
   startRun(root: string, runId: string): void;
   applyRunEvent(root: string, runId: string, event: AiEvent): void;
   /** Shows the plan and resolves with the user's decision (see {@link resolvePlan}). */
@@ -509,8 +527,8 @@ export const useAiStore = create<AiStoreState>((set, get) => {
       }));
     },
 
-    appendUser(root, text, contextBlocks = []) {
-      update(root, (conversation) => addUserMessage(conversation, text, contextBlocks));
+    appendUser(root, text, contextBlocks = [], images = []) {
+      update(root, (conversation) => addUserMessage(conversation, text, contextBlocks, images));
     },
 
     startRun(root, runId) {

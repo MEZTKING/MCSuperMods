@@ -30,10 +30,10 @@ The section also shows the privacy text below.
 
 Nothing leaves your computer until you press **Send**. Then MCSuperMods sends to Anthropic, under your key:
 
-- your message and the conversation so far;
+- your message and the conversation so far, with any screenshots or pictures you added to it;
 - the project content the helper reads while it works: element JSON, ids, problems, template and version data and the script typings.
 
-Textures, other files and file paths are never sent. The key stays in MCSuperMods' main process (the part that talks to Anthropic) and is never given to the window you work in. Conversations are kept in memory only, one per project: closing MCSuperMods forgets them.
+Textures, other files and file paths are never sent, except pictures you add to a message yourself. The key stays in MCSuperMods' main process (the part that talks to Anthropic) and is never given to the window you work in. Conversations are kept in memory only, one per project: closing MCSuperMods forgets them.
 
 The helper's placeholder textures are drawn on your computer, like the Creator's; the model only asks for a pattern and a colour.
 
@@ -47,7 +47,7 @@ Open a project, then use one of:
 
 The helper opens in the right-hand dock as a third tab, **AI helper**, next to **Preview** and **Problems**. Without a key it shows **Open Settings** and the privacy text instead.
 
-At the top choose the mode: **Chat** or **Build**. Type in the box at the bottom; Enter sends (or press **Send**), Shift+Enter starts a new line. **Stop** ends a run at once. The icon button **New conversation** starts afresh (it asks first when proposed changes are still waiting).
+At the top choose the mode: **Chat** or **Build**. Type in the box at the bottom; Enter sends (or press **Send**), Shift+Enter starts a new line. To show the helper something, paste a screenshot into the box (Ctrl+V), drop a picture on it or choose **Picture** (up to four per message); thumbnails show above the box, and the × on one removes it. A picture of an item, a mob or another mod's content is a good start in Build mode: "make this". **Stop** ends a run at once. The icon button **New conversation** starts afresh (it asks first when proposed changes are still waiting).
 
 ## Chat mode
 

@@ -43,6 +43,7 @@ import {
   useAiStore,
 } from '../../store/ai-store';
 import { useUiStore } from '../../store/ui-store';
+import type { AiPicture } from './ai-pictures';
 
 /** A context block waiting in the input area, shown as a chip with its text quoted. */
 export interface AiContextDraft {
@@ -56,6 +57,8 @@ export interface AiContextDraft {
 export interface AiDraft {
   text: string;
   context: AiContextDraft | null;
+  /** Pictures to send with the message (ADR 0048). */
+  pictures?: readonly AiPicture[];
 }
 
 /** The panel's state beside the conversations. */
@@ -325,12 +328,23 @@ export class AiController {
    *
    * @returns The run id, or `null` when nothing was sent.
    */
-  async send(text: string, contextBlocks: readonly string[] = []): Promise<string | null> {
+  async send(
+    text: string,
+    contextBlocks: readonly string[] = [],
+    pictures: readonly AiPicture[] = [],
+  ): Promise<string | null> {
     const ai = this.#ai;
     const root = this.root;
     const conversation = this.conversation();
     if (ai === undefined || root === null || conversation === null) return null;
-    if (isRunning(conversation) || text.trim() === '') return null;
+    if (isRunning(conversation) || (text.trim() === '' && pictures.length === 0)) return null;
+    if (text.trim() === '') {
+      // The API needs some text with the pictures.
+      text =
+        conversation.mode === 'build'
+          ? 'Build what this picture shows.'
+          : 'What does this picture show, and how could I make it?';
+    }
     const store = useAiStore.getState();
     const panel = useAiPanelStore.getState();
     if (panel.models[root] === undefined) {
@@ -338,7 +352,12 @@ export class AiController {
       useAiPanelStore.setState((state) => ({ models: { ...state.models, [root]: model } }));
     }
     const runId = this.#newId();
-    store.appendUser(root, text, contextBlocks);
+    store.appendUser(
+      root,
+      text,
+      contextBlocks,
+      pictures.map((picture) => picture.url),
+    );
     store.startRun(root, runId);
     const started = useAiStore.getState().conversations[root];
     const run = started?.run;
@@ -357,6 +376,11 @@ export class AiController {
         mode: run.mode,
         text,
         contextBlocks: [projectBlock, ...contextBlocks],
+        ...(pictures.length > 0
+          ? {
+              images: pictures.map(({ mediaType, data }) => ({ mediaType, data })),
+            }
+          : {}),
         limits: run.limits,
       });
     } catch (error) {
@@ -369,9 +393,11 @@ export class AiController {
   async sendDraft(): Promise<string | null> {
     const draft = this.draft();
     const conversation = this.conversation();
-    if (conversation === null || isRunning(conversation) || draft.text.trim() === '') return null;
+    const pictures = draft.pictures ?? [];
+    if (conversation === null || isRunning(conversation)) return null;
+    if (draft.text.trim() === '' && pictures.length === 0) return null;
     this.setDraft(EMPTY_DRAFT);
-    return this.send(draft.text, draft.context === null ? [] : [draft.context.block]);
+    return this.send(draft.text, draft.context === null ? [] : [draft.context.block], pictures);
   }
 
   /** Stops the open conversation's run. */

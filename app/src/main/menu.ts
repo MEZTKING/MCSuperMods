@@ -86,6 +86,8 @@ export function installMenu(recent: readonly RecentProject[] = []): void {
         { label: 'Create…', click: () => send('creator') },
         { label: 'New Project with the AI Helper…', click: () => send('newWithAi') },
         { label: 'Modpacks…', click: () => send('modpacks') },
+        // ADR 0048: a screenshot, image or skin as a texture.
+        { label: 'Picture to Texture…', click: () => send('pictureToTexture') },
         { label: 'Open Project…', accelerator: 'CmdOrCtrl+O', click: () => send('open') },
         {
           label: 'Open Recent',

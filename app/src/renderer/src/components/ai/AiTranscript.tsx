@@ -167,6 +167,18 @@ export function AiTranscript(props: { messages: readonly AiDisplayMessage[] }) {
                       </pre>
                     </details>
                   ))}
+                  {message.images !== undefined && (
+                    <div className="flex flex-wrap gap-1" data-testid={`${testId}-pictures`}>
+                      {message.images.map((url, index) => (
+                        <img
+                          key={index}
+                          src={url}
+                          alt={`Attachment ${index + 1} of this message`}
+                          className="max-h-24 max-w-40 rounded border border-border object-contain"
+                        />
+                      ))}
+                    </div>
+                  )}
                   <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">{message.text}</p>
                 </div>
               </li>

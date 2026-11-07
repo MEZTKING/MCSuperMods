@@ -83,6 +83,30 @@ export const aiSettingsSchema = z.object({
   limits: z.object({ chat: aiRunLimitsSchema, build: aiRunLimitsSchema }),
 });
 
+/** The picture types the model reads. */
+export const AI_IMAGE_MEDIA_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'] as const;
+/** The most pictures one message carries. */
+export const AI_IMAGES_MAX = 4;
+/** The largest picture, in bytes before base64 (the API limit, verify at implementation). */
+export const AI_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+/** {@link AI_IMAGE_MAX_BYTES} as base64 characters. */
+export const AI_IMAGE_MAX_BASE64 = Math.ceil(AI_IMAGE_MAX_BYTES / 3) * 4;
+
+/** A picture sent with a message (a screenshot, ADR 0048): base64 without a `data:` prefix. */
+export interface AiImage {
+  mediaType: (typeof AI_IMAGE_MEDIA_TYPES)[number];
+  data: string;
+}
+
+export const aiImageSchema = z.object({
+  mediaType: z.enum(AI_IMAGE_MEDIA_TYPES),
+  data: z
+    .string()
+    .min(1)
+    .max(AI_IMAGE_MAX_BASE64)
+    .regex(/^[A-Za-z0-9+/]+={0,2}$/),
+});
+
 /** Starts one run: one user message until the model ends its turn. */
 export interface AiStartRequest {
   runId: string;
@@ -92,6 +116,8 @@ export interface AiStartRequest {
   text: string;
   /** Visible context blocks (a problem, an element) sent before the message as text blocks. */
   contextBlocks: string[];
+  /** Pictures sent with the message, before its text (ADR 0048). */
+  images?: AiImage[];
   /** Limits for this run only; the mode's settings apply when omitted. */
   limits?: AiRunLimits;
 }
@@ -102,6 +128,7 @@ export const aiStartRequestSchema = z.object({
   mode: aiModeSchema,
   text: z.string().max(200_000),
   contextBlocks: z.array(z.string().max(200_000)).max(16),
+  images: z.array(aiImageSchema).max(AI_IMAGES_MAX).optional(),
   limits: aiRunLimitsSchema.optional(),
 });
 

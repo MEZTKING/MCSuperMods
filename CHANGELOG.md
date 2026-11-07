@@ -9,6 +9,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Added
 
 - **New texture…**: paint a texture from a blank picture, sized for an item, a block, an armour layer or a painting. Undo removes it again.
+- **Picture to texture** (File menu, palette, and the picture button by a namespace's assets): paste a screenshot, drop or choose any picture (PNG, JPEG, GIF, BMP, WebP), crop it, scale it smooth or sharp, make the background transparent and reduce the colours, then add it as an item, block, armour, mob skin or painting texture, or touch it up in the painter first. Old 64 by 32 player skins become the 64 by 64 layout.
+- **Player skins on mobs**: the Custom mob's new **Skin** field wears a player skin (64 by 64 with its hat and sleeves layer, or an old 64 by 32 one), and **Arms** offers slim 3-pixel arms.
+- **Screenshots for the AI helper**: paste, drop or attach up to four pictures to a message, or to **New project with the AI helper…**, and the helper builds what it sees.
 
 ### Changed
 
