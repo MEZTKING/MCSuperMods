@@ -742,6 +742,13 @@ export interface MsmBridge extends PlatformAdapter {
    * returns an unsubscribe function.
    */
   onMenuOpenRecent(listener: (root: string) => void): () => void;
+  /**
+   * Subscribes to plugin exporters chosen under File > More Exports (the exporter id);
+   * returns an unsubscribe function. Optional for older test doubles.
+   */
+  onMenuPluginExport?(listener: (id: string) => void): () => void;
+  /** Tells the main process which plugin exporters File > More Exports lists. */
+  setMenuPluginExports?(entries: { id: string; label: string; enabled: boolean }[]): void;
   /** Subscribes to asset extraction progress; returns an unsubscribe function. */
   onMinecraftProgress(listener: (progress: MinecraftProgress) => void): () => void;
   /** Tells the main process whether there are unsaved changes (for the close prompt). */

@@ -5,8 +5,15 @@
  * @packageDocumentation
  */
 
-import { BrowserWindow, Menu, type MenuItemConstructorOptions } from 'electron';
-import { EventChannels, type MenuCommand, type MenuOpenRecent } from '../shared/ipc-channels';
+import { app, BrowserWindow, ipcMain, Menu, type MenuItemConstructorOptions } from 'electron';
+import {
+  EventChannels,
+  isMenuPluginExports,
+  type MenuCommand,
+  type MenuOpenRecent,
+  type MenuPluginExport,
+  type MenuPluginExportEntry,
+} from '../shared/ipc-channels';
 import type { RecentProject } from '../shared/platform';
 
 function targetWindow(): BrowserWindow | undefined {
@@ -20,6 +27,46 @@ function send(command: MenuCommand): void {
 function sendOpenRecent(root: string): void {
   const payload: MenuOpenRecent = { root };
   targetWindow()?.webContents.send(EventChannels.menuOpenRecent, payload);
+}
+
+function sendPluginExport(id: string): void {
+  const payload: MenuPluginExport = { id };
+  targetWindow()?.webContents.send(EventChannels.menuPluginExport, payload);
+}
+
+/** The menu's current recent projects and plugin exporters; each install keeps the other. */
+let currentRecent: readonly RecentProject[] = [];
+let currentPluginExports: readonly MenuPluginExportEntry[] = [];
+
+/** The entries File > More Exports adds for plugin exporters (after a separator). */
+export function pluginExportItems(
+  entries: readonly MenuPluginExportEntry[],
+  choose: (id: string) => void,
+): MenuItemConstructorOptions[] {
+  if (entries.length === 0) return [];
+  return [
+    { type: 'separator' },
+    ...entries.map((entry) => ({
+      label: entry.label.replaceAll('&', '&&'),
+      enabled: entry.enabled,
+      click: () => choose(entry.id),
+    })),
+  ];
+}
+
+/**
+ * Listens for the renderer's plugin exporter list (File > More Exports) and reinstalls the
+ * menu when it changes. Only the main frame of an app window may set it.
+ */
+export function registerMenuIpc(): void {
+  ipcMain.on(EventChannels.setMenuPluginExports, (event, payload: unknown) => {
+    if (event.senderFrame !== event.sender.mainFrame) return;
+    if (BrowserWindow.fromWebContents(event.sender) === null) return;
+    if (!isMenuPluginExports(payload)) return;
+    if (JSON.stringify(payload) === JSON.stringify(currentPluginExports)) return;
+    currentPluginExports = payload;
+    if (app.isReady()) installMenu();
+  });
 }
 
 /** The longest path shown in an "Open Recent" label before the middle is elided. */
@@ -74,7 +121,8 @@ export function recentSubmenu(
  * Builds and installs the application menu. Call again with the new list whenever the
  * recent projects change.
  */
-export function installMenu(recent: readonly RecentProject[] = []): void {
+export function installMenu(recent: readonly RecentProject[] = currentRecent): void {
+  currentRecent = recent;
   const template: MenuItemConstructorOptions[] = [
     {
       label: 'File',
@@ -117,6 +165,8 @@ export function installMenu(recent: readonly RecentProject[] = []): void {
               label: 'Export Structures as Sponge Schematics (.schem)…',
               click: () => send('exportSchematics'),
             },
+            // Other plugin exporters (an external plugin's), as the toolbar's "More exports".
+            ...pluginExportItems(currentPluginExports, sendPluginExport),
           ],
         },
         { type: 'separator' },

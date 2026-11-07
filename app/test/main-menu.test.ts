@@ -18,7 +18,10 @@ vi.mock('electron', () => ({
   },
 }));
 
-const { installMenu, recentLabel, recentSubmenu, shortenPath } = await import('../src/main/menu');
+const { installMenu, pluginExportItems, recentLabel, recentSubmenu, shortenPath } = await import(
+  '../src/main/menu'
+);
+const { isMenuPluginExports, isMenuPluginExport } = await import('../src/shared/ipc-channels');
 
 describe('File menu', () => {
   it('offers "Export Java Project…" after "Export Fabric Mod Jar…"', () => {
@@ -133,5 +136,33 @@ describe('Open Recent menu', () => {
     );
     expect(empty[0]).toEqual({ label: 'No recent projects', enabled: false });
     expect(empty[2]).toMatchObject({ label: 'Clear Recent Projects', enabled: false });
+  });
+});
+
+describe('File > More Exports plugin exporters', () => {
+  it('lists plugin exporters after a separator, disabled ones greyed, & kept literal', () => {
+    const chosen: string[] = [];
+    expect(pluginExportItems([], (id) => chosen.push(id))).toEqual([]);
+    const items = pluginExportItems(
+      [
+        { id: 'a', label: 'Lists & tables into a folder…', enabled: true },
+        { id: 'b', label: 'Other into a folder…', enabled: false },
+      ],
+      (id) => chosen.push(id),
+    );
+    expect(items[0]).toEqual({ type: 'separator' });
+    expect(items[1]).toMatchObject({ label: 'Lists && tables into a folder…', enabled: true });
+    expect(items[2]).toMatchObject({ enabled: false });
+    (items[1] as { click: () => void }).click();
+    expect(chosen).toEqual(['a']);
+  });
+
+  it('checks the payloads both ways', () => {
+    expect(isMenuPluginExports([{ id: 'a', label: 'A', enabled: true }])).toBe(true);
+    expect(isMenuPluginExports([{ id: '', label: 'A', enabled: true }])).toBe(false);
+    expect(isMenuPluginExports([{ id: 'a', label: 'A' }])).toBe(false);
+    expect(isMenuPluginExports('a')).toBe(false);
+    expect(isMenuPluginExport({ id: 'a' })).toBe(true);
+    expect(isMenuPluginExport({ id: 3 })).toBe(false);
   });
 });

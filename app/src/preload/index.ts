@@ -13,6 +13,7 @@ import {
   isAiEventPayload,
   isMenuCommand,
   isMenuOpenRecent,
+  isMenuPluginExport,
   isMinecraftProgress,
   isUpdateStatus,
 } from '../shared/ipc-channels';
@@ -276,6 +277,18 @@ const bridge: MsmBridge = {
     return () => {
       ipcRenderer.removeListener(EventChannels.menuOpenRecent, handler);
     };
+  },
+  onMenuPluginExport(listener) {
+    const handler = (_event: IpcRendererEvent, payload: unknown): void => {
+      if (isMenuPluginExport(payload)) listener(payload.id);
+    };
+    ipcRenderer.on(EventChannels.menuPluginExport, handler);
+    return () => {
+      ipcRenderer.removeListener(EventChannels.menuPluginExport, handler);
+    };
+  },
+  setMenuPluginExports(entries) {
+    ipcRenderer.send(EventChannels.setMenuPluginExports, entries);
   },
   onMinecraftProgress(listener) {
     const handler = (_event: IpcRendererEvent, progress: unknown): void => {

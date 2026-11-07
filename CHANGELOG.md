@@ -6,7 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- Exporters from plugins are also under **File → More Exports**, as in the toolbar's **More exports**.
 
 ## [1.3.0] - 2026-11-07
 

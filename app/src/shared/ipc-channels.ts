@@ -93,6 +93,16 @@ export const EventChannels = {
   menu: 'msm:v1:menu',
   /** Main to renderer: "Open Recent" in the application menu, payload {@link MenuOpenRecent}. */
   menuOpenRecent: 'msm:v1:menu:openRecent',
+  /**
+   * Main to renderer: a plugin exporter chosen under File > More Exports, payload
+   * {@link MenuPluginExport}.
+   */
+  menuPluginExport: 'msm:v1:menu:pluginExport',
+  /**
+   * Renderer to main: the plugin exporters File > More Exports lists, payload
+   * {@link MenuPluginExports}.
+   */
+  setMenuPluginExports: 'msm:v1:menu:setPluginExports',
   /** Main to renderer: asset extraction progress, payload {@link MinecraftProgress}. */
   minecraftProgress: 'msm:v1:minecraft:progress',
   /** Renderer to main: the renderer has rendered its first frame (used by smoke mode). */
@@ -154,6 +164,52 @@ export type MenuCommand = (typeof MENU_COMMANDS)[number];
 /** Whether a value is a known menu command. */
 export function isMenuCommand(value: unknown): value is MenuCommand {
   return typeof value === 'string' && (MENU_COMMANDS as readonly string[]).includes(value);
+}
+
+/** One plugin exporter File > More Exports lists; `enabled` is false while problems block it. */
+export interface MenuPluginExportEntry {
+  id: string;
+  label: string;
+  enabled: boolean;
+}
+
+/** The payload of {@link EventChannels.setMenuPluginExports}. */
+export type MenuPluginExports = MenuPluginExportEntry[];
+
+/** The most plugin exporters the menu lists. */
+export const MENU_PLUGIN_EXPORTS_MAX = 32;
+
+/** Whether a value is a well-formed {@link MenuPluginExports} payload. */
+export function isMenuPluginExports(value: unknown): value is MenuPluginExports {
+  return (
+    Array.isArray(value) &&
+    value.length <= MENU_PLUGIN_EXPORTS_MAX &&
+    value.every((entry) => {
+      if (typeof entry !== 'object' || entry === null) return false;
+      const { id, label, enabled } = entry as Record<string, unknown>;
+      return (
+        typeof id === 'string' &&
+        id.length > 0 &&
+        id.length <= 200 &&
+        typeof label === 'string' &&
+        label.length > 0 &&
+        label.length <= 120 &&
+        typeof enabled === 'boolean'
+      );
+    })
+  );
+}
+
+/** The payload of {@link EventChannels.menuPluginExport}: the exporter id. */
+export interface MenuPluginExport {
+  id: string;
+}
+
+/** Whether a value is a well-formed {@link MenuPluginExport} payload. */
+export function isMenuPluginExport(value: unknown): value is MenuPluginExport {
+  if (typeof value !== 'object' || value === null) return false;
+  const id = (value as Record<string, unknown>).id;
+  return typeof id === 'string' && id.length > 0 && id.length <= 200;
 }
 
 /** The payload of {@link EventChannels.menuOpenRecent}: the recent project's root. */

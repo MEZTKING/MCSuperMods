@@ -1478,6 +1478,26 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   useEffect(() => bridge.onMenu((command) => dispatch(command, 'menu')));
 
   useEffect(() => bridge.onMenuOpenRecent((root) => openRecent(root)), [bridge, openRecent]);
+  // File > More Exports lists the plugin exporters too (the toolbar's "More exports").
+  const menuPluginExports = JSON.stringify(
+    pluginExports.map((entry) => ({
+      id: entry.id,
+      label: entry.label,
+      enabled: entry.reason === null,
+    })),
+  );
+  useEffect(() => {
+    bridge.setMenuPluginExports?.(JSON.parse(menuPluginExports));
+  }, [bridge, menuPluginExports]);
+  const pluginExportsRef = useRef(pluginExports);
+  pluginExportsRef.current = pluginExports;
+  useEffect(
+    () =>
+      bridge.onMenuPluginExport?.((id) =>
+        pluginExportsRef.current.find((entry) => entry.id === id)?.onSelect(),
+      ),
+    [bridge],
+  );
 
   const recentPicks = useMemo<PaletteCommand[]>(
     () =>

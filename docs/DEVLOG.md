@@ -2979,3 +2979,8 @@ Next: the ADR 0044 follow-ups are all closed; a release after 1.2.0 when the use
 What: app `package.json` and `engine-mod` `mod_version` 1.3.0; CHANGELOG `[1.3.0] - 2026-11-07` (Music disc song files, body armour defence, tool numbers in Stats, passthrough warning, plugin API 1.4.0); status lines in the CLAUDE.md files, README, ADR 0049 and 0050 status, ROADMAP row and HANDOFF state.
 Decisions: 1.3.0 is drafted on top of the unpublished 1.1.0 and 1.2.0 drafts; publishing 1.3.0 alone delivers all three. The release attaches `msm-plugin-api-1.4.0.tgz`.
 Next: draft via `release.yml` after green CI; publish only after the user's Windows test.
+
+## 2026-11-07 — main session — Plugin exporters in File > More Exports
+
+What: on "Continue", the ROADMAP follow-up. The renderer sends its plugin exporters (`id`, `label`, `enabled`) over the one-way `msm:v1:menu:setPluginExports` whenever they change; `main/menu.ts` keeps them with the recent projects (`installMenu` no longer forgets one when the other changes) and lists them under File > More Exports after a separator (`pluginExportItems`, `&` doubled); a click sends `msm:v1:menu:pluginExport` and the renderer runs the same `onSelect` as the toolbar. Only an app window's main frame may set the list; payloads are checked (`isMenuPluginExports`, at most 32). Tests: `main-menu.test.ts`, e2e `plugins-path` opens the exporter's dialog from the menu.
+Next: the user's Windows test of the 1.3.0 draft; remaining ROADMAP items are user decisions (26.4 release re-pin, npm token, dimensions, form models).

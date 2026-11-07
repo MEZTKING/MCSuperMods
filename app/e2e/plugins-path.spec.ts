@@ -208,6 +208,29 @@ test('plugins: the sample plugin loads, its kind has a schema form and exports',
     `${namespace}:greet_hello: tellraw @a {"text": ${JSON.stringify(MESSAGE)}, "color": "gold"}\n`,
   );
 
+  // The same exporter under File > More Exports (the menu entry opens the same dialog).
+  await expect
+    .poll(() =>
+      launched.app.evaluate(({ Menu }) => {
+        const file = Menu.getApplicationMenu()?.items.find((item) => item.label === 'File');
+        const more = file?.submenu?.items.find((item) => item.label === 'More Exports');
+        return more?.submenu?.items.map((item) => item.label) ?? [];
+      }),
+    )
+    .toContain('Greeting list into a folder…');
+  await launched.app.evaluate(({ Menu, BrowserWindow }) => {
+    const file = Menu.getApplicationMenu()?.items.find((item) => item.label === 'File');
+    const more = file?.submenu?.items.find((item) => item.label === 'More Exports');
+    const entry = more?.submenu?.items.find(
+      (item) => item.label === 'Greeting list into a folder…',
+    );
+    if (entry === undefined) throw new Error('File > More Exports has no plugin exporter.');
+    entry.click(undefined, BrowserWindow.getAllWindows()[0], undefined);
+  });
+  await expect(window.getByTestId('plugin-export-dialog')).toBeVisible();
+  await window.getByTestId('plugin-export-dialog').getByRole('button', { name: 'Cancel' }).click();
+  await expect(window.getByTestId('plugin-export-dialog')).toBeHidden();
+
   await window.screenshot({ path: join(outputDir, 'plugins-path.png') });
   await window.getByTestId('toolbar-save').click();
   await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
