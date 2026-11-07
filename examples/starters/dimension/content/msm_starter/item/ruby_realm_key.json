@@ -1,0 +1,32 @@
+{
+  "data": {
+    "components": {
+      "msm:on_use": {
+        "cooldown_ticks": 60,
+        "event": "msm_starter:ruby_realm_key_used"
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "events": {
+      "msm_starter:ruby_realm_key_used": {
+        "actions": [
+          {
+            "function": "msm_starter:ruby_realm/travel",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_starter:item/ruby_realm_key",
+    "rarity": "rare"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_realm_key",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The key: using it runs the event msm_starter:ruby_realm_key_used, whose run_function action runs msm_starter:ruby_realm/travel as the player, so it takes them to Ruby Realm and back. It waits three seconds (cooldown_ticks 60) between uses. Take it from the Tools and Utilities tab of the creative menu, or add a recipe."
+  }
+}

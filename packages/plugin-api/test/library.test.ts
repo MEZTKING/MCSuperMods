@@ -239,7 +239,9 @@ describe('1.1.0 additions', () => {
   it('lists a starter in the Creator with a group and a blurb', () => {
     expectTypeOf<ProjectStarter['creator']>().toEqualTypeOf<StarterCreatorInfo | undefined>();
     expectTypeOf<StarterCreatorInfo['group']>().toEqualTypeOf<CreatorGroup>();
-    expectTypeOf<CreatorGroup>().toEqualTypeOf<'gear' | 'blocks' | 'food' | 'mobs' | 'scripts'>();
+    expectTypeOf<CreatorGroup>().toEqualTypeOf<
+      'gear' | 'blocks' | 'food' | 'mobs' | 'scripts' | 'worlds'
+    >();
     const flow: ProjectStarter = {
       ...starter,
       creator: { group: 'gear', blurb: 'Tools and armour of one material.' },

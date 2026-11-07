@@ -39,6 +39,7 @@ const STARTER_IDS = [
   'enchantment',
   'painting',
   'music-disc-item',
+  'dimension',
   'recipe_pack',
   'music_disc',
   'function_starter',
@@ -158,7 +159,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the twenty-four starters in order', () => {
+  it('lists the twenty-five starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -168,7 +169,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(20).fill('content'),
+      ...Array<string>(21).fill('content'),
     ]);
   });
 
@@ -600,8 +601,9 @@ describe('structure and worldgen content', () => {
     entry.requiresKinds.some((kind) => WORLDGEN_KINDS.has(kind)),
   );
 
-  it('covers the three worldgen starters and the 19 structure and worldgen examples', () => {
+  it('covers the four worldgen starters and the 19 structure and worldgen examples', () => {
     expect(worldgenEntries.map((entry) => entry.id)).toEqual([
+      'dimension',
       'custom_biome',
       'jigsaw_structure',
       'worldgen_pack',
@@ -624,6 +626,8 @@ describe('structure and worldgen content', () => {
             (key === 'name' || key === 'target')
           )
             continue;
+          // An item's trigger names one of its own events, not an element.
+          if (element.kind === 'msm:item' && key === 'event') continue;
           if (!/^#?other_ns:/.test(text)) continue;
           expect(ids.has(text.replace(/^#/, '')), `${entry.id} ${element.id} ${key} ${text}`).toBe(
             true,

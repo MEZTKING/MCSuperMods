@@ -1,0 +1,20 @@
+{
+  "data": {
+    "generator": {
+      "biome_source": {
+        "biome": "minecraft:cherry_grove",
+        "type": "minecraft:fixed"
+      },
+      "settings": "minecraft:overworld",
+      "type": "minecraft:noise"
+    },
+    "type": "minecraft:overworld"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_realm",
+  "kind": "minecraft:dimension",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The dimension Ruby Realm: overworld terrain with cherry grove everywhere, and the overworld sky with day and night (the vanilla dimension type minecraft:overworld). The game loads a new dimension when a world opens, so open or reload a world after adding it."
+  }
+}

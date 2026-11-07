@@ -94,6 +94,7 @@ const WIZARDS = [
   'enchantment',
   'painting',
   'music-disc-item',
+  'dimension',
   'custom_mob',
   'scripted-item',
 ];
@@ -110,6 +111,7 @@ const FLOWS: Record<string, string> = {
   enchantment: 'gear',
   painting: 'blocks',
   'music-disc-item': 'blocks',
+  dimension: 'worlds',
   custom_mob: 'mobs',
   'scripted-item': 'scripts',
 };
@@ -140,6 +142,7 @@ describe('wizard starters', () => {
     expect(groups('enchantment')).toEqual(['Enchantment', 'Effect', 'Offering']);
     expect(groups('painting')).toEqual(['Painting', 'Picture']);
     expect(groups('music-disc-item')).toEqual(['Song', 'Disc']);
+    expect(groups('dimension')).toEqual(['World', 'Travel']);
   });
 
   it('lists the Creator flows with their groups and blurbs (ADR 0043 D1)', () => {
@@ -891,6 +894,52 @@ describe('Creator flows', () => {
     expect(placeable?.kind).toBe('minecraft:tag/painting_variant');
     expect(placeable?.data).toEqual({ values: ['demo:lake'] });
     expect(picked.elements.find((entry) => entry.id === 'demo:lake')?.notes).not.toMatch(/give/);
+  });
+
+  it('Dimension: terrain, biome, sky and a key that runs the travel function', () => {
+    const plain = build(starter('dimension'), {});
+    expect(data(plain, 'demo:ruby_realm')).toEqual({
+      type: 'minecraft:overworld',
+      generator: {
+        type: 'minecraft:noise',
+        settings: 'minecraft:overworld',
+        biome_source: { type: 'minecraft:fixed', biome: 'minecraft:cherry_grove' },
+      },
+    });
+    const travel = data(plain, 'demo:ruby_realm/travel').lines as string[];
+    expect(travel).toContain(
+      'execute if dimension demo:ruby_realm in minecraft:overworld run return run spreadplayers ~ ~ 0 64 false @s',
+    );
+    expect(travel).toContain('execute in demo:ruby_realm run spreadplayers ~ ~ 0 64 false @s');
+    const key = data(plain, 'demo:ruby_realm_key');
+    expect(key.events).toEqual({
+      'demo:ruby_realm_key_used': {
+        actions: [{ type: 'run_function', function: 'demo:ruby_realm/travel' }],
+      },
+    });
+
+    const caves = build(starter('dimension'), {
+      terrain: 'nether',
+      biome: 'mix',
+      sky: 'nether',
+      travel: 'command',
+    });
+    expect(data(caves, 'demo:ruby_realm')).toEqual({
+      type: 'minecraft:the_nether',
+      generator: {
+        type: 'minecraft:noise',
+        settings: 'minecraft:nether',
+        biome_source: { type: 'minecraft:multi_noise', preset: 'minecraft:overworld' },
+      },
+    });
+    expect(data(caves, 'demo:ruby_realm/travel').lines).toContain(
+      'execute in demo:ruby_realm run spreadplayers ~ ~ 0 64 under 120 false @s',
+    );
+    expect(caves.elements.map((entry) => entry.id)).not.toContain('demo:ruby_realm_key');
+    expect(caves.assets).toEqual([]);
+
+    const flat = data(build(starter('dimension'), { terrain: 'flat' }), 'demo:ruby_realm');
+    expect((flat.generator as JsonObject).type).toBe('minecraft:flat');
   });
 
   it('Music disc: a song file is stored, played and timed', () => {

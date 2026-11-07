@@ -2,6 +2,16 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.5.0 — 2026-11-07
+
+Worlds in the Creator (ADR 0051). `API_VERSION` is `1.5.0`. Additive.
+
+- `CreatorGroup` gains `'worlds'`: the Creator lists dimension flows under "Worlds".
+
+### Migration from 1.4.0
+
+None. A host older than 1.5.0 does not know the `worlds` group: a plugin whose flow uses it should declare `^1.5.0`.
+
 ## 1.4.0 — 2026-11-07
 
 Sound files in starters (ADR 0049). `API_VERSION` is `1.4.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

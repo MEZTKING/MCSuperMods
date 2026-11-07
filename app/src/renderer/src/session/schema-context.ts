@@ -78,6 +78,7 @@ export const DATA_REGISTRY_KINDS: readonly string[] = Object.freeze([
   'chat_type',
   'damage_type',
   'dialog',
+  'dimension',
   'dimension_type',
   'enchantment',
   'function',

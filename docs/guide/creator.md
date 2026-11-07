@@ -32,6 +32,7 @@ Flows that make new items or blocks need the **Fabric mod jar** export ([Blocks 
 | **Custom ore** | Blocks | An ore that drops gems, the gem item and a storage block | **Ore**: **Gem name**, **Colour**, **Pickaxe needed**, **Add a storage block**. **Drops**: **Fewest gems per ore**, **Most gems per ore**. |
 | **Simple block** | Blocks | One block with its own hardness, tool, light and drops | **Block**: **Block name**, **Colour**, **Texture**, **Light level**. **Mining**: **Hardness**, **Mined with**, **Tool tier needed for drops**, **Drops itself when mined**. **Recipe**: **Crafted from**. |
 | **Painting** | Blocks | A painting of your own picture, 1 by 1 to 4 by 4 blocks | **Painting**: **Title**, **Author**, **Size**. **Picture**: **Picture** (a PNG you pick, or a placeholder landscape), **Placeholder colour**. |
+| **Dimension** | Worlds | A world of its own, with a key or a command to get there | **World**: **Dimension name**, **Terrain**, **Biome**, **Sky and rules**. **Travel**: **How to get there** (a key item, or a command only for vanilla packs), **Key colour**. |
 | **Music disc** | Blocks | A jukebox song with its own music disc | **Song**: **Song name**, **Artist**, **Song file** (your `.ogg`), **Length in seconds**, **Comparator signal**. **Disc**: **Label colour**, **Disc** (a new music disc item, or music disc 13 with a new look for vanilla packs). |
 | **Food** | Food | Something to eat | **Food**: **Food name**, **Colour**. **Eating**: **Hunger restored**, **Saturation**, **Can be eaten when not hungry**. **Recipe**: **Crafted from**. |
 | **Consumable** | Food | A food with effects, a potion-like drink or a charm | **Item**: **Name**, **Colour**, **Kind** (food, drink or charm). **Using**: **Hunger restored**, **Saturation**, **Can be eaten when not hungry**, **Seconds to eat or drink**, **Cooldown in seconds**, **Leaves a glass bottle**. **Effects**: two effects with seconds, level and chance. **Recipe**: **Crafted from**. |
@@ -81,6 +82,10 @@ Change what you like: another colour, another tier, a piece more or less. **Crea
 - a renamed element is still recognised and updated under its new id;
 - a piece you untick is removed when you have not changed it, and kept (under **Kept your edits**) when you have;
 - a texture you replaced with your own is kept the same way; one the new answers no longer use stays in the project (**No longer used (left in the project)**).
+
+## Make a dimension
+
+The **Dimension** flow (under **Worlds**) makes a new world to visit. Pick the **Terrain** (hills like the overworld, towering amplified peaks, floating islands, one big cave with a roof, nether-like caverns, end-like islands, or completely flat), the **Biome** (one biome everywhere, such as a cherry grove or a desert, or the overworld's mix) and the **Sky and rules** (the overworld sky, always dark, the nether haze or the end sky). **Create** adds the dimension and a travel function. With a key item (the default, which needs the Fabric mod jar), use the key to go there and use it again to come back; each trip lands you on solid ground near where you stand. In vanilla packs, run `/function <namespace>:<name>/travel` instead. The game loads new dimensions when a world opens, so reopen your world after adding one. Floating islands and end-like terrain can have no ground nearby; then the game says it could not find a spot, and you stay where you are.
 
 ## Add your own song
 

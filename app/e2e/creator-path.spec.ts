@@ -440,3 +440,30 @@ test('Creator: Music disc with a picked song file (ADR 0049)', async () => {
   };
   expect(jukebox.data.length_in_seconds).toBe(95);
 });
+
+test('Creator: Dimension with a key (ADR 0051)', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-creator-dimension-'));
+  const folders = {
+    projectDir: join(base, NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  const launched = await launchApp({ reuse: folders });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-new-project').click();
+  await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
+
+  const dimension = await openFlow(window, 'dimension');
+  await dimension.getByTestId('creator-create').click();
+  await expect(dimension).toBeHidden();
+  for (const element of ['ruby_realm', 'ruby_realm/travel', 'ruby_realm_key']) {
+    await expect(window.getByTestId(`element-row-${id(element)}`)).toBeVisible();
+  }
+  // The travel function names the project's own dimension without a problem.
+  await window.getByTestId('dock-tab-problems').click();
+  await expect(
+    window.getByTestId('problems-panel').locator('[data-testid="problem-row"]'),
+  ).toHaveCount(0);
+});

@@ -1,0 +1,16 @@
+{
+  "data": {
+    "lines": [
+      "# Travels to Ruby Realm and back. Run with /function msm_starter:ruby_realm/travel, or use the key.",
+      "execute if dimension msm_starter:ruby_realm in minecraft:overworld run return run spreadplayers ~ ~ 0 64 false @s",
+      "execute in msm_starter:ruby_realm run spreadplayers ~ ~ 0 64 false @s"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_realm/travel",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The travel function. execute in msm_starter:ruby_realm runs spreadplayers in the dimension, which puts you on solid ground within 64 blocks. Run inside the dimension, the first line takes you back to the overworld the same way (if dimension …, then return)."
+  }
+}

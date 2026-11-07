@@ -346,6 +346,22 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     { painting_name: 'Mountain Lake', author: 'Alex', size: '4x3', colour: '#2454c4' },
     { painting_name: 'Grey Square', size: '1x1', image: pngDataUrl(32, 32) },
   ],
+  dimension: [
+    {
+      dimension_name: 'Frost Caves',
+      terrain: 'caves',
+      biome: 'minecraft:snowy_plains',
+      sky: 'caves',
+    },
+    {
+      dimension_name: 'Sky Isles',
+      terrain: 'floating_islands',
+      biome: 'mix',
+      sky: 'end',
+      travel: 'command',
+    },
+    { dimension_name: 'Flatland', terrain: 'flat', biome: 'minecraft:plains' },
+  ],
   'music-disc-item': [
     { song_name: 'Night Walk', artist: 'Steve', length_seconds: 240, comparator_output: 12 },
     { song_name: 'Old Tune', disc_type: 'vanilla', colour: '#28a060' },
@@ -433,6 +449,7 @@ const MIRRORED_STARTERS = [
   'enchantment',
   'painting',
   'music-disc-item',
+  'dimension',
 ];
 
 function kindRegistry(): ElementKindRegistry {
@@ -531,6 +548,7 @@ const DATA_REGISTRY_KINDS = new Set([
   'chat_type',
   'damage_type',
   'dialog',
+  'dimension',
   'dimension_type',
   'enchantment',
   'function',

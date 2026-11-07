@@ -111,6 +111,8 @@ describe('dataRegistryIds', () => {
 
   it('keeps the data pack allow-list for unregistered kinds', () => {
     expect(dataRegistryIds(sample, kindLookupFor([]))).toEqual({
+      // Dimensions count since ADR 0051: commands such as `execute in` name them.
+      dimension: ['demo:sky'],
       recipe: ['demo:ruby'],
       'tag/item': ['demo:gems'],
     });

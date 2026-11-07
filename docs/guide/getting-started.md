@@ -39,7 +39,7 @@ Close Settings.
 ## 3. Create a project from the Custom ore starter
 
 1. Click the small arrow next to **New** on the toolbar and choose **New from starter…** (or **File → New Project from Starter…**).
-2. The **New project** dialog lists the 24 starters under Blank, Packs and Themed content. Choose **Custom ore**. Its badges show that it fills a resource pack, a data pack and the Fabric mod jar, and the **Wizard** badge means it asks a few questions before it creates the project. The dialog shows "Step 1 of 4"; choose **Next**.
+2. The **New project** dialog lists the 25 starters under Blank, Packs and Themed content. Choose **Custom ore**. Its badges show that it fills a resource pack, a data pack and the Fabric mod jar, and the **Wizard** badge means it asks a few questions before it creates the project. The dialog shows "Step 1 of 4"; choose **Next**.
 3. **Custom ore: Ore** (step 2) asks for the **Gem name** (`Ruby`), its **Colour**, the **Pickaxe needed** to mine it (**Iron pickaxe**) and whether to **Add a storage block**. Keep the answers for this guide (the steps below assume Ruby) and choose **Next**.
 4. **Custom ore: Drops** (step 3) asks for the **Fewest gems per ore** and **Most gems per ore** (1 and 2). Choose **Next**.
 5. The last step, **Custom ore: Choose folder and create**, sums up your answers and has the **Minecraft version** select. Keep **Minecraft 26.3**: it is the release target, and [Minecraft versions](targets.md) explains the snapshot. **Back** returns to any earlier step.

@@ -19,6 +19,7 @@ import { customBiomeBundle } from './custom-biome';
 import { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
 import { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
 import { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
+import { DIMENSION_PARAMETERS, dimensionBundle } from './dimension';
 import { ENCHANTMENT_PARAMETERS, enchantmentBundle } from './enchantment';
 import { FOOD_PARAMETERS, foodBundle } from './food';
 import { functionStarterBundle } from './function-starter';
@@ -41,6 +42,7 @@ export { customBiomeBundle, customBiomeContent, customBiomeIds } from './custom-
 export { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
 export { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
 export { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
+export { DIMENSION_PARAMETERS, dimensionBundle } from './dimension';
 export { ENCHANTMENT_PARAMETERS, enchantmentBundle } from './enchantment';
 export { FOOD_PARAMETERS, foodBundle } from './food';
 export { functionStarterBundle } from './function-starter';
@@ -301,6 +303,23 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
         blurb: 'A jukebox song with its own music disc.',
       },
       probeValues: [{ disc_type: 'vanilla' }],
+    },
+  ),
+  starter(
+    'dimension',
+    'Dimension',
+    'A new dimension to explore: pick the terrain, the biome and the sky, and travel there and back with a key item (Fabric mod jar) or a command (vanilla packs).',
+    'content',
+    ['datapack', 'resourcepack', 'msm'],
+    dimensionBundle,
+    {
+      parameters: DIMENSION_PARAMETERS,
+      creator: {
+        group: 'worlds',
+        blurb:
+          'A world of its own, with the terrain, biome and sky you pick, and a key to get there.',
+      },
+      probeValues: [{ travel: 'command' }, { terrain: 'flat' }],
     },
   ),
   starter(
