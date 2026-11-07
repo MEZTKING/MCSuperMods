@@ -149,6 +149,23 @@ function buildEntry(
  * Alternative wizard answers (ADR 0040): every parameterised starter is also built with these,
  * and once more with {@link minimumValues}, and must validate and export with zero problems.
  */
+/** A minimal Ogg Vorbis container (header page and a last page, 3 s) as a `data:` URL. */
+function songDataUrl(): string {
+  const page = (granule: number, packet: number[]): number[] => {
+    const header = new Uint8Array(27);
+    header.set([0x4f, 0x67, 0x67, 0x53, 0, 2]);
+    new DataView(header.buffer).setUint32(6, granule, true);
+    header[26] = 1;
+    return [...header, packet.length, ...packet];
+  };
+  const id = new Uint8Array(30);
+  id.set([0x01, 0x76, 0x6f, 0x72, 0x62, 0x69, 0x73]);
+  id[11] = 2;
+  new DataView(id.buffer).setUint32(12, 44_100, true);
+  const bytes = new Uint8Array([...page(0, [...id]), ...page(3 * 44_100, [0, 0, 0, 0])]);
+  return `data:audio/ogg;base64,${Buffer.from(bytes).toString('base64')}`;
+}
+
 /** A grey player skin of height 64 or 32 as a PNG `data:` URL. */
 function skinDataUrl(height: number): string {
   const bytes = encodePng(new Uint8Array(64 * height * 4).fill(160), 64, height);
@@ -332,6 +349,8 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
   'music-disc-item': [
     { song_name: 'Night Walk', artist: 'Steve', length_seconds: 240, comparator_output: 12 },
     { song_name: 'Old Tune', disc_type: 'vanilla', colour: '#28a060' },
+    // A song file (ADR 0049): stored as sounds/my_song.ogg and played by the event.
+    { song_name: 'My Song', song_file: songDataUrl() },
   ],
   'simple-block': [
     {

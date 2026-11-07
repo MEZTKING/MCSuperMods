@@ -1,5 +1,6 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
+  type AudioStarterParameter,
   type BundleContext,
   type ContentBundle,
   type CreatorGroup,
@@ -212,6 +213,8 @@ describe('1.0.0 library additions', () => {
           return parameter.default.join('+');
         case 'image':
           return String(parameter.maxSize ?? 'any');
+        case 'audio':
+          return String(parameter.maxBytes ?? 'any');
       }
     };
     expect(describe({ id: 'a', label: 'A', type: 'number', default: 2, min: 1 })).toBe('3');
@@ -332,6 +335,8 @@ describe('1.2.0 additions', () => {
           return parameter.type;
         case 'image':
           return `image up to ${parameter.maxBytes ?? 1_048_576} bytes`;
+        case 'audio':
+          return `audio up to ${parameter.maxBytes ?? 8_388_608} bytes`;
         default: {
           const never: never = parameter;
           return String(never);
@@ -341,5 +346,19 @@ describe('1.2.0 additions', () => {
     expect(describe({ id: 'p', label: 'P', type: 'image', default: null })).toBe(
       'image up to 1048576 bytes',
     );
+  });
+});
+
+describe('1.4.0 additions', () => {
+  it('declares an audio parameter whose value is an Ogg data URL or null', () => {
+    const song: StarterParameter = {
+      id: 'song_file',
+      label: 'Song file',
+      type: 'audio',
+      default: null,
+      maxBytes: 16_777_216,
+    };
+    expect(song.type).toBe('audio');
+    expectTypeOf<AudioStarterParameter['default']>().toEqualTypeOf<null>();
   });
 });

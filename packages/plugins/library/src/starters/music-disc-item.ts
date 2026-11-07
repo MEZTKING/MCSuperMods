@@ -5,8 +5,9 @@
  * (through `msm:components`, ADR 0044 D1) plays the song; a project that stays vanilla gets
  * the Custom music disc starter's approach instead: music disc 13 with a `select` item
  * definition and a function that gives the disc. No sound file is bundled: the event plays
- * the vanilla `minecraft:records/cat` until the user imports their own `.ogg`. Ids derive
- * from `song_name`: the song `<id>`, the disc item `<id>_disc`.
+ * the vanilla `minecraft:records/cat` unless the user picks their own `.ogg` (`song_file`,
+ * ADR 0049): then it is stored as `sounds/<id>.ogg`, the event plays it and the song's length
+ * comes from the file. Ids derive from `song_name`: the song `<id>`, the disc item `<id>_disc`.
  */
 import type {
   BundleContext,
@@ -26,6 +27,8 @@ import {
   texture,
 } from '../content/bundle';
 import {
+  audioValue,
+  decodeOggDataUrl,
   hexFromRgb,
   NAME_MAX_LENGTH,
   NAME_PATTERN,
@@ -35,6 +38,9 @@ import {
   rgbFromHex,
   stringValue,
 } from '../content/parameters';
+
+/** The largest song file the flow accepts. */
+const SONG_MAX_BYTES = 16 * 1024 * 1024;
 
 /** The Music disc flow's questions (ADR 0044 D6), groups "Song" and "Disc". */
 export const MUSIC_DISC_ITEM_PARAMETERS: readonly StarterParameter[] = Object.freeze([
@@ -59,10 +65,20 @@ export const MUSIC_DISC_ITEM_PARAMETERS: readonly StarterParameter[] = Object.fr
     maxLength: NAME_MAX_LENGTH,
   },
   {
+    id: 'song_file',
+    label: 'Song file',
+    description:
+      'Your music as an Ogg Vorbis file (.ogg, at most 16 MB). Its length is read from the file. A mono file fades with distance from the jukebox; a stereo one plays at the same volume everywhere. Leave it empty to play the vanilla "cat" record until you add one.',
+    group: 'Song',
+    type: 'audio',
+    default: null,
+    maxBytes: SONG_MAX_BYTES,
+  },
+  {
     id: 'length_seconds',
     label: 'Length in seconds',
     description:
-      'How long the jukebox counts as playing; set it to the length of your .ogg file (import it with Import assets, then Sounds).',
+      'How long the jukebox counts as playing when no song file is chosen (a chosen file sets it).',
     group: 'Song',
     type: 'number',
     default: 185,
@@ -108,7 +124,11 @@ export function musicDiscItemBundle(context: BundleContext): ContentBundle {
   const name = nameForms(stringValue(values, 'song_name'));
   const artist = nameForms(stringValue(values, 'artist')).display;
   const colour = rgbFromHex(stringValue(values, 'colour'), COLOURS.violet);
-  const length = Math.round(numberValue(values, 'length_seconds'));
+  const picked = decodeOggDataUrl(audioValue(values, 'song_file') ?? '');
+  const length =
+    picked === null
+      ? Math.round(numberValue(values, 'length_seconds'))
+      : Math.max(1, Math.ceil(picked.seconds));
   const comparator = Math.round(numberValue(values, 'comparator_output'));
   const asItem = stringValue(values, 'disc_type') !== 'vanilla';
 
@@ -130,8 +150,19 @@ export function musicDiscItemBundle(context: BundleContext): ContentBundle {
     element(
       rl(namespace, 'sounds'),
       KINDS.sounds,
-      { [event]: { sounds: [{ name: 'minecraft:records/cat', stream: true }] } },
-      `Defines the sound event ${namespace}:${event}. It plays the vanilla file records/cat for now: choose Import assets, then Sounds, and pick your own .ogg (for example ${name.id}.ogg; it is stored as sounds/${name.id}.ogg in this namespace), then change name to ${namespace}:${name.id}. stream: true plays long music without loading it all at once.`,
+      {
+        [event]: {
+          sounds: [
+            {
+              name: picked === null ? 'minecraft:records/cat' : rl(namespace, name.id),
+              stream: true,
+            },
+          ],
+        },
+      },
+      picked === null
+        ? `Defines the sound event ${namespace}:${event}. It plays the vanilla file records/cat for now: choose Import assets, then Sounds, and pick your own .ogg (for example ${name.id}.ogg; it is stored as sounds/${name.id}.ogg in this namespace), then change name to ${namespace}:${name.id}. stream: true plays long music without loading it all at once.`
+        : `Defines the sound event ${namespace}:${event}: it plays your file sounds/${name.id}.ogg in this namespace (${picked.channels === 1 ? 'mono, so it fades with distance' : 'stereo, so it plays at the same volume everywhere'}). stream: true plays long music without loading it all at once.`,
     ),
     element(
       song,
@@ -211,5 +242,13 @@ export function musicDiscItemBundle(context: BundleContext): ContentBundle {
       'The English text of the song description, shown under the disc and when it starts playing.',
     ),
   );
-  return { elements, assets: [texture(namespace, `item/${name.id}_disc`, 'disc', colour)] };
+  return {
+    elements,
+    assets: [
+      texture(namespace, `item/${name.id}_disc`, 'disc', colour),
+      ...(picked === null
+        ? []
+        : [{ namespace, path: `sounds/${name.id}.ogg`, bytes: picked.bytes }]),
+    ],
+  };
 }

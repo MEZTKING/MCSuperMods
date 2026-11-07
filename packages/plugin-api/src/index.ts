@@ -23,6 +23,7 @@ export type {
 } from './contributions';
 export type { Json, JsonObject, ResourceLocation } from './json';
 export type {
+  AudioStarterParameter,
   BooleanStarterParameter,
   BundleContext,
   ChoiceStarterParameter,

@@ -2959,3 +2959,9 @@ Next: publish 1.1.0 once the user's Windows test passes; these changes go into t
 What: app `package.json` and `engine-mod` `mod_version` 1.2.0; CHANGELOG `[1.2.0] - 2026-11-07` (New texture…, Picture to texture, player skins on mobs, screenshots for the AI helper, better placeholder art); status lines in the CLAUDE.md files, README, ADR 0048 status, ROADMAP row and HANDOFF state.
 Decisions: 1.2.0 is drafted on top of the unpublished 1.1.0 draft; publishing 1.2.0 alone delivers both.
 Next: draft via `release.yml` after green CI; publish only after the user's Windows test.
+
+## 2026-11-07 — main session — Song files for the Music disc (ADR 0049)
+
+What: on "Continue", the follow-up "music disc flow has no audio import". Plugin API 1.4.0 adds `AudioStarterParameter` (`audio`; Ogg Vorbis `data:` URL or `null`; `maxBytes` 8 MB by default). The app's wizard model gains `oggInfo`, `checkOggBytes`, `oggDataUrl`, `readAudioFile` and `audioSummary`; `ParameterField` renders an `.ogg` input and the Creator `CreatorAudioField` (**Choose song…** through `pickFiles`, prop `pickAudio`). The library reads the container (`oggVorbisInfo`, `decodeOggDataUrl`, `audioValue`); the Music disc flow's **Song file** (`song_file`, 16 MB) is stored as `sounds/<id>.ogg`, played by the event, and sets `length_in_seconds` from the file. Tests: plugin-api 1.4.0 additions, library parameters (song and Ogg reader), exporters alternative with a song, app `wizard-audio.test.tsx`, e2e `creator-path` Music disc with a picked song (`e2e/ogg.ts`).
+Decisions: no audio preview (the CSP allows no `data:` media); length rounded up; mono or stereo named in the notes.
+Next: release after 1.2.0 when the user wants one; other follow-ups (vanilla-tier weapon numbers via `TargetFacts`, passthrough validator, optional `ArmorDefense.body`).

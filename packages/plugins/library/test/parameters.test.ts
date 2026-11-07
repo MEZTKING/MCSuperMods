@@ -18,6 +18,7 @@ import {
   decodePngDataUrl,
   idFromName,
   nameForms,
+  oggVorbisInfo,
   pluralOf,
   readValues,
   rgbFromHex,
@@ -31,6 +32,29 @@ import {
   paintingPng,
   placeholderPng,
 } from '../src/index';
+
+/**
+ * A minimal Ogg Vorbis file: a first page with the identification header, and a last page
+ * whose granule position gives `seconds` at 44.1 kHz (nothing is decodable; only the
+ * container is read).
+ */
+function oggBytes(seconds: number, channels: number): Uint8Array {
+  const page = (granule: number, packet: number[]): number[] => {
+    const header = new Uint8Array(27);
+    header.set([0x4f, 0x67, 0x67, 0x53, 0, 2]);
+    const view = new DataView(header.buffer);
+    view.setUint32(6, granule % 2 ** 32, true);
+    view.setUint32(10, Math.floor(granule / 2 ** 32), true);
+    header[26] = 1;
+    return [...header, packet.length, ...packet];
+  };
+  const id = new Uint8Array(30);
+  id.set([0x01, 0x76, 0x6f, 0x72, 0x62, 0x69, 0x73]);
+  id[11] = channels;
+  new DataView(id.buffer).setUint32(12, 44_100, true);
+  id[29] = 1;
+  return new Uint8Array([...page(0, [...id]), ...page(Math.round(seconds * 44_100), [0, 0, 0, 0])]);
+}
 
 /** A PNG `data:` URL of `bytes`. */
 const dataUrl = (bytes: Uint8Array): string =>
@@ -867,6 +891,37 @@ describe('Creator flows', () => {
     expect(placeable?.kind).toBe('minecraft:tag/painting_variant');
     expect(placeable?.data).toEqual({ values: ['demo:lake'] });
     expect(picked.elements.find((entry) => entry.id === 'demo:lake')?.notes).not.toMatch(/give/);
+  });
+
+  it('Music disc: a song file is stored, played and timed', () => {
+    const song = oggBytes(125.2, 1);
+    const bundle = build(starter('music-disc-item'), {
+      song_file: `data:audio/ogg;base64,${Buffer.from(song).toString('base64')}`,
+      length_seconds: 30,
+    });
+    expect(data(bundle, 'demo:sounds')).toEqual({
+      'music_disc.ruby_waltz': { sounds: [{ name: 'demo:ruby_waltz', stream: true }] },
+    });
+    expect(data(bundle, 'demo:ruby_waltz').length_in_seconds).toBe(126);
+    expect(bundle.assets.find((asset) => asset.path === 'sounds/ruby_waltz.ogg')?.bytes).toEqual(
+      song,
+    );
+    // Not Ogg Vorbis: the vanilla record plays and the typed length stays.
+    const plain = build(starter('music-disc-item'), {
+      song_file: 'data:audio/ogg;base64,bm90IG9nZw==',
+      length_seconds: 30,
+    });
+    expect(data(plain, 'demo:ruby_waltz').length_in_seconds).toBe(30);
+    expect(plain.assets.some((asset) => asset.path.endsWith('.ogg'))).toBe(false);
+  });
+
+  it('reads the Vorbis header and the length of an Ogg file', () => {
+    expect(oggVorbisInfo(oggBytes(10, 2))).toEqual({
+      sampleRate: 44_100,
+      channels: 2,
+      seconds: 10,
+    });
+    expect(oggVorbisInfo(new Uint8Array(64))).toBeNull();
   });
 
   it('Music disc: a real disc item by default, music disc 13 for vanilla packs', () => {

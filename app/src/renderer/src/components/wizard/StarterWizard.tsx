@@ -17,6 +17,7 @@ import { fieldClass } from '../NewElementDialog';
 import { Button } from '../ui/Button';
 import { ParameterField } from './ParameterField';
 import {
+  audioSummary,
   CREATE_STEP_TITLE,
   imageSummary,
   pickTargetId,
@@ -216,7 +217,9 @@ export function StarterWizard(props: StarterWizardProps) {
                         ? setSummary(parameter, value)
                         : parameter.type === 'image'
                           ? imageSummary(value)
-                          : String(value);
+                          : parameter.type === 'audio'
+                            ? audioSummary(value)
+                            : String(value);
                 return [
                   <dt key={`${parameter.id}-label`} className="text-muted">
                     {parameter.label}

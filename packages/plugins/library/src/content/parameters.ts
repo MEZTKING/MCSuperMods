@@ -53,6 +53,11 @@ export function readValues(
         typeof value === 'string' && decodePngDataUrl(value) !== null ? value : null;
       continue;
     }
+    if (parameter.type === 'audio') {
+      out[parameter.id] =
+        typeof value === 'string' && decodeOggDataUrl(value) !== null ? value : null;
+      continue;
+    }
     if (parameter.type === 'set') {
       out[parameter.id] = Array.isArray(value)
         ? parameter.choices.map((choice) => choice.value).filter((choice) => value.includes(choice))
@@ -90,6 +95,65 @@ export function booleanValue(values: ParameterValues, id: string): boolean {
 
 /** The value of an image parameter: a PNG `data:` URL, or `null` when none was picked. */
 export function imageValue(values: ParameterValues, id: string): string | null {
+  const value = values[id];
+  return typeof value === 'string' ? value : null;
+}
+
+/** An Ogg Vorbis sound read from an audio parameter's value (ADR 0049). */
+export interface DecodedOgg {
+  bytes: Uint8Array;
+  /** Samples per second, from the Vorbis identification header. */
+  sampleRate: number;
+  /** 1 for mono, 2 for stereo. */
+  channels: number;
+  /** The length in seconds, from the last page's granule position. */
+  seconds: number;
+}
+
+/** The prefix of an audio parameter's value. */
+export const OGG_DATA_URL_PREFIX = 'data:audio/ogg;base64,';
+
+const OGG_CAPTURE = [0x4f, 0x67, 0x67, 0x53];
+
+/**
+ * Reads the Vorbis identification header and the length of Ogg Vorbis bytes, or `null` when
+ * they are not Ogg Vorbis. Only the container is read: nothing is decoded.
+ */
+export function oggVorbisInfo(bytes: Uint8Array): Omit<DecodedOgg, 'bytes'> | null {
+  const isPage = (at: number): boolean => OGG_CAPTURE.every((byte, i) => bytes[at + i] === byte);
+  if (bytes.length < 58 || !isPage(0)) return null;
+  const segments = bytes[26] ?? 0;
+  const packet = 27 + segments;
+  const vorbis = [0x01, 0x76, 0x6f, 0x72, 0x62, 0x69, 0x73];
+  if (!vorbis.every((byte, i) => bytes[packet + i] === byte)) return null;
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (packet + 16 > bytes.length) return null;
+  const channels = bytes[packet + 11] ?? 0;
+  const sampleRate = view.getUint32(packet + 12, true);
+  if (channels === 0 || sampleRate === 0) return null;
+  // The last page's granule position counts the samples per channel.
+  for (let at = bytes.length - 27; at >= 0; at -= 1) {
+    if (!isPage(at)) continue;
+    const low = view.getUint32(at + 6, true);
+    const high = view.getUint32(at + 10, true);
+    const samples = high * 2 ** 32 + low;
+    if (high === 0xffffffff) continue;
+    return { sampleRate, channels, seconds: samples / sampleRate };
+  }
+  return null;
+}
+
+/** The Ogg Vorbis sound of an audio parameter's value, or `null` for anything else. */
+export function decodeOggDataUrl(value: string): DecodedOgg | null {
+  if (!value.startsWith(OGG_DATA_URL_PREFIX)) return null;
+  const bytes = base64Bytes(value.slice(OGG_DATA_URL_PREFIX.length));
+  if (bytes === null) return null;
+  const info = oggVorbisInfo(bytes);
+  return info === null ? null : { bytes, ...info };
+}
+
+/** The value of an audio parameter: an Ogg `data:` URL, or `null` when none was picked. */
+export function audioValue(values: ParameterValues, id: string): string | null {
   const value = values[id];
   return typeof value === 'string' ? value : null;
 }

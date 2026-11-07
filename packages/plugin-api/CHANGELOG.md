@@ -2,6 +2,16 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.4.0 — 2026-11-07
+
+Sound files in starters (ADR 0049). `API_VERSION` is `1.4.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `AudioStarterParameter` (`type: 'audio'`, `default: null`, `maxBytes?` (absent means 8 388 608 bytes)): a sound the user picks, passed to `build` as an Ogg Vorbis `data:` URL string (`data:audio/ogg;base64,...`) or `null`. The host checks the Ogg signature, the Vorbis identification header and the size before passing it. A member of the `StarterParameter` union; the built-in Music disc flow reads it.
+
+### Migration from 1.3.0
+
+None. A host older than 1.4.0 does not know `audio` parameters: plugins that declare one should declare `^1.4.0`.
+
 ## 1.3.0 — 2026-11-06
 
 Modpacks (ADR 0046). `API_VERSION` is `1.3.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

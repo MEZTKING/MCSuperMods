@@ -14,8 +14,10 @@ import { type ReactNode, useId, useState } from 'react';
 import { fieldClass } from '../NewElementDialog';
 import { Button } from '../ui/Button';
 import {
+  audioSummary,
   derivedId,
   type RawValue,
+  readAudioFile,
   readImageFile,
   showsIdPreview,
   toggleSetValue,
@@ -198,6 +200,46 @@ export function ParameterField({
               }}
             >
               Remove image
+            </Button>
+          )}
+        </span>
+      );
+      break;
+    case 'audio':
+      control = (
+        <span className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-muted" data-testid={`${testId}-summary`}>
+            {audioSummary(text === '' ? null : text)}
+          </span>
+          <input
+            {...common}
+            type="file"
+            accept=".ogg,audio/ogg"
+            className="text-xs"
+            onChange={(event) => {
+              const input = event.target;
+              const file = input.files?.[0];
+              if (file === undefined) return;
+              void readAudioFile(parameter, file).then((result) => {
+                if ('error' in result) {
+                  setFileError(result.error);
+                } else {
+                  setFileError(null);
+                  onChange(result.value);
+                }
+                input.value = '';
+              });
+            }}
+          />
+          {text !== '' && (
+            <Button
+              data-testid={`${testId}-clear`}
+              onClick={() => {
+                setFileError(null);
+                onChange('');
+              }}
+            >
+              Remove sound
             </Button>
           )}
         </span>

@@ -315,6 +315,33 @@ export interface ImageStarterParameter extends StarterParameterBase {
 }
 
 /**
+ * A sound file the user picks, for example a music disc's song; the host renders a file
+ * picker that shows the length. Its value in {@link BundleContext.values} is an Ogg Vorbis
+ * `data:` URL (`data:audio/ogg;base64,...`) or `null` when the user picked none. The host
+ * checks the Ogg signature, the Vorbis identification header and {@link maxBytes} before
+ * passing a value. A starter must accept `null`. Since 1.4.0 (ADR 0049).
+ *
+ * @example
+ * ```ts
+ * const song: AudioStarterParameter = {
+ *   id: 'song_file',
+ *   label: 'Song file',
+ *   type: 'audio',
+ *   default: null,
+ *   maxBytes: 16_777_216,
+ * };
+ * ```
+ */
+export interface AudioStarterParameter extends StarterParameterBase {
+  /** The parameter's value type. */
+  type: 'audio';
+  /** No sound: the bundle uses a vanilla sound or none. */
+  default: null;
+  /** The largest file the host accepts, in bytes; absent means 8 388 608 (8 MB). */
+  maxBytes?: number;
+}
+
+/**
  * One question a parameterised {@link ProjectStarter} asks; the host renders the parameters
  * as a multi-step wizard (ADR 0040) and passes the answers in {@link BundleContext.values}.
  * Since 1.0.0.
@@ -335,7 +362,8 @@ export type StarterParameter =
   | ColourStarterParameter
   | ChoiceStarterParameter
   | SetStarterParameter
-  | ImageStarterParameter;
+  | ImageStarterParameter
+  | AudioStarterParameter;
 
 /**
  * The Creator group a {@link ProjectStarter} is listed under (ADR 0043 D1): `gear` (tools and

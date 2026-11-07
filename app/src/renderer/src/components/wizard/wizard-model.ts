@@ -70,6 +70,7 @@ export function defaultRawValue(parameter: StarterParameter): RawValue {
     case 'set':
       return [...parameter.default];
     case 'image':
+    case 'audio':
       return '';
     default:
       return parameter.default;
@@ -107,7 +108,9 @@ export function toValue(parameter: StarterParameter, raw: RawValue | undefined):
   if (raw === undefined || validateParameter(parameter, raw) !== null) {
     return parameter.type === 'set' ? [...parameter.default] : parameter.default;
   }
-  if (parameter.type === 'image') return raw === '' ? null : String(raw);
+  if (parameter.type === 'image' || parameter.type === 'audio') {
+    return raw === '' ? null : String(raw);
+  }
   switch (parameter.type) {
     case 'boolean':
       return raw === true;
@@ -211,6 +214,12 @@ export function validateParameter(
       if (chosen < min) return min === 1 ? 'Choose at least one.' : `Choose at least ${min}.`;
       return null;
     }
+    case 'audio': {
+      if (typeof raw !== 'string') return NOT_OGG;
+      if (raw === '') return null;
+      const bytes = bytesOfOggDataUrl(raw);
+      return bytes === null ? NOT_OGG : checkOggBytes(parameter, bytes);
+    }
     case 'image': {
       if (typeof raw !== 'string') return NOT_A_PNG;
       if (raw === '') return null;
@@ -313,6 +322,104 @@ export function imageSummary(value: Json): string {
   const bytes = typeof value === 'string' ? bytesOfPngDataUrl(value) : null;
   const size = bytes === null ? null : pngSize(bytes);
   return size === null ? 'None' : `PNG image, ${size.width} by ${size.height} pixels`;
+}
+
+// Audio parameters (ADR 0049) ---------------------------------------------------------------
+
+/** The largest sound file when an audio parameter sets no `maxBytes`: 8 MB. */
+export const DEFAULT_AUDIO_MAX_BYTES = 8_388_608;
+
+/** The prefix of an audio parameter's value. */
+export const OGG_DATA_URL_PREFIX = 'data:audio/ogg;base64,';
+
+const NOT_OGG = 'Choose an Ogg Vorbis sound (.ogg).';
+const OGG_CAPTURE = [0x4f, 0x67, 0x67, 0x53];
+const VORBIS_ID = [0x01, 0x76, 0x6f, 0x72, 0x62, 0x69, 0x73];
+
+/**
+ * The sample rate, channels and length of Ogg Vorbis bytes, read from the container (the
+ * Vorbis identification header and the last page's granule position), or `null` when they
+ * are not Ogg Vorbis.
+ */
+export function oggInfo(
+  bytes: Uint8Array,
+): { sampleRate: number; channels: number; seconds: number } | null {
+  const isPage = (at: number): boolean => OGG_CAPTURE.every((byte, i) => bytes[at + i] === byte);
+  if (bytes.length < 58 || !isPage(0)) return null;
+  const packet = 27 + (bytes[26] ?? 0);
+  if (packet + 16 > bytes.length || !VORBIS_ID.every((byte, i) => bytes[packet + i] === byte)) {
+    return null;
+  }
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const channels = bytes[packet + 11] ?? 0;
+  const sampleRate = view.getUint32(packet + 12, true);
+  if (channels === 0 || sampleRate === 0) return null;
+  for (let at = bytes.length - 27; at >= 0; at -= 1) {
+    if (!isPage(at)) continue;
+    const high = view.getUint32(at + 10, true);
+    if (high === 0xffffffff) continue;
+    const samples = high * 2 ** 32 + view.getUint32(at + 6, true);
+    return { sampleRate, channels, seconds: samples / sampleRate };
+  }
+  return null;
+}
+
+/**
+ * Checks a picked file's bytes against an audio parameter (ADR 0049): Ogg Vorbis with a
+ * readable length, at most `maxBytes` (8 MB by default).
+ *
+ * @returns An error message, or `null` when the sound is accepted.
+ */
+export function checkOggBytes(
+  parameter: StarterParameter & { type: 'audio' },
+  bytes: Uint8Array,
+): string | null {
+  const maxBytes = parameter.maxBytes ?? DEFAULT_AUDIO_MAX_BYTES;
+  if (bytes.length > maxBytes) return `Choose a sound of at most ${showBytes(maxBytes)}.`;
+  return oggInfo(bytes) === null ? NOT_OGG : null;
+}
+
+/** Ogg bytes as an audio parameter's value, a `data:audio/ogg;base64,` URL. */
+export function oggDataUrl(bytes: Uint8Array): string {
+  let binary = '';
+  for (let at = 0; at < bytes.length; at += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(at, at + 0x8000));
+  }
+  return `${OGG_DATA_URL_PREFIX}${btoa(binary)}`;
+}
+
+/** The bytes of a `data:audio/ogg;base64,` URL, or `null` for anything else. */
+export function bytesOfOggDataUrl(value: string): Uint8Array | null {
+  if (!value.startsWith(OGG_DATA_URL_PREFIX)) return null;
+  try {
+    return Uint8Array.from(atob(value.slice(OGG_DATA_URL_PREFIX.length)), (char) =>
+      char.charCodeAt(0),
+    );
+  } catch {
+    return null;
+  }
+}
+
+/** Reads a picked file for an audio parameter; the value, or the error to show. */
+export async function readAudioFile(
+  parameter: StarterParameter & { type: 'audio' },
+  file: Blob,
+): Promise<{ value: string } | { error: string }> {
+  const maxBytes = parameter.maxBytes ?? DEFAULT_AUDIO_MAX_BYTES;
+  if (file.size > maxBytes) return { error: `Choose a sound of at most ${showBytes(maxBytes)}.` };
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const error = checkOggBytes(parameter, bytes);
+  return error === null ? { value: oggDataUrl(bytes) } : { error };
+}
+
+/** The summary of an audio parameter's value: `Ogg Vorbis, 2:05, mono`, or `None`. */
+export function audioSummary(value: Json): string {
+  const bytes = typeof value === 'string' ? bytesOfOggDataUrl(value) : null;
+  const info = bytes === null ? null : oggInfo(bytes);
+  if (info === null) return 'None';
+  const total = Math.ceil(info.seconds);
+  const time = `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+  return `Ogg Vorbis, ${time}, ${info.channels === 1 ? 'mono' : info.channels === 2 ? 'stereo' : `${info.channels} channels`}`;
 }
 
 /** Whether `value` matches the whole of `pattern`; an invalid pattern accepts everything. */

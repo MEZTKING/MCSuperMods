@@ -32,7 +32,7 @@ Flows that make new items or blocks need the **Fabric mod jar** export ([Blocks 
 | **Custom ore** | Blocks | An ore that drops gems, the gem item and a storage block | **Ore**: **Gem name**, **Colour**, **Pickaxe needed**, **Add a storage block**. **Drops**: **Fewest gems per ore**, **Most gems per ore**. |
 | **Simple block** | Blocks | One block with its own hardness, tool, light and drops | **Block**: **Block name**, **Colour**, **Texture**, **Light level**. **Mining**: **Hardness**, **Mined with**, **Tool tier needed for drops**, **Drops itself when mined**. **Recipe**: **Crafted from**. |
 | **Painting** | Blocks | A painting of your own picture, 1 by 1 to 4 by 4 blocks | **Painting**: **Title**, **Author**, **Size**. **Picture**: **Picture** (a PNG you pick, or a placeholder landscape), **Placeholder colour**. |
-| **Music disc** | Blocks | A jukebox song with its own music disc | **Song**: **Song name**, **Artist**, **Length in seconds**, **Comparator signal**. **Disc**: **Label colour**, **Disc** (a new music disc item, or music disc 13 with a new look for vanilla packs). |
+| **Music disc** | Blocks | A jukebox song with its own music disc | **Song**: **Song name**, **Artist**, **Song file** (your `.ogg`), **Length in seconds**, **Comparator signal**. **Disc**: **Label colour**, **Disc** (a new music disc item, or music disc 13 with a new look for vanilla packs). |
 | **Food** | Food | Something to eat | **Food**: **Food name**, **Colour**. **Eating**: **Hunger restored**, **Saturation**, **Can be eaten when not hungry**. **Recipe**: **Crafted from**. |
 | **Consumable** | Food | A food with effects, a potion-like drink or a charm | **Item**: **Name**, **Colour**, **Kind** (food, drink or charm). **Using**: **Hunger restored**, **Saturation**, **Can be eaten when not hungry**, **Seconds to eat or drink**, **Cooldown in seconds**, **Leaves a glass bottle**. **Effects**: two effects with seconds, level and chance. **Recipe**: **Crafted from**. |
 | **Custom mob** | Mobs | An animated mob with behaviour, spawning, a spawn egg and drops | **Mob**: **Mob name**, **Skin colour**, **Skin** (a player skin PNG), **Arms**, spawn egg colours. **Behaviour**: **Health**, **Walking speed**, **Behaviour**. **Spawning**: **Spawns in**. |
@@ -81,6 +81,10 @@ Change what you like: another colour, another tier, a piece more or less. **Crea
 - a renamed element is still recognised and updated under its new id;
 - a piece you untick is removed when you have not changed it, and kept (under **Kept your edits**) when you have;
 - a texture you replaced with your own is kept the same way; one the new answers no longer use stays in the project (**No longer used (left in the project)**).
+
+## Add your own song
+
+The **Music disc** flow's **Song file** takes your music as an Ogg Vorbis file (`.ogg`, at most 16 MB). Choose **Choose song…** and pick it; the field shows its length and whether it is mono or stereo ("Ogg Vorbis, 2:05, stereo"). **Create** stores it as `sounds/<song id>.ogg`, the disc plays it, and the jukebox's playing time is the song's length, so **Length in seconds** is only used without a file. A mono file fades with distance from the jukebox, like the vanilla discs; a stereo one plays at the same volume everywhere. Other formats (MP3, WAV) must be converted to Ogg Vorbis first, for example with Audacity. **Remove sound** goes back to the vanilla "cat" record.
 
 ## Use a player skin
 

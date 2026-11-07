@@ -45,6 +45,7 @@ import {
   stepErrors,
   toValues,
 } from '../wizard/wizard-model';
+import { CreatorAudioField, type PickAudio } from './CreatorAudioField';
 import { CreatorImageField, type PickImage } from './CreatorImageField';
 import { CreatorPreview } from './CreatorPreview';
 import {
@@ -114,6 +115,8 @@ export interface CreatorDialogProps {
    * ADR 0044 D7); without it the field falls back to the wizard's file input.
    */
   pickImage?: PickImage;
+  /** Opens the host's Ogg file picker for an `audio` field (ADR 0049); else the wizard's input. */
+  pickAudio?: PickAudio;
   /** Test hook: overrides WebGL detection in the preview. */
   webgl?: boolean;
   /** Test hook: the rebuild delay (default 150 ms). */
@@ -430,7 +433,18 @@ export function CreatorDialog(props: CreatorDialogProps) {
                       {group.title}
                     </legend>
                     {group.parameters.map((parameter) =>
-                      parameter.type === 'image' && props.pickImage !== undefined ? (
+                      parameter.type === 'audio' && props.pickAudio !== undefined ? (
+                        <CreatorAudioField
+                          key={parameter.id}
+                          parameter={parameter}
+                          value={
+                            typeof raw[parameter.id] === 'string' ? String(raw[parameter.id]) : ''
+                          }
+                          error={errors[parameter.id] ?? null}
+                          pickAudio={props.pickAudio}
+                          onChange={(value) => change(parameter.id, value)}
+                        />
+                      ) : parameter.type === 'image' && props.pickImage !== undefined ? (
                         <CreatorImageField
                           key={parameter.id}
                           parameter={parameter}

@@ -1882,6 +1882,12 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 filters: [{ name: 'PNG image', extensions: ['png'] }],
               })
             }
+            pickAudio={(title) =>
+              bridge.dialogs.pickFiles({
+                title,
+                filters: [{ name: 'Ogg Vorbis sound', extensions: ['ogg'] }],
+              })
+            }
             onClose={() => setDialog(null)}
             onCreated={(result) => {
               setDialog(null);

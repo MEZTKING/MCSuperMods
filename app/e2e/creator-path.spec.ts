@@ -30,6 +30,7 @@ import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import { type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { oggVorbis } from './ogg';
 import { gradientPng } from './png';
 
 /** The project folder name; a blank project's namespace is derived from it. */
@@ -399,4 +400,43 @@ test('Creator: Painting with a picked PNG and a bow from the Weapon flow', async
 
   await save(window);
   console.log(`creator-path painting and weapon: ${((Date.now() - started) / 1000).toFixed(1)} s`);
+});
+
+test('Creator: Music disc with a picked song file (ADR 0049)', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-creator-song-'));
+  const folders = {
+    projectDir: join(base, NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  const song = oggVorbis(95, 1);
+  const songPath = join(base, 'night_walk.ogg');
+  writeFileSync(songPath, song);
+  const launched = await launchApp({ reuse: folders, pickFiles: [songPath] });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-new-project').click();
+  await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
+
+  const disc = await openFlow(window, 'music-disc-item');
+  await expect(disc.getByTestId('param-song_file-summary')).toHaveText('None');
+  await disc.getByTestId('param-song_file').click();
+  await expect(disc.getByTestId('param-song_file-summary')).toHaveText('Ogg Vorbis, 1:35, mono');
+  await disc.getByTestId('creator-create').click();
+  await expect(disc).toBeHidden();
+  await expect(window.getByTestId(`element-row-${id('ruby_waltz')}`)).toBeVisible();
+  const stored = join(folders.projectDir, 'assets', NAMESPACE, 'sounds', 'ruby_waltz.ogg');
+  await expect.poll(() => existsSync(stored)).toBe(true);
+  expect(readFileSync(stored).equals(song)).toBe(true);
+  await save(window);
+  const content = join(folders.projectDir, 'content', NAMESPACE);
+  const songFile = (readdirSync(content, { recursive: true }) as string[]).find(
+    (entry) => entry.endsWith('ruby_waltz.json') && !entry.includes('item'),
+  );
+  if (songFile === undefined) throw new Error('The jukebox song was not saved.');
+  const jukebox = JSON.parse(readFileSync(join(content, songFile), 'utf8')) as {
+    data: { length_in_seconds: number };
+  };
+  expect(jukebox.data.length_in_seconds).toBe(95);
 });
