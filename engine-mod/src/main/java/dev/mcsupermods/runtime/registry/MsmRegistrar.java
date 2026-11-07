@@ -559,7 +559,7 @@ public final class MsmRegistrar {
                 defense.put(ArmorType.CHESTPLATE, m.defense().chestplate());
                 defense.put(ArmorType.LEGGINGS, m.defense().leggings());
                 defense.put(ArmorType.BOOTS, m.defense().boots());
-                defense.put(ArmorType.BODY, m.defense().chestplate()); // horse and wolf armour (ADR 0044 D5)
+                defense.put(ArmorType.BODY, m.defense().bodyOrChestplate()); // horse and wolf armour (ADR 0044 D5, ADR 0050 D4)
                 Holder<SoundEvent> sound = SoundEvents.ARMOR_EQUIP_GENERIC;
                 if (m.equipSound().isPresent()) {
                     Optional<Holder.Reference<SoundEvent>> found = BuiltInRegistries.SOUND_EVENT.get(m.equipSound().get());

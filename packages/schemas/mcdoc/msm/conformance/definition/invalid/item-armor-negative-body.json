@@ -1,0 +1,23 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": {
+        "defense": {
+          "body": -1,
+          "boots": 2,
+          "chestplate": 7,
+          "helmet": 2,
+          "leggings": 5
+        },
+        "durability": 20,
+        "enchantment_value": 12,
+        "equipment_asset": "mymod:ruby_armor",
+        "knockback_resistance": 0,
+        "toughness": 1
+      },
+      "slot": "wolf"
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

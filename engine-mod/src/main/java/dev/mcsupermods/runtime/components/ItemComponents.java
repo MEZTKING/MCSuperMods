@@ -202,13 +202,19 @@ public record ItemComponents(
         public static final Codec<ArmorMaterialName> CODEC = MsmCodecs.named("armor material", values(), ArmorMaterialName::serialName);
     }
 
-    /** Defence points per slot. */
-    public record Defense(int helmet, int chestplate, int leggings, int boots) {
+    /** Defence points per slot; {@code body} (horse and wolf armour) defaults to {@code chestplate} (ADR 0050 D4). */
+    public record Defense(int helmet, int chestplate, int leggings, int boots, Optional<Integer> body) {
         public static final Codec<Defense> CODEC = RecordCodecBuilder.create(i -> i.group(
                 required("helmet", intAtLeast(0)).forGetter(Defense::helmet),
                 required("chestplate", intAtLeast(0)).forGetter(Defense::chestplate),
                 required("leggings", intAtLeast(0)).forGetter(Defense::leggings),
-                required("boots", intAtLeast(0)).forGetter(Defense::boots)).apply(i, Defense::new));
+                required("boots", intAtLeast(0)).forGetter(Defense::boots),
+                optional("body", intAtLeast(0)).forGetter(Defense::body)).apply(i, Defense::new));
+
+        /** The defence of horse and wolf armour: {@code body}, else {@code chestplate}. */
+        public int bodyOrChestplate() {
+            return body.orElse(chestplate);
+        }
     }
 
     /**

@@ -258,7 +258,7 @@ class DefinitionParserTest {
                   "toughness": 1.5, "knockback_resistance": 0.1, "equip_sound": "minecraft:item.armor.equip_diamond",
                   "repair_items": "#minecraft:diamond_tool_materials", "equipment_asset": "x:ruby"}}}}""");
         assertTrue(custom.clean(), custom.errors() + " " + custom.warnings());
-        assertEquals(new ItemComponents.CustomArmorMaterial(20, new ItemComponents.Defense(3, 7, 6, 3), 15, 1.5f, 0.1f,
+        assertEquals(new ItemComponents.CustomArmorMaterial(20, new ItemComponents.Defense(3, 7, 6, 3, Optional.empty()), 15, 1.5f, 0.1f,
                 Optional.of(Identifier.parse("minecraft:item.armor.equip_diamond")), Optional.of(Identifier.parse("minecraft:diamond_tool_materials")),
                 Identifier.parse("x:ruby")), custom.definition().orElseThrow().components().armor().orElseThrow().material());
 

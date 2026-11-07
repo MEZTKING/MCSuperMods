@@ -147,6 +147,10 @@
     "code": "schema.missing-field",
     "path": "/components/msm:armor/material/equipment_asset"
   },
+  "item-armor-negative-body.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:armor/material/defense/body"
+  },
   "item-bad-armor-slot-body.json": {
     "code": "schema.invalid-enum",
     "path": "/components/msm:armor/slot"

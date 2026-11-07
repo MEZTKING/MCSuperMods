@@ -23,6 +23,8 @@ Checked on 2026-11-04.
 | `fabric` (Loader, Fabric API, Loom) | loader `0.20.1`, API `0.165.2+26.3`, Loom `1.19.3` | meta.fabricmc.net `/v2/versions/loader/26.3`, maven.fabricmc.net `fabric-api` metadata and Loom plugin markers, FabricMC example mod branch `26.3`; checked 2026-11-05 (ADR 0027) |
 | `fabric.minecraftDependency` | `~26.3` | (verify at implementation) |
 | `geckolib` | version `5.5.7`, mod id `geckolib`, `>=5.5.7`, `geckolib-fabric-26.3-5.5.7.jar`, Modrinth version `kSxHvs99`, SHA-512 `c7c89bd6…8c158fc5` | Modrinth API `project/geckolib/version` (Fabric, 26.3) and CDN; jar downloaded, hashed and its `fabric.mod.json` read; checked 2026-11-05 (ADR 0030) |
+| `items.vanillaTools` | the tooltip numbers of the 42 vanilla tools (seven tiers by sword, pickaxe, axe, shovel, hoe, spear; iron sword: 6 damage, 1.6 attacks per second, 250 durability, enchantability 14) | misode/mcmeta `26.3-summary` `item_components/data.min.json` (`attribute_modifiers` plus the player bases 1 and 4, `max_damage`, `tool` rules, `enchantable`); read 2026-11-07 (ADR 0050 D3) |
+| `items.dataPackComponents` | 24 data components naming data pack registry entries | derived from `vendor/vanilla-mcdoc` (components with an `id` attribute naming a data pack registry); a target test derives it again; 2026-11-07 (ADR 0050 D1) |
 | GeckoLib | not set (Phase 5) | (verify at implementation) |
 
 ## Vendored data

@@ -1138,6 +1138,19 @@
               "min": 0
             }
           }
+        },
+        {
+          "desc": "Armour points of horse and wolf armour (vanilla iron horse armour has 5, diamond 11);\ndefaults to `chestplate` (ADR 0050 D4).",
+          "key": "body",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
         }
       ],
       "kind": "struct"
@@ -1157,7 +1170,7 @@
           }
         },
         {
-          "desc": "Armour points per slot; horse and wolf armour use the `chestplate` value.",
+          "desc": "Armour points per slot; horse and wolf armour use `body`, or the `chestplate` value\nwithout it.",
           "key": "defense",
           "kind": "pair",
           "type": {
@@ -1198,6 +1211,19 @@
               {
                 "key": "boots",
                 "kind": "pair",
+                "type": {
+                  "kind": "int",
+                  "valueRange": {
+                    "kind": 0,
+                    "min": 0
+                  }
+                }
+              },
+              {
+                "desc": "Armour points of horse and wolf armour (vanilla iron horse armour has 5, diamond 11);\ndefaults to `chestplate` (ADR 0050 D4).",
+                "key": "body",
+                "kind": "pair",
+                "optional": true,
                 "type": {
                   "kind": "int",
                   "valueRange": {
@@ -4949,5 +4975,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:ff62c07d97c732a95cdf8a45f59d8e1efe06128aa8e871998c969f4010f6e925"
+  "ref": "msm-mcdoc:sha256:a8278b024e3c3f5fc8a374e01c0314ce60d09de344e55c0621841273c99df5de"
 }

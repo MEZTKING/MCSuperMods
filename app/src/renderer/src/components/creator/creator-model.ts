@@ -357,9 +357,11 @@ function armourLines(armor: JsonObject): string[] {
     return [`A ${slot} of the vanilla ${material} armour material.`];
   if (!isObject(material)) return [`A ${slot}.`];
   const lines: string[] = [];
-  // Custom horse and wolf armour use the chestplate defence (ADR 0044 D5).
-  const defenseKey = body === undefined ? rawSlot : 'chestplate';
-  const defense = isObject(material.defense) ? num(material.defense[defenseKey]) : undefined;
+  // Custom horse and wolf armour use `body`, else the chestplate defence (ADR 0044 D5, ADR 0050 D4).
+  const defenseOf = (key: string): number | undefined =>
+    isObject(material.defense) ? num(material.defense[key]) : undefined;
+  const defense =
+    body === undefined ? defenseOf(rawSlot) : (defenseOf('body') ?? defenseOf('chestplate'));
   lines.push(
     defense === undefined
       ? `A ${slot} of the set's own armour material.`

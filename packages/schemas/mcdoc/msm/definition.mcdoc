@@ -238,12 +238,16 @@ enum(string) ArmorMaterialName {
 struct ArmorMaterial {
 	/// Base durability; each slot multiplies it as vanilla does (helmet 11, chestplate 16, leggings 15, boots 13).
 	durability: int @ 1..,
-	/// Armour points per slot; horse and wolf armour use the `chestplate` value.
+	/// Armour points per slot; horse and wolf armour use `body`, or the `chestplate` value
+	/// without it.
 	defense: struct ArmorDefense {
 		helmet: int @ 0..,
 		chestplate: int @ 0..,
 		leggings: int @ 0..,
 		boots: int @ 0..,
+		/// Armour points of horse and wolf armour (vanilla iron horse armour has 5, diamond 11);
+		/// defaults to `chestplate` (ADR 0050 D4).
+		body?: int @ 0..,
 	},
 	/// How well the piece takes enchantments (iron is 9); 0 means it cannot be enchanted (the
 	/// runtime then leaves out the `enchantable` component, since the game rejects 0).

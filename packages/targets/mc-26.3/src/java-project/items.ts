@@ -126,7 +126,14 @@ interface CustomToolMaterial {
 /** A custom `ArmorMaterial` (ADR 0042 D1); the tag without the `#`. */
 interface CustomArmorMaterial {
   readonly durability: number;
-  readonly defense: { helmet: number; chestplate: number; leggings: number; boots: number };
+  readonly defense: {
+    helmet: number;
+    chestplate: number;
+    leggings: number;
+    boots: number;
+    /** Horse and wolf armour (ADR 0050 D4); the chestplate value when absent. */
+    body?: number;
+  };
   readonly enchantmentValue: number;
   readonly toughness: number;
   readonly knockbackResistance: number;
@@ -405,7 +412,9 @@ function readArmor(armor: Reader): ArmorSpec {
     'msm:armor material field',
   );
   const defense = material.requiredObject('defense');
-  defense.onlyKeys(ARMOR_SLOTS, 'msm:armor defense field');
+  defense.onlyKeys([...ARMOR_SLOTS, 'body'], 'msm:armor defense field');
+  const body = defense.optionalNumber('body');
+  if (body !== undefined && !Number.isInteger(body)) defense.requiredInteger('body');
   return {
     slot,
     material: {
@@ -415,6 +424,7 @@ function readArmor(armor: Reader): ArmorSpec {
         chestplate: defense.requiredInteger('chestplate'),
         leggings: defense.requiredInteger('leggings'),
         boots: defense.requiredInteger('boots'),
+        ...(body === undefined ? {} : { body }),
       },
       enchantmentValue: material.requiredInteger('enchantment_value'),
       toughness: material.requiredNumber('toughness'),
@@ -495,7 +505,7 @@ function armorMaterialField(
     `/** The custom armour material of {@code ${itemId}}. */`,
     `private static final ${armorMaterial} ${field}_ARMOR = new ${armorMaterial}(`,
     `        ${javaInt(material.durability)}, // base durability; each slot multiplies it (helmet 11, chestplate 16, leggings 15, boots 13)`,
-    `        ${map}.of(${armorType}.HELMET, ${javaInt(defense.helmet)}, ${armorType}.CHESTPLATE, ${javaInt(defense.chestplate)}, ${armorType}.LEGGINGS, ${javaInt(defense.leggings)}, ${armorType}.BOOTS, ${javaInt(defense.boots)}, ${armorType}.BODY, ${javaInt(defense.chestplate)}), // defense (BODY as the chestplate: horse and wolf armour)`,
+    `        ${map}.of(${armorType}.HELMET, ${javaInt(defense.helmet)}, ${armorType}.CHESTPLATE, ${javaInt(defense.chestplate)}, ${armorType}.LEGGINGS, ${javaInt(defense.leggings)}, ${armorType}.BOOTS, ${javaInt(defense.boots)}, ${armorType}.BODY, ${javaInt(defense.body ?? defense.chestplate)}), // defense (${defense.body === undefined ? 'BODY as the chestplate: horse and wolf armour' : 'BODY: horse and wolf armour'})`,
     `        ${enchantmentArgument(material.enchantmentValue)}`,
     `        ${sound}`,
     `        ${javaFloat(material.toughness)}, // toughness`,

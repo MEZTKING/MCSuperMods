@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - **Your own song on a music disc**: the Music disc flow's **Song file** takes an `.ogg`; the disc plays it and the jukebox's playing time comes from the file.
 - Plugin API 1.4.0: `audio` starter parameters (`AudioStarterParameter`) `ItemFacts.dataPackComponents` and `ItemFacts.vanillaTools`.
+- Custom armour materials take an optional `body` armour value for horse and wolf armour (it was always the chestplate value).
 - The Creator's **Stats** tab shows the real numbers of a vanilla-tier tool: attack damage, attacks per second, durability, mining speed and enchantability.
 - **Problems** warns about an `msm:components` entry (such as `minecraft:enchantments`) that names a data pack entry the game cannot apply when it loads items.
 

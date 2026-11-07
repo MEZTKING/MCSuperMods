@@ -160,6 +160,19 @@ describe('Java generator (mc-26.3)', () => {
     );
   });
 
+  it("uses a custom armour material's body defence for horse armour (ADR 0050 D4)", async () => {
+    const horse = await definition('item', 'ruby_horse_armor');
+    const plain = generateJavaProject(input({ items: [horse] })).files;
+    const modItems = (files: { path: string; contents: string }[]): string =>
+      files.find((file) => file.path.endsWith('/ModItems.java'))?.contents ?? '';
+    expect(modItems(plain)).toContain('// defense (BODY as the chestplate: horse and wolf armour)');
+    const withBody = structuredClone(horse);
+    const armor = (withBody.definition.components as JsonObject)['msm:armor'] as JsonObject;
+    ((armor.material as JsonObject).defense as JsonObject).body = 9;
+    const generated = modItems(generateJavaProject(input({ items: [withBody] })).files);
+    expect(generated).toContain('ArmorType.BODY, 9), // defense (BODY: horse and wolf armour)');
+  });
+
   it('generates weapons, consumables, totems, body armour and the passthrough (ADR 0044)', async () => {
     const paths = [
       'ruby_bow',
