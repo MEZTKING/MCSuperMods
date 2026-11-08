@@ -385,6 +385,7 @@ async function renderApp(
         return {
           jarPath: `/prism/instances/Test/minecraft/mods/${modId}.jar`,
           replaced: false,
+          removed: [],
           fabricApi: 'installed',
           fabricApiFile: 'fabric-api-0.165.2+26.3.jar',
           launched: true,

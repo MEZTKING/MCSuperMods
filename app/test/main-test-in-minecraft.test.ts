@@ -142,8 +142,18 @@ describe('Test in Minecraft service', () => {
 
     // A second run replaces its own jar and reuses Fabric API without downloading.
     const again = await service.run('t', 'ruby', new Uint8Array([3]));
-    expect(again).toMatchObject({ replaced: true, fabricApi: 'present' });
+    expect(again).toMatchObject({ replaced: true, fabricApi: 'present', removed: [] });
     expect(downloads).toHaveLength(2);
+
+    // Another project's run removes this project's jar (MSM installed it), never the user's.
+    const other = await service.run('t', 'sapphire', new Uint8Array([4]));
+    expect(other.removed).toEqual(['ruby.jar']);
+    expect((await readdir(mods)).sort()).toEqual([
+      '.msm-installed.json',
+      'fabric-api-0.1.0+9.9.jar',
+      'sapphire.jar',
+      'someone-elses.jar',
+    ]);
   });
 
   it('launches with the chosen launcher program', async () => {

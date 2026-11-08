@@ -312,9 +312,13 @@ export function createTestInMinecraftService(deps: TestInMinecraftDeps): TestInM
         cachedFabricApi({ fs, cacheDir: deps.cacheDir, download, sha512 }, facts.api),
       );
       const jar = await installContentJar(installDeps, modsDir, modId, data);
+      // Only this project runs: jars MSM installed for other projects or modpacks go.
+      const keep = new Set([contentJarModsFileName(modId)]);
+      const removed = await removeUnlistedInstalls(installDeps, modsDir, keep);
       const result: TestInMinecraftResult = {
         jarPath: normalize(jar.path),
         replaced: jar.replaced,
+        removed,
         fabricApi: api.state,
         fabricApiFile: api.file,
         launched: false,

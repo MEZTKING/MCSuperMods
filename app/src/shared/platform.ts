@@ -264,6 +264,11 @@ export interface TestInMinecraftResult {
   jarPath: string;
   /** `true` when an earlier copy MSM installed was replaced. */
   replaced: boolean;
+  /**
+   * Jars MSM installed earlier for other projects or modpacks, removed so only this project
+   * runs (sorted file names). Files MSM did not install are never touched.
+   */
+  removed: string[];
   /** Fabric API: downloaded and installed, MSM's copy already there, or the user's own copy. */
   fabricApi: 'installed' | 'present' | 'user-copy';
   /** Fabric API's file name in `mods/`. */

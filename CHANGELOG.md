@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Fixed
+
+- **Test in Minecraft** loaded the mods of every project tested before in the same instance; now only the project you test (and Fabric API) runs. Mods you added yourself stay.
+
 ### Added
 
 - **Dimensions** in the Creator (new **Worlds** group): pick the terrain, the biome and the sky, and travel there and back with a key item or a command.

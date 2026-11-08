@@ -827,6 +827,7 @@ export const ipcContract = {
       .object({
         jarPath: absolutePath,
         replaced: z.boolean(),
+        removed: z.array(fileName).max(256),
         fabricApi: z.enum(['installed', 'present', 'user-copy']),
         fabricApiFile: fileName,
         launched: z.boolean(),

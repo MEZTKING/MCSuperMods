@@ -86,7 +86,11 @@ export function testInMinecraftMessage(result: TestInMinecraftResult): string {
     : result.note === null
       ? ''
       : ` ${result.note}`;
-  return `Installed the mod to ${result.jarPath}.${api}${next}`;
+  const removed =
+    result.removed.length === 0
+      ? ''
+      : ` Removed ${result.removed.length} mod(s) from earlier test runs of other projects, so only this one loads (${result.removed.join(', ')}).`;
+  return `Installed the mod to ${result.jarPath}.${removed}${api}${next}`;
 }
 
 export interface TestInMinecraftDialogProps {
@@ -170,7 +174,8 @@ export function TestInMinecraftDialog(props: TestInMinecraftDialogProps) {
             </p>
           )}
           <p className="text-muted text-xs">
-            Only files MCSuperMods installed are replaced; other mods are never touched.
+            Only this project's mod and Fabric API stay installed: mods MCSuperMods added for other
+            projects are removed, and mods you added yourself are never touched.
           </p>
           <div className="mt-1 flex flex-wrap gap-1.5">
             {!status.managedInstanceSelected && status.canCreateInstance && (

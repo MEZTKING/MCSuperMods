@@ -506,6 +506,7 @@ const samples: Record<
       {
         jarPath: '/p/instances/T/minecraft/mods/ruby_mod.jar',
         replaced: false,
+        removed: ['msm_old_mod.jar'],
         fabricApi: 'installed',
         fabricApiFile: 'fabric-api-0.165.2+26.3.jar',
         launched: true,
@@ -514,6 +515,7 @@ const samples: Record<
       {
         jarPath: '/p/mods/ruby_mod.jar',
         replaced: false,
+        removed: [],
         fabricApi: 'downloaded',
         fabricApiFile: 'fabric-api.jar',
         launched: false,
