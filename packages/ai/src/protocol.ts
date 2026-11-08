@@ -56,6 +56,8 @@ export interface AiSettings {
   /** Allow server-side refusal fallback (`fallbacks: 'default'`) on models that support it. */
   fallbacks: boolean;
   limits: Record<AiMode, AiRunLimits>;
+  /** Keep each project's conversation on this computer (ADR 0055). Missing means yes. */
+  remember?: boolean | undefined;
 }
 
 /** Settings of a fresh install. */
@@ -81,6 +83,7 @@ export const aiSettingsSchema = z.object({
   effort: z.object({ chat: aiEffortSchema, build: aiEffortSchema }),
   fallbacks: z.boolean(),
   limits: z.object({ chat: aiRunLimitsSchema, build: aiRunLimitsSchema }),
+  remember: z.boolean().optional(),
 });
 
 /** The picture types the model reads. */

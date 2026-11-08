@@ -9,7 +9,6 @@
  *
  * @packageDocumentation
  */
-
 import {
   type AiEvent,
   type AiKeyTestResult,
@@ -17,6 +16,7 @@ import {
   type AiStartRequest,
   type AiToolRequest,
   type AiToolResult,
+  aiModelIdSchema,
   type ConversationState,
   createConversation,
   DEFAULT_AI_MODEL,
@@ -26,6 +26,7 @@ import {
 } from '@msm/ai';
 import { type AiEventPayload, EventChannels } from '../../shared/ipc-channels';
 import type { AiKeyStatus } from '../../shared/platform';
+import type { AiHistoryStore } from './ai-history';
 import type { AiKeyStore } from './ai-key-store';
 
 /** Where a run's events go: the calling renderer's `webContents`. */
@@ -50,6 +51,8 @@ export interface AiServiceDeps {
   scriptedClient?: ModelClient;
   /** Logs unexpected run failures (never the key). Defaults to `console.error`. */
   log?: (message: string, error?: unknown) => void;
+  /** Saved conversations (ADR 0055); without it nothing is saved. */
+  history?: AiHistoryStore;
 }
 
 /** The AI helper service behind `PlatformAdapter.ai`. */
@@ -64,6 +67,21 @@ export interface AiService {
   toolResult(runId: string, result: AiToolResult): Promise<void>;
   newConversation(conversationId: string): Promise<void>;
   dropConversation(conversationId: string): Promise<void>;
+  /**
+   * Saves a conversation's API history with the panel's transcript for `root` (ADR 0055).
+   * Does nothing when the settings say not to remember conversations.
+   */
+  saveHistory(conversationId: string, root: string, transcript: string): Promise<void>;
+  /**
+   * Restores `root`'s saved conversation into `conversationId` (unless it has a run) and
+   * returns the transcript and the model, or `null` when there is none.
+   */
+  loadHistory(
+    conversationId: string,
+    root: string,
+  ): Promise<{ transcript: string; model: string; savedAt: string } | null>;
+  /** Deletes `root`'s saved conversation. */
+  forgetHistory(root: string): Promise<void>;
   /** Run ids still running (tests and diagnostics). */
   activeRuns(): string[];
 }
@@ -302,6 +320,38 @@ export function createAiService(deps: AiServiceDeps): AiService {
         state: createConversation(conversationId, model),
         runId: null,
       });
+    },
+    async saveHistory(conversationId, root, transcript) {
+      const conversation = conversations.get(conversationId);
+      if (deps.history === undefined || conversation === undefined) return;
+      if ((await deps.settings()).remember === false) return;
+      await deps.history.write({
+        format: 1,
+        root,
+        savedAt: new Date().toISOString(),
+        model: conversation.state.model,
+        messages: structuredClone(conversation.state.messages) as unknown[],
+        transcript,
+      });
+    },
+    async loadHistory(conversationId, root) {
+      if (deps.history === undefined) return null;
+      if ((await deps.settings()).remember === false) return null;
+      const existing = conversations.get(conversationId);
+      if (existing?.runId != null) return null;
+      const record = await deps.history.read(root);
+      if (record === null) return null;
+      const parsed = aiModelIdSchema.safeParse(record.model);
+      const state = createConversation(
+        conversationId,
+        parsed.success ? parsed.data : DEFAULT_AI_MODEL,
+      );
+      state.messages = record.messages as typeof state.messages;
+      conversations.set(conversationId, { state, runId: null });
+      return { transcript: record.transcript, model: state.model, savedAt: record.savedAt };
+    },
+    async forgetHistory(root) {
+      await deps.history?.remove(root);
     },
     async dropConversation(conversationId) {
       cancelConversationRun(conversationId);
