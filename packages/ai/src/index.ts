@@ -110,6 +110,7 @@ export type {
   PlanDecision,
   ProposePlanInput,
 } from './tools/decide';
+export type { NoteMissingFeatureInput } from './tools/note';
 export {
   type AddStarterInput,
   CREATE_ELEMENTS_MAX,

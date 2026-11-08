@@ -97,6 +97,12 @@ import type {
 } from '../../../shared/platform';
 import { type ChangeAsset, type ChangeItem, planChangeItems } from '../changeset/changeset';
 import type { ExternalPluginState, ExternalPluginStatus } from '../plugins/external-plugins';
+import {
+  parseWishlist,
+  serialiseWishlist,
+  WISHLIST_FILE,
+  type WishlistEntry,
+} from '../wishlist/wishlist';
 import { assetImportError } from './asset-files';
 import {
   assertElementIdAllowed,
@@ -2878,6 +2884,31 @@ export class ProjectSession {
       });
       this.#publish();
     }
+  }
+
+  /**
+   * The project's Wishlist (ADR 0053), from `msm.wishlist.json`; empty when there is none or
+   * no project is open.
+   */
+  async readWishlist(): Promise<WishlistEntry[]> {
+    if (this.snapshot.project === null) return [];
+    try {
+      if (!(await this.#fs.exists(WISHLIST_FILE))) return [];
+      return parseWishlist(new TextDecoder().decode(await this.#fs.readFile(WISHLIST_FILE)));
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Writes the project's Wishlist (ADR 0053) to `msm.wishlist.json`. Not part of the undo
+   * history: the Wishlist is a note about MSM, not project content.
+   *
+   * @throws Error If no project is open.
+   */
+  async writeWishlist(entries: readonly WishlistEntry[]): Promise<void> {
+    if (this.snapshot.project === null) throw new Error('No project is open.');
+    await this.#fs.writeFile(WISHLIST_FILE, new TextEncoder().encode(serialiseWishlist(entries)));
   }
 
   /**

@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **Wishlist** (Help menu): when the AI helper cannot build something exactly, it builds the closest version, says what is missing and adds it to the project's Wishlist; add your own wishes and copy the open ones to ask for them.
 - **Real pushes**: scripts can read an entity's `velocity` and `look` and call `setVelocity` and `addVelocity`, and events have a **Launch (push)** action, so launchers, jump pads and dashes move you smoothly instead of in small teleports.
 
 ### Fixed

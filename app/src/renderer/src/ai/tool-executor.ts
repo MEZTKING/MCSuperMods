@@ -26,6 +26,7 @@ import {
   type AiToolResult,
   type CheckpointInput,
   LIST_PAGE_SIZE,
+  type NoteMissingFeatureInput,
   type PlanDecision,
   type ProposePlanInput,
   parseToolInput,
@@ -54,6 +55,7 @@ import { assetImportError } from '../session/asset-files';
 import { assertElementIdAllowed, presentSingletonKinds } from '../session/element-defaults';
 import type { ProjectSession } from '../session/project-session';
 import { templateContext, templatesFor } from '../studios/templates';
+import { addWish } from '../wishlist/wishlist';
 import { projectContextOf } from './project-context';
 import { KIND_SCHEMA_SUMMARY_OPTIONS, kindSchemaSummary } from './schema-summary';
 
@@ -63,6 +65,11 @@ export interface DecisionHost {
   proposePlan(plan: ProposePlanInput, signal?: AbortSignal): Promise<PlanDecision>;
   /** Pauses in step mode until the user continues or stops; answers `continue` otherwise. */
   checkpoint(input: CheckpointInput, signal?: AbortSignal): Promise<'continue' | 'stop'>;
+  /**
+   * Adds a missing feature to the project's Wishlist (ADR 0053); resolves with the number of
+   * open wishes. Without it the executor writes the Wishlist through the session.
+   */
+  noteMissingFeature?(input: NoteMissingFeatureInput): Promise<number>;
 }
 
 /** The error codes tool results carry in `{ error: { code, message } }`. */
@@ -1038,6 +1045,32 @@ export function createToolExecutor(
     checkpoint: async (input, signal) => ({
       value: { decision: await decisions.checkpoint(input, signal) },
     }),
+
+    // Notes -------------------------------------------------------------------------------
+    note_missing_feature: async (input) => {
+      live();
+      let open: number;
+      if (decisions.noteMissingFeature !== undefined) {
+        open = await decisions.noteMissingFeature(input);
+      } else {
+        const next = addWish(await session.readWishlist(), {
+          source: 'ai',
+          title: input.title,
+          request: input.request,
+          missing: input.missing,
+          ...(input.builtInstead === undefined ? {} : { builtInstead: input.builtInstead }),
+        });
+        await session.writeWishlist(next);
+        open = next.filter((entry) => entry.status === 'open').length;
+      }
+      return {
+        value: {
+          noted: true,
+          openWishes: open,
+          message: 'Added to the Wishlist (Help > Wishlist…). Tell the user.',
+        },
+      };
+    },
   };
 
   return async (request, signal) => {

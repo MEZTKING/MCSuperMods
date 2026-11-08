@@ -221,6 +221,8 @@ export function installMenu(recent: readonly RecentProject[] = currentRecent): v
       label: 'Help',
       submenu: [
         { label: 'Your First Mod…', click: () => send('firstMod') },
+        // ADR 0053: requests MSM could not build, kept per project.
+        { label: 'Wishlist…', click: () => send('wishlist') },
         { label: 'Examples…', click: () => send('examples') },
         { label: "What's New…", click: () => send('whatsNew') },
         { type: 'separator' },

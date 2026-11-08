@@ -54,6 +54,12 @@ const EXAMPLES: { [N in AiToolName]: AiToolInputs[N] } = {
     notes: 'Textures are placeholders.',
   },
   checkpoint: { completedItemIds: ['mod'], nextItemId: 'ore', summary: 'Added the mod element.' },
+  note_missing_feature: {
+    title: "Set a player's velocity",
+    request: 'A launcher that pushes me forward.',
+    missing: 'Scripts cannot set velocity.',
+    builtInstead: 'A launcher that teleports in small steps.',
+  },
 };
 
 type SchemaNode = { [key: string]: unknown };
@@ -91,6 +97,7 @@ describe('tool catalogue', () => {
       'run_checks',
       'propose_plan',
       'checkpoint',
+      'note_missing_feature',
     ]);
     const groups = TOOL_CATALOGUE.map((t) => t.group);
     expect(groups).toEqual([...groups].sort((a, b) => order(a) - order(b)));
@@ -154,5 +161,5 @@ describe('tool catalogue', () => {
 });
 
 function order(group: string): number {
-  return ['read', 'propose', 'check', 'decide'].indexOf(group);
+  return ['read', 'propose', 'check', 'decide', 'note'].indexOf(group);
 }

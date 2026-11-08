@@ -79,6 +79,12 @@ Build makes whole content from one prompt. Switch to **Build**, describe what yo
 
 After applying, export as usual: the resource and data packs, and the **Fabric mod jar** when the content has new blocks, items or mobs ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)). Replace the placeholder textures with your own by importing textures with the same names (see [Replacing the placeholders](templates-and-examples.md#replacing-the-placeholders)).
 
+## When MCSuperMods cannot do it yet
+
+Some requests need something MCSuperMods does not have yet. The helper then tries the other ways first (a vanilla component through `msm:components`, data pack commands, a script), proposes the closest version that works and tells you plainly what it does not do. It also adds the gap to the project's **Wishlist** (**Help → Wishlist…**, or "Wishlist" in the palette): what you asked for, what is missing and what it built instead. You can add your own wishes there, tick the ones that have been added to MCSuperMods, and **Copy** the open ones to send them on, so they can be built into a later version. The Wishlist is saved with the project (`msm.wishlist.json`). If you need something right away, **Export → Fabric Java project** gives you the mod as Java code to extend by hand.
+
+AI conversations themselves are not saved: closing MCSuperMods forgets them (see [What is sent, and when](#what-is-sent-and-when)); the Wishlist keeps what matters from them.
+
 ## Review and Apply
 
 Every change the helper proposes waits under **Proposed changes** (with "k of n kept" counting the changes you keep), grouped as **New elements**, **Changed elements**, **Deleted elements**, **Renamed elements** and **Placeholder textures**.

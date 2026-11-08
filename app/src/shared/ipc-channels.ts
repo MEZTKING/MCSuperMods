@@ -149,6 +149,7 @@ export const MENU_COMMANDS = [
   'toggleMode',
   'newWithAi',
   'pictureToTexture',
+  'wishlist',
   'examples',
   'clearRecentProjects',
   'upgradeTarget',

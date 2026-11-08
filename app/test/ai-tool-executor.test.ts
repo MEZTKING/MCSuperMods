@@ -760,3 +760,26 @@ describe('createToolExecutor: checks and decisions', () => {
     expect(fixture.session.snapshot.project).toBe(before);
   });
 });
+
+describe('createToolExecutor: note_missing_feature (ADR 0053)', () => {
+  it('adds the gap to the project Wishlist once per title', async () => {
+    const fixture = await setup();
+    const wish = {
+      title: "Set a player's velocity",
+      request: 'A launcher that pushes me forward.',
+      missing: 'Scripts cannot set velocity.',
+      builtInstead: 'A launcher that teleports in small steps.',
+    };
+    const { result, value } = await fixture.call('note_missing_feature', wish);
+    expect(result.isError).toBe(false);
+    expect(value).toMatchObject({ noted: true, openWishes: 1 });
+    await fixture.call('note_missing_feature', { ...wish, missing: 'No velocity call.' });
+    const entries = await fixture.session.readWishlist();
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toMatchObject({
+      source: 'ai',
+      status: 'open',
+      missing: 'No velocity call.',
+    });
+  });
+});

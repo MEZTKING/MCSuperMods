@@ -3000,3 +3000,8 @@ Also answered: AI helper conversations live in memory only (one per project) and
 
 What: the user's launcher moved the player in small teleports. Script API `Entity.velocity`, `look`, `setVelocity`, `addVelocity` (JSON contract, `ScriptEntity`, regenerated `msm-runtime.d.ts`); action `launch` (`action.mcdoc` with `LaunchDirection`, symbols rebuilt; `Action.Launch` and `LaunchDirection` in Java, `EventRunner.launch`, shared `events/Motion` with clamping and `hurtMarked`); Events editor "Launch (push)"; Java eject `Actions.launch` (only when used). Tests: corpus `item-launch`, `block-launch`, `entity-launch`, `item-launch-too-strong`; `DefinitionParserTest.launchDecodes`; generator test. The Java builds and the contract test run in CI only (no JDK here).
 Next: the AI helper's missing-feature protocol and the Wishlist; Picture to texture options; drag and drop textures.
+
+## 2026-11-08 — main session — Missing features and the Wishlist (ADR 0053)
+
+What: system prompt rule for requests MSM cannot build (other routes first, closest version, say what is missing, record it); tool `note_missing_feature` (`tools/note.ts`, group `note`; catalogue 22 tools); app `wishlist/wishlist.ts` (parse, serialise, `addWish` merging by open title, `wishlistText`), `session.readWishlist`/`writeWishlist` over `msm.wishlist.json`, the executor handler, `WishlistDialog` (Help > Wishlist…, palette `wishlist`; tick, remove, add your own, copy open). Tests: AI tool list and example, SDK tool count, `wishlist.test.ts`, executor test.
+Next: Picture to texture options and drag and drop textures.

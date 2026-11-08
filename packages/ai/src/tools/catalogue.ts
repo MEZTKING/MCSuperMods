@@ -9,10 +9,17 @@ import { z } from 'zod';
 import type { BetaTool } from '../sdk-types';
 import { CHECK_TOOLS } from './check';
 import { DECIDE_TOOLS } from './decide';
+import { NOTE_TOOLS } from './note';
 import { PROPOSE_TOOLS } from './propose';
 import { READ_TOOLS } from './read';
 
-const ALL_TOOLS = [...READ_TOOLS, ...PROPOSE_TOOLS, ...CHECK_TOOLS, ...DECIDE_TOOLS] as const;
+const ALL_TOOLS = [
+  ...READ_TOOLS,
+  ...PROPOSE_TOOLS,
+  ...CHECK_TOOLS,
+  ...DECIDE_TOOLS,
+  ...NOTE_TOOLS,
+] as const;
 
 type AnyToolEntry = (typeof ALL_TOOLS)[number];
 
@@ -30,7 +37,7 @@ export interface AiToolDefinition {
   /** The model's instructions for this tool. */
   description: string;
   input: z.ZodType;
-  group: 'read' | 'propose' | 'check' | 'decide';
+  group: 'read' | 'propose' | 'check' | 'decide' | 'note';
 }
 
 /** The catalogue, in request order. */

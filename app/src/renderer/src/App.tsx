@@ -83,6 +83,7 @@ import { UpgradeTargetDialog } from './components/UpgradeTargetDialog';
 import { UsagesDialog } from './components/UsagesDialog';
 import { WelcomeDialog } from './components/WelcomeDialog';
 import { WhatsNewDialog } from './components/WhatsNewDialog';
+import { WishlistDialog } from './components/WishlistDialog';
 import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
@@ -202,6 +203,7 @@ type DialogState =
     }
   | { type: 'new-texture'; namespace: string }
   | { type: 'picture'; namespace: string }
+  | { type: 'wishlist' }
   | { type: 'no-minecraft'; message: string };
 
 /**
@@ -1365,6 +1367,13 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     firstMod: () => setDialog({ type: 'welcome' }),
     toggleMode,
     newWithAi: buildWithAi,
+    wishlist: () => {
+      if (project === null) {
+        setMessage({ kind: 'error', text: 'Open a project to see its Wishlist.' });
+        return;
+      }
+      setDialog({ type: 'wishlist' });
+    },
     pictureToTexture: needsNamespace(() => {
       const namespace = selected?.id.split(':')[0] ?? project?.namespaces[0]?.name;
       if (namespace !== undefined) setDialog({ type: 'picture', namespace });
@@ -1443,6 +1452,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     toggleMode,
     newWithAi: aiController === null ? null : buildWithAi,
     pictureToTexture: canAddElement ? handlers.pictureToTexture : null,
+    wishlist: project === null ? null : handlers.wishlist,
     aiHelper: aiController === null ? null : () => aiController.open(),
     aiExplainProblem:
       aiController === null || !aiKeySet || selectedProblem === null
@@ -1962,6 +1972,15 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                     : `Painted ${dialog.path}. Undo restores the old picture.`,
               });
             }}
+            onClose={() => setDialog(null)}
+          />
+        )}
+        {dialog?.type === 'wishlist' && project !== null && (
+          <WishlistDialog
+            projectName={project.name}
+            load={() => session.readWishlist()}
+            save={(entries) => session.writeWishlist(entries)}
+            copy={(text) => navigator.clipboard.writeText(text)}
             onClose={() => setDialog(null)}
           />
         )}

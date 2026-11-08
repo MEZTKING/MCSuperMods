@@ -145,7 +145,7 @@ describe('createAnthropicModelClient against a local stub', () => {
       cache_control: { type: 'ephemeral' },
     });
     expect(request?.body).not.toHaveProperty('betas');
-    expect(request?.body.tools).toHaveLength(21);
+    expect(request?.body.tools).toHaveLength(22);
     expect(conversation.messages).toHaveLength(2);
   });
 
