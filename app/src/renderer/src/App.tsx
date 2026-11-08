@@ -202,7 +202,12 @@ type DialogState =
       isNew?: boolean;
     }
   | { type: 'new-texture'; namespace: string }
-  | { type: 'picture'; namespace: string }
+  | {
+      type: 'picture';
+      namespace: string;
+      /** Pictures dropped on the window, put in the tray (ADR 0054). */
+      pictures?: { name: string; data: Uint8Array }[];
+    }
   | { type: 'wishlist' }
   | { type: 'no-minecraft'; message: string };
 
@@ -1992,15 +1997,16 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 .find((entry) => entry.name === dialog.namespace)
                 ?.assets.map((asset) => asset.path) ?? []
             }
-            pickPicture={async () => {
-              const [file] = await bridge.dialogs.pickFiles({
-                title: 'Choose a picture',
+            pickPictures={async () => {
+              const files = await bridge.dialogs.pickFiles({
+                title: 'Choose pictures',
                 filters: [
                   { name: 'Pictures', extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'] },
                 ],
               });
-              return file === undefined ? null : { name: file.name, data: file.data };
+              return files.map((file) => ({ name: file.name, data: file.data }));
             }}
+            {...(dialog.pictures === undefined ? {} : { initialPictures: dialog.pictures })}
             onAdd={async ({ path, bytes }) => {
               await addNewTexture(dialog.namespace, path, bytes);
               setMessage({

@@ -1,14 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
+  addOutline,
+  adjustColours,
   backgroundOf,
   convertPicture,
   cropImage,
+  fitInside,
   fitRect,
   hardenAlpha,
   isLegacySkin,
   reduceColours,
   removeBackground,
   resizeImage,
+  transformImage,
   upgradeLegacySkin,
 } from '../../src/renderer/src/components/texture-editor/image-convert';
 import {
@@ -103,5 +107,31 @@ describe('picture to texture', () => {
     expect([out.width, out.height]).toEqual([16, 16]);
     expect(pixelAt(out, 0, 0)?.[3]).toBe(0);
     expect(pixelAt(out, 8, 8)).toEqual(RED);
+  });
+
+  it('turns, mirrors and fits pictures', () => {
+    const image = filled(2, 1, RED);
+    paint(image, 1, 0, BLUE);
+    const turned = transformImage(image, 90, false, false);
+    expect([turned.width, turned.height]).toEqual([1, 2]);
+    expect(pixelAt(turned, 0, 0)).toEqual(RED);
+    expect(pixelAt(turned, 0, 1)).toEqual(BLUE);
+    const mirrored = transformImage(image, 0, true, false);
+    expect(pixelAt(mirrored, 0, 0)).toEqual(BLUE);
+    const fitted = fitInside(filled(4, 2, RED), 4, 4, 'sharp');
+    expect(pixelAt(fitted, 0, 0)?.[3]).toBe(0);
+    expect(pixelAt(fitted, 0, 1)).toEqual(RED);
+    expect(pixelAt(fitted, 0, 3)?.[3]).toBe(0);
+  });
+
+  it('adjusts colours and draws an outline', () => {
+    const image = filled(3, 3, [0, 0, 0, 0]);
+    paint(image, 1, 1, [100, 100, 100, 255]);
+    adjustColours(image, { brightness: 20, contrast: 0, saturation: 0, hue: 0 });
+    expect(pixelAt(image, 1, 1)).toEqual([151, 151, 151, 255]);
+    expect(pixelAt(image, 0, 0)?.[3]).toBe(0);
+    addOutline(image, [0, 0, 0, 255]);
+    expect(pixelAt(image, 1, 0)).toEqual([0, 0, 0, 255]);
+    expect(pixelAt(image, 0, 0)?.[3]).toBe(0);
   });
 });

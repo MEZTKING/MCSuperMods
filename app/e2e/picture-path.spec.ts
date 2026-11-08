@@ -102,4 +102,33 @@ test('picture to texture: a legacy skin and a pasted screenshot', async () => {
   await expect(window.getByTestId(`asset-row-${MOD_ID}:textures/item/pasted_gem.png`)).toHaveCount(
     0,
   );
+
+  // Several pictures: both go in the tray, a click switches and renames, the options apply.
+  await window.getByTestId(`assets-picture-${MOD_ID}`).click();
+  await expect(dialog).toBeVisible();
+  const red = [...rgbaPng(16, 16, () => [200, 20, 40, 255])];
+  const blue = [...rgbaPng(16, 16, (x) => (x < 8 ? [20, 40, 200, 255] : [0, 0, 0, 0]))];
+  await window.evaluate(`(() => {
+    const transfer = new DataTransfer();
+    transfer.items.add(new File([new Uint8Array(${JSON.stringify(red)})], 'red_gem.png', { type: 'image/png' }));
+    transfer.items.add(new File([new Uint8Array(${JSON.stringify(blue)})], 'blue_half.png', { type: 'image/png' }));
+    window.dispatchEvent(new ClipboardEvent('paste', { clipboardData: transfer }));
+  })()`);
+  await expect(dialog.getByTestId('picture-tray-1')).toBeVisible();
+  await expect(dialog.getByTestId('picture-name')).toHaveValue('red_gem');
+  await dialog.getByTestId('picture-tray-1').click();
+  await expect(dialog.getByTestId('picture-name')).toHaveValue('blue_half');
+  await dialog.getByTestId('picture-kind').selectOption('item');
+  await dialog.locator('[data-testid="picture-more"] summary').click();
+  await dialog.getByTestId('picture-flip-x').click();
+  await dialog.getByTestId('picture-outline').selectOption('dark');
+  await dialog.getByTestId('picture-dialog-submit').click();
+  await expect(dialog).toBeHidden();
+  const halfPath = join(folders.projectDir, 'assets', MOD_ID, 'textures', 'item', 'blue_half.png');
+  await expect.poll(() => existsSync(halfPath)).toBe(true);
+  const half = readPng(readFileSync(halfPath));
+  // Mirrored: the blue half is now on the right; the outline sits just left of it.
+  expect(half.pixel(12, 8)).toEqual([20, 40, 200, 255]);
+  expect(half.pixel(7, 8)).toEqual([26, 26, 26, 255]);
+  expect(half.pixel(2, 8)[3]).toBe(0);
 });

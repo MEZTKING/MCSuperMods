@@ -285,6 +285,153 @@ export function upgradeLegacySkin(image: RgbaImage): RgbaImage {
   return out;
 }
 
+/** Quarter turns clockwise. */
+export type Rotation = 0 | 90 | 180 | 270;
+
+/** `image` turned clockwise by `rotation` and mirrored. */
+export function transformImage(
+  image: RgbaImage,
+  rotation: Rotation,
+  flipX: boolean,
+  flipY: boolean,
+): RgbaImage {
+  if (rotation === 0 && !flipX && !flipY) return image;
+  const turned = rotation === 90 || rotation === 270;
+  const width = turned ? image.height : image.width;
+  const height = turned ? image.width : image.height;
+  const data = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      // Undo the flips (applied after the turn), then the turn, to find the source pixel.
+      const fx = flipX ? width - 1 - x : x;
+      const fy = flipY ? height - 1 - y : y;
+      let sx = fx;
+      let sy = fy;
+      if (rotation === 90) {
+        sx = fy;
+        sy = image.height - 1 - fx;
+      } else if (rotation === 180) {
+        sx = image.width - 1 - fx;
+        sy = image.height - 1 - fy;
+      } else if (rotation === 270) {
+        sx = image.width - 1 - fy;
+        sy = fx;
+      }
+      const from = (sy * image.width + sx) * 4;
+      data.set(image.data.subarray(from, from + 4), (y * width + x) * 4);
+    }
+  }
+  return { width, height, data };
+}
+
+/**
+ * `image` scaled to fit inside `width` by `height` keeping its proportions, centred on a
+ * transparent picture of that size.
+ */
+export function fitInside(
+  image: RgbaImage,
+  width: number,
+  height: number,
+  mode: ScaleMode,
+): RgbaImage {
+  const scale = Math.min(width / image.width, height / image.height);
+  const w = Math.max(1, Math.min(width, Math.round(image.width * scale)));
+  const h = Math.max(1, Math.min(height, Math.round(image.height * scale)));
+  const scaled = w === image.width && h === image.height ? image : resizeImage(image, w, h, mode);
+  const data = new Uint8ClampedArray(width * height * 4);
+  const ox = Math.floor((width - w) / 2);
+  const oy = Math.floor((height - h) / 2);
+  for (let y = 0; y < h; y += 1) {
+    data.set(scaled.data.subarray(y * w * 4, (y + 1) * w * 4), ((oy + y) * width + ox) * 4);
+  }
+  return { width, height, data };
+}
+
+/** Colour adjustments, each 0 for no change. */
+export interface ColourAdjust {
+  /** -100 (black) to 100 (white). */
+  brightness: number;
+  /** -100 (flat grey) to 100 (twice the contrast). */
+  contrast: number;
+  /** -100 (grey) to 100 (twice as colourful). */
+  saturation: number;
+  /** Hue turn in degrees, -180 to 180. */
+  hue: number;
+}
+
+/** Applies brightness, contrast, saturation and a hue turn to every visible pixel. */
+export function adjustColours(image: RgbaImage, adjust: ColourAdjust): void {
+  const { brightness, contrast, saturation, hue } = adjust;
+  if (brightness === 0 && contrast === 0 && saturation === 0 && hue === 0) return;
+  const c = 1 + contrast / 100;
+  const sat = 1 + saturation / 100;
+  const b = (brightness / 100) * 255;
+  // Hue rotation matrix in RGB space (luminance-preserving).
+  const angle = (hue * Math.PI) / 180;
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  const m = [
+    0.213 + cos * 0.787 - sin * 0.213,
+    0.715 - cos * 0.715 - sin * 0.715,
+    0.072 - cos * 0.072 + sin * 0.928,
+    0.213 - cos * 0.213 + sin * 0.143,
+    0.715 + cos * 0.285 + sin * 0.14,
+    0.072 - cos * 0.072 - sin * 0.283,
+    0.213 - cos * 0.213 - sin * 0.787,
+    0.715 - cos * 0.715 + sin * 0.715,
+    0.072 + cos * 0.928 + sin * 0.072,
+  ] as const;
+  const d = image.data;
+  for (let at = 0; at < d.length; at += 4) {
+    if ((d[at + 3] ?? 0) === 0) continue;
+    let r = d[at] ?? 0;
+    let g = d[at + 1] ?? 0;
+    let bl = d[at + 2] ?? 0;
+    if (hue !== 0) {
+      const nr = r * m[0] + g * m[1] + bl * m[2];
+      const ng = r * m[3] + g * m[4] + bl * m[5];
+      const nb = r * m[6] + g * m[7] + bl * m[8];
+      r = nr;
+      g = ng;
+      bl = nb;
+    }
+    if (saturation !== 0) {
+      const grey = 0.299 * r + 0.587 * g + 0.114 * bl;
+      r = grey + (r - grey) * sat;
+      g = grey + (g - grey) * sat;
+      bl = grey + (bl - grey) * sat;
+    }
+    if (contrast !== 0) {
+      r = (r - 128) * c + 128;
+      g = (g - 128) * c + 128;
+      bl = (bl - 128) * c + 128;
+    }
+    d[at] = r + b;
+    d[at + 1] = g + b;
+    d[at + 2] = bl + b;
+  }
+}
+
+/**
+ * Draws a one-pixel outline in `colour` on the transparent pixels next to (left, right, up,
+ * down) a visible one, so the shape stands out like vanilla item textures.
+ */
+export function addOutline(image: RgbaImage, colour: Rgba): void {
+  const { width, height } = image;
+  const solid = (x: number, y: number): boolean =>
+    x >= 0 && y >= 0 && x < width && y < height && (image.data[(y * width + x) * 4 + 3] ?? 0) > 0;
+  const edge: number[] = [];
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      if (solid(x, y)) continue;
+      if (solid(x - 1, y) || solid(x + 1, y) || solid(x, y - 1) || solid(x, y + 1)) {
+        edge.push((y * width + x) * 4);
+      }
+    }
+  }
+  for (const at of edge) image.data.set(colour, at);
+}
+
 /** Options of {@link convertPicture}. */
 export interface ConvertOptions {
   crop: Rect;
@@ -295,17 +442,41 @@ export interface ConvertOptions {
   backgroundTolerance: number;
   /** Reduce to at most this many colours (0 keeps them all). */
   colours: number;
+  /** Quarter turns and mirroring, applied to the crop. */
+  rotation?: Rotation;
+  flipX?: boolean;
+  flipY?: boolean;
+  /** `fill` (the default) stretches the crop over the texture; `fit` keeps its proportions. */
+  fit?: 'fill' | 'fit';
+  /** Colour adjustments after scaling. */
+  adjust?: ColourAdjust;
+  /** A one-pixel outline colour, or none. */
+  outline?: Rgba | null;
 }
 
-/** The whole pipeline: crop, cut the background, scale, harden the alpha, reduce colours. */
+/**
+ * The whole pipeline: crop, cut the background, turn and mirror, scale (fill or fit), harden
+ * the alpha, adjust the colours, reduce them, outline.
+ */
 export function convertPicture(image: RgbaImage, options: ConvertOptions): RgbaImage {
   const cropped = cropImage(image, options.crop);
   if (options.backgroundTolerance > 0) removeBackground(cropped, options.backgroundTolerance);
+  const turned = transformImage(
+    cropped,
+    options.rotation ?? 0,
+    options.flipX ?? false,
+    options.flipY ?? false,
+  );
   const scaled =
-    cropped.width === options.width && cropped.height === options.height
-      ? cropped
-      : resizeImage(cropped, options.width, options.height, options.scale);
+    options.fit === 'fit'
+      ? fitInside(turned, options.width, options.height, options.scale)
+      : turned.width === options.width && turned.height === options.height
+        ? turned
+        : resizeImage(turned, options.width, options.height, options.scale);
   hardenAlpha(scaled);
+  if (options.adjust !== undefined) adjustColours(scaled, options.adjust);
   if (options.colours > 0) reduceColours(scaled, options.colours);
+  if (options.outline !== undefined && options.outline !== null)
+    addOutline(scaled, options.outline);
   return scaled;
 }
