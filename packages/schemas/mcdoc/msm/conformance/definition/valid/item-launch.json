@@ -1,0 +1,28 @@
+{
+  "components": {
+    "msm:on_use": {
+      "cooldown_ticks": 20,
+      "event": "mymod:dash"
+    }
+  },
+  "events": {
+    "mymod:dash": {
+      "actions": [
+        {
+          "strength": 1.5,
+          "type": "launch",
+          "up": 0.3
+        },
+        {
+          "add": true,
+          "direction": "up",
+          "strength": 0.8,
+          "target": "other",
+          "type": "launch"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

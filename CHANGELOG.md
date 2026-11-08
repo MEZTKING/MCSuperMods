@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+- **Real pushes**: scripts can read an entity's `velocity` and `look` and call `setVelocity` and `addVelocity`, and events have a **Launch (push)** action, so launchers, jump pads and dashes move you smoothly instead of in small teleports.
+
 ### Fixed
 
 - **Test in Minecraft** loaded the mods of every project tested before in the same instance; now only the project you test (and Fabric API) runs. Mods you added yourself stay.

@@ -58,6 +58,7 @@ The actions:
 | `give_item` | Gives the player an item, optionally several. Nothing happens when no player is involved, for example for redstone. |
 | `trigger_event` | Runs another event of the same block or item. Chains stop after 16 steps. |
 | `apply_effect` | Gives a vanilla mob effect, for example `minecraft:speed`, for a number of **seconds** at an **amplifier** (0 is level I). **Target** `self` (the default) is the player of the event; `other` is the other entity of the event, such as the mob an entity hits. Needs the runtime of MCSuperMods 0.8.0 or later. |
+| `launch` | Pushes the player (or with **Target** `other` the other entity) so it flies smoothly, like a slime block or a wind charge: **Strength** in blocks per tick (1 is a strong dash, up to 10) where they look, flat along the ground (`horizontal`) or straight `up`, plus an **Extra upward push**. In Raw JSON, `"add": true` adds to their current motion instead of replacing it. Add a slow falling `apply_effect` to soften the landing. Needs the runtime of MCSuperMods 1.4.0 or later. |
 | `run_script` | Calls a handler that one of the project's scripts defines with `msm.actions.define`; pick it in the handler list or type its id. See [Scripting](scripting.md#run_script-from-the-events-editor). Scripts are not part of the Java project export. |
 
 **Problems** reports an event a trigger or `trigger_event` names but the element does not have (removing an event leaves its uses in place, so this is how you find them), and events that trigger each other in a loop. Both are errors.

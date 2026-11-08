@@ -207,6 +207,10 @@
     "code": "schema.out-of-range",
     "path": "/events/mymod:x/actions/0/count"
   },
+  "item-launch-too-strong.json": {
+    "code": "schema.out-of-range",
+    "path": "/events/mymod:dash/actions/0/strength"
+  },
   "item-on-use-missing-event.json": {
     "code": "schema.missing-field",
     "path": "/components/msm:on_use/event"

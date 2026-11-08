@@ -1,0 +1,13 @@
+{
+  "events": {
+    "mymod:dash": {
+      "actions": [
+        {
+          "strength": 50,
+          "type": "launch"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

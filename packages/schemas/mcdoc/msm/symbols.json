@@ -140,6 +140,11 @@
           "desc": "Gives a vanilla mob effect to the player or the other entity of the event (ADR 0044 D2).",
           "identifier": "ApplyEffect",
           "value": "apply_effect"
+        },
+        {
+          "desc": "Pushes the player or the other entity of the event (ADR 0052).",
+          "identifier": "Launch",
+          "value": "launch"
         }
       ]
     },
@@ -274,6 +279,88 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::action::Launch": {
+      "fields": [
+        {
+          "desc": "Speed in blocks per tick along `direction`.",
+          "key": "strength",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 10,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `look`.",
+          "key": "direction",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::LaunchDirection"
+          }
+        },
+        {
+          "desc": "Extra upward speed in blocks per tick (negative pushes down); defaults to 0.",
+          "key": "up",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 10,
+              "min": -10
+            }
+          }
+        },
+        {
+          "desc": "`true` adds to the current motion; the default replaces it.",
+          "key": "add",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Defaults to `self`.",
+          "key": "target",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::EffectTarget"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::LaunchDirection": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Where the target looks, up and down included.",
+          "identifier": "Look",
+          "value": "look"
+        },
+        {
+          "desc": "Where the target looks, flat along the ground.",
+          "identifier": "Horizontal",
+          "value": "horizontal"
+        },
+        {
+          "desc": "Straight up.",
+          "identifier": "Up",
+          "value": "up"
+        }
+      ]
     },
     "::msm::action::PlayAnimation": {
       "fields": [
@@ -4919,6 +5006,10 @@
         "kind": "reference",
         "path": "::msm::action::GiveItem"
       },
+      "launch": {
+        "kind": "reference",
+        "path": "::msm::action::Launch"
+      },
       "play_animation": {
         "kind": "reference",
         "path": "::msm::action::PlayAnimation"
@@ -4975,5 +5066,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:a8278b024e3c3f5fc8a374e01c0314ce60d09de344e55c0621841273c99df5de"
+  "ref": "msm-mcdoc:sha256:e006cb5453a72082e659c0c722ef4944e7dca4ac5db28a7ae071ee609467e55e"
 }

@@ -1,0 +1,31 @@
+{
+  "category": "monster",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/frost_golem",
+      "texture": "mymod:entity/frost_golem"
+    },
+    "msm:attack": {
+      "damage": 3,
+      "on_attack": "mymod:knock_up"
+    }
+  },
+  "events": {
+    "mymod:knock_up": {
+      "actions": [
+        {
+          "direction": "horizontal",
+          "strength": 0.6,
+          "target": "other",
+          "type": "launch",
+          "up": 0.5
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  }
+}

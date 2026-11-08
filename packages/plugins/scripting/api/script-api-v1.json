@@ -237,6 +237,58 @@
           "type": "string",
           "doc": "The entity's display name as plain text."
         },
+        "velocity": {
+          "kind": "property",
+          "type": "Pos",
+          "doc": "The entity's motion in blocks per tick (x, y, z)."
+        },
+        "look": {
+          "kind": "property",
+          "type": "Pos",
+          "doc": "The direction the entity looks, as a vector of length 1."
+        },
+        "setVelocity": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "x",
+              "type": "number",
+              "doc": "Blocks per tick along x."
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "doc": "Blocks per tick along y (up)."
+            },
+            {
+              "name": "z",
+              "type": "number",
+              "doc": "Blocks per tick along z."
+            }
+          ],
+          "doc": "Replaces the motion, so the game moves the entity smoothly, as a slime block or a wind charge does; each part is limited to 10. Players are pushed too."
+        },
+        "addVelocity": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "x",
+              "type": "number",
+              "doc": "Blocks per tick along x."
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "doc": "Blocks per tick along y (up)."
+            },
+            {
+              "name": "z",
+              "type": "number",
+              "doc": "Blocks per tick along z."
+            }
+          ],
+          "doc": "Adds to the motion, for example `entity.addVelocity(0, 1, 0)` for a jump; each part is limited to 10."
+        },
         "damage": {
           "kind": "method",
           "params": [

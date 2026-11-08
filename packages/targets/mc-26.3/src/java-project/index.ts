@@ -51,6 +51,7 @@ export function generateJavaProject(input: JavaProjectInput): {
     files: [],
     usesActions: false,
     usesApplyEffect: false,
+    usesLaunch: false,
     usesVanillaComponents: false,
     usesFollowGoal: false,
   };
@@ -68,7 +69,12 @@ export function generateJavaProject(input: JavaProjectInput): {
   if (context.usesActions) {
     context.files.push({
       path: `${context.javaRoot}/Actions.java`,
-      contents: actionsJava(input.javaPackage, input.modId, context.usesApplyEffect),
+      contents: actionsJava(
+        input.javaPackage,
+        input.modId,
+        context.usesApplyEffect,
+        context.usesLaunch,
+      ),
     });
   }
   if (context.usesVanillaComponents) {

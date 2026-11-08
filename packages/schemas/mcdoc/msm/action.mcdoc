@@ -22,6 +22,8 @@ enum(string) ActionType {
 	RunScript = "run_script",
 	/// Gives a vanilla mob effect to the player or the other entity of the event (ADR 0044 D2).
 	ApplyEffect = "apply_effect",
+	/// Pushes the player or the other entity of the event (ADR 0052).
+	Launch = "launch",
 }
 
 /// Who an `apply_effect` action affects.
@@ -31,6 +33,16 @@ enum(string) EffectTarget {
 	/// The other entity of the event: the mob an entity hits (`on_attack`), the player who
 	/// hurts or interacts with an entity; for block and item events, the player.
 	Other = "other",
+}
+
+/// Where a `launch` action pushes.
+enum(string) LaunchDirection {
+	/// Where the target looks, up and down included.
+	Look = "look",
+	/// Where the target looks, flat along the ground.
+	Horizontal = "horizontal",
+	/// Straight up.
+	Up = "up",
 }
 
 /// One action of an event, selected by `type`.
@@ -125,6 +137,23 @@ dispatch msm:action[apply_effect] to struct ApplyEffect {
 	seconds: float @ 0..,
 	/// Effect level minus one; defaults to 0 (level I).
 	amplifier?: int @ 0..255,
+	/// Defaults to `self`.
+	target?: EffectTarget,
+}
+
+/// Pushes an entity so the game moves it smoothly, as a slime block or a wind charge does
+/// (ADR 0052): `strength` blocks per tick along `direction`, plus `up` blocks per tick
+/// upwards. A strength of 1 is a strong dash; vanilla clamps speeds near 10. Runtimes older
+/// than 1.4.0 reject it as an unknown type.
+dispatch msm:action[launch] to struct Launch {
+	/// Speed in blocks per tick along `direction`.
+	strength: float @ 0..10,
+	/// Defaults to `look`.
+	direction?: LaunchDirection,
+	/// Extra upward speed in blocks per tick (negative pushes down); defaults to 0.
+	up?: float @ -10..10,
+	/// `true` adds to the current motion; the default replaces it.
+	add?: boolean,
 	/// Defaults to `self`.
 	target?: EffectTarget,
 }

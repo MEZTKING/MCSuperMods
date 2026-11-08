@@ -66,6 +66,9 @@ export interface ActionField {
  */
 export const EFFECT_TARGETS: readonly string[] = Object.freeze(['self', 'other']);
 
+/** Where a `launch` action pushes (`LaunchDirection` in `action.mcdoc`, ADR 0052). */
+export const LAUNCH_DIRECTIONS: readonly string[] = Object.freeze(['look', 'horizontal', 'up']);
+
 /** One action type of format v1. */
 export interface ActionSpec {
   type: string;
@@ -75,8 +78,9 @@ export interface ActionSpec {
 
 /**
  * The actions of format v1 with their fields and defaults: the six of ADR 0025 D4,
- * `run_script` (ADR 0032 D4), which calls a handler a script defines, and `apply_effect`
- * (ADR 0044 D2), which gives a mob effect to the event's player or the other entity.
+ * `run_script` (ADR 0032 D4), which calls a handler a script defines, `apply_effect`
+ * (ADR 0044 D2), which gives a mob effect to the event's player or the other entity, and
+ * `launch` (ADR 0052), which pushes it.
  */
 export const ACTIONS: readonly ActionSpec[] = Object.freeze([
   {
@@ -144,6 +148,37 @@ export const ACTIONS: readonly ActionSpec[] = Object.freeze([
       { key: 'effect', label: 'Effect', type: 'id', registry: 'mob_effect', required: true },
       { key: 'seconds', label: 'Seconds', type: 'float', required: true, initialValue: 10 },
       { key: 'amplifier', label: 'Amplifier', type: 'int', required: false, defaultValue: 0 },
+      {
+        key: 'target',
+        label: 'Target',
+        type: 'choice',
+        choices: EFFECT_TARGETS,
+        required: false,
+        defaultValue: 'self',
+      },
+    ],
+  },
+  {
+    // ADR 0052: a real push (slime block, wind charge); `add` is left to Raw JSON.
+    type: 'launch',
+    label: 'Launch (push)',
+    fields: [
+      {
+        key: 'strength',
+        label: 'Strength (blocks per tick)',
+        type: 'float',
+        required: true,
+        initialValue: 1,
+      },
+      {
+        key: 'direction',
+        label: 'Direction',
+        type: 'choice',
+        choices: LAUNCH_DIRECTIONS,
+        required: false,
+        defaultValue: 'look',
+      },
+      { key: 'up', label: 'Extra upward push', type: 'float', required: false, defaultValue: 0 },
       {
         key: 'target',
         label: 'Target',

@@ -396,4 +396,19 @@ class DefinitionParserTest {
                   "target": "everyone"}]}}}""");
         assertTrue(bad.errors().getFirst().contains("target"), bad.errors().toString());
     }
+
+    @Test
+    void launchDecodes() {
+        ParseResult<ItemDefinition> result = item("""
+                {"format": 1, "components": {"msm:on_use": {"event": "x:dash"}}, "events": {"x:dash": {"actions": [
+                  {"type": "launch", "strength": 1.5},
+                  {"type": "launch", "strength": 0, "direction": "up", "up": 1.2, "add": true, "target": "other"}]}}}""");
+        assertTrue(result.clean(), result.errors() + " " + result.warnings());
+        List<Action> actions = result.definition().orElseThrow().events().get(Identifier.parse("x:dash")).orElseThrow().actions();
+        assertEquals(new Action.Launch(1.5f, Action.LaunchDirection.LOOK, 0f, false, Action.EffectTarget.SELF), actions.getFirst());
+        assertEquals(new Action.Launch(0f, Action.LaunchDirection.UP, 1.2f, true, Action.EffectTarget.OTHER), actions.get(1));
+        ParseResult<ItemDefinition> bad = item("""
+                {"format": 1, "events": {"x:dash": {"actions": [{"type": "launch", "strength": 50}]}}}""");
+        assertTrue(bad.errors().getFirst().contains("strength"), bad.errors().toString());
+    }
 }

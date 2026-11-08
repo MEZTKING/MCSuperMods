@@ -1152,6 +1152,7 @@ function writeItemClass(
       : 'Actions';
     if (usesActions(spec.events)) context.usesActions = true;
     if (spec.events.appliesEffects) context.usesApplyEffect = true;
+    if (spec.events.launches) context.usesLaunch = true;
     members.push(...eventMethods(file, spec.events, 'item', actions));
   }
   const lines = [

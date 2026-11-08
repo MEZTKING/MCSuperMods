@@ -2,6 +2,7 @@ package dev.mcsupermods.runtime.events;
 
 import static dev.mcsupermods.runtime.loader.MsmCodecs.ID;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.floatAtLeast;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.floatRange;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.intAtLeast;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.intRange;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.optional;
@@ -30,7 +31,8 @@ public sealed interface Action {
         TRIGGER_EVENT("trigger_event", TriggerEvent.CODEC),
         PLAY_ANIMATION("play_animation", PlayAnimation.CODEC),
         RUN_SCRIPT("run_script", RunScript.CODEC),
-        APPLY_EFFECT("apply_effect", ApplyEffect.CODEC);
+        APPLY_EFFECT("apply_effect", ApplyEffect.CODEC),
+        LAUNCH("launch", Launch.CODEC);
 
         public final String serialName;
         final MapCodec<? extends Action> codec;
@@ -165,6 +167,40 @@ public sealed interface Action {
         }
 
         public static final Codec<EffectTarget> CODEC = MsmCodecs.named("effect target", values(), EffectTarget::serialName);
+    }
+
+    /** Where a {@code launch} action pushes ({@code LaunchDirection}). */
+    enum LaunchDirection {
+        /** Where the target looks, up and down included. */
+        LOOK,
+        /** Where the target looks, flat along the ground. */
+        HORIZONTAL,
+        /** Straight up. */
+        UP;
+
+        public String serialName() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+
+        public static final Codec<LaunchDirection> CODEC = MsmCodecs.named("launch direction", values(), LaunchDirection::serialName);
+    }
+
+    /**
+     * Pushes an entity (ADR 0052): {@code strength} blocks per tick along {@code direction}, plus {@code up} blocks per
+     * tick upwards; {@code add} adds to the current motion instead of replacing it.
+     */
+    record Launch(float strength, LaunchDirection direction, float up, boolean add, EffectTarget target) implements Action {
+        static final MapCodec<Launch> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+                required("strength", floatRange(0, 10)).forGetter(Launch::strength),
+                optional("direction", LaunchDirection.CODEC, LaunchDirection.LOOK).forGetter(Launch::direction),
+                optional("up", floatRange(-10, 10), 0f).forGetter(Launch::up),
+                optional("add", Codec.BOOL, false).forGetter(Launch::add),
+                optional("target", EffectTarget.CODEC, EffectTarget.SELF).forGetter(Launch::target)).apply(i, Launch::new));
+
+        @Override
+        public Type type() {
+            return Type.LAUNCH;
+        }
     }
 
     /**

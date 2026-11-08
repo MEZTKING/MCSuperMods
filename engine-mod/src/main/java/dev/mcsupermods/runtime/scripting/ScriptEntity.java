@@ -1,6 +1,7 @@
 package dev.mcsupermods.runtime.scripting;
 
 import dev.mcsupermods.runtime.events.AnimationTarget;
+import dev.mcsupermods.runtime.events.Motion;
 import dev.mcsupermods.runtime.loader.EntityDefinition;
 import java.util.Set;
 import net.minecraft.core.Holder;
@@ -32,6 +33,16 @@ final class ScriptEntity {
             .live("isAlive", Entity.class, (api, e) -> e.isAlive())
             .constant("isPlayer", Entity.class, (api, e) -> e instanceof Player)
             .live("name", Entity.class, (api, e) -> e.getName().getString())
+            .live("velocity", Entity.class, (api, e) -> api.pos(ScriptPos.of(e.getDeltaMovement())))
+            .live("look", Entity.class, (api, e) -> api.pos(ScriptPos.of(e.getLookAngle())))
+            .method("setVelocity", 3, 3, Entity.class, (api, e, args) -> {
+                Motion.set(e, ScriptValues.number(args, 0, "x"), ScriptValues.number(args, 1, "y"), ScriptValues.number(args, 2, "z"));
+                return null;
+            })
+            .method("addVelocity", 3, 3, Entity.class, (api, e, args) -> {
+                Motion.add(e, ScriptValues.number(args, 0, "x"), ScriptValues.number(args, 1, "y"), ScriptValues.number(args, 2, "z"));
+                return null;
+            })
             .method("damage", 1, 1, Entity.class, (api, e, args) -> {
                 float amount = (float) ScriptValues.number(args, 0, "amount");
                 if (e.level() instanceof ServerLevel l && amount > 0) {

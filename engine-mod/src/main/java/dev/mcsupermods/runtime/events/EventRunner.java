@@ -102,6 +102,7 @@ public final class EventRunner {
                 }
                 case Action.RunScript a -> ScriptHost.runAction(owner, eventId, a.handler(), ctx);
                 case Action.ApplyEffect a -> applyEffect(owner, a, ctx);
+                case Action.Launch a -> launch(a, ctx);
             }
         }
     }
@@ -191,6 +192,33 @@ public final class EventRunner {
         };
         if (target != null) {
             target.addEffect(new MobEffectInstance(effect.get(), a.ticks(), a.amplifier()));
+        }
+    }
+
+    /**
+     * {@code launch} (ADR 0052): the same target rule as {@code apply_effect}; the push follows the target's look
+     * direction, flattened for {@code horizontal}, or goes straight up.
+     */
+    private static void launch(Action.Launch a, EventContext ctx) {
+        net.minecraft.world.entity.Entity target = switch (a.target()) {
+            case SELF -> ctx.player() != null ? ctx.player() : ctx.entity();
+            case OTHER -> ctx.other();
+        };
+        if (target == null) return;
+        Vec3 look = target.getLookAngle();
+        Vec3 direction = switch (a.direction()) {
+            case LOOK -> look;
+            case HORIZONTAL -> {
+                Vec3 flat = new Vec3(look.x, 0, look.z);
+                yield flat.lengthSqr() < 1.0E-6 ? Vec3.ZERO : flat.normalize();
+            }
+            case UP -> new Vec3(0, 1, 0);
+        };
+        Vec3 push = direction.scale(a.strength()).add(0, a.up(), 0);
+        if (a.add()) {
+            Motion.add(target, push.x, push.y, push.z);
+        } else {
+            Motion.set(target, push.x, push.y, push.z);
         }
     }
 

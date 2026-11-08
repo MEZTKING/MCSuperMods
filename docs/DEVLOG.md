@@ -2995,3 +2995,8 @@ Next: the user's Windows test of the 1.3.0 draft; the Dimension flow goes into t
 
 What: the user asked whether moving between projects loads every project's mod in the test instance. It did: `run` installed `msm_<id>.jar` per mod id and never removed the others. Now `run` calls `removeUnlistedInstalls` keeping only this project's jar (Fabric API is always kept; files MSM did not install are never touched), `TestInMinecraftResult.removed` lists what went and the status message names them. Tests: `main-test-in-minecraft` (a second project removes the first's jar, the user's jar stays), IPC contract and App fixtures. Guide and CHANGELOG.
 Also answered: AI helper conversations live in memory only (one per project) and are gone when the app closes (ADR 0041).
+
+## 2026-11-08 — main session — Velocity and launch (ADR 0052)
+
+What: the user's launcher moved the player in small teleports. Script API `Entity.velocity`, `look`, `setVelocity`, `addVelocity` (JSON contract, `ScriptEntity`, regenerated `msm-runtime.d.ts`); action `launch` (`action.mcdoc` with `LaunchDirection`, symbols rebuilt; `Action.Launch` and `LaunchDirection` in Java, `EventRunner.launch`, shared `events/Motion` with clamping and `hurtMarked`); Events editor "Launch (push)"; Java eject `Actions.launch` (only when used). Tests: corpus `item-launch`, `block-launch`, `entity-launch`, `item-launch-too-strong`; `DefinitionParserTest.launchDecodes`; generator test. The Java builds and the contract test run in CI only (no JDK here).
+Next: the AI helper's missing-feature protocol and the Wishlist; Picture to texture options; drag and drop textures.

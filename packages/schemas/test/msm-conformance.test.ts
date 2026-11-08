@@ -83,6 +83,7 @@ describe('MSM mcdoc symbols', () => {
     expect(index.dispatcherKeys('msm:action')).toEqual([
       'apply_effect',
       'give_item',
+      'launch',
       'play_animation',
       'play_sound',
       'run_function',

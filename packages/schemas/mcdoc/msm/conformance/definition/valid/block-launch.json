@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:on_step": {
+      "event": "mymod:bounce"
+    }
+  },
+  "events": {
+    "mymod:bounce": {
+      "actions": [
+        {
+          "direction": "up",
+          "strength": 1.2,
+          "type": "launch"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

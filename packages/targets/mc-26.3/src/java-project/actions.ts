@@ -30,6 +30,7 @@ export const ACTION_TYPES = [
   'trigger_event',
   'play_animation',
   'apply_effect',
+  'launch',
 ] as const;
 
 /** The default `play_animation` controller (the runtime's `TRIGGERED_CONTROLLER`). */
@@ -48,6 +49,8 @@ export interface Events {
   readonly otherParameter: boolean;
   /** Whether any action is `apply_effect` (the `Actions` helper then has `applyEffect`). */
   readonly appliesEffects: boolean;
+  /** Whether any action is `launch` (the `Actions` helper then has `launch`, ADR 0052). */
+  readonly launches: boolean;
 }
 
 /**
@@ -82,11 +85,14 @@ export function readEvents(definition: Reader, kind: EventOwnerKind): Events {
     }
   }
   let appliesEffects = false;
+  let launches = false;
   let otherTarget = false;
   for (const actions of byId.values()) {
     for (const action of actions) {
-      if (action.requiredString('type') !== 'apply_effect') continue;
-      appliesEffects = true;
+      const type = action.requiredString('type');
+      if (type !== 'apply_effect' && type !== 'launch') continue;
+      if (type === 'apply_effect') appliesEffects = true;
+      else launches = true;
       if (effectTarget(action) === 'other') otherTarget = true;
     }
   }
@@ -95,6 +101,7 @@ export function readEvents(definition: Reader, kind: EventOwnerKind): Events {
     methods: eventMethodNames([...byId.keys()]),
     otherParameter: kind === 'entity' && otherTarget,
     appliesEffects,
+    launches,
   };
 }
 
@@ -288,6 +295,29 @@ function actionLines(
       }
       return [
         `${actions}.applyEffect(OWNER, ${target}, ${effect}, ${javaInt(ticksOf(seconds))}, ${javaInt(amplifier)});`,
+      ];
+    }
+    case 'launch': {
+      action.onlyKeys(['type', 'strength', 'direction', 'up', 'add', 'target'], 'launch field');
+      const strength = action.requiredNumber('strength');
+      if (strength < 0 || strength > 10) action.fail('strength must be 0 to 10');
+      const direction = action.string('direction', 'look');
+      if (!['look', 'horizontal', 'up'].includes(direction)) {
+        action.fail(`direction '${direction}' is not one of look, horizontal, up`);
+      }
+      const up = action.optionalNumber('up') ?? 0;
+      if (up < -10 || up > 10) action.fail('up must be -10 to 10');
+      const add = action.boolean('add', false);
+      let target: string;
+      if (effectTarget(action) === 'other') {
+        target = events.otherParameter ? 'other' : 'player';
+      } else if (kind === 'entity') {
+        target = 'player != null ? player : entity';
+      } else {
+        target = 'player';
+      }
+      return [
+        `${actions}.launch(${target}, ${javaFloat(strength)}, ${javaString(direction)}, ${javaFloat(up)}, ${add});`,
       ];
     }
     default:

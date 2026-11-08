@@ -308,6 +308,7 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
     : 'Actions';
   if (usesActions(spec.events)) context.usesActions = true;
   if (spec.events.appliesEffects) context.usesApplyEffect = true;
+  if (spec.events.launches) context.usesLaunch = true;
   const power = tracksPower(spec);
 
   const members: string[] = [];

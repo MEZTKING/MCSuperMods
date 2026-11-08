@@ -60,6 +60,14 @@ interface Entity {
    * @param amplifier - The amplifier, 0 (level I) by default.
    */
   addEffect(id: string, ticks: number, amplifier?: number): void;
+  /**
+   * Adds to the motion, for example `entity.addVelocity(0, 1, 0)` for a jump; each part is limited to 10.
+   *
+   * @param x - Blocks per tick along x.
+   * @param y - Blocks per tick along y (up).
+   * @param z - Blocks per tick along z.
+   */
+  addVelocity(x: number, y: number, z: number): void;
   /** Returns this entity as a player, or `undefined` when it is not one. */
   asPlayer(): Player | undefined;
   /**
@@ -82,6 +90,8 @@ interface Entity {
   readonly isPlayer: boolean;
   /** Kills the entity. */
   kill(): void;
+  /** The direction the entity looks, as a vector of length 1. */
+  readonly look: Pos;
   /** The maximum health in half hearts. */
   readonly maxHealth: number;
   /** The entity's display name as plain text. */
@@ -95,12 +105,22 @@ interface Entity {
   playAnimation(name: string, controller?: string): void;
   /** The entity's exact position. */
   readonly pos: Pos;
+  /**
+   * Replaces the motion, so the game moves the entity smoothly, as a slime block or a wind charge does; each part is limited to 10. Players are pushed too.
+   *
+   * @param x - Blocks per tick along x.
+   * @param y - Blocks per tick along y (up).
+   * @param z - Blocks per tick along z.
+   */
+  setVelocity(x: number, y: number, z: number): void;
   /** Moves the entity to a position in its current world. */
   teleport(pos: Pos): void;
   /** The entity type id, for example `minecraft:zombie`. */
   readonly type: string;
   /** The entity's UUID as text. */
   readonly uuid: string;
+  /** The entity's motion in blocks per tick (x, y, z). */
+  readonly velocity: Pos;
   /** The world the entity is in. */
   readonly world: World;
 }

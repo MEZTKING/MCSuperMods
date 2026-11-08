@@ -160,6 +160,26 @@ describe('Java generator (mc-26.3)', () => {
     );
   });
 
+  it('ejects the launch action as Actions.launch (ADR 0052)', () => {
+    const dash: DefinitionInput = {
+      id: 'msm_test:dash_charm',
+      path: 'msm/msm_test/item/dash_charm.json',
+      definition: {
+        format: 1,
+        components: { 'msm:on_use': { event: 'msm_test:dash' } },
+        events: {
+          'msm_test:dash': { actions: [{ type: 'launch', strength: 1.5, up: 0.3 }] },
+        },
+      },
+    };
+    const files = generateJavaProject(input({ items: [dash] })).files;
+    const all = files.map((file) => file.contents).join('\n');
+    expect(all).toContain('Actions.launch(player, 1.5f, "look", 0.3f, false);');
+    const actions = files.find((file) => file.path.endsWith('/Actions.java'))?.contents ?? '';
+    expect(actions).toContain('public static void launch(Entity target, double strength');
+    expect(actions).toContain('target.hurtMarked = true;');
+  });
+
   it("uses a custom armour material's body defence for horse armour (ADR 0050 D4)", async () => {
     const horse = await definition('item', 'ruby_horse_armor');
     const plain = generateJavaProject(input({ items: [horse] })).files;

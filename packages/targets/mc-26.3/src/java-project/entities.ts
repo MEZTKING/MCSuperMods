@@ -456,6 +456,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   const actions = usesHelper ? file.use(`${context.input.javaPackage}.Actions`) : 'Actions';
   if (usesHelper) context.usesActions = true;
   if (spec.events.appliesEffects) context.usesApplyEffect = true;
+  if (spec.events.launches) context.usesLaunch = true;
 
   const members: string[] = [];
   if (spec.events.byId.size > 0)
