@@ -3005,3 +3005,8 @@ Next: the AI helper's missing-feature protocol and the Wishlist; Picture to text
 
 What: system prompt rule for requests MSM cannot build (other routes first, closest version, say what is missing, record it); tool `note_missing_feature` (`tools/note.ts`, group `note`; catalogue 22 tools); app `wishlist/wishlist.ts` (parse, serialise, `addWish` merging by open title, `wishlistText`), `session.readWishlist`/`writeWishlist` over `msm.wishlist.json`, the executor handler, `WishlistDialog` (Help > Wishlist…, palette `wishlist`; tick, remove, add your own, copy open). Tests: AI tool list and example, SDK tool count, `wishlist.test.ts`, executor test.
 Next: Picture to texture options and drag and drop textures.
+
+## 2026-11-08 — main session — Picture to texture options, tray, drag and drop (ADR 0054)
+
+What: `image-convert.ts` gains `transformImage`, `fitInside`, `adjustColours`, `addOutline` (pipeline options `rotation`, `flipX`, `flipY`, `fit`, `adjust`, `outline`); `PictureToTextureDialog` has "More options" (turn, mirror, fill or fit with a free crop, four colour sliders, outline) and a picture tray (`pickPictures`, `initialPictures`, multi paste and drop); `textures/retexture.ts` (`textureIdOf`, `retexture`) and `textures/texture-drop.tsx` (context and `useTextureDrop`); asset rows draggable; element rows and the live preview take texture drops (App `dropTexture`, one `setElementData`); window-level picture file drop opens the dialog. Tests: image-convert, retexture, picture-path (tray, mirror, outline pixels), golden-path (drag onto the model, message, Undo).
+Next: CI for the velocity Java (ADR 0052), then the user's Windows test; these changes go into the release after 1.3.0.

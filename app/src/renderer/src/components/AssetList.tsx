@@ -9,6 +9,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { TEXTURE_DRAG_TYPE } from '../textures/retexture';
 import { iconButtonClass } from './ui/Button';
 
 /** Host actions for a namespace's assets. All optional: without them the list is read-only. */
@@ -78,9 +79,20 @@ function AssetRow(props: { namespace: string; asset: Asset; actions: AssetAction
   const name = `${namespace}:${asset.path}`;
   return (
     <li
-      className="group flex min-w-0 items-center gap-1.5 px-1 py-0.5"
-      title={`${asset.path} (${asset.mediaType})`}
+      className={`group flex min-w-0 items-center gap-1.5 px-1 py-0.5 ${isImage && asset.path.startsWith('textures/') ? 'cursor-grab' : ''}`}
+      title={
+        isImage && asset.path.startsWith('textures/')
+          ? `${asset.path}: drag it onto an item, block or model to use it`
+          : `${asset.path} (${asset.mediaType})`
+      }
       data-testid={`asset-row-${name}`}
+      draggable={isImage && asset.path.startsWith('textures/')}
+      onDragStart={(event) => {
+        if (!isImage || !asset.path.startsWith('textures/')) return;
+        event.dataTransfer.setData(TEXTURE_DRAG_TYPE, name);
+        event.dataTransfer.setData('text/plain', name);
+        event.dataTransfer.effectAllowed = 'copy';
+      }}
     >
       {thumbnail !== null ? (
         <img

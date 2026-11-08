@@ -2,6 +2,7 @@ import type { Element, Json, ResourceLocation } from '@msm/core';
 import { Braces, Eye, EyeOff, FormInput, Sparkles, WandSparkles } from 'lucide-react';
 import { ScrollArea, Tabs } from 'radix-ui';
 import { type ReactNode, useState } from 'react';
+import { useTextureDrop } from '../textures/texture-drop';
 import { RawJsonPanel } from './RawJsonPanel';
 import { tabTriggerClass } from './ui/Button';
 
@@ -66,6 +67,7 @@ export function EditorArea({
 }: EditorAreaProps) {
   const [ownTab, setOwnTab] = useState<EditorTab>('form');
   const current = hideRawJson ? 'form' : (tab ?? ownTab);
+  const previewDrop = useTextureDrop(element?.id ?? null);
 
   if (element === null) {
     return (
@@ -212,7 +214,8 @@ export function EditorArea({
           <aside
             aria-label="Live preview"
             data-testid="editor-preview"
-            className="min-h-0 overflow-auto border-l border-border p-2"
+            className={`min-h-0 overflow-auto border-l border-border p-2 ${previewDrop.over ? 'outline-2 outline-accent' : ''}`}
+            {...previewDrop.dropProps}
           >
             {preview}
           </aside>

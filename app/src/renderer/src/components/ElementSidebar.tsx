@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, Search, Trash2 } from 'lucide-react';
 import { ScrollArea } from 'radix-ui';
 import { useState } from 'react';
 import type { RecentProjectView } from '../../../shared/platform';
+import { useTextureDrop } from '../textures/texture-drop';
 import { type AssetActions, AssetList } from './AssetList';
 import { buttonClass, iconButtonClass } from './ui/Button';
 
@@ -237,8 +238,13 @@ function ElementRow(props: {
   onRemove(id: ResourceLocation): void;
 }) {
   const { element } = props;
+  const { over, dropProps } = useTextureDrop(element.id);
   return (
-    <li className="group flex min-w-0 items-center gap-1">
+    <li
+      className={`group flex min-w-0 items-center gap-1 rounded ${over ? 'outline-2 outline-accent' : ''}`}
+      data-texture-over={over ? 'true' : undefined}
+      {...dropProps}
+    >
       <button
         type="button"
         aria-label={element.id}

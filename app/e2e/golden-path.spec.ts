@@ -118,6 +118,16 @@ test('new project, block model, texture, export zip, reopen', async () => {
     existsSync(join(folders.projectDir, 'assets', NAMESPACE, 'textures', 'item', 'blank_gem.png')),
   ).toBe(true);
 
+  // Drag the new texture onto the model in the sidebar: it draws with it (ADR 0054); Undo.
+  await window
+    .getByTestId(`asset-row-${NAMESPACE}:textures/item/blank_gem.png`)
+    .dragTo(window.getByTestId(`element-row-${ELEMENT_ID}`));
+  await expect(
+    window.getByText(new RegExp(`${ELEMENT_ID} now draws with ${NAMESPACE}:item/blank_gem`)),
+  ).toBeVisible();
+  await expect(window.locator('footer')).toContainText(`Undo: Edit ${ELEMENT_ID}`);
+  await window.keyboard.press('ControlOrMeta+Z');
+
   // Point textures.all at the imported texture, through the form.
   await window.getByTestId(`element-row-${ELEMENT_ID}`).click();
   await window.getByTestId('editor-tab-form').click();

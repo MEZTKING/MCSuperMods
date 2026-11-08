@@ -128,6 +128,8 @@ import { projectScripts } from './studios/scripting/script-model';
 import { type StructureStudioHost, StructureStudioHostContext } from './studios/structures/host';
 import { templatesFor } from './studios/templates';
 import { useSchemaContext } from './studios/use-schema-context';
+import { retexture, textureIdOf } from './textures/retexture';
+import { TextureDropContext } from './textures/texture-drop';
 
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -883,6 +885,27 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
 
   // Assets --------------------------------------------------------------------------------
 
+  /** A texture asset dropped on an element: its model draws with it (ADR 0054), one undo step. */
+  const dropTexture = (elementId: string, asset: string): void => {
+    if (project === null) return;
+    const colon = asset.indexOf(':');
+    const texture = textureIdOf(asset.slice(0, colon), asset.slice(colon + 1));
+    const element = project.namespaces
+      .flatMap((namespace) => namespace.elements)
+      .find((entry) => entry.id === elementId);
+    if (texture === null || element === undefined) return;
+    const change = retexture(project, element, texture);
+    if (!change.ok) {
+      setMessage({ kind: 'error', text: change.reason });
+      return;
+    }
+    session.setElementData(change.modelId as ResourceLocation, change.data);
+    setMessage({
+      kind: 'info',
+      text: `${elementId} now draws with ${texture} (${change.slot} of ${change.modelId}). Undo puts ${change.previous ?? 'the old texture'} back.`,
+    });
+  };
+
   /** Adds a new texture as a project asset in one undo step (Undo moves it to the trash). */
   const addNewTexture = async (
     namespace: string,
@@ -1493,6 +1516,39 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   useEffect(() => bridge.onMenu((command) => dispatch(command, 'menu')));
 
   useEffect(() => bridge.onMenuOpenRecent((root) => openRecent(root)), [bridge, openRecent]);
+  // Picture files dropped anywhere on the window open Picture to texture with them (ADR 0054).
+  const dropPicturesRef = useRef<(files: File[]) => void>(() => {});
+  dropPicturesRef.current = (files) => {
+    const namespace = selected?.id.split(':')[0] ?? project?.namespaces[0]?.name;
+    if (namespace === undefined || dialog !== null) return;
+    void Promise.all(
+      files.map(async (file) => ({
+        name: file.name,
+        data: new Uint8Array(await file.arrayBuffer()),
+      })),
+    ).then((pictures) => setDialog({ type: 'picture', namespace, pictures }));
+  };
+  useEffect(() => {
+    const isPicture = (file: File): boolean =>
+      file.type.startsWith('image/') || /\.(png|jpe?g|gif|bmp|webp)$/i.test(file.name);
+    const onDragOver = (event: DragEvent): void => {
+      if (event.dataTransfer?.types.includes('Files')) event.preventDefault();
+    };
+    const onDrop = (event: DragEvent): void => {
+      if (event.defaultPrevented) return;
+      const files = [...(event.dataTransfer?.files ?? [])].filter(isPicture);
+      if (files.length === 0) return;
+      event.preventDefault();
+      dropPicturesRef.current(files);
+    };
+    window.addEventListener('dragover', onDragOver);
+    window.addEventListener('drop', onDrop);
+    return () => {
+      window.removeEventListener('dragover', onDragOver);
+      window.removeEventListener('drop', onDrop);
+    };
+  }, []);
+
   // File > More Exports lists the plugin exporters too (the toolbar's "More exports").
   const menuPluginExports = JSON.stringify(
     pluginExports.map((entry) => ({
@@ -1660,614 +1716,619 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     );
 
   return (
-    <Tooltip.Provider delayDuration={400}>
-      <Toast.Provider swipeDirection="right" label="Notification">
-        <div className="grid h-full grid-rows-[auto_minmax(0,1fr)_auto]">
-          <div>
-            <UpdateBanner updates={bridge.updates} onWhatsNew={openWhatsNew} />
-            <Toolbar
-              hasProject={project !== null}
-              canUndo={snapshot.canUndo}
-              canRedo={snapshot.canRedo}
-              undoLabel={snapshot.undoLabel}
-              redoLabel={snapshot.redoLabel}
-              saveDisabledReason={saveDisabledReason}
-              canAddElement={canAddElement}
-              exportDisabledReason={exportReason}
-              installDisabledReason={installReason}
-              dataExportDisabledReason={dataExportReason}
-              combinedExportDisabledReason={combinedReason}
-              dataInstallDisabledReason={dataInstallReason}
-              primaryExport={hasDataPack && !hasResourcePack ? 'data' : 'resource'}
-              exporting={exporting}
-              onNew={handlers.new}
-              onNewFromStarter={handlers.newProjectFromStarter}
-              onExamples={handlers.examples}
-              {...(aiController === null ? {} : { onNewWithAi: buildWithAi })}
-              mode={uiMode}
-              onToggleMode={toggleMode}
-              onCreator={handlers.creator}
-              onOpen={handlers.open}
-              recentProjects={recentProjects}
-              onOpenRecent={openRecent}
-              onRemoveRecent={removeRecent}
-              onClearRecent={clearRecent}
-              onRecentMenuOpen={() => void refreshRecent()}
-              onSave={handlers.save}
-              onUndo={() => session.undo()}
-              onRedo={() => session.redo()}
-              onAddNamespace={() => setDialog({ type: 'namespace' })}
-              onAddElement={() => setDialog({ type: 'element' })}
-              onImportAssets={handlers.importAssets}
-              onExportZip={exportResourceZip}
-              onExportDataZip={exportDataZip}
-              onExportCombined={exportCombined}
-              structureExportDisabledReason={structureExportReason}
-              onExportStructures={exportStructures}
-              onExportSchematics={exportSchematics}
-              pluginExports={pluginExports}
-              fabricJarExportDisabledReason={fabricJarReason}
-              onExportFabricJar={exportFabricJar}
-              onExportJavaProject={exportJavaProject}
-              onTestInMinecraft={testInMinecraft}
-              onInstall={installResource}
-              onInstallData={installData}
-              onSettings={handlers.settings}
-              {...(aiController === null ? {} : { onAiHelper: () => aiController.toggle() })}
-              installTarget={installTarget}
-              installTargets={installTargets}
-              onChooseInstallTarget={(id) => void chooseInstallTarget(id)}
-            />
+    <TextureDropContext.Provider value={project === null ? null : dropTexture}>
+      <Tooltip.Provider delayDuration={400}>
+        <Toast.Provider swipeDirection="right" label="Notification">
+          <div className="grid h-full grid-rows-[auto_minmax(0,1fr)_auto]">
+            <div>
+              <UpdateBanner updates={bridge.updates} onWhatsNew={openWhatsNew} />
+              <Toolbar
+                hasProject={project !== null}
+                canUndo={snapshot.canUndo}
+                canRedo={snapshot.canRedo}
+                undoLabel={snapshot.undoLabel}
+                redoLabel={snapshot.redoLabel}
+                saveDisabledReason={saveDisabledReason}
+                canAddElement={canAddElement}
+                exportDisabledReason={exportReason}
+                installDisabledReason={installReason}
+                dataExportDisabledReason={dataExportReason}
+                combinedExportDisabledReason={combinedReason}
+                dataInstallDisabledReason={dataInstallReason}
+                primaryExport={hasDataPack && !hasResourcePack ? 'data' : 'resource'}
+                exporting={exporting}
+                onNew={handlers.new}
+                onNewFromStarter={handlers.newProjectFromStarter}
+                onExamples={handlers.examples}
+                {...(aiController === null ? {} : { onNewWithAi: buildWithAi })}
+                mode={uiMode}
+                onToggleMode={toggleMode}
+                onCreator={handlers.creator}
+                onOpen={handlers.open}
+                recentProjects={recentProjects}
+                onOpenRecent={openRecent}
+                onRemoveRecent={removeRecent}
+                onClearRecent={clearRecent}
+                onRecentMenuOpen={() => void refreshRecent()}
+                onSave={handlers.save}
+                onUndo={() => session.undo()}
+                onRedo={() => session.redo()}
+                onAddNamespace={() => setDialog({ type: 'namespace' })}
+                onAddElement={() => setDialog({ type: 'element' })}
+                onImportAssets={handlers.importAssets}
+                onExportZip={exportResourceZip}
+                onExportDataZip={exportDataZip}
+                onExportCombined={exportCombined}
+                structureExportDisabledReason={structureExportReason}
+                onExportStructures={exportStructures}
+                onExportSchematics={exportSchematics}
+                pluginExports={pluginExports}
+                fabricJarExportDisabledReason={fabricJarReason}
+                onExportFabricJar={exportFabricJar}
+                onExportJavaProject={exportJavaProject}
+                onTestInMinecraft={testInMinecraft}
+                onInstall={installResource}
+                onInstallData={installData}
+                onSettings={handlers.settings}
+                {...(aiController === null ? {} : { onAiHelper: () => aiController.toggle() })}
+                installTarget={installTarget}
+                installTargets={installTargets}
+                onChooseInstallTarget={(id) => void chooseInstallTarget(id)}
+              />
+            </div>
+            <main className="grid min-h-0 grid-cols-[minmax(200px,280px)_minmax(0,1fr)_minmax(260px,360px)]">
+              <ElementSidebar
+                project={project}
+                selectedId={selectedId}
+                onSelect={(id) => select(id)}
+                onRemove={(id: ResourceLocation) =>
+                  run('Remove element', () => session.removeElement(id))
+                }
+                assetActions={{
+                  onImport: (namespace) => setDialog({ type: 'import', namespace }),
+                  onRemove: (namespace, path) =>
+                    setDialog({ type: 'remove-asset', namespace, path }),
+                  onReveal: (namespace, path) => reveal(`assets/${namespace}/${path}`),
+                  onPaint: (namespace, path) => {
+                    session.readAsset(namespace, path).then(
+                      (bytes) => setDialog({ type: 'paint', namespace, path, bytes }),
+                      (error: unknown) =>
+                        setMessage({
+                          kind: 'error',
+                          text: `Cannot open ${path}: ${messageOf(error)}`,
+                        }),
+                    );
+                  },
+                  onNewTexture: (namespace) => setDialog({ type: 'new-texture', namespace }),
+                  onPicture: (namespace) => setDialog({ type: 'picture', namespace }),
+                  thumbnail,
+                  revision: assetRevision,
+                }}
+                recentProjects={recentProjects}
+                onOpenRecent={openRecent}
+                onRemoveRecent={removeRecent}
+                mode={uiMode}
+                collapsed={collapsedGroups}
+                onToggleGroup={(key) => usePreferences.getState().toggleCollapsed(key)}
+                flowTitles={flowTitles}
+              />
+              <EditorArea
+                element={selected}
+                form={form}
+                tab={activeTab}
+                onTabChange={setActiveTab}
+                onApply={(id: ResourceLocation, data: Json) =>
+                  run('Apply', () => session.setElementData(id, data))
+                }
+                {...(aiController === null
+                  ? {}
+                  : { onAskAi: (id: ResourceLocation) => aiController.askAboutElement(id) })}
+                onEditInCreator={editInCreator}
+                {...(project === null ? {} : { onOpenCreator: handlers.creator })}
+                {...(aiController === null ? {} : { onBuildWithAi: buildWithAi })}
+                hideRawJson={uiMode === 'easy'}
+                {...(preview === undefined ? {} : { preview })}
+                previewShown={centrePreview}
+                onTogglePreview={() => usePreferences.getState().toggleCentrePreview()}
+              />
+              <RightDock
+                problems={snapshot.problems}
+                exportProblems={exportProblems}
+                tab={rightDock}
+                onTabChange={setRightDock}
+                preview={dockPreview}
+                onNavigate={(problem) => {
+                  setLastProblem(problem);
+                  navigateTo(problem.elementId, problem.path ?? null, problem.range ?? null);
+                }}
+                onReveal={reveal}
+                {...(aiController === null
+                  ? {}
+                  : {
+                      assistant: (
+                        <AiPanel controller={aiController} onOpenSettings={handlers.settings} />
+                      ),
+                      onExplain: (problem: Problem) => aiController.explainProblem(problem),
+                    })}
+              />
+            </main>
+            <StatusBar snapshot={snapshot} target={project === null ? null : target} />
           </div>
-          <main className="grid min-h-0 grid-cols-[minmax(200px,280px)_minmax(0,1fr)_minmax(260px,360px)]">
-            <ElementSidebar
+          <StatusToast />
+          {dialog?.type === 'namespace' && (
+            <NewNamespaceDialog
+              onCancel={() => setDialog(null)}
+              onSubmit={(name) => {
+                session.addNamespace(name);
+                setDialog(null);
+              }}
+            />
+          )}
+          {dialog?.type === 'element' && project !== null && target !== null && (
+            <NewElementDialog
+              namespaces={namespaces}
+              templates={templates}
+              kindDefault={(kind) => session.kindDefault(kind)}
+              target={target}
+              onCancel={() => setDialog(null)}
+              onSubmit={(input) => {
+                // Throws on kind rules (e.g. `<ns>:sounds`) and duplicates; the dialog shows it.
+                session.addElement(input);
+                navigateTo(input.id, null);
+                setDialog(null);
+              }}
+            />
+          )}
+          {dialog?.type === 'new-project' && (
+            <NewProjectDialog
+              starters={session.library.starters}
+              targets={session.availableTargets}
+              defaultTargetId={session.defaultTargetId ?? ''}
+              onCancel={() => setDialog(null)}
+              {...(project === null ? {} : { onOpenCreator: () => setDialog({ type: 'creator' }) })}
+              onCreate={({ starterId, targetId, values }) => {
+                // The dialog closes first; `newProject` then asks for the folder.
+                setDialog(null);
+                const starter =
+                  starterId === null
+                    ? undefined
+                    : session.library.starters.find((entry) => entry.id === starterId);
+                void openWith(
+                  starter === undefined ? 'New project' : `New project from "${starter.title}"`,
+                  () =>
+                    session.newProject({
+                      starterId,
+                      values,
+                      ...(targetId === '' ? {} : { targetId }),
+                    }),
+                );
+              }}
+            />
+          )}
+          {dialog?.type === 'upgrade-target' && project !== null && target !== null && (
+            <UpgradeTargetDialog
+              currentTargetId={target.id}
+              targets={session.availableTargets}
+              preview={previewUpgrade}
+              onCancel={() => setDialog(null)}
+              onUpgrade={(targetId, report) => {
+                setDialog(null);
+                session.upgradeTarget(targetId, report).then(
+                  () => {
+                    setMessage({ kind: 'info', text: `Project target changed to ${targetId}.` });
+                    void refreshMinecraftStatus();
+                  },
+                  (error: unknown) =>
+                    setMessage({
+                      kind: 'error',
+                      text: `Upgrade project target failed: ${messageOf(error)}`,
+                    }),
+                );
+              }}
+            />
+          )}
+          {dialog?.type === 'examples' && (
+            <ExamplesDialog
+              examples={session.library.examples}
+              namespaces={project === null ? null : namespaces}
+              target={target}
+              onClose={() => setDialog(null)}
+              onOpenAsProject={(example) => {
+                setDialog(null);
+                void openWith(`New project from example "${example.title}"`, () =>
+                  session.newProject({ bundle: example }),
+                );
+              }}
+              onCopy={async (example, namespace) => {
+                const result = await session.addBundle(example, {
+                  namespace,
+                  label: `Copy example ${example.title}`,
+                });
+                if (result.assets.length > 0) setAssetRevision((revision) => revision + 1);
+                const skipped = result.duplicates.length + result.skippedAssets.length;
+                const merged = mergedPhrase(result.merged);
+                setMessage({
+                  kind: 'info',
+                  text:
+                    `Copied "${example.title}" into ${namespace}: ${result.added.length} element(s), ${result.assets.length} asset(s)` +
+                    (merged === '' ? '' : `; merged into ${merged}`) +
+                    (skipped > 0 ? `; ${skipped} already in the project and skipped.` : '.'),
+                });
+                const first = result.added[0];
+                if (first !== undefined) select(first);
+                return result;
+              }}
+            />
+          )}
+          {dialog?.type === 'creator' && project !== null && target !== null && (
+            <CreatorDialog
+              session={session}
               project={project}
-              selectedId={selectedId}
-              onSelect={(id) => select(id)}
-              onRemove={(id: ResourceLocation) =>
-                run('Remove element', () => session.removeElement(id))
+              namespaces={namespaces.filter((name) => name !== 'minecraft')}
+              edit={dialog.edit ?? null}
+              folders={target.folders.resource}
+              readProjectAsset={readProjectAsset}
+              vanilla={vanilla}
+              pickImage={(title) =>
+                bridge.dialogs.pickFiles({
+                  title,
+                  filters: [{ name: 'PNG image', extensions: ['png'] }],
+                })
               }
-              assetActions={{
-                onImport: (namespace) => setDialog({ type: 'import', namespace }),
-                onRemove: (namespace, path) => setDialog({ type: 'remove-asset', namespace, path }),
-                onReveal: (namespace, path) => reveal(`assets/${namespace}/${path}`),
-                onPaint: (namespace, path) => {
-                  session.readAsset(namespace, path).then(
-                    (bytes) => setDialog({ type: 'paint', namespace, path, bytes }),
-                    (error: unknown) =>
-                      setMessage({
-                        kind: 'error',
-                        text: `Cannot open ${path}: ${messageOf(error)}`,
-                      }),
-                  );
-                },
-                onNewTexture: (namespace) => setDialog({ type: 'new-texture', namespace }),
-                onPicture: (namespace) => setDialog({ type: 'picture', namespace }),
-                thumbnail,
-                revision: assetRevision,
+              pickAudio={(title) =>
+                bridge.dialogs.pickFiles({
+                  title,
+                  filters: [{ name: 'Ogg Vorbis sound', extensions: ['ogg'] }],
+                })
+              }
+              onClose={() => setDialog(null)}
+              onCreated={(result) => {
+                setDialog(null);
+                if (result.written > 0 || result.applied > 0) {
+                  setAssetRevision((revision) => revision + 1);
+                }
+                const skipped =
+                  result.skipped > 0 ? ` ${result.skipped} no longer fitted and were skipped.` : '';
+                setMessage({
+                  kind: 'info',
+                  text: `${result.label}: ${result.changed} element(s) and file(s) changed. Undo reverts them in one step.${skipped}`,
+                });
+                const first = result.created[0];
+                if (first !== undefined) select(first);
               }}
-              recentProjects={recentProjects}
-              onOpenRecent={openRecent}
-              onRemoveRecent={removeRecent}
-              mode={uiMode}
-              collapsed={collapsedGroups}
-              onToggleGroup={(key) => usePreferences.getState().toggleCollapsed(key)}
-              flowTitles={flowTitles}
             />
-            <EditorArea
-              element={selected}
-              form={form}
-              tab={activeTab}
-              onTabChange={setActiveTab}
-              onApply={(id: ResourceLocation, data: Json) =>
-                run('Apply', () => session.setElementData(id, data))
+          )}
+          {dialog?.type === 'modpacks' && bridge.modpacks !== undefined && (
+            <ModpacksDialog
+              session={session}
+              modpacks={bridge.modpacks}
+              testInMinecraft={bridge.testInMinecraft}
+              saveFile={bridge.dialogs.saveFile}
+              targets={session.availableTargets}
+              currentProjectRoot={snapshot.root}
+              defaultTargetId={
+                project === null ? (session.defaultTargetId ?? '') : session.target.id
               }
-              {...(aiController === null
-                ? {}
-                : { onAskAi: (id: ResourceLocation) => aiController.askAboutElement(id) })}
-              onEditInCreator={editInCreator}
-              {...(project === null ? {} : { onOpenCreator: handlers.creator })}
+              onOpenProject={(root) => {
+                setDialog(null);
+                void openWith('Open project', () => session.openPath(root));
+              }}
+              onClose={() => setDialog(null)}
+            />
+          )}
+          {dialog?.type === 'paint' && (
+            <TextureEditorDialog
+              name={`${dialog.namespace}:${dialog.path}`}
+              bytes={dialog.bytes}
+              {...(dialog.size === undefined ? {} : { size: dialog.size })}
+              onSave={async (bytes) => {
+                const file = { namespace: dialog.namespace, path: dialog.path, bytes };
+                if (dialog.bytes === null || dialog.isNew === true) {
+                  await addNewTexture(dialog.namespace, dialog.path, bytes);
+                } else {
+                  await session.applyChangeset([], `Paint ${dialog.path}`, { writes: [file] });
+                }
+                setAssetRevision((revision) => revision + 1);
+                setMessage({
+                  kind: 'info',
+                  text:
+                    dialog.bytes === null || dialog.isNew === true
+                      ? `Added ${dialog.namespace}:${dialog.path}. Undo removes it.`
+                      : `Painted ${dialog.path}. Undo restores the old picture.`,
+                });
+              }}
+              onClose={() => setDialog(null)}
+            />
+          )}
+          {dialog?.type === 'wishlist' && project !== null && (
+            <WishlistDialog
+              projectName={project.name}
+              load={() => session.readWishlist()}
+              save={(entries) => session.writeWishlist(entries)}
+              copy={(text) => navigator.clipboard.writeText(text)}
+              onClose={() => setDialog(null)}
+            />
+          )}
+          {dialog?.type === 'picture' && (
+            <PictureToTextureDialog
+              namespace={dialog.namespace}
+              existing={
+                project?.namespaces
+                  .find((entry) => entry.name === dialog.namespace)
+                  ?.assets.map((asset) => asset.path) ?? []
+              }
+              pickPictures={async () => {
+                const files = await bridge.dialogs.pickFiles({
+                  title: 'Choose pictures',
+                  filters: [
+                    { name: 'Pictures', extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'] },
+                  ],
+                });
+                return files.map((file) => ({ name: file.name, data: file.data }));
+              }}
+              {...(dialog.pictures === undefined ? {} : { initialPictures: dialog.pictures })}
+              onAdd={async ({ path, bytes }) => {
+                await addNewTexture(dialog.namespace, path, bytes);
+                setMessage({
+                  kind: 'info',
+                  text: `Added ${dialog.namespace}:${path}. Undo removes it.`,
+                });
+              }}
+              onPaint={({ path, bytes, kind }) =>
+                setDialog({
+                  type: 'paint',
+                  namespace: dialog.namespace,
+                  path,
+                  bytes,
+                  size: { width: kind.width, height: kind.height },
+                  isNew: true,
+                })
+              }
+              onClose={() => setDialog(null)}
+            />
+          )}
+          {dialog?.type === 'new-texture' && (
+            <NewTextureDialog
+              namespace={dialog.namespace}
+              existing={
+                project?.namespaces
+                  .find((entry) => entry.name === dialog.namespace)
+                  ?.assets.map((asset) => asset.path) ?? []
+              }
+              onPaint={({ kind, path }) =>
+                setDialog({
+                  type: 'paint',
+                  namespace: dialog.namespace,
+                  path,
+                  bytes: null,
+                  size: { width: kind.width, height: kind.height },
+                })
+              }
+              onClose={() => setDialog(null)}
+            />
+          )}
+          {dialog?.type === 'ai-start' && (
+            <AiStartDialog
+              keySet={aiKeySet}
+              onStart={(description, pictures) => void startWithAi(description, pictures)}
+              onOpenSettings={() => {
+                setDialog(null);
+                handlers.settings();
+              }}
+              onClose={() => setDialog(null)}
+            />
+          )}
+          {dialog?.type === 'welcome' && (
+            <WelcomeDialog
+              hasProject={project !== null}
+              onSettings={handlers.settings}
+              onNewProject={() => {
+                setDialog(null);
+                handlers.new();
+              }}
+              onCreator={handlers.creator}
               {...(aiController === null ? {} : { onBuildWithAi: buildWithAi })}
-              hideRawJson={uiMode === 'easy'}
-              {...(preview === undefined ? {} : { preview })}
-              previewShown={centrePreview}
-              onTogglePreview={() => usePreferences.getState().toggleCentrePreview()}
+              onClose={() => setDialog(null)}
             />
-            <RightDock
-              problems={snapshot.problems}
-              exportProblems={exportProblems}
-              tab={rightDock}
-              onTabChange={setRightDock}
-              preview={dockPreview}
-              onNavigate={(problem) => {
-                setLastProblem(problem);
-                navigateTo(problem.elementId, problem.path ?? null, problem.range ?? null);
+          )}
+          {dialog?.type === 'whats-new' && (
+            <WhatsNewDialog
+              version={dialog.version}
+              notes={dialog.notes}
+              onClose={() => setDialog(null)}
+            />
+          )}
+          {dialog?.type === 'import' && project !== null && (
+            <ImportAssetsDialog
+              namespaces={namespaces}
+              initialNamespace={dialog.namespace}
+              onImport={importAssets}
+              onCancel={() => setDialog(null)}
+            />
+          )}
+          {dialog?.type === 'import-files' && project !== null && (
+            <ImportFilesDialog
+              title={dialog.mode === 'blockbench' ? 'Import Blockbench model' : 'Import structure'}
+              namespaces={namespaces}
+              importers={importersFor(dialog.mode).map((entry) => entry.importer)}
+              note={dialog.mode === 'blockbench' ? BLOCKBENCH_IMPORT_NOTE : undefined}
+              onImport={(namespace) => importFiles(namespace, dialog.mode)}
+              onCancel={() => setDialog(null)}
+            />
+          )}
+          {dialog?.type === 'remove-asset' && (
+            <ConfirmDialog
+              title="Remove asset"
+              message={`Remove ${dialog.namespace}:${dialog.path}? Undo brings it back.`}
+              confirmLabel="Remove"
+              onCancel={() => setDialog(null)}
+              onConfirm={() => {
+                const { namespace, path } = dialog;
+                setDialog(null);
+                session.removeAsset(namespace, path).then(
+                  () => setMessage({ kind: 'info', text: `Removed ${namespace}:${path}.` }),
+                  (error: unknown) =>
+                    setMessage({ kind: 'error', text: `Remove asset: ${messageOf(error)}` }),
+                );
               }}
-              onReveal={reveal}
-              {...(aiController === null
-                ? {}
-                : {
-                    assistant: (
-                      <AiPanel controller={aiController} onOpenSettings={handlers.settings} />
-                    ),
-                    onExplain: (problem: Problem) => aiController.explainProblem(problem),
-                  })}
             />
-          </main>
-          <StatusBar snapshot={snapshot} target={project === null ? null : target} />
-        </div>
-        <StatusToast />
-        {dialog?.type === 'namespace' && (
-          <NewNamespaceDialog
-            onCancel={() => setDialog(null)}
-            onSubmit={(name) => {
-              session.addNamespace(name);
-              setDialog(null);
-            }}
-          />
-        )}
-        {dialog?.type === 'element' && project !== null && target !== null && (
-          <NewElementDialog
-            namespaces={namespaces}
-            templates={templates}
-            kindDefault={(kind) => session.kindDefault(kind)}
-            target={target}
-            onCancel={() => setDialog(null)}
-            onSubmit={(input) => {
-              // Throws on kind rules (e.g. `<ns>:sounds`) and duplicates; the dialog shows it.
-              session.addElement(input);
-              navigateTo(input.id, null);
-              setDialog(null);
-            }}
-          />
-        )}
-        {dialog?.type === 'new-project' && (
-          <NewProjectDialog
-            starters={session.library.starters}
-            targets={session.availableTargets}
-            defaultTargetId={session.defaultTargetId ?? ''}
-            onCancel={() => setDialog(null)}
-            {...(project === null ? {} : { onOpenCreator: () => setDialog({ type: 'creator' }) })}
-            onCreate={({ starterId, targetId, values }) => {
-              // The dialog closes first; `newProject` then asks for the folder.
-              setDialog(null);
-              const starter =
-                starterId === null
-                  ? undefined
-                  : session.library.starters.find((entry) => entry.id === starterId);
-              void openWith(
-                starter === undefined ? 'New project' : `New project from "${starter.title}"`,
-                () =>
-                  session.newProject({
-                    starterId,
-                    values,
-                    ...(targetId === '' ? {} : { targetId }),
-                  }),
-              );
-            }}
-          />
-        )}
-        {dialog?.type === 'upgrade-target' && project !== null && target !== null && (
-          <UpgradeTargetDialog
-            currentTargetId={target.id}
-            targets={session.availableTargets}
-            preview={previewUpgrade}
-            onCancel={() => setDialog(null)}
-            onUpgrade={(targetId, report) => {
-              setDialog(null);
-              session.upgradeTarget(targetId, report).then(
-                () => {
-                  setMessage({ kind: 'info', text: `Project target changed to ${targetId}.` });
-                  void refreshMinecraftStatus();
-                },
-                (error: unknown) =>
+          )}
+          {dialog?.type === 'rename' && (
+            <RenameElementDialog
+              id={dialog.id}
+              references={dialog.references}
+              onCancel={() => setDialog(null)}
+              onSubmit={(newId) => {
+                // Throws on kind rules and a missing namespace; the dialog shows it.
+                const result = session.renameElement(dialog.id, newId);
+                setDialog(null);
+                if (!result.renamed) {
+                  setRightDock('problems');
                   setMessage({
                     kind: 'error',
-                    text: `Upgrade project target failed: ${messageOf(error)}`,
-                  }),
-              );
-            }}
-          />
-        )}
-        {dialog?.type === 'examples' && (
-          <ExamplesDialog
-            examples={session.library.examples}
-            namespaces={project === null ? null : namespaces}
-            target={target}
-            onClose={() => setDialog(null)}
-            onOpenAsProject={(example) => {
-              setDialog(null);
-              void openWith(`New project from example "${example.title}"`, () =>
-                session.newProject({ bundle: example }),
-              );
-            }}
-            onCopy={async (example, namespace) => {
-              const result = await session.addBundle(example, {
-                namespace,
-                label: `Copy example ${example.title}`,
-              });
-              if (result.assets.length > 0) setAssetRevision((revision) => revision + 1);
-              const skipped = result.duplicates.length + result.skippedAssets.length;
-              const merged = mergedPhrase(result.merged);
-              setMessage({
-                kind: 'info',
-                text:
-                  `Copied "${example.title}" into ${namespace}: ${result.added.length} element(s), ${result.assets.length} asset(s)` +
-                  (merged === '' ? '' : `; merged into ${merged}`) +
-                  (skipped > 0 ? `; ${skipped} already in the project and skipped.` : '.'),
-              });
-              const first = result.added[0];
-              if (first !== undefined) select(first);
-              return result;
-            }}
-          />
-        )}
-        {dialog?.type === 'creator' && project !== null && target !== null && (
-          <CreatorDialog
-            session={session}
-            project={project}
-            namespaces={namespaces.filter((name) => name !== 'minecraft')}
-            edit={dialog.edit ?? null}
-            folders={target.folders.resource}
-            readProjectAsset={readProjectAsset}
-            vanilla={vanilla}
-            pickImage={(title) =>
-              bridge.dialogs.pickFiles({
-                title,
-                filters: [{ name: 'PNG image', extensions: ['png'] }],
-              })
-            }
-            pickAudio={(title) =>
-              bridge.dialogs.pickFiles({
-                title,
-                filters: [{ name: 'Ogg Vorbis sound', extensions: ['ogg'] }],
-              })
-            }
-            onClose={() => setDialog(null)}
-            onCreated={(result) => {
-              setDialog(null);
-              if (result.written > 0 || result.applied > 0) {
-                setAssetRevision((revision) => revision + 1);
-              }
-              const skipped =
-                result.skipped > 0 ? ` ${result.skipped} no longer fitted and were skipped.` : '';
-              setMessage({
-                kind: 'info',
-                text: `${result.label}: ${result.changed} element(s) and file(s) changed. Undo reverts them in one step.${skipped}`,
-              });
-              const first = result.created[0];
-              if (first !== undefined) select(first);
-            }}
-          />
-        )}
-        {dialog?.type === 'modpacks' && bridge.modpacks !== undefined && (
-          <ModpacksDialog
-            session={session}
-            modpacks={bridge.modpacks}
-            testInMinecraft={bridge.testInMinecraft}
-            saveFile={bridge.dialogs.saveFile}
-            targets={session.availableTargets}
-            currentProjectRoot={snapshot.root}
-            defaultTargetId={project === null ? (session.defaultTargetId ?? '') : session.target.id}
-            onOpenProject={(root) => {
-              setDialog(null);
-              void openWith('Open project', () => session.openPath(root));
-            }}
-            onClose={() => setDialog(null)}
-          />
-        )}
-        {dialog?.type === 'paint' && (
-          <TextureEditorDialog
-            name={`${dialog.namespace}:${dialog.path}`}
-            bytes={dialog.bytes}
-            {...(dialog.size === undefined ? {} : { size: dialog.size })}
-            onSave={async (bytes) => {
-              const file = { namespace: dialog.namespace, path: dialog.path, bytes };
-              if (dialog.bytes === null || dialog.isNew === true) {
-                await addNewTexture(dialog.namespace, dialog.path, bytes);
-              } else {
-                await session.applyChangeset([], `Paint ${dialog.path}`, { writes: [file] });
-              }
-              setAssetRevision((revision) => revision + 1);
-              setMessage({
-                kind: 'info',
-                text:
-                  dialog.bytes === null || dialog.isNew === true
-                    ? `Added ${dialog.namespace}:${dialog.path}. Undo removes it.`
-                    : `Painted ${dialog.path}. Undo restores the old picture.`,
-              });
-            }}
-            onClose={() => setDialog(null)}
-          />
-        )}
-        {dialog?.type === 'wishlist' && project !== null && (
-          <WishlistDialog
-            projectName={project.name}
-            load={() => session.readWishlist()}
-            save={(entries) => session.writeWishlist(entries)}
-            copy={(text) => navigator.clipboard.writeText(text)}
-            onClose={() => setDialog(null)}
-          />
-        )}
-        {dialog?.type === 'picture' && (
-          <PictureToTextureDialog
-            namespace={dialog.namespace}
-            existing={
-              project?.namespaces
-                .find((entry) => entry.name === dialog.namespace)
-                ?.assets.map((asset) => asset.path) ?? []
-            }
-            pickPictures={async () => {
-              const files = await bridge.dialogs.pickFiles({
-                title: 'Choose pictures',
-                filters: [
-                  { name: 'Pictures', extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'] },
-                ],
-              });
-              return files.map((file) => ({ name: file.name, data: file.data }));
-            }}
-            {...(dialog.pictures === undefined ? {} : { initialPictures: dialog.pictures })}
-            onAdd={async ({ path, bytes }) => {
-              await addNewTexture(dialog.namespace, path, bytes);
-              setMessage({
-                kind: 'info',
-                text: `Added ${dialog.namespace}:${path}. Undo removes it.`,
-              });
-            }}
-            onPaint={({ path, bytes, kind }) =>
-              setDialog({
-                type: 'paint',
-                namespace: dialog.namespace,
-                path,
-                bytes,
-                size: { width: kind.width, height: kind.height },
-                isNew: true,
-              })
-            }
-            onClose={() => setDialog(null)}
-          />
-        )}
-        {dialog?.type === 'new-texture' && (
-          <NewTextureDialog
-            namespace={dialog.namespace}
-            existing={
-              project?.namespaces
-                .find((entry) => entry.name === dialog.namespace)
-                ?.assets.map((asset) => asset.path) ?? []
-            }
-            onPaint={({ kind, path }) =>
-              setDialog({
-                type: 'paint',
-                namespace: dialog.namespace,
-                path,
-                bytes: null,
-                size: { width: kind.width, height: kind.height },
-              })
-            }
-            onClose={() => setDialog(null)}
-          />
-        )}
-        {dialog?.type === 'ai-start' && (
-          <AiStartDialog
-            keySet={aiKeySet}
-            onStart={(description, pictures) => void startWithAi(description, pictures)}
-            onOpenSettings={() => {
-              setDialog(null);
-              handlers.settings();
-            }}
-            onClose={() => setDialog(null)}
-          />
-        )}
-        {dialog?.type === 'welcome' && (
-          <WelcomeDialog
-            hasProject={project !== null}
-            onSettings={handlers.settings}
-            onNewProject={() => {
-              setDialog(null);
-              handlers.new();
-            }}
-            onCreator={handlers.creator}
-            {...(aiController === null ? {} : { onBuildWithAi: buildWithAi })}
-            onClose={() => setDialog(null)}
-          />
-        )}
-        {dialog?.type === 'whats-new' && (
-          <WhatsNewDialog
-            version={dialog.version}
-            notes={dialog.notes}
-            onClose={() => setDialog(null)}
-          />
-        )}
-        {dialog?.type === 'import' && project !== null && (
-          <ImportAssetsDialog
-            namespaces={namespaces}
-            initialNamespace={dialog.namespace}
-            onImport={importAssets}
-            onCancel={() => setDialog(null)}
-          />
-        )}
-        {dialog?.type === 'import-files' && project !== null && (
-          <ImportFilesDialog
-            title={dialog.mode === 'blockbench' ? 'Import Blockbench model' : 'Import structure'}
-            namespaces={namespaces}
-            importers={importersFor(dialog.mode).map((entry) => entry.importer)}
-            note={dialog.mode === 'blockbench' ? BLOCKBENCH_IMPORT_NOTE : undefined}
-            onImport={(namespace) => importFiles(namespace, dialog.mode)}
-            onCancel={() => setDialog(null)}
-          />
-        )}
-        {dialog?.type === 'remove-asset' && (
-          <ConfirmDialog
-            title="Remove asset"
-            message={`Remove ${dialog.namespace}:${dialog.path}? Undo brings it back.`}
-            confirmLabel="Remove"
-            onCancel={() => setDialog(null)}
-            onConfirm={() => {
-              const { namespace, path } = dialog;
-              setDialog(null);
-              session.removeAsset(namespace, path).then(
-                () => setMessage({ kind: 'info', text: `Removed ${namespace}:${path}.` }),
-                (error: unknown) =>
-                  setMessage({ kind: 'error', text: `Remove asset: ${messageOf(error)}` }),
-              );
-            }}
-          />
-        )}
-        {dialog?.type === 'rename' && (
-          <RenameElementDialog
-            id={dialog.id}
-            references={dialog.references}
-            onCancel={() => setDialog(null)}
-            onSubmit={(newId) => {
-              // Throws on kind rules and a missing namespace; the dialog shows it.
-              const result = session.renameElement(dialog.id, newId);
-              setDialog(null);
-              if (!result.renamed) {
-                setRightDock('problems');
+                    text: `Cannot rename ${dialog.id} to ${newId}: that id is taken (see Problems).`,
+                  });
+                  return;
+                }
+                select(newId);
+                const count = result.references;
                 setMessage({
-                  kind: 'error',
-                  text: `Cannot rename ${dialog.id} to ${newId}: that id is taken (see Problems).`,
+                  kind: 'info',
+                  text: `Renamed ${dialog.id} to ${newId}; ${count} reference${count === 1 ? '' : 's'} rewritten.`,
                 });
-                return;
+              }}
+            />
+          )}
+          {dialog?.type === 'usages' && (
+            <UsagesDialog
+              id={dialog.id}
+              usages={dialog.usages}
+              onClose={() => setDialog(null)}
+              onNavigate={(reference) => {
+                setDialog(null);
+                navigateTo(reference.from, reference.path === '' ? null : reference.path);
+              }}
+            />
+          )}
+          <WorldPickerDialog
+            open={dialog?.type === 'worlds'}
+            worlds={dialog?.type === 'worlds' ? dialog.worlds : NO_WORLDS}
+            {...(installTarget === null ? {} : { locationName: installTargetName(installTarget) })}
+            onClose={() => setDialog(null)}
+            onPick={(world) => {
+              setDialog(null);
+              void runPackExport('data', 'install', () => session.installDataPack(world.dir));
+            }}
+          />
+          {dialog?.type === 'plugin-export' &&
+            (() => {
+              const exporter = session.pluginExporters.find(
+                (entry) => entry.id === dialog.exporterId,
+              );
+              if (exporter === undefined) return null;
+              return (
+                <PluginExportDialog
+                  displayName={exporter.displayName}
+                  options={exporter.options ?? []}
+                  onClose={() => setDialog(null)}
+                  onExport={(values) => {
+                    setDialog(null);
+                    void runFolderExport(exporter.id, 'file(s)', values);
+                  }}
+                />
+              );
+            })()}
+          {dialog?.type === 'fabric-jar' && (
+            <ExportFabricJarDialog
+              options={session.fabricJarOptions}
+              hasEntities={
+                project?.namespaces.some((namespace) =>
+                  namespace.elements.some((element) => element.kind === 'msm:entity'),
+                ) === true
               }
-              select(newId);
-              const count = result.references;
-              setMessage({
-                kind: 'info',
-                text: `Renamed ${dialog.id} to ${newId}; ${count} reference${count === 1 ? '' : 's'} rewritten.`,
-              });
-            }}
+              onClose={() => setDialog(null)}
+              onExport={(values) => {
+                setDialog(null);
+                void runFabricJarExport(values);
+              }}
+            />
+          )}
+          {dialog?.type === 'java-project' && (
+            <ExportJavaProjectDialog
+              scripts={projectScripts(project).map((script) => script.id)}
+              onClose={() => setDialog(null)}
+              onExport={() => {
+                setDialog(null);
+                void runJavaProjectExport();
+              }}
+            />
+          )}
+          {dialog?.type === 'test-in-minecraft' && (
+            <TestInMinecraftDialog
+              load={loadTestStatus}
+              createInstance={createTestInstance}
+              pickLauncherProgram={pickLauncherProgram}
+              onClose={() => setDialog(null)}
+              onOpenSettings={handlers.settings}
+              onRun={() => {
+                setDialog(null);
+                void runTestInMinecraft();
+              }}
+            />
+          )}
+          {dialog?.type === 'no-minecraft' && (
+            <ConfirmDialog
+              title="Install data pack"
+              message={`${dialog.message} In Settings, choose your Minecraft folder or a Prism Launcher, MultiMC or CurseForge instance.`}
+              confirmLabel="Open Settings"
+              // The alert dialog also reports "closed" after a confirm; keep Settings open then.
+              onCancel={() =>
+                setDialog((current) => (current?.type === 'no-minecraft' ? null : current))
+              }
+              onConfirm={() => setDialog({ type: 'settings' })}
+            />
+          )}
+          <CommandPalette
+            open={paletteOpen}
+            commands={palette}
+            onClose={() => setPaletteOpen(false)}
           />
-        )}
-        {dialog?.type === 'usages' && (
-          <UsagesDialog
-            id={dialog.id}
-            usages={dialog.usages}
-            onClose={() => setDialog(null)}
-            onNavigate={(reference) => {
-              setDialog(null);
-              navigateTo(reference.from, reference.path === '' ? null : reference.path);
-            }}
+          <CommandPalette
+            open={recentPickerOpen}
+            commands={recentPicks}
+            onClose={() => setRecentPickerOpen(false)}
+            title="Open recent project"
+            placeholder="Type a project name or folder"
+            testId="recent-picker"
+            emptyText="No recent projects."
           />
-        )}
-        <WorldPickerDialog
-          open={dialog?.type === 'worlds'}
-          worlds={dialog?.type === 'worlds' ? dialog.worlds : NO_WORLDS}
-          {...(installTarget === null ? {} : { locationName: installTargetName(installTarget) })}
-          onClose={() => setDialog(null)}
-          onPick={(world) => {
-            setDialog(null);
-            void runPackExport('data', 'install', () => session.installDataPack(world.dir));
-          }}
-        />
-        {dialog?.type === 'plugin-export' &&
-          (() => {
-            const exporter = session.pluginExporters.find(
-              (entry) => entry.id === dialog.exporterId,
-            );
-            if (exporter === undefined) return null;
-            return (
-              <PluginExportDialog
-                displayName={exporter.displayName}
-                options={exporter.options ?? []}
-                onClose={() => setDialog(null)}
-                onExport={(values) => {
-                  setDialog(null);
-                  void runFolderExport(exporter.id, 'file(s)', values);
-                }}
-              />
-            );
-          })()}
-        {dialog?.type === 'fabric-jar' && (
-          <ExportFabricJarDialog
-            options={session.fabricJarOptions}
-            hasEntities={
-              project?.namespaces.some((namespace) =>
-                namespace.elements.some((element) => element.kind === 'msm:entity'),
-              ) === true
-            }
-            onClose={() => setDialog(null)}
-            onExport={(values) => {
-              setDialog(null);
-              void runFabricJarExport(values);
-            }}
-          />
-        )}
-        {dialog?.type === 'java-project' && (
-          <ExportJavaProjectDialog
-            scripts={projectScripts(project).map((script) => script.id)}
-            onClose={() => setDialog(null)}
-            onExport={() => {
-              setDialog(null);
-              void runJavaProjectExport();
-            }}
-          />
-        )}
-        {dialog?.type === 'test-in-minecraft' && (
-          <TestInMinecraftDialog
-            load={loadTestStatus}
-            createInstance={createTestInstance}
-            pickLauncherProgram={pickLauncherProgram}
-            onClose={() => setDialog(null)}
-            onOpenSettings={handlers.settings}
-            onRun={() => {
-              setDialog(null);
-              void runTestInMinecraft();
-            }}
-          />
-        )}
-        {dialog?.type === 'no-minecraft' && (
-          <ConfirmDialog
-            title="Install data pack"
-            message={`${dialog.message} In Settings, choose your Minecraft folder or a Prism Launcher, MultiMC or CurseForge instance.`}
-            confirmLabel="Open Settings"
-            // The alert dialog also reports "closed" after a confirm; keep Settings open then.
-            onCancel={() =>
-              setDialog((current) => (current?.type === 'no-minecraft' ? null : current))
-            }
-            onConfirm={() => setDialog({ type: 'settings' })}
-          />
-        )}
-        <CommandPalette
-          open={paletteOpen}
-          commands={palette}
-          onClose={() => setPaletteOpen(false)}
-        />
-        <CommandPalette
-          open={recentPickerOpen}
-          commands={recentPicks}
-          onClose={() => setRecentPickerOpen(false)}
-          title="Open recent project"
-          placeholder="Type a project name or folder"
-          testId="recent-picker"
-          emptyText="No recent projects."
-        />
-        {dialog?.type === 'settings' && (
-          <SettingsDialog
-            mcVersion={mcVersion ?? 'unknown'}
-            status={minecraft.status}
-            progress={minecraft.progress}
-            load={loadSettings}
-            save={saveSettings}
-            browse={browseMinecraft}
-            extract={extractAssets}
-            onClose={() => setDialog(null)}
-            locations={locationList === null ? null : installTargets}
-            selectedId={selectedTargetId}
-            onSelectTarget={(id) => void chooseInstallTarget(id)}
-            targetMissing={minecraft.status?.targetMissing ?? false}
-            jarSource={jarSource}
-            manualRoots={manualRoots}
-            onAddLauncherRoot={addLauncherRoot}
-            onRemoveLauncherRoot={removeLauncherRoot}
-            plugins={session.externalPlugins}
-            onOpenPluginsFolder={bridge.plugins?.openFolder}
-            ai={bridge.ai}
-            onAiChanged={() => void aiController?.refresh()}
-            aiConversationModel={aiConversationModel}
-          />
-        )}
-      </Toast.Provider>
-    </Tooltip.Provider>
+          {dialog?.type === 'settings' && (
+            <SettingsDialog
+              mcVersion={mcVersion ?? 'unknown'}
+              status={minecraft.status}
+              progress={minecraft.progress}
+              load={loadSettings}
+              save={saveSettings}
+              browse={browseMinecraft}
+              extract={extractAssets}
+              onClose={() => setDialog(null)}
+              locations={locationList === null ? null : installTargets}
+              selectedId={selectedTargetId}
+              onSelectTarget={(id) => void chooseInstallTarget(id)}
+              targetMissing={minecraft.status?.targetMissing ?? false}
+              jarSource={jarSource}
+              manualRoots={manualRoots}
+              onAddLauncherRoot={addLauncherRoot}
+              onRemoveLauncherRoot={removeLauncherRoot}
+              plugins={session.externalPlugins}
+              onOpenPluginsFolder={bridge.plugins?.openFolder}
+              ai={bridge.ai}
+              onAiChanged={() => void aiController?.refresh()}
+              aiConversationModel={aiConversationModel}
+            />
+          )}
+        </Toast.Provider>
+      </Tooltip.Provider>
+    </TextureDropContext.Provider>
   );
 }
