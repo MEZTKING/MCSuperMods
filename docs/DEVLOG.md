@@ -3015,3 +3015,8 @@ Next: CI for the velocity Java (ADR 0052), then the user's Windows test; these c
 
 What: started persisting AI helper conversations. `app/src/main/ai/ai-history.ts` (store under `<msmHome>/ai-history/`, `historyFileName`, `fitHistory` dropping pictures then old turns, `createAiHistoryStore`); `AiService.saveHistory`, `loadHistory`, `forgetHistory` with `AiServiceDeps.history` (optional) honouring `AiSettings.remember`; `remember?: boolean | undefined` in `@msm/ai` `AiSettings` and `aiSettingsSchema`. Test `app/test/main-ai-history.test.ts`. ADR 0055 drafted (Proposed). Nothing is wired yet, so the app behaves as before.
 Next (see HANDOFF "In progress"): wire the store in `main/index.ts`; IPC `ai:saveHistory`/`loadHistory`/`forgetHistory` (channels, zod contract, `ipc.ts`, preload, `AiPlatform`); renderer `ai-controller.ts` save on `done`, restore on project open with a notice, forget on New conversation; Settings checkbox; ai-store comment; service and controller tests; guide, CHANGELOG; accept the ADR.
+
+## 2026-11-08 — main session — 1.3.0 published
+
+What: on the user's go-ahead after their Windows test, `publish-release.yml` run 6 published 1.3.0 (it includes the 1.1.0 and 1.2.0 drafts' changes). HANDOFF updated.
+Next: ADR 0055 part 2; then 1.4.0 when the user asks.
