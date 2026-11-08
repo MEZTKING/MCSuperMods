@@ -177,7 +177,7 @@ describe('Java generator (mc-26.3)', () => {
     expect(all).toContain('Actions.launch(player, 1.5f, "look", 0.3f, false);');
     const actions = files.find((file) => file.path.endsWith('/Actions.java'))?.contents ?? '';
     expect(actions).toContain('public static void launch(Entity target, double strength');
-    expect(actions).toContain('target.hurtMarked = true;');
+    expect(actions).toContain('target.syncVelocity = true;');
   });
 
   it("uses a custom armour material's body defence for horse armour (ADR 0050 D4)", async () => {

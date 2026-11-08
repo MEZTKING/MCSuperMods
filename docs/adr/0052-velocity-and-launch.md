@@ -8,7 +8,7 @@ The user built a launcher with the AI helper; it could only move the player in m
 
 - **D1 Script API.** `Entity` gains `velocity` and `look` (read-only `Pos` values: the motion in blocks per tick and the unit look vector) and `setVelocity(x, y, z)` and `addVelocity(x, y, z)`. Additive to script API v1 (`script-api-v1.json` first, then `ScriptEntity`; the contract test ties them).
 - **D2 Action.** `launch` (`action.mcdoc`): `strength` (0 to 10 blocks per tick) along `direction` (`look`, the default; `horizontal`; `up`), plus `up` (-10 to 10), `add` (add to the motion instead of replacing it) and `target` (`self` or `other`, as `apply_effect`). The Events editor offers it as "Launch (push)" (`add` stays in Raw JSON), and the Java project eject writes it as `Actions.launch`.
-- **D3 Runtime.** One helper, `events/Motion`, sets the motion with each component clamped to ±10 and sets `hurtMarked`, so the server sends the motion to the client (what moves a player). Runtimes older than this one reject `launch` as an unknown action type.
+- **D3 Runtime.** One helper, `events/Motion`, sets the motion with each component clamped to ±10 and sets `syncVelocity` and `needsSync` (the 26.x names of `hurtMarked` and `hasImpulse`, read from the 26.3 and 26.4-snapshot-7 server jars), so the server sends the motion to the client (what moves a player). Runtimes older than this one reject `launch` as an unknown action type.
 
 ## Consequences
 

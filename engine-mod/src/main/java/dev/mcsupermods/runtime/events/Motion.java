@@ -5,8 +5,9 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Sets an entity's velocity so the game moves it smoothly, as slime blocks and wind charges do (ADR 0052): the
- * server's motion is changed and {@code hurtMarked} makes it send the new motion to the clients, which is what moves a
- * player. Each component is clamped to {@link #LIMIT} blocks per tick.
+ * server's motion is changed and {@code syncVelocity} and {@code needsSync} make it send the new motion to the clients,
+ * which is what moves a player (the 26.x names of the old {@code hurtMarked} and {@code hasImpulse}; checked in the 26.3
+ * and 26.4-snapshot-7 server jars). Each component is clamped to {@link #LIMIT} blocks per tick.
  */
 public final class Motion {
     /** The largest speed per axis, in blocks per tick (vanilla clamps sent motion near this). */
@@ -22,7 +23,8 @@ public final class Motion {
     /** Replaces the entity's velocity. */
     public static void set(Entity entity, double x, double y, double z) {
         entity.setDeltaMovement(clamp(x), clamp(y), clamp(z));
-        entity.hurtMarked = true;
+        entity.syncVelocity = true;
+        entity.needsSync = true;
     }
 
     /** Adds to the entity's velocity. */
