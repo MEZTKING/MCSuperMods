@@ -13,7 +13,11 @@
  * the holder is `entity`, `other` and (when a player) `player`; in a throwable's events `self`
  * is the thrower (the player, else the thrower entity) and `other` the living entity hit, so
  * both take the `other` parameter when an action targets it, as entities do. `damage` and
- * `heal` (ADR 0055 D4) take the same targets as `apply_effect`.
+ * `heal` (ADR 0055 D4) take the same targets as `apply_effect`. A block with `msm:on_step`
+ * (ADR 0058 D1, the runtime's `EventContext.forBlockStep`) passes a stepper that is not a
+ * player as `entity`: `self` and `other` are then the player, else the stepper (living for
+ * `apply_effect`, `damage`, `heal` and an `other` launch), `run_function` runs as the player,
+ * else the stepper, and `play_sound` stays in the block sound source.
  *
  * @packageDocumentation
  */
@@ -23,14 +27,27 @@ import { indent, type JavaFile, javaFloat, javaInt, javaString } from './java';
 import { eventMethodNames } from './names';
 import type { Reader } from './read';
 
-/** Where an event's definition lives. */
-export type EventOwnerKind = 'block' | 'item' | 'entity' | 'effect' | 'throwable';
+/**
+ * Where an event's definition lives. `step_block` is a block with `msm:on_step`, whose events
+ * may run with a stepping entity that is not a player (ADR 0058 D1).
+ */
+export type EventOwnerKind = 'block' | 'step_block' | 'item' | 'entity' | 'effect' | 'throwable';
 
 /**
  * Whether `self` falls back to the event's entity when there is no player (entities, effect
- * holders and throwers); for blocks and plain items `self` is the player.
+ * holders, throwers and the stepper of a step block); for other blocks and plain items `self`
+ * is the player.
  */
 function selfFallsBackToEntity(kind: EventOwnerKind): boolean {
+  return kind === 'entity' || kind === 'effect' || kind === 'throwable' || kind === 'step_block';
+}
+
+/**
+ * Whether the event methods take an `other` parameter when an action targets it (entities,
+ * effects, throwables). Blocks and plain items use the player; a step block derives `other`
+ * from the player or the stepper, as the runtime's `forBlockStep`.
+ */
+function takesOther(kind: EventOwnerKind): boolean {
   return kind === 'entity' || kind === 'effect' || kind === 'throwable';
 }
 
@@ -72,6 +89,11 @@ export interface Events {
   readonly damages: boolean;
   /** Whether any action is `heal` (the `Actions` helper then has `heal`, ADR 0055 D4). */
   readonly heals: boolean;
+  /**
+   * Whether a step block's event uses `run_function` (`Actions.runFunction` then takes any
+   * entity to run as, the stepper when there is no player; ADR 0058 D1).
+   */
+  readonly runsFunctionsAsStepper: boolean;
 }
 
 /** Actions whose `target` is `self` or `other`. */
@@ -120,11 +142,12 @@ export function readEvents(definition: Reader, kind: EventOwnerKind): Events {
   return {
     byId,
     methods: eventMethodNames([...byId.keys()]),
-    otherParameter: selfFallsBackToEntity(kind) && otherTarget,
+    otherParameter: takesOther(kind) && otherTarget,
     appliesEffects: used.has('apply_effect'),
     launches: used.has('launch'),
     damages: used.has('damage'),
     heals: used.has('heal'),
+    runsFunctionsAsStepper: kind === 'step_block' && used.has('run_function'),
   };
 }
 
@@ -178,6 +201,7 @@ export function noteActions(context: GenerationContext, file: JavaFile, events: 
   if (events.launches) context.usesLaunch = true;
   if (events.damages) context.usesDamage = true;
   if (events.heals) context.usesHeal = true;
+  if (events.runsFunctionsAsStepper) context.usesRunFunctionAsEntity = true;
   return file.use(`${context.input.javaPackage}.Actions`);
 }
 
@@ -261,11 +285,14 @@ function actionLines(
 ): string[] {
   const type = action.requiredString('type');
   switch (type) {
-    case 'run_function':
+    case 'run_function': {
       action.onlyKeys(['type', 'function'], 'run_function field');
+      // ADR 0058 D1: in a block step event without a player, the function runs as the stepper.
+      const as = kind === 'step_block' ? 'player != null ? player : entity' : 'player';
       return [
-        `${actions}.runFunction(OWNER, level, origin, player, ${javaString(action.requiredString('function'))});`,
+        `${actions}.runFunction(OWNER, level, origin, ${as}, ${javaString(action.requiredString('function'))});`,
       ];
+    }
     case 'spawn_particle': {
       action.onlyKeys(['type', 'particle', 'count', 'spread', 'speed'], 'spawn_particle field');
       const particle = javaString(action.requiredString('particle'));
@@ -294,7 +321,11 @@ function actionLines(
       const sound = javaString(action.requiredString('sound'));
       const volume = javaFloat(action.number('volume', 1));
       const pitch = javaFloat(action.number('pitch', 1));
-      return [`${actions}.playSound(OWNER, level, origin, entity, ${sound}, ${volume}, ${pitch});`];
+      // Block events always play in the block sound source (ADR 0058 D1), even with a stepping mob.
+      const entity = kind === 'step_block' ? 'null' : 'entity';
+      return [
+        `${actions}.playSound(OWNER, level, origin, ${entity}, ${sound}, ${volume}, ${pitch});`,
+      ];
     }
     case 'trigger_event': {
       action.onlyKeys(['type', 'event'], 'trigger_event field');
@@ -337,7 +368,11 @@ function actionLines(
       const add = action.boolean('add', false);
       let target: string;
       if (effectTarget(action) === 'other') {
-        target = events.otherParameter ? 'other' : 'player';
+        target = events.otherParameter
+          ? 'other'
+          : kind === 'step_block'
+            ? livingFallback(file)
+            : 'player';
       } else if (selfFallsBackToEntity(kind)) {
         target = 'player != null ? player : entity';
       } else {
@@ -364,9 +399,10 @@ function actionLines(
 
 /**
  * The living entity an action with a `target` affects, as the runtime's
- * `EventRunner.livingTarget`: `self` is the player, else (entities, effects, throwables) the
- * event's entity when it is living; `other` is the `other` parameter, or the player for blocks
- * and plain items.
+ * `EventRunner.livingTarget`: `self` is the player, else (entities, effects, throwables, the
+ * stepper of a step block) the event's entity when it is living; `other` is the `other`
+ * parameter, the player for blocks and plain items, or for a step block the player, else the
+ * living stepper (the runtime's `forBlockStep` sets `other` to the living stepper).
  */
 function livingTarget(
   file: JavaFile,
@@ -374,8 +410,16 @@ function livingTarget(
   events: Events,
   kind: EventOwnerKind,
 ): string {
-  if (effectTarget(action) === 'other') return events.otherParameter ? 'other' : 'player';
+  if (effectTarget(action) === 'other') {
+    if (events.otherParameter) return 'other';
+    return kind === 'step_block' ? livingFallback(file) : 'player';
+  }
   if (!selfFallsBackToEntity(kind)) return 'player';
+  return livingFallback(file);
+}
+
+/** The player, else the event's entity when it is living. */
+function livingFallback(file: JavaFile): string {
   const living = file.use('net.minecraft.world.entity.LivingEntity');
   return `player != null ? player : entity instanceof ${living} living ? living : null`;
 }

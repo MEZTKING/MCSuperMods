@@ -6,7 +6,8 @@
  * implementation; both compile against the 26.3 jar. Every Mojang, Fabric and GeckoLib name
  * here belongs to this target; the next target copies the folder and adjusts names.
  *
- * Output: `src/main/java/<package>/` with `<ModClass>.java`, `ModEffects.java`,
+ * Output: `src/main/java/<package>/` with `<ModClass>.java`, `ModSounds.java` (when the
+ * resource pack defines sound events, ADR 0057 D5), `ModEffects.java`,
  * `ModBlocks.java`, `ModItems.java`, `ModEntities.java`, `Actions.java`, `VanillaComponents.java`
  * (when an item uses `msm:components`), `effect/` (with `MobEffectBase.java`, ADR 0055 D10),
  * `block/`, `item/` (with `ThrowableItem.java` when an item has `msm:throwable`), `entity/`
@@ -27,6 +28,7 @@ import { generateEntities } from './entities';
 import { generateItems } from './items';
 import { generateMod } from './mod';
 import { NameTable, splitId } from './names';
+import { generateSounds } from './sounds';
 import { actionsJava } from './templates/actions-java';
 import { followTypesGoalJava } from './templates/follow-types-goal-java';
 import { throwableItemJava } from './templates/throwable-item-java';
@@ -59,6 +61,7 @@ export function generateJavaProject(input: JavaProjectInput): {
     usesLaunch: false,
     usesDamage: false,
     usesHeal: false,
+    usesRunFunctionAsEntity: false,
     usesVanillaComponents: false,
     usesFollowGoal: false,
   };
@@ -79,6 +82,9 @@ export function generateJavaProject(input: JavaProjectInput): {
   );
   if (throwables) classNames.reserve('item.ThrowableItem', 'entity.ThrownItemEntity');
   const registrations: string[] = [];
+  // Sound events first (ADR 0057 D5): effects, items, events and entities name them.
+  const sounds = generateSounds(context);
+  if (sounds !== undefined) registrations.push(sounds);
   const effects = generateEffects(context, classNames);
   if (effects !== undefined) registrations.push(effects);
   if (throwables) {
@@ -115,6 +121,7 @@ export function generateJavaProject(input: JavaProjectInput): {
         context.usesLaunch,
         context.usesDamage,
         context.usesHeal,
+        context.usesRunFunctionAsEntity,
       ),
     });
   }

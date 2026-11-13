@@ -5,8 +5,10 @@
  * the spawn egg `SpawnEggItem(Item.Properties.setId(key).spawnEgg(type))` and the natural
  * spawn through `BiomeModifications.addSpawn`), and one `entity/<Name>Entity.java` per entity:
  * a `PathfinderMob implements GeoEntity` mirroring `MsmEntity` (attributes, goals, the four
- * trigger overrides, the loot table) and `MsmGeoEntity` (the `msm_main` and `msm_triggered`
- * controllers). Minecraft 26.3 and GeckoLib 5, Mojang names.
+ * trigger overrides, the loot table, the mob sounds of ADR 0057 D6) and `MsmGeoEntity` (the
+ * `msm_main` and `msm_triggered` controllers). A `sounds` id that is not registered keeps the
+ * vanilla sound and is warned about once the server has started, as the runtime's
+ * `MsmEntityRegistrar.checkAfterStart`. Minecraft 26.3 and GeckoLib 5, Mojang names.
  *
  * @packageDocumentation
  */
@@ -49,7 +51,11 @@ const ENTITY_KEYS = [
   'spawn',
   'components',
   'events',
+  'sounds',
 ];
+const SOUND_KEYS = ['ambient', 'hurt', 'death', 'step', 'ambient_interval_ticks'];
+/** A sound event id, with or without a namespace, as `Identifier.parse` accepts it. */
+const SOUND_ID = /^([a-z0-9_.-]+:)?[a-z0-9_./-]+$/;
 const ENTITY_COMPONENTS = [
   'msm:animated_model',
   'msm:health',
@@ -90,6 +96,15 @@ interface Spawn {
   rule: string;
 }
 
+/** The mob sounds of a definition (ADR 0057 D6); absent fields keep vanilla's. */
+interface Sounds {
+  readonly ambient: string | undefined;
+  readonly hurt: string | undefined;
+  readonly death: string | undefined;
+  readonly step: string | undefined;
+  readonly ambientIntervalTicks: number | undefined;
+}
+
 interface EntitySpec {
   readonly input: DefinitionInput;
   readonly reader: Reader;
@@ -124,6 +139,41 @@ interface EntitySpec {
   readonly onDeath: string | undefined;
   readonly onInteract: string | undefined;
   readonly events: Events;
+  readonly sounds: Sounds | undefined;
+}
+
+function readSounds(reader: Reader): Sounds | undefined {
+  const sounds = reader.object('sounds');
+  if (sounds === undefined) return undefined;
+  sounds.onlyKeys(SOUND_KEYS, 'sounds field');
+  const id = (key: string): string | undefined => {
+    const value = sounds.optionalString(key);
+    if (value !== undefined && !SOUND_ID.test(value)) {
+      sounds.fail(`${key} '${value}' is not a sound event id`);
+    }
+    return value;
+  };
+  const interval = sounds.has('ambient_interval_ticks')
+    ? sounds.requiredInteger('ambient_interval_ticks')
+    : undefined;
+  if (interval !== undefined && interval < 20)
+    sounds.fail('ambient_interval_ticks must be at least 20');
+  return {
+    ambient: id('ambient'),
+    hurt: id('hurt'),
+    death: id('death'),
+    step: id('step'),
+    ambientIntervalTicks: interval,
+  };
+}
+
+/** The distinct sound event ids a definition names, in field order (the start-up check). */
+function soundIds(sounds: Sounds | undefined): string[] {
+  if (sounds === undefined) return [];
+  const ids = [sounds.ambient, sounds.hurt, sounds.death, sounds.step].filter(
+    (id): id is string => id !== undefined,
+  );
+  return [...new Set(ids)];
 }
 
 function eventOf(component: Reader | undefined, events: Events): string | undefined {
@@ -239,6 +289,7 @@ function readEntity(input: DefinitionInput): EntitySpec {
     onDeath: eventOf(components.object('msm:on_death'), events),
     onInteract: eventOf(components.object('msm:on_interact'), events),
     events,
+    sounds: readSounds(reader),
   };
 }
 
@@ -333,6 +384,32 @@ export function generateEntities(
     if (spec.spawn !== undefined) register.push(...spawnLines(file, spec, field));
   }
   const helpers: string[] = [];
+  const soundChecks = specs.flatMap((spec) =>
+    soundIds(spec.sounds).map(
+      (id) => `    warnUnknownSound(${javaString(spec.input.path)}, ${javaString(id)});`,
+    ),
+  );
+  if (soundChecks.length > 0) {
+    // Other mods may register sound events after this one: check once the server runs.
+    const lifecycle = file.use('net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents');
+    register.push(`${lifecycle}.SERVER_STARTED.register(server -> {`, ...soundChecks, '});');
+    const identifier = file.use('net.minecraft.resources.Identifier');
+    const logger = file.use('org.slf4j.Logger');
+    const loggerFactory = file.use('org.slf4j.LoggerFactory');
+    body.unshift(
+      '',
+      `private static final ${logger} LOGGER = ${loggerFactory}.getLogger(${javaString(context.input.modId)});`,
+    );
+    helpers.push(
+      '',
+      '/** Warns about a sounds id that no mod registered; the vanilla sound stays (ADR 0057 D6). */',
+      'private static void warnUnknownSound(String file, String id) {',
+      `    if (!${builtIn}.SOUND_EVENT.containsKey(${identifier}.parse(id))) {`,
+      '        LOGGER.warn("{}: unknown sound event in sounds {}; the vanilla sound stays", file, id);',
+      '    }',
+      '}',
+    );
+  }
   if (needsEggHelper) {
     const item = file.use('net.minecraft.world.item.Item');
     const spawnEggItem = file.use('net.minecraft.world.item.SpawnEggItem');
@@ -352,7 +429,9 @@ export function generateEntities(
     '',
     '    private ModEntities() {}',
     '',
-    '    /** Loads the class (registering every entity type), adds the spawn eggs to their tabs and the natural spawns. */',
+    soundChecks.length > 0
+      ? '    /** Loads the class (registering every entity type), adds the spawn eggs to their tabs, the natural spawns and the sound check. */'
+      : '    /** Loads the class (registering every entity type), adds the spawn eggs to their tabs and the natural spawns. */',
     '    public static void register() {',
     ...indent(register, 2),
     '    }',
@@ -692,6 +771,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
       '}',
     );
   }
+  if (spec.sounds !== undefined) members.push(...soundMembers(file, spec.sounds));
   if (spec.lootTable !== undefined) {
     const resourceKey = file.use('net.minecraft.resources.ResourceKey');
     const registries = file.use('net.minecraft.core.registries.Registries');
@@ -771,4 +851,93 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
     '}',
   ];
   context.files.push({ path: classPath(context, 'entity', name), contents: file.render(lines) });
+}
+
+/**
+ * The mob sound overrides of `MsmEntity` (ADR 0057 D6): each configured id when it names a
+ * registered sound event, else vanilla's sound; a configured step sound replaces the block's at
+ * volume 0.15; `ambient_interval_ticks` replaces vanilla's interval.
+ */
+function soundMembers(file: JavaFile, sounds: Sounds): string[] {
+  const soundEvent = file.use('net.minecraft.sounds.SoundEvent');
+  const members: string[] = [];
+  const configured = (id: string, signature: string, superCall: string, doc: string): string[] => [
+    '',
+    doc,
+    '@Override',
+    `${signature} {`,
+    `    ${soundEvent} sound = sound(${javaString(id)});`,
+    `    return sound != null ? sound : ${superCall};`,
+    '}',
+  ];
+  if (sounds.ambient !== undefined) {
+    members.push(
+      ...configured(
+        sounds.ambient,
+        `protected ${soundEvent} getAmbientSound()`,
+        'super.getAmbientSound()',
+        '/** sounds.ambient, when registered; else the vanilla sound. */',
+      ),
+    );
+  }
+  if (sounds.ambientIntervalTicks !== undefined) {
+    members.push(
+      '',
+      '/** sounds.ambient_interval_ticks. */',
+      '@Override',
+      'public int getAmbientSoundInterval() {',
+      `    return ${javaInt(sounds.ambientIntervalTicks)};`,
+      '}',
+    );
+  }
+  if (sounds.hurt !== undefined) {
+    const damageSource = file.use('net.minecraft.world.damagesource.DamageSource');
+    members.push(
+      ...configured(
+        sounds.hurt,
+        `protected ${soundEvent} getHurtSound(${damageSource} source)`,
+        'super.getHurtSound(source)',
+        '/** sounds.hurt, when registered; else the vanilla sound. */',
+      ),
+    );
+  }
+  if (sounds.death !== undefined) {
+    members.push(
+      ...configured(
+        sounds.death,
+        `protected ${soundEvent} getDeathSound()`,
+        'super.getDeathSound()',
+        '/** sounds.death, when registered; else the vanilla sound. */',
+      ),
+    );
+  }
+  if (sounds.step !== undefined) {
+    const blockPos = file.use('net.minecraft.core.BlockPos');
+    const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
+    members.push(
+      '',
+      "/** sounds.step, when registered, at the volume most vanilla mobs use (0.15); else the block's step sound. */",
+      '@Override',
+      `protected void playStepSound(${blockPos} pos, ${blockState} state) {`,
+      `    ${soundEvent} sound = sound(${javaString(sounds.step)});`,
+      '    if (sound != null) {',
+      '        playSound(sound, 0.15f, 1.0f);',
+      '    } else {',
+      '        super.playStepSound(pos, state);',
+      '    }',
+      '}',
+    );
+  }
+  if (soundIds(sounds).length > 0) {
+    const builtIn = file.use('net.minecraft.core.registries.BuiltInRegistries');
+    const identifier = file.use('net.minecraft.resources.Identifier');
+    members.push(
+      '',
+      '/** The registered sound event {@code id}, or null (the vanilla sound then stays). */',
+      `private static ${soundEvent} sound(String id) {`,
+      `    return ${builtIn}.SOUND_EVENT.getOptional(${identifier}.parse(id)).orElse(null);`,
+      '}',
+    );
+  }
+  return members;
 }

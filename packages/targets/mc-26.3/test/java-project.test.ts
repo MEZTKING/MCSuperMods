@@ -340,12 +340,192 @@ describe('Java generator (mc-26.3)', () => {
     expect(golem).toContain('Actions.applyEffect(OWNER, other, "minecraft:slowness", 80, 0);');
     const stone =
       files.find((file) => file.path.endsWith('/SteppingStoneBlock.java'))?.contents ?? '';
-    expect(stone).toContain('Actions.applyEffect(OWNER, player, "minecraft:slowness", 50, 2);');
+    // A step block's self is the player, else the living stepper (ADR 0058 D1).
+    expect(stone).toContain(
+      'Actions.applyEffect(OWNER, player != null ? player : entity instanceof LivingEntity living ? living : null, "minecraft:slowness", 50, 2);',
+    );
     // Without apply_effect, Actions has no applyEffect (the older goldens stay as they were).
     const plain = generateJavaProject(input({ items: [await definition('item', 'gadget')] }));
     const plainActions =
       plain.files.find((file) => file.path.endsWith('/Actions.java'))?.contents ?? '';
     expect(plainActions).not.toContain('applyEffect');
+  });
+
+  it('registers project sound events first and mob sounds (ADR 0057 D5, D6)', async () => {
+    // The keys of engine-mod/src/gametest/resources/assets/msm_test/sounds.json, as the
+    // exporter passes them (sorted, namespaced, without minecraft).
+    const soundEvents = [
+      'msm_test:chime',
+      'msm_test:golem.ambient',
+      'msm_test:golem.death',
+      'msm_test:golem.hurt',
+      'msm_test:golem.step',
+    ];
+    const { files } = generateJavaProject(
+      input({
+        blocks: [await definition('block', 'chime_block')],
+        entities: [await definition('entity', 'off_key'), await definition('entity', 'singer')],
+        soundEvents,
+        geckolib: true,
+      }),
+    );
+    await golden('sounds', files);
+    const text = (suffix: string): string =>
+      files.find((file) => file.path.endsWith(suffix))?.contents ?? '';
+    // ModSounds registers before everything else.
+    const mod = text('/MsmTestMod.java');
+    expect(mod.indexOf('ModSounds.register();')).toBeGreaterThan(0);
+    expect(mod.indexOf('ModSounds.register();')).toBeLessThan(mod.indexOf('ModBlocks.register();'));
+    const sounds = text('/ModSounds.java');
+    for (const id of soundEvents) expect(sounds).toContain(`"${id}"`);
+    expect(sounds).toContain('SoundEvent.createVariableRangeEvent(id)');
+    const singer = text('/SingerEntity.java');
+    expect(singer).toContain('protected SoundEvent getAmbientSound() {');
+    expect(singer).toContain('return 120;');
+    expect(singer).toContain('protected SoundEvent getHurtSound(DamageSource source) {');
+    expect(singer).toContain('protected SoundEvent getDeathSound() {');
+    expect(singer).toContain('playSound(sound, 0.15f, 1.0f);');
+    // Only the configured sounds are overridden.
+    const offKey = text('/OffKeyEntity.java');
+    expect(offKey).toContain('return sound != null ? sound : super.getHurtSound(source);');
+    expect(offKey).not.toContain('getDeathSound');
+    expect(offKey).not.toContain('playStepSound');
+    expect(offKey).not.toContain('getAmbientSoundInterval');
+    // An unknown id keeps the vanilla sound and is warned about after start-up.
+    const entities = text('/ModEntities.java');
+    expect(entities).toContain(
+      'warnUnknownSound("msm/msm_test/entity/off_key.json", "msm_test:no_such_sound");',
+    );
+    expect(entities).toContain('ServerLifecycleEvents.SERVER_STARTED.register(server -> {');
+    // A project sound in a block event plays as a block.
+    expect(text('/ChimeBlock.java')).toContain(
+      'Actions.playSound(OWNER, level, origin, entity, "msm_test:chime", 1.0f, 1.0f);',
+    );
+  });
+
+  it('writes no ModSounds for a silent project or only minecraft keys', async () => {
+    const block = await definition('block', 'chime_block');
+    for (const soundEvents of [undefined, [], ['minecraft:block.note_block.bell']]) {
+      const { files } = generateJavaProject(
+        input(soundEvents === undefined ? { blocks: [block] } : { blocks: [block], soundEvents }),
+      );
+      expect(files.some((file) => file.path.endsWith('/ModSounds.java'))).toBe(false);
+      const mod = files.find((file) => file.path.endsWith('/MsmTestMod.java'))?.contents ?? '';
+      expect(mod).not.toContain('ModSounds');
+    }
+    // Each key once; an id without a namespace is refused.
+    const twice = generateJavaProject(
+      input({ soundEvents: ['msm_test:chime', 'msm_test:chime', 'minecraft:x'] }),
+    );
+    const sounds = twice.files.find((file) => file.path.endsWith('/ModSounds.java'))?.contents;
+    expect(sounds?.match(/"msm_test:chime"/g)).toHaveLength(1);
+    expect(sounds).not.toContain('minecraft:x');
+    expect(() => generateJavaProject(input({ soundEvents: ['chime'] }))).toThrow(
+      /not a namespaced sound event id/,
+    );
+  });
+
+  it('gives step events the stepper and a per-dimension cooldown (ADR 0058 D1)', async () => {
+    const { files } = generateJavaProject(
+      input({
+        blocks: [await definition('block', 'step_other'), await definition('block', 'step_self')],
+      }),
+    );
+    await golden('step-blocks', files);
+    const text = (suffix: string): string =>
+      files.find((file) => file.path.endsWith(suffix))?.contents ?? '';
+    const self = text('/StepSelfBlock.java');
+    expect(self).toContain(
+      'private record StepKey(ResourceKey<Level> dimension, long pos, UUID entity) {}',
+    );
+    expect(self).toContain(
+      'StepKey key = new StepKey(server.dimension(), pos.asLong(), entity.getUUID());',
+    );
+    expect(self).toContain(
+      'event_stepped(server, pos.immutable(), Vec3.atCenterOf(pos), player, player == null ? entity : null, 1);',
+    );
+    // self: the player, else the stepper (living for effects and damage).
+    expect(self).toContain(
+      'Actions.applyEffect(OWNER, player != null ? player : entity instanceof LivingEntity living ? living : null, "minecraft:speed", 200, 0);',
+    );
+    expect(self).toContain(
+      'Actions.launch(player != null ? player : entity, 1.0f, "up", 0.0f, false);',
+    );
+    // run_function runs as the stepper when there is no player.
+    expect(self).toContain(
+      'Actions.runFunction(OWNER, level, origin, player != null ? player : entity, "msm_test:tag_stepper");',
+    );
+    const actions = text('/Actions.java');
+    expect(actions).toContain(
+      'public static void runFunction(String owner, ServerLevel level, Vec3 origin, Entity as, String id) {',
+    );
+    // other: the player, else the living stepper.
+    const other = text('/StepOtherBlock.java');
+    expect(other).not.toContain('LivingEntity other');
+    expect(other).toContain(
+      'Actions.heal(player != null ? player : entity instanceof LivingEntity living ? living : null, 3.0f);',
+    );
+    expect(other).toContain(
+      'Actions.launch(player != null ? player : entity instanceof LivingEntity living ? living : null, 1.0f, "up", 0.0f, false);',
+    );
+    // Block events play sounds as blocks, even with a stepping mob.
+    const chiming = generateJavaProject(
+      input({
+        blocks: [
+          {
+            id: 'msm_test:chime_pad',
+            path: 'msm/msm_test/block/chime_pad.json',
+            definition: {
+              components: { 'msm:on_step': { event: 'msm_test:chime' } },
+              events: {
+                'msm_test:chime': { actions: [{ sound: 'msm_test:chime', type: 'play_sound' }] },
+              },
+              format: 1,
+            },
+          },
+        ],
+      }),
+    );
+    expect(
+      chiming.files.find((file) => file.path.endsWith('/ChimePadBlock.java'))?.contents,
+    ).toContain('Actions.playSound(OWNER, level, origin, null, "msm_test:chime", 1.0f, 1.0f);');
+    // run_function in a block without msm:on_step keeps the player parameter.
+    const plain = generateJavaProject(
+      input({
+        blocks: [
+          {
+            id: 'msm_test:button',
+            path: 'msm/msm_test/block/button.json',
+            definition: {
+              components: { 'msm:on_interact': { event: 'msm_test:press' } },
+              events: {
+                'msm_test:press': {
+                  actions: [{ function: 'msm_test:mark', type: 'run_function' }],
+                },
+              },
+              format: 1,
+            },
+          },
+        ],
+      }),
+    );
+    expect(plain.files.find((file) => file.path.endsWith('/Actions.java'))?.contents).toContain(
+      'Vec3 origin, Player player, String id) {',
+    );
+  });
+
+  it('rejects bad mob sounds', async () => {
+    const singer = await definition('entity', 'singer');
+    const withSounds = (sounds: unknown) =>
+      generateJavaProject(
+        input({
+          entities: [{ ...singer, definition: { ...singer.definition, sounds } as JsonObject }],
+          geckolib: true,
+        }),
+      );
+    expect(() => withSounds({ ambient_interval_ticks: 19 })).toThrow(/at least 20/);
+    expect(() => withSounds({ loud: 'minecraft:entity.pig.ambient' })).toThrow(/loud/);
+    expect(() => withSounds({ hurt: 'Not An Id' })).toThrow(/not a sound event id/);
   });
 
   it('generates the kitchen-sink entity with GeckoLib and the client entrypoint', async () => {

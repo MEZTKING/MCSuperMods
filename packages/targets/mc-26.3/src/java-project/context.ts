@@ -23,6 +23,11 @@ export interface GenerationContext {
   usesDamage: boolean;
   /** Set when an event uses `heal` (`Actions.heal` is then written, ADR 0055 D4). */
   usesHeal: boolean;
+  /**
+   * Set when a step block's event uses `run_function` (`Actions.runFunction` then takes the
+   * entity to run as, ADR 0058 D1).
+   */
+  usesRunFunctionAsEntity: boolean;
   /** Set when an item uses `msm:components` (`VanillaComponents.java` is then written). */
   usesVanillaComponents: boolean;
   /** Set when an entity uses the `follow` goal. */

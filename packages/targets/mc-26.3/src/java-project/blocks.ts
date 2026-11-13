@@ -4,14 +4,17 @@
  * tool requirement and loot table override; the block item with
  * `useBlockDescriptionPrefix().stacksTo(n).rarity(r)`; creative tabs through
  * `CreativeModeTabEvents.modifyOutputEvent`) and one `block/<Name>Block.java` per block with
- * events or redstone behaviour, mirroring `MsmBlock` (interact, step with a cooldown map,
- * redstone `POWERED` state and `neighborChanged`). Minecraft 26.3, Mojang names.
+ * events or redstone behaviour, mirroring `MsmBlock` (interact, step with a cooldown map keyed
+ * by dimension, position and entity, redstone `POWERED` state and `neighborChanged`). A step
+ * event carries the stepper as the runtime's `EventContext.forBlockStep` (ADR 0058 D1): the
+ * player when it is one, else the `entity` argument. Minecraft 26.3, Mojang names.
  *
  * @packageDocumentation
  */
 
 import type { DefinitionInput } from '@msm/plugin-api';
 import {
+  type EventOwnerKind,
   type Events,
   eventMethod,
   eventMethods,
@@ -101,6 +104,8 @@ interface BlockSpec {
   readonly resistance: number;
   readonly requiresTool: boolean;
   readonly light: number | undefined;
+  /** `step_block` with `msm:on_step` (events may run with a stepping entity), else `block`. */
+  readonly kind: EventOwnerKind;
   readonly events: Events;
   /** Method of the `msm:on_interact` event. */
   readonly onInteract: string | undefined;
@@ -116,7 +121,8 @@ function readBlock(input: DefinitionInput): BlockSpec {
   checkFormat(reader);
   const components = reader.object('components');
   components?.onlyKeys(BLOCK_COMPONENTS, 'component');
-  const events = readEvents(reader, 'block');
+  const kind: EventOwnerKind = components?.has('msm:on_step') ? 'step_block' : 'block';
+  const events = readEvents(reader, kind);
 
   let item: BlockSpec['item'];
   const rawItem = input.definition.item;
@@ -155,6 +161,7 @@ function readBlock(input: DefinitionInput): BlockSpec {
     resistance: breakable?.number('resistance', 6) ?? 6,
     requiresTool: breakable?.boolean('requires_tool', false) ?? false,
     light: light?.requiredInteger('level'),
+    kind,
     events,
     onInteract:
       interact === undefined
@@ -326,12 +333,14 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
     const map = file.use('java.util.Map');
     const hashMap = file.use('java.util.HashMap');
     const uuid = file.use('java.util.UUID');
+    const resourceKey = file.use('net.minecraft.resources.ResourceKey');
+    const levelType = file.use('net.minecraft.world.level.Level');
     members.push(
       '',
-      '/** Last step tick per position and entity, for the msm:on_step cooldown. Server thread only. */',
+      '/** Last step tick per dimension, position and entity, for the msm:on_step cooldown. Server thread only. */',
       `private final ${map}<StepKey, Long> lastStep = new ${hashMap}<>();`,
       '',
-      `private record StepKey(long pos, ${uuid} entity) {}`,
+      `private record StepKey(${resourceKey}<${levelType}> dimension, long pos, ${uuid} entity) {}`,
     );
   }
   members.push('', `public ${name}(${properties} properties) {`, '    super(properties);');
@@ -382,15 +391,16 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
       `    if (level instanceof ${serverLevel()} server) {`,
       '        long now = server.getGameTime();',
       `        int cooldown = ${javaInt(spec.onStep.cooldown)};`,
-      '        StepKey key = new StepKey(pos.asLong(), entity.getUUID());',
+      '        StepKey key = new StepKey(server.dimension(), pos.asLong(), entity.getUUID());',
       '        Long last = lastStep.get(key);',
       '        if (last == null || now - last >= cooldown || now < last) {',
       '            if (lastStep.size() > 1024) {',
       '                lastStep.values().removeIf(t -> now - t >= cooldown);',
       '            }',
       '            lastStep.put(key, now);',
+      '            // The stepper is the player when it is one, else the entity (ADR 0058 D1).',
       `            ${player()} player = entity instanceof ${player()} p ? p : null;`,
-      `            ${fireCall(spec.onStep.method, `server, pos.immutable(), ${vec3()}.atCenterOf(pos), player, null`)}`,
+      `            ${fireCall(spec.onStep.method, `server, pos.immutable(), ${vec3()}.atCenterOf(pos), player, player == null ? entity : null`)}`,
       '        }',
       '    }',
       '    super.stepOn(level, pos, state, entity);',
@@ -469,7 +479,7 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
       '}',
     );
   }
-  members.push(...eventMethods(file, spec.events, 'block', actions));
+  members.push(...eventMethods(file, spec.events, spec.kind, actions));
 
   const lines = [
     `/** The block {@code ${spec.input.id}}. */`,

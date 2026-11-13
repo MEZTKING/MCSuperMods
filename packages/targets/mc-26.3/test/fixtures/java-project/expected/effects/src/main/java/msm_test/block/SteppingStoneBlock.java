@@ -6,8 +6,10 @@ import java.util.Map;
 import java.util.UUID;
 import msm_test.Actions;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -19,10 +21,10 @@ import net.minecraft.world.phys.Vec3;
 public class SteppingStoneBlock extends Block {
     private static final String OWNER = "msm_test:stepping_stone";
 
-    /** Last step tick per position and entity, for the msm:on_step cooldown. Server thread only. */
+    /** Last step tick per dimension, position and entity, for the msm:on_step cooldown. Server thread only. */
     private final Map<StepKey, Long> lastStep = new HashMap<>();
 
-    private record StepKey(long pos, UUID entity) {}
+    private record StepKey(ResourceKey<Level> dimension, long pos, UUID entity) {}
 
     public SteppingStoneBlock(BlockBehaviour.Properties properties) {
         super(properties);
@@ -34,15 +36,16 @@ public class SteppingStoneBlock extends Block {
         if (level instanceof ServerLevel server) {
             long now = server.getGameTime();
             int cooldown = 0;
-            StepKey key = new StepKey(pos.asLong(), entity.getUUID());
+            StepKey key = new StepKey(server.dimension(), pos.asLong(), entity.getUUID());
             Long last = lastStep.get(key);
             if (last == null || now - last >= cooldown || now < last) {
                 if (lastStep.size() > 1024) {
                     lastStep.values().removeIf(t -> now - t >= cooldown);
                 }
                 lastStep.put(key, now);
+                // The stepper is the player when it is one, else the entity (ADR 0058 D1).
                 Player player = entity instanceof Player p ? p : null;
-                event_stepped(server, pos.immutable(), Vec3.atCenterOf(pos), player, null, 1);
+                event_stepped(server, pos.immutable(), Vec3.atCenterOf(pos), player, player == null ? entity : null, 1);
             }
         }
         super.stepOn(level, pos, state, entity);
@@ -53,6 +56,6 @@ public class SteppingStoneBlock extends Block {
         if (Actions.tooDeep(OWNER, "mymod:stepped", depth)) {
             return;
         }
-        Actions.applyEffect(OWNER, player, "minecraft:slowness", 50, 2);
+        Actions.applyEffect(OWNER, player != null ? player : entity instanceof LivingEntity living ? living : null, "minecraft:slowness", 50, 2);
     }
 }

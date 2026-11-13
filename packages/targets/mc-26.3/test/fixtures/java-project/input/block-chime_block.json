@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "msm_test:chime"
+    }
+  },
+  "events": {
+    "msm_test:chime": {
+      "actions": [
+        {
+          "sound": "msm_test:chime",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "item": false
+}

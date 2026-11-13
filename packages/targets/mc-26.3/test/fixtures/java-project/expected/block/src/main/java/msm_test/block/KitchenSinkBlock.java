@@ -7,6 +7,7 @@ import java.util.UUID;
 import msm_test.Actions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -30,10 +31,10 @@ public class KitchenSinkBlock extends Block {
     /** The last seen neighbour power, for the msm:redstone events. */
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
-    /** Last step tick per position and entity, for the msm:on_step cooldown. Server thread only. */
+    /** Last step tick per dimension, position and entity, for the msm:on_step cooldown. Server thread only. */
     private final Map<StepKey, Long> lastStep = new HashMap<>();
 
-    private record StepKey(long pos, UUID entity) {}
+    private record StepKey(ResourceKey<Level> dimension, long pos, UUID entity) {}
 
     public KitchenSinkBlock(BlockBehaviour.Properties properties) {
         super(properties);
@@ -60,15 +61,16 @@ public class KitchenSinkBlock extends Block {
         if (level instanceof ServerLevel server) {
             long now = server.getGameTime();
             int cooldown = 20;
-            StepKey key = new StepKey(pos.asLong(), entity.getUUID());
+            StepKey key = new StepKey(server.dimension(), pos.asLong(), entity.getUUID());
             Long last = lastStep.get(key);
             if (last == null || now - last >= cooldown || now < last) {
                 if (lastStep.size() > 1024) {
                     lastStep.values().removeIf(t -> now - t >= cooldown);
                 }
                 lastStep.put(key, now);
+                // The stepper is the player when it is one, else the entity (ADR 0058 D1).
                 Player player = entity instanceof Player p ? p : null;
-                event_step(server, pos.immutable(), Vec3.atCenterOf(pos), player, null, 1);
+                event_step(server, pos.immutable(), Vec3.atCenterOf(pos), player, player == null ? entity : null, 1);
             }
         }
         super.stepOn(level, pos, state, entity);
@@ -130,11 +132,11 @@ public class KitchenSinkBlock extends Block {
         if (Actions.tooDeep(OWNER, "msm_test:interact", depth)) {
             return;
         }
-        Actions.runFunction(OWNER, level, origin, player, "msm_test:mark");
+        Actions.runFunction(OWNER, level, origin, player != null ? player : entity, "msm_test:mark");
         Actions.spawnParticle(OWNER, level, origin, "minecraft:end_rod", 5, 0.3f, 0.01f);
         Actions.setBlockState(OWNER, level, base, "minecraft:oak_stairs[facing=east,half=top]", 0, 1, 0);
         Actions.giveItem(OWNER, level, player, "minecraft:diamond", 2);
-        Actions.playSound(OWNER, level, origin, entity, "minecraft:block.amethyst_block.chime", 0.8f, 1.2f);
+        Actions.playSound(OWNER, level, origin, null, "minecraft:block.amethyst_block.chime", 0.8f, 1.2f);
         event_chained(level, base, origin, player, entity, depth + 1);
     }
 
@@ -152,7 +154,7 @@ public class KitchenSinkBlock extends Block {
         if (Actions.tooDeep(OWNER, "msm_test:powered", depth)) {
             return;
         }
-        Actions.playSound(OWNER, level, origin, entity, "minecraft:block.note_block.bell", 1.0f, 1.0f);
+        Actions.playSound(OWNER, level, origin, null, "minecraft:block.note_block.bell", 1.0f, 1.0f);
     }
 
     /** Event {@code msm_test:step}. */
@@ -168,6 +170,6 @@ public class KitchenSinkBlock extends Block {
         if (Actions.tooDeep(OWNER, "msm_test:unpowered", depth)) {
             return;
         }
-        Actions.playSound(OWNER, level, origin, entity, "minecraft:block.note_block.bass", 1.0f, 1.0f);
+        Actions.playSound(OWNER, level, origin, null, "minecraft:block.note_block.bass", 1.0f, 1.0f);
     }
 }
