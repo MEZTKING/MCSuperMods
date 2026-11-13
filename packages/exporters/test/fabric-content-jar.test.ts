@@ -82,6 +82,11 @@ const entityDefinition = raw('ruby:entity', {
   layer: 'msm',
   json: { format: 1, type: 'entity' },
 });
+const effectDefinition = raw('ruby:effect', {
+  path: 'msm/ruby/effect/ruby_rush.json',
+  layer: 'msm',
+  json: { format: 1, category: 'beneficial' },
+});
 const packMcmeta = raw('ruby:pack', {
   path: 'pack.mcmeta',
   layer: 'datapack',
@@ -179,6 +184,17 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         fileCount: 5,
         target: target.id,
       });
+    });
+
+    it('carries effect definitions, lists them in the manifest and does not need GeckoLib', async () => {
+      const { report, entries } = await exportJar([effectDefinition]);
+      expect(report.ok).toBe(true);
+      expect(json(entries, 'msm/ruby/effect/ruby_rush.json')).toEqual({
+        category: 'beneficial',
+        format: 1,
+      });
+      expect(Object.keys(entries).some((path) => path.includes('geckolib'))).toBe(false);
+      expect(Object.keys(entries).some((path) => path.endsWith('msm.export.json'))).toBe(true);
     });
 
     it('writes the same bytes for the same input', async () => {

@@ -5,7 +5,7 @@
  * test-local `test:raw` kind and the real generator of each built-in target.
  */
 import { utf8 } from '@msm/core';
-import type { Element, Json, Problem, Target } from '@msm/plugin-api';
+import type { Element, JavaProjectInput, Json, Problem, Target } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import {
@@ -298,6 +298,42 @@ describe.each(
     expect(codes(report.problems)).toEqual([ExportProblemCodes.javaGenerationFailed]);
     expect(report.problems[0]?.message).toContain('msm/ruby/block/broken.json');
     expect(files.size).toBe(0);
+  });
+
+  it('routes effect definitions to effects and unknown folders to a warning, not entities', async () => {
+    let captured: JavaProjectInput | undefined;
+    const spy: Target = {
+      ...target,
+      javaProject: {
+        generate(input) {
+          captured = input;
+          return [];
+        },
+      },
+    };
+    const effect = raw('ruby:effect', {
+      path: 'msm/ruby/effect/ruby_rush.json',
+      layer: 'msm',
+      json: { format: 1, category: 'beneficial' },
+    });
+    const unknown = raw('ruby:mystery', {
+      path: 'msm/ruby/mystery/thing.json',
+      layer: 'msm',
+      json: { format: 1 },
+    });
+    const { report } = await eject([effect, unknown, plainItem], { wrapper, target: spy });
+    expect(report.ok).toBe(true);
+    expect(captured?.effects?.map((entry) => entry.id)).toEqual(['ruby:ruby_rush']);
+    expect(captured?.effects?.[0]?.path).toBe('msm/ruby/effect/ruby_rush.json');
+    expect(captured?.entities).toEqual([]);
+    expect(captured?.items.map((entry) => entry.id)).toEqual(['ruby:ruby']);
+    expect(captured?.geckolib).toBe(false);
+    const unknownProblems = report.problems.filter(
+      (problem) => problem.code === ExportProblemCodes.javaGenerationFailed,
+    );
+    expect(unknownProblems).toHaveLength(1);
+    expect(unknownProblems[0]?.severity).toBe('warning');
+    expect(unknownProblems[0]?.file).toBe('msm/ruby/mystery/thing.json');
   });
 
   it('needs GeckoLib facts for entities and adds GeckoLib to the build', async () => {

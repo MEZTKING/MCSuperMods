@@ -72,7 +72,7 @@ export const JAVA_PROJECT_MOD_JSON = `src/main/resources/${FABRIC_MOD_JSON_FILE}
 // biome-ignore lint/suspicious/noTemplateCurlyInString: Gradle's placeholder, not a template
 const VERSION_PLACEHOLDER = '${version}';
 
-const DEFINITION_PATTERN = /^msm\/([^/]+)\/(block|item|entity)\/(.+)\.json$/;
+const DEFINITION_PATTERN = /^msm\/([^/]+)\/([^/]+)\/(.+)\.json$/;
 const SCRIPT_PATTERN = /^msm\/([^/]+)\/script\/(.+)\.ts$/;
 
 const JAVA_KEYWORDS = new Set([
@@ -286,6 +286,7 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
       const blocks: DefinitionInput[] = [];
       const items: DefinitionInput[] = [];
       const entities: DefinitionInput[] = [];
+      const effects: DefinitionInput[] = [];
       const scripts: string[] = [];
       const resources: OutputFile[] = [];
       let provided: OutputFile | undefined;
@@ -316,6 +317,16 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
         }
         const match = DEFINITION_PATTERN.exec(file.path);
         if (match === null) continue;
+        const kind = match[2];
+        if (kind !== 'block' && kind !== 'item' && kind !== 'entity' && kind !== 'effect') {
+          problems.report({
+            severity: 'warning',
+            code: ExportProblemCodes.javaGenerationFailed,
+            file: file.path,
+            message: `${file.path} is in the unknown definition folder msm/${match[1]}/${kind}/, so no Java is generated for it.`,
+          });
+          continue;
+        }
         const json = jsonOf(file);
         if (!isObject(json)) {
           problems.report({
@@ -342,6 +353,7 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
         };
         if (match[2] === 'block') blocks.push(entry);
         else if (match[2] === 'item') items.push(entry);
+        else if (kind === 'effect') effects.push(entry);
         else entities.push(entry);
       }
       if (outside > 0) {
@@ -397,6 +409,7 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
           blocks,
           items,
           entities,
+          effects,
           geckolib: geckolib !== undefined,
         });
       } catch (error) {
