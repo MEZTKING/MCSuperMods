@@ -158,15 +158,13 @@ export function eventMethod(reader: Reader, events: Events, id: string): string 
   );
 }
 
-/** Whether any action of the events needs the `Actions` helper class. */
+/**
+ * Whether the events need the `Actions` helper class: every event method starts with the
+ * `Actions.tooDeep` depth guard, so any declared event does, even one whose actions are only
+ * `trigger_event` and `play_animation`.
+ */
 export function usesActions(events: Events): boolean {
-  for (const actions of events.byId.values()) {
-    for (const action of actions) {
-      const type = action.requiredString('type');
-      if (type !== 'trigger_event' && type !== 'play_animation') return true;
-    }
-  }
-  return false;
+  return events.byId.size > 0;
 }
 
 /**

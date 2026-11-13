@@ -181,6 +181,96 @@ describe('Java generator (mc-26.3)', () => {
     expect(actions).toContain('target.syncVelocity = true;');
   });
 
+  it('writes Actions for events with only trigger_event and play_animation', async () => {
+    // Every event method starts with the Actions.tooDeep depth guard, so Actions.java must
+    // exist (and be imported from the subpackages) even when no other action is used.
+    const chain = (first: string, second: string): JsonObject => ({
+      [first]: {
+        actions: [
+          { type: 'trigger_event', event: second },
+          { type: 'play_animation', animation: 'animation.wave' },
+        ],
+      },
+      [second]: { actions: [{ type: 'play_animation', animation: 'animation.wave' }] },
+    });
+    const block: DefinitionInput = {
+      id: 'msm_test:echo_block',
+      path: 'msm/msm_test/block/echo_block.json',
+      definition: {
+        format: 1,
+        components: { 'msm:on_interact': { event: 'msm_test:ping' } },
+        events: chain('msm_test:ping', 'msm_test:pong'),
+      },
+    };
+    const item: DefinitionInput = {
+      id: 'msm_test:echo_wand',
+      path: 'msm/msm_test/item/echo_wand.json',
+      definition: {
+        format: 1,
+        components: { 'msm:on_use': { event: 'msm_test:ping' } },
+        events: chain('msm_test:ping', 'msm_test:pong'),
+      },
+    };
+    const throwable: DefinitionInput = {
+      id: 'msm_test:echo_ball',
+      path: 'msm/msm_test/item/echo_ball.json',
+      definition: {
+        format: 1,
+        components: { 'msm:throwable': { on_hit_block: { event: 'msm_test:ping' } } },
+        events: chain('msm_test:ping', 'msm_test:pong'),
+      },
+    };
+    const effect: DefinitionInput = {
+      id: 'msm_test:echo',
+      path: 'msm/msm_test/effect/echo.json',
+      definition: {
+        format: 1,
+        category: 'neutral',
+        color: 255,
+        components: { 'msm:on_tick': { event: 'msm_test:ping', interval_ticks: 20 } },
+        events: chain('msm_test:ping', 'msm_test:pong'),
+      },
+    };
+    const entity: DefinitionInput = {
+      id: 'msm_test:echo_golem',
+      path: 'msm/msm_test/entity/echo_golem.json',
+      definition: {
+        format: 1,
+        category: 'creature',
+        size: { width: 0.9, height: 1.6 },
+        components: {
+          'msm:animated_model': {
+            model: 'msm_test:entity/echo_golem',
+            texture: 'msm_test:entity/echo_golem',
+          },
+          'msm:attack': { damage: 2, on_attack: 'msm_test:ping' },
+        },
+        events: chain('msm_test:ping', 'msm_test:pong'),
+      },
+    };
+    const { files } = generateJavaProject(
+      input({
+        blocks: [block],
+        items: [item, throwable],
+        effects: [effect],
+        entities: [entity],
+        geckolib: true,
+      }),
+    );
+    await golden('events-only', files);
+    const actions = files.find((file) => file.path === 'src/main/java/msm_test/Actions.java');
+    expect(actions?.contents).toContain('public static boolean tooDeep(');
+    const callers = files.filter((file) => file.contents.includes('Actions.tooDeep('));
+    expect(callers.map((file) => file.path)).toEqual([
+      'src/main/java/msm_test/block/EchoBlock.java',
+      'src/main/java/msm_test/effect/EchoEffect.java',
+      'src/main/java/msm_test/entity/EchoGolemEntity.java',
+      'src/main/java/msm_test/item/EchoBallItem.java',
+      'src/main/java/msm_test/item/EchoWandItem.java',
+    ]);
+    for (const file of callers) expect(file.contents).toContain('import msm_test.Actions;');
+  });
+
   it("uses a custom armour material's body defence for horse armour (ADR 0050 D4)", async () => {
     const horse = await definition('item', 'ruby_horse_armor');
     const plain = generateJavaProject(input({ items: [horse] })).files;
