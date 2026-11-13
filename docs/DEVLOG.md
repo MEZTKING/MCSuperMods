@@ -3067,3 +3067,21 @@ Next: CI for the velocity Java (ADR 0052), then the user's Windows test; these c
 
 **Next**
 - Wave 1 B200 review; Wave 2 (B203–B206).
+
+---
+
+## 2026-11-13 — main session — effects and throwables (1.4.0 prepared)
+
+**What**
+- B200–B211 landed: formats and corpus (`msm:effect`, `msm:throwable`, actions `damage` and `heal`); script API `hasEffect`, `effectLevel`, `removeEffect` and `ActionEvent.other`; plugin API 1.6.0 (`JavaProjectInput.effects`); runtime `MsmMobEffect`, `MsmThrowableItem` and `msm_runtime:thrown_item` with 97 GameTests on 26.3, 26.3 without GeckoLib and 26.4; the `blocks-items` kind, lowering, validators and templates; Effect Studio, the Item Studio's Throwable section and the Hurt and Heal actions; `java-project` routing (an unknown `msm` kind folder now warns instead of becoming an entity); the Java eject (`ModEffects`, `ThrownItemEntity`, dispensers); the Status effect and Throwable flows, five placeholder patterns, the Frost bomb and scripted effect examples; the AI helper paragraph (catalogue frozen at 22 tools); sample mod and script additions with 28 parity GameTests on content and ejected jars; the Creator group Magic with Card previews, e2e and the guide page `effects-and-throwables.md`.
+- Also in this stretch: the feature order fix (a placed feature in different steps is the warning `worldgen.feature-step-differs`), the Music disc `sound_id` fix (project sounds in a vanilla sound field must be `{ "sound_id": ... }`), the Problems check for a bare string in a vanilla sound-event field, the eject fix that writes `Actions.java` whenever a definition declares events, and `docs/COVERAGE-AUDIT.md` (suspects S1–S13 and a ranked backlog).
+- Close: version 1.4.0 in `app/package.json` and `mod_version`; CHANGELOG `[1.4.0] - 2026-11-13`; ADRs 0055 and 0056 accepted with the runtime findings kept; DESIGN "Proposed" notes made plain statements; ROADMAP B200–B211 ticked and a Milestone Log row; status lines in the root and scoped `CLAUDE.md` files and the README; `PLAN-effects-throwables.md` deleted; HANDOFF rewritten. Counts: 62 kinds, 129 templates, 27 starters, 73 examples. `turbo run test --force --continue`: 20 of 21 tasks green with 4,234 tests (45 skipped); `@msm/plugin-scripting` passed 44 of 48, the four failures belonging to the plugin API 1.7.0 work in progress in the same worktree.
+
+**Decisions**
+- The five plan defaults stand (thrown item drawn as its picture; `return` without a return flight; no brewing; the names; release as 1.4.0 after the user's Windows test of the drafts).
+- 1.4.0 is prepared, not built: a release build waits for the user's go-ahead on the 1.1.0–1.3.0 drafts.
+- The plan's facts table lives on in the 2026-11-13 planning entry above and the ADR Status sections; the plan file is gone.
+
+**Next**
+- The runtime fixes batch (`docs/PLAN-runtime-fixes.md`, B212–B228; ADRs 0057–0059): project sound events and mob sounds, event actors and entity commands, block shapes; plugin API 1.7.0. Re-run the scripting package's tests once that work lands.
+- The user's Windows test, the in-game checks (effects and throwables checklist, feature-order confirmation, Music disc starters), then the 1.4.0 build.

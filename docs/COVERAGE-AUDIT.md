@@ -9,7 +9,7 @@ How to read the evidence columns:
 - **Game**: a claim about vanilla or Fabric behaviour from the author's knowledge, not checked against the 26.3 jar in this session (no game jar in the container): treat as "(verify at implementation)".
 - **In game**: nothing in section 2 has been confirmed in a running client. The only in-game confirmations on record are the user's of 2026-11-05 (ruby golem with texture, ruby blocks, scripted welcome message, one advancement; `docs/HANDOFF.md`). Every phase's in-game check is still open in `docs/ROADMAP.md`.
 
-Custom status effects and throwables/projectiles are being designed in `docs/PLAN-effects-throwables.md` (ADR 0055 draft onwards). They appear below as **covered by plan** and are not designed here.
+Custom status effects and throwables/projectiles were designed in ADRs 0055 and 0056 and shipped in 1.4.0. They appear below as **covered by plan** and are not designed here.
 
 ## 1. Coverage table
 

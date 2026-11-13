@@ -2,7 +2,7 @@
 
 ## Context
 
-[ADR 0044](0044-gear-weapons-and-consumables.md) D8 deferred custom status effects: `MobEffect` is a code registry, and a useful effect needs tick behaviour. The user asked on 2026-11-13 for custom status effects and throwables. Facts read from the 26.3 client jar, the vendored registries and Fabric API 0.165.2+26.3 (full table in `docs/PLAN-effects-throwables.md` section 1):
+[ADR 0044](0044-gear-weapons-and-consumables.md) D8 deferred custom status effects: `MobEffect` is a code registry, and a useful effect needs tick behaviour. The user asked on 2026-11-13 for custom status effects and throwables. Facts read from the 26.3 client jar, the vendored registries and Fabric API 0.165.2+26.3 (the full table is in the DEVLOG entry of 2026-11-13, "plan: custom status effects and throwables"):
 
 - Mob effects are not data driven: the vanilla-mcdoc `minecraft:resource` dispatcher has no `mob_effect` entry, and `registries.json` lists 40 built-in ids.
 - `MobEffect` has a protected constructor `(MobEffectCategory, int)` (and a particle variant), `applyEffectTick`, `shouldApplyEffectTickThisTick`, `onEffectStarted`, `addAttributeModifier` and `withSoundOnAdded`. There is no "removed" or "expired" hook on the class; the signatures are identical on 26.4-snapshot-7.
@@ -60,7 +60,7 @@
 
 ## Status
 
-Proposed (2026-11-13). Findings from the runtime brief (expiry and `AFTER_REMOVE`, any 26.4 seam, the 26.4 Fabric API) are added here before the mirrors are written. Accepted on close.
+Accepted (2026-11-13), shipped in 1.4.0.
 
 Runtime findings (B203, 2026-11-13; GameTests 97 of 97 on 26.3, 26.3 without GeckoLib and 26.4):
 

@@ -1,41 +1,41 @@
 # Session handoff
 
-Rewritten 2026-11-06 at the 1.0 close (B162), for the next main session. Read this, then the root `CLAUDE.md`, then the last six `DEVLOG.md` entries. `DESIGN.md` is authoritative; this file only says where things stand and how the work has been run. Rewrite it (do not append history; history goes in `DEVLOG.md`) when you hand over again.
+Rewritten 2026-11-13 at the 1.4.0 preparation, for the next main session. Read this, then the root `CLAUDE.md`, then the last six `DEVLOG.md` entries. `DESIGN.md` is authoritative; this file only says where things stand and how the work has been run. Rewrite it (do not append history; history goes in `DEVLOG.md`) when you hand over again.
 
 ## Start here
 
 - **Code:** `main` holds everything, fast-forwarded only after green CI. Start a fresh branch from `main`.
 - **Access for a new account:** the repository is public (`MEZTKING/MCSuperMods`). Pushing, running workflows and releasing need write access from the owner and the Claude GitHub app on the repository. Without them a session can only read, build and test.
-- **State (2026-11-07, later):** **1.0.0 is published** (`publish-release.yml` run 5). Drafts waiting for the user's Windows test: **1.1.0** (`release.yml` run 17; modpacks, ADRs 0046–0047), **1.2.0** (run 18; ADR 0048: Picture to texture, skins, screenshots for the AI helper) and now **1.3.0** (app and `mod_version` 1.3.0, CHANGELOG `[1.3.0] - 2026-11-07`: ADR 0049 Music disc song files with plugin API 1.4.0 `audio` parameters; ADR 0050 passthrough data pack warning, `ItemFacts.vanillaTools` in the Creator's Stats, optional `defense.body`). Each draft contains the ones before it. The 0.7.0 draft is superseded (the user may delete it; the session proxy cannot).
-- **Do first:** ask the user whether their Windows test of the newest draft passed. Publishing 1.3.0 alone delivers everything; to list every version on the Releases page, publish 1.1.0, 1.2.0, then 1.3.0 with `publish-release.yml`.
-- **Follow-ups:** the ADR 0044 follow-ups are all closed. Remaining housekeeping is below (SDK bump after 2026-11-16, asar budget).
+- **State (2026-11-13):** **1.0.0 is published.** Drafts 1.1.0, 1.2.0 and 1.3.0 await the user's Windows test; 1.4.0 is prepared on `main` but not built (see "Where things stand").
+- **Do first:** ask whether the Windows test of the newest draft passed. Publishing the newest draft alone delivers everything before it; to list every version, publish them in order with `publish-release.yml`. Build 1.4.0 only after that go-ahead.
 - **Commits:** authored as Rakib <rakib1insta@gmail.com>, with no Co-Authored-By, Claude-Session or other credit lines (the user's rule since 2026-11-06).
 - **What needs the user's own Windows PC:** only the real-key AI helper test (the key stays on their machine; `safeStorage` refuses Linux `basic_text` by design) and the in-game checks. A cloud session never needs the key.
 
 ## Where things stand
 
-- **1.0.0 (prepared, not released):** everything in 0.7.0 plus B161 (e2e `plugins-path` and `targets-path`, guides `plugins.md` and `targets.md`), the plugin-only data pack fix, the `windows-plugin` CI job with the drive-letter fix for external plugin builds (Spyglass lowercases `D:` in normalised URIs but compares roots case-sensitively), and plugin exporters under "More exports". CHANGELOG has `## [1.0.0] - 2026-11-06`; change the date to the release day before triggering `release.yml` if it differs. ROADMAP Phase 7 is ticked, with a Milestone Log row and "Follow-ups after 1.0" (the former reserve briefs B163–B166). `PHASE7-PLAN.md` is deleted.
-- **0.7.0 draft:** `release.yml` run 15, tag `v0.7.0` at 97db1c8; four assets; unpublished.
-- Counts: 61 kinds, 125 templates, 24 starters, 71 examples; 3,907 tests (42 skipped) in 21 turbo tasks; e2e 15 spec files, 19 tests; runtime 78 required GameTests; parity 17 sample-mod tests and 7 sample-mob tests.
+- **Published:** 1.0.0. **Drafts awaiting the user's Windows test:** 1.1.0 (`release.yml` run 17), 1.2.0 (run 18) and 1.3.0; each contains the ones before it. The 0.7.0 draft is superseded.
+- **1.4.0 prepared, not built:** app and `mod_version` 1.4.0, CHANGELOG `[1.4.0] - 2026-11-13` (change the date to the release day if it differs; keep a non-empty `[Unreleased]`). Content: custom status effects and throwables (ADRs 0055, 0056, accepted; plugin API 1.6.0; guide `effects-and-throwables.md`), the Dimension flow (ADR 0051), launch and real pushes (ADR 0052), the Wishlist (ADR 0053), picture options and texture drag and drop (ADR 0054), the feature order fix (a placed feature in different steps is the warning `worldgen.feature-step-differs`), the Music disc `sound_id` fix, the `sound_event` check in Problems and the eject `Actions.java` fix. A release build is triggered only after the user's go-ahead on the drafts.
+- **Runtime fixes batch in progress** (`docs/PLAN-runtime-fixes.md`, B212–B228; ADRs 0057–0059, proposed): project sound events and mob sounds, event actors and entity commands, block shapes and see-through blocks. Plugin API 1.7.0 (`JavaProjectInput.soundEvents`) and its executors work in `packages/schemas`, `packages/plugins/scripting` and `packages/plugin-api`. Coverage backlog: `docs/COVERAGE-AUDIT.md`.
+- Counts: 62 kinds, 129 templates, 27 starters, 73 examples; 22-tool AI catalogue unchanged; runtime 97 GameTests (26.3, 26.3 without GeckoLib, 26.4); parity 28 sample-mod tests (content and ejected jars). The last full `turbo run test --force` (2026-11-13) passed 4,234 tests (45 skipped) in 20 of 21 tasks; the scripting package had four failures from the unfinished 1.7.0 work, so re-run it once that lands.
 - The AI helper has only run against the scripted model client and a local SSE stub.
 - All phases still await the user's in-game checks; the user confirmed in game (2026-11-05): the ruby golem renders with its texture, ruby blocks, the scripted welcome message, the "Red Gold" advancement.
 
 ## Waiting on the user
 
-1. **Release go-ahead (1.0.0 or 0.7.0):** install the draft's installer on Windows, save an Anthropic API key in Settings > "AI helper", Test key, and run one small build in the AI helper; then `publish-release.yml`.
-2. **In-game checks** of the sample mod items (ruby helmet, custom-tier ruby pickaxe mining obsidian, ruby bow, ruby tonic, ruby charm, ruby horse armour; `fixtures/sample-mod/README.md`) and a Creator Gear set.
-3. GitHub Pages source set to "GitHub Actions" (for the docs site); the npm token decision for publishing `@msm/plugin-api`; the 26.4 re-pin when Mojang releases 26.4.
+1. **Windows test of the drafts (1.1.0 to 1.3.0)**, then the go-ahead to build 1.4.0 with `release.yml` and publish. Also the real-key AI helper test (save an Anthropic key in Settings > "AI helper", Test key, run one small build).
+2. **In-game checks:** the sample mod items (ruby helmet, custom-tier ruby pickaxe, ruby bow, ruby tonic, ruby charm, ruby horse armour) and a Creator Gear set; the effects and throwables checklist in `fixtures/sample-mod/README.md` (effect icon and tinted particles, the thrown item in flight, hold-to-throw animation, a dispenser, picking a dropped knife up); the feature-order confirmation (the same placed feature in different steps of two biomes loads without a crash); the Music disc starters (a disc with a song file plays in a jukebox).
+3. GitHub Pages source set to "GitHub Actions" (docs site); the npm token decision for publishing `@msm/plugin-api`; the 26.4 re-pin when Mojang releases 26.4.
 4. Earlier pending checks: Blockbench comparison, Test in Minecraft with Prism, old drafts and stale branches to delete (the session proxy refuses deletes).
 
 ## Housekeeping
 
 - Move `@anthropic-ai/sdk` from 1.1.0 to 1.4.0 or newer after 2026-11-16 (two-week rule); verify Haiku 5.5 cache prices and `max_tokens: 16` for the key test "(verify at implementation)".
 - Fix the renderer Biome override paths (`app/src/renderer/biome.json` reads root override globs relative to itself, so the Spyglass ban never applied; fixing it flags a type import in `session/mcfunction-problems.ts`).
-- Follow-ups: none open (draw speed pull, ADR 0044 follow-ups and painting picture sizes are done).
-- Plugin exporters run with default options (`runPluginExporter` passes none) and are only in the toolbar menu, not File > More Exports or the palette; the sample plugin has no exporter, so `plugins-path` does not click one.
-- `release.yml` still builds only `--filter=@msm/app...`; since the Windows fix the full build would work too, so the filter is optional.
-- `app.asar` is 30.1 MB of its 32 MB budget (reserve idea: vendored target data outside the asar, ROADMAP follow-ups).
-- The session container had no JDK 25: Gradle results come from CI (`engine-mod` matrix). Install Temurin 25 from `api.adoptium.net` if a local Gradle run is needed.
+- Plugin exporters run with default options (`runPluginExporter` passes none); the sample plugin has no exporter, so `plugins-path` does not click one.
+- `release.yml` still builds only `--filter=@msm/app...`; the full build would work too, so the filter is optional.
+- `app.asar` was 30.1 MB of its 32 MB budget at 1.0; re-check with `node tools/check-size/index.ts` before the 1.4.0 build (reserve idea: vendored target data outside the asar, ROADMAP follow-ups).
+- JDK 25 can be installed from `api.adoptium.net` into `/root/jdk` (it worked in the 2026-11-13 session); then `JAVA_HOME=/root/jdk/<jdk-dir> ./gradlew build` in `engine-mod/` runs locally. CI (`engine-mod` job) remains the check.
+- Follow-ups kept in ROADMAP Post-1.0 Ideas: 3D thrown models, return flight, custom arrows, instant effects and brewing.
 
 ## User decisions to respect
 

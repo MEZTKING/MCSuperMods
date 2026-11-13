@@ -495,22 +495,22 @@ User request of 2026-11-06: "modpack support, so everything you make can be orga
 - [x] **Update mods** re-pins every Modrinth mod for the modpack's Minecraft version (after a version change or for newer releases).
 - Follow-ups: CurseForge export; server packs.
 
-### Add-on after 1.0 — Custom status effects and throwables (planned v1.4.0)
+### Add-on after 1.0 — Custom status effects and throwables (v1.4.0 prepared)
 
-User request of 2026-11-13 ("add custom status effects and throwables"), taking up two items deferred by [ADR 0044](adr/0044-gear-weapons-and-consumables.md) D8. Design: [ADR 0055](adr/0055-custom-status-effects.md) (status effects) and [ADR 0056](adr/0056-throwables.md) (throwables), both proposed; working plan `PLAN-effects-throwables.md`, deleted at close. Defaults that need the user's veto: the thrown item is drawn as its item picture; `return` is a boomerang without a return flight; no brewing; the names `msm:effect`, `msm:throwable`, `msm_runtime:thrown_item`; release as 1.4.0.
+User request of 2026-11-13 ("add custom status effects and throwables"), taking up two items deferred by [ADR 0044](adr/0044-gear-weapons-and-consumables.md) D8. Design: [ADR 0055](adr/0055-custom-status-effects.md) (status effects) and [ADR 0056](adr/0056-throwables.md) (throwables), both accepted (2026-11-13); the working plan is deleted (history in the DEVLOG). Defaults the user may veto: the thrown item is drawn as its item picture; `return` is a boomerang without a return flight; no brewing; the names `msm:effect`, `msm:throwable`, `msm_runtime:thrown_item`; release as 1.4.0.
 
-- [ ] B200 Format: `Effect` definition and element, `Throwable` component, actions `damage` and `heal`, schema refs, corpus.
-- [ ] B201 Script API: `hasEffect`, `effectLevel`, `removeEffect`, `ActionEvent.other`.
-- [ ] B202 Plugin API 1.6.0 (`JavaProjectInput.effects`) and target notes.
-- [ ] B203 Runtime: `MsmMobEffect`, `MsmThrowableItem`, `MsmThrownItem`, renderer, actions, GameTests on 26.3 and 26.4.
-- [ ] B204 Plugin `blocks-items`: effect kind, lowering, validators, templates.
-- [ ] B205 App Studios: Effect Studio, Throwable section, Hurt and Heal actions.
-- [ ] B206 Exporters: effect routing in `java-project`, content jar check.
-- [ ] B207 Java eject (26.3 generator): `ModEffects`, effect classes, `ThrownItemEntity`, client entrypoint rule.
-- [ ] B208 Library: Status effect and Throwable flows, patterns, examples.
-- [ ] B209 AI helper: system prompt paragraph and "poison dart" scenario.
-- [ ] B210 Samples and parity: sample mod and script additions, parity GameTests, goldens.
-- [ ] B211 Creator group "Magic", previews, e2e and guide.
+- [x] B200 Format: `Effect` definition and element, `Throwable` component, actions `damage` and `heal`, schema refs, corpus.
+- [x] B201 Script API: `hasEffect`, `effectLevel`, `removeEffect`, `ActionEvent.other`.
+- [x] B202 Plugin API 1.6.0 (`JavaProjectInput.effects`) and target notes.
+- [x] B203 Runtime: `MsmMobEffect`, `MsmThrowableItem`, `MsmThrownItem`, renderer, actions, GameTests on 26.3 and 26.4.
+- [x] B204 Plugin `blocks-items`: effect kind, lowering, validators, templates.
+- [x] B205 App Studios: Effect Studio, Throwable section, Hurt and Heal actions.
+- [x] B206 Exporters: effect routing in `java-project`, content jar check.
+- [x] B207 Java eject (26.3 generator): `ModEffects`, effect classes, `ThrownItemEntity`, client entrypoint rule.
+- [x] B208 Library: Status effect and Throwable flows, patterns, examples.
+- [x] B209 AI helper: system prompt paragraph and "poison dart" scenario.
+- [x] B210 Samples and parity: sample mod and script additions, parity GameTests, goldens.
+- [x] B211 Creator group "Magic", previews, e2e and guide.
 - [ ] The user checks in game: effect icon and tinted particles, the thrown item in flight, the hold-to-throw animation, a dispenser, picking a dropped knife up, the Creator results.
 - Follow-ups kept in Post-1.0 Ideas: 3D thrown models, return flight, custom arrows, instant effects, brewing.
 
@@ -577,3 +577,4 @@ Not committed; each needs an ADR before work starts.
 | 2026-11-06 | v1.0.0 released; v1.1.0 prepared | 1.0.0 published after the user's Windows test (installer, blockmap, `latest.yml`, plugin API tarball). 1.1.0: modpacks (ADR 0046), Easy and Advanced mode, sidebar search and folding, New project with the AI helper, the live preview beside the form (items, blocks, armour with a parts list, recipes), texture painting (ADR 0047), bow and crossbow pull, external `supports`, plugin API 1.3.0. Release pending the user's Windows test. |
 | 2026-11-07 | Pictures, screenshots and skins | ADR 0048: Picture to texture (paste, drop or choose; crop, scale, background, colours), player skins on the Custom mob (overlay layer, legacy layout, slim arms), screenshots for the AI helper; also New texture…, better placeholder art and an Easy-mode e2e. Prepared as v1.2.0 (app and `mod_version` 1.2.0); release pending the user's Windows test, after 1.1.0. |
 | 2026-11-07 | v1.3.0 prepared | ADR 0049 (Music disc song files; plugin API 1.4.0 `audio` parameters), ADR 0050 (passthrough data pack warning, `ItemFacts.vanillaTools` in the Creator's Stats, optional `defense.body` for horse and wolf armour); app and `mod_version` 1.3.0. Release pending the user's Windows test, after 1.1.0 and 1.2.0. |
+| 2026-11-13 | 1.4.0 prepared: custom status effects and throwables | ADRs 0055 (`msm:effect`, Effect Studio, `damage`/`heal` actions, script `hasEffect`/`effectLevel`/`removeEffect`/`ActionEvent.other`) and 0056 (`msm:throwable` item component, `msm_runtime:thrown_item`, dispensers), plugin API 1.6.0, the Creator groups Magic (Status effect) and Gear (Throwable), Java eject for both (`ModEffects`, `ThrownItemEntity`), AI helper knowledge, sample mod and script additions. Also in 1.4.0: Dimension flow, launch and real pushes, Wishlist, picture options, texture drag and drop, the feature-order fix (different steps are a warning), the Music disc `sound_id` fix and the eject `Actions.java` fix. 62 kinds, 129 templates (resourcepack 15, datapack 56, structures 9, worldgen 21, blocks-items 18, models-anim 3, entities 3, scripting 4), 27 starters, 73 examples. Tests (`turbo run test --force --continue`, 21 tasks): 20 tasks pass with 4,234 tests (45 skipped); `@msm/plugin-scripting` passed 44 of 48, the four failures coming from the plugin API 1.7.0 work in progress in the same worktree, not from 1.4.0; GameTests 97 runtime (78 plus 9 effect plus 10 throwable) and 28 sample-mod parity as reported by the runtime and parity briefs (CI is the check). Prepared, not built: the release build waits for the user's Windows test of the 1.1.0–1.3.0 drafts; in-game checks in `fixtures/sample-mod/README.md` (Effects and throwables). |

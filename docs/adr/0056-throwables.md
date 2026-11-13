@@ -2,7 +2,7 @@
 
 ## Context
 
-[ADR 0044](0044-gear-weapons-and-consumables.md) D8 deferred trident-style throwables and custom projectiles: the thrown entity renders the vanilla trident model, so a custom one needs a projectile entity and a renderer. The user asked on 2026-11-13 for throwables together with custom status effects ([ADR 0055](0055-custom-status-effects.md)). Facts read from the 26.3 client jar and the vendored data (full table in `docs/PLAN-effects-throwables.md` section 1):
+[ADR 0044](0044-gear-weapons-and-consumables.md) D8 deferred trident-style throwables and custom projectiles: the thrown entity renders the vanilla trident model, so a custom one needs a projectile entity and a renderer. The user asked on 2026-11-13 for throwables together with custom status effects ([ADR 0055](0055-custom-status-effects.md)). Facts read from the 26.3 client jar and the vendored data (the full table is in the DEVLOG entry of 2026-11-13, "plan: custom status effects and throwables"):
 
 - No data component makes an item throw a projectile: none of the 122 `data_component_type` ids spawns an entity on use. Throwing is item class code.
 - `SnowballItem` implements `ProjectileItem` and calls `Projectile.spawnProjectileFromRotation(factory, ServerLevel, ItemStack, LivingEntity, 0.0f, 1.5f, 1.0f)`. `TridentItem` has a throw threshold of 10 ticks, shoot power 2.5, base damage 8, and overrides `getUseAnimation`, `getUseDuration` and `releaseUsing`. `ItemUseAnimation` has `TRIDENT` and `SPEAR`.
@@ -51,7 +51,7 @@
 
 ## Status
 
-Proposed (2026-11-13). Findings from the runtime brief (the use animation, tracking numbers, any seam) are added here before the mirrors are written. Accepted on close.
+Accepted (2026-11-13), shipped in 1.4.0.
 
 Runtime findings (B203, 2026-11-13):
 

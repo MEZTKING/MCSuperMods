@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [1.4.0] - 2026-11-13
+
 ### Added
 
 - **Status effects of your own**: the Creator's **Status effect** flow (new **Magic** group) makes an effect with its name, colour, icon, stat changes and what it does every few seconds (heal, hurt, particles or a function), plus a drink or a throwable flask that gives it. The new **Effect Studio** edits effects by hand: category, colour, particle, sound, stat changes per level and events when the effect starts, while it is active and when it ends. Three effect templates; paint the 18 by 18 icon with **Paint icon** or **New texture…** and the kind **Effect icon**. Custom effects work in drinks, food, totems, **Apply effect** and `/effect`; they cannot be brewed.
@@ -32,6 +36,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - **Test in Minecraft** loaded the mods of every project tested before in the same instance; now only the project you test (and Fabric API) runs. Mods you added yourself stay.
 - The Music disc flows' discs with your own song failed to load in the game: the song now names its sound in the form the game accepts.
+- The Java project export left out `Actions.java` for a project whose only events were on items or blocks; it is now written whenever a definition declares events.
 
 ## [1.3.0] - 2026-11-07
 
