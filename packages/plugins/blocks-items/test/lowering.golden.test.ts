@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import type { ElementKind, Json, OutputFile, ResourceLocation } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
-import { blockKind, blocksItemsKinds, itemKind, modKind } from '../src/index';
+import { blockKind, blocksItemsKinds, effectKind, itemKind, modKind } from '../src/index';
 import { blockingProblems, element, indexesFor, sortedJson } from './support';
 
 const UPDATE = process.env.UPDATE_GOLDENS === '1';
@@ -267,6 +267,86 @@ const SAMPLES: Sample[] = [
       max_stack_size: 1,
       components: { 'msm:armor': { slot: 'horse', material: 'diamond' } },
     },
+  },
+  {
+    kind: itemKind,
+    name: 'ruby_dart',
+    id: 'example:ruby_dart',
+    data: {
+      format: 1,
+      model: 'minecraft:item/arrow',
+      display_name: 'Ruby Dart',
+      max_stack_size: 16,
+      components: {
+        'msm:throwable': {
+          speed: 2.5,
+          inaccuracy: 0.5,
+          gravity: 0.05,
+          damage: 3,
+          charge_ticks: 10,
+          after_throw: 'drop',
+          cooldown_ticks: 10,
+          sound: 'minecraft:item.trident.throw',
+          dispensable: false,
+          on_hit_entity: { event: 'example:dart_hit' },
+          on_hit_block: { event: 'example:dart_stuck' },
+        },
+        'msm:tool': { type: 'sword', tier: 'iron' },
+        'msm:durability': { max: 120 },
+      },
+      events: {
+        'example:dart_hit': {
+          actions: [
+            { type: 'apply_effect', effect: 'example:frost', seconds: 8, target: 'other' },
+            { type: 'damage', amount: 2, target: 'other' },
+          ],
+        },
+        'example:dart_stuck': {
+          actions: [{ type: 'play_sound', sound: 'minecraft:item.trident.hit_ground' }],
+        },
+      },
+    },
+  },
+  {
+    kind: effectKind,
+    name: 'frost',
+    id: 'example:frost',
+    data: {
+      format: 1,
+      display_name: 'Frost',
+      category: 'harmful',
+      color: 0x9fd8ff,
+      particle: 'minecraft:snowflake',
+      sound: 'minecraft:block.powder_snow.step',
+      attribute_modifiers: [
+        { attribute: 'minecraft:movement_speed', amount: -0.15, operation: 'add_multiplied_total' },
+        { attribute: 'minecraft:attack_speed', amount: -0.1, operation: 'add_multiplied_base' },
+        { attribute: 'minecraft:armor', amount: -1, operation: 'add_value' },
+      ],
+      components: {
+        'msm:on_start': { event: 'example:chill' },
+        'msm:on_tick': { event: 'example:bite', interval_ticks: 40, faster_per_level: true },
+        'msm:on_end': { event: 'example:thaw' },
+      },
+      events: {
+        'example:chill': {
+          actions: [{ type: 'spawn_particle', particle: 'minecraft:snowflake', count: 10 }],
+        },
+        'example:bite': { actions: [{ type: 'damage', amount: 1 }] },
+        'example:thaw': {
+          actions: [
+            { type: 'heal', amount: 2, target: 'other' },
+            { type: 'play_sound', sound: 'minecraft:block.glass.break', pitch: 1.5 },
+          ],
+        },
+      },
+    },
+  },
+  {
+    kind: effectKind,
+    name: 'withering_no_name',
+    id: 'example:curses/withering',
+    data: { format: 1, category: 'neutral', color: 0 },
   },
   {
     kind: modKind,

@@ -4,6 +4,7 @@
  */
 
 export { blockDefinition, DEFINITION_FORMAT, dropsItselfLootTable, lowerBlock } from './block';
+export { effectDefinition, lowerEffect } from './effect';
 export { itemDefinition, lowerItem } from './item';
 export {
   FABRIC_MOD_JSON,
@@ -13,6 +14,7 @@ export {
 } from './mod';
 export {
   BlocksItemsLoweringError,
+  type DefinitionFolder,
   definitionPath,
   descriptionKey,
   splitResourceLocation,

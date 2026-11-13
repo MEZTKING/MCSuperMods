@@ -1,0 +1,82 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:durability": {
+          "max": 120
+        },
+        "msm:throwable": {
+          "after_throw": "drop",
+          "charge_ticks": 10,
+          "cooldown_ticks": 10,
+          "damage": 3,
+          "dispensable": false,
+          "gravity": 0.05,
+          "inaccuracy": 0.5,
+          "on_hit_block": {
+            "event": "example:dart_stuck"
+          },
+          "on_hit_entity": {
+            "event": "example:dart_hit"
+          },
+          "sound": "minecraft:item.trident.throw",
+          "speed": 2.5
+        },
+        "msm:tool": {
+          "tier": "iron",
+          "type": "sword"
+        }
+      },
+      "events": {
+        "example:dart_hit": {
+          "actions": [
+            {
+              "effect": "example:frost",
+              "seconds": 8,
+              "target": "other",
+              "type": "apply_effect"
+            },
+            {
+              "amount": 2,
+              "target": "other",
+              "type": "damage"
+            }
+          ]
+        },
+        "example:dart_stuck": {
+          "actions": [
+            {
+              "sound": "minecraft:item.trident.hit_ground",
+              "type": "play_sound"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "max_stack_size": 16
+    },
+    "layer": "msm",
+    "path": "msm/example/item/ruby_dart.json",
+    "schema": "msm:item_definition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/arrow",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_dart.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "item.example.ruby_dart": "Ruby Dart"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

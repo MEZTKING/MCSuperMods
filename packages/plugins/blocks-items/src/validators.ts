@@ -6,11 +6,14 @@
  *   missing-model cube and gets no block state or item model definition.
  * - `blocks-items.unknown-event` (error): an `event` field of a trigger component
  *   (`msm:on_interact`, `msm:on_step`, `msm:on_use`, the `on_powered` and `on_unpowered` of
- *   `msm:redstone`) or a `trigger_event` action naming an event the element does not declare.
+ *   `msm:redstone`, the `on_hit_entity` and `on_hit_block` of `msm:throwable` (ADR 0056), and
+ *   an effect's `msm:on_start`, `msm:on_tick` and `msm:on_end` (ADR 0055 D12)) or a
+ *   `trigger_event` action naming an event the element does not declare.
  *   A `run_script` action (ADR 0032 D4) names a script handler, not an event, so it is never
  *   an event reference; `scripting.unknown-handler` of `@msm/plugin-scripting` checks it.
- * - `blocks-items.event-cycle` (error): events whose `trigger_event` actions call each other in
- *   a loop; the runtime would stop the chain at 16 levels with a logged error.
+ * - `blocks-items.event-cycle` (error): events of a block, item or effect whose `trigger_event`
+ *   actions call each other in a loop; the runtime would stop the chain at 16 levels with a
+ *   logged error.
  * - `blocks-items.bad-mod-id` (error): an `msm:mod` whose `mod_id` breaks Fabric's rule
  *   `^[a-z][a-z0-9_-]{1,63}$` (the schema checks the length only).
  * - `blocks-items.reserved-mod-id` (error): an `msm:mod` whose `mod_id` is one of
@@ -33,7 +36,9 @@
  *   exclusive components {@link EXCLUSIVE_ITEM_COMPONENTS} (ADR 0042 D1, ADR 0044 D3; the
  *   runtime registers none of them), or an `msm:components` entry for a vanilla component that
  *   an MSM component or field of the same item already sets ({@link MSM_VANILLA_COMPONENTS};
- *   ADR 0044 D1: MSM's own component wins). The message names the two components.
+ *   ADR 0044 D1: MSM's own component wins), or an `msm:throwable` together with one of
+ *   {@link THROWABLE_CONFLICTS} or an `msm:tool` of type `mace` (ADR 0056 D2: the runtime
+ *   applies none of them). The message names the two components.
  * - `blocks-items.item-collision` (error): an `msm:item` with the id of an `msm:block` that
  *   registers its own block item (`item` is not `false`).
  * - `blocks-items.passthrough-needs-data-pack` (warning): an `msm:components` entry for a
@@ -54,7 +59,7 @@ import type {
   ProjectValidator,
   ValidationRegistry,
 } from '@msm/plugin-api';
-import { BLOCK_KIND, ITEM_KIND, MOD_KIND } from './kinds';
+import { BLOCK_KIND, EFFECT_KIND, ITEM_KIND, MOD_KIND } from './kinds';
 import { rangedPullOf } from './lowering/item';
 import { isRecord } from './lowering/paths';
 import { rangedPullModels } from './lowering/shared';
@@ -119,6 +124,19 @@ export const EXCLUSIVE_ITEM_COMPONENTS: readonly string[] = Object.freeze([
 ]);
 
 /**
+ * Item components an `msm:throwable` cannot share an item with (ADR 0056 D2): each owns the
+ * use action or the item class. An `msm:tool` of type `mace` conflicts too; other tools,
+ * `msm:durability` and `msm:on_use` combine with it.
+ */
+export const THROWABLE_CONFLICTS: readonly string[] = Object.freeze([
+  'msm:armor',
+  'msm:ranged_weapon',
+  'msm:shield',
+  'msm:consumable',
+  'msm:food',
+]);
+
+/**
  * The vanilla data components (unprefixed ids) each MSM item component sets, so an
  * `msm:components` entry for one of them clashes (ADR 0044 D1). Keys are component ids under
  * `components`, or the top-level fields `max_stack_size` and `rarity`. Every id is checked
@@ -156,16 +174,42 @@ const record = (value: Json | undefined): JsonObject | undefined =>
 const definitions = (elements: readonly Element[]): Element[] =>
   elements.filter((element) => element.kind === BLOCK_KIND || element.kind === ITEM_KIND);
 
-/** The trigger component fields that name an event, per kind: `[component, field]`. */
-const EVENT_FIELDS: Readonly<Record<string, readonly (readonly [string, string])[]>> = {
+/** The elements whose definitions declare events: blocks, items and effects. */
+const eventOwners = (elements: readonly Element[]): Element[] =>
+  elements.filter(
+    (element) =>
+      element.kind === BLOCK_KIND || element.kind === ITEM_KIND || element.kind === EFFECT_KIND,
+  );
+
+/**
+ * The trigger component fields that name an event, per kind: the keys from `components` down
+ * to the string, `[component, ...fields]`.
+ */
+const EVENT_FIELDS: Readonly<Record<string, readonly (readonly string[])[]>> = {
   [BLOCK_KIND]: [
     ['msm:on_interact', 'event'],
     ['msm:on_step', 'event'],
     ['msm:redstone', 'on_powered'],
     ['msm:redstone', 'on_unpowered'],
   ],
-  [ITEM_KIND]: [['msm:on_use', 'event']],
+  [ITEM_KIND]: [
+    ['msm:on_use', 'event'],
+    ['msm:throwable', 'on_hit_entity', 'event'],
+    ['msm:throwable', 'on_hit_block', 'event'],
+  ],
+  [EFFECT_KIND]: [
+    ['msm:on_start', 'event'],
+    ['msm:on_tick', 'event'],
+    ['msm:on_end', 'event'],
+  ],
 };
+
+/** The value at `keys` below `root`, or `undefined` when a step is not an object. */
+function valueAt(root: JsonObject | undefined, keys: readonly string[]): Json | undefined {
+  let value: Json | undefined = root;
+  for (const key of keys) value = record(value)?.[key];
+  return value;
+}
 
 /** One event reference inside an element. */
 interface EventReference {
@@ -179,10 +223,10 @@ function eventReferences(element: Element): EventReference[] {
   const data = dataOf(element);
   const references: EventReference[] = [];
   const components = record(data.components);
-  for (const [component, field] of EVENT_FIELDS[element.kind] ?? []) {
-    const value = record(components?.[component])?.[field];
+  for (const keys of EVENT_FIELDS[element.kind] ?? []) {
+    const value = valueAt(components, keys);
     if (typeof value === 'string') {
-      references.push({ event: value, path: pointer('components', component, field) });
+      references.push({ event: value, path: pointer('components', ...keys) });
     }
   }
   const events = record(data.events) ?? {};
@@ -208,7 +252,7 @@ const declaredEvents = (element: Element): Set<string> =>
 
 function unknownEvents(elements: readonly Element[]): Problem[] {
   const problems: Problem[] = [];
-  for (const element of definitions(elements)) {
+  for (const element of eventOwners(elements)) {
     const declared = declaredEvents(element);
     for (const reference of eventReferences(element)) {
       if (declared.has(reference.event)) continue;
@@ -266,7 +310,7 @@ function cycles(
 
 function eventCycles(elements: readonly Element[]): Problem[] {
   const problems: Problem[] = [];
-  for (const element of definitions(elements)) {
+  for (const element of eventOwners(elements)) {
     const declared = declaredEvents(element);
     const edges = new Map<string, Set<string>>();
     for (const reference of eventReferences(element)) {
@@ -436,6 +480,32 @@ const vanillaComponentId = (key: string): string =>
 const describeSetter = (setter: string): string =>
   setter.startsWith('msm:') ? `"${setter}"` : `the "${setter}" field`;
 
+/** ADR 0056 D2: what an `msm:throwable` cannot share an item with. */
+function throwableConflicts(element: Element, components: JsonObject): Problem[] {
+  if (components['msm:throwable'] === undefined) return [];
+  const path = pointer('components', 'msm:throwable');
+  const problems: Problem[] = THROWABLE_CONFLICTS.filter((id) => components[id] !== undefined).map(
+    (other) => ({
+      severity: 'error',
+      code: 'blocks-items.component-conflict',
+      elementId: element.id,
+      path,
+      message: `An item cannot have both "msm:throwable" and "${other}": both decide what using the item does, so the game would apply neither. Remove one of them.`,
+    }),
+  );
+  if (record(components['msm:tool'])?.type === 'mace') {
+    problems.push({
+      severity: 'error',
+      code: 'blocks-items.component-conflict',
+      elementId: element.id,
+      path,
+      message:
+        'A mace cannot be thrown: "msm:throwable" and an "msm:tool" of type "mace" both decide how the item works, so the game would apply neither. Remove "msm:throwable" or pick another tool type.',
+    });
+  }
+  return problems;
+}
+
 function componentConflicts(elements: readonly Element[]): Problem[] {
   const problems: Problem[] = [];
   for (const element of elements) {
@@ -453,6 +523,7 @@ function componentConflicts(elements: readonly Element[]): Problem[] {
         message: `An item cannot have both "${first}" and "${second}": the game would register neither. Remove one of them.`,
       });
     }
+    problems.push(...throwableConflicts(element, components));
     const passthrough = record(components['msm:components']);
     if (passthrough === undefined) continue;
     const setters = new Map<string, string>();
@@ -570,6 +641,7 @@ function missingPullModels(elements: readonly Element[]): Problem[] {
 }
 
 const DEFINITION_KINDS = [BLOCK_KIND, ITEM_KIND] as const;
+const EVENT_KINDS = [BLOCK_KIND, ITEM_KIND, EFFECT_KIND] as const;
 
 export const blocksItemsValidators: readonly ProjectValidator[] = Object.freeze([
   {
@@ -593,12 +665,12 @@ export const blocksItemsValidators: readonly ProjectValidator[] = Object.freeze(
   },
   {
     id: 'msm.blocks-items.unknown-event',
-    kinds: DEFINITION_KINDS,
+    kinds: EVENT_KINDS,
     validate: ({ elements }) => unknownEvents(elements),
   },
   {
     id: 'msm.blocks-items.event-cycle',
-    kinds: DEFINITION_KINDS,
+    kinds: EVENT_KINDS,
     validate: ({ elements }) => eventCycles(elements),
   },
   {

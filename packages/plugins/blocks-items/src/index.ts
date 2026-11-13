@@ -1,6 +1,7 @@
 /**
  * `@msm/plugin-blocks-items`: built-in MSM plugin contributing custom blocks, custom items and
- * the mod metadata (ADR 0025 D8): the `msm:block`, `msm:item` and `msm:mod` kinds, their
+ * the mod metadata (ADR 0025 D8) and custom mob effects (ADR 0055): the `msm:block`, `msm:item`,
+ * `msm:effect` and `msm:mod` kinds, their
  * lowering to runtime definitions under `msm/` plus vanilla pack files, the `blocks-items.*`
  * project validators and the "New element" templates.
  */
@@ -22,6 +23,7 @@ export {
   MSM_VANILLA_COMPONENTS,
   RESERVED_MOD_IDS,
   SPEAR_VANILLA_COMPONENTS,
+  THROWABLE_CONFLICTS,
 } from './validators';
 
 export default definePlugin({

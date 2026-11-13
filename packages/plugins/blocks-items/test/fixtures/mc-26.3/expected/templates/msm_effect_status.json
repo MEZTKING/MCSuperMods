@@ -1,0 +1,40 @@
+[
+  {
+    "contents": {
+      "category": "beneficial",
+      "color": 5951976,
+      "components": {
+        "msm:on_start": {
+          "event": "demo:sample_start"
+        }
+      },
+      "events": {
+        "demo:sample_start": {
+          "actions": [
+            {
+              "sound": "minecraft:block.amethyst_block.chime",
+              "type": "play_sound"
+            },
+            {
+              "count": 8,
+              "particle": "minecraft:end_rod",
+              "spread": 0.4,
+              "type": "spawn_particle"
+            }
+          ]
+        }
+      },
+      "format": 1
+    },
+    "layer": "msm",
+    "path": "msm/demo/effect/sample.json"
+  },
+  {
+    "contents": {
+      "effect.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  }
+]

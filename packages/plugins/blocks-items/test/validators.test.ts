@@ -8,6 +8,7 @@ import {
   blocksItemsValidators,
   DELAYED_PASSTHROUGH_COMPONENTS,
   RESERVED_MOD_IDS,
+  THROWABLE_CONFLICTS,
 } from '../src/index';
 import { element, indexesFor } from './support';
 
@@ -32,6 +33,9 @@ const block = (id: `${string}:${string}`, data: Record<string, unknown>): Elemen
   element('msm:block', id, { format: 1, model: 'minecraft:block/stone', ...data } as never);
 const item = (id: `${string}:${string}`, data: Record<string, unknown>): Element =>
   element('msm:item', id, { format: 1, model: 'minecraft:item/stick', ...data } as never);
+const effect = (id: `${string}:${string}`, data: Record<string, unknown>): Element =>
+  element('msm:effect', id, { format: 1, category: 'harmful', color: 0, ...data } as never);
+const THROWABLE = { 'msm:throwable': { damage: 1 } };
 
 describe('blocks-items validators', () => {
   it('lists every code it reports', () => {
@@ -471,6 +475,149 @@ describe('blocks-items validators', () => {
         }),
       ]);
       expect(codes(problems)).toEqual([]);
+    });
+  });
+
+  describe('effects and throwables (ADR 0055, ADR 0056)', () => {
+    const conflicts = (problems: Problem[]) =>
+      problems
+        .filter((problem) => problem.code === 'blocks-items.component-conflict')
+        .map((problem) => [problem.severity, problem.elementId, problem.path]);
+
+    it.each(
+      THROWABLE_CONFLICTS.map((id) => {
+        const value: Record<string, unknown> = {
+          'msm:armor': { slot: 'helmet', material: 'iron' },
+          'msm:ranged_weapon': { type: 'bow' },
+          'msm:shield': {},
+          'msm:consumable': { seconds: 1 },
+          'msm:food': { nutrition: 1, saturation: 0.1 },
+        };
+        return [id, value[id]] as const;
+      }),
+    )('reports msm:throwable with %s', async (id, value) => {
+      const problems = await validate([
+        item('demo:a', { components: { ...THROWABLE, [id]: value } }),
+      ]);
+      expect(conflicts(problems)).toEqual([['error', 'demo:a', '/components/msm:throwable']]);
+      const found = problems.find((problem) => problem.code === 'blocks-items.component-conflict');
+      expect(found?.message).toContain(`"msm:throwable" and "${id}"`);
+    });
+
+    it('reports msm:throwable on a mace', async () => {
+      const problems = await validate([
+        item('demo:a', {
+          components: { ...THROWABLE, 'msm:tool': { type: 'mace', tier: 'iron' } },
+        }),
+      ]);
+      expect(conflicts(problems)).toEqual([['error', 'demo:a', '/components/msm:throwable']]);
+      expect(problems[0]?.message).toContain('A mace cannot be thrown');
+    });
+
+    it('reports each clash of one throwable item once per pair', async () => {
+      const problems = await validate([
+        item('demo:a', {
+          components: {
+            ...THROWABLE,
+            'msm:shield': {},
+            'msm:food': { nutrition: 1, saturation: 0.1 },
+          },
+        }),
+      ]);
+      expect(problems.map((problem) => problem.message)).toEqual([
+        expect.stringContaining('"msm:throwable" and "msm:shield"'),
+        expect.stringContaining('"msm:throwable" and "msm:food"'),
+      ]);
+    });
+
+    it('accepts msm:throwable with another tool, durability and msm:on_use', async () => {
+      const problems = await validate([
+        item('demo:a', {
+          components: {
+            'msm:throwable': {
+              after_throw: 'drop',
+              on_hit_entity: { event: 'demo:hit' },
+              on_hit_block: { event: 'demo:land' },
+            },
+            'msm:tool': { type: 'sword', tier: 'iron' },
+            'msm:durability': { max: 100 },
+            'msm:on_use': { event: 'demo:hit' },
+          },
+          events: {
+            'demo:hit': { actions: [{ type: 'damage', amount: 2, target: 'other' }] },
+            'demo:land': { actions: [{ type: 'heal', amount: 1 }] },
+          },
+        }),
+      ]);
+      expect(problems).toEqual([]);
+    });
+
+    it.each([
+      ['on_hit_entity', '/components/msm:throwable/on_hit_entity/event'],
+      ['on_hit_block', '/components/msm:throwable/on_hit_block/event'],
+    ])('reports a throwable %s naming an undeclared event', async (field, path) => {
+      const problems = await validate([
+        item('demo:a', { components: { 'msm:throwable': { [field]: { event: 'demo:gone' } } } }),
+      ]);
+      expect(problems.map((p) => [p.code, p.severity, p.elementId, p.path])).toEqual([
+        ['blocks-items.unknown-event', 'error', 'demo:a', path],
+      ]);
+      expect(problems[0]?.message).toContain('"demo:gone"');
+    });
+
+    it.each([
+      ['msm:on_start', { event: 'demo:gone' }],
+      ['msm:on_tick', { event: 'demo:gone', interval_ticks: 10 }],
+      ['msm:on_end', { event: 'demo:gone' }],
+    ])('reports an effect %s naming an undeclared event', async (component, value) => {
+      const problems = await validate([
+        effect('demo:frost', { components: { [component]: value } }),
+      ]);
+      expect(problems.map((p) => [p.code, p.severity, p.elementId, p.path])).toEqual([
+        ['blocks-items.unknown-event', 'error', 'demo:frost', `/components/${component}/event`],
+      ]);
+    });
+
+    it('reports an undeclared trigger_event and a loop inside an effect', async () => {
+      const problems = await validate([
+        effect('demo:frost', {
+          components: { 'msm:on_tick': { event: 'demo:a' } },
+          events: {
+            'demo:a': { actions: [{ type: 'trigger_event', event: 'demo:b' }] },
+            'demo:b': {
+              actions: [
+                { type: 'trigger_event', event: 'demo:a' },
+                { type: 'trigger_event', event: 'demo:c' },
+              ],
+            },
+          },
+        }),
+      ]);
+      expect(problems.map((p) => [p.code, p.path])).toEqual([
+        ['blocks-items.unknown-event', '/events/demo:b/actions/1/event'],
+        ['blocks-items.event-cycle', '/events/demo:a'],
+      ]);
+    });
+
+    it('accepts a clean effect and asks it for no model', async () => {
+      const problems = await validate([
+        effect('demo:frost', {
+          display_name: 'Frost',
+          attribute_modifiers: [
+            { attribute: 'minecraft:movement_speed', amount: -0.1, operation: 'add_value' },
+          ],
+          components: {
+            'msm:on_start': { event: 'demo:a' },
+            'msm:on_tick': { event: 'demo:a', interval_ticks: 20, faster_per_level: true },
+            'msm:on_end': { event: 'demo:b' },
+          },
+          events: {
+            'demo:a': { actions: [{ type: 'damage', amount: 1 }] },
+            'demo:b': { actions: [{ type: 'heal', amount: 1, target: 'other' }] },
+          },
+        }),
+      ]);
+      expect(problems).toEqual([]);
     });
   });
 });

@@ -1,0 +1,86 @@
+[
+  {
+    "contents": {
+      "attribute_modifiers": [
+        {
+          "amount": -0.15,
+          "attribute": "minecraft:movement_speed",
+          "operation": "add_multiplied_total"
+        },
+        {
+          "amount": -0.1,
+          "attribute": "minecraft:attack_speed",
+          "operation": "add_multiplied_base"
+        },
+        {
+          "amount": -1,
+          "attribute": "minecraft:armor",
+          "operation": "add_value"
+        }
+      ],
+      "category": "harmful",
+      "color": 10475775,
+      "components": {
+        "msm:on_end": {
+          "event": "example:thaw"
+        },
+        "msm:on_start": {
+          "event": "example:chill"
+        },
+        "msm:on_tick": {
+          "event": "example:bite",
+          "faster_per_level": true,
+          "interval_ticks": 40
+        }
+      },
+      "events": {
+        "example:bite": {
+          "actions": [
+            {
+              "amount": 1,
+              "type": "damage"
+            }
+          ]
+        },
+        "example:chill": {
+          "actions": [
+            {
+              "count": 10,
+              "particle": "minecraft:snowflake",
+              "type": "spawn_particle"
+            }
+          ]
+        },
+        "example:thaw": {
+          "actions": [
+            {
+              "amount": 2,
+              "target": "other",
+              "type": "heal"
+            },
+            {
+              "pitch": 1.5,
+              "sound": "minecraft:block.glass.break",
+              "type": "play_sound"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "particle": "minecraft:snowflake",
+      "sound": "minecraft:block.powder_snow.step"
+    },
+    "layer": "msm",
+    "path": "msm/example/effect/frost.json",
+    "schema": "msm:effect_definition"
+  },
+  {
+    "contents": {
+      "effect.example.frost": "Frost"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

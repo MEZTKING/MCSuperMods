@@ -42,9 +42,13 @@ const IDS = [
   'msm_item_drink',
   'msm_item_totem',
   'msm_item_wand',
+  'msm_item_throwable',
+  'msm_effect_status',
+  'msm_effect_damage_over_time',
+  'msm_effect_stat_boost',
   'msm_mod',
 ];
-const CATEGORIES = new Set(['Blocks', 'Items', 'Mod']);
+const CATEGORIES = new Set(['Blocks', 'Items', 'Effects', 'Mod']);
 
 const kindOf = (template: ElementTemplate) => {
   const kind = blocksItemsKinds.find((entry) => entry.id === template.kind);

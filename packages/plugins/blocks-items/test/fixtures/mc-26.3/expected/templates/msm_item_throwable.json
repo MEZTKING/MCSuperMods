@@ -1,0 +1,58 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:throwable": {
+          "after_throw": "consume",
+          "damage": 2,
+          "on_hit_entity": {
+            "event": "demo:sample_hit"
+          },
+          "sound": "minecraft:entity.snowball.throw",
+          "speed": 1.5
+        }
+      },
+      "creative_tab": "minecraft:combat",
+      "events": {
+        "demo:sample_hit": {
+          "actions": [
+            {
+              "effect": "minecraft:slowness",
+              "seconds": 3,
+              "target": "other",
+              "type": "apply_effect"
+            },
+            {
+              "count": 6,
+              "particle": "minecraft:snowflake",
+              "spread": 0.3,
+              "type": "spawn_particle"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "max_stack_size": 16
+    },
+    "layer": "msm",
+    "path": "msm/demo/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/snowball",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "item.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  }
+]

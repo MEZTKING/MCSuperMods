@@ -1,8 +1,9 @@
 /**
  * Output path helpers for blocks and items lowering. Vanilla folder names always come from the
  * target (`target.folders.resource`, `target.folders.data`), never from this plugin; the
- * runtime folders (`msm/<ns>/block/`, `msm/<ns>/item/`) are fixed by ADR 0025 D1. A copy of the
- * other plugins' helpers, because `@msm/plugin-api` holds interfaces only.
+ * runtime folders (`msm/<ns>/block/`, `msm/<ns>/item/`, `msm/<ns>/effect/`) are fixed by
+ * ADR 0025 D1 and ADR 0055 D2. A copy of the other plugins' helpers, because
+ * `@msm/plugin-api` holds interfaces only.
  */
 import type {
   DataFolderKey,
@@ -79,15 +80,25 @@ export function dataPath(
   return `data/${namespace}/${target.folders.data[key]}/${path}.json`;
 }
 
-/** The runtime definition path `msm/<namespace>/<block|item>/<path>.json` (ADR 0025 D1). */
-export function definitionPath(kind: 'block' | 'item', namespace: string, path: string): string {
+/** A runtime definition folder under `msm/<namespace>/` (ADR 0025 D1, ADR 0055 D2). */
+export type DefinitionFolder = 'block' | 'item' | 'effect';
+
+/**
+ * The runtime definition path `msm/<namespace>/<block|item|effect>/<path>.json` (ADR 0025 D1,
+ * ADR 0055 D2).
+ */
+export function definitionPath(kind: DefinitionFolder, namespace: string, path: string): string {
   return `msm/${namespace}/${kind}/${path}.json`;
 }
 
 /**
  * The game's description id of a registry entry: `<prefix>.<namespace>.<path>` with every `/`
- * of the path written as `.`, for example `block.example.ores.ruby`.
+ * of the path written as `.`, for example `block.example.ores.ruby` or `effect.example.frost`.
  */
-export function descriptionKey(prefix: 'block' | 'item', namespace: string, path: string): string {
+export function descriptionKey(
+  prefix: 'block' | 'item' | 'effect',
+  namespace: string,
+  path: string,
+): string {
   return `${prefix}.${namespace}.${path.replaceAll('/', '.')}`;
 }

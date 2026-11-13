@@ -9,10 +9,14 @@ import plugin, {
   blocksItemsKinds,
   blocksItemsTemplates,
   blocksItemsValidators,
+  definitionPath,
   descriptionKey,
+  effectDefinition,
+  effectKind,
   incorrectForTierTag,
   itemDefinition,
   lowerBlock,
+  lowerEffect,
   lowerItem,
   lowerMod,
   MSM_VANILLA_COMPONENTS,
@@ -26,7 +30,7 @@ import plugin, {
 } from '../src/index';
 import { blockingProblems, element, indexesFor } from './support';
 
-const KIND_IDS = ['msm:block', 'msm:item', 'msm:mod'];
+const KIND_IDS = ['msm:block', 'msm:item', 'msm:effect', 'msm:mod'];
 const kinds = (): ElementKind[] => plugin.contributes.elementKinds ?? [];
 const firstTarget = (builtInTargets[0] as TargetBundle).target;
 
@@ -54,12 +58,13 @@ describe('@msm/plugin-blocks-items', () => {
     expect(registrationProblems()).toEqual([]);
   });
 
-  it('contributes the three kinds with their schemas, folders and registries', () => {
+  it('contributes the four kinds with their schemas, folders and registries', () => {
     expect(kinds().map((kind) => kind.id)).toEqual(KIND_IDS);
     expect(blocksItemsKinds.map((kind) => kind.id)).toEqual(KIND_IDS);
     expect(kinds().map((kind) => [kind.schema, kind.folder, kind.registry])).toEqual([
       [MSM_SCHEMA_REFS.block, 'block', 'block'],
       [MSM_SCHEMA_REFS.item, 'item', 'item'],
+      [MSM_SCHEMA_REFS.effect, 'effect', 'mob_effect'],
       [MSM_SCHEMA_REFS.mod, 'mod', undefined],
     ]);
   });
@@ -93,6 +98,9 @@ describe('@msm/plugin-blocks-items', () => {
     expect(() => lowerItem(element('msm:item', 'demo:a', 'x'), firstTarget)).toThrow(
       BlocksItemsLoweringError,
     );
+    expect(() => lowerEffect(element('msm:effect', 'demo:a', [1]), firstTarget)).toThrow(
+      BlocksItemsLoweringError,
+    );
     expect(() => lowerMod(element('msm:mod', 'demo:mod', { mod_id: 'a' }), firstTarget)).toThrow(
       BlocksItemsLoweringError,
     );
@@ -108,6 +116,10 @@ describe('@msm/plugin-blocks-items', () => {
 
   it('writes description ids with dots for path separators', () => {
     expect(descriptionKey('block', 'demo', 'ores/ruby')).toBe('block.demo.ores.ruby');
+    expect(descriptionKey('effect', 'demo', 'curses/frost')).toBe('effect.demo.curses.frost');
+    expect(definitionPath('effect', 'demo', 'curses/frost')).toBe(
+      'msm/demo/effect/curses/frost.json',
+    );
   });
 
   it('strips editor fields, keeps an explicit requires_tool and writes format 1', () => {
@@ -135,6 +147,37 @@ describe('@msm/plugin-blocks-items', () => {
     expect(
       itemDefinition(element('msm:item', 'demo:x', { format: 1, model: 'm:x', display_name: 'D' })),
     ).toEqual({ format: 1 });
+  });
+
+  it('lowers an effect to its definition without the name, plus the name key (ADR 0055 D2)', () => {
+    const data: Json = {
+      format: 1,
+      display_name: 'Frost',
+      category: 'harmful',
+      color: 255,
+      components: { 'msm:on_tick': { event: 'demo:bite' } },
+      events: { 'demo:bite': { actions: [{ type: 'damage', amount: 1 }] } },
+    };
+    const effect = element('msm:effect', 'demo:frost', data);
+    const { display_name: _name, ...definition } = data as Record<string, Json>;
+    expect(effectDefinition(effect)).toEqual(definition);
+    expect((data as { display_name?: string }).display_name).toBe('Frost');
+    const files = lowerEffect(effect, firstTarget);
+    expect(files.map((file) => [file.path, file.layer, file.schema, file.merge])).toEqual([
+      ['msm/demo/effect/frost.json', 'msm', MSM_SCHEMA_REFS.effectDefinition, undefined],
+      [
+        `assets/demo/${firstTarget.folders.resource.lang}/en_us.json`,
+        'resourcepack',
+        '::java::assets::lang::Lang',
+        'object',
+      ],
+    ]);
+    expect(files[1]?.contents).toEqual({ 'effect.demo.frost': 'Frost' });
+    expect(lowerEffect(element('msm:effect', 'demo:x', { format: 1 }), firstTarget)).toHaveLength(
+      1,
+    );
+    expect(effectKind.defaultData).toMatchObject({ format: 1, category: 'beneficial' });
+    expect(effectKind.hiddenPaths).toEqual(['/format']);
   });
 
   it('maps every tier to a needs tag by mining level', () => {
@@ -233,6 +276,43 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       ])
         expect(folder).toMatch(/^[a-z_]+$/);
       expect(bundle.target.fabric).toBeDefined();
+    });
+
+    it('checks effect data and throwables against the real schemas', async () => {
+      const indexes = await indexesFor(bundle);
+      const bad = blockingProblems(indexes, MSM_SCHEMA_REFS.effect, {
+        format: 1,
+        category: 'awful',
+        color: -1,
+        attribute_modifiers: [
+          { attribute: 'minecraft:no_such_stat', amount: 1, operation: 'add_value' },
+        ],
+      });
+      expect(bad.length).toBeGreaterThanOrEqual(3);
+      expect(bad.some((problem) => problem.code === 'schema.unknown-id')).toBe(true);
+      const item = (throwable: Json): Json => ({
+        format: 1,
+        components: { 'msm:throwable': throwable },
+        events: {
+          'demo:hit': {
+            actions: [{ type: 'apply_effect', effect: 'demo:sample', seconds: 1, target: 'other' }],
+          },
+        },
+      });
+      expect(
+        blockingProblems(
+          indexes,
+          MSM_SCHEMA_REFS.item,
+          item({ on_hit_entity: { event: 'demo:hit' } }),
+        ),
+      ).toEqual([]);
+      expect(
+        blockingProblems(
+          indexes,
+          MSM_SCHEMA_REFS.item,
+          item({ speed: 9, after_throw: 'boomerang' }),
+        ),
+      ).not.toEqual([]);
     });
 
     it.each(KIND_IDS.map((id) => [id] as const))('%s default data validates', async (kindId) => {

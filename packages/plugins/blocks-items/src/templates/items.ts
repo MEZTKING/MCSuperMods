@@ -225,4 +225,39 @@ export const itemTemplates: readonly ElementTemplate[] = [
       };
     },
   },
+  {
+    id: 'msm_item_throwable',
+    kind: ITEM_KIND,
+    category: CATEGORY,
+    title: 'Throwable item',
+    description:
+      'Thrown like a snowball: it flies as its own picture, deals a heart of damage and slows the mob it hits.',
+    data: (context) => {
+      const hit = ownEvent(context, 'hit');
+      return {
+        format: 1,
+        model: 'minecraft:item/snowball',
+        display_name: displayName(context.path),
+        max_stack_size: 16,
+        creative_tab: 'minecraft:combat',
+        components: {
+          'msm:throwable': {
+            speed: 1.5,
+            damage: 2,
+            after_throw: 'consume',
+            sound: 'minecraft:entity.snowball.throw',
+            on_hit_entity: { event: hit },
+          },
+        },
+        events: {
+          [hit]: {
+            actions: [
+              { type: 'apply_effect', effect: 'minecraft:slowness', seconds: 3, target: 'other' },
+              { type: 'spawn_particle', particle: 'minecraft:snowflake', count: 6, spread: 0.3 },
+            ],
+          },
+        },
+      };
+    },
+  },
 ];
