@@ -53,7 +53,7 @@ describe('ElementKindRegistry', () => {
 
 describe('registerPlugin', () => {
   it('accepts a compatible apiVersion range', () => {
-    expect(API_VERSION).toBe('1.5.0');
+    expect(API_VERSION).toBe('1.6.0');
     const registry = new ElementKindRegistry();
     registerPlugin(registry, testPlugin('^1.0.0'));
     expect(registry.all().map((kind) => kind.id)).toEqual(['test:thing', 'test:nested']);

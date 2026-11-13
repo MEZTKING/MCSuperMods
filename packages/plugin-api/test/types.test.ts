@@ -322,12 +322,28 @@ describe('0.8.0 additions', () => {
       blocks: DefinitionInput[];
       items: DefinitionInput[];
       entities: DefinitionInput[];
+      effects?: DefinitionInput[];
       geckolib: boolean;
     }>();
     expectTypeOf<JavaProjectGenerator['generate']>().toEqualTypeOf<
       (input: JavaProjectInput) => GeneratedFile[]
     >();
     expectTypeOf<Target['javaProject']>().toEqualTypeOf<JavaProjectGenerator | undefined>();
+  });
+
+  it('keeps a 1.5.0-shaped JavaProjectInput assignable (effects is optional, 1.6.0)', () => {
+    const legacy = {
+      modId: 'm',
+      javaPackage: 'p',
+      modClassName: 'M',
+      blocks: [],
+      items: [],
+      entities: [],
+      geckolib: false,
+    } satisfies JavaProjectInput;
+    const withEffects: JavaProjectInput = { ...legacy, effects: [] };
+    expect(legacy).not.toHaveProperty('effects');
+    expect(withEffects.effects).toEqual([]);
   });
 
   it('accepts a pure generator', () => {

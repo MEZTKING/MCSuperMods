@@ -345,6 +345,12 @@ export interface JavaProjectInput {
   items: DefinitionInput[];
   /** Entity definitions (`msm/<namespace>/entity/*.json`), in a stable order. */
   entities: DefinitionInput[];
+  /**
+   * Status effect definitions (`msm/<namespace>/effect/*.json`), in a stable order. Optional:
+   * absent means the same as an empty array, so generators written for earlier versions
+   * and hosts that do not set it keep working. Since 1.6.0 (ADR 0055).
+   */
+  effects?: DefinitionInput[];
   /** `true` when the project has entities and the target has {@link TargetFacts.geckolib} facts. */
   geckolib: boolean;
 }

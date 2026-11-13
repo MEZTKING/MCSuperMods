@@ -2,6 +2,16 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.6.0 — 2026-11-13
+
+Status effects and throwables (ADRs 0055 and 0056). `API_VERSION` is `1.6.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `JavaProjectInput.effects?: DefinitionInput[]`: the project's status effect definitions (`msm/<namespace>/effect/*.json`), in a stable order, for generators that emit mob effect classes. Optional; absent means none.
+
+### Migration from 1.5.0
+
+None. A generator that reads `effects` should declare `^1.6.0` and treat an absent value as empty; generators written earlier ignore the field.
+
 ## 1.5.0 — 2026-11-07
 
 Worlds in the Creator (ADR 0051). `API_VERSION` is `1.5.0`. Additive.
