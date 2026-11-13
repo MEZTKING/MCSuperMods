@@ -1,0 +1,21 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/ruby_golem",
+      "texture": "mymod:entity/ruby_golem"
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  },
+  "sounds": {
+    "ambient": "mymod:golem.ambient",
+    "ambient_interval_ticks": 80,
+    "death": "mymod:golem.death",
+    "hurt": "mymod:golem.hurt",
+    "step": "mymod:golem.step"
+  }
+}

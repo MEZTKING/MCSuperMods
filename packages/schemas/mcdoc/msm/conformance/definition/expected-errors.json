@@ -167,6 +167,26 @@
     "code": "schema.missing-field",
     "path": "/events/mymod:x/actions/0/animation"
   },
+  "entity-sounds-interval-19.json": {
+    "code": "schema.out-of-range",
+    "path": "/sounds/ambient_interval_ticks"
+  },
+  "entity-sounds-interval-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/sounds/ambient_interval_ticks"
+  },
+  "entity-sounds-non-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/sounds/hurt"
+  },
+  "entity-sounds-not-struct.json": {
+    "code": "schema.type-mismatch",
+    "path": "/sounds"
+  },
+  "entity-sounds-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/sounds/idle"
+  },
   "entity-spawn-egg-true.json": {
     "code": "schema.no-union-match",
     "path": "/spawn_egg"

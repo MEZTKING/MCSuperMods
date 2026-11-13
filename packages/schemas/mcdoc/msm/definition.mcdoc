@@ -725,6 +725,25 @@ struct EntityCommon {
 	events?: struct EntityEvents {
 		[string]: Event,
 	},
+	/// Mob sounds (ADR 0057 D6). Absent means the vanilla defaults.
+	sounds?: EntitySounds,
+}
+
+/// Sound events a mob plays. Every id is a vanilla sound event or a project sound key
+/// (`<ns>:<path>` from `assets/<ns>/sounds.json`); an unknown id is a runtime warning and
+/// the vanilla default stays. Project sound keys are valid from the runtime version that
+/// ships ADR 0057.
+struct EntitySounds {
+	/// Idle sound; project sound keys are valid from the runtime version that ships ADR 0057.
+	ambient?: #[id="sound_event"] string,
+	/// Played when the mob is hurt; project sound keys are valid from the runtime version that ships ADR 0057.
+	hurt?: #[id="sound_event"] string,
+	/// Played when the mob dies; project sound keys are valid from the runtime version that ships ADR 0057.
+	death?: #[id="sound_event"] string,
+	/// Played on each step; project sound keys are valid from the runtime version that ships ADR 0057.
+	step?: #[id="sound_event"] string,
+	/// Ticks between ambient sounds (at least 20); absent means vanilla's interval. Valid from the runtime version that ships ADR 0057.
+	ambient_interval_ticks?: int @ 20..,
 }
 
 /// An entity definition, `msm/<ns>/entity/<path>.json` (ADR 0028 D2).

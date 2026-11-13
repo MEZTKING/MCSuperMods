@@ -2617,6 +2617,16 @@
             ],
             "kind": "struct"
           }
+        },
+        {
+          "desc": "Mob sounds (ADR 0057 D6). Absent means the vanilla defaults.",
+          "key": "sounds",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::EntitySounds"
+          }
         }
       ],
       "kind": "struct"
@@ -2679,6 +2689,108 @@
               "kind": 0,
               "max": 8,
               "min": 0.1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::EntitySounds": {
+      "fields": [
+        {
+          "desc": "Idle sound; project sound keys are valid from the runtime version that ships ADR 0057.",
+          "key": "ambient",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Played when the mob is hurt; project sound keys are valid from the runtime version that ships ADR 0057.",
+          "key": "hurt",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Played when the mob dies; project sound keys are valid from the runtime version that ships ADR 0057.",
+          "key": "death",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Played on each step; project sound keys are valid from the runtime version that ships ADR 0057.",
+          "key": "step",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Ticks between ambient sounds (at least 20); absent means vanilla's interval. Valid from the runtime version that ships ADR 0057.",
+          "key": "ambient_interval_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 20
             }
           }
         }
@@ -5679,5 +5791,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:2a6981c17adc4684d3c7d32a97036dae7b0500d36dfcee1bfe981cf844433a06"
+  "ref": "msm-mcdoc:sha256:7230b0e8b5b95c5eee046fc99444c4177615bc865706c8fb3a9ba1617ffe5343"
 }

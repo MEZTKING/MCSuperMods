@@ -39,6 +39,10 @@
     "code": "schema.missing-field",
     "path": "/components"
   },
+  "entity-sounds-interval-19.json": {
+    "code": "schema.out-of-range",
+    "path": "/sounds/ambient_interval_ticks"
+  },
   "item-consumable-seconds-negative.json": {
     "code": "schema.out-of-range",
     "path": "/components/msm:consumable/seconds"
