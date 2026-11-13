@@ -264,7 +264,9 @@ export function ElementForm(props: ElementFormProps & { studios?: readonly Studi
     }
   }, [schema, kind]);
 
-  const registries = schema.status === 'ready' ? schema.context.registries(project) : null;
+  // The kind-aware view: project sound keys are sound events in MSM kinds (ADR 0057 D3).
+  const registries =
+    schema.status === 'ready' ? schema.context.registries(project, element.kind) : null;
   const completions = useMemo(
     () => createCompletionSource(project, registries),
     [project, registries],

@@ -9,7 +9,12 @@
 
 import type { Project } from '@msm/core';
 import type { RegistryIndex } from '@msm/schemas';
-import { kindRegistry, projectRegistryIds } from '../session/schema-context';
+import {
+  kindRegistry,
+  projectRegistryIds,
+  SOUND_EVENT,
+  WEIGHED_SOUND_EVENT,
+} from '../session/schema-context';
 
 /** At most this many suggestions per call; the form shows fewer. */
 const LIMIT = 200;
@@ -102,19 +107,34 @@ export function stripIdPath(ids: Iterable<string>, idPath: string | undefined): 
 const TAG_PREFIX = 'tag/';
 
 /**
+ * `ids` with the project's sound event keys that `ids` holds first (in `keys` order), then
+ * the rest in their order: a sound picker lists the project's own sounds before vanilla's.
+ */
+function projectSoundsFirst(ids: readonly string[], keys: readonly string[]): string[] {
+  const present = new Set(ids);
+  const first = keys.filter((key) => present.has(key));
+  if (first.length === 0) return [...ids];
+  const lead = new Set(first);
+  return [...first, ...ids.filter((id) => !lead.has(id))];
+}
+
+/**
  * Builds a completion source over `project`.
  *
  * - `suggest(registry, prefix, idPath?)`: ids of `registry` from the registry index. A
  *   prefix starting with `#` suggests tags instead (`#` + ids of `tag/<registry>`, or of
  *   `registry` itself when it already is a `tag/` registry). `suggest('tag/<registry>', p)`
  *   without `#` returns the tag ids without `#` (the Tag Studio adds it). `idPath` keeps
- *   only ids under that path and strips it (see {@link stripIdPath}).
+ *   only ids under that path and strips it (see {@link stripIdPath}). For `sound_event` the
+ *   project's `sounds.json` event keys that `registries` counts as sound events (the view of
+ *   an MSM kind, ADR 0057 D3) come first; a vanilla kind's view does not offer them.
  * - `projectIds(kind, prefix)`: `texture` (project textures), `model` (model elements),
  *   `element` (every element), a kind id (elements of that kind) or a registry name (the
  *   project's ids in that registry).
  *
  * @param project - The open project.
- * @param registries - The registry index for the project, or `null` while schemas load.
+ * @param registries - The registry index for the project, or `null` while schemas load: the
+ *   view for the element's kind (`SchemaContext.registries(project, kindId)`).
  */
 export function createCompletionSource(
   project: Project,
@@ -137,7 +157,12 @@ export function createCompletionSource(
           : `${TAG_PREFIX}${kindRegistry(registry)}`;
         return pick(registries.ids(tags), prefix.slice(1)).map((id) => `#${id}`);
       }
-      return pick(stripIdPath(registries.ids(registry), idPath), prefix);
+      let ids = registries.ids(registry);
+      if (registry === SOUND_EVENT || registry === `minecraft:${SOUND_EVENT}`) {
+        registryIds ??= projectRegistryIds(project);
+        ids = projectSoundsFirst(ids, registryIds[WEIGHED_SOUND_EVENT] ?? []);
+      }
+      return pick(stripIdPath(ids, idPath), prefix);
     },
     projectIds(kind, prefix, idPath) {
       if (kind === 'texture') {

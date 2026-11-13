@@ -1586,7 +1586,7 @@ export class ProjectSession {
     }
     const context = await this.schemas();
     const element = createElement({ id, kind, data, now: () => '' });
-    return this.#validateElement(element, context, context.registries(project));
+    return this.#validateElement(element, context, project);
   }
 
   /**
@@ -1613,12 +1613,11 @@ export class ProjectSession {
         },
       ];
     }
-    const registries = context.registries(project);
     const projectIds = mcfunctionProjectIds(project);
     const elementProblems: Problem[] = [];
     let scriptFailure: unknown;
     for (const element of elementsById(project).values()) {
-      const problems = this.#validateElement(element, context, registries);
+      const problems = this.#validateElement(element, context, project);
       const clean = !problems.some((problem) => problem.severity === 'error');
       if (clean && element.kind === FUNCTION_KIND && this.#mcfunction !== undefined) {
         problems.push(
@@ -2561,7 +2560,6 @@ export class ProjectSession {
     this.#schemaLoadProblems = [];
     const project = this.#stack.state;
     const elements = elementsById(project);
-    const registries = context.registries(project);
     const pending = [...this.#pending];
     this.#pending.clear();
     const functions: { element: Element; problems: Problem[] }[] = [];
@@ -2572,7 +2570,7 @@ export class ProjectSession {
         this.#schemaProblems.delete(id);
         continue;
       }
-      const problems = this.#validateElement(element, context, registries);
+      const problems = this.#validateElement(element, context, project);
       if (
         element.kind === FUNCTION_KIND &&
         this.#mcfunction !== undefined &&
@@ -2716,13 +2714,14 @@ export class ProjectSession {
     for (const [id, problems] of results) this.#validatorProblems.set(id, problems);
   }
 
-  #validateElement(
-    element: Element,
-    context: SchemaContext,
-    registries: ReturnType<SchemaContext['registries']>,
-  ): Problem[] {
+  /**
+   * The schema pass of one element, against the kind-aware registry view of `project` (ADR
+   * 0057 D3: project sound event keys are `sound_event` ids in MSM kinds only).
+   */
+  #validateElement(element: Element, context: SchemaContext, project: Project): Problem[] {
     const kind = this.registry.get(element.kind);
     if (kind === undefined) return [];
+    const registries = context.registries(project, kind.id);
     let node: SchemaNode;
     try {
       node = context.schemaIndex.resolveSchemaRef(kind.schema);

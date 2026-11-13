@@ -33,9 +33,13 @@ export interface SchemaContext {
   vanillaRegistries: Readonly<Record<string, readonly string[]>>;
   /**
    * The registry index for `project`: vanilla ids plus the project's own models, textures,
-   * sounds and data pack ids. Memoised on the set of project ids.
+   * sounds and data pack ids. With `kindId` the view is kind-aware (ADR 0057 D3): for an MSM
+   * kind (`msm:*`) the project's `sounds.json` event keys are `sound_event` ids too, since the
+   * MSM runtime registers them ({@link soundAwareRegistryIds}); for any other kind, or without
+   * `kindId`, they are only `weighed_sound_event` ids. Memoised on the project and on the set
+   * of project ids.
    */
-  registries(project: Project): RegistryIndex;
+  registries(project: Project, kindId?: string): RegistryIndex;
 }
 
 const decoder = new TextDecoder('utf-8', { fatal: true });
@@ -270,7 +274,8 @@ function soundEventKeys(data: unknown): string[] {
  *
  * Event keys are not `sound_event` ids: the game decodes a `sound_event` string as a
  * reference into its registry, where a key from a resource pack's `sounds.json` is not; such
- * a key is written `{ "sound_id": "ns:foo.bar" }` (registry `weighed_sound_event`).
+ * a key is written `{ "sound_id": "ns:foo.bar" }` (registry `weighed_sound_event`). The
+ * registry view of an MSM kind adds them to `sound_event` ({@link soundAwareRegistryIds}).
  *
  * @param project - The project.
  * @param kinds - The registered kinds; defaults to the built-in plugins' kinds.
@@ -308,6 +313,40 @@ export function projectRegistryIds(
     texture: texture.sort(),
     [WEIGHED_SOUND_EVENT]: [...soundEvent].sort(),
   };
+}
+
+const KIND_PREFIX_MSM = 'msm:';
+
+/** The registry the game decodes a plain sound event string against. */
+export const SOUND_EVENT = 'sound_event';
+
+/**
+ * Whether elements of `kindId` take the project's `sounds.json` event keys as plain
+ * `sound_event` ids: MSM's own kinds (`msm:*`), whose data the MSM runtime reads and whose
+ * project sound events it registers (ADR 0057 D1, D3). Vanilla kinds do not.
+ *
+ * @param kindId - An element kind id.
+ */
+export function takesProjectSoundEvents(kindId: string): boolean {
+  return kindId.startsWith(KIND_PREFIX_MSM);
+}
+
+/**
+ * `ids` (from {@link projectRegistryIds}) with the project's event keys (its
+ * {@link WEIGHED_SOUND_EVENT} ids) added to {@link SOUND_EVENT}: the project ids of an MSM
+ * kind's registry view (ADR 0057 D3). Sorted, without duplicates.
+ *
+ * @param ids - The project's registry ids.
+ */
+export function soundAwareRegistryIds(
+  ids: Readonly<Record<string, readonly string[]>>,
+): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const [name, list] of Object.entries(ids)) out[name] = [...list];
+  const keys = ids[WEIGHED_SOUND_EVENT] ?? [];
+  if (keys.length === 0) return out;
+  out[SOUND_EVENT] = [...new Set([...(ids[SOUND_EVENT] ?? []), ...keys])].sort();
+  return out;
 }
 
 /**
@@ -392,20 +431,36 @@ export async function loadSchemaContext(
     extensions: BUILT_IN_EXTENSIONS,
   });
 
+  // Both views are rebuilt only when the project's ids change; the ids are recomputed only
+  // when the project (an immutable command stack state) changes.
+  let cachedProject: Project | null = null;
+  let cachedIds: Record<string, string[]> | null = null;
   let cachedKey: string | null = null;
-  let cached: RegistryIndex | null = null;
+  let cached: { plain: RegistryIndex; msm: RegistryIndex | null } | null = null;
   return {
     target,
     schemaIndex,
     vanillaRegistries,
-    registries(project) {
-      const ids = projectRegistryIds(project, kinds);
+    registries(project, kindId) {
+      if (project !== cachedProject || cachedIds === null) {
+        cachedIds = projectRegistryIds(project, kinds);
+        cachedProject = project;
+      }
+      const ids = cachedIds;
       const key = JSON.stringify(ids);
       if (cached === null || key !== cachedKey) {
-        cached = createRegistryIndex({ vanilla: vanillaRegistries, project: ids });
+        cached = {
+          plain: createRegistryIndex({ vanilla: vanillaRegistries, project: ids }),
+          msm: null,
+        };
         cachedKey = key;
       }
-      return cached;
+      if (kindId === undefined || !takesProjectSoundEvents(kindId)) return cached.plain;
+      cached.msm ??= createRegistryIndex({
+        vanilla: vanillaRegistries,
+        project: soundAwareRegistryIds(ids),
+      });
+      return cached.msm;
     },
   };
 }
@@ -422,8 +477,6 @@ export const UNREGISTERED_SOUND_EVENT = 'schema.unregistered-sound-event';
 
 /** The `expected` text `validateJson` gives an unknown `sound_event` id. */
 const SOUND_EVENT_EXPECTED = 'sound_event id';
-
-const KIND_PREFIX_MSM = 'msm:';
 
 /** The value at RFC 6901 `pointer` in `data`, or `undefined`. */
 function soundValueAt(data: Json | undefined, pointer: string): Json | undefined {
@@ -463,10 +516,11 @@ export function unregisteredSoundEventMessage(id: string): string {
  * element) into an error with code {@link UNREGISTERED_SOUND_EVENT} that asks for the
  * `{ "sound_id": ... }` form. Other problems pass through unchanged.
  *
- * Elements of MSM's own kinds (`msm:*`) are read by the MSM runtime, not by the game's sound
- * event codec, and take a plain string only; for them such a problem is dropped, so a project
- * event key stays accepted there as before (the runtime registering those events is separate
- * work, audit S1).
+ * Elements of MSM's own kinds (`msm:*`) are read by the MSM runtime, which registers the
+ * project's event keys as sound events (ADR 0057 D1); they take a plain string only. Their
+ * kind-aware registry view ({@link SchemaContext.registries} with the kind id) already
+ * accepts project keys, so no such problem arises there; one that does (a view without the
+ * kind) passes through unchanged, as the `{ "sound_id" }` advice does not apply to them.
  *
  * @param problems - The element's schema problems.
  * @param kindId - The element's kind id.
@@ -490,7 +544,10 @@ export function rewriteSoundEventProblems(
       out.push(problem);
       continue;
     }
-    if (kindId.startsWith(KIND_PREFIX_MSM)) continue;
+    if (takesProjectSoundEvents(kindId)) {
+      out.push(problem);
+      continue;
+    }
     out.push({
       ...problem,
       severity: 'error',

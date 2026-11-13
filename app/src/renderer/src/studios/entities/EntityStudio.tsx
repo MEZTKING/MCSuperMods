@@ -6,6 +6,8 @@
  *   `msm:geo_model` and `msm:animation` elements, texture picker over the project's
  *   `textures/` PNGs, idle, walk and attack animations offered from the chosen set, scale.
  * - Stats: `msm:health` and `msm:movement`.
+ * - Sounds (ADR 0057 D6): ambient, hurt, death and step sound pickers over the sound event
+ *   ids, the project's own sounds first (ADR 0057 D3), and the ambient interval.
  * - Attack: `msm:attack` on or off, damage, knockback, the on-attack event.
  * - Behaviour: the ordered `msm:ai_goals` list (add from the six types, remove, move, per-type
  *   fields).
@@ -59,6 +61,15 @@ type JsonObject = { [key: string]: Json };
 
 const MODEL_PATH = ['components', 'msm:animated_model'] as const;
 const GOALS_PATH = ['components', 'msm:ai_goals', 'goals'] as const;
+
+/** The four mob sound pickers of the Sounds section: data key, label and test id suffix. */
+const MOB_SOUNDS = [
+  { key: 'ambient', label: 'Ambient sound' },
+  { key: 'hurt', label: 'Hurt sound' },
+  { key: 'death', label: 'Death sound' },
+  { key: 'step', label: 'Step sound' },
+] as const;
+const AMBIENT_INTERVAL = 'ambient_interval_ticks';
 
 /** A "Go to" button for a project element, disabled when the element is not in the project. */
 function GoToButton(props: { label: string; id: string; exists: boolean }) {
@@ -496,6 +507,52 @@ export function EntityStudio(props: StudioProps) {
     </Section>
   );
 
+  const sounds = asObject(data.sounds);
+  // Clearing the last field removes `sounds` itself, so the mob keeps the vanilla defaults
+  // without an empty object left behind.
+  const setSound = (key: string, value: Json | undefined, coalesce?: string) => {
+    if (value === undefined && Object.keys(sounds).every((other) => other === key)) {
+      set(['sounds'], undefined);
+      return;
+    }
+    set(['sounds', key], value, coalesce);
+  };
+  const soundsSection = (
+    <Section title="Sounds" testId="entity-sounds">
+      <div className="flex flex-wrap items-end gap-2">
+        {MOB_SOUNDS.map(({ key, label }) => (
+          <IdField
+            key={key}
+            label={label}
+            value={typeof sounds[key] === 'string' ? (sounds[key] as string) : ''}
+            registry="sound_event"
+            suggest={suggest}
+            testId={`entity-sound-${key}`}
+            onCommit={(value) => setSound(key, value === '' ? undefined : value)}
+          />
+        ))}
+        <NumberField
+          label="Ambient interval (ticks)"
+          value={sounds[AMBIENT_INTERVAL]}
+          integer
+          allowEmpty
+          testId="entity-sound-ambient-interval"
+          onCommit={(value) =>
+            setSound(AMBIENT_INTERVAL, value, typingKey(`/sounds/${AMBIENT_INTERVAL}`))
+          }
+        />
+      </div>
+      <p className="text-muted text-xs">
+        Your project's own sounds are listed first. Empty fields keep the default sounds; the
+        ambient interval is at least 20 ticks.
+      </p>
+      {at(['sounds'])}
+      {[...MOB_SOUNDS.map(({ key }) => key), AMBIENT_INTERVAL].map((key) => (
+        <ProblemsAt key={key} problems={problems} pointer={pointerOf(['sounds', key])} />
+      ))}
+    </Section>
+  );
+
   const attackOn = components['msm:attack'] !== undefined;
   const attack = asObject(components['msm:attack']);
   const attackSection = (
@@ -823,6 +880,7 @@ export function EntityStudio(props: StudioProps) {
       {identity}
       {appearance}
       {stats}
+      {soundsSection}
       {attackSection}
       {behaviour}
       {spawning}
