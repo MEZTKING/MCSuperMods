@@ -105,6 +105,10 @@ import { kindRegistry } from './session/schema-context';
 import { type CommandSource, createCommandDeduper, shortcutFor } from './shortcuts';
 import { usePreferences } from './store/preferences';
 import { useUiStore } from './store/ui-store';
+import {
+  type BlocksItemsStudioHost,
+  BlocksItemsStudioHostContext,
+} from './studios/blocks-items/host';
 import { ElementForm } from './studios/ElementForm';
 import {
   dataExportDisabledReason,
@@ -1667,22 +1671,43 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   const scriptTypings = session.scriptTypings;
   const scriptHost = useMemo(() => ({ typings: scriptTypings }), [scriptTypings]);
 
+  const blocksItemsHost: BlocksItemsStudioHost = {
+    thumbnail,
+    revision: assetRevision,
+    paintTexture: (namespace, path, size) => {
+      const exists = project?.namespaces
+        .find((entry) => entry.name === namespace)
+        ?.assets.some((asset) => asset.path === path);
+      if (exists !== true) {
+        setDialog({ type: 'paint', namespace, path, bytes: null, size, isNew: true });
+        return;
+      }
+      session.readAsset(namespace, path).then(
+        (bytes) => setDialog({ type: 'paint', namespace, path, bytes }),
+        (error: unknown) =>
+          setMessage({ kind: 'error', text: `Cannot open ${path}: ${messageOf(error)}` }),
+      );
+    },
+  };
+
   const form =
     project !== null && selected !== null ? (
       <StructureStudioHostContext.Provider value={structureHost}>
         <ScriptStudioHostContext.Provider value={scriptHost}>
-          <ElementForm
-            complete={completeFunction}
-            project={project}
-            element={selected}
-            kind={selectedKind}
-            problems={selectedProblems}
-            schema={schema}
-            onChange={editValue}
-            focusPointer={selectedPointer}
-            {...(selectedRange === null ? {} : { focusColumn: selectedRange.start })}
-            onFocused={clearPointer}
-          />
+          <BlocksItemsStudioHostContext.Provider value={blocksItemsHost}>
+            <ElementForm
+              complete={completeFunction}
+              project={project}
+              element={selected}
+              kind={selectedKind}
+              problems={selectedProblems}
+              schema={schema}
+              onChange={editValue}
+              focusPointer={selectedPointer}
+              {...(selectedRange === null ? {} : { focusColumn: selectedRange.start })}
+              onFocused={clearPointer}
+            />
+          </BlocksItemsStudioHostContext.Provider>
         </ScriptStudioHostContext.Provider>
       </StructureStudioHostContext.Provider>
     ) : undefined;

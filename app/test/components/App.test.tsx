@@ -1162,6 +1162,27 @@ describe('App Java project export', () => {
   });
 });
 
+describe('App blocks and items host (Effect Studio)', () => {
+  it('enables "Paint icon" and opens the 18 by 18 effect icon in the texture editor', async () => {
+    const harness = await renderApp();
+    act(() => {
+      harness.session.addElement({
+        id: 'demo:frost_bite',
+        kind: 'msm:effect',
+        data: { format: 1, category: 'harmful', color: 0x88ccff },
+      });
+      useUiStore.getState().select('demo:frost_bite');
+    });
+    const button = (await screen.findByTestId('effect-paint-icon')) as HTMLButtonElement;
+    expect(button.disabled).toBe(false);
+    await userEvent.setup().click(button);
+    const editor = await screen.findByTestId('texture-editor');
+    expect(
+      within(editor).getByLabelText('demo:textures/mob_effect/frost_bite.png, 18 by 18 pixels'),
+    ).toBeTruthy();
+  });
+});
+
 describe('App Test in Minecraft', () => {
   it('creates the test instance, then installs and launches from the dialog', async () => {
     const harness = await renderApp();
