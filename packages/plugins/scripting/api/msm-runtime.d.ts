@@ -6,11 +6,11 @@
 interface ActionEvent extends GameEvent {
   /** The block involved, when there is one. */
   readonly block?: BlockRef;
-  /** The entity involved, when there is one. */
+  /** The entity involved, when there is one: the entity that stepped on a block (a mob, an item or a minecart as well as a player), for example. */
   readonly entity?: Entity;
   /** The definition event id, for example `msm:on_interact`. */
   readonly event: string;
-  /** The other entity involved, when there is one: the entity a thrown item hit, or the holder of a status effect. */
+  /** The other entity involved, when there is one: the entity that stepped on a block, the entity a thrown item hit, or the holder of a status effect. */
   readonly other?: Entity;
   /** The id of the block, item or entity definition whose event ran. */
   readonly owner: string;
@@ -125,6 +125,18 @@ interface Entity {
    * @param id - The effect id, for example `minecraft:speed` or one of your own.
    */
   removeEffect(id: string): boolean;
+  /**
+   * Runs a command as and at this entity (`@s` is the entity, `~ ~ ~` is its position, in its facing) with permission level 2 and no output; returns the command's result count, or 0 when the entity is not in a server level.
+   *
+   * @param command - The command without a leading slash.
+   */
+  runCommand(command: string): number;
+  /**
+   * Runs a data pack function as and at this entity (`@s` is the entity); returns `false` when the function does not exist or the entity is not in a server level.
+   *
+   * @param id - The function id, for example `mymod:reward`.
+   */
+  runFunction(id: string): boolean;
   /**
    * Replaces the motion, so the game moves the entity smoothly, as a slime block or a wind charge does; each part is limited to 10. Players are pushed too.
    *
@@ -341,24 +353,26 @@ interface World {
   /** Returns the block state at a position as `namespace:id[property=value,...]`. */
   getBlock(pos: Pos): string;
   /**
-   * Plays a sound event at a position for nearby players.
+   * Plays a sound event at a position for nearby players. The id can be a vanilla sound event or a project sound key (for example `mymod:block.chime`) once the project declares it in `sounds.json`.
    *
    * @param id - The sound event id, for example `minecraft:block.note_block.bell`.
    * @param options - The volume and pitch, 1 by default.
    */
   playSound(id: string, pos: Pos, options?: { volume?: number; pitch?: number }): void;
   /**
-   * Runs a command as the server with permission level 2 and no output; returns the command's result count.
+   * Runs a command as the server with permission level 2 and no output; returns the command's result count. Without `at` it runs at the world spawn point with no `@s`; pass `at` for position-relative commands, or use `Entity.runCommand` to run as an entity.
    *
    * @param command - The command without a leading slash.
+   * @param at - Where the command runs: `~ ~ ~` is this position. Without it, the command runs at the world spawn point.
    */
-  runCommand(command: string): number;
+  runCommand(command: string, at?: Pos): number;
   /**
-   * Runs a data pack function as the server; returns `false` when the function does not exist.
+   * Runs a data pack function as the server; returns `false` when the function does not exist. Without `at` it runs at the world spawn point with no `@s`; pass `at` for position-relative functions, or use `Entity.runFunction` to run as an entity.
    *
    * @param id - The function id, for example `mymod:reward`.
+   * @param at - Where the function runs: `~ ~ ~` is this position. Without it, the function runs at the world spawn point.
    */
-  runFunction(id: string): boolean;
+  runFunction(id: string, at?: Pos): boolean;
   /**
    * Places a block state written as `namespace:id[property=value,...]`; returns `false` when the state does not parse or the block was not placed.
    *

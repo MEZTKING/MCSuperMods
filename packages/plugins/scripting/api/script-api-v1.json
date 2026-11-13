@@ -129,7 +129,7 @@
               "doc": "The volume and pitch, 1 by default."
             }
           ],
-          "doc": "Plays a sound event at a position for nearby players."
+          "doc": "Plays a sound event at a position for nearby players. The id can be a vanilla sound event or a project sound key (for example `mymod:block.chime`) once the project declares it in `sounds.json`."
         },
         "runCommand": {
           "kind": "method",
@@ -138,9 +138,15 @@
               "name": "command",
               "type": "string",
               "doc": "The command without a leading slash."
+            },
+            {
+              "name": "at",
+              "type": "Pos",
+              "optional": true,
+              "doc": "Where the command runs: `~ ~ ~` is this position. Without it, the command runs at the world spawn point."
             }
           ],
-          "doc": "Runs a command as the server with permission level 2 and no output; returns the command's result count.",
+          "doc": "Runs a command as the server with permission level 2 and no output; returns the command's result count. Without `at` it runs at the world spawn point with no `@s`; pass `at` for position-relative commands, or use `Entity.runCommand` to run as an entity.",
           "returns": "number"
         },
         "runFunction": {
@@ -150,9 +156,15 @@
               "name": "id",
               "type": "string",
               "doc": "The function id, for example `mymod:reward`."
+            },
+            {
+              "name": "at",
+              "type": "Pos",
+              "optional": true,
+              "doc": "Where the function runs: `~ ~ ~` is this position. Without it, the function runs at the world spawn point."
             }
           ],
-          "doc": "Runs a data pack function as the server; returns `false` when the function does not exist.",
+          "doc": "Runs a data pack function as the server; returns `false` when the function does not exist. Without `at` it runs at the world spawn point with no `@s`; pass `at` for position-relative functions, or use `Entity.runFunction` to run as an entity.",
           "returns": "boolean"
         },
         "spawnEntity": {
@@ -400,6 +412,30 @@
             }
           ],
           "doc": "Triggers a GeckoLib animation on an MSM entity; does nothing on other entities."
+        },
+        "runCommand": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "command",
+              "type": "string",
+              "doc": "The command without a leading slash."
+            }
+          ],
+          "doc": "Runs a command as and at this entity (`@s` is the entity, `~ ~ ~` is its position, in its facing) with permission level 2 and no output; returns the command's result count, or 0 when the entity is not in a server level.",
+          "returns": "number"
+        },
+        "runFunction": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The function id, for example `mymod:reward`."
+            }
+          ],
+          "doc": "Runs a data pack function as and at this entity (`@s` is the entity); returns `false` when the function does not exist or the entity is not in a server level.",
+          "returns": "boolean"
         },
         "asPlayer": {
           "kind": "method",
@@ -712,7 +748,7 @@
         "entity": {
           "kind": "property",
           "type": "Entity",
-          "doc": "The entity involved, when there is one.",
+          "doc": "The entity involved, when there is one: the entity that stepped on a block (a mob, an item or a minecart as well as a player), for example.",
           "optional": true
         },
         "player": {
@@ -724,7 +760,7 @@
         "other": {
           "kind": "property",
           "type": "Entity",
-          "doc": "The other entity involved, when there is one: the entity a thrown item hit, or the holder of a status effect.",
+          "doc": "The other entity involved, when there is one: the entity that stepped on a block, the entity a thrown item hit, or the holder of a status effect.",
           "optional": true
         }
       },
