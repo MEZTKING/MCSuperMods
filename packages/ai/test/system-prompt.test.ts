@@ -60,7 +60,8 @@ describe('systemPrompt effects and throwables paragraph (ADR 0055 D11)', () => {
       expect(text).toContain('msm:on_tick');
       expect(text).toContain('run_script');
       expect(text).toContain('{ "sound_id": "namespace:event" }');
-      expect(text).toContain('only vanilla sound events for now');
+      expect(text).toContain('plain project sound id');
+      expect(text).toContain('Entity.runCommand');
       expect(text).toContain('note_missing_feature');
     },
   );
