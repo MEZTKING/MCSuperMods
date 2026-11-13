@@ -19,7 +19,7 @@ import net.minecraft.resources.Identifier;
 
 /** Walks {@code msm/<namespace>/<kind>/**}{@code /*.json} in every loaded mod container. */
 public final class DefinitionScanner {
-    private static final List<String> KINDS = List.of("block", "item", "entity");
+    private static final List<String> KINDS = List.of("block", "item", "entity", "effect");
 
     private DefinitionScanner() {}
 
@@ -81,6 +81,6 @@ public final class DefinitionScanner {
         for (String error : errors) {
             MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, error);
         }
-        return new LoadReport(files, List.copyOf(found), List.of(), List.of(), List.of(), List.copyOf(errors), List.of());
+        return new LoadReport(files, List.copyOf(found), List.of(), List.of(), List.of(), List.of(), List.copyOf(errors), List.of());
     }
 }

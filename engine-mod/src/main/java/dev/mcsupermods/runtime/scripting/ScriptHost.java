@@ -392,7 +392,7 @@ public final class ScriptHost {
         ScriptEvents.Action data = new ScriptEvents.Action(ctx.level(), owner, event,
                 at != null ? ScriptPos.of(at) : ScriptPos.of(ctx.origin()),
                 at != null ? new BlockRef(ctx.level().getBlockState(at), at) : null,
-                ctx.entity(), ctx.player() instanceof ServerPlayer sp ? sp : null);
+                ctx.entity(), ctx.player() instanceof ServerPlayer sp ? sp : null, ctx.other());
         try (Context cx = factory.enterContext()) {
             call(cx, h, api.event(ScriptEvents.ACTION, data));
         }

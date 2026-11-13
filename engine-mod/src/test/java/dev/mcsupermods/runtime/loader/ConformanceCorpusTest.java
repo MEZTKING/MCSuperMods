@@ -57,7 +57,10 @@ class ConformanceCorpusTest {
         if (name.startsWith("entity-")) {
             return DefinitionParser.parseEntity(read(file));
         }
-        throw new IllegalArgumentException("corpus file without a block-, item- or entity- prefix: " + name);
+        if (name.startsWith("effect-")) {
+            return DefinitionParser.parseEffect(read(file));
+        }
+        throw new IllegalArgumentException("corpus file without a block-, item-, entity- or effect- prefix: " + name);
     }
 
     @Test

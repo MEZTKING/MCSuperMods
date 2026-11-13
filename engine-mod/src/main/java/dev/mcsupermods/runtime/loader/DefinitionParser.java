@@ -6,6 +6,7 @@ import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import dev.mcsupermods.runtime.components.BlockComponents;
+import dev.mcsupermods.runtime.components.EffectComponents;
 import dev.mcsupermods.runtime.components.EntityComponents;
 import dev.mcsupermods.runtime.components.ItemComponents;
 import dev.mcsupermods.runtime.events.Action;
@@ -33,6 +34,10 @@ import net.minecraft.resources.Identifier;
  *   <li>Blocks and items: {@code play_animation} actions are dropped with a warning (ADR 0028 D4).</li>
  *   <li>Items: two or more of {@code msm:tool}, {@code msm:armor}, {@code msm:ranged_weapon} and {@code msm:shield}
  *       are an error; the item registers without them (ADR 0042 D1, ADR 0044 D3).</li>
+ *   <li>Items: {@code msm:throwable} with {@code msm:armor}, {@code msm:ranged_weapon}, {@code msm:shield},
+ *       {@code msm:consumable}, {@code msm:food} or a {@code mace} tool is an error; none of them is applied
+ *       (ADR 0056 D2).</li>
+ *   <li>Effects: {@code play_animation} actions are dropped with a warning (ADR 0055 D3).</li>
  * </ol>
  */
 public final class DefinitionParser {
@@ -50,7 +55,37 @@ public final class DefinitionParser {
     public static ParseResult<ItemDefinition> parseItem(JsonElement json) {
         ParseResult<ItemDefinition> result = parse(json, ItemDefinition.KEYS, ItemComponents.KEYS, ItemDefinition.CODEC,
                 def -> new Refs(def.events(), def.components().eventReferences(), List.of()));
-        return dropExclusiveTogether(dropPlayAnimation(result, ItemDefinition::events, ItemDefinition::withEvents));
+        return dropThrowableConflicts(dropExclusiveTogether(dropPlayAnimation(result, ItemDefinition::events, ItemDefinition::withEvents)));
+    }
+
+    /** A mob effect definition (ADR 0055 D2); {@code play_animation} is dropped with a warning, as for blocks and items. */
+    public static ParseResult<EffectDefinition> parseEffect(JsonElement json) {
+        ParseResult<EffectDefinition> result = parse(json, EffectDefinition.KEYS, EffectComponents.KEYS, EffectDefinition.CODEC,
+                def -> new Refs(def.events(), def.components().eventReferences(), List.of()));
+        return dropPlayAnimation(result, EffectDefinition::events, EffectDefinition::withEvents);
+    }
+
+    /**
+     * {@code msm:throwable} with a component that owns right-click or the item class (ADR 0056 D2): an error, and
+     * neither the throwable nor those components are applied. Runs after {@link #dropExclusiveTogether}, so the
+     * exclusive set is already settled.
+     */
+    private static ParseResult<ItemDefinition> dropThrowableConflicts(ParseResult<ItemDefinition> result) {
+        if (result.definition().isEmpty()) {
+            return result;
+        }
+        ItemDefinition def = result.definition().get();
+        List<String> conflicts = def.components().throwableConflicts();
+        if (conflicts.isEmpty()) {
+            return result;
+        }
+        List<String> all = new ArrayList<>(List.of("msm:throwable"));
+        all.addAll(conflicts);
+        List<String> errors = new ArrayList<>(result.errors());
+        String names = String.join(", ", all.subList(0, all.size() - 1)) + " and " + all.getLast();
+        errors.add("components: " + names + " on one item; " + (all.size() == 2 ? "neither" : "none") + " is applied");
+        return new ParseResult<>(Optional.of(def.withComponents(def.components().withoutThrowableConflicts())), List.copyOf(errors),
+                result.warnings());
     }
 
     /**

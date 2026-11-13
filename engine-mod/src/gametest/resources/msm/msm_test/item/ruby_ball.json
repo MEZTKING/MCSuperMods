@@ -1,0 +1,41 @@
+{
+  "components": {
+    "msm:throwable": {
+      "damage": 3,
+      "on_hit_block": {
+        "event": "msm_test:land"
+      },
+      "on_hit_entity": {
+        "event": "msm_test:hit"
+      }
+    }
+  },
+  "events": {
+    "msm_test:hit": {
+      "actions": [
+        {
+          "effect": "msm_test:frostbite",
+          "seconds": 10,
+          "target": "other",
+          "type": "apply_effect"
+        },
+        {
+          "amount": 1,
+          "target": "self",
+          "type": "heal"
+        }
+      ]
+    },
+    "msm_test:land": {
+      "actions": [
+        {
+          "offset": [0, 1, 0],
+          "state": "minecraft:gold_block",
+          "type": "set_block_state"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 16
+}

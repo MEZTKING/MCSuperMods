@@ -32,7 +32,9 @@ public sealed interface Action {
         PLAY_ANIMATION("play_animation", PlayAnimation.CODEC),
         RUN_SCRIPT("run_script", RunScript.CODEC),
         APPLY_EFFECT("apply_effect", ApplyEffect.CODEC),
-        LAUNCH("launch", Launch.CODEC);
+        LAUNCH("launch", Launch.CODEC),
+        DAMAGE("damage", Damage.CODEC),
+        HEAL("heal", Heal.CODEC);
 
         public final String serialName;
         final MapCodec<? extends Action> codec;
@@ -155,9 +157,12 @@ public sealed interface Action {
         }
     }
 
-    /** Who an {@code apply_effect} action affects ({@code EffectTarget}). */
+    /** Who an {@code apply_effect}, {@code launch}, {@code damage} or {@code heal} action affects ({@code EffectTarget}). */
     enum EffectTarget {
-        /** The event's player; in an entity definition without a player, the entity itself. */
+        /**
+         * The event's player; without a player, the entity of the event ({@link EventContext#entity()}): the entity
+         * itself in an entity definition, the holder in an effect definition, the thrower in a throwable's hit event.
+         */
         SELF,
         /** The other entity of the event ({@link EventContext#other()}). */
         OTHER;
@@ -222,6 +227,33 @@ public sealed interface Action {
         @Override
         public Type type() {
             return Type.APPLY_EFFECT;
+        }
+    }
+
+    /**
+     * Hurts the target with magic damage (ADR 0055 D4), {@code amount} in half hearts; without a living target it does
+     * nothing.
+     */
+    record Damage(float amount, EffectTarget target) implements Action {
+        static final MapCodec<Damage> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+                required("amount", floatAtLeast(0)).forGetter(Damage::amount),
+                optional("target", EffectTarget.CODEC, EffectTarget.SELF).forGetter(Damage::target)).apply(i, Damage::new));
+
+        @Override
+        public Type type() {
+            return Type.DAMAGE;
+        }
+    }
+
+    /** Heals the target by {@code amount} half hearts (ADR 0055 D4); without a living target it does nothing. */
+    record Heal(float amount, EffectTarget target) implements Action {
+        static final MapCodec<Heal> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+                required("amount", floatAtLeast(0)).forGetter(Heal::amount),
+                optional("target", EffectTarget.CODEC, EffectTarget.SELF).forGetter(Heal::target)).apply(i, Heal::new));
+
+        @Override
+        public Type type() {
+            return Type.HEAL;
         }
     }
 }

@@ -1,0 +1,21 @@
+{
+  "category": "neutral",
+  "color": 0,
+  "components": {
+    "msm:on_tick": {
+      "event": "msm_test:probe",
+      "interval_ticks": 5
+    }
+  },
+  "events": {
+    "msm_test:probe": {
+      "actions": [
+        {
+          "handler": "msm_test:effect_probe",
+          "type": "run_script"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

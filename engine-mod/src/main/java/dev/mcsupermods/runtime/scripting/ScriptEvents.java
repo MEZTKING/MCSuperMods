@@ -137,10 +137,12 @@ public final class ScriptEvents {
         final BlockRef block;
         final Entity entity;
         final ServerPlayer player;
+        final Entity other;
 
         Action(ServerLevel level, Identifier owner, Identifier event, ScriptPos pos, BlockRef block, Entity entity,
-                ServerPlayer player) {
+                ServerPlayer player, Entity other) {
             super(level);
+            this.other = other;
             this.owner = owner;
             this.event = event;
             this.pos = pos;
@@ -210,7 +212,8 @@ public final class ScriptEvents {
             .constant("pos", Action.class, (api, e) -> api.pos(e.pos))
             .constant("block", Action.class, (api, e) -> e.block == null ? null : api.block(e.block))
             .constant("entity", Action.class, (api, e) -> e.entity == null ? null : api.entity(e.entity))
-            .constant("player", Action.class, (api, e) -> e.player == null ? null : api.player(e.player));
+            .constant("player", Action.class, (api, e) -> e.player == null ? null : api.player(e.player))
+            .constant("other", Action.class, (api, e) -> e.other == null ? null : api.entity(e.other));
 
     /** One row of the event table of ADR 0032 D2. */
     public record Spec(String name, ScriptType type, boolean cancellable, String source) {}

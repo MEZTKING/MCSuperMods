@@ -103,6 +103,8 @@ public final class EventRunner {
                 case Action.RunScript a -> ScriptHost.runAction(owner, eventId, a.handler(), ctx);
                 case Action.ApplyEffect a -> applyEffect(owner, a, ctx);
                 case Action.Launch a -> launch(a, ctx);
+                case Action.Damage a -> damage(a, ctx);
+                case Action.Heal a -> heal(a, ctx);
             }
         }
     }
@@ -186,12 +188,36 @@ public final class EventRunner {
             MsmRuntime.LOGGER.error("[{}] {}: unknown mob effect {}", MsmRuntime.MOD_ID, owner, a.effect());
             return;
         }
-        LivingEntity target = switch (a.target()) {
+        LivingEntity target = livingTarget(a.target(), ctx);
+        if (target != null) {
+            target.addEffect(new MobEffectInstance(effect.get(), a.ticks(), a.amplifier()));
+        }
+    }
+
+    /**
+     * The living entity an action with an {@code EffectTarget} affects: {@code self} is the event's player, else the
+     * event's entity when it is living; {@code other} is {@link EventContext#other()}. Null when there is none.
+     */
+    static LivingEntity livingTarget(Action.EffectTarget target, EventContext ctx) {
+        return switch (target) {
             case SELF -> ctx.player() != null ? ctx.player() : ctx.entity() instanceof LivingEntity living ? living : null;
             case OTHER -> ctx.other();
         };
-        if (target != null) {
-            target.addEffect(new MobEffectInstance(effect.get(), a.ticks(), a.amplifier()));
+    }
+
+    /** {@code damage} (ADR 0055 D4): magic damage, as poison and instant damage deal. */
+    private static void damage(Action.Damage a, EventContext ctx) {
+        LivingEntity target = livingTarget(a.target(), ctx);
+        if (target != null && a.amount() > 0 && target.isAlive()) {
+            target.hurtServer(ctx.level(), ctx.level().damageSources().magic(), a.amount());
+        }
+    }
+
+    /** {@code heal} (ADR 0055 D4). */
+    private static void heal(Action.Heal a, EventContext ctx) {
+        LivingEntity target = livingTarget(a.target(), ctx);
+        if (target != null && a.amount() > 0 && target.isAlive()) {
+            target.heal(a.amount());
         }
     }
 

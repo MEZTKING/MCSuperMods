@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonParser;
 import dev.mcsupermods.runtime.components.BlockComponents;
+import dev.mcsupermods.runtime.components.EffectComponents;
 import dev.mcsupermods.runtime.components.ItemComponents;
 import dev.mcsupermods.runtime.events.Action;
 import dev.mcsupermods.runtime.events.EventDefinition;
@@ -410,5 +411,114 @@ class DefinitionParserTest {
         ParseResult<ItemDefinition> bad = item("""
                 {"format": 1, "events": {"x:dash": {"actions": [{"type": "launch", "strength": 50}]}}}""");
         assertTrue(bad.errors().getFirst().contains("strength"), bad.errors().toString());
+    }
+
+    private static ParseResult<EffectDefinition> effect(String json) {
+        return DefinitionParser.parseEffect(JsonParser.parseString(json));
+    }
+
+    @Test
+    void effectDecodesWithDefaults() {
+        ParseResult<EffectDefinition> minimal = effect("{\"format\": 1, \"category\": \"harmful\", \"color\": 255}");
+        assertTrue(minimal.clean(), minimal.errors() + " " + minimal.warnings());
+        EffectDefinition def = minimal.definition().orElseThrow();
+        assertEquals(EffectDefinition.Category.HARMFUL, def.category());
+        assertEquals(255, def.color());
+        assertEquals(Optional.empty(), def.particle());
+        assertEquals(Optional.empty(), def.sound());
+        assertEquals(List.of(), def.attributeModifiers());
+        assertEquals(EffectComponents.NONE, def.components());
+
+        ParseResult<EffectDefinition> full = effect("""
+                {"format": 1, "category": "beneficial", "color": 16777215, "particle": "minecraft:heart",
+                  "sound": "minecraft:entity.player.levelup",
+                  "attribute_modifiers": [{"attribute": "minecraft:movement_speed", "amount": 0.2, "operation": "add_multiplied_total"}],
+                  "components": {"msm:on_start": {"event": "x:a"}, "msm:on_tick": {"event": "x:b"}, "msm:on_end": {"event": "x:a"}},
+                  "events": {"x:a": {"actions": [{"type": "heal", "amount": 2}]},
+                    "x:b": {"actions": [{"type": "damage", "amount": 1, "target": "other"}]}}}""");
+        assertTrue(full.clean(), full.errors() + " " + full.warnings());
+        EffectDefinition f = full.definition().orElseThrow();
+        assertEquals(new EffectDefinition.Modifier(Identifier.parse("minecraft:movement_speed"), 0.2f,
+                EffectDefinition.Operation.ADD_MULTIPLIED_TOTAL), f.attributeModifiers().getFirst());
+        EffectComponents.OnTick tick = f.components().onTick().orElseThrow();
+        assertEquals(20, tick.intervalTicks());
+        assertFalse(tick.fasterPerLevel());
+        assertEquals(new Action.Heal(2f, Action.EffectTarget.SELF),
+                f.events().get(Identifier.parse("x:a")).orElseThrow().actions().getFirst());
+        assertEquals(new Action.Damage(1f, Action.EffectTarget.OTHER),
+                f.events().get(Identifier.parse("x:b")).orElseThrow().actions().getFirst());
+    }
+
+    @Test
+    void tickIntervalScalesWithLevel() {
+        EffectComponents.OnTick plain = new EffectComponents.OnTick(Identifier.parse("x:t"), 40, false);
+        assertEquals(40, plain.interval(0));
+        assertEquals(40, plain.interval(3));
+        EffectComponents.OnTick faster = new EffectComponents.OnTick(Identifier.parse("x:t"), 40, true);
+        assertEquals(40, faster.interval(0));
+        assertEquals(20, faster.interval(1));
+        assertEquals(13, faster.interval(2));
+        assertEquals(1, faster.interval(200), "at least one tick");
+    }
+
+    @Test
+    void effectDropsBadEventsAndPlayAnimation() {
+        ParseResult<EffectDefinition> result = effect("""
+                {"format": 1, "category": "neutral", "color": 0, "future": 1,
+                  "components": {"msm:on_tick": {"event": "x:gone"}, "msm:on_hit": {"event": "x:a"}},
+                  "events": {"x:a": {"actions": [{"type": "play_animation", "animation": "wave"}, {"type": "heal", "amount": 1}]},
+                    "x:gone": {"actions": [{"type": "explode"}]}}}""");
+        EffectDefinition def = result.definition().orElseThrow();
+        assertTrue(result.errors().stream().anyMatch(e -> e.contains("x:gone") && e.contains("event dropped")), result.errors().toString());
+        assertTrue(result.errors().stream().anyMatch(e -> e.contains("msm:on_tick names event x:gone")), result.errors().toString());
+        assertTrue(result.warnings().stream().anyMatch(w -> w.contains("future")), result.warnings().toString());
+        assertTrue(result.warnings().stream().anyMatch(w -> w.contains("msm:on_hit")), result.warnings().toString());
+        assertTrue(result.warnings().stream().anyMatch(w -> w.contains("play_animation 'wave'")), result.warnings().toString());
+        assertEquals(List.of(new Action.Heal(1f, Action.EffectTarget.SELF)),
+                def.events().get(Identifier.parse("x:a")).orElseThrow().actions());
+        assertFalse(effect("{\"format\": 2, \"category\": \"neutral\", \"color\": 0}").errors().isEmpty());
+    }
+
+    @Test
+    void throwableDecodesWithDefaults() {
+        ParseResult<ItemDefinition> result = item("{\"format\": 1, \"components\": {\"msm:throwable\": {}}}");
+        assertTrue(result.clean(), result.errors() + " " + result.warnings());
+        ItemComponents.Throwable t = result.definition().orElseThrow().components().throwable().orElseThrow();
+        assertEquals(new ItemComponents.Throwable(1.5f, 1.0f, 0.03f, 0f, 0, ItemComponents.AfterThrow.CONSUME, 0, Optional.empty(), true,
+                Optional.empty(), Optional.empty()), t);
+        ParseResult<ItemDefinition> refs = item("""
+                {"format": 1, "components": {"msm:throwable": {"on_hit_entity": {"event": "x:hit"}, "on_hit_block": {"event": "x:land"}}},
+                  "events": {"x:hit": {"actions": [{"type": "damage", "amount": 3, "target": "other"}]}}}""");
+        assertEquals(List.of("components: msm:throwable on_hit_block names event x:land, which is not declared in events (or was dropped)"),
+                refs.errors());
+        assertTrue(refs.definition().orElseThrow().components().throwable().isPresent());
+    }
+
+    @Test
+    void throwableConflictsApplyNone() {
+        ParseResult<ItemDefinition> drink = item("""
+                {"format": 1, "components": {"msm:throwable": {}, "msm:consumable": {"seconds": 1, "animation": "drink"},
+                  "msm:durability": {"max": 5}}}""");
+        assertEquals(List.of("components: msm:throwable and msm:consumable on one item; neither is applied"), drink.errors());
+        ItemComponents c = drink.definition().orElseThrow().components();
+        assertTrue(c.throwable().isEmpty() && c.consumable().isEmpty());
+        assertTrue(c.durability().isPresent(), "unrelated components stay");
+
+        ParseResult<ItemDefinition> mace = item("""
+                {"format": 1, "components": {"msm:throwable": {}, "msm:tool": {"type": "mace", "tier": "iron"},
+                  "msm:food": {"nutrition": 1, "saturation": 0}}}""");
+        assertEquals(List.of("components: msm:throwable, msm:food and msm:tool on one item; none is applied"), mace.errors());
+        assertTrue(mace.definition().orElseThrow().components().tool().isEmpty());
+
+        ParseResult<ItemDefinition> knife = item("""
+                {"format": 1, "components": {"msm:throwable": {"after_throw": "drop"}, "msm:tool": {"type": "sword", "tier": "iron"},
+                  "msm:on_use": {"event": "x:u"}}, "events": {"x:u": {"actions": []}}}""");
+        assertTrue(knife.clean(), knife.errors() + " " + knife.warnings());
+        assertTrue(knife.definition().orElseThrow().components().throwable().isPresent());
+        assertTrue(knife.definition().orElseThrow().components().tool().isPresent());
+
+        ParseResult<ItemDefinition> armour = item("""
+                {"format": 1, "components": {"msm:throwable": {}, "msm:armor": {"slot": "helmet", "material": "iron"}}}""");
+        assertEquals(List.of("components: msm:throwable and msm:armor on one item; neither is applied"), armour.errors());
     }
 }

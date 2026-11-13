@@ -71,16 +71,26 @@ final class ScriptEntity {
                 return null;
             })
             .method("addEffect", 2, 3, Entity.class, (api, e, args) -> {
-                String id = ScriptValues.string(args, 0, "id");
-                Holder<MobEffect> effect = BuiltInRegistries.MOB_EFFECT.get(ScriptValues.id(id, "effect id"))
-                        .<Holder<MobEffect>>map(h -> h)
-                        .orElseThrow(() -> ScriptRuntime.typeError("unknown effect '" + id + "'"));
+                Holder<MobEffect> effect = effect(ScriptValues.string(args, 0, "id"));
                 int ticks = (int) Math.max(1, ScriptValues.number(args, 1, "ticks"));
                 int amplifier = (int) Math.max(0, ScriptValues.number(args, 2, "amplifier", 0));
                 if (e instanceof LivingEntity l) {
                     l.addEffect(new MobEffectInstance(effect, ticks, amplifier));
                 }
                 return null;
+            })
+            .method("hasEffect", 1, 1, Entity.class, (api, e, args) -> {
+                Holder<MobEffect> effect = effect(ScriptValues.string(args, 0, "id"));
+                return e instanceof LivingEntity l && l.hasEffect(effect);
+            })
+            .method("effectLevel", 1, 1, Entity.class, (api, e, args) -> {
+                Holder<MobEffect> effect = effect(ScriptValues.string(args, 0, "id"));
+                MobEffectInstance instance = e instanceof LivingEntity l ? l.getEffect(effect) : null;
+                return instance == null ? 0.0 : (double) (instance.getAmplifier() + 1);
+            })
+            .method("removeEffect", 1, 1, Entity.class, (api, e, args) -> {
+                Holder<MobEffect> effect = effect(ScriptValues.string(args, 0, "id"));
+                return e instanceof LivingEntity l && l.removeEffect(effect);
             })
             .method("playAnimation", 1, 2, Entity.class, (api, e, args) -> {
                 String name = ScriptValues.string(args, 0, "name");
@@ -92,4 +102,11 @@ final class ScriptEntity {
                 return null;
             })
             .method("asPlayer", 0, 0, Entity.class, (api, e, args) -> e instanceof ServerPlayer p ? api.player(p) : null);
+
+    /** A mob effect by id (vanilla or registered from {@code msm/<ns>/effect/}); an unknown id is a script type error. */
+    static Holder<MobEffect> effect(String id) {
+        return BuiltInRegistries.MOB_EFFECT.get(ScriptValues.id(id, "effect id"))
+                .<Holder<MobEffect>>map(h -> h)
+                .orElseThrow(() -> ScriptRuntime.typeError("unknown effect '" + id + "'"));
+    }
 }

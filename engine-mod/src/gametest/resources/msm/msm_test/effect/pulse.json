@@ -1,0 +1,21 @@
+{
+  "category": "beneficial",
+  "color": 16733525,
+  "components": {
+    "msm:on_tick": {
+      "event": "msm_test:beat",
+      "interval_ticks": 10
+    }
+  },
+  "events": {
+    "msm_test:beat": {
+      "actions": [
+        {
+          "amount": 1,
+          "type": "heal"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

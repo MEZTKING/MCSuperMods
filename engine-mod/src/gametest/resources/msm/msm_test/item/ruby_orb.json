@@ -1,0 +1,25 @@
+{
+  "components": {
+    "msm:durability": {
+      "max": 30
+    },
+    "msm:on_use": {
+      "event": "msm_test:cast"
+    },
+    "msm:throwable": {
+      "after_throw": "keep",
+      "cooldown_ticks": 20
+    }
+  },
+  "events": {
+    "msm_test:cast": {
+      "actions": [
+        {
+          "particle": "minecraft:crit",
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

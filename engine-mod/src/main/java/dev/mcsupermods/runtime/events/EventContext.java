@@ -18,7 +18,8 @@ import net.minecraft.world.phys.Vec3;
  * @param block  the block whose definition fired the event (for {@code run_script}), or null
  * @param other  the other living entity of the event (the {@code apply_effect} target {@code other}, ADR 0044 D2):
  *               the player for block and item events, the player who hurts or interacts with an entity, the
- *               mob an entity hits; or null
+ *               mob an entity hits, the holder of a mob effect (ADR 0055 D3), the living entity a thrown item hits
+ *               (ADR 0056 D3); or null
  */
 public record EventContext(ServerLevel level, BlockPos base, Vec3 origin, Player player, Entity entity, BlockPos block,
         LivingEntity other) {
@@ -40,5 +41,24 @@ public record EventContext(ServerLevel level, BlockPos base, Vec3 origin, Player
     /** An entity event with another entity than the player, such as the mob an entity hits. */
     public static EventContext forEntity(ServerLevel level, Entity entity, Player player, LivingEntity other) {
         return new EventContext(level, entity.blockPosition(), entity.position(), player, entity, null, other);
+    }
+
+    /**
+     * A mob effect event (ADR 0055 D3): offsets from the holder's block, effects at the holder; the holder is the
+     * entity, the other entity, and the player when it is one, so {@code self} and {@code other} both mean the holder.
+     */
+    public static EventContext forEffect(ServerLevel level, LivingEntity holder) {
+        Player player = holder instanceof Player p ? p : null;
+        return new EventContext(level, holder.blockPosition(), holder.position(), player, holder, null, holder);
+    }
+
+    /**
+     * A thrown item's hit event (ADR 0056 D3): effects at the hit point, offsets from {@code base} (the hit block, or
+     * the block of the entity hit); the thrower is the player when it is one and the entity otherwise, so {@code self}
+     * means the thrower; {@code other} is the living entity hit, or null. {@code block} is the hit block, or null.
+     */
+    public static EventContext forThrownHit(ServerLevel level, Vec3 at, BlockPos base, Entity thrower, LivingEntity hit, BlockPos block) {
+        Player player = thrower instanceof Player p ? p : null;
+        return new EventContext(level, base.immutable(), at, player, thrower, block == null ? null : block.immutable(), hit);
     }
 }

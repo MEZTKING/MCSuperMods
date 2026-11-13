@@ -36,12 +36,13 @@ public record ItemComponents(
         Optional<RangedWeapon> rangedWeapon,
         Optional<Shield> shield,
         Optional<DeathProtection> deathProtection,
+        Optional<Throwable> throwable,
         Map<Identifier, JsonElement> vanilla) {
 
     public static final List<String> KEYS = List.of("msm:food", "msm:tool", "msm:durability", "msm:on_use", "msm:armor",
-            "msm:consumable", "msm:ranged_weapon", "msm:shield", "msm:death_protection", "msm:components");
+            "msm:consumable", "msm:ranged_weapon", "msm:shield", "msm:death_protection", "msm:throwable", "msm:components");
     public static final ItemComponents NONE = new ItemComponents(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Map.of());
+            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Map.of());
 
     /**
      * {@code msm:components} (ADR 0044 D1): vanilla data component ids to their vanilla JSON, kept as JSON here
@@ -69,6 +70,7 @@ public record ItemComponents(
             optional("msm:ranged_weapon", RangedWeapon.CODEC).forGetter(ItemComponents::rangedWeapon),
             optional("msm:shield", Shield.CODEC).forGetter(ItemComponents::shield),
             optional("msm:death_protection", DeathProtection.CODEC).forGetter(ItemComponents::deathProtection),
+            optional("msm:throwable", Throwable.CODEC).forGetter(ItemComponents::throwable),
             optional("msm:components", VANILLA_CODEC, Map.of()).forGetter(ItemComponents::vanilla)).apply(i, ItemComponents::new));
 
     /**
@@ -95,12 +97,111 @@ public record ItemComponents(
     /** These components without the mutually exclusive ones (used when more than one is present). */
     public ItemComponents withoutExclusive() {
         return new ItemComponents(food, Optional.empty(), durability, onUse, Optional.empty(), consumable, Optional.empty(),
-                Optional.empty(), deathProtection, vanilla);
+                Optional.empty(), deathProtection, throwable, vanilla);
+    }
+
+    /**
+     * The components present that cannot be combined with {@code msm:throwable} (ADR 0056 D2): {@code msm:armor},
+     * {@code msm:ranged_weapon}, {@code msm:shield}, {@code msm:consumable}, {@code msm:food} and a {@code mace}
+     * {@code msm:tool}, in that order; empty without {@code msm:throwable}.
+     */
+    public List<String> throwableConflicts() {
+        List<String> present = new ArrayList<>();
+        if (throwable.isEmpty()) {
+            return present;
+        }
+        if (armor.isPresent()) {
+            present.add("msm:armor");
+        }
+        if (rangedWeapon.isPresent()) {
+            present.add("msm:ranged_weapon");
+        }
+        if (shield.isPresent()) {
+            present.add("msm:shield");
+        }
+        if (consumable.isPresent()) {
+            present.add("msm:consumable");
+        }
+        if (food.isPresent()) {
+            present.add("msm:food");
+        }
+        if (tool.isPresent() && tool.get().type() == ToolType.MACE) {
+            present.add("msm:tool");
+        }
+        return present;
+    }
+
+    /** These components without {@code msm:throwable} and the components it conflicts with. */
+    public ItemComponents withoutThrowableConflicts() {
+        boolean dropTool = tool.isPresent() && tool.get().type() == ToolType.MACE;
+        return new ItemComponents(Optional.empty(), dropTool ? Optional.empty() : tool, durability, onUse, Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.empty(), deathProtection, Optional.empty(), vanilla);
     }
 
     /** Every event id a component names, with the component for messages. */
     public Stream<String[]> eventReferences() {
-        return onUse.stream().map(c -> new String[] {"msm:on_use", c.event().toString()});
+        Stream<String[]> use = onUse.stream().map(c -> new String[] {"msm:on_use", c.event().toString()});
+        Stream<String[]> thrown = throwable.stream().flatMap(t -> Stream.of(
+                t.onHitEntity().map(h -> new String[] {"msm:throwable on_hit_entity", h.event().toString()}),
+                t.onHitBlock().map(h -> new String[] {"msm:throwable on_hit_block", h.event().toString()})).flatMap(Optional::stream));
+        return Stream.concat(use, thrown);
+    }
+
+    /** What happens to a thrown item when it lands ({@code AfterThrow}, ADR 0056 D1). */
+    public enum AfterThrow {
+        /** One item of the stack is used, as a snowball. */
+        CONSUME,
+        /** The stack keeps its item; the thrown copy disappears when it lands. */
+        KEEP,
+        /** The thrown item drops where it lands. */
+        DROP,
+        /** The thrown item goes back into the thrower's inventory when it lands, or drops at their feet. */
+        RETURN;
+
+        public String serialName() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+
+        public static final Codec<AfterThrow> CODEC = MsmCodecs.named("after_throw mode", values(), AfterThrow::serialName);
+    }
+
+    /** An event fired when a thrown item hits something ({@code OnThrownHit}). */
+    public record OnThrownHit(Identifier event) {
+        public static final Codec<OnThrownHit> CODEC = RecordCodecBuilder.create(i -> i.group(
+                required("event", ID).forGetter(OnThrownHit::event)).apply(i, OnThrownHit::new));
+    }
+
+    /**
+     * Makes the item throwable (ADR 0056 D1): the thrown copy flies as {@code msm_runtime:thrown_item}. Defaults are the
+     * snowball's ({@code speed} 1.5, {@code inaccuracy} 1, {@code gravity} 0.03, {@code consume}).
+     */
+    public record Throwable(
+            float speed,
+            float inaccuracy,
+            float gravity,
+            float damage,
+            int chargeTicks,
+            AfterThrow afterThrow,
+            int cooldownTicks,
+            Optional<Identifier> sound,
+            boolean dispensable,
+            Optional<OnThrownHit> onHitEntity,
+            Optional<OnThrownHit> onHitBlock) {
+        public static final float DEFAULT_SPEED = 1.5f;
+        public static final float DEFAULT_GRAVITY = 0.03f;
+
+        public static final Codec<Throwable> CODEC = RecordCodecBuilder.create(i -> i.group(
+                optional("speed", floatRange(0.1f, 5), DEFAULT_SPEED).forGetter(Throwable::speed),
+                optional("inaccuracy", floatRange(0, 10), 1.0f).forGetter(Throwable::inaccuracy),
+                optional("gravity", floatRange(0, 1), DEFAULT_GRAVITY).forGetter(Throwable::gravity),
+                optional("damage", floatAtLeast(0), 0.0f).forGetter(Throwable::damage),
+                optional("charge_ticks", intRange(0, 200), 0).forGetter(Throwable::chargeTicks),
+                optional("after_throw", AfterThrow.CODEC, AfterThrow.CONSUME).forGetter(Throwable::afterThrow),
+                optional("cooldown_ticks", intAtLeast(0), 0).forGetter(Throwable::cooldownTicks),
+                optional("sound", ID).forGetter(Throwable::sound),
+                optional("dispensable", Codec.BOOL, true).forGetter(Throwable::dispensable),
+                optional("on_hit_entity", OnThrownHit.CODEC).forGetter(Throwable::onHitEntity),
+                optional("on_hit_block", OnThrownHit.CODEC).forGetter(Throwable::onHitBlock)).apply(i, Throwable::new));
     }
 
     /** Whether the item is damageable, which forces a stack size of 1. */

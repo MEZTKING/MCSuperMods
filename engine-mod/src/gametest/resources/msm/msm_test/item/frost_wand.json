@@ -1,0 +1,20 @@
+{
+  "components": {
+    "msm:on_use": {
+      "event": "msm_test:chill"
+    }
+  },
+  "events": {
+    "msm_test:chill": {
+      "actions": [
+        {
+          "effect": "msm_test:pulse",
+          "seconds": 5,
+          "type": "apply_effect"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

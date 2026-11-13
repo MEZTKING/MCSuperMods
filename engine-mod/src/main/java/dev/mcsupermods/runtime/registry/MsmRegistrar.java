@@ -9,6 +9,7 @@ import dev.mcsupermods.runtime.events.Events;
 import dev.mcsupermods.runtime.loader.BlockDefinition;
 import dev.mcsupermods.runtime.loader.DefinitionException;
 import dev.mcsupermods.runtime.loader.DefinitionParser;
+import dev.mcsupermods.runtime.loader.EffectDefinition;
 import dev.mcsupermods.runtime.loader.ItemDefinition;
 import dev.mcsupermods.runtime.loader.LoadReport;
 import dev.mcsupermods.runtime.loader.MsmRarity;
@@ -25,9 +26,11 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -66,6 +69,7 @@ import net.minecraft.world.item.equipment.ArmorMaterials;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 /** Turns parsed definitions into registry entries. Runs once, from {@code onInitialize}. */
@@ -78,11 +82,42 @@ public final class MsmRegistrar {
 
     private MsmRegistrar() {}
 
+    private static boolean hooksInstalled;
+
     public static LoadReport registerAll(LoadReport scanned) {
         List<Identifier> blocks = new ArrayList<>();
         List<Identifier> items = new ArrayList<>();
+        List<Identifier> effects = new ArrayList<>();
         List<String> errors = new ArrayList<>(scanned.errors());
         List<String> warnings = new ArrayList<>(scanned.warnings());
+        if (!hooksInstalled) {
+            hooksInstalled = true;
+            // ADR 0056 D3: one projectile type for every throwable, registered always so both sides agree.
+            MsmThrownItem.register();
+            MsmMobEffect.registerHooks();
+        }
+        // Effects first (ADR 0055 D3): items (consumables, death protection) resolve effect ids while registering.
+        for (RawDefinition raw : scanned.definitions()) {
+            if (!raw.kind().equals("effect")) {
+                continue;
+            }
+            ParseResult<EffectDefinition> parsed = DefinitionParser.parseEffect(raw.json());
+            report(raw, parsed, errors, warnings);
+            if (parsed.definition().isEmpty()) {
+                continue;
+            }
+            try {
+                if (BuiltInRegistries.MOB_EFFECT.containsKey(raw.id())) {
+                    throw new DefinitionException("mob effect id " + raw.id() + " is already registered");
+                }
+                EffectDefinition def = parsed.definition().get();
+                checkEvents(raw, def.events(), errors);
+                registerEffect(raw, def, errors, warnings);
+                effects.add(raw.id());
+            } catch (DefinitionException | RuntimeException e) {
+                fail(errors, raw, e);
+            }
+        }
         // Blocks first, so a block's item exists before any item definition could collide with it.
         for (RawDefinition raw : scanned.definitions()) {
             if (!raw.kind().equals("block")) {
@@ -126,7 +161,63 @@ public final class MsmRegistrar {
         // Entities last: their spawn eggs count as items and must not collide with item definitions.
         List<Identifier> entities = MsmEntityRegistrar.registerAll(scanned.definitions(), items, errors, warnings);
         return new LoadReport(scanned.filesRead(), scanned.definitions(), List.copyOf(blocks), List.copyOf(items),
-                List.copyOf(entities), List.copyOf(errors), List.copyOf(warnings));
+                List.copyOf(entities), List.copyOf(effects), List.copyOf(errors), List.copyOf(warnings));
+    }
+
+    /**
+     * {@code msm/<ns>/effect/*.json} as an {@link MsmMobEffect} (ADR 0055 D3). Particle types, sounds and attributes
+     * are built-in registries that vanilla has bootstrapped, so they are checked here: an unknown particle keeps the
+     * tinted swirl and an unknown sound plays nothing (warnings); an unknown attribute skips that modifier (an error).
+     * Modifier ids are {@code <ns>:effect.<path>.<index>}.
+     */
+    private static void registerEffect(RawDefinition raw, EffectDefinition def, List<String> errors, List<String> warnings) {
+        MobEffectCategory category = switch (def.category()) {
+            case BENEFICIAL -> MobEffectCategory.BENEFICIAL;
+            case HARMFUL -> MobEffectCategory.HARMFUL;
+            case NEUTRAL -> MobEffectCategory.NEUTRAL;
+        };
+        SimpleParticleType particle = null;
+        if (def.particle().isPresent()) {
+            Identifier p = def.particle().get();
+            if (BuiltInRegistries.PARTICLE_TYPE.containsKey(p) && BuiltInRegistries.PARTICLE_TYPE.getValue(p) instanceof SimpleParticleType simple) {
+                particle = simple;
+            } else {
+                warn(warnings, raw.describe() + ": particle " + p + " is not a particle type without options; the tinted swirl is used");
+            }
+        }
+        MsmMobEffect effect = particle == null ? new MsmMobEffect(raw.id(), def, category) : new MsmMobEffect(raw.id(), def, category, particle);
+        if (def.sound().isPresent()) {
+            Optional<SoundEvent> sound = BuiltInRegistries.SOUND_EVENT.getOptional(def.sound().get());
+            if (sound.isPresent()) {
+                effect.withSoundOnAdded(sound.get());
+            } else {
+                warn(warnings, raw.describe() + ": unknown sound " + def.sound().get() + "; no sound is played when the effect is added");
+            }
+        }
+        List<EffectDefinition.Modifier> modifiers = def.attributeModifiers();
+        for (int index = 0; index < modifiers.size(); index++) {
+            EffectDefinition.Modifier m = modifiers.get(index);
+            Optional<Holder.Reference<Attribute>> attribute = BuiltInRegistries.ATTRIBUTE.get(m.attribute());
+            if (attribute.isEmpty()) {
+                String message = raw.describe() + ": attribute_modifiers[" + index + "]: unknown attribute " + m.attribute()
+                        + "; the modifier is skipped";
+                errors.add(message);
+                MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, message);
+                continue;
+            }
+            AttributeModifier.Operation operation = switch (m.operation()) {
+                case ADD_VALUE -> AttributeModifier.Operation.ADD_VALUE;
+                case ADD_MULTIPLIED_BASE -> AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
+                case ADD_MULTIPLIED_TOTAL -> AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
+            };
+            effect.addAttributeModifier(attribute.get(), modifierId(raw.id(), index), m.amount(), operation);
+        }
+        Registry.register(BuiltInRegistries.MOB_EFFECT, ResourceKey.create(Registries.MOB_EFFECT, raw.id()), effect);
+    }
+
+    /** The id of an effect's attribute modifier: {@code <ns>:effect.<path>.<index>} (ADR 0055 D3). */
+    public static Identifier modifierId(Identifier effect, int index) {
+        return Identifier.fromNamespaceAndPath(effect.getNamespace(), "effect." + effect.getPath() + "." + index);
     }
 
     static void report(RawDefinition raw, ParseResult<?> parsed, List<String> errors, List<String> warnings) {
@@ -267,7 +358,9 @@ public final class MsmRegistrar {
             props = props.durability(c.durability().get().max()); // after the others: overrides the material's durability
         }
         Item item;
-        if (c.rangedWeapon().isPresent()) {
+        if (c.throwable().isPresent()) {
+            item = new MsmThrowableItem(id, def, throwSound(raw, c.throwable().get(), warnings), props);
+        } else if (c.rangedWeapon().isPresent()) {
             item = switch (c.rangedWeapon().get().type()) {
                 case BOW -> new MsmBowItem(id, def, props);
                 case CROSSBOW -> new MsmCrossbowItem(id, def, props);
@@ -279,6 +372,21 @@ public final class MsmRegistrar {
         }
         Item registered = Registry.register(BuiltInRegistries.ITEM, key, item);
         def.creativeTab().ifPresent(tab -> addToTab(raw, tab, registered));
+        if (c.throwable().isPresent() && c.throwable().get().dispensable()) {
+            DispenserBlock.registerProjectileBehavior(registered); // ADR 0056 D3, through ProjectileItem
+        }
+    }
+
+    /** The throw sound of {@code msm:throwable}: {@code sound}, else the snowball's; an unknown sound is a warning. */
+    private static SoundEvent throwSound(RawDefinition raw, ItemComponents.Throwable throwable, List<String> warnings) {
+        if (throwable.sound().isPresent()) {
+            Optional<SoundEvent> sound = BuiltInRegistries.SOUND_EVENT.getOptional(throwable.sound().get());
+            if (sound.isPresent()) {
+                return sound.get();
+            }
+            warn(warnings, raw.describe() + ": msm:throwable: unknown sound " + throwable.sound().get() + "; the snowball sound is used");
+        }
+        return SoundEvents.SNOWBALL_THROW;
     }
 
     /**

@@ -1,0 +1,46 @@
+{
+  "attribute_modifiers": [
+    {
+      "amount": 2,
+      "attribute": "minecraft:armor",
+      "operation": "add_value"
+    },
+    {
+      "amount": -0.1,
+      "attribute": "minecraft:movement_speed",
+      "operation": "add_multiplied_total"
+    }
+  ],
+  "category": "harmful",
+  "color": 11393254,
+  "components": {
+    "msm:on_end": {
+      "event": "msm_test:thaw"
+    },
+    "msm:on_start": {
+      "event": "msm_test:bite"
+    }
+  },
+  "events": {
+    "msm_test:bite": {
+      "actions": [
+        {
+          "amount": 4,
+          "type": "damage"
+        }
+      ]
+    },
+    "msm_test:thaw": {
+      "actions": [
+        {
+          "amount": 2,
+          "target": "other",
+          "type": "heal"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "particle": "minecraft:snowflake",
+  "sound": "minecraft:entity.player.hurt_freeze"
+}
