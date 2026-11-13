@@ -323,12 +323,28 @@ describe('0.8.0 additions', () => {
       items: DefinitionInput[];
       entities: DefinitionInput[];
       effects?: DefinitionInput[];
+      soundEvents?: string[];
       geckolib: boolean;
     }>();
     expectTypeOf<JavaProjectGenerator['generate']>().toEqualTypeOf<
       (input: JavaProjectInput) => GeneratedFile[]
     >();
     expectTypeOf<Target['javaProject']>().toEqualTypeOf<JavaProjectGenerator | undefined>();
+  });
+
+  it('keeps a 1.6.0-shaped JavaProjectInput assignable (soundEvents is optional, 1.7.0)', () => {
+    const input: JavaProjectInput = {
+      modId: 'm',
+      javaPackage: 'a.b',
+      modClassName: 'M',
+      blocks: [],
+      items: [],
+      entities: [],
+      geckolib: false,
+    };
+    expect(input.soundEvents).toBeUndefined();
+    const withSounds: JavaProjectInput = { ...input, soundEvents: ['ns:key'] };
+    expect(withSounds.soundEvents).toEqual(['ns:key']);
   });
 
   it('keeps a 1.5.0-shaped JavaProjectInput assignable (effects is optional, 1.6.0)', () => {

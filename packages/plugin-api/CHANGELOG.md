@@ -2,6 +2,16 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.7.0 — 2026-11-13
+
+Project sound events (ADR 0057). `API_VERSION` is `1.7.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `JavaProjectInput.soundEvents?: string[]`: the namespaced sound event keys of the project's `assets/<namespace>/sounds.json` files, sorted, without the `minecraft` namespace, for generators that register sound events. Optional; absent means none.
+
+### Migration from 1.6.0
+
+None. A generator that reads `soundEvents` should declare `^1.7.0` and treat an absent value as empty; generators written earlier ignore the field.
+
 ## 1.6.0 — 2026-11-13
 
 Status effects and throwables (ADRs 0055 and 0056). `API_VERSION` is `1.6.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

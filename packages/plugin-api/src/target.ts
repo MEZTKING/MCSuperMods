@@ -351,6 +351,14 @@ export interface JavaProjectInput {
    * and hosts that do not set it keep working. Since 1.6.0 (ADR 0055).
    */
   effects?: DefinitionInput[];
+  /**
+   * The sound event keys the project's resource pack defines, namespaced (for example
+   * `<namespace>:<key>`), sorted, without the `minecraft` namespace, collected from every
+   * `assets/<namespace>/sounds.json`. Generators that emit Java register one sound event per
+   * key. Optional: absent means the same as an empty array, so generators written for earlier
+   * versions and hosts that do not set it keep working. Since 1.7.0 (ADR 0057).
+   */
+  soundEvents?: string[];
   /** `true` when the project has entities and the target has {@link TargetFacts.geckolib} facts. */
   geckolib: boolean;
 }
