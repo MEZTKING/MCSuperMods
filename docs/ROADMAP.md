@@ -514,6 +514,29 @@ User request of 2026-11-13 ("add custom status effects and throwables"), taking 
 - [ ] The user checks in game: effect icon and tinted particles, the thrown item in flight, the hold-to-throw animation, a dispenser, picking a dropped knife up, the Creator results.
 - Follow-ups kept in Post-1.0 Ideas: 3D thrown models, return flight, custom arrows, instant effects, brewing.
 
+### Add-on after 1.0 — Runtime fixes and sounds (planned)
+
+Takes up suspects S1, S4, S5, S6, S7 (and S10 in passing) and backlog item B1 of [`COVERAGE-AUDIT.md`](COVERAGE-AUDIT.md). Design: [ADR 0057](adr/0057-project-sound-events-and-mob-sounds.md) (project sound events and mob sounds), [ADR 0058](adr/0058-event-actors-entity-commands-and-cancel-resync.md) (event actors, entity-scoped commands, cancel resync) and [ADR 0059](adr/0059-block-shapes-and-see-through-blocks.md) (block shapes), all proposed; working plan `PLAN-runtime-fixes.md`, deleted at close. Part A (B212–B223) ships on its own; Part B (B224–B228, block shapes) may ship one release later. Defaults that need the user's veto: bare sound strings in vanilla data stay an error in the app; entity and thrown-item events keep their function source; fixed shapes and see-through only (no rotation, stairs, real slabs, doors, fences or crops); no Creator questions for sounds or shapes yet.
+
+- [ ] B212 Format A: entity `sounds`, doc comments on the five sound fields, corpus.
+- [ ] B213 Script API contract: `at` on the `World` calls, `Entity.runCommand` and `Entity.runFunction`, corrected doc strings.
+- [ ] B214 Plugin API 1.7.0 (`JavaProjectInput.soundEvents`) and target notes.
+- [ ] B215 Runtime: sound registration, mob sounds, step entity.
+- [ ] B216 Runtime: script commands and cancel resync.
+- [ ] B217 App: kind-aware sound ids and sound pickers.
+- [ ] B218 Exporters: collect sound event keys for `java-project`.
+- [ ] B219 Plugin `entities`: `sounds` through lowering, template.
+- [ ] B220 Java eject (26.3 generator): `ModSounds`, mob sounds, step and source rules.
+- [ ] B221 AI helper and library texts.
+- [ ] B222 Samples and parity, including `SampleScriptParityTest`.
+- [ ] B223 e2e, guide and changelog.
+- [ ] B224 Format B and plugin `blocks-items`: `msm:shape`, presets, validators, templates.
+- [ ] B225 Runtime shapes.
+- [ ] B226 App Block Studio: Shape section.
+- [ ] B227 Java eject shapes.
+- [ ] B228 Shapes: sample, parity, e2e, guide.
+- [ ] The user checks in game: project sounds (Play sound action, drink, armour equip, thrown item, script), mob sounds, a mob bounced by a jump pad, cancelled placements showing no ghost block, cut-out and translucent textures on a see-through block on 26.3 and 26.4, outline and collision of a half block and a plant.
+
 ### Exit criteria
 
 Two targets supported; an external plugin works; 1.0 released.

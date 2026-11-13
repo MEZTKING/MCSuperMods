@@ -508,6 +508,8 @@ Testing uses JUnit 5 for parsing and Fabric **GameTest** for behaviour (section 
 
 Proposed additions ([ADR 0055](adr/0055-custom-status-effects.md), [ADR 0056](adr/0056-throwables.md)): the definition kind `msm:effect` (category, colour, attribute modifiers and the trigger components `msm:on_start`, `msm:on_tick` and `msm:on_end`), the item component `msm:throwable` (speed, gravity, damage, `after_throw`, `on_hit_entity`, `on_hit_block`), and the actions `damage` and `heal`.
 
+Proposed additions ([ADR 0057](adr/0057-project-sound-events-and-mob-sounds.md), [ADR 0059](adr/0059-block-shapes-and-see-through-blocks.md)): the runtime registers one sound event per key of each `assets/<ns>/sounds.json` before effects, so project sounds resolve everywhere vanilla takes a sound id; entities gain `sounds` (ambient, hurt, death, step); blocks gain the component `msm:shape` (pixel boxes, collision, see-through). Render layers need no code in 26.x: the texture's pixels choose cut-out or translucent.
+
 ## 11. Behaviour Model (Components and Events)
 
 We borrow Bedrock's proven idea: a block, item or entity definition is a bag of **components** plus **events** that chain **actions**. This gives beginners real behaviour without code.
@@ -555,6 +557,8 @@ On export this lowers to `msm/mymod/block/ruby_ore.json` (the runtime definition
 | 5 | Entities | `msm:health`, `msm:movement`, `msm:ai_goals` (goal subset `wander`, `look_at_player`, `look_around`, `melee_attack`, `flee`, `follow`), `msm:attack`, `msm:animated_model` (required; GeckoLib), `msm:on_hurt`, `msm:on_death`, `msm:on_interact`; plus `spawn` rules and `spawn_egg` |
 
 A new component's MSM mcdoc and runtime implementation land in the same change. The Phase 4 components and the six actions are implemented in `msm_runtime` v1 and edited in the Block and Item Studios; action fields, defaults and the runtime rules (dropped events, chain depth 16, strict types, `"item": false`) are in [ADR 0025](adr/0025-msm-definition-format-v1.md). The Phase 5 entity components, implemented in `msm_runtime` 0.5 and edited in the Entity Studio, are in [ADR 0028](adr/0028-entity-definition-format-v1.md): goals run in list order unless `priority` says otherwise, an undecodable goal is dropped with an error, `msm:on_hurt` fires only when the mob survives, and `play_animation` (`{ "animation", "controller"? }`, controller `msm_triggered` by default) triggers a GeckoLib animation on the event's entity; in block and item definitions it is dropped at load with a warning.
+
+Proposed addition ([ADR 0058](adr/0058-event-actors-entity-commands-and-cancel-resync.md)): `msm:on_step` events carry the stepping entity (`self` and `other` are the stepper, so jump pads work on mobs and items), and the step cooldown is keyed per dimension.
 
 ## 12. Scripting and Escape Hatches
 
@@ -613,6 +617,8 @@ The API is described once, in `packages/plugins/scripting/api/script-api-v1.json
 - **Documented.** The generated project includes a README explaining its structure, how to build it (`./gradlew build`, JDK 25), and that it is no longer managed by MSM, plus `LICENSE-NOTES.md`.
 - **Checked.** CI builds the ejected `fixtures/sample-mod` and `fixtures/sample-mob` with Gradle and runs the same behaviour-parity GameTests against the content jar and the ejected jar.
 - **Without scripts in v0.6.** Scripts and `run_script` actions are left out with an `export.scripts-not-ejected` warning per script and a README section (reserve brief B142 would copy the runtime's `scripting/` sources and nest Rhino).
+
+Proposed additions ([ADR 0058](adr/0058-event-actors-entity-commands-and-cancel-resync.md)): `World.runCommand` and `World.runFunction` take an optional position, `Entity.runCommand` and `Entity.runFunction` run as and at the entity (the one-argument `World` forms run at the world spawn point with no `@s`), and a cancelled `block.interact`, `item.use`, `entity.interact` or `block.break` resends the player's inventory (and the neighbouring blocks of a placement). Script API v1 grows additively.
 
 ## 13. Interop (Blockbench, NBT, Minecraft Installation)
 
