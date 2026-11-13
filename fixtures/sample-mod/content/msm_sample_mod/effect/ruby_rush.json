@@ -1,0 +1,61 @@
+{
+  "data": {
+    "attribute_modifiers": [
+      {
+        "amount": 0.2,
+        "attribute": "minecraft:movement_speed",
+        "operation": "add_multiplied_total"
+      }
+    ],
+    "category": "beneficial",
+    "color": 14684511,
+    "components": {
+      "msm:on_end": {
+        "event": "msm_sample_mod:rush_end"
+      },
+      "msm:on_start": {
+        "event": "msm_sample_mod:rush_start"
+      },
+      "msm:on_tick": {
+        "event": "msm_sample_mod:rush_tick",
+        "interval_ticks": 10
+      }
+    },
+    "display_name": "Ruby Rush",
+    "events": {
+      "msm_sample_mod:rush_end": {
+        "actions": [
+          {
+            "effect": "minecraft:glowing",
+            "seconds": 3,
+            "type": "apply_effect"
+          }
+        ]
+      },
+      "msm_sample_mod:rush_start": {
+        "actions": [
+          {
+            "function": "msm_sample_mod:ruby/rush",
+            "type": "run_function"
+          }
+        ]
+      },
+      "msm_sample_mod:rush_tick": {
+        "actions": [
+          {
+            "amount": 1,
+            "type": "heal"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "sound": "minecraft:block.amethyst_block.chime"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_rush",
+  "kind": "msm:effect",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

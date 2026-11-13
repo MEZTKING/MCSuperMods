@@ -3,7 +3,8 @@
  * an `msm:mod`, one block and one item copied from the sample mod and renamed, one script per
  * event of ADR 0032 D2 (each logging with `msm.log.info`), an action handler script called by
  * the block's `run_script` action, and a `util` module that two scripts load with
- * `require("./util")`; namespace `msm_sample_script`.
+ * `require("./util")`; since ADR 0055 an `msm:effect` whose `msm:on_tick` runs a second
+ * action handler script (the script tick hook); namespace `msm_sample_script`.
  *
  * - The fixture equals the project built from {@link SAMPLE_ELEMENTS} now; `UPDATE_GOLDENS=1`
  *   rewrites it (the README is hand-written).
@@ -261,6 +262,20 @@ const SCRIPTS: readonly SampleElement[] = [
     '  }',
     '});',
   ]),
+  script('surge_handler', [
+    IMPORT,
+    '',
+    `// The per-tick script of the ${ns('spark_surge')} effect: its msm:on_tick event runs this`,
+    '// handler (run_script) every 40 ticks; self and other are the holder (ADR 0055 D5).',
+    `msm.actions.define("${ns('surge')}", (e) => {`,
+    '  if (e.other === undefined) return;',
+    `  var level = e.other.effectLevel("${ns('spark_surge')}");`,
+    '  msm.log.info("action surge: " + e.other.type + " at level " + level + ", health " + e.other.health);',
+    '  if (e.other.health < e.other.maxHealth) {',
+    '    e.other.heal(level);',
+    '  }',
+    '});',
+  ]),
 ];
 
 /** The mod, a block and an item from the sample mod (renamed), and the scripts. */
@@ -312,6 +327,18 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
       max_stack_size: 64,
       rarity: 'uncommon',
       creative_tab: 'minecraft:ingredients',
+    },
+  },
+  {
+    id: ns('spark_surge'),
+    kind: 'msm:effect',
+    data: {
+      format: 1,
+      display_name: 'Spark Surge',
+      category: 'beneficial',
+      color: 0x55ffff,
+      components: { 'msm:on_tick': { event: ns('surge'), interval_ticks: 40 } },
+      events: { [ns('surge')]: { actions: [{ type: 'run_script', handler: ns('surge') }] } },
     },
   },
   ...SCRIPTS,
@@ -614,12 +641,17 @@ describe('sample script project', () => {
       expect(handlers.length, event).toBe(1);
       expect(handlers[0]?.includes('msm.log.info('), event).toBe(true);
     }
-    expect(text.filter((source) => source.includes('msm.actions.define(')).length).toBe(1);
+    expect(text.filter((source) => source.includes('msm.actions.define(')).length).toBe(2);
     expect(text.filter((source) => source.includes('from "./util"')).length).toBe(2);
     const blockData = JSON.stringify(
       elementsOf(project).find((element) => element.kind === 'msm:block')?.data,
     );
     expect(blockData).toContain(`{"handler":"${ns('spark')}","type":"run_script"}`);
+    const effectData = JSON.stringify(
+      elementsOf(project).find((element) => element.kind === 'msm:effect')?.data,
+    );
+    expect(effectData).toContain(`"msm:on_tick":{"event":"${ns('surge')}"`);
+    expect(effectData).toContain(`{"handler":"${ns('surge')}","type":"run_script"}`);
   });
 
   it('parses and type-checks every script against the typings', () => {
@@ -700,6 +732,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         [
           `msm/${NAMESPACE}/block/spark_ore.json`,
           `msm/${NAMESPACE}/item/spark_gem.json`,
+          `msm/${NAMESPACE}/effect/spark_surge.json`,
           ...SCRIPTS.map(scriptPathOf),
         ].sort(),
       );
@@ -721,6 +754,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       for (const [path, ref] of [
         [`msm/${NAMESPACE}/block/spark_ore.json`, MSM_SCHEMA_REFS.blockDefinition],
         [`msm/${NAMESPACE}/item/spark_gem.json`, MSM_SCHEMA_REFS.itemDefinition],
+        [`msm/${NAMESPACE}/effect/spark_surge.json`, MSM_SCHEMA_REFS.effectDefinition],
       ] as const) {
         const value = JSON.parse(utf8.decode(files[path] as Uint8Array)) as Json;
         for (const problem of validateJson(value, context.schemaIndex.resolveSchemaRef(ref), {

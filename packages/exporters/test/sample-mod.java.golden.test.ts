@@ -1,7 +1,9 @@
 /**
  * Golden over the Java project eject of `fixtures/sample-mod` (ADR 0033): every block and item
  * component and every block and item action of the fixture (gear since ADR 0044: a bow
- * subclass, a drink, a charm with `apply_effect`, horse armour).
+ * subclass, a drink, a charm with `apply_effect`, horse armour; since ADRs 0055 and 0056 the
+ * effects as `ModEffects` and `effect/*Effect`, the throwables over `ThrowableItem`, one
+ * `ThrownItemEntity` and a client entrypoint for its renderer, without GeckoLib).
  *
  * - The export succeeds without errors (warnings only for project ids the vanilla registries
  *   do not know); the project's files and contents hash to the value
@@ -92,11 +94,22 @@ describe.each(
       `${PKG}/item/RubyAppleItem.java`,
       `${PKG}/item/RubyBowItem.java`,
       `${PKG}/item/RubyCharmItem.java`,
+      `${PKG}/ModEffects.java`,
+      `${PKG}/effect/MobEffectBase.java`,
+      `${PKG}/effect/RubyRushEffect.java`,
+      `${PKG}/effect/RubyStingEffect.java`,
+      `${PKG}/item/ThrowableItem.java`,
+      `${PKG}/item/RubyDartItem.java`,
+      `${PKG}/item/RubyBoomerangItem.java`,
+      `${PKG}/entity/ThrownItemEntity.java`,
+      `${PKG}/client/MsmSampleModClient.java`,
     ]) {
       expect(paths, path).toContain(path);
     }
     expect(paths.some((path) => path.startsWith('msm/') || path.includes('/msm/'))).toBe(false);
-    expect(paths.some((path) => path.includes('/client/'))).toBe(false);
+    // The client entrypoint registers the thrown item's renderer; no entities, so no GeckoLib.
+    const client = utf8.decode(files.get(`${PKG}/client/MsmSampleModClient.java`) as Uint8Array);
+    expect(client).not.toContain('geckolib');
     expect(paths.some((path) => path.includes('GlowStone'))).toBe(false); // no behaviour: plain Block
     expect(
       paths.filter((path) => path.startsWith('src/main/resources/data/')).length,
@@ -109,7 +122,11 @@ describe.each(
       version: string;
     };
     expect(modJson.depends.msm_runtime).toBeUndefined();
-    expect(modJson.entrypoints).toEqual({ main: ['msm_sample_mod.MsmSampleMod'] });
+    expect(modJson.entrypoints).toEqual({
+      client: ['msm_sample_mod.client.MsmSampleModClient'],
+      main: ['msm_sample_mod.MsmSampleMod'],
+    });
+    expect(modJson.depends.geckolib).toBeUndefined();
     // biome-ignore lint/suspicious/noTemplateCurlyInString: Gradle's placeholder
     expect(modJson.version).toBe('${version}');
     expect(utf8.decode(files.get('gradle.properties') as Uint8Array)).toContain(

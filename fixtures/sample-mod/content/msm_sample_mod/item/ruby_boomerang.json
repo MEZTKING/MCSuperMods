@@ -1,0 +1,28 @@
+{
+  "data": {
+    "components": {
+      "msm:durability": {
+        "max": 64
+      },
+      "msm:throwable": {
+        "after_throw": "return",
+        "charge_ticks": 10,
+        "dispensable": false,
+        "sound": "minecraft:item.trident.throw",
+        "speed": 1.5
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Ruby Boomerang",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "minecraft:item/breeze_rod",
+    "rarity": "uncommon"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_boomerang",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

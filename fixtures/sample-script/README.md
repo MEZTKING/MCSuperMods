@@ -1,22 +1,23 @@
 # Sample script project
 
-A scripting sample for the Fabric content jar (ADRs 0031 and 0032), namespace `msm_sample_script`: an `msm:mod`, one block and one item copied from `fixtures/sample-mod` and renamed, one script for each of the nine game events of the script API, an action handler that the block's `run_script` action calls, and a `util` module that two scripts load with `require("./util")`. Every script logs with `msm.log.info`, so the server log shows what ran.
+A scripting sample for the Fabric content jar (ADRs 0031 and 0032), namespace `msm_sample_script`: an `msm:mod`, one block and one item copied from `fixtures/sample-mod` and renamed, one script for each of the nine game events of the script API, an action handler that the block's `run_script` action calls, a `util` module that two scripts load with `require("./util")`, and (since ADR 0055) a status effect whose `msm:on_tick` event runs a second action handler, the script tick hook. Every script logs with `msm.log.info`, so the server log shows what ran.
 
 `packages/exporters/test/sample-script.golden.test.ts` checks it on every run:
 
 - the folder equals the elements listed in the test saved as a project (it fails when the list changes and this folder is not regenerated);
 - every element validates with zero problems, the project validators report nothing (the `run_script` handler is defined by a script), and every script parses and type-checks against the generated `msm-runtime.d.ts`;
 - the content jar exports with zero problems (a stub runtime jar and the real TypeScript transpiler with the options of ADR 0031 D2), and its SHA-256 is pinned per target, built in two time zones;
-- the jar holds the two definitions and the eleven scripts as `msm/msm_sample_script/script/*.js` (no `.ts`), each parsing as ES5 with no `class`, `async`, `let`, `const`, arrow or `for...of` tokens, and `fabric.mod.json` depends on `msm_runtime`.
+- the jar holds the three definitions (block, item, effect) and the twelve scripts as `msm/msm_sample_script/script/*.js` (no `.ts`), each parsing as ES5 with no `class`, `async`, `let`, `const`, arrow or `for...of` tokens, and `fabric.mod.json` depends on `msm_runtime`.
 
 CI's `engine-mod` job then exports this project with the real runtime nested and starts a headless Fabric dedicated server with it (`tools/run-fabric-server`). The server must log
 
 ```
-[msm_runtime] registered 1 block(s) and 2 item(s) from 2 definition file(s); 0 error(s), 0 warning(s)
-[msm_runtime] loaded 11 script(s); 0 error(s)
+[msm_runtime] registered 1 block(s) and 2 item(s) from 3 definition file(s); 0 error(s), 0 warning(s)
+[msm_runtime] registered 0 entity type(s) and 1 mob effect(s)
+[msm_runtime] loaded 12 script(s); 0 error(s)
 ```
 
-and nothing from the runtime at warning or error level. A headless server has no players, so of the event scripts only `server.started` and `server.tick` run there; their lines appear after `Done`. The jar is kept as the workflow artefact `msm-sample-script`. Scripts are not part of the Java project export, so this sample has no parity run (see `fixtures/sample-mod/README.md` for those).
+and nothing from the runtime at warning or error level (12 scripts loaded with no error is the check that the effect's tick handler is loaded). A headless server has no players or mobs with the effect, so of the event scripts only `server.started` and `server.tick` run there; their lines appear after `Done`. The jar is kept as the workflow artefact `msm-sample-script`. Scripts are not part of the Java project export, so this sample has no parity run (see `fixtures/sample-mod/README.md` for those).
 
 ## Contents
 
@@ -35,6 +36,8 @@ and nothing from the runtime at warning or error level. A headless server has no
 | `msm_sample_script:on_player_join` | script | `player.join`: sends the player a chat message and logs the join |
 | `msm_sample_script:on_server_started` | script | `server.started`: logs the runtime version and dimension; uses `id()` from `./util` |
 | `msm_sample_script:on_server_tick` | script | `server.tick`: logs the first tick only |
+| `msm_sample_script:spark_surge` | effect | beneficial, colour `#55FFFF`, no icon (the missing-texture icon shows); `msm:on_tick` every 40 ticks fires `msm_sample_script:surge`, whose one action is `run_script` with handler `msm_sample_script:surge` |
+| `msm_sample_script:surge_handler` | script | `msm.actions.define("msm_sample_script:surge", ...)`: reads the holder (`e.other`) and its `effectLevel`, logs them and heals the holder by the level when hurt |
 | `msm_sample_script:spark_handler` | script | `msm.actions.define("msm_sample_script:spark", ...)`: logs the call and gives the player one spark gem; uses `id()` from `./util` |
 
 All content is original work written for MCSuperMods; the project contains no Mojang files.
@@ -54,14 +57,15 @@ Create a new **Creative** world with cheats on, then check:
 
 | Do this | Expected in chat or the game | Expected in the log |
 |---|---|---|
-| Start the world | Chat: `MSM Sample Script is loaded. Use the spark ore.` | `util loaded` (once), `loaded 11 script(s); 0 error(s)`, `server.started: runtime 0.5.0 in minecraft:overworld, handler msm_sample_script:spark`, `server.tick: first tick <n>`, `player.join: <your name>` |
+| Start the world | Chat: `MSM Sample Script is loaded. Use the spark ore.` | `util loaded` (once), `loaded 12 script(s); 0 error(s)`, `server.started: runtime 0.5.0 in minecraft:overworld, handler msm_sample_script:spark`, `server.tick: first tick <n>`, `player.join: <your name>` |
 | Place Spark Ore (Natural Blocks tab) and right-click it | An amethyst chime; one Spark Gem in your inventory | `block.interact: <name> used spark ore at <pos>`, then `action msm_sample_script:spark: msm_sample_script:spark_ore msm_sample_script:spark at <pos>` |
 | Right-click with a Spark Gem (Ingredients tab) | Nothing visible | `item.use: <name> used <count> spark gem(s)` |
 | `/summon minecraft:pig ~ ~ ~2` and right-click the pig | Nothing visible | `entity.interact: <name> used minecraft:pig` |
 | Hit the pig (switch to Survival: `/gamemode survival`) | The pig is hurt | `entity.hurt: minecraft:pig took <amount> from <name>` |
 | Kill the pig | The pig dies | `entity.death: <name> killed minecraft:pig` |
 | Mine the Spark Ore with an iron pickaxe (Survival) | It drops itself | `block.break: <name> broke spark ore at <pos>` |
-| `/reload` | | `util loaded` and `loaded 11 script(s); 0 error(s)` again |
+| `/effect give @s msm_sample_script:spark_surge 30 1`, then `/damage @s 4` (Survival) | The effect shows (missing-texture icon, no icon was painted); health comes back two points every two seconds | `action surge: minecraft:player at level 2, health <health>` every 40 ticks while it runs |
+| `/reload` | | `util loaded` and `loaded 12 script(s); 0 error(s)` again |
 
 Then check that the log has no line containing `[msm_runtime]` at WARN or ERROR and no `Failed to load`. Report any such line, and any row whose log line is missing.
 

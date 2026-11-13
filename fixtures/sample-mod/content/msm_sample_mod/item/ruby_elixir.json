@@ -1,0 +1,29 @@
+{
+  "data": {
+    "components": {
+      "msm:consumable": {
+        "animation": "drink",
+        "converts_to": "minecraft:glass_bottle",
+        "effects": [
+          {
+            "amplifier": 1,
+            "effect": "msm_sample_mod:ruby_rush",
+            "seconds": 20
+          }
+        ],
+        "seconds": 1
+      }
+    },
+    "creative_tab": "minecraft:food_and_drinks",
+    "display_name": "Ruby Elixir",
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "minecraft:item/experience_bottle"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_elixir",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

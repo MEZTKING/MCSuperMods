@@ -1,0 +1,30 @@
+{
+  "data": {
+    "category": "beneficial",
+    "color": 5636095,
+    "components": {
+      "msm:on_tick": {
+        "event": "msm_sample_script:surge",
+        "interval_ticks": 40
+      }
+    },
+    "display_name": "Spark Surge",
+    "events": {
+      "msm_sample_script:surge": {
+        "actions": [
+          {
+            "handler": "msm_sample_script:surge",
+            "type": "run_script"
+          }
+        ]
+      }
+    },
+    "format": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:spark_surge",
+  "kind": "msm:effect",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

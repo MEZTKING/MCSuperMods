@@ -1,0 +1,37 @@
+{
+  "data": {
+    "components": {
+      "msm:throwable": {
+        "after_throw": "drop",
+        "damage": 3,
+        "on_hit_entity": {
+          "event": "msm_sample_mod:dart_hit"
+        },
+        "speed": 2
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Ruby Dart",
+    "events": {
+      "msm_sample_mod:dart_hit": {
+        "actions": [
+          {
+            "effect": "msm_sample_mod:ruby_sting",
+            "seconds": 10,
+            "target": "other",
+            "type": "apply_effect"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "minecraft:item/arrow"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_dart",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

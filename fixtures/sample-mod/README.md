@@ -1,17 +1,17 @@
 # Sample mod project
 
-A kitchen-sink MCSuperMods project for the Fabric content jar (ADR 0026 D6), namespace `msm_sample_mod`: an `msm:mod`, three custom blocks and nine custom items that between them use the block and item components and all seven actions (armour and a custom tool material since ADR 0042; a bow, a drink, a charm with `apply_effect` and horse armour since ADR 0044), plus an equipment asset, one function and one loot table. Block and item models are vanilla ones; the only textures are the three placeholder armour layers of the ruby equipment asset (`assets/msm_sample_mod/textures/entity/equipment/humanoid/ruby.png` and `humanoid_leggings/ruby.png`, plain tinted 64x32 sheets, and `horse_body/ruby.png`, 64x64, drawn by the test).
+A kitchen-sink MCSuperMods project for the Fabric content jar (ADR 0026 D6), namespace `msm_sample_mod`: an `msm:mod`, three custom blocks and twelve custom items that between them use the block and item components and all nine actions (armour and a custom tool material since ADR 0042; a bow, a drink, a charm with `apply_effect` and horse armour since ADR 0044; two custom status effects, a drink that gives one, a throwing dart and a boomerang since ADRs 0055 and 0056), plus an equipment asset, two functions and one loot table. Block and item models are vanilla ones; the only textures are the three placeholder armour layers of the ruby equipment asset (`assets/msm_sample_mod/textures/entity/equipment/humanoid/ruby.png` and `humanoid_leggings/ruby.png`, plain tinted 64x32 sheets, and `horse_body/ruby.png`, 64x64, drawn by the test) and the two 18x18 effect icons (`textures/mob_effect/ruby_rush.png` and `ruby_sting.png`, the library's `effect_icon` placeholder in each effect's colour).
 
 `packages/exporters/test/sample-mod.golden.test.ts` checks it on every run:
 
 - the folder equals the elements listed in the test saved as a project (it fails when the list changes and this folder is not regenerated);
 - every element validates with zero problems, the project validators report nothing, and the function passes the offline mcfunction checker;
 - the content jar exports with zero problems (with a stub runtime jar), and its SHA-256 is pinned per target, built in two time zones;
-- the jar holds the twelve expected `msm/` definitions, the equipment asset and its three layer textures, and each definition validates against the MSM definition schema.
+- the jar holds the seventeen expected `msm/` definitions (3 blocks, 12 items, 2 effects), the equipment asset and its three layer textures, the two effect icons and the effects' `effect.msm_sample_mod.<id>` names, and each definition validates against the MSM definition schema.
 
-CI's `engine-mod` job then builds `msm_runtime` with Gradle, exports this project with the real runtime nested, and starts a headless Fabric dedicated server with it (`tools/run-fabric-server`). The server must log `[msm_runtime] registered 3 block(s) and 11 item(s) from 12 definition file(s); 0 error(s), 0 warning(s)` and nothing else from the runtime at warning or error level. The jar is kept as the workflow artefact `msm-sample-mod`.
+CI's `engine-mod` job then builds `msm_runtime` with Gradle, exports this project with the real runtime nested, and starts a headless Fabric dedicated server with it (`tools/run-fabric-server`). The server must log `[msm_runtime] registered 3 block(s) and 14 item(s) from 17 definition file(s); 0 error(s), 0 warning(s)` (then `registered 0 entity type(s) and 2 mob effect(s)`) and nothing else from the runtime at warning or error level. The jar is kept as the workflow artefact `msm-sample-mod`.
 
-The same job also exports this project as a Java project (ADR 0033; `sample-mod.java.golden.test.ts` with `MSM_SAMPLE_MOD_JAVA_OUT`), builds it with its own `./gradlew build`, and runs the behaviour-parity GameTests of `engine-mod/parity/` (`SampleModParityTest`: every block's light, hardness, resistance, tool requirement, sound type, loot table and block item; the items' food, tool, durability, rarity and stack size; the ruby helmet's slot, equipment asset, defence, toughness, knockback resistance, durability, repair item and enchantability; the ruby pickaxe's custom material (durability, attack values, mining speed, not enchantable, and obsidian broken by a survival player drops obsidian while a stone pickaxe's does not); the ruby ore's and ruby apple's function (its `say` line), the chime block's glowstone from stepping (with the per-entity cooldown) and from redstone, its zero signal, the wand's rubies and cooldown; the ruby bow's durability and its faster, harder-hitting arrows after a short draw against the vanilla bow's; the ruby tonic's drink animation, effects, glass bottle and cooldown; the ruby charm's two effects (on the user, `self` and `other`), cooldown and that it is not used up; the ruby horse armour's body slot, horse-only wearer, equipment asset, defence and toughness) twice: on the content jar with `msm_runtime` and on the ejected jar without it (`tools/run-fabric-server --gametest ... --gametest-filter 'msm_parity_tests:sample_mod_*'`, `--no-runtime` for the ejected jar). The same tests passing on both is the parity check; the ejected jars and the GameTest reports are kept as the artefacts `msm-ejected-jars` and `parity-gametest-reports`.
+The same job also exports this project as a Java project (ADR 0033; `sample-mod.java.golden.test.ts` with `MSM_SAMPLE_MOD_JAVA_OUT`), builds it with its own `./gradlew build`, and runs the behaviour-parity GameTests of `engine-mod/parity/` (`SampleModParityTest`: every block's light, hardness, resistance, tool requirement, sound type, loot table and block item; the items' food, tool, durability, rarity and stack size; the ruby helmet's slot, equipment asset, defence, toughness, knockback resistance, durability, repair item and enchantability; the ruby pickaxe's custom material (durability, attack values, mining speed, not enchantable, and obsidian broken by a survival player drops obsidian while a stone pickaxe's does not); the ruby ore's and ruby apple's function (its `say` line), the chime block's glowstone from stepping (with the per-entity cooldown) and from redstone, its zero signal, the wand's rubies and cooldown; the ruby bow's durability and its faster, harder-hitting arrows after a short draw against the vanilla bow's; the ruby tonic's drink animation, effects, glass bottle and cooldown; the ruby charm's two effects (on the user, `self` and `other`), cooldown and that it is not used up; the ruby horse armour's body slot, horse-only wearer, equipment asset, defence and toughness; since ADRs 0055 and 0056: both effects registered with their category, colour and name key; Ruby Rush's movement speed at levels I and II and gone after removal; its start (the `ruby/rush` chat line, once, not again on a refresh), its end (glowing, on removal and when it runs out) and its tick heal; Ruby Sting's tick damage; the Ruby Elixir giving Ruby Rush II with a glass bottle back; a thrown dart as a projectile carrying the dart, owned by the thrower, at speed 2 with the default gravity; a dart hit dealing 3 damage, giving the mob hit Ruby Sting and dropping the dart; a dart landing on a block dropping where it lands; the boomerang thrown only after 10 ticks of holding and back in the inventory with one durability used; a dispenser throwing one dart and having no behaviour for the boomerang) twice: on the content jar with `msm_runtime` and on the ejected jar without it (`tools/run-fabric-server --gametest ... --gametest-filter 'msm_parity_tests:sample_mod_*'`, `--no-runtime` for the ejected jar). The same tests passing on both is the parity check; the ejected jars and the GameTest reports are kept as the artefacts `msm-ejected-jars` and `parity-gametest-reports`.
 
 The entity counterpart, an animated GeckoLib mob checked the same way, is `fixtures/sample-mob/` (see its README).
 
@@ -33,7 +33,13 @@ The entity counterpart, an animated GeckoLib mob checked the same way, is `fixtu
 | `msm_sample_mod:ruby_tonic` | item | `msm:consumable` drink (1 second): speed II for 30 seconds and regeneration for 5, leaves a glass bottle, 3 second cooldown, stack of 16, Food & Drinks tab |
 | `msm_sample_mod:ruby_charm` | item | `msm:on_use` with a 100-tick cooldown running two `apply_effect` actions (speed II for 10 seconds on the user, glowing for 2 seconds on the `other` target, the user too in item events), not used up, uncommon, Tools & Utilities tab |
 | `msm_sample_mod:ruby_apple` | item | `msm:food` (4 nutrition, can always eat) with `msm:on_use` (`spawn_particle`, `run_function`), stack of 16 |
+| `msm_sample_mod:ruby_rush` | effect | beneficial, colour `#E0115F`, chime sound when added; movement speed times 1.2 per level (`add_multiplied_total` 0.2); `msm:on_start` runs `ruby/rush`, `msm:on_tick` heals 1 every 10 ticks, `msm:on_end` gives glowing for 3 seconds; icon `textures/mob_effect/ruby_rush.png` |
+| `msm_sample_mod:ruby_sting` | effect | harmful, colour `#8B0000`, crit particles instead of the swirl; `msm:on_tick` `damage` 1 every 20 ticks; icon `textures/mob_effect/ruby_sting.png` |
+| `msm_sample_mod:ruby_elixir` | item | `msm:consumable` drink (1 second) giving Ruby Rush II for 20 seconds, leaves a glass bottle, stack of 16, Food & Drinks tab |
+| `msm_sample_mod:ruby_dart` | item | `msm:throwable`: speed 2, damage 3, `after_throw` `drop` (picked up again), `on_hit_entity` gives the mob hit Ruby Sting for 10 seconds; stack of 16, Combat tab, arrow look |
+| `msm_sample_mod:ruby_boomerang` | item | `msm:throwable` held to throw (`charge_ticks` 10), `after_throw` `return`, trident throw sound, not dispensable; `msm:durability` 64, uncommon, Combat tab, breeze rod look |
 | `msm_sample_mod:ruby/shimmer` | function | `particle` and `say`, run by the ruby ore and the ruby apple |
+| `msm_sample_mod:ruby/rush` | function | `say The ruby rush begins.`, run when Ruby Rush starts |
 | `msm_sample_mod:blocks/ruby_ore_rich` | loot table | 1 to 3 rubies, survives explosions |
 
 All content is original work written for MCSuperMods; the project contains no Mojang files.
@@ -93,12 +99,41 @@ Then, in **Survival** (`/gamemode survival`):
 Finally open the game log (Prism: the instance's **Minecraft Log**; official launcher: `%APPDATA%\.minecraft\logs\latest.log`) and check that it has the line
 
 ```
-[msm_runtime] registered 3 block(s) and 7 item(s) from 8 definition file(s); 0 error(s), 0 warning(s)
+[msm_runtime] registered 3 block(s) and 14 item(s) from 17 definition file(s); 0 error(s), 0 warning(s)
+[msm_runtime] registered 0 entity type(s) and 2 mob effect(s)
 ```
 
 and no other line containing `[msm_runtime]` at WARN or ERROR, no `Failed to load` and no missing-model or missing-texture warning mentioning `msm_sample_mod`. Report any such line.
 
-Things only the game client can confirm, and worth reporting if they look wrong: the block and item models and names (the client loads `assets/` from a mod jar without a `pack.mcmeta`), the creative tab placement and name colours, the particle positions, the tool speeds, and the worn helmet's look (the equipment asset and its layer texture).
+### Effects and throwables (ADRs 0055 and 0056)
+
+Back in **Creative**, then **Survival** where the table says so:
+
+| Check | Expected |
+|---|---|
+| Creative tab **Food & Drinks** | **Ruby Elixir**, looking like a bottle o' enchanting; it stacks to 16 |
+| Creative tab **Combat** | **Ruby Dart** (arrow look, stacks to 16) and **Ruby Boomerang** (yellow name, breeze rod look) |
+| Drink the Ruby Elixir (Survival) | A chime and the chat line `The ruby rush begins.`; a glass bottle is left; you walk noticeably faster (FOV widens) |
+| Look at the effect while it runs: the top-right HUD corner and the inventory screen (E) | The **Ruby Rush II** icon is the round ruby-pink placeholder badge with a sparkle (not the purple-black missing texture); the inventory shows the name "Ruby Rush II" and the time left; the bar or frame is the "good effect" kind |
+| Look at yourself in third person (F5) while Ruby Rush runs | Swirl particles around you tinted ruby pink (`#E0115F`) |
+| Take some damage (`/damage @s 6`) while Ruby Rush runs | Health comes back by half a heart every half second |
+| Wait until Ruby Rush runs out (20 seconds), or `/effect clear @s msm_sample_mod:ruby_rush` | You glow (outline) for 3 seconds; your speed is back to normal |
+| `/effect give @s msm_sample_mod:ruby_sting 10` | A dark red badge icon with the "bad effect" look; crit particles (not swirls) around you; you lose half a heart every second |
+| Right-click with Ruby Darts, first and third person (F5) | A dart leaves at once with the snowball throw sound; **in flight it is drawn as the arrow item picture facing the camera** (not invisible, not a snowball); one dart is used per throw |
+| Throw a Ruby Dart at a cow or zombie | It takes damage (one and a half hearts) and gets Ruby Sting (dark red particles); the dart drops beside it |
+| Walk over a dart that landed | **You pick it up again** like any dropped item |
+| Hold right-click with the Ruby Boomerang | **The arm raises like a held trident or spear** while you hold; releasing before half a second does nothing; after it, the boomerang flies with the trident throw sound and disappears from your hand. Report which animation it is (`SPEAR` today) and whether `TRIDENT` would look better |
+| Let the boomerang land | It is back in your inventory (or at your feet when the inventory is full), with a little durability gone |
+| Put Ruby Darts in a dispenser and power it with a button | **The dispenser shoots a dart** (drawn in flight as above), using one; a Ruby Boomerang in a dispenser is dropped as an item instead of thrown |
+
+And the two Creator flows, in the app (any project with a Fabric target):
+
+| Check | Expected |
+|---|---|
+| **Creator → Magic → Status effect**: a name, a colour, "heals", a drink to get it; export the Fabric mod jar and load it with the sample mod | The drink gives the effect; its icon is the tinted placeholder badge; the effect heals as chosen; its name shows in the tooltip and the HUD |
+| **Creator → Gear → Throwable**: style "knife that can be picked up again", hold to throw, "when it hits: a vanilla effect"; export and load | The knife is thrown after holding, drawn as its own item picture in flight, gives the effect to the mob hit and can be picked up where it lands |
+
+Things only the game client can confirm, and worth reporting if they look wrong: the block and item models and names (the client loads `assets/` from a mod jar without a `pack.mcmeta`), the creative tab placement and name colours, the particle positions, the tool speeds, the worn helmet's look (the equipment asset and its layer texture), the effect icons, names and tinted particles, the thrown items' look in flight and the hold-to-throw animation.
 
 ## Changing the sample
 

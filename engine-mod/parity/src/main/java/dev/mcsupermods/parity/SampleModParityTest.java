@@ -1,8 +1,10 @@
 package dev.mcsupermods.parity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -16,15 +18,20 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -38,7 +45,9 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.RedstoneLampBlock;
+import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.AABB;
@@ -56,9 +65,18 @@ import net.minecraft.world.phys.Vec3;
  * 1.5, damage multiplier 1.5), {@code ruby_tonic} (a drink with speed and regeneration, a glass bottle
  * back, a 3 second cooldown), {@code ruby_charm} ({@code apply_effect} on use, a 100-tick cooldown) and
  * {@code ruby_horse_armor}; function {@code ruby/shimmer}
- * ({@code say The ruby shimmers.}). Events are
- * observed through their vanilla effects: placed blocks, given items, item cooldowns and the
- * function's chat line. Sounds and particles have no server-side trace a GameTest can read.
+ * ({@code say The ruby shimmers.}); since ADRs 0055 and 0056 the effects {@code ruby_rush}
+ * (beneficial, movement speed times 1.2 per level, heals 1 every 10 ticks, {@code ruby/rush} on
+ * start, glowing for 3 seconds on end) and {@code ruby_sting} (harmful, damage 1 every 20 ticks),
+ * the drink {@code ruby_elixir} (Ruby Rush II for 20 seconds), the throwables {@code ruby_dart}
+ * (speed 2, damage 3, {@code drop}, Ruby Sting for 10 seconds on the mob hit) and
+ * {@code ruby_boomerang} (hold 10 ticks, {@code return}, durability 64, not dispensable).
+ * Events are observed through their vanilla effects: placed blocks, given items, item cooldowns,
+ * effects, health and the functions' chat lines. Sounds and particles have no server-side trace
+ * a GameTest can read. Effect tick and end events run at the end of the server tick, so checks
+ * after them wait a tick or more. The thrown entity's type is {@code msm_runtime:thrown_item} in
+ * the content jar and {@code msm_sample_mod:thrown_item} in the ejected one: the tests find it as
+ * a vanilla {@link ThrowableItemProjectile} carrying the item.
  * Run with {@code --gametest-filter msm_parity_tests:sample_mod_*}.
  */
 public class SampleModParityTest {
@@ -69,6 +87,9 @@ public class SampleModParityTest {
     private static final String NAMESPACE = "msm_sample_mod";
     private static final BlockPos AT = new BlockPos(2, 1, 2);
     private static final String SHIMMER = "The ruby shimmers.";
+    private static final String RUSH = "The ruby rush begins.";
+    /** Ground for thrown items, away from {@link #AT}. */
+    private static final BlockPos LANDING = new BlockPos(4, 1, 4);
 
     private static Identifier id(String path) {
         return Identifier.fromNamespaceAndPath(NAMESPACE, path);
@@ -480,5 +501,276 @@ public class SampleModParityTest {
         helper.assertValueEqual(armor.getMaxStackSize(), 1, "ruby_horse_armor stacks to 1");
         helper.assertValueEqual(armor.getRarity(), Rarity.RARE, "ruby_horse_armor rarity");
         helper.succeed();
+    }
+
+    // Effects (ADR 0055)
+
+    private static Holder<MobEffect> effect(GameTestHelper helper, String path) {
+        Optional<Holder.Reference<MobEffect>> holder = BuiltInRegistries.MOB_EFFECT.get(id(path));
+        helper.assertTrue(holder.isPresent(), "effect " + id(path) + " is not registered");
+        return holder.orElseThrow();
+    }
+
+    private static Mob cow(GameTestHelper helper, BlockPos at) {
+        return helper.spawnWithNoFreeWill(EntityTypes.COW, at);
+    }
+
+    @GameTest
+    public void effectsAreRegisteredWithCategoryAndColour(GameTestHelper helper) {
+        MobEffect rush = effect(helper, "ruby_rush").value();
+        helper.assertValueEqual(rush.getCategory(), MobEffectCategory.BENEFICIAL, "ruby_rush category");
+        helper.assertValueEqual(rush.getColor(), 0xE0115F, "ruby_rush colour");
+        helper.assertValueEqual(rush.getDescriptionId(), "effect.msm_sample_mod.ruby_rush", "ruby_rush name key");
+        MobEffect sting = effect(helper, "ruby_sting").value();
+        helper.assertValueEqual(sting.getCategory(), MobEffectCategory.HARMFUL, "ruby_sting category");
+        helper.assertValueEqual(sting.getColor(), 0x8B0000, "ruby_sting colour");
+        helper.assertValueEqual(sting.getDescriptionId(), "effect.msm_sample_mod.ruby_sting", "ruby_sting name key");
+        helper.succeed();
+    }
+
+    @GameTest
+    public void rubyRushSpeedModifierScalesWithLevel(GameTestHelper helper) {
+        Mob cow = cow(helper, AT);
+        Holder<MobEffect> rush = effect(helper, "ruby_rush");
+        double base = cow.getAttributeValue(Attributes.MOVEMENT_SPEED);
+        cow.addEffect(new MobEffectInstance(rush, 200, 0));
+        assertClose(helper, cow.getAttributeValue(Attributes.MOVEMENT_SPEED), base * 1.2, "ruby_rush I movement speed (times 1.2)");
+        cow.removeEffect(rush);
+        assertClose(helper, cow.getAttributeValue(Attributes.MOVEMENT_SPEED), base, "movement speed after ruby_rush is removed");
+        cow.addEffect(new MobEffectInstance(rush, 200, 1));
+        assertClose(helper, cow.getAttributeValue(Attributes.MOVEMENT_SPEED), base * 1.4, "ruby_rush II movement speed (times 1.4)");
+        cow.removeEffect(rush);
+        assertClose(helper, cow.getAttributeValue(Attributes.MOVEMENT_SPEED), base, "movement speed after ruby_rush II is removed");
+        cow.discard();
+        helper.succeed();
+    }
+
+    /** on_start runs {@code ruby/rush} once (not again on a refresh); on_end gives glowing, on removal and on expiry. */
+    @GameTest(maxTicks = 60)
+    public void rubyRushStartAndEnd(GameTestHelper helper) {
+        Holder<MobEffect> rush = effect(helper, "ruby_rush");
+        Mob removed = cow(helper, AT);
+        Mob expired = cow(helper, AT.east(2));
+        int mark = ParityChat.mark();
+        removed.addEffect(new MobEffectInstance(rush, 200, 0));
+        removed.addEffect(new MobEffectInstance(rush, 300, 0)); // longer: updated, no second on_start
+        helper.assertValueEqual(ParityChat.since(mark), List.of(RUSH), "chat after adding ruby_rush (on_start run_function ruby/rush)");
+        expired.addEffect(new MobEffectInstance(rush, 5, 0));
+        helper.assertFalse(removed.hasEffect(MobEffects.GLOWING), "glowing before on_end");
+        removed.removeEffect(rush);
+        helper.runAfterDelay(20, () -> {
+            assertEffect(helper, removed, MobEffects.GLOWING, 0, 60 - 20, "on_end after removeEffect (apply_effect glowing)");
+            helper.assertFalse(expired.hasEffect(rush), "ruby_rush did not run out");
+            helper.assertTrue(expired.hasEffect(MobEffects.GLOWING), "on_end after ruby_rush ran out gave no glowing");
+            removed.discard();
+            expired.discard();
+            helper.succeed();
+        });
+    }
+
+    @GameTest(maxTicks = 60)
+    public void rubyRushTickHeals(GameTestHelper helper) {
+        Mob cow = cow(helper, AT);
+        cow.setHealth(2);
+        cow.addEffect(new MobEffectInstance(effect(helper, "ruby_rush"), 400, 0));
+        helper.runAfterDelay(25, () -> {
+            // heal 1 every 10 ticks: two or three heals in 25 ticks.
+            helper.assertTrue(cow.getHealth() >= 4 - 1.0e-3 && cow.getHealth() <= 5 + 1.0e-3,
+                    "ruby_rush heal on tick: health " + cow.getHealth() + ", expected 4 to 5");
+            cow.discard();
+            helper.succeed();
+        });
+    }
+
+    @GameTest(maxTicks = 80)
+    public void rubyStingTickDamages(GameTestHelper helper) {
+        Mob cow = cow(helper, AT);
+        float full = cow.getHealth();
+        cow.addEffect(new MobEffectInstance(effect(helper, "ruby_sting"), 400, 0));
+        helper.runAfterDelay(45, () -> {
+            // damage 1 every 20 ticks: two or three hits in 45 ticks.
+            float lost = full - cow.getHealth();
+            helper.assertTrue(lost >= 2 - 1.0e-3 && lost <= 3 + 1.0e-3, "ruby_sting damage on tick: lost " + lost + ", expected 2 to 3");
+            cow.discard();
+            helper.succeed();
+        });
+    }
+
+    @GameTest
+    public void rubyElixirGivesRubyRush(GameTestHelper helper) {
+        ItemStack elixir = new ItemStack(item(helper, "ruby_elixir"));
+        helper.assertValueEqual(elixir.getMaxStackSize(), 16, "ruby_elixir max stack size");
+        Consumable consumable = elixir.get(DataComponents.CONSUMABLE);
+        helper.assertTrue(consumable != null && consumable.animation() == ItemUseAnimation.DRINK, "ruby_elixir is a drink: " + consumable);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, elixir);
+        int mark = ParityChat.mark();
+        ItemStack left = elixir.finishUsingItem(helper.getLevel(), player);
+        helper.assertTrue(left.is(Items.GLASS_BOTTLE), "drinking ruby_elixir leaves a glass bottle, got " + left);
+        assertEffect(helper, player, effect(helper, "ruby_rush"), 1, 400, "ruby_elixir ruby_rush");
+        helper.assertValueEqual(ParityChat.since(mark), List.of(RUSH), "chat after drinking ruby_elixir (on_start)");
+        helper.succeed();
+    }
+
+    // Throwables (ADR 0056)
+
+    /** The thrown items near {@code player} carrying {@code item}, of the one thrown-item type. */
+    private static List<ThrowableItemProjectile> thrown(GameTestHelper helper, Entity near, Item item) {
+        return helper.getLevel().getEntitiesOfClass(ThrowableItemProjectile.class, new AABB(near.blockPosition()).inflate(8),
+                e -> e.getItem().is(item));
+    }
+
+    private static Player thrower(GameTestHelper helper) {
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        player.snapTo(helper.absoluteVec(Vec3.atBottomCenterOf(AT)));
+        return player;
+    }
+
+    /** Moves a thrown item 2.5 blocks above {@code target} (relative) and sends it straight down. */
+    private static void dropOnto(GameTestHelper helper, ThrowableItemProjectile entity, Vec3 target) {
+        Vec3 above = helper.absoluteVec(target.add(0, 2.5, 0));
+        entity.snapTo(above.x, above.y, above.z);
+        entity.setDeltaMovement(0, -0.8, 0);
+    }
+
+    private static List<ItemEntity> droppedNear(GameTestHelper helper, BlockPos at, Item item) {
+        return helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(at)).inflate(2), e -> e.getItem().is(item));
+    }
+
+    @GameTest
+    public void rubyDartThrowSpawnsAProjectileWithTheItem(GameTestHelper helper) {
+        Item dart = item(helper, "ruby_dart");
+        Player player = thrower(helper);
+        ItemStack stack = new ItemStack(dart, 4);
+        helper.assertValueEqual(stack.getMaxStackSize(), 16, "ruby_dart max stack size");
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        InteractionResult result = stack.use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+        helper.assertTrue(result.consumesAction(), "use did not throw: " + result);
+        helper.assertValueEqual(player.getMainHandItem().getCount(), 3, "a throw takes one dart from the hand");
+        List<ThrowableItemProjectile> thrown = thrown(helper, player, dart);
+        helper.assertValueEqual(thrown.size(), 1, "thrown darts");
+        ThrowableItemProjectile entity = thrown.getFirst();
+        helper.assertValueEqual(BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getPath(), "thrown_item", "thrown entity type path");
+        helper.assertValueEqual(entity.getItem().getCount(), 1, "the projectile carries one dart");
+        helper.assertTrue(entity.getOwner() == player, "the thrower owns the projectile: " + entity.getOwner());
+        double speed = entity.getDeltaMovement().length();
+        helper.assertTrue(Math.abs(speed - 2.0) < 0.25, "ruby_dart speed 2, got " + speed);
+        assertClose(helper, entity.getGravity(), 0.03, "ruby_dart gravity (the default)");
+        thrown.forEach(Entity::discard);
+        helper.succeed();
+    }
+
+    /** A survival player at {@link #AT} looking at {@code target}'s middle, so a throw flies straight at it. */
+    private static Player aimingAt(GameTestHelper helper, Entity target) {
+        Player player = thrower(helper);
+        player.lookAt(EntityAnchorArgument.Anchor.EYES, target.position().add(0, target.getBbHeight() / 2, 0));
+        return player;
+    }
+
+    @GameTest(maxTicks = 40)
+    public void rubyDartHitDamagesAndStings(GameTestHelper helper) {
+        BlockPos at = AT.east(3);
+        helper.setBlock(at.below(), Blocks.STONE);
+        Item dart = item(helper, "ruby_dart");
+        Mob cow = cow(helper, at);
+        Player player = aimingAt(helper, cow);
+        float full = cow.getHealth();
+        ItemStack stack = new ItemStack(dart);
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        stack.use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+        ThrowableItemProjectile entity = thrown(helper, player, dart).getFirst();
+        helper.runAfterDelay(10, () -> {
+            helper.assertTrue(entity.isRemoved(), "the dart was not removed after the hit: at " + entity.position() + ", cow at " + cow.position());
+            float lost = full - cow.getHealth();
+            helper.assertTrue(Math.abs(lost - 3) < 1.0e-3, "ruby_dart damage 3: lost " + lost);
+            MobEffectInstance sting = cow.getEffect(effect(helper, "ruby_sting"));
+            helper.assertTrue(sting != null, "on_hit_entity did not give ruby_sting to the cow (target other)");
+            helper.assertValueEqual(sting.getAmplifier(), 0, "ruby_sting amplifier");
+            helper.assertTrue(sting.getDuration() > 180 && sting.getDuration() <= 200, "ruby_sting duration " + sting.getDuration());
+            helper.assertFalse(player.hasEffect(effect(helper, "ruby_sting")), "the thrower got ruby_sting");
+            List<ItemEntity> dropped = droppedNear(helper, at, dart);
+            helper.assertValueEqual(dropped.size(), 1, "the dart dropped after the hit (drop)");
+            dropped.forEach(Entity::discard);
+            cow.discard();
+            helper.succeed();
+        });
+    }
+
+    @GameTest(maxTicks = 40)
+    public void rubyDartDropsWhereItLands(GameTestHelper helper) {
+        helper.setBlock(LANDING, Blocks.STONE);
+        Item dart = item(helper, "ruby_dart");
+        Player player = thrower(helper);
+        ItemStack stack = new ItemStack(dart, 2);
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        stack.use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+        ThrowableItemProjectile entity = thrown(helper, player, dart).getFirst();
+        dropOnto(helper, entity, Vec3.atBottomCenterOf(LANDING).add(0, 1, 0));
+        helper.runAfterDelay(10, () -> {
+            helper.assertTrue(entity.isRemoved(), "the dart was not removed after landing");
+            List<ItemEntity> dropped = droppedNear(helper, LANDING, dart);
+            helper.assertValueEqual(dropped.size(), 1, "darts dropped at the landing point");
+            helper.assertValueEqual(dropped.getFirst().getItem().getCount(), 1, "dropped dart count");
+            helper.assertValueEqual(count(player, dart), 1, "darts left with the thrower");
+            dropped.forEach(Entity::discard);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(maxTicks = 40)
+    public void rubyBoomerangChargesAndReturns(GameTestHelper helper) {
+        helper.setBlock(LANDING, Blocks.STONE);
+        Item boomerangItem = item(helper, "ruby_boomerang");
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        player.snapTo(helper.absoluteVec(Vec3.atBottomCenterOf(AT)));
+        ItemStack boomerang = new ItemStack(boomerangItem);
+        helper.assertValueEqual(boomerang.getMaxDamage(), 64, "ruby_boomerang durability");
+        helper.assertValueEqual(boomerang.getRarity(), Rarity.UNCOMMON, "ruby_boomerang rarity");
+        player.setItemInHand(InteractionHand.MAIN_HAND, boomerang);
+        boomerang.use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+        helper.assertTrue(player.isUsingItem(), "charge_ticks 10: use starts holding");
+        int duration = boomerang.getUseDuration(player);
+        helper.assertFalse(boomerangItem.releaseUsing(boomerang, helper.getLevel(), player, duration - 5), "released after 5 of 10 ticks");
+        helper.assertTrue(thrown(helper, player, boomerangItem).isEmpty(), "thrown after 5 of 10 ticks");
+        helper.assertTrue(boomerangItem.releaseUsing(boomerang, helper.getLevel(), player, duration - 12), "released after 12 of 10 ticks");
+        player.stopUsingItem();
+        helper.assertValueEqual(count(player, boomerangItem), 0, "the boomerang left the inventory while it flies");
+        List<ThrowableItemProjectile> thrown = thrown(helper, player, boomerangItem);
+        helper.assertValueEqual(thrown.size(), 1, "thrown boomerangs");
+        dropOnto(helper, thrown.getFirst(), Vec3.atBottomCenterOf(LANDING).add(0, 1, 0));
+        helper.runAfterDelay(10, () -> {
+            helper.assertValueEqual(count(player, boomerangItem), 1, "boomerangs back in the inventory (return)");
+            for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+                ItemStack s = player.getInventory().getItem(i);
+                if (s.is(boomerangItem)) {
+                    helper.assertValueEqual(s.getDamageValue(), 1, "the returned boomerang took one durability");
+                }
+            }
+            helper.assertTrue(droppedNear(helper, LANDING, boomerangItem).isEmpty(), "the boomerang also dropped");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(maxTicks = 40)
+    public void dispenserThrowsDartsButNotBoomerangs(GameTestHelper helper) {
+        helper.assertFalse(DispenserBlock.DISPENSER_REGISTRY.containsKey(item(helper, "ruby_boomerang")),
+                "ruby_boomerang (dispensable false) has a dispenser behaviour");
+        Item dart = item(helper, "ruby_dart");
+        BlockPos at = new BlockPos(2, 2, 2);
+        helper.setBlock(at, Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, Direction.UP));
+        DispenserBlockEntity dispenser = (DispenserBlockEntity) helper.getBlockEntity(at, DispenserBlockEntity.class);
+        dispenser.setItem(0, new ItemStack(dart, 3));
+        helper.setBlock(at.east(), Blocks.REDSTONE_BLOCK);
+        List<ThrowableItemProjectile> seen = new ArrayList<>();
+        helper.onEachTick(() -> seen.addAll(helper.getLevel().getEntitiesOfClass(ThrowableItemProjectile.class,
+                new AABB(helper.absolutePos(at)).inflate(8), e -> e.getItem().is(dart) && !seen.contains(e))));
+        helper.runAfterDelay(12, () -> {
+            helper.assertValueEqual(dispenser.getItem(0).getCount(), 2, "the dispenser used one dart");
+            helper.assertValueEqual(seen.size(), 1, "darts thrown by the dispenser");
+            seen.forEach(Entity::discard);
+            droppedNear(helper, at, dart).forEach(Entity::discard);
+            helper.succeed();
+        });
     }
 }

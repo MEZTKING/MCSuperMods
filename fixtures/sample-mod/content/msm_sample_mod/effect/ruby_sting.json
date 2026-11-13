@@ -1,0 +1,31 @@
+{
+  "data": {
+    "category": "harmful",
+    "color": 9109504,
+    "components": {
+      "msm:on_tick": {
+        "event": "msm_sample_mod:sting_tick",
+        "interval_ticks": 20
+      }
+    },
+    "display_name": "Ruby Sting",
+    "events": {
+      "msm_sample_mod:sting_tick": {
+        "actions": [
+          {
+            "amount": 1,
+            "type": "damage"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "particle": "minecraft:crit"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_sting",
+  "kind": "msm:effect",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

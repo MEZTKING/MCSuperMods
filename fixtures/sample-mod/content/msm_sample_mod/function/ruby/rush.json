@@ -1,0 +1,14 @@
+{
+  "data": {
+    "lines": [
+      "# Run when Ruby Rush starts (msm:on_start, run_function action).",
+      "say The ruby rush begins."
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby/rush",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

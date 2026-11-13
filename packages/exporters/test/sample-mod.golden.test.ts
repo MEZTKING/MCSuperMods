@@ -1,9 +1,11 @@
 /**
  * Golden over the committed kitchen-sink mod project (`fixtures/sample-mod`, ADR 0026 D6):
- * an `msm:mod`, three `msm:block` and nine `msm:item` elements covering the block and item
+ * an `msm:mod`, three `msm:block` and twelve `msm:item` elements covering the block and item
  * components and the actions (gear since ADR 0044: a bow, a drink, a charm with `apply_effect`,
- * horse armour), a `minecraft:equipment` element with its three armour layer textures
- * (ADR 0042), a function and a loot table, namespace `msm_sample_mod`.
+ * horse armour; since ADRs 0055 and 0056 a drink giving a custom effect, a dart and a
+ * boomerang), two `msm:effect` elements with their icons, a `minecraft:equipment` element with
+ * its three armour layer textures (ADR 0042), two functions and a loot table, namespace
+ * `msm_sample_mod`.
  *
  * - The fixture equals the project built from {@link SAMPLE_ELEMENTS} and
  *   {@link SAMPLE_ASSETS} now; `UPDATE_GOLDENS=1` rewrites it (the README is hand-written).
@@ -38,7 +40,7 @@ import {
 import type { Element, Json, Plugin, Problem, Project, Target } from '@msm/plugin-api';
 import blocksItemsPlugin from '@msm/plugin-blocks-items';
 import dataPackPlugin from '@msm/plugin-datapack';
-import { encodePng, type Rgb } from '@msm/plugin-library';
+import { encodePng, placeholderPng, type Rgb } from '@msm/plugin-library';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
 import {
   createRegistryIndex,
@@ -100,12 +102,18 @@ const ns = (path: string): string => `${NAMESPACE}:${path}`;
  * `msm:light_emitter`, `msm:on_interact`, `msm:on_step`, `msm:redstone`, `msm:food`,
  * `msm:tool` with a vanilla tier and with a custom material and an attack speed override,
  * `msm:armor` with a custom material (helmet and horse armour), `msm:durability`, `msm:on_use`,
- * `msm:consumable`, `msm:ranged_weapon`) and every action (`play_sound`, `spawn_particle`,
- * `run_function`, `set_block_state`, `give_item`, `trigger_event`, `apply_effect`). Item and
- * block models are vanilla ones; the only textures are the three armour layers of the ruby
- * equipment asset ({@link SAMPLE_ASSETS}). The equipment element is
+ * `msm:consumable`, `msm:ranged_weapon`, `msm:throwable`), the effect components
+ * (`msm:on_start`, `msm:on_tick`, `msm:on_end`) and every action (`play_sound`,
+ * `spawn_particle`, `run_function`, `set_block_state`, `give_item`, `trigger_event`,
+ * `apply_effect`, `damage`, `heal`). Item and block models are vanilla ones; the only textures
+ * are the three armour layers of the ruby equipment asset and the two effect icons
+ * ({@link SAMPLE_ASSETS}). The equipment element is
  * `ruby_armor`, not `ruby`: element ids are unique per namespace and `ruby` is the item.
  */
+/** The colours of the two effects (particles and the HUD bar), also their placeholder icons'. */
+const RUBY_RUSH_COLOUR = 0xe0115f;
+const RUBY_STING_COLOUR = 0x8b0000;
+
 const SAMPLE_ELEMENTS: readonly SampleElement[] = [
   {
     id: ns('mod'),
@@ -407,6 +415,119 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
       },
     },
   },
+  // Effects and throwables (ADRs 0055 and 0056).
+  {
+    id: ns('ruby_rush'),
+    kind: 'msm:effect',
+    data: {
+      format: 1,
+      display_name: 'Ruby Rush',
+      category: 'beneficial',
+      color: RUBY_RUSH_COLOUR,
+      sound: 'minecraft:block.amethyst_block.chime',
+      attribute_modifiers: [
+        { attribute: 'minecraft:movement_speed', amount: 0.2, operation: 'add_multiplied_total' },
+      ],
+      components: {
+        'msm:on_start': { event: ns('rush_start') },
+        'msm:on_tick': { event: ns('rush_tick'), interval_ticks: 10 },
+        'msm:on_end': { event: ns('rush_end') },
+      },
+      events: {
+        [ns('rush_start')]: {
+          actions: [{ type: 'run_function', function: ns('ruby/rush') }],
+        },
+        [ns('rush_tick')]: { actions: [{ type: 'heal', amount: 1 }] },
+        [ns('rush_end')]: {
+          actions: [{ type: 'apply_effect', effect: 'minecraft:glowing', seconds: 3 }],
+        },
+      },
+    },
+  },
+  {
+    id: ns('ruby_sting'),
+    kind: 'msm:effect',
+    data: {
+      format: 1,
+      display_name: 'Ruby Sting',
+      category: 'harmful',
+      color: RUBY_STING_COLOUR,
+      particle: 'minecraft:crit',
+      components: {
+        'msm:on_tick': { event: ns('sting_tick'), interval_ticks: 20 },
+      },
+      events: {
+        [ns('sting_tick')]: { actions: [{ type: 'damage', amount: 1 }] },
+      },
+    },
+  },
+  {
+    id: ns('ruby_elixir'),
+    kind: 'msm:item',
+    data: {
+      format: 1,
+      model: 'minecraft:item/experience_bottle',
+      display_name: 'Ruby Elixir',
+      max_stack_size: 16,
+      creative_tab: 'minecraft:food_and_drinks',
+      components: {
+        'msm:consumable': {
+          seconds: 1,
+          animation: 'drink',
+          converts_to: 'minecraft:glass_bottle',
+          effects: [{ effect: ns('ruby_rush'), seconds: 20, amplifier: 1 }],
+        },
+      },
+    },
+  },
+  {
+    id: ns('ruby_dart'),
+    kind: 'msm:item',
+    data: {
+      format: 1,
+      model: 'minecraft:item/arrow',
+      display_name: 'Ruby Dart',
+      max_stack_size: 16,
+      creative_tab: 'minecraft:combat',
+      components: {
+        'msm:throwable': {
+          speed: 2,
+          damage: 3,
+          after_throw: 'drop',
+          on_hit_entity: { event: ns('dart_hit') },
+        },
+      },
+      events: {
+        [ns('dart_hit')]: {
+          actions: [
+            { type: 'apply_effect', effect: ns('ruby_sting'), seconds: 10, target: 'other' },
+          ],
+        },
+      },
+    },
+  },
+  {
+    id: ns('ruby_boomerang'),
+    kind: 'msm:item',
+    data: {
+      format: 1,
+      model: 'minecraft:item/breeze_rod',
+      display_name: 'Ruby Boomerang',
+      max_stack_size: 1,
+      rarity: 'uncommon',
+      creative_tab: 'minecraft:combat',
+      components: {
+        'msm:durability': { max: 64 },
+        'msm:throwable': {
+          speed: 1.5,
+          charge_ticks: 10,
+          after_throw: 'return',
+          sound: 'minecraft:item.trident.throw',
+          dispensable: false,
+        },
+      },
+    },
+  },
   {
     id: ns('ruby/shimmer'),
     kind: 'minecraft:function',
@@ -415,6 +536,16 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
         '# Run by the ruby ore and the ruby apple (run_function action).',
         'particle minecraft:end_rod ~ ~1 ~ 0.3 0.3 0.3 0.02 10',
         'say The ruby shimmers.',
+      ],
+    },
+  },
+  {
+    id: ns('ruby/rush'),
+    kind: 'minecraft:function',
+    data: {
+      lines: [
+        '# Run when Ruby Rush starts (msm:on_start, run_function action).',
+        'say The ruby rush begins.',
       ],
     },
   },
@@ -476,8 +607,22 @@ function armorLayerPlaceholder(colour: Rgb, height = 32): Uint8Array {
   return encodePng(rgba, width, height);
 }
 
-/** The three armour layers of `ruby_armor` (`horse_body`, `humanoid`, `humanoid_leggings`). */
+/** An `0xRRGGBB` colour as RGB. */
+const rgbOf = (colour: number): Rgb => [(colour >> 16) & 0xff, (colour >> 8) & 0xff, colour & 0xff];
+
+/**
+ * The three armour layers of `ruby_armor` (`horse_body`, `humanoid`, `humanoid_leggings`) and
+ * the two effect icons (the library's 18x18 `effect_icon` placeholder, ADR 0055 D6).
+ */
 const SAMPLE_ASSETS: readonly SampleAsset[] = [
+  {
+    path: 'textures/mob_effect/ruby_rush.png',
+    bytes: placeholderPng('effect_icon', { colour: rgbOf(RUBY_RUSH_COLOUR) }),
+  },
+  {
+    path: 'textures/mob_effect/ruby_sting.png',
+    bytes: placeholderPng('effect_icon', { colour: rgbOf(RUBY_STING_COLOUR) }),
+  },
   {
     path: 'textures/entity/equipment/horse_body/ruby.png',
     bytes: armorLayerPlaceholder(RUBY, 64),
@@ -728,6 +873,10 @@ describe('sample mod project', () => {
       'msm:on_use',
       'msm:consumable',
       'msm:ranged_weapon',
+      'msm:throwable',
+      'msm:on_start',
+      'msm:on_tick',
+      'msm:on_end',
     ]) {
       expect(text.includes(`"${component}"`), component).toBe(true);
     }
@@ -739,6 +888,8 @@ describe('sample mod project', () => {
       'give_item',
       'trigger_event',
       'apply_effect',
+      'damage',
+      'heal',
     ]) {
       expect(text.includes(`"type":"${action}"`), action).toBe(true);
     }
@@ -748,6 +899,7 @@ describe('sample mod project', () => {
       'minecraft:function',
       'minecraft:loot_table',
       'msm:block',
+      'msm:effect',
       'msm:item',
       'msm:mod',
     ]);
@@ -844,6 +996,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           ...SAMPLE_ELEMENTS.filter((entry) => entry.kind === 'msm:item').map(
             (entry) => `msm/${NAMESPACE}/item/${entry.id.split(':')[1]}.json`,
           ),
+          ...SAMPLE_ELEMENTS.filter((entry) => entry.kind === 'msm:effect').map(
+            (entry) => `msm/${NAMESPACE}/effect/${entry.id.split(':')[1]}.json`,
+          ),
         ].sort(),
       );
       for (const path of [
@@ -857,6 +1012,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         `assets/${NAMESPACE}/${target.folders.resource.textures}/entity/equipment/humanoid/ruby.png`,
         `assets/${NAMESPACE}/${target.folders.resource.textures}/entity/equipment/humanoid_leggings/ruby.png`,
         `assets/${NAMESPACE}/${target.folders.resource.textures}/entity/equipment/horse_body/ruby.png`,
+        `assets/${NAMESPACE}/${target.folders.resource.textures}/mob_effect/ruby_rush.png`,
+        `assets/${NAMESPACE}/${target.folders.resource.textures}/mob_effect/ruby_sting.png`,
+        `data/${NAMESPACE}/${target.folders.data.function}/ruby/rush.mcfunction`,
       ]) {
         expect(paths, path).toContain(path);
       }
@@ -869,7 +1027,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       for (const path of definitions) {
         const ref = path.includes('/block/')
           ? MSM_SCHEMA_REFS.blockDefinition
-          : MSM_SCHEMA_REFS.itemDefinition;
+          : path.includes('/effect/')
+            ? MSM_SCHEMA_REFS.effectDefinition
+            : MSM_SCHEMA_REFS.itemDefinition;
         const value = JSON.parse(utf8.decode(files[path] as Uint8Array)) as Json;
         for (const problem of validateJson(value, context.schemaIndex.resolveSchemaRef(ref), {
           registries: context.registries,
@@ -887,6 +1047,14 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(modJson.id).toBe(NAMESPACE);
       expect(modJson.depends.msm_runtime).toBe(`>=${meta.msmVersion}`);
       expect(modJson.jars).toEqual([{ file: `META-INF/jars/msm_runtime-${meta.msmVersion}.jar` }]);
+
+      const lang = JSON.parse(
+        utf8.decode(
+          files[`assets/${NAMESPACE}/${target.folders.resource.lang}/en_us.json`] as Uint8Array,
+        ),
+      ) as Record<string, string>;
+      expect(lang[`effect.${NAMESPACE}.ruby_rush`]).toBe('Ruby Rush');
+      expect(lang[`effect.${NAMESPACE}.ruby_sting`]).toBe('Ruby Sting');
     });
 
     describe('content jar', () => {

@@ -9,6 +9,9 @@
   },
   "description": "Kitchen-sink sample: every block and item component and every action.",
   "entrypoints": {
+    "client": [
+      "msm_sample_mod.client.MsmSampleModClient"
+    ],
     "main": [
       "msm_sample_mod.MsmSampleMod"
     ]

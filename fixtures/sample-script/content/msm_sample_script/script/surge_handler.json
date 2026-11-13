@@ -1,0 +1,24 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// The per-tick script of the msm_sample_script:spark_surge effect: its msm:on_tick event runs this",
+      "// handler (run_script) every 40 ticks; self and other are the holder (ADR 0055 D5).",
+      "msm.actions.define(\"msm_sample_script:surge\", (e) => {",
+      "  if (e.other === undefined) return;",
+      "  var level = e.other.effectLevel(\"msm_sample_script:spark_surge\");",
+      "  msm.log.info(\"action surge: \" + e.other.type + \" at level \" + level + \", health \" + e.other.health);",
+      "  if (e.other.health < e.other.maxHealth) {",
+      "    e.other.heal(level);",
+      "  }",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:surge_handler",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}
