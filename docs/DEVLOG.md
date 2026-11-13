@@ -3024,3 +3024,29 @@ Next: CI for the velocity Java (ADR 0052), then the user's Windows test; these c
 
 **Next**
 - None from this session.
+
+## 2026-11-13 — executor — feature order: different steps are legal
+
+**What**
+- `packages/plugins/worldgen/src/validators.ts`: `worldgen.feature-order` (error) now reports only a cycle of placed-feature order within one decoration step (including a feature listed twice in one step). The same placed feature in different steps in two biomes is the new warning `worldgen.feature-step-differs`, which does not block export. Ids without a namespace count as `minecraft:` in both checks. `WORLDGEN_PROBLEM_CODES` has six codes; the validator id `msm.worldgen.feature-order` reports both.
+- Tests: worldgen validator tests (different steps: no error, one warning; three-biome cycle; feature listed twice in a step; bare and prefixed ids collide); the sample-worldgen golden mutation now swaps two vegetal features in a biome copy (one error), plus a step-move copy (one warning, no error); e2e `worldgen-path` asserts the warning for a step move with export enabled, then makes a real cycle by moving the first lakes feature down in the starter's biome.
+- Biome Studio hint text; guide `worldgen.md` (what crashes, what is a warning, vanilla biomes in the world's list take part too); ADR 0022 implementation note; DESIGN testing row; ROADMAP Phase 3 exit item; `fixtures/sample-worldgen/README.md`.
+
+**Decisions**
+- Grounded in 26.3's `FeatureSorter` (nodes are (step, feature) pairs; edges are consecutive pairs across a biome's steps; a cycle can only form inside one step). Brief W1.
+
+**Next**
+- None.
+
+## 2026-11-13 — orchestrator — plan: custom status effects and throwables
+
+**What**
+- Wrote `docs/PLAN-effects-throwables.md` for the user's request "add custom status effects and throwables" (ROADMAP Post-1.0 Ideas, deferred by ADR 0044 D8): verified facts, two ADR drafts (0055 `msm:effect`, 0056 `msm:throwable`), briefs B200–B211 in four waves, and what needs the user. No code changed.
+- Facts read from the vendored 26.3 data, `javap` over the 26.3 and 26.4-snapshot-7 client jars (downloaded to the scratchpad only) and the Fabric API 0.165.2+26.3 entity events jar: mob effects and potions are code registries; no data component throws a projectile; `MobEffect`, `ThrowableItemProjectile`, `ProjectileItem` and `ThrownItemRenderer` have the same signatures on both versions; Fabric has `ServerMobEffectEvents`.
+- Found while reading: the `java-project` exporter treats any `msm/<ns>/<kind>/` folder other than `block` and `item` as an entity (B206 fixes it with the new kind).
+
+**Decisions (drafts, for the main session and the user)**
+- `msm:effect` is a kind in `@msm/plugin-blocks-items` (registry `mob_effect`); throwables are an item component with one shared projectile entity type drawn by vanilla's `ThrownItemRenderer` (no GeckoLib). Two new actions (`damage`, `heal`); four additive script API members; plugin API 1.6.0 (`JavaProjectInput.effects?`); no new AI tool; no new `supports` gate.
+
+**Next**
+- The user's answers to the five defaults in the plan's section 4; then Wave 0 (ADRs as Proposed, DESIGN and ROADMAP notes) and Wave 1 (B200–B202).

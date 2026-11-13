@@ -9,7 +9,7 @@ The library starter "Custom biome with a jigsaw structure" (`worldgen_pack`) sav
 - both packs export with zero problems, and the data zip's SHA-256 is pinned per target, built in two time zones;
 - the three structure `.nbt` files in the zip read back with the same block counts;
 - a chain walk over the zip resolves every link (world preset → dimensions → dimension types and biomes → placed features → configured features; structure set → structure → biome tag → biomes; structure → start pool → pools and fallbacks → structure templates → jigsaw pools, with every jigsaw `target` named in its pool), and it fails on a copy with a pool removed;
-- a copy with a placed feature moved to another step in a second biome reports exactly one `worldgen.feature-order` error.
+- a copy of the biome that lists two of its placed features in the opposite order in one step reports exactly one `worldgen.feature-order` error; a copy with a placed feature moved to another step reports only the `worldgen.feature-step-differs` warning.
 
 ## Contents
 

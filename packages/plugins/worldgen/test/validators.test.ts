@@ -99,29 +99,32 @@ function run(elements: Element[], code: string): Problem[] {
 }
 
 describe('worldgen validators', () => {
-  it('declares the five codes and reads only the kinds they name', () => {
-    expect(WORLDGEN_PROBLEM_CODES).toHaveLength(5);
+  it('declares the six codes and reads only the kinds they name', () => {
+    expect(WORLDGEN_PROBLEM_CODES).toHaveLength(6);
     expect(new Set(worldgenValidators.map((validator) => validator.id)).size).toBe(5);
     for (const validator of worldgenValidators) expect(validator.kinds.length).toBeGreaterThan(0);
   });
 
   describe('worldgen.feature-order', () => {
-    it('reports the same placed feature in different steps of two biomes', () => {
+    it('reports no error for the same placed feature in different steps of two biomes', () => {
+      expect(
+        run(
+          [
+            biome('demo:a', { [ORES]: ['demo:ruby_ore', 'demo:x'], [VEGETAL]: ['demo:y'] }),
+            biome('demo:b', { [ORES]: ['demo:y'], [VEGETAL]: ['demo:ruby_ore', 'demo:x'] }),
+          ],
+          'worldgen.feature-order',
+        ),
+      ).toEqual([]);
+    });
+
+    it('reports a placed feature listed twice in one step', () => {
       const problems = run(
-        [
-          biome('demo:a', { [ORES]: ['demo:ruby_ore'] }),
-          biome('demo:b', { [VEGETAL]: ['demo:ruby_ore'] }),
-        ],
+        [biome('demo:a', { [VEGETAL]: ['demo:x', 'demo:y', 'demo:x'] })],
         'worldgen.feature-order',
       );
       expect(problems).toHaveLength(1);
-      expect(problems[0]).toMatchObject({
-        severity: 'error',
-        elementId: 'demo:b',
-        path: `/features/${VEGETAL}/0`,
-      });
-      expect(problems[0]?.message).toContain(steps[ORES]);
-      expect(problems[0]?.message).toContain(steps[VEGETAL]);
+      expect(problems[0]).toMatchObject({ severity: 'error', elementId: 'demo:a' });
     });
 
     it('reports two placed features in opposite order within one step of two biomes', () => {
@@ -153,7 +156,8 @@ describe('worldgen validators', () => {
         'worldgen.feature-order',
       );
       expect(problems).toHaveLength(1);
-      expect(problems[0]?.elementId).toBe('demo:c');
+      expect(problems[0]).toMatchObject({ severity: 'error', elementId: 'demo:c' });
+      expect(problems[0]?.message).toContain('"demo:x", "demo:y", "demo:z"');
     });
 
     it('reports nothing for a consistent order', () => {
@@ -181,6 +185,51 @@ describe('worldgen validators', () => {
         'worldgen.feature-order',
       );
       expect(problems).toHaveLength(1);
+      expect(problems[0]?.message).toContain('"minecraft:birch", "minecraft:oak"');
+    });
+  });
+
+  describe('worldgen.feature-step-differs', () => {
+    it('warns once about the same placed feature in different steps of two biomes', () => {
+      const elements = [
+        biome('demo:a', { [ORES]: ['demo:ruby_ore'] }),
+        biome('demo:b', { [VEGETAL]: ['demo:ruby_ore'] }),
+      ];
+      const problems = run(elements, 'worldgen.feature-step-differs');
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toMatchObject({
+        severity: 'warning',
+        elementId: 'demo:b',
+        path: `/features/${VEGETAL}/0`,
+      });
+      expect(problems[0]?.message).toContain(steps[ORES]);
+      expect(problems[0]?.message).toContain(steps[VEGETAL]);
+      expect(problems[0]?.message).toContain('placement seed');
+      expect(run(elements, 'worldgen.feature-order')).toEqual([]);
+    });
+
+    it('treats a bare id and its minecraft: form as the same feature', () => {
+      const problems = run(
+        [
+          biome('demo:a', { [ORES]: ['freeze_top_layer'] }),
+          biome('demo:b', { [VEGETAL]: ['minecraft:freeze_top_layer'] }),
+        ],
+        'worldgen.feature-step-differs',
+      );
+      expect(problems).toHaveLength(1);
+      expect(problems[0]?.message).toContain('"minecraft:freeze_top_layer"');
+    });
+
+    it('reports nothing when every biome uses the same step', () => {
+      expect(
+        run(
+          [
+            biome('demo:a', { [ORES]: ['ruby_ore'] }),
+            biome('demo:b', { [ORES]: ['minecraft:ruby_ore'] }),
+          ],
+          'worldgen.feature-step-differs',
+        ),
+      ).toEqual([]);
     });
   });
 

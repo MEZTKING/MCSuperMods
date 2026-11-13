@@ -11,8 +11,10 @@
  *   time zones (`test/fixtures/<target id>/sample-worldgen-data.sha256`).
  * - The zip's structure `.nbt` files read back with the elements' block counts, and the chain
  *   walk (`chain-walk.ts`) resolves every link; it fails on a copy with a pool removed.
- * - A copy with a placed feature moved to another step in a second biome reports exactly one
- *   `worldgen.feature-order` error.
+ * - A copy of the biome that lists two of its placed features in the opposite order in one step
+ *   reports exactly one `worldgen.feature-order` error (a real "Feature order cycle"); a copy
+ *   with a placed feature moved to another step reports only a
+ *   `worldgen.feature-step-differs` warning, which the game accepts.
  */
 import { createHash } from 'node:crypto';
 import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
@@ -30,7 +32,7 @@ import {
   registerPlugin,
   saveProject,
 } from '@msm/core';
-import type { Element, Exporter, Plugin, Project } from '@msm/plugin-api';
+import type { Element, Exporter, Plugin, Problem, Project } from '@msm/plugin-api';
 import dataPackPlugin from '@msm/plugin-datapack';
 import libraryPlugin, { libraryStarters } from '@msm/plugin-library';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
@@ -338,22 +340,20 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(found).toEqual([]);
     });
 
-    it('reports exactly one feature-order error when a placed feature changes step in a second biome', async () => {
+    /** The sample's elements plus a copy of its biome whose features `mutate` changes. */
+    async function withBiomeCopy(
+      mutate: (features: string[][], vegetal: number) => void,
+    ): Promise<{ copy: Element; problems: Problem[] }> {
       const elements = elementsOf(await loadSample());
       const biome = elements.find((element) => element.kind === 'minecraft:worldgen/biome');
       const data = structuredClone(biome?.data) as { features: string[][] };
-      const steps = target.worldgen.featureSteps;
-      const vegetal = steps.indexOf('vegetal_decoration');
-      const moved = `${NAMESPACE}:amber_tree_placed`;
-      expect(data.features[vegetal]).toContain(moved);
-      data.features[vegetal] = (data.features[vegetal] ?? []).filter((id) => id !== moved);
-      data.features[vegetal - 1] = [...(data.features[vegetal - 1] ?? []), moved];
+      mutate(data.features, target.worldgen.featureSteps.indexOf('vegetal_decoration'));
       const copy: Element = {
         ...(biome as Element),
         id: `${NAMESPACE}:amber_woods_copy`,
         data: data as unknown as Element['data'],
       };
-      const found = (
+      const problems = (
         await Promise.all(
           VALIDATORS.map((validator) =>
             validator.validate({
@@ -363,11 +363,36 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
             }),
           ),
         )
-      )
-        .flat()
-        .filter((problem) => problem.severity === 'error');
-      expect(found.map((problem) => problem.code)).toEqual(['worldgen.feature-order']);
-      expect(found[0]?.elementId).toBe(copy.id);
+      ).flat();
+      return { copy, problems };
+    }
+
+    it('reports exactly one feature-order error when a second biome lists two features in the opposite order', async () => {
+      const { copy, problems } = await withBiomeCopy((features, vegetal) => {
+        const list = features[vegetal] ?? [];
+        expect(list.length).toBeGreaterThanOrEqual(2);
+        features[vegetal] = [list[1] as string, list[0] as string, ...list.slice(2)];
+      });
+      const errors = problems.filter((problem) => problem.severity === 'error');
+      expect(errors.map((problem) => problem.code)).toEqual(['worldgen.feature-order']);
+      expect(errors[0]?.elementId).toBe(copy.id);
+    });
+
+    it('reports only a step warning when a placed feature changes step in a second biome', async () => {
+      const moved = `${NAMESPACE}:amber_tree_placed`;
+      const { copy, problems } = await withBiomeCopy((features, vegetal) => {
+        expect(features[vegetal]).toContain(moved);
+        features[vegetal] = (features[vegetal] ?? []).filter((id) => id !== moved);
+        features[vegetal - 1] = [...(features[vegetal - 1] ?? []), moved];
+      });
+      expect(problems.filter((problem) => problem.severity === 'error')).toEqual([]);
+      // The copy is in no biome source, so it also reports `worldgen.biome-unreachable`.
+      const featureProblems = problems.filter((problem) =>
+        problem.code.startsWith('worldgen.feature'),
+      );
+      expect(featureProblems.map((p) => [p.code, p.severity, p.elementId])).toEqual([
+        ['worldgen.feature-step-differs', 'warning', copy.id],
+      ]);
     });
 
     it('exports the resource pack with the English names', async () => {

@@ -291,8 +291,9 @@ export function BiomeStudio(props: StudioProps) {
   const featureSection = (
     <Section title="Features" testId="biome-features">
       <p className="text-muted text-xs">
-        Placed features run step by step, in list order within a step. A placed feature used by
-        several biomes must keep the same step and relative order in all of them.
+        Placed features run step by step, in list order within a step. Placed features shared by
+        several biomes must keep the same relative order within a step in all of them, and are best
+        kept in the same step too.
       </p>
       {data.features !== undefined && !Array.isArray(data.features) ? (
         <p className="text-muted text-sm">

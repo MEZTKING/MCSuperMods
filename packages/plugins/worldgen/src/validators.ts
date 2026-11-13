@@ -3,10 +3,20 @@
  * only the project's elements and the target's facts; vanilla content is not visible, so the
  * checks compare project elements with each other. Codes:
  *
- * - `worldgen.feature-order` (error): a placed feature in different decoration steps in two
- *   project biomes, or placed features whose order within one step forms a cycle across
- *   project biomes (two biomes listing two features in opposite order is the simplest case).
- *   This is the class of the game's "Feature order cycle" crash.
+ * - `worldgen.feature-order` (error): placed features whose order within one decoration step
+ *   forms a cycle across project biomes (two biomes listing two features in opposite order is
+ *   the simplest case; a feature listed twice in one step is a cycle too). This is the class of
+ *   the game's "Feature order cycle" crash. The game's sorter (`FeatureSorter`) makes one graph
+ *   node per (step, feature) pair and an edge for each consecutive pair of a biome's features
+ *   across all its steps; steps only increase along a biome's list, so a cycle can only form
+ *   inside one step, and a feature listed in different steps is legal.
+ * - `worldgen.feature-step-differs` (warning): the same placed feature in different decoration
+ *   steps in two project biomes. The game accepts it, but the feature runs at a different point
+ *   of decoration and with a different placement seed in those biomes, which is usually a
+ *   mistake.
+ *
+ *   Both checks treat an id without a namespace as `minecraft:`, as the game does, so `oak` and
+ *   `minecraft:oak` are the same feature.
  * - `worldgen.biome-unreachable` (warning): a project biome named by no biome source of a
  *   project dimension or world preset.
  * - `worldgen.preset-not-selectable` (info): a project world preset in neither the
@@ -121,8 +131,9 @@ function featureOrder(elements: readonly Element[], steps: readonly string[]): P
   }));
   const stepName = (step: number): string => steps[step] ?? String(step);
 
-  // 1. The same placed feature in different steps: reported once for every occurrence whose
-  //    step differs from the feature's first occurrence (in element order).
+  // 1. The same placed feature in different steps: legal (the game's sort nodes are
+  //    (step, feature) pairs), so a warning once for every occurrence whose step differs from
+  //    the feature's first occurrence (in element order).
   const byFeature = new Map<string, Occurrence[]>();
   for (const biome of biomes) {
     biome.steps.forEach((features, step) => {
@@ -138,17 +149,18 @@ function featureOrder(elements: readonly Element[], steps: readonly string[]): P
     for (const occurrence of occurrences) {
       if (occurrence.step === first.step) continue;
       problems.push({
-        severity: 'error',
-        code: 'worldgen.feature-order',
+        severity: 'warning',
+        code: 'worldgen.feature-step-differs',
         elementId: occurrence.biome,
         path: `/features/${occurrence.step}/${occurrence.index}`,
-        message: `Placed feature "${feature}" is in step "${stepName(occurrence.step)}" here but in step "${stepName(first.step)}" in biome "${first.biome}". A placed feature must use the same step in every biome, or the game stops with "Feature order cycle".`,
+        message: `Placed feature "${feature}" is in step "${stepName(occurrence.step)}" here but in step "${stepName(first.step)}" in biome "${first.biome}". The game accepts this, but the feature runs at a different point of decoration and with a different placement seed in these biomes, which is usually a mistake.`,
       });
     }
   }
 
   // 2. Order within a step: consecutive features of every biome are edges; a cycle means no
-  //    order satisfies every biome.
+  //    order satisfies every biome and the game stops with "Feature order cycle". Edges across
+  //    steps cannot close a cycle, so each step is checked on its own.
   for (let step = 0; step < steps.length; step += 1) {
     const edges = new Map<string, Set<string>>();
     const edgeOwners = new Map<string, Set<string>>();
@@ -380,6 +392,7 @@ export const worldgenValidators: readonly ProjectValidator[] = Object.freeze([
 /** The problem codes the validators report. */
 export const WORLDGEN_PROBLEM_CODES = Object.freeze([
   'worldgen.feature-order',
+  'worldgen.feature-step-differs',
   'worldgen.biome-unreachable',
   'worldgen.preset-not-selectable',
   'worldgen.preset-missing-overworld',

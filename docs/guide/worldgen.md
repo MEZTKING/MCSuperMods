@@ -44,12 +44,15 @@ A feature is made of two elements:
 
 Select a placed feature to open the Placed Feature Studio: **Configured feature** picks the feature, **Placement modifiers** is the ordered list (choose a type and **Add modifier**; each modifier's settings appear under it), and **Used in** lists the biomes and steps that place it. Then add the placed feature to a step in the Biome Studio's **Features**.
 
-**The feature order rule.** Minecraft builds one global order of placed features per step from every biome in the world. If two biomes disagree, the game stops when the world loads with "Feature order cycle". So:
+**The feature order rule.** Minecraft sorts the placed features of every step into one global order, built from every biome in the world's biome list. Two placed features that appear together in one step of several biomes must be in the same order in all of them: if the biomes disagree (biome A lists X before Y and biome B lists Y before X, or a longer loop such as X before Y, Y before Z and Z before X across three biomes), no order fits and the game stops when the world loads with "Feature order cycle". Listing the same placed feature twice in one step of a biome is a loop too.
 
-- a placed feature used by several biomes must be in the same step in all of them;
-- two placed features that appear together in several biomes must be in the same order in all of them.
+MCSuperMods checks this across the biomes in your project and reports `worldgen.feature-order` as an error, which disables export until you fix it (undo works).
 
-MCSuperMods checks this across the biomes in your project and reports `worldgen.feature-order` as an error, which disables export until you fix it (undo works). Vanilla biomes are not visible to the check: when you reuse vanilla placed features, keep them in the step and order vanilla uses, as the starters do. A placed feature nothing uses reports `worldgen.placed-feature-unused`.
+A placed feature that is in one step in one biome and in another step in a second biome does not crash the game: the game treats each step's copy as a separate entry. It is still usually a mistake, because the feature runs at a different point of decoration in those biomes and gets a different placement seed, so MCSuperMods reports it as the warning `worldgen.feature-step-differs`, which does not block export.
+
+Both checks treat an id without a namespace as `minecraft:`, as the game does, so `freeze_top_layer` and `minecraft:freeze_top_layer` are the same placed feature.
+
+Vanilla biomes are not visible to the checks, but the vanilla biomes in your world's biome list (for example a world preset that mixes your biome with vanilla ones) take part in the game's sort as well. When you reuse vanilla placed features, keep them in the step and order vanilla uses, as the starters do. A placed feature nothing uses reports `worldgen.placed-feature-unused`.
 
 ## The climate map
 
