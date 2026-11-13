@@ -40,6 +40,7 @@ const TAG_ENTRIES: Record<(typeof TAG_REGISTRIES)[number], [string, string]> = {
   damage_type: ['minecraft:cactus', '#minecraft:is_fire'],
   enchantment: ['minecraft:sharpness', '#minecraft:curse'],
   painting_variant: ['minecraft:sunset', '#minecraft:placeable'],
+  villager_trade: ['minecraft:fletcher/1/emerald_arrow', '#minecraft:fletcher/level_1'],
   'worldgen/biome': ['minecraft:plains', '#minecraft:is_overworld'],
   'worldgen/structure': ['minecraft:village_plains', '#minecraft:village'],
   'worldgen/world_preset': ['minecraft:flat', '#minecraft:extended'],
@@ -150,6 +151,19 @@ const GENERIC_SAMPLES: Record<GenericDataRegistry, Json> = {
     ],
     columns: 2,
     can_close_with_escape: true,
+  },
+  villager_trade: {
+    wants: { id: 'minecraft:emerald', count: 2 },
+    additional_wants: { id: 'minecraft:paper', count: 4 },
+    gives: { id: 'minecraft:diamond', count: 1 },
+    max_uses: { type: 'minecraft:uniform', min: 4, max: 8 },
+    xp: 10,
+    reputation_discount: 0.05,
+  },
+  trade_set: {
+    trades: ['example:ruby', 'minecraft:fletcher/1/stick_emerald'],
+    amount: { type: 'minecraft:uniform', min: 1, max: 3 },
+    allow_duplicates: false,
   },
 };
 

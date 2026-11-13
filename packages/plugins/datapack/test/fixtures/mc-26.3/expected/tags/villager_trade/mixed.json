@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "replace": false,
+    "values": [
+      "minecraft:fletcher/1/emerald_arrow",
+      "#minecraft:fletcher/level_1",
+      "#example:others",
+      {
+        "id": "minecraft:fletcher/1/emerald_arrow",
+        "required": false
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/tags/villager_trade/mixed.json",
+  "schema": "tag:villager_trade"
+}

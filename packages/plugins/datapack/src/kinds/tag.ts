@@ -17,6 +17,7 @@ export const TAG_REGISTRIES = Object.freeze([
   'damage_type',
   'enchantment',
   'painting_variant',
+  'villager_trade',
   'worldgen/biome',
   'worldgen/structure',
   'worldgen/world_preset',

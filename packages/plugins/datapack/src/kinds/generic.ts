@@ -18,6 +18,8 @@ export const GENERIC_DATA_REGISTRIES = Object.freeze([
   'trim_material',
   'trim_pattern',
   'dialog',
+  'villager_trade',
+  'trade_set',
 ] as const satisfies readonly DataFolderKey[]);
 
 /** A registry with a generic kind. */
@@ -88,6 +90,17 @@ const DEFAULTS: Readonly<Record<GenericDataRegistry, Json>> = {
   dialog: {
     type: 'minecraft:notice',
     title: 'Notice',
+  },
+  villager_trade: {
+    wants: { id: 'minecraft:emerald', count: 1 },
+    gives: { id: 'minecraft:paper', count: 1 },
+    max_uses: 12,
+    xp: 1,
+    reputation_discount: 0.05,
+  },
+  trade_set: {
+    trades: '#minecraft:fletcher/level_1',
+    amount: 2,
   },
 };
 

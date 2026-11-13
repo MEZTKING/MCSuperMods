@@ -11,7 +11,7 @@ Built-in plugins contribute element kinds, lowering, commands and library conten
 | Subfolder | Package | Phase |
 |---|---|---|
 | `resourcepack/` | `@msm/plugin-resourcepack` | 1 |
-| `datapack/` | `@msm/plugin-datapack` | 2 |
+| `datapack/` | `@msm/plugin-datapack` (also `minecraft:villager_trade`, `minecraft:trade_set`, `minecraft:tag/villager_trade`; 60 templates; ADR 0060 D5) | 2 |
 | `library/` | `@msm/plugin-library` | 2 add-on |
 | `structures/` | `@msm/plugin-structures` | 3 |
 | `worldgen/` | `@msm/plugin-worldgen` | 3 |

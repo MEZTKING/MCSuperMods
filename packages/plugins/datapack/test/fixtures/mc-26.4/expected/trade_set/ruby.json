@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "allow_duplicates": false,
+    "amount": {
+      "max": 3,
+      "min": 1,
+      "type": "minecraft:uniform"
+    },
+    "trades": [
+      "example:ruby",
+      "minecraft:fletcher/1/stick_emerald"
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/trade_set/ruby.json",
+  "schema": "resource:trade_set"
+}

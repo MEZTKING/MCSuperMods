@@ -1,7 +1,7 @@
 /**
  * The data pack element templates (ADR 0020), in picker order: recipes, loot tables,
  * advancements, predicates, item modifiers, functions and function tags, other tags,
- * enchantments, then the other tier-B registries. Every template uses only vanilla ids, ids
+ * enchantments, then the other tier-B registries and the trades. Every template uses only vanilla ids, ids
  * derived from the new element's own id, or the project's `root`, `tick` and `load`.
  */
 import type { ElementTemplate } from '@msm/plugin-api';
@@ -13,6 +13,7 @@ import { predicateTemplates } from './predicates';
 import { recipeTemplates } from './recipes';
 import { enchantmentTemplates, otherDataTemplates } from './registries';
 import { tagTemplates } from './tags';
+import { tradeTemplates } from './trades';
 
 export const dataPackTemplates: readonly ElementTemplate[] = Object.freeze([
   ...recipeTemplates,
@@ -24,4 +25,5 @@ export const dataPackTemplates: readonly ElementTemplate[] = Object.freeze([
   ...tagTemplates,
   ...enchantmentTemplates,
   ...otherDataTemplates,
+  ...tradeTemplates,
 ]);

@@ -23,7 +23,7 @@ const {
   ...FIRST_TARGET
 } = (builtInTargets[0] as TargetBundle).target;
 
-/** The 56 template ids, in picker order (library plan section 2.1). */
+/** The 60 template ids, in picker order (library plan section 2.1). */
 const IDS = [
   'recipe_shaped',
   'recipe_shapeless',
@@ -81,6 +81,10 @@ const IDS = [
   'trim_pattern',
   'dialog_notice',
   'dialog_confirmation',
+  'trade_emeralds_for_item',
+  'trade_item_for_emeralds',
+  'trade_set',
+  'tag_villager_trade_fletcher',
 ];
 
 /** The ids the app offered before templates moved into the plugin (kept for the e2e specs). */
@@ -145,9 +149,9 @@ const byId = (id: string): ElementTemplate => {
 };
 
 describe('data pack templates', () => {
-  it('has the 56 ids in picker order, unique, and contributed by the plugin', () => {
+  it('has the 60 ids in picker order, unique, and contributed by the plugin', () => {
     expect(dataPackTemplates.map((template) => template.id)).toEqual(IDS);
-    expect(new Set(IDS).size).toBe(56);
+    expect(new Set(IDS).size).toBe(60);
     expect(plugin.contributes.elementTemplates?.map((template) => template.id)).toEqual(IDS);
     for (const id of KEPT) expect(IDS).toContain(id);
   });
@@ -358,3 +362,25 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     });
   },
 );
+
+describe('villager trade templates', () => {
+  it('lowers the fletcher tag template to a mergeable vanilla trade tag on every target', async () => {
+    const template = byId('tag_villager_trade_fletcher');
+    const context = contextFor(template);
+    expect(context.id).toBe('minecraft:fletcher/level_1');
+    for (const bundle of builtInTargets) {
+      const [file, ...rest] = (await kindOf(template).lower(
+        {
+          id: context.id,
+          kind: template.kind,
+          data: { replace: false, values: ['demo:sample'] },
+        } as never,
+        bundle.target as never,
+      )) as unknown as Array<{ path: string; merge?: string; contents: { replace: boolean } }>;
+      expect(rest).toHaveLength(0);
+      expect(file?.path).toBe('data/minecraft/tags/villager_trade/fletcher/level_1.json');
+      expect(file?.merge).toBe('tag');
+      expect(file?.contents.replace).toBe(false);
+    }
+  });
+});

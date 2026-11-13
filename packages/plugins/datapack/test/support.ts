@@ -40,6 +40,8 @@ export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
   'tag/game_event': ['example:others'],
   'tag/painting_variant': ['example:others'],
   'tag/item': ['demo:gems', 'example:others'],
+  'tag/villager_trade': ['example:others'],
+  villager_trade: ['example:ruby'],
   'tag/worldgen/biome': ['example:others'],
   'tag/worldgen/structure': ['example:others'],
   'tag/worldgen/world_preset': ['example:others'],
