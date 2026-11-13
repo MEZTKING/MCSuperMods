@@ -50,6 +50,13 @@
         "height": 1.95,
         "width": 0.6
       },
+      "sounds": {
+        "ambient": "minecraft:entity.zombie.ambient",
+        "ambient_interval_ticks": 120,
+        "death": "minecraft:entity.zombie.death",
+        "hurt": "minecraft:entity.zombie.hurt",
+        "step": "minecraft:entity.zombie.step"
+      },
       "spawn": {
         "biomes": [
           "#minecraft:is_overworld"

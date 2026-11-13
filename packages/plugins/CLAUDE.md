@@ -16,7 +16,7 @@ Built-in plugins contribute element kinds, lowering, commands and library conten
 | `structures/` | `@msm/plugin-structures` | 3 |
 | `worldgen/` | `@msm/plugin-worldgen` | 3 |
 | `blocks-items/` | `@msm/plugin-blocks-items` (blocks, items, effects, mod) | 4 |
-| `entities/` | `@msm/plugin-entities` | 5 |
+| `entities/` | `@msm/plugin-entities` (mob `sounds` pass through; Monster template shows them) | 5 |
 | `models-anim/` | `@msm/plugin-models-anim` | 5 |
 | `scripting/` | `@msm/plugin-scripting` (scripts, script API, typings) | 6 |
 

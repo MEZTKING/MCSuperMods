@@ -69,7 +69,7 @@ export const entitiesTemplates: readonly ElementTemplate[] = Object.freeze([
     kind: ENTITY_KIND,
     category: CATEGORY,
     title: 'Monster',
-    description: `A hostile mob that chases and hits players, fights back when hurt and spawns in the dark, with a spawn egg. ${MODEL_NOTE}`,
+    description: `A hostile mob that chases and hits players, fights back when hurt and spawns in the dark, with a spawn egg. Its \`sounds\` use vanilla zombie sounds; replace them with your own sound keys (from your project's sounds element) or remove the block for the vanilla defaults. ${MODEL_NOTE}`,
     data: (context) => ({
       format: 1,
       display_name: displayName(context.path),
@@ -83,6 +83,13 @@ export const entitiesTemplates: readonly ElementTemplate[] = Object.freeze([
         rule: 'monster',
       },
       spawn_egg: { texture: eggTexture(context) },
+      sounds: {
+        ambient: 'minecraft:entity.zombie.ambient',
+        hurt: 'minecraft:entity.zombie.hurt',
+        death: 'minecraft:entity.zombie.death',
+        step: 'minecraft:entity.zombie.step',
+        ambient_interval_ticks: 120,
+      },
       components: {
         'msm:health': { max: 24 },
         'msm:movement': { speed: 0.23, follow_range: 32 },

@@ -34,6 +34,13 @@ const SAMPLES: Sample[] = [
       size: { width: 0.9, height: 1.6 },
       eye_height: 1.4,
       loot_table: 'example:entities/ruby_golem_rare',
+      sounds: {
+        ambient: 'minecraft:entity.iron_golem.repair',
+        hurt: 'minecraft:entity.iron_golem.hurt',
+        death: 'minecraft:entity.iron_golem.death',
+        step: 'minecraft:entity.iron_golem.step',
+        ambient_interval_ticks: 100,
+      },
       spawn_egg: {
         creative_tab: 'minecraft:spawn_eggs',
         texture: 'example:item/ruby_golem_spawn_egg',

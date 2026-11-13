@@ -134,6 +134,13 @@
         "height": 1.6,
         "width": 0.9
       },
+      "sounds": {
+        "ambient": "minecraft:entity.iron_golem.repair",
+        "ambient_interval_ticks": 100,
+        "death": "minecraft:entity.iron_golem.death",
+        "hurt": "minecraft:entity.iron_golem.hurt",
+        "step": "minecraft:entity.iron_golem.step"
+      },
       "spawn": {
         "biomes": [
           "#minecraft:is_forest",
