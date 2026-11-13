@@ -8,7 +8,10 @@
 import { useId, useState } from 'react';
 import { fieldClass, Modal } from '../NewElementDialog';
 
-/** The kinds of texture offered, with their folder and size. */
+/**
+ * The kinds of texture offered, with their folder and size. An effect icon's name must be the
+ * effect's path: `textures/mob_effect/<path>.png` is found by its id (ADR 0055 D2).
+ */
 export const NEW_TEXTURE_KINDS = [
   { id: 'item', label: 'Item (16 × 16)', folder: 'textures/item', width: 16, height: 16 },
   { id: 'block', label: 'Block (16 × 16)', folder: 'textures/block', width: 16, height: 16 },
@@ -32,6 +35,13 @@ export const NEW_TEXTURE_KINDS = [
     folder: 'textures/entity',
     width: 64,
     height: 64,
+  },
+  {
+    id: 'effect_icon',
+    label: 'Effect icon (18 × 18)',
+    folder: 'textures/mob_effect',
+    width: 18,
+    height: 18,
   },
   {
     id: 'painting_1x1',
@@ -136,8 +146,10 @@ export function NewTextureDialog(props: NewTextureDialogProps) {
         ))}
       </select>
       <p className="text-xs text-muted">
-        It is saved as {props.namespace}:{name === '' ? '<name>' : name} in {kind.folder}. Point a
-        model or an equipment layer at it to use it.
+        It is saved as {props.namespace}:{name === '' ? '<name>' : name} in {kind.folder}.{' '}
+        {kind.id === 'effect_icon'
+          ? 'Name it after the effect (ruby_rush for the effect ruby_rush): the game finds the icon by name.'
+          : 'Point a model or an equipment layer at it to use it.'}
       </p>
     </Modal>
   );

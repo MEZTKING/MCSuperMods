@@ -20,7 +20,14 @@ import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
 import { AdvancedToggle, Section } from '../worldgen/parts';
-import { asObject, choicesAt, eventNames, pathSetter, pointerOf } from './blocks-items-model';
+import {
+  asObject,
+  choicesAt,
+  eventNames,
+  pathSetter,
+  pointerOf,
+  projectEffects,
+} from './blocks-items-model';
 import { EventsEditor } from './EventsEditor';
 import { CheckField, EventSelect, ModelField, ProblemsAt, TextField } from './parts';
 
@@ -402,6 +409,7 @@ export function BlockStudio(props: StudioProps) {
         suggest={suggest}
         onChange={onChange}
         handlers={projectHandlers(project)}
+        effects={projectEffects(project)}
       />
     </section>
   );

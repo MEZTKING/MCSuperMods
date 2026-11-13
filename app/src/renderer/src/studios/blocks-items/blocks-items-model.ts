@@ -23,6 +23,8 @@ export const BLOCK_KIND = 'msm:block';
 export const ITEM_KIND = 'msm:item';
 /** The kind id of custom entities (the Entity Studio, ADR 0028), which share the events editor. */
 export const ENTITY_KIND = 'msm:entity';
+/** The kind id of custom mob effects (the Effect Studio, ADR 0055). */
+export const EFFECT_KIND = 'msm:effect';
 /** The kind id a model id may name in the project (go to definition). */
 export const MODEL_KIND = 'minecraft:model';
 
@@ -61,8 +63,9 @@ export interface ActionField {
 }
 
 /**
- * Who an `apply_effect` action affects (`EffectTarget` in `action.mcdoc`): `self` is the
- * event's player (an entity without one: itself), `other` the other entity of the event.
+ * Who an `apply_effect`, `launch`, `damage` or `heal` action affects (`EffectTarget` in
+ * `action.mcdoc`): `self` is the event's player (an entity without one: itself; an effect:
+ * its holder; a throwable's hit: the thrower), `other` the other entity of the event.
  */
 export const EFFECT_TARGETS: readonly string[] = Object.freeze(['self', 'other']);
 
@@ -79,8 +82,9 @@ export interface ActionSpec {
 /**
  * The actions of format v1 with their fields and defaults: the six of ADR 0025 D4,
  * `run_script` (ADR 0032 D4), which calls a handler a script defines, `apply_effect`
- * (ADR 0044 D2), which gives a mob effect to the event's player or the other entity, and
- * `launch` (ADR 0052), which pushes it.
+ * (ADR 0044 D2), which gives a mob effect to the event's player or the other entity,
+ * `launch` (ADR 0052), which pushes it, and `damage` ("Hurt") and `heal` ("Heal", ADR 0055
+ * D4), which hurt it with magic damage or heal it.
  */
 export const ACTIONS: readonly ActionSpec[] = Object.freeze([
   {
@@ -189,6 +193,48 @@ export const ACTIONS: readonly ActionSpec[] = Object.freeze([
       },
     ],
   },
+  {
+    type: 'damage',
+    label: 'Hurt',
+    fields: [
+      {
+        key: 'amount',
+        label: 'Amount (half hearts)',
+        type: 'float',
+        required: true,
+        initialValue: 2,
+      },
+      {
+        key: 'target',
+        label: 'Target',
+        type: 'choice',
+        choices: EFFECT_TARGETS,
+        required: false,
+        defaultValue: 'self',
+      },
+    ],
+  },
+  {
+    type: 'heal',
+    label: 'Heal',
+    fields: [
+      {
+        key: 'amount',
+        label: 'Amount (half hearts)',
+        type: 'float',
+        required: true,
+        initialValue: 2,
+      },
+      {
+        key: 'target',
+        label: 'Target',
+        type: 'choice',
+        choices: EFFECT_TARGETS,
+        required: false,
+        defaultValue: 'self',
+      },
+    ],
+  },
 ] satisfies ActionSpec[]);
 
 /** `play_animation` (ADR 0028), which only entity events may use. */
@@ -248,23 +294,48 @@ export function eventActions(data: Json | undefined, name: string): Json[] {
   return Array.isArray(actions) ? actions : [];
 }
 
-/** The trigger fields that name an event, per kind: `[component, field]`. */
-export const EVENT_FIELDS: Readonly<Record<string, readonly (readonly [string, string])[]>> =
-  Object.freeze({
+/**
+ * The trigger fields that name an event, per kind: the path under `components`, ending in the
+ * field that holds the event id (`['msm:on_use', 'event']`, or
+ * `['msm:throwable', 'on_hit_entity', 'event']` for a nested trigger).
+ */
+export const EVENT_FIELDS: Readonly<Record<string, readonly (readonly string[])[]>> = Object.freeze(
+  {
     [BLOCK_KIND]: [
       ['msm:on_interact', 'event'],
       ['msm:on_step', 'event'],
       ['msm:redstone', 'on_powered'],
       ['msm:redstone', 'on_unpowered'],
     ],
-    [ITEM_KIND]: [['msm:on_use', 'event']],
+    [ITEM_KIND]: [
+      ['msm:on_use', 'event'],
+      ['msm:throwable', 'on_hit_entity', 'event'],
+      ['msm:throwable', 'on_hit_block', 'event'],
+    ],
     [ENTITY_KIND]: [
       ['msm:on_hurt', 'event'],
       ['msm:on_death', 'event'],
       ['msm:on_interact', 'event'],
       ['msm:attack', 'on_attack'],
     ],
-  });
+    [EFFECT_KIND]: [
+      ['msm:on_start', 'event'],
+      ['msm:on_tick', 'event'],
+      ['msm:on_end', 'event'],
+    ],
+  },
+);
+
+/** `value` with the string at `path` replaced by `to` when it equals `from`; else `value`. */
+function renamedAt(value: Json, path: readonly string[], from: string, to: string): Json {
+  const [key, ...rest] = path;
+  if (key === undefined || !isJsonObject(value)) return value;
+  const child = value[key];
+  if (child === undefined) return value;
+  if (rest.length === 0) return child === from ? { ...value, [key]: to } : value;
+  const next = renamedAt(child, rest, from, to);
+  return next === child ? value : { ...value, [key]: next };
+}
 
 /**
  * `data` with event `from` renamed to `to`, keeping its position, and every reference to it
@@ -295,13 +366,12 @@ export function renameEvent(data: Json, kind: string, from: string, to: string):
       : event;
     renamedEvents[name === from ? to : name] = nextEvent;
   }
-  const components = isJsonObject(root.components) ? { ...root.components } : undefined;
+  let components: Json | undefined = isJsonObject(root.components)
+    ? { ...root.components }
+    : undefined;
   if (components !== undefined) {
-    for (const [component, field] of EVENT_FIELDS[kind] ?? []) {
-      const value = components[component];
-      if (isJsonObject(value) && value[field] === from) {
-        components[component] = { ...value, [field]: to };
-      }
+    for (const path of EVENT_FIELDS[kind] ?? []) {
+      components = renamedAt(components, path, from, to);
     }
   }
   return {
@@ -351,6 +421,34 @@ export function findElement(project: Project, id: string, kind: string): Element
     if (found !== undefined) return found;
   }
   return undefined;
+}
+
+/** The ids of the project's own mob effects (`msm:effect` elements), sorted. */
+export function projectEffects(project: Project | null | undefined): string[] {
+  if (project === null || project === undefined) return [];
+  return project.namespaces
+    .flatMap((namespace) => namespace.elements)
+    .filter((element) => element.kind === EFFECT_KIND)
+    .map((element) => element.id)
+    .sort();
+}
+
+/**
+ * `suggest` with `ids` (for example the project's own effects) offered first for `registry`
+ * when they match the typed prefix; other registries are unchanged.
+ */
+export function withProjectIds(
+  suggest: (registry: string, prefix: string) => string[],
+  registry: string,
+  ids: readonly string[],
+): (registry: string, prefix: string) => string[] {
+  if (ids.length === 0) return suggest;
+  return (asked, prefix) => {
+    const base = suggest(asked, prefix);
+    if (asked !== registry) return base;
+    const own = ids.filter((id) => id.startsWith(prefix) || id.split(':')[1]?.startsWith(prefix));
+    return [...own, ...base.filter((id) => !own.includes(id))];
+  };
 }
 
 /** A suggested id for a new event of `elementId`: `<id>_event`, `<id>_event_2`, … */

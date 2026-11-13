@@ -35,6 +35,7 @@ export interface ElementSidebarProps {
 export const GROUP_LABELS: Readonly<Record<string, string>> = {
   'msm:item': 'Items',
   'msm:block': 'Blocks',
+  'msm:effect': 'Status effects',
   'msm:mod': 'Mod settings',
   'minecraft:model': 'Models',
   'minecraft:item_definition': 'Item looks',

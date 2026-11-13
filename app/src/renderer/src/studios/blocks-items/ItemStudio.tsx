@@ -2,8 +2,10 @@
  * Item Studio (B97) for `msm:item` element data (ADR 0025 D3, D5): model ("Go to model"),
  * display name, stack size (shown as 1 while `msm:durability` is set, as the runtime forces
  * it), rarity, creative tab, food, tool (type and tier), durability, `msm:on_use` with
- * cooldown, and the events editor shared with the Block Studio. Choices come from the schema;
- * everything else stays behind "Advanced (all fields)".
+ * cooldown, `msm:throwable` (B205, ADR 0056 D1: damage, speed, gravity, spread, hold to
+ * throw, what happens after the throw, cooldown, sound, dispensers and the two hit events), and
+ * the events editor shared with the Block Studio. Choices come from the schema; everything
+ * else stays behind "Advanced (all fields)".
  */
 
 import { useState } from 'react';
@@ -12,13 +14,32 @@ import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
 import { AdvancedToggle, Section } from '../worldgen/parts';
-import { asObject, choicesAt, eventNames, pathSetter, pointerOf } from './blocks-items-model';
+import {
+  asObject,
+  choicesAt,
+  eventNames,
+  pathSetter,
+  pointerOf,
+  projectEffects,
+} from './blocks-items-model';
 import { EventsEditor } from './EventsEditor';
 import { CheckField, EventSelect, ModelField, ProblemsAt, TextField } from './parts';
 
 /** New component values when a component is switched on (ADR 0025 D3 examples). */
 const NEW_FOOD = { nutrition: 4, saturation: 0.3 };
 const NEW_DURABILITY = { max: 250 };
+
+/** What happens after a throw (`AfterThrow` in `definition.mcdoc`), when the schema has none. */
+const AFTER_THROW: readonly string[] = ['consume', 'keep', 'drop', 'return'];
+
+/** The components a throwable cannot be combined with (ADR 0056 D2), with their words. */
+const THROWABLE_CONFLICTS: readonly (readonly [string, string])[] = [
+  ['msm:armor', 'armour'],
+  ['msm:ranged_weapon', 'a bow or crossbow'],
+  ['msm:shield', 'a shield'],
+  ['msm:consumable', 'a drink or consumable'],
+  ['msm:food', 'food'],
+];
 
 export function ItemStudio(props: StudioProps) {
   const { project, element, node, problems, suggest, onChange } = props;
@@ -260,6 +281,135 @@ export function ItemStudio(props: StudioProps) {
     </Section>
   );
 
+  const throwablePath = ['components', 'msm:throwable'];
+  const hasThrowable = components['msm:throwable'] !== undefined;
+  const throwable = asObject(components['msm:throwable']);
+  const afterThrow = choices([...throwablePath, 'after_throw']);
+  const conflicts = THROWABLE_CONFLICTS.filter(([key]) => components[key] !== undefined).map(
+    ([, words]) => words,
+  );
+  if (hasThrowable && asObject(components['msm:tool']).type === 'mace') conflicts.push('a mace');
+  const throwNumber = (key: string, label: string, testId: string, integer = false) => (
+    <NumberField
+      label={label}
+      value={throwable[key]}
+      integer={integer}
+      allowEmpty
+      testId={testId}
+      onCommit={(value) =>
+        set([...throwablePath, key], value, typingKey(`/components/msm:throwable/${key}`))
+      }
+    />
+  );
+  const hitEvent = (key: string, label: string, testId: string) => (
+    <EventSelect
+      label={label}
+      value={asObject(throwable[key]).event}
+      events={events}
+      testId={testId}
+      onChange={(value) =>
+        value === undefined
+          ? set([...throwablePath, key], undefined)
+          : set([...throwablePath, key, 'event'], value)
+      }
+    />
+  );
+  const throwableSection = (
+    <Section title="Throwable" testId="item-throwable">
+      <CheckField
+        label="Throwable"
+        checked={hasThrowable}
+        testId="item-throwable-toggle"
+        onChange={(checked) => set(throwablePath, checked ? {} : undefined)}
+      />
+      {hasThrowable && (
+        <>
+          <p className="text-muted text-xs">
+            Using the item throws it; it flies as its own picture. Empty fields use the snowball's
+            values.
+          </p>
+          {conflicts.length > 0 && (
+            <p role="status" className="text-warning text-xs" data-testid="item-throwable-conflict">
+              A throwable item cannot also be {conflicts.join(', ')}: the game applies none of them.
+            </p>
+          )}
+          <div className="flex flex-wrap items-end gap-2">
+            {throwNumber('damage', 'Damage (half hearts)', 'item-throwable-damage')}
+            {throwNumber('speed', 'Speed (default 1.5)', 'item-throwable-speed')}
+            {throwNumber('gravity', 'Gravity (default 0.03)', 'item-throwable-gravity')}
+            {throwNumber('inaccuracy', 'Spread (default 1)', 'item-throwable-inaccuracy')}
+          </div>
+          <div className="flex flex-wrap items-end gap-2">
+            {throwNumber(
+              'charge_ticks',
+              'Hold to throw (ticks, 0 throws at once)',
+              'item-throwable-charge',
+              true,
+            )}
+            {throwNumber('cooldown_ticks', 'Cooldown (ticks)', 'item-throwable-cooldown', true)}
+            <SelectField
+              label="After the throw"
+              value={typeof throwable.after_throw === 'string' ? throwable.after_throw : undefined}
+              choices={afterThrow.length > 0 ? afterThrow : AFTER_THROW}
+              emptyLabel="(default: consume)"
+              testId="item-throwable-after"
+              onChange={(value) => set([...throwablePath, 'after_throw'], value)}
+            />
+          </div>
+          <p className="text-muted text-xs">
+            consume uses one item; keep uses none; drop leaves the item where it lands; return puts
+            it back in the thrower's inventory. keep, drop and return take one durability per throw
+            when the item has durability.
+          </p>
+          <div className="flex flex-wrap items-end gap-2">
+            <IdField
+              label="Throw sound"
+              value={typeof throwable.sound === 'string' ? throwable.sound : ''}
+              registry="sound_event"
+              suggest={suggest}
+              testId="item-throwable-sound"
+              onCommit={(value) =>
+                set([...throwablePath, 'sound'], value === '' ? undefined : value)
+              }
+            />
+            <CheckField
+              label="Dispensers throw it"
+              checked={throwable.dispensable !== false}
+              testId="item-throwable-dispensable"
+              onChange={(checked) =>
+                set([...throwablePath, 'dispensable'], checked ? undefined : false)
+              }
+            />
+          </div>
+          <div className="flex flex-wrap items-end gap-2">
+            {hitEvent('on_hit_entity', 'On hit entity', 'item-throwable-hit-entity')}
+            {hitEvent('on_hit_block', 'On hit block', 'item-throwable-hit-block')}
+          </div>
+          <p className="text-muted text-xs">
+            In the hit events "self" is the thrower and "other" is the mob hit, so "Apply effect",
+            "Hurt" and "Launch (push)" with target other act on the mob.
+          </p>
+        </>
+      )}
+      {[
+        'damage',
+        'speed',
+        'gravity',
+        'inaccuracy',
+        'charge_ticks',
+        'cooldown_ticks',
+        'after_throw',
+        'sound',
+        'dispensable',
+      ].map((key) => (
+        <ProblemsAt key={key} problems={problems} pointer={pointerOf([...throwablePath, key])} />
+      ))}
+      {at([...throwablePath, 'on_hit_entity', 'event'])}
+      {at([...throwablePath, 'on_hit_block', 'event'])}
+      {at(throwablePath)}
+    </Section>
+  );
+
   return (
     <section aria-label="Item Studio" data-testid="item-studio" className="flex flex-col gap-4">
       <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="item-advanced-toggle" />
@@ -268,12 +418,14 @@ export function ItemStudio(props: StudioProps) {
       {foodSection}
       {toolSection}
       {behaviour}
+      {throwableSection}
       <EventsEditor
         element={element}
         problems={problems}
         suggest={suggest}
         onChange={onChange}
         handlers={projectHandlers(project)}
+        effects={projectEffects(project)}
       />
     </section>
   );

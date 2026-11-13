@@ -3,8 +3,10 @@
  * remove events, and edit each event's ordered action list (add, remove, reorder, change type,
  * and the fields of the format v1 actions with their ADR 0025 D4 defaults, including
  * `run_script` with its handler picked from the project's scripts or typed, ADR 0032 D4, and
- * `apply_effect` with its mob effect, seconds, amplifier and target, ADR 0044 D2;
- * entity events also offer `play_animation`, ADR 0028).
+ * `apply_effect` with its mob effect, seconds, amplifier and target, ADR 0044 D2, the
+ * project's own effects offered first; "Hurt" (`damage`) and "Heal" (`heal`), ADR 0055 D4;
+ * entity events also offer `play_animation`, ADR 0028). Action types are listed by label
+ * with their format id.
  *
  * Renaming rewrites the references in trigger components and `trigger_event` actions in one
  * edit (one undo step); removing an event leaves its references, which the
@@ -42,6 +44,7 @@ import {
   pointerOf,
   renameEvent,
   suggestEventId,
+  withProjectIds,
 } from './blocks-items-model';
 import { EventSelect } from './parts';
 
@@ -56,6 +59,48 @@ export interface EventsEditorProps {
   handlers?: readonly string[];
   /** Trigger fields shown above the events (for example an entity's On hurt). */
   triggers?: ReactNode;
+  /** The project's own mob effect ids, offered first by `apply_effect` ({@link projectEffects}). */
+  effects?: readonly string[];
+}
+
+/** The text of an action type's option: its label and its format id, as "Hurt (damage)". */
+export function actionTypeLabel(spec: ActionSpec): string {
+  return `${spec.label} (${spec.type})`;
+}
+
+/** A select over action types, showing each by {@link actionTypeLabel}. */
+function ActionTypeSelect(props: {
+  label: string;
+  value: string | undefined;
+  actions: readonly ActionSpec[];
+  onChange(type: string): void;
+}) {
+  const id = useId();
+  const current = props.value ?? '';
+  const known = props.actions.some((spec) => spec.type === current);
+  return (
+    <div className="flex min-w-0 flex-col gap-0.5 text-xs">
+      <label htmlFor={id} className="text-muted">
+        {props.label}
+      </label>
+      <select
+        id={id}
+        className={inputClass}
+        value={current}
+        onChange={(event) => {
+          if (event.target.value !== '') props.onChange(event.target.value);
+        }}
+      >
+        {current === '' && <option value="">(choose an action)</option>}
+        {!known && current !== '' && <option value={current}>{current}</option>}
+        {props.actions.map((spec) => (
+          <option key={spec.type} value={spec.type}>
+            {actionTypeLabel(spec)}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
 }
 
 const offsetAxes = ['X', 'Y', 'Z'] as const;
@@ -301,12 +346,12 @@ function EventEditor(props: {
           return (
             <li key={index} className="flex flex-col gap-1" data-testid={`msm-action-${index}`}>
               <div className="flex flex-wrap items-end gap-2">
-                <SelectField
+                <ActionTypeSelect
                   label={`${actionName} type`}
                   value={typeof action.type === 'string' ? action.type : undefined}
-                  choices={props.actions.map((entry) => entry.type)}
+                  actions={props.actions}
                   onChange={(type) => {
-                    if (type === undefined || type === action.type) return;
+                    if (type === action.type) return;
                     onChange(pointer, newAction(type, events, name));
                   }}
                 />
@@ -366,13 +411,11 @@ function EventEditor(props: {
         })}
       </ol>
       <div className="flex items-end gap-1">
-        <SelectField
+        <ActionTypeSelect
           label={`New action type for ${name}`}
           value={addType}
-          choices={props.actions.map((entry) => entry.type)}
-          onChange={(type) => {
-            if (type !== undefined) setAddType(type);
-          }}
+          actions={props.actions}
+          onChange={setAddType}
         />
         <Button
           className="text-xs"
@@ -403,7 +446,9 @@ export function EventsEditor({
   animations = [],
   handlers = [],
   triggers,
+  effects = [],
 }: EventsEditorProps) {
+  const suggestIds = withProjectIds(suggest, 'mob_effect', effects);
   const events = eventNames(element.data);
   const actions = actionsFor(element.kind);
   const [draft, setDraft] = useState('');
@@ -440,7 +485,7 @@ export function EventsEditor({
             animations={animations}
             handlers={handlers}
             problems={problems}
-            suggest={suggest}
+            suggest={suggestIds}
             onChange={onChange}
           />
         ))}

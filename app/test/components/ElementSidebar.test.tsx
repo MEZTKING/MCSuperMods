@@ -224,6 +224,23 @@ describe('ElementSidebar entities and models', () => {
   });
 });
 
+describe('ElementSidebar status effects (ADR 0055)', () => {
+  it('groups msm:effect elements under Status effects', () => {
+    const project = sampleProject();
+    const demo = project.namespaces[0];
+    if (demo === undefined) throw new Error('no namespace');
+    demo.elements.push(element('demo:frost_bite', 'msm:effect'));
+    render(
+      <ElementSidebar project={project} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
+    );
+    const region = screen.getByRole('region', { name: 'Namespace demo' });
+    const headings = within(region).getAllByRole('heading', { level: 3 }).map(headingLabel);
+    expect(headings).toContain('Status effects');
+    const effects = within(region).getByRole('region', { name: 'demo msm:effect' });
+    expect(within(effects).getByRole('button', { name: 'demo:frost_bite' })).toBeTruthy();
+  });
+});
+
 describe('ElementSidebar navigation (ADR 0047)', () => {
   function projectWithSet() {
     const project = sampleProject();
