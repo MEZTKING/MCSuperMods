@@ -6,7 +6,7 @@
  */
 
 import { defaultKindRegistry, type Project, parseJsonPointer } from '@msm/core';
-import type { Json, Plugin, Target } from '@msm/plugin-api';
+import type { Json, OutputFile, Plugin, Target } from '@msm/plugin-api';
 import {
   BUILT_IN_EXTENSIONS,
   createRegistryIndex,
@@ -347,6 +347,38 @@ export function soundAwareRegistryIds(
   if (keys.length === 0) return out;
   out[SOUND_EVENT] = [...new Set([...(ids[SOUND_EVENT] ?? []), ...keys])].sort();
   return out;
+}
+
+/**
+ * The kind id the registry view of an MSM output file is asked for: any `msm:*` id selects
+ * the kind-aware view ({@link takesProjectSoundEvents}); no element has this kind.
+ */
+const MSM_OUTPUT_KIND = 'msm:output';
+
+/** The layer of the files the MSM runtime reads (definitions under `msm/<ns>/`). */
+const MSM_LAYER = 'msm';
+const MSM_OUTPUT_PREFIX = 'msm/';
+
+/**
+ * Whether a lowered output file takes the project's `sounds.json` event keys as plain
+ * `sound_event` ids: a file of the `msm` layer (or under `msm/`), which the MSM runtime reads
+ * and whose project sound events it registers (ADR 0057 D3). Vanilla data and resource pack
+ * files do not.
+ *
+ * @param file - The output file's layer and path.
+ */
+export function outputTakesProjectSoundEvents(file: Pick<OutputFile, 'layer' | 'path'>): boolean {
+  return file.layer === MSM_LAYER || file.path.startsWith(MSM_OUTPUT_PREFIX);
+}
+
+/**
+ * The kind id whose registry view and sound event rules apply to an output file:
+ * {@link MSM_OUTPUT_KIND} for an MSM file, `undefined` (the plain view) otherwise.
+ *
+ * @param file - The output file's layer and path.
+ */
+export function outputKindFor(file: Pick<OutputFile, 'layer' | 'path'>): string | undefined {
+  return outputTakesProjectSoundEvents(file) ? MSM_OUTPUT_KIND : undefined;
 }
 
 /**

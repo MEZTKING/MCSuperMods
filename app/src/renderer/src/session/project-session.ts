@@ -135,6 +135,7 @@ import {
 } from './references';
 import {
   loadSchemaContext,
+  outputKindFor,
   projectRegistryIds,
   rewriteSoundEventProblems,
   type SchemaContext,
@@ -2414,6 +2415,13 @@ export class ProjectSession {
       target: context.target,
       schemaIndex: context.schemaIndex,
       registries: context.registries(project),
+      // ADR 0057 D3: `msm` layer files take project sound event keys as `sound_event` ids;
+      // vanilla files keep the plain view, where a bare key is an unregistered sound event.
+      registriesFor: (file) => context.registries(project, outputKindFor(file)),
+      rewriteSchemaProblems: (file, problems, data, registries) =>
+        registries === undefined
+          ? problems
+          : rewriteSoundEventProblems(problems, outputKindFor(file) ?? '', data, registries),
       exporter,
       sink,
       readAsset: (namespace, path) => this.readAsset(namespace, path),

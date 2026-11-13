@@ -22,7 +22,13 @@ import {
   type Project,
   type Target,
 } from '@msm/plugin-api';
-import { type RegistryIndex, type SchemaIndex, type SchemaNode, validateJson } from '@msm/schemas';
+import {
+  type RegistryIndex,
+  type SchemaIndex,
+  type SchemaNode,
+  type SchemaProblem,
+  validateJson,
+} from '@msm/schemas';
 import { assetOutputFiles } from './assets';
 import { ExportProblemCodes } from './problem-codes';
 import { comparePaths } from './zip';
@@ -36,6 +42,25 @@ export interface ExportRequest {
   schemaIndex: SchemaIndex;
   /** When given, `#[id]` strings are checked against it (warnings only). */
   registries?: RegistryIndex;
+  /**
+   * The registry index for one output file, when the host keeps more than one view (the app
+   * accepts project sound event keys as `sound_event` ids in `msm` layer files only, ADR 0057
+   * D3). A returned index replaces {@link registries} for that file; `undefined` falls back
+   * to it.
+   */
+  registriesFor?: (file: OutputFile) => RegistryIndex | undefined;
+  /**
+   * Post-processes one file's schema problems before they are reported, for host-specific
+   * problems (the app turns a bare project sound event key in a vanilla `sound_event` field
+   * into the error `schema.unregistered-sound-event`). Receives the file, its problems, its
+   * parsed JSON and the registry index it was checked against.
+   */
+  rewriteSchemaProblems?: (
+    file: OutputFile,
+    problems: SchemaProblem[],
+    data: Json,
+    registries: RegistryIndex | undefined,
+  ) => SchemaProblem[];
   exporter: Exporter;
   sink: OutputSink;
   /**
@@ -110,6 +135,7 @@ function validateFile(
   file: OutputFile,
   schemaIndex: SchemaIndex,
   registries: RegistryIndex | undefined,
+  rewrite: ExportRequest['rewriteSchemaProblems'],
 ): Problem[] {
   if (file.schema === undefined) return [];
   let node: SchemaNode;
@@ -128,7 +154,10 @@ function validateFile(
   const contents = jsonContents(file);
   if ('problem' in contents) return [contents.problem];
   const options = registries === undefined ? {} : { registries };
-  return validateJson(contents.value, node, options).map((schemaProblem) => {
+  const found = validateJson(contents.value, node, options);
+  const schemaProblems =
+    rewrite === undefined ? found : rewrite(file, found, contents.value, registries);
+  return schemaProblems.map((schemaProblem) => {
     const problem: Problem = {
       severity: schemaProblem.severity,
       code: schemaProblem.code,
@@ -191,8 +220,10 @@ async function validateTextFiles(
  *    layer), rejects unsafe paths (`export.unsafe-path`) and merges with core's
  *    `mergeOutputFiles`: an asset at a path a lowered file already uses is an
  *    `export.conflict` error.
- * 4. Validates every file that names a `schema` against the schema index. Schema errors
- *    block; warnings pass through.
+ * 4. Validates every file that names a `schema` against the schema index, with the
+ *    registry index `registriesFor` gives for the file (else `registries`), then passes the
+ *    problems through `rewriteSchemaProblems` when given. Schema errors block; warnings pass
+ *    through.
  *    4b. Checks every file with a `language` through `request.validateText`; its error
  *    problems block, warnings pass through. Without a checker, one
  *    `export.language-unchecked` info per language; a throwing checker is
@@ -251,7 +282,12 @@ export async function runExport(request: ExportRequest): Promise<ExportReport> {
   const files = [...merged.files].sort(
     (a, b) => comparePaths(a.layer, b.layer) || comparePaths(a.path, b.path),
   );
-  for (const file of files) problems.push(...validateFile(file, schemaIndex, registries));
+  for (const file of files) {
+    const fileRegistries = request.registriesFor?.(file) ?? registries;
+    problems.push(
+      ...validateFile(file, schemaIndex, fileRegistries, request.rewriteSchemaProblems),
+    );
+  }
   problems.push(...(await validateTextFiles(files, request.validateText)));
 
   const hasError = (): boolean => problems.some((problem) => problem.severity === 'error');

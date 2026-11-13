@@ -1,4 +1,6 @@
 import { createMemoryFileSystem, type Problem, type Project } from '@msm/core';
+import { SEPARATE_RUNTIME_OPTION } from '@msm/exporters';
+import type { Json } from '@msm/plugin-api';
 import { createRegistryIndex, type SchemaProblem } from '@msm/schemas';
 import { describe, expect, it } from 'vitest';
 import {
@@ -164,5 +166,95 @@ describe('ProjectSession: project sound keys in MSM kinds (ADR 0057 D3)', () => 
     const song = createCompletionSource(project, vanilla);
     expect(song.suggest('sound_event', '')).not.toContain(KEY);
     expect(song.suggest('sound_event', 'chime')).toEqual([]);
+  }, 60_000);
+});
+
+describe('ProjectSession export gate: project sound keys in output files (ADR 0057 D3)', () => {
+  const KEY = 'demo:chime.ring';
+  const SOUNDS = { 'chime.ring': { sounds: ['minecraft:random/orb'] } };
+
+  async function sessionWith(elements: { id: `${string}:${string}`; kind: string; data: Json }[]) {
+    const { session } = newSession(createMemoryFileSystem());
+    await session.newProject();
+    session.addElement({ id: 'demo:sounds', kind: 'minecraft:sounds', data: SOUNDS });
+    for (const element of elements) session.addElement(element);
+    await session.flushValidation();
+    return session;
+  }
+
+  const soundProblems = (problems: readonly Problem[]) =>
+    problems.filter(
+      (problem) =>
+        problem.code === 'schema.unknown-id' || problem.code === UNREGISTERED_SOUND_EVENT,
+    );
+
+  it('accepts a project key in msm:item and msm:entity definitions', async () => {
+    const session = await sessionWith([
+      {
+        id: 'demo:tonic',
+        kind: 'msm:item',
+        data: {
+          format: 1,
+          display_name: 'Tonic',
+          components: { 'msm:consumable': { seconds: 1, animation: 'drink', sound: KEY } },
+        },
+      },
+      {
+        id: 'demo:critter',
+        kind: 'msm:entity',
+        data: {
+          format: 1,
+          display_name: 'Critter',
+          category: 'creature',
+          size: { width: 0.6, height: 0.6 },
+          spawn_egg: false,
+          sounds: { ambient: KEY, hurt: KEY, death: KEY, step: KEY },
+          components: {
+            'msm:health': { max: 8 },
+            'msm:animated_model': {
+              model: 'demo:entity/critter',
+              animations: 'demo:entity/critter_animations',
+              texture: 'demo:entity/critter',
+            },
+          },
+        },
+      },
+    ]);
+    const result = await session.exportFabricJar({ [SEPARATE_RUNTIME_OPTION]: true });
+    const paths = [
+      '/components/msm:consumable/sound',
+      '/sounds/ambient',
+      '/sounds/hurt',
+      '/sounds/death',
+      '/sounds/step',
+    ];
+    const msmFiles = result.problems.filter((problem) => problem.file?.startsWith('msm/'));
+    expect(msmFiles.filter((problem) => paths.includes(problem.path ?? ''))).toEqual([]);
+    expect(soundProblems(result.problems)).toEqual([]);
+  }, 60_000);
+
+  it('keeps a bare project key in a jukebox_song an unregistered sound event', async () => {
+    const session = await sessionWith([
+      {
+        id: 'demo:song',
+        kind: 'minecraft:jukebox_song',
+        data: {
+          sound_event: KEY,
+          description: 'Song',
+          length_in_seconds: 10,
+          comparator_output: 1,
+        },
+      },
+    ]);
+    const result = await session.exportPack('data', 'zip');
+    expect(result.ok).toBe(false);
+    expect(soundProblems(result.problems)).toEqual([
+      expect.objectContaining({
+        severity: 'error',
+        code: UNREGISTERED_SOUND_EVENT,
+        file: 'data/demo/jukebox_song/song.json',
+        path: '/sound_event',
+      }),
+    ]);
   }, 60_000);
 });
