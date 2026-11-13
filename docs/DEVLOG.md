@@ -3050,3 +3050,20 @@ Next: CI for the velocity Java (ADR 0052), then the user's Windows test; these c
 
 **Next**
 - The user's answers to the five defaults in the plan's section 4; then Wave 0 (ADRs as Proposed, DESIGN and ROADMAP notes) and Wave 1 (B200–B202).
+
+---
+
+## 2026-11-13 — main session — feature order, effects and throwables plan, coverage audit
+
+**What**
+- Feature order: a placed feature in different steps is the warning `worldgen.feature-step-differs`, not an export-blocking cycle (the game's FeatureSorter keys nodes by step and feature; the owner's parity notes were the lead, the rule is reasoned from the game's structure and still needs an in-game confirmation). Bare and `minecraft:` ids are one feature.
+- `docs/PLAN-effects-throwables.md` (B200–B211), ADRs 0055 and 0056 proposed, script API effect methods and `ActionEvent.other` (B201), plugin API 1.6.0 (B202; core's version pin updated).
+- `docs/COVERAGE-AUDIT.md`: coverage of the game's content types, behavioural suspects S1–S13 (custom sounds unregistered in the runtime, Music disc `sound_event` form, no behaviour test for launch, `on_step` without an entity, block shapes and render layers, script commands at the world origin, server-only cancel), ranked backlog.
+
+**Decisions**
+- Commits are authored as the user with no credit lines (user's rule); the stop hook's request to re-author them as Claude is declined.
+- B201 and B202 stay off the remote branch until B203 lands (`ScriptApiContractTest`).
+- Audit S2 (Music disc) is fixed now; S1 (sound events) becomes the first runtime brief after B203.
+
+**Next**
+- Wave 1 B200 review; Wave 2 (B203–B206).
