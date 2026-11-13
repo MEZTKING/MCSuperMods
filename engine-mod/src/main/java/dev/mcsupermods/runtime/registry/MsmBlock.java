@@ -10,6 +10,7 @@ import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -40,10 +41,10 @@ public class MsmBlock extends Block {
     private final BlockDefinition definition;
     private final boolean tracksPower;
     private final int emit;
-    /** Last step tick per position and entity, for {@code msm:on_step} cooldowns. Server thread only. */
+    /** Last step tick per dimension, position and entity, for {@code msm:on_step} cooldowns. Server thread only. */
     private final Map<StepKey, Long> lastStep = new HashMap<>();
 
-    private record StepKey(long pos, UUID entity) {}
+    private record StepKey(ResourceKey<Level> dimension, long pos, UUID entity) {}
 
     public static MsmBlock create(Identifier id, BlockDefinition definition, Properties properties) {
         TRACKS_POWER.set(definition.components().reactsToRedstone());
@@ -103,15 +104,15 @@ public class MsmBlock extends Block {
         if (step.isPresent() && level instanceof ServerLevel server) {
             long now = server.getGameTime();
             int cooldown = step.get().cooldownTicks();
-            StepKey key = new StepKey(pos.asLong(), entity.getUUID());
+            StepKey key = new StepKey(server.dimension(), pos.asLong(), entity.getUUID());
             Long last = lastStep.get(key);
             if (last == null || now - last >= cooldown || now < last) {
                 if (lastStep.size() > 1024) {
                     lastStep.values().removeIf(t -> now - t >= cooldown);
                 }
                 lastStep.put(key, now);
-                Player player = entity instanceof Player p ? p : null;
-                EventRunner.fire(id, definition.events(), step.get().event(), EventContext.forBlock(server, pos, player));
+                // ADR 0058 D1: the stepper is the event's player or entity, and its other entity when living.
+                EventRunner.fire(id, definition.events(), step.get().event(), EventContext.forBlockStep(server, pos, entity));
             }
         }
         super.stepOn(level, pos, state, entity);

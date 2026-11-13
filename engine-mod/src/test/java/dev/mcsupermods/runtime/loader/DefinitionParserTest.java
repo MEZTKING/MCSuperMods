@@ -521,4 +521,34 @@ class DefinitionParserTest {
                 {"format": 1, "components": {"msm:throwable": {}, "msm:armor": {"slot": "helmet", "material": "iron"}}}""");
         assertEquals(List.of("components: msm:throwable and msm:armor on one item; neither is applied"), armour.errors());
     }
+
+    @Test
+    void entitySoundsDecodeWithDefaults() {
+        assertEquals(Optional.empty(), entity("", "").definition().orElseThrow().sounds(), "absent sounds");
+        EntityDefinition.Sounds empty = entity("", "\"sounds\": {}, ").definition().orElseThrow().sounds().orElseThrow();
+        assertEquals(new EntityDefinition.Sounds(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()),
+                empty, "an empty struct is valid and means vanilla's sounds");
+        ParseResult<EntityDefinition> full = entity("", "\"sounds\": {\"ambient\": \"t:golem.ambient\", \"hurt\": \"entity.iron_golem.hurt\", "
+                + "\"death\": \"t:golem.death\", \"step\": \"t:golem.step\", \"ambient_interval_ticks\": 20}, ");
+        assertTrue(full.clean(), full.errors() + " " + full.warnings());
+        EntityDefinition.Sounds sounds = full.definition().orElseThrow().sounds().orElseThrow();
+        assertEquals(Optional.of(Identifier.parse("t:golem.ambient")), sounds.ambient());
+        assertEquals(Optional.of(Identifier.parse("minecraft:entity.iron_golem.hurt")), sounds.hurt(), "no namespace means minecraft");
+        assertEquals(Optional.of(20), sounds.ambientIntervalTicks());
+        assertEquals(List.of(Identifier.parse("t:golem.ambient"), Identifier.parse("minecraft:entity.iron_golem.hurt"),
+                Identifier.parse("t:golem.death"), Identifier.parse("t:golem.step")), sounds.ids());
+    }
+
+    @Test
+    void entitySoundsRejectUnknownKeysAndShortIntervals() {
+        ParseResult<EntityDefinition> unknown = entity("", "\"sounds\": {\"idle\": \"t:a\", \"ambient\": \"t:b\"}, ");
+        assertTrue(unknown.definition().isEmpty(), "an unknown key inside sounds is an error");
+        assertTrue(unknown.errors().getFirst().contains("sounds: idle: unknown field"), unknown.errors().toString());
+        ParseResult<EntityDefinition> short19 = entity("", "\"sounds\": {\"ambient_interval_ticks\": 19}, ");
+        assertTrue(short19.definition().isEmpty());
+        assertTrue(short19.errors().getFirst().contains("ambient_interval_ticks"), short19.errors().toString());
+        ParseResult<EntityDefinition> badId = entity("", "\"sounds\": {\"step\": \"Bad Id\"}, ");
+        assertTrue(badId.definition().isEmpty());
+        assertTrue(badId.errors().getFirst().contains("step"), badId.errors().toString());
+    }
 }

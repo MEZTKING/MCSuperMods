@@ -20,7 +20,12 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
@@ -34,6 +39,7 @@ import net.minecraft.world.item.enchantment.Enchantable;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RedstoneLampBlock;
@@ -239,6 +245,85 @@ public class MsmRuntimeGameTest {
             helper.assertValueEqual(count(player, Items.STICK), 2, "step after the cooldown did not fire");
             helper.succeed();
         });
+    }
+
+    /** ADR 0058 D1: a mob stepping on the block is {@code self} for apply_effect, damage, run_function ({@code @s}) and launch. */
+    @GameTest(maxTicks = 40)
+    public void stepActsOnAMobAsSelf(GameTestHelper helper) {
+        MsmBlock block = (MsmBlock) block("step_self");
+        helper.setBlock(AT, block);
+        Mob pig = helper.spawn(EntityTypes.PIG, AT.above());
+        double y = pig.getY();
+        float health = pig.getHealth();
+        try (Recorder r = new Recorder()) {
+            block.stepOn(helper.getLevel(), helper.absolutePos(AT), helper.getBlockState(AT), pig);
+            helper.assertValueEqual(r.events, List.of("stepped@1"), "events fired");
+        }
+        helper.assertTrue(pig.hasEffect(MobEffects.SPEED), "apply_effect self did not reach the mob");
+        helper.assertTrue(Math.abs(pig.getHealth() - (health - 2)) < 1e-4, "damage self: " + health + " -> " + pig.getHealth());
+        helper.assertTrue(pig.entityTags().contains("msm_stepped"), "run_function did not run as the mob: " + pig.entityTags());
+        helper.assertTrue(pig.getDeltaMovement().y > 0.5, "launch did not set the velocity: " + pig.getDeltaMovement());
+        helper.runAfterDelay(3, () -> {
+            helper.assertTrue(pig.getY() > y + 0.5, "the mob did not rise: " + y + " -> " + pig.getY());
+            pig.discard();
+            helper.succeed();
+        });
+    }
+
+    /** ADR 0058 D1: the stepping mob is also {@code other}. */
+    @GameTest(maxTicks = 40)
+    public void stepActsOnAMobAsOther(GameTestHelper helper) {
+        MsmBlock block = (MsmBlock) block("step_other");
+        helper.setBlock(AT, block);
+        Mob pig = helper.spawn(EntityTypes.PIG, AT.above());
+        pig.setHealth(pig.getMaxHealth() - 4);
+        double y = pig.getY();
+        block.stepOn(helper.getLevel(), helper.absolutePos(AT), helper.getBlockState(AT), pig);
+        helper.assertTrue(pig.hasEffect(MobEffects.SLOWNESS), "apply_effect other did not reach the mob");
+        helper.assertTrue(Math.abs(pig.getHealth() - (pig.getMaxHealth() - 1)) < 1e-4, "heal other: " + pig.getHealth());
+        helper.assertTrue(pig.getDeltaMovement().y > 0.5, "launch other did not set the velocity: " + pig.getDeltaMovement());
+        helper.runAfterDelay(3, () -> {
+            helper.assertTrue(pig.getY() > y + 0.5, "the mob did not rise: " + y + " -> " + pig.getY());
+            pig.discard();
+            helper.succeed();
+        });
+    }
+
+    /** ADR 0058 D1: {@code launch} with target {@code self} also moves a stepping item entity (not living: no effect, no damage). */
+    @GameTest(maxTicks = 40)
+    public void stepLaunchesAnItemEntity(GameTestHelper helper) {
+        MsmBlock block = (MsmBlock) block("step_self");
+        helper.setBlock(AT, block);
+        ItemEntity item = helper.spawnItem(Items.STICK, Vec3.atBottomCenterOf(AT.above()));
+        double y = item.getY();
+        block.stepOn(helper.getLevel(), helper.absolutePos(AT), helper.getBlockState(AT), item);
+        helper.assertTrue(item.getDeltaMovement().y > 0.5, "launch did not set the item's velocity: " + item.getDeltaMovement());
+        helper.runAfterDelay(3, () -> {
+            helper.assertTrue(item.getY() > y + 0.5, "the item did not rise: " + y + " -> " + item.getY());
+            item.discard();
+            helper.succeed();
+        });
+    }
+
+    /** S10: the step cooldown is per dimension, position and entity. */
+    @GameTest
+    public void stepCooldownIsPerDimension(GameTestHelper helper) {
+        MsmBlock block = (MsmBlock) block("kitchen_sink");
+        helper.setBlock(AT, block);
+        ServerLevel nether = helper.getLevel().getServer().getLevel(Level.NETHER);
+        helper.assertTrue(nether != null, "no nether level");
+        Mob pig = helper.spawnWithNoFreeWill(EntityTypes.PIG, AT.above());
+        BlockPos abs = helper.absolutePos(AT);
+        BlockState state = helper.getBlockState(AT);
+        try (Recorder r = new Recorder()) {
+            block.stepOn(helper.getLevel(), abs, state, pig);
+            block.stepOn(helper.getLevel(), abs, state, pig);
+            helper.assertValueEqual(r.events, List.of("step@1"), "a second step within the cooldown fired");
+            block.stepOn(nether, abs, state, pig);
+            helper.assertValueEqual(r.events, List.of("step@1", "step@1"), "the same position in another dimension shares the cooldown");
+        }
+        pig.discard();
+        helper.succeed();
     }
 
     @GameTest

@@ -31,6 +31,7 @@ import net.minecraft.resources.Identifier;
  * state; the registrar maps them onto the vanilla constants of the same name.
  *
  * @param spawnEgg the spawn egg; empty when the file says {@code "spawn_egg": false}
+ * @param sounds   the mob sounds (ADR 0057 D6); empty, or an absent field inside, means vanilla's
  */
 public record EntityDefinition(
         int format,
@@ -41,10 +42,11 @@ public record EntityDefinition(
         Optional<SpawnEgg> spawnEgg,
         Optional<Spawn> spawn,
         EntityComponents components,
-        Events events) {
+        Events events,
+        Optional<Sounds> sounds) {
 
     public static final List<String> KEYS = List.of("format", "category", "size", "eye_height", "loot_table", "spawn_egg", "spawn",
-            "components", "events");
+            "components", "events", "sounds");
 
     /** The GeckoLib controller that {@code play_animation} uses by default and that plays the {@code attack} animation. */
     public static final String TRIGGERED_CONTROLLER = "msm_triggered";
@@ -109,6 +111,27 @@ public record EntityDefinition(
                 optional("creative_tab", ID).forGetter(SpawnEgg::creativeTab)).apply(i, SpawnEgg::new));
     }
 
+    /**
+     * Mob sounds (ADR 0057 D6, {@code ::msm::definition::EntitySounds}): sound event ids, vanilla or project keys,
+     * resolved when played (an unknown id keeps vanilla's sound and is a warning after start-up); the ambient interval
+     * in ticks, at least 20. Unknown keys are errors (the struct is closed).
+     */
+    public record Sounds(Optional<Identifier> ambient, Optional<Identifier> hurt, Optional<Identifier> death, Optional<Identifier> step,
+            Optional<Integer> ambientIntervalTicks) {
+        public static final List<String> KEYS = List.of("ambient", "hurt", "death", "step", "ambient_interval_ticks");
+        public static final Codec<Sounds> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                optional("ambient", ID).forGetter(Sounds::ambient),
+                optional("hurt", ID).forGetter(Sounds::hurt),
+                optional("death", ID).forGetter(Sounds::death),
+                optional("step", ID).forGetter(Sounds::step),
+                optional("ambient_interval_ticks", intAtLeast(20)).forGetter(Sounds::ambientIntervalTicks)).apply(i, Sounds::new)), KEYS);
+
+        /** The ids named, for the start-up check. */
+        public List<Identifier> ids() {
+            return java.util.stream.Stream.of(ambient, hurt, death, step).flatMap(Optional::stream).toList();
+        }
+    }
+
     /** A biome id, or a biome tag written {@code #ns:path}. */
     private static final Codec<String> BIOME = Codec.STRING.validate(s -> Identifier.tryParse(s.startsWith("#") ? s.substring(1) : s) != null
             ? DataResult.success(s)
@@ -143,7 +166,8 @@ public record EntityDefinition(
             optional("spawn_egg", SPAWN_EGG, Optional.of(SpawnEgg.DEFAULT)).forGetter(EntityDefinition::spawnEgg),
             optional("spawn", Spawn.CODEC).forGetter(EntityDefinition::spawn),
             required("components", EntityComponents.CODEC).forGetter(EntityDefinition::components),
-            optional("events", Events.CODEC, Events.NONE).forGetter(EntityDefinition::events)).apply(i, EntityDefinition::new));
+            optional("events", Events.CODEC, Events.NONE).forGetter(EntityDefinition::events),
+            optional("sounds", Sounds.CODEC).forGetter(EntityDefinition::sounds)).apply(i, EntityDefinition::new));
 
     /**
      * Animation names to register as triggerable, by controller: the {@code idle}, {@code walk} and

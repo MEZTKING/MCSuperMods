@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:consumable": {
+      "animation": "drink",
+      "seconds": 1,
+      "sound": "msm_test:chime"
+    }
+  },
+  "format": 1
+}

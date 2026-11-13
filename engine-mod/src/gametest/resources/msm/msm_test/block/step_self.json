@@ -1,0 +1,37 @@
+{
+  "components": {
+    "msm:on_step": {
+      "cooldown_ticks": 20,
+      "event": "msm_test:stepped"
+    }
+  },
+  "events": {
+    "msm_test:stepped": {
+      "actions": [
+        {
+          "effect": "minecraft:speed",
+          "seconds": 10,
+          "target": "self",
+          "type": "apply_effect"
+        },
+        {
+          "amount": 2,
+          "target": "self",
+          "type": "damage"
+        },
+        {
+          "function": "msm_test:tag_stepper",
+          "type": "run_function"
+        },
+        {
+          "direction": "up",
+          "strength": 1.0,
+          "target": "self",
+          "type": "launch"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "item": false
+}

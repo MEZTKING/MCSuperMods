@@ -17,7 +17,10 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.resources.Identifier;
 
-/** Walks {@code msm/<namespace>/<kind>/**}{@code /*.json} in every loaded mod container. */
+/**
+ * Walks {@code msm/<namespace>/<kind>/**}{@code /*.json} in every loaded mod container, and collects the sound event
+ * keys of {@code assets/<namespace>/sounds.json} through {@link SoundScanner}.
+ */
 public final class DefinitionScanner {
     private static final List<String> KINDS = List.of("block", "item", "entity", "effect");
 
@@ -81,6 +84,9 @@ public final class DefinitionScanner {
         for (String error : errors) {
             MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, error);
         }
-        return new LoadReport(files, List.copyOf(found), List.of(), List.of(), List.of(), List.of(), List.copyOf(errors), List.of());
+        // ADR 0057 D1: the sound event keys of the same mods' resource packs (and of mods depending on msm_runtime).
+        SoundScanner.Keys sounds = SoundScanner.scanAllMods();
+        return new LoadReport(files, List.copyOf(found), List.of(), List.of(), List.of(), List.of(), sounds.ids(), List.copyOf(errors),
+                sounds.warnings());
     }
 }

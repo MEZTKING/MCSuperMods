@@ -8,13 +8,17 @@ import dev.mcsupermods.runtime.events.EventRunner;
 import dev.mcsupermods.runtime.goals.FollowTypesGoal;
 import dev.mcsupermods.runtime.loader.EntityDefinition;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -33,6 +37,7 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Driver class for every {@code msm/<ns>/entity/*.json} mob (ADR 0028 D5): attributes come from the
@@ -53,6 +58,52 @@ public class MsmEntity extends PathfinderMob implements AnimationTarget {
     /** The entity type id, the owner of the definition's events. */
     public Identifier definitionId() {
         return BuiltInRegistries.ENTITY_TYPE.getKey(getType());
+    }
+
+    // Mob sounds (ADR 0057 D6): the definition's id when it names a registered sound event, else vanilla's.
+
+    private SoundEvent configured(Function<EntityDefinition.Sounds, Optional<Identifier>> which) {
+        EntityDefinition def = MsmEntityRegistrar.definition(getType()).orElse(null);
+        if (def == null || def.sounds().isEmpty()) {
+            return null;
+        }
+        return which.apply(def.sounds().get()).flatMap(BuiltInRegistries.SOUND_EVENT::getOptional).orElse(null);
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        SoundEvent sound = configured(EntityDefinition.Sounds::ambient);
+        return sound != null ? sound : super.getAmbientSound();
+    }
+
+    @Override
+    public int getAmbientSoundInterval() {
+        EntityDefinition def = MsmEntityRegistrar.definition(getType()).orElse(null);
+        return def == null ? super.getAmbientSoundInterval()
+                : def.sounds().flatMap(EntityDefinition.Sounds::ambientIntervalTicks).orElseGet(super::getAmbientSoundInterval);
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        SoundEvent sound = configured(EntityDefinition.Sounds::hurt);
+        return sound != null ? sound : super.getHurtSound(source);
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        SoundEvent sound = configured(EntityDefinition.Sounds::death);
+        return sound != null ? sound : super.getDeathSound();
+    }
+
+    /** A configured step sound replaces the block's step sound, at the volume most vanilla mobs use (0.15). */
+    @Override
+    protected void playStepSound(BlockPos pos, BlockState state) {
+        SoundEvent sound = configured(EntityDefinition.Sounds::step);
+        if (sound != null) {
+            playSound(sound, 0.15f, 1.0f);
+        } else {
+            super.playStepSound(pos, state);
+        }
     }
 
     /** Plays nothing; {@code MsmGeoEntity} triggers the GeckoLib animation. */

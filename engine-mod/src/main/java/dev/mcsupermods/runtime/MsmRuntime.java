@@ -9,7 +9,10 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Entry point: scans {@code msm/} in every mod container and registers what it finds. */
+/**
+ * Entry point: scans {@code msm/} and the {@code sounds.json} files of every opted-in mod container and registers what it
+ * finds (sound events first, ADR 0057 D1).
+ */
 public final class MsmRuntime implements ModInitializer {
     public static final String MOD_ID = "msm_runtime";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
@@ -24,6 +27,7 @@ public final class MsmRuntime implements ModInitializer {
                 MOD_ID, report.blocks().size(), report.items().size(), report.filesRead(), report.errors().size(),
                 report.warnings().size());
         LOGGER.info("[{}] registered {} entity type(s) and {} mob effect(s)", MOD_ID, report.entities().size(), report.effects().size());
+        LOGGER.info("[{}] registered {} sound event(s)", MOD_ID, report.sounds().size());
         // Creative tabs, items, block states, functions, biomes and entity types of other mods and data packs
         // exist only once the server runs.
         ServerLifecycleEvents.SERVER_STARTED.register(server -> report = report.withWarnings(MsmRegistrar.checkAfterStart(server)));

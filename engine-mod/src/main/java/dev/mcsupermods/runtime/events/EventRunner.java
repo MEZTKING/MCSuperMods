@@ -121,8 +121,12 @@ public final class EventRunner {
                 .withPosition(ctx.origin())
                 .withPermission(LevelBasedPermissionSet.GAMEMASTER) // permission level 2, as for function tags
                 .withSuppressedOutput();
-        if (ctx.player() != null) {
-            source = source.withEntity(ctx.player()).withRotation(ctx.player().getRotationVector());
+        // As the player; in a block step event without a player, as the stepper (ADR 0058 D1). Entity, effect and
+        // thrown-item events keep the player-only rule.
+        net.minecraft.world.entity.Entity as = ctx.player() != null ? ctx.player()
+                : ctx.source() == EventContext.Source.BLOCK ? ctx.entity() : null;
+        if (as != null) {
+            source = source.withEntity(as).withRotation(as.getRotationVector());
         }
         server.getFunctions().execute(function.get(), source);
     }
@@ -255,7 +259,8 @@ public final class EventRunner {
             return;
         }
         Vec3 o = ctx.origin();
-        SoundSource source = ctx.entity() != null ? SoundSource.NEUTRAL : SoundSource.BLOCKS;
+        // Block events always play as blocks (ADR 0058 D1); the others as neutral when an entity is involved.
+        SoundSource source = ctx.source() != EventContext.Source.BLOCK && ctx.entity() != null ? SoundSource.NEUTRAL : SoundSource.BLOCKS;
         ctx.level().playSound(null, o.x, o.y, o.z, sound.get(), source, a.volume(), a.pitch());
     }
 }

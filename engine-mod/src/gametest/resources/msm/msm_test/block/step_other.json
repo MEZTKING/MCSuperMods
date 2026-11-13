@@ -1,0 +1,33 @@
+{
+  "components": {
+    "msm:on_step": {
+      "cooldown_ticks": 20,
+      "event": "msm_test:stepped"
+    }
+  },
+  "events": {
+    "msm_test:stepped": {
+      "actions": [
+        {
+          "effect": "minecraft:slowness",
+          "seconds": 10,
+          "target": "other",
+          "type": "apply_effect"
+        },
+        {
+          "amount": 3,
+          "target": "other",
+          "type": "heal"
+        },
+        {
+          "direction": "up",
+          "strength": 1.0,
+          "target": "other",
+          "type": "launch"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "item": false
+}

@@ -161,7 +161,8 @@ public sealed interface Action {
     enum EffectTarget {
         /**
          * The event's player; without a player, the entity of the event ({@link EventContext#entity()}): the entity
-         * itself in an entity definition, the holder in an effect definition, the thrower in a throwable's hit event.
+         * itself in an entity definition, the holder in an effect definition, the thrower in a throwable's hit event,
+         * the stepping mob or item in a block's {@code msm:on_step} event (ADR 0058 D1).
          */
         SELF,
         /** The other entity of the event ({@link EventContext#other()}). */

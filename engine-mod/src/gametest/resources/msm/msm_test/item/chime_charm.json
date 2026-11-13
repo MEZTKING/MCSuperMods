@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:components": {
+      "minecraft:break_sound": "msm_test:chime"
+    }
+  },
+  "format": 1
+}

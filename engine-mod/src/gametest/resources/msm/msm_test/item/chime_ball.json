@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:throwable": {
+      "sound": "msm_test:chime"
+    }
+  },
+  "format": 1
+}

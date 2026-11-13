@@ -6,6 +6,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -140,6 +141,40 @@ public final class MsmCodecs {
             @Override
             public String toString() {
                 return codec.toString();
+            }
+        };
+    }
+
+    /**
+     * An mcdoc struct without a spread: a map key outside {@code keys} is an error naming the key, as
+     * {@code schema.unknown-field} in TypeScript. Anything that is not a map goes to {@code codec} for its own error.
+     */
+    public static <A> Codec<A> closed(Codec<A> codec, List<String> keys) {
+        return new Codec<>() {
+            @Override
+            public <T> DataResult<Pair<A, T>> decode(DynamicOps<T> ops, T input) {
+                var map = ops.getMap(input);
+                if (map.isSuccess()) {
+                    List<String> unknown = map.getOrThrow().entries()
+                            .map(e -> ops.getStringValue(e.getFirst()).result().orElse(String.valueOf(e.getFirst())))
+                            .filter(k -> !keys.contains(k))
+                            .sorted()
+                            .toList();
+                    if (!unknown.isEmpty()) {
+                        return DataResult.error(() -> unknown.getFirst() + ": unknown field (expected one of " + String.join(", ", keys) + ")");
+                    }
+                }
+                return codec.decode(ops, input);
+            }
+
+            @Override
+            public <T> DataResult<T> encode(A input, DynamicOps<T> ops, T prefix) {
+                return codec.encode(input, ops, prefix);
+            }
+
+            @Override
+            public String toString() {
+                return "Closed[" + codec + "]";
             }
         };
     }

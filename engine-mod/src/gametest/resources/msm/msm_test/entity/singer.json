@@ -1,0 +1,22 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.6
+  },
+  "sounds": {
+    "ambient": "msm_test:golem.ambient",
+    "ambient_interval_ticks": 120,
+    "death": "msm_test:golem.death",
+    "hurt": "msm_test:golem.hurt",
+    "step": "msm_test:golem.step"
+  },
+  "spawn_egg": false
+}

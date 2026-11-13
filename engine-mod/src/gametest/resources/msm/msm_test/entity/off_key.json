@@ -1,0 +1,19 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.6
+  },
+  "sounds": {
+    "ambient": "msm_test:no_such_sound",
+    "hurt": "minecraft:entity.iron_golem.hurt"
+  },
+  "spawn_egg": false
+}

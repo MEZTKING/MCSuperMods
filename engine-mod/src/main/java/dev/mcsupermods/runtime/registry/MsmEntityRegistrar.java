@@ -120,6 +120,8 @@ public final class MsmEntityRegistrar {
                     items.add(eggId);
                 }
                 def.spawn().ifPresent(spawn -> addSpawn(raw, spawn, def, type, errors));
+                def.sounds().ifPresent(sounds -> sounds.ids().stream().distinct()
+                        .forEach(sound -> LATE.add(new LateCheck(raw.describe(), "sound event in sounds", sound.toString()))));
                 for (Identifier entityType : Goal.entityTypes(def.components().goals()).distinct().toList()) {
                     LATE.add(new LateCheck(raw.describe(), "entity type in msm:ai_goals", entityType.toString()));
                 }
@@ -237,8 +239,9 @@ public final class MsmEntityRegistrar {
     }
 
     /**
-     * Warns about ids that exist only once the server runs: biomes and biome tags (data packs) and
-     * entity types of other mods. {@code play_animation} names are not checked: the animation files
+     * Warns about ids that exist only once the server runs: biomes and biome tags (data packs),
+     * entity types of other mods and the sound events of {@code sounds} (ADR 0057 D6; other mods may register them
+     * after this runtime). {@code play_animation} names are not checked: the animation files
      * are client resources, unknown on a server; GeckoLib plays nothing for an unknown name.
      */
     static List<String> checkAfterStart(MinecraftServer server) {
@@ -250,10 +253,12 @@ public final class MsmEntityRegistrar {
                         ? biomes.get(TagKey.create(Registries.BIOME, Identifier.parse(check.id().substring(1)))).isPresent()
                         : biomes.get(ResourceKey.create(Registries.BIOME, Identifier.parse(check.id()))).isPresent();
                 case "entity type in msm:ai_goals" -> BuiltInRegistries.ENTITY_TYPE.containsKey(Identifier.parse(check.id()));
+                case "sound event in sounds" -> BuiltInRegistries.SOUND_EVENT.containsKey(Identifier.parse(check.id()));
                 default -> true;
             };
             if (!known) {
-                warnings.add(check.file() + ": unknown " + check.what() + " " + check.id());
+                warnings.add(check.file() + ": unknown " + check.what() + " " + check.id()
+                        + (check.what().startsWith("sound") ? "; the vanilla sound stays" : ""));
             }
         }
         return warnings;

@@ -96,6 +96,8 @@ public final class MsmRegistrar {
             MsmThrownItem.register();
             MsmMobEffect.registerHooks();
         }
+        // Sound events before everything else (ADR 0057 D1): effects, items, events and entities resolve sound ids.
+        List<Identifier> sounds = registerSounds(scanned.sounds());
         // Effects first (ADR 0055 D3): items (consumables, death protection) resolve effect ids while registering.
         for (RawDefinition raw : scanned.definitions()) {
             if (!raw.kind().equals("effect")) {
@@ -161,7 +163,23 @@ public final class MsmRegistrar {
         // Entities last: their spawn eggs count as items and must not collide with item definitions.
         List<Identifier> entities = MsmEntityRegistrar.registerAll(scanned.definitions(), items, errors, warnings);
         return new LoadReport(scanned.filesRead(), scanned.definitions(), List.copyOf(blocks), List.copyOf(items),
-                List.copyOf(entities), List.copyOf(effects), List.copyOf(errors), List.copyOf(warnings));
+                List.copyOf(entities), List.copyOf(effects), sounds, List.copyOf(errors), List.copyOf(warnings));
+    }
+
+    /**
+     * One variable-range {@link SoundEvent} per key (ADR 0057 D1); a key already registered (by vanilla or another mod)
+     * is skipped silently. Returns the ids registered here, in the scanner's sorted order.
+     */
+    static List<Identifier> registerSounds(List<Identifier> keys) {
+        List<Identifier> registered = new ArrayList<>();
+        for (Identifier id : keys) {
+            if (BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
+                continue;
+            }
+            Registry.register(BuiltInRegistries.SOUND_EVENT, id, SoundEvent.createVariableRangeEvent(id));
+            registered.add(id);
+        }
+        return List.copyOf(registered);
     }
 
     /**

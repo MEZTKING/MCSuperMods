@@ -1,0 +1,18 @@
+{
+  "chime": {
+    "sounds": ["block/amethyst/resonate1"],
+    "subtitle": "subtitles.msm_test.chime"
+  },
+  "golem.ambient": {
+    "sounds": ["mob/irongolem/walk1"]
+  },
+  "golem.death": {
+    "sounds": ["mob/irongolem/death"]
+  },
+  "golem.hurt": {
+    "sounds": ["mob/irongolem/hit1"]
+  },
+  "golem.step": {
+    "sounds": ["mob/irongolem/walk2"]
+  }
+}
