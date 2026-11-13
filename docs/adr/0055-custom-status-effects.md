@@ -61,3 +61,13 @@
 ## Status
 
 Proposed (2026-11-13). Findings from the runtime brief (expiry and `AFTER_REMOVE`, any 26.4 seam, the 26.4 Fabric API) are added here before the mirrors are written. Accepted on close.
+
+Runtime findings (B203, 2026-11-13; GameTests 97 of 97 on 26.3, 26.3 without GeckoLib and 26.4):
+
+- `msm:on_end` fires both when the effect is removed and when it runs out: in 26.3 `LivingEntity.tickEffects` calls `onEffectsRemoved` after removing an expired instance, and Fabric's `ServerMobEffectEvents.AFTER_REMOVE` fires from there (GameTest `onEndFiresOnExpiry`).
+- `msm:on_start` hooks `MobEffect.onEffectAdded`, not `onEffectStarted` (departs from D3): `addEffect` calls `onEffectStarted` on every call, refreshes included, while `onEffectAdded` runs only when the effect is new.
+- `msm:on_tick` and `msm:on_end` run at Fabric `END_SERVER_TICK` in the same tick, not inside `tickEffects`: an action that adds or removes an effect while vanilla iterates the holder's effect map would throw `ConcurrentModificationException`. Queued events are skipped once the holder is removed. `msm:on_start` runs at once. The Java eject must mirror both rules.
+- The tick interval is `duration % interval == 0` with `interval = max(1, interval_ticks / level)` when `faster_per_level` (level = amplifier + 1); infinite effects tick on `tickCount`.
+- In effect events `self` and `other` are both the holder.
+- Attribute, particle and sound ids are checked when the effect is built (built-in registries are bootstrapped by then): an unknown particle keeps the tinted swirl with a warning, an unknown sound plays nothing with a warning, an unknown attribute is an error and that modifier is skipped. Custom sound events are not registered yet (coverage audit S1).
+- No 26.4 seam was needed; Fabric API 0.165.4+26.4 has `ServerMobEffectEvents`.

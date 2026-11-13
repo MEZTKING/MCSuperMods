@@ -52,3 +52,11 @@
 ## Status
 
 Proposed (2026-11-13). Findings from the runtime brief (the use animation, tracking numbers, any seam) are added here before the mirrors are written. Accepted on close.
+
+Runtime findings (B203, 2026-11-13):
+
+- Use animation: `SPEAR` while charging, `NONE` otherwise; whether `TRIDENT` looks better is an in-game check.
+- `msm_runtime:thrown_item` copies the snowball's entity type settings read from 26.3 `EntityTypes`: no loot table, 0.25 by 0.25, tracking range 4, update interval 10.
+- `ThrownItemRenderer` is registered through the existing `EntityRendererRegistration` seam on every client, with or without GeckoLib; no new seam. Compiled for 26.3 and 26.4, not run (no client in the container).
+- Dispensers use vanilla's projectile behaviour, which always uses one item: `keep` from a dispenser loses the item, `drop` and `return` drop it where it lands.
+- A throwable combined with armour, a ranged weapon, a shield, a consumable, food or a mace drops the throwable and the clashing components with an error; the existing tool and armour conflict check runs first.
