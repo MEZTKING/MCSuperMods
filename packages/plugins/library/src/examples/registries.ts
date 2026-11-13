@@ -159,7 +159,7 @@ export const registryExamples: readonly ExampleProject[] = [
               length_in_seconds: 185,
               comparator_output: 4,
             },
-            `sound_event is what plays, here the vanilla cat track; point it at a sound event of your own sounds element for new music. description is shown when the song starts, length_in_seconds is how long the jukebox counts as playing and comparator_output (0 to 15) the comparator signal. Any item with a jukebox_playable component can play it: /give @s minecraft:music_disc_13[minecraft:jukebox_playable="${id}"].`,
+            `sound_event is what plays, here the vanilla cat track. A bare string must be a registered sound event such as a vanilla one; for new music from your own sounds element use the object form { "sound_id": "${namespace}:<event>" }. description is shown when the song starts, length_in_seconds is how long the jukebox counts as playing and comparator_output (0 to 15) the comparator signal. Any item with a jukebox_playable component can play it: /give @s minecraft:music_disc_13[minecraft:jukebox_playable="${id}"].`,
           ),
         ],
         assets: [],

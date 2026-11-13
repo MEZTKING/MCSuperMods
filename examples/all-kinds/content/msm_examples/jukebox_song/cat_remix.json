@@ -12,7 +12,7 @@
   "kind": "minecraft:jukebox_song",
   "meta": {
     "createdAt": "2026-11-04T00:00:00.000Z",
-    "notes": "sound_event is what plays, here the vanilla cat track; point it at a sound event of your own sounds element for new music. description is shown when the song starts, length_in_seconds is how long the jukebox counts as playing and comparator_output (0 to 15) the comparator signal. Any item with a jukebox_playable component can play it: /give @s minecraft:music_disc_13[minecraft:jukebox_playable=\"msm_examples:cat_remix\"].",
+    "notes": "sound_event is what plays, here the vanilla cat track. A bare string must be a registered sound event such as a vanilla one; for new music from your own sounds element use the object form { \"sound_id\": \"msm_examples:<event>\" }. description is shown when the song starts, length_in_seconds is how long the jukebox counts as playing and comparator_output (0 to 15) the comparator signal. Any item with a jukebox_playable component can play it: /give @s minecraft:music_disc_13[minecraft:jukebox_playable=\"msm_examples:cat_remix\"].",
     "tags": [
       "example",
       "music"

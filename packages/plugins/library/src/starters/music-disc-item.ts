@@ -168,12 +168,12 @@ export function musicDiscItemBundle(context: BundleContext): ContentBundle {
       song,
       KINDS.jukeboxSong,
       {
-        sound_event: rl(namespace, event),
+        sound_event: { sound_id: rl(namespace, event) },
         description: { translate: songKey },
         length_in_seconds: length,
         comparator_output: comparator,
       },
-      `The jukebox song: the sound event ${namespace}:${event}, the "Now playing" text, how long the jukebox counts as playing (${length} seconds) and the comparator signal (${comparator}).`,
+      `The jukebox song: the sound ${namespace}:${event} from this pack's sounds element (the object form { sound_id } names a sounds.json key directly; a bare string would have to be a registered sound event), the "Now playing" text, how long the jukebox counts as playing (${length} seconds) and the comparator signal (${comparator}).`,
     ),
   );
   if (asItem) {

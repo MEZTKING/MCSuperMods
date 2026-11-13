@@ -398,7 +398,7 @@ describe('project starters', () => {
     expect(sounds?.id).toBe('demo:sounds');
     expect(JSON.stringify(sounds?.data)).toContain('"minecraft:records/cat"');
     const song = bundle.elements.find((entry) => entry.kind === 'minecraft:jukebox_song');
-    expect(song?.data).toMatchObject({ sound_event: 'demo:music_disc.my_song' });
+    expect(song?.data).toMatchObject({ sound_event: { sound_id: 'demo:music_disc.my_song' } });
     const definition = bundle.elements.find((entry) => entry.kind === 'minecraft:item_definition');
     expect(definition?.id).toBe('minecraft:music_disc_13');
     expect(definition?.data).toMatchObject({
@@ -493,6 +493,39 @@ describe('every starter and example', () => {
       expect(entry.requiresKinds, entry.id).toEqual([...used].sort());
       for (const kind of used) expect(KIND_IDS, entry.id).toContain(kind);
     }
+  });
+
+  it('never names a project sound by a bare string id in a sound event holder field', () => {
+    // The game decodes these fields with `SoundEvent.CODEC`, a registry holder codec: a string must
+    // be a registered sound event, which a key of the project's sounds.json is not. A project
+    // sound needs the direct form { "sound_id": "<ns>:<key>" } (vanilla-mcdoc `SoundEventRef`).
+    const HOLDER_FIELDS = new Set(['sound_event', 'equip_sound', 'shearing_sound', 'sound']);
+    const offenders: string[] = [];
+    const walk = (value: unknown, path: string): void => {
+      if (Array.isArray(value)) {
+        for (const [index, item] of value.entries()) walk(item, `${path}[${index}]`);
+      } else if (typeof value === 'object' && value !== null) {
+        for (const [key, child] of Object.entries(value)) {
+          if (HOLDER_FIELDS.has(key) && typeof child === 'string' && child.startsWith('demo:')) {
+            offenders.push(`${path}.${key} = ${child}`);
+          }
+          walk(child, `${path}.${key}`);
+        }
+      }
+    };
+    const variants: Record<string, readonly Record<string, Json>[]> = {
+      'music-disc-item': [{ disc_type: 'vanilla' }],
+      consumable: [{ kind: 'charm' }],
+    };
+    for (const entry of entries) {
+      for (const values of [{}, ...(variants[entry.id] ?? [])]) {
+        for (const element of build(entry, 'demo', values).elements) {
+          if (element.kind === 'minecraft:sounds') continue;
+          walk(element.data, `${entry.id} ${element.id}`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
   });
 
   it('builds the same bundle every time', () => {

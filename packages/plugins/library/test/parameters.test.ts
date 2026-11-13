@@ -988,7 +988,7 @@ describe('Creator flows', () => {
       components: { 'msm:components': { 'minecraft:jukebox_playable': 'demo:ruby_waltz' } },
     });
     expect(data(item, 'demo:ruby_waltz')).toEqual({
-      sound_event: 'demo:music_disc.ruby_waltz',
+      sound_event: { sound_id: 'demo:music_disc.ruby_waltz' },
       description: { translate: 'jukebox_song.demo.ruby_waltz' },
       length_in_seconds: 185,
       comparator_output: 7,

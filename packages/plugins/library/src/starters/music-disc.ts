@@ -34,12 +34,12 @@ export function musicDiscBundle({ namespace, projectName }: BundleContext): Cont
         song,
         KINDS.jukeboxSong,
         {
-          sound_event: rl(namespace, event),
+          sound_event: { sound_id: rl(namespace, event) },
           description: { translate: `jukebox_song.${namespace}.${SONG}` },
           length_in_seconds: 185,
           comparator_output: 7,
         },
-        `The jukebox song: which sound event plays (${namespace}:${event}, defined in this pack's sounds element), the "Now playing" text, how long the jukebox counts as playing and the redstone signal a comparator reads (0 to 15). Set length_in_seconds to the length of your own track.`,
+        `The jukebox song: which sound plays (${namespace}:${event}, defined in this pack's sounds element; the object form { sound_id } names a sounds.json key directly, while a bare string would have to be a registered sound event), the "Now playing" text, how long the jukebox counts as playing and the redstone signal a comparator reads (0 to 15). Set length_in_seconds to the length of your own track.`,
       ),
       element(
         rl(namespace, 'en_us'),
