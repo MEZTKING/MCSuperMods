@@ -495,6 +495,25 @@ User request of 2026-11-06: "modpack support, so everything you make can be orga
 - [x] **Update mods** re-pins every Modrinth mod for the modpack's Minecraft version (after a version change or for newer releases).
 - Follow-ups: CurseForge export; server packs.
 
+### Add-on after 1.0 — Custom status effects and throwables (planned v1.4.0)
+
+User request of 2026-11-13 ("add custom status effects and throwables"), taking up two items deferred by [ADR 0044](adr/0044-gear-weapons-and-consumables.md) D8. Design: [ADR 0055](adr/0055-custom-status-effects.md) (status effects) and [ADR 0056](adr/0056-throwables.md) (throwables), both proposed; working plan `PLAN-effects-throwables.md`, deleted at close. Defaults that need the user's veto: the thrown item is drawn as its item picture; `return` is a boomerang without a return flight; no brewing; the names `msm:effect`, `msm:throwable`, `msm_runtime:thrown_item`; release as 1.4.0.
+
+- [ ] B200 Format: `Effect` definition and element, `Throwable` component, actions `damage` and `heal`, schema refs, corpus.
+- [ ] B201 Script API: `hasEffect`, `effectLevel`, `removeEffect`, `ActionEvent.other`.
+- [ ] B202 Plugin API 1.6.0 (`JavaProjectInput.effects`) and target notes.
+- [ ] B203 Runtime: `MsmMobEffect`, `MsmThrowableItem`, `MsmThrownItem`, renderer, actions, GameTests on 26.3 and 26.4.
+- [ ] B204 Plugin `blocks-items`: effect kind, lowering, validators, templates.
+- [ ] B205 App Studios: Effect Studio, Throwable section, Hurt and Heal actions.
+- [ ] B206 Exporters: effect routing in `java-project`, content jar check.
+- [ ] B207 Java eject (26.3 generator): `ModEffects`, effect classes, `ThrownItemEntity`, client entrypoint rule.
+- [ ] B208 Library: Status effect and Throwable flows, patterns, examples.
+- [ ] B209 AI helper: system prompt paragraph and "poison dart" scenario.
+- [ ] B210 Samples and parity: sample mod and script additions, parity GameTests, goldens.
+- [ ] B211 Creator group "Magic", previews, e2e and guide.
+- [ ] The user checks in game: effect icon and tinted particles, the thrown item in flight, the hold-to-throw animation, a dispenser, picking a dropped knife up, the Creator results.
+- Follow-ups kept in Post-1.0 Ideas: 3D thrown models, return flight, custom arrows, instant effects, brewing.
+
 ### Exit criteria
 
 Two targets supported; an external plugin works; 1.0 released.
@@ -516,7 +535,7 @@ Not committed; each needs an ADR before work starts.
 - **Collaboration**: shared projects beyond git, such as live co-editing.
 - **Marketplace**: discovery and install for third-party plugins and templates.
 - **Pre-26.1 vanilla export**: 1.21.x pack export via a target plugin, using existing mcdoc schemas.
-- **More gear and content types** (deferred from [ADR 0044](adr/0044-gear-weapons-and-consumables.md) D8): trident-style throwables and custom projectile entities (need a projectile entity and renderer), custom status effects (a code registry needing a script tick hook), armour trim patterns (per-layer textures), banner patterns, a glider flow.
+- **More gear and content types** (deferred from [ADR 0044](adr/0044-gear-weapons-and-consumables.md) D8): armour trim patterns (per-layer textures), banner patterns, a glider flow. Trident-style throwables and custom status effects moved to the add-on "Custom status effects and throwables" (ADRs 0055, 0056); what stays here from them: 3D thrown models, return flight, custom arrows and GeckoLib projectiles, instant effects, brewing.
 - **AI assistant (user request, 2026-11-04)**: moved ahead of 1.0 on 2026-11-05 as the "AI helper" add-on of Phase 7 ([ADR 0041](adr/0041-ai-helper.md)). Later ideas for it: persisted conversations with their own retention rules, a base URL setting for proxies, server-side compaction for very long build runs, a stored generator version in Creator metadata.
 
 ## Milestone Log
