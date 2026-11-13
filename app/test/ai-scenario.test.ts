@@ -439,3 +439,204 @@ describe('AI helper scenario: explain a problem (chat mode)', () => {
     ).toEqual([]);
   });
 });
+
+/** The poison dart build (ADR 0055 D11, brief B209): an `msm:effect` and an `msm:throwable` item. */
+const DART_PROMPT = 'make a poison dart that poisons the mob it hits';
+
+const dartScript = (): AiModelScript =>
+  aiModelScriptSchema.parse({
+    turns: [
+      {
+        content: [
+          {
+            type: 'tool_use',
+            name: 'propose_plan',
+            input: {
+              title: 'Poison dart',
+              items: [
+                {
+                  itemId: 'mod',
+                  kind: 'msm:mod',
+                  elementId: 'darts:mod',
+                  summary: 'The mod metadata.',
+                },
+                {
+                  itemId: 'venom',
+                  kind: 'msm:effect',
+                  elementId: 'darts:venom',
+                  summary: 'A harmful effect that hurts every second.',
+                  dependsOn: ['mod'],
+                },
+                {
+                  itemId: 'dart',
+                  kind: 'msm:item',
+                  elementId: 'darts:poison_dart',
+                  summary: 'A throwable that gives venom on hit.',
+                  dependsOn: ['venom'],
+                },
+              ],
+            },
+          },
+        ],
+      },
+      {
+        content: [
+          {
+            type: 'tool_use',
+            name: 'create_elements',
+            input: {
+              elements: [
+                {
+                  id: 'darts:mod',
+                  kind: 'msm:mod',
+                  data: {
+                    mod_id: 'darts',
+                    version: '1.0.0',
+                    name: 'Darts',
+                    description: 'Poison darts.',
+                    authors: [],
+                    licence: 'MIT',
+                  },
+                },
+                {
+                  id: 'darts:venom',
+                  kind: 'msm:effect',
+                  data: {
+                    format: 1,
+                    display_name: 'Venom',
+                    category: 'harmful',
+                    color: 5882118,
+                    components: { 'msm:on_tick': { event: 'darts:sting', interval_ticks: 20 } },
+                    events: { 'darts:sting': { actions: [{ type: 'damage', amount: 1 }] } },
+                  },
+                },
+                {
+                  id: 'darts:poison_dart',
+                  kind: 'msm:item',
+                  data: {
+                    format: 1,
+                    model: 'darts:item/poison_dart',
+                    display_name: 'Poison Dart',
+                    max_stack_size: 16,
+                    creative_tab: 'minecraft:combat',
+                    components: {
+                      'msm:throwable': {
+                        speed: 2,
+                        damage: 2,
+                        after_throw: 'consume',
+                        on_hit_entity: { event: 'darts:poison' },
+                      },
+                    },
+                    events: {
+                      'darts:poison': {
+                        actions: [
+                          {
+                            type: 'apply_effect',
+                            effect: 'darts:venom',
+                            seconds: 8,
+                            target: 'other',
+                          },
+                        ],
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            type: 'tool_use',
+            name: 'create_texture',
+            input: {
+              namespace: 'darts',
+              path: 'item/poison_dart',
+              pattern: 'gem',
+              colour: '#58b030',
+            },
+          },
+        ],
+      },
+      { content: [{ type: 'tool_use', name: 'run_checks', input: { scope: 'all' } }] },
+      {
+        content: [
+          {
+            type: 'tool_use',
+            name: 'checkpoint',
+            input: {
+              completedItemIds: ['mod', 'venom', 'dart'],
+              summary: 'Every plan item is proposed and the checks report no errors.',
+            },
+          },
+        ],
+      },
+      {
+        content: [
+          {
+            type: 'text',
+            text: 'The poison dart is ready to review. The texture is a placeholder to replace.',
+          },
+        ],
+      },
+    ],
+  }) as AiModelScript;
+
+describe('AI helper scenario: the poison dart (build mode)', () => {
+  it('plans, proposes an effect and a throwable, checks clean and applies in one step', async () => {
+    const { session } = await openSession();
+    const before = session.snapshot.project;
+    const changeset = new PendingChangeset();
+    const client = new ScriptedModelClient(dartScript());
+    const conversation = createConversation('conversation-3', 'claude-opus-5-5');
+
+    const { result, record } = await run(session, changeset, client, conversation, {
+      mode: 'build',
+      text: DART_PROMPT,
+    });
+    expect(result.reason).toBe('end_turn');
+    expect(client.remaining).toBe(0);
+    expect(record.plans[0]?.items.map((item) => item.elementId)).toEqual([
+      'darts:mod',
+      'darts:venom',
+      'darts:poison_dart',
+    ]);
+    expect(record.checkpoints).toBe(1);
+    expect(
+      [...record.results.entries()]
+        .filter(([, answer]) => answer.isError)
+        .map(([id, answer]) => `${id}: ${answer.content}`),
+    ).toEqual([]);
+
+    expect(changeset.items.filter((item) => item.conflict !== undefined)).toEqual([]);
+    expect(
+      changeset.items
+        .filter((item) => item.op === 'create')
+        .map((item) => item.elementId)
+        .sort(),
+    ).toEqual(['darts:mod', 'darts:poison_dart', 'darts:venom']);
+
+    // run_checks reported no errors.
+    const checkUse = conversation.messages
+      .flatMap((message) =>
+        message.role === 'assistant' && typeof message.content !== 'string' ? message.content : [],
+      )
+      .find((block) => block.type === 'tool_use' && block.name === 'run_checks');
+    const checkId = checkUse?.type === 'tool_use' ? checkUse.id : '';
+    const checks = JSON.parse(record.results.get(checkId)?.content ?? '{}') as {
+      counts: { error: number };
+    };
+    expect(checks.counts.error).toBe(0);
+    expectAppendOnly(client);
+
+    // One undo step.
+    const applied = await session.applyChangeset(changeset.items);
+    expect(applied.skipped).toEqual([]);
+    expect(session.snapshot.undoLabel).toBe(APPLY_CHANGESET_LABEL);
+    expect([...elementIds(session.snapshot.project)]).toEqual(
+      expect.arrayContaining(['darts:venom', 'darts:poison_dart']),
+    );
+    await session.flushValidation();
+    expect(session.snapshot.problems.filter((problem) => problem.severity === 'error')).toEqual([]);
+    expect(session.undo()).toBe(true);
+    expect(session.snapshot.project).toEqual(before);
+  });
+});

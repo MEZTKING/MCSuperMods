@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import {
   AI_TOOL_NAMES,
@@ -163,3 +164,13 @@ describe('tool catalogue', () => {
 function order(group: string): number {
   return ['read', 'propose', 'check', 'decide', 'note'].indexOf(group);
 }
+
+describe('tool catalogue is frozen (ADR 0055 D11)', () => {
+  it('has 22 tools in the documented order with unchanged schemas', () => {
+    expect(TOOL_CATALOGUE.map((tool) => tool.name)).toEqual([...AI_TOOL_NAMES]);
+    expect(TOOL_CATALOGUE).toHaveLength(22);
+    expect(createHash('sha256').update(JSON.stringify(TOOL_CATALOGUE)).digest('hex')).toBe(
+      'd7761384303f4de9d4956bee35b689151a5afa00cdad0214b75dbed28f4901b4',
+    );
+  });
+});

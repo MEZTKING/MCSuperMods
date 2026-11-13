@@ -49,3 +49,19 @@ describe('projectContextBlock', () => {
     );
   });
 });
+
+describe('systemPrompt effects and throwables paragraph (ADR 0055 D11)', () => {
+  it.each(['chat', 'build'] as const)(
+    'names the kinds, the sound rule and the gaps in %s mode',
+    (mode) => {
+      const text = systemPrompt(mode);
+      expect(text).toContain('msm:effect');
+      expect(text).toContain('msm:throwable');
+      expect(text).toContain('msm:on_tick');
+      expect(text).toContain('run_script');
+      expect(text).toContain('{ "sound_id": "namespace:event" }');
+      expect(text).toContain('only vanilla sound events for now');
+      expect(text).toContain('note_missing_feature');
+    },
+  );
+});
