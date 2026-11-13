@@ -133,7 +133,13 @@ import {
   referencesForRename,
   type SessionReferences,
 } from './references';
-import { loadSchemaContext, projectRegistryIds, type SchemaContext } from './schema-context';
+import {
+  loadSchemaContext,
+  projectRegistryIds,
+  rewriteSoundEventProblems,
+  type SchemaContext,
+  UNREGISTERED_SOUND_EVENT,
+} from './schema-context';
 import {
   checkScriptElement,
   SCRIPT_KIND,
@@ -623,6 +629,11 @@ export const SessionProblemCodes = {
   scriptingUnavailable: 'session.scripting-unavailable',
   /** The Java project's root folder already holds files (ADR 0033 D4); nothing is written. */
   folderNotEmpty: 'export.folder-not-empty',
+  /**
+   * A `sounds.json` event key written as a plain string where the game reads a registered
+   * sound event (error; the `{ "sound_id": ... }` form names it).
+   */
+  unregisteredSoundEvent: UNREGISTERED_SOUND_EVENT,
 } as const;
 
 /**
@@ -2726,7 +2737,12 @@ export class ProjectSession {
       ];
     }
     const hidden = kind.hiddenPaths ?? [];
-    return validateJson(element.data, node, { registries })
+    return rewriteSoundEventProblems(
+      validateJson(element.data, node, { registries }),
+      kind.id,
+      element.data,
+      registries,
+    )
       .filter((problem) => !hidden.some((path) => isUnder(problem.path, path)))
       .map((schemaProblem) => {
         const problem: Problem = {

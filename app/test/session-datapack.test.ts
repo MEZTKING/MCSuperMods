@@ -81,36 +81,88 @@ describe('ProjectSession: data pack kinds', () => {
 });
 
 describe('ProjectSession: sound event ids', () => {
-  it('declares every event key of a sounds element as a sound_event id', async () => {
-    const { session } = await dataProject();
-    session.addElement({
-      id: 'demo:sounds',
-      kind: 'minecraft:sounds',
-      data: {
-        'music_disc.my_song': { sounds: [{ name: 'minecraft:records/cat', stream: true }] },
-        'block.ping': { sounds: ['minecraft:random/orb'] },
-      },
-    });
+  const SOUNDS = {
+    'music_disc.my_song': { sounds: [{ name: 'minecraft:records/cat', stream: true }] },
+    'block.ping': { sounds: ['minecraft:random/orb'] },
+  };
+  const song = (soundEvent: Json) => ({
+    sound_event: soundEvent,
+    description: 'My Song',
+    length_in_seconds: 10,
+    comparator_output: 1,
+  });
+
+  async function songProblems(soundEvent: Json) {
+    const { session } = await dataProject({ checker: null });
+    session.addElement({ id: 'demo:sounds', kind: 'minecraft:sounds', data: SOUNDS });
     session.addElement({
       id: 'demo:my_song',
       kind: 'minecraft:jukebox_song',
-      data: {
-        sound_event: 'demo:music_disc.my_song',
-        description: 'My Song',
-        length_in_seconds: 10,
-        comparator_output: 1,
-      },
+      data: song(soundEvent),
     });
     await session.flushValidation();
+    return { session, problems: session.problemsFor('demo:my_song') };
+  }
+
+  it('declares every event key of a sounds element as a weighed_sound_event id only', async () => {
+    const { session } = await songProblems({ sound_id: 'demo:music_disc.my_song' });
     const project = session.snapshot.project;
     if (project === null) throw new Error('no project');
-    expect(projectRegistryIds(project).sound_event).toEqual([
-      'demo:block.ping',
-      'demo:music_disc.my_song',
-    ]);
+    const ids = projectRegistryIds(project);
+    expect(ids.weighed_sound_event).toEqual(['demo:block.ping', 'demo:music_disc.my_song']);
+    expect(ids.sound_event).toBeUndefined();
     const registries = (await session.schemas()).registries(project);
-    expect(registries.has('sound_event', 'demo:music_disc.my_song')).toBe(true);
-    expect(session.problemsFor('demo:my_song')).toEqual([]);
+    expect(registries.has('weighed_sound_event', 'demo:music_disc.my_song')).toBe(true);
+    expect(registries.has('sound_event', 'demo:music_disc.my_song')).toBe(false);
+    // Vanilla sound events are weighed sound events too.
+    expect(registries.has('weighed_sound_event', 'minecraft:music_disc.cat')).toBe(true);
+    expect(registries.ids('weighed_sound_event')).toContain('demo:music_disc.my_song');
+    expect(registries.ids('sound_event')).not.toContain('demo:music_disc.my_song');
+  });
+
+  it('reports a bare project sound key in a sound_event field as an error', async () => {
+    const { problems } = await songProblems('demo:music_disc.my_song');
+    expect(problems).toEqual([
+      {
+        severity: 'error',
+        code: SessionProblemCodes.unregisteredSoundEvent,
+        elementId: 'demo:my_song',
+        path: '/sound_event',
+        message:
+          'Sound event "demo:music_disc.my_song" comes from a sounds element, not the game\'s sound event registry, so the game cannot load a plain string here. Write it as { "sound_id": "demo:music_disc.my_song" } instead.',
+      },
+    ]);
+    expect(SessionProblemCodes.unregisteredSoundEvent).toBe('schema.unregistered-sound-event');
+  });
+
+  it('accepts the inline form for a project sound key', async () => {
+    const { problems } = await songProblems({ sound_id: 'demo:music_disc.my_song' });
+    expect(problems).toEqual([]);
+  });
+
+  it('accepts a registered vanilla sound event as a string and inline', async () => {
+    expect((await songProblems('minecraft:music_disc.cat')).problems).toEqual([]);
+    expect((await songProblems('music_disc.cat')).problems).toEqual([]);
+    expect((await songProblems({ sound_id: 'minecraft:music_disc.cat' })).problems).toEqual([]);
+  });
+
+  it('keeps an unknown sound event a warning', async () => {
+    const bare = (await songProblems('demo:missing')).problems;
+    expect(bare).toEqual([
+      expect.objectContaining({
+        severity: 'warning',
+        code: 'schema.unknown-id',
+        path: '/sound_event',
+      }),
+    ]);
+    const inline = (await songProblems({ sound_id: 'demo:missing' })).problems;
+    expect(inline).toEqual([
+      expect.objectContaining({
+        severity: 'warning',
+        code: 'schema.unknown-id',
+        path: '/sound_event/sound_id',
+      }),
+    ]);
   });
 });
 

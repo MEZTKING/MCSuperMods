@@ -5,8 +5,8 @@
  * @packageDocumentation
  */
 
-import { defaultKindRegistry, type Project } from '@msm/core';
-import type { Plugin, Target } from '@msm/plugin-api';
+import { defaultKindRegistry, type Project, parseJsonPointer } from '@msm/core';
+import type { Json, Plugin, Target } from '@msm/plugin-api';
 import {
   BUILT_IN_EXTENSIONS,
   createRegistryIndex,
@@ -14,6 +14,7 @@ import {
   parseVanillaMcdocSymbols,
   type RegistryIndex,
   type SchemaIndex,
+  type SchemaProblem,
   type VanillaMcdocSymbols,
 } from '@msm/schemas';
 import type { PlatformAdapter } from '../../../shared/platform';
@@ -27,7 +28,7 @@ export interface SchemaContext {
   schemaIndex: SchemaIndex;
   /**
    * Vanilla registry ids (mcmeta `registries.json`, ids without a namespace) plus
-   * {@link SEEDED_VANILLA_IDS}.
+   * {@link SEEDED_VANILLA_IDS} and {@link WEIGHED_SOUND_EVENT} (the vanilla sound events).
    */
   vanillaRegistries: Readonly<Record<string, readonly string[]>>;
   /**
@@ -263,9 +264,13 @@ function soundEventKeys(data: unknown): string[] {
 /**
  * The ids a project defines, per registry: `model` (model elements and the item models of
  * entity spawn eggs with a texture), `texture` (PNG assets
- * under `textures/`), `sound` (Ogg assets under `sounds/`), `sound_event` (every event key of
- * a `minecraft:sounds` element: key `foo.bar` in namespace `ns` is `ns:foo.bar`) and the data
- * pack registries of {@link dataRegistryIds}. Sorted, namespaced, without duplicates.
+ * under `textures/`), `sound` (Ogg assets under `sounds/`), `weighed_sound_event` (every event
+ * key of a `minecraft:sounds` element: key `foo.bar` in namespace `ns` is `ns:foo.bar`) and
+ * the data pack registries of {@link dataRegistryIds}. Sorted, namespaced, without duplicates.
+ *
+ * Event keys are not `sound_event` ids: the game decodes a `sound_event` string as a
+ * reference into its registry, where a key from a resource pack's `sounds.json` is not; such
+ * a key is written `{ "sound_id": "ns:foo.bar" }` (registry `weighed_sound_event`).
  *
  * @param project - The project.
  * @param kinds - The registered kinds; defaults to the built-in plugins' kinds.
@@ -300,8 +305,8 @@ export function projectRegistryIds(
     ...dataRegistryIds(project, kinds),
     model: model.sort(),
     sound: sound.sort(),
-    sound_event: [...soundEvent].sort(),
     texture: texture.sort(),
+    [WEIGHED_SOUND_EVENT]: [...soundEvent].sort(),
   };
 }
 
@@ -313,12 +318,22 @@ export const SEEDED_VANILLA_IDS: Readonly<Record<string, readonly string[]>> = O
   'tag/function': Object.freeze(['load', 'tick']),
 });
 
+/**
+ * The registry of `sounds.json` event keys, which mcmeta does not list: the ids a
+ * `{ "sound_id": ... }` sound event names. It holds the project's event keys plus, as the
+ * vanilla resource pack defines an event for each, the vanilla `sound_event` ids.
+ */
+export const WEIGHED_SOUND_EVENT = 'weighed_sound_event';
+
 function withSeeds(
   vanilla: Readonly<Record<string, readonly string[]>>,
 ): Record<string, readonly string[]> {
   const out: Record<string, readonly string[]> = { ...vanilla };
   for (const [registry, ids] of Object.entries(SEEDED_VANILLA_IDS)) {
     out[registry] = [...new Set([...(vanilla[registry] ?? []), ...ids])];
+  }
+  if (out[WEIGHED_SOUND_EVENT] === undefined && vanilla.sound_event !== undefined) {
+    out[WEIGHED_SOUND_EVENT] = vanilla.sound_event;
   }
   return out;
 }
@@ -393,4 +408,96 @@ export async function loadSchemaContext(
       return cached;
     },
   };
+}
+
+// Sound event references the game cannot load. A `sound_event` field written as a string (a
+// jukebox song's `sound_event`, a consumable's `sound`, an equippable's `equip_sound`, …) is
+// decoded as a reference into the game's sound event registry. An event key that only a
+// resource pack's `sounds.json` defines (a project `minecraft:sounds` element) is not in that
+// registry, so the data pack entry fails to load; the inline form `{ "sound_id": "<key>" }`
+// names it instead.
+
+/** Problem code of a `sounds.json` event key written where a registered sound event belongs. */
+export const UNREGISTERED_SOUND_EVENT = 'schema.unregistered-sound-event';
+
+/** The `expected` text `validateJson` gives an unknown `sound_event` id. */
+const SOUND_EVENT_EXPECTED = 'sound_event id';
+
+const KIND_PREFIX_MSM = 'msm:';
+
+/** The value at RFC 6901 `pointer` in `data`, or `undefined`. */
+function soundValueAt(data: Json | undefined, pointer: string): Json | undefined {
+  let segments: string[];
+  try {
+    segments = parseJsonPointer(pointer);
+  } catch {
+    return undefined;
+  }
+  let current: Json | undefined = data;
+  for (const segment of segments) {
+    if (Array.isArray(current)) current = current[Number(segment)];
+    else if (typeof current === 'object' && current !== null) current = current[segment];
+    else return undefined;
+  }
+  return current;
+}
+
+/** `x` becomes `minecraft:x`; a namespaced id is returned unchanged. */
+function namespacedSoundId(id: string): string {
+  return id.includes(':') ? id : `minecraft:${id}`;
+}
+
+/**
+ * The message for an event key `id` written as a plain string in a `sound_event` field.
+ *
+ * @param id - The event key as written.
+ */
+export function unregisteredSoundEventMessage(id: string): string {
+  const key = namespacedSoundId(id);
+  return `Sound event ${JSON.stringify(id)} comes from a sounds element, not the game's sound event registry, so the game cannot load a plain string here. Write it as { "sound_id": ${JSON.stringify(key)} } instead.`;
+}
+
+/**
+ * Rewrites the `schema.unknown-id` problems of `sound_event` strings that name a `sounds.json`
+ * event key (an id of {@link WEIGHED_SOUND_EVENT}, usually from a project `minecraft:sounds`
+ * element) into an error with code {@link UNREGISTERED_SOUND_EVENT} that asks for the
+ * `{ "sound_id": ... }` form. Other problems pass through unchanged.
+ *
+ * Elements of MSM's own kinds (`msm:*`) are read by the MSM runtime, not by the game's sound
+ * event codec, and take a plain string only; for them such a problem is dropped, so a project
+ * event key stays accepted there as before (the runtime registering those events is separate
+ * work, audit S1).
+ *
+ * @param problems - The element's schema problems.
+ * @param kindId - The element's kind id.
+ * @param data - The element's data.
+ * @param registries - The project's registry index.
+ */
+export function rewriteSoundEventProblems(
+  problems: readonly SchemaProblem[],
+  kindId: string,
+  data: Json | undefined,
+  registries: RegistryIndex,
+): SchemaProblem[] {
+  const out: SchemaProblem[] = [];
+  for (const problem of problems) {
+    if (problem.code !== 'schema.unknown-id' || problem.expected !== SOUND_EVENT_EXPECTED) {
+      out.push(problem);
+      continue;
+    }
+    const value = soundValueAt(data, problem.path);
+    if (typeof value !== 'string' || !registries.has(WEIGHED_SOUND_EVENT, value)) {
+      out.push(problem);
+      continue;
+    }
+    if (kindId.startsWith(KIND_PREFIX_MSM)) continue;
+    out.push({
+      ...problem,
+      severity: 'error',
+      // A session code; `SchemaProblemCode` has no member for it.
+      code: UNREGISTERED_SOUND_EVENT as SchemaProblem['code'],
+      message: unregisteredSoundEventMessage(value),
+    });
+  }
+  return out;
 }
