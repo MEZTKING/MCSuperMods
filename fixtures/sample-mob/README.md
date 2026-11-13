@@ -1,6 +1,6 @@
 # Sample mob project
 
-A kitchen-sink MCSuperMods project for an animated entity in the Fabric content jar (ADRs 0028 and 0029), namespace `msm_sample_mob`: an `msm:mod`, one entity `glow_golem` that uses every entity component, all six AI goal types, the trigger events and the `play_animation` action, with a natural spawn and a spawn egg; one GeckoLib geo model, one animation set (`idle`, `walk`, `attack`, `wave`), two placeholder textures (the 64x64 skin and the 16x16 egg), one function and one loot table.
+A kitchen-sink MCSuperMods project for an animated entity in the Fabric content jar (ADRs 0028 and 0029), namespace `msm_sample_mob`: an `msm:mod`, one entity `glow_golem` that uses every entity component, all six AI goal types, the trigger events and the `play_animation` action, with a natural spawn and a spawn egg; one GeckoLib geo model, one animation set (`idle`, `walk`, `attack`, `wave`), two placeholder textures (the 64x64 skin and the 16x16 egg), one function and one loot table; since ADR 0057 a `sounds.json` with the golem's four project sound events (ambient, hurt, death, step).
 
 `packages/exporters/test/sample-mob.golden.test.ts` checks it on every run:
 
@@ -12,24 +12,26 @@ A kitchen-sink MCSuperMods project for an animated entity in the Fabric content 
 CI's `engine-mod` job then builds `msm_runtime` with Gradle, exports this project with the real runtime and the real GeckoLib jar nested (GeckoLib is downloaded from the target's facts and checked against its SHA-512), and starts a headless Fabric dedicated server with it (`tools/run-fabric-server`). The server must log
 
 ```
+[msm_runtime] registered 4 sound event(s)
 [msm_runtime] registered 0 block(s) and 1 item(s) from 1 definition file(s); 0 error(s), 0 warning(s)
 [msm_runtime] registered 1 entity type(s)
 ```
 
 (the spawn egg is the one item) and nothing from the runtime or GeckoLib at warning or error level. The jar is kept as the workflow artefact `msm-sample-mob`. The server has no renderer, so how the mob looks and animates is left to the in-game check below.
 
-The same job also exports this project as a Java project (ADR 0033; `sample-mob.java.golden.test.ts` with `MSM_SAMPLE_MOB_JAVA_OUT`, GeckoLib nested by Loom), builds it with its own `./gradlew build`, and runs the behaviour-parity GameTests of `engine-mod/parity/` (`SampleMobParityTest`: the entity type's category, size, eye height and fire immunity, its attributes and loot table, the spawn egg and `SpawnEggItem.getType`, the natural spawn in forests and plains (weight 5, groups of 1 to 2) and not in deserts, walking to a target, the first melee hit on a pig taking exactly 5 health, and on death the function's `say` line and the glowstone dust drop) twice: on the content jar with `msm_runtime` and on the ejected jar without it (`--gametest-filter 'msm_parity_tests:sample_mob_*'`, `--no-runtime` for the ejected jar). The same tests passing on both is the parity check; the reports are kept as the artefact `parity-gametest-reports`.
+The same job also exports this project as a Java project (ADR 0033; `sample-mob.java.golden.test.ts` with `MSM_SAMPLE_MOB_JAVA_OUT`, GeckoLib nested by Loom), builds it with its own `./gradlew build`, and runs the behaviour-parity GameTests of `engine-mod/parity/` (`SampleMobParityTest`: the entity type's category, size, eye height and fire immunity, its attributes and loot table, the spawn egg and `SpawnEggItem.getType`, the natural spawn in forests and plains (weight 5, groups of 1 to 2) and not in deserts, walking to a target, the first melee hit on a pig taking exactly 5 health, and on death the function's `say` line and the glowstone dust drop; since ADR 0057 the ambient interval of 200 ticks and the ambient, step, hurt and death sounds being the four project sound events, read as the sound packets a listening player receives (`ParityEars`)) twice: on the content jar with `msm_runtime` and on the ejected jar without it (`--gametest-filter 'msm_parity_tests:sample_mob_*'`, `--no-runtime` for the ejected jar). The same tests passing on both is the parity check; the reports are kept as the artefact `parity-gametest-reports`.
 
 ## Contents
 
 | Element | Kind | What it shows |
 |---|---|---|
 | `msm_sample_mob:mod` | mod metadata | `fabric.mod.json`: id `msm_sample_mob`, version 1.0.0, MIT |
-| `msm_sample_mob:glow_golem` | entity | creature, 0.8 x 1.9 hitbox, eye height 1.6; `msm:health` 40; `msm:movement` (speed 0.25, follow range 24, knockback resistance 0.4, swims, fire immune); `msm:attack` 5 damage, knockback 0.5, `on_attack` plays the iron golem attack sound; goals `melee_attack` (priority 1, zombies, retaliates), `flee` (creepers), `follow` (players, stops at 3 blocks, range 12), `wander`, `look_at_player`, `look_around`; `msm:animated_model` with `idle`, `walk`, `attack` and 4 transition ticks; `msm:on_hurt` (glow particles), `msm:on_interact` (`play_animation` `wave` and a chime), `msm:on_death` (end rod particles and `run_function`); natural spawn in `#minecraft:is_forest` and `minecraft:plains`, weight 5, groups of 1 to 2; spawn egg in the Spawn Eggs tab with its own texture; drops from its own loot table |
+| `msm_sample_mob:glow_golem` | entity | creature, 0.8 x 1.9 hitbox, eye height 1.6; `msm:health` 40; `msm:movement` (speed 0.25, follow range 24, knockback resistance 0.4, swims, fire immune); `msm:attack` 5 damage, knockback 0.5, `on_attack` plays the iron golem attack sound; goals `melee_attack` (priority 1, zombies, retaliates), `flee` (creepers), `follow` (players, stops at 3 blocks, range 12), `wander`, `look_at_player`, `look_around`; `msm:animated_model` with `idle`, `walk`, `attack` and 4 transition ticks; `msm:on_hurt` (glow particles), `msm:on_interact` (`play_animation` `wave` and a chime), `msm:on_death` (end rod particles and `run_function`); `sounds`: the project sound events `golem.ambient` (every 200 ticks on average), `golem.hurt`, `golem.death` and `golem.step`; natural spawn in `#minecraft:is_forest` and `minecraft:plains`, weight 5, groups of 1 to 2; spawn egg in the Spawn Eggs tab with its own texture; drops from its own loot table |
 | `msm_sample_mob:entity/glow_golem` | geo model | biped (body, head, two arms, two legs) over a 64x64 texture, Bedrock geometry 1.12.0 |
 | `msm_sample_mob:entity/glow_golem_animations` | animation | `idle` (a slow bob), `walk` (arm and leg swing), `attack` (both arms swing down), `wave` (the right arm waves) |
 | `textures/entity/glow_golem.png` | texture | 64x64 two-tone yellow checker skin |
 | `textures/item/glow_golem_spawn_egg.png` | texture | 16x16 speckled yellow egg |
+| `msm_sample_mob:sounds` | sounds | `assets/msm_sample_mob/sounds.json`: `golem.ambient`, `golem.hurt`, `golem.death` and `golem.step`, each playing a vanilla iron golem sound file (walk, hit, death, walk); the runtime registers them as sound events (ADR 0057) |
 | `msm_sample_mob:golem/glow_burst` | function | `particle` and `say`, run when the golem dies |
 | `msm_sample_mob:entities/glow_golem` | loot table | 1 to 3 glowstone dust |
 
@@ -69,11 +71,15 @@ Then switch to **Survival** (`/gamemode survival`):
 |---|---|
 | Hit the golem | Glow particles appear; it fights back and plays its attack animation as it hits you |
 | Kill it | End rod particles, the chat line `The glow golem fades.`, glow particles from the function, and 1 to 3 glowstone dust drop (the hurt event does not fire on the killing blow) |
+| Listen to a golem standing still for half a minute (**Hostile** and **Friendly Creatures** volume up) | Now and then (about every 10 seconds) a heavy iron golem step plays as its idle sound (`golem.ambient`) |
+| Watch a golem walk | Iron golem steps with each stride (`golem.step`), not the generic step sound |
+| Hit it, then kill it | The iron golem hurt sound on each hit (`golem.hurt`) and the iron golem death sound when it dies (`golem.death`); not the generic player-like hurt sound and not silence |
 | Explore a forest or plains biome in a new world | Glow Golems spawn naturally, alone or in pairs (they are creatures, so mostly at world generation and on grass) |
 
 Finally open the game log (Prism: the instance's **Minecraft Log**; official launcher: `%APPDATA%\.minecraft\logs\latest.log`) and check that it has the lines
 
 ```
+[msm_runtime] registered 4 sound event(s)
 [msm_runtime] registered 0 block(s) and 1 item(s) from 1 definition file(s); 0 error(s), 0 warning(s)
 [msm_runtime] registered 1 entity type(s)
 ```

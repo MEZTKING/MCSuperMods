@@ -23,7 +23,7 @@
         "actions": [
           {
             "pitch": 0.8,
-            "sound": "minecraft:block.note_block.chime",
+            "sound": "msm_sample_mod:chime.ring",
             "type": "play_sound"
           }
         ]

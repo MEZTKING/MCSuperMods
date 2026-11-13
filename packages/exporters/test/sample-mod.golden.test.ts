@@ -1,11 +1,12 @@
 /**
  * Golden over the committed kitchen-sink mod project (`fixtures/sample-mod`, ADR 0026 D6):
- * an `msm:mod`, three `msm:block` and twelve `msm:item` elements covering the block and item
+ * an `msm:mod`, four `msm:block` and twelve `msm:item` elements covering the block and item
  * components and the actions (gear since ADR 0044: a bow, a drink, a charm with `apply_effect`,
  * horse armour; since ADRs 0055 and 0056 a drink giving a custom effect, a dart and a
- * boomerang), two `msm:effect` elements with their icons, a `minecraft:equipment` element with
- * its three armour layer textures (ADR 0042), two functions and a loot table, namespace
- * `msm_sample_mod`.
+ * boomerang; since ADRs 0057 and 0058 the `ruby_spring` step block and two project sound
+ * events in a `minecraft:sounds` element), two `msm:effect` elements with their icons, a
+ * `minecraft:equipment` element with its three armour layer textures (ADR 0042), three
+ * functions and a loot table, namespace `msm_sample_mod`.
  *
  * - The fixture equals the project built from {@link SAMPLE_ELEMENTS} and
  *   {@link SAMPLE_ASSETS} now; `UPDATE_GOLDENS=1` rewrites it (the README is hand-written).
@@ -182,7 +183,33 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
           ],
         },
         [ns('chime')]: {
-          actions: [{ type: 'play_sound', sound: 'minecraft:block.note_block.chime', pitch: 0.8 }],
+          actions: [{ type: 'play_sound', sound: ns('chime.ring'), pitch: 0.8 }],
+        },
+      },
+    },
+  },
+  {
+    id: ns('ruby_spring'),
+    kind: 'msm:block',
+    data: {
+      format: 1,
+      model: 'minecraft:block/slime_block',
+      display_name: 'Ruby Spring',
+      loot: 'self',
+      sound_type: 'stone',
+      item: { creative_tab: 'minecraft:redstone_blocks', max_stack_size: 64, rarity: 'common' },
+      components: {
+        'msm:breakable': { hardness: 1.5, tool: 'pickaxe', min_tier: 'wood' },
+        // Whoever steps on it, player or mob, is `self` (ADR 0058 D1).
+        'msm:on_step': { event: ns('spring'), cooldown_ticks: 10 },
+      },
+      events: {
+        [ns('spring')]: {
+          actions: [
+            { type: 'apply_effect', effect: 'minecraft:jump_boost', seconds: 5, target: 'self' },
+            { type: 'launch', strength: 1, direction: 'up', target: 'self' },
+            { type: 'run_function', function: ns('ruby/spring') },
+          ],
         },
       },
     },
@@ -287,7 +314,7 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
             enchantment_value: 12,
             toughness: 1,
             knockback_resistance: 0.05,
-            equip_sound: 'minecraft:item.armor.equip_diamond',
+            equip_sound: ns('ruby.clink'),
             repair_items: '#minecraft:repairs_diamond_armor',
             equipment_asset: ns('ruby_armor'),
           },
@@ -365,6 +392,7 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
           ],
           converts_to: 'minecraft:glass_bottle',
           cooldown_seconds: 3,
+          sound: ns('ruby.clink'),
         },
       },
     },
@@ -547,6 +575,26 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
         '# Run when Ruby Rush starts (msm:on_start, run_function action).',
         'say The ruby rush begins.',
       ],
+    },
+  },
+  {
+    id: ns('ruby/spring'),
+    kind: 'minecraft:function',
+    data: {
+      lines: [
+        '# Run by the ruby spring (run_function action) as whoever stepped on it (ADR 0058 D1).',
+        'tag @s add msm_sample_sprung',
+      ],
+    },
+  },
+  {
+    // Project sound events (ADR 0057): the runtime registers both keys, so msm: elements name
+    // them as plain ids. Both play vanilla sound files from the player's own game.
+    id: ns('sounds'),
+    kind: 'minecraft:sounds',
+    data: {
+      'chime.ring': { sounds: ['minecraft:block/amethyst/resonate1'] },
+      'ruby.clink': { sounds: ['minecraft:random/glass1'] },
     },
   },
   {
@@ -739,7 +787,9 @@ const elementsOf = (project: Project): Element[] =>
 
 /**
  * The project's own ids per registry. A block's item shares the block's id, so block ids
- * (with a block item) are item ids too; the namespace's PNG assets are textures.
+ * (with a block item) are item ids too; the namespace's PNG assets are textures. The event
+ * keys of the `sounds.json` element are `sound_event` ids, as the app's registry view of an
+ * `msm:` kind has them (ADR 0057 D3; the sample names them only in `msm:` elements).
  */
 function projectIds(project: Project): Record<string, string[]> {
   const ids: Record<string, string[]> = {};
@@ -747,6 +797,10 @@ function projectIds(project: Project): Record<string, string[]> {
     ids[name] = [...(ids[name] ?? []), id];
   };
   for (const element of elementsOf(project)) {
+    if (element.kind === 'minecraft:sounds') {
+      for (const key of Object.keys(element.data as object))
+        add('sound_event', `${NAMESPACE}:${key}`);
+    }
     const name = registry.get(element.kind)?.registry;
     if (name === undefined) {
       if (element.kind.startsWith('minecraft:'))
@@ -890,6 +944,7 @@ describe('sample mod project', () => {
       'apply_effect',
       'damage',
       'heal',
+      'launch',
     ]) {
       expect(text.includes(`"type":"${action}"`), action).toBe(true);
     }
@@ -898,6 +953,7 @@ describe('sample mod project', () => {
       'minecraft:equipment',
       'minecraft:function',
       'minecraft:loot_table',
+      'minecraft:sounds',
       'msm:block',
       'msm:effect',
       'msm:item',
@@ -1015,6 +1071,8 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         `assets/${NAMESPACE}/${target.folders.resource.textures}/mob_effect/ruby_rush.png`,
         `assets/${NAMESPACE}/${target.folders.resource.textures}/mob_effect/ruby_sting.png`,
         `data/${NAMESPACE}/${target.folders.data.function}/ruby/rush.mcfunction`,
+        `data/${NAMESPACE}/${target.folders.data.function}/ruby/spring.mcfunction`,
+        `assets/${NAMESPACE}/sounds.json`,
       ]) {
         expect(paths, path).toContain(path);
       }

@@ -1,5 +1,10 @@
 package dev.mcsupermods.parity;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -12,8 +17,10 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -28,6 +35,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
@@ -43,6 +51,7 @@ import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.enchantment.Enchantable;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -77,6 +86,12 @@ import net.minecraft.world.phys.Vec3;
  * after them wait a tick or more. The thrown entity's type is {@code msm_runtime:thrown_item} in
  * the content jar and {@code msm_sample_mod:thrown_item} in the ejected one: the tests find it as
  * a vanilla {@link ThrowableItemProjectile} carrying the item.
+ * Since ADRs 0057 and 0058: the project sound events {@code chime.ring} (the chime block's
+ * {@code chime} event) and {@code ruby.clink} (the tonic's drinking sound and the helmet's equip
+ * sound), heard as the sound packets a listening {@link ParityEars} player receives; and the block
+ * {@code ruby_spring}, whose {@code on_step} event gives whoever steps on it, mob or player,
+ * Jump Boost for 5 seconds, launches it up at strength 1 and runs {@code ruby/spring}
+ * ({@code tag @s add msm_sample_sprung}) as it, with a 10-tick cooldown per dimension.
  * Run with {@code --gametest-filter msm_parity_tests:sample_mod_*}.
  */
 public class SampleModParityTest {
@@ -772,5 +787,157 @@ public class SampleModParityTest {
             droppedNear(helper, at, dart).forEach(Entity::discard);
             helper.succeed();
         });
+    }
+
+    // Project sound events (ADR 0057)
+
+    private static final List<String> SOUND_KEYS = List.of("chime.ring", "ruby.clink");
+
+    private static RegistryOps<JsonElement> ops(GameTestHelper helper) {
+        return RegistryOps.create(JsonOps.INSTANCE, helper.getLevel().registryAccess());
+    }
+
+    private static void assertHeard(GameTestHelper helper, ParityEars ears, String key, String what) {
+        List<Identifier> heard = ears.heard();
+        helper.assertTrue(heard.contains(id(key)), what + ": " + id(key) + " not heard; heard " + heard);
+    }
+
+    @GameTest
+    public void projectSoundEventsAreRegistered(GameTestHelper helper) {
+        for (String key : SOUND_KEYS) {
+            helper.assertTrue(BuiltInRegistries.SOUND_EVENT.containsKey(id(key)), id(key) + " is not a registered sound event");
+            SoundEvent sound = BuiltInRegistries.SOUND_EVENT.getValue(id(key));
+            helper.assertValueEqual(sound.location(), id(key), id(key) + " location");
+            helper.assertTrue(sound.fixedRange().isEmpty(), id(key) + " is not a variable-range event");
+        }
+        helper.succeed();
+    }
+
+    /** Once registered, a bare project key is a {@code SoundEvent.CODEC} value: a reference into the registry. */
+    @GameTest
+    public void soundEventCodecDecodesTheBareKey(GameTestHelper helper) {
+        for (String key : SOUND_KEYS) {
+            DataResult<Holder<SoundEvent>> decoded = SoundEvent.CODEC.parse(ops(helper), new JsonPrimitive(id(key).toString()));
+            helper.assertTrue(decoded.result().isPresent(), id(key) + " did not decode: " + decoded.error());
+            helper.assertTrue(decoded.getOrThrow().is(id(key)), id(key) + " decoded to " + decoded.getOrThrow());
+        }
+        helper.assertTrue(SoundEvent.CODEC.parse(ops(helper), new JsonPrimitive(id("no_such_sound").toString())).error().isPresent(),
+                "an unregistered key decoded");
+        helper.succeed();
+    }
+
+    /**
+     * The tonic's consumable sound and the helmet's equip sound are references to {@code ruby.clink}: encoded with the
+     * components' own Codecs they are the bare id (an inline event would be an object), whatever the Minecraft
+     * version's Java shape of the field.
+     */
+    @GameTest
+    public void consumableAndEquipSoundsNameTheProjectEvent(GameTestHelper helper) {
+        Consumable consumable = new ItemStack(item(helper, "ruby_tonic")).get(DataComponents.CONSUMABLE);
+        helper.assertTrue(consumable != null, "ruby_tonic is consumable");
+        JsonObject encoded = DataComponents.CONSUMABLE.codecOrThrow().encodeStart(ops(helper), consumable).getOrThrow().getAsJsonObject();
+        helper.assertValueEqual(encoded.get("sound"), new JsonPrimitive(id("ruby.clink").toString()), "ruby_tonic consumable sound");
+        Equippable equippable = new ItemStack(item(helper, "ruby_helmet")).get(DataComponents.EQUIPPABLE);
+        helper.assertTrue(equippable != null, "ruby_helmet is equippable");
+        encoded = DataComponents.EQUIPPABLE.codecOrThrow().encodeStart(ops(helper), equippable).getOrThrow().getAsJsonObject();
+        helper.assertValueEqual(encoded.get("equip_sound"), new JsonPrimitive(id("ruby.clink").toString()), "ruby_helmet equip sound");
+        helper.succeed();
+    }
+
+    /** The chime block's {@code chime} event (on losing power) plays {@code chime.ring}. */
+    @GameTest
+    public void chimePlaysTheProjectSound(GameTestHelper helper) {
+        helper.setBlock(AT, block(helper, "chime_block"));
+        helper.setBlock(AT.west(), Blocks.REDSTONE_BLOCK);
+        try (ParityEars ears = ParityEars.listener(helper, AT.above(2))) {
+            helper.setBlock(AT.west(), Blocks.AIR);
+            assertHeard(helper, ears, "chime.ring", "chime_block on_unpowered");
+        }
+        helper.succeed();
+    }
+
+    /** The drinker's own client plays its drinking sound, so the server sends it to the other players: a listener hears it. */
+    @GameTest
+    public void tonicPlaysTheProjectSound(GameTestHelper helper) {
+        try (ParityEars ears = ParityEars.listener(helper, AT.above());
+                ParityEars drinker = new ParityEars(helper, AT, GameType.SURVIVAL)) {
+            ItemStack tonic = new ItemStack(item(helper, "ruby_tonic"));
+            drinker.player.setItemInHand(InteractionHand.MAIN_HAND, tonic);
+            ears.heard();
+            drinker.player.setItemInHand(InteractionHand.MAIN_HAND, tonic.finishUsingItem(helper.getLevel(), drinker.player));
+            assertHeard(helper, ears, "ruby.clink", "drinking ruby_tonic");
+        }
+        helper.succeed();
+    }
+
+    /** Vanilla plays no equip sound in an entity's first tick, so the stand is dressed a few ticks after it spawns. */
+    @GameTest(maxTicks = 20)
+    public void helmetEquipPlaysTheProjectSound(GameTestHelper helper) {
+        ArmorStand stand = helper.spawn(EntityTypes.ARMOR_STAND, AT);
+        helper.runAfterDelay(3, () -> {
+            try (ParityEars ears = ParityEars.listener(helper, AT.above(2))) {
+                stand.setItemSlot(EquipmentSlot.HEAD, new ItemStack(item(helper, "ruby_helmet")));
+                assertHeard(helper, ears, "ruby.clink", "equipping ruby_helmet");
+            }
+            stand.discard();
+            helper.succeed();
+        });
+    }
+
+    // The ruby spring (ADR 0058 D1): whoever steps on it is self
+
+    private static final String SPRUNG = "msm_sample_sprung";
+
+    @GameTest(maxTicks = 40)
+    public void rubySpringLaunchesAMob(GameTestHelper helper) {
+        Block spring = block(helper, "ruby_spring");
+        helper.setBlock(AT, spring);
+        Mob pig = helper.spawn(EntityTypes.PIG, AT.above());
+        double y = pig.getY();
+        spring.stepOn(helper.getLevel(), helper.absolutePos(AT), helper.getBlockState(AT), pig);
+        assertEffect(helper, pig, MobEffects.JUMP_BOOST, 0, 100, "ruby_spring on a pig");
+        helper.assertTrue(pig.getDeltaMovement().y > 0.5, "launch did not set the pig's velocity: " + pig.getDeltaMovement());
+        helper.assertTrue(pig.entityTags().contains(SPRUNG), "ruby/spring did not run as the pig: " + pig.entityTags());
+        helper.runAfterDelay(3, () -> {
+            helper.assertTrue(pig.getY() > y + 0.5, "the pig did not rise: " + y + " -> " + pig.getY());
+            pig.discard();
+            helper.succeed();
+        });
+    }
+
+    /** A server player's position follows its client, so the launch shows as its velocity. */
+    @GameTest
+    public void rubySpringLaunchesAPlayer(GameTestHelper helper) {
+        Block spring = block(helper, "ruby_spring");
+        helper.setBlock(AT, spring);
+        try (ParityEars ears = new ParityEars(helper, AT.above(), GameType.SURVIVAL)) {
+            ServerPlayer player = ears.player;
+            spring.stepOn(helper.getLevel(), helper.absolutePos(AT), helper.getBlockState(AT), player);
+            assertEffect(helper, player, MobEffects.JUMP_BOOST, 0, 100, "ruby_spring on a player");
+            helper.assertTrue(player.getDeltaMovement().y > 0.5, "launch did not set the player's velocity: " + player.getDeltaMovement());
+            helper.assertTrue(player.entityTags().contains(SPRUNG), "ruby/spring did not run as the player: " + player.entityTags());
+        }
+        helper.succeed();
+    }
+
+    /** The step cooldown is per entity, position and dimension. */
+    @GameTest
+    public void rubySpringCooldownIsPerDimension(GameTestHelper helper) {
+        Block spring = block(helper, "ruby_spring");
+        helper.setBlock(AT, spring);
+        ServerLevel nether = helper.getLevel().getServer().getLevel(Level.NETHER);
+        helper.assertTrue(nether != null, "no nether level");
+        Mob pig = helper.spawnWithNoFreeWill(EntityTypes.PIG, AT.above());
+        BlockPos abs = helper.absolutePos(AT);
+        BlockState state = helper.getBlockState(AT);
+        spring.stepOn(helper.getLevel(), abs, state, pig);
+        helper.assertTrue(pig.hasEffect(MobEffects.JUMP_BOOST), "first step gave no effect");
+        pig.removeAllEffects();
+        spring.stepOn(helper.getLevel(), abs, state, pig);
+        helper.assertFalse(pig.hasEffect(MobEffects.JUMP_BOOST), "a second step within the cooldown fired");
+        spring.stepOn(nether, abs, state, pig);
+        helper.assertTrue(pig.hasEffect(MobEffects.JUMP_BOOST), "the same position in the nether shares the overworld's cooldown");
+        pig.discard();
+        helper.succeed();
     }
 }

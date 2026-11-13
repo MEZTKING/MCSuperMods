@@ -14,6 +14,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -36,7 +37,10 @@ import net.minecraft.world.phys.Vec3;
  * pathfinding, melee damage and the {@code on_death} effects (the function's chat line
  * {@code The glow golem fades.} and the loot table's glowstone dust). The movement tests run in
  * the {@code msm_parity_tests:arena} structure (stone floor, 9x9 interior, walls three high; a
- * copy of the runtime's GameTest arena). Run with
+ * copy of the runtime's GameTest arena). Since ADR 0057 the golem's ambient (every 200 ticks), hurt,
+ * death and step sounds are the project sound events {@code golem.ambient}, {@code golem.hurt},
+ * {@code golem.death} and {@code golem.step}, heard as the sound packets a listening
+ * {@link ParityEars} spectator receives. Run with
  * {@code --gametest-filter msm_parity_tests:sample_mob_*}.
  */
 public class SampleMobParityTest {
@@ -177,5 +181,49 @@ public class SampleMobParityTest {
             List<ItemEntity> drops = helper.getEntities(EntityTypes.ITEM, MID, 3.0);
             helper.assertTrue(drops.stream().anyMatch(i -> i.getItem().is(Items.GLOWSTONE_DUST)), "no glowstone dust dropped: " + drops);
         });
+    }
+
+    // Mob sounds (ADR 0057 D6)
+
+    private static void assertHeard(GameTestHelper helper, ParityEars ears, String key, String what) {
+        List<Identifier> heard = ears.heard();
+        helper.assertTrue(heard.contains(id(key)), what + ": " + id(key) + " not heard; heard " + heard);
+    }
+
+    @GameTest(structure = ARENA, maxTicks = 100)
+    public void golemSoundsAreTheProjectEvents(GameTestHelper helper) {
+        EntityType<Mob> type = golem(helper);
+        ParityEars ears = ParityEars.listener(helper, MID.above());
+        try {
+            Mob mob = helper.spawnWithNoFreeWill(type, MID);
+            helper.assertValueEqual(mob.getAmbientSoundInterval(), 200, "ambient_interval_ticks");
+            ears.heard();
+            mob.playAmbientSound();
+            assertHeard(helper, ears, "golem.ambient", "ambient");
+            // Steps: once it stands on the floor, walk back and forth past the step distance.
+            helper.runAfterDelay(5, () -> {
+                try {
+                    ears.heard();
+                    for (int i = 0; i < 8; i++) {
+                        mob.move(MoverType.SELF, new Vec3(i % 2 == 0 ? 0.4 : -0.4, -0.1, 0));
+                    }
+                    assertHeard(helper, ears, "golem.step", "step");
+                    mob.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 1.0f);
+                    assertHeard(helper, ears, "golem.hurt", "hurt");
+                    // Vanilla plays the death sound only for a hit outside the invulnerable time: a second golem dies.
+                    Mob doomed = helper.spawnWithNoFreeWill(type, MID);
+                    ears.heard();
+                    doomed.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 1000.0f);
+                    assertHeard(helper, ears, "golem.death", "death");
+                    mob.discard();
+                } finally {
+                    ears.close();
+                }
+                helper.succeed();
+            });
+        } catch (RuntimeException e) {
+            ears.close();
+            throw e;
+        }
     }
 }

@@ -3,10 +3,20 @@
     "lines": [
       "import { msm } from \"msm:runtime\";",
       "",
-      "// block.interact: a player uses the spark ore with the main hand.",
+      "// block.interact: a player uses the spark ore or the warded stone with the main hand.",
       "msm.events.on(\"block.interact\", (e) => {",
-      "  if (e.block.id !== \"msm_sample_script:spark_ore\" || e.hand !== \"main\") return;",
+      "  if (e.hand !== \"main\") return;",
+      "  if (e.block.id === \"msm_sample_script:warded_stone\") {",
+      "    // A cancel refuses the use: nothing is placed against the warded stone, the held",
+      "    // stack is kept, and the runtime sends the player its inventory and the blocks around.",
+      "    msm.log.info(\"block.interact: \" + e.player.name + \" was refused at warded stone \" + e.block.pos);",
+      "    e.cancel();",
+      "    return;",
+      "  }",
+      "  if (e.block.id !== \"msm_sample_script:spark_ore\") return;",
       "  msm.log.info(\"block.interact: \" + e.player.name + \" used spark ore at \" + e.block.pos);",
+      "  // With `at`, ~ ~ ~ is the spark ore, so the sea lantern goes on top of it.",
+      "  e.world.runCommand(\"setblock ~ ~1 ~ minecraft:sea_lantern\", e.block.pos);",
       "});"
     ]
   },

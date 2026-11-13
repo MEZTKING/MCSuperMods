@@ -269,6 +269,17 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-mob-ejected.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
+      # The fifth run (ADR 0058 D4): script behaviour on the content jar only, since scripts
+      # are not part of the Java project eject (ADR 0033).
+      - name: Parity GameTests (sample script, content jar)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-script/msm_sample_script.jar"
+          --facts "$RUNNER_TEMP/sample-script/fabric-facts.json"
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_script_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-script-content.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
       # Artifact names carry the version: matrix jobs may not upload the same name twice.
       - if: always()
         uses: actions/upload-artifact@v7

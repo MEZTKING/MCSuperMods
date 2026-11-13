@@ -1,0 +1,28 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2,
+        "min_tier": "wood",
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Warded Stone",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks",
+      "max_stack_size": 64,
+      "rarity": "common"
+    },
+    "loot": "self",
+    "model": "minecraft:block/obsidian",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:warded_stone",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

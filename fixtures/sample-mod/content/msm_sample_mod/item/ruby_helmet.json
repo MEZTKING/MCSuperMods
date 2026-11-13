@@ -11,7 +11,7 @@
           },
           "durability": 25,
           "enchantment_value": 12,
-          "equip_sound": "minecraft:item.armor.equip_diamond",
+          "equip_sound": "msm_sample_mod:ruby.clink",
           "equipment_asset": "msm_sample_mod:ruby_armor",
           "knockback_resistance": 0.05,
           "repair_items": "#minecraft:repairs_diamond_armor",

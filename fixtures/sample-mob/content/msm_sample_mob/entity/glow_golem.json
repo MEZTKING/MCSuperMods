@@ -137,6 +137,13 @@
       "height": 1.9,
       "width": 0.8
     },
+    "sounds": {
+      "ambient": "msm_sample_mob:golem.ambient",
+      "ambient_interval_ticks": 200,
+      "death": "msm_sample_mob:golem.death",
+      "hurt": "msm_sample_mob:golem.hurt",
+      "step": "msm_sample_mob:golem.step"
+    },
     "spawn": {
       "biomes": [
         "#minecraft:is_forest",

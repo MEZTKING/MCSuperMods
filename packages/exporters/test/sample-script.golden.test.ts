@@ -4,7 +4,9 @@
  * event of ADR 0032 D2 (each logging with `msm.log.info`), an action handler script called by
  * the block's `run_script` action, and a `util` module that two scripts load with
  * `require("./util")`; since ADR 0055 an `msm:effect` whose `msm:on_tick` runs a second
- * action handler script (the script tick hook); namespace `msm_sample_script`.
+ * action handler script (the script tick hook); since ADR 0058 the `warded_stone` block, whose
+ * use `on_block_interact` cancels, `World.runCommand` with `at` on the spark ore and
+ * `Entity.runCommand` on a used entity; namespace `msm_sample_script`.
  *
  * - The fixture equals the project built from {@link SAMPLE_ELEMENTS} now; `UPDATE_GOLDENS=1`
  *   rewrites it (the README is hand-written).
@@ -170,10 +172,20 @@ const SCRIPTS: readonly SampleElement[] = [
   script('on_block_interact', [
     IMPORT,
     '',
-    '// block.interact: a player uses the spark ore with the main hand.',
+    '// block.interact: a player uses the spark ore or the warded stone with the main hand.',
     'msm.events.on("block.interact", (e) => {',
-    `  if (e.block.id !== "${ns('spark_ore')}" || e.hand !== "main") return;`,
+    '  if (e.hand !== "main") return;',
+    `  if (e.block.id === "${ns('warded_stone')}") {`,
+    '    // A cancel refuses the use: nothing is placed against the warded stone, the held',
+    '    // stack is kept, and the runtime sends the player its inventory and the blocks around.',
+    '    msm.log.info("block.interact: " + e.player.name + " was refused at warded stone " + e.block.pos);',
+    '    e.cancel();',
+    '    return;',
+    '  }',
+    `  if (e.block.id !== "${ns('spark_ore')}") return;`,
     '  msm.log.info("block.interact: " + e.player.name + " used spark ore at " + e.block.pos);',
+    '  // With `at`, ~ ~ ~ is the spark ore, so the sea lantern goes on top of it.',
+    '  e.world.runCommand("setblock ~ ~1 ~ minecraft:sea_lantern", e.block.pos);',
     '});',
   ]),
   script('on_block_break', [
@@ -201,6 +213,8 @@ const SCRIPTS: readonly SampleElement[] = [
     'msm.events.on("entity.interact", (e) => {',
     '  if (e.hand !== "main") return;',
     '  msm.log.info("entity.interact: " + e.player.name + " used " + e.entity.type);',
+    '  // Entity.runCommand runs as and at the entity: @s is the entity that was used.',
+    '  e.entity.runCommand("tag @s add msm_sample_touched");',
     '});',
   ]),
   script('on_entity_hurt', [
@@ -314,6 +328,22 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
             { type: 'run_script', handler: ns('spark') },
           ],
         },
+      },
+    },
+  },
+  {
+    // A plain block whose use the on_block_interact script cancels (ADR 0058 D3).
+    id: ns('warded_stone'),
+    kind: 'msm:block',
+    data: {
+      format: 1,
+      model: 'minecraft:block/obsidian',
+      display_name: 'Warded Stone',
+      loot: 'self',
+      sound_type: 'stone',
+      item: { creative_tab: 'minecraft:building_blocks', max_stack_size: 64, rarity: 'common' },
+      components: {
+        'msm:breakable': { hardness: 2, resistance: 6, tool: 'pickaxe', min_tier: 'wood' },
       },
     },
   },
@@ -731,6 +761,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(paths.filter((path) => path.startsWith('msm/'))).toEqual(
         [
           `msm/${NAMESPACE}/block/spark_ore.json`,
+          `msm/${NAMESPACE}/block/warded_stone.json`,
           `msm/${NAMESPACE}/item/spark_gem.json`,
           `msm/${NAMESPACE}/effect/spark_surge.json`,
           ...SCRIPTS.map(scriptPathOf),
@@ -753,6 +784,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       const problems: string[] = [];
       for (const [path, ref] of [
         [`msm/${NAMESPACE}/block/spark_ore.json`, MSM_SCHEMA_REFS.blockDefinition],
+        [`msm/${NAMESPACE}/block/warded_stone.json`, MSM_SCHEMA_REFS.blockDefinition],
         [`msm/${NAMESPACE}/item/spark_gem.json`, MSM_SCHEMA_REFS.itemDefinition],
         [`msm/${NAMESPACE}/effect/spark_surge.json`, MSM_SCHEMA_REFS.effectDefinition],
       ] as const) {

@@ -7,6 +7,8 @@
       "msm.events.on(\"entity.interact\", (e) => {",
       "  if (e.hand !== \"main\") return;",
       "  msm.log.info(\"entity.interact: \" + e.player.name + \" used \" + e.entity.type);",
+      "  // Entity.runCommand runs as and at the entity: @s is the entity that was used.",
+      "  e.entity.runCommand(\"tag @s add msm_sample_touched\");",
       "});"
     ]
   },

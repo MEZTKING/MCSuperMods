@@ -3,7 +3,9 @@
  * 0029): an `msm:mod`, one `msm:entity` (`glow_golem`) using every entity component, all six
  * goal types, the trigger events, `play_animation`, a natural spawn and a spawn egg, one
  * `msm:geo_model`, one `msm:animation` set (`idle`, `walk`, `attack`, `wave`), two
- * placeholder textures, a function and a loot table, namespace `msm_sample_mob`.
+ * placeholder textures, a function and a loot table, namespace `msm_sample_mob`; since ADR
+ * 0057 the golem's ambient, hurt, death and step sounds are four project sound events of a
+ * `minecraft:sounds` element.
  *
  * - The fixture equals the project built from {@link SAMPLE_ELEMENTS} and
  *   {@link SAMPLE_ASSETS} now; `UPDATE_GOLDENS=1` rewrites it (the README is hand-written).
@@ -237,6 +239,14 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
         'msm:on_death': { event: ns('fade') },
         'msm:on_interact': { event: ns('greet') },
       },
+      // Project sound events (ADR 0057 D6), defined by the `sounds` element below.
+      sounds: {
+        ambient: ns('golem.ambient'),
+        hurt: ns('golem.hurt'),
+        death: ns('golem.death'),
+        step: ns('golem.step'),
+        ambient_interval_ticks: 200,
+      },
       events: {
         [ns('swing')]: {
           actions: [{ type: 'play_sound', sound: 'minecraft:entity.iron_golem.attack' }],
@@ -372,6 +382,17 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
         'particle minecraft:glow ~ ~1 ~ 0.5 0.6 0.5 0.05 20',
         'say The glow golem fades.',
       ],
+    },
+  },
+  {
+    // The golem's sound events: vanilla iron golem sound files from the player's own game.
+    id: ns('sounds'),
+    kind: 'minecraft:sounds',
+    data: {
+      'golem.ambient': { sounds: ['minecraft:mob/irongolem/walk1'] },
+      'golem.death': { sounds: ['minecraft:mob/irongolem/death'] },
+      'golem.hurt': { sounds: ['minecraft:mob/irongolem/hit1'] },
+      'golem.step': { sounds: ['minecraft:mob/irongolem/walk2'] },
     },
   },
   {
@@ -520,6 +541,12 @@ function projectIds(project: Project): Record<string, string[]> {
   };
   for (const namespace of project.namespaces) {
     for (const element of namespace.elements) {
+      // `sounds.json` event keys are `sound_event` ids in `msm:` elements (ADR 0057 D3).
+      if (element.kind === 'minecraft:sounds') {
+        for (const key of Object.keys(element.data as object)) {
+          add('sound_event', `${namespace.name}:${key}`);
+        }
+      }
       const name = registry.get(element.kind)?.registry;
       if (name === undefined) {
         if (element.kind.startsWith('minecraft:'))
@@ -695,6 +722,7 @@ describe('sample mob project', () => {
     expect([...kinds].sort()).toEqual([
       'minecraft:function',
       'minecraft:loot_table',
+      'minecraft:sounds',
       'msm:animation',
       'msm:entity',
       'msm:geo_model',
@@ -839,6 +867,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           `assets/${NAMESPACE}/${resource.lang}/en_us.json`,
           `data/${NAMESPACE}/${data.function}/golem/glow_burst.mcfunction`,
           `data/${NAMESPACE}/${data.loot_table}/entities/glow_golem.json`,
+          `assets/${NAMESPACE}/sounds.json`,
         ]) {
           expect(paths, path).toContain(path);
         }

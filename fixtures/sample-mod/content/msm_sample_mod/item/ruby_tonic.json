@@ -16,7 +16,8 @@
             "seconds": 5
           }
         ],
-        "seconds": 1
+        "seconds": 1,
+        "sound": "msm_sample_mod:ruby.clink"
       }
     },
     "creative_tab": "minecraft:food_and_drinks",

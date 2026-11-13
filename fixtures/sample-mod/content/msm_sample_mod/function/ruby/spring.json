@@ -1,0 +1,14 @@
+{
+  "data": {
+    "lines": [
+      "# Run by the ruby spring (run_function action) as whoever stepped on it (ADR 0058 D1).",
+      "tag @s add msm_sample_sprung"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby/spring",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

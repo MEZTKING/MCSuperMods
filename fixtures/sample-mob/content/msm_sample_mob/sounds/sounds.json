@@ -1,0 +1,30 @@
+{
+  "data": {
+    "golem.ambient": {
+      "sounds": [
+        "minecraft:mob/irongolem/walk1"
+      ]
+    },
+    "golem.death": {
+      "sounds": [
+        "minecraft:mob/irongolem/death"
+      ]
+    },
+    "golem.hurt": {
+      "sounds": [
+        "minecraft:mob/irongolem/hit1"
+      ]
+    },
+    "golem.step": {
+      "sounds": [
+        "minecraft:mob/irongolem/walk2"
+      ]
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mob:sounds",
+  "kind": "minecraft:sounds",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1.5,
+        "min_tier": "wood",
+        "tool": "pickaxe"
+      },
+      "msm:on_step": {
+        "cooldown_ticks": 10,
+        "event": "msm_sample_mod:spring"
+      }
+    },
+    "display_name": "Ruby Spring",
+    "events": {
+      "msm_sample_mod:spring": {
+        "actions": [
+          {
+            "effect": "minecraft:jump_boost",
+            "seconds": 5,
+            "target": "self",
+            "type": "apply_effect"
+          },
+          {
+            "direction": "up",
+            "strength": 1,
+            "target": "self",
+            "type": "launch"
+          },
+          {
+            "function": "msm_sample_mod:ruby/spring",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:redstone_blocks",
+      "max_stack_size": 64,
+      "rarity": "common"
+    },
+    "loot": "self",
+    "model": "minecraft:block/slime_block",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_spring",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}
