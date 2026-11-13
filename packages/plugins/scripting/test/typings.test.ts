@@ -132,6 +132,19 @@ describe('msm-runtime.d.ts', () => {
     expect(typeCheck(imported)).toEqual([]);
   });
 
+  it('type-checks the effect members and ActionEvent.other', () => {
+    const src = [
+      'msm.actions.define("mymod:zap", (e) => {',
+      '  const o = e.other;',
+      '  if (o && o.hasEffect("mymod:burning")) { const n: number = o.effectLevel("mymod:burning"); const r: boolean = o.removeEffect("mymod:burning"); msm.log.info(String(n) + String(r)); }',
+      '});',
+    ].join('\n');
+    expect(typeCheck(src)).toEqual([]);
+    expect(typeCheck('msm.actions.define("a:b", (e) => { e.other.hasEffect("x"); });')).not.toEqual(
+      [],
+    );
+  });
+
   it('type-checks relative and runtime requires (no TS2591)', () => {
     const required = [
       'const util = require("./util");',

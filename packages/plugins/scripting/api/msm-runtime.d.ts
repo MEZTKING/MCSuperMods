@@ -10,6 +10,8 @@ interface ActionEvent extends GameEvent {
   readonly entity?: Entity;
   /** The definition event id, for example `msm:on_interact`. */
   readonly event: string;
+  /** The other entity involved, when there is one: the entity a thrown item hit, or the holder of a status effect. */
+  readonly other?: Entity;
   /** The id of the block, item or entity definition whose event ran. */
   readonly owner: string;
   /** The player involved, when there is one. */
@@ -77,6 +79,18 @@ interface Entity {
    */
   damage(amount: number): void;
   /**
+   * Returns the level of the mob effect (the amplifier plus 1), or 0 when the entity does not have it.
+   *
+   * @param id - The effect id, for example `minecraft:speed` or one of your own.
+   */
+  effectLevel(id: string): number;
+  /**
+   * Returns whether the entity currently has the mob effect.
+   *
+   * @param id - The effect id, for example `minecraft:speed` or one of your own.
+   */
+  hasEffect(id: string): boolean;
+  /**
    * Heals the entity, up to its maximum health.
    *
    * @param amount - The health to add in half hearts.
@@ -105,6 +119,12 @@ interface Entity {
   playAnimation(name: string, controller?: string): void;
   /** The entity's exact position. */
   readonly pos: Pos;
+  /**
+   * Removes the mob effect; returns `true` when the entity had it.
+   *
+   * @param id - The effect id, for example `minecraft:speed` or one of your own.
+   */
+  removeEffect(id: string): boolean;
   /**
    * Replaces the motion, so the game moves the entity smoothly, as a slime block or a wind charge does; each part is limited to 10. Players are pushed too.
    *

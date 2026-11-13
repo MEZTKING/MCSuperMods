@@ -348,6 +348,42 @@
           ],
           "doc": "Gives the entity a mob effect."
         },
+        "hasEffect": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The effect id, for example `minecraft:speed` or one of your own."
+            }
+          ],
+          "doc": "Returns whether the entity currently has the mob effect.",
+          "returns": "boolean"
+        },
+        "effectLevel": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The effect id, for example `minecraft:speed` or one of your own."
+            }
+          ],
+          "doc": "Returns the level of the mob effect (the amplifier plus 1), or 0 when the entity does not have it.",
+          "returns": "number"
+        },
+        "removeEffect": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The effect id, for example `minecraft:speed` or one of your own."
+            }
+          ],
+          "doc": "Removes the mob effect; returns `true` when the entity had it.",
+          "returns": "boolean"
+        },
         "playAnimation": {
           "kind": "method",
           "params": [
@@ -683,6 +719,12 @@
           "kind": "property",
           "type": "Player",
           "doc": "The player involved, when there is one.",
+          "optional": true
+        },
+        "other": {
+          "kind": "property",
+          "type": "Entity",
+          "doc": "The other entity involved, when there is one: the entity a thrown item hit, or the holder of a status effect.",
           "optional": true
         }
       },
