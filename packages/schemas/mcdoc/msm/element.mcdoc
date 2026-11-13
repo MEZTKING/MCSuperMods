@@ -6,6 +6,7 @@ use super::definition::BlockBehaviourComponents
 use super::definition::BlockCommon
 use super::definition::EffectCommon
 use super::definition::Breakable as DefinitionBreakable
+use super::definition::Shape as DefinitionShape
 use super::definition::EntityBehaviourComponents
 use super::definition::EntityCommon
 use super::definition::SpawnEgg as DefinitionSpawnEgg
@@ -30,9 +31,29 @@ struct Breakable {
 	min_tier?: ToolTier,
 }
 
+/// A shape preset of the editor (ADR 0059 D2).
+enum(string) ShapePreset {
+	Full = "full",
+	SlabBottom = "slab_bottom",
+	SlabTop = "slab_top",
+	Carpet = "carpet",
+	Pillar = "pillar",
+	Cross = "cross",
+	Custom = "custom",
+}
+
+/// `msm:shape` in element data: `preset` is editor-only. Lowering writes the preset's `boxes`
+/// (`cross` also `collision: false` unless set) and strips it; `custom` keeps `boxes`.
+struct Shape {
+	...DefinitionShape,
+	/// The shape the editor chose; absent or `custom` means `boxes` as written.
+	preset?: ShapePreset,
+}
+
 /// Block components in element data.
 struct BlockComponents {
 	"msm:breakable"?: Breakable,
+	"msm:shape"?: Shape,
 	...BlockBehaviourComponents,
 }
 

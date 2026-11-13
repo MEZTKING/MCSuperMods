@@ -84,4 +84,63 @@ export const blockTemplates: readonly ElementTemplate[] = [
       };
     },
   },
+  {
+    id: 'msm_block_half',
+    kind: BLOCK_KIND,
+    category: CATEGORY,
+    title: 'Half block',
+    description:
+      'A fixed bottom half block (shape preset "slab_bottom"): you stand on it half a block up. It is not a stackable vanilla slab.',
+    data: (context) => ({
+      format: 1,
+      model: 'minecraft:block/smooth_stone_slab',
+      display_name: displayName(context.path),
+      sound_type: 'stone',
+      loot: 'self',
+      item: { creative_tab: 'minecraft:building_blocks' },
+      components: {
+        'msm:breakable': { hardness: 2, resistance: 6, tool: 'pickaxe' },
+        'msm:shape': { preset: 'slab_bottom' },
+      },
+    }),
+  },
+  {
+    id: 'msm_block_plant',
+    kind: BLOCK_KIND,
+    category: CATEGORY,
+    title: 'Plant (cross)',
+    description:
+      'A plant drawn as two crossed planes (shape preset "cross"): it breaks instantly, lets light through and you walk through it.',
+    data: (context) => ({
+      format: 1,
+      model: 'minecraft:block/poppy',
+      display_name: displayName(context.path),
+      sound_type: 'grass',
+      loot: 'self',
+      item: { creative_tab: 'minecraft:natural_blocks' },
+      components: {
+        'msm:breakable': { hardness: 0, resistance: 0 },
+        'msm:shape': { preset: 'cross' },
+      },
+    }),
+  },
+  {
+    id: 'msm_block_glass_like',
+    kind: BLOCK_KIND,
+    category: CATEGORY,
+    title: 'Glass-like block',
+    description:
+      'A full block you can see through, as glass: light passes and faces between two of them are hidden. It drops nothing unless you add loot.',
+    data: (context) => ({
+      format: 1,
+      model: 'minecraft:block/glass',
+      display_name: displayName(context.path),
+      sound_type: 'glass',
+      item: { creative_tab: 'minecraft:building_blocks' },
+      components: {
+        'msm:breakable': { hardness: 0.3, resistance: 0.3 },
+        'msm:shape': { preset: 'full', see_through: true },
+      },
+    }),
+  },
 ];

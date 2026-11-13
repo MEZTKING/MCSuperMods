@@ -158,9 +158,24 @@ struct BlockBehaviourComponents {
 	"msm:redstone"?: Redstone,
 }
 
+/// The block's outline and collision shape (ADR 0059 D1). Absent means the full solid cube.
+/// The shape is the same in every block state.
+struct Shape {
+	/// Pixel boxes `[x1, y1, z1, x2, y2, z2]` from 0 to 16, as model elements, joined into one
+	/// shape; absent means the full cube.
+	boxes?: [[float @ 0..16] @ 6] @ 1..16,
+	/// Whether entities collide with the shape; defaults to true. `false` makes the block
+	/// walk-through, as plants are.
+	collision?: boolean,
+	/// Whether the block lets light and the view of neighbouring faces through, as glass does.
+	/// Defaults to true when `boxes` is present and is not the single full cube, else false.
+	see_through?: boolean,
+}
+
 /// Runtime block components.
 struct BlockComponents {
 	"msm:breakable"?: Breakable,
+	"msm:shape"?: Shape,
 	...BlockBehaviourComponents,
 }
 

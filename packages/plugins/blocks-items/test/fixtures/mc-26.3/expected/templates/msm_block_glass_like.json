@@ -1,0 +1,61 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0.3,
+          "resistance": 0.3
+        },
+        "msm:shape": {
+          "boxes": [
+            [
+              0,
+              0,
+              0,
+              16,
+              16,
+              16
+            ]
+          ],
+          "see_through": true
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:building_blocks"
+      },
+      "sound_type": "glass"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "minecraft:block/glass"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:block/glass",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  }
+]

@@ -15,6 +15,14 @@
     "code": "schema.no-union-match",
     "path": "/loot"
   },
+  "block-shape-bad-preset.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:shape/preset"
+  },
+  "block-shape-box-17.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:shape/boxes/0/4"
+  },
   "effect-bad-category.json": {
     "code": "schema.invalid-enum",
     "path": "/category"

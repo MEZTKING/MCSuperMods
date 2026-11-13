@@ -1,0 +1,49 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:shape": {
+          "boxes": [
+            [
+              0,
+              0,
+              0,
+              16,
+              16,
+              16
+            ]
+          ],
+          "see_through": true
+        }
+      },
+      "format": 1,
+      "sound_type": "glass"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_glass.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "minecraft:block/glass"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_glass.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:block/glass",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_glass.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  }
+]

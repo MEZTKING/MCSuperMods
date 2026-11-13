@@ -1825,6 +1825,15 @@
           }
         },
         {
+          "key": "msm:shape",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Shape"
+          }
+        },
+        {
           "kind": "spread",
           "type": {
             "kind": "reference",
@@ -3856,6 +3865,59 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::Shape": {
+      "fields": [
+        {
+          "desc": "Pixel boxes `[x1, y1, z1, x2, y2, z2]` from 0 to 16, as model elements, joined into one\nshape; absent means the full cube.",
+          "key": "boxes",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "item": {
+                "kind": "float",
+                "valueRange": {
+                  "kind": 0,
+                  "max": 16,
+                  "min": 0
+                }
+              },
+              "kind": "list",
+              "lengthRange": {
+                "kind": 0,
+                "max": 6,
+                "min": 6
+              }
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 16,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whether entities collide with the shape; defaults to true. `false` makes the block\nwalk-through, as plants are.",
+          "key": "collision",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether the block lets light and the view of neighbouring faces through, as glass does.\nDefaults to true when `boxes` is present and is not the single full cube, else false.",
+          "key": "see_through",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::Shield": {
       "fields": [
         {
@@ -4908,6 +4970,15 @@
           }
         },
         {
+          "key": "msm:shape",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::Shape"
+          }
+        },
+        {
           "kind": "spread",
           "type": {
             "kind": "reference",
@@ -5105,6 +5176,62 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::element::Shape": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Shape"
+          }
+        },
+        {
+          "desc": "The shape the editor chose; absent or `custom` means `boxes` as written.",
+          "key": "preset",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::ShapePreset"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::ShapePreset": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Full",
+          "value": "full"
+        },
+        {
+          "identifier": "SlabBottom",
+          "value": "slab_bottom"
+        },
+        {
+          "identifier": "SlabTop",
+          "value": "slab_top"
+        },
+        {
+          "identifier": "Carpet",
+          "value": "carpet"
+        },
+        {
+          "identifier": "Pillar",
+          "value": "pillar"
+        },
+        {
+          "identifier": "Cross",
+          "value": "cross"
+        },
+        {
+          "identifier": "Custom",
+          "value": "custom"
+        }
+      ]
     },
     "::msm::element::SpawnEgg": {
       "fields": [
@@ -5791,5 +5918,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:7230b0e8b5b95c5eee046fc99444c4177615bc865706c8fb3a9ba1617ffe5343"
+  "ref": "msm-mcdoc:sha256:19bfff758906458e7234410a1c41bf11dfa84888efc34491f258a500d323148f"
 }

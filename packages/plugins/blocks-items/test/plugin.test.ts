@@ -13,7 +13,9 @@ import plugin, {
   descriptionKey,
   effectDefinition,
   effectKind,
+  FULL_CUBE,
   incorrectForTierTag,
+  isSeeThroughBlock,
   itemDefinition,
   lowerBlock,
   lowerEffect,
@@ -22,6 +24,8 @@ import plugin, {
   MSM_VANILLA_COMPONENTS,
   NEEDS_TIER_TAGS,
   needsTierTag,
+  SHAPE_PRESET_BOXES,
+  SHAPE_PRESETS,
   SPEAR_VANILLA_COMPONENTS,
   splitResourceLocation,
   TOOL_TIERS,
@@ -69,7 +73,7 @@ describe('@msm/plugin-blocks-items', () => {
     ]);
   });
 
-  it('contributes its templates and the eleven validators', () => {
+  it('contributes its templates and the twelve validators', () => {
     expect(plugin.contributes.elementTemplates?.map((t) => t.id)).toEqual(
       blocksItemsTemplates.map((t) => t.id),
     );
@@ -77,6 +81,7 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.missing-model',
       'msm.blocks-items.missing-pull-model',
       'msm.blocks-items.passthrough-needs-data-pack',
+      'msm.blocks-items.model-not-cube',
       'msm.blocks-items.unknown-event',
       'msm.blocks-items.event-cycle',
       'msm.blocks-items.mod-id',
@@ -86,7 +91,7 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.equipment-asset',
       'msm.blocks-items.component-conflict',
     ]);
-    expect(blocksItemsValidators).toHaveLength(11);
+    expect(blocksItemsValidators).toHaveLength(12);
   });
 
   it('rejects unsafe ids and non-object data', () => {
@@ -192,6 +197,72 @@ describe('@msm/plugin-blocks-items', () => {
     ]);
     expect(needsTierTag('mithril')).toBeUndefined();
     expect(incorrectForTierTag('wood')).toBe('minecraft:incorrect_for_wooden_tool');
+  });
+});
+
+describe('msm:shape lowering (ADR 0059 D2)', () => {
+  const shaped = (shape: Json): Json => ({
+    format: 1,
+    model: 'minecraft:block/stone',
+    components: { 'msm:shape': shape },
+  });
+  const loweredShape = (shape: Json): Json => {
+    const definition = blockDefinition(element('msm:block', 'demo:x', shaped(shape)));
+    return (definition.components as Record<string, Json>)['msm:shape'] as Json;
+  };
+
+  it('has one box list per preset other than custom', () => {
+    expect(Object.keys(SHAPE_PRESET_BOXES).sort()).toEqual(
+      SHAPE_PRESETS.filter((preset) => preset !== 'custom').sort(),
+    );
+    expect(SHAPE_PRESET_BOXES.full).toEqual([FULL_CUBE]);
+  });
+
+  it.each([
+    ['full', { boxes: [[0, 0, 0, 16, 16, 16]] }],
+    ['slab_bottom', { boxes: [[0, 0, 0, 16, 8, 16]] }],
+    ['slab_top', { boxes: [[0, 8, 0, 16, 16, 16]] }],
+    ['carpet', { boxes: [[0, 0, 0, 16, 1, 16]] }],
+    ['pillar', { boxes: [[4, 0, 4, 12, 16, 12]] }],
+    ['cross', { boxes: [[2, 0, 2, 14, 16, 14]], collision: false }],
+  ] as const)('lowers preset %s to its boxes and strips the preset', (preset, expected) => {
+    // A stale `boxes` from an earlier custom shape is replaced by the preset's.
+    expect(loweredShape({ preset, boxes: [[1, 1, 1, 2, 2, 2]] })).toEqual(expected);
+  });
+
+  it('keeps custom boxes, an explicit collision on a cross and see_through', () => {
+    const boxes = [
+      [0, 0, 0, 16, 8, 16],
+      [0, 8, 0, 8, 16, 16],
+    ];
+    expect(loweredShape({ preset: 'custom', boxes, see_through: false })).toEqual({
+      boxes,
+      see_through: false,
+    });
+    expect(loweredShape({ boxes })).toEqual({ boxes });
+    expect(loweredShape({ preset: 'cross', collision: true, see_through: true })).toEqual({
+      boxes: [[2, 0, 2, 14, 16, 14]],
+      collision: true,
+      see_through: true,
+    });
+    expect(loweredShape({ preset: 'custom' })).toEqual({});
+  });
+
+  it('never mutates the element data', () => {
+    const data = shaped({ preset: 'slab_top' });
+    blockDefinition(element('msm:block', 'demo:x', data));
+    expect(data).toEqual(shaped({ preset: 'slab_top' }));
+  });
+
+  it('tells see-through blocks by the runtime default (ADR 0059 D1)', () => {
+    expect(isSeeThroughBlock({ format: 1 })).toBe(false);
+    expect(isSeeThroughBlock(shaped({}))).toBe(false);
+    expect(isSeeThroughBlock(shaped({ preset: 'full' }))).toBe(false);
+    expect(isSeeThroughBlock(shaped({ preset: 'full', see_through: true }))).toBe(true);
+    expect(isSeeThroughBlock(shaped({ preset: 'slab_bottom' }))).toBe(true);
+    expect(isSeeThroughBlock(shaped({ preset: 'cross', see_through: false }))).toBe(false);
+    expect(isSeeThroughBlock(shaped({ boxes: [[0, 0, 0, 16, 16, 16]] }))).toBe(false);
+    expect(isSeeThroughBlock(shaped({ boxes: [[0, 0, 0, 16, 15, 16]] }))).toBe(true);
   });
 });
 

@@ -7,8 +7,11 @@ import {
   BLOCKS_ITEMS_PROBLEM_CODES,
   blocksItemsValidators,
   DELAYED_PASSTHROUGH_COMPONENTS,
+  isCubeModel,
   RESERVED_MOD_IDS,
   THROWABLE_CONFLICTS,
+  TRANSPARENT_TEXTURE_CODE,
+  transparentTextureProblem,
 } from '../src/index';
 import { element, indexesFor } from './support';
 
@@ -39,7 +42,62 @@ const THROWABLE = { 'msm:throwable': { damage: 1 } };
 
 describe('blocks-items validators', () => {
   it('lists every code it reports', () => {
-    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(12);
+    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(14);
+    expect(BLOCKS_ITEMS_PROBLEM_CODES).toContain(TRANSPARENT_TEXTURE_CODE);
+  });
+
+  it('warns when a block has a non-cube project model and no shape (ADR 0059 D4)', async () => {
+    const model = (id: `${string}:${string}`, data: Record<string, unknown>) =>
+      element('minecraft:model', id, data as never);
+    const problems = await validate([
+      model('demo:block/cube_child', { parent: 'minecraft:block/cube_all' }),
+      model('demo:block/column', { parent: 'block/cube_column' }),
+      model('demo:block/furnace_like', { parent: 'minecraft:block/orientable' }),
+      model('demo:block/grandchild', { parent: 'demo:block/cube_child' }),
+      model('demo:block/slab', { parent: 'minecraft:block/slab' }),
+      model('demo:block/via_slab', { parent: 'demo:block/slab' }),
+      model('demo:block/own', { elements: [{ from: [0, 0, 0], to: [16, 8, 16] }] }),
+      model('demo:block/loop_a', { parent: 'demo:block/loop_b' }),
+      model('demo:block/loop_b', { parent: 'demo:block/loop_a' }),
+      block('demo:a', { model: 'demo:block/cube_child' }),
+      block('demo:b', { model: 'demo:block/column' }),
+      block('demo:c', { model: 'demo:block/furnace_like' }),
+      block('demo:d', { model: 'demo:block/grandchild' }),
+      block('demo:e', { model: 'demo:block/slab' }),
+      block('demo:f', { model: 'demo:block/via_slab' }),
+      block('demo:g', { model: 'demo:block/own' }),
+      block('demo:h', { model: 'demo:block/loop_a' }),
+      block('demo:i', { model: 'minecraft:block/oak_slab' }),
+      block('demo:j', {
+        model: 'demo:block/slab',
+        components: { 'msm:shape': { preset: 'slab_bottom' } },
+      }),
+    ]);
+    const found = problems.filter((problem) => problem.code === 'blocks-items.model-not-cube');
+    expect(found.map((problem) => problem.elementId)).toEqual(['demo:e', 'demo:f', 'demo:g']);
+    expect(found.every((problem) => problem.severity === 'warning')).toBe(true);
+    expect(found.every((problem) => problem.path === '/model')).toBe(true);
+    expect(found[0]?.message).toContain('"minecraft:block/slab" is not a cube');
+    expect(found[1]?.message).toContain('"minecraft:block/slab" is not a cube');
+    expect(found[2]?.message).toContain('has its own elements');
+  });
+
+  it('knows the vanilla cube model families', () => {
+    for (const id of ['minecraft:block/cube', 'block/cube_all', 'minecraft:block/orientable']) {
+      expect(isCubeModel(id), id).toBe(true);
+    }
+    for (const id of ['minecraft:block/slab', 'minecraft:block/cross', 'minecraft:block/cubes']) {
+      expect(isCubeModel(id), id).toBe(false);
+    }
+  });
+
+  it('words the app-side transparent texture warning (ADR 0059 D4)', () => {
+    expect(transparentTextureProblem('demo:a', 'demo:block/glass')).toMatchObject({
+      severity: 'warning',
+      code: TRANSPARENT_TEXTURE_CODE,
+      elementId: 'demo:a',
+      path: '/model',
+    });
   });
 
   it('warns when a custom bow or crossbow model has no pulling models', async () => {

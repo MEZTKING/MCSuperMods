@@ -50,6 +50,13 @@
  *   model has no `<model>_pulling_0`…`_2` (and for a crossbow `_arrow`, `_firework`) model
  *   element, which its item definition shows while it is drawn. Only when the target has
  *   `items.rangedPull`.
+ * - `blocks-items.model-not-cube` (warning, ADR 0059 D4): a block without `msm:shape` whose
+ *   model is a project model that is not a full cube: it has its own `elements`, or its parent
+ *   chain (followed through project models) ends in a vanilla model outside the cube families
+ *   {@link isCubeModel}. Vanilla models named directly are not checked.
+ * - `blocks-items.transparent-texture-on-solid-block` (warning, ADR 0059 D4): reported by the
+ *   app, which knows texture pixels; this package only owns the code and the problem's wording
+ *   ({@link transparentTextureProblem}) and {@link isSeeThroughBlock}.
  */
 import type {
   Element,
@@ -62,6 +69,7 @@ import type {
 import { BLOCK_KIND, EFFECT_KIND, ITEM_KIND, MOD_KIND } from './kinds';
 import { rangedPullOf } from './lowering/item';
 import { isRecord } from './lowering/paths';
+import { SHAPE_COMPONENT } from './lowering/shape';
 import { rangedPullModels } from './lowering/shared';
 import { incorrectForTierTag, toolTierName } from './lowering/tools';
 
@@ -97,7 +105,29 @@ export const BLOCKS_ITEMS_PROBLEM_CODES = Object.freeze([
   'blocks-items.component-conflict',
   'blocks-items.missing-pull-model',
   'blocks-items.passthrough-needs-data-pack',
+  'blocks-items.model-not-cube',
+  'blocks-items.transparent-texture-on-solid-block',
 ] as const);
+
+/** The code of the app-side texture warning (ADR 0059 D4). */
+export const TRANSPARENT_TEXTURE_CODE = 'blocks-items.transparent-texture-on-solid-block';
+
+/**
+ * The warning the app reports when a block's model textures have transparent pixels and the
+ * block is not see-through ({@link isSeeThroughBlock} is false): the holes show into the world.
+ *
+ * @param elementId - The `msm:block` element.
+ * @param texture - The texture id with transparent pixels.
+ */
+export function transparentTextureProblem(elementId: Element['id'], texture: string): Problem {
+  return {
+    severity: 'warning',
+    code: TRANSPARENT_TEXTURE_CODE,
+    elementId,
+    path: '/model',
+    message: `Texture "${texture}" has transparent pixels, but this block is solid, so you see through it into the world. Turn on "See-through" in the block's shape, or use a texture without transparent pixels.`,
+  };
+}
 
 /**
  * The `msm:components` entries the runtime decodes once data packs are loaded (ADR 0044 D1;
@@ -640,6 +670,68 @@ function missingPullModels(elements: readonly Element[]): Problem[] {
   return problems;
 }
 
+/**
+ * Whether a vanilla model id is a full cube: `block/cube` and its `cube_*` children, and the
+ * `orientable*` models that extend `block/cube`.
+ */
+export function isCubeModel(id: string): boolean {
+  const path = id.startsWith('minecraft:') ? id.slice('minecraft:'.length) : id;
+  return /^block\/(cube(_[a-z_]+)?|orientable(_[a-z_]+)?)$/.test(path);
+}
+
+/**
+ * Why a project model is not a full cube, or `undefined` when it is one (or cannot be told).
+ * Follows project parents, stopping at a cycle.
+ */
+function notCubeReason(model: string, models: ReadonlyMap<string, JsonObject>): string | undefined {
+  const seen = new Set<string>();
+  let current = model;
+  for (;;) {
+    const data = models.get(current);
+    if (data === undefined) {
+      return current === model || isCubeModel(current)
+        ? undefined
+        : `its parent "${current}" is not a cube`;
+    }
+    if (seen.has(current)) return undefined;
+    seen.add(current);
+    if (Array.isArray(data.elements) && data.elements.length > 0) {
+      return current === model
+        ? 'it has its own elements'
+        : `its parent "${current}" has its own elements`;
+    }
+    const parent = data.parent;
+    if (typeof parent !== 'string' || parent.length === 0) return undefined;
+    current = parent.includes(':') ? parent : `minecraft:${parent}`;
+  }
+}
+
+function modelsNotCube(elements: readonly Element[]): Problem[] {
+  const models = new Map<string, JsonObject>(
+    elements
+      .filter((element) => element.kind === MODEL_KIND)
+      .map((element) => [element.id, dataOf(element)]),
+  );
+  const problems: Problem[] = [];
+  for (const element of elements) {
+    if (element.kind !== BLOCK_KIND) continue;
+    const data = dataOf(element);
+    if (record(data.components)?.[SHAPE_COMPONENT] !== undefined) continue;
+    const model = data.model;
+    if (typeof model !== 'string' || !models.has(model)) continue;
+    const reason = notCubeReason(model, models);
+    if (reason === undefined) continue;
+    problems.push({
+      severity: 'warning',
+      code: 'blocks-items.model-not-cube',
+      elementId: element.id,
+      path: '/model',
+      message: `Model "${model}" is not a full cube (${reason}), but this block has no shape, so it collides and hides its neighbours' faces as a full cube. Give the block a shape (a preset, or "From model"), or use a cube model.`,
+    });
+  }
+  return problems;
+}
+
 const DEFINITION_KINDS = [BLOCK_KIND, ITEM_KIND] as const;
 const EVENT_KINDS = [BLOCK_KIND, ITEM_KIND, EFFECT_KIND] as const;
 
@@ -662,6 +754,11 @@ export const blocksItemsValidators: readonly ProjectValidator[] = Object.freeze(
       const facts = target.items?.dataPackComponents;
       return facts === undefined ? [] : passthroughNeedsDataPack(elements, facts);
     },
+  },
+  {
+    id: 'msm.blocks-items.model-not-cube',
+    kinds: [BLOCK_KIND, MODEL_KIND],
+    validate: ({ elements }) => modelsNotCube(elements),
   },
   {
     id: 'msm.blocks-items.unknown-event',

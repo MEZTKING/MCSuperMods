@@ -110,6 +110,70 @@ const SAMPLES: Sample[] = [
   },
   {
     kind: blockKind,
+    name: 'ruby_slab',
+    id: 'example:ruby_slab',
+    data: {
+      format: 1,
+      model: 'minecraft:block/smooth_stone_slab',
+      display_name: 'Ruby Slab',
+      loot: 'self',
+      components: {
+        'msm:breakable': { hardness: 2, tool: 'pickaxe' },
+        'msm:shape': { preset: 'slab_bottom' },
+        'msm:on_step': { event: 'example:hum' },
+      },
+      events: {
+        'example:hum': {
+          actions: [{ type: 'play_sound', sound: 'minecraft:block.amethyst_block.chime' }],
+        },
+      },
+    },
+  },
+  {
+    kind: blockKind,
+    name: 'ruby_sprout',
+    id: 'example:ruby_sprout',
+    data: {
+      format: 1,
+      model: 'minecraft:block/poppy',
+      display_name: 'Ruby Sprout',
+      loot: 'self',
+      sound_type: 'grass',
+      components: { 'msm:breakable': { hardness: 0 }, 'msm:shape': { preset: 'cross' } },
+    },
+  },
+  {
+    kind: blockKind,
+    name: 'ruby_glass',
+    id: 'example:ruby_glass',
+    data: {
+      format: 1,
+      model: 'minecraft:block/glass',
+      sound_type: 'glass',
+      components: { 'msm:shape': { preset: 'full', see_through: true } },
+    },
+  },
+  {
+    kind: blockKind,
+    name: 'ruby_post_custom',
+    id: 'example:ruby_post',
+    data: {
+      format: 1,
+      model: 'minecraft:block/stone',
+      components: {
+        'msm:shape': {
+          preset: 'custom',
+          boxes: [
+            [0, 0, 0, 16, 2, 16],
+            [6, 2, 6, 10, 16, 10],
+          ],
+          collision: true,
+        },
+      },
+    },
+  },
+  {
+    kind: blockKind,
     name: 'loot_id_no_model',
     id: 'example:ruby_ore',
     data: { format: 1, loot: 'example:blocks/ruby_ore_rare', sound_type: 'deepslate' },

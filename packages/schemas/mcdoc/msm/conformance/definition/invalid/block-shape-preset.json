@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:shape": {
+      "boxes": [[0, 0, 0, 16, 8, 16]],
+      "preset": "slab_bottom"
+    }
+  },
+  "format": 1
+}

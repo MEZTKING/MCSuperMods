@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:shape": {
+      "collision": false,
+      "preset": "cross",
+      "see_through": true
+    }
+  },
+  "format": 1
+}

@@ -19,6 +19,17 @@ export {
   descriptionKey,
   splitResourceLocation,
 } from './paths';
+export {
+  FULL_CUBE,
+  isSeeThroughBlock,
+  lowerShapeInPlace,
+  SHAPE_COMPONENT,
+  SHAPE_PRESET_BOXES,
+  SHAPE_PRESETS,
+  type ShapeBox,
+  type ShapePreset,
+  shapeOf,
+} from './shape';
 export { DISPLAY_NAME_LANGUAGE } from './shared';
 export {
   BLOCK_TOOLS,

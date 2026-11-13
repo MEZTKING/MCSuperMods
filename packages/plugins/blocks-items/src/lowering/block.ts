@@ -13,6 +13,7 @@ import {
   isRecord,
   splitResourceLocation,
 } from './paths';
+import { lowerShapeInPlace, SHAPE_COMPONENT } from './shape';
 import {
   BLOCK_STATE_SCHEMA,
   BLOCK_TAG_SCHEMA,
@@ -63,8 +64,9 @@ function readEditorFields(data: JsonObject): BlockEditorFields {
 }
 
 /**
- * The runtime block definition: the element data without `model`, `display_name`, `loot` and
- * the `tool` and `min_tier` of `msm:breakable`. A tool or tier sets `requires_tool: true`
+ * The runtime block definition: the element data without `model`, `display_name`, `loot`, the
+ * `tool` and `min_tier` of `msm:breakable` and the `preset` of `msm:shape`, whose boxes it
+ * writes instead (ADR 0059 D2). A tool or tier sets `requires_tool: true`
  * unless the element sets `requires_tool` itself; a `loot` id becomes `loot_table` unless one
  * is set; `format` is always the format this plugin writes.
  *
@@ -86,6 +88,8 @@ export function blockDefinition(element: Element): JsonObject {
       const needsTool = fields.tool !== undefined || fields.minTier !== undefined;
       if (needsTool && breakable.requires_tool === undefined) breakable.requires_tool = true;
     }
+    const shape = components[SHAPE_COMPONENT];
+    if (isRecord(shape)) lowerShapeInPlace(shape);
   }
   if (fields.loot !== undefined && fields.loot !== 'self' && definition.loot_table === undefined) {
     definition.loot_table = fields.loot;

@@ -24,12 +24,21 @@ const nodeReadFile = async (url: URL): Promise<Uint8Array> => readFile(url);
  * counts them (`dataRegistryIds`).
  */
 export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
-  block: ['demo:sample', 'example:ruby_ore', 'example:chime_block', 'example:ores/glow_stone'],
+  block: [
+    'demo:sample',
+    'example:ruby_ore',
+    'example:chime_block',
+    'example:ores/glow_stone',
+    'example:ruby_slab',
+    'example:ruby_sprout',
+  ],
   item: [
     'demo:sample',
     'example:ruby_ore',
     'example:chime_block',
     'example:ores/glow_stone',
+    'example:ruby_slab',
+    'example:ruby_sprout',
     'example:ruby',
     'example:wand',
     'example:ruby_mace',

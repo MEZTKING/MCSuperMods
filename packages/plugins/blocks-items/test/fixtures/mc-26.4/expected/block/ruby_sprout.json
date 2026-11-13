@@ -1,0 +1,85 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0
+        },
+        "msm:shape": {
+          "boxes": [
+            [
+              2,
+              0,
+              2,
+              14,
+              16,
+              14
+            ]
+          ],
+          "collision": false
+        }
+      },
+      "format": 1,
+      "sound_type": "grass"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_sprout.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "minecraft:block/poppy"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_sprout.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:block/poppy",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_sprout.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.ruby_sprout": "Ruby Sprout"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ruby_sprout",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ruby_sprout",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ruby_sprout.json",
+    "schema": "resource:loot_table"
+  }
+]
