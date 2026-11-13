@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:throwable": {
+      "charge_ticks": 10,
+      "damage": 8,
+      "sound": "minecraft:item.trident.throw",
+      "speed": 2.5
+    }
+  },
+  "format": 1,
+  "max_stack_size": 4
+}

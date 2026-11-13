@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:durability": {
+      "max": 50
+    },
+    "msm:throwable": {
+      "after_throw": "return",
+      "dispensable": false
+    }
+  },
+  "format": 1
+}

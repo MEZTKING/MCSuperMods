@@ -6,12 +6,14 @@
  * implementation; both compile against the 26.3 jar. Every Mojang, Fabric and GeckoLib name
  * here belongs to this target; the next target copies the folder and adjusts names.
  *
- * Output: `src/main/java/<package>/` with `<ModClass>.java`, `ModBlocks.java`,
- * `ModItems.java`, `ModEntities.java`, `Actions.java`, `VanillaComponents.java` (when an item
- * uses `msm:components`), `block/`, `item/`, `entity/` (with
- * `FollowTypesGoal.java` when a follow goal exists), and `client/` with
- * `<ModClass>Client.java` and `client/entity/` models when the project has entities. Paths
- * are sorted; text uses LF and four-space indentation.
+ * Output: `src/main/java/<package>/` with `<ModClass>.java`, `ModEffects.java`,
+ * `ModBlocks.java`, `ModItems.java`, `ModEntities.java`, `Actions.java`, `VanillaComponents.java`
+ * (when an item uses `msm:components`), `effect/` (with `MobEffectBase.java`, ADR 0055 D10),
+ * `block/`, `item/` (with `ThrowableItem.java` when an item has `msm:throwable`), `entity/`
+ * (with `FollowTypesGoal.java` when a follow goal exists and `ThrownItemEntity.java` with
+ * throwables, ADR 0056 D7), and `client/` with `<ModClass>Client.java` when the project has
+ * entities or throwables, plus `client/entity/` GeckoLib models with entities. Paths are
+ * sorted; text uses LF and four-space indentation.
  *
  * @packageDocumentation
  */
@@ -20,12 +22,15 @@ import type { GeneratedFile, JavaProjectGenerator, JavaProjectInput } from '@msm
 import { generateBlocks } from './blocks';
 import { generateClient } from './client';
 import type { GenerationContext } from './context';
+import { generateEffects } from './effects';
 import { generateEntities } from './entities';
 import { generateItems } from './items';
 import { generateMod } from './mod';
-import { NameTable } from './names';
+import { NameTable, splitId } from './names';
 import { actionsJava } from './templates/actions-java';
 import { followTypesGoalJava } from './templates/follow-types-goal-java';
+import { throwableItemJava } from './templates/throwable-item-java';
+import { thrownItemEntityJava } from './templates/thrown-item-entity-java';
 import { vanillaComponentsJava } from './templates/vanilla-components-java';
 
 export { className, constantName, eventMethodName, JAVA_KEYWORDS } from './names';
@@ -52,12 +57,43 @@ export function generateJavaProject(input: JavaProjectInput): {
     usesActions: false,
     usesApplyEffect: false,
     usesLaunch: false,
+    usesDamage: false,
+    usesHeal: false,
     usesVanillaComponents: false,
     usesFollowGoal: false,
   };
+  const throwables = input.items.some((item) => {
+    const components = item.definition.components;
+    return (
+      typeof components === 'object' &&
+      components !== null &&
+      !Array.isArray(components) &&
+      Object.hasOwn(components, 'msm:throwable')
+    );
+  });
   const classNames = new NameTable();
-  classNames.reserve('entity.FollowTypesGoal', 'client.entity.GeoModelBase');
+  classNames.reserve(
+    'entity.FollowTypesGoal',
+    'client.entity.GeoModelBase',
+    'effect.MobEffectBase',
+  );
+  if (throwables) classNames.reserve('item.ThrowableItem', 'entity.ThrownItemEntity');
   const registrations: string[] = [];
+  const effects = generateEffects(context, classNames);
+  if (effects !== undefined) registrations.push(effects);
+  if (throwables) {
+    registrations.push('entity.ThrownItemEntity');
+    context.files.push(
+      {
+        path: `${context.javaRoot}/item/ThrowableItem.java`,
+        contents: throwableItemJava(input.javaPackage, input.modId),
+      },
+      {
+        path: `${context.javaRoot}/entity/ThrownItemEntity.java`,
+        contents: thrownItemEntityJava(input.javaPackage, input.modId, thrownItemPath(input)),
+      },
+    );
+  }
   const blocks = generateBlocks(context, classNames);
   if (blocks !== undefined) registrations.push(blocks);
   const items = generateItems(context, classNames);
@@ -65,7 +101,10 @@ export function generateJavaProject(input: JavaProjectInput): {
   const entities = generateEntities(context, classNames);
   if (entities !== undefined) registrations.push(entities.className);
   const main = generateMod(context, registrations);
-  const client = entities === undefined ? undefined : generateClient(context, entities.entities);
+  const client =
+    entities === undefined && !throwables
+      ? undefined
+      : generateClient(context, entities?.entities ?? [], throwables);
   if (context.usesActions) {
     context.files.push({
       path: `${context.javaRoot}/Actions.java`,
@@ -74,6 +113,8 @@ export function generateJavaProject(input: JavaProjectInput): {
         input.modId,
         context.usesApplyEffect,
         context.usesLaunch,
+        context.usesDamage,
+        context.usesHeal,
       ),
     });
   }
@@ -94,9 +135,25 @@ export function generateJavaProject(input: JavaProjectInput): {
 }
 
 /**
+ * The path of the thrown item entity type id in the mod's namespace: `thrown_item`, or
+ * `thrown_item_<n>` when a project entity already has `<mod id>:thrown_item`.
+ */
+function thrownItemPath(input: JavaProjectInput): string {
+  const taken = new Set(
+    input.entities
+      .map((entity) => splitId(entity.id))
+      .filter((id) => id.namespace === input.modId)
+      .map((id) => id.path),
+  );
+  let path = 'thrown_item';
+  for (let n = 2; taken.has(path); n++) path = `thrown_item_${n}`;
+  return path;
+}
+
+/**
  * The 26.3 `JavaProjectGenerator`. The entrypoints follow ADR 0033 D2:
  * `<package>.<ModClass>` always and `<package>.client.<ModClass>Client` when the project has
- * entities (the exporter adds the client entrypoint when that file is generated).
+ * entities or throwables (the exporter adds the client entrypoint when that file is generated).
  */
 export const javaProjectGenerator: JavaProjectGenerator = {
   generate(input) {

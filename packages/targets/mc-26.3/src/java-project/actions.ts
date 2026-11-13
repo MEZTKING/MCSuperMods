@@ -9,16 +9,30 @@
  * player, else the entity of an entity definition) or `other` (the player for block and item
  * events; for entity events the player, or the mob an entity hits through `on_attack`, passed
  * as an extra `LivingEntity other` parameter only to entity definitions that need it).
+ * Status effects (ADR 0055) and throwable items (ADR 0056) are owners too: in an effect event
+ * the holder is `entity`, `other` and (when a player) `player`; in a throwable's events `self`
+ * is the thrower (the player, else the thrower entity) and `other` the living entity hit, so
+ * both take the `other` parameter when an action targets it, as entities do. `damage` and
+ * `heal` (ADR 0055 D4) take the same targets as `apply_effect`.
  *
  * @packageDocumentation
  */
 
+import type { GenerationContext } from './context';
 import { indent, type JavaFile, javaFloat, javaInt, javaString } from './java';
 import { eventMethodNames } from './names';
 import type { Reader } from './read';
 
 /** Where an event's definition lives. */
-export type EventOwnerKind = 'block' | 'item' | 'entity';
+export type EventOwnerKind = 'block' | 'item' | 'entity' | 'effect' | 'throwable';
+
+/**
+ * Whether `self` falls back to the event's entity when there is no player (entities, effect
+ * holders and throwers); for blocks and plain items `self` is the player.
+ */
+function selfFallsBackToEntity(kind: EventOwnerKind): boolean {
+  return kind === 'entity' || kind === 'effect' || kind === 'throwable';
+}
 
 /** Action types the generator writes. `run_script` is removed by the exporter beforehand. */
 export const ACTION_TYPES = [
@@ -31,6 +45,8 @@ export const ACTION_TYPES = [
   'play_animation',
   'apply_effect',
   'launch',
+  'damage',
+  'heal',
 ] as const;
 
 /** The default `play_animation` controller (the runtime's `TRIGGERED_CONTROLLER`). */
@@ -43,15 +59,23 @@ export interface Events {
   /** Method name per event id. */
   readonly methods: ReadonlyMap<string, string>;
   /**
-   * Whether the event methods take a `LivingEntity other` parameter after `entity`: entity
-   * definitions with an `apply_effect` whose target is `other` (blocks and items use `player`).
+   * Whether the event methods take a `LivingEntity other` parameter after `entity`: entity,
+   * effect and throwable definitions with an action whose target is `other` (blocks and plain
+   * items use `player`).
    */
   readonly otherParameter: boolean;
   /** Whether any action is `apply_effect` (the `Actions` helper then has `applyEffect`). */
   readonly appliesEffects: boolean;
   /** Whether any action is `launch` (the `Actions` helper then has `launch`, ADR 0052). */
   readonly launches: boolean;
+  /** Whether any action is `damage` (the `Actions` helper then has `damage`, ADR 0055 D4). */
+  readonly damages: boolean;
+  /** Whether any action is `heal` (the `Actions` helper then has `heal`, ADR 0055 D4). */
+  readonly heals: boolean;
 }
+
+/** Actions whose `target` is `self` or `other`. */
+const TARGETED_ACTIONS = ['apply_effect', 'launch', 'damage', 'heal'];
 
 /**
  * Reads and checks a definition's `events`: every event has an `actions` list, every action
@@ -84,28 +108,27 @@ export function readEvents(definition: Reader, kind: EventOwnerKind): Events {
       }
     }
   }
-  let appliesEffects = false;
-  let launches = false;
+  const used = new Set<string>();
   let otherTarget = false;
   for (const actions of byId.values()) {
     for (const action of actions) {
       const type = action.requiredString('type');
-      if (type !== 'apply_effect' && type !== 'launch') continue;
-      if (type === 'apply_effect') appliesEffects = true;
-      else launches = true;
-      if (effectTarget(action) === 'other') otherTarget = true;
+      used.add(type);
+      if (TARGETED_ACTIONS.includes(type) && effectTarget(action) === 'other') otherTarget = true;
     }
   }
   return {
     byId,
     methods: eventMethodNames([...byId.keys()]),
-    otherParameter: kind === 'entity' && otherTarget,
-    appliesEffects,
-    launches,
+    otherParameter: selfFallsBackToEntity(kind) && otherTarget,
+    appliesEffects: used.has('apply_effect'),
+    launches: used.has('launch'),
+    damages: used.has('damage'),
+    heals: used.has('heal'),
   };
 }
 
-/** The `target` of an `apply_effect`: `self` (the default) or `other`. */
+/** The `target` of an `apply_effect`, `launch`, `damage` or `heal`: `self` (the default) or `other`. */
 function effectTarget(action: Reader): string {
   const target = action.string('target', 'self');
   if (target !== 'self' && target !== 'other') {
@@ -144,6 +167,20 @@ export function usesActions(events: Events): boolean {
     }
   }
   return false;
+}
+
+/**
+ * Records which `Actions` helpers a definition's events need and returns the name to call
+ * them by from `file` (`Actions`, imported when the events use it).
+ */
+export function noteActions(context: GenerationContext, file: JavaFile, events: Events): string {
+  if (!usesActions(events)) return 'Actions';
+  context.usesActions = true;
+  if (events.appliesEffects) context.usesApplyEffect = true;
+  if (events.launches) context.usesLaunch = true;
+  if (events.damages) context.usesDamage = true;
+  if (events.heals) context.usesHeal = true;
+  return file.use(`${context.input.javaPackage}.Actions`);
 }
 
 /** Every `play_animation` of the events as `[controller, animation]`, events in id order. */
@@ -284,15 +321,7 @@ function actionLines(
       if (seconds < 0) action.fail('seconds must be at least 0');
       const amplifier = action.integer('amplifier', 0);
       if (amplifier < 0 || amplifier > 255) action.fail('amplifier must be 0 to 255');
-      let target: string;
-      if (effectTarget(action) === 'other') {
-        target = events.otherParameter ? 'other' : 'player';
-      } else if (kind === 'entity') {
-        const living = file.use('net.minecraft.world.entity.LivingEntity');
-        target = `player != null ? player : entity instanceof ${living} living ? living : null`;
-      } else {
-        target = 'player';
-      }
+      const target = livingTarget(file, action, events, kind);
       return [
         `${actions}.applyEffect(OWNER, ${target}, ${effect}, ${javaInt(ticksOf(seconds))}, ${javaInt(amplifier)});`,
       ];
@@ -311,7 +340,7 @@ function actionLines(
       let target: string;
       if (effectTarget(action) === 'other') {
         target = events.otherParameter ? 'other' : 'player';
-      } else if (kind === 'entity') {
+      } else if (selfFallsBackToEntity(kind)) {
         target = 'player != null ? player : entity';
       } else {
         target = 'player';
@@ -320,9 +349,37 @@ function actionLines(
         `${actions}.launch(${target}, ${javaFloat(strength)}, ${javaString(direction)}, ${javaFloat(up)}, ${add});`,
       ];
     }
+    case 'damage':
+    case 'heal': {
+      action.onlyKeys(['type', 'amount', 'target'], `${type} field`);
+      const amount = action.requiredNumber('amount');
+      if (amount < 0) action.fail('amount must be at least 0');
+      const target = livingTarget(file, action, events, kind);
+      return type === 'damage'
+        ? [`${actions}.damage(level, ${target}, ${javaFloat(amount)});`]
+        : [`${actions}.heal(${target}, ${javaFloat(amount)});`];
+    }
     default:
       return action.fail(`action type '${type}' cannot be ejected`);
   }
+}
+
+/**
+ * The living entity an action with a `target` affects, as the runtime's
+ * `EventRunner.livingTarget`: `self` is the player, else (entities, effects, throwables) the
+ * event's entity when it is living; `other` is the `other` parameter, or the player for blocks
+ * and plain items.
+ */
+function livingTarget(
+  file: JavaFile,
+  action: Reader,
+  events: Events,
+  kind: EventOwnerKind,
+): string {
+  if (effectTarget(action) === 'other') return events.otherParameter ? 'other' : 'player';
+  if (!selfFallsBackToEntity(kind)) return 'player';
+  const living = file.use('net.minecraft.world.entity.LivingEntity');
+  return `player != null ? player : entity instanceof ${living} living ? living : null`;
 }
 
 function offsetOf(action: Reader): [number, number, number] {

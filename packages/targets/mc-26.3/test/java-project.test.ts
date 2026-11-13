@@ -18,6 +18,7 @@ import {
   constantName,
   eventMethodName,
   generateJavaProject,
+  JAVA_KEYWORDS,
 } from '../src/java-project/index';
 import { eventMethodNames, NameTable } from '../src/java-project/names';
 
@@ -265,6 +266,212 @@ describe('Java generator (mc-26.3)', () => {
     await golden('entity', files);
   });
 
+  it('generates status effects mirroring MsmMobEffect, registered first (ADR 0055 D10)', async () => {
+    const effects = await Promise.all(
+      ['frostbite', 'pulse', 'quickening'].map((path) => definition('effect', path)),
+    );
+    const { files, entrypoints } = generateJavaProject(
+      input({ effects, items: [await definition('item', 'frost_tonic')] }),
+    );
+    // Effects only (no entities, no throwables): no client entrypoint.
+    expect(entrypoints.client).toBeUndefined();
+    await golden('status-effects', files);
+    const text = (suffix: string): string =>
+      files.find((file) => file.path.endsWith(suffix))?.contents ?? '';
+    expect(text('/MsmTestMod.java')).toContain(
+      '        ModEffects.register();\n        ModItems.register();',
+    );
+    const frostbite = text('/effect/FrostbiteEffect.java');
+    expect(frostbite).toContain(
+      'super(OWNER, MobEffectCategory.HARMFUL, 0xADD8E6, "minecraft:snowflake");',
+    );
+    expect(frostbite).toContain('soundOnAdded("minecraft:entity.player.hurt_freeze");');
+    expect(frostbite).toContain(
+      'modifier(1, "minecraft:movement_speed", -0.1f, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);',
+    );
+    // self and other are both the holder.
+    expect(frostbite).toContain(
+      'event_bite(level, holder.blockPosition(), holder.position(), holder instanceof Player p ? p : null, holder, holder, 1);',
+    );
+    expect(frostbite).toContain(
+      'Actions.damage(level, player != null ? player : entity instanceof LivingEntity living ? living : null, 4.0f);',
+    );
+    expect(frostbite).toContain('Actions.heal(other, 2.0f);');
+    expect(frostbite).toContain('protected boolean hasOnEnd() {');
+    expect(text('/effect/PulseEffect.java')).toContain('        return 10;');
+    expect(text('/effect/QuickeningEffect.java')).toContain(
+      'return Math.max(1, 10 / (Math.max(0, amplifier) + 1));',
+    );
+    const base = text('/effect/MobEffectBase.java');
+    expect(base).toContain('public void onEffectAdded(LivingEntity entity, int amplifier) {');
+    expect(base).toContain('ServerMobEffectEvents.AFTER_REMOVE.register(');
+    expect(base).toContain('ServerTickEvents.END_SERVER_TICK.register(server -> flush());');
+    expect(text('/ModEffects.java')).toContain(
+      'public static final Holder<MobEffect> FROSTBITE = Registry.registerForHolder(BuiltInRegistries.MOB_EFFECT,',
+    );
+    const actions = text('/Actions.java');
+    expect(actions).toContain(
+      'public static void damage(ServerLevel level, LivingEntity target, float amount) {',
+    );
+    expect(actions).toContain('public static void heal(LivingEntity target, float amount) {');
+    expect(actions).not.toContain('applyEffect');
+    // A drink naming a project effect: looked up after ModEffects registered it.
+    expect(text('/ModItems.java')).toContain(
+      'Identifier.fromNamespaceAndPath("msm_test", "frostbite")',
+    );
+    // No throwable classes without throwables.
+    expect(files.some((file) => file.path.endsWith('/ThrownItemEntity.java'))).toBe(false);
+  });
+
+  it('generates throwables mirroring MsmThrowableItem and MsmThrownItem (ADR 0056 D7)', async () => {
+    const paths = [
+      'ruby_ball',
+      'ruby_knife',
+      'ruby_boomerang',
+      'ruby_javelin',
+      'ruby_orb',
+      'feather_ball',
+    ];
+    const items = await Promise.all(paths.map((path) => definition('item', path)));
+    const { files, entrypoints } = generateJavaProject(
+      input({ items, effects: [await definition('effect', 'frostbite')] }),
+    );
+    // Throwables without entities: a client entrypoint without GeckoLib.
+    expect(entrypoints.client).toBe('msm_test.client.MsmTestModClient');
+    await golden('throwables', files);
+    const text = (suffix: string): string =>
+      files.find((file) => file.path.endsWith(suffix))?.contents ?? '';
+    const client = text('/client/MsmTestModClient.java');
+    expect(client).toContain(
+      'EntityRenderers.register(ThrownItemEntity.TYPE, ThrownItemRenderer<ThrownItemEntity>::new);',
+    );
+    expect(client).not.toContain('geckolib');
+    expect(files.some((file) => file.path.endsWith('/GeoModelBase.java'))).toBe(false);
+    expect(text('/MsmTestMod.java')).toContain(
+      '        ModEffects.register();\n        ThrownItemEntity.register();\n        ModItems.register();',
+    );
+    expect(text('/entity/ThrownItemEntity.java')).toContain(
+      'Identifier.fromNamespaceAndPath("msm_test", "thrown_item")',
+    );
+    // Each after_throw.
+    expect(text('/item/RubyBallItem.java')).toContain('AfterThrow.CONSUME, // after_throw');
+    expect(text('/item/RubyOrbItem.java')).toContain('AfterThrow.KEEP, // after_throw');
+    expect(text('/item/RubyKnifeItem.java')).toContain('AfterThrow.DROP, // after_throw');
+    expect(text('/item/RubyBoomerangItem.java')).toContain('AfterThrow.RETURN, // after_throw');
+    // Hit events: self is the thrower, other the entity hit.
+    const ball = text('/item/RubyBallItem.java');
+    expect(ball).toContain(
+      'event_hit(level, base, at, thrower instanceof Player p ? p : null, thrower, hit, 1);',
+    );
+    expect(ball).toContain(
+      'event_land(level, pos, at, thrower instanceof Player p ? p : null, thrower, null, 1);',
+    );
+    expect(ball).toContain('Actions.applyEffect(OWNER, other, "msm_test:frostbite", 200, 0);');
+    expect(ball).toContain(
+      'Actions.heal(player != null ? player : entity instanceof LivingEntity living ? living : null, 1.0f);',
+    );
+    // msm:on_use fires before the throw, then its cooldown.
+    expect(text('/item/RubyOrbItem.java')).toContain(
+      'protected void onUse(Level level, Player player, InteractionHand hand, ItemStack stack) {',
+    );
+    expect(text('/item/RubyJavelinItem.java')).toContain('10, // charge_ticks');
+    const modItems = text('/ModItems.java');
+    // Dispensable unless dispensable is false (the boomerang).
+    expect(modItems).toContain('DispenserBlock.registerProjectileBehavior(RUBY_BALL);');
+    expect(modItems).not.toContain('DispenserBlock.registerProjectileBehavior(RUBY_BOOMERANG);');
+    expect(modItems).toContain('new RubyKnifeItem(new Item.Properties()');
+    expect(modItems).toContain('.sword(ToolMaterial.IRON, 3.0f, -2.4f)');
+    expect(modItems).toContain('.stacksTo(16)');
+  });
+
+  it('gives the client both renderers with entities and throwables', async () => {
+    const { files } = generateJavaProject(
+      input({
+        items: [await definition('item', 'ruby_ball')],
+        entities: [await definition('entity', 'kitchen_sink')],
+        effects: [await definition('effect', 'frostbite')],
+        geckolib: true,
+      }),
+    );
+    const client =
+      files.find((file) => file.path.endsWith('/client/MsmTestModClient.java'))?.contents ?? '';
+    expect(client).toContain('ThrownItemRenderer<ThrownItemEntity>::new');
+    expect(client).toContain('import com.geckolib.renderer.GeoEntityRenderer;');
+    expect(client).toContain(
+      "/** Client entrypoint: vanilla's thrown item renderer and a GeckoLib renderer per entity type. */",
+    );
+    const mod = files.find((file) => file.path.endsWith('/MsmTestMod.java'))?.contents ?? '';
+    expect(mod).toContain(
+      '        ModEffects.register();\n        ThrownItemEntity.register();\n        ModItems.register();\n        ModEntities.register();',
+    );
+  });
+
+  it('keeps effect and throwable names unique and clear of Java keywords', async () => {
+    const frostbite = await definition('effect', 'frostbite');
+    const effect = (id: string, event: string): DefinitionInput => ({
+      id,
+      path: `msm/${id.replace(':', '/effect/')}.json`,
+      definition: {
+        format: 1,
+        category: 'neutral',
+        color: 0,
+        components: { 'msm:on_start': { event } },
+        events: { [event]: { actions: [{ type: 'heal', amount: 1 }] } },
+      },
+    });
+    const ball = await definition('item', 'ruby_ball');
+    const throwableItem = {
+      ...ball,
+      id: 'msm_test:throwable',
+      path: 'msm/msm_test/item/throwable.json',
+    };
+    const thrownEntity = {
+      ...(await definition('entity', 'kitchen_sink')),
+      id: 'msm_test:thrown_item',
+      path: 'msm/msm_test/entity/thrown_item.json',
+    };
+    const { files } = generateJavaProject(
+      input({
+        effects: [
+          frostbite,
+          { ...frostbite, id: 'other:frostbite', path: 'msm/other/effect/frostbite.json' },
+          effect('msm_test:static', 'msm_test:class'),
+          effect('msm_test:mob_effect_base', 'msm_test:new'),
+        ],
+        items: [ball, throwableItem],
+        entities: [thrownEntity],
+        geckolib: true,
+      }),
+    );
+    const paths = files.map((file) => file.path);
+    expect(paths).toContain('src/main/java/msm_test/effect/FrostbiteEffect.java');
+    expect(paths).toContain('src/main/java/msm_test/effect/FrostbiteEffect2.java');
+    expect(paths).toContain('src/main/java/msm_test/effect/StaticEffect.java');
+    expect(paths).toContain('src/main/java/msm_test/effect/MobEffectBaseEffect.java');
+    expect(paths).toContain('src/main/java/msm_test/item/ThrowableItem.java');
+    expect(paths).toContain('src/main/java/msm_test/item/ThrowableItem2.java');
+    expect(paths).toContain('src/main/java/msm_test/entity/ThrownItemEntity.java');
+    expect(paths).toContain('src/main/java/msm_test/entity/ThrownItemEntity2.java');
+    const text = (suffix: string): string =>
+      files.find((file) => file.path.endsWith(suffix))?.contents ?? '';
+    const modEffects = text('/ModEffects.java');
+    expect(modEffects).toContain('public static final Holder<MobEffect> FROSTBITE_2 =');
+    expect(modEffects).toContain('public static final Holder<MobEffect> STATIC =');
+    expect(text('/effect/StaticEffect.java')).toContain('private void event_class(');
+    expect(text('/effect/MobEffectBaseEffect.java')).toContain('private void event_new(');
+    // The project entity keeps msm_test:thrown_item; the thrown item type moves aside.
+    expect(text('/entity/ThrownItemEntity.java')).toContain(
+      'Identifier.fromNamespaceAndPath("msm_test", "thrown_item_2")',
+    );
+    for (const file of files) {
+      for (const match of file.contents.matchAll(
+        /\b(?:class|void|int|boolean) ([A-Za-z_0-9]+)\(/g,
+      )) {
+        expect(JAVA_KEYWORDS.has(match[1] as string), `${file.path}: ${match[1]}`).toBe(false);
+      }
+    }
+  });
+
   it('generates a blank project as the mod class alone', () => {
     const files = target.javaProject?.generate(input({})) ?? [];
     expect(files.map((file) => file.path)).toEqual(['src/main/java/msm_test/MsmTestMod.java']);
@@ -425,6 +632,88 @@ describe('Java generator (mc-26.3)', () => {
           ],
         }),
       ).toThrow(/bypassed_by 'minecraft:bypasses_shield' is not a tag reference/);
+    });
+
+    it('rejects a throwable with a clashing component, and bad effect and throwable fields', () => {
+      const item = (definition: JsonObject): DefinitionInput => ({
+        id: 'msm_test:bad',
+        path: 'msm/msm_test/item/bad.json',
+        definition,
+      });
+      const effect = (definition: JsonObject): DefinitionInput => ({
+        id: 'msm_test:bad',
+        path: 'msm/msm_test/effect/bad.json',
+        definition,
+      });
+      expect(
+        generate({
+          items: [
+            item({
+              format: 1,
+              components: {
+                'msm:throwable': {},
+                'msm:food': { nutrition: 1, saturation: 1 },
+              },
+            }),
+          ],
+        }),
+      ).toThrow(/msm:throwable and msm:food on one item cannot be ejected/);
+      expect(
+        generate({
+          items: [
+            item({
+              format: 1,
+              components: { 'msm:throwable': {}, 'msm:tool': { type: 'mace', tier: 'iron' } },
+            }),
+          ],
+        }),
+      ).toThrow(/msm:throwable and msm:tool \(mace\) on one item cannot be ejected/);
+      expect(
+        generate({
+          items: [item({ format: 1, components: { 'msm:throwable': { after_throw: 'fly' } } })],
+        }),
+      ).toThrow(/after_throw 'fly' is not one of consume, keep, drop, return/);
+      expect(
+        generate({
+          items: [
+            item({
+              format: 1,
+              components: { 'msm:throwable': { on_hit_entity: { event: 'msm_test:x' } } },
+            }),
+          ],
+        }),
+      ).toThrow(/names event msm_test:x, which is not declared/);
+      expect(generate({ effects: [effect({ format: 1, category: 'evil', color: 0 })] })).toThrow(
+        /msm\/msm_test\/effect\/bad\.json \(msm_test:bad\): category 'evil' is not one of/,
+      );
+      expect(
+        generate({ effects: [effect({ format: 1, category: 'neutral', color: 16777216 })] }),
+      ).toThrow(/color must be 0 to 16777215/);
+      expect(
+        generate({
+          effects: [
+            effect({
+              format: 1,
+              category: 'neutral',
+              color: 0,
+              components: { 'msm:on_tick': { event: 'msm_test:x', interval_ticks: 0 } },
+              events: { 'msm_test:x': { actions: [{ type: 'heal', amount: 1 }] } },
+            }),
+          ],
+        }),
+      ).toThrow(/interval_ticks must be at least 1/);
+      expect(
+        generate({
+          effects: [
+            effect({
+              format: 1,
+              category: 'neutral',
+              color: 0,
+              events: { 'msm_test:x': { actions: [{ type: 'damage', amount: -1 }] } },
+            }),
+          ],
+        }),
+      ).toThrow(/amount must be at least 0/);
     });
 
     it('rejects undeclared events', () => {

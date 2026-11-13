@@ -1,0 +1,17 @@
+{
+  "components": {
+    "msm:durability": {
+      "max": 50
+    },
+    "msm:throwable": {
+      "after_throw": "drop",
+      "damage": 4,
+      "speed": 2
+    },
+    "msm:tool": {
+      "tier": "iron",
+      "type": "sword"
+    }
+  },
+  "format": 1
+}

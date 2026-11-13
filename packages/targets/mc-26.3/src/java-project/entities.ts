@@ -17,10 +17,10 @@ import {
   eventMethod,
   eventMethods,
   fireCall,
+  noteActions,
   playAnimations,
   readEvents,
   TRIGGERED_CONTROLLER,
-  usesActions,
 } from './actions';
 import { tabLine } from './blocks';
 import { classPath, type GenerationContext, packageOf } from './context';
@@ -452,11 +452,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   const attributeSupplier = file.use('net.minecraft.world.entity.ai.attributes.AttributeSupplier');
   const attributes = file.use('net.minecraft.world.entity.ai.attributes.Attributes');
   const mob = file.use('net.minecraft.world.entity.Mob');
-  const usesHelper = usesActions(spec.events);
-  const actions = usesHelper ? file.use(`${context.input.javaPackage}.Actions`) : 'Actions';
-  if (usesHelper) context.usesActions = true;
-  if (spec.events.appliesEffects) context.usesApplyEffect = true;
-  if (spec.events.launches) context.usesLaunch = true;
+  const actions = noteActions(context, file, spec.events);
 
   const members: string[] = [];
   if (spec.events.byId.size > 0)

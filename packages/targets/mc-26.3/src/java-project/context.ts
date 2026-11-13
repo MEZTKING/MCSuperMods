@@ -19,6 +19,10 @@ export interface GenerationContext {
   usesApplyEffect: boolean;
   /** Set when an event uses `launch` (`Actions.launch` is then written, ADR 0052). */
   usesLaunch: boolean;
+  /** Set when an event uses `damage` (`Actions.damage` is then written, ADR 0055 D4). */
+  usesDamage: boolean;
+  /** Set when an event uses `heal` (`Actions.heal` is then written, ADR 0055 D4). */
+  usesHeal: boolean;
   /** Set when an item uses `msm:components` (`VanillaComponents.java` is then written). */
   usesVanillaComponents: boolean;
   /** Set when an entity uses the `follow` goal. */

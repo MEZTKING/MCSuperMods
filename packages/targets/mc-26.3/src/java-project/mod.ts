@@ -1,7 +1,7 @@
 /**
- * The mod initialiser: `<ModClass>.java`, a `ModInitializer` that registers blocks, items and
- * entities in the runtime's order (blocks with their items first, then items, then entities
- * with their spawn eggs).
+ * The mod initialiser: `<ModClass>.java`, a `ModInitializer` that registers its content in the
+ * runtime's order: status effects first (items name them), the thrown item entity type, blocks
+ * with their items, then items, then entities with their spawn eggs.
  *
  * @packageDocumentation
  */
@@ -12,7 +12,8 @@ import { indent, JavaFile, javaString } from './java';
 /**
  * Generates `<ModClass>.java`.
  *
- * @param registrations - The simple names of the registration classes, in order.
+ * @param registrations - The registration classes, in order: simple names in the mod package,
+ *   or `<sub-package>.<Name>` (for example `entity.ThrownItemEntity`).
  * @returns The fully qualified initialiser class.
  */
 export function generateMod(context: GenerationContext, registrations: readonly string[]): string {
@@ -27,7 +28,9 @@ export function generateMod(context: GenerationContext, registrations: readonly 
     '    @Override',
     '    public void onInitialize() {',
     ...indent(
-      registrations.map((name) => `${name}.register();`),
+      registrations.map(
+        (name) => `${name.includes('.') ? file.use(`${javaPackage}.${name}`) : name}.register();`,
+      ),
       2,
     ),
     '    }',

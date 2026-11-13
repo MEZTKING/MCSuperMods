@@ -1,0 +1,16 @@
+{
+  "components": {
+    "msm:consumable": {
+      "animation": "drink",
+      "effects": [
+        {
+          "amplifier": 1,
+          "effect": "msm_test:frostbite",
+          "seconds": 10
+        }
+      ],
+      "seconds": 1
+    }
+  },
+  "format": 1
+}

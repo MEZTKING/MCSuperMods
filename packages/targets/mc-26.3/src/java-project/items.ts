@@ -13,7 +13,10 @@
  * `use_remainder`, spears (`spear(material, <vanilla constants>)`), maces (`MaceItem`), bows and
  * crossbows (`BowItem`/`CrossbowItem`, or a generated subclass mirroring `MsmBowItem` and
  * `MsmCrossbowItem` when a factor differs from 1), shields (`blocks_attacks`, delayed),
- * `death_protection`, horse and wolf armour. Minecraft 26.3, Mojang names.
+ * `death_protection`, horse and wolf armour. Throwables (ADR 0056 D7): an `item/<Name>Item`
+ * subclass of the generated `item/ThrowableItem` (mirroring `MsmThrowableItem`) with the
+ * settings of `msm:throwable`, `msm:on_use` and the hit events, registered with the dispenser
+ * when `dispensable`. Minecraft 26.3, Mojang names.
  *
  * @packageDocumentation
  */
@@ -24,9 +27,9 @@ import {
   eventMethod,
   eventMethods,
   fireCall,
+  noteActions,
   readEvents,
   ticksOf,
-  usesActions,
 } from './actions';
 import { RARITIES, tabLine } from './blocks';
 import { classPath, type GenerationContext, packageOf } from './context';
@@ -53,11 +56,15 @@ const ITEM_COMPONENTS = [
   'msm:ranged_weapon',
   'msm:shield',
   'msm:death_protection',
+  'msm:throwable',
   'msm:components',
 ];
 
 /** Components of which at most one may be on an item (the runtime then applies none). */
 const EXCLUSIVE_COMPONENTS = ['msm:armor', 'msm:ranged_weapon', 'msm:shield', 'msm:tool'] as const;
+
+/** `after_throw` values, each a `ThrowableItem.AfterThrow` constant. */
+const AFTER_THROW = ['consume', 'keep', 'drop', 'return'] as const;
 
 /** Tool types and the vanilla iron-tier base attack damage and speed of each (as the runtime). */
 const TOOL_TYPES: Readonly<Record<string, [string, string, string]>> = {
@@ -198,6 +205,23 @@ interface DeathProtectionSpec {
   readonly clearEffects: boolean;
 }
 
+/** `msm:throwable` (ADR 0056 D1), with the runtime's defaults. */
+export interface ThrowableSpec {
+  readonly speed: number;
+  readonly inaccuracy: number;
+  readonly gravity: number;
+  readonly damage: number;
+  readonly chargeTicks: number;
+  /** A `ThrowableItem.AfterThrow` constant. */
+  readonly afterThrow: string;
+  readonly cooldownTicks: number;
+  readonly sound: string | undefined;
+  readonly dispensable: boolean;
+  /** Event method names. */
+  readonly onHitEntity: string | undefined;
+  readonly onHitBlock: string | undefined;
+}
+
 interface ItemSpec {
   readonly input: DefinitionInput;
   readonly maxStackSize: number;
@@ -213,6 +237,7 @@ interface ItemSpec {
   readonly ranged: RangedSpec | undefined;
   readonly shield: ShieldSpec | undefined;
   readonly deathProtection: DeathProtectionSpec | undefined;
+  readonly throwable: ThrowableSpec | undefined;
   /** The `msm:components` object as compact JSON, or `undefined`. */
   readonly vanilla: string | undefined;
 }
@@ -223,7 +248,8 @@ function readItem(input: DefinitionInput): ItemSpec {
   checkFormat(reader);
   const components = reader.object('components');
   components?.onlyKeys(ITEM_COMPONENTS, 'component');
-  const events = readEvents(reader, 'item');
+  const throwable = components?.object('msm:throwable');
+  const events = readEvents(reader, throwable === undefined ? 'item' : 'throwable');
   const food = components?.object('msm:food');
   food?.onlyKeys(['nutrition', 'saturation', 'can_always_eat'], 'msm:food field');
   const tool = components?.object('msm:tool');
@@ -235,6 +261,18 @@ function readItem(input: DefinitionInput): ItemSpec {
     reader.fail(
       `${exclusive.slice(0, 2).join(' and ')} on one item cannot be ejected (the runtime applies none of them)`,
     );
+  }
+  if (throwable !== undefined) {
+    const clashing = ['msm:armor', 'msm:ranged_weapon', 'msm:shield', 'msm:consumable', 'msm:food'];
+    const conflicts = clashing.filter((name) => components?.has(name) === true);
+    if (components?.object('msm:tool')?.optionalString('type') === 'mace') {
+      conflicts.push('msm:tool (mace)');
+    }
+    if (conflicts.length > 0) {
+      reader.fail(
+        `msm:throwable and ${conflicts.join(', ')} on one item cannot be ejected (the runtime applies none of them)`,
+      );
+    }
   }
   const consumable = components?.object('msm:consumable');
   const ranged = components?.object('msm:ranged_weapon');
@@ -283,7 +321,50 @@ function readItem(input: DefinitionInput): ItemSpec {
               clearEffects: deathProtection.boolean('clear_effects', false),
             };
           })(),
+    throwable: throwable === undefined ? undefined : readThrowable(throwable, events),
     vanilla: vanilla === undefined ? undefined : JSON.stringify(vanilla.value),
+  };
+}
+
+function readThrowable(throwable: Reader, events: Events): ThrowableSpec {
+  throwable.onlyKeys(
+    [
+      'speed',
+      'inaccuracy',
+      'gravity',
+      'damage',
+      'charge_ticks',
+      'after_throw',
+      'cooldown_ticks',
+      'sound',
+      'dispensable',
+      'on_hit_entity',
+      'on_hit_block',
+    ],
+    'msm:throwable field',
+  );
+  const hit = (key: string): string | undefined => {
+    const reader = throwable.object(key);
+    if (reader === undefined) return undefined;
+    reader.onlyKeys(['event'], `${key} field`);
+    return eventMethod(reader, events, reader.requiredString('event'));
+  };
+  const chargeTicks = throwable.integer('charge_ticks', 0);
+  if (chargeTicks < 0 || chargeTicks > 200) throwable.fail('charge_ticks must be 0 to 200');
+  const cooldownTicks = throwable.integer('cooldown_ticks', 0);
+  if (cooldownTicks < 0) throwable.fail('cooldown_ticks must be at least 0');
+  return {
+    speed: ranged(throwable, 'speed', 1.5, 0.1, 5),
+    inaccuracy: ranged(throwable, 'inaccuracy', 1, 0, 10),
+    gravity: ranged(throwable, 'gravity', 0.03, 0, 1),
+    damage: ranged(throwable, 'damage', 0, 0),
+    chargeTicks,
+    afterThrow: throwable.enumConstant('after_throw', AFTER_THROW, 'consume'),
+    cooldownTicks,
+    sound: throwable.optionalString('sound'),
+    dispensable: throwable.boolean('dispensable', true),
+    onHitEntity: hit('on_hit_entity'),
+    onHitBlock: hit('on_hit_block'),
   };
 }
 
@@ -858,6 +939,7 @@ export function generateItems(
   const body: string[] = [];
   const methods: string[] = [];
   const tabs: string[] = [];
+  const dispensers: string[] = [];
   for (const spec of specs) {
     const { path } = splitId(spec.input.id);
     const id = spec.input.id;
@@ -873,7 +955,17 @@ export function generateItems(
     const materials: string[] = [];
     const base = gearBase(spec);
     let type: string;
-    if (spec.onUse !== undefined || rangedChanges(spec.ranged)) {
+    if (spec.throwable !== undefined) {
+      const name = classNames.take(className(path, 'Item'), (n) => [`item.${n}`], '');
+      writeThrowableItemClass(context, spec, spec.throwable, name);
+      type = file.use(`${packageOf(context, 'item')}.${name}`);
+      if (spec.throwable.dispensable) {
+        const dispenser = file.use('net.minecraft.world.level.block.DispenserBlock');
+        dispensers.push(
+          `${dispenser}.registerProjectileBehavior(${field}); // dispensable: thrown through ProjectileItem`,
+        );
+      }
+    } else if (spec.onUse !== undefined || rangedChanges(spec.ranged)) {
       const name = classNames.take(className(path, 'Item'), (n) => [`item.${n}`], '');
       writeItemClass(context, spec, name, base ?? 'net.minecraft.world.item.Item');
       type = file.use(`${packageOf(context, 'item')}.${name}`);
@@ -1063,9 +1155,9 @@ export function generateItems(
     '',
     '    private ModItems() {}',
     '',
-    '    /** Loads the class (registering every item) and adds the items to their creative tabs. */',
+    `    /** Loads the class (registering every item) and adds the items to their creative tabs${dispensers.length > 0 ? '; dispensers throw the dispensable throwables' : ''}. */`,
     '    public static void register() {',
-    ...indent(tabs, 2),
+    ...indent([...tabs, ...dispensers], 2),
     '    }',
     ...indent([...methods, ...shared]),
     '}',
@@ -1147,12 +1239,7 @@ function writeItemClass(
   }
   if (ranged !== undefined) members.push(...rangedMembers(file, ranged));
   if (spec.onUse !== undefined) {
-    const actions = usesActions(spec.events)
-      ? file.use(`${context.input.javaPackage}.Actions`)
-      : 'Actions';
-    if (usesActions(spec.events)) context.usesActions = true;
-    if (spec.events.appliesEffects) context.usesApplyEffect = true;
-    if (spec.events.launches) context.usesLaunch = true;
+    const actions = noteActions(context, file, spec.events);
     members.push(...eventMethods(file, spec.events, 'item', actions));
   }
   const lines = [
@@ -1227,4 +1314,101 @@ function rangedMembers(file: JavaFile, ranged: RangedSpec): string[] {
     );
   }
   return out;
+}
+
+/**
+ * A throwable item class: `item/ThrowableItem` with the item's `msm:throwable` settings, and
+ * overrides for `msm:on_use` (fired before the throw or the charge, then its cooldown, as
+ * `MsmItem.useWithEvent` inside `MsmThrowableItem.use`) and the hit events (the thrower is
+ * `self`, the living entity hit is `other`, as the runtime's `EventContext.forThrownHit`).
+ */
+function writeThrowableItemClass(
+  context: GenerationContext,
+  spec: ItemSpec,
+  throwable: ThrowableSpec,
+  name: string,
+): void {
+  const file = new JavaFile(packageOf(context, 'item'), spec.input.path);
+  const itemType = file.use('net.minecraft.world.item.Item');
+  const hasEvents =
+    spec.onUse !== undefined ||
+    throwable.onHitEntity !== undefined ||
+    throwable.onHitBlock !== undefined;
+  const members: string[] = [
+    `private static final String OWNER = ${javaString(spec.input.id)};`,
+    '',
+  ];
+  const sound = throwable.sound === undefined ? 'null' : javaString(throwable.sound);
+  members.push(
+    `public ${name}(${itemType}.Properties properties) {`,
+    '    super(properties, OWNER, new Settings(',
+    `            ${javaFloat(throwable.speed)}, // speed`,
+    `            ${javaFloat(throwable.inaccuracy)}, // inaccuracy`,
+    `            ${javaFloat(throwable.gravity)}, // gravity`,
+    `            ${javaFloat(throwable.damage)}, // damage`,
+    `            ${javaInt(throwable.chargeTicks)}, // charge_ticks`,
+    `            AfterThrow.${throwable.afterThrow}, // after_throw`,
+    `            ${javaInt(throwable.cooldownTicks)}, // cooldown_ticks`,
+    `            ${sound})); // sound${throwable.sound === undefined ? " (the snowball's)" : ''}`,
+    '}',
+  );
+  const serverLevel = (): string => file.use('net.minecraft.server.level.ServerLevel');
+  const player = (): string => file.use('net.minecraft.world.entity.player.Player');
+  const vec3 = (): string => file.use('net.minecraft.world.phys.Vec3');
+  const blockPos = (): string => file.use('net.minecraft.core.BlockPos');
+  const entity = (): string => file.use('net.minecraft.world.entity.Entity');
+  const living = (): string => file.use('net.minecraft.world.entity.LivingEntity');
+  const withOther = (args: string, other: string): string =>
+    spec.events.otherParameter ? `${args}, ${other}` : args;
+  if (spec.onUse !== undefined) {
+    const level = file.use('net.minecraft.world.level.Level');
+    const hand = file.use('net.minecraft.world.InteractionHand');
+    const stack = file.use('net.minecraft.world.item.ItemStack');
+    members.push(
+      '',
+      '/** msm:on_use: fires the event, then starts its cooldown; the throw or the charge follows. */',
+      '@Override',
+      `protected void onUse(${level} level, ${player()} player, ${hand} hand, ${stack} stack) {`,
+      `    if (level instanceof ${serverLevel()} server) {`,
+      `        ${fireCall(spec.onUse.method, withOther('server, player.blockPosition().below(), player.position(), player, null', 'player'))}`,
+      '    }',
+    );
+    if (spec.onUse.cooldown > 0) {
+      members.push(
+        `    player.getCooldowns().addCooldown(stack, ${javaInt(spec.onUse.cooldown)});`,
+      );
+    }
+    members.push('}');
+  }
+  if (throwable.onHitEntity !== undefined) {
+    members.push(
+      '',
+      '/** on_hit_entity: the thrower is self, the living entity hit is other. */',
+      '@Override',
+      `public void onHitEntity(${serverLevel()} level, ${vec3()} at, ${blockPos()} base, ${entity()} thrower, ${living()} hit) {`,
+      `    ${fireCall(throwable.onHitEntity, withOther(`level, base, at, thrower instanceof ${player()} p ? p : null, thrower`, 'hit'))}`,
+      '}',
+    );
+  }
+  if (throwable.onHitBlock !== undefined) {
+    members.push(
+      '',
+      '/** on_hit_block: the thrower is self; there is no other entity. */',
+      '@Override',
+      `public void onHitBlock(${serverLevel()} level, ${vec3()} at, ${blockPos()} pos, ${entity()} thrower) {`,
+      `    ${fireCall(throwable.onHitBlock, withOther(`level, pos, at, thrower instanceof ${player()} p ? p : null, thrower`, 'null'))}`,
+      '}',
+    );
+  }
+  if (hasEvents) {
+    const actions = noteActions(context, file, spec.events);
+    members.push(...eventMethods(file, spec.events, 'throwable', actions));
+  }
+  const lines = [
+    `/** The throwable item {@code ${spec.input.id}}. */`,
+    `public class ${name} extends ThrowableItem {`,
+    ...indent(members),
+    '}',
+  ];
+  context.files.push({ path: classPath(context, 'item', name), contents: file.render(lines) });
 }

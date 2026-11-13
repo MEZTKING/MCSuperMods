@@ -16,8 +16,8 @@ import {
   eventMethod,
   eventMethods,
   fireCall,
+  noteActions,
   readEvents,
-  usesActions,
 } from './actions';
 import { classPath, type GenerationContext, packageOf } from './context';
 import {
@@ -303,12 +303,7 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
   const file = new JavaFile(javaPackage, spec.input.path);
   const blockType = file.use('net.minecraft.world.level.block.Block');
   const properties = file.use('net.minecraft.world.level.block.state.BlockBehaviour', 'Properties');
-  const actions = usesActions(spec.events)
-    ? file.use(`${context.input.javaPackage}.Actions`)
-    : 'Actions';
-  if (usesActions(spec.events)) context.usesActions = true;
-  if (spec.events.appliesEffects) context.usesApplyEffect = true;
-  if (spec.events.launches) context.usesLaunch = true;
+  const actions = noteActions(context, file, spec.events);
   const power = tracksPower(spec);
 
   const members: string[] = [];

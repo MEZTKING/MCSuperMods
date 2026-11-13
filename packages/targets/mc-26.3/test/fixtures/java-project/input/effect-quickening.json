@@ -1,0 +1,22 @@
+{
+  "category": "neutral",
+  "color": 65280,
+  "components": {
+    "msm:on_tick": {
+      "event": "msm_test:beat",
+      "faster_per_level": true,
+      "interval_ticks": 10
+    }
+  },
+  "events": {
+    "msm_test:beat": {
+      "actions": [
+        {
+          "particle": "minecraft:happy_villager",
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1
+}
