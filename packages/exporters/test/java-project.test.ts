@@ -336,6 +336,80 @@ describe.each(
     expect(unknownProblems[0]?.file).toBe('msm/ruby/mystery/thing.json');
   });
 
+  it('collects sorted, namespaced sound events from every sounds.json, without minecraft', async () => {
+    let captured: JavaProjectInput | undefined;
+    const spy: Target = {
+      ...target,
+      javaProject: {
+        generate(input) {
+          captured = input;
+          return [];
+        },
+      },
+    };
+    const sounds = (ns: string, json: Json) =>
+      raw(`${ns}:sounds`, { path: `assets/${ns}/sounds.json`, layer: 'resourcepack', json });
+    const { report } = await eject(
+      [
+        sounds('ruby', { 'chime.ring': { sounds: ['ruby:chime'] }, alpha: { sounds: [] } }),
+        sounds('amber', { zap: { sounds: [] } }),
+        sounds('minecraft', { 'block.stone.break': { sounds: [] } }),
+      ],
+      { wrapper, target: spy },
+    );
+    expect(report.ok).toBe(true);
+    expect(captured?.soundEvents).toEqual(['amber:zap', 'ruby:alpha', 'ruby:chime.ring']);
+    expect(report.problems.filter((p) => p.severity === 'warning')).toEqual([]);
+  });
+
+  it('passes an empty soundEvents list for a silent project', async () => {
+    let captured: JavaProjectInput | undefined;
+    const spy: Target = {
+      ...target,
+      javaProject: {
+        generate(input) {
+          captured = input;
+          return [];
+        },
+      },
+    };
+    await eject([plainItem], { wrapper, target: spy });
+    expect(captured?.soundEvents).toEqual([]);
+  });
+
+  it('warns about a malformed sounds.json or key and keeps the rest', async () => {
+    let captured: JavaProjectInput | undefined;
+    const spy: Target = {
+      ...target,
+      javaProject: {
+        generate(input) {
+          captured = input;
+          return [];
+        },
+      },
+    };
+    const bad = raw('amber:sounds', {
+      path: 'assets/amber/sounds.json',
+      layer: 'resourcepack',
+      json: [1, 2],
+    });
+    const badKey = raw('ruby:sounds', {
+      path: 'assets/ruby/sounds.json',
+      layer: 'resourcepack',
+      json: { Bad_Key: { sounds: [] }, good: { sounds: [] } },
+    });
+    const { report } = await eject([bad, badKey], { wrapper, target: spy });
+    expect(report.ok).toBe(true);
+    expect(captured?.soundEvents).toEqual(['ruby:good']);
+    const warnings = report.problems.filter(
+      (p) => p.code === ExportProblemCodes.javaGenerationFailed,
+    );
+    expect(warnings.map((p) => [p.severity, p.file])).toEqual([
+      ['warning', 'assets/amber/sounds.json'],
+      ['warning', 'assets/ruby/sounds.json'],
+    ]);
+  });
+
   it('needs GeckoLib facts for entities and adds GeckoLib to the build', async () => {
     const { geckolib: _geckolib, ...withoutGeckolib } = target;
     const missing = await eject([entity], { wrapper, target: withoutGeckolib });

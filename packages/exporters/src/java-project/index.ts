@@ -73,6 +73,8 @@ export const JAVA_PROJECT_MOD_JSON = `src/main/resources/${FABRIC_MOD_JSON_FILE}
 const VERSION_PLACEHOLDER = '${version}';
 
 const DEFINITION_PATTERN = /^msm\/([^/]+)\/([^/]+)\/(.+)\.json$/;
+const SOUNDS_JSON_PATTERN = /^assets\/([^/]+)\/sounds\.json$/;
+const SOUND_KEY_PATTERN = /^[a-z0-9_.-]+(?:\/[a-z0-9_.-]+)*$/;
 const SCRIPT_PATTERN = /^msm\/([^/]+)\/script\/(.+)\.ts$/;
 
 const JAVA_KEYWORDS = new Set([
@@ -231,6 +233,47 @@ function withoutScripts(definition: JsonObject): {
   };
 }
 
+/**
+ * The sound event keys of every `assets/<ns>/sounds.json` in the resources, namespaced,
+ * sorted, without `minecraft` (ADR 0057 D5). A file that is not a JSON object, and a key that
+ * is not a valid sound id, is reported as a warning and skipped.
+ */
+function collectSoundEvents(
+  resources: OutputFile[],
+  problems: ExporterInput['problems'],
+): string[] {
+  const events = new Set<string>();
+  for (const file of resources) {
+    const match = SOUNDS_JSON_PATTERN.exec(file.path);
+    if (match === null || file.layer !== 'resourcepack') continue;
+    const namespace = match[1] as string;
+    const json = jsonOf(file);
+    if (!isObject(json)) {
+      problems.report({
+        severity: 'warning',
+        code: ExportProblemCodes.javaGenerationFailed,
+        file: file.path,
+        message: `${file.path} is not a JSON object, so its sound events are not registered in the Java project.`,
+      });
+      continue;
+    }
+    if (namespace === 'minecraft') continue;
+    for (const key of Object.keys(json)) {
+      if (!/^[a-z0-9_.-]+$/.test(namespace) || !SOUND_KEY_PATTERN.test(key)) {
+        problems.report({
+          severity: 'warning',
+          code: ExportProblemCodes.javaGenerationFailed,
+          file: file.path,
+          message: `${file.path}: "${namespace}:${key}" is not a valid sound id and is not registered in the Java project.`,
+        });
+        continue;
+      }
+      events.add(`${namespace}:${key}`);
+    }
+  }
+  return [...events].sort(comparePaths);
+}
+
 async function loadWrapper(
   load: JavaProjectOptions['loadGradleWrapper'],
 ): Promise<GradleWrapper | undefined> {
@@ -252,7 +295,8 @@ async function loadWrapper(
  * lacks Fabric facts or a generator, `export.no-geckolib-target` for entities without
  * GeckoLib facts, `export.invalid-mod-json`, `export.java-generation-failed` when the
  * generator throws (all write nothing); `export.scripts-not-ejected` (warning) per script
- * and per definition event with `run_script` actions; `export.gradle-wrapper-missing` (info);
+ * and per definition event with `run_script` actions; `export.java-generation-failed` is also a
+ * warning for a malformed `assets/<ns>/sounds.json` or an invalid key (skipped; ADR 0057 D5); `export.gradle-wrapper-missing` (info);
  * `export.outside-jar-folders` (info) for pack files outside `assets/` and `data/`.
  *
  * @param options - Where the Gradle wrapper comes from.
@@ -356,6 +400,7 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
         else if (kind === 'effect') effects.push(entry);
         else entities.push(entry);
       }
+      const soundEvents = collectSoundEvents(resources, problems);
       if (outside > 0) {
         problems.report({
           severity: 'info',
@@ -410,6 +455,7 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
           items,
           entities,
           effects,
+          soundEvents,
           geckolib: geckolib !== undefined,
         });
       } catch (error) {
