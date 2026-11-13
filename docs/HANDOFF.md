@@ -100,6 +100,7 @@ Rewritten 2026-11-06 at the 1.0 close (B162), for the next main session. Read th
 - Playwright: use the pre-installed Chromium; headless app runs need `xvfb-run -a`. Native Electron menus cannot be clicked in e2e: drive commands through the palette or the toolbar. Monaco completion lists need the suggest controller contribution (`monaco-setup.ts`); the TypeScript language needs `languages/definitions/typescript/register`.
 - `dist:dir` and the packaged smoke need a built runtime: `cd engine-mod && ./gradlew build`, then `node app/scripts/stage-runtime.mjs --require` (it also stages the Gradle wrapper).
 - The user is on Windows with Node 26 (engines `>=24 <27`), PowerShell; README "Try it" covers their setup.
+- Worldgen background (reference only, user's note of 2026-11-13): the user's other project has a world generator matched to the vanilla reference on its branch `claude/parity` (draft PR #448), explained in its `docs/PARITY-DISCOVERIES.md`, `docs/parity-ledger.md` and "Vanilla Jar/tools/README.md". Useful for how feature order and seeds work (feature seed = population seed + index + 10000 x step; placed features ordered by step, then sorted across biomes, not by file order), the three block-state forms, and measurement traps (count block states, not names; use full chunks). It is not part of this repo: read it for understanding, never copy reference game files, and keep fixed-seed examples land-independent.
 
 ## 1.0 close lessons
 

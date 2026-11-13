@@ -51,7 +51,8 @@ Read only the one for the area you work in, plus docs/DESIGN.md sections it link
 ## Agent workflow
 
 - Fable = orchestrator/planner: reads DESIGN + ROADMAP, decides, writes briefs, reviews.
-- Opus at medium effort = executor: implements one brief, runs tests, reports.
+- Every worker, review, root-cause and worldgen job runs on Opus (model: claude-opus-5-5) at medium effort; when a worker or review is stuck, rerun it on Opus at high effort. Sonnet (model: claude-sonnet-5-5) is still fine for the smaller or mechanical parts (docs, language files, one-file fixes, live checks, art-designer briefs).
+- Commits carry no `Co-Authored-By`, `Claude-Session` or other credit lines (user's rule; see `docs/HANDOFF.md`).
 - Briefs name files, paths and exit criteria.
 - Executors do not change architecture without an ADR.
 - Parallel executors never touch the same file.

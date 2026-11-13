@@ -3010,3 +3010,17 @@ Next: Picture to texture options and drag and drop textures.
 
 What: `image-convert.ts` gains `transformImage`, `fitInside`, `adjustColours`, `addOutline` (pipeline options `rotation`, `flipX`, `flipY`, `fit`, `adjust`, `outline`); `PictureToTextureDialog` has "More options" (turn, mirror, fill or fit with a free crop, four colour sliders, outline) and a picture tray (`pickPictures`, `initialPictures`, multi paste and drop); `textures/retexture.ts` (`textureIdOf`, `retexture`) and `textures/texture-drop.tsx` (context and `useTextureDrop`); asset rows draggable; element rows and the live preview take texture drops (App `dropTexture`, one `setElementData`); window-level picture file drop opens the dialog. Tests: image-convert, retexture, picture-path (tray, mirror, outline pixels), golden-path (drag onto the model, message, Undo).
 Next: CI for the velocity Java (ADR 0052), then the user's Windows test; these changes go into the release after 1.3.0.
+
+---
+
+## 2026-11-13 — main session (Phases 0–3) — model and commit rules
+
+**What**
+- Root `CLAUDE.md` "Agent workflow": every worker, review, root-cause and worldgen job runs on Opus (`claude-opus-5-5`) at medium effort, rerun on Opus at high effort when stuck; Sonnet (`claude-sonnet-5-5`) for small or mechanical parts. Commits carry no credit lines (already in HANDOFF since 2026-11-06).
+- `docs/HANDOFF.md` "Environment notes": pointer to the user's other project's worldgen parity notes as background reading.
+
+**Decisions**
+- User's instructions of 2026-11-13.
+
+**Next**
+- None from this session.
