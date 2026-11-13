@@ -400,7 +400,7 @@ Known gaps of the v0.6 design; none blocks the Phase 6 exit criterion.
 
 - [ ] Scripts in the eject (reserve brief B142): copy the runtime's `scripting/` sources into the ejected project, nest Rhino and ship the transpiled `.js`; needs an ADR 0033 D1 amendment.
 - [ ] Parity for more fixtures (reserve brief B143): more actions and components in the parity GameTests (scripts cannot have parity without the runtime).
-- [ ] Persistent script data (reserve brief B144): per-entity `entity.data` in NBT and a per-script `msm.storage` saved with the world; needs an ADR 0032 amendment and a world-save GameTest.
+- [ ] Persistent script data (reserve brief B144): moved to the add-on "Adding to vanilla content, triggers and saved data (planned)" (ADR 0062).
 - [ ] Re-probe Rhino 2.0 when it is released (classes, `for...of`, `async`); keep a TypeScript 6.x copy for the transpiler if the repository moves to TypeScript 7.
 - [ ] Client-side script events (rendering, keys, HUD); v1 runs on the server only.
 - [ ] Typed `require`: the typings return `any` for a required module; a module-aware check across a project's scripts would type it.
@@ -536,6 +536,29 @@ Takes up suspects S1, S4, S5, S6, S7 (and S10 in passing) and backlog item B1 of
 - [ ] B227 Java eject shapes.
 - [ ] B228 Shapes: sample, parity, e2e, guide.
 - [ ] The user checks in game: project sounds (Play sound action, drink, armour equip, thrown item, script), mob sounds, a mob bounced by a jump pad, cancelled placements showing no ghost block, cut-out and translucent textures on a see-through block on 26.3 and 26.4, outline and collision of a half block and a plant.
+
+### Add-on after 1.0 — Adding to vanilla content, triggers and saved data (planned)
+
+Takes up backlog items B3, B4 and B6 of [`COVERAGE-AUDIT.md`](COVERAGE-AUDIT.md) and the data half of B9 (trades). Design: [ADR 0060](adr/0060-adding-to-vanilla-content.md) (adding to vanilla content), [ADR 0061](adr/0061-more-triggers.md) (more triggers) and [ADR 0062](adr/0062-persistent-script-data.md) (persistent script data), all proposed; working plan `PLAN-vanilla-additions.md`, deleted at close. Waves 1 and 2 may start at once; the rest waits until the runtime fixes batch (B224–B228) is committed and CI is green. Parts B and C may ship one release after Part A. Defaults that need the user's veto: additions never override a world data pack; a new villager trade is a candidate, not a guarantee; Custom ore generates by default; 5-tick minimum trigger interval and 2,000 firings per server tick; script data limits of 16 KiB per entity and 1 MiB per world; the names `msm:biome_addition` and `msm:loot_addition`, "World addition" and "Extra drops".
+
+- [ ] B229 Plugin API 1.8.0 and target facts (trade folders, compost providers).
+- [ ] B230 Plugin `datapack`: trade kinds, tag registry, templates.
+- [ ] B231 Creator flow "Villager trade" (group `worlds`), example, sample data pack trade.
+- [ ] B232 Format: addition definitions, `BlockItem.components`, `fuel` and `compost`, ten trigger components, corpus.
+- [ ] B233 Script API contract: `DataStore`.
+- [ ] B234 Runtime: biome and loot additions, block item components.
+- [ ] B235 Runtime: triggers and the tick limiter.
+- [ ] B144 Runtime: persistent script data.
+- [ ] B236 Plugin `blocks-items`: addition kinds, `fuel` and `compost` lowering, validators, templates.
+- [ ] B237 Exporters: `java-project` routing for the addition folders.
+- [ ] B238 Java eject (26.3 generator): `ModWorldgen`, `ModLoot`, trigger overrides.
+- [ ] B239 App Studios: World addition, Extra drops, Triggers, Fuel and compost.
+- [ ] B240 Library and AI helper: ore generation, "Extra drop" flow, examples, prompt.
+- [ ] B241 Samples and parity, including the two-run script data check.
+- [ ] B242 e2e, guide and changelog.
+- [ ] B243 (reserve) real-generation check on the headless server.
+- [ ] The user checks in game: ore in a new world only, the extra drop, furnace and composter, the villager trade, each trigger in play, script data across quit, death and portal.
+- Deferred and kept in the audit backlog: flammability and block pairs, values on vanilla items, custom compost chances, `on_crafted`, no-code conditions on stored data.
 
 ### Exit criteria
 
