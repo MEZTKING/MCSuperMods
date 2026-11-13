@@ -8,6 +8,7 @@ import {
   ARMOR_LAYER_SIZE,
   armorLayerPng,
   bodyArmorLayerPng,
+  EFFECT_ICON_SIZE,
   encodePng,
   HORSE_ARMOR_LAYER_SIZE,
   PAINTING_PIXELS_PER_BLOCK,
@@ -82,7 +83,7 @@ const PINNED: Partial<Record<PlaceholderPattern, string>> = {
 const PINNED_SKIN = '224f2f4715ddc13cad76f34fd7555f720a9149052645c23f4c28c102c2ff4fd5';
 
 describe('placeholder textures', () => {
-  it('has thirty-seven patterns', () => {
+  it('has forty-two patterns', () => {
     expect(PLACEHOLDER_PATTERNS).toEqual([
       'plain',
       'ore',
@@ -121,6 +122,11 @@ describe('placeholder textures', () => {
       'wolf_armor',
       'horse_armor_layer',
       'wolf_armor_layer',
+      'ball',
+      'knife',
+      'boomerang',
+      'flask',
+      'effect_icon',
     ]);
   });
 
@@ -134,13 +140,15 @@ describe('placeholder textures', () => {
     expect(Buffer.from(readFileSync(file)).equals(Buffer.from(png))).toBe(true);
   });
 
-  it('draws the armour layers at their vanilla sizes and every other pattern at 16x16', () => {
+  it('draws the armour layers and the effect icon at their vanilla sizes and every other pattern at 16x16', () => {
     const sizes: Partial<Record<PlaceholderPattern, { width: number; height: number }>> = {
+      effect_icon: { width: EFFECT_ICON_SIZE, height: EFFECT_ICON_SIZE },
       armor_layer_1: ARMOR_LAYER_SIZE,
       armor_layer_2: ARMOR_LAYER_SIZE,
       horse_armor_layer: HORSE_ARMOR_LAYER_SIZE,
       wolf_armor_layer: WOLF_ARMOR_LAYER_SIZE,
     };
+    expect(EFFECT_ICON_SIZE).toBe(18);
     expect(HORSE_ARMOR_LAYER_SIZE).toEqual({ width: 64, height: 64 });
     expect(WOLF_ARMOR_LAYER_SIZE).toEqual({ width: 64, height: 32 });
     for (const pattern of PLACEHOLDER_PATTERNS) {
@@ -280,6 +288,20 @@ describe('placeholder textures', () => {
     expect(pixel(0, 0)).toEqual(pixel(4, 4));
     expect(sha256(png)).toBe(PINNED_SKIN);
     expect(sha256(placeholderSkinPng({ colour: [32, 180, 72] }))).not.toBe(PINNED_SKIN);
+  });
+
+  it('draws the effect icon as a round badge with a sparkle, clear in the corners', () => {
+    const pixels = placeholderPixels('effect_icon');
+    const at = (x: number, y: number) => {
+      const index = (y * EFFECT_ICON_SIZE + x) * 4;
+      return [...pixels.subarray(index, index + 4)];
+    };
+    expect(at(0, 0)[3]).toBe(0);
+    expect(at(17, 17)[3]).toBe(0);
+    expect(at(0, 8)[3]).toBe(255);
+    expect(at(8, 8)).not.toEqual(at(8, 3));
+    const tinted = placeholderPixels('effect_icon', { colour: [36, 84, 196] });
+    expect([...tinted]).not.toEqual([...pixels]);
   });
 
   it('tints by colour', () => {

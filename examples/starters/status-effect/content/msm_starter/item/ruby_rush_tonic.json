@@ -1,0 +1,29 @@
+{
+  "data": {
+    "components": {
+      "msm:consumable": {
+        "animation": "drink",
+        "converts_to": "minecraft:glass_bottle",
+        "effects": [
+          {
+            "effect": "msm_starter:ruby_rush",
+            "seconds": 30
+          }
+        ],
+        "seconds": 1.6
+      }
+    },
+    "creative_tab": "minecraft:food_and_drinks",
+    "display_name": "Ruby Rush Tonic",
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "msm_starter:item/ruby_rush_tonic"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_rush_tonic",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A drink: msm:consumable with the drink animation takes 1.6 seconds, gives msm_starter:ruby_rush (level 1) for 30 seconds and leaves a glass bottle (converts_to). Custom effects work in consumable effects like vanilla ones."
+  }
+}

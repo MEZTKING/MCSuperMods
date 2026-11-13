@@ -45,7 +45,14 @@ export type Rgb = readonly [number, number, number];
  * - `horse_armor_layer`: 64x64 worn horse armour in the vanilla horse texture layout
  *   (equipment texture under `entity/equipment/horse_body/`);
  * - `wolf_armor_layer`: 64x32 worn wolf armour in the vanilla wolf texture layout (equipment
- *   texture under `entity/equipment/wolf_body/`).
+ *   texture under `entity/equipment/wolf_body/`);
+ * - `ball`: a round throwable, like a snowball (item texture);
+ * - `knife`: a short throwing knife with a guard and a wooden grip (handheld item texture);
+ * - `boomerang`: a bent boomerang with two painted stripes (handheld item texture);
+ * - `flask`: a round-bottomed flask of coloured liquid with a cork, for thrown effects (item
+ *   texture);
+ * - `effect_icon`: 18x18 round badge with a sparkle, a status effect icon (texture under
+ *   `mob_effect/`, named after the effect; ADR 0055 D6).
  *
  * Paintings have their own placeholder of any size, {@link paintingPng}.
  */
@@ -86,7 +93,12 @@ export type PlaceholderPattern =
   | 'horse_armor'
   | 'wolf_armor'
   | 'horse_armor_layer'
-  | 'wolf_armor_layer';
+  | 'wolf_armor_layer'
+  | 'ball'
+  | 'knife'
+  | 'boomerang'
+  | 'flask'
+  | 'effect_icon';
 
 /** Every pattern, in documentation order. */
 export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze([
@@ -127,6 +139,11 @@ export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze
   'wolf_armor',
   'horse_armor_layer',
   'wolf_armor_layer',
+  'ball',
+  'knife',
+  'boomerang',
+  'flask',
+  'effect_icon',
 ]);
 
 /** Width and height of the armour layer patterns, the vanilla humanoid armour texture size. */
@@ -138,12 +155,17 @@ export const HORSE_ARMOR_LAYER_SIZE = Object.freeze({ width: 64, height: 64 });
 /** Width and height of the wolf armour layer, the vanilla wolf texture size. */
 export const WOLF_ARMOR_LAYER_SIZE = Object.freeze({ width: 64, height: 32 });
 
+/** Edge length of the `effect_icon` pattern, the vanilla mob effect icon size (ADR 0055 D6). */
+export const EFFECT_ICON_SIZE = 18;
+
 /**
  * The size of a pattern's image in pixels: {@link ARMOR_LAYER_SIZE} for the humanoid armour
  * layers, {@link HORSE_ARMOR_LAYER_SIZE} and {@link WOLF_ARMOR_LAYER_SIZE} for the body armour
- * layers, {@link PLACEHOLDER_SIZE} square for every other pattern.
+ * layers, {@link EFFECT_ICON_SIZE} square for `effect_icon`, {@link PLACEHOLDER_SIZE} square for
+ * every other pattern.
  */
 export function placeholderSize(pattern: PlaceholderPattern): { width: number; height: number } {
+  if (pattern === 'effect_icon') return { width: EFFECT_ICON_SIZE, height: EFFECT_ICON_SIZE };
   if (pattern === 'armor_layer_1' || pattern === 'armor_layer_2') {
     return { width: ARMOR_LAYER_SIZE.width, height: ARMOR_LAYER_SIZE.height };
   }
@@ -846,6 +868,103 @@ const WOLF_ARMOR: Mask = [
   '................',
 ];
 
+const BALL: Mask = [
+  '................',
+  '................',
+  '................',
+  '......xxxx......',
+  '....xxxxxxxx....',
+  '....xsxxxxxx....',
+  '...xsxxxxxxxx...',
+  '...xxxxxxxdxx...',
+  '...xxxxxxxxxx...',
+  '...xxxdxxxxxx...',
+  '....xxxxxxxx....',
+  '....xxxxxdxx....',
+  '......xxxx......',
+  '................',
+  '................',
+  '................',
+];
+
+const KNIFE: Mask = [
+  '................',
+  '................',
+  '.............xx.',
+  '............xsx.',
+  '...........xsx..',
+  '..........xsx...',
+  '.........xsx....',
+  '........xxx.....',
+  '......ddxx......',
+  '.......hd.......',
+  '......hh........',
+  '.....hh.........',
+  '....gg..........',
+  '................',
+  '................',
+  '................',
+];
+
+const BOOMERANG: Mask = [
+  '................',
+  '................',
+  '...xx...........',
+  '...xsx..........',
+  '...xxx..........',
+  '...xdx..........',
+  '...xxx..........',
+  '...xdx..........',
+  '...xxxx.........',
+  '...xxxxxdxdxx...',
+  '....xxxxxxxxsx..',
+  '.....xxxxxxxxx..',
+  '................',
+  '................',
+  '................',
+  '................',
+];
+
+const FLASK: Mask = [
+  '................',
+  '......hhhh......',
+  '.......ww.......',
+  '.......ww.......',
+  '......wxxw......',
+  '.....wxxxxw.....',
+  '....wxsxxxxw....',
+  '...wxsxxxxxxw...',
+  '...wxxxxxxxxw...',
+  '...wxxxxxxxxw...',
+  '...wxxxxxxxxw...',
+  '....wxxxxxxw....',
+  '.....wwwwww.....',
+  '................',
+  '................',
+  '................',
+];
+
+/**
+ * A status effect icon: a round badge with a dark rim, a light upper-left and a deep
+ * lower-right edge and a four-pointed sparkle in the middle, transparent outside the circle.
+ */
+function effectIcon(palette: Palette): Pixel {
+  const centre = (EFFECT_ICON_SIZE - 1) / 2;
+  return (x, y) => {
+    const dx = x - centre;
+    const dy = y - centre;
+    const squared = dx * dx + dy * dy;
+    if (squared > 8.6 * 8.6) return CLEAR;
+    if (squared > 7.4 * 7.4) return palette.dark;
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+    if ((ax < 1 && ay < 4) || (ay < 1 && ax < 4) || (ax < 2 && ay < 2)) return palette.shine;
+    if (dx + dy < -6) return palette.light;
+    if (dx + dy > 6) return palette.deep;
+    return palette.mid;
+  };
+}
+
 /**
  * One cuboid of an entity model as it unwraps onto its texture (vanilla box UV): the texture
  * offset `u`, `v` and the box's width, height and depth in pixels.
@@ -1073,6 +1192,11 @@ const PATTERNS: Readonly<Record<PlaceholderPattern, (palette: Palette) => Pixel>
   wolf_armor: maskPattern(WOLF_ARMOR),
   horse_armor_layer: boxPattern(HORSE_BOXES),
   wolf_armor_layer: boxPattern(WOLF_BOXES),
+  ball: maskPattern(BALL),
+  knife: maskPattern(KNIFE),
+  boomerang: maskPattern(BOOMERANG),
+  flask: maskPattern(FLASK),
+  effect_icon: effectIcon,
 };
 
 /**

@@ -1,0 +1,49 @@
+{
+  "data": {
+    "attribute_modifiers": [
+      {
+        "amount": -0.15,
+        "attribute": "minecraft:movement_speed",
+        "operation": "add_multiplied_total"
+      }
+    ],
+    "category": "harmful",
+    "color": 2380996,
+    "components": {
+      "msm:on_tick": {
+        "event": "msm_examples:frostbite_chill",
+        "faster_per_level": true,
+        "interval_ticks": 40
+      }
+    },
+    "display_name": "Frostbite",
+    "events": {
+      "msm_examples:frostbite_chill": {
+        "actions": [
+          {
+            "amount": 1,
+            "type": "damage"
+          },
+          {
+            "count": 4,
+            "particle": "minecraft:snowflake",
+            "spread": 0.3,
+            "type": "spawn_particle"
+          }
+        ]
+      }
+    },
+    "format": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:frostbite",
+  "kind": "msm:effect",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A custom status effect. category harmful shows its name in red and lets milk clear it; color tints its swirling particles. attribute_modifiers makes the holder 15 per cent slower per level, and the change goes when the effect ends. msm:on_tick fires msm_examples:frostbite_chill every 40 ticks (faster at higher levels), which hurts the holder by half a heart of magic damage and shows snowflakes. Its icon is textures/mob_effect/frostbite.png. Custom effects need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "effects"
+    ]
+  }
+}

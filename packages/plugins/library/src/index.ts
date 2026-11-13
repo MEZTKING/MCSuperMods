@@ -14,8 +14,8 @@
  * - The Custom ore, Custom sword and Custom mob starters are wizards: their `parameters`
  *   (ADR 0040) name, colour and tune the content; the defaults build the ruby content.
  * - Creator flows (ADR 0043) are starters with `creator`: Gear set, Simple block, Food,
- *   Scripted behaviour, Custom ore and Custom mob, and (ADR 0044) Weapon, Consumable, Totem,
- *   Enchantment, Painting and Music disc.
+ *   Scripted behaviour, Custom ore and Custom mob, (ADR 0044) Weapon, Consumable, Totem,
+ *   Enchantment, Painting and Music disc, and (ADRs 0055, 0056) Status effect and Throwable.
  * - The Scripted ore starter adds three runtime scripts to the Custom ore starter's content
  *   (Phase 6, ADRs 0031 and 0032; scripts need the Fabric mod jar export and are not part of
  *   the Java project export).
@@ -34,6 +34,7 @@ export {
   armorLayerPng,
   bodyArmorLayerPng,
   DEFAULT_COLOUR,
+  EFFECT_ICON_SIZE,
   encodePng,
   HORSE_ARMOR_LAYER_SIZE,
   PAINTING_PIXELS_PER_BLOCK,
@@ -82,8 +83,10 @@ export {
   PAINTING_PARAMETERS,
   SCRIPTED_ITEM_PARAMETERS,
   SIMPLE_BLOCK_PARAMETERS,
+  STATUS_EFFECT_PARAMETERS,
   scriptedItemIds,
   scriptedOreIds,
+  THROWABLE_PARAMETERS,
   TOTEM_PARAMETERS,
   WEAPON_PARAMETERS,
   WEAPON_TYPES,

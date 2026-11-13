@@ -1,12 +1,13 @@
 /**
  * Phase 6 examples (ADRs 0031, 0032): the per-kind example of `msm:script` (a block
  * interaction that cancels the use and gives an item), and two script behaviour examples (a
- * scheduled chain of effects, and a block whose event calls a script through a `run_script`
- * action). Scripts run only in the Fabric mod jar export, with `msm_runtime`; the vanilla
+ * scheduled chain of effects, a block whose event calls a script through a `run_script`
+ * action, and a status effect whose `msm:on_tick` event runs a script; ADR 0055 D5). Scripts run only in the Fabric mod jar export, with `msm_runtime`; the vanilla
  * packs and the Java project export leave them out.
  */
 import type { ExampleProject } from '@msm/plugin-api';
-import { element, KINDS, rl } from '../content/bundle';
+import { COLOURS, element, KINDS, rl } from '../content/bundle';
+import { colourInt, effectIconAsset } from '../content/effects';
 import { defineExample } from './define';
 
 const IMPORT = 'import { msm } from "msm:runtime";';
@@ -153,6 +154,65 @@ export const scriptBehaviourExamples: readonly ExampleProject[] = [
           ),
         ],
         assets: [],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_msm_scripted_effect',
+    title: 'Script: scripted effect',
+    description:
+      'An Antidote status effect whose tick event runs a script: it cures poison and heals more at higher levels.',
+    kind: KINDS.effect,
+    category: CATEGORY,
+    tags: ['status effect', 'on_tick', 'run_script', 'script', 'mod'],
+    build: ({ namespace }) => {
+      const antidote = rl(namespace, 'antidote');
+      const tick = rl(namespace, 'antidote_tick');
+      const handler = rl(namespace, 'antidote_cure');
+      const script = rl(namespace, 'antidote_handler');
+      return {
+        elements: [
+          element(
+            antidote,
+            KINDS.effect,
+            {
+              format: 1,
+              display_name: 'Antidote',
+              category: 'beneficial',
+              color: colourInt(COLOURS.jade),
+              components: { 'msm:on_tick': { event: tick, interval_ticks: 20 } },
+              events: { [tick]: { actions: [{ type: 'run_script', handler }] } },
+            },
+            `A status effect whose behaviour is a script. msm:on_tick fires ${tick} once a second, and its run_script action calls the handler ${handler}. In an effect's events, other (and self) is the mob or player that has the effect. Its icon is textures/mob_effect/antidote.png. Give it with /effect give @s ${antidote} 30 1.`,
+          ),
+          element(
+            script,
+            KINDS.script,
+            {
+              lines: [
+                IMPORT,
+                '',
+                `// Called once a second by the "msm:on_tick" event of ${antidote}.`,
+                `msm.actions.define("${handler}", (e) => {`,
+                '  const holder = e.other;',
+                '  if (holder === undefined || !holder.isAlive) return;',
+                `  const level = holder.effectLevel("${antidote}");`,
+                '  if (holder.hasEffect("minecraft:poison")) {',
+                '    holder.removeEffect("minecraft:poison");',
+                '    e.world.playSound("minecraft:entity.witch.drink", holder.pos);',
+                '  }',
+                '  if (holder.health < holder.maxHealth) holder.heal(level);',
+                '  e.world.spawnParticle("minecraft:happy_villager", holder.pos.offset(0, 1, 0), {',
+                '    count: 2 * level,',
+                '    spread: 0.4,',
+                '  });',
+                '});',
+              ],
+            },
+            `The script that defines the handler ${handler}. e.other is the effect's holder; hasEffect and removeEffect cure its poison, and effectLevel (the amplifier plus 1) scales the healing and the particles. ${JAR_ONLY}`,
+          ),
+        ],
+        assets: [effectIconAsset(namespace, 'antidote', COLOURS.jade)],
       };
     },
   }),

@@ -1,0 +1,21 @@
+{
+  "data": {
+    "category": "misc",
+    "ingredients": [
+      "minecraft:glistering_melon_slice",
+      "minecraft:glass_bottle"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_starter:ruby_rush_tonic"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_rush_tonic_from_glistering_melon_slice",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Glistering melon slice, a glass bottle anywhere in the crafting grid make a Ruby Rush Tonic."
+  }
+}

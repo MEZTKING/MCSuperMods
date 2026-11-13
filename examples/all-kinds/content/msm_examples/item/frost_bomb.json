@@ -1,0 +1,74 @@
+{
+  "data": {
+    "components": {
+      "msm:throwable": {
+        "after_throw": "consume",
+        "damage": 1,
+        "gravity": 0.05,
+        "on_hit_block": {
+          "event": "msm_examples:frost_bomb_shatter"
+        },
+        "on_hit_entity": {
+          "event": "msm_examples:frost_bomb_hit"
+        },
+        "sound": "minecraft:entity.snowball.throw",
+        "speed": 1.2
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Frost Bomb",
+    "events": {
+      "msm_examples:frost_bomb_hit": {
+        "actions": [
+          {
+            "amplifier": 1,
+            "effect": "msm_examples:frostbite",
+            "seconds": 8,
+            "target": "other",
+            "type": "apply_effect"
+          },
+          {
+            "pitch": 1.4,
+            "sound": "minecraft:block.glass.break",
+            "type": "play_sound"
+          },
+          {
+            "count": 12,
+            "particle": "minecraft:snowflake",
+            "spread": 0.5,
+            "type": "spawn_particle"
+          }
+        ]
+      },
+      "msm_examples:frost_bomb_shatter": {
+        "actions": [
+          {
+            "pitch": 1.4,
+            "sound": "minecraft:block.glass.break",
+            "type": "play_sound"
+          },
+          {
+            "count": 12,
+            "particle": "minecraft:snowflake",
+            "spread": 0.5,
+            "type": "spawn_particle"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "msm_examples:item/frost_bomb"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:frost_bomb",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A throwable item. msm:throwable throws it on use, a little slower and heavier than a snowball, and each throw uses one (after_throw consume). Hitting a mob deals half a heart and fires msm_examples:frost_bomb_hit, whose apply_effect gives the mob hit (target other) Frostbite II for 8 seconds; hitting a block fires msm_examples:frost_bomb_shatter. In flight it is drawn as its item picture.",
+    "tags": [
+      "example",
+      "effects"
+    ]
+  }
+}

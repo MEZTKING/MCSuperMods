@@ -12,7 +12,14 @@ import type {
 } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
-import { EFFECT_CHOICES } from '../src/content/effects';
+import {
+  attributeModifiers,
+  chosenStats,
+  colourInt,
+  EFFECT_CHOICES,
+  PARTICLE_CHOICES,
+  STAT_CHOICES,
+} from '../src/content/effects';
 import {
   base64Bytes,
   decodePngDataUrl,
@@ -91,6 +98,8 @@ const WIZARDS = [
   'weapon',
   'consumable',
   'totem',
+  'status-effect',
+  'throwable',
   'enchantment',
   'painting',
   'music-disc-item',
@@ -108,6 +117,9 @@ const FLOWS: Record<string, string> = {
   weapon: 'gear',
   consumable: 'food',
   totem: 'gear',
+  // ADR 0055 D11 asks for a "magic" group; the plugin API has none yet (see status-effect.ts).
+  'status-effect': 'gear',
+  throwable: 'gear',
   enchantment: 'gear',
   painting: 'blocks',
   'music-disc-item': 'blocks',
@@ -139,6 +151,8 @@ describe('wizard starters', () => {
     expect(groups('weapon')).toEqual(['Weapon', 'Stats', 'Ranged', 'Shield', 'Recipe']);
     expect(groups('consumable')).toEqual(['Item', 'Using', 'Effects', 'Recipe']);
     expect(groups('totem')).toEqual(['Totem', 'Effects', 'Recipe']);
+    expect(groups('status-effect')).toEqual(['Effect', 'Behaviour', 'Stats', 'Getting it']);
+    expect(groups('throwable')).toEqual(['Item', 'Throw', 'Hit', 'Recipe']);
     expect(groups('enchantment')).toEqual(['Enchantment', 'Effect', 'Offering']);
     expect(groups('painting')).toEqual(['Painting', 'Picture']);
     expect(groups('music-disc-item')).toEqual(['Song', 'Disc']);
@@ -810,6 +824,287 @@ describe('Creator flows', () => {
       pattern: [' G ', 'GXG', ' G '],
       key: { G: 'minecraft:gold_ingot', X: 'minecraft:emerald' },
     });
+  });
+
+  it('Status effect: the defaults make a healing effect, its icon and a drink with a recipe', () => {
+    const bundle = build(starter('status-effect'), {});
+    expect(bundle.elements.map((entry) => `${entry.kind} ${entry.id}`)).toEqual([
+      'minecraft:pack_mcmeta demo:pack',
+      'msm:mod demo:mod',
+      'msm:effect demo:ruby_rush',
+      'msm:item demo:ruby_rush_tonic',
+      'minecraft:model demo:item/ruby_rush_tonic',
+      'minecraft:recipe demo:ruby_rush_tonic_from_glistering_melon_slice',
+    ]);
+    expect(data(bundle, 'demo:ruby_rush')).toEqual({
+      format: 1,
+      display_name: 'Ruby Rush',
+      category: 'beneficial',
+      color: 0xc41c34,
+      attribute_modifiers: [
+        { attribute: 'minecraft:movement_speed', amount: 0.2, operation: 'add_multiplied_total' },
+      ],
+      components: {
+        'msm:on_tick': { event: 'demo:ruby_rush_tick', interval_ticks: 40, faster_per_level: true },
+      },
+      events: { 'demo:ruby_rush_tick': { actions: [{ type: 'heal', amount: 1 }] } },
+    });
+    expect(data(bundle, 'demo:ruby_rush_tonic')).toMatchObject({
+      display_name: 'Ruby Rush Tonic',
+      components: {
+        'msm:consumable': {
+          animation: 'drink',
+          effects: [{ effect: 'demo:ruby_rush', seconds: 30 }],
+          converts_to: 'minecraft:glass_bottle',
+        },
+      },
+    });
+    expect(data(bundle, 'demo:ruby_rush_tonic_from_glistering_melon_slice')).toMatchObject({
+      ingredients: ['minecraft:glistering_melon_slice', 'minecraft:glass_bottle'],
+      result: { id: 'demo:ruby_rush_tonic', count: 1 },
+    });
+    expect(bundle.assets.map((asset) => asset.path)).toEqual([
+      'textures/mob_effect/ruby_rush.png',
+      'textures/item/ruby_rush_tonic.png',
+    ]);
+    expect(bundle.assets[0]?.bytes).toEqual(
+      placeholderPng('effect_icon', { colour: [196, 28, 52] }),
+    );
+    expect(bundle.assets[1]?.bytes).toEqual(placeholderPng('bottle', { colour: [196, 28, 52] }));
+  });
+
+  it('Status effect: every category, behaviour, particle and source follows the values', () => {
+    for (const category of ['beneficial', 'harmful', 'neutral']) {
+      expect(data(build(starter('status-effect'), { category }), 'demo:ruby_rush')).toMatchObject({
+        category,
+      });
+    }
+    const tick = (values: Record<string, Json>) =>
+      data(build(starter('status-effect'), values), 'demo:ruby_rush');
+    expect(tick({ behaviour: 'hurt', amount: 2.5 }).events).toEqual({
+      'demo:ruby_rush_tick': { actions: [{ type: 'damage', amount: 2.5 }] },
+    });
+    for (const particle of PARTICLE_CHOICES) {
+      expect(tick({ behaviour: 'particles', particle: particle.value }).events).toEqual({
+        'demo:ruby_rush_tick': {
+          actions: [{ type: 'spawn_particle', particle: particle.value, count: 6, spread: 0.4 }],
+        },
+      });
+    }
+    const none = tick({ behaviour: 'none', stat_1: 'none' });
+    expect(none).not.toHaveProperty('components');
+    expect(none).not.toHaveProperty('events');
+    expect(none).not.toHaveProperty('attribute_modifiers');
+    const fn = build(starter('status-effect'), {
+      behaviour: 'function',
+      interval_seconds: 0.25,
+      faster_per_level: false,
+    });
+    expect(data(fn, 'demo:ruby_rush')).toMatchObject({
+      components: { 'msm:on_tick': { event: 'demo:ruby_rush_tick', interval_ticks: 5 } },
+      events: {
+        'demo:ruby_rush_tick': {
+          actions: [{ type: 'run_function', function: 'demo:ruby_rush/tick' }],
+        },
+      },
+    });
+    expect((data(fn, 'demo:ruby_rush').components as JsonObject)['msm:on_tick']).not.toHaveProperty(
+      'faster_per_level',
+    );
+    expect(fn.elements.find((entry) => entry.id === 'demo:ruby_rush/tick')?.kind).toBe(
+      'minecraft:function',
+    );
+
+    const flask = build(starter('status-effect'), {
+      source: 'flask',
+      level: 3,
+      seconds: 12,
+      ingredient: 'minecraft:blaze_powder',
+    });
+    expect(data(flask, 'demo:ruby_rush_flask')).toMatchObject({
+      display_name: 'Ruby Rush Flask',
+      components: {
+        'msm:throwable': {
+          after_throw: 'consume',
+          on_hit_entity: { event: 'demo:ruby_rush_flask_hit' },
+          on_hit_block: { event: 'demo:ruby_rush_flask_shatter' },
+        },
+      },
+      events: {
+        'demo:ruby_rush_flask_hit': {
+          actions: [
+            {
+              type: 'apply_effect',
+              effect: 'demo:ruby_rush',
+              seconds: 12,
+              amplifier: 2,
+              target: 'other',
+            },
+            expect.anything(),
+            expect.anything(),
+          ],
+        },
+      },
+    });
+    expect(data(flask, 'demo:ruby_rush_flask_from_blaze_powder')).toMatchObject({
+      ingredients: ['minecraft:blaze_powder', 'minecraft:glass_bottle', 'minecraft:gunpowder'],
+    });
+    expect(flask.assets[1]?.bytes).toEqual(placeholderPng('flask', { colour: [196, 28, 52] }));
+
+    const bare = build(starter('status-effect'), { source: 'none' });
+    expect(bare.elements.map((entry) => entry.kind)).toEqual([
+      'minecraft:pack_mcmeta',
+      'msm:mod',
+      'msm:effect',
+    ]);
+    expect(bare.assets.map((asset) => asset.path)).toEqual(['textures/mob_effect/ruby_rush.png']);
+    const noRecipe = build(starter('status-effect'), { ingredient: 'none' });
+    expect(noRecipe.elements.some((entry) => entry.kind === 'minecraft:recipe')).toBe(false);
+  });
+
+  it('Status effect: every stat turns into an attribute modifier per level', () => {
+    for (const stat of STAT_CHOICES) {
+      const bundle = build(starter('status-effect'), {
+        stat_1: stat.value,
+        stat_1_amount: -10,
+        stat_2: 'minecraft:max_health',
+        stat_2_amount: 4,
+      });
+      expect(data(bundle, 'demo:ruby_rush').attribute_modifiers).toEqual([
+        {
+          attribute: stat.value,
+          amount: stat.unit === 'percent' ? -0.1 : -10,
+          operation: stat.operation,
+        },
+        { attribute: 'minecraft:max_health', amount: 4, operation: 'add_value' },
+      ]);
+    }
+    // A zero amount leaves the slot out.
+    expect(chosenStats({ stat_1: 'minecraft:luck', stat_1_amount: 0 }, 1)).toEqual([]);
+    expect(
+      attributeModifiers(chosenStats({ stat_1: 'minecraft:scale', stat_1_amount: 50 }, 1)),
+    ).toEqual([{ attribute: 'minecraft:scale', amount: 0.5, operation: 'add_multiplied_base' }]);
+    expect(colourInt([0x12, 0x34, 0x56])).toBe(0x123456);
+  });
+
+  it('Throwable: the defaults make a knife that drops where it lands, with a recipe', () => {
+    const bundle = build(starter('throwable'), {});
+    expect(bundle.elements.map((entry) => `${entry.kind} ${entry.id}`)).toEqual([
+      'minecraft:pack_mcmeta demo:pack',
+      'msm:mod demo:mod',
+      'msm:item demo:ruby_knife',
+      'minecraft:model demo:item/ruby_knife',
+      'minecraft:recipe demo:ruby_knife_from_flint',
+    ]);
+    expect(data(bundle, 'demo:ruby_knife')).toEqual({
+      format: 1,
+      model: 'demo:item/ruby_knife',
+      display_name: 'Ruby Knife',
+      max_stack_size: 16,
+      creative_tab: 'minecraft:combat',
+      components: {
+        'msm:throwable': {
+          speed: 1.5,
+          gravity: 0.03,
+          damage: 4,
+          after_throw: 'drop',
+          sound: 'minecraft:item.trident.throw',
+        },
+      },
+    });
+    expect(data(bundle, 'demo:item/ruby_knife')).toMatchObject({
+      parent: 'minecraft:item/handheld',
+    });
+    expect(data(bundle, 'demo:ruby_knife_from_flint')).toMatchObject({
+      ingredients: ['minecraft:flint', 'minecraft:iron_ingot'],
+      result: { id: 'demo:ruby_knife', count: 2 },
+    });
+    expect(bundle.assets[0]?.bytes).toEqual(placeholderPng('knife', { colour: [196, 28, 52] }));
+  });
+
+  it('Throwable: every style, weight and hit follows the values', () => {
+    const item = (values: Record<string, Json>) =>
+      data(build(starter('throwable'), values), 'demo:ruby_knife');
+    const throwable = (values: Record<string, Json>) =>
+      (item(values).components as JsonObject)['msm:throwable'] as JsonObject;
+    const styles: Record<string, [string, string]> = {
+      ball: ['consume', 'ball'],
+      knife: ['drop', 'knife'],
+      boomerang: ['return', 'boomerang'],
+      bomb: ['consume', 'ball'],
+    };
+    for (const [style, [afterThrow, pattern]] of Object.entries(styles)) {
+      const bundle = build(starter('throwable'), { style });
+      const component = (data(bundle, 'demo:ruby_knife').components as JsonObject)[
+        'msm:throwable'
+      ] as JsonObject;
+      expect(component.after_throw, style).toBe(afterThrow);
+      expect(bundle.assets[0]?.bytes, style).toEqual(
+        placeholderPng(pattern as 'ball', { colour: [196, 28, 52] }),
+      );
+    }
+    // A bomb bursts unless another hit is chosen.
+    expect(throwable({ style: 'bomb' }).on_hit_block).toEqual({
+      event: 'demo:ruby_knife_hit_block',
+    });
+    expect(throwable({ gravity: 'floaty' }).gravity).toBe(0.01);
+    expect(throwable({ gravity: 'heavy' }).gravity).toBe(0.06);
+    expect(throwable({ hold_to_throw: true }).charge_ticks).toBe(10);
+    expect(throwable({ damage: 0 })).not.toHaveProperty('damage');
+    expect(throwable({ speed: 2.5 }).speed).toBe(2.5);
+    expect(item({ stack_size: 1 }).max_stack_size).toBe(1);
+
+    for (const effect of EFFECT_CHOICES) {
+      expect(
+        item({ on_hit: 'effect', hit_effect: effect.value, hit_effect_seconds: 9 }).events,
+      ).toMatchObject({
+        'demo:ruby_knife_hit': {
+          actions: [
+            { type: 'apply_effect', effect: effect.value, seconds: 9, target: 'other' },
+            {},
+          ],
+        },
+      });
+    }
+    expect(item({ on_hit: 'knock_up' }).events).toMatchObject({
+      'demo:ruby_knife_hit': {
+        actions: [{ type: 'launch', direction: 'up', target: 'other' }, {}],
+      },
+    });
+    for (const block of [
+      'minecraft:cobweb',
+      'minecraft:fire',
+      'minecraft:snow',
+      'minecraft:torch',
+    ]) {
+      expect(item({ on_hit: 'place_block', hit_block: block }).events).toEqual({
+        'demo:ruby_knife_hit': { actions: [{ type: 'set_block_state', state: block }] },
+        'demo:ruby_knife_hit_block': {
+          actions: [{ type: 'set_block_state', state: block, offset: [0, 1, 0] }],
+        },
+      });
+    }
+    const burst = item({ on_hit: 'burst', burst_damage: 3 });
+    expect(burst.events).toMatchObject({
+      'demo:ruby_knife_hit': { actions: [{ type: 'damage', amount: 3, target: 'other' }, {}, {}] },
+    });
+    expect(
+      (item({ on_hit: 'burst', burst_damage: 0 }).events as JsonObject)['demo:ruby_knife_hit'],
+    ).toEqual((burst.events as JsonObject)['demo:ruby_knife_hit_block']);
+    const plain = throwable({ on_hit: 'nothing' });
+    expect(plain).not.toHaveProperty('on_hit_entity');
+    expect(plain).not.toHaveProperty('on_hit_block');
+    expect(item({ on_hit: 'nothing' })).not.toHaveProperty('events');
+    const boomerang = build(starter('throwable'), {
+      style: 'boomerang',
+      ingredient: 'minecraft:feather',
+    });
+    expect(data(boomerang, 'demo:ruby_knife_from_feather')).toMatchObject({
+      ingredients: ['minecraft:feather', 'minecraft:stick'],
+      result: { count: 1 },
+    });
+    const noRecipe = build(starter('throwable'), { ingredient: 'none' });
+    expect(noRecipe.elements.some((entry) => entry.kind === 'minecraft:recipe')).toBe(false);
   });
 
   it('Enchantment: targets, levels, rarity, effect and tags follow the values', () => {

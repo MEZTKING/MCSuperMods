@@ -1,0 +1,35 @@
+{
+  "data": {
+    "category": "beneficial",
+    "color": 2662496,
+    "components": {
+      "msm:on_tick": {
+        "event": "msm_examples:antidote_tick",
+        "interval_ticks": 20
+      }
+    },
+    "display_name": "Antidote",
+    "events": {
+      "msm_examples:antidote_tick": {
+        "actions": [
+          {
+            "handler": "msm_examples:antidote_cure",
+            "type": "run_script"
+          }
+        ]
+      }
+    },
+    "format": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:antidote",
+  "kind": "msm:effect",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A status effect whose behaviour is a script. msm:on_tick fires msm_examples:antidote_tick once a second, and its run_script action calls the handler msm_examples:antidote_cure. In an effect's events, other (and self) is the mob or player that has the effect. Its icon is textures/mob_effect/antidote.png. Give it with /effect give @s msm_examples:antidote 30 1.",
+    "tags": [
+      "example",
+      "scripts"
+    ]
+  }
+}

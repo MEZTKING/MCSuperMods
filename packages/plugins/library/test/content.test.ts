@@ -36,6 +36,8 @@ const STARTER_IDS = [
   'weapon',
   'consumable',
   'totem',
+  'status-effect',
+  'throwable',
   'enchantment',
   'painting',
   'music-disc-item',
@@ -52,7 +54,7 @@ const STARTER_IDS = [
 ];
 
 /**
- * The 60 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
+ * The 62 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
  * items, entities, models and animations and scripting plugins, in per-kind example order.
  */
 const KIND_IDS = [
@@ -112,6 +114,7 @@ const KIND_IDS = [
   'minecraft:worldgen/material_rule',
   'msm:block',
   'msm:item',
+  'msm:effect',
   'msm:mod',
   'msm:entity',
   'msm:geo_model',
@@ -159,7 +162,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the twenty-five starters in order', () => {
+  it('lists the twenty-seven starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -169,7 +172,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(21).fill('content'),
+      ...Array<string>(23).fill('content'),
     ]);
   });
 
@@ -413,8 +416,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 61 per-kind examples, one per built-in kind, 6 behaviour examples and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(61);
+  it('has 62 per-kind examples, one per built-in kind, 7 behaviour examples and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(62);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -431,8 +434,9 @@ describe('examples', () => {
     expect(scriptBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_script_schedule',
       'example_msm_script_action',
+      'example_msm_scripted_effect',
     ]);
-    expect(libraryExamples).toHaveLength(71);
+    expect(libraryExamples).toHaveLength(73);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -487,6 +491,11 @@ describe('every starter and example', () => {
       }
       if (entry.id === 'consumable') {
         for (const element of build(entry, 'demo', { kind: 'charm' }).elements) {
+          used.add(element.kind);
+        }
+      }
+      if (entry.id === 'status-effect') {
+        for (const element of build(entry, 'demo', { behaviour: 'function' }).elements) {
           used.add(element.kind);
         }
       }
@@ -574,8 +583,12 @@ describe('every starter and example', () => {
         const paintingId = id.replace(':painting/', ':');
         // Equipment layers name `<ns>:<name>` for textures/entity/equipment/<layer>/<name>.png.
         const equipmentId = id.replace(/:entity\/equipment\/[a-z_]+\//, ':');
+        // An effect icon is textures/mob_effect/<path>.png of the effect `<ns>:<path>`.
+        const effectId = id.replace(':mob_effect/', ':');
         expect(
-          [id, paintingId, equipmentId].some((candidate) => text.includes(`"${candidate}"`)),
+          [id, paintingId, equipmentId, effectId].some((candidate) =>
+            text.includes(`"${candidate}"`),
+          ),
           id,
         ).toBe(true);
       }

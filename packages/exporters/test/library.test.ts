@@ -391,6 +391,65 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
       ingredient: 'minecraft:sweet_berries',
     },
   ],
+  // ADR 0055 D11: a drink, a flask, a heal effect with no item, the other behaviours.
+  'status-effect': [
+    {
+      effect_name: 'Frost Bite',
+      colour: '#2454c4',
+      category: 'harmful',
+      behaviour: 'hurt',
+      amount: 2,
+      stat_1: 'minecraft:movement_speed',
+      stat_1_amount: -15,
+      stat_2: 'minecraft:attack_damage',
+      stat_2_amount: -1,
+      source: 'flask',
+      level: 2,
+      ingredient: 'minecraft:fermented_spider_eye',
+    },
+    { effect_name: 'Mending Light', behaviour: 'heal', source: 'none', stat_1: 'none' },
+    {
+      effect_name: 'Star Glow',
+      category: 'neutral',
+      behaviour: 'particles',
+      particle: 'minecraft:electric_spark',
+      stat_1: 'minecraft:scale',
+      stat_1_amount: 25,
+      stat_2: 'minecraft:gravity',
+      stat_2_amount: -30,
+      source: 'drink',
+      ingredient: 'minecraft:amethyst_shard',
+    },
+    { effect_name: 'Arcane Pulse', behaviour: 'function', faster_per_level: false },
+  ],
+  // ADR 0056 D8: every style, weight and hit.
+  throwable: [
+    {
+      throwable_name: 'Snow Ball',
+      style: 'ball',
+      damage: 0,
+      gravity: 'floaty',
+      on_hit: 'effect',
+      hit_effect: 'minecraft:slowness',
+      ingredient: 'minecraft:packed_ice',
+    },
+    {
+      throwable_name: 'Sky Boomerang',
+      style: 'boomerang',
+      stack_size: 1,
+      hold_to_throw: true,
+      on_hit: 'knock_up',
+      ingredient: 'minecraft:feather',
+    },
+    { throwable_name: 'Ember Bomb', style: 'bomb', gravity: 'heavy', speed: 1 },
+    {
+      throwable_name: 'Web Knife',
+      style: 'knife',
+      on_hit: 'place_block',
+      hit_block: 'minecraft:cobweb',
+    },
+    { throwable_name: 'Spark Star', style: 'ball', on_hit: 'burst', burst_damage: 0 },
+  ],
   'scripted-item': [
     { item_name: 'Storm Rod', behaviour: 'lightning', lightning_distance: 16 },
     { item_name: 'Cloud Feather', behaviour: 'launch', launch_height: 12, cooldown_seconds: 5 },
@@ -450,6 +509,8 @@ const MIRRORED_STARTERS = [
   'painting',
   'music-disc-item',
   'dimension',
+  'status-effect',
+  'throwable',
 ];
 
 function kindRegistry(): ElementKindRegistry {
@@ -1090,6 +1151,7 @@ describe('library bundles', () => {
       'example_msm_script demo:lodestone_compass',
       'example_msm_script_schedule demo:amethyst_spiral',
       'example_msm_script_action demo:chime_handler',
+      'example_msm_scripted_effect demo:antidote_handler',
     ]);
   });
 
@@ -1209,6 +1271,8 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         'minecraft:tag/enchantment': 'tag/enchantment',
       };
       const flows = [
+        'status-effect',
+        'throwable',
         'gear-set',
         'weapon',
         'consumable',
@@ -1244,6 +1308,98 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           if (choice.value !== 'none')
             expect(effects.has(choice.value.slice(10)), choice.value).toBe(true);
         }
+      }
+    });
+
+    it('the Status effect and Throwable flows name only stats, effects, particles, blocks, items and sounds the target has (ADRs 0055, 0056)', () => {
+      const vanilla = (registry: string) => new Set(context.vanilla[registry] ?? []);
+      const choices = (starter: string, id: string): string[] => {
+        const parameter = (starterById(starter).parameters ?? []).find((entry) => entry.id === id);
+        return parameter?.type === 'choice'
+          ? parameter.choices.map((choice) => choice.value).filter((value) => value.includes(':'))
+          : [];
+      };
+      const has = (registry: string, ids: readonly string[]) => {
+        expect(ids.length, registry).toBeGreaterThan(0);
+        for (const id of ids) {
+          expect(vanilla(registry).has(id.replace(/^minecraft:/, '')), `${registry} ${id}`).toBe(
+            true,
+          );
+        }
+      };
+      has('attribute', [
+        ...choices('status-effect', 'stat_1'),
+        ...choices('status-effect', 'stat_2'),
+      ]);
+      has('particle_type', choices('status-effect', 'particle'));
+      has('item', choices('status-effect', 'ingredient'));
+      has('mob_effect', choices('throwable', 'hit_effect'));
+      has('block', choices('throwable', 'hit_block'));
+      has('item', choices('throwable', 'ingredient'));
+      // Every vanilla id the built bundles name, over all answers: sounds, particles, items,
+      // attributes, effects and blocks.
+      const fields: Record<string, string> = {
+        sound: 'sound_event',
+        particle: 'particle_type',
+        attribute: 'attribute',
+        effect: 'mob_effect',
+        state: 'block',
+        converts_to: 'item',
+      };
+      for (const id of ['status-effect', 'throwable']) {
+        const flow = starterById(id);
+        for (const values of [{}, ...(WIZARD_ALTERNATIVES[id] ?? []), minimumValues(flow)]) {
+          const walk = (value: unknown, key: string): void => {
+            if (typeof value === 'string' && key in fields && value.startsWith('minecraft:')) {
+              const registry = fields[key] as string;
+              expect(vanilla(registry).has(value.slice(10)), `${id} ${key} ${value}`).toBe(true);
+            } else if (Array.isArray(value)) {
+              for (const item of value) walk(item, key);
+            } else if (typeof value === 'object' && value !== null) {
+              for (const [name, child] of Object.entries(value)) walk(child, name);
+            }
+          };
+          for (const entry of buildEntry(flow, 'demo', 'Flow', bundle.target, values).elements) {
+            walk(entry.data, '');
+          }
+        }
+      }
+    });
+
+    it('the Status effect flow exports the effect, its icon and its drink or flask in the Fabric mod jar (ADR 0055)', async () => {
+      const cases: [Record<string, Json>, string | undefined][] = [
+        [{}, 'ruby_rush_tonic'],
+        [{ source: 'flask' }, 'ruby_rush_flask'],
+        [{ source: 'none', behaviour: 'heal' }, undefined],
+      ];
+      for (const [values, item] of cases) {
+        const built = await buildProject('Effect', 'demo', [
+          buildEntry(starterById('status-effect'), 'demo', 'Effect', bundle.target, values),
+        ]);
+        const { resourceFiles, jarFiles } = await checkProject(bundle, context, built);
+        expect(resourceFiles).toContain('assets/demo/textures/mob_effect/ruby_rush.png');
+        expect(jarFiles).toContain('msm/demo/effect/ruby_rush.json');
+        expect(jarFiles).toContain('assets/demo/textures/mob_effect/ruby_rush.png');
+        if (item === undefined) {
+          expect(jarFiles.some((path) => path.startsWith('msm/demo/item/'))).toBe(false);
+        } else {
+          expect(jarFiles).toContain(`msm/demo/item/${item}.json`);
+          expect(resourceFiles).toContain(`assets/demo/textures/item/${item}.png`);
+        }
+      }
+    });
+
+    it('the Throwable flow exports each style as an item with msm:throwable (ADR 0056)', async () => {
+      for (const style of ['ball', 'knife', 'boomerang', 'bomb']) {
+        const built = await buildProject('Throw', 'demo', [
+          buildEntry(starterById('throwable'), 'demo', 'Throw', bundle.target, { style }),
+        ]);
+        const { jarFiles } = await checkProject(bundle, context, built);
+        expect(jarFiles, style).toContain('msm/demo/item/ruby_knife.json');
+        const knife = built.project.namespaces
+          .flatMap((namespace) => namespace.elements)
+          .find((element) => element.id === 'demo:ruby_knife');
+        expect(JSON.stringify(knife?.data), style).toContain('msm:throwable');
       }
     });
 

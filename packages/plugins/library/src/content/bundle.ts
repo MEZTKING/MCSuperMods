@@ -78,6 +78,7 @@ export const KINDS = Object.freeze({
   block: 'msm:block',
   item: 'msm:item',
   mod: 'msm:mod',
+  effect: 'msm:effect',
   entity: 'msm:entity',
   geoModel: 'msm:geo_model',
   animation: 'msm:animation',

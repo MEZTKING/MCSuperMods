@@ -1,11 +1,13 @@
 /**
- * Phase 4 examples (ADR 0025): one per-kind example each for `msm:block`, `msm:item` and
+ * Phase 4 examples (ADR 0025): one per-kind example each for `msm:block`, `msm:item`,
+ * `msm:effect` (ADR 0055: the Frost bomb, a throwable that gives a custom slowing effect) and
  * `msm:mod`, plus behaviour examples (a tool with its recipe, and an event chain that runs a
  * function). New blocks and items need the Fabric mod jar export; the vanilla pack exports
  * carry only their models, textures, language keys, loot tables and tags.
  */
 import type { ExampleProject } from '@msm/plugin-api';
 import { COLOURS, element, KINDS, modIdFromNamespace, rl, texture } from '../content/bundle';
+import { colourInt, effectIconAsset } from '../content/effects';
 import { defineExample } from './define';
 
 /** The per-kind examples of the blocks and items plugin, in kind order. */
@@ -159,6 +161,117 @@ export const blocksItemsExamples: readonly ExampleProject[] = [
           ),
         ],
         assets: [],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_msm_effect',
+    title: 'Frost bomb',
+    description:
+      'A custom Frostbite effect that slows and chills its holder, and a throwable Frost Bomb that gives it to the mob it hits.',
+    kind: KINDS.effect,
+    category: 'Effects',
+    tags: ['status effect', 'throwable', 'on_tick', 'apply_effect', 'mod'],
+    build: ({ namespace }) => {
+      const frostbite = rl(namespace, 'frostbite');
+      const chill = rl(namespace, 'frostbite_chill');
+      const bomb = rl(namespace, 'frost_bomb');
+      const hit = rl(namespace, 'frost_bomb_hit');
+      const shatter = rl(namespace, 'frost_bomb_shatter');
+      const bombModel = rl(namespace, 'item/frost_bomb');
+      const burst = {
+        type: 'spawn_particle',
+        particle: 'minecraft:snowflake',
+        count: 12,
+        spread: 0.5,
+      };
+      const glass = { type: 'play_sound', sound: 'minecraft:block.glass.break', pitch: 1.4 };
+      return {
+        elements: [
+          element(
+            frostbite,
+            KINDS.effect,
+            {
+              format: 1,
+              display_name: 'Frostbite',
+              category: 'harmful',
+              color: colourInt(COLOURS.sapphire),
+              attribute_modifiers: [
+                {
+                  attribute: 'minecraft:movement_speed',
+                  amount: -0.15,
+                  operation: 'add_multiplied_total',
+                },
+              ],
+              components: {
+                'msm:on_tick': { event: chill, interval_ticks: 40, faster_per_level: true },
+              },
+              events: {
+                [chill]: {
+                  actions: [
+                    { type: 'damage', amount: 1 },
+                    {
+                      type: 'spawn_particle',
+                      particle: 'minecraft:snowflake',
+                      count: 4,
+                      spread: 0.3,
+                    },
+                  ],
+                },
+              },
+            },
+            `A custom status effect. category harmful shows its name in red and lets milk clear it; color tints its swirling particles. attribute_modifiers makes the holder 15 per cent slower per level, and the change goes when the effect ends. msm:on_tick fires ${chill} every 40 ticks (faster at higher levels), which hurts the holder by half a heart of magic damage and shows snowflakes. Its icon is textures/mob_effect/frostbite.png. Custom effects need the Fabric mod jar export.`,
+          ),
+          element(
+            bomb,
+            KINDS.item,
+            {
+              format: 1,
+              model: bombModel,
+              display_name: 'Frost Bomb',
+              max_stack_size: 16,
+              creative_tab: 'minecraft:combat',
+              components: {
+                'msm:throwable': {
+                  speed: 1.2,
+                  gravity: 0.05,
+                  damage: 1,
+                  after_throw: 'consume',
+                  sound: 'minecraft:entity.snowball.throw',
+                  on_hit_entity: { event: hit },
+                  on_hit_block: { event: shatter },
+                },
+              },
+              events: {
+                [hit]: {
+                  actions: [
+                    {
+                      type: 'apply_effect',
+                      effect: frostbite,
+                      seconds: 8,
+                      amplifier: 1,
+                      target: 'other',
+                    },
+                    glass,
+                    burst,
+                  ],
+                },
+                [shatter]: { actions: [glass, burst] },
+              },
+            },
+            `A throwable item. msm:throwable throws it on use, a little slower and heavier than a snowball, and each throw uses one (after_throw consume). Hitting a mob deals half a heart and fires ${hit}, whose apply_effect gives the mob hit (target other) Frostbite II for 8 seconds; hitting a block fires ${shatter}. In flight it is drawn as its item picture.`,
+          ),
+          element(
+            bombModel,
+            KINDS.model,
+            { parent: 'minecraft:item/generated', textures: { layer0: bombModel } },
+            'A flat item model drawn from textures/item/frost_bomb.png.',
+          ),
+        ],
+        assets: [
+          effectIconAsset(namespace, 'frostbite', COLOURS.sapphire),
+          texture(namespace, 'item/frost_bomb', 'ball', COLOURS.sapphire),
+        ],
       };
     },
   }),

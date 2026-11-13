@@ -33,6 +33,8 @@ import { recipePackBundle } from './recipe-pack';
 import { SCRIPTED_ITEM_PARAMETERS, scriptedItemBundle } from './scripted-item';
 import { scriptedOreBundle } from './scripted-ore';
 import { SIMPLE_BLOCK_PARAMETERS, simpleBlockBundle } from './simple-block';
+import { STATUS_EFFECT_PARAMETERS, statusEffectBundle } from './status-effect';
+import { THROWABLE_PARAMETERS, throwableBundle } from './throwable';
 import { TOTEM_PARAMETERS, totemBundle } from './totem';
 import { WEAPON_PARAMETERS, weaponBundle } from './weapon';
 import { worldgenPackBundle } from './worldgen-pack';
@@ -65,6 +67,8 @@ export {
 } from './scripted-item';
 export { scriptedOreBundle, scriptedOreIds } from './scripted-ore';
 export { SIMPLE_BLOCK_PARAMETERS, simpleBlockBundle } from './simple-block';
+export { STATUS_EFFECT_PARAMETERS, statusEffectBundle } from './status-effect';
+export { THROWABLE_PARAMETERS, throwableBundle } from './throwable';
 export { TOTEM_PARAMETERS, totemBundle } from './totem';
 export { WEAPON_PARAMETERS, WEAPON_TYPES, weaponBundle } from './weapon';
 export { worldgenPackBundle } from './worldgen-pack';
@@ -256,6 +260,40 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       creator: {
         group: 'gear',
         blurb: 'A totem that saves its holder from death and gives effects.',
+      },
+    },
+  ),
+  starter(
+    'status-effect',
+    'Status effect',
+    'A new status effect with its own name, colour and icon: what it does every few seconds, the stats it changes and how players get it (a drink or a throwable flask, with an optional recipe). Custom effects need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    statusEffectBundle,
+    {
+      parameters: STATUS_EFFECT_PARAMETERS,
+      creator: {
+        // ADR 0055 D11 names a new group "magic"; plugin API 1.6.0 has no such CreatorGroup
+        // yet, so the flow is listed under "gear" until the API gains it.
+        group: 'gear',
+        blurb:
+          'A status effect with its icon, what it does, its stat changes and a drink or flask.',
+      },
+      probeValues: [{ behaviour: 'function' }],
+    },
+  ),
+  starter(
+    'throwable',
+    'Throwable',
+    'An item you throw: a ball, a knife you pick up again, a boomerang that comes back or a bomb, with its damage, speed, weight and what happens when it hits, a texture and model, and an optional recipe. New items need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    throwableBundle,
+    {
+      parameters: THROWABLE_PARAMETERS,
+      creator: {
+        group: 'gear',
+        blurb: 'Something to throw: a ball, knife, boomerang or bomb and what it does on a hit.',
       },
     },
   ),

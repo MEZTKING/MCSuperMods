@@ -1,0 +1,25 @@
+{
+  "data": {
+    "components": {
+      "msm:throwable": {
+        "after_throw": "drop",
+        "damage": 4,
+        "gravity": 0.03,
+        "sound": "minecraft:item.trident.throw",
+        "speed": 1.5
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Ruby Knife",
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "msm_starter:item/ruby_knife"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_knife",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A throwable: msm:throwable throws it at 1.5 blocks per tick with gravity 0.03 at once on use, dealing 4 half hearts to the mob hit. It is left where it lands, to be picked up again (after_throw drop). In flight it is drawn as its item picture."
+  }
+}

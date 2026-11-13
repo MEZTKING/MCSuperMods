@@ -1,0 +1,39 @@
+{
+  "data": {
+    "attribute_modifiers": [
+      {
+        "amount": 0.2,
+        "attribute": "minecraft:movement_speed",
+        "operation": "add_multiplied_total"
+      }
+    ],
+    "category": "beneficial",
+    "color": 12852276,
+    "components": {
+      "msm:on_tick": {
+        "event": "msm_starter:ruby_rush_tick",
+        "faster_per_level": true,
+        "interval_ticks": 40
+      }
+    },
+    "display_name": "Ruby Rush",
+    "events": {
+      "msm_starter:ruby_rush_tick": {
+        "actions": [
+          {
+            "amount": 1,
+            "type": "heal"
+          }
+        ]
+      }
+    },
+    "format": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_rush",
+  "kind": "msm:effect",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A custom status effect, a good one (category beneficial) shown in the colour #c41c34. msm:on_tick fires msm_starter:ruby_rush_tick every 2 seconds (interval_ticks 40), more often at higher levels (faster_per_level: level II twice as often); its heal action gives the holder 1 half heart. Stat changes (attribute_modifiers): movement speed +20 per cent per level; they are removed when the effect ends. Its icon is textures/mob_effect/ruby_rush.png; paint over the placeholder to restyle it. Custom effects need the Fabric mod jar export."
+  }
+}
