@@ -86,6 +86,23 @@ The `run_script` action lets a block, item or entity event call a script, so peo
 
 A [status effect](effects-and-throwables.md) runs a script every few seconds while it is active: in the Effect Studio, choose **New event** next to **While active**, add a `run_script` action to that event and pick the handler. The handler's `e.entity` and `e.other` are both the holder, so `e.entity.effectLevel("<namespace>:<effect name>")` gives the effect's level (0 when the holder no longer has it) and `e.entity.removeEffect("minecraft:poison")` cures poison. The example **Script: scripted effect** (Help → Examples…) is an antidote that works this way. In a throwable's **On hit entity** event, `e.player` is the thrower and `e.other` the mob or player hit.
 
+## Commands as an entity
+
+`world.runCommand` and `world.runFunction` run at the world spawn point with no `@s`, unless you pass a position: `e.world.runCommand("setblock ~ ~1 ~ minecraft:glowstone", e.block.pos)` uses `at` as `~ ~ ~`. To run a command "as" something, use the entity itself: `e.player.runCommand("tag @s add rewarded")` and `e.entity.runFunction("mymod:reward")` run as and at that entity, so `@s` means it and `~ ~ ~` is where it stands. The same works for any mob from `entitiesNear`. Use `world.runCommand` for things that belong to a place and `entity.runCommand` for things that belong to a creature.
+
+## What cancelling restores
+
+`e.cancel()` stops the server doing something, but the player's game may already have guessed the result. So after a cancel the runtime sends the truth back:
+
+| Cancelled | Sent again |
+|---|---|
+| `block.interact`, `item.use`, `entity.interact`, `block.break` | the player's whole inventory, so a held stack's count and durability return to what the server has |
+| `block.interact` that would have placed a block | the six neighbours of the place, so a block the client drew is taken away |
+| `block.break` | the broken block's block entity (a chest's contents, a sign's text), not only the block |
+| `item.use` with an item that has a cooldown | the item's cooldown is cleared, so the item is not shown as used (unless the server itself has it on cooldown) |
+
+What it cannot undo is a client guess about an entity interaction (a bucket, shears, a name tag), which may show for a moment until the next update.
+
 ## Typings and the `.msm/` folder
 
 The editor knows the API from a typings file, `msm-runtime.d.ts`, made from the same description the runtime is tested against. MCSuperMods also writes it into the project as `.msm/msm-runtime.d.ts` when you open or create a project, so you can see which API version the project was last edited with, or point another editor (for example Visual Studio Code) at it. You never need to edit it; MCSuperMods rewrites it when it changes.

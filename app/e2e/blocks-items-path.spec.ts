@@ -16,6 +16,12 @@
  * throwable in the Item Studio's Throwable section ("Left where it lands"), Undo turns the
  * choice and then the section back off, and the jar carries both definitions.
  *
+ * A third test (ADR 0057) adds the "Sounds" template, finds the project's sound key at the top of
+ * a Play sound action's completion list, picks it, and checks the jar: the key is a plain
+ * string in the block definition and `assets/<ns>/sounds.json` is in the jar. It counts errors
+ * only: an export can still report harmless `schema.unknown-id` warnings for project sounds
+ * inside `msm/` files.
+ *
  * "Test in Minecraft" is not covered here. Preview and WebGL are unavailable headless.
  */
 
@@ -467,4 +473,78 @@ test('blocks and items: Effect Studio tick action and an item throwable section,
 
   await window.getByTestId('toolbar-save').click();
   await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
+});
+
+test('blocks and items: a sounds element, its key picked from the completion list, jar export', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-sounds-'));
+  const folders = {
+    projectDir: join(base, NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  mkdirSync(outputDir, { recursive: true });
+  const launched = await launchApp({ reuse: folders });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-new-project').click();
+  await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
+
+  // The sounds element: one per namespace, its name is fixed to "sounds". ---------------------
+  const soundKey = `${NAMESPACE}:block.example.chime`;
+  await window.getByTestId('toolbar-add-element').click();
+  const dialog = window.getByTestId('new-element-dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByTestId('new-element-filter').fill('sounds');
+  await dialog.getByTestId('template-sounds').check();
+  await dialog.getByTestId('new-element-dialog-submit').click();
+  await expect(dialog).toBeHidden();
+  await expect(window.getByTestId(`element-row-${NAMESPACE}:sounds`)).toBeVisible();
+
+  // A block whose event plays the project's sound. -------------------------------------------
+  await addFromTemplate(window, 'simple block', 'msm_block_simple', BLOCK_PATH);
+  const block = window.getByTestId('block-studio');
+  await expect(block).toBeVisible();
+  const events = block.getByTestId('msm-events');
+  await events.getByLabel('New event id').fill(EVENT_ID);
+  await events.getByRole('button', { name: 'Add event' }).click();
+  const event = events.getByTestId(`msm-event-${EVENT_ID}`);
+  await event.getByRole('button', { name: `Add action to ${EVENT_ID}` }).click();
+  const sound = event
+    .getByTestId('msm-action-0')
+    .getByLabel(`${EVENT_ID} action 1 sound`, { exact: true });
+  await expect(sound).toBeVisible();
+  // The completion list is a datalist: the project's key is in it, and before the vanilla ones.
+  const listId = await sound.getAttribute('list');
+  expect(listId).not.toBeNull();
+  const options = await window
+    .locator(`datalist[id="${listId}"] option`)
+    .evaluateAll((nodes) => nodes.map((node) => (node as HTMLOptionElement).value));
+  expect(options).toContain(soundKey);
+  expect(options.indexOf(soundKey)).toBeLessThan(
+    options.indexOf('minecraft:block.amethyst_block.chime'),
+  );
+  await sound.fill(soundKey);
+  await sound.press('Enter');
+  await expect(sound).toHaveValue(soundKey);
+  await block.getByTestId('block-on-interact').selectOption(EVENT_ID);
+  // Errors only (see the header comment).
+  await expect(await problemRows(window, 'error')).toHaveCount(0);
+
+  // The jar holds the plain key and the sounds file. -----------------------------------------
+  const palette = await openPalette(window, 'fabric mod jar');
+  await palette.getByTestId('command-exportFabricJar').click();
+  const jarDialog = window.getByTestId('fabric-jar-dialog');
+  await expect(jarDialog).toBeVisible();
+  await jarDialog.getByTestId('fabric-jar-dialog-submit').click();
+  await expect(jarDialog).toBeHidden();
+  const jarPath = join(folders.outDir, `${NAMESPACE}.jar`);
+  await expect.poll(() => isCompleteZip(jarPath), { timeout: 20_000 }).toBe(true);
+  const jar = readZip(jarPath);
+  const definition = zipJson(jar, `msm/${NAMESPACE}/block/${BLOCK_PATH}.json`) as {
+    events?: Record<string, { actions?: Record<string, unknown>[] }>;
+  };
+  expect(definition.events?.[EVENT_ID]?.actions).toEqual([{ type: 'play_sound', sound: soundKey }]);
+  const sounds = zipJson(jar, `assets/${NAMESPACE}/sounds.json`) as Record<string, unknown>;
+  expect(Object.keys(sounds)).toContain('block.example.chime');
 });

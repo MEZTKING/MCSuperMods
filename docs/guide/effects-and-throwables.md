@@ -80,7 +80,7 @@ A throwable cannot also be armour, a ranged weapon, a shield, a consumable, food
 
 ## Sounds
 
-Custom sound events are not registered in the game yet, so the sound fields of MCSuperMods' own data (**Sound when added**, **Throw sound**, the **Play sound** action) take vanilla sounds only, such as `minecraft:entity.snowball.throw`; a sound of your project's `sounds` element plays nothing there. In vanilla fields that take a sound event (a jukebox song, the `sound` of a vanilla consumable component), a sound of your project works when written as `{ "sound_id": "<namespace>:<sound name>" }`; written as a plain string, **Problems** reports an error that says so.
+The runtime registers every sound of your project's `sounds` element as a sound event when the game starts, so the sound fields of MCSuperMods' own data (**Sound when added**, **Throw sound**, the **Play sound** action) take your own sounds as well as vanilla ones, and their pickers list your project's sounds first. In vanilla fields that take a sound event (a jukebox song, the `sound` of a vanilla consumable component), write a sound of your project as `{ "sound_id": "<namespace>:<sound name>" }`; written as a plain string, **Problems** reports an error that says so, because the same project can also be exported as plain vanilla packs, where nothing registers it.
 
 ## Limits
 
@@ -108,4 +108,4 @@ Export the **Fabric mod jar** or use **Test in Minecraft**; **Problems** must sh
 | The tick event never runs | **While active** must name the event, and the event needs actions. |
 | A stat change does nothing | The `[msm_runtime]` lines name an unknown attribute; pick the stat from the list. |
 | The throwable is not thrown | It may also be armour, food, a consumable, a shield, a ranged weapon or a mace; **Problems** shows the conflict. |
-| A sound plays nothing | Use a vanilla sound in **Sound when added**, **Throw sound** and **Play sound** (see [Sounds](#sounds)). |
+| A sound plays nothing | Check the sound's name in your `sounds` element and that its `.ogg` file is in the project; the `[msm_runtime]` lines name an unknown sound event (see [Sounds](#sounds)). |

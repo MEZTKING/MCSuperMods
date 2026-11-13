@@ -39,6 +39,7 @@ Selecting an entity opens the Entity Studio. Empty fields use the defaults. **Ad
 - **Stats**: **Health** (default 20), **Speed** (default 0.25; a zombie has 0.23, so small changes matter), **Follow range** (how far it notices targets, default 16), **Knockback resistance** (0 to 1), **Swims** (floats up in water instead of sinking; on by default) and **Fire immune**.
 - **Attack**: **Attacks in melee** with **Damage** and **Knockback**, and **On attack**, an event that runs after each hit. Without it, a melee goal does nothing.
 - **Behaviour**: the goals (see below).
+- **Sounds**: the sounds the mob makes (see [Mob sounds](#mob-sounds)).
 - **Spawning**: natural spawning (see [Spawning](#spawning)).
 - **Spawn egg**: see [Spawn eggs](#spawn-eggs).
 - **Events**: **On hurt**, **On death** and **On interact** choose events, and the events and their actions are edited below them as for blocks (see [Events and play_animation](#events-and-play_animation)).
@@ -57,6 +58,10 @@ Goals are what the mob decides to do. They are listed in priority order: the fir
 | **Follow** | `follow` | Follows the entity types in **Follows** within its range and stops its stop distance away. |
 
 A typical monster lists **Melee attack** first, then **Wander**, **Look at player** and **Look around**; a timid critter lists **Flee** first. A melee goal with neither targets nor **Fights back when hurt** never attacks, and neither does a melee goal without **Attacks in melee**; **Problems** warns about both.
+
+## Mob sounds
+
+The **Sounds** section has four pickers and a number: **Ambient sound** (made now and then while the mob lives), **Hurt sound**, **Death sound**, **Step sound** (each footstep) and **Ambient interval (ticks)** (how often the ambient sound may play; empty: the vanilla interval of mobs). Leave a picker empty and the mob keeps the vanilla sound of its base type. Each picker lists your project's own sounds first (see [Your own sounds](blocks-and-items.md#your-own-sounds)) and then the vanilla ones, so a mob can purr with `minecraft:entity.cat.purr` or growl with a file you imported. A sound id the game does not know is a warning in the game log and the default sound stays. Sounds need the runtime that ships with this release; the [Java project export](eject.md) writes the same overrides.
 
 ## Spawning
 

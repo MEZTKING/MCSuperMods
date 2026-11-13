@@ -6,7 +6,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **Your own sounds work in the game**: every key of a project's `sounds.json` is now a registered sound event, so in MCSuperMods' own fields (the **Play sound** action, an effect's or throwable's sound, mob sounds, `world.playSound` in scripts) you write the plain key, and the pickers list the project's sounds before the vanilla ones. In vanilla fields keep writing `{ "sound_id": "..." }`. A new sound key needs a game restart.
+- **Mob sounds**: the Mob Studio's new **Sounds** section sets the **Ambient sound**, **Hurt sound**, **Death sound** and **Step sound** of a mob, and the **Ambient interval (ticks)**.
+- **Blocks that react to mobs**: the actions of an **On step** event now apply to whatever stepped on the block, mob or player (`self` is the stepper, `run_function` runs as it), so a jump pad launches pigs too. The step cooldown is counted per dimension.
+- **Script commands**: `world.runCommand` and `world.runFunction` accept a position and run there (without one, at the world spawn point), and `entity.runCommand` and `entity.runFunction` run as and at the entity.
+- The Java project export writes `ModSounds.java` for the project's sounds and the mob sound overrides.
+- Plugin API 1.7.0: `JavaProjectInput.soundEvents`, the project's sound event keys for Java project generators.
+
+### Changed
+
+- The AI helper writes plain sound keys inside MCSuperMods' own data, `{ "sound_id" }` in vanilla data, and uses `entity.runCommand` to run something "as" a creature.
+- The guide chapters on blocks and items, entities, scripting and the Java project export describe the above.
+
+### Fixed
+
+- After a script cancels an interaction, the game sends the player's inventory, the six neighbours of a placement and a broken block's block entity again, and clears an item cooldown, so the client no longer shows results the server refused.
 
 ## [1.4.0] - 2026-11-13
 

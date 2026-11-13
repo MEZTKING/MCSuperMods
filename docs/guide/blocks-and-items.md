@@ -52,9 +52,9 @@ The actions (the action list shows each by its name with its id in brackets, for
 
 | Action | What it does |
 |---|---|
-| `play_sound` | Plays a sound, for example `minecraft:block.amethyst_block.chime`, with an optional volume and pitch (default 1). |
+| `play_sound` | Plays a sound, for example `minecraft:block.amethyst_block.chime` or one of your own (see [Your own sounds](#your-own-sounds)), with an optional volume and pitch (default 1). |
 | `spawn_particle` | Shows particles, for example `minecraft:glow`, at the block or the player: how many (**Count**), how far they spread and how fast they move. |
-| `run_function` | Runs a function of your data pack at that spot, as the player when there is one. This is the way to do anything the other actions cannot. |
+| `run_function` | Runs a function of your data pack at that spot, as the player when there is one (in an **On step** event: as the mob or player that stepped). This is the way to do anything the other actions cannot. |
 | `set_block_state` | Places a block, for example `minecraft:glowstone` or `minecraft:oak_log[axis=x]`, at an **Offset** from the block (for items: from the block under the player). |
 | `give_item` | Gives the player an item, optionally several. Nothing happens when no player is involved, for example for redstone. |
 | `trigger_event` | Runs another event of the same block or item. Chains stop after 16 steps. |
@@ -65,6 +65,26 @@ The actions (the action list shows each by its name with its id in brackets, for
 | `run_script` | Calls a handler that one of the project's scripts defines with `msm.actions.define`; pick it in the handler list or type its id. See [Scripting](scripting.md#run_script-from-the-events-editor). Scripts are not part of the Java project export. |
 
 **Problems** reports an event a trigger or `trigger_event` names but the element does not have (removing an event leaves its uses in place, so this is how you find them), and events that trigger each other in a loop. Both are errors.
+
+## Your own sounds
+
+A project's own sounds live in its **Sounds** element (**Add element**, category **Sounds**, one per namespace; its name is fixed to `sounds`): each key such as `block.example.chime` lists the Ogg files it plays. Import the audio with **Import assets** (see [Templates, starters and examples](templates-and-examples.md)).
+
+The game needs every key to be a registered sound event, and the runtime and the [Java project export](eject.md) register every key of the project's `sounds.json` for you (the Java project writes `ModSounds.java`). So in MCSuperMods' own fields you write the plain key, `<namespace>:block.example.chime`:
+
+- the **Play sound** action (`play_sound`) of a block, item, entity or effect event;
+- the sound fields of the Studios: an effect's **Sound when added**, a throwable's **Throw sound**, a mob's sounds (see [Mob sounds](entities-and-models.md#mob-sounds));
+- `world.playSound` in a [script](scripting.md).
+
+Their pickers list the project's sounds first, then the vanilla ones, and **Problems** accepts the key. In a vanilla field (a jukebox song, the `sound` of a vanilla consumable component) the key still has to be written as `{ "sound_id": "<namespace>:block.example.chime" }`; a plain string there is the error `schema.unregistered-sound-event`, because the same project also exports as vanilla packs, where a bare key would break the data pack.
+
+A new sound key is a registry entry, so it needs a game restart; changing the audio file or its `sounds.json` entry only needs the resource pack reloaded (F3+T). A mod that gets the sounds from an older MCSuperMods runtime logs the unknown sound and plays nothing.
+
+## Blocks that react to mobs
+
+**On step** runs when something stands on or walks onto the block: a player, a pig, a zombie or any other entity. The event's actions apply to the entity that stepped, so a **Launch (push)** with **Target** `self` throws that entity up and an **Apply effect** gives it the effect, whatever it is. With **Target** `other`, the action reaches the other entity of the event, if any. `run_function` runs as the stepper too, so `@s` is the mob. The **Step cooldown (ticks)** is counted per dimension, per block and per stepping entity, so a mob standing still is not pushed every tick, and a step in the Nether does not use up the Overworld's wait.
+
+A jump pad for everything that walks is therefore one block with **On step** pointing at an event with a `launch` and a slow falling `apply_effect`. The sample mod's `ruby_spring` block is built this way.
 
 ## Drops
 
