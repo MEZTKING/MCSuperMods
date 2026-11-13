@@ -294,6 +294,10 @@ describe('1.1.0 additions', () => {
     expectTypeOf<ItemFacts['armorMaterials']>().toEqualTypeOf<readonly string[]>();
     const facts: TargetFacts = { ...testTarget, items: { armorMaterials: ['iron'] } };
     expect(facts.items?.armorMaterials).toEqual(['iron']);
+    expect(facts.items?.compostProviders).toBeUndefined();
+    expectTypeOf<ItemFacts['compostProviders']>().toEqualTypeOf<
+      Record<string, string> | undefined
+    >();
     expect(testTarget.items).toBeUndefined();
   });
 });

@@ -52,6 +52,8 @@ export const target: Target = {
       structure: 'structure',
       dimension: 'dimension',
       worldgen: 'worldgen',
+      villager_trade: 'villager_trade',
+      trade_set: 'trade_set',
     },
   },
   dataVersion: 5127,
@@ -96,6 +98,18 @@ export const target: Target = {
       'netherite',
       'armadillo_scute',
     ],
+    // items.compostProviders: the chance a compostable item has, mapped to the vanilla
+    // context_int_provider that gives it (ADR 0060 D4). Read from the five
+    // data/minecraft/context_int_provider/compostable/*.json files of the Loom-cached merged jar
+    // (never stored in the repository): low 30/70, low_medium 50/50, medium 65/35, medium_high
+    // 85/15 (each weighted_list, one layer on an empty composter) and always_add_one (constant 1).
+    compostProviders: {
+      '30%': 'minecraft:compostable/low',
+      '50%': 'minecraft:compostable/low_medium',
+      '65%': 'minecraft:compostable/medium',
+      '85%': 'minecraft:compostable/medium_high',
+      '100%': 'minecraft:compostable/always_add_one',
+    },
     // vanillaTools (ADR 0050): the tooltip numbers of each vanilla tool, read 2026-11-07 from
     // misode/mcmeta 26.4-snapshot-7-summary item_components/data.min.json (attack damage = 1 + the attack_damage
     // modifier, attack speed = 4 + the attack_speed modifier; mining speed from minecraft:tool).

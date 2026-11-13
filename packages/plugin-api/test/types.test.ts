@@ -207,6 +207,8 @@ describe('0.3.0 additions', () => {
       | 'structure'
       | 'dimension'
       | 'worldgen'
+      | 'villager_trade'
+      | 'trade_set'
     >();
     expectTypeOf<Target['folders']['data']>().toEqualTypeOf<
       Readonly<Record<DataFolderKey, string>>
@@ -324,12 +326,36 @@ describe('0.8.0 additions', () => {
       entities: DefinitionInput[];
       effects?: DefinitionInput[];
       soundEvents?: string[];
+      biomeAdditions?: DefinitionInput[];
+      lootAdditions?: DefinitionInput[];
       geckolib: boolean;
     }>();
     expectTypeOf<JavaProjectGenerator['generate']>().toEqualTypeOf<
       (input: JavaProjectInput) => GeneratedFile[]
     >();
     expectTypeOf<Target['javaProject']>().toEqualTypeOf<JavaProjectGenerator | undefined>();
+  });
+
+  it('keeps a 1.7.0-shaped JavaProjectInput assignable (additions are optional, 1.8.0)', () => {
+    const input: JavaProjectInput = {
+      modId: 'm',
+      javaPackage: 'a.b',
+      modClassName: 'M',
+      blocks: [],
+      items: [],
+      entities: [],
+      soundEvents: ['ns:key'],
+      geckolib: false,
+    };
+    expect(input.biomeAdditions).toBeUndefined();
+    expect(input.lootAdditions).toBeUndefined();
+    const withAdditions: JavaProjectInput = {
+      ...input,
+      biomeAdditions: [{ id: 'ns:a', path: 'msm/ns/biome_addition/a.json', definition: {} }],
+      lootAdditions: [{ id: 'ns:b', path: 'msm/ns/loot_addition/b.json', definition: {} }],
+    };
+    expect(withAdditions.biomeAdditions).toHaveLength(1);
+    expect(withAdditions.lootAdditions).toHaveLength(1);
   });
 
   it('keeps a 1.6.0-shaped JavaProjectInput assignable (soundEvents is optional, 1.7.0)', () => {

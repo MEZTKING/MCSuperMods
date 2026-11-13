@@ -115,6 +115,8 @@ describe('target mc-26.3', () => {
       structure: 'structure',
       dimension: 'dimension',
       worldgen: 'worldgen',
+      villager_trade: 'villager_trade',
+      trade_set: 'trade_set',
     });
     for (const name of Object.values(target.folders.data)) {
       expect(name).not.toBe('');
@@ -144,6 +146,27 @@ describe('target mc-26.3', () => {
     for (const name of target.items?.armorMaterials ?? []) {
       expect(registries.equipment).toContain(name);
     }
+  });
+
+  it('maps the five compost chances to the vanilla providers (ADR 0060 D4)', () => {
+    expect(target.items?.compostProviders).toEqual({
+      '30%': 'minecraft:compostable/low',
+      '50%': 'minecraft:compostable/low_medium',
+      '65%': 'minecraft:compostable/medium',
+      '85%': 'minecraft:compostable/medium_high',
+      '100%': 'minecraft:compostable/always_add_one',
+    });
+  });
+
+  it('has the villager_trade and trade_set data folders, each a registry (ADR 0060 D5)', async () => {
+    expect(target.folders.data.villager_trade).toBe('villager_trade');
+    expect(target.folders.data.trade_set).toBe('trade_set');
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    expect(registries.villager_trade?.length).toBeGreaterThan(0);
+    expect(registries.trade_set?.length).toBeGreaterThan(0);
   });
 
   it('matches the vendored mcmeta data version', async () => {

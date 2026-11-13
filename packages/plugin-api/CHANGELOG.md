@@ -2,6 +2,18 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.8.0 — 2026-11-13
+
+Additions to vanilla content (ADR 0060). `API_VERSION` is `1.8.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `DataFolderKey` gains `'villager_trade'` and `'trade_set'`, so `Target.folders.data` has two more required entries.
+- `JavaProjectInput.biomeAdditions?` and `lootAdditions?: DefinitionInput[]`: the project's `msm/<namespace>/biome_addition/*.json` and `loot_addition/*.json` definitions, in a stable order, for generators that emit the `BiomeModifications` calls and the loot table listener. Optional; absent means none.
+- `ItemFacts.compostProviders?: Record<string, string>`: the compost chance as the editor shows it (`30%`) mapped to the vanilla `context_int_provider` id for the `minecraft:compostable` component. Optional.
+
+### Migration from 1.7.0
+
+A target (or a test fixture building a `Target`) must add `villager_trade` and `trade_set` to `folders.data`, because `Record<DataFolderKey, string>` is exhaustive; the vanilla names are `villager_trade` and `trade_set`. A generator that reads the new input fields should declare `^1.8.0` and treat absent values as empty; generators written earlier ignore them.
+
 ## 1.7.0 — 2026-11-13
 
 Project sound events (ADR 0057). `API_VERSION` is `1.7.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

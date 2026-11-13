@@ -104,6 +104,9 @@ export type ResourceFolderKey =
  * - `worldgen`: the parent folder of every world generation registry folder; worldgen kinds
  *   append `/<registry>`, for example `<worldgen>/biome`, exactly as tag kinds append to
  *   `tags`. Since 0.5.0.
+ * - `villager_trade`: villager trades. Since 1.8.0 (ADR 0060).
+ * - `trade_set`: trade sets, the pools of trades a villager level draws from. Since 1.8.0
+ *   (ADR 0060).
  */
 export type DataFolderKey =
   | 'recipe'
@@ -125,7 +128,9 @@ export type DataFolderKey =
   | 'dialog'
   | 'structure'
   | 'dimension'
-  | 'worldgen';
+  | 'worldgen'
+  | 'villager_trade'
+  | 'trade_set';
 
 /**
  * World generation facts of a target. Since 0.5.0.
@@ -181,6 +186,13 @@ export interface ItemFacts {
    * name against this list.
    */
   armorMaterials: readonly string[];
+  /**
+   * The vanilla compost chance providers of the target, keyed by the chance as the editor
+   * shows it (for example `30%`) and valued with the `context_int_provider` id the
+   * `minecraft:compostable` component's `layers` field takes. Optional: absent means the
+   * target offers no friendly compost chances. Since 1.8.0 (ADR 0060 D4, D8).
+   */
+  compostProviders?: Record<string, string>;
   /**
    * How the target's vanilla bow and crossbow item definitions show the pull, so a custom bow
    * or crossbow can animate the same way (scaled by its draw speed). Without it they show one
@@ -359,6 +371,19 @@ export interface JavaProjectInput {
    * versions and hosts that do not set it keep working. Since 1.7.0 (ADR 0057).
    */
   soundEvents?: string[];
+  /**
+   * The project's biome addition definitions (`msm/<namespace>/biome_addition/*.json`), in a
+   * stable order, for generators that emit the `BiomeModifications` calls. Optional: absent
+   * means the same as an empty array, so generators written for earlier versions and hosts
+   * that do not set it keep working. Since 1.8.0 (ADR 0060).
+   */
+  biomeAdditions?: DefinitionInput[];
+  /**
+   * The project's loot addition definitions (`msm/<namespace>/loot_addition/*.json`), in a
+   * stable order, for generators that emit the loot table `MODIFY` listener. Optional: absent
+   * means the same as an empty array. Since 1.8.0 (ADR 0060).
+   */
+  lootAdditions?: DefinitionInput[];
   /** `true` when the project has entities and the target has {@link TargetFacts.geckolib} facts. */
   geckolib: boolean;
 }

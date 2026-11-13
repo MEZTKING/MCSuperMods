@@ -41,6 +41,8 @@ export const testTarget: TargetFacts = {
       structure: 'structure',
       dimension: 'dimension',
       worldgen: 'worldgen',
+      villager_trade: 'villager_trade',
+      trade_set: 'trade_set',
     },
   },
   dataVersion: 1,
