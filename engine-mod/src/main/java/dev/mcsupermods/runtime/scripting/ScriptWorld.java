@@ -25,7 +25,9 @@ import org.mozilla.javascript.ScriptRuntime;
 
 /**
  * {@code World} (ADR 0032 D2) over a {@link ServerLevel}. Commands and functions run as the server with permission
- * level 2 (as {@code run_function} actions do) and suppressed output.
+ * level 2 (as {@code run_function} actions do) and suppressed output, at the world spawn point with no {@code @s}, or
+ * at the optional {@code at} position (ADR 0058 D2). {@code Entity.runCommand} and {@code Entity.runFunction} share
+ * {@link #runCommand} and {@link #runFunction}.
  */
 final class ScriptWorld {
     private ScriptWorld() {}
@@ -61,27 +63,10 @@ final class ScriptWorld {
                 l.playSound(null, at.x, at.y, at.z, sound, SoundSource.BLOCKS, volume, pitch);
                 return null;
             })
-            .method("runCommand", 1, 1, ServerLevel.class, (api, l, args) -> {
-                String command = ScriptValues.string(args, 0, "command");
-                int[] result = {0};
-                CommandSourceStack source = source(l).withCallback((success, value) -> {
-                    if (success) {
-                        result[0] += value;
-                    }
-                });
-                l.getServer().getCommands().performPrefixedCommand(source, command);
-                return result[0];
-            })
-            .method("runFunction", 1, 1, ServerLevel.class, (api, l, args) -> {
-                MinecraftServer server = l.getServer();
-                Optional<CommandFunction<CommandSourceStack>> function = server.getFunctions()
-                        .get(ScriptValues.id(ScriptValues.string(args, 0, "id"), "function id"));
-                if (function.isEmpty()) {
-                    return false;
-                }
-                server.getFunctions().execute(function.get(), source(l));
-                return true;
-            })
+            .method("runCommand", 1, 2, ServerLevel.class, (api, l, args) ->
+                    runCommand(source(l, args, 1), ScriptValues.string(args, 0, "command")))
+            .method("runFunction", 1, 2, ServerLevel.class, (api, l, args) ->
+                    runFunction(source(l, args, 1), ScriptValues.string(args, 0, "id")))
             .method("spawnEntity", 2, 2, ServerLevel.class, (api, l, args) -> {
                 String id = ScriptValues.string(args, 0, "id");
                 ScriptPos pos = ScriptPos.arg(args, 1, "pos");
@@ -101,10 +86,38 @@ final class ScriptWorld {
                 return api.array(found.stream().map(api::entity).toArray());
             });
 
-    private static CommandSourceStack source(ServerLevel level) {
-        return level.getServer().createCommandSourceStack()
+    /**
+     * The server's source in {@code level} with permission level 2 and suppressed output: at the world spawn point
+     * ({@code MinecraftServer.createCommandSourceStack()}), or at the position argument {@code at} when it is given.
+     */
+    private static CommandSourceStack source(ServerLevel level, Object[] args, int at) {
+        CommandSourceStack source = level.getServer().createCommandSourceStack()
                 .withLevel(level)
                 .withPermission(LevelBasedPermissionSet.GAMEMASTER) // permission level 2
                 .withSuppressedOutput();
+        return ScriptValues.present(args, at) ? source.withPosition(ScriptPos.arg(args, at, "at").vec()) : source;
+    }
+
+    /** Runs a command (a leading slash is allowed) and returns the summed result count of its successful parts. */
+    static int runCommand(CommandSourceStack source, String command) {
+        int[] result = {0};
+        CommandSourceStack counted = source.withCallback((success, value) -> {
+            if (success) {
+                result[0] += value;
+            }
+        });
+        source.getServer().getCommands().performPrefixedCommand(counted, command);
+        return result[0];
+    }
+
+    /** Runs a data pack function; false when no function has the id (an invalid id is a script type error). */
+    static boolean runFunction(CommandSourceStack source, String id) {
+        MinecraftServer server = source.getServer();
+        Optional<CommandFunction<CommandSourceStack>> function = server.getFunctions().get(ScriptValues.id(id, "function id"));
+        if (function.isEmpty()) {
+            return false;
+        }
+        server.getFunctions().execute(function.get(), source);
+        return true;
     }
 }

@@ -4,10 +4,12 @@ import dev.mcsupermods.runtime.events.AnimationTarget;
 import dev.mcsupermods.runtime.events.Motion;
 import dev.mcsupermods.runtime.loader.EntityDefinition;
 import java.util.Set;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -18,7 +20,8 @@ import org.mozilla.javascript.ScriptRuntime;
 /**
  * {@code Entity} (ADR 0032 D2) over any {@link Entity}; health, healing and effects apply to living entities and do
  * nothing (health 0) on others. {@code playAnimation} reaches MSM entities through {@link AnimationTarget} and does
- * nothing on others.
+ * nothing on others. {@code runCommand} and {@code runFunction} run as and at the entity (ADR 0058 D2) and do nothing
+ * (0 or false) when it is not in a server level.
  */
 final class ScriptEntity {
     private ScriptEntity() {}
@@ -101,7 +104,35 @@ final class ScriptEntity {
                 }
                 return null;
             })
-            .method("asPlayer", 0, 0, Entity.class, (api, e, args) -> e instanceof ServerPlayer p ? api.player(p) : null);
+            .method("asPlayer", 0, 0, Entity.class, (api, e, args) -> e instanceof ServerPlayer p ? api.player(p) : null)
+            .method("runCommand", 1, 1, Entity.class, (api, e, args) -> {
+                String command = ScriptValues.string(args, 0, "command");
+                CommandSourceStack source = source(e);
+                return source == null ? 0 : ScriptWorld.runCommand(source, command);
+            })
+            .method("runFunction", 1, 1, Entity.class, (api, e, args) -> {
+                String id = ScriptValues.string(args, 0, "id");
+                CommandSourceStack source = source(e);
+                return source != null && ScriptWorld.runFunction(source, id);
+            });
+
+    /**
+     * The source of {@code Entity.runCommand} and {@code Entity.runFunction} (ADR 0058 D2): the server's source as and
+     * at the entity (its level, position and rotation; {@code @s} is the entity), permission level 2, output
+     * suppressed; null when the entity is not in a server level.
+     */
+    private static CommandSourceStack source(Entity e) {
+        if (!(e.level() instanceof ServerLevel l)) {
+            return null;
+        }
+        return l.getServer().createCommandSourceStack()
+                .withLevel(l)
+                .withEntity(e)
+                .withPosition(e.position())
+                .withRotation(e.getRotationVector())
+                .withPermission(LevelBasedPermissionSet.GAMEMASTER) // permission level 2
+                .withSuppressedOutput();
+    }
 
     /** A mob effect by id (vanilla or registered from {@code msm/<ns>/effect/}); an unknown id is a script type error. */
     static Holder<MobEffect> effect(String id) {
