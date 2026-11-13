@@ -7,10 +7,11 @@ All changes to the `@msm/plugin-api` surface. The package follows semver; every 
 Status effects and throwables (ADRs 0055 and 0056). `API_VERSION` is `1.6.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
 
 - `JavaProjectInput.effects?: DefinitionInput[]`: the project's status effect definitions (`msm/<namespace>/effect/*.json`), in a stable order, for generators that emit mob effect classes. Optional; absent means none.
+- `CreatorGroup` gains `'magic'`: the Creator lists the Status effect flow under "Magic".
 
 ### Migration from 1.5.0
 
-None. A generator that reads `effects` should declare `^1.6.0` and treat an absent value as empty; generators written earlier ignore the field.
+None. A generator that reads `effects` should declare `^1.6.0` and treat an absent value as empty; generators written earlier ignore the field. A host older than 1.6.0 does not know the `magic` group: a plugin whose flow uses it should declare `^1.6.0`.
 
 ## 1.5.0 — 2026-11-07
 

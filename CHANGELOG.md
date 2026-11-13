@@ -8,21 +8,30 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **Status effects of your own**: the Creator's **Status effect** flow (new **Magic** group) makes an effect with its name, colour, icon, stat changes and what it does every few seconds (heal, hurt, particles or a function), plus a drink or a throwable flask that gives it. The new **Effect Studio** edits effects by hand: category, colour, particle, sound, stat changes per level and events when the effect starts, while it is active and when it ends. Three effect templates; paint the 18 by 18 icon with **Paint icon** or **New texture…** and the kind **Effect icon**. Custom effects work in drinks, food, totems, **Apply effect** and `/effect`; they cannot be brewed.
+- **Throwables**: the Creator's **Throwable** flow (under **Gear**) makes a ball, a knife you pick up again, a boomerang that comes back to your inventory or a bomb, with its damage, speed, weight and what happens on a hit. Any item can be thrown through the Item Studio's new **Throwable** section (damage, speed, gravity, hold to throw, what happens after the throw, hit events); dispensers throw them too. A **Throwable item** template and the **Frost bomb** and **Script: scripted effect** examples.
+- **Hurt** and **Heal** actions for every event, and scripts can check and remove effects (`hasEffect`, `effectLevel`, `removeEffect`) and see the entity a thrown item hit (`e.other`).
+- The Creator's **Card** tab previews a status effect (icon, name in its colour, a table per level) and a throwable (its picture, a sketch of the throw, damage and what happens after).
+- The Java project export writes status effects (`ModEffects.java`) and throwables (`ThrownItemEntity.java`).
+- The AI helper knows status effects and throwables and the new placeholder pictures (ball, knife, boomerang, flask, effect icon).
+- **Dimensions** in the Creator (new **Worlds** group): pick the terrain, the biome and the sky, and travel there and back with a key item or a command.
 - **Drag and drop textures**: drag a texture from the assets onto an item, block or model in the sidebar or onto the live preview to use it (one Undo puts the old one back); drop pictures from your computer on the window to open Picture to texture with them.
 - **Picture to texture** has more options: turn and mirror, fit the whole picture instead of cropping, brightness, contrast, colourfulness and hue, and a dark or coloured outline; several pictures go in a tray where one click switches between them.
 - **Wishlist** (Help menu): when the AI helper cannot build something exactly, it builds the closest version, says what is missing and adds it to the project's Wishlist; add your own wishes and copy the open ones to ask for them.
 - **Real pushes**: scripts can read an entity's `velocity` and `look` and call `setVelocity` and `addVelocity`, and events have a **Launch (push)** action, so launchers, jump pads and dashes move you smoothly instead of in small teleports.
+- Functions can name the project's own dimensions (`execute in`) without a warning.
+- **Problems** reports a sound of your project's `sounds` element written as a plain string in a vanilla sound field (such as a jukebox song's sound), which the game cannot load, and says to write it as `{ "sound_id": "..." }`.
+- Exporters from plugins are also under **File → More Exports**, as in the toolbar's **More exports**.
+- Plugin API 1.5.0: the Creator group `worlds`. Plugin API 1.6.0: the Creator group `magic` and the status effects of a project for Java project generators.
+
+### Changed
+
+- Worldgen: a placed feature used in different steps of a biome is now a warning, not a feature order cycle error; only a real cycle inside one step is an error, as in the game.
 
 ### Fixed
 
 - **Test in Minecraft** loaded the mods of every project tested before in the same instance; now only the project you test (and Fabric API) runs. Mods you added yourself stay.
-
-### Added
-
-- **Dimensions** in the Creator (new **Worlds** group): pick the terrain, the biome and the sky, and travel there and back with a key item or a command.
-- Functions can name the project's own dimensions (`execute in`) without a warning.
-- Plugin API 1.5.0: the Creator group `worlds`.
-- Exporters from plugins are also under **File → More Exports**, as in the toolbar's **More exports**.
+- The Music disc flows' discs with your own song failed to load in the game: the song now names its sound in the form the game accepts.
 
 ## [1.3.0] - 2026-11-07
 

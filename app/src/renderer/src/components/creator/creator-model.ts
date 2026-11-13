@@ -22,9 +22,11 @@ import {
   actionEffectRows,
   consumeEffectRows,
   type EffectRow,
+  effectCards,
   enchantmentCards,
   idWords,
   paintingCards,
+  throwableCards,
   tidyNumber,
 } from './creator-cards';
 
@@ -34,6 +36,7 @@ export const CREATOR_GROUPS: readonly { group: CreatorGroup; title: string }[] =
   { group: 'blocks', title: 'Blocks' },
   { group: 'food', title: 'Food' },
   { group: 'mobs', title: 'Mobs' },
+  { group: 'magic', title: 'Magic' },
   { group: 'scripts', title: 'Scripts' },
   { group: 'worlds', title: 'Worlds' },
 ];
@@ -573,16 +576,25 @@ export const ENTRY_SECTIONS: readonly { title: string; statuses: CreatorEntrySta
   { title: 'No longer used (left in the project)', statuses: ['unused'] },
 ];
 
-/** Whether a bundle has anything for the Card tab (enchantments or paintings). */
+/**
+ * Whether a bundle has anything for the Card tab (enchantments, paintings, status effects or
+ * throwables).
+ */
 export function bundleHasCards(bundle: ContentBundle): boolean {
-  return enchantmentCards(bundle).length > 0 || paintingCards(bundle).length > 0;
+  return (
+    enchantmentCards(bundle).length > 0 ||
+    paintingCards(bundle).length > 0 ||
+    effectCards(bundle).length > 0 ||
+    throwableCards(bundle).length > 0
+  );
 }
 
 /**
- * The tab a newly picked flow opens on: Items, else Blocks, else Card, else Stats, else
- * Elements, so a Painting or an Enchantment opens on its card.
+ * The tab a newly picked flow opens on: Card for a status effect, else Items, else Blocks, else
+ * Card, else Stats, else Elements, so a Painting or an Enchantment opens on its card.
  */
 export function firstTab(bundle: ContentBundle): CreatorTab {
+  if (effectCards(bundle).length > 0) return 'card';
   if (bundleItems(bundle).length > 0) return 'items';
   if (bundleBlocks(bundle).length > 0) return 'blocks';
   if (bundleHasCards(bundle)) return 'card';

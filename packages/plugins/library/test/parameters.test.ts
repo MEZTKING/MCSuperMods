@@ -117,8 +117,7 @@ const FLOWS: Record<string, string> = {
   weapon: 'gear',
   consumable: 'food',
   totem: 'gear',
-  // ADR 0055 D11 asks for a "magic" group; the plugin API has none yet (see status-effect.ts).
-  'status-effect': 'gear',
+  'status-effect': 'magic',
   throwable: 'gear',
   enchantment: 'gear',
   painting: 'blocks',

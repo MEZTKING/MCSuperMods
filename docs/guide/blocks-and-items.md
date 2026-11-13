@@ -33,9 +33,10 @@ Selecting an item opens the Item Studio, with **Advanced (all fields)** and **Ra
 - **Food**: tick **Edible** to make the item food, with **Nutrition** (hunger points restored), **Saturation** and **Can always eat** (eat even when not hungry).
 - **Tool and durability**: tick **Tool** and choose a **Tool type** (pickaxe, axe, shovel, hoe, sword, spear or mace) and **Tool tier**. Tick **Durability** and set **Uses** for an item that wears out.
 - **Behaviour**: **On use** runs an event when a player uses the item (right-click), at most once per **Use cooldown (ticks)**.
+- **Throwable**: tick **Throwable** to make the item something players throw, like a snowball or a throwing knife, with its damage, speed, gravity and what happens after the throw and on a hit. See [Throwables in the Item Studio](effects-and-throwables.md#throwables-in-the-item-studio).
 - **Events**: as for blocks.
 
-Armour, custom tool materials, weapons, consumables and totems have no section of their own in the Item Studio yet: edit them in **Advanced (all fields)** or **Raw JSON**, or let the [Creator](creator.md) make them (see [Armour](#armour) and the sections after it).
+Status effects have a Studio of their own, the **Effect Studio** ([Status effects and throwables](effects-and-throwables.md#the-effect-studio)). Armour, custom tool materials, weapons, consumables and totems have no section of their own in the Item Studio yet: edit them in **Advanced (all fields)** or **Raw JSON**, or let the [Creator](creator.md) make them (see [Armour](#armour) and the sections after it).
 
 ## Events and actions
 
@@ -47,7 +48,7 @@ An event is a named list of actions that run in order on the server. A block or 
 
 The arrow buttons reorder the actions and the cross removes one. Renaming an event updates every trigger and action that uses it.
 
-The actions:
+The actions (the action list shows each by its name with its id in brackets, for example **Hurt (damage)**):
 
 | Action | What it does |
 |---|---|
@@ -57,8 +58,10 @@ The actions:
 | `set_block_state` | Places a block, for example `minecraft:glowstone` or `minecraft:oak_log[axis=x]`, at an **Offset** from the block (for items: from the block under the player). |
 | `give_item` | Gives the player an item, optionally several. Nothing happens when no player is involved, for example for redstone. |
 | `trigger_event` | Runs another event of the same block or item. Chains stop after 16 steps. |
-| `apply_effect` | Gives a vanilla mob effect, for example `minecraft:speed`, for a number of **seconds** at an **amplifier** (0 is level I). **Target** `self` (the default) is the player of the event; `other` is the other entity of the event, such as the mob an entity hits. Needs the runtime of MCSuperMods 0.8.0 or later. |
+| `apply_effect` | Gives a mob effect, a vanilla one such as `minecraft:speed` or one of the project's [status effects](effects-and-throwables.md), for a number of **seconds** at an **amplifier** (0 is level I). **Target** `self` (the default) is the player of the event; `other` is the other entity of the event, such as the mob an entity hits. Needs the runtime of MCSuperMods 0.8.0 or later. |
 | `launch` | Pushes the player (or with **Target** `other` the other entity) so it flies smoothly, like a slime block or a wind charge: **Strength** in blocks per tick (1 is a strong dash, up to 10) where they look, flat along the ground (`horizontal`) or straight `up`, plus an **Extra upward push**. In Raw JSON, `"add": true` adds to their current motion instead of replacing it. Add a slow falling `apply_effect` to soften the landing. Needs the runtime of MCSuperMods 1.4.0 or later. |
+| `damage` (**Hurt**) | Hurts the player (or with **Target** `other` the other entity) by **Amount (half hearts)** of magic damage, which armour does not reduce. Needs the runtime of MCSuperMods 1.4.0 or later. |
+| `heal` (**Heal**) | Heals the player (or with **Target** `other` the other entity) by **Amount (half hearts)**. Needs the runtime of MCSuperMods 1.4.0 or later. |
 | `run_script` | Calls a handler that one of the project's scripts defines with `msm.actions.define`; pick it in the handler list or type its id. See [Scripting](scripting.md#run_script-from-the-events-editor). Scripts are not part of the Java project export. |
 
 **Problems** reports an event a trigger or `trigger_event` names but the element does not have (removing an event leaves its uses in place, so this is how you find them), and events that trigger each other in a loop. Both are errors.
@@ -118,6 +121,8 @@ An item can be only one of armour, tool, ranged weapon and shield. The Creator's
 - **Food with effects and drinks**: `msm:consumable` sets how long using the item takes (`seconds`; vanilla food and potions 1.6), the `animation` (`eat`, `drink` or `none`), `effects` (each a mob effect with `seconds`, an optional `amplifier` and `chance`), an optional `sound`, `particles`, `converts_to` (the item left over, such as `minecraft:glass_bottle`) and `cooldown_seconds`. With `msm:food` too it is food that also gives effects; alone it is a drink that restores no hunger. Template **Drink**.
 - **Charms**: an item that gives effects each time it is used and is not used up is an `msm:on_use` trigger whose event has `apply_effect` actions, with a cooldown. The Creator's **Consumable** flow makes one when **Kind** is **Charm**.
 - **Totems**: `msm:death_protection` saves its holder from death when held in either hand, like a totem of undying, gives its `effects` and, with `clear_effects`, first removes the holder's other effects. Template **Totem**.
+
+The effects can be the project's own [status effects](effects-and-throwables.md) as well as vanilla ones.
 
 **In the game**: eat or drink the item and watch the effects appear; for a totem, hold it in survival and take fatal damage (`/damage @s 100`).
 

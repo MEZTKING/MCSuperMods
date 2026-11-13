@@ -10,6 +10,12 @@
  * the resource pack holds no `msm/` files, and a second launch reopens the project with no
  * problems and the edits kept.
  *
+ * A second test (ADRs 0055, 0056) adds an `msm:effect` from the "Status effect" template: the
+ * Effect Studio shows the missing icon, "While active" gets a new event with a "Heal" action
+ * and Undo takes the action away again; an item from the "Tool item" template becomes a
+ * throwable in the Item Studio's Throwable section ("Left where it lands"), Undo turns the
+ * choice and then the section back off, and the jar carries both definitions.
+ *
  * "Test in Minecraft" is not covered here. Preview and WebGL are unavailable headless.
  */
 
@@ -363,4 +369,102 @@ test('blocks and items: templates, Block Studio, unknown event, Fabric jar, reso
   await expect(reopened.getByTestId(`msm-event-${EVENT_ID}`)).toBeVisible();
   await expectNoProblems(w2);
   await w2.screenshot({ path: join(outputDir, 'blocks-items-path-reopened.png') });
+});
+
+test('blocks and items: Effect Studio tick action and an item throwable section, with Undo', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-effects-'));
+  const folders = {
+    projectDir: join(base, NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  mkdirSync(outputDir, { recursive: true });
+  const launched = await launchApp({ reuse: folders });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-new-project').click();
+  await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
+
+  // The Effect Studio: a status effect with a tick event that heals. ------------------------
+  const effectId = `${NAMESPACE}:frost_step`;
+  await addFromTemplate(window, 'status effect', 'msm_effect_status', 'frost_step');
+  await expect(window.getByTestId(`element-row-${effectId}`)).toBeVisible();
+  const studio = window.getByTestId('effect-studio');
+  await expect(studio).toBeVisible();
+  await expect(studio.getByTestId('effect-display-name')).toHaveValue('Frost Step');
+  await expect(studio.getByTestId('effect-icon-missing')).toBeVisible();
+  await studio.getByTestId('effect-on-tick-new').click();
+  const onTick = studio.getByTestId('effect-on-tick');
+  await expect(onTick).not.toHaveValue('');
+  const tickEvent = await onTick.inputValue();
+  await expect(studio.getByTestId('effect-tick-interval')).toBeVisible();
+  const event = studio.getByTestId(`msm-event-${tickEvent}`);
+  await expect(event).toBeVisible();
+  await event.getByLabel(`New action type for ${tickEvent}`).selectOption('heal');
+  await event.getByRole('button', { name: `Add action to ${tickEvent}` }).click();
+  const heal = event.getByTestId('msm-action-0');
+  await expect(heal.getByLabel(`${tickEvent} action 1 type`)).toHaveValue('heal');
+  await expect(studio.getByTestId('effect-preview-levels')).toContainText('acts every 20 ticks');
+  await expect(await problemRows(window, 'error')).toHaveCount(0);
+  // Undo takes the action away; the tick event stays.
+  await window.getByTestId('toolbar-undo').click();
+  await expect(heal).toHaveCount(0);
+  await expect(onTick).toHaveValue(tickEvent);
+  await event.getByLabel(`New action type for ${tickEvent}`).selectOption('heal');
+  await event.getByRole('button', { name: `Add action to ${tickEvent}` }).click();
+  await expect(event.getByTestId('msm-action-0')).toBeVisible();
+
+  // The Item Studio: a tool that is also thrown. --------------------------------------------
+  const itemId = `${NAMESPACE}:ice_pick`;
+  await addFromTemplate(window, 'tool item', 'msm_item_tool', 'ice_pick');
+  await expect(window.getByTestId(`element-row-${itemId}`)).toBeVisible();
+  const item = window.getByTestId('item-studio');
+  await expect(item).toBeVisible();
+  const toggle = item.getByTestId('item-throwable-toggle');
+  await expect(toggle).not.toBeChecked();
+  await toggle.check();
+  await expect(toggle).toBeChecked();
+  const after = item.getByTestId('item-throwable-after');
+  await expect(after).toBeVisible();
+  await after.selectOption('drop');
+  await expect(after).toHaveValue('drop');
+  await expect(item.getByTestId('item-throwable-conflict')).toHaveCount(0);
+  await expect(await problemRows(window, 'error')).toHaveCount(0);
+  // Undo: first the choice, then the whole section.
+  await window.getByTestId('toolbar-undo').click();
+  await expect(after).toHaveValue('');
+  await window.getByTestId('toolbar-undo').click();
+  await expect(toggle).not.toBeChecked();
+  await expect(after).toHaveCount(0);
+  await toggle.check();
+  await after.selectOption('drop');
+  await expect(after).toHaveValue('drop');
+  await expect(await problemRows(window, 'error')).toHaveCount(0);
+
+  // The jar carries the effect and the throwable item. --------------------------------------
+  const palette = await openPalette(window, 'fabric mod jar');
+  await palette.getByTestId('command-exportFabricJar').click();
+  const jarDialog = window.getByTestId('fabric-jar-dialog');
+  await expect(jarDialog).toBeVisible();
+  await jarDialog.getByTestId('exporter-option-separateRuntime').check();
+  await jarDialog.getByTestId('fabric-jar-dialog-submit').click();
+  await expect(jarDialog).toBeHidden();
+  const jarPath = join(folders.outDir, `${NAMESPACE}.jar`);
+  await expect.poll(() => isCompleteZip(jarPath), { timeout: 20_000 }).toBe(true);
+  const jar = readZip(jarPath);
+  const effect = zipJson(jar, `msm/${NAMESPACE}/effect/frost_step.json`) as {
+    components?: Record<string, { event?: string }>;
+    events?: Record<string, { actions: { type: string }[] }>;
+  };
+  expect(effect.components?.['msm:on_tick']?.event).toBe(tickEvent);
+  expect(effect.events?.[tickEvent]?.actions.map((action) => action.type)).toEqual(['heal']);
+  const thrown = zipJson(jar, `msm/${NAMESPACE}/item/ice_pick.json`) as {
+    components: Record<string, Record<string, unknown>>;
+  };
+  expect(thrown.components['msm:throwable']).toEqual({ after_throw: 'drop' });
+  expect(thrown.components['msm:tool']).toBeDefined();
+
+  await window.getByTestId('toolbar-save').click();
+  await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
 });

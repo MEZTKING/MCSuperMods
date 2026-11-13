@@ -14,6 +14,11 @@
  * 2. Painting and Weapon: the Painting flow opens on the Card tab, "Choose picture…" takes a PNG
  *    through `MSM_E2E_PICK_FILES`, "Create" writes it unchanged into the project; the Weapon flow
  *    as a bow shows its Stats; both export in the Fabric mod jar and packs with no errors.
+ * 3. Status effect and Throwable (ADRs 0055, 0056): the Status effect flow, listed under
+ *    "Magic", opens on the Card tab with the icon, the name and the level table, and makes a
+ *    drink; the Throwable flow's Card tab shows the item picture and the throw sketch. "Edit in
+ *    Creator" on the effect changes one answer (good to bad), and the Fabric mod jar holds the
+ *    effect definition, its icon and the throwable item definition.
  */
 
 import {
@@ -133,6 +138,12 @@ async function openFlow(window: Page, flowId: string): Promise<Locator> {
   const dialog = window.getByTestId('creator-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId(`creator-flow-${flowId}`).click();
+  return dialog;
+}
+
+/** Picks `flowId` from the Creator group `groupTestId` of an open Creator dialog. */
+async function openFlowFrom(dialog: Locator, groupTestId: string, flowId: string) {
+  await dialog.getByTestId(groupTestId).getByTestId(`creator-flow-${flowId}`).click();
   return dialog;
 }
 
@@ -466,4 +477,90 @@ test('Creator: Dimension with a key (ADR 0051)', async () => {
   await expect(
     window.getByTestId('problems-panel').locator('[data-testid="problem-row"]'),
   ).toHaveCount(0);
+});
+
+test('Creator: Status effect with a drink and a Throwable (ADRs 0055, 0056)', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-creator-magic-'));
+  const folders = {
+    projectDir: join(base, NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  const launched = await launchApp({ reuse: folders });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-new-project').click();
+  await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
+
+  // Status effect, from the Magic group: opens on its card.
+  await window.getByTestId('toolbar-creator').click();
+  const picker = window.getByTestId('creator-dialog');
+  await expect(picker.getByTestId('creator-group-magic')).toContainText('Magic');
+  const effect = await openFlowFrom(picker, 'creator-group-magic', 'status-effect');
+  await expect(effect.getByTestId('creator-tab-card')).toHaveAttribute('aria-selected', 'true');
+  const card = effect.getByTestId(`creator-effect-${id('ruby_rush')}`);
+  await expect(card).toBeVisible();
+  await expect(card.getByTestId('creator-effect-icon')).toHaveAttribute('src', /^data:image\/png/);
+  await expect(card.getByTestId('creator-effect-name')).toHaveText('Ruby Rush');
+  await expect(card.getByTestId('creator-effect-levels')).toBeVisible();
+  await expect(effect.getByTestId('param-source')).toHaveValue('drink');
+  await effect.getByTestId('creator-create').click();
+  await expect(effect).toBeHidden();
+  await expect(
+    window.getByText(/^Create Status effect: \d+ element\(s\) and file\(s\) changed/),
+  ).toBeVisible();
+  await expect(window.getByTestId(`element-row-${id('ruby_rush')}`)).toBeVisible();
+  await expect(window.getByTestId(`element-row-${id('ruby_rush_tonic')}`)).toBeVisible();
+
+  // Throwable: a knife, with its card.
+  const throwable = await openFlow(window, 'throwable');
+  await expect(throwable.getByTestId(`creator-item-${id('ruby_knife')}`)).toBeVisible();
+  await throwable.getByTestId('creator-tab-card').click();
+  const knife = throwable.getByTestId(`creator-throwable-${id('ruby_knife')}`);
+  await expect(knife).toBeVisible();
+  await expect(knife.getByTestId('creator-throwable-sprite')).toBeVisible();
+  await expect(knife.getByTestId('creator-throwable-arc')).toBeVisible();
+  await expect(knife).toContainText('picked up again');
+  await throwable.getByTestId('creator-create').click();
+  await expect(throwable).toBeHidden();
+  await expect(window.getByTestId(`element-row-${id('ruby_knife')}`)).toBeVisible();
+  await expectNoErrors(window);
+
+  // Edit one answer: the effect becomes a bad one.
+  await window.getByTestId(`element-row-${id('ruby_rush')}`).click();
+  await window.getByTestId('editor-edit-in-creator').click();
+  const edit = window.getByTestId('creator-dialog');
+  await expect(edit.getByRole('heading', { name: 'Edit: Status effect' })).toBeVisible();
+  await edit.getByTestId('param-category').selectOption('harmful');
+  await edit.getByTestId('creator-tab-card').click();
+  await expect(edit.getByTestId('creator-effect-name')).toHaveCSS('color', 'rgb(255, 85, 85)');
+  await edit.getByTestId('creator-create').click();
+  await expect(edit).toBeHidden();
+  await expect(
+    window.getByText(/^Update Status effect: \d+ element\(s\) and file\(s\) changed/),
+  ).toBeVisible();
+  await save(window);
+  expect(savedData(folders.projectDir, 'effect', 'ruby_rush').category).toBe('harmful');
+  await expectNoErrors(window);
+
+  // The jar: the effect, its icon and the throwable item.
+  const jar = await exportJar(window, folders.outDir);
+  expect(Object.keys(jar.files)).toEqual(
+    expect.arrayContaining([
+      `msm/${NAMESPACE}/effect/ruby_rush.json`,
+      `assets/${NAMESPACE}/textures/mob_effect/ruby_rush.png`,
+      `msm/${NAMESPACE}/item/ruby_rush_tonic.json`,
+      `msm/${NAMESPACE}/item/ruby_knife.json`,
+    ]),
+  );
+  const definition = JSON.parse(
+    strFromU8(jar.files[`msm/${NAMESPACE}/effect/ruby_rush.json`] ?? new Uint8Array()),
+  ) as { category?: string };
+  expect(definition.category).toBe('harmful');
+  const knifeDefinition = JSON.parse(
+    strFromU8(jar.files[`msm/${NAMESPACE}/item/ruby_knife.json`] ?? new Uint8Array()),
+  ) as { components: Record<string, Record<string, unknown>> };
+  expect(knifeDefinition.components['msm:throwable']).toMatchObject({ after_throw: 'drop' });
+  await window.screenshot({ path: join(outputDir, 'creator-path-magic.png') });
 });

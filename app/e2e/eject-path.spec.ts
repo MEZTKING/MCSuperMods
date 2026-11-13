@@ -9,6 +9,10 @@
  * `msm_runtime` and the README. A second export into the same folder is blocked with the
  * folder-not-empty message.
  *
+ * A second test (ADRs 0055 D10, 0056 D7) adds a status effect and a throwable item from their
+ * templates to the sample mod and checks that the tree holds `ModEffects.java` naming the
+ * effect and one `ThrownItemEntity.java`.
+ *
  * Gradle never runs here: CI builds the ejected sample projects (`engine-mod` job).
  */
 
@@ -17,6 +21,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   statSync,
@@ -71,6 +76,24 @@ async function openPalette(window: Page, query: string): Promise<Locator> {
   await expect(palette).toBeVisible();
   await palette.getByTestId('command-palette-input').fill(query);
   return palette;
+}
+
+/** Adds an element from template `templateId` through the New element dialog. */
+async function addFromTemplate(
+  window: Page,
+  filter: string,
+  templateId: string,
+  name: string,
+): Promise<void> {
+  await window.getByTestId('toolbar-add-element').click();
+  const dialog = window.getByTestId('new-element-dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByTestId('new-element-filter').fill(filter);
+  await dialog.getByTestId(`template-${templateId}`).check();
+  await expect(dialog.getByTestId('new-element-namespace')).toHaveValue(MOD_ID);
+  await dialog.getByTestId('new-element-name').fill(name);
+  await dialog.getByTestId('new-element-dialog-submit').click();
+  await expect(dialog).toBeHidden();
 }
 
 /** Opens "Export Java project" from the palette and returns the dialog. */
@@ -212,4 +235,44 @@ test('eject: sample mod to a Fabric Java project, tree checked, second export bl
   });
   // The first project is untouched.
   expect(read('README.md')).toBe(readme);
+});
+
+test('eject: a status effect and a throwable give ModEffects and ThrownItemEntity', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-eject-effects-'));
+  const folders = {
+    projectDir: join(base, MOD_ID),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  cpSync(join(appDir, '..', 'fixtures', 'sample-mod'), folders.projectDir, { recursive: true });
+  const launched = await launchApp({ reuse: folders });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-open-project').click();
+  await expect(window.getByTestId(`element-row-${MOD_ID}:ruby_ore`)).toBeVisible();
+
+  await addFromTemplate(window, 'status effect', 'msm_effect_status', 'frost_step');
+  await expect(window.getByTestId(`element-row-${MOD_ID}:frost_step`)).toBeVisible();
+  await addFromTemplate(window, 'throwable', 'msm_item_throwable', 'snow_dart');
+  await expect(window.getByTestId(`element-row-${MOD_ID}:snow_dart`)).toBeVisible();
+
+  const dialog = await openJavaProjectDialog(window);
+  await dialog.getByTestId('java-project-dialog-submit').click();
+  await expect(dialog).toBeHidden();
+  const root = join(folders.outDir, MOD_ID);
+  await expect(toast(window)).toContainText(`Java project written to ${root}`, {
+    timeout: 30_000,
+  });
+
+  const javaFiles = (readdirSync(join(root, 'src/main/java'), { recursive: true }) as string[])
+    .map((path) => path.replaceAll('\\', '/'))
+    .filter((path) => path.endsWith('.java'));
+  const named = (name: string): string => {
+    const found = javaFiles.filter((path) => path.split('/').pop() === name);
+    expect(found, name).toHaveLength(1);
+    return readFileSync(join(root, 'src/main/java', found[0] as string), 'utf8');
+  };
+  expect(named('ModEffects.java')).toContain('frost_step');
+  expect(named('ThrownItemEntity.java')).toContain('class ThrownItemEntity');
 });

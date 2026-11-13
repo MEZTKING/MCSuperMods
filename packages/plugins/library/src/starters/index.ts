@@ -273,9 +273,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     {
       parameters: STATUS_EFFECT_PARAMETERS,
       creator: {
-        // ADR 0055 D11 names a new group "magic"; plugin API 1.6.0 has no such CreatorGroup
-        // yet, so the flow is listed under "gear" until the API gains it.
-        group: 'gear',
+        group: 'magic',
         blurb:
           'A status effect with its icon, what it does, its stat changes and a drink or flask.',
       },

@@ -28,14 +28,14 @@ The mod id's folder must not exist yet, or must be empty. Otherwise nothing is w
 |---|---|
 | `build.gradle.kts`, `settings.gradle.kts`, `gradle.properties` | The Gradle build, with Fabric Loom and the Minecraft, Fabric Loader and Fabric API versions of the project's target |
 | `gradlew`, `gradlew.bat`, `gradle/wrapper/` | The Gradle wrapper, so you do not need to install Gradle |
-| `src/main/java/<mod id>/` | The generated Java: the mod class, `ModBlocks.java`, `ModItems.java` and `ModEntities.java` (one constant per block, item and entity type), classes for content with behaviour under `block/`, `item/` and `entity/`, the event actions in `Actions.java`, and for mobs the client entrypoint and GeckoLib models under `client/` |
+| `src/main/java/<mod id>/` | The generated Java: the mod class, `ModBlocks.java`, `ModItems.java`, `ModEntities.java` and `ModEffects.java` (one constant per block, item, entity type and status effect), classes for content with behaviour under `block/`, `item/`, `entity/` and `effect/`, one `ThrownItemEntity.java` that every throwable uses, the event actions in `Actions.java`, and for mobs or throwables the client entrypoint (GeckoLib models under `client/` only with mobs) |
 | `src/main/resources/fabric.mod.json` | The mod metadata from the `msm:mod` element, depending on Fabric Loader, Fabric API, Minecraft and, with mobs, GeckoLib (not on `msm_runtime`) |
 | `src/main/resources/assets/`, `data/` | The project's models, textures, language files, loot tables, recipes, functions and other pack files, unchanged |
 | `README.md` | How to build the project, its layout, and what was left out |
 | `LICENSE-NOTES.md` | The licences of the libraries and tools the project uses |
 | `msm.export.json` | Which MCSuperMods version and target produced the project |
 
-The Java package is the mod id (with `-` written as `_`). Files that do not apply to the project (for example `ModEntities.java` without mobs) are not written. The output depends only on the project, the target and the MCSuperMods version, so exporting the same project twice gives identical files.
+The Java package is the mod id (with `-` written as `_`). Files that do not apply to the project (for example `ModEntities.java` without mobs, `ModEffects.java` without [status effects](effects-and-throwables.md)) are not written. The output depends only on the project, the target and the MCSuperMods version, so exporting the same project twice gives identical files.
 
 ## Build it
 

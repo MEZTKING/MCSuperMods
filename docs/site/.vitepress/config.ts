@@ -50,6 +50,7 @@ export default defineConfig({
           { text: 'Worldgen', link: '/worldgen' },
           { text: 'Blocks and items', link: '/blocks-and-items' },
           { text: 'The Creator', link: '/creator' },
+          { text: 'Status effects and throwables', link: '/effects-and-throwables' },
           { text: 'Entities and models', link: '/entities-and-models' },
           { text: 'Scripting', link: '/scripting' },
           { text: 'Eject to a Java project', link: '/eject' },

@@ -240,7 +240,7 @@ describe('1.1.0 additions', () => {
     expectTypeOf<ProjectStarter['creator']>().toEqualTypeOf<StarterCreatorInfo | undefined>();
     expectTypeOf<StarterCreatorInfo['group']>().toEqualTypeOf<CreatorGroup>();
     expectTypeOf<CreatorGroup>().toEqualTypeOf<
-      'gear' | 'blocks' | 'food' | 'mobs' | 'scripts' | 'worlds'
+      'gear' | 'blocks' | 'food' | 'mobs' | 'scripts' | 'worlds' | 'magic'
     >();
     const flow: ProjectStarter = {
       ...starter,

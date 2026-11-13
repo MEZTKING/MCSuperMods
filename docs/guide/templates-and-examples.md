@@ -4,9 +4,9 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (125) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (24) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
-| **Examples** (71) | **Help → Examples…** | A commented project or element to open or copy |
+| **Element templates** (129) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (27) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
+| **Examples** (73) | **Help → Examples…** | A commented project or element to open or copy |
 
 Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, and scripting plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
 
@@ -260,8 +260,19 @@ New blocks, items and the mod metadata exist only in the **Fabric mod jar** expo
 | Shield | `msm_item_shield` | `msm:item` | Blocks attacks while raised, like a shield. The vanilla shield model draws nothing as a plain item model, so it shows the turtle scute until you add your own. |
 | Drink | `msm_item_drink` | `msm:item` | A potion-like drink that gives speed and regeneration and leaves a glass bottle, shown with the honey bottle model. |
 | Totem | `msm_item_totem` | `msm:item` | Saves its holder from death like a totem of undying and gives regeneration, absorption and fire resistance. |
+| Throwable item | `msm_item_throwable` | `msm:item` | Thrown like a snowball: it flies as its own picture, deals a heart of damage and slows the mob it hits. |
 
-Armour, custom tool materials, weapons, consumables and totems are explained in [Blocks and items](blocks-and-items.md#armour).
+Armour, custom tool materials, weapons, consumables and totems are explained in [Blocks and items](blocks-and-items.md#armour), throwables in [Status effects and throwables](effects-and-throwables.md#throwables-in-the-item-studio).
+
+#### Effects
+
+Status effects of your own (`msm:effect`), like the vanilla ones, need the Fabric mod jar too. Each shows a blank icon until you paint `textures/mob_effect/<name>.png` (see [Effect icons](effects-and-throwables.md#effect-icons)).
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Status effect | `msm_effect_status` | `msm:effect` | A good effect with its own colour that plays a chime and sparkles once when it starts. Give it with a drink, a throwable or the /effect command. |
+| Damage over time effect | `msm_effect_damage_over_time` | `msm:effect` | A harmful effect like poison: it hurts its holder by half a heart every second, faster at higher levels. |
+| Stat boost effect | `msm_effect_stat_boost` | `msm:effect` | A good effect that makes its holder 20% faster and hit 1 harder per level, removed again when the effect ends. |
 
 #### Mod
 
@@ -333,9 +344,12 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Weapon (Creator: Gear) | `weapon` | resource, data, mod | One sword, spear, mace, bow, crossbow or shield with its own name, colour and stats, a texture and model, and an optional recipe. |
 | Consumable (Creator: Food) | `consumable` | resource, data, mod | A food with effects, a potion-like drink or a charm that gives effects when used, with a texture, model and optional recipe. |
 | Totem (Creator: Gear) | `totem` | resource, data, mod | An item that saves its holder from death like a totem of undying and gives the effects you choose, with a texture, model and optional recipe. |
+| Throwable (Creator: Gear) | `throwable` | resource, data, mod | An item you throw: a ball, a knife you pick up again, a boomerang that comes back or a bomb, with its damage, speed, weight and what happens when it hits, a texture and model, and an optional recipe. |
+| Status effect (Creator: Magic) | `status-effect` | resource, data, mod | A new status effect with its own name, colour and icon: what it does every few seconds, the stats it changes and how players get it (a drink or a throwable flask, with an optional recipe). |
 | Enchantment (Creator: Gear) | `enchantment` | data | A new enchantment: what it goes on, its highest level, how rare it is and what it does, offered at the enchanting table. |
 | Painting (Creator: Blocks) | `painting` | resource, data | A new painting with its title, author, size and your own picture (or a placeholder landscape), in the `minecraft:placeable` tag. |
 | Music disc (Creator: Blocks) | `music-disc-item` | resource, data, mod | A new jukebox song and a music disc that plays it: a real disc item in the Fabric mod jar, or music disc 13 with a new look in vanilla packs. |
+| Dimension (Creator: Worlds) | `dimension` | resource, data, mod | A new dimension to explore: pick the terrain, the biome and the sky, and travel there and back with a key item (Fabric mod jar) or a command (vanilla packs). |
 | Recipe pack | `recipe_pack` | data | Shaped, shapeless, smelting, blasting and stonecutting recipes, an item tag used as an ingredient, a crafting advancement and a load message. |
 | Custom music disc | `music_disc` | resource, data | A jukebox song, its sound event, a disc model and texture, and a `give_disc` function. |
 | Functions | `function_starter` | data | `load` and `tick` functions wired to `#minecraft:load` and `#minecraft:tick`, a jump scoreboard, a `greet` function and a function tag of your own. |
@@ -401,7 +415,7 @@ The script examples use `msm:script`, which runs only in the Fabric mod jar (see
 
 ### All examples
 
-There is one example for each of the 61 element kinds, six more behaviour examples (blocks and items: a tool and an event chain; entities: a hostile mob and natural spawning; scripts: scheduled effects and an action handler), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 62 element kinds, seven more behaviour examples (blocks and items: a tool and an event chain; entities: a hostile mob and natural spawning; scripts: scheduled effects, an action handler and a scripted effect), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Throwable) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -461,6 +475,7 @@ There is one example for each of the 61 element kinds, six more behaviour exampl
 | Material rule | `example_material_rule` | Worldgen (advanced) | `minecraft:worldgen/material_rule` | A surface rule: bedrock at the bottom, grass over dirt on top. |
 | Switch lamp | `example_msm_block` | Blocks | `msm:block` | A custom block that lights up when used or powered by redstone, by swapping itself for a lit twin. |
 | Sparkle berries | `example_msm_item` | Items | `msm:item` | A custom food item that sparkles and chimes when you start eating it. |
+| Frost bomb | `example_msm_effect` | Effects | `msm:effect` | A custom Frostbite effect that slows and chills its holder, and a throwable Frost Bomb that gives it to the mob it hits. |
 | Mod metadata | `example_msm_mod` | Mod | `msm:mod` | The name, version, authors and licence of the Fabric mod jar. |
 | Sturdy pickaxe | `example_msm_tool` | Items | `msm:item` | A custom iron-tier pickaxe with extra durability and a crafting recipe. |
 | Beacon stone | `example_msm_event_chain` | Blocks | `msm:block` | A block whose use event triggers a second event that spawns particles and runs a function. |
@@ -472,6 +487,7 @@ There is one example for each of the 61 element kinds, six more behaviour exampl
 | Script: block interaction | `example_msm_script` | Scripts | `msm:script` | A script that cancels using a lodestone with an empty hand and gives the player a compass instead. |
 | Script: scheduled effects | `example_msm_script_schedule` | Scripts | `msm:script` | A script that turns using an amethyst shard into a rising spiral of particles over two seconds, one `msm.schedule` step after another. |
 | Script: action handler | `example_msm_script_action` | Scripts | `msm:script` | A chime block whose use event runs a script through a `run_script` action, and the script that defines that handler. |
+| Script: scripted effect | `example_msm_scripted_effect` | Scripts | `msm:effect` | An Antidote status effect whose tick event runs a script: it cures poison and heals more at higher levels. |
 | Custom ore project | `starter_custom_ore` | Starters | `msm:block` | The Custom ore starter: a real ruby ore block, the ruby item and a block of ruby, with loot, recipes, a tag, advancements and the mod metadata. |
 | Recipe pack project | `starter_recipe_pack` | Starters | `minecraft:recipe` | The Recipe pack starter: one recipe of each common type and an advancement. |
 | Custom music disc project | `starter_music_disc` | Starters | `minecraft:jukebox_song` | The Custom music disc starter: a jukebox song, its disc model and texture. |
@@ -483,10 +499,10 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 
 | Folder | Namespace | Contents |
 |---|---|---|
-| `examples/all-kinds/` | `msm_examples` | The 61 per-kind examples in one project |
+| `examples/all-kinds/` | `msm_examples` | The 62 per-kind examples in one project |
 | `examples/blocks-items/` | `msm_examples` | The two blocks and items behaviour examples (Sturdy pickaxe, Beacon stone) |
 | `examples/entities/` | `msm_examples` | The two entity behaviour examples (Hostile mob, Natural spawning), each with its model, animations and textures |
-| `examples/scripts/` | `msm_examples` | The two script behaviour examples (Script: scheduled effects, Script: action handler) |
+| `examples/scripts/` | `msm_examples` | The three script behaviour examples (Script: scheduled effects, Script: action handler, Script: scripted effect) |
 | `examples/starters/custom_ore/` | `msm_starter` | The Custom ore starter |
 | `examples/starters/recipe_pack/` | `msm_starter` | The Recipe pack starter |
 | `examples/starters/music_disc/` | `msm_starter` | The Custom music disc starter |
@@ -507,6 +523,9 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 | `examples/starters/painting/` | `msm_starter` | The Painting starter |
 | `examples/starters/music-disc-item/` | `msm_starter` | The Music disc starter |
 | `examples/starters/scripted-item/` | `msm_starter` | The Scripted behaviour starter |
+| `examples/starters/dimension/` | `msm_starter` | The Dimension starter |
+| `examples/starters/status-effect/` | `msm_starter` | The Status effect starter |
+| `examples/starters/throwable/` | `msm_starter` | The Throwable starter |
 
 Copy a folder somewhere else before opening it, so your edits do not change the repository. See [examples/README.md](https://github.com/MEZTKING/MCSuperMods/blob/main/examples/README.md).
 

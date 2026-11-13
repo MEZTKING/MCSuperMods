@@ -47,6 +47,11 @@ export const PLACEHOLDER_PATTERN_NAMES = [
   'wolf_armor',
   'horse_armor_layer',
   'wolf_armor_layer',
+  'ball',
+  'knife',
+  'boomerang',
+  'flask',
+  'effect_icon',
 ] as const;
 
 /** Most elements one `create_elements` call may propose. */
@@ -89,7 +94,7 @@ export const createTextureInput = z.object({
   pattern: z
     .enum(PLACEHOLDER_PATTERN_NAMES)
     .describe(
-      'The placeholder pattern: plain, ore (speckles on stone), gem, disc, egg (spawn egg), sword, pickaxe, axe, shovel, hoe, helmet, chestplate, leggings, boots, ingot, bow, crossbow, shield, spear, mace, bottle, totem, smithing_template, horse_armor, wolf_armor (all 16x16), armor_layer_1 and armor_layer_2 (64x32 worn armour layers, under textures/entity/equipment/humanoid and humanoid_leggings), horse_armor_layer (64x64, under textures/entity/equipment/horse_body) or wolf_armor_layer (64x32, under textures/entity/equipment/wolf_body).',
+      'The placeholder pattern: plain, ore (speckles on stone), gem, disc, egg (spawn egg), sword, pickaxe, axe, shovel, hoe, helmet, chestplate, leggings, boots, ingot, bow, crossbow, shield, spear, mace, bottle, totem, smithing_template, horse_armor, wolf_armor, ball, knife, boomerang, flask (all 16x16; the last four for throwables), effect_icon (18x18 status effect icon, under textures/mob_effect), armor_layer_1 and armor_layer_2 (64x32 worn armour layers, under textures/entity/equipment/humanoid and humanoid_leggings), horse_armor_layer (64x64, under textures/entity/equipment/horse_body) or wolf_armor_layer (64x32, under textures/entity/equipment/wolf_body).',
     ),
   colour: z
     .string()

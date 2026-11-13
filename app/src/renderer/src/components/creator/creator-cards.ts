@@ -487,3 +487,287 @@ export function actionEffectRows(actions: Json | undefined): EffectRow[] {
     ];
   });
 }
+
+const EFFECT_KIND = 'msm:effect';
+const ITEM_KIND = 'msm:item';
+
+/** The levels an effect card's table lists (the game allows up to 256). */
+export const EFFECT_TABLE_LEVELS = 4;
+
+/** The colour of an effect's name in tooltips, by category (vanilla `MobEffectCategory`). */
+export const CATEGORY_NAME_COLOURS: Readonly<Record<string, string>> = {
+  beneficial: '#5555ff',
+  harmful: '#ff5555',
+  neutral: '#5555ff',
+};
+
+/** The words of an effect category. */
+const CATEGORY_WORDS: Readonly<Record<string, string>> = {
+  beneficial: 'Good (beneficial)',
+  harmful: 'Bad (harmful)',
+  neutral: 'Neutral',
+};
+
+/** One row of an effect's level table. */
+export interface EffectLevelRow {
+  level: number;
+  roman: string;
+  /** One value per {@link EffectCard.columns} entry. */
+  values: string[];
+}
+
+/** What the Card tab shows of a status effect (`msm:effect`, ADR 0055). */
+export interface EffectCard {
+  id: string;
+  /** The English name (`display_name`), or the id's words. */
+  name: string;
+  category: 'beneficial' | 'harmful' | 'neutral';
+  /** "Good (beneficial)", "Bad (harmful)" or "Neutral". */
+  categoryWords: string;
+  /** The name's colour in tooltips, from the category. */
+  nameColour: string;
+  /** The effect's own colour (particles and bar) as `#rrggbb`. */
+  colour: string;
+  /** The icon's asset: `textures/mob_effect/<path>.png` in the effect's namespace. */
+  icon: { namespace: string; path: string };
+  /** Sentences under the name (what it does when added, each tick, when it ends). */
+  lines: string[];
+  /** The headings of the level table after Level. */
+  columns: string[];
+  levels: EffectLevelRow[];
+}
+
+/** An action list's results in words ("heals 2 health", "hurts 2 health", …). */
+function actionWords(actions: Json | undefined): string[] {
+  if (!Array.isArray(actions)) return [];
+  return actions.flatMap((action): string[] => {
+    if (!isObject(action) || typeof action.type !== 'string') return [];
+    const amount = num(action.amount);
+    const whom = action.target === 'other' ? ' the one hit' : '';
+    switch (action.type) {
+      case 'heal':
+        return [`heals${whom} ${show(amount)} health`];
+      case 'damage':
+        return [`hurts${whom} ${show(amount)} health`];
+      case 'apply_effect':
+        return typeof action.effect === 'string'
+          ? [
+              `gives${whom === '' ? '' : whom} ${idWords(action.effect)} ${romanLevel(Math.round(num(action.amplifier) ?? 0) + 1)} for ${show(num(action.seconds) ?? 0)} seconds`,
+            ]
+          : [];
+      case 'spawn_particle':
+        return ['shows particles'];
+      case 'play_sound':
+        return ['plays a sound'];
+      case 'run_function':
+        return [`runs ${typeof action.function === 'string' ? action.function : 'a function'}`];
+      case 'run_script':
+        return ['runs a script'];
+      case 'launch':
+        return [`launches${whom}`];
+      case 'place_block':
+        return ['places a block'];
+      default:
+        return [action.type.replaceAll('_', ' ')];
+    }
+  });
+}
+
+/** The words of an event's actions, or `undefined` when the event is not in `events`. */
+function eventWords(events: Json | undefined, ref: Json | undefined): string | undefined {
+  if (!isObject(ref) || typeof ref.event !== 'string' || !isObject(events)) return undefined;
+  const event = events[ref.event];
+  if (!isObject(event)) return undefined;
+  const words = actionWords(event.actions);
+  return words.length === 0 ? 'does nothing yet' : words.join(', ');
+}
+
+/** A modifier's value at `level` in words (`+0.04`, `+20%`). */
+function modifierAt(amount: number, operation: string, level: number): string {
+  const value = amount * level;
+  if (operation === 'add_multiplied_base' || operation === 'add_multiplied_total') {
+    const percent = Math.round(value * 1000) / 10;
+    return `${percent >= 0 ? '+' : ''}${percent}%`;
+  }
+  return `${value >= 0 ? '+' : ''}${tidyNumber(value)}`;
+}
+
+const hexColour = (value: number | undefined): string =>
+  `#${Math.max(0, Math.min(0xffffff, Math.round(value ?? 0)))
+    .toString(16)
+    .padStart(6, '0')}`;
+
+/** The status effects of a bundle as Card tab cards. */
+export function effectCards(bundle: ContentBundle): EffectCard[] {
+  return bundle.elements.flatMap((entry) => {
+    if (entry.kind !== EFFECT_KIND || !isObject(entry.data)) return [];
+    const data = entry.data;
+    const category =
+      data.category === 'harmful' || data.category === 'neutral' ? data.category : 'beneficial';
+    const components = isObject(data.components) ? data.components : {};
+    const columns: LevelColumn[] = [];
+    const modifiers = Array.isArray(data.attribute_modifiers) ? data.attribute_modifiers : [];
+    for (const modifier of modifiers) {
+      if (!isObject(modifier)) continue;
+      const amount = num(modifier.amount);
+      const attribute = typeof modifier.attribute === 'string' ? modifier.attribute : 'attribute';
+      const operation = typeof modifier.operation === 'string' ? modifier.operation : 'add_value';
+      columns.push({
+        label: idWords(attribute),
+        at: (level) => (amount === undefined ? 'n/a' : modifierAt(amount, operation, level)),
+      });
+    }
+    const lines: string[] = [];
+    const start = eventWords(data.events, components['msm:on_start']);
+    if (start !== undefined) lines.push(`When it is added, it ${start}.`);
+    const tick = components['msm:on_tick'];
+    const tickWords = eventWords(data.events, tick);
+    if (isObject(tick) && tickWords !== undefined) {
+      const interval = Math.max(1, Math.round(num(tick.interval_ticks) ?? 20));
+      const faster = tick.faster_per_level === true;
+      const seconds = (level: number) =>
+        (faster ? Math.max(1, Math.floor(interval / level)) : interval) / 20;
+      lines.push(
+        `Every ${tidyNumber(seconds(1))} seconds it ${tickWords}${faster ? '; higher levels act faster' : ''}.`,
+      );
+      columns.push({ label: 'Acts every (seconds)', at: (level) => tidyNumber(seconds(level)) });
+    }
+    const end = eventWords(data.events, components['msm:on_end']);
+    if (end !== undefined) lines.push(`When it ends or is removed, it ${end}.`);
+    if (modifiers.length > 0) lines.push('Its stat changes last while it does.');
+    if (lines.length === 0) lines.push('It shows its icon and particles and does nothing more.');
+    const levels: EffectLevelRow[] = [];
+    if (columns.length > 0) {
+      for (let level = 1; level <= EFFECT_TABLE_LEVELS; level += 1) {
+        levels.push({
+          level,
+          roman: romanLevel(level),
+          values: columns.map((column) => column.at(level)),
+        });
+      }
+    }
+    const colon = entry.id.indexOf(':');
+    return [
+      {
+        id: entry.id,
+        name: typeof data.display_name === 'string' ? data.display_name : idWords(entry.id),
+        category,
+        categoryWords: CATEGORY_WORDS[category] ?? category,
+        nameColour: CATEGORY_NAME_COLOURS[category] ?? '#5555ff',
+        colour: hexColour(num(data.color)),
+        icon: {
+          namespace: entry.id.slice(0, colon),
+          path: `mob_effect/${entry.id.slice(colon + 1)}.png`,
+        },
+        lines,
+        columns: columns.map((column) => column.label),
+        levels,
+      },
+    ];
+  });
+}
+
+/** One point of a throw's flight, in blocks from the thrower's feet. */
+export interface ArcPoint {
+  x: number;
+  y: number;
+}
+
+/** The eye height a throw starts from (a standing player). */
+export const THROW_EYE_HEIGHT = 1.62;
+
+/**
+ * The flight of a throw at `speed` blocks per tick and `gravity`, aimed level from eye height,
+ * as vanilla's `ThrowableProjectile` moves (move, then air drag 0.99, then gravity), until it
+ * reaches the ground or 200 ticks pass. One point per tick, starting at the eye.
+ */
+export function throwArc(speed: number, gravity: number): ArcPoint[] {
+  const points: ArcPoint[] = [{ x: 0, y: THROW_EYE_HEIGHT }];
+  let x = 0;
+  let y = THROW_EYE_HEIGHT;
+  let vx = speed;
+  let vy = 0;
+  for (let tick = 0; tick < 200 && y > 0; tick += 1) {
+    x += vx;
+    y += vy;
+    vx *= 0.99;
+    vy = vy * 0.99 - gravity;
+    if (y <= 0) {
+      const previous = points[points.length - 1] as ArcPoint;
+      const t = previous.y / (previous.y - y);
+      points.push({ x: previous.x + (x - previous.x) * t, y: 0 });
+      break;
+    }
+    points.push({ x, y });
+  }
+  return points;
+}
+
+/** What the Card tab shows of a throwable item (`msm:throwable`, ADR 0056). */
+export interface ThrowableCard {
+  id: string;
+  /** The item's `display_name`, or the id's words. */
+  name: string;
+  speed: number;
+  gravity: number;
+  /** Where a level throw from eye height lands. */
+  arc: ArcPoint[];
+  /** The sentences: distance, damage, holding, after the throw, hits. */
+  lines: string[];
+}
+
+const AFTER_THROW_WORDS: Readonly<Record<string, string>> = {
+  consume: 'Each throw uses one item.',
+  keep: 'Throwing does not use the item up.',
+  drop: 'It is left where it lands, to be picked up again.',
+  return:
+    "It goes back into the thrower's inventory when it lands (it does not fly back), or drops at their feet when there is no room.",
+};
+
+/** The throwable items of a bundle as Card tab cards. */
+export function throwableCards(bundle: ContentBundle): ThrowableCard[] {
+  return bundle.elements.flatMap((entry) => {
+    if (entry.kind !== ITEM_KIND || !isObject(entry.data)) return [];
+    const data = entry.data;
+    const components = isObject(data.components) ? data.components : {};
+    const throwable = components['msm:throwable'];
+    if (!isObject(throwable)) return [];
+    const speed = num(throwable.speed) ?? 1.5;
+    const gravity = num(throwable.gravity) ?? 0.03;
+    const arc = throwArc(speed, gravity);
+    const last = arc[arc.length - 1] as ArcPoint;
+    const lines = [
+      `Thrown at ${tidyNumber(speed)} blocks per tick with gravity ${tidyNumber(gravity)}: a level throw lands about ${Math.round(last.x)} blocks away.`,
+    ];
+    const damage = num(throwable.damage) ?? 0;
+    lines.push(
+      damage > 0
+        ? `Deals ${tidyNumber(damage)} damage (${tidyNumber(damage / 2)} hearts) to what it hits.`
+        : 'Deals no damage itself.',
+    );
+    const charge = num(throwable.charge_ticks) ?? 0;
+    lines.push(
+      charge > 0
+        ? `Hold use for ${tidyNumber(charge / 20)} seconds, then let go to throw.`
+        : 'Thrown at once on use.',
+    );
+    const after = typeof throwable.after_throw === 'string' ? throwable.after_throw : 'consume';
+    lines.push(AFTER_THROW_WORDS[after] ?? AFTER_THROW_WORDS.consume ?? '');
+    const cooldown = num(throwable.cooldown_ticks) ?? 0;
+    if (cooldown > 0) lines.push(`Then waits ${tidyNumber(cooldown / 20)} seconds.`);
+    const hitEntity = eventWords(data.events, throwable.on_hit_entity);
+    if (hitEntity !== undefined) lines.push(`Hitting a mob or player ${hitEntity}.`);
+    const hitBlock = eventWords(data.events, throwable.on_hit_block);
+    if (hitBlock !== undefined) lines.push(`Hitting a block ${hitBlock}.`);
+    return [
+      {
+        id: entry.id,
+        name: typeof data.display_name === 'string' ? data.display_name : idWords(entry.id),
+        speed,
+        gravity,
+        arc,
+        lines,
+      },
+    ];
+  });
+}

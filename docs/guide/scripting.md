@@ -77,10 +77,14 @@ An event name that is not in the table is reported in the game log when the scri
 The `run_script` action lets a block, item or entity event call a script, so people who build with the Studios and people who write code can work on the same mod.
 
 1. In a script, define a handler: `msm.actions.define("<namespace>:guard", (e) => { ... });`. The **Action handler script** template does this with the script's own id. The handler receives `e.owner` (the block, item or entity id), `e.event` (the event id), `e.pos`, and `e.block`, `e.entity`, `e.player` and `e.other` (the entity a thrown item hit, or the holder of a status effect) when they apply.
-2. In the Block, Item or Entity Studio, open the event under **Events**, choose `run_script` in the list next to **Add action** and choose **Add action**.
+2. In the Block, Item, Entity or Effect Studio, open the event under **Events**, choose `run_script` in the list next to **Add action** and choose **Add action**.
 3. Pick the handler in the action's handler list (it shows "(choose a handler)" until you do), or type its id in the handler id field below it. The list holds every handler the project's scripts define. When no script defines one yet, the Studio says: "No script defines a handler yet: add msm.actions.define("<id>", (e) => { ... }) to a script."
 
 **Problems** warns when a `run_script` action names a handler that no script in the project defines.
+
+### A script for a status effect
+
+A [status effect](effects-and-throwables.md) runs a script every few seconds while it is active: in the Effect Studio, choose **New event** next to **While active**, add a `run_script` action to that event and pick the handler. The handler's `e.entity` and `e.other` are both the holder, so `e.entity.effectLevel("<namespace>:<effect name>")` gives the effect's level (0 when the holder no longer has it) and `e.entity.removeEffect("minecraft:poison")` cures poison. The example **Script: scripted effect** (Help → Examples…) is an antidote that works this way. In a throwable's **On hit entity** event, `e.player` is the thrower and `e.other` the mob or player hit.
 
 ## Typings and the `.msm/` folder
 
