@@ -519,7 +519,7 @@ test('blocks and items: a sounds element, its key picked from the completion lis
   expect(listId).not.toBeNull();
   const options = await window
     .locator(`datalist[id="${listId}"] option`)
-    .evaluateAll((nodes) => nodes.map((node) => (node as HTMLOptionElement).value));
+    .evaluateAll((nodes) => nodes.map((node) => (node as unknown as { value: string }).value));
   expect(options).toContain(soundKey);
   expect(options.indexOf(soundKey)).toBeLessThan(
     options.indexOf('minecraft:block.amethyst_block.chime'),

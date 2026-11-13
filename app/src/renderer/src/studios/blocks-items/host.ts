@@ -1,7 +1,7 @@
 /**
  * What the blocks and items Studios ask of the host beyond `StudioProps`: project texture
- * thumbnails and opening the texture editor on a project texture (painting an effect icon,
- * ADR 0055 D6). `App` provides it around the Form tab; without a provider the Effect Studio
+ * thumbnails, opening the texture editor on a project texture (painting an effect icon,
+ * ADR 0055 D6) and the Block Studio's texture layer hint (ADR 0059 D4). `App` provides it around the Form tab; without a provider the Effect Studio
  * shows no thumbnail and points to "New texture…" instead of painting.
  *
  * @packageDocumentation
@@ -20,6 +20,13 @@ export interface BlocksItemsStudioHost {
    * one of `size` when the namespace has no such asset yet (saved as a new asset).
    */
   paintTexture(namespace: string, path: string, size: { width: number; height: number }): void;
+  /**
+   * The layer each project texture of block model `model` draws in, from its pixels (ADR 0059
+   * D4): `solid`, `cutout` or `translucent`. Absent where the host cannot read textures.
+   */
+  textureLayers?(
+    model: string,
+  ): Promise<readonly { texture: string; layer: 'solid' | 'cutout' | 'translucent' }[]>;
 }
 
 /** Provided by `App`; `null` outside it (tests, previews). */

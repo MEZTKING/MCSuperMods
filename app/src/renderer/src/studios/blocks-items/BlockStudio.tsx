@@ -2,6 +2,9 @@
  * Block Studio (B97) for `msm:block` element data (ADR 0025 D2, D5):
  *
  * - Appearance: model (suggestions, "Go to model") and display name.
+ * - Shape (ADR 0059): `msm:shape` preset, custom boxes, "From model" (one undo step),
+ *   walk-through and see-through toggles, the layer the model's textures give, and a live
+ *   outline of the boxes.
  * - Mining: `msm:breakable` hardness, resistance, tool, minimum tier, requires tool.
  * - Light level (`msm:light_emitter`) and sound type.
  * - Drops: `loot` as drops itself, a loot table id, or none.
@@ -14,7 +17,9 @@
  */
 
 import type { Json } from '@msm/core';
-import { useState } from 'react';
+import { isSeeThroughBlock } from '@msm/plugin-blocks-items';
+import { useEffect, useState } from 'react';
+import { buttonClass } from '../../components/ui/Button';
 import { typingKey } from '../../forms/context';
 import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
@@ -23,13 +28,75 @@ import { AdvancedToggle, Section } from '../worldgen/parts';
 import {
   asObject,
   choicesAt,
+  effectiveBoxes,
   eventNames,
+  isWalkThrough,
+  MAX_SHAPE_BOXES,
+  type PixelBox,
   pathSetter,
   pointerOf,
   projectEffects,
+  SHAPE_PATH,
+  SHAPE_PRESET_LABELS,
+  SHAPE_PRESETS,
+  type ShapePreset,
+  shapeFromModel,
+  shapePreset,
+  shapeWithBoxes,
+  shapeWithPreset,
+  writtenBoxes,
 } from './blocks-items-model';
 import { EventsEditor } from './EventsEditor';
-import { CheckField, EventSelect, ModelField, ProblemsAt, TextField } from './parts';
+import { useBlocksItemsStudioHost } from './host';
+import { CheckField, EventSelect, ModelField, ProblemsAt, ShapePreview, TextField } from './parts';
+
+type TextureLayer = 'solid' | 'cutout' | 'translucent';
+
+/** The words of ADR 0059 D4 for each texture layer. */
+const LAYER_LABELS: Readonly<Record<TextureLayer, string>> = {
+  solid: 'solid',
+  cutout: 'cut-out',
+  translucent: 'see-through',
+};
+
+/** The corner fields of a box, in `[x1, y1, z1, x2, y2, z2]` order. */
+const BOX_FIELDS: readonly string[] = ['from x', 'from y', 'from z', 'to x', 'to y', 'to z'];
+
+/**
+ * The layer each project texture of `model` draws in, from the host; `null` while unknown or
+ * without a host. Reloads when the model or asset bytes change.
+ */
+function useTextureLayers(
+  model: string,
+): readonly { texture: string; layer: TextureLayer }[] | null {
+  const host = useBlocksItemsStudioHost();
+  const [layers, setLayers] = useState<readonly { texture: string; layer: TextureLayer }[] | null>(
+    null,
+  );
+  const read = host?.textureLayers;
+  const revision = host?.revision;
+  useEffect(() => {
+    // `revision` changes when asset bytes may have changed.
+    void revision;
+    if (read === undefined || model === '') {
+      setLayers(null);
+      return;
+    }
+    let live = true;
+    read(model).then(
+      (found) => {
+        if (live) setLayers(found);
+      },
+      () => {
+        if (live) setLayers(null);
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [read, model, revision]);
+  return layers;
+}
 
 type Drops = 'self' | 'table' | 'none';
 
@@ -45,7 +112,10 @@ export function BlockStudio(props: StudioProps) {
   // The block item object last unticked in this session, per element, so ticking "Has a block
   // item" again restores its stack size, rarity and creative tab.
   const [lastItem, setLastItem] = useState<{ id: string; item: Json } | null>(null);
+  // Why "From model" found no shape, for the element it was asked for.
+  const [fromModelError, setFromModelError] = useState<{ id: string; reason: string } | null>(null);
   const data = asObject(element.data);
+  const layers = useTextureLayers(typeof data.model === 'string' ? data.model : '');
   const set = pathSetter(element.data, onChange);
   const events = eventNames(element.data);
   const components = asObject(data.components);
@@ -85,6 +155,188 @@ export function BlockStudio(props: StudioProps) {
         onCommit={(value) => set(['display_name'], value, typingKey('/display_name'))}
       />
       {at(['display_name'])}
+    </Section>
+  );
+
+  const shape = components['msm:shape'];
+  const hasShape = shape !== undefined;
+  const preset = shapePreset(shape);
+  const custom =
+    hasShape && (preset === 'custom' || (preset === undefined && writtenBoxes(shape).length > 0));
+  const boxes = custom ? writtenBoxes(shape) : effectiveBoxes(shape);
+  const walkThrough = isWalkThrough(shape);
+  const seeThrough = isSeeThroughBlock(element.data);
+  const shapeObject = asObject(shape);
+  /** Whether the block would be see-through without an explicit `see_through`. */
+  const defaultSeeThrough = (() => {
+    const { see_through: _seeThrough, ...rest } = shapeObject;
+    return isSeeThroughBlock({ ...data, components: { ...components, 'msm:shape': rest } });
+  })();
+  const setBoxes = (next: PixelBox[]) => set([...SHAPE_PATH, 'boxes'], next);
+  const fromModelReason =
+    fromModelError !== null && fromModelError.id === element.id ? fromModelError.reason : null;
+  const holes = layers?.filter((entry) => entry.layer !== 'solid') ?? [];
+  const shapeSection = (
+    <Section title="Shape" testId="block-shape">
+      <div className="flex flex-wrap items-start gap-3">
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <div className="flex flex-wrap items-end gap-2">
+            <SelectField
+              label="Shape"
+              value={preset ?? (hasShape ? 'custom' : undefined)}
+              choices={SHAPE_PRESETS}
+              emptyLabel="(full solid cube)"
+              testId="block-shape-preset"
+              onChange={(value) =>
+                value === undefined
+                  ? set(SHAPE_PATH, undefined)
+                  : set(SHAPE_PATH, shapeWithPreset(shape, value as ShapePreset))
+              }
+            />
+            <button
+              type="button"
+              className={buttonClass}
+              data-testid="block-shape-from-model"
+              title="Read the boxes from the block's model (its elements, or a vanilla slab, carpet or cross parent)"
+              onClick={() => {
+                const found = shapeFromModel(
+                  project,
+                  typeof data.model === 'string' ? data.model : '',
+                );
+                if (!found.ok) {
+                  setFromModelError({ id: element.id, reason: found.reason });
+                  return;
+                }
+                setFromModelError(null);
+                set(SHAPE_PATH, shapeWithBoxes(shape, found));
+              }}
+            >
+              From model
+            </button>
+          </div>
+          <p className="text-muted text-xs" data-testid="block-shape-preset-label">
+            {preset !== undefined
+              ? SHAPE_PRESET_LABELS[preset]
+              : hasShape
+                ? SHAPE_PRESET_LABELS.custom
+                : 'Full solid cube (no shape set)'}
+            . A half block here is a fixed shape, not a stackable vanilla slab.
+          </p>
+          {fromModelReason !== null && (
+            <p
+              role="status"
+              className="text-warning text-xs"
+              data-testid="block-shape-from-model-error"
+            >
+              {fromModelReason}
+            </p>
+          )}
+          {custom && (
+            <div className="flex flex-col gap-1" data-testid="block-shape-boxes">
+              {boxes.map((box, index) => (
+                <div
+                  key={index}
+                  className="flex flex-wrap items-end gap-1"
+                  data-testid={`block-shape-box-${index}`}
+                >
+                  {BOX_FIELDS.map((field, axis) => (
+                    <NumberField
+                      key={field}
+                      label={`Box ${index + 1} ${field}`}
+                      value={box[axis]}
+                      testId={`block-shape-box-${index}-${axis}`}
+                      onCommit={(value) => {
+                        if (value === undefined) return;
+                        set(
+                          [...SHAPE_PATH, 'boxes', index, axis],
+                          value,
+                          typingKey(`/components/msm:shape/boxes/${index}/${axis}`),
+                        );
+                      }}
+                    />
+                  ))}
+                  <button
+                    type="button"
+                    className={buttonClass}
+                    aria-label={`Remove box ${index + 1}`}
+                    data-testid={`block-shape-box-${index}-remove`}
+                    disabled={boxes.length <= 1}
+                    onClick={() => setBoxes(boxes.filter((_, i) => i !== index))}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <div>
+                <button
+                  type="button"
+                  className={buttonClass}
+                  data-testid="block-shape-add-box"
+                  disabled={boxes.length >= MAX_SHAPE_BOXES}
+                  onClick={() => setBoxes([...boxes, [0, 0, 0, 16, 16, 16]])}
+                >
+                  Add box
+                </button>
+              </div>
+              <p className="text-muted text-xs">
+                Boxes are in pixels from 0 to 16, as in a model: from x, y, z to x, y, z. At most{' '}
+                {MAX_SHAPE_BOXES}.
+              </p>
+            </div>
+          )}
+          <CheckField
+            label="Walk-through (no collision, like plants)"
+            checked={walkThrough}
+            testId="block-shape-walk-through"
+            onChange={(checked) =>
+              set(
+                [...SHAPE_PATH, 'collision'],
+                checked ? false : preset === 'cross' ? true : undefined,
+              )
+            }
+          />
+          <CheckField
+            label="See-through (light passes, neighbours stay visible, like glass)"
+            checked={seeThrough}
+            testId="block-shape-see-through"
+            onChange={(checked) =>
+              set(
+                [...SHAPE_PATH, 'see_through'],
+                checked === defaultSeeThrough ? undefined : checked,
+              )
+            }
+          />
+          <div className="text-muted text-xs" data-testid="block-shape-layers">
+            {layers === null ? (
+              <p>
+                Textures choose how they draw: no transparent pixels draw solid, fully transparent
+                pixels cut-out, partly transparent pixels see-through.
+              </p>
+            ) : layers.length === 0 ? (
+              <p>The model uses no project textures, so the layer cannot be shown here.</p>
+            ) : (
+              <ul aria-label="Texture layers">
+                {layers.map((entry) => (
+                  <li key={entry.texture} data-testid={`block-shape-layer-${entry.texture}`}>
+                    {entry.texture}: {LAYER_LABELS[entry.layer]}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {holes.length > 0 && !seeThrough && (
+              <p role="status" className="text-warning" data-testid="block-shape-layer-warning">
+                Transparent pixels on a solid block show holes into the world: turn on
+                "See-through".
+              </p>
+            )}
+          </div>
+        </div>
+        <ShapePreview boxes={boxes} walkThrough={walkThrough} />
+      </div>
+      {at(SHAPE_PATH)}
+      {['preset', 'boxes', 'collision', 'see_through'].map((key) => (
+        <ProblemsAt key={key} problems={problems} pointer={pointerOf([...SHAPE_PATH, key])} />
+      ))}
     </Section>
   );
 
@@ -398,6 +650,7 @@ export function BlockStudio(props: StudioProps) {
       <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="block-advanced-toggle" />
       <ProblemsAt problems={problems} pointer="" />
       {appearance}
+      {shapeSection}
       {mining}
       {looks}
       {dropsSection}

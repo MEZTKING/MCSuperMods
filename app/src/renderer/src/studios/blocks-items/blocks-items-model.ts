@@ -11,6 +11,13 @@
  */
 
 import type { Element, Json, Project } from '@msm/core';
+import {
+  FULL_CUBE,
+  isCubeModel,
+  SHAPE_PRESET_BOXES,
+  SHAPE_PRESETS,
+  type ShapePreset,
+} from '@msm/plugin-blocks-items';
 import type { SchemaNode } from '@msm/schemas';
 import { childPointer, isJsonObject } from '../../forms/pointer';
 import { flattenUnion, resolveNode } from '../../forms/schema-utils';
@@ -488,4 +495,201 @@ export function pathSetter(data: Json, onChange: StudioChange) {
     }
     onChange(pointer, value, options);
   };
+}
+
+// Block shapes (ADR 0059) -------------------------------------------------------------------
+
+/** The element path of a block's `msm:shape` component. */
+export const SHAPE_PATH: readonly string[] = Object.freeze(['components', 'msm:shape']);
+
+/** The most boxes a shape holds (`boxes @ 1..16`). */
+export const MAX_SHAPE_BOXES = 16;
+
+/** The presets the Block Studio offers, in order (from the plugin). */
+export { SHAPE_PRESETS, type ShapePreset };
+
+/** The words the Block Studio shows for each preset. */
+export const SHAPE_PRESET_LABELS: Readonly<Record<ShapePreset, string>> = Object.freeze({
+  full: 'Full block',
+  slab_bottom: 'Bottom half',
+  slab_top: 'Top half',
+  carpet: 'Carpet',
+  pillar: 'Pillar',
+  cross: 'Plant (cross)',
+  custom: 'Custom boxes',
+});
+
+/** One pixel box `[x1, y1, z1, x2, y2, z2]`. */
+export type PixelBox = [number, number, number, number, number, number];
+
+const isPreset = (value: Json | undefined): value is ShapePreset =>
+  typeof value === 'string' && (SHAPE_PRESETS as readonly string[]).includes(value);
+
+/** The preset of a shape object, or `undefined` when it names none. */
+export function shapePreset(shape: Json | undefined): ShapePreset | undefined {
+  const preset = asObject(shape).preset;
+  return isPreset(preset) ? preset : undefined;
+}
+
+const isBox = (value: Json | undefined): value is PixelBox =>
+  Array.isArray(value) && value.length === 6 && value.every((entry) => typeof entry === 'number');
+
+/** The well-formed boxes written in a shape's `boxes`. */
+export function writtenBoxes(shape: Json | undefined): PixelBox[] {
+  const boxes = asObject(shape).boxes;
+  return Array.isArray(boxes) ? boxes.filter(isBox).map((box) => [...box] as PixelBox) : [];
+}
+
+/**
+ * The boxes a shape lowers to, for the preview: a preset's own boxes (except `custom`), else
+ * the written boxes, else the full cube.
+ */
+export function effectiveBoxes(shape: Json | undefined): PixelBox[] {
+  const preset = shapePreset(shape);
+  if (preset !== undefined && preset !== 'custom') {
+    return SHAPE_PRESET_BOXES[preset].map((box) => [...box] as PixelBox);
+  }
+  const written = writtenBoxes(shape);
+  return written.length > 0 ? written : [[...FULL_CUBE] as PixelBox];
+}
+
+/** Whether a block with this shape is walk-through (`collision` false; `cross` by default). */
+export function isWalkThrough(shape: Json | undefined): boolean {
+  const object = asObject(shape);
+  if (typeof object.collision === 'boolean') return !object.collision;
+  return shapePreset(shape) === 'cross';
+}
+
+/** What "From model" found: boxes to write as `custom`, or why there are none. */
+export type ShapeFromModel =
+  | { ok: true; boxes: PixelBox[]; walkThrough: boolean; source: string }
+  | { ok: false; reason: string };
+
+/** Vanilla model families "From model" knows besides the cubes (ADR 0059 D2). */
+const VANILLA_SHAPES: Readonly<Record<string, { preset: Exclude<ShapePreset, 'custom'> }>> =
+  Object.freeze({
+    'block/slab': { preset: 'slab_bottom' },
+    'block/slab_top': { preset: 'slab_top' },
+    'block/carpet': { preset: 'carpet' },
+    'block/cross': { preset: 'cross' },
+    'block/tinted_cross': { preset: 'cross' },
+  });
+
+/**
+ * The family of a vanilla block model path: the family models themselves, and by the game's
+ * naming the models made from them (`block/oak_slab`, `block/oak_slab_top`,
+ * `block/white_carpet`).
+ */
+function vanillaFamily(path: string): { preset: Exclude<ShapePreset, 'custom'> } | undefined {
+  const own = VANILLA_SHAPES[path];
+  if (own !== undefined) return own;
+  if (!path.startsWith('block/')) return undefined;
+  if (path.endsWith('_slab_top')) return { preset: 'slab_top' };
+  if (path.endsWith('_slab')) return { preset: 'slab_bottom' };
+  if (path.endsWith('_carpet')) return { preset: 'carpet' };
+  return undefined;
+}
+
+const namespacedModel = (id: string): string => (id.includes(':') ? id : `minecraft:${id}`);
+
+const clampPixel = (value: number): number => Math.min(16, Math.max(0, value));
+
+/** The boxes of a model's `elements` (`from`, `to`), clamped to the block; flat ones dropped. */
+function elementBoxes(elements: readonly Json[]): PixelBox[] {
+  const boxes: PixelBox[] = [];
+  for (const entry of elements) {
+    const { from, to } = asObject(entry);
+    if (!Array.isArray(from) || !Array.isArray(to) || from.length !== 3 || to.length !== 3)
+      continue;
+    const a = from.map((value) => (typeof value === 'number' ? clampPixel(value) : Number.NaN));
+    const b = to.map((value) => (typeof value === 'number' ? clampPixel(value) : Number.NaN));
+    if ([...a, ...b].some(Number.isNaN)) continue;
+    const low = a.map((value, i) => Math.min(value, b[i] as number));
+    const high = a.map((value, i) => Math.max(value, b[i] as number));
+    if (low.some((value, i) => value === high[i])) continue;
+    boxes.push([...low, ...high] as PixelBox);
+  }
+  return boxes;
+}
+
+/**
+ * The shape of block model `model` (ADR 0059 D2): the boxes of the first model with its own
+ * `elements`, following project parents, or the boxes of a known vanilla family (the `cube*`
+ * and `orientable*` models, `slab`, `slab_top`, `carpet`, `cross`, `tinted_cross`, and models
+ * named `*_slab`, `*_slab_top`, `*_carpet`; a cross is walk-through). Other vanilla models are
+ * not read (their files stay in the extraction cache).
+ *
+ * @param project - The project, for its `minecraft:model` elements.
+ * @param model - The block's model id.
+ */
+export function shapeFromModel(project: Project, model: string): ShapeFromModel {
+  if (model.trim() === '') return { ok: false, reason: 'The block has no model.' };
+  const seen = new Set<string>();
+  let current = namespacedModel(model);
+  for (;;) {
+    if (seen.has(current)) {
+      return { ok: false, reason: `The model "${model}" has a parent loop.` };
+    }
+    seen.add(current);
+    const own = findElement(project, current, MODEL_KIND);
+    if (own === undefined) break;
+    const data = asObject(own.data);
+    if (Array.isArray(data.elements) && data.elements.length > 0) {
+      const boxes = elementBoxes(data.elements);
+      if (boxes.length === 0) {
+        return { ok: false, reason: `The elements of "${current}" have no volume.` };
+      }
+      if (boxes.length > MAX_SHAPE_BOXES) {
+        return {
+          ok: false,
+          reason: `"${current}" has ${boxes.length} boxes; a shape holds at most ${MAX_SHAPE_BOXES}.`,
+        };
+      }
+      return { ok: true, boxes, walkThrough: false, source: current };
+    }
+    if (typeof data.parent !== 'string' || data.parent === '') {
+      return { ok: false, reason: `"${current}" has no elements and no parent.` };
+    }
+    current = namespacedModel(data.parent);
+  }
+  const path = current.startsWith('minecraft:') ? current.slice('minecraft:'.length) : undefined;
+  const family = path === undefined ? undefined : vanillaFamily(path);
+  if (family !== undefined) {
+    return {
+      ok: true,
+      boxes: SHAPE_PRESET_BOXES[family.preset].map((box) => [...box] as PixelBox),
+      walkThrough: family.preset === 'cross',
+      source: current,
+    };
+  }
+  if (path !== undefined && isCubeModel(current)) {
+    return { ok: true, boxes: [[...FULL_CUBE] as PixelBox], walkThrough: false, source: current };
+  }
+  return {
+    ok: false,
+    reason: `"${current}" is not a project model, a cube, a slab, a carpet or a cross, so its shape cannot be read.`,
+  };
+}
+
+/**
+ * The `msm:shape` object "From model" writes: `custom` with the found boxes, keeping
+ * `see_through`; a cross also sets `collision: false`.
+ */
+export function shapeWithBoxes(
+  shape: Json | undefined,
+  found: { boxes: PixelBox[]; walkThrough: boolean },
+): JsonObject {
+  const next: JsonObject = { ...asObject(shape), preset: 'custom', boxes: found.boxes };
+  if (found.walkThrough) next.collision = false;
+  return next;
+}
+
+/**
+ * The `msm:shape` object after choosing `preset`: other presets drop written `boxes` (lowering
+ * ignores them); `custom` starts from the boxes the shape showed.
+ */
+export function shapeWithPreset(shape: Json | undefined, preset: ShapePreset): JsonObject {
+  const { boxes: _boxes, ...rest } = asObject(shape);
+  if (preset === 'custom') return { ...rest, preset, boxes: effectiveBoxes(shape) };
+  return { ...rest, preset };
 }

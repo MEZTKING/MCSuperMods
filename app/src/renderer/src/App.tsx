@@ -1674,6 +1674,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   const blocksItemsHost: BlocksItemsStudioHost = {
     thumbnail,
     revision: assetRevision,
+    textureLayers: (model) => session.textureLayers(model),
     paintTexture: (namespace, path, size) => {
       const exists = project?.namespaces
         .find((entry) => entry.name === namespace)

@@ -151,6 +151,13 @@ import {
   scriptTranspiler,
 } from './scripting-problems';
 import {
+  type BlockTexture,
+  modelTextures,
+  type TextureLayer,
+  TextureLayerCache,
+  transparentTextureProblems,
+} from './texture-layers';
+import {
   blockingValidatorErrors,
   changedKinds,
   collectValidators,
@@ -674,6 +681,9 @@ function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
 }
 
 /** Lowering problem codes {@link ProjectSession.checkProject} reports. */
+/** Kinds whose changes can change the texture transparency warnings (ADR 0059 D4). */
+const TEXTURE_KINDS: ReadonlySet<string> = new Set(['msm:block', 'minecraft:model']);
+
 const LOWERING_CONFLICT_CODES: ReadonlySet<string> = new Set([
   ProblemCodes.loweringConflict,
   ProblemCodes.loweringMergeConflict,
@@ -776,6 +786,12 @@ export class ProjectSession {
   /** Numbers the stored asset writes (ADR 0045). */
   #writeCounter = 0;
   #assetProblems: Problem[] = [];
+  /** Layers of project textures, cleared when asset bytes may have changed (ADR 0059 D4). */
+  readonly #textureLayers = new TextureLayerCache();
+  /** `blocks-items.transparent-texture-on-solid-block` warnings of the last texture pass. */
+  #textureProblems: Problem[] = [];
+  /** Whether blocks, models or texture bytes changed since the last texture pass. */
+  #texturesPending = false;
   #generation = 0;
   #snapshot: SessionSnapshot = EMPTY;
 
@@ -1835,6 +1851,11 @@ export class ProjectSession {
       }
       result.imported.push(path);
     }
+    if (result.imported.length > 0) {
+      // Bytes replaced in place run no command; their layers may have changed.
+      this.#texturesChanged();
+      this.#scheduleValidation(this.#validationDelay);
+    }
     return result;
   }
 
@@ -2051,6 +2072,49 @@ export class ProjectSession {
   /** Reads a project asset's bytes. */
   readAsset(namespace: string, path: string): Promise<Uint8Array> {
     return this.#fs.readFile(`assets/${namespace}/${path}`);
+  }
+
+  /**
+   * The layer each project texture of block model `model` draws in (ADR 0059 D4), from the
+   * texture pixels, cached per file; textures that cannot be read are left out.
+   *
+   * @param model - The block's model id.
+   */
+  async textureLayers(model: string): Promise<{ texture: string; layer: TextureLayer }[]> {
+    const project = this.snapshot.project;
+    if (project === null || model === '') return [];
+    await this.#assetOps;
+    const out: { texture: string; layer: TextureLayer }[] = [];
+    for (const texture of modelTextures(project, model)) {
+      const layer = await this.#textureLayer(texture);
+      if (layer !== undefined) out.push({ texture: texture.texture, layer });
+    }
+    return out;
+  }
+
+  #textureLayer(texture: BlockTexture): Promise<TextureLayer | undefined> {
+    return this.#textureLayers.layer(texture, (namespace, path) => this.readAsset(namespace, path));
+  }
+
+  /** Forgets cached texture layers and queues a texture pass (asset bytes changed). */
+  #texturesChanged(): void {
+    this.#textureLayers.clear();
+    this.#texturesPending = true;
+  }
+
+  /**
+   * The texture pass (ADR 0059 D4): re-reads the transparency warnings when blocks, models or
+   * texture bytes changed, after pending asset byte moves.
+   */
+  async #checkTextures(project: Project, generation: number): Promise<void> {
+    if (!this.#texturesPending) return;
+    this.#texturesPending = false;
+    await this.#assetOps;
+    const problems = await transparentTextureProblems(project, (texture) =>
+      this.#textureLayer(texture),
+    );
+    if (generation !== this.#generation) return;
+    this.#textureProblems = problems;
   }
 
   // Export -------------------------------------------------------------------------------
@@ -2544,7 +2608,10 @@ export class ProjectSession {
 
   async #validatePending(): Promise<void> {
     const generation = this.#generation;
-    if (this.#stack === null || (this.#pending.size === 0 && this.#pendingValidators.size === 0)) {
+    if (
+      this.#stack === null ||
+      (this.#pending.size === 0 && this.#pendingValidators.size === 0 && !this.#texturesPending)
+    ) {
       return;
     }
     let context: SchemaContext;
@@ -2597,6 +2664,8 @@ export class ProjectSession {
       }
     }
     await this.#runValidators(context, project);
+    if (generation !== this.#generation || this.#stack === null) return;
+    await this.#checkTextures(project, generation);
     if (generation !== this.#generation || this.#stack === null) return;
     this.#publish();
     if (functions.length > 0) await this.#checkFunctions(functions, context, project, generation);
@@ -2807,10 +2876,20 @@ export class ProjectSession {
         this.#pending.delete(id);
       }
     }
+    if (
+      event.effects.some(isAssetWrite) ||
+      [...assetKeys(this.#lastState)].join('\n') !== [...assetKeys(event.state)].join('\n')
+    ) {
+      this.#texturesChanged();
+    } else if (
+      [...changedKinds(this.#lastState, event.state)].some((kind) => TEXTURE_KINDS.has(kind))
+    ) {
+      this.#texturesPending = true;
+    }
     this.#syncAssetFiles(this.#lastState, event.state);
     this.#replayAssetWrites(event);
     this.#lastState = event.state;
-    if (this.#pending.size > 0 || this.#pendingValidators.size > 0) {
+    if (this.#pending.size > 0 || this.#pendingValidators.size > 0 || this.#texturesPending) {
       this.#scheduleValidation(this.#validationDelay);
     }
     this.#publish();
@@ -2889,6 +2968,8 @@ export class ProjectSession {
           this.#publish();
         }
       }
+      // Layers read while the bytes were moving are stale.
+      this.#textureLayers.clear();
     });
   }
 
@@ -3050,6 +3131,7 @@ export class ProjectSession {
     this.#lastState = project;
     for (const id of elementsById(project).keys()) this.#pending.add(id);
     for (const entry of this.#validators) this.#pendingValidators.add(entry.validator.id);
+    this.#texturesChanged();
     this.#publish();
     // Full pass on open, without the debounce.
     if (this.#pending.size > 0 || this.#pendingValidators.size > 0) this.#scheduleValidation(0);
@@ -3073,6 +3155,9 @@ export class ProjectSession {
     this.#pendingValidators = new Set();
     this.#lastState = null;
     this.#assetProblems = [];
+    this.#textureProblems = [];
+    this.#textureLayers.clear();
+    this.#texturesPending = false;
     this.#renameProblems = [];
     this.#referenceCache = null;
     this.#scriptingProblem = null;
@@ -3115,6 +3200,7 @@ export class ProjectSession {
           ...this.#unavailablePluginProblems(project),
           ...schemaProblems,
           ...validatorProblems,
+          ...this.#textureProblems,
         ],
       };
     }
