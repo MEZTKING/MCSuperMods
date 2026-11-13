@@ -17,6 +17,9 @@ import { parseVanillaMcdocSymbols, type VanillaMcdocSymbols } from '../symbols/p
  *   written to `msm/<ns>/entity/<path>.json` (ADR 0028).
  * - `geoModel` / `animation`: element data of the `msm:geo_model` and `msm:animation` kinds,
  *   the Bedrock geometry and animation JSON GeckoLib reads (ADR 0029).
+ * - `effect` / `effectDefinition`: element data of the `msm:effect` kind (definition plus
+ *   `display_name`) and the runtime definition written to `msm/<ns>/effect/<path>.json`
+ *   (ADR 0055).
  */
 export const MSM_SCHEMA_REFS = {
   block: 'msm:block',
@@ -28,6 +31,8 @@ export const MSM_SCHEMA_REFS = {
   entityDefinition: 'msm:entity_definition',
   geoModel: 'msm:geo_model',
   animation: 'msm:animation',
+  effect: 'msm:effect',
+  effectDefinition: 'msm:effect_definition',
 } as const;
 
 /** The mcdoc type path behind each MSM schema reference. */
@@ -41,6 +46,8 @@ export const MSM_TYPE_PATHS = {
   entityDefinition: '::msm::definition::Entity',
   geoModel: '::msm::geometry::Geometry',
   animation: '::msm::animation::Animations',
+  effect: '::msm::element::Effect',
+  effectDefinition: '::msm::definition::Effect',
   action: '::msm::action::Action',
 } as const;
 
@@ -55,6 +62,8 @@ export const MSM_SCHEMA_ALIASES: Readonly<Record<string, string>> = Object.freez
   [MSM_SCHEMA_REFS.entityDefinition]: MSM_TYPE_PATHS.entityDefinition,
   [MSM_SCHEMA_REFS.geoModel]: MSM_TYPE_PATHS.geoModel,
   [MSM_SCHEMA_REFS.animation]: MSM_TYPE_PATHS.animation,
+  [MSM_SCHEMA_REFS.effect]: MSM_TYPE_PATHS.effect,
+  [MSM_SCHEMA_REFS.effectDefinition]: MSM_TYPE_PATHS.effectDefinition,
 });
 
 let parsed: VanillaMcdocSymbols | undefined;

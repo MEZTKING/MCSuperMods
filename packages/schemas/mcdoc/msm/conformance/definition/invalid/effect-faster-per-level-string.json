@@ -1,0 +1,21 @@
+{
+  "category": "harmful",
+  "color": 5149489,
+  "components": {
+    "msm:on_tick": {
+      "event": "mymod:x",
+      "faster_per_level": "yes"
+    }
+  },
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "amount": 1,
+          "type": "heal"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

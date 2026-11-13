@@ -1,0 +1,22 @@
+{
+  "attribute_modifiers": [
+    {
+      "amount": 4,
+      "attribute": "minecraft:max_health",
+      "operation": "add_value"
+    },
+    {
+      "amount": 0.1,
+      "attribute": "minecraft:scale",
+      "operation": "add_multiplied_base"
+    },
+    {
+      "amount": -0.5,
+      "attribute": "minecraft:jump_strength",
+      "operation": "add_multiplied_total"
+    }
+  ],
+  "category": "beneficial",
+  "color": 16766720,
+  "format": 1
+}

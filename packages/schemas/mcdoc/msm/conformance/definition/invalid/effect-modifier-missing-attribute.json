@@ -1,0 +1,11 @@
+{
+  "attribute_modifiers": [
+    {
+      "amount": 2,
+      "operation": "add_value"
+    }
+  ],
+  "category": "harmful",
+  "color": 5149489,
+  "format": 1
+}

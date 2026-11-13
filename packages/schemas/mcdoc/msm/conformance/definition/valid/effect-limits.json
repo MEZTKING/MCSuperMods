@@ -1,0 +1,24 @@
+{
+  "attribute_modifiers": [],
+  "category": "beneficial",
+  "color": 16777215,
+  "components": {
+    "msm:on_tick": {
+      "event": "mymod:x",
+      "faster_per_level": false,
+      "interval_ticks": 1
+    }
+  },
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "amount": 0,
+          "target": "self",
+          "type": "heal"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

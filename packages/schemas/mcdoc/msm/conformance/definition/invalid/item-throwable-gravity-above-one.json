@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:throwable": {
+      "gravity": 2
+    }
+  },
+  "format": 1
+}

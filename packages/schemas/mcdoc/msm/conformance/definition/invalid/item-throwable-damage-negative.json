@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:throwable": {
+      "damage": -1
+    }
+  },
+  "format": 1
+}

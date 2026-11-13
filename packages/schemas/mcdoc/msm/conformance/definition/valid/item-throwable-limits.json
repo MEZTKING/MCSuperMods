@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:throwable": {
+      "charge_ticks": 200,
+      "cooldown_ticks": 0,
+      "damage": 0,
+      "dispensable": true,
+      "gravity": 0,
+      "inaccuracy": 10,
+      "speed": 0.1
+    }
+  },
+  "format": 1
+}

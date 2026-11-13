@@ -1,0 +1,12 @@
+{
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "type": "damage"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

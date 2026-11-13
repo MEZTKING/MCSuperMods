@@ -1,0 +1,21 @@
+{
+  "category": "harmful",
+  "color": 5149489,
+  "components": {
+    "msm:on_tick": {
+      "event": "mymod:hurt",
+      "interval_ticks": 25
+    }
+  },
+  "events": {
+    "mymod:hurt": {
+      "actions": [
+        {
+          "amount": 1,
+          "type": "damage"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

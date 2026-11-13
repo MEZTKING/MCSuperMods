@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:throwable": {
+      "charge_ticks": 0,
+      "gravity": 1,
+      "inaccuracy": 0,
+      "speed": 5
+    }
+  },
+  "format": 1
+}

@@ -1,0 +1,46 @@
+{
+  "components": {
+    "msm:throwable": {
+      "after_throw": "drop",
+      "charge_ticks": 5,
+      "cooldown_ticks": 10,
+      "damage": 3,
+      "dispensable": true,
+      "gravity": 0.04,
+      "inaccuracy": 0.5,
+      "on_hit_block": {
+        "event": "mymod:land"
+      },
+      "on_hit_entity": {
+        "event": "mymod:hit"
+      },
+      "sound": "minecraft:entity.snowball.throw",
+      "speed": 2
+    }
+  },
+  "display_name": "Ruby Dart",
+  "events": {
+    "mymod:hit": {
+      "actions": [
+        {
+          "effect": "mymod:ruby_rush",
+          "seconds": 8,
+          "target": "other",
+          "type": "apply_effect"
+        }
+      ]
+    },
+    "mymod:land": {
+      "actions": [
+        {
+          "count": 3,
+          "particle": "minecraft:crit",
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 16,
+  "model": "mymod:item/ruby_dart"
+}

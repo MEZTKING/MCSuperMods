@@ -1,0 +1,60 @@
+{
+  "attribute_modifiers": [
+    {
+      "amount": 0.2,
+      "attribute": "minecraft:movement_speed",
+      "operation": "add_multiplied_total"
+    },
+    {
+      "amount": 1.5,
+      "attribute": "minecraft:attack_damage",
+      "operation": "add_value"
+    }
+  ],
+  "category": "beneficial",
+  "color": 14423100,
+  "components": {
+    "msm:on_end": {
+      "event": "mymod:end"
+    },
+    "msm:on_start": {
+      "event": "mymod:start"
+    },
+    "msm:on_tick": {
+      "event": "mymod:tick",
+      "faster_per_level": true,
+      "interval_ticks": 40
+    }
+  },
+  "events": {
+    "mymod:end": {
+      "actions": [
+        {
+          "count": 8,
+          "particle": "minecraft:poof",
+          "spread": 0.5,
+          "type": "spawn_particle"
+        }
+      ]
+    },
+    "mymod:start": {
+      "actions": [
+        {
+          "sound": "minecraft:block.beacon.activate",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:tick": {
+      "actions": [
+        {
+          "amount": 1,
+          "type": "heal"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "particle": "minecraft:happy_villager",
+  "sound": "minecraft:entity.player.levelup"
+}

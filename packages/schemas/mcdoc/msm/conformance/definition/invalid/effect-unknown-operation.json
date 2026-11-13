@@ -1,0 +1,12 @@
+{
+  "attribute_modifiers": [
+    {
+      "amount": 2,
+      "attribute": "minecraft:armor",
+      "operation": "multiply"
+    }
+  ],
+  "category": "harmful",
+  "color": 5149489,
+  "format": 1
+}

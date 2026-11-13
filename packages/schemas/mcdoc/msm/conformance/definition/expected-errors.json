@@ -7,6 +7,10 @@
     "code": "schema.invalid-enum",
     "path": "/sound_type"
   },
+  "block-damage-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/events/mymod:x/actions/0/amount"
+  },
   "block-emit-negative.json": {
     "code": "schema.out-of-range",
     "path": "/components/msm:redstone/emit"
@@ -59,6 +63,62 @@
     "code": "schema.invalid-enum",
     "path": "/events/mymod:x/actions/0/type"
   },
+  "effect-bad-category.json": {
+    "code": "schema.invalid-enum",
+    "path": "/category"
+  },
+  "effect-color-fraction.json": {
+    "code": "schema.not-integer",
+    "path": "/color"
+  },
+  "effect-color-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/color"
+  },
+  "effect-color-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/color"
+  },
+  "effect-color-too-large.json": {
+    "code": "schema.out-of-range",
+    "path": "/color"
+  },
+  "effect-faster-per-level-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:on_tick/faster_per_level"
+  },
+  "effect-format-2.json": {
+    "code": "schema.invalid-literal",
+    "path": "/format"
+  },
+  "effect-missing-category.json": {
+    "code": "schema.missing-field",
+    "path": "/category"
+  },
+  "effect-missing-color.json": {
+    "code": "schema.missing-field",
+    "path": "/color"
+  },
+  "effect-modifier-amount-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/attribute_modifiers/0/amount"
+  },
+  "effect-modifier-missing-attribute.json": {
+    "code": "schema.missing-field",
+    "path": "/attribute_modifiers/0/attribute"
+  },
+  "effect-on-start-missing-event.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:on_start/event"
+  },
+  "effect-tick-interval-zero.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:on_tick/interval_ticks"
+  },
+  "effect-unknown-operation.json": {
+    "code": "schema.invalid-enum",
+    "path": "/attribute_modifiers/0/operation"
+  },
   "entity-bad-category.json": {
     "code": "schema.invalid-enum",
     "path": "/category"
@@ -78,6 +138,10 @@
   "entity-goal-priority-fraction.json": {
     "code": "schema.not-integer",
     "path": "/components/msm:ai_goals/goals/0/priority"
+  },
+  "entity-heal-amount-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/events/mymod:x/actions/0/amount"
   },
   "entity-health-negative.json": {
     "code": "schema.out-of-range",
@@ -179,6 +243,10 @@
     "code": "schema.missing-field",
     "path": "/components/msm:consumable/seconds"
   },
+  "item-damage-missing-amount.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:x/actions/0/amount"
+  },
   "item-death-protection-chance-2.json": {
     "code": "schema.out-of-range",
     "path": "/components/msm:death_protection/effects/0/chance"
@@ -206,6 +274,10 @@
   "item-give-count-zero.json": {
     "code": "schema.out-of-range",
     "path": "/events/mymod:x/actions/0/count"
+  },
+  "item-heal-bad-target.json": {
+    "code": "schema.invalid-enum",
+    "path": "/events/mymod:x/actions/0/target"
   },
   "item-launch-too-strong.json": {
     "code": "schema.out-of-range",
@@ -246,6 +318,46 @@
   "item-stack-zero.json": {
     "code": "schema.out-of-range",
     "path": "/max_stack_size"
+  },
+  "item-throwable-bad-after-throw.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:throwable/after_throw"
+  },
+  "item-throwable-charge-fraction.json": {
+    "code": "schema.not-integer",
+    "path": "/components/msm:throwable/charge_ticks"
+  },
+  "item-throwable-charge-too-long.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:throwable/charge_ticks"
+  },
+  "item-throwable-damage-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:throwable/damage"
+  },
+  "item-throwable-dispensable-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:throwable/dispensable"
+  },
+  "item-throwable-gravity-above-one.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:throwable/gravity"
+  },
+  "item-throwable-hit-missing-event.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:throwable/on_hit_entity/event"
+  },
+  "item-throwable-inaccuracy-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:throwable/inaccuracy"
+  },
+  "item-throwable-speed-too-fast.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:throwable/speed"
+  },
+  "item-throwable-speed-zero.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:throwable/speed"
   },
   "item-tool-material-negative-speed.json": {
     "code": "schema.out-of-range",

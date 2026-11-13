@@ -1,0 +1,54 @@
+{
+  "attribute_modifiers": [
+    {
+      "amount": 0.2,
+      "attribute": "minecraft:movement_speed",
+      "operation": "add_multiplied_total"
+    }
+  ],
+  "category": "beneficial",
+  "color": 14423100,
+  "components": {
+    "msm:on_end": {
+      "event": "mymod:end"
+    },
+    "msm:on_start": {
+      "event": "mymod:start"
+    },
+    "msm:on_tick": {
+      "event": "mymod:tick",
+      "faster_per_level": true,
+      "interval_ticks": 50
+    }
+  },
+  "display_name": "Ruby Rush",
+  "events": {
+    "mymod:end": {
+      "actions": [
+        {
+          "amount": 1,
+          "type": "damage"
+        }
+      ]
+    },
+    "mymod:start": {
+      "actions": [
+        {
+          "sound": "minecraft:block.beacon.activate",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:tick": {
+      "actions": [
+        {
+          "amount": 1,
+          "type": "heal"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "particle": "minecraft:happy_villager",
+  "sound": "minecraft:entity.player.levelup"
+}

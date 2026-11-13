@@ -14,7 +14,8 @@ import {
  * The MSM conformance corpus (ADR 0025 D7, ADR 0028 D7), shared with the runtime's JUnit tests:
  * `conformance/definition/` holds runtime definitions, `conformance/element/` element data,
  * `conformance/geometry/` and `conformance/animation/` the GeckoLib JSON of the
- * `msm:geo_model` and `msm:animation` elements. The file name prefix selects the schema;
+ * `msm:geo_model` and `msm:animation` elements. Effect files (`effect-`) are ADR 0055's
+ * `msm:effect`. The file name prefix selects the schema;
  * `expected-errors.json` maps each invalid file to one error (pointer and code) that
  * `validateJson` must report.
  */
@@ -27,12 +28,14 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     block: MSM_SCHEMA_REFS.blockDefinition,
     item: MSM_SCHEMA_REFS.itemDefinition,
     entity: MSM_SCHEMA_REFS.entityDefinition,
+    effect: MSM_SCHEMA_REFS.effectDefinition,
   },
   element: {
     block: MSM_SCHEMA_REFS.block,
     item: MSM_SCHEMA_REFS.item,
     mod: MSM_SCHEMA_REFS.mod,
     entity: MSM_SCHEMA_REFS.entity,
+    effect: MSM_SCHEMA_REFS.effect,
   },
   geometry: { geometry: MSM_SCHEMA_REFS.geoModel },
   animation: { animation: MSM_SCHEMA_REFS.animation },
@@ -82,7 +85,9 @@ describe('MSM mcdoc symbols', () => {
     expect(index.resolveSchemaRef(MSM_SCHEMA_REFS.block)).toBe(index.resolve(MSM_TYPE_PATHS.block));
     expect(index.dispatcherKeys('msm:action')).toEqual([
       'apply_effect',
+      'damage',
       'give_item',
+      'heal',
       'launch',
       'play_animation',
       'play_sound',
@@ -195,7 +200,7 @@ describe('MSM conformance corpus coverage', () => {
     return { keys, actions };
   };
 
-  it('uses every action type in a valid entity definition, and every other one in a valid block and item definition', () => {
+  it('uses every action type in a valid entity definition, and every other one in a valid block, item and effect definition', () => {
     const all = index.dispatcherKeys('msm:action');
     const definitionActions = (prefix: string): string[] =>
       [...covered('definition', prefix).actions].sort();
@@ -204,6 +209,29 @@ describe('MSM conformance corpus coverage', () => {
     const blockAndItem = all.filter((type) => type !== 'play_animation');
     expect(definitionActions('block')).toEqual(blockAndItem);
     expect(definitionActions('item')).toEqual(blockAndItem);
+    expect(definitionActions('effect')).toEqual(blockAndItem);
+  });
+
+  it.each([
+    ['definition', 'effect-', 8, 10],
+    ['definition', 'item-throwable-', 6, 8],
+  ] as const)(
+    'has enough %s %s cases (ADR 0055, ADR 0056)',
+    (group, prefix, minValid, minInvalid) => {
+      const count = (kind: 'valid' | 'invalid') =>
+        files(group, kind).filter((name) => name.startsWith(prefix)).length;
+      expect(count('valid')).toBeGreaterThanOrEqual(minValid);
+      expect(count('invalid')).toBeGreaterThanOrEqual(minInvalid);
+    },
+  );
+
+  it.each(['damage', 'heal'])('has valid and invalid %s action cases', (type) => {
+    const uses = (kind: 'valid' | 'invalid') =>
+      files('definition', kind).filter((name) =>
+        JSON.stringify(read('definition', kind, name)).includes(`"type":"${type}"`),
+      ).length;
+    expect(uses('valid')).toBeGreaterThanOrEqual(2);
+    expect(uses('invalid')).toBeGreaterThanOrEqual(2);
   });
 
   it('uses every goal type in a valid entity definition and element', () => {
@@ -231,6 +259,8 @@ describe('MSM conformance corpus coverage', () => {
     ['element', 'mod', MSM_SCHEMA_REFS.mod],
     ['definition', 'entity', MSM_SCHEMA_REFS.entityDefinition],
     ['element', 'entity', MSM_SCHEMA_REFS.entity],
+    ['definition', 'effect', MSM_SCHEMA_REFS.effectDefinition],
+    ['element', 'effect', MSM_SCHEMA_REFS.effect],
     ['geometry', 'geometry', MSM_SCHEMA_REFS.geoModel],
     ['animation', 'animation', MSM_SCHEMA_REFS.animation],
   ] as const)('sets every %s %s field in some valid file', (group, prefix, ref) => {

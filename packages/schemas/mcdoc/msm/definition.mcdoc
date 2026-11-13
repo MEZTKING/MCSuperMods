@@ -1,6 +1,7 @@
-// MSM definition format v1: the runtime definitions of blocks, items (ADR 0025 D2, D3) and
-// entities (ADR 0028 D2). Lowering writes these to `msm/<ns>/block/<path>.json`,
-// `msm/<ns>/item/<path>.json` and `msm/<ns>/entity/<path>.json`.
+// MSM definition format v1: the runtime definitions of blocks, items (ADR 0025 D2, D3),
+// entities (ADR 0028 D2) and mob effects (ADR 0055 D2). Lowering writes these to
+// `msm/<ns>/block/<path>.json`, `msm/<ns>/item/<path>.json`, `msm/<ns>/entity/<path>.json` and
+// `msm/<ns>/effect/<path>.json`.
 
 use super::action::Event
 
@@ -362,21 +363,76 @@ struct DeathProtection {
 	clear_effects?: boolean,
 }
 
+/// What happens to a thrown item when it lands (ADR 0056 D1).
+enum(string) AfterThrow {
+	/// Each throw uses one item from the stack, as a snowball does.
+	Consume = "consume",
+	/// The stack keeps its item; the thrown copy disappears when it lands.
+	Keep = "keep",
+	/// The thrown item drops where it lands and can be picked up again, as a throwing knife.
+	Drop = "drop",
+	/// The thrown item goes back into the thrower's inventory when it lands, or drops at their
+	/// feet when it does not fit (no return flight).
+	Return = "return",
+}
+
+/// An event fired when a thrown item hits something.
+struct OnThrownHit {
+	/// An event id declared in `events`.
+	event: string,
+}
+
+/// Makes the item throwable (ADR 0056 D1): using it throws a copy that flies as the shared
+/// `msm_runtime:thrown_item` entity and is drawn as the item's picture. Runtimes older than
+/// 1.4.0 ignore the component.
+struct Throwable {
+	/// Launch speed in blocks per tick; defaults to 1.5 (a snowball; a trident is 2.5).
+	speed?: float @ 0.1..5,
+	/// Spread of the throw; defaults to 1.
+	inaccuracy?: float @ 0..10,
+	/// Downward acceleration in blocks per tick squared; defaults to 0.03 (a snowball).
+	gravity?: float @ 0..1,
+	/// Damage in half hearts dealt to the entity hit, as thrown damage by the thrower; defaults
+	/// to 0.
+	damage?: float @ 0..,
+	/// Ticks the player must hold use before releasing throws (a trident needs 10); defaults to
+	/// 0, which throws at once.
+	charge_ticks?: int @ 0..200,
+	/// Defaults to `consume`. `keep`, `drop` and `return` take one durability per throw when the
+	/// item has `msm:durability`.
+	after_throw?: AfterThrow,
+	/// Ticks before the item can be thrown again; defaults to 0.
+	cooldown_ticks?: int @ 0..,
+	/// Sound played on throwing; defaults to `minecraft:entity.snowball.throw`.
+	sound?: #[id="sound_event"] string,
+	/// Whether a dispenser throws the item; defaults to true.
+	dispensable?: boolean,
+	/// Fires when the thrown item hits an entity, after `damage`; `other` is the entity hit.
+	on_hit_entity?: OnThrownHit,
+	/// Fires when the thrown item hits a block.
+	on_hit_block?: OnThrownHit,
+}
+
 /// Runtime item components.
 struct ItemComponents {
 	"msm:food"?: Food,
 	"msm:tool"?: Tool,
-	/// An armour piece; not together with `msm:tool`, `msm:ranged_weapon` or `msm:shield`
-	/// (checked by the validators).
+	/// An armour piece; not together with `msm:tool`, `msm:ranged_weapon`, `msm:shield` or
+	/// `msm:throwable` (checked by the validators).
 	"msm:armor"?: Armor,
 	"msm:durability"?: Durability,
 	"msm:on_use"?: OnUse,
 	/// Eating or drinking: effects, time, sound, the item left over and a cooldown.
 	"msm:consumable"?: Consumable,
-	/// A bow or crossbow; not together with `msm:tool`, `msm:armor` or `msm:shield`.
+	/// A bow or crossbow; not together with `msm:tool`, `msm:armor`, `msm:shield` or
+	/// `msm:throwable`.
 	"msm:ranged_weapon"?: RangedWeapon,
-	/// Blocks attacks; not together with `msm:tool`, `msm:armor` or `msm:ranged_weapon`.
+	/// Blocks attacks; not together with `msm:tool`, `msm:armor`, `msm:ranged_weapon` or
+	/// `msm:throwable`.
 	"msm:shield"?: Shield,
+	/// Thrown on use; not together with `msm:armor`, `msm:ranged_weapon`, `msm:shield`,
+	/// `msm:consumable`, `msm:food` or a `mace` tool (checked by the validators).
+	"msm:throwable"?: Throwable,
 	/// Saves the holder from death.
 	"msm:death_protection"?: DeathProtection,
 	/// Vanilla data components by id, each in its vanilla JSON form (ADR 0044 D1), checked
@@ -678,4 +734,89 @@ struct Entity {
 	spawn_egg?: (SpawnEgg | false),
 	/// Behaviour components; `msm:animated_model` is required.
 	components: EntityComponents,
+}
+
+/// The category of a mob effect, which sets the colour of its name in tooltips.
+enum(string) EffectCategory {
+	Beneficial = "beneficial",
+	Harmful = "harmful",
+	Neutral = "neutral",
+}
+
+/// How an attribute modifier combines with the attribute (vanilla `AttributeModifier.Operation`).
+enum(string) AttributeOperation {
+	/// Adds the amount to the base value.
+	AddValue = "add_value",
+	/// Adds the amount times the base value.
+	AddMultipliedBase = "add_multiplied_base",
+	/// Multiplies the total by one plus the amount.
+	AddMultipliedTotal = "add_multiplied_total",
+}
+
+/// A stat change while the effect is active; the amount is multiplied by the effect level, as
+/// vanilla does.
+struct EffectAttributeModifier {
+	/// The attribute, such as `minecraft:movement_speed`.
+	attribute: #[id="attribute"] string,
+	/// The amount at level I.
+	amount: float,
+	operation: AttributeOperation,
+}
+
+/// Fires an event once when the effect starts on an entity.
+struct OnEffectStart {
+	/// An event id declared in `events`.
+	event: string,
+}
+
+/// Fires an event repeatedly while the effect is active.
+struct OnEffectTick {
+	/// An event id declared in `events`.
+	event: string,
+	/// Ticks between two firings; defaults to 20.
+	interval_ticks?: int @ 1..,
+	/// Whether higher levels fire more often (the interval is divided by the level); defaults
+	/// to false.
+	faster_per_level?: boolean,
+}
+
+/// Fires an event when the effect is removed from an entity.
+struct OnEffectEnd {
+	/// An event id declared in `events`.
+	event: string,
+}
+
+/// Mob effect components (ADR 0055 D2). In these events the holder is both `self` and `other`.
+struct EffectComponents {
+	"msm:on_start"?: OnEffectStart,
+	"msm:on_tick"?: OnEffectTick,
+	"msm:on_end"?: OnEffectEnd,
+}
+
+/// Fields every effect definition and effect element share. The icon is not a field: it is the
+/// 18 by 18 texture `assets/<ns>/textures/mob_effect/<path>.png`.
+struct EffectCommon {
+	/// Definition format; this is version 1.
+	format: 1,
+	category: EffectCategory,
+	/// Colour of the effect's particles and potion bar, as `0xRRGGBB`.
+	color: int @ 0..16777215,
+	/// A particle type without options shown instead of the tinted swirl.
+	particle?: #[id="particle_type"] string,
+	/// Sound played when the effect is added.
+	sound?: #[id="sound_event"] string,
+	/// Stat changes while the effect is active.
+	attribute_modifiers?: [EffectAttributeModifier],
+	/// Behaviour components.
+	components?: EffectComponents,
+	/// Events that components refer to, by id. `play_animation` is dropped with a warning.
+	events?: struct EffectEvents {
+		[string]: Event,
+	},
+}
+
+/// A mob effect definition, `msm/<ns>/effect/<path>.json` (ADR 0055 D2). Runtimes older than
+/// 1.4.0 ignore the `effect` folder with a warning.
+struct Effect {
+	...EffectCommon,
 }

@@ -1,0 +1,8 @@
+{
+  "category": "harmful",
+  "color": 5149489,
+  "components": {
+    "msm:on_start": {}
+  },
+  "format": 1
+}

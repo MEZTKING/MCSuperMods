@@ -1,0 +1,33 @@
+{
+  "category": "monster",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/leech",
+      "texture": "mymod:entity/leech"
+    },
+    "msm:attack": {
+      "damage": 2,
+      "on_attack": "mymod:drain"
+    }
+  },
+  "events": {
+    "mymod:drain": {
+      "actions": [
+        {
+          "amount": 1,
+          "target": "other",
+          "type": "damage"
+        },
+        {
+          "amount": 1,
+          "type": "heal"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.8,
+    "width": 0.6
+  }
+}

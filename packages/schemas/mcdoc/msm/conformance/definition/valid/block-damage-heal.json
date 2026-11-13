@@ -1,0 +1,31 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "mymod:mend"
+    },
+    "msm:on_step": {
+      "cooldown_ticks": 20,
+      "event": "mymod:thorns"
+    }
+  },
+  "events": {
+    "mymod:mend": {
+      "actions": [
+        {
+          "amount": 4,
+          "target": "other",
+          "type": "heal"
+        }
+      ]
+    },
+    "mymod:thorns": {
+      "actions": [
+        {
+          "amount": 2,
+          "type": "damage"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

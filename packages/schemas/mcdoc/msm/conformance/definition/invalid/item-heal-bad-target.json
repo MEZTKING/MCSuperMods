@@ -1,0 +1,14 @@
+{
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "amount": 2,
+          "target": "thrower",
+          "type": "heal"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

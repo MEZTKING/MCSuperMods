@@ -1,0 +1,26 @@
+{
+  "components": {
+    "msm:on_use": {
+      "cooldown_ticks": 40,
+      "event": "mymod:drain"
+    }
+  },
+  "events": {
+    "mymod:drain": {
+      "actions": [
+        {
+          "amount": 3,
+          "target": "self",
+          "type": "damage"
+        },
+        {
+          "amount": 3,
+          "target": "other",
+          "type": "heal"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

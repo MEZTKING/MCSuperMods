@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:throwable": {
+      "on_hit_entity": {}
+    }
+  },
+  "format": 1
+}

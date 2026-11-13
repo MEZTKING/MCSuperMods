@@ -1,0 +1,7 @@
+{
+  "category": "neutral",
+  "color": 8421504,
+  "format": 1,
+  "particle": "minecraft:snowflake",
+  "sound": "minecraft:block.powder_snow.step"
+}

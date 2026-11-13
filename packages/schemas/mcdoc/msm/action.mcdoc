@@ -24,14 +24,20 @@ enum(string) ActionType {
 	ApplyEffect = "apply_effect",
 	/// Pushes the player or the other entity of the event (ADR 0052).
 	Launch = "launch",
+	/// Hurts the player or the other entity of the event with magic damage (ADR 0055 D4).
+	Damage = "damage",
+	/// Heals the player or the other entity of the event (ADR 0055 D4).
+	Heal = "heal",
 }
 
-/// Who an `apply_effect` action affects.
+/// Who an `apply_effect`, `launch`, `damage` or `heal` action affects.
 enum(string) EffectTarget {
-	/// The event's player; in an entity definition without a player, the entity itself.
+	/// The event's player; in an entity definition without a player, the entity itself; in an
+	/// effect definition, the holder; in a throwable's hit event, the thrower.
 	Self = "self",
 	/// The other entity of the event: the mob an entity hits (`on_attack`), the player who
-	/// hurts or interacts with an entity; for block and item events, the player.
+	/// hurts or interacts with an entity; for block and item events, the player; in an effect
+	/// definition, the holder; in a throwable's hit event, the living entity hit.
 	Other = "other",
 }
 
@@ -154,6 +160,26 @@ dispatch msm:action[launch] to struct Launch {
 	up?: float @ -10..10,
 	/// `true` adds to the current motion; the default replaces it.
 	add?: boolean,
+	/// Defaults to `self`.
+	target?: EffectTarget,
+}
+
+/// Hurts an entity with magic damage (ADR 0055 D4), as poison and instant damage do. Without a
+/// living entity to hurt, the action does nothing; runtimes older than 1.4.0 reject it as an
+/// unknown type.
+dispatch msm:action[damage] to struct Damage {
+	/// Damage in half hearts.
+	amount: float @ 0..,
+	/// Defaults to `self`.
+	target?: EffectTarget,
+}
+
+/// Heals an entity (ADR 0055 D4), as regeneration and instant health do. Without a living
+/// entity to heal, the action does nothing; runtimes older than 1.4.0 reject it as an unknown
+/// type.
+dispatch msm:action[heal] to struct Heal {
+	/// Health restored in half hearts.
+	amount: float @ 0..,
 	/// Defaults to `self`.
 	target?: EffectTarget,
 }

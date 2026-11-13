@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:throwable": {
+      "after_throw": "stick"
+    }
+  },
+  "display_name": "X",
+  "format": 1
+}

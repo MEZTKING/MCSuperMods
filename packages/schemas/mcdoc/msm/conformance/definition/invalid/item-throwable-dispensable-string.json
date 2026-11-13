@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:throwable": {
+      "dispensable": "no"
+    }
+  },
+  "format": 1
+}

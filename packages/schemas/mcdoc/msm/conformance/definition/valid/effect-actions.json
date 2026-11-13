@@ -1,0 +1,80 @@
+{
+  "category": "neutral",
+  "color": 65280,
+  "components": {
+    "msm:on_end": {
+      "event": "mymod:b"
+    },
+    "msm:on_start": {
+      "event": "mymod:a"
+    }
+  },
+  "events": {
+    "mymod:a": {
+      "actions": [
+        {
+          "amplifier": 0,
+          "effect": "minecraft:glowing",
+          "seconds": 5,
+          "target": "other",
+          "type": "apply_effect"
+        },
+        {
+          "amount": 2,
+          "target": "other",
+          "type": "damage"
+        },
+        {
+          "count": 1,
+          "item": "minecraft:snowball",
+          "type": "give_item"
+        },
+        {
+          "amount": 2,
+          "target": "self",
+          "type": "heal"
+        },
+        {
+          "direction": "up",
+          "strength": 0.5,
+          "type": "launch"
+        },
+        {
+          "pitch": 1.2,
+          "sound": "minecraft:entity.player.hurt_freeze",
+          "type": "play_sound",
+          "volume": 1
+        },
+        {
+          "event": "mymod:b",
+          "type": "trigger_event"
+        }
+      ]
+    },
+    "mymod:b": {
+      "actions": [
+        {
+          "function": "mymod:effect_end",
+          "type": "run_function"
+        },
+        {
+          "handler": "mymod:effect_end",
+          "type": "run_script"
+        },
+        {
+          "offset": [0, 0, 0],
+          "state": "minecraft:snow",
+          "type": "set_block_state"
+        },
+        {
+          "count": 4,
+          "particle": "minecraft:snowflake",
+          "speed": 0.1,
+          "spread": 0.3,
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

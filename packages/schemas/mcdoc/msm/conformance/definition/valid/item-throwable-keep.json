@@ -1,0 +1,23 @@
+{
+  "components": {
+    "msm:on_use": {
+      "event": "mymod:cast"
+    },
+    "msm:throwable": {
+      "after_throw": "keep",
+      "cooldown_ticks": 40
+    }
+  },
+  "events": {
+    "mymod:cast": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.evoker.cast_spell",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

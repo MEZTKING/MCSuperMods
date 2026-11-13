@@ -1,0 +1,36 @@
+{
+  "components": {
+    "msm:throwable": {
+      "after_throw": "consume",
+      "gravity": 0.08,
+      "on_hit_block": {
+        "event": "mymod:boom"
+      },
+      "on_hit_entity": {
+        "event": "mymod:boom"
+      },
+      "speed": 1
+    }
+  },
+  "events": {
+    "mymod:boom": {
+      "actions": [
+        {
+          "amount": 6,
+          "target": "other",
+          "type": "damage"
+        },
+        {
+          "particle": "minecraft:explosion",
+          "type": "spawn_particle"
+        },
+        {
+          "sound": "minecraft:entity.generic.explode",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 16
+}

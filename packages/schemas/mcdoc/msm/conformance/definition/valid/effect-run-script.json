@@ -1,0 +1,21 @@
+{
+  "category": "harmful",
+  "color": 3355443,
+  "components": {
+    "msm:on_tick": {
+      "event": "mymod:script_tick",
+      "interval_ticks": 10
+    }
+  },
+  "events": {
+    "mymod:script_tick": {
+      "actions": [
+        {
+          "handler": "mymod:frost_tick",
+          "type": "run_script"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

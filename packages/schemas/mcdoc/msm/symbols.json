@@ -145,6 +145,16 @@
           "desc": "Pushes the player or the other entity of the event (ADR 0052).",
           "identifier": "Launch",
           "value": "launch"
+        },
+        {
+          "desc": "Hurts the player or the other entity of the event with magic damage (ADR 0055 D4).",
+          "identifier": "Damage",
+          "value": "damage"
+        },
+        {
+          "desc": "Heals the player or the other entity of the event (ADR 0055 D4).",
+          "identifier": "Heal",
+          "value": "heal"
         }
       ]
     },
@@ -209,17 +219,44 @@
       ],
       "kind": "struct"
     },
+    "::msm::action::Damage": {
+      "fields": [
+        {
+          "desc": "Damage in half hearts.",
+          "key": "amount",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `self`.",
+          "key": "target",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::EffectTarget"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::action::EffectTarget": {
       "enumKind": "string",
       "kind": "enum",
       "values": [
         {
-          "desc": "The event's player; in an entity definition without a player, the entity itself.",
+          "desc": "The event's player; in an entity definition without a player, the entity itself; in an\neffect definition, the holder; in a throwable's hit event, the thrower.",
           "identifier": "Self",
           "value": "self"
         },
         {
-          "desc": "The other entity of the event: the mob an entity hits (`on_attack`), the player who\nhurts or interacts with an entity; for block and item events, the player.",
+          "desc": "The other entity of the event: the mob an entity hits (`on_attack`), the player who\nhurts or interacts with an entity; for block and item events, the player; in an effect\ndefinition, the holder; in a throwable's hit event, the living entity hit.",
           "identifier": "Other",
           "value": "other"
         }
@@ -275,6 +312,33 @@
               "kind": 0,
               "min": 1
             }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::Heal": {
+      "fields": [
+        {
+          "desc": "Health restored in half hearts.",
+          "key": "amount",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `self`.",
+          "key": "target",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::EffectTarget"
           }
         }
       ],
@@ -1049,6 +1113,32 @@
         }
       ]
     },
+    "::msm::definition::AfterThrow": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Each throw uses one item from the stack, as a snowball does.",
+          "identifier": "Consume",
+          "value": "consume"
+        },
+        {
+          "desc": "The stack keeps its item; the thrown copy disappears when it lands.",
+          "identifier": "Keep",
+          "value": "keep"
+        },
+        {
+          "desc": "The thrown item drops where it lands and can be picked up again, as a throwing knife.",
+          "identifier": "Drop",
+          "value": "drop"
+        },
+        {
+          "desc": "The thrown item goes back into the thrower's inventory when it lands, or drops at their\nfeet when it does not fit (no return flight).",
+          "identifier": "Return",
+          "value": "return"
+        }
+      ]
+    },
     "::msm::definition::AiGoals": {
       "fields": [
         {
@@ -1547,6 +1637,27 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::definition::AttributeOperation": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Adds the amount to the base value.",
+          "identifier": "AddValue",
+          "value": "add_value"
+        },
+        {
+          "desc": "Adds the amount times the base value.",
+          "identifier": "AddMultipliedBase",
+          "value": "add_multiplied_base"
+        },
+        {
+          "desc": "Multiplies the total by one plus the amount.",
+          "identifier": "AddMultipliedTotal",
+          "value": "add_multiplied_total"
+        }
+      ]
     },
     "::msm::definition::Block": {
       "fields": [
@@ -2051,6 +2162,248 @@
               "kind": 0,
               "min": 1
             }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Effect": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::EffectCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::EffectAttributeModifier": {
+      "fields": [
+        {
+          "desc": "The attribute, such as `minecraft:movement_speed`.",
+          "key": "attribute",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "attribute"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The amount at level I.",
+          "key": "amount",
+          "kind": "pair",
+          "type": {
+            "kind": "float"
+          }
+        },
+        {
+          "key": "operation",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::AttributeOperation"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::EffectCategory": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Beneficial",
+          "value": "beneficial"
+        },
+        {
+          "identifier": "Harmful",
+          "value": "harmful"
+        },
+        {
+          "identifier": "Neutral",
+          "value": "neutral"
+        }
+      ]
+    },
+    "::msm::definition::EffectCommon": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "key": "category",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::EffectCategory"
+          }
+        },
+        {
+          "desc": "Colour of the effect's particles and potion bar, as `0xRRGGBB`.",
+          "key": "color",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 16777215,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "A particle type without options shown instead of the tinted swirl.",
+          "key": "particle",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "particle_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Sound played when the effect is added.",
+          "key": "sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Stat changes while the effect is active.",
+          "key": "attribute_modifiers",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::definition::EffectAttributeModifier"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Behaviour components.",
+          "key": "components",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::EffectComponents"
+          }
+        },
+        {
+          "desc": "Events that components refer to, by id. `play_animation` is dropped with a warning.",
+          "key": "events",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "reference",
+                  "path": "::msm::action::Event"
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::EffectComponents": {
+      "fields": [
+        {
+          "key": "msm:on_start",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnEffectStart"
+          }
+        },
+        {
+          "key": "msm:on_tick",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnEffectTick"
+          }
+        },
+        {
+          "key": "msm:on_end",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnEffectEnd"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::EffectEvents": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::Event"
           }
         }
       ],
@@ -2745,7 +3098,7 @@
           }
         },
         {
-          "desc": "An armour piece; not together with `msm:tool`, `msm:ranged_weapon` or `msm:shield`\n(checked by the validators).",
+          "desc": "An armour piece; not together with `msm:tool`, `msm:ranged_weapon`, `msm:shield` or\n`msm:throwable` (checked by the validators).",
           "key": "msm:armor",
           "kind": "pair",
           "optional": true,
@@ -2783,7 +3136,7 @@
           }
         },
         {
-          "desc": "A bow or crossbow; not together with `msm:tool`, `msm:armor` or `msm:shield`.",
+          "desc": "A bow or crossbow; not together with `msm:tool`, `msm:armor`, `msm:shield` or\n`msm:throwable`.",
           "key": "msm:ranged_weapon",
           "kind": "pair",
           "optional": true,
@@ -2793,13 +3146,23 @@
           }
         },
         {
-          "desc": "Blocks attacks; not together with `msm:tool`, `msm:armor` or `msm:ranged_weapon`.",
+          "desc": "Blocks attacks; not together with `msm:tool`, `msm:armor`, `msm:ranged_weapon` or\n`msm:throwable`.",
           "key": "msm:shield",
           "kind": "pair",
           "optional": true,
           "type": {
             "kind": "reference",
             "path": "::msm::definition::Shield"
+          }
+        },
+        {
+          "desc": "Thrown on use; not together with `msm:armor`, `msm:ranged_weapon`, `msm:shield`,\n`msm:consumable`, `msm:food` or a `mace` tool (checked by the validators).",
+          "key": "msm:throwable",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Throwable"
           }
         },
         {
@@ -3087,6 +3450,67 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::OnEffectEnd": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::OnEffectStart": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::OnEffectTick": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Ticks between two firings; defaults to 20.",
+          "key": "interval_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whether higher levels fire more often (the interval is divided by the level); defaults\nto false.",
+          "key": "faster_per_level",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::OnHurt": {
       "fields": [
         {
@@ -3134,6 +3558,19 @@
               "kind": 0,
               "min": 0
             }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::OnThrownHit": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
           }
         }
       ],
@@ -3736,6 +4173,153 @@
         }
       ]
     },
+    "::msm::definition::Throwable": {
+      "fields": [
+        {
+          "desc": "Launch speed in blocks per tick; defaults to 1.5 (a snowball; a trident is 2.5).",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 5,
+              "min": 0.1
+            }
+          }
+        },
+        {
+          "desc": "Spread of the throw; defaults to 1.",
+          "key": "inaccuracy",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 10,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Downward acceleration in blocks per tick squared; defaults to 0.03 (a snowball).",
+          "key": "gravity",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Damage in half hearts dealt to the entity hit, as thrown damage by the thrower; defaults\nto 0.",
+          "key": "damage",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Ticks the player must hold use before releasing throws (a trident needs 10); defaults to\n0, which throws at once.",
+          "key": "charge_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 200,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `consume`. `keep`, `drop` and `return` take one durability per throw when the\nitem has `msm:durability`.",
+          "key": "after_throw",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::AfterThrow"
+          }
+        },
+        {
+          "desc": "Ticks before the item can be thrown again; defaults to 0.",
+          "key": "cooldown_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Sound played on throwing; defaults to `minecraft:entity.snowball.throw`.",
+          "key": "sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Whether a dispenser throws the item; defaults to true.",
+          "key": "dispensable",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Fires when the thrown item hits an entity, after `damage`; `other` is the entity hit.",
+          "key": "on_hit_entity",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnThrownHit"
+          }
+        },
+        {
+          "desc": "Fires when the thrown item hits a block.",
+          "key": "on_hit_block",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnThrownHit"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::Tool": {
       "fields": [
         {
@@ -4270,6 +4854,27 @@
           "type": {
             "kind": "reference",
             "path": "::msm::definition::ToolTier"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::Effect": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::EffectCommon"
+          }
+        },
+        {
+          "desc": "Display name, lowered to the `effect.<ns>.<path>` language key.",
+          "key": "display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
           }
         }
       ],
@@ -5002,9 +5607,17 @@
         "kind": "reference",
         "path": "::msm::action::ApplyEffect"
       },
+      "damage": {
+        "kind": "reference",
+        "path": "::msm::action::Damage"
+      },
       "give_item": {
         "kind": "reference",
         "path": "::msm::action::GiveItem"
+      },
+      "heal": {
+        "kind": "reference",
+        "path": "::msm::action::Heal"
       },
       "launch": {
         "kind": "reference",
@@ -5066,5 +5679,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:e006cb5453a72082e659c0c722ef4944e7dca4ac5db28a7ae071ee609467e55e"
+  "ref": "msm-mcdoc:sha256:2a6981c17adc4684d3c7d32a97036dae7b0500d36dfcee1bfe981cf844433a06"
 }

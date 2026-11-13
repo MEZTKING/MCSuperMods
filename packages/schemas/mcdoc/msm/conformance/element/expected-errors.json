@@ -15,6 +15,14 @@
     "code": "schema.no-union-match",
     "path": "/loot"
   },
+  "effect-bad-category.json": {
+    "code": "schema.invalid-enum",
+    "path": "/category"
+  },
+  "effect-display-name-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/display_name"
+  },
   "entity-display-name-number.json": {
     "code": "schema.type-mismatch",
     "path": "/display_name"
@@ -42,6 +50,10 @@
   "item-model-number.json": {
     "code": "schema.type-mismatch",
     "path": "/model"
+  },
+  "item-throwable-bad-after-throw.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:throwable/after_throw"
   },
   "mod-authors-not-list.json": {
     "code": "schema.type-mismatch",

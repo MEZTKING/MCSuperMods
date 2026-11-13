@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:throwable": {
+      "inaccuracy": -0.5
+    }
+  },
+  "format": 1
+}

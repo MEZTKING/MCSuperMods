@@ -1,0 +1,47 @@
+{
+  "components": {
+    "msm:durability": {
+      "max": 250
+    },
+    "msm:throwable": {
+      "after_throw": "return",
+      "charge_ticks": 10,
+      "cooldown_ticks": 20,
+      "damage": 8,
+      "dispensable": false,
+      "gravity": 0.05,
+      "inaccuracy": 0,
+      "on_hit_block": {
+        "event": "mymod:land"
+      },
+      "on_hit_entity": {
+        "event": "mymod:hit"
+      },
+      "sound": "minecraft:item.trident.throw",
+      "speed": 2.5
+    }
+  },
+  "events": {
+    "mymod:hit": {
+      "actions": [
+        {
+          "effect": "mymod:frostbite",
+          "seconds": 10,
+          "target": "other",
+          "type": "apply_effect"
+        }
+      ]
+    },
+    "mymod:land": {
+      "actions": [
+        {
+          "count": 6,
+          "particle": "minecraft:crit",
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}
