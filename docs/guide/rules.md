@@ -1,0 +1,112 @@
+# Rules: make things happen without code
+
+Rules say what your blocks, items, mobs and effects do when something happens, in sentences you build from pickers. "When a player uses the Chime Block, play a chime and give the player a Ruby." You do not write code, JSON or a script: MCSuperMods turns the sentences into the events and scripts the game reads.
+
+Rules are for people who do not want to code, and they are as strong as most small scripts: conditions, chances, counters, repeats and waits are all there. When you need more than the catalogue offers, use a [script](scripting.md) instead.
+
+Rules are part of the Fabric mod jar. Export the **Fabric mod jar** ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)), press **Play** ([Playing and testing](playing-and-testing.md)) or use **Share my mod** ([Very easy mode](very-easy.md)).
+
+## Where rules live
+
+- **In a Studio.** The Block, Item, Mob and Effect Studios have a **Rules** section just above the events: "Rules say what this block does when something happens. No code needed." It lists the rules about the thing you are editing and has **Add a rule**. A new rule starts with the thing's most natural moment already chosen: "A player uses the block" for a block, "A player uses the item" for an item, "The mob is hurt" for a mob, "The effect starts" for an effect.
+- **In the Rule book.** All rules are kept in rule books. A project starts with none; the first rule you add makes the project's book, `<namespace>:rules`, in the same undo step. **Open the rule book** in a Rules section opens it with every rule of the project. In Very easy mode, **Make things happen** on Home opens it ([Very easy mode](very-easy.md)).
+- **From a template.** **Add element** (Ctrl+N) has six templates in the category **Rules**: **Welcome message**, **Jump pad**, **Lucky block**, **Healing spring**, **Click counter** and **Mob drops a reward**. They use only vanilla ids, so each works in a project of its own.
+- **From an example.** Help > Examples… has **Rules: a lucky block** (breaking the Lucky Block counts, and with a 60 per cent chance drops one to three Lucky Coins, else spawns a silverfish; using a coin gives a minute of Luck) and **Rules: a guard mob** (every five seconds the Guard warns every player within 12 blocks and makes them glow; it calls for help when hurt). See [Templates, starters and examples](templates-and-examples.md).
+- **The AI helper** writes rule books too ([The AI helper](ai-helper.md)).
+
+## One rule, one sentence
+
+The **Rule book** shows each rule as a card with a name, an **On** switch, **Move rule up** and **Move rule down**, **Duplicate rule** and **Delete rule**. Under the name are three parts:
+
+- **When** is the moment, for example "A player uses the block", with the thing it is about.
+- **Only if** is optional. It is a list of things that must be true ("The player is sneaking", "A chance 50%"). Choose **all of these** or **any of these**, and **Not** to turn one round.
+- **Do** is the list of steps, in order.
+
+Every blank in the sentence is a button, for example "Item: Ruby". Choose it to pick another thing, a number or a place. Things are chosen in the picker, which shows **Your things** first, then Minecraft's. Pictures of Minecraft things appear once MSM has found your Minecraft (Settings, Game locations); until then you see a generic icon. Alt+Up and Alt+Down move the selected step, condition or rule.
+
+A rule's **key** (a to z, 0 to 9 and `_`, at most 32 characters, different in each book) is made for you. **Problems** shows what is wrong with a rule on the rule's card, in words: a message you can read, then the step it is about.
+
+## When: the moments
+
+| Group | Moments |
+|---|---|
+| Blocks | A player uses the block; Something steps on the block; A player breaks the block; The block is placed; The block gets a random tick; Something is inside the block; The block is powered by redstone; The block stops being powered |
+| Containers, machines, portals | A player opens or closes the container; The machine starts working or finishes; Something travels through the portal |
+| Items | A player uses the item; uses it on a block; The item hits a mob; Every few seconds while the item is held or worn |
+| Thrown items | The thrown item hits a mob or a block |
+| Mobs | The mob is hurt, dies, attacks or spawns; A player uses the mob; Every few seconds while the mob is alive |
+| Effects | The effect starts, ends, or every few seconds while it lasts |
+| Players | A player joins, leaves, respawns, chats or changes dimension; Every few seconds for each player |
+| The world | The world starts; Every few seconds |
+| Anything | A player uses or breaks any block; A player uses any item; Any mob is hurt or dies; A player uses any mob. Pick a vanilla thing or one of yours, or leave it empty for all of them |
+
+Some things have no moment: crafting, picking up, eating, sleeping, advancements, keys and the screen. They are not offered.
+
+Moments with "every few seconds" take a number of seconds; some take a cooldown in seconds or a chance. These options belong to the thing's moment, not to one rule, so **two rules on the same block and moment share them**: change "every 2 seconds" on one and the other changes too. The cards show the shared value.
+
+## Do: the steps
+
+| Group | Steps |
+|---|---|
+| Players | Give an item; Take an item away; Heal; Hurt; Feed; Give experience; Set the game mode; Teleport; Launch; Show a chat message; Show a title; Show text above the hotbar; Give an effect; Remove an effect |
+| World | Place a block; Remove a block (with or without drops); Spawn a mob; Drop an item; Make an explosion; Set the weather; Run a function; Run a command; Light a portal |
+| Sounds and particles | Play a sound; Spawn particles; Play an animation |
+| Mobs | Remove the mob; Show a boss bar |
+| Logic | If ... otherwise ...; Repeat; For each player; Wait; Stop the normal action |
+| Counters | Set a counter; Add to a counter; Take from a counter |
+
+Places are "Here", "Above here", "At the player", "At the mob", "Where the player looks" and "Offset". Who is "The player", "The mob", "The other one", "Every player" or "Every player nearby". A moment offers only what exists there: a random tick has no player, so there is no "The player".
+
+Numbers can be fixed or **readings**: a random number, a counter, the player's health, food, level or position, the number of players, the time of day, or a sum. Text can mix words and readings ("You have used the lucky block" and a counter).
+
+**The time of day** counts game ticks: 0 is sunrise, 6000 noon, 13000 nightfall and 18000 midnight. **Weather** is the server's, so "It is raining" is never true in the Nether or the End.
+
+**Stop the normal action** cancels what the game would have done, and works only on "A player chats", "A player uses any block", "A player breaks any block", "A player uses any item", "Any mob is hurt" and "A player uses any mob".
+
+## Counters
+
+A counter remembers a number. Choose a counter in a step or a reading, and MSM declares it on first use in the book's **Counters** list: its name, who owns it (**player**, **mob** or **world**) and its starting number. A player counter is separate for every player; a world counter is shared.
+
+Counters are saved with the world. A new test world starts them again ([Playing and testing](playing-and-testing.md)).
+
+## Logic: if, repeat, for each player
+
+- **If ... otherwise ...** runs one list when its conditions hold and another when not.
+- **Repeat** runs a list up to 100 times.
+- **For each player** runs a list for every player, or every player within a radius of up to 64 blocks. Inside it, "The player" is that player.
+- **Wait** pauses the rest of the rule for some seconds. The game carries on meanwhile.
+
+These can nest up to three levels. A rule has at most 50 steps in all, a list at most 50 entries, an explosion's power is 0 to 10, a dropped stack at most 64 and a weather change at most 1,000,000 seconds. The Rule book stops you at these limits and **Problems** says so if a hand edit goes past them.
+
+## Plain rules and rules with logic
+
+MCSuperMods compiles a rule in one of two ways, and you do not have to choose:
+
+- A **plain** rule is on a block, item, mob or effect of your own, has no **Only if**, uses plain numbers (nothing random or read from the game), only steps the game's own events can do (Give an item, Heal, Hurt, Launch, Give an effect, Place a block, Run a function, Light a portal, Play a sound, Spawn particles, Play an animation), and only people and mobs the moment has (a random tick has no player to give things to). It becomes ordinary **events** on the thing, the same ones you could write in the Events editor.
+- **Every other rule** compiles to a **script**. Everything else works the same; the script is written for you and is checked like your own scripts. When one rule needs a script, the other rules on the same thing and moment join it, so the order stays what you see.
+
+In Advanced mode the rule book shows **What this becomes**: the events and the generated script, for reading. They cannot be edited there; they are made again whenever the rules change.
+
+A hand-made event on the same moment runs before any rule.
+
+## Rules in the Events editor
+
+A block, item, mob or effect that has rules shows them in the Events editor under **From rules**: a read-only list of the events they make, with **Open the rule book**. Rule events cannot be edited there, because they are made from the rules.
+
+A hand-made event whose actions can all be written as steps has **Turn into rules**: it makes a rule for the moment, removes the event and keeps the order, as one undo step ("Turn <event> into rules"). It is offered only when the rule means exactly what the event did.
+
+## What the game needs to know
+
+- **A new moment needs a restart.** The first rule that gives a block, say, "A player breaks the block" changes the block itself, so Minecraft must start again to read it. Editing rules on a moment the thing already has reloads in the running game. See [Playing and testing](playing-and-testing.md).
+- **Rules need the Fabric mod jar.** Vanilla packs carry no rules. Exporting a resource or data pack says: "Rules are not in vanilla packs: they need the Fabric mod jar. Export the Fabric mod jar to play with your rules."
+- **Rules with logic are not in the Java project.** The [Java eject](eject.md) has events but no scripts, so a rule that needs a script does nothing there. The Export Java project dialog lists those rules, and **Problems** says: "The rule "<name>" needs a script, and scripts are not in the Java project, so it does nothing there. Rules without logic are in it as events." A button that copies a rule as a script of your own is planned; for now read the generated script in Advanced mode, under **What this becomes**.
+- **Pictures and sounds.** Pictures of Minecraft's own things need your Minecraft files (Settings, Game locations). Minecraft's sounds cannot be played in the editor; you see their names. Sounds of your own project play.
+- **Time limits.** One script call may run for two seconds; a very long repeat or a long chain of waits is stopped.
+
+## Hand edits
+
+A rule book is an ordinary element (kind `msm:rules`), so Raw JSON and other tools can edit it. If an edit breaks a limit or an id, the rule's card shows the error and the export is blocked until it is fixed.
+
+## Try the sample
+
+`fixtures/sample-rules` in the repository is a small project that uses most of this: a chime block, a lucky block with a counter, a rally horn that waits, a mob that keeps watch, and rules on vanilla Stone, joining and the weather. Its checklist is [`fixtures/sample-rules/README.md`](https://github.com/MEZTKING/MCSuperMods/blob/main/fixtures/sample-rules/README.md). Use the Lucky Block with an empty hand: while the hand holds a Ruby, sneaking and using it does nothing (Minecraft treats it as placing the Ruby).

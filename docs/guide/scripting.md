@@ -6,6 +6,10 @@ Like blocks and items, scripts reach the game only through the **Fabric mod jar*
 
 The quickest start is the **Scripted ore** starter (**New from starter…**): the Custom ore content plus three scripts. Sneak-using ruby ore gives a bonus ruby, standing on a block of ruby heals you through a `run_script` action, and joining players are greeted. The examples **Script: block interaction**, **Script: scheduled effects** and **Script: action handler** in **Help → Examples…** show one idea each (see [Templates, starters and examples](templates-and-examples.md)).
 
+## Rules first, then scripts
+
+Most small behaviours need no code: "when a player uses this block, with a 50 per cent chance give a Ruby, and count the uses" is a [rule](rules.md), with conditions, chances, counters, repeats and waits. Rules that need logic are compiled to a script for you, so rules and scripts are the same engine. Write a script yourself when the catalogue of rule steps cannot do what you want: reading and changing items in detail, entity data, raycasts, commands built from text, or anything outside the steps. A rule that compiled to a script can be read in Advanced mode under **What this becomes** (a button to copy it as a script of your own is planned).
+
 ## What a script can do
 
 A script registers **handlers**: functions the runtime calls when something happens in the game. A handler can read what happened (the block, the item, the player, the damage), stop it (`e.cancel()`), and change the world: place blocks, spawn particles and mobs, play sounds, give items, heal or hurt entities, send chat messages, run commands and data pack functions. A script can also define a named handler that a block, item or entity event calls through the `run_script` action, so a block made in the Block Studio can run your code.

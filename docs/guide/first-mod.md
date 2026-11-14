@@ -53,13 +53,15 @@ The element list fills with your new ore, ruby, ruby block, tools, armour, recip
    - With the official launcher, choose **Install**, then start the Fabric profile for 26.3 yourself.
 3. In the game, make a new Creative world and search the inventory for "ruby". Mine the ruby ore underground in a Survival world, and craft a ruby pickaxe from the recipes.
 
+Quicker: with Prism Launcher signed in, press **Play** in the toolbar (or **F5**) instead. MCSuperMods builds the mod, starts the test instance and opens a flat test world with a chest of everything you made. After a change, **Reload** (Ctrl+R) sends it to the running game. See [Playing and testing](playing-and-testing.md).
+
 If something is missing in the game, see [Blocks and items, Troubleshooting](blocks-and-items.md#troubleshooting).
 
 ## 6. Change something and test again
 
 1. Select any ruby element, for example `ruby_sword`, and choose **Edit in Creator** above its editor.
 2. Change the **Colour**, or add pieces under **Pieces** (a bow, a shield, horse armour).
-3. Choose **Create**: it applies the change as one step, "Update Gear set", which one Undo takes back. Then choose **Test in Minecraft…** again and restart the game.
+3. Choose **Create**: it applies the change as one step, "Update Gear set", which one Undo takes back. Then choose **Test in Minecraft…** again and restart the game, or press **Reload** if you used **Play**.
 
 Pieces you changed by hand are kept unless you choose to overwrite them ([The Creator](creator.md)).
 
@@ -69,6 +71,7 @@ Open the **Export** menu and choose **Fabric mod (.jar)…**, then save the jar.
 
 ## Where to go next
 
+- Make things happen without code, such as a block that gives a reward: [Rules](rules.md). Prefer big tiles and plain words? [Very easy mode](very-easy.md).
 - Replace the placeholder textures with your own pictures: [Replacing the placeholders](creator.md#replacing-the-placeholders).
 - More things to make with a few questions: weapons, food, totems, enchantments, paintings, music discs, mobs ([The Creator](creator.md)).
 - A tour of the whole window, forms and Studios: [Getting started](getting-started.md).

@@ -45,6 +45,8 @@ export default defineConfig({
         items: [
           { text: 'Overview', link: '/' },
           { text: 'Your first mod', link: '/first-mod' },
+          { text: 'Very easy mode', link: '/very-easy' },
+          { text: 'Playing and testing', link: '/playing-and-testing' },
           { text: 'Getting started', link: '/getting-started' },
           { text: 'Structures', link: '/structures' },
           { text: 'Worldgen', link: '/worldgen' },
@@ -54,6 +56,7 @@ export default defineConfig({
           { text: 'Portals', link: '/portals' },
           { text: 'Particles', link: '/particles' },
           { text: 'The Creator', link: '/creator' },
+          { text: 'Rules', link: '/rules' },
           { text: 'Status effects and throwables', link: '/effects-and-throwables' },
           { text: 'Potions and brewing', link: '/potions' },
           { text: 'Adding to vanilla', link: '/adding-to-vanilla' },

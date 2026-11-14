@@ -54,7 +54,7 @@ Things you meet here that are limits of the feature, not faults, are marked "kno
 
 #### Blocks and items
 
-Use the blocks with an **empty hand** (right-click); holding a block would place it instead.
+Use the blocks with an **empty hand** (right-click); holding a block would place it instead. The Lucky Block needs the hand empty for another reason too (found by the parity test, B381): while the hand holds the Ruby (or anything), Minecraft treats a sneak-use as using the held item, so the Lucky Block stops responding to sneak-use. Put the Ruby away or drop it, then sneak and use the block with an empty hand. This is Minecraft's secondary-use rule, not a fault.
 
 | Check | Expected |
 |---|---|

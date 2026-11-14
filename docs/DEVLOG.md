@@ -4522,3 +4522,21 @@ Decisions
 Next
 - B390: create one `MobField({ catalogue: entityCatalogue, log })` per area; in the `SimClock` tick call `mobs.update(entities.step())`; pass `mobs={field}` beside `particles` and `partialTick`; on new files call `field.setCatalogue(newEntityCatalogue)`; "Clear the area" calls `field.clear()` after `entities.clear()`. Spawn eggs: hotbar and picker list each `CatalogueEntity` with a `spawnEgg` (name `spawnEggName`); a right click with one calls `entities.spawnFromEgg(itemId, { pos, face })`. The e2e step "spawn a mob, the readout shows one entity, remove it" waits for the view.
 - B392: the guide's limits gain the plate label, boxes for mobs without a model and the smoothed turning.
+
+## 2026-11-14 — executor — B383 Guide, changelog, status lines
+
+What
+- New guide pages `docs/guide/rules.md` (the Rule book, sentences, the moments and steps in groups, counters, logic and its caps, plain rules versus rules with logic, the Rules section, From rules and Turn into rules, templates and examples, the limits in plain words), `very-easy.md` (the three modes, the Very easy window, name-only new mod, the 13 Make something tiles, My things, Things to fix, Share my mod) and `playing-and-testing.md` (Play, the test world, the Play menu, Reload and its chat lines, Restart needed and its reasons, Prism setup, F5 and Ctrl+R with the window reload on Ctrl+Shift+R, first-start accessibility, a reopen refills the chests, troubleshooting). Index rows in `docs/guide/README.md`, sidebar entries in `docs/site/.vitepress/config.ts`.
+- Edited `first-mod.md` (Play and Reload as the quick route), `creator.md` ("Make things happen"), `scripting.md` ("Rules first, then scripts") and `eject.md` (rules that need a script are not in the Java project).
+- `CHANGELOG.md` `[Unreleased]`: Rules, the Rule book Studio, templates and examples, Very easy mode, Play and Reload, the new pages, plugin API 1.15.0, the Ctrl+R move.
+- Status lines: `app`, `packages/core`, `plugin-api`, `targets`, `interop`, `schemas`, `plugins` (a `rules/` row, 95 kinds and 194 templates) and `engine-mod` (`client/dev/`, `dev/`, 704 JUnit, 440 GameTests per variant recounted from the annotations, `SampleRulesParityTest` 3 and `SampleRulesScriptParityTest` 5 = sample rules 8).
+- `fixtures/sample-rules/README.md`: the B381 finding (the Lucky Block stops responding to sneak-use while the hand holds the Ruby) in the Blocks and items part; `examples/README.md` `rules/` row points at the guide.
+- Checked: links between guide pages and anchors by script (no bad links), `pnpm --filter @msm/site build`, `pnpm lint`, `WhatsNew.test.tsx`; scoped CLAUDE.md files at most 55 lines.
+
+Decisions
+- "Copy as my own script" (ADR 0082 D7 d) is not built, so the guide says it is planned and points at **What this becomes**; the in-app `rules.not-in-eject` text still names it.
+- Try it (ADR 0085) is not documented: it is not shipped.
+- `docs/guide/getting-started.md`'s shortcuts table and `docs/CLAUDE.md`'s guide list were not in the brief's owner files and are left for the close.
+
+Next
+- B384: set the counts and status in root `CLAUDE.md` and `docs/CLAUDE.md` (the guide list needs the three new pages), add F5 and Ctrl+R to the shortcuts table of `getting-started.md`, and document Try it when ADR 0085 ships.

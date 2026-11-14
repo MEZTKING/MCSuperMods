@@ -178,6 +178,10 @@ The Creator draws simple placeholder textures in the colour you choose. To chang
 
 When the AI helper adds a whole piece of content, it uses these flows with the answers it chose. The elements it adds carry the same record of flow and answers, so after you apply its changes, **Edit in Creator** reopens them like a set you made yourself.
 
+## Make things happen
+
+The Creator makes things. To make them do something when a player uses, breaks or meets them, add [Rules](rules.md): open the thing in its Studio and use its **Rules** section, or, in Very easy mode, the **Make things happen** tile on Home ([Very easy mode](very-easy.md)). A rule needs no code.
+
 ## Try it in the game
 
-Export the **Fabric mod jar** ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)) or use **Test in Minecraft** ([Blocks and items](blocks-and-items.md#test-in-minecraft)); **Problems** must show no errors. In a creative world, give yourself an item with `/give @s <namespace>:<id>`. For a Gear set, put the armour on and check the look and the armour bar; for an enchantment, use `/enchant @s <namespace>:<id>` or an enchanting table; for a painting, hang paintings on a wall big enough for its size: the flow adds it to the `minecraft:placeable` tag, so the game picks it at random among the paintings that fit.
+Press **Play** ([Playing and testing](playing-and-testing.md)), export the **Fabric mod jar** ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)) or use **Test in Minecraft** ([Blocks and items](blocks-and-items.md#test-in-minecraft)); **Problems** must show no errors. In a creative world, give yourself an item with `/give @s <namespace>:<id>`. For a Gear set, put the armour on and check the look and the armour bar; for an enchantment, use `/enchant @s <namespace>:<id>` or an enchanting table; for a painting, hang paintings on a wall big enough for its size: the flow adds it to the `minecraft:placeable` tag, so the game picks it at random among the paintings that fit.
