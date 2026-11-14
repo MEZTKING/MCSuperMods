@@ -4200,3 +4200,19 @@ Decisions
 
 Next
 - B360: guide and `engine-mod/CLAUDE.md` (parity: sample particles 12 = 11 + 1 script; client GameTests in CI), `tools/run-fabric-server/README.md` CI paragraph. B361: ADR 0081 D6 findings, K4/L16 (drawing checked in CI by the client GameTests).
+## 2026-11-14 — executor — B387 Sim: world and blocks (Try it)
+
+What
+- `packages/sim/src/world/sim-world.ts`: `SimWorld`, the area's dense block grid (palette of frozen states, `Uint16Array` of indices), `get`, `set` (air is `null`), `inBounds`, `isFloor` (the drawn floor at `y = -1`), `count`, `blocks()`, `clear()`, change events (`onChange`, each with its 8-block chunk), `takeDirtyChunks()` and `chunksTouching(pos)` (the neighbour chunk across a chunk face, B385's note); `stateKey`, `sameState`, `freezeState`, `chunkOf`, `SIM_CHUNK_SIZE = 8`.
+- `packages/sim/src/blocks/`: `catalogue.ts` (`buildCatalogue(files, target, log, options?)` gives a `BlockCatalogue` that implements `BlockShapes`: each block's type, properties and default state from its `msm/<ns>/block/` definition and lowered block state, `en_us` name, set type and whether hands open it, press time, weighted plate, crop ages and outline heights, soil, wooden fences from `#minecraft:wooden_fences`, `msm:shape` boxes turned with the axis or facing; props for vanilla ids, unreadable definitions, unknown types and set or wood types the target does not have, each with one "Only in Minecraft" line; `normalise` for ADR 0085 D4; shapes cached so the same state gets the same arrays); `shapes.ts` (type boxes in pixels); `directions.ts`; `placement.ts` (`placeBlock`, `placementState`, `doorHinge`, `breakBlock`); `neighbours.ts` (`connectedState`, `stairsShape`, `isSupported`, `updateNeighbours`); `interact.ts` (`useBlock`: doors, trapdoors, gates, button press start).
+- `packages/sim/src/index.ts`: two export lines (blocks, world).
+- Tests (`packages/sim/test/world/`, `test/blocks/`): 185 in all; placement table with 6 to 10 cases per type for all 18 types; connections (row, corner, T, removal) for fences, walls and panes; wall posts and tall sides; gates in walls; stairs corners; door halves, hinge and support; use by hand; catalogue over `fixtures/sample-mod` lowered on both built-in targets (`test/lower-fixture.ts` loads the plugins and targets by file path at test time, so the package keeps only its two allowed dependencies).
+
+Decisions
+- Hands do not open `iron` or `gold` doors and trapdoors (ADR 0067 D2); wooden set types (`wood`, `cherry`, `bamboo`, `crimson`, `warped`) press 30 ticks, others 20 (the format's default). These are MSM format rules held as named constants; the names a target accepts still come from `TargetFacts.blocks`.
+- Directional blocks face the player as the runtime's `MsmBlock` places them (`nearestLookingDirection().getOpposite()`).
+- Properties the lowered block state leaves out but the runtime has and the sim drives are added: `powered` for a block with `msm:redstone` `on_powered`/`on_unpowered`, `stage` for saplings. Waterlogging, door/gate/trapdoor `powered`, leaves `distance`/`persistent` are not modelled (no liquids, no redstone, no decay).
+- Approximate: wall posts and tall sides; crops and saplings plant on anything (one line names the soil); portals place as a plain block with one line.
+
+Next
+- B389/B390: `world.onChange` or `takeDirtyChunks()` drive the rebuild; `local-source.ts` wires `placeBlock`, `breakBlock` and `useBlock` (and refuses a place where the player stands). B391: `releaseAfterTicks` from `useBlock`, `catalogue.withProperties` for growth and power. B397: the parity scenarios should check gold and stone doors, wall posts and the type shapes.
