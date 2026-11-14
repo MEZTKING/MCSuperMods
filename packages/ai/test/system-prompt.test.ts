@@ -213,3 +213,21 @@ describe('systemPrompt mobs paragraph (ADR 0073 D6)', () => {
     },
   );
 });
+
+describe('systemPrompt containers and machines paragraph (ADR 0076 D6)', () => {
+  it.each(['chat', 'build'] as const)('names the components and the limits in %s mode', (mode) => {
+    const text = systemPrompt(mode);
+    for (const term of [
+      'msm:container',
+      'msm:machine',
+      'keep_contents',
+      'recipe_types',
+      'vanilla screen',
+      'three slots',
+      'vanilla data pack leaves out machine recipes',
+      'note_missing_feature',
+    ]) {
+      expect(text, term).toContain(term);
+    }
+  });
+});

@@ -3320,3 +3320,11 @@ Decisions
 
 Next
 - B320: the flows and examples can start from these templates' shapes. B327: the template counts in the status lines and guide (blocks-items 45 to 53, 177 to 185 in all) and the guide's template list.
+
+## 2026-11-14 — executor — B322 AI helper for containers and machines
+
+**What:** `packages/ai/src/system-prompt.ts` gains one "Containers and machines" paragraph (ADR 0076 D6): `msm:container` layouts, `keep_contents`, holders, `msm:machine` (three slots, vanilla furnace, blast furnace and smoker screens, power, recipe types, element-only `recipes`), the family-type and container-or-machine limits, the open and lit models, the flows and eight templates, and the vanilla pack rule. Prompt grew from 20,713 to 23,107 bytes (+2,394). A test pins the key terms in both modes.
+
+**Decisions:** no element summaries are written in `packages/ai` (`project_summary` only counts kinds per kind), so the "summaries name the layout and recipe count" part of D6 had nothing to change; it needs an app-side change if wanted. Script API 1.2 and the B320 flow names are not mentioned beyond "Storage crate" and "Machine" (named in ADR 0076 D2); B317 and B320 should extend the paragraph if their names differ.
+
+**Next:** B320 confirms the flow and starter names; B327 mentions the prompt in the guide if needed.
