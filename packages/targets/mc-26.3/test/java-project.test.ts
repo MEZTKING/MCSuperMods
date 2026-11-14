@@ -2,6 +2,7 @@
  * The 26.3 Java generator (ADR 0033 D3): identifier derivation, one golden per kind built from
  * the runtime's GameTest kitchen-sink definitions (copied from
  * `engine-mod/src/gametest/resources/msm/msm_test/` into `test/fixtures/java-project/input/`;
+ * `block-shape_*` are the `MsmShapeGameTest` blocks;
  * `block-stepping_stone` and `entity-frost_golem` are the `apply_effect` corpus cases of
  * `packages/schemas/mcdoc/msm/conformance/definition/valid/`),
  * determinism, and the errors the exporter reports as `export.java-generation-failed`.
@@ -514,6 +515,74 @@ describe('Java generator (mc-26.3)', () => {
     );
   });
 
+  it('generates block shapes mirroring MsmBlock (ADR 0059 D6)', async () => {
+    const { files } = generateJavaProject(
+      input({
+        blocks: await Promise.all(
+          ['shape_carpet', 'shape_cross', 'shape_glass', 'shape_slab', 'shape_two_boxes'].map(
+            (path) => definition('block', path),
+          ),
+        ),
+      }),
+    );
+    await golden('shapes', files);
+    const text = (suffix: string): string =>
+      files.find((file) => file.path.endsWith(suffix))?.contents ?? '';
+    // Each axis is ordered before Block.box: [12, 16, 12, 4, 8, 4] is written as 4..12, 8..16.
+    const two = text('/ShapeTwoBoxesBlock.java');
+    expect(two).toContain('Block.box(4.0f, 8.0f, 4.0f, 12.0f, 16.0f, 12.0f)).optimize();');
+    // see_through false: the outline only, no glass overrides.
+    expect(two).toContain('protected VoxelShape getShape(');
+    expect(two).not.toContain('propagatesSkylightDown');
+    const blocks = text('/ModBlocks.java');
+    const entry = (field: string): string =>
+      blocks.slice(
+        blocks.indexOf(`${field} = `),
+        blocks.indexOf(';', blocks.indexOf(`${field} = `)),
+      );
+    expect(entry('SHAPE_TWO_BOXES')).not.toContain('noOcclusion');
+    // The cross: walk-through and see-through (boxes that are not the full cube).
+    expect(entry('SHAPE_CROSS')).toContain('.noCollision()');
+    expect(entry('SHAPE_CROSS')).toContain('.isValidSpawn((state, level, pos, type) -> false)');
+    // The glass cube: see-through only because it says so; collision stays.
+    expect(entry('SHAPE_GLASS')).not.toContain('noCollision');
+    expect(entry('SHAPE_GLASS')).toContain('.noOcclusion()');
+    const glass = text('/ShapeGlassBlock.java');
+    for (const line of [
+      'return Shapes.empty();',
+      'protected boolean propagatesSkylightDown(BlockState state) {',
+      'return 1.0f;',
+      'return adjacent.is(this) || super.skipRendering(state, adjacent, direction);',
+    ]) {
+      expect(glass).toContain(line);
+    }
+    // A shape alongside step events keeps both.
+    const slab = text('/ShapeSlabBlock.java');
+    expect(slab).toContain('Block.box(0.0f, 0.0f, 0.0f, 16.0f, 8.0f, 16.0f)).optimize();');
+    expect(slab).toContain('public void stepOn(');
+  });
+
+  it('gives a shape without boxes the full cube, solid unless see_through', () => {
+    const shaped = (shape: JsonObject) =>
+      generateJavaProject(
+        input({
+          blocks: [
+            {
+              id: 'msm_test:cube',
+              path: 'msm/msm_test/block/cube.json',
+              definition: { components: { 'msm:shape': shape }, format: 1 },
+            },
+          ],
+        }),
+      ).files.map((file) => file.contents);
+    const solid = shaped({ collision: false }).join('\n');
+    expect(solid).toContain('Block.box(0.0f, 0.0f, 0.0f, 16.0f, 16.0f, 16.0f)).optimize();');
+    expect(solid).toContain('.noCollision()');
+    expect(solid).not.toContain('noOcclusion');
+    const fullBox = shaped({ boxes: [[0, 0, 0, 16, 16, 16]] }).join('\n');
+    expect(fullBox).not.toContain('noOcclusion');
+  });
+
   it('rejects bad mob sounds', async () => {
     const singer = await definition('entity', 'singer');
     const withSounds = (sounds: unknown) =>
@@ -810,6 +879,21 @@ describe('Java generator (mc-26.3)', () => {
         /unknown top-level key 'colour'/,
       );
       expect(generate({ blocks: [block({ format: 2 })] })).toThrow(/format 2/);
+    });
+
+    it('rejects malformed shapes and the editor-only preset', () => {
+      const shaped = (shape: JsonObject) =>
+        generate({ blocks: [block({ format: 1, components: { 'msm:shape': shape } })] });
+      expect(shaped({ preset: 'slab_bottom', boxes: [[0, 0, 0, 16, 8, 16]] })).toThrow(
+        /components\.msm:shape: unknown msm:shape field 'preset'/,
+      );
+      expect(shaped({ boxes: [] })).toThrow(/1 to 16 boxes/);
+      expect(shaped({ boxes: Array.from({ length: 17 }, () => [0, 0, 0, 1, 1, 1]) })).toThrow(
+        /1 to 16 boxes/,
+      );
+      expect(shaped({ boxes: [[0, 0, 0, 16, 8]] })).toThrow(/boxes\[0\] must be 6 numbers/);
+      expect(shaped({ boxes: [[0, 0, 0, 16, 16.5, 16]] })).toThrow(/from 0 to 16/);
+      expect(shaped({ collision: 'no' })).toThrow(/collision must be true or false/);
     });
 
     it('rejects armour with a tool and malformed tag references', () => {

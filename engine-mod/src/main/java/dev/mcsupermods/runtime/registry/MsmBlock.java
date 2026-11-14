@@ -116,7 +116,9 @@ public class MsmBlock extends Block {
         }
         if (spec.seeThrough()) {
             // The predicates vanilla glass sets (Blocks.GLASS), plus isViewBlocking (vanilla derives it from isSuffocating).
+            // isValidSpawn never: no mob spawns on a glass-like block, as on glass.
             props = props.noOcclusion()
+                    .isValidSpawn((state, level, pos, type) -> false)
                     .isSuffocating((state, level, pos) -> false)
                     .isViewBlocking((state, level, pos, box) -> false)
                     .isRedstoneConductor((state, level, pos) -> false);

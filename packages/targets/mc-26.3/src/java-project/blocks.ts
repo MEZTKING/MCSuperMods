@@ -7,7 +7,12 @@
  * events or redstone behaviour, mirroring `MsmBlock` (interact, step with a cooldown map keyed
  * by dimension, position and entity, redstone `POWERED` state and `neighborChanged`). A step
  * event carries the stepper as the runtime's `EventContext.forBlockStep` (ADR 0058 D1): the
- * player when it is one, else the `entity` argument. Minecraft 26.3, Mojang names.
+ * player when it is one, else the `entity` argument. `msm:shape` (ADR 0059 D3, D6) mirrors
+ * `MsmBlock.shapeProperties` in the properties (`noCollision()`; for see-through blocks
+ * `noOcclusion()` and never a valid spawn, suffocating, view-blocking or redstone-conducting)
+ * and `MsmBlock`'s overrides in the block class (`getShape` from the union of the boxes, each
+ * axis ordered; for see-through blocks sky light, shade brightness 1, no visual shape and the
+ * glass rule in `skipRendering`). Minecraft 26.3, Mojang names.
  *
  * @packageDocumentation
  */
@@ -89,7 +94,20 @@ const BLOCK_COMPONENTS = [
   'msm:on_interact',
   'msm:on_step',
   'msm:redstone',
+  'msm:shape',
 ];
+
+/** `msm:shape` fields (`::msm::definition::Shape`); the editor-only `preset` is not one. */
+const SHAPE_KEYS = ['boxes', 'collision', 'see_through'];
+const FULL_CUBE = [0, 0, 0, 16, 16, 16] as const;
+
+/** A parsed `msm:shape`, as the runtime's `BlockComponents.Shape`. */
+interface ShapeSpec {
+  /** The boxes with each axis ordered (`[minX, minY, minZ, maxX, maxY, maxZ]`); the full cube when absent. */
+  readonly boxes: readonly (readonly number[])[];
+  readonly collision: boolean;
+  readonly seeThrough: boolean;
+}
 
 /** A parsed block definition. */
 interface BlockSpec {
@@ -113,6 +131,50 @@ interface BlockSpec {
   readonly emit: number;
   readonly onPowered: string | undefined;
   readonly onUnpowered: string | undefined;
+  readonly shape: ShapeSpec | undefined;
+}
+
+/**
+ * Reads `msm:shape` with the runtime's checks: 1 to 16 boxes of 6 numbers from 0 to 16,
+ * `collision` true by default, `see_through` by default true when `boxes` is present and is not
+ * the single full cube.
+ */
+function readShape(shape: Reader): ShapeSpec {
+  shape.onlyKeys(SHAPE_KEYS, 'msm:shape field');
+  const raw = shape.has('boxes') ? shape.value.boxes : undefined;
+  let boxes: number[][] | undefined;
+  if (raw !== undefined) {
+    if (!Array.isArray(raw) || raw.length < 1 || raw.length > 16) {
+      shape.fail('boxes must be a list of 1 to 16 boxes');
+    }
+    boxes = raw.map((box, index) => {
+      if (
+        !Array.isArray(box) ||
+        box.length !== 6 ||
+        box.some((n) => typeof n !== 'number' || !Number.isFinite(n) || n < 0 || n > 16)
+      ) {
+        shape.fail(`boxes[${index}] must be 6 numbers from 0 to 16 [x1, y1, z1, x2, y2, z2]`);
+      }
+      return box as number[];
+    });
+  }
+  const isFullCube = (box: readonly number[]): boolean => box.every((n, i) => n === FULL_CUBE[i]);
+  const seeThrough = shape.has('see_through')
+    ? shape.boolean('see_through', false)
+    : boxes !== undefined && !(boxes.length === 1 && isFullCube(boxes[0] ?? []));
+  // Block.box needs min <= max on each axis; the format allows either corner first.
+  const ordered = (boxes ?? [[...FULL_CUBE]]).map((b) => {
+    const [x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0] = b;
+    return [
+      Math.min(x1, x2),
+      Math.min(y1, y2),
+      Math.min(z1, z2),
+      Math.max(x1, x2),
+      Math.max(y1, y2),
+      Math.max(z1, z2),
+    ];
+  });
+  return { boxes: ordered, collision: shape.boolean('collision', true), seeThrough };
 }
 
 function readBlock(input: DefinitionInput): BlockSpec {
@@ -150,6 +212,7 @@ function readBlock(input: DefinitionInput): BlockSpec {
   redstone?.onlyKeys(['emit', 'on_powered', 'on_unpowered'], 'msm:redstone field');
   const powered = redstone?.optionalString('on_powered');
   const unpowered = redstone?.optionalString('on_unpowered');
+  const shape = components?.object('msm:shape');
 
   return {
     input,
@@ -183,13 +246,18 @@ function readBlock(input: DefinitionInput): BlockSpec {
       unpowered === undefined || redstone === undefined
         ? undefined
         : eventMethod(redstone, events, unpowered),
+    shape: shape === undefined ? undefined : readShape(shape),
   };
 }
 
-/** Whether the block needs its own class (events reachable from a component, or redstone). */
+/** Whether the block needs its own class (events reachable from a component, redstone or a shape). */
 function needsClass(spec: BlockSpec): boolean {
   return (
-    spec.onInteract !== undefined || spec.onStep !== undefined || spec.emit > 0 || tracksPower(spec)
+    spec.onInteract !== undefined ||
+    spec.onStep !== undefined ||
+    spec.emit > 0 ||
+    tracksPower(spec) ||
+    spec.shape !== undefined
   );
 }
 
@@ -247,6 +315,7 @@ export function generateBlocks(
     if (spec.light !== undefined)
       props.push(`        .lightLevel(state -> ${javaInt(spec.light)})`);
     if (spec.requiresTool) props.push('        .requiresCorrectToolForDrops()');
+    if (spec.shape !== undefined) props.push(...shapeProperties(spec.shape));
     if (spec.lootTable !== undefined) {
       const optional = file.use('java.util.Optional');
       props.push(
@@ -294,6 +363,23 @@ export function generateBlocks(
   return 'ModBlocks';
 }
 
+/** The `Properties` calls of `MsmBlock.shapeProperties` (ADR 0059 D3). */
+function shapeProperties(shape: ShapeSpec): string[] {
+  const out: string[] = [];
+  if (!shape.collision)
+    out.push('        .noCollision() // msm:shape collision false: walk-through');
+  if (shape.seeThrough) {
+    out.push(
+      '        .noOcclusion() // msm:shape see-through: the predicates of vanilla glass',
+      '        .isValidSpawn((state, level, pos, type) -> false)',
+      '        .isSuffocating((state, level, pos) -> false)',
+      '        .isViewBlocking((state, level, pos, box) -> false)',
+      '        .isRedstoneConductor((state, level, pos) -> false)',
+    );
+  }
+  return out;
+}
+
 /**
  * A creative tab registration: `CreativeModeTabEvents.modifyOutputEvent(key).register(...)`.
  * An unknown tab never fires, as in the runtime.
@@ -303,6 +389,57 @@ export function tabLine(file: JavaFile, tab: string, field: string): string {
   const resourceKey = file.use('net.minecraft.resources.ResourceKey');
   const registries = file.use('net.minecraft.core.registries.Registries');
   return `${events}.modifyOutputEvent(${resourceKey}.create(${registries}.CREATIVE_MODE_TAB, ${identifierExpression(file, tab)})).register(output -> output.accept(${field}));`;
+}
+
+/** The `MsmBlock` overrides for `msm:shape` (ADR 0059 D3): outline, and see-through light and faces. */
+function shapeMembers(
+  file: JavaFile,
+  shape: ShapeSpec,
+  blockState: string,
+  blockPos: string,
+): string[] {
+  const blockGetter = file.use('net.minecraft.world.level.BlockGetter');
+  const collisionContext = file.use('net.minecraft.world.phys.shapes.CollisionContext');
+  const voxelShape = file.use('net.minecraft.world.phys.shapes.VoxelShape');
+  const out = [
+    '',
+    '/** msm:shape: the outline; collision follows it unless the properties say noCollision(). */',
+    '@Override',
+    `protected ${voxelShape} getShape(${blockState} state, ${blockGetter} level, ${blockPos} pos, ${collisionContext} context) {`,
+    '    return SHAPE;',
+    '}',
+  ];
+  if (shape.seeThrough) {
+    const shapes = file.use('net.minecraft.world.phys.shapes.Shapes');
+    const direction = file.use('net.minecraft.core.Direction');
+    out.push(
+      '',
+      '/** msm:shape see-through: no visual shape, as glass. */',
+      '@Override',
+      `protected ${voxelShape} getVisualShape(${blockState} state, ${blockGetter} level, ${blockPos} pos, ${collisionContext} context) {`,
+      `    return ${shapes}.empty();`,
+      '}',
+      '',
+      '/** msm:shape see-through: sky light passes. */',
+      '@Override',
+      `protected boolean propagatesSkylightDown(${blockState} state) {`,
+      '    return true;',
+      '}',
+      '',
+      '/** msm:shape see-through: no ambient occlusion darkening. */',
+      '@Override',
+      `protected float getShadeBrightness(${blockState} state, ${blockGetter} level, ${blockPos} pos) {`,
+      '    return 1.0f;',
+      '}',
+      '',
+      '/** msm:shape see-through: the glass rule, no face between two of these blocks. */',
+      '@Override',
+      `protected boolean skipRendering(${blockState} state, ${blockState} adjacent, ${direction} direction) {`,
+      '    return adjacent.is(this) || super.skipRendering(state, adjacent, direction);',
+      '}',
+    );
+  }
+  return out;
 }
 
 function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: string): void {
@@ -343,6 +480,19 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
       `private record StepKey(${resourceKey}<${levelType}> dimension, long pos, ${uuid} entity) {}`,
     );
   }
+  if (spec.shape !== undefined) {
+    const voxelShape = file.use('net.minecraft.world.phys.shapes.VoxelShape');
+    const shapes = file.use('net.minecraft.world.phys.shapes.Shapes');
+    const boxes = spec.shape.boxes.map(
+      (box) => `${blockType}.box(${box.map((n) => javaFloat(n)).join(', ')})`,
+    );
+    if (members.length > 0) members.push('');
+    members.push(
+      '/** msm:shape: the union of the boxes, the outline for every state. */',
+      `private static final ${voxelShape} SHAPE = ${shapes}.or(`,
+      ...boxes.map((box, i) => `        ${box}${i === boxes.length - 1 ? ').optimize();' : ','}`),
+    );
+  }
   members.push('', `public ${name}(${properties} properties) {`, '    super(properties);');
   if (power)
     members.push('    registerDefaultState(stateDefinition.any().setValue(POWERED, false));');
@@ -365,6 +515,10 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
   const serverLevel = () => file.use('net.minecraft.server.level.ServerLevel');
   const vec3 = () => file.use('net.minecraft.world.phys.Vec3');
   const player = () => file.use('net.minecraft.world.entity.player.Player');
+
+  if (spec.shape !== undefined) {
+    members.push(...shapeMembers(file, spec.shape, blockState(), blockPos()));
+  }
 
   if (spec.onInteract !== undefined) {
     const interactionResult = file.use('net.minecraft.world.InteractionResult');

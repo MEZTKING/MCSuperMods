@@ -136,6 +136,7 @@ public class MsmShapeGameTest {
         helper.assertValueEqual(state.getLightDampening(), 15, "light dampening");
         helper.assertFalse(state.propagatesSkylightDown(), "a plain block lets sky light down");
         helper.assertFalse(state.skipRendering(state, Direction.UP), "a plain block skips faces against itself");
+        helper.assertTrue(state.isValidSpawn(helper.getLevel(), abs, EntityTypes.ZOMBIE), "a plain block refuses a zombie spawn");
         helper.succeed();
     }
 
@@ -221,6 +222,7 @@ public class MsmShapeGameTest {
             helper.assertFalse(s.isSuffocating(level, abs), path + " suffocates");
             helper.assertFalse(s.isViewBlocking(level, abs, new AABB(abs)), path + " blocks the view");
             helper.assertFalse(s.isRedstoneConductor(level, abs), path + " conducts redstone");
+            helper.assertFalse(s.isValidSpawn(level, abs, EntityTypes.ZOMBIE), path + " lets a zombie spawn on it");
             helper.assertTrue(s.getVisualShape(level, abs, CollisionContext.empty()).isEmpty(), path + " has a visual shape");
             helper.assertTrue(s.skipRendering(s, Direction.EAST), path + " draws the face against itself");
             helper.assertFalse(s.skipRendering(Blocks.STONE.defaultBlockState(), Direction.EAST), path + " skips a face against stone");
