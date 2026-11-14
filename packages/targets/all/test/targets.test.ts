@@ -350,6 +350,34 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       for (const id of types) expect(recipeTypes, id).toContain(id.slice('minecraft:'.length));
     });
 
+    it('lists portal block facts the vendored registries know (ADR 0077 D7)', async () => {
+      const registries = (await readVendoredJson(
+        bundle,
+        'mcmetaRegistries',
+        nodeReadFile,
+      )) as Record<string, string[]>;
+      const soundEvents = registries.sound_event ?? [];
+      const particleTypes = registries.particle_type ?? [];
+      const portal = target.blocks?.portal;
+      expect(portal).toEqual({
+        ambientSound: 'minecraft:block.portal.ambient',
+        travelSound: 'minecraft:block.portal.travel',
+        triggerSound: 'minecraft:block.portal.trigger',
+        particle: 'minecraft:portal',
+      });
+      for (const id of [
+        portal?.ambientSound ?? '',
+        portal?.travelSound ?? '',
+        portal?.triggerSound ?? '',
+      ]) {
+        expect(id, id).toMatch(/^minecraft:[a-z0-9_.]+$/);
+        expect(soundEvents, id).toContain(id.slice('minecraft:'.length));
+      }
+      const particle = portal?.particle ?? '';
+      expect(particle).toMatch(/^minecraft:[a-z0-9_]+$/);
+      expect(particleTypes, particle).toContain(particle.slice('minecraft:'.length));
+    });
+
     it('lists entity facts the vendored registries know (ADR 0070 D7, ADR 0071 D4)', async () => {
       const registries = (await readVendoredJson(
         bundle,

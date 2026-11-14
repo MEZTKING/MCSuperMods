@@ -241,6 +241,15 @@ export interface BlockFacts {
    * D7).
    */
   machineRecipeTypes?: readonly string[];
+  /**
+   * The default looks and sounds of a portal block (the `portal` block type): the namespaced
+   * sound event ids it plays while idle (`ambientSound`), when an entity travels through it
+   * (`travelSound`) and when an entity steps in (`triggerSound`), and the namespaced particle
+   * type id it shows by default (`particle`, an option-less particle type such as
+   * `minecraft:portal`). Optional: a target without them leaves the defaults to the runtime and
+   * skips the checks that need them. Since 1.13.0 (ADR 0077 D7).
+   */
+  portal?: { ambientSound: string; travelSound: string; triggerSound: string; particle: string };
 }
 
 /**
@@ -594,8 +603,8 @@ export interface TargetFacts {
    */
   items?: ItemFacts;
   /**
-   * Block facts: the set type and wood type names block families take, and (since 1.12.0) the
-   * container sounds and machine recipe types. Optional: a target without them skips the checks
+   * Block facts: the set type and wood type names block families take, (since 1.12.0) the
+   * container sounds and machine recipe types, and (since 1.13.0) the portal looks. Optional: a target without them skips the checks
    * that need them. Since 1.10.0 (ADR 0067 D9).
    */
   blocks?: BlockFacts;

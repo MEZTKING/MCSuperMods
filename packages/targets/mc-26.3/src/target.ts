@@ -442,6 +442,18 @@ export const target: Target = {
       'minecraft:smoking',
       'minecraft:campfire_cooking',
     ],
+    // portal (ADR 0077 D7; plugin API 1.13.0): a portal block's default sounds and particle, the
+    // Nether portal's own. Verified 2026-11-14: the three sound ids are in the vendored
+    // `registries.json` `sound_event` list and `portal` in its `particle_type` list (asserted by
+    // `test/target.test.ts` and `all/test/targets.test.ts`); javap over the Loom-cached 26.3
+    // merged jar: `SoundEvents.PORTAL_AMBIENT`, `PORTAL_TRAVEL`, `PORTAL_TRIGGER` register these
+    // ids and `ParticleTypes.PORTAL` is a `SimpleParticleType` (no options) named `portal`.
+    portal: {
+      ambientSound: 'minecraft:block.portal.ambient',
+      travelSound: 'minecraft:block.portal.travel',
+      triggerSound: 'minecraft:block.portal.trigger',
+      particle: 'minecraft:portal',
+    },
   },
   // entities (ADR 0070 D7, ADR 0071 D4): the vanilla items a ranged mob may fire and the tag the
   // vanilla saddle equips. Verified 2026-11-14 with javap over the Loom-cached 26.3 merged jar: each

@@ -400,6 +400,27 @@ describe('0.8.0 additions', () => {
     expect(older.machineRecipeTypes).toBeUndefined();
   });
 
+  it('carries optional portal block facts (1.13.0)', () => {
+    expectTypeOf<BlockFacts['portal']>().toEqualTypeOf<
+      | { ambientSound: string; travelSound: string; triggerSound: string; particle: string }
+      | undefined
+    >();
+    const facts: BlockFacts = {
+      setTypes: ['wood'],
+      woodTypes: ['oak'],
+      portal: {
+        ambientSound: 'minecraft:block.portal.ambient',
+        travelSound: 'minecraft:block.portal.travel',
+        triggerSound: 'minecraft:block.portal.trigger',
+        particle: 'minecraft:portal',
+      },
+    };
+    expect(facts.portal?.particle).toBe('minecraft:portal');
+    // A 1.12.0-shaped block facts object without them stays assignable.
+    const older: BlockFacts = { setTypes: ['wood'], woodTypes: ['oak'] };
+    expect(older.portal).toBeUndefined();
+  });
+
   it('keeps a 1.8.0-shaped JavaProjectInput assignable (potions is optional, 1.9.0)', () => {
     const input: JavaProjectInput = {
       modId: 'm',

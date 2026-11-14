@@ -3497,3 +3497,17 @@ What: CI run 43598871331 (96a81aa, a docs commit) failed `msm_machine_game_test_
 Decisions: no reflection into `ExperienceOrb.count`; the exact amount is already pinned by `storedExperience()` and by the parity test's flint recipe (experience 1, one orb).
 
 Next: none.
+## 2026-11-14 — executor — B332 plugin API 1.13.0
+
+What
+- Plugin API 1.13.0 (ADR 0077 D7, additive): `BlockFacts.portal?: { ambientSound; travelSound; triggerSound; particle }` with JSDoc, `API_VERSION` and package version 1.13.0, CHANGELOG entry, a type test and the version pins in `define-plugin.test.ts` and `packages/core/test/registry.test.ts`.
+- Both targets (`mc-26.3`, `mc-26.4`): `blocks.portal` = `minecraft:block.portal.ambient`, `minecraft:block.portal.travel`, `minecraft:block.portal.trigger`, `minecraft:portal`; identical. Each target test and `all/test/targets.test.ts` check the ids against the vendored `sound_event` and `particle_type` registries; each `CHANGES.md` records the fact with date and source.
+- Verified with `javap -c` (JDK 25) over the Loom-cached merged jars of 26.3 and 26.4-snapshot-7: `SoundEvents` registers the three ids as `PORTAL_AMBIENT`, `PORTAL_TRAVEL`, `PORTAL_TRIGGER`; `ParticleTypes` registers `portal` as `PORTAL`, a `SimpleParticleType`; `NetherPortalBlock` uses `PORTAL_AMBIENT` and `PORTAL`, `LocalPlayer` uses `PORTAL_TRIGGER`.
+- Confirmed `app/src/renderer/src/plugins/external-plugins.ts` and `app/src/renderer/src/ai/tool-executor.ts` pass `target.blocks` whole, so the new field reaches external plugins and the AI helper without changes.
+- Checks: `pnpm lint`, `pnpm typecheck`, `node tools/check-deps/index.ts` and the full `turbo run test --force` green.
+
+Decisions
+- Built-in plugins keep `^1.0.0`. The `portal` group is optional as a whole, like `containerSounds`.
+
+Next
+- B335 reads `target.blocks?.portal` for the defaults and `portal-sound-unknown`. The status lines in `packages/plugin-api/CLAUDE.md` and `packages/targets/CLAUDE.md` still say 1.12.0 (outside this brief's owner files; for B344).

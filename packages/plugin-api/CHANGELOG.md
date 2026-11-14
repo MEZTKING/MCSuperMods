@@ -2,6 +2,16 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.13.0 — 2026-11-14
+
+Custom portal blocks (ADR 0077 D7). `API_VERSION` is `1.13.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `BlockFacts.portal?: { ambientSound: string; travelSound: string; triggerSound: string; particle: string }`: the namespaced sound event ids a portal block plays while idle, when an entity travels and when an entity steps in, and the namespaced (option-less) particle type id it shows by default.
+
+### Migration from 1.12.0
+
+None. A plugin that reads the field should declare `^1.13.0` and treat an absent value as "no facts to check against"; plugins written earlier ignore it.
+
 ## 1.12.0 — 2026-11-14
 
 Containers and machines (ADR 0074 D7, ADR 0075 D7). `API_VERSION` is `1.12.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

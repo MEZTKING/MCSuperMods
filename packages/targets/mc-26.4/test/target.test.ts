@@ -104,6 +104,24 @@ describe('target mc-26.4', () => {
     }
   });
 
+  it('lists the portal sounds and particle (ADR 0077 D7)', async () => {
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    const portal = target.blocks?.portal;
+    expect(portal).toEqual({
+      ambientSound: 'minecraft:block.portal.ambient',
+      travelSound: 'minecraft:block.portal.travel',
+      triggerSound: 'minecraft:block.portal.trigger',
+      particle: 'minecraft:portal',
+    });
+    for (const id of [portal?.ambientSound, portal?.travelSound, portal?.triggerSound]) {
+      expect(registries.sound_event, id).toContain(id?.slice('minecraft:'.length));
+    }
+    expect(registries.particle_type).toContain(portal?.particle.slice('minecraft:'.length));
+  });
+
   it('derives its id from the Minecraft version line', () => {
     // The runtime version key: mcVersion up to the first '-' (the plan's fixed names).
     expect(target.id).toBe(`mc-${runtimeVersion}`);
