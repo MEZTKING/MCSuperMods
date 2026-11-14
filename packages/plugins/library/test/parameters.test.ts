@@ -114,6 +114,12 @@ const WIZARDS = [
   'mob-skin',
   'goat-horn',
   'custom_mob',
+  'pet',
+  'farm-animal',
+  'mount',
+  'flying-mob',
+  'water-mob',
+  'boss',
   'scripted-item',
 ];
 
@@ -142,6 +148,12 @@ const FLOWS: Record<string, string> = {
   'mob-skin': 'mobs',
   'goat-horn': 'gear',
   custom_mob: 'mobs',
+  pet: 'mobs',
+  'farm-animal': 'mobs',
+  mount: 'mobs',
+  'flying-mob': 'mobs',
+  'water-mob': 'mobs',
+  boss: 'mobs',
   'scripted-item': 'scripts',
 };
 
@@ -160,7 +172,11 @@ describe('wizard starters', () => {
     ];
     expect(groups('custom_ore')).toEqual(['Ore', 'Drops', 'World']);
     expect(groups('custom-sword')).toEqual(['Sword', 'Stats', 'Recipe']);
-    expect(groups('custom_mob')).toEqual(['Mob', 'Behaviour', 'Spawning']);
+    expect(groups('custom_mob')).toEqual(['Mob', 'Behaviour', 'Spawning', 'Variants']);
+    for (const id of ['pet', 'farm-animal', 'mount', 'flying-mob', 'water-mob']) {
+      expect(groups(id), id).toEqual(['Mob', 'Behaviour', 'Spawning', 'Variants']);
+    }
+    expect(groups('boss')).toEqual(['Mob', 'Behaviour', 'Boss bar']);
     expect(groups('gear-set')).toEqual(['Material', 'Pieces', 'Tools', 'Armour']);
     expect(groups('simple-block')).toEqual(['Block', 'Mining', 'Recipe']);
     expect(groups('food')).toEqual(['Food', 'Eating', 'Recipe']);

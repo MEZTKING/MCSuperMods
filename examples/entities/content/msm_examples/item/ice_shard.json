@@ -1,0 +1,29 @@
+{
+  "data": {
+    "components": {
+      "msm:throwable": {
+        "after_throw": "consume",
+        "damage": 3,
+        "gravity": 0.03,
+        "sound": "minecraft:entity.snowball.throw",
+        "speed": 1.4
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Ice Shard",
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "msm_examples:item/ice_shard"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ice_shard",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The projectile the archer throws: msm:throwable gives it its speed, a light gravity and 3 damage on a hit. Players can throw it too; each throw uses one.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

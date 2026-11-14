@@ -24,6 +24,7 @@
         "attack": "attack",
         "idle": "idle",
         "model": "msm_starter:entity/ruby_golem",
+        "renderer": "auto",
         "scale": 0.8,
         "texture": "msm_starter:entity/ruby_golem",
         "walk": "walk"
@@ -90,6 +91,6 @@
   "kind": "msm:entity",
   "meta": {
     "createdAt": "2026-11-04T00:00:00.000Z",
-    "notes": "A new mob. It is a creature with a 0.9 by 1.6 block hitbox, 30 health (15 hearts) and a walking speed of 0.28. Its goals run in list order: melee_attack with retaliate and no targets means it only fights back when hurt, hitting for 4 damage (msm:attack) and firing msm_starter:ruby_golem_attack; otherwise it wanders and looks about. It spawns naturally in every forest (#minecraft:is_forest) in groups of one or two, has a spawn egg with its own texture, drops the loot table msm_starter:entities/ruby_golem, and its death event spawns sparks and runs a function. msm:animated_model names the GeckoLib model, animation set and texture; scale 0.8 shrinks the two-block biped model to the hitbox. Export the Fabric mod jar to try it in game."
+    "notes": "A new mob. It is a creature with a 0.9 by 1.6 block hitbox, 30 health (15 hearts) and a walking speed of 0.28. Its goals run in list order: melee_attack with retaliate and no targets means it only fights back when hurt, hitting for 4 damage (msm:attack) and firing msm_starter:ruby_golem_attack; otherwise it wanders and looks about. It spawns naturally in every forest (#minecraft:is_forest) in groups of one or two, has a spawn egg with its own texture, drops the loot table msm_starter:entities/ruby_golem, and its death event spawns sparks and runs a function. msm:animated_model names the model, animation set and texture with renderer auto (GeckoLib where the target has it, the runtime's own renderer elsewhere); scale 0.8 shrinks the two-block biped model to the hitbox. Export the Fabric mod jar to try it in game."
   }
 }

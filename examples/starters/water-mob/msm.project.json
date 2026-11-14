@@ -1,0 +1,21 @@
+{
+  "formatVersion": 1,
+  "name": "Water mob",
+  "namespaces": [
+    "msm_starter"
+  ],
+  "plugins": [
+    "msm.resourcepack",
+    "msm.datapack",
+    "msm.structures",
+    "msm.worldgen",
+    "msm.blocks-items",
+    "msm.entities",
+    "msm.models-anim",
+    "msm.scripting"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

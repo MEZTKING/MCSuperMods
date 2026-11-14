@@ -15,11 +15,13 @@ import {
   kindExamples,
   libraryExamples,
   libraryStarters,
+  MOB_PRESET_NAMES,
   mobSkinPng,
   PLACEHOLDER_PATTERNS,
   paintingPng,
   placeholderPng,
   placeholderSkinPng,
+  presetSkinPng,
   STARTERS_CATEGORY,
   scriptBehaviourExamples,
   starterExamples,
@@ -61,6 +63,12 @@ const STARTER_IDS = [
   'jigsaw_structure',
   'worldgen_pack',
   'custom_mob',
+  'pet',
+  'farm-animal',
+  'mount',
+  'flying-mob',
+  'water-mob',
+  'boss',
   'scripted_ore',
   'scripted-item',
 ];
@@ -204,6 +212,12 @@ const PLACEHOLDERS = new Set([
   ...Object.values(COLOURS).map((colour) =>
     Buffer.from(placeholderSkinPng({ colour })).toString('hex'),
   ),
+  // Preset mob skins (ADR 0073 D1): every preset in each colour.
+  ...MOB_PRESET_NAMES.flatMap((preset) =>
+    Object.values(COLOURS).map((colour) =>
+      Buffer.from(presetSkinPng(preset, { colour })).toString('hex'),
+    ),
+  ),
   // Mob variant skins (ADR 0064 D6): every vanilla size, in each colour and its shades.
   ...[
     ...Object.values(SKIN_ANIMALS).flatMap((facts) => [facts.adult, facts.baby]),
@@ -232,7 +246,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the thirty-six starters in order', () => {
+  it('lists the forty-two starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -242,7 +256,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(32).fill('content'),
+      ...Array<string>(38).fill('content'),
     ]);
   });
 
@@ -609,7 +623,7 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 94 per-kind examples, one per built-in kind, 21 behaviour examples and 4 starter projects', () => {
+  it('has 94 per-kind examples, one per built-in kind, 27 behaviour examples and 4 starter projects', () => {
     expect(kindExamples).toHaveLength(94);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
@@ -633,6 +647,12 @@ describe('examples', () => {
     expect(entityBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_hostile_mob',
       'example_msm_natural_spawn',
+      'example_msm_tameable_pet',
+      'example_msm_flying_mount',
+      'example_msm_throwing_archer',
+      'example_msm_fish_school',
+      'example_msm_boss_bar',
+      'example_msm_vanilla_renderer',
     ]);
     expect(scriptBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_script_schedule',
@@ -643,7 +663,7 @@ describe('examples', () => {
       'example_msm_teleport_staff',
       'example_msm_boss_fight_bar',
     ]);
-    expect(libraryExamples).toHaveLength(119);
+    expect(libraryExamples).toHaveLength(125);
   });
 
   it('reuses the starter builders for the starter projects', () => {

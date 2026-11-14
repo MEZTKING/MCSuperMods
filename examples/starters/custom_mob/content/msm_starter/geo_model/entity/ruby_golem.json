@@ -184,6 +184,6 @@
   "kind": "msm:geo_model",
   "meta": {
     "createdAt": "2026-11-04T00:00:00.000Z",
-    "notes": "The GeckoLib geo model: a biped with body, head, arm and leg bones over a 64x64 texture. Replace it with your own by importing a Blockbench model; keep the bone names, or update the animations to match."
+    "notes": "The geo model: a biped with body, head, arm and leg bones over a 64x64 texture. Replace it with your own by importing a Blockbench model; keep the bone names, or update the animations to match."
   }
 }

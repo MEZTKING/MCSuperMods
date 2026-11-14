@@ -2,11 +2,13 @@
  * The Custom mob starter (ADR 0028, ADR 0029; wizard parameters ADR 0040 D2): an animated mob
  * (by default the Ruby Golem) that wanders the chosen biomes, fights back when hit (or never
  * fights, or hunts players), drops emeralds and bursts into sparks when it dies. It brings its
- * GeckoLib geo model, animation set, placeholder skin and spawn egg texture, a loot table, a
- * function and the `msm:mod` metadata. The defaults build the Ruby Golem of earlier versions
- * byte for byte. New entities need the Fabric mod jar export (with `msm_runtime` and
- * GeckoLib); the vanilla pack exports carry only the models, textures, language keys, loot
- * table and function.
+ * geo model, animation set, placeholder skin and spawn egg texture, a loot table, a function
+ * and the `msm:mod` metadata. ADR 0073 D2 adds a fourth behaviour, the hostile archer that
+ * shoots arrows (`msm:ranged_attack`), `base` `monster` for the hostile ones, `renderer` `auto`
+ * (GeckoLib where the target has it, the runtime's own renderer elsewhere, ADR 0072 D6) and
+ * extra variants. New entities need the Fabric mod jar export (with `msm_runtime`, and GeckoLib
+ * where the target has it); the vanilla pack exports carry only the models, textures, language
+ * keys, loot table and function.
  */
 import type { BundleContext, ContentBundle, JsonObject, StarterParameter } from '@msm/plugin-api';
 import type { Rgb } from '../assets/png';
@@ -21,6 +23,14 @@ import {
   texture,
 } from '../content/bundle';
 import { bipedAnimations, bipedGeometry } from '../content/entities';
+import {
+  LAND_VARIANT_PLACES,
+  readVariants,
+  variantNotes,
+  variantParameters,
+  variantsComponent,
+} from '../content/mob-flows';
+import { bipedPresetAnimations } from '../content/mob-presets';
 import {
   decodePngDataUrl,
   hexFromRgb,
@@ -145,6 +155,7 @@ export const CUSTOM_MOB_PARAMETERS: readonly StarterParameter[] = Object.freeze(
       { value: 'peaceful', label: 'Peaceful: never fights' },
       { value: 'neutral', label: 'Neutral: fights back when hit' },
       { value: 'hostile', label: 'Hostile: hunts players in the dark' },
+      { value: 'archer', label: 'Hostile archer: shoots arrows from a distance' },
     ],
   },
   {
@@ -155,6 +166,7 @@ export const CUSTOM_MOB_PARAMETERS: readonly StarterParameter[] = Object.freeze(
     default: '#minecraft:is_forest',
     choices: BIOMES.map((biome) => ({ value: biome.tag, label: biome.label })),
   },
+  ...variantParameters(LAND_VARIANT_PLACES),
 ]);
 
 export function customMobBundle(context: BundleContext): ContentBundle {
@@ -177,8 +189,11 @@ export function customMobBundle(context: BundleContext): ContentBundle {
   const biome =
     BIOMES.find((entry) => entry.tag === stringValue(values, 'spawn_biomes')) ??
     (BIOMES[0] as (typeof BIOMES)[number]);
-  const fights = behaviour !== 'peaceful';
-  const hostile = behaviour === 'hostile';
+  const archer = behaviour === 'archer';
+  const fights = behaviour === 'neutral' || behaviour === 'hostile';
+  const hostile = behaviour === 'hostile' || archer;
+  const variants = readVariants(values, LAND_VARIANT_PLACES);
+  const variantsData = variantsComponent(namespace, mob.id, variants);
   const lastWord = mob.lower.split(' ').at(-1) as string;
   const idOf = (word: string): string => nameForms(word).id;
 
@@ -192,20 +207,24 @@ export function customMobBundle(context: BundleContext): ContentBundle {
   const onAttack = rl(namespace, `${mob.id}_attack`);
   const onDeath = rl(namespace, `${mob.id}_death`);
   const goals: JsonObject[] = [
-    ...(hostile
-      ? [{ type: 'melee_attack', targets: ['minecraft:player'], retaliate: true }]
-      : fights
-        ? [{ type: 'melee_attack', retaliate: true }]
-        : []),
+    ...(archer
+      ? [{ type: 'ranged_attack', strafe: true, targets: ['minecraft:player'], retaliate: true }]
+      : hostile
+        ? [{ type: 'melee_attack', targets: ['minecraft:player'], retaliate: true }]
+        : fights
+          ? [{ type: 'melee_attack', retaliate: true }]
+          : []),
     { type: 'wander' },
     { type: 'look_at_player' },
     { type: 'look_around' },
   ];
-  const goalsText = hostile
-    ? `Its goals run in list order: melee_attack with minecraft:player as its target means it hunts players, and with retaliate it also fights back when hurt, hitting for 4 damage (msm:attack) and firing ${onAttack}; otherwise it wanders and looks about.`
-    : fights
-      ? `Its goals run in list order: melee_attack with retaliate and no targets means it only fights back when hurt, hitting for 4 damage (msm:attack) and firing ${onAttack}; otherwise it wanders and looks about.`
-      : 'Its goals run in list order: it wanders and looks about, and with no melee_attack goal or msm:attack it never fights.';
+  const goalsText = archer
+    ? 'Its goals run in list order: ranged_attack with minecraft:player as its target means it hunts players, circling them (strafe) and shooting arrows from up to 15 blocks every two seconds with msm:ranged_attack, and with retaliate it also shoots back when hurt; otherwise it wanders and looks about.'
+    : hostile
+      ? `Its goals run in list order: melee_attack with minecraft:player as its target means it hunts players, and with retaliate it also fights back when hurt, hitting for 4 damage (msm:attack) and firing ${onAttack}; otherwise it wanders and looks about.`
+      : fights
+        ? `Its goals run in list order: melee_attack with retaliate and no targets means it only fights back when hurt, hitting for 4 damage (msm:attack) and firing ${onAttack}; otherwise it wanders and looks about.`
+        : 'Its goals run in list order: it wanders and looks about, and with no melee_attack goal or msm:attack it never fights.';
   const spawnText = `It spawns naturally in ${biome.every} (${biome.tag})${hostile ? ' where it is dark enough for monsters (rule monster)' : ''} in groups of one or two`;
   const category = hostile ? 'monster' : 'creature';
   return {
@@ -245,19 +264,34 @@ export function customMobBundle(context: BundleContext): ContentBundle {
             ...(hostile ? { rule: 'monster' } : {}),
           },
           spawn_egg: { texture: egg },
+          ...(hostile ? { base: 'monster' } : {}),
           components: {
             'msm:health': { max: health },
             'msm:movement': { speed },
             ...(fights ? { 'msm:attack': { damage: 4, on_attack: onAttack } } : {}),
+            ...(archer
+              ? {
+                  'msm:ranged_attack': {
+                    projectile: 'minecraft:arrow',
+                    damage: 2,
+                    interval_ticks: 40,
+                    range: 15,
+                    sound: 'minecraft:entity.skeleton.shoot',
+                  },
+                }
+              : {}),
             'msm:ai_goals': { goals },
+            ...(variantsData === undefined ? {} : { 'msm:variants': variantsData }),
             'msm:animated_model': {
               model,
               animations,
               texture: skin,
+              renderer: 'auto',
               scale: 0.8,
               idle: 'idle',
               walk: 'walk',
               ...(fights ? { attack: 'attack' } : {}),
+              ...(archer ? { shoot: 'shoot' } : {}),
             },
             'msm:on_death': { event: onDeath },
           },
@@ -277,7 +311,7 @@ export function customMobBundle(context: BundleContext): ContentBundle {
             },
           },
         },
-        `A new mob. It is a ${category} with a 0.9 by 1.6 block hitbox, ${health} health (${health / 2} hearts) and a walking speed of ${speed}. ${goalsText} ${spawnText}, has a spawn egg with its own texture, drops the loot table ${loot}, and its death event spawns sparks and runs a function. msm:animated_model names the GeckoLib model, animation set and texture; scale 0.8 shrinks the two-block biped model to the hitbox. Export the Fabric mod jar to try it in game.`,
+        `A new mob. It is a ${category}${hostile ? ' (base monster: an enemy removed in Peaceful)' : ''} with a 0.9 by 1.6 block hitbox, ${health} health (${health / 2} hearts) and a walking speed of ${speed}. ${goalsText} ${spawnText}, has a spawn egg with its own texture, drops the loot table ${loot}, and its death event spawns sparks and runs a function.${variantNotes(variants)} msm:animated_model names the model, animation set and texture with renderer auto (GeckoLib where the target has it, the runtime's own renderer elsewhere); scale 0.8 shrinks the two-block biped model to the hitbox. Export the Fabric mod jar to try it in game.`,
       ),
       element(
         model,
@@ -288,13 +322,13 @@ export function customMobBundle(context: BundleContext): ContentBundle {
             : { layout: playerSkin.height === 32 ? 'legacy' : 'modern', overlay: true }),
           ...(slim ? { slim: true } : {}),
         }),
-        `The GeckoLib geo model: a biped with body, head, arm and leg bones over ${playerSkin?.height === 32 ? 'an old 64x32 player skin (the left arm and leg mirror the right ones)' : playerSkin === null ? 'a 64x64 texture' : 'a 64x64 player skin, with its second layer (hat, jacket, sleeves and trousers) as slightly larger cubes'}${slim ? ', with slim 3-pixel arms' : ''}. Replace it with your own by importing a Blockbench model; keep the bone names, or update the animations to match.`,
+        `The geo model: a biped with body, head, arm and leg bones over ${playerSkin?.height === 32 ? 'an old 64x32 player skin (the left arm and leg mirror the right ones)' : playerSkin === null ? 'a 64x64 texture' : 'a 64x64 player skin, with its second layer (hat, jacket, sleeves and trousers) as slightly larger cubes'}${slim ? ', with slim 3-pixel arms' : ''}. Replace it with your own by importing a Blockbench model; keep the bone names, or update the animations to match.`,
       ),
       element(
         animations,
         KINDS.animation,
-        bipedAnimations(fights),
-        `The animation set the entity plays: idle while standing, walk while moving${fights ? ' and attack when it hits' : ''}. Each animation moves bones of the geo model by name with keyframes in seconds.`,
+        archer ? bipedPresetAnimations() : bipedAnimations(fights),
+        `The animation set the entity plays: idle while standing, walk while moving${fights ? ' and attack when it hits' : ''}${archer ? ' and shoot when it fires an arrow (the set also has sit and attack)' : ''}. Each animation moves bones of the geo model by name with keyframes in seconds.`,
       ),
       element(
         loot,
@@ -338,6 +372,18 @@ export function customMobBundle(context: BundleContext): ContentBundle {
       playerSkin === null
         ? skinTexture(namespace, `entity/${mob.id}`, skinColour)
         : { namespace, path: `textures/entity/${mob.id}.png`, bytes: playerSkin.bytes },
+      ...variants.map((variant) => {
+        const picture = decodePngDataUrl(variant.picture ?? '');
+        return picture !== null &&
+          picture.width === 64 &&
+          picture.height === (playerSkin?.height ?? 64)
+          ? {
+              namespace,
+              path: `textures/entity/${mob.id}_${variant.id}.png`,
+              bytes: picture.bytes,
+            }
+          : skinTexture(namespace, `entity/${mob.id}_${variant.id}`, variant.colour);
+      }),
       texture(namespace, `item/${mob.id}_spawn_egg`, 'egg', eggColour, eggSpots),
     ],
   };

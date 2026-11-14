@@ -202,6 +202,111 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     // A player skin (64 by 64 with its second layer, slim arms) and a legacy 64 by 32 one.
     { mob_name: 'Skin Walker', skin: skinDataUrl(64), arms: 'slim' },
     { mob_name: 'Old Timer', skin: skinDataUrl(32) },
+    // ADR 0073 D2: the archer, and three variants (one with a picture, two by biome).
+    {
+      mob_name: 'Bone Archer',
+      behaviour: 'archer',
+      variant_count: 3,
+      variant_1_biome: 'cold',
+      variant_2_picture: skinDataUrl(64),
+      variant_3_biome: 'badlands',
+    },
+  ],
+  // ADR 0073 D2: every preset, choice and variant slot of the mob flows.
+  pet: [
+    {
+      pet_name: 'Sky Kitten',
+      preset: 'flyer',
+      taming_food: 'raw_fish',
+      breeding_food: 'cooked_fish',
+      defends: false,
+      variant_count: 3,
+      variant_1_biome: 'warm',
+      variant_2_picture: pngDataUrl(64, 64),
+      variant_3_biome: 'mountains',
+      picture: pngDataUrl(64, 64),
+    },
+    { pet_name: 'Song Bird', preset: 'bird', sits: false, babies: false, spawn_biomes: 'jungles' },
+    { pet_name: 'Little Squire', preset: 'biped', taming_food: 'bones', spawn_biomes: 'nowhere' },
+  ],
+  'farm-animal': [
+    {
+      animal_name: 'Dust Hen',
+      preset: 'bird',
+      breeding_food: 'seeds',
+      drop: 'minecraft:feather',
+      rideable: true,
+      variant_count: 2,
+      variant_1_biome: 'cold',
+      variant_2_picture: pngDataUrl(64, 32),
+      picture: pngDataUrl(64, 32),
+    },
+    {
+      animal_name: 'Hill Goat',
+      rideable: true,
+      drop: 'minecraft:mutton',
+      spawn_biomes: 'mountains',
+    },
+  ],
+  mount: [
+    {
+      mount_name: 'Cloud Ray',
+      preset: 'flyer',
+      owner_only: true,
+      needs_saddle: false,
+      variant_count: 1,
+      variant_1_biome: 'savannas',
+    },
+    { mount_name: 'Wing Horse', flying: true, jump: 0, spawn_biomes: 'savannas' },
+  ],
+  'flying-mob': [
+    {
+      mob_name: 'Storm Bird',
+      preset: 'bird',
+      behaviour: 'shooter',
+      projectile: 'minecraft:wind_charge',
+    },
+    { mob_name: 'Night Wasp', behaviour: 'hostile', variant_count: 2 },
+    { mob_name: 'Ash Moth', behaviour: 'neutral', projectile: 'minecraft:arrow' },
+    { mob_name: 'Hail Moth', behaviour: 'shooter', projectile: 'minecraft:arrow' },
+    { mob_name: 'Fire Moth', behaviour: 'shooter', projectile: 'minecraft:fire_charge' },
+    { mob_name: 'Egg Moth', behaviour: 'shooter', projectile: 'minecraft:egg' },
+  ],
+  'water-mob': [
+    {
+      mob_name: 'Bay Dolphin',
+      kind: 'dolphin',
+      behaviour: 'neutral',
+      spawn_biomes: 'rivers',
+      variant_count: 3,
+      variant_1_biome: 'warm_oceans',
+      variant_2_biome: 'cold_oceans',
+      variant_3_picture: pngDataUrl(64, 32),
+    },
+    {
+      mob_name: 'Mud Newt',
+      preset: 'quadruped',
+      kind: 'amphibian',
+      behaviour: 'hostile',
+      spawn_biomes: 'swamps',
+      variant_count: 1,
+      variant_1_biome: 'swamps',
+    },
+  ],
+  boss: [
+    {
+      boss_name: 'Frost Beast',
+      preset: 'quadruped',
+      size: 'giant',
+      attacks: 'both',
+      projectile: 'minecraft:snowball',
+      bar_colour: 'blue',
+      bar_style: 'progress',
+      darkens_sky: false,
+      drop: 'minecraft:netherite_scrap',
+      picture: pngDataUrl(64, 64),
+    },
+    { boss_name: 'Sky Archer', attacks: 'ranged', projectile: 'minecraft:arrow', size: 'huge' },
   ],
   'gear-set': [
     {
@@ -668,6 +773,12 @@ const MIRRORED_STARTERS = [
   'jigsaw_structure',
   'worldgen_pack',
   'custom_mob',
+  'pet',
+  'farm-animal',
+  'mount',
+  'flying-mob',
+  'water-mob',
+  'boss',
   'scripted_ore',
   'gear-set',
   'simple-block',
@@ -1389,18 +1500,16 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     const starters = libraryStarters.filter((starter) => supported(starter, bundle.target));
     const examples = libraryExamples.filter((example) => supported(example, bundle.target));
 
-    it('hides the entries that need GeckoLib on a target without it', () => {
+    it('offers the mob entries on every target with Fabric, GeckoLib or not (ADR 0072 D6)', () => {
       const withEntities = [...libraryStarters, ...libraryExamples].filter((entry) =>
         entry.requiresKinds.includes('msm:entity'),
       );
       expect(withEntities.map((entry) => entry.id)).toContain('custom_mob');
       for (const entry of withEntities) {
-        expect(supported(entry, bundle.target), entry.id).toBe(
-          bundle.target.geckolib !== undefined,
-        );
+        expect(supported(entry, bundle.target), entry.id).toBe(bundle.target.fabric !== undefined);
       }
       expect(starters.some((starter) => starter.id === 'custom_mob')).toBe(
-        bundle.target.geckolib !== undefined,
+        bundle.target.fabric !== undefined,
       );
     });
 

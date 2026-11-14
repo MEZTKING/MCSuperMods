@@ -1,0 +1,84 @@
+{
+  "data": {
+    "base": "monster",
+    "category": "monster",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "retaliate": true,
+            "speed": 1,
+            "targets": [
+              "minecraft:player"
+            ],
+            "type": "melee_attack"
+          },
+          {
+            "speed": 0.8,
+            "type": "wander"
+          },
+          {
+            "distance": 16,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/stone_titan_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_examples:entity/stone_titan",
+        "renderer": "auto",
+        "scale": 2,
+        "shoot": "shoot",
+        "sit": "sit",
+        "texture": "msm_examples:entity/stone_titan",
+        "walk": "walk"
+      },
+      "msm:attack": {
+        "damage": 15,
+        "knockback": 2
+      },
+      "msm:boss_bar": {
+        "colour": "red",
+        "darken_sky": true,
+        "fog": true,
+        "music": false,
+        "overlay": "notched_12",
+        "range": 64
+      },
+      "msm:health": {
+        "max": 300
+      },
+      "msm:movement": {
+        "fire_immune": true,
+        "follow_range": 40,
+        "knockback_resistance": 1,
+        "speed": 0.28
+      }
+    },
+    "display_name": "Stone Titan",
+    "format": 1,
+    "size": {
+      "height": 3.9,
+      "width": 1.2
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/stone_titan_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:stone_titan",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A boss. msm:boss_bar shows its health in a red bar with 12 notches to every player within 64 blocks (range), darkens the sky and fogs the world; a boss never despawns. It has 300 health, cannot be knocked back (knockback_resistance 1), ignores fire and hits for 15 damage. It has no spawn field, so it never spawns on its own: summon it with its spawn egg or /summon. scale 2 draws the model twice as big, and its hitbox is twice the biped's.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "data": {
+    "base": "animal",
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 1.4,
+            "type": "panic"
+          },
+          {
+            "speed": 1,
+            "type": "wander"
+          },
+          {
+            "distance": 6,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_starter:entity/moss_boar_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_starter:entity/moss_boar",
+        "renderer": "auto",
+        "shoot": "shoot",
+        "sit": "sit",
+        "swim": "swim",
+        "texture": "msm_starter:entity/moss_boar",
+        "walk": "walk"
+      },
+      "msm:breedable": {
+        "baby_scale": 0.5,
+        "follow_parents": true,
+        "grow_up_ticks": 24000,
+        "items": [
+          "minecraft:wheat"
+        ],
+        "tempted": true
+      },
+      "msm:health": {
+        "max": 10
+      },
+      "msm:movement": {
+        "speed": 0.2
+      }
+    },
+    "display_name": "Moss Boar",
+    "format": 1,
+    "loot_table": "msm_starter:entities/moss_boar",
+    "size": {
+      "height": 1.1,
+      "width": 0.9
+    },
+    "spawn": {
+      "biomes": [
+        "minecraft:plains",
+        "minecraft:sunflower_plains",
+        "minecraft:meadow"
+      ],
+      "max_group": 4,
+      "min_group": 2,
+      "rule": "animal",
+      "weight": 8
+    },
+    "spawn_egg": {
+      "texture": "msm_starter:item/moss_boar_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:moss_boar",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A farm animal: base animal lets it breed. msm:breedable makes two of them fed wheat have a baby at 0.5 times their size that grows up in 20 minutes (24000 ticks); holding the food tempts them and babies follow their parents. panic makes it run about when hurt. It spawns in plains and meadows in groups of two to four (rule animal: on grass in daylight). msm:animated_model names the model, animation set and texture with renderer auto: GeckoLib draws it where the target has GeckoLib, the runtime's own renderer elsewhere. Export the Fabric mod jar to try it in game."
+  }
+}

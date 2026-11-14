@@ -1,0 +1,82 @@
+{
+  "data": {
+    "base": "animal",
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 1.2,
+            "type": "panic"
+          },
+          {
+            "speed": 0.7,
+            "type": "wander"
+          },
+          {
+            "distance": 6,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_starter:entity/dune_runner_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_starter:entity/dune_runner",
+        "renderer": "auto",
+        "scale": 1.5,
+        "shoot": "shoot",
+        "sit": "sit",
+        "swim": "swim",
+        "texture": "msm_starter:entity/dune_runner",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 24
+      },
+      "msm:movement": {
+        "speed": 0.25,
+        "step_height": 1
+      },
+      "msm:rideable": {
+        "controlled_by": "anyone",
+        "jump": 0.7,
+        "passengers": 1,
+        "saddle": true,
+        "saddle_bone": "saddle",
+        "speed": 1
+      }
+    },
+    "display_name": "Dune Runner",
+    "format": 1,
+    "size": {
+      "height": 1.65,
+      "width": 1.35
+    },
+    "spawn": {
+      "biomes": [
+        "minecraft:plains",
+        "minecraft:sunflower_plains",
+        "minecraft:meadow"
+      ],
+      "max_group": 4,
+      "min_group": 2,
+      "rule": "animal",
+      "weight": 5
+    },
+    "spawn_egg": {
+      "texture": "msm_starter:item/dune_runner_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:dune_runner",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A mount: msm:rideable lets a player get on with an empty hand and steer it once it wears a vanilla saddle (shown by the saddle bone). It walks and jumps with the jump bar at strength 0.7, stepping up full blocks (step_height 1). Its ridden speed is its movement speed (0.25); sneaking dismounts. It spawns in plains and meadows in groups of two to four (rule animal: on grass in daylight). msm:animated_model names the model, animation set and texture with renderer auto: GeckoLib draws it where the target has GeckoLib, the runtime's own renderer elsewhere. Export the Fabric mod jar to try it in game."
+  }
+}

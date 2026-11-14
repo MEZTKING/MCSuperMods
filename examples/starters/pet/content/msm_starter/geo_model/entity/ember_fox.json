@@ -1,0 +1,263 @@
+{
+  "data": {
+    "format_version": "1.12.0",
+    "minecraft:geometry": [
+      {
+        "bones": [
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -4,
+                  9,
+                  -6
+                ],
+                "size": [
+                  8,
+                  7,
+                  14
+                ],
+                "uv": [
+                  0,
+                  0
+                ]
+              }
+            ],
+            "name": "body",
+            "pivot": [
+              0,
+              13,
+              1
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -3,
+                  11,
+                  -12
+                ],
+                "size": [
+                  6,
+                  6,
+                  6
+                ],
+                "uv": [
+                  0,
+                  21
+                ]
+              },
+              {
+                "origin": [
+                  -2,
+                  11,
+                  -14
+                ],
+                "size": [
+                  4,
+                  3,
+                  2
+                ],
+                "uv": [
+                  24,
+                  21
+                ]
+              }
+            ],
+            "name": "head",
+            "parent": "body",
+            "pivot": [
+              0,
+              14,
+              -6
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -1,
+                  9,
+                  8
+                ],
+                "size": [
+                  2,
+                  6,
+                  2
+                ],
+                "uv": [
+                  44,
+                  0
+                ]
+              }
+            ],
+            "name": "tail",
+            "parent": "body",
+            "pivot": [
+              0,
+              15,
+              8
+            ],
+            "rotation": [
+              30,
+              0,
+              0
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -4,
+                  0,
+                  -5
+                ],
+                "size": [
+                  3,
+                  9,
+                  3
+                ],
+                "uv": [
+                  0,
+                  33
+                ]
+              }
+            ],
+            "name": "leg_front_right",
+            "pivot": [
+              -2.5,
+              9,
+              -3.5
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  1,
+                  0,
+                  -5
+                ],
+                "size": [
+                  3,
+                  9,
+                  3
+                ],
+                "uv": [
+                  12,
+                  33
+                ]
+              }
+            ],
+            "name": "leg_front_left",
+            "pivot": [
+              2.5,
+              9,
+              -3.5
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -4,
+                  0,
+                  4
+                ],
+                "size": [
+                  3,
+                  9,
+                  3
+                ],
+                "uv": [
+                  24,
+                  33
+                ]
+              }
+            ],
+            "name": "leg_back_right",
+            "pivot": [
+              -2.5,
+              9,
+              5.5
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  1,
+                  0,
+                  4
+                ],
+                "size": [
+                  3,
+                  9,
+                  3
+                ],
+                "uv": [
+                  36,
+                  33
+                ]
+              }
+            ],
+            "name": "leg_back_left",
+            "pivot": [
+              2.5,
+              9,
+              5.5
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "inflate": 0.5,
+                "origin": [
+                  -4,
+                  15,
+                  -3
+                ],
+                "size": [
+                  8,
+                  2,
+                  7
+                ],
+                "uv": [
+                  0,
+                  45
+                ]
+              }
+            ],
+            "name": "saddle",
+            "parent": "body",
+            "pivot": [
+              0,
+              13,
+              1
+            ]
+          }
+        ],
+        "description": {
+          "identifier": "geometry.ember_fox",
+          "texture_height": 64,
+          "texture_width": 64,
+          "visible_bounds_height": 1.5,
+          "visible_bounds_offset": [
+            0,
+            0.75,
+            0
+          ],
+          "visible_bounds_width": 1.5
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:entity/ember_fox",
+  "kind": "msm:geo_model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The geo model, the four-legged animal preset: bones body, head, tail, leg_front_right, leg_front_left, leg_back_right, leg_back_left, saddle over a 64x64 texture. The saddle bone is the saddle, shown only while a rideable mob is saddled. Replace it with your own by importing a Blockbench model; keep the bone names, or update the animations to match."
+  }
+}

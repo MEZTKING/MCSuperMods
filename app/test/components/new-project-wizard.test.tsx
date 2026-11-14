@@ -123,7 +123,8 @@ describe('NewProjectDialog with targets and wizards', () => {
   it('offers only the targets a starter supports', async () => {
     const { onCreate, user } = renderDialog([mob]);
     await user.click(screen.getByTestId('starter-custom_mob'));
-    for (let step = 0; step < 4; step += 1) await user.click(screen.getByTestId('wizard-next'));
+    // Starter list, Mob, Behaviour, Spawning and Variants steps.
+    for (let step = 0; step < 5; step += 1) await user.click(screen.getByTestId('wizard-next'));
     const options = [...(screen.getByTestId('new-project-target') as HTMLSelectElement).options];
     const supported = facts.filter((target) => mob.supports?.(target) ?? true);
     expect(options.map((option) => option.value)).toEqual(supported.map((target) => target.id));

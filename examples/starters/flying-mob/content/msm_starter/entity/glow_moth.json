@@ -1,0 +1,67 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 1,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_starter:entity/glow_moth_animations",
+        "attack": "attack",
+        "fly": "fly",
+        "idle": "idle",
+        "model": "msm_starter:entity/glow_moth",
+        "renderer": "auto",
+        "shoot": "shoot",
+        "texture": "msm_starter:entity/glow_moth",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 10
+      },
+      "msm:movement": {
+        "flying_speed": 0.6,
+        "hovers": true,
+        "mode": "fly",
+        "speed": 0.3
+      }
+    },
+    "display_name": "Glow Moth",
+    "format": 1,
+    "size": {
+      "height": 0.8,
+      "width": 0.8
+    },
+    "spawn": {
+      "biomes": [
+        "#minecraft:is_forest"
+      ],
+      "max_group": 3,
+      "min_group": 1,
+      "rule": "mob",
+      "weight": 6
+    },
+    "spawn_egg": {
+      "texture": "msm_starter:item/glow_moth_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:glow_moth",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A flying mob: mode fly gives it flying movement and navigation, it hovers in place when idle (hovers true) and takes no fall damage; flying_speed sets how fast it flies. It never fights: it only wanders and looks about. It spawns in every forest in groups of one to three. msm:animated_model names the model, animation set and texture with renderer auto: GeckoLib draws it where the target has GeckoLib, the runtime's own renderer elsewhere. Export the Fabric mod jar to try it in game."
+  }
+}

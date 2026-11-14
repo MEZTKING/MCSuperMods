@@ -1,0 +1,100 @@
+{
+  "data": {
+    "category": "water_ambient",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "distance": 8,
+            "from": [
+              "minecraft:player"
+            ],
+            "speed": 1.6,
+            "sprint_speed": 1.4,
+            "type": "flee"
+          },
+          {
+            "speed": 1,
+            "type": "wander"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/reef_fish_animations",
+        "idle": "idle",
+        "model": "msm_examples:entity/reef_fish",
+        "renderer": "auto",
+        "swim": "swim",
+        "texture": "msm_examples:entity/reef_fish",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 3
+      },
+      "msm:movement": {
+        "breathes_air": false,
+        "dry_out_ticks": 300,
+        "mode": "swim",
+        "speed": 1
+      },
+      "msm:variants": {
+        "choose": "biome",
+        "variants": [
+          {
+            "id": "default",
+            "texture": "msm_examples:entity/reef_fish"
+          },
+          {
+            "biomes": [
+              "minecraft:warm_ocean",
+              "minecraft:lukewarm_ocean",
+              "minecraft:deep_lukewarm_ocean"
+            ],
+            "id": "warm",
+            "texture": "msm_examples:entity/reef_fish_warm"
+          },
+          {
+            "biomes": [
+              "minecraft:cold_ocean",
+              "minecraft:deep_cold_ocean",
+              "minecraft:frozen_ocean",
+              "minecraft:deep_frozen_ocean"
+            ],
+            "id": "cold",
+            "texture": "msm_examples:entity/reef_fish_cold"
+          }
+        ]
+      }
+    },
+    "display_name": "Reef Fish",
+    "format": 1,
+    "size": {
+      "height": 0.5,
+      "width": 0.5
+    },
+    "spawn": {
+      "biomes": [
+        "#minecraft:is_ocean"
+      ],
+      "max_group": 8,
+      "min_group": 4,
+      "placement": "in_water",
+      "rule": "water_animal",
+      "weight": 12
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/reef_fish_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:reef_fish",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A school fish. mode swim moves it in water at speed 1 (swimmers need a speed near 1), it flops on land and loses health 300 ticks after leaving the water (dry_out_ticks). The water_ambient category, placement in_water and rule water_animal spawn schools of four to eight in every ocean, between 13 blocks below sea level and sea level. msm:variants with choose biome picks the warm look in warm and lukewarm oceans, the cold look in cold and frozen ones, and the default variant, which lists no biomes, everywhere else. flee makes it dart away from players.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

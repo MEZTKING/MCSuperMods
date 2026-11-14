@@ -13,7 +13,8 @@ import type {
 } from '@msm/plugin-api';
 import { kindsOf } from '../content/bundle';
 import { PROBE_CONTEXT } from '../content/probe';
-import { hasGeckolib } from '../content/supports';
+import { hasFabric } from '../content/supports';
+import { BOSS_PARAMETERS, bossBundle } from './boss';
 import { CONSUMABLE_PARAMETERS, consumableBundle } from './consumable';
 import { CROP_PARAMETERS, cropBundle } from './crop';
 import { customBiomeBundle } from './custom-biome';
@@ -23,16 +24,20 @@ import { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
 import { DIMENSION_PARAMETERS, dimensionBundle } from './dimension';
 import { ENCHANTMENT_PARAMETERS, enchantmentBundle } from './enchantment';
 import { EXTRA_DROP_PARAMETERS, extraDropBundle } from './extra-drop';
+import { FARM_ANIMAL_PARAMETERS, farmAnimalBundle } from './farm-animal';
+import { FLYING_MOB_PARAMETERS, flyingMobBundle } from './flying-mob';
 import { FOOD_PARAMETERS, foodBundle } from './food';
 import { functionStarterBundle } from './function-starter';
 import { GEAR_SET_PARAMETERS, gearSetBundle } from './gear-set';
 import { GOAT_HORN_PARAMETERS, goatHornBundle } from './goat-horn';
 import { jigsawStructureBundle } from './jigsaw-structure';
 import { MOB_SKIN_PARAMETERS, mobSkinBundle } from './mob-skin';
+import { MOUNT_PARAMETERS, mountBundle } from './mount';
 import { musicDiscBundle } from './music-disc';
 import { MUSIC_DISC_ITEM_PARAMETERS, musicDiscItemBundle } from './music-disc-item';
 import { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
 import { PAINTING_PARAMETERS, paintingBundle } from './painting';
+import { PET_PARAMETERS, petBundle } from './pet';
 import { POTION_PARAMETERS, potionBundle } from './potion';
 import { recipePackBundle } from './recipe-pack';
 import { SCRIPTED_ITEM_PARAMETERS, scriptedItemBundle } from './scripted-item';
@@ -44,10 +49,12 @@ import { THROWABLE_PARAMETERS, throwableBundle } from './throwable';
 import { TOTEM_PARAMETERS, totemBundle } from './totem';
 import { TREE_PARAMETERS, treeBundle } from './tree';
 import { VILLAGER_TRADE_PARAMETERS, villagerTradeBundle } from './villager-trade';
+import { WATER_MOB_PARAMETERS, waterMobBundle } from './water-mob';
 import { WEAPON_PARAMETERS, weaponBundle } from './weapon';
 import { WOOD_SET_PARAMETERS, woodSetBundle } from './wood-set';
 import { worldgenPackBundle } from './worldgen-pack';
 
+export { BOSS_PARAMETERS, bossBundle } from './boss';
 export { CONSUMABLE_PARAMETERS, consumableBundle } from './consumable';
 export { CROP_PARAMETERS, cropBundle } from './crop';
 export { customBiomeBundle, customBiomeContent, customBiomeIds } from './custom-biome';
@@ -57,12 +64,15 @@ export { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
 export { DIMENSION_PARAMETERS, dimensionBundle } from './dimension';
 export { ENCHANTMENT_PARAMETERS, enchantmentBundle } from './enchantment';
 export { EXTRA_DROP_PARAMETERS, EXTRA_DROP_TABLES, extraDropBundle } from './extra-drop';
+export { FARM_ANIMAL_PARAMETERS, farmAnimalBundle } from './farm-animal';
+export { FLYING_MOB_PARAMETERS, flyingMobBundle } from './flying-mob';
 export { FOOD_PARAMETERS, foodBundle } from './food';
 export { functionStarterBundle } from './function-starter';
 export { GEAR_SET_PARAMETERS, gearSetBundle, gearSetIds, nearestTrimPalette } from './gear-set';
 export { GOAT_HORN_PARAMETERS, goatHornBundle } from './goat-horn';
 export { hamletIds, jigsawStructureBundle, jigsawStructureContent } from './jigsaw-structure';
 export { MOB_SKIN_BIOMES, MOB_SKIN_PARAMETERS, mobSkinBundle } from './mob-skin';
+export { MOUNT_PARAMETERS, mountBundle } from './mount';
 export { musicDiscBundle, SONG } from './music-disc';
 export { MUSIC_DISC_ITEM_PARAMETERS, musicDiscItemBundle } from './music-disc-item';
 export { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
@@ -72,6 +82,7 @@ export {
   PAINTING_PARAMETERS,
   paintingBundle,
 } from './painting';
+export { PET_PARAMETERS, petBundle } from './pet';
 export {
   BREWING_INGREDIENTS,
   OWN_EFFECT,
@@ -92,6 +103,7 @@ export { THROWABLE_PARAMETERS, throwableBundle } from './throwable';
 export { TOTEM_PARAMETERS, totemBundle } from './totem';
 export { TREE_PARAMETERS, treeBundle } from './tree';
 export { VILLAGER_TRADE_PARAMETERS, villagerTradeBundle } from './villager-trade';
+export { WATER_MOB_PARAMETERS, waterMobBundle } from './water-mob';
 export { WEAPON_PARAMETERS, WEAPON_TYPES, weaponBundle } from './weapon';
 export { WOOD_SET_MEMBERS, WOOD_SET_PARAMETERS, woodSetBundle } from './wood-set';
 export { worldgenPackBundle } from './worldgen-pack';
@@ -570,17 +582,109 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'custom_mob',
     'Custom mob',
-    'An animated Ruby Golem that wanders forests, fights back when hit and drops emeralds: its GeckoLib model, animations, texture and spawn egg, a loot table, a death function and the mod metadata. New mobs need the Fabric mod jar export.',
+    'An animated Ruby Golem that wanders forests, fights back when hit and drops emeralds (or never fights, hunts players or shoots arrows at them): its model, animations, texture and spawn egg, a loot table, a death function and the mod metadata. New mobs need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'datapack', 'msm'],
     customMobBundle,
     {
-      supports: hasGeckolib,
+      supports: hasFabric,
       parameters: CUSTOM_MOB_PARAMETERS,
       creator: {
         group: 'mobs',
         blurb: 'An animated mob with its behaviour, spawning, spawn egg and drops.',
       },
+      probeValues: [{ behaviour: 'archer', variant_count: 3 }],
+    },
+  ),
+  starter(
+    'pet',
+    'Pet',
+    'An animal players tame with a food, which then sits when told, follows its owner, defends them and has babies: its model (four-legged, bird, round flyer or two-legged), animations, skin, variants and spawn egg, and the mod metadata. New mobs need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'msm'],
+    petBundle,
+    {
+      supports: hasFabric,
+      parameters: PET_PARAMETERS,
+      creator: { group: 'mobs', blurb: 'A pet to tame that sits, follows you and defends you.' },
+      probeValues: [
+        { preset: 'flyer', defends: false, babies: false, variant_count: 3 },
+        { preset: 'bird', spawn_biomes: 'nowhere' },
+        { preset: 'biped' },
+      ],
+    },
+  ),
+  starter(
+    'farm-animal',
+    'Farm animal',
+    'An animal players breed with a food, with babies of the size you choose, that runs when hurt and drops meat (cooked when it burns) or another item, and if you choose can be ridden with a saddle: its model, animations, skin, variants, spawn egg and loot table. New mobs need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    farmAnimalBundle,
+    {
+      supports: hasFabric,
+      parameters: FARM_ANIMAL_PARAMETERS,
+      creator: { group: 'mobs', blurb: 'An animal to breed and farm, with its babies and drops.' },
+      probeValues: [{ preset: 'bird', rideable: true, drop: 'minecraft:feather' }],
+    },
+  ),
+  starter(
+    'mount',
+    'Mount',
+    'A mob players ride and steer, with or without a saddle: its speed and jump, whether only its owner may ride it and whether it flies, with its model, animations, skin, variants and spawn egg. New mobs need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    mountBundle,
+    {
+      supports: hasFabric,
+      parameters: MOUNT_PARAMETERS,
+      creator: { group: 'mobs', blurb: 'A mob to ride: on the ground or in the air.' },
+      probeValues: [{ preset: 'flyer', owner_only: true, needs_saddle: false }],
+    },
+  ),
+  starter(
+    'flying-mob',
+    'Flying mob',
+    'A mob that flies about and hovers, peaceful, neutral, hostile or shooting a projectile at players: its model (round flyer or bird), animations, skin, variants and spawn egg. New mobs need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'msm'],
+    flyingMobBundle,
+    {
+      supports: hasFabric,
+      parameters: FLYING_MOB_PARAMETERS,
+      creator: { group: 'mobs', blurb: 'A flying mob: friendly, or one that swoops or shoots.' },
+      probeValues: [{ behaviour: 'shooter' }, { behaviour: 'hostile', preset: 'bird' }],
+    },
+  ),
+  starter(
+    'water-mob',
+    'Water mob',
+    'A fish that swims in schools, a dolphin-like swimmer or an axolotl-like amphibian, peaceful, neutral or hostile, spawning in oceans, rivers or swamps: its model, animations, skin, variants and spawn egg. New mobs need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'msm'],
+    waterMobBundle,
+    {
+      supports: hasFabric,
+      parameters: WATER_MOB_PARAMETERS,
+      creator: { group: 'mobs', blurb: 'A fish, dolphin-like swimmer or amphibian for the water.' },
+      probeValues: [
+        { kind: 'dolphin', behaviour: 'neutral' },
+        { kind: 'amphibian', preset: 'quadruped', behaviour: 'hostile' },
+      ],
+    },
+  ),
+  starter(
+    'boss',
+    'Boss',
+    'A large monster with a boss bar: its health, size, melee or ranged attacks, bar colour and style, drops, model, animations, skin and spawn egg. It never spawns on its own: summon it with its egg. New mobs need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    bossBundle,
+    {
+      supports: hasFabric,
+      parameters: BOSS_PARAMETERS,
+      creator: { group: 'mobs', blurb: 'A boss with a boss bar, big attacks and rich drops.' },
+      probeValues: [{ attacks: 'both', preset: 'quadruped' }, { attacks: 'ranged' }],
     },
   ),
   starter(

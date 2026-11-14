@@ -1,0 +1,98 @@
+{
+  "data": {
+    "base": "animal",
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "height": 0.4,
+            "type": "leap_at_target"
+          },
+          {
+            "retaliate": true,
+            "speed": 1,
+            "type": "melee_attack"
+          },
+          {
+            "speed": 1,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_starter:entity/ember_fox_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_starter:entity/ember_fox",
+        "renderer": "auto",
+        "scale": 0.8,
+        "shoot": "shoot",
+        "sit": "sit",
+        "swim": "swim",
+        "texture": "msm_starter:entity/ember_fox",
+        "walk": "walk"
+      },
+      "msm:attack": {
+        "damage": 3
+      },
+      "msm:breedable": {
+        "baby_scale": 0.5,
+        "items": [
+          "minecraft:cooked_beef",
+          "minecraft:cooked_porkchop",
+          "minecraft:cooked_chicken"
+        ]
+      },
+      "msm:health": {
+        "max": 10
+      },
+      "msm:movement": {
+        "speed": 0.3
+      },
+      "msm:tameable": {
+        "chance": 0.33,
+        "defends_owner": true,
+        "follows_owner": true,
+        "items": [
+          "minecraft:sweet_berries",
+          "minecraft:glow_berries"
+        ],
+        "sit": true,
+        "tamed_health": 20
+      }
+    },
+    "display_name": "Ember Fox",
+    "format": 1,
+    "size": {
+      "height": 0.9,
+      "width": 0.7
+    },
+    "spawn": {
+      "biomes": [
+        "#minecraft:is_forest"
+      ],
+      "max_group": 4,
+      "min_group": 2,
+      "rule": "animal",
+      "weight": 5
+    },
+    "spawn_egg": {
+      "texture": "msm_starter:item/ember_fox_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ember_fox",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A pet: base animal makes it an animal that can be tamed and bred. msm:tameable tames it one time in three when a player feeds it berries (minecraft:sweet_berries, minecraft:glow_berries): then it follows its owner, sits or stands when the owner right-clicks it with an empty hand and attacks what hurts its owner or what its owner attacks (melee_attack, 3 damage), never despawns and has 20 health instead of 10. msm:breedable lets two tamed or wild pets fed cooked meat have a baby at half size that grows up in 20 minutes; the food also tempts it. It spawns in every forest in groups of two to four (rule animal: on grass in daylight). msm:animated_model names the model, animation set and texture with renderer auto: GeckoLib draws it where the target has GeckoLib, the runtime's own renderer elsewhere. Export the Fabric mod jar to try it in game."
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "data": {
+    "base": "monster",
+    "category": "monster",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "retaliate": true,
+            "speed": 1,
+            "strafe": true,
+            "targets": [
+              "minecraft:player"
+            ],
+            "type": "ranged_attack"
+          },
+          {
+            "speed": 1,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/frost_archer_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_examples:entity/frost_archer",
+        "renderer": "auto",
+        "shoot": "shoot",
+        "sit": "sit",
+        "texture": "msm_examples:entity/frost_archer",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 20
+      },
+      "msm:movement": {
+        "follow_range": 16,
+        "speed": 0.25
+      },
+      "msm:ranged_attack": {
+        "charge_ticks": 15,
+        "inaccuracy": 4,
+        "interval_ticks": 30,
+        "projectile": "msm_examples:ice_shard",
+        "range": 14,
+        "sound": "minecraft:entity.snowball.throw",
+        "speed": 1.4
+      }
+    },
+    "display_name": "Frost Archer",
+    "format": 1,
+    "size": {
+      "height": 1.95,
+      "width": 0.6
+    },
+    "spawn": {
+      "biomes": [
+        "#minecraft:is_taiga"
+      ],
+      "max_group": 2,
+      "min_group": 1,
+      "rule": "monster",
+      "weight": 30
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/frost_archer_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:frost_archer",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A ranged monster. msm:ranged_attack names its projectile: msm_examples:ice_shard, a project item with msm:throwable, so the archer throws it as a player would, with the item's own damage, gravity and hit events (an arrow would take damage here instead). The ranged_attack goal walks into range (14 blocks), aims for charge_ticks (the shoot animation plays), throws every 30 ticks and circles its target (strafe), as a skeleton does. base monster makes it an enemy removed in Peaceful; rule monster spawns it in dark taigas.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

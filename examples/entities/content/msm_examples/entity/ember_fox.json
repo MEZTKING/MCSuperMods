@@ -1,0 +1,122 @@
+{
+  "data": {
+    "base": "animal",
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "height": 0.4,
+            "type": "leap_at_target"
+          },
+          {
+            "retaliate": true,
+            "speed": 1.2,
+            "type": "melee_attack"
+          },
+          {
+            "speed": 1,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/ember_fox_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_examples:entity/ember_fox",
+        "renderer": "auto",
+        "scale": 0.7,
+        "shoot": "shoot",
+        "sit": "sit",
+        "swim": "swim",
+        "texture": "msm_examples:entity/ember_fox",
+        "walk": "walk"
+      },
+      "msm:attack": {
+        "damage": 2
+      },
+      "msm:breedable": {
+        "baby_scale": 0.5,
+        "items": [
+          "minecraft:cooked_chicken",
+          "minecraft:cooked_rabbit"
+        ]
+      },
+      "msm:health": {
+        "max": 10
+      },
+      "msm:movement": {
+        "speed": 0.3
+      },
+      "msm:tameable": {
+        "chance": 0.33,
+        "defends_owner": true,
+        "follow": {
+          "speed": 1.2,
+          "start_distance": 10,
+          "stop_distance": 2
+        },
+        "follows_owner": true,
+        "items": [
+          "minecraft:sweet_berries",
+          "minecraft:glow_berries"
+        ],
+        "sit": true,
+        "tamed_health": 20
+      },
+      "msm:variants": {
+        "choose": "biome",
+        "variants": [
+          {
+            "id": "default",
+            "texture": "msm_examples:entity/ember_fox"
+          },
+          {
+            "biomes": [
+              "#minecraft:spawns_snow_foxes"
+            ],
+            "id": "snow",
+            "texture": "msm_examples:entity/ember_fox_snow"
+          }
+        ]
+      }
+    },
+    "display_name": "Ember Fox",
+    "format": 1,
+    "size": {
+      "height": 0.75,
+      "width": 0.65
+    },
+    "spawn": {
+      "biomes": [
+        "#minecraft:is_taiga"
+      ],
+      "max_group": 3,
+      "min_group": 2,
+      "rule": "animal",
+      "weight": 6
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/ember_fox_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ember_fox",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A tameable pet. base animal is needed for taming and breeding. msm:tameable tames it one time in three when a player feeds it sweet or glow berries; once tamed it follows its owner (follow sets its speed and distances), sits or stands when the owner right-clicks it with an empty hand, attacks what hurts its owner or what its owner attacks, never despawns and has 20 health. msm:breedable makes two foxes fed cooked chicken or rabbit have a half-size baby; taming and breeding foods differ, so feeding one never does the other. msm:variants with choose biome gives foxes that spawn in #minecraft:spawns_snow_foxes the snow coat and every other fox the default one; babies take a parent's coat.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

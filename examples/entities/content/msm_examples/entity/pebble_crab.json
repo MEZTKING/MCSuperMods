@@ -1,0 +1,68 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 1.5,
+            "type": "panic"
+          },
+          {
+            "speed": 1,
+            "type": "wander"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/pebble_crab_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_examples:entity/pebble_crab",
+        "renderer": "vanilla",
+        "scale": 0.6,
+        "sit": "sit",
+        "texture": "msm_examples:entity/pebble_crab",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 6
+      },
+      "msm:movement": {
+        "speed": 0.2
+      }
+    },
+    "display_name": "Pebble Crab",
+    "format": 1,
+    "size": {
+      "height": 0.6,
+      "width": 0.55
+    },
+    "spawn": {
+      "biomes": [
+        "#minecraft:is_beach"
+      ],
+      "max_group": 4,
+      "min_group": 2,
+      "rule": "mob",
+      "weight": 8
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/pebble_crab_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:pebble_crab",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A mob drawn by the runtime's own renderer. renderer vanilla never uses GeckoLib: the jar never nests GeckoLib for it, on any target. That renderer plays a subset of GeckoLib's animations (no Molang, easings, sound or particle keyframes); the preset animations stay inside it. renderer auto (the default) would use GeckoLib where the target has it. panic makes it scuttle off when hurt; it spawns on beaches.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

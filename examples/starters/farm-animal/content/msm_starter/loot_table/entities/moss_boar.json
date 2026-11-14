@@ -1,0 +1,46 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": [
+              {
+                "count": {
+                  "max": 3,
+                  "min": 1,
+                  "type": "minecraft:uniform"
+                },
+                "type": "minecraft:set_count"
+              },
+              {
+                "condition": {
+                  "entity": "this",
+                  "predicate": {
+                    "flags": {
+                      "is_on_fire": true
+                    }
+                  },
+                  "type": "minecraft:entity_properties"
+                },
+                "type": "minecraft:furnace_smelt"
+              }
+            ],
+            "name": "minecraft:porkchop",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "random_sequence": "msm_starter:entities/moss_boar",
+    "type": "minecraft:entity"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:entities/moss_boar",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "What the moss boar drops: one to 3 raw porkchop; furnace_smelt cooks it when the animal dies burning (entity_properties is_on_fire), as a cow drops cooked beef."
+  }
+}

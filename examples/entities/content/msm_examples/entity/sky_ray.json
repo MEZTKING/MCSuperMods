@@ -1,0 +1,82 @@
+{
+  "data": {
+    "base": "animal",
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 1,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/sky_ray_animations",
+        "attack": "attack",
+        "fly": "fly",
+        "idle": "idle",
+        "model": "msm_examples:entity/sky_ray",
+        "renderer": "auto",
+        "scale": 2,
+        "shoot": "shoot",
+        "texture": "msm_examples:entity/sky_ray",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 30
+      },
+      "msm:movement": {
+        "flying_speed": 0.8,
+        "hovers": true,
+        "mode": "fly",
+        "speed": 0.3
+      },
+      "msm:rideable": {
+        "controlled_by": "anyone",
+        "on_mount": "msm_examples:sky_ray_mount",
+        "passengers": 2,
+        "saddle": true,
+        "saddle_bone": "saddle",
+        "speed": 1.5
+      }
+    },
+    "display_name": "Sky Ray",
+    "events": {
+      "msm_examples:sky_ray_mount": {
+        "actions": [
+          {
+            "sound": "minecraft:entity.phantom.flap",
+            "type": "play_sound"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "size": {
+      "height": 1.6,
+      "width": 1.6
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/sky_ray_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sky_ray",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A flying mount. mode fly makes it fly and hover when idle (hovers), with flying_speed 0.8, and it takes no fall damage. msm:rideable lets a player get on with an empty hand; once it wears a vanilla saddle (saddle true) the first rider steers it along their view, rising while they hold jump, at 1.5 times its movement speed. passengers 2 seats a second rider behind; saddle_bone shows the model's saddle bone only while it is saddled, and on_mount fires msm_examples:sky_ray_mount, a flap sound. It has no natural spawn: use its spawn egg.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

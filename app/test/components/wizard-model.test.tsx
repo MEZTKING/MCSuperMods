@@ -75,7 +75,7 @@ describe('wizard model', () => {
       );
     expect(titles('custom_ore')).toEqual(['Ore', 'Drops', 'World']);
     expect(titles('custom-sword')).toEqual(['Sword', 'Stats', 'Recipe']);
-    expect(titles('custom_mob')).toEqual(['Mob', 'Behaviour', 'Spawning']);
+    expect(titles('custom_mob')).toEqual(['Mob', 'Behaviour', 'Spawning', 'Variants']);
     expect(hasParameters(libraryStarters.find((starter) => starter.id === 'blank'))).toBe(false);
   });
 
@@ -200,7 +200,8 @@ describe('wizard model', () => {
   it('offers the targets a starter supports and preselects a release target', () => {
     const mob = libraryStarters.find((starter) => starter.id === 'custom_mob') ?? null;
     expect(targetsFor(null, facts)).toEqual(facts);
-    expect(targetsFor(mob, facts).every((target) => target.geckolib !== undefined)).toBe(true);
+    // Mobs need a Fabric target, with or without GeckoLib (ADR 0072 D6).
+    expect(targetsFor(mob, facts).every((target) => target.fabric !== undefined)).toBe(true);
     expect(pickTargetId(facts, snapshot.id)).toBe(snapshot.id);
     expect(pickTargetId(facts, 'mc-unknown')).toBe(release.id);
     expect(pickTargetId([], 'mc-unknown')).toBe('mc-unknown');
