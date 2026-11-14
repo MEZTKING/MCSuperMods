@@ -13,7 +13,7 @@ Holds the project's design record: the authoritative design, the delivery plan, 
 - `DEVLOG.md`: append-only session log, newest entry at the bottom.
 - `HANDOFF.md`: where the project stands and how the work is run, for the next main session; rewritten (not appended) at each handover.
 - `adr/NNNN-title.md`: one file per architecture decision, sections Context / Decision / Consequences / Status.
-- `guide/`: the user guide (`README.md` index, `first-mod.md`, `getting-started.md`, `structures.md`, `worldgen.md`, `templates-and-examples.md`, `blocks-and-items.md`, `block-types-and-plants.md`, `creator.md`, `entities-and-models.md`, `scripting.md`, `eject.md`, `ai-helper.md`, `modpacks.md`, `effects-and-throwables.md`, `potions.md`, `adding-to-vanilla.md`, `plugins.md`, `targets.md`; each page also needs a sidebar entry in `site/.vitepress/config.ts`); task-oriented, matches shipped UI labels.
+- `guide/`: the user guide (`README.md` index, `first-mod.md`, `getting-started.md`, `structures.md`, `worldgen.md`, `templates-and-examples.md`, `blocks-and-items.md`, `block-types-and-plants.md`, `creator.md`, `entities-and-models.md`, `mob-behaviours.md`, `scripting.md`, `eject.md`, `ai-helper.md`, `modpacks.md`, `effects-and-throwables.md`, `potions.md`, `adding-to-vanilla.md`, `plugins.md`, `targets.md`; each page also needs a sidebar entry in `site/.vitepress/config.ts`); task-oriented, matches shipped UI labels.
 
 ## Conventions
 

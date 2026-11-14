@@ -60,7 +60,7 @@ The additions and triggers behave as with the `msm_runtime` mod: world additions
 
 ## GeckoLib and licences
 
-A project with mobs uses GeckoLib for their models and animations. The ejected project depends on GeckoLib from the Modrinth Maven, and the build nests it in the mod jar (jar-in-jar), so players do not need to install it. Loom prints a line that GeckoLib's version "is not valid semver" while building; that line is harmless.
+A project with mobs uses GeckoLib for their models and animations, including mobs set to **Built-in renderer** in the Entity Studio, which look the same but may play a few more animation features (the export notes this with `export.eject-uses-geckolib`). The ejected project depends on GeckoLib from the Modrinth Maven, and the build nests it in the mod jar (jar-in-jar), so players do not need to install it. Loom prints a line that GeckoLib's version "is not valid semver" while building; that line is harmless.
 
 `LICENSE-NOTES.md` lists the licences: Fabric Loader and Fabric API (Apache 2.0), Fabric Loom (MIT, build only), the Gradle wrapper (Apache 2.0) and GeckoLib (MIT). Minecraft itself is downloaded by Loom at build time under the Minecraft EULA and is not part of the project or of the built jar. The generated sources carry no licence of their own: choose one for your mod (the `license` field of `fabric.mod.json` comes from the `msm:mod` element).
 

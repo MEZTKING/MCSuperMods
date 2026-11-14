@@ -55,6 +55,7 @@ export default defineConfig({
           { text: 'Potions and brewing', link: '/potions' },
           { text: 'Adding to vanilla', link: '/adding-to-vanilla' },
           { text: 'Entities and models', link: '/entities-and-models' },
+          { text: 'Mob behaviours', link: '/mob-behaviours' },
           { text: 'Scripting', link: '/scripting' },
           { text: 'Eject to a Java project', link: '/eject' },
           { text: 'The AI helper', link: '/ai-helper' },

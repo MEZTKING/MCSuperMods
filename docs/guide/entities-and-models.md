@@ -1,8 +1,8 @@
 # Entities and models
 
-MCSuperMods makes new mobs with three element kinds: `msm:entity` (the mob itself, edited in the **Entity Studio**), `msm:geo_model` (its 3D model) and `msm:animation` (its animation set). Models and animations come from [Blockbench](https://www.blockbench.net/), the free model editor; MCSuperMods imports them, shows them animated in its preview and puts them into the game with the GeckoLib mod. A resource or data pack cannot add a mob, so entities reach the game only through the **Fabric mod jar** export, like [blocks and items](blocks-and-items.md).
+MCSuperMods makes new mobs with three element kinds: `msm:entity` (the mob itself, edited in the **Entity Studio**), `msm:geo_model` (its 3D model) and `msm:animation` (its animation set). Models and animations come from [Blockbench](https://www.blockbench.net/), the free model editor; MCSuperMods imports them, shows them animated in its preview and puts them into the game, drawn by the GeckoLib mod or by the runtime's own built-in renderer (see [Export the mod jar and the renderer](#export-the-mod-jar-and-the-renderer)). A resource or data pack cannot add a mob, so entities reach the game only through the **Fabric mod jar** export, like [blocks and items](blocks-and-items.md).
 
-The quickest start is the **Custom mob** starter (**New from starter…**): a Ruby Golem with its model, animations, skin, spawn egg, loot table and a death effect. The examples **Wandering creature**, **Hostile mob** and **Natural spawning** in **Help → Examples…** show one idea each (see [Templates, starters and examples](templates-and-examples.md)).
+Pets, farm animals, mounts, flying and water mobs, shooters and bosses, with taming, breeding, riding, variants and boss bars, are covered in [Mob behaviours](mob-behaviours.md). The quickest start is the **Custom mob** starter (**New from starter…**): a Ruby Golem with its model, animations, skin, spawn egg, loot table and a death effect. The examples **Wandering creature**, **Hostile mob** and **Natural spawning** in **Help → Examples…** show one idea each (see [Templates, starters and examples](templates-and-examples.md)).
 
 ## Import a model from Blockbench
 
@@ -25,7 +25,7 @@ Only `.bbmodel`, `.geo.json` and `.animation.json` files are accepted. Blockbenc
 ## Create an entity
 
 1. Choose **Add element** on the toolbar (Ctrl+N).
-2. Under **Entities**, pick **Creature** (a passive mob that wanders and spawns in forests), **Monster** (chases and hits players, fights back, spawns in the dark) or **Ambient critter** (small, runs away from players, no spawn egg).
+2. Under **Entities**, pick **Creature** (a passive mob that wanders and spawns in forests), **Monster** (chases and hits players, fights back, spawns in the dark), **Ambient critter** (small, runs away from players, no spawn egg), **Pet**, **Farm animal**, **Mount**, **Flying creature**, **Fish**, **Archer** or **Boss** (each with the parts described in [Mob behaviours](mob-behaviours.md)).
 3. Type a name, for example `gloom`, and choose **Create**.
 
 The element id (`<namespace>:gloom`) is the entity's id in the game, so `/summon <namespace>:gloom` works once the mod is installed. The templates point at a model `<namespace>:entity/gloom`, an animation set `<namespace>:entity/gloom_animations` and a texture of the same name. Until those exist, **Problems** reports them: import a Blockbench model with that name, or choose the imported ones in the Entity Studio. **Entity models** (**Cube creature model**, **Biped model**) and **Entity animations** (**Idle and walk animations**) in the same dialog give you a model and animations to start from without Blockbench.
@@ -34,10 +34,12 @@ The element id (`<namespace>:gloom`) is the entity's id in the game, so `/summon
 
 Selecting an entity opens the Entity Studio. Empty fields use the defaults. **Advanced (all fields)** at the top shows every field as a plain form, and **Raw JSON** edits the same data as text.
 
+- **Kind of mob**: **Kind of mob** and **Base** set what the mob is built on, its category, movement and spawn rule together (see [Mob behaviours](mob-behaviours.md#kind-of-mob-and-base)).
 - **Identity**: **Display name** (the name players see), **Category** (`monster`, `creature`, `ambient`, the water categories or `misc`; it decides which group of mobs it is counted with for spawning), **Width** and **Height** (the hitbox in blocks) and **Eye height** (empty: 0.85 times the height).
-- **Appearance**: **Model** (a geo model of the project), **Animation set**, **Texture** (the project's PNGs under `textures/`) and **Scale**. **Go to model** and **Go to animation set** open them. **Idle animation**, **Walk animation** and **Attack animation** choose names from the animation set: idle plays on a loop while the mob stands, walk while it moves, attack once on each melee hit. **(none)** plays nothing.
+- **Appearance**: **Model** (a geo model of the project), **Animation set**, **Texture** (the project's PNGs under `textures/`) and **Scale**. **Go to model** and **Go to animation set** open them. **Idle animation**, **Walk animation** and **Attack animation** choose names from the animation set: idle plays on a loop while the mob stands, walk while it moves, attack once on each melee hit. **(none)** plays nothing. **Sit animation**, **Fly animation**, **Swim animation** and **Shoot animation** are the state animations ([Mob behaviours](mob-behaviours.md#animations-for-states)), and **Renderer** chooses how the mob is drawn.
 - **Stats**: **Health** (default 20), **Speed** (default 0.25; a zombie has 0.23, so small changes matter), **Follow range** (how far it notices targets, default 16), **Knockback resistance** (0 to 1), **Swims** (floats up in water instead of sinking; on by default) and **Fire immune**.
 - **Attack**: **Attacks in melee** with **Damage** and **Knockback**, and **On attack**, an event that runs after each hit. Without it, a melee goal does nothing.
+- **Movement**, **Ranged attack**, **Taming**, **Breeding**, **Riding**, **Variants** and **Boss bar**: see [Mob behaviours](mob-behaviours.md).
 - **Behaviour**: the goals (see below).
 - **Sounds**: the sounds the mob makes (see [Mob sounds](#mob-sounds)).
 - **Spawning**: natural spawning (see [Spawning](#spawning)).
@@ -56,6 +58,10 @@ Goals are what the mob decides to do. They are listed in priority order: the fir
 | **Melee attack** | `melee_attack` | Chases and hits the entity types in **Targets** (for example `minecraft:player`). **Target must be in sight** stops it hunting through walls; **Fights back when hurt** makes it attack whoever hurt it, even with no targets. Needs **Attacks in melee**. |
 | **Flee** | `flee` | Runs from the entity types in **Runs from** when they come within its distance, at its speed, and at its sprint speed when they are close. |
 | **Follow** | `follow` | Follows the entity types in **Follows** within its range and stops its stop distance away. |
+| **Ranged attack** | `ranged_attack` | Shoots the projectile of the **Ranged attack** section at its **Targets** from a distance (**Circles its target** to strafe). |
+| **Tempted by items** | `tempt` | Follows a player holding one of its **Items**; **Scared by quick players** makes it back off from fast ones. |
+| **Panic when hurt** | `panic` | Runs about when hurt. |
+| **Leap at target** | `leap_at_target` | Jumps at its target from a short distance (**Leap height**). |
 
 A typical monster lists **Melee attack** first, then **Wander**, **Look at player** and **Look around**; a timid critter lists **Flee** first. A melee goal with neither targets nor **Fights back when hurt** never attacks, and neither does a melee goal without **Attacks in melee**; **Problems** warns about both.
 
@@ -104,18 +110,20 @@ The preview is a guide, not the game:
 
 When the preview and the game differ, the game is right; please report it.
 
-## Export the mod jar and GeckoLib
+## Export the mod jar and the renderer
 
 Export as for blocks and items: open the arrow next to **Export .zip** and choose **Fabric mod (.jar)…**, or **File → Export Fabric Mod Jar…**, or "Export Fabric mod jar…" in the command palette. Every error in **Problems** blocks the export (for example a model that no longer exists); warnings do not.
 
-Mobs are drawn by **GeckoLib**, a free mod (MIT licence) for animated models. When the project has entities the dialog says so: "This project has entities, so the jar also nests GeckoLib, which draws their models and animations. MCSuperMods downloads GeckoLib once from Modrinth and keeps it for later exports." The jar then holds:
+A mob is drawn by **GeckoLib**, a free mod (MIT licence) for animated models, or by the runtime's own **built-in renderer**, which reads the same model and animation files. The mob's **Renderer** setting chooses: **Automatic (GeckoLib when present)** uses GeckoLib on 26.3 and the built-in renderer on a target without GeckoLib, **GeckoLib only** insists on GeckoLib and **Built-in renderer** never uses it (see [Mob behaviours](mob-behaviours.md#choose-how-the-mob-is-drawn)). When the project has mobs drawn by GeckoLib the dialog says so: "This project has entities, so the jar also nests GeckoLib, which draws their models and animations. MCSuperMods downloads GeckoLib once from Modrinth and keeps it for later exports." The jar then holds:
 
 - your entities as definitions under `msm/<namespace>/entity/`, and the models and animations under `assets/<namespace>/geckolib/`;
 - the textures, names (`entity.<namespace>.<name>`), spawn egg models and everything else of the project, as for blocks and items;
 - `fabric.mod.json`, which depends on `msm_runtime` and `geckolib` as well as Fabric Loader, Fabric API and Minecraft;
 - by default, both `msm_runtime` and GeckoLib nested inside it (`META-INF/jars/`), so one file plus Fabric API is all a player needs.
 
-The first export with entities downloads GeckoLib, checks it and keeps it in the app's download cache. Without an internet connection the export stops with: "GeckoLib could not be downloaded. A mod with entities needs a one-off download of GeckoLib: connect to the internet and try again, or choose "Separate runtime and GeckoLib (for modpacks)"." After one successful download it works offline.
+When every mob is drawn by the built-in renderer, as on the 26.4 snapshot or with **Built-in renderer**, the dialog says: "This project’s entities are drawn by the runtime’s built-in renderer on this target, so the jar needs no GeckoLib." The jar then carries no GeckoLib, depends only on `msm_runtime`, and needs no download. The built-in renderer plays fewer animation features than GeckoLib (Molang, easings and sound or particle keyframes are left out), so a mob can look slightly different between the two.
+
+The first export of a GeckoLib mob downloads GeckoLib, checks it and keeps it in the app's download cache. Without an internet connection the export stops with: "GeckoLib could not be downloaded. A mod with entities needs a one-off download of GeckoLib: connect to the internet and try again, or choose "Separate runtime and GeckoLib (for modpacks)"." After one successful download it works offline.
 
 **Separate runtime and GeckoLib (for modpacks)** leaves both `msm_runtime` and GeckoLib out of the jar. The jar still depends on them, so the modpack must provide them: GeckoLib for Fabric from Modrinth or CurseForge, and `msm_runtime` from another MCSuperMods mod exported with the runtime nested ([Separate runtime](blocks-and-items.md#separate-runtime-and-geckolib-for-modpacks)). This option needs no download.
 
@@ -125,7 +133,7 @@ The first export with entities downloads GeckoLib, checks it and keeps it in the
 
 Install the jar with Fabric API as described in [Install the mod in a Fabric game](blocks-and-items.md#install-the-mod-in-a-fabric-game), or use **Test in Minecraft…**. Then, in a creative world:
 
-1. The mod list shows your mod, with `MSM Runtime` and `GeckoLib` nested.
+1. The mod list shows your mod, with `MSM Runtime` nested (and `GeckoLib`, when the mobs use it).
 2. Your spawn egg is in the **Spawn Eggs** tab (or the tab you chose); use it, or `/summon <namespace>:<name>`.
 3. The mob looks like the preview and plays its idle animation; its walk animation plays as it moves.
 4. Its goals, events and drops behave as set, and it spawns in its biomes in new chunks.
@@ -148,6 +156,7 @@ Spawn eggs count as items in the first line; the second counts your entities. An
 | The game refuses to start and asks for `geckolib` | The jar was exported with **Separate runtime and GeckoLib (for modpacks)**. Export it again without that option, or add GeckoLib for Fabric and the same Minecraft version to `mods`. |
 | `registered 0 entity type(s)` and an error "needs the mod 'geckolib', which is not loaded" | GeckoLib is missing from this game (the runtime was installed on its own). Use a jar exported with GeckoLib nested, or add GeckoLib. |
 | The export says GeckoLib could not be downloaded | Connect to the internet once and export again; or choose **Separate runtime and GeckoLib (for modpacks)** and provide GeckoLib yourself. |
+| The mob is invisible on a target that uses the built-in renderer | The game log says once which model or animation file could not be read; fix or re-import it. |
 | The mob is invisible or a GeckoLib error mentions the model | Check **Model** in the Entity Studio and that the geo model exists; **Problems** reports a missing model. |
 | The mob is purple and black | Its **Texture** is missing or named wrongly. |
 | The mob does not animate | Check **Idle animation** and **Walk animation**: the names must exist in the animation set (**Problems** warns otherwise). |

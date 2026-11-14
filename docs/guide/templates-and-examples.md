@@ -4,9 +4,9 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (169) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (36) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
-| **Examples** (118) | **Help → Examples…** | A commented project or element to open or copy |
+| **Element templates** (177) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (42) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
+| **Examples** (125) | **Help → Examples…** | A commented project or element to open or copy |
 
 Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, and scripting plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
 
@@ -346,13 +346,20 @@ Additions to vanilla content need the Fabric mod jar too; see [Adding to vanilla
 
 #### Entities
 
-New mobs, like new blocks and items, exist only in the **Fabric mod jar** export, which also carries GeckoLib (see [Entities and models](entities-and-models.md)). The entity templates point at a model `<namespace>:entity/<name>`, an animation set `<namespace>:entity/<name>_animations` and a texture of the same name; until you import or add them, **Problems** reports them.
+New mobs, like new blocks and items, exist only in the **Fabric mod jar** export, which carries GeckoLib when a mob needs it (see [Entities and models](entities-and-models.md) and [Mob behaviours](mob-behaviours.md)); on the 26.4 snapshot the built-in renderer draws them. The entity templates point at a model `<namespace>:entity/<name>`, an animation set `<namespace>:entity/<name>_animations` and a texture of the same name; until you import or add them, **Problems** reports them.
 
 | Template | id | Kind | Notes |
 |---|---|---|---|
 | Creature | `msm_entity_creature` | `msm:entity` | A passive mob that wanders, looks at players and spawns in forests, with a spawn egg. |
 | Monster | `msm_entity_monster` | `msm:entity` | A hostile mob that chases and hits players, fights back when hurt and spawns in the dark, with a spawn egg. |
 | Ambient critter | `msm_entity_ambient` | `msm:entity` | A small ambient mob that runs away from players, without a spawn egg. |
+| Pet | `msm_entity_pet` | `msm:entity` | A wolf-like animal you tame with bones: it sits when you right-click it with an empty hand, follows and defends you and has babies when fed cooked meat. |
+| Farm animal | `msm_entity_farm_animal` | `msm:entity` | A cow-like animal that follows players holding wheat, breeds with it, has babies and runs about when hurt. |
+| Mount | `msm_entity_mount` | `msm:entity` | A horse-like animal anyone can ride and steer once it wears a vanilla saddle, with a jump bar. |
+| Flying creature | `msm_entity_flying` | `msm:entity` | A peaceful bee-like flyer that drifts through the air, hovers when idle and takes no fall damage. |
+| Fish | `msm_entity_fish` | `msm:entity` | A small fish that swims in schools, darts away from players and dries out on land. |
+| Archer | `msm_entity_archer` | `msm:entity` | A skeleton-like monster that circles players and shoots arrows from a distance. |
+| Boss | `msm_entity_boss` | `msm:entity` | A large monster with a boss bar that darkens the sky; it never spawns on its own. |
 
 #### Entity models
 
@@ -432,13 +439,19 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Jigsaw village-style structure | `jigsaw_structure` | data | A small hamlet built by jigsaw blocks: a centre hut, streets that follow the terrain and lamp posts, with four template pools, a structure set and a biome tag that places it in forests. |
 | Custom biome with a jigsaw structure | `worldgen_pack` | resource, data | Both worldgen starters in one project: Amber Woods and its World Type, and hamlets that generate in Amber Woods and in every vanilla forest. |
 | Custom mob (Creator: Mobs) | `custom_mob` | resource, data, mod | An animated Ruby Golem that wanders forests, fights back when hit, drops emeralds and bursts into sparks when it dies: its GeckoLib model, idle, walk and attack animations, skin, spawn egg, loot table, a death function and the mod metadata. |
+| Pet (Creator: Mobs) | `pet` | resource, mod | An animal you tame with a food that sits when told, follows and defends you and has babies, with a model of your choice, variants and a spawn egg. |
+| Farm animal (Creator: Mobs) | `farm-animal` | resource, data, mod | An animal you breed with a food, with babies of the size you choose, drops (cooked when it burns) and, if you choose, a saddle. |
+| Mount (Creator: Mobs) | `mount` | resource, data, mod | A mob you ride and steer, with or without a saddle, on the ground or in the air. |
+| Flying mob (Creator: Mobs) | `flying-mob` | resource, mod | A mob that flies and hovers: peaceful, neutral, hostile or shooting a projectile at players. |
+| Water mob (Creator: Mobs) | `water-mob` | resource, mod | A fish, a dolphin-like swimmer or an amphibian. |
+| Boss (Creator: Mobs) | `boss` | resource, data, mod | A large monster with a boss bar that darkens the sky, melee or ranged attacks and drops. |
 | Scripted ore | `scripted_ore` | resource, data, mod | The Custom ore starter with three scripts: sneak-using ruby ore gives a bonus ruby, standing on a block of ruby heals you through a `run_script` action, and joining players are greeted. |
 | Scripted behaviour (Creator: Scripts) | `scripted-item` | resource, mod | An item that runs a script when used: it heals you, launches you upward, strikes lightning where you look or gives you an effect. The script opens in the Script Studio. |
 
 Five starters need a word of explanation (and every starter with mod content needs the Fabric mod jar, as Custom ore does):
 
 - **Custom ore needs the Fabric mod jar.** Its ore, ruby and Block of Ruby are new blocks and items (`msm:block`, `msm:item`), which a resource or data pack cannot add. Export the **Fabric mod jar** and install it with Fabric Loader and Fabric API; the jar carries the `msm_runtime` mod inside unless you choose a separate runtime. The resource and data pack exports still work but hold only the models, textures, names, loot tables, tags, recipes and advancements, which do nothing without the blocks and items. Nothing in the `minecraft` namespace is changed: emerald ore stays emerald ore.
-- **Custom mob needs the Fabric mod jar with GeckoLib.** The Ruby Golem is a new mob (`msm:entity`), drawn by the GeckoLib mod from its model (`msm:geo_model`) and animations (`msm:animation`). Export the **Fabric mod jar**: it nests `msm_runtime` and GeckoLib, which MCSuperMods downloads once (see [Entities and models](entities-and-models.md#export-the-mod-jar-and-geckolib)). Replace the placeholder skin by importing a Blockbench model of your own and choosing it in the Entity Studio.
+- **Custom mob and the other mob starters need the Fabric mod jar.** The Ruby Golem is a new mob (`msm:entity`), drawn from its model (`msm:geo_model`) and animations (`msm:animation`) by GeckoLib on 26.3 or by the runtime's built-in renderer on the 26.4 snapshot (all mob starters offer both versions). Export the **Fabric mod jar**: it nests `msm_runtime` and, for GeckoLib mobs, GeckoLib, which MCSuperMods downloads once (see [Entities and models](entities-and-models.md#export-the-mod-jar-and-geckolib)). Replace the placeholder skin by importing a Blockbench model of your own and choosing it in the Entity Studio.
 - **Scripted ore needs the Fabric mod jar too.** Its scripts (`msm:script`) run inside the game through `msm_runtime`, so they work only in the Fabric mod jar; the Java project export leaves them out. The Block of Ruby's step event calls the `guard` handler of a script through a `run_script` action (see [Scripting](scripting.md)).
 - **The music disc plays a vanilla track.** MCSuperMods bundles no audio, so the sound event points at the game's own `records/cat` file. The disc itself is the vanilla `music_disc_13` item carrying the new song and a name, drawn with the starter's own disc model; the `give_disc` function gives it to you (`/function <namespace>:give_disc`), because a pack cannot add a new item to the creative inventory.
 - **A custom biome needs its own World Type.** A data pack cannot add a biome to the normal overworld, so the Custom biome starters add a World Type that lists the new biome. Choose it when creating a new world; existing worlds keep their biomes, although the hamlets of the jigsaw starters do appear in new chunks of an existing world.
@@ -476,11 +489,17 @@ The blocks and items examples and the Custom ore starter use the `msm:block`, `m
 
 Event ids are namespaced strings of your own (`<namespace>:lamp_turn_on`); each block or item declares its events under `events`, and its components name them.
 
-The entity examples and the Custom mob starter use `msm:entity`, `msm:geo_model` and `msm:animation`, which also need the Fabric mod jar (with GeckoLib). Each entity example is a complete mob with its model, animations, skin and, when it has one, spawn egg texture:
+The entity examples and the mob starters use `msm:entity`, `msm:geo_model` and `msm:animation`, which also need the Fabric mod jar (with GeckoLib on 26.3 for mobs that use it). Each entity example is a complete mob with its model, animations, skin and, when it has one, spawn egg texture:
 
 - **Wandering creature** shows the basics: a peaceful mob with wander and look goals and a spawn egg.
 - **Hostile mob** shows `melee_attack` with `targets`, `msm:attack` whose `on_attack` event uses `play_animation`, and the spawn rule `monster`.
 - **Natural spawning** shows `spawn` with a biome tag (`#`) and a biome id together.
+- **Tameable fox-like pet** shows `msm:tameable` and `msm:breedable` on the `animal` base, with a snowy variant by biome.
+- **Rideable flying mount** shows `msm:rideable` with a saddle on a mob that flies.
+- **Archer with a throwable** shows `msm:ranged_attack` shooting a project item with `msm:throwable`.
+- **Fish school with biome variants** shows swimming, `msm:variants` by biome and the water spawn rule.
+- **Boss with a boss bar** shows `msm:boss_bar` with its colour, style and sky effects.
+- **Drawn without GeckoLib** shows `renderer: vanilla`, a mob the built-in renderer draws on every target.
 
 The script examples use `msm:script`, which runs only in the Fabric mod jar (see [Scripting](scripting.md)):
 
@@ -490,7 +509,7 @@ The script examples use `msm:script`, which runs only in the Fabric mod jar (see
 
 ### All examples
 
-There is one example for each of the 93 element kinds, twenty-one more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; a potion brewed with your own item; entities: a hostile mob and natural spawning; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 94 element kinds, twenty-seven more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn, Pet, Farm animal, Mount, Flying mob, Water mob, Boss) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -599,6 +618,12 @@ There is one example for each of the 93 element kinds, twenty-one more behaviour
 | Cube creature model | `example_msm_geo_model` | Entity models | `msm:geo_model` | A box-shaped GeckoLib model with a body and a head bone over a 64x64 texture, shown on a small mob. |
 | Idle and walk animations | `example_msm_animation` | Entity animations | `msm:animation` | An idle bob and a walk cycle that swings the arms and legs of a biped model, shown on a small mob. |
 | Hostile mob | `example_msm_hostile_mob` | Entities | `msm:entity` | A monster that chases and hits players, fights back when hurt and spawns in the dark. |
+| Tameable fox-like pet | `example_msm_tameable_pet` | Entities | `msm:entity` | A fox-like animal you tame with sweet berries: it sits when told, follows and defends you, has babies and grows a white coat in snowy biomes. |
+| Rideable flying mount | `example_msm_flying_mount` | Entities | `msm:entity` | A big round flyer you saddle and ride through the air: it flies where you look and rises while you hold jump. |
+| Archer with a throwable | `example_msm_throwing_archer` | Entities | `msm:entity` | A skeleton-like monster that circles players and throws ice shards, a project item with `msm:throwable`, from a distance. |
+| Fish school with biome variants | `example_msm_fish_school` | Entities | `msm:entity` | A fish that swims in schools in every ocean, orange in warm oceans and pale in cold ones, and flops and dries out on land. |
+| Boss with a boss bar | `example_msm_boss_bar` | Entities | `msm:entity` | A giant monster with a red boss bar that darkens the sky and fogs the world, summoned only from its spawn egg. |
+| Drawn without GeckoLib | `example_msm_vanilla_renderer` | Entities | `msm:entity` | A small creature drawn by the runtime's own renderer, never GeckoLib, so it needs no GeckoLib on any target. |
 | Natural spawning | `example_msm_natural_spawn` | Entities | `msm:entity` | A creature that spawns on its own in forests and plains, using a biome tag and a biome id. |
 | Script: block interaction | `example_msm_script` | Scripts | `msm:script` | A script that cancels using a lodestone with an empty hand and gives the player a compass instead. |
 | Script: scheduled effects | `example_msm_script_schedule` | Scripts | `msm:script` | A script that turns using an amethyst shard into a rising spiral of particles over two seconds, one `msm.schedule` step after another. |
@@ -619,9 +644,9 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 
 | Folder | Namespace | Contents |
 |---|---|---|
-| `examples/all-kinds/` | `msm_examples` | The 93 per-kind examples in one project |
+| `examples/all-kinds/` | `msm_examples` | The 94 per-kind examples in one project |
 | `examples/blocks-items/` | `msm_examples` | The blocks and items behaviour examples (Sturdy pickaxe, Beacon stone, Fuel log, Life-steal sword, Night-vision helmet, Brewed with your own item, Elm wood set, Shale stone set, Onion crop, Silver birch tree, Crusher, Vault door) |
-| `examples/entities/` | `msm_examples` | The two entity behaviour examples (Hostile mob, Natural spawning), each with its model, animations and textures |
+| `examples/entities/` | `msm_examples` | The entity behaviour examples (Hostile mob, Natural spawning, Tameable fox-like pet, Rideable flying mount, Archer with a throwable, Fish school with biome variants, Boss with a boss bar, Drawn without GeckoLib), each with its model, animations and textures |
 | `examples/scripts/` | `msm_examples` | The script behaviour examples (Script: scheduled effects, Script: action handler, Script: scripted effect, Script: kill counter, Script: full set bonus, Script: teleport staff, Script: boss fight bar) |
 | `examples/starters/custom_ore/` | `msm_starter` | The Custom ore starter |
 | `examples/starters/recipe_pack/` | `msm_starter` | The Recipe pack starter |
@@ -650,6 +675,12 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 | `examples/starters/potion/` | `msm_starter` | The Potion starter |
 | `examples/starters/mob-skin/` | `msm_starter` | The Mob skin starter |
 | `examples/starters/goat-horn/` | `msm_starter` | The Goat horn starter |
+| `examples/starters/pet/` | `msm_starter` | The Pet starter |
+| `examples/starters/farm-animal/` | `msm_starter` | The Farm animal starter |
+| `examples/starters/mount/` | `msm_starter` | The Mount starter |
+| `examples/starters/flying-mob/` | `msm_starter` | The Flying mob starter |
+| `examples/starters/water-mob/` | `msm_starter` | The Water mob starter |
+| `examples/starters/boss/` | `msm_starter` | The Boss starter |
 
 Copy a folder somewhere else before opening it, so your edits do not change the repository. See [examples/README.md](https://github.com/MEZTKING/MCSuperMods/blob/main/examples/README.md).
 

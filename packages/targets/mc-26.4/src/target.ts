@@ -486,7 +486,8 @@ export const target: Target = {
     gradle: '9.8.2',
   },
   // No geckolib: Modrinth lists no GeckoLib build for any 26.4 snapshot (checked 2026-11-05,
-  // ADR 0037); the entities export reports export.no-geckolib-target for this target.
+  // ADR 0037). Mobs still work here: the runtime draws `renderer: auto` mobs with its built-in
+  // renderer (ADR 0072), and only `renderer: geckolib` mobs report export.no-geckolib-target.
   // No javaProject: the 26.3 generator's Java does not compile against 26.4 (B151: SoundType
   // is gone, block sounds are the data-driven `block_sound_set` registry; entity renderers
   // register through the client registry), so the java-project exporter reports

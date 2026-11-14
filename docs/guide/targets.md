@@ -1,6 +1,6 @@
 # Minecraft versions (targets)
 
-Every MCSuperMods project is made for one Minecraft version, its **target**. The target decides which ids, fields and folder names are valid, which pack formats go into `pack.mcmeta`, and which Fabric, `msm_runtime` and GeckoLib builds go into the Fabric mod jar. Your project itself is version-agnostic: when you move it to another target, MCSuperMods lowers the same elements to that version's files.
+Every MCSuperMods project is made for one Minecraft version, its **target**. The target decides which ids, fields and folder names are valid, which pack formats go into `pack.mcmeta`, and which Fabric, `msm_runtime` and (where one exists) GeckoLib builds go into the Fabric mod jar. Your project itself is version-agnostic: when you move it to another target, MCSuperMods lowers the same elements to that version's files.
 
 ## The two targets
 
@@ -17,7 +17,7 @@ MCSuperMods supports the current Minecraft release and the next version's snapsh
 
 The **New project** dialog has a **Minecraft version** select. For a starter without questions it is under the starter list; for a starter with the **Wizard** badge it is on the last step, beside the summary of your answers. It starts on the newest release target. Choosing a snapshot shows a **snapshot** badge and the note "A snapshot target follows a Minecraft version that is not released yet; its facts may change when it is re-pinned."
 
-A wizard lists only the targets its starter can be made for. The **Custom mob** starter needs GeckoLib, which has no build for the 26.4 snapshot yet, so it offers only 26.3.
+A wizard lists only the targets its starter can be made for. Every mob starter, including **Custom mob**, **Pet** and **Boss**, offers both targets: on the 26.4 snapshot the mobs are drawn by the runtime's built-in renderer.
 
 **New** on its own creates a blank project on the newest release target.
 
@@ -55,13 +55,13 @@ A project made from the **Custom ore** starter, for example, moves from 26.3 to 
 | Pack formats | `pack.mcmeta` gets the target's resource or data pack format; you never type a pack format. |
 | File names | Pack zips are named `<project>-<target id>.zip` (and `-data.zip` for the data pack), so exports for different targets do not overwrite each other. |
 | Fabric mod jar | `fabric.mod.json` names the target's Minecraft and Fabric API versions, and the nested `msm_runtime` is the build for that Minecraft version. |
-| Mobs | Mobs need GeckoLib. 26.3 has it; the 26.4 snapshot has none yet, so a Fabric mod jar of a project with mobs cannot be exported for it (`export.no-geckolib-target`), the **Custom mob** starter offers only 26.3, and the Creator shows its Custom mob flow as "Not available for Minecraft 26.4-snapshot-7 (this project's target)." |
+| Mobs | Mobs work on both targets. 26.3 has GeckoLib; the 26.4 snapshot has none yet, so there the runtime draws mobs with its built-in renderer (no Molang, easings or sound and particle keyframes; see [Mob behaviours](mob-behaviours.md#choose-how-the-mob-is-drawn)). A mob whose **Renderer** is **Automatic (GeckoLib when present)** or **Built-in renderer** exports for 26.4 without GeckoLib (an info line, `export.entity-vanilla-renderer`); only a mob set to **GeckoLib only** cannot (`export.no-geckolib-target`), and **Problems** says so. |
 | Java project export | **File → Export Java Project…** works for 26.3 only; for the 26.4 snapshot it reports `export.no-java-project-target`. |
 | Preview textures | The preview uses the vanilla assets of the target's Minecraft version, extracted from your own copy of the game (**Settings → Vanilla assets**). Start that version once in any launcher if they are missing. |
 | Test in Minecraft | The managed test instance is named after the version, for example `MCSuperMods Test (26.3)`. |
 
 ## When 26.4 is released
 
-When Mojang releases Minecraft 26.4, a later MCSuperMods release moves the `mc-26.4` target from the snapshot to the release. The target id stays `mc-26.4`, so projects on it follow without an upgrade; the status bar drops the **snapshot** badge, mobs become available once GeckoLib has a 26.4 build, and 26.4 becomes the default for new projects. If the release removed or renamed anything the snapshot had, the next validation pass shows it in **Problems**.
+When Mojang releases Minecraft 26.4, a later MCSuperMods release moves the `mc-26.4` target from the snapshot to the release. The target id stays `mc-26.4`, so projects on it follow without an upgrade; the status bar drops the **snapshot** badge, mobs keep using the built-in renderer until GeckoLib has a 26.4 build, when **Automatic** mobs will switch to it, and 26.4 becomes the default for new projects. If the release removed or renamed anything the snapshot had, the next validation pass shows it in **Problems**.
 
 The design behind targets is in [ADR 0037](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0037-second-target-mc-26.4-and-target-upgrade.md) (the second target and the upgrade command) and [ADR 0038](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0038-per-version-runtime-builds.md) (one `msm_runtime` build per Minecraft version).
