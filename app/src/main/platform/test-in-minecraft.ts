@@ -90,7 +90,7 @@ export interface TestInMinecraftDeps {
 }
 
 /** The launchers' display names, for messages. */
-const LAUNCHER_NAMES: Record<LaunchableLauncher, string> = {
+export const LAUNCHER_NAMES: Record<LaunchableLauncher, string> = {
   prism: 'Prism Launcher',
   multimc: 'MultiMC',
 };
@@ -121,8 +121,87 @@ export function spawnDetached(program: string, args: readonly string[]): Promise
   });
 }
 
-function messageOf(error: unknown): string {
+/** An error's message, or the value as text. */
+export function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+/** The real path of `path`, or `null` when it does not exist. */
+export async function realOrNull(
+  resolveReal: (absPath: string) => Promise<string>,
+  path: string,
+): Promise<string | null> {
+  try {
+    return await resolveReal(normalize(path));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The first existing Prism data folder: the detected ones, then those added in Settings.
+ * Shared with Play (`play.ts`).
+ */
+export async function findPrismRoot(
+  fs: InstallFileSystem,
+  env: LauncherProgramEnv,
+  settings: Pick<SettingsStore, 'get'>,
+): Promise<string | null> {
+  const current = await settings.get();
+  const manual = current.launchers?.prismDataDirs ?? [];
+  for (const root of [...defaultPrismDataDirs(env), ...manual]) {
+    if (await fs.exists(root)) return root;
+  }
+  return null;
+}
+
+/**
+ * Checks that `location`'s real game folder sits inside its real instance folder, which sits
+ * inside the real instances folder (as for pack installs), then creates `folder` when missing
+ * and checks that it resolves inside the game folder (or, with `allowGameDir`, is the game
+ * folder itself). Returns `folder` normalised. `what` names the folder in the error ("The
+ * mods folder"). Shared with Play (`play.ts`).
+ */
+export async function checkedFolderInGame(
+  deps: { fs: InstallFileSystem; realpath: (absPath: string) => Promise<string> },
+  location: GameLocation,
+  folder: string,
+  what = 'The mods folder',
+  allowGameDir = false,
+): Promise<string> {
+  const realGame = await realOrNull(deps.realpath, location.gameDir);
+  if (realGame === null) throw new Error('The game folder of this location does not exist.');
+  if (location.instanceDir !== null) {
+    const instanceDir = normalize(location.instanceDir);
+    const [realInstance, realInstances] = await Promise.all([
+      realOrNull(deps.realpath, instanceDir),
+      realOrNull(deps.realpath, dirname(instanceDir)),
+    ]);
+    if (
+      realInstance === null ||
+      realInstances === null ||
+      !isPathInside(realInstances, realInstance) ||
+      !(
+        locationPathKey(realInstance) === locationPathKey(realGame) ||
+        isPathInside(realInstance, realGame)
+      )
+    ) {
+      throw new Error(
+        `The game folder of ${JSON.stringify(location.displayName)} is outside its instance folder.`,
+      );
+    }
+  }
+  const target = normalize(folder);
+  await deps.fs.mkdirp(target);
+  const realTarget = await realOrNull(deps.realpath, target);
+  const isGameDir =
+    allowGameDir &&
+    realTarget !== null &&
+    locationPathKey(realTarget) === locationPathKey(realGame);
+  if (realTarget === null || !(isGameDir || isPathInside(realGame, realTarget))) {
+    throw new Error(`${what} is outside the game folder.`);
+  }
+  return target;
 }
 
 /** Creates the service. */
@@ -134,23 +213,8 @@ export function createTestInMinecraftService(deps: TestInMinecraftDeps): TestInM
   const spawnLauncher = deps.spawnLauncher ?? spawnDetached;
   const resolveReal = deps.realpath ?? ((path: string) => realpath(path));
 
-  const realOrNull = async (path: string): Promise<string | null> => {
-    try {
-      return await resolveReal(normalize(path));
-    } catch {
-      return null;
-    }
-  };
-
   /** The first existing Prism data folder: detected ones, then those added in Settings. */
-  const prismRoot = async (): Promise<string | null> => {
-    const settings = await deps.settings.get();
-    const manual = settings.launchers?.prismDataDirs ?? [];
-    for (const root of [...defaultPrismDataDirs(deps.env), ...manual]) {
-      if (await fs.exists(root)) return root;
-    }
-    return null;
-  };
+  const prismRoot = (): Promise<string | null> => findPrismRoot(fs, deps.env, deps.settings);
 
   const launcherProgram = async (location: GameLocation): Promise<string | null> => {
     const launcher = location.ref.launcher;
@@ -190,37 +254,8 @@ export function createTestInMinecraftService(deps: TestInMinecraftDeps): TestInM
    * The real game folder after the containment checks of pack installs, then the mods folder
    * (created when missing) checked to resolve inside it.
    */
-  const checkedModsDir = async (location: GameLocation, modsDir: string): Promise<string> => {
-    const realGame = await realOrNull(location.gameDir);
-    if (realGame === null) throw new Error('The game folder of this location does not exist.');
-    if (location.instanceDir !== null) {
-      const instanceDir = normalize(location.instanceDir);
-      const [realInstance, realInstances] = await Promise.all([
-        realOrNull(instanceDir),
-        realOrNull(dirname(instanceDir)),
-      ]);
-      if (
-        realInstance === null ||
-        realInstances === null ||
-        !isPathInside(realInstances, realInstance) ||
-        !(
-          locationPathKey(realInstance) === locationPathKey(realGame) ||
-          isPathInside(realInstance, realGame)
-        )
-      ) {
-        throw new Error(
-          `The game folder of ${JSON.stringify(location.displayName)} is outside its instance folder.`,
-        );
-      }
-    }
-    const mods = normalize(modsDir);
-    await fs.mkdirp(mods);
-    const realMods = await realOrNull(mods);
-    if (realMods === null || !isPathInside(realGame, realMods)) {
-      throw new Error('The mods folder is outside the game folder.');
-    }
-    return mods;
-  };
+  const checkedModsDir = (location: GameLocation, modsDir: string): Promise<string> =>
+    checkedFolderInGame({ fs, realpath: resolveReal }, location, modsDir);
 
   /** Starts the launcher when the location allows it; otherwise says how to start the game. */
   const launch = async (

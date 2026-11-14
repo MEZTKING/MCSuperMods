@@ -120,6 +120,65 @@ const sampleView = {
   members: [{ path: '../ruby', root: '/m/ruby', found: true, name: 'Ruby', targetId: 'mc-26.3' }],
 };
 
+const playStatus = {
+  targetId: 'mc-26.3',
+  mcVersion: '26.3',
+  instanceName: 'MCSuperMods Test (26.3)',
+  instance: 'ready',
+  gameDir: '/p/instances/MCSuperMods Test (26.3)/minecraft',
+  state: 'test-world',
+  testWorld: 'msm-test-ruby',
+  world: 'msm-test-ruby',
+  handled: { seq: 3, ok: true },
+  canReload: true,
+  restartNeeded: [],
+  label: 'In the test world',
+  busy: null,
+  progress: null,
+};
+const playInput = {
+  targetId: 'mc-26.3',
+  modId: 'ruby',
+  jar: bytes,
+  outputs: [
+    { path: 'data/ruby/recipe/ruby.json', contents: { type: 'x' }, elementId: 'ruby:ruby' },
+    { path: 'assets/ruby/textures/item/ruby.png', contents: bytes },
+  ],
+  namespaces: ['ruby'],
+  items: [{ id: 'ruby:ruby', count: 16 }, { id: 'ruby:ruby_lamp' }],
+};
+const playResult = {
+  ok: true,
+  instanceName: 'MCSuperMods Test (26.3)',
+  instanceCreated: false,
+  gameDir: '/p/instances/MCSuperMods Test (26.3)/minecraft',
+  world: 'msm-test-ruby',
+  restarted: true,
+  launched: true,
+  note: null,
+  fabricApi: 'present',
+  itemsLeftOut: 0,
+  seq: 4,
+};
+const reloadResult = {
+  ok: true,
+  action: 'reload',
+  seq: 5,
+  changes: 2,
+  assets: false,
+  counts: { data: 1, scripts: 0, events: 0, assets: 0, worldData: 0, removed: 0 },
+  restart: [
+    {
+      reason: 'new-definition',
+      path: 'msm/ruby/block/ruby_lamp.json',
+      kind: 'block',
+      elementId: 'ruby:ruby_lamp',
+      text: 'You added a new block: Ruby Lamp. New blocks are only read when Minecraft starts.',
+    },
+  ],
+  message: 'Reloading 2 changes in Minecraft.',
+};
+
 /** One valid and one invalid request and response per channel. */
 const samples: Record<
   InvokeChannel,
@@ -628,6 +687,43 @@ const samples: Record<
   [InvokeChannels.aiDropConversation]: {
     request: [{ conversationId: 'conv-2' }, { conversationId: 'x'.repeat(201) }],
     response: [undefined, {}],
+  },
+  [InvokeChannels.playStatus]: {
+    request: [{ targetId: 'mc-26.3' }, { targetId: '' }],
+    response: [playStatus, { ...playStatus, state: 'flying' }],
+  },
+  [InvokeChannels.playPlay]: {
+    request: [playInput, { ...playInput, outputs: [{ path: '../x', contents: 1 }] }],
+    response: [playResult, { ...playResult, fabricApi: 'maybe' }],
+  },
+  [InvokeChannels.playReload]: {
+    request: [
+      {
+        targetId: 'mc-26.3',
+        modId: 'ruby',
+        outputs: playInput.outputs,
+        names: { 'ruby:ruby_lamp': 'Ruby Lamp' },
+      },
+      { targetId: 'mc-26.3', modId: 'Ruby!', outputs: [] },
+    ],
+    response: [reloadResult, { ...reloadResult, action: 'jump' }],
+  },
+  [InvokeChannels.playRestart]: {
+    request: [playInput, { ...playInput, namespaces: [] }],
+    response: [
+      { ok: false, code: 'game-not-closing', message: 'Close Minecraft, then press Play again.' },
+      { ok: false, code: 'oops', message: 'x' },
+    ],
+  },
+  [InvokeChannels.playNewWorld]: {
+    request: [
+      { targetId: 'mc-26.3', namespace: 'ruby' },
+      { targetId: 'mc-26.3', namespace: 'Ruby/..' },
+    ],
+    response: [
+      { ok: true, renamedTo: 'msm-test-ruby-old-1' },
+      { ok: true, renamedTo: '../x' },
+    ],
   },
 };
 

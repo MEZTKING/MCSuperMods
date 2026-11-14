@@ -10,7 +10,7 @@
 import type { AiEvent, AiKeyTestResult, AiSettings, AiStartRequest, AiToolResult } from '@msm/ai';
 import type { Modpack, ModpackMod, ProjectFileSystem } from '@msm/core';
 // Type-only: the service itself runs in main (ADR 0014); these are plain MSM shapes.
-import type { Problem } from '@msm/plugin-api';
+import type { Json, Problem } from '@msm/plugin-api';
 import type { McfunctionCompletion, McfunctionProblem } from '@msm/schemas/mcfunction';
 
 /** The mcfunction IPC's payload types, for the renderer (which may not import Spyglass). */
@@ -291,6 +291,225 @@ export interface ModpackTestResult {
   fabricApiFile: string;
   launched: boolean;
   note: string | null;
+}
+
+// ---- One-click Play and Reload (ADR 0084). ----
+
+/**
+ * One lowered file Play and Reload compare (ADR 0084 D6): an `OutputFile` of the expanded
+ * project with the element it came from. Play and Reload must send the same set, lowered the
+ * same way, so equal files hash equal; scripts are sent as lowered (`.ts`), main transpiles
+ * them for the overlay.
+ */
+export interface PlayOutputFile {
+  /** The jar path: `assets/...`, `data/...` or `msm/...`. */
+  path: string;
+  /** Bytes, or a JSON value (hashed and written as sorted, 2-space JSON). */
+  contents: Uint8Array | Json;
+  /** The element id the file came from, to name it in restart reasons. */
+  elementId?: string;
+}
+
+/** One item for the test world's chests and hotbar. */
+export interface PlaySetupItem {
+  /** `namespace:path` of an item, a block item or a spawn egg. */
+  id: string;
+  /** The stack size, 1 when absent. */
+  count?: number;
+}
+
+/** What Play (and Restart) needs from the renderer. */
+export interface PlayInput {
+  targetId: string;
+  modId: string;
+  /** The content jar, built as the export dialog's defaults. */
+  jar: Uint8Array;
+  /** The lowered project's files (see {@link PlayOutputFile}). */
+  outputs: PlayOutputFile[];
+  /** The project's namespaces, its own first (it names the test world `msm-test-<ns>`). */
+  namespaces: string[];
+  /** Project items, block items and spawn eggs in the order to show them; the first nine go in the hotbar. */
+  items: PlaySetupItem[];
+}
+
+/** What Reload needs from the renderer. */
+export interface ReloadInput {
+  targetId: string;
+  modId: string;
+  /** The lowered project's files, the same set and lowering as at Play. */
+  outputs: PlayOutputFile[];
+  /**
+   * The content jar as Play would build it now, so a change to `fabric.mod.json` or the
+   * runtime is found. Without it those are assumed unchanged (the mod id is still compared).
+   */
+  jar?: Uint8Array;
+  /** Display names by element id, for restart reasons ("You added a new block: Ruby Lamp."). */
+  names?: Record<string, string>;
+}
+
+/** Why a Play, Restart, Reload or New test world did not happen. */
+export type PlayFailureCode =
+  /** No Prism Launcher data folder: show the one-time setup panel. */
+  | 'no-prism'
+  /** A folder named like the managed instance exists without MSM's marker. */
+  | 'instance-not-managed'
+  /** The running game did not close within 30 seconds of the quit request. */
+  | 'game-not-closing'
+  /** The installed jar is locked by a game MSM cannot talk to. */
+  | 'jar-locked'
+  /** Reload: nothing was installed with Play yet. */
+  | 'not-played'
+  /** Reload: the game is not in the test world. */
+  | 'not-in-world'
+  /** New test world: the game is running. */
+  | 'game-running'
+  /** Reload: a script could not be transpiled. */
+  | 'script-error'
+  /** Another Play or Reload is running. */
+  | 'busy'
+  /** The input is not usable (no namespace, a bad item id). */
+  | 'bad-input'
+  /** Anything else; `message` says what. */
+  | 'failed';
+
+/** A failed Play, Reload or New test world, in plain words. */
+export interface PlayFailure {
+  ok: false;
+  code: PlayFailureCode;
+  message: string;
+}
+
+/** What a Play or Restart did. */
+export type PlayResult =
+  | {
+      ok: true;
+      /** The managed instance's name, `MCSuperMods Test (<mc>)`. */
+      instanceName: string;
+      /** `true` when the instance was created by this Play. */
+      instanceCreated: boolean;
+      /** The instance's game folder (for "Open the test instance's folder"). */
+      gameDir: string;
+      /** The test world's folder name, `msm-test-<namespace>`. */
+      world: string;
+      /** `true` when the running game was asked to quit first. */
+      restarted: boolean;
+      /** Whether Prism Launcher was started. */
+      launched: boolean;
+      /** How to start the game when it was not launched; otherwise `null`. */
+      note: string | null;
+      fabricApi: 'installed' | 'present' | 'user-copy';
+      /** Items left out of the chests because they are full. */
+      itemsLeftOut: number;
+      /** The play request's sequence number. */
+      seq: number;
+    }
+  | PlayFailure;
+
+/** Why a restart is needed, in plain words (ADR 0084 D6). */
+export interface PlayRestartReason {
+  /** The `@msm/interop` reason code (`new-definition`, `file-removed`, ...). */
+  reason: string;
+  /** The jar path concerned. */
+  path: string;
+  /** For a rename: the old path. */
+  from?: string;
+  /** The definition kind (`block`, `item`, `entity`, ...). */
+  kind?: string;
+  elementId?: string;
+  /** One or two sentences for the user. */
+  text: string;
+}
+
+/** What a Reload did. */
+export type ReloadResult =
+  | {
+      ok: true;
+      /** `reload` in place, `reopen` the world (world data changed), or `none` (nothing pending). */
+      action: 'reload' | 'reopen' | 'none';
+      /** The request's sequence number, or `null` when none was written. */
+      seq: number | null;
+      /** Files written or removed since what the game shows (the chat's "N changes"). */
+      changes: number;
+      /** Whether resource pack files changed (the game reloads its resources too). */
+      assets: boolean;
+      /** Files by group, compared with the installed jar. */
+      counts: {
+        data: number;
+        scripts: number;
+        events: number;
+        assets: number;
+        worldData: number;
+        removed: number;
+      };
+      /** What needs a restart; empty when nothing does. */
+      restart: PlayRestartReason[];
+      /** A plain summary line. */
+      message: string;
+    }
+  | PlayFailure;
+
+/** What New test world did. */
+export type TestWorldResult =
+  | {
+      ok: true;
+      /** The old world's new folder name, or `null` when there was no test world yet. */
+      renamedTo: string | null;
+    }
+  | PlayFailure;
+
+/**
+ * Where the game is, for the status chip (ADR 0084 D7): no Prism Launcher, not running,
+ * starting (Prism started, title screen or loading), in the test world, or in another world.
+ */
+export type PlayGameState = 'no-prism' | 'not-running' | 'starting' | 'test-world' | 'other-world';
+
+/** The Play status, read by main from the managed instance's `status.json`. */
+export interface PlayStatus {
+  targetId: string;
+  mcVersion: string;
+  /** `MCSuperMods Test (<mc>)`. */
+  instanceName: string;
+  /** `ready`, `missing` (created on the first Play) or `no-prism`. */
+  instance: 'ready' | 'missing' | 'no-prism';
+  /** The managed instance's game folder, when it exists. */
+  gameDir: string | null;
+  state: PlayGameState;
+  /** The test world's folder name from `dev.json`, or `null` before the first Play. */
+  testWorld: string | null;
+  /** The world open in the game, or `null`. */
+  world: string | null;
+  /** The outcome of the last request the game handled, or `null`. */
+  handled: { seq: number; ok: boolean; message?: string } | null;
+  /** Whether Reload can run now (the game is in the test world). */
+  canReload: boolean;
+  /** The last Reload's restart reasons, until the next Play. */
+  restartNeeded: PlayRestartReason[];
+  /** The chip's words: "Game not running", "Starting…", "In the test world", "Restart needed", ... */
+  label: string;
+  /** What runs now, or `null`. */
+  busy: 'play' | 'reload' | 'restart' | null;
+  /** The one progress line while busy ("Installing the mod…"), else `null`. */
+  progress: string | null;
+}
+
+/** One-click Play and Reload (ADR 0084), served by main. */
+export interface PlayPlatform {
+  /** The managed instance and the game for `targetId`; also makes it the polled target. */
+  status(targetId: string): Promise<PlayStatus>;
+  /**
+   * Saves nothing (the renderer saves first): creates the managed instance when missing,
+   * installs the jar and Fabric API, writes the dev files and starts Prism Launcher. When the
+   * game runs it is asked to quit first (up to 30 seconds).
+   */
+  play(input: PlayInput): Promise<PlayResult>;
+  /** Writes what reloads in place with a reload or reopen request; lists restart reasons. */
+  reload(input: ReloadInput): Promise<ReloadResult>;
+  /** Quits the running game, installs and starts it again (the same as {@link play}). */
+  restart(input: PlayInput): Promise<PlayResult>;
+  /** Renames `saves/msm-test-<namespace>` to `...-old-<n>`; the next Play creates a fresh world. */
+  newWorld(targetId: string, namespace: string): Promise<TestWorldResult>;
+  /** Subscribes to status changes (every second while a window is focused, and after each operation). */
+  onStatus(listener: (status: PlayStatus) => void): () => void;
 }
 
 /** One remembered modpack (ADR 0046 D2). */
@@ -736,6 +955,11 @@ export interface PlatformAdapter {
    * written before the helper may omit it.
    */
   ai?: AiPlatform;
+  /**
+   * One-click Play and Reload (ADR 0084). The preload always provides it; optional so that
+   * test doubles written before it may omit it.
+   */
+  play?: PlayPlatform;
 }
 
 /** What the preload exposes as `window.msm`: the adapter plus window-level events. */

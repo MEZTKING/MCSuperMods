@@ -17,6 +17,7 @@ import {
   ipcContract,
   type MinecraftProgress,
 } from '../shared/ipc-contract';
+import type { PlayInput, PlayOutputFile } from '../shared/platform';
 import type { AiSender, AiService } from './ai/ai-service';
 import type { MainPlatform } from './platform/node-platform';
 import type { PluginsService } from './platform/plugins';
@@ -193,7 +194,69 @@ export function createIpcHandlers(
       }),
     [InvokeChannels.aiNewConversation]: (req) => ai.newConversation(req.conversationId),
     [InvokeChannels.aiDropConversation]: (req) => ai.dropConversation(req.conversationId),
+    [InvokeChannels.playStatus]: (req) => platform.play.status(req.targetId),
+    [InvokeChannels.playPlay]: (req) => platform.play.play(playInput(req)),
+    [InvokeChannels.playReload]: (req) =>
+      platform.play.reload({
+        targetId: req.targetId,
+        modId: req.modId,
+        outputs: req.outputs.map(playOutput),
+        ...(req.jar === undefined ? {} : { jar: req.jar }),
+        ...(req.names === undefined ? {} : { names: req.names }),
+      }),
+    [InvokeChannels.playRestart]: (req) => platform.play.restart(playInput(req)),
+    [InvokeChannels.playNewWorld]: (req) => platform.play.newTestWorld(req.targetId, req.namespace),
   };
+}
+
+type PlayRequest = z.output<IpcContract[typeof InvokeChannels.playPlay]['request']>;
+
+/** A validated lowered file as the Play service takes it. */
+function playOutput(file: PlayRequest['outputs'][number]): PlayOutputFile {
+  return {
+    path: file.path,
+    contents: file.contents as PlayOutputFile['contents'],
+    ...(file.elementId === undefined ? {} : { elementId: file.elementId }),
+  };
+}
+
+/** A validated Play or Restart request as the Play service takes it. */
+function playInput(req: PlayRequest): PlayInput {
+  return {
+    targetId: req.targetId,
+    modId: req.modId,
+    jar: req.jar,
+    outputs: req.outputs.map(playOutput),
+    namespaces: req.namespaces,
+    items: req.items.map((item) => ({
+      id: item.id,
+      ...(item.count === undefined ? {} : { count: item.count }),
+    })),
+  };
+}
+
+/**
+ * Pushes Play status changes to every window and polls `status.json` every second while one
+ * of the app's windows is focused (ADR 0084 D7). Call once, after `app.whenReady()`.
+ */
+export function registerPlayEvents(
+  play: Pick<MainPlatform['play'], 'onStatus' | 'setPolling'>,
+  electronApp: Pick<Electron.App, 'on'>,
+): void {
+  play.onStatus((status) => {
+    for (const window of BrowserWindow.getAllWindows()) {
+      if (!window.webContents.isDestroyed()) {
+        window.webContents.send(EventChannels.playStatusChanged, status);
+      }
+    }
+  });
+  electronApp.on('browser-window-focus', () => play.setPolling(true));
+  electronApp.on('browser-window-blur', () => {
+    // Blur fires before the next window's focus; poll only while none is focused.
+    setTimeout(() => {
+      if (BrowserWindow.getFocusedWindow() === null) play.setPolling(false);
+    }, 0);
+  });
 }
 
 function isTrustedSender(event: IpcMainInvokeEvent): boolean {

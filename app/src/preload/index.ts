@@ -15,9 +15,37 @@ import {
   isMenuOpenRecent,
   isMenuPluginExport,
   isMinecraftProgress,
+  isPlayStatusPayload,
   isUpdateStatus,
 } from '../shared/ipc-channels';
-import type { AiPlatform, MsmBridge } from '../shared/platform';
+import type { AiPlatform, MsmBridge, PlayPlatform, PlayStatus } from '../shared/platform';
+
+type PlayInputOf = Parameters<PlayPlatform['play']>[0];
+type PlayOutputOf = PlayInputOf['outputs'][number];
+
+/** A lowered file as the contract takes it (only the known fields cross). */
+function outputFile(file: PlayOutputOf): PlayOutputOf {
+  return {
+    path: file.path,
+    contents: file.contents,
+    ...(file.elementId === undefined ? {} : { elementId: file.elementId }),
+  };
+}
+
+/** A Play or Restart request as the contract takes it (only the known fields cross). */
+function playRequest(input: PlayInputOf): PlayInputOf {
+  return {
+    targetId: input.targetId,
+    modId: input.modId,
+    jar: input.jar,
+    outputs: input.outputs.map(outputFile),
+    namespaces: [...input.namespaces],
+    items: input.items.map((item) => ({
+      id: item.id,
+      ...(item.count === undefined ? {} : { count: item.count }),
+    })),
+  };
+}
 
 const bridge: MsmBridge = {
   app: {
@@ -175,6 +203,30 @@ const bridge: MsmBridge = {
   },
   thumbnails: {
     get: (assetPath, size) => ipcRenderer.invoke(InvokeChannels.thumbnailsGet, { assetPath, size }),
+  },
+  play: {
+    status: (targetId) => ipcRenderer.invoke(InvokeChannels.playStatus, { targetId }),
+    play: (input) => ipcRenderer.invoke(InvokeChannels.playPlay, playRequest(input)),
+    reload: (input) =>
+      ipcRenderer.invoke(InvokeChannels.playReload, {
+        targetId: input.targetId,
+        modId: input.modId,
+        outputs: input.outputs.map(outputFile),
+        ...(input.jar === undefined ? {} : { jar: input.jar }),
+        ...(input.names === undefined ? {} : { names: { ...input.names } }),
+      }),
+    restart: (input) => ipcRenderer.invoke(InvokeChannels.playRestart, playRequest(input)),
+    newWorld: (targetId, namespace) =>
+      ipcRenderer.invoke(InvokeChannels.playNewWorld, { targetId, namespace }),
+    onStatus(listener) {
+      const handler = (_event: IpcRendererEvent, status: unknown): void => {
+        if (isPlayStatusPayload(status)) listener(status as PlayStatus);
+      };
+      ipcRenderer.on(EventChannels.playStatusChanged, handler);
+      return () => {
+        ipcRenderer.removeListener(EventChannels.playStatusChanged, handler);
+      };
+    },
   },
   updates: {
     check: () => ipcRenderer.invoke(InvokeChannels.updatesCheck),

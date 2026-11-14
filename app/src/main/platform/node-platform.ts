@@ -29,6 +29,7 @@ import { createLocationResolver } from './locations';
 import { createMcfunctionBroker } from './mcfunction';
 import { createMinecraftService, type MinecraftService } from './minecraft';
 import { createModpackService, type ModpackService } from './modpacks';
+import { createPlayService, type PlayService } from './play';
 import { type RuntimeJarLocation, readRuntimeJar, runtimeVersionKey } from './runtime-jar';
 import { createScopedFileSystem, isWithin, type ScopedFileSystem } from './scoped-fs';
 import { createScriptingService, type ScriptingService } from './scripting';
@@ -164,10 +165,13 @@ export interface NodePlatformDeps {
  * updater (`../updater.ts`) and `ai` by the AI service (`../ai/ai-service.ts`), not by the Node
  * platform.
  */
-export interface MainPlatform extends Omit<PlatformAdapter, 'updates' | 'ai' | 'modpacks'> {
+export interface MainPlatform
+  extends Omit<PlatformAdapter, 'updates' | 'ai' | 'modpacks' | 'play'> {
   minecraft: MinecraftService;
   settings: SettingsStore;
   modpacks: ModpackService;
+  /** One-click Play and Reload (ADR 0084); the IPC layer serves `play:*` from it. */
+  play: PlayService;
 }
 
 /**
@@ -259,6 +263,20 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
       ? {}
       : { spawnLauncher: testOptions.spawnLauncher }),
     pickProgram: async (opts) => (await deps.dialogs.openFiles(opts))[0] ?? null,
+  });
+  const scripting = deps.scripting ?? createScriptingService();
+  // ADR 0084: Play uses only the managed instance and the same download cache.
+  const play = createPlayService({
+    fs: installFs,
+    env: { ...deps.installEnv, ...testOptions.env },
+    settings,
+    cacheDir: downloadsDir,
+    appVersion: async () => (await deps.info()).version,
+    transpile: (source, name) => scripting.transpile(source, name),
+    ...(testOptions.download === undefined ? {} : { download: testOptions.download }),
+    ...(testOptions.spawnLauncher === undefined
+      ? {}
+      : { spawnLauncher: testOptions.spawnLauncher }),
   });
   const modpacks = createModpackService({
     settings,
@@ -450,8 +468,9 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
       gradleWrapper: async () =>
         deps.gradleWrapper === undefined ? null : readGradleWrapper(deps.gradleWrapper),
     },
-    scripting: deps.scripting ?? createScriptingService(),
+    scripting,
     testInMinecraft,
+    play,
     modpacks,
     thumbnails: createThumbnailService({ projectFs: active, resizePng: deps.resizePng }),
     project: {

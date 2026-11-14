@@ -82,6 +82,12 @@ export const InvokeChannels = {
   aiToolResult: 'msm:v1:ai:toolResult',
   aiNewConversation: 'msm:v1:ai:newConversation',
   aiDropConversation: 'msm:v1:ai:dropConversation',
+  // ADR 0084: one-click Play and Reload.
+  playStatus: 'msm:v1:play:status',
+  playPlay: 'msm:v1:play:play',
+  playReload: 'msm:v1:play:reload',
+  playRestart: 'msm:v1:play:restart',
+  playNewWorld: 'msm:v1:play:newWorld',
 } as const;
 
 /**
@@ -113,6 +119,8 @@ export const EventChannels = {
   updatesStatus: 'msm:v1:updates:status',
   /** Main to renderer: an event of an AI helper run, payload {@link AiEventPayload}. */
   aiEvent: 'msm:v1:ai:event',
+  /** Main to renderer: the Play status changed (ADR 0084 D7), payload `PlayStatus`. */
+  playStatusChanged: 'msm:v1:play:statusChanged',
 } as const;
 
 /** The name of an invoke channel. */
@@ -258,6 +266,36 @@ export function isAiEventPayload(value: unknown): value is AiEventPayload {
   if (typeof event !== 'object' || event === null) return false;
   const type = (event as Record<string, unknown>).type;
   return typeof type === 'string' && (AI_EVENT_TYPES as readonly string[]).includes(type);
+}
+
+/** The Play status states (`PlayGameState` in `platform.ts`, ADR 0084 D7). */
+export const PLAY_GAME_STATES = [
+  'no-prism',
+  'not-running',
+  'starting',
+  'test-world',
+  'other-world',
+] as const;
+
+/**
+ * A cheap shape check of a Play status push for the preload: the fields the chip reads. Main
+ * builds the status itself, so the full schema is not repeated.
+ */
+export function isPlayStatusPayload(value: unknown): value is {
+  targetId: string;
+  state: (typeof PLAY_GAME_STATES)[number];
+  label: string;
+} {
+  if (typeof value !== 'object' || value === null) return false;
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record.targetId === 'string' &&
+    typeof record.label === 'string' &&
+    typeof record.state === 'string' &&
+    (PLAY_GAME_STATES as readonly string[]).includes(record.state) &&
+    typeof record.canReload === 'boolean' &&
+    Array.isArray(record.restartNeeded)
+  );
 }
 
 /** The vendored data files of a target that the renderer may read. */

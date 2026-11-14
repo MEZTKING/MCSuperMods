@@ -4271,3 +4271,20 @@ Decisions
 
 Next
 - B390: one `SimClock` in `local-source.ts`; per tick: player step, then `timers.tick([controller.box])`, send the changes as `blockChanged`; after `useBlock`, `timers.afterUse(pos, result)`; a `tool` action calls `applyTool`; `timers.clear()` with "Clear the area". B396: `msm:redstone` `on_powered`/`on_unpowered` and plate or button triggers when Power or a plate changes `powered`.
+
+## 2026-11-14 — executor — B373 Play and Reload service, IPC
+
+What
+- New `app/src/main/platform/play.ts` (ADR 0084 D1, D3, D5 to D7, D9): `createPlayService` with `status`, `play`, `reload`, `restart`, `newTestWorld`, `onStatus` and `setPolling`. Play uses only the managed Prism instance `MCSuperMods Test (<mc>)` (created or updated on every Play; the user's install target is never changed). It installs the jar and Fabric API (fetched into the download cache before the game is asked to quit), clears the overlays, the dev resource pack and the world's dev data pack, and writes the dev files: `resourcepacks/msm-dev/pack.mcmeta`, the `options.txt` line, `setup.mcfunction`, `installed.json`, `dev.json` and then `play.json`. It then starts Prism with `--launch`. When the game runs, Play writes a quit request and waits up to 30 s (gone means stale, or the quit handled and no status for 5 s, and the jar installs). Otherwise it stops with "Close Minecraft, then press Play again." Reload hashes the same lowered outputs, classifies them with `classifyChanges`, moves events-only changes of potion, particle and addition kinds to restart, transpiles scripts before writing anything, writes the overlays, `pack.mcmeta` files and `installed.json`'s overlay, and writes a `reopen` or `reload` request (none when nothing is pending). Restart reasons come back in plain words.
+- `test-in-minecraft.ts` exports `findPrismRoot`, `checkedFolderInGame` (with an `allowGameDir` option for Play), `realOrNull`, `messageOf` and `LAUNCHER_NAMES`; there is no change in behaviour.
+- IPC: `msm:v1:play:status|play|reload|restart|newWorld` and the push `msm:v1:play:statusChanged`; zod schemas (`playStatusSchema`, `PLAY_OUTPUTS_MAX`, `PLAY_ITEMS_MAX`); `PlatformAdapter.play?: PlayPlatform`; the preload bridge `window.msm.play` with `isPlayStatusPayload`; `registerPlayEvents` (status pushed to every window, polled every second while a window of the app is focused). `MainPlatform.play` is built in `node-platform.ts`.
+- Tests: `app/test/main/play.test.ts` (12) and the contract samples for the five channels. App suite 176 files, 1614 tests; lint, typecheck and build pass.
+
+Decisions
+- Results are `{ ok: false, code, message }` unions instead of thrown errors, so the renderer gets codes (`no-prism` opens the setup panel) without parsing IPC error text.
+- Main reads `fabric.mod.json`'s hash and the nested runtime version from the jar (fflate, already bundled). Reload takes the jar optionally; without it, only the mod id is compared.
+- The status chip words live in main (`PLAY_STATE_LABELS`, `RESTART_NEEDED_LABEL`). "In another world" is added for a game in a non-test world.
+- New test world refuses while the game runs; it renames, never deletes.
+
+Next
+- B376: the controls over `window.msm.play` (pass `names` and the jar at Reload). B379: the stub launcher through `testInMinecraft.spawnLauncher` or a new e2e hook. B374: honour the formats and the quit or settle timing.

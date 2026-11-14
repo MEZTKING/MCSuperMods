@@ -560,6 +560,158 @@ const aiKeyTestResult = z.discriminatedUnion('ok', [
     .strict(),
 ]);
 
+// ---- One-click Play and Reload (ADR 0084). ----
+
+/** The most lowered files one Play or Reload carries. */
+export const PLAY_OUTPUTS_MAX = 50_000;
+/** The most chest items one Play carries. */
+export const PLAY_ITEMS_MAX = 4096;
+/** A jar path of a lowered file: relative, `/`-separated, no empty, `.` or `..` segments. */
+const playJarPath = z
+  .string()
+  .min(1)
+  .max(1024)
+  .refine(
+    (path) =>
+      !path.includes('\\') &&
+      !path.startsWith('/') &&
+      path.split('/').every((part) => part !== '' && part !== '.' && part !== '..'),
+    { message: 'Not a jar path' },
+  );
+const playOutputFile = z
+  .object({
+    path: playJarPath,
+    contents: z.union([bytes, z.json()]),
+    elementId: z.string().min(1).max(512).optional(),
+  })
+  .strict();
+const playNamespace = z.string().regex(/^[a-z0-9_.-]{1,64}$/);
+const playInput = z
+  .object({
+    targetId,
+    modId: fabricModId,
+    jar: bytes,
+    outputs: z.array(playOutputFile).max(PLAY_OUTPUTS_MAX),
+    namespaces: z.array(playNamespace).min(1).max(64),
+    items: z
+      .array(
+        z
+          .object({
+            id: z.string().min(3).max(256),
+            count: z.number().int().min(1).max(99).optional(),
+          })
+          .strict(),
+      )
+      .max(PLAY_ITEMS_MAX),
+  })
+  .strict();
+const reloadInput = z
+  .object({
+    targetId,
+    modId: fabricModId,
+    outputs: z.array(playOutputFile).max(PLAY_OUTPUTS_MAX),
+    jar: bytes.optional(),
+    names: z.record(z.string().max(512), z.string().max(256)).optional(),
+  })
+  .strict();
+const playFailure = z
+  .object({
+    ok: z.literal(false),
+    code: z.enum([
+      'no-prism',
+      'instance-not-managed',
+      'game-not-closing',
+      'jar-locked',
+      'not-played',
+      'not-in-world',
+      'game-running',
+      'script-error',
+      'busy',
+      'bad-input',
+      'failed',
+    ]),
+    message: z.string().max(4096),
+  })
+  .strict();
+const playRestartReason = z
+  .object({
+    reason: z.string().max(64),
+    path: z.string().max(1024),
+    from: z.string().max(1024).optional(),
+    kind: z.string().max(64).optional(),
+    elementId: z.string().max(512).optional(),
+    text: z.string().max(1024),
+  })
+  .strict();
+const playResult = z.union([
+  z
+    .object({
+      ok: z.literal(true),
+      instanceName: z.string().min(1).max(255),
+      instanceCreated: z.boolean(),
+      gameDir: absolutePath,
+      world: worldDir,
+      restarted: z.boolean(),
+      launched: z.boolean(),
+      note: z.string().max(1024).nullable(),
+      fabricApi: z.enum(['installed', 'present', 'user-copy']),
+      itemsLeftOut: z.number().int().nonnegative(),
+      seq: z.number().int().positive(),
+    })
+    .strict(),
+  playFailure,
+]);
+const reloadResult = z.union([
+  z
+    .object({
+      ok: z.literal(true),
+      action: z.enum(['reload', 'reopen', 'none']),
+      seq: z.number().int().positive().nullable(),
+      changes: z.number().int().nonnegative(),
+      assets: z.boolean(),
+      counts: z
+        .object({
+          data: z.number().int().nonnegative(),
+          scripts: z.number().int().nonnegative(),
+          events: z.number().int().nonnegative(),
+          assets: z.number().int().nonnegative(),
+          worldData: z.number().int().nonnegative(),
+          removed: z.number().int().nonnegative(),
+        })
+        .strict(),
+      restart: z.array(playRestartReason),
+      message: z.string().max(1024),
+    })
+    .strict(),
+  playFailure,
+]);
+/** `PlayStatus` as a schema. */
+export const playStatusSchema = z
+  .object({
+    targetId,
+    mcVersion: shortVersion,
+    instanceName: z.string().min(1).max(255),
+    instance: z.enum(['ready', 'missing', 'no-prism']),
+    gameDir: absolutePath.nullable(),
+    state: z.enum(['no-prism', 'not-running', 'starting', 'test-world', 'other-world']),
+    testWorld: worldDir.nullable(),
+    world: worldDir.nullable(),
+    handled: z
+      .object({
+        seq: z.number().int().positive(),
+        ok: z.boolean(),
+        message: z.string().optional(),
+      })
+      .strict()
+      .nullable(),
+    canReload: z.boolean(),
+    restartNeeded: z.array(playRestartReason),
+    label: z.string().max(128),
+    busy: z.enum(['play', 'reload', 'restart']).nullable(),
+    progress: z.string().max(256).nullable(),
+  })
+  .strict();
+
 export const ipcContract = {
   [InvokeChannels.projectPickDirectory]: {
     request: z
@@ -976,6 +1128,20 @@ export const ipcContract = {
   [InvokeChannels.aiDropConversation]: {
     request: z.object({ conversationId: aiId }).strict(),
     response: voidResponse,
+  },
+  [InvokeChannels.playStatus]: {
+    request: z.object({ targetId }).strict(),
+    response: playStatusSchema,
+  },
+  [InvokeChannels.playPlay]: { request: playInput, response: playResult },
+  [InvokeChannels.playReload]: { request: reloadInput, response: reloadResult },
+  [InvokeChannels.playRestart]: { request: playInput, response: playResult },
+  [InvokeChannels.playNewWorld]: {
+    request: z.object({ targetId, namespace: playNamespace }).strict(),
+    response: z.union([
+      z.object({ ok: z.literal(true), renamedTo: worldDir.nullable() }).strict(),
+      playFailure,
+    ]),
   },
 } as const satisfies Record<InvokeChannel, { request: z.ZodType; response: z.ZodType }>;
 

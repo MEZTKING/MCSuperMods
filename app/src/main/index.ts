@@ -25,7 +25,7 @@ import { createAiKeyStore } from './ai/ai-key-store';
 import { createAiService } from './ai/ai-service';
 import { registerAppSchemePrivileges } from './app-scheme';
 import { applyE2eHooks, readE2eAiScript, readE2eHooks } from './e2e-hooks';
-import { registerIpc } from './ipc';
+import { registerIpc, registerPlayEvents } from './ipc';
 import { installMenu, registerMenuIpc } from './menu';
 import { createNodePlatform, type NativeDialogs } from './platform/node-platform';
 import { createPluginsService } from './platform/plugins';
@@ -298,6 +298,7 @@ function runSmoke(window: BrowserWindow): void {
 
 void app.whenReady().then(() => {
   registerIpc(platform, updater, plugins, aiService);
+  registerPlayEvents(platform.play, app);
   registerMenuIpc();
   installMenu();
   platform.settings.recentProjects().then(
