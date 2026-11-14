@@ -20,6 +20,9 @@
  *   `particles` prop as camera-facing quads (`particles.ts`). Both use one small shader of their
  *   own; the frame ends with `resetGlForDeepslate`, so the next pass starts from deepslate's
  *   state.
+ * - Mobs (B395) are drawn before those two passes, after the blocks and the outline, with the
+ *   depth buffer kept: the `mobs` prop's snapshots through the geo preview's renderer, one baked
+ *   look per model and texture, a box for a mob without a model, and a name plate (`mobs.ts`).
  *
  * This module is the lazy chunk: `TryItScene` imports it with `lazy()` after checking WebGL.
  */
@@ -39,6 +42,7 @@ import {
   type PickedOutline,
   viewMatrixFor,
 } from './camera';
+import { type MobField, type MobFrameStats, MobPass } from './mobs';
 import { type ParticleField, ParticlePass, QuadBatch } from './particles';
 import {
   PortalIndex,
@@ -66,6 +70,9 @@ export interface TryItFrameStats {
   particles: number;
   /** Portal blocks drawn. */
   portals: number;
+  /** Mobs drawn (with their model or as a box) and their name plates. */
+  mobs: number;
+  mobPlates: number;
 }
 
 /** What the resources found, for notes beside the view. */
@@ -104,8 +111,13 @@ export interface TryItCanvasProps {
    */
   particles?: ParticleField | null;
   /**
+   * The mobs to draw (B395): a `MobField` from `mobs.ts`, given `EntityWorld.step()`'s
+   * snapshots by the owner on each simulation tick. `null` or absent draws none.
+   */
+  mobs?: MobField | null;
+  /**
    * How far the simulation is between its last tick and the next, 0..1 (`SimClock.alpha`), for
-   * drawing particles between ticks. Default 0.
+   * drawing mobs and particles between ticks. Default 0.
    */
   partialTick?: PerFrame<number>;
   /** "Smaller picture": draws at half the resolution and scales it up. */
@@ -282,6 +294,7 @@ interface Scene {
   batch: QuadBatch | null;
   portalPass: PortalPass | null;
   particlePass: ParticlePass | null;
+  mobPass: MobPass | null;
   portalIndex: PortalIndex;
   /** Milliseconds drawn so far, for the portal pictures' frames. */
   animationMs: number;
@@ -308,6 +321,7 @@ function createScene(): Scene | null {
     batch: null,
     portalPass: null,
     particlePass: null,
+    mobPass: null,
     portalIndex: new PortalIndex(),
     animationMs: 0,
   };
@@ -317,6 +331,7 @@ function disposeScene(scene: Scene | null): void {
   if (scene === null) return;
   scene.portalPass?.dispose();
   scene.particlePass?.dispose();
+  scene.mobPass?.dispose();
   scene.batch?.dispose();
   scene.portalIndex.dispose();
   scene.gl.getExtension('WEBGL_lose_context')?.loseContext();
@@ -353,8 +368,45 @@ interface FrameExtras {
   portalLooks: ReadonlyMap<string, PortalLook>;
   isPortal: (id: string) => boolean;
   particles: ParticleField | null;
+  mobs: MobField | null;
   partialTick: number;
+  /** Milliseconds since the last frame. */
+  elapsedMs: number;
   props: TryItCanvasProps;
+}
+
+const NO_MOBS: MobFrameStats = { models: 0, boxes: 0, plates: 0 };
+
+/** Draws the mobs after the blocks (B395); the caller restores deepslate's state after. */
+function drawMobs(
+  scene: Scene,
+  projection: mat4,
+  view: mat4,
+  pose: CameraPose,
+  extras: FrameExtras,
+): MobFrameStats {
+  const mobs = extras.mobs;
+  if (mobs === null || mobs.size === 0) return NO_MOBS;
+  if (scene.batch === null) scene.batch = new QuadBatch(scene.gl);
+  const { props } = extras;
+  const source = {
+    files: props.files,
+    folders: props.folders,
+    vanilla: props.vanilla,
+    ...(props.readProjectAsset === undefined ? {} : { readProjectAsset: props.readProjectAsset }),
+  };
+  if (scene.mobPass === null) scene.mobPass = new MobPass(scene.batch, source);
+  else scene.mobPass.setSource(source);
+  return scene.mobPass.draw(mobs, {
+    projection,
+    view,
+    clip: scene.clip,
+    planes: scene.planes,
+    eye: pose.eye,
+    alpha: extras.partialTick,
+    nowMs: scene.animationMs,
+    elapsedMs: extras.elapsedMs,
+  });
 }
 
 /** Draws the portal and particle passes after the blocks; returns what they drew. */
@@ -421,7 +473,7 @@ function drawFrame(
   extras: FrameExtras,
 ): Omit<TryItFrameStats, 'rebuildMs'> {
   const { gl, renderer, internals } = scene;
-  const none = { meshes: 0, particles: 0, portals: 0 };
+  const none = { meshes: 0, particles: 0, portals: 0, mobs: 0, mobPlates: 0 };
   if (renderer === null) return none;
   resetGlForDeepslate(gl);
   gl.clearColor(SKY[0], SKY[1], SKY[2], 1);
@@ -490,8 +542,17 @@ function drawFrame(
     internals.prepareDraw(view);
     internals.drawMesh(scene.outline, LINE_DRAW);
   }
+  // Mobs first, keeping the depth buffer, then the see-through passes; the geo renderer leaves
+  // face culling off, so deepslate's state is put back whatever drew.
+  const mobs = drawMobs(scene, internals.projMatrix, view, pose, extras);
   const drawn = drawExtras(scene, view, pose, extras);
-  return { meshes: opaque.length + seeThrough.length, ...drawn };
+  if (extras.mobs !== null && extras.mobs.size > 0) resetGlForDeepslate(gl);
+  return {
+    meshes: opaque.length + seeThrough.length,
+    ...drawn,
+    mobs: mobs.models + mobs.boxes,
+    mobPlates: mobs.plates,
+  };
 }
 
 type Status = { state: 'loading' } | { state: 'ready' } | { state: 'error'; message: string };
@@ -696,7 +757,9 @@ export default function TryItCanvas(props: TryItCanvasProps) {
             portalLooks: extrasRef.current.portalLooks,
             isPortal: extrasRef.current.isPortal,
             particles: current.particles ?? null,
+            mobs: current.mobs ?? null,
             partialTick: read(current.partialTick ?? 0),
+            elapsedMs: elapsed,
             props: current,
           },
         );
