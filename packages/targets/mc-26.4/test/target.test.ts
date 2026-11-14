@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { createSchemaIndex, parseVanillaMcdocSymbols } from '@msm/schemas';
 import { describe, expect, it } from 'vitest';
 import { target } from '../src/index';
 
@@ -414,5 +415,53 @@ describe('target mc-26.4', () => {
       enchantability: 14,
     });
     expect(tools.diamond?.pickaxe?.miningSpeed).toBe(8);
+  });
+
+  it('lists the particle types that take options, as the vendored mcdoc and mcmeta do (ADR 0080 D9)', async () => {
+    const symbols = parseVanillaMcdocSymbols(
+      await readJson('../vendor/vanilla-mcdoc/symbols.json'),
+    );
+    const index = createSchemaIndex(symbols, { mcVersion: target.mcVersion });
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    const facts = target.particles;
+    expect(facts?.withOptions).toEqual([
+      'minecraft:block',
+      'minecraft:block_crumble',
+      'minecraft:block_marker',
+      'minecraft:dragon_breath',
+      'minecraft:dust',
+      'minecraft:dust_color_transition',
+      'minecraft:dust_pillar',
+      'minecraft:effect',
+      'minecraft:entity_effect',
+      'minecraft:falling_dust',
+      'minecraft:flash',
+      'minecraft:geyser',
+      'minecraft:geyser_base',
+      'minecraft:geyser_plume',
+      'minecraft:geyser_poof',
+      'minecraft:instant_effect',
+      'minecraft:item',
+      'minecraft:sculk_charge',
+      'minecraft:shriek',
+      'minecraft:tinted_leaves',
+      'minecraft:trail',
+      'minecraft:vibration',
+    ]);
+    // The dispatcher keys available in this version (`since`/`until` honoured), without the
+    // `%none`/`%unknown` fallbacks, are exactly the types that take options.
+    const keys = index
+      .dispatcherKeys('minecraft:particle')
+      .filter((key) => !key.startsWith('%'))
+      .map((key) => `minecraft:${key}`);
+    expect([...(facts?.withOptions ?? [])].sort()).toEqual(keys);
+    for (const id of facts?.withOptions ?? []) {
+      expect(registries.particle_type, id).toContain(id.slice('minecraft:'.length));
+    }
+    expect(facts?.descriptionFolder).toBe('particles');
+    expect(facts?.textureFolder).toBe('particle');
   });
 });

@@ -3749,3 +3749,19 @@ Next
 - User: the sample portals checklist on 26.3 and 26.4 (with the trips into `sky_realm`, checked nowhere else) and a Creator Portal; the vetoable defaults of ADRs 0077–0078; the sample machines, mob and block checklists.
 - Follow-ups: `ember_portal` `on_travel` for parity; project-dimension travel only on dedicated servers; surface arrival on fluids is water-only; a general third-party notices file; the containers and mob follow-ups in the HANDOFF.
 - Backlog: B14 particles, then B15 client side.
+
+## 2026-11-14 — executor — B348 plugin API 1.14.0
+
+What
+- Plugin API 1.14.0 (ADR 0080 D9, additive): `ParticleFacts { withOptions: readonly string[]; descriptionFolder: string; textureFolder: string }` and `TargetFacts.particles?: ParticleFacts`, exported from the package index; `API_VERSION`, `package.json` and the two version pins (plugin-api `define-plugin.test.ts`, core `registry.test.ts`) at 1.14.0; CHANGELOG entry with its migration note; a type test for the new facts and for a 1.13.0-shaped target staying assignable.
+- Both targets list `particles`: the 22 vanilla particle types that take options (`minecraft:block` to `minecraft:vibration`), `descriptionFolder` `particles`, `textureFolder` `particle`; identical on 26.3 and 26.4-snapshot-7. Each target's `test/target.test.ts` pins the list and checks it against the vendored vanilla-mcdoc `minecraft:particle` dispatcher keys available in that version (through `createSchemaIndex(...).dispatcherKeys`, which honours `since`/`until`; `%none` and `%unknown` left out) and the vendored `particle_type` registry; `all/test/targets.test.ts` checks the same for every built-in target plus uniqueness and single-segment folders. `CHANGES.md` of both targets records the facts with date and source.
+- Verified with `javap -p` of `ParticleTypes` over the Loom-cached 26.3 and 26.4-snapshot-7 merged jars: exactly 22 fields are not `SimpleParticleType`, the same 22 names on both. The jars' assets: descriptions in `assets/minecraft/particles/` (115 and 116 files), pictures in `assets/minecraft/textures/particle/` (301 and 307 PNGs), `atlases/particles.json` one `minecraft:directory` source `particle`, prefix `""`.
+
+Decisions
+- The facts object is a named interface `ParticleFacts`, as the other facts groups are, rather than the inline type ADR 0080 D9 writes; the shape is the same.
+- Built-in plugins keep `^1.0.0`.
+- The app's `toTargetFacts` fallback (`external-plugins.ts`, for non-built-in targets) and the AI helper's `target_facts` tool (`tool-executor.ts`) copy target fields one by one, so neither passes `particles` yet; built-in targets reach external plugins whole through `@msm/targets`' `targetFacts`. Both are app files outside this brief and are reported to the orchestrator.
+
+Next
+- An app brief adds `particles` to `toTargetFacts`' fallback and to `target_facts` (one line each).
+- B351 reads `target.particles` for `particle-needs-options`, `particle-options-unknown-type` and the description and picture paths.

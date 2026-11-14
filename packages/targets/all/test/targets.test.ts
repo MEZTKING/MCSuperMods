@@ -378,6 +378,36 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(particleTypes, particle).toContain(particle.slice('minecraft:'.length));
     });
 
+    it('lists particle facts the vendored mcdoc and registries know (ADR 0080 D9)', async () => {
+      const registries = (await readVendoredJson(
+        bundle,
+        'mcmetaRegistries',
+        nodeReadFile,
+      )) as Record<string, string[]>;
+      const particleTypes = registries.particle_type ?? [];
+      const symbols = parseVanillaMcdocSymbols(
+        await readVendoredJson(bundle, 'vanillaMcdocSymbols', nodeReadFile),
+      );
+      const index = createSchemaIndex(symbols, { mcVersion: target.mcVersion });
+      const facts = target.particles;
+      expect(facts).toBeDefined();
+      const withOptions = facts?.withOptions ?? [];
+      expect(withOptions.length).toBeGreaterThan(0);
+      expect(new Set(withOptions).size).toBe(withOptions.length);
+      for (const id of withOptions) {
+        expect(id, id).toMatch(/^minecraft:[a-z0-9_]+$/);
+        expect(particleTypes, id).toContain(id.slice('minecraft:'.length));
+      }
+      const keys = index
+        .dispatcherKeys('minecraft:particle')
+        .filter((key) => !key.startsWith('%'))
+        .map((key) => `minecraft:${key}`);
+      expect([...withOptions].sort()).toEqual(keys);
+      // Single path segments, as the resource folders are.
+      expect(facts?.descriptionFolder).toMatch(/^[a-z0-9_]+$/);
+      expect(facts?.textureFolder).toMatch(/^[a-z0-9_]+$/);
+    });
+
     it('lists entity facts the vendored registries know (ADR 0070 D7, ADR 0071 D4)', async () => {
       const registries = (await readVendoredJson(
         bundle,

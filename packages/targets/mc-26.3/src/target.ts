@@ -481,6 +481,43 @@ export const target: Target = {
     ],
     saddleTag: 'minecraft:can_equip_saddle',
   },
+  // particles (ADR 0080 D9; plugin API 1.14.0): the vanilla particle types that take options,
+  // and the resource pack folders of particle descriptions and pictures. Verified 2026-11-14: the
+  // list equals the keys of the vendored vanilla-mcdoc `minecraft:particle` dispatcher available
+  // in this version (`%`-keys left out) and every id is in the vendored `registries.json`
+  // `particle_type` list (asserted by `test/target.test.ts` and `all/test/targets.test.ts`); javap
+  // over the Loom-cached 26.3 merged jar: these are exactly the 22 `ParticleTypes` fields that are
+  // not a `SimpleParticleType`. The jar's assets hold the descriptions in
+  // `assets/minecraft/particles/*.json` and the pictures in `assets/minecraft/textures/particle/`
+  // (`atlases/particles.json`: one `minecraft:directory` source `particle`).
+  particles: {
+    withOptions: [
+      'minecraft:block',
+      'minecraft:block_crumble',
+      'minecraft:block_marker',
+      'minecraft:dragon_breath',
+      'minecraft:dust',
+      'minecraft:dust_color_transition',
+      'minecraft:dust_pillar',
+      'minecraft:effect',
+      'minecraft:entity_effect',
+      'minecraft:falling_dust',
+      'minecraft:flash',
+      'minecraft:geyser',
+      'minecraft:geyser_base',
+      'minecraft:geyser_plume',
+      'minecraft:geyser_poof',
+      'minecraft:instant_effect',
+      'minecraft:item',
+      'minecraft:sculk_charge',
+      'minecraft:shriek',
+      'minecraft:tinted_leaves',
+      'minecraft:trail',
+      'minecraft:vibration',
+    ],
+    descriptionFolder: 'particles',
+    textureFolder: 'particle',
+  },
   // Verified 2026-11-05 against maven.fabricmc.net and the FabricMC example mod's 26.3
   // branch (ADR 0027).
   fabric: {

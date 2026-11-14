@@ -73,6 +73,7 @@ export type {
   MigrationReport,
   ModrinthFileFacts,
   PackFormat,
+  ParticleFacts,
   RangedPullFacts,
   ResourceFolderKey,
   Target,

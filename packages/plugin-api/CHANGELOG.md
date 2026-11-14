@@ -2,6 +2,16 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.14.0 — 2026-11-14
+
+Custom particle types (ADR 0080 D9). `API_VERSION` is `1.14.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `TargetFacts.particles?: ParticleFacts` with `ParticleFacts { withOptions: readonly string[]; descriptionFolder: string; textureFolder: string }`: the namespaced vanilla particle types that take options (such as `minecraft:dust` or `minecraft:block`), the folder under `assets/<namespace>/` that holds particle description files, and the folder under the textures folder that holds particle pictures.
+
+### Migration from 1.13.0
+
+None. A plugin that reads the field should declare `^1.14.0` and treat an absent value as "no facts to check against"; plugins written earlier ignore it.
+
 ## 1.13.0 — 2026-11-14
 
 Custom portal blocks (ADR 0077 D7). `API_VERSION` is `1.13.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

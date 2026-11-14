@@ -274,6 +274,36 @@ export interface EntityFacts {
 }
 
 /**
+ * Particle facts of a target: what the particle definition format and the particle validators
+ * check against. Since 1.14.0 (ADR 0080 D9).
+ */
+export interface ParticleFacts {
+  /**
+   * The namespaced vanilla particle types that take options (for example `minecraft:dust` or
+   * `minecraft:block`): the game's particle types whose spawns carry extra fields, as opposed to
+   * option-less types such as `minecraft:flame`. A field that needs an option-less type (an
+   * effect's `particle`, a leaves block's `falling_particle`, a portal's particle, a plain id in
+   * `spawn_particle`) may not name one of these; an options object must name one of these or an
+   * option-less type. The list differs between targets when the game adds or removes such a
+   * type. Since 1.14.0.
+   */
+  withOptions: readonly string[];
+  /**
+   * The folder under `assets/<namespace>/` that holds particle description files
+   * (`<folder>/<path>.json`, listing the sprites a particle type draws), for example
+   * `particles`. A single path segment. Since 1.14.0.
+   */
+  descriptionFolder: string;
+  /**
+   * The folder under the textures folder ({@link TargetFacts.folders}`.resource.textures`) that
+   * holds particle pictures, so the sprite `<namespace>:<name>` is the file
+   * `assets/<namespace>/<textures>/<folder>/<name>.png`, for example `particle`. A single path
+   * segment. Since 1.14.0.
+   */
+  textureFolder: string;
+}
+
+/**
  * Item facts of a target: names the definition format checks against the game's own
  * constants. Since 1.1.0 (ADR 0042 D4).
  */
@@ -614,6 +644,13 @@ export interface TargetFacts {
    * ADR 0071 D4).
    */
   entities?: EntityFacts;
+  /**
+   * Particle facts: the vanilla particle types that take options and the resource pack folders
+   * of particle descriptions and pictures. Optional: a target without them skips the checks that
+   * need them, and an external plugin reading them must handle their absence. Since 1.14.0
+   * (ADR 0080 D9).
+   */
+  particles?: ParticleFacts;
 }
 
 /**

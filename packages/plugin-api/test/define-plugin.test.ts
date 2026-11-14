@@ -33,6 +33,6 @@ describe('definePlugin', () => {
   });
 
   it('exposes the API version', () => {
-    expect(API_VERSION).toBe('1.13.0');
+    expect(API_VERSION).toBe('1.14.0');
   });
 });

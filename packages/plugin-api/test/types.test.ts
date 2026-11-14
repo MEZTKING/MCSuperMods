@@ -22,6 +22,7 @@ import type {
   ModrinthFileFacts,
   OutputFile,
   OutputMergeMode,
+  ParticleFacts,
   PluginContributions,
   Problem,
   Project,
@@ -419,6 +420,21 @@ describe('0.8.0 additions', () => {
     // A 1.12.0-shaped block facts object without them stays assignable.
     const older: BlockFacts = { setTypes: ['wood'], woodTypes: ['oak'] };
     expect(older.portal).toBeUndefined();
+  });
+
+  it('carries optional particle facts on a target (1.14.0)', () => {
+    expectTypeOf<TargetFacts['particles']>().toEqualTypeOf<ParticleFacts | undefined>();
+    expectTypeOf<ParticleFacts['withOptions']>().toEqualTypeOf<readonly string[]>();
+    expectTypeOf<ParticleFacts['descriptionFolder']>().toEqualTypeOf<string>();
+    expectTypeOf<ParticleFacts['textureFolder']>().toEqualTypeOf<string>();
+    const facts: ParticleFacts = {
+      withOptions: ['minecraft:dust', 'minecraft:block'],
+      descriptionFolder: 'particles',
+      textureFolder: 'particle',
+    };
+    expect(facts.withOptions).toContain('minecraft:dust');
+    // A 1.13.0-shaped target without particle facts stays assignable.
+    expect(testTarget.particles).toBeUndefined();
   });
 
   it('keeps a 1.8.0-shaped JavaProjectInput assignable (potions is optional, 1.9.0)', () => {
