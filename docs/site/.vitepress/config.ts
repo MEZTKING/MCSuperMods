@@ -47,6 +47,7 @@ export default defineConfig({
           { text: 'Your first mod', link: '/first-mod' },
           { text: 'Very easy mode', link: '/very-easy' },
           { text: 'Playing and testing', link: '/playing-and-testing' },
+          { text: 'Try it', link: '/try-it' },
           { text: 'Getting started', link: '/getting-started' },
           { text: 'Structures', link: '/structures' },
           { text: 'Worldgen', link: '/worldgen' },

@@ -1,6 +1,6 @@
 # packages/sim — Try it simulation
 
-`@msm/sim` is MCSuperMods' own, approximate simulation of a project's blocks, player and rules for the Try it view (ADR 0085, plan `docs/PLAN-test-world.md`). B386 made the scaffold and `src/types.ts`; the briefs B387–B391 fill it in.
+`@msm/sim` is MCSuperMods' own, approximate simulation of a project's blocks, player and rules for the Try it view (ADR 0085, plan `docs/PLAN-test-world.md`). Slice 1 (B386–B395) is done and shipped in 1.5.1: world, blocks, player, clock and tools, and mobs that wander; triggers and actions come with slice 3 (B396, `TODO(B396)` markers in `local-source.ts`).
 
 ## Purpose
 
@@ -9,9 +9,14 @@ It turns a project's lowered files into a small world (48 by 48 by 32 blocks) th
 ## Contents
 
 - `src/types.ts`: the interfaces the view and the simulation share: `BlockState`, `Box`, `BlockShapes`, `SimFiles`, `WorldSource` (ADR 0085 D14), `SimLog`, the events and actions, and `AREA_SIZE_X/Y/Z`.
-- `src/index.ts`: the public exports.
-- `test/`: Vitest tests, run with `pnpm --filter @msm/sim test`.
-- Planned: `src/world/` and `src/blocks/` (B387), `src/player/` (B388), the rules and ticking (B391).
+- `src/world/`: `SimWorld` (the grid, 8-block chunks, change listeners) (B387).
+- `src/blocks/`: `buildCatalogue` (block definitions from the lowered files, shapes, states), `placeBlock`, `breakBlock`, `useBlock`, neighbour updates (B387).
+- `src/player/`: `PlayerController` (movement, collision, picking); the movement numbers in `constants.ts` (B388).
+- `src/tick/`: `SimClock`, `BlockTimers` (buttons, plates), the Grow and Power tools (B391).
+- `src/entities/`: `buildEntityCatalogue`, `EntityWorld` (spawn, wander, hit; at most 24) (B393).
+- `src/local-source.ts`: `LocalWorldSource`, the one `WorldSource` the app's `tryit/` view uses: owns the world, catalogues, player, mobs and timers; `act`, `tick`, `pointedAt`, `setFiles` (keeps the world), the 200-line log (B390).
+- `src/index.ts`: the public exports (one line per module, sorted).
+- `test/`: Vitest tests, run with `pnpm --filter @msm/sim test`; `test/lower-fixture.ts` lowers a fixture project for tests.
 
 ## Rules
 

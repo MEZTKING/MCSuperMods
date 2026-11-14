@@ -3,17 +3,22 @@
  * SwiftShader WebGL.
  *
  * A copy of `fixtures/sample-mob` (one mob with a spawn egg) gains a Ruby Block with ambient
- * dust particles. Then:
+ * dust particles, a Ruby Door and a Ruby Slab. Then:
  *
  * 1. F6 opens Try it; the first-run card closes with "Got it".
  * 2. The strip "Preview, not the real game." is there with its Play button, and cannot be closed.
  * 3. Looking down by key and pressing C places the Ruby Block: the readout counts 1, the canvas
- *    is mounted and the block's ambient particles appear.
+ *    is mounted, something was drawn (WebGL `readPixels`: not all one colour) and the block's
+ *    ambient particles appear.
  * 4. X breaks it: the count is 0.
- * 5. With the clock paused, C with the spawn egg hatches the mob: the readout shows 1 mob.
- * 6. X hits it: the mob is gone and the log says so.
- * 7. A block is placed again; the block's name is changed in the Block Studio; back in Try it
- *    (F6) the hotbar shows the new name and the block is still there.
+ * 5. The slab is placed as a bottom slab and broken; the door is placed (two blocks), C opens it
+ *    (the pointed state shows `open=true`) and X breaks both halves.
+ * 6. With the clock paused, C with the spawn egg hatches the mob: the readout shows 1 mob.
+ * 7. X hits it: the mob is gone and the log says so.
+ * 8. The slab and the block are placed again; the slab's texture is changed in the Block Studio
+ *    and the block's name too; back in Try it (F6) the hotbar shows the new name and both blocks
+ *    are still there.
+ * 9. With a mob hatched again, "Clear the area" leaves no blocks and no mobs.
  *
  * With `MSM_TRYIT_SHOT=<file.png>` the run also saves a picture of the area with a few blocks, a
  * mob and particles (launch with `--force-device-scale-factor=2` for a sharp one).
@@ -27,6 +32,8 @@ import { appDir, type LaunchedApp, launchApp } from './fixtures';
 
 const NAMESPACE = 'msm_sample_mob';
 const BLOCK_ID = `${NAMESPACE}:ruby_block`;
+const DOOR_ID = `${NAMESPACE}:ruby_door`;
+const SLAB_ID = `${NAMESPACE}:ruby_slab`;
 const EGG_ID = `${NAMESPACE}:glow_golem_spawn_egg`;
 const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] as const;
 const SHOT = process.env.MSM_TRYIT_SHOT;
@@ -47,7 +54,7 @@ function writeElement(projectDir: string, folder: string, path: string, element:
   writeFileSync(file, `${JSON.stringify(element, null, 2)}\n`);
 }
 
-/** The sample mob project with a Ruby Block that gives off dust. */
+/** The sample mob project with a Ruby Block that gives off dust, a Ruby Door and a Ruby Slab. */
 function makeProject(projectDir: string): void {
   const fixtures = join(appDir, '..', 'fixtures');
   cpSync(join(fixtures, 'sample-mob'), projectDir, { recursive: true });
@@ -85,25 +92,112 @@ function makeProject(projectDir: string): void {
     kind: 'minecraft:model',
     meta,
   });
+  writeElement(projectDir, 'block', 'ruby_door', {
+    data: {
+      display_name: 'Ruby Door',
+      format: 1,
+      loot: 'self',
+      set_type: 'wood',
+      sound_type: 'wood',
+      textures: {
+        bottom: `${NAMESPACE}:block/ruby_door_bottom`,
+        top: `${NAMESPACE}:block/ruby_door_top`,
+      },
+      type: 'door',
+    },
+    formatVersion: 1,
+    id: DOOR_ID,
+    kind: 'msm:block',
+    meta,
+  });
+  writeElement(projectDir, 'block', 'ruby_slab', {
+    data: {
+      display_name: 'Ruby Slab',
+      format: 1,
+      loot: 'self',
+      sound_type: 'stone',
+      textures: { all: `${NAMESPACE}:block/ruby_block` },
+      type: 'slab',
+    },
+    formatVersion: 1,
+    id: SLAB_ID,
+    kind: 'msm:block',
+    meta,
+  });
   const textures = join(projectDir, 'assets', NAMESPACE, 'textures', 'block');
   mkdirSync(textures, { recursive: true });
-  copyFileSync(
-    join(
-      fixtures,
-      'sample-mod',
-      'assets',
-      'msm_sample_mod',
-      'textures',
-      'block',
-      'ruby_bricks.png',
-    ),
-    join(textures, 'ruby_block.png'),
+  const sampleTextures = join(
+    fixtures,
+    'sample-mod',
+    'assets',
+    'msm_sample_mod',
+    'textures',
+    'block',
   );
+  copyFileSync(join(sampleTextures, 'ruby_bricks.png'), join(textures, 'ruby_block.png'));
+  for (const half of ['bottom', 'top']) {
+    copyFileSync(
+      join(sampleTextures, `maple_door_${half}.png`),
+      join(textures, `ruby_door_${half}.png`),
+    );
+  }
 }
 
 /** Presses a key on the test area's picture (it holds the keys). */
 async function press(canvas: Locator, ...codes: string[]): Promise<void> {
   for (const code of codes) await canvas.press(code);
+}
+
+/**
+ * How many different colours the test area's WebGL picture has, read with `readPixels` on a
+ * 16 by 16 grid of points. The picture is read in an animation frame after the view's own (the
+ * drawing buffer is not kept after it is shown); the largest count of a few frames is returned,
+ * so a frame the view skipped (it draws at most 60 a second) reads as nothing rather than failing.
+ */
+async function pictureColours(view: Locator): Promise<number> {
+  // The e2e project has no DOM typings: the few WebGL members used are typed here.
+  interface PixelReader {
+    readonly drawingBufferWidth: number;
+    readonly drawingBufferHeight: number;
+    readonly RGBA: number;
+    readonly UNSIGNED_BYTE: number;
+    readPixels(
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      f: number,
+      t: number,
+      out: Uint8Array,
+    ): void;
+  }
+  return view.locator('canvas').evaluate(async (element) => {
+    const canvas = element as unknown as { getContext(type: 'webgl'): PixelReader | null };
+    const page = globalThis as unknown as { requestAnimationFrame(done: () => void): void };
+    const gl = canvas.getContext('webgl');
+    if (gl === null) return 0;
+    let most = 0;
+    for (let frame = 0; frame < 10; frame += 1) {
+      await new Promise<void>((done) => page.requestAnimationFrame(() => done()));
+      const colours = new Set<number>();
+      const pixel = new Uint8Array(4);
+      for (let i = 0; i < 16; i += 1) {
+        for (let j = 0; j < 16; j += 1) {
+          const x = Math.floor(((i + 0.5) * gl.drawingBufferWidth) / 16);
+          const y = Math.floor(((j + 0.5) * gl.drawingBufferHeight) / 16);
+          gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+          colours.add(
+            (pixel[0] ?? 0) * 0x1000000 +
+              (pixel[1] ?? 0) * 0x10000 +
+              (pixel[2] ?? 0) * 0x100 +
+              (pixel[3] ?? 0),
+          );
+        }
+      }
+      most = Math.max(most, colours.size);
+    }
+    return most;
+  });
 }
 
 async function openTryIt(
@@ -117,7 +211,7 @@ async function openTryIt(
   return { view, canvas: window.getByTestId('tryit-canvas'), state };
 }
 
-test('Try it: place, break, spawn, hit and keep the area through an edit', async () => {
+test('Try it: place, break, open a door, spawn, hit, keep the area through edits and clear it', async () => {
   base = mkdtempSync(join(tmpdir(), 'msm-tryit-'));
   const folders = {
     projectDir: join(base, NAMESPACE),
@@ -156,12 +250,16 @@ test('Try it: place, break, spawn, hit and keep the area through an edit', async
   // 3. Place the project block. ---------------------------------------------------------------
   await expect(view.locator('canvas')).toHaveCount(1);
   await expect(window.getByTestId('tryit-slot-1')).toHaveAttribute('data-thing', BLOCK_ID);
-  await expect(window.getByTestId('tryit-slot-2')).toHaveAttribute('data-thing', EGG_ID);
+  await expect(window.getByTestId('tryit-slot-2')).toHaveAttribute('data-thing', DOOR_ID);
+  await expect(window.getByTestId('tryit-slot-3')).toHaveAttribute('data-thing', SLAB_ID);
+  await expect(window.getByTestId('tryit-slot-4')).toHaveAttribute('data-thing', EGG_ID);
   await press(canvas, 'ArrowDown', 'ArrowDown', 'ArrowDown');
   await expect(state).toHaveAttribute('data-pointed', 'the floor');
   await press(canvas, 'Digit1', 'KeyC');
   await expect(state).toHaveAttribute('data-blocks', '1');
   await expect(state).toHaveAttribute('data-pointed', BLOCK_ID);
+  // Something was drawn: the picture is not all one colour (limit L17: no picture goldens).
+  await expect.poll(() => pictureColours(view), { timeout: 10_000 }).toBeGreaterThan(1);
   // The clock runs with the picture: the block's dust appears.
   await expect
     .poll(async () => Number(await state.getAttribute('data-particles')), { timeout: 15_000 })
@@ -171,14 +269,33 @@ test('Try it: place, break, spawn, hit and keep the area through an edit', async
   await press(canvas, 'KeyX');
   await expect(state).toHaveAttribute('data-blocks', '0');
 
-  // 5. Spawn the mob with the clock paused, so it stays where it hatched. --------------------
+  // 5. A slab and a door. ------------------------------------------------------------------------
+  await press(canvas, 'Digit3', 'KeyC');
+  await expect(state).toHaveAttribute('data-blocks', '1');
+  await expect(state).toHaveAttribute('data-pointed', new RegExp(`^${SLAB_ID}\\[.*type=bottom`));
+  await press(canvas, 'KeyX');
+  await expect(state).toHaveAttribute('data-blocks', '0');
+  await press(canvas, 'Digit2', 'KeyC');
+  await expect(state).toHaveAttribute('data-blocks', '2');
+  await expect(state).toHaveAttribute('data-pointed', new RegExp(`^${DOOR_ID}\\[.*open=false`));
+  // C on a door opens it, though a block is held.
+  await press(canvas, 'KeyC');
+  // The open door stands along its hinge side, so the pointer straight ahead passes it; a small
+  // turn to the left points at it again.
+  await press(canvas, 'ArrowLeft');
+  await expect(state).toHaveAttribute('data-pointed', new RegExp(`^${DOOR_ID}\\[.*open=true`));
+  await expect(state).toHaveAttribute('data-blocks', '2');
+  await press(canvas, 'KeyX', 'ArrowRight');
+  await expect(state).toHaveAttribute('data-blocks', '0');
+
+  // 6. Spawn the mob with the clock paused, so it stays where it hatched. --------------------
   await window.getByTestId('tryit-clock-pause').click();
   await expect(state).toHaveAttribute('data-paused', 'true');
-  await press(canvas, 'Digit2', 'KeyC');
+  await press(canvas, 'Digit4', 'KeyC');
   await expect(state).toHaveAttribute('data-entities', '1');
   await expect(state).toHaveAttribute('data-pointed', /^mob /);
 
-  // 6. Hit it. ----------------------------------------------------------------------------------
+  // 7. Hit it. ----------------------------------------------------------------------------------
   await press(canvas, 'KeyX');
   await expect(state).toHaveAttribute('data-entities', '0');
   await expect(window.getByTestId('tryit-log')).toContainText('You hit Glow Golem');
@@ -195,7 +312,7 @@ test('Try it: place, break, spawn, hit and keep the area through an edit', async
     await window.waitForTimeout(1600);
     await window.keyboard.up('KeyS');
     await window.waitForTimeout(1500);
-    await press(canvas, 'ArrowLeft', 'ArrowLeft', 'Digit2', 'KeyC', 'KeyZ');
+    await press(canvas, 'ArrowLeft', 'ArrowLeft', 'Digit4', 'KeyC', 'KeyZ');
     await press(canvas, 'ArrowRight', 'ArrowUp', 'ArrowUp');
     await expect(state).toHaveAttribute('data-entities', '1');
     await window.waitForTimeout(1000);
@@ -206,9 +323,26 @@ test('Try it: place, break, spawn, hit and keep the area through an edit', async
     await expect(state).toHaveAttribute('data-pointed', 'the floor');
   }
 
-  // 7. An edit to the block keeps the area. ----------------------------------------------------
-  await press(canvas, 'Digit1', 'KeyC');
+  // 8. Edits to the slab's texture and the block's name keep the area. -------------------------
+  // The slab to the left (a quarter turn), the block straight ahead.
+  await press(canvas, 'Digit3', ...Array<string>(6).fill('ArrowLeft'), 'KeyC');
   await expect(state).toHaveAttribute('data-blocks', '1');
+  await expect(state).toHaveAttribute('data-pointed', new RegExp(`^${SLAB_ID}\\[`));
+  await press(canvas, ...Array<string>(6).fill('ArrowRight'), 'Digit1', 'KeyC');
+  await expect(state).toHaveAttribute('data-blocks', '2');
+  await expect(state).toHaveAttribute('data-pointed', BLOCK_ID);
+
+  await window.getByTestId(`element-row-${SLAB_ID}`).click();
+  await expect(view).toBeHidden();
+  const studio = window.getByTestId('block-studio');
+  const texture = studio.getByTestId('block-texture-all');
+  await expect(texture).toHaveValue(`${NAMESPACE}:block/ruby_block`);
+  await texture.fill(`${NAMESPACE}:block/ruby_door_top`);
+  await texture.press('Enter');
+  await expect(studio.getByTestId('block-texture-all-thumbnail')).toBeVisible();
+  await openTryIt(window);
+  await expect(window.getByTestId('tryit-state')).toHaveAttribute('data-blocks', '2');
+
   await window.getByTestId(`element-row-${BLOCK_ID}`).click();
   await expect(view).toBeHidden();
   const name = window.getByTestId('block-display-name');
@@ -219,6 +353,18 @@ test('Try it: place, break, spawn, hit and keep the area through an edit', async
     'aria-label',
     'Slot 1: Glow Ruby',
   );
-  await expect(window.getByTestId('tryit-state')).toHaveAttribute('data-blocks', '1');
+  await expect(window.getByTestId('tryit-state')).toHaveAttribute('data-blocks', '2');
   await expect(window.getByTestId('tryit-card')).toBeHidden();
+
+  // 9. "Clear the area" leaves nothing. -----------------------------------------------------------
+  // Back in Try it the look starts level again; look down at the block.
+  await press(canvas, 'ArrowDown', 'ArrowDown', 'ArrowDown');
+  await expect(state).toHaveAttribute('data-pointed', BLOCK_ID);
+  await press(canvas, 'Digit4', 'KeyC');
+  await expect(state).toHaveAttribute('data-entities', '1');
+  await window.getByTestId('tryit-clear').click();
+  await expect(state).toHaveAttribute('data-blocks', '0');
+  await expect(state).toHaveAttribute('data-entities', '0');
+  await expect(state).toHaveAttribute('data-last-log', 'You cleared the area.');
+  await expect(state).toHaveAttribute('data-pointed', 'the floor');
 });

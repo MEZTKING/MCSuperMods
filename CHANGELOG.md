@@ -9,6 +9,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Added
 
 - Work in progress: Try it will show what your rules and events do when you use, break and step on your blocks.
+- A **Try it** page in the user guide: how to open it, the keys, the tools and the clock, mobs, particles and portals, **What happened**, and the full list of what Try it cannot show. The link on Try it's first-run card opens it.
 
 ## [1.5.1] - 2026-11-14
 

@@ -16,7 +16,7 @@ Nothing is hidden for good. Very easy only hides things: a hand-made event, a te
 
 ## The Very easy window
 
-The toolbar has only what you need: **Home**, Undo, Redo, **Play** and **Reload** with the game's status, **Share my mod**, the AI helper, Help and the mode row. There is no sidebar, no Problems tab and no target in the status bar. Anything wrong appears in **Things to fix**.
+The toolbar has only what you need: **Home**, Undo, Redo, **Try it**, **Play** and **Reload** with the game's status, **Share my mod**, the AI helper, Help and the mode row. There is no sidebar, no Problems tab and no target in the status bar. Anything wrong appears in **Things to fix**.
 
 ## Start a new mod
 
@@ -71,6 +71,10 @@ If a mistake stops the mod from being built, **Play** and **Share my mod** send 
 ## Play and Reload
 
 **Play** saves your mod, builds it and starts Minecraft in a test world with your things in chests and in your hotbar. **Reload** sends later changes to the running game. Both are in the Very easy toolbar. The whole story, including Restart, is in [Playing and testing](playing-and-testing.md).
+
+## Try it
+
+**Try it** in the toolbar (or F6) opens a small test area inside MCSuperMods, with no Minecraft needed. Your blocks and spawn eggs are in the hotbar: walk or fly around, place and break blocks, open doors and watch your mobs wander. It is a quick preview, not the game: what it cannot show is listed under "What happened" with "Only in Minecraft", and **Play in Minecraft** is always at the top for the real check ([Try it](try-it.md)).
 
 ## Share my mod
 

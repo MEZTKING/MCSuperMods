@@ -4646,3 +4646,19 @@ Decisions
 
 Next
 - B399: `packages/sim/test/sim-parity.test.ts` plays the file, and should also check that `mod/<target>` equals the lowering (or run `lower.test.ts`).
+## 2026-11-14 — executor — B392 e2e, guide page and slice 1 close (Try it)
+
+What
+- `app/e2e/tryit-path.spec.ts` extended: the project gains a Ruby Door (type `door`, the sample mod's maple door pictures) and a Ruby Slab (type `slab`); hotbar slots 1 to 4 are the block, door, slab and spawn egg. New steps: after the first place, a WebGL `readPixels` check (16 by 16 points, the most colours of ten animation frames read after the view's own draw) finds more than one colour; the slab places as `type=bottom` and breaks; the door places as two blocks with `open=false`, C opens it, a 15 degree turn left points at the open leaf (`open=true`; straight ahead passes it, as the open leaf stands on the hinge side) and X breaks both halves; the slab and the block are placed again, the slab's `block-texture-all` changes to the door's top picture in the Block Studio and the block's name changes, and back in Try it the count stays 2; a mob is hatched and **Clear the area** leaves 0 blocks, 0 mobs and the last line "You cleared the area.". About 16.5 s a run (the steps themselves about 6 s).
+- New guide page `docs/guide/try-it.md` (what it is, how to open it, the keys from `TRYIT_KEYS`, the hotbar and picker, the tools and the clock, mobs, particles and portals, What happened, and `## Limits` in plain words, the anchor of the first-run card's link); sidebar entry after Playing and testing (`docs/site/.vitepress/config.ts`), a line in `docs/guide/README.md` and in the root README's guide list; Try it lines in `playing-and-testing.md` (introduction and the Keyboard note) and `very-easy.md` (the toolbar and a short section); one `[Unreleased]` line in `CHANGELOG.md` for the page.
+- `app/CLAUDE.md`: the Try it status sentence and the `tryit/` contents entry. `packages/sim/CLAUDE.md`: world, blocks, player, tick, entities and `local-source.ts` listed; "planned" removed.
+- Checks: `pnpm build`; `tryit-path` green 3 times in a row (`--repeat-each=3`) and 10 times in a row earlier with the pixel check (10 colours every run); the full e2e suite (49 tests) green once (an earlier full run had one `launchers-path` failure, the Install menu not opening, which passed alone and in the next full run; not touched here); `pnpm --filter @msm/site build` with no dead link; `pnpm lint`, `pnpm typecheck`.
+
+Decisions
+- The `readPixels` check is kept: stable over ten runs under SwiftShader. It reads the canvas from the test through a `requestAnimationFrame` after the view's own frame, not through the readout, so no app file changed; the readout stays state only.
+- The guide's limits describe what 1.5.1 does, not the plan's end state: events, rules and scripts do not run yet, containers do not open (no mock-up screens yet), no sounds; and adds the picture limits (first frame of animated pictures, 16 by 16) and third-party plugin blocks.
+- The CHANGELOG gets one line for the guide page only; Try it itself is already under `[1.5.1]`.
+
+Next
+- Orchestrator: report slice 1 closed to the user. Slice 3 (B396–B399) updates the guide's "No scripts or rules yet", "Containers and machines do not open" and sounds rows and the `tryit-path` steps.
+- Follow-up: Try it's look starts level again after a Studio and back (the player's position is kept, the look is not); the e2e looks down again.

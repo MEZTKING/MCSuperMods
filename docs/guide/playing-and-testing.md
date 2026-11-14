@@ -2,6 +2,8 @@
 
 **Play** puts your mod in Minecraft with one click. **Reload** sends your next change to the game while it is running. Both work in every mode, and they are the quickest way to see what you made. This page also says when the game has to start again and why.
 
+For a quick look without Minecraft at all, press **Try it** (F6): a small test area inside MCSuperMods where you walk around your blocks, open your doors and hatch your mobs. It is a preview, not the game, so check in Minecraft with Play before you share a mod ([Try it](try-it.md)).
+
 For a one-off test with another launcher, or to install the mod into a world you already play, use **Test in Minecraft…** from the Export menu ([Blocks and items](blocks-and-items.md#test-in-minecraft)). Play is for trying things while you build.
 
 ## What you need
@@ -72,7 +74,7 @@ Dev tools are on only in the test instance's single-player test world. They are 
 - **The world is flat on purpose.** The test world is for trying blocks, items, mobs and rules quickly. To see a biome or a structure in real terrain, make a world in Minecraft with the data pack ([Worldgen](worldgen.md), [Structures](structures.md)).
 - **Counters are saved with the world.** A new test world starts them again.
 - **Rules need the jar.** Play always builds the Fabric mod jar, so rules work ([Rules](rules.md)).
-- **Keyboard.** F5 plays and Ctrl+R reloads in the game. The app window's own reload moved to **Ctrl+Shift+R** (**View > Reload Window**).
+- **Keyboard.** F5 plays, Ctrl+R reloads in the game and F6 opens Try it. The app window's own reload moved to **Ctrl+Shift+R** (**View > Reload Window**).
 - **Use blocks with an empty hand.** While your hand holds a block (or any item) Minecraft may place it instead of using the block, and sneaking with an item in the hand skips the block's use. To try a rule on a block, empty your hand first.
 
 ## Troubleshooting
