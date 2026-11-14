@@ -4256,3 +4256,18 @@ Decisions
 Next
 - B375: read `session.rulesView` / `rulesViewNow()`; `ruleEventsFor` gives the read-only "From rules" list with each event's origin; `rulesNotInEjectProblems` feeds the eject dialog's list.
 - B373/B376: `lowerExpandedProject()` gives the lowered outputs (each with `elementId`) of the expanded project for Play and Reload hashing and overlays; `buildContentJar()` gives the jar.
+## 2026-11-14 — executor — B391 Sim: clock, growth and tools (Try it)
+
+What
+- `packages/sim/src/tick/clock.ts`: `SimClock(onTick)` at 20 ticks a second (`TICKS_PER_SECOND` from `player/constants.ts`, `TICK_MS` 50): `advance(elapsedMs)` runs the ticks that fall due (at most `MAX_CATCH_UP_TICKS` 10, the rest of a long stall dropped), `pause`, `resume`, `step` (one tick, paused or not), `setSpeed` (0.25 to 8, the fast clock), `reset`, getters `tick`, `paused`, `speed`, `alpha` (time between ticks for drawing).
+- `timers.ts`: `BlockTimers(world, catalogue)`: `afterUse(pos, useResult)` / `scheduleRelease(pos, ticks)` let a pressed button go after its press time (30 ticks wooden, 20 others, `press_ticks`); `tick(entityBoxes)` presses plates an entity's world box rests on (`PLATE_PRESS_AREA`, a quarter block high) and lets them go 20 ticks (weighted 10) after the last one leaves; weighted plates set `power` by the number of boxes (`weightedSignal`); broken or replaced blocks drop their timers; `clear`, `pending`.
+- `growth.ts`: `growBlock` (Grow tool, id `grow`): crop `age` and sapling `stage` one step up; a sapling at its last stage stays and logs "Only in Minecraft: <Name> grows into a tree". `power.ts`: `powerBlock` (Power tool, id `power`): toggles `powered`, else `lit`; otherwise "Only in Minecraft: <Name> has no powered or lit picture; what a redstone signal does to it shows only in the game". `tools.ts`: `applyTool(world, catalogue, log, tool, pos)` and `SIM_TOOLS` (labels Grow, Power).
+- `src/index.ts`: one export line. Tests in `packages/sim/test/tick/` (20; package 232).
+
+Decisions
+- Plates take plain world boxes (`playerBox(...)` now, mob boxes later). Release delays (20, weighted 10) are approximations of the game's observable timing, held as named constants. A weighted plate's `power` follows the count at once (`ceil(15 * min(n, max) / max)`), rather than only on or off, so its picture matches the game's.
+- A crop at its last age logs an ordinary line ("<Name> is fully grown"); a vanilla prop logs "Only in Minecraft: <Name> grows only by the game's own rules". No random ticks; leaves do not decay; nothing travels from a powered block.
+- `tools.ts` is a small extra file in the owned `tick/` folder for the dispatcher.
+
+Next
+- B390: one `SimClock` in `local-source.ts`; per tick: player step, then `timers.tick([controller.box])`, send the changes as `blockChanged`; after `useBlock`, `timers.afterUse(pos, result)`; a `tool` action calls `applyTool`; `timers.clear()` with "Clear the area". B396: `msm:redstone` `on_powered`/`on_unpowered` and plate or button triggers when Power or a plate changes `powered`.
