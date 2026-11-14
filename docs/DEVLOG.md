@@ -4327,3 +4327,18 @@ Next
 - The main session: clean-worktree run and CI on the merged close (the client GameTest step has not run in Actions yet), then the Milestone Log row's test totals.
 - The user: `fixtures/sample-particles/README.md` on 26.3 and 26.4, and the vetoable defaults of ADRs 0080–0081.
 - Follow-ups in ROADMAP "Custom particles" and HANDOFF; the Rules and Try it closes add their 1.15.0 text to `packages/plugin-api/CLAUDE.md`.
+## 2026-11-14 — executor — B376 Play controls
+
+What
+- New `app/src/renderer/src/store/play-store.ts` (Zustand, ADR 0084 D1, D6, D7): `connectPlay(session, bridge, options?)` connects the store once (status for the open project's target, main's pushes for that target only, a fresh read when the project or its target changes; nothing without `bridge.play`). Actions `play`, `reload`, `restart`, `newTestWorld`, `openInstanceFolder`, `showRestartNeeded`, `findPrism`, `choosePrismFolder`. Play and Reload flush held-back typing (`flushPendingEdits`), save when the project is dirty, build the content jar with the export dialog's defaults (`session.buildContentJar()`) and the lowered files of the expanded project (`session.lowerExpandedProject()`), then call `window.msm.play`. Jar-blocking errors go to Problems ("Play blocked by N error(s); nothing was sent to the game. See Problems."). Pure helpers: `playChipState`, `gameRunning`, `playNamespaces` (own first, `minecraft` last), `playItems` (items, then block items through `blockItemIdOf`, then spawn eggs unless `spawn_egg: false`), `playNames` (`display_name`, else the readable id), `playOutputs`, `playResultMessage`, `newWorldMessage`, `restartTexts`; labels in `PLAY_CONTROL_LABELS`.
+- New `app/src/renderer/src/components/play/`: `PlayControls.tsx` (no props: Play, Reload, a menu with "New test world", "Restart" and "Open the test instance's folder" that says why an entry is off, the status chip with `data-state`, and the progress line); `RestartNeededDialog.tsx` (main's reason texts, once each, and Restart); `PrismSetupPanel.tsx` (how to install Prism Launcher and sign in, "Find Prism" and "Choose Prism's folder…", which adds the folder to Settings' Prism data folders).
+- Tests: `app/test/components/play-store.test.ts` (26), `app/test/components/PlayControls.test.tsx` (21, every chip state and the nine restart texts), `app/test/main/play-labels.test.ts` (2, pins the copied words to main's exports), fixtures `app/test/components/play-fixtures.ts`. App suite 180 files, 1675 tests; lint, typecheck and build pass.
+
+Decisions
+- The chip words come through `PlayStatus.label` and the restart texts through `PlayRestartReason.text`; no main code is imported into the renderer. The renderer tests copy main's words and a node test pins the copies.
+- `lowerExpandedProject()` returns plain `OutputFile`s without `elementId` (the B371 note says otherwise), so `playOutputs` gives a file the id of the project element its path names (`msm|data|assets/<ns>/<folder>/<path>.<ext>` to `<ns>:<path>`) when the file has none, so restart reasons can say "Ruby Lamp".
+- Reload also flushes and saves, so the game never runs content that is not on disk. Play with a `no-prism` status opens the Prism panel without building.
+- "Open the test instance's folder" falls back to a status line with the path, because main's `showItemInFolder` only reveals under the project, Minecraft, install target and save folders.
+
+Next
+- B378: place `<PlayControls />` in the toolbar, call `connectPlay(session, bridge)` once in `App.tsx`, and wire F5 to `usePlayStore.getState().play()` and Ctrl+R to `reload()` (File > Play and the palette too). Main: add the managed instance's game folder to `revealRoots` in `node-platform.ts`. Core or session: carry `elementId` on lowered files.
