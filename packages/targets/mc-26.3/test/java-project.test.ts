@@ -5,6 +5,7 @@
  * `block-shape_*` are the `MsmShapeGameTest` blocks; `biome_addition-*`, `loot_addition-*`,
  * `block-fuel_block` and `item-fuel_gem` are the `MsmAdditionGameTest` definitions; the trigger
  * items, blocks and `entity-ticker` are the `MsmTriggerGameTest` definitions;
+ * `potion-*` are the `MsmPotionGameTest` definitions;
  * `block-stepping_stone` and `entity-frost_golem` are the `apply_effect` corpus cases of
  * `packages/schemas/mcdoc/msm/conformance/definition/valid/`),
  * determinism, and the errors the exporter reports as `export.java-generation-failed`.
@@ -24,6 +25,7 @@ import {
   JAVA_KEYWORDS,
 } from '../src/java-project/index';
 import { eventMethodNames, NameTable } from '../src/java-project/names';
+import { VANILLA_MOB_EFFECTS } from '../src/java-project/potions';
 
 const update = process.env.UPDATE_GOLDENS === '1';
 const here = dirname(fileURLToPath(import.meta.url));
@@ -923,6 +925,104 @@ describe('Java generator (mc-26.3)', () => {
     );
     // No throwable classes without throwables.
     expect(files.some((file) => file.path.endsWith('/ThrownItemEntity.java'))).toBe(false);
+  });
+
+  it('generates potions mirroring MsmRegistrar.registerPotion, after effects (ADR 0063 D8)', async () => {
+    // The MsmPotionGameTest definitions without partly_broken (an unknown effect, below).
+    const potions = await Promise.all(
+      ['frost_draught', 'long_frost_draught', 'strong_frost_draught', 'swift_step'].map((path) =>
+        definition('potion', path),
+      ),
+    );
+    const { files, entrypoints } = generateJavaProject(
+      input({
+        effects: [await definition('effect', 'frostbite')],
+        potions,
+        items: [await definition('item', 'frost_tonic')],
+      }),
+    );
+    expect(entrypoints.client).toBeUndefined();
+    await golden('potions', files);
+    const text = (suffix: string): string =>
+      files.find((file) => file.path.endsWith(suffix))?.contents ?? '';
+    expect(text('/MsmTestMod.java')).toContain(
+      '        ModEffects.register();\n        ModPotions.register();\n        ModItems.register();',
+    );
+    const modPotions = text('/ModPotions.java');
+    // name defaults to <ns>.<path>; the variants state the base potion's name.
+    expect(modPotions).toContain(
+      'public static final Holder<Potion> FROST_DRAUGHT = register("msm_test:frost_draught", "msm_test.frost_draught",\n' +
+        '            new MobEffectInstance(effect("msm_test:frostbite"), 3600, 0));',
+    );
+    expect(modPotions).toContain(
+      'LONG_FROST_DRAUGHT = register("msm_test:long_frost_draught", "msm_test.frost_draught",',
+    );
+    expect(modPotions).toContain('new MobEffectInstance(effect("msm_test:frostbite"), 1800, 1));');
+    // Flags only when one differs from vanilla's defaults.
+    expect(modPotions).toContain(
+      'SWIFT_STEP = register("msm_test:swift_step", "msm_test.swift",\n' +
+        '            new MobEffectInstance(effect("minecraft:speed"), 600, 2, true, false, false),\n' +
+        '            new MobEffectInstance(effect("minecraft:jump_boost"), 200, 0));',
+    );
+    expect(modPotions).toContain(
+      'Registry.registerForHolder(BuiltInRegistries.POTION, ResourceKey.create(Registries.POTION, Identifier.parse(id)),',
+    );
+    expect(modPotions).toContain('new Potion(name, effects));');
+  });
+
+  it('writes no ModPotions without potions and fails on an unknown effect', async () => {
+    const effect = await definition('effect', 'frostbite');
+    for (const potions of [undefined, []]) {
+      const { files } = generateJavaProject(
+        input(potions === undefined ? { effects: [effect] } : { effects: [effect], potions }),
+      );
+      expect(files.some((file) => file.path.endsWith('/ModPotions.java'))).toBe(false);
+      expect(files.find((file) => file.path.endsWith('/MsmTestMod.java'))?.contents).not.toContain(
+        'ModPotions',
+      );
+    }
+    // msm_runtime skips partly_broken with an error; the eject refuses it.
+    const broken = await definition('potion', 'partly_broken');
+    expect(() => generateJavaProject(input({ potions: [broken] }))).toThrow(
+      "msm/msm_test/potion/partly_broken.json (msm_test:partly_broken): effects[1]: unknown mob effect 'msm_test:no_such_effect'",
+    );
+    // A project effect is known only when the project has it.
+    const draught = await definition('potion', 'frost_draught');
+    expect(() => generateJavaProject(input({ potions: [draught] }))).toThrow(
+      /unknown mob effect 'msm_test:frostbite'/,
+    );
+    const withDefinition = (json: JsonObject) =>
+      generateJavaProject(input({ potions: [{ ...draught, definition: json }] }));
+    const one = { id: 'speed', duration_ticks: 20 };
+    expect(
+      withDefinition({ format: 1, effects: [one] }).files.find((file) =>
+        file.path.endsWith('/ModPotions.java'),
+      )?.contents,
+    ).toContain('new MobEffectInstance(effect("minecraft:speed"), 20, 0));');
+    expect(() => withDefinition({ format: 1, effects: [] })).toThrow(/1 to 8 effects, not 0/);
+    expect(() => withDefinition({ format: 1, effects: Array(9).fill(one) })).toThrow(
+      /1 to 8 effects, not 9/,
+    );
+    expect(() => withDefinition({ format: 1 })).toThrow(/effects is missing/);
+    expect(() => withDefinition({ format: 1, effects: [one], brewing: {} })).toThrow(
+      /unknown top-level key 'brewing'/,
+    );
+    expect(() => withDefinition({ format: 1, effects: [{ ...one, duration_ticks: 0 }] })).toThrow(
+      /duration_ticks must be at least 1/,
+    );
+    expect(() => withDefinition({ format: 1, effects: [{ ...one, amplifier: 256 }] })).toThrow(
+      /amplifier must be 0 to 255/,
+    );
+    expect(() => withDefinition({ format: 1, effects: [{ ...one, colour: 1 }] })).toThrow(
+      /unknown effect field 'colour'/,
+    );
+  });
+
+  it('knows the vendored mob_effect registry', async () => {
+    const registries = JSON.parse(
+      await readFile(join(here, '..', 'vendor', 'mcmeta', 'registries.json'), 'utf8'),
+    ) as Record<string, string[]>;
+    expect([...VANILLA_MOB_EFFECTS]).toEqual(registries.mob_effect);
   });
 
   it('generates throwables mirroring MsmThrowableItem and MsmThrownItem (ADR 0056 D7)', async () => {

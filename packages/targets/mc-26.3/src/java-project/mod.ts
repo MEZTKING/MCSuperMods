@@ -1,7 +1,7 @@
 /**
  * The mod initialiser: `<ModClass>.java`, a `ModInitializer` that registers its content in the
  * runtime's order: the project's sound events first (ADR 0057 D5), status effects (items name
- * them), the thrown item entity type, blocks
+ * them), potions (ADR 0063 D8), the thrown item entity type, blocks
  * with their items, then items, then entities with their spawn eggs.
  *
  * @packageDocumentation

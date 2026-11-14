@@ -7,7 +7,8 @@
  * here belongs to this target; the next target copies the folder and adjusts names.
  *
  * Output: `src/main/java/<package>/` with `<ModClass>.java`, `ModSounds.java` (when the
- * resource pack defines sound events, ADR 0057 D5), `ModEffects.java`,
+ * resource pack defines sound events, ADR 0057 D5), `ModEffects.java`, `ModPotions.java` (when
+ * the project has potions, ADR 0063 D8),
  * `ModBlocks.java`, `ModItems.java`, `ModEntities.java`, `Actions.java`, `VanillaComponents.java`
  * (when an item uses `msm:components`), `effect/` (with `MobEffectBase.java`, ADR 0055 D10),
  * `block/`, `item/` (with `ThrowableItem.java` when an item has `msm:throwable`), `entity/`
@@ -33,6 +34,7 @@ import { generateItems } from './items';
 import { generateLoot } from './loot';
 import { generateMod } from './mod';
 import { NameTable, splitId } from './names';
+import { generatePotions } from './potions';
 import { generateSounds } from './sounds';
 import { actionsJava } from './templates/actions-java';
 import { cooldownMapJava } from './templates/cooldown-map-java';
@@ -99,6 +101,9 @@ export function generateJavaProject(input: JavaProjectInput): {
   if (sounds !== undefined) registrations.push(sounds);
   const effects = generateEffects(context, classNames);
   if (effects !== undefined) registrations.push(effects);
+  // Potions after the effects they name and before blocks and items (ADR 0063 D4, D8).
+  const potions = generatePotions(context);
+  if (potions !== undefined) registrations.push(potions);
   if (throwables) {
     registrations.push('entity.ThrownItemEntity');
     context.files.push(

@@ -1,0 +1,11 @@
+{
+  "effects": [
+    {
+      "amplifier": 1,
+      "duration_ticks": 1800,
+      "id": "msm_test:frostbite"
+    }
+  ],
+  "format": 1,
+  "name": "msm_test.frost_draught"
+}

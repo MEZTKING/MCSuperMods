@@ -1,0 +1,18 @@
+{
+  "effects": [
+    {
+      "ambient": true,
+      "amplifier": 2,
+      "duration_ticks": 600,
+      "id": "minecraft:speed",
+      "show_icon": false,
+      "show_particles": false
+    },
+    {
+      "duration_ticks": 200,
+      "id": "minecraft:jump_boost"
+    }
+  ],
+  "format": 1,
+  "name": "msm_test.swift"
+}
