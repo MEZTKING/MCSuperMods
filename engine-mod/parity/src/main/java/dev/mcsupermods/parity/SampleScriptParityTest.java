@@ -1,5 +1,6 @@
 package dev.mcsupermods.parity;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -68,7 +69,8 @@ import net.minecraft.world.phys.Vec3;
  *       and nothing; {@code smite_command} deals magic damage with the player as the attacker, so the kill is the
  *       player's (a breeze's player-kill drop, the kill counter); {@code nether_command} teleports the player and a cow
  *       to the Nether ({@code on_player_change_dimension} says so); {@code on_player_tick} gives Luck to a player who
- *       wears a golden helmet only; {@code on_entity_damaged} reports the damage after armour.
+ *       wears a golden helmet only; {@code on_entity_damaged} reports the damage after armour, also for a killing blow
+ *       (the smite), once and before {@code entity.death}.
  * </ul>
  *
  * <p>The start counter ({@code start_counter}, {@code msm.storage} across a restart) is checked by
@@ -248,6 +250,15 @@ public class SampleScriptParityTest {
             }
         }
         return out;
+    }
+
+    private static int indexOfFirst(List<String> lines, String prefix) {
+        for (int i = 0; i < lines.size(); i++) {
+            if (lines.get(i).startsWith(prefix)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /** Clears the column above {@code rel} up to the test area's barrier ceiling, so a ray upwards leaves the area. */
@@ -461,10 +472,18 @@ public class SampleScriptParityTest {
             ears.chat("!smite");
             helper.assertValueEqual(said(ears), List.of("Nothing to smite."), "smiting the sky");
             stand(helper, ears, AT, -90f, 0f);
+            float health = breeze.getHealth();
             ears.chat("!smite");
             List<String> answer = said(ears);
             helper.assertTrue(answer.contains("Smitten: minecraft:breeze fell."), "smite answer: " + answer);
-            helper.assertTrue(answer.stream().anyMatch(line -> line.startsWith("Your kills: ")), "the kill counter did not count it: " + answer);
+            int kills = indexOfFirst(answer, "Your kills: ");
+            helper.assertTrue(kills >= 0, "the kill counter did not count it: " + answer);
+            // entity.damaged also fires for the killing blow, once, with what the breeze had left, before entity.death.
+            String took = "minecraft:breeze took " + BigDecimal.valueOf(Math.round(health * 100) / 100.0).stripTrailingZeros().toPlainString()
+                    + " damage (minecraft:magic), 0 health left.";
+            helper.assertValueEqual(answer.stream().filter(line -> line.startsWith("minecraft:breeze took ")).toList(), List.of(took),
+                    "entity.damaged answers for the killing blow");
+            helper.assertTrue(answer.indexOf(took) < kills, "entity.damaged after entity.death: " + answer);
             helper.assertFalse(breeze.isAlive(), "the breeze survived");
             helper.assertTrue(breeze.getLastDamageSource() != null && breeze.getLastDamageSource().is(DamageTypes.MAGIC)
                     && breeze.getLastDamageSource().getEntity() == ears.player, "damage source: " + breeze.getLastDamageSource());

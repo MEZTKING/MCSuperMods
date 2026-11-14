@@ -692,7 +692,7 @@ interface MsmEvents {
    */
   on(name: "player.chat", handler: (e: PlayerChatEvent) => void): void;
   /**
-   * Runs after a living entity took damage, with the final amount. Several handlers run in registration order.
+   * Runs after a living entity took damage, with the final amount; also for the killing blow, before entity.death. Several handlers run in registration order.
    *
    * Since runtime 1.5.0.
    */

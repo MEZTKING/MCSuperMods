@@ -1354,4 +1354,55 @@ public class MsmScriptGameTest {
         assertNoApiErrors(helper, host);
         helper.succeed();
     }
+
+    private static List<String> startingWith(ScriptHost host, String prefix) {
+        return host.recentLogs().stream().filter(l -> l.startsWith(prefix)).toList();
+    }
+
+    /**
+     * {@code entity.damaged} fires exactly once for every hit: for a killing blow (Fabric's {@code AFTER_DAMAGE} skips
+     * it) with what the mob had left, before {@code entity.death}; for a hit that does not kill; and for a hit a totem
+     * of undying survives, with the amount that would have killed.
+     */
+    @GameTest
+    public void entityDamagedFiresOnceAlsoForTheKillingBlow(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        ServerLevel level = helper.getLevel();
+        ServerPlayer player = survivalPlayer(helper);
+        String tail = " source minecraft:player_attack attacker minecraft:player direct minecraft:player";
+
+        Mob killed = named(helper.spawnWithNoFreeWill(EntityTypes.ZOMBIE, AT), "msm-ev-dmg-kill");
+        killed.setHealth(5);
+        killed.hurtServer(level, level.damageSources().playerAttack(player), 20);
+        helper.assertFalse(killed.isAlive(), "the killing blow did not kill");
+        String damagedLine = PLAYER_EVENTS + "entity.damaged msm-ev-dmg-kill amount 5" + tail;
+        List<String> killLines = startingWith(host, PLAYER_EVENTS + "entity.damaged msm-ev-dmg-kill ");
+        helper.assertValueEqual(killLines, List.of(damagedLine), "entity.damaged for the killing blow");
+        List<String> logs = host.recentLogs();
+        int damagedAt = logs.indexOf(damagedLine);
+        int deathAt = logs.indexOf(PLAYER_EVENTS + "entity.death msm-ev-dmg-kill");
+        helper.assertTrue(damagedAt >= 0 && deathAt > damagedAt, "entity.damaged at " + damagedAt + ", entity.death at " + deathAt);
+
+        Mob hit = named(helper.spawnWithNoFreeWill(EntityTypes.ZOMBIE, AT.east(2)), "msm-ev-dmg-hit");
+        hit.hurtServer(level, level.damageSources().playerAttack(player), 2);
+        helper.assertTrue(hit.isAlive(), "a 2-point hit killed the zombie");
+        List<String> hitLines = startingWith(host, PLAYER_EVENTS + "entity.damaged msm-ev-dmg-hit ");
+        helper.assertValueEqual(hitLines.size(), 1, "entity.damaged lines for a normal hit: " + hitLines);
+        helper.assertTrue(hitLines.get(0).endsWith(tail), "normal hit: " + hitLines.get(0));
+        helper.assertValueEqual(logged(host, PLAYER_EVENTS + "entity.death msm-ev-dmg-hit"), 0L, "entity.death for a survivor");
+
+        Mob saved = named(helper.spawnWithNoFreeWill(EntityTypes.ZOMBIE, AT.east(4)), "msm-ev-dmg-totem");
+        saved.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.TOTEM_OF_UNDYING));
+        saved.setHealth(5);
+        saved.hurtServer(level, level.damageSources().playerAttack(player), 20);
+        helper.assertTrue(saved.isAlive() && saved.getMainHandItem().isEmpty(), "the totem did not save the zombie");
+        helper.assertValueEqual(startingWith(host, PLAYER_EVENTS + "entity.damaged msm-ev-dmg-totem "),
+                List.of(PLAYER_EVENTS + "entity.damaged msm-ev-dmg-totem amount 5" + tail), "entity.damaged for the totem hit");
+        helper.assertValueEqual(logged(host, PLAYER_EVENTS + "entity.death msm-ev-dmg-totem"), 0L, "entity.death after a totem");
+
+        hit.discard();
+        saved.discard();
+        assertNoApiErrors(helper, host);
+        helper.succeed();
+    }
 }

@@ -1716,7 +1716,7 @@
                       "type": "(e: EntityDamagedEvent) => void"
                     }
                   ],
-                  "doc": "Runs after a living entity took damage, with the final amount. Several handlers run in registration order.\n\nSince runtime 1.5.0."
+                  "doc": "Runs after a living entity took damage, with the final amount; also for the killing blow, before entity.death. Several handlers run in registration order.\n\nSince runtime 1.5.0."
                 }
               ],
               "doc": "Registers a handler for a game event."
@@ -1910,7 +1910,7 @@
       "type": "EntityDamagedEvent",
       "cancellable": false,
       "source": "ServerLivingEntityEvents.AFTER_DAMAGE",
-      "doc": "Runs after a living entity took damage, with the final amount.\n\nSince runtime 1.5.0."
+      "doc": "Runs after a living entity took damage, with the final amount; also for the killing blow, before entity.death.\n\nSince runtime 1.5.0."
     }
   },
   "functions": {

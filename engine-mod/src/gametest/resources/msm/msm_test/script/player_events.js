@@ -61,6 +61,21 @@ msm.events.on("entity.damaged", function (e) {
         + " health " + e.entity.health);
 });
 
+// Killing blows and totems: every entity.damaged and entity.death of an "msm-ev-dmg-" mob, by name, to count them.
+msm.events.on("entity.damaged", function (e) {
+    if (e.entity.name.indexOf("msm-ev-dmg-") !== 0) {
+        return;
+    }
+    msm.log.info("entity.damaged " + e.entity.name + " amount " + e.amount + " source " + e.source + " attacker "
+        + (e.attacker ? e.attacker.type : "none") + " direct " + (e.direct ? e.direct.type : "none"));
+});
+
+msm.events.on("entity.death", function (e) {
+    if (e.entity.name.indexOf("msm-ev-dmg-") === 0) {
+        msm.log.info("entity.death " + e.entity.name);
+    }
+});
+
 msm.events.on("entity.hurt", function (e) {
     if (e.entity.name !== "msm-ev-hurt") {
         return;

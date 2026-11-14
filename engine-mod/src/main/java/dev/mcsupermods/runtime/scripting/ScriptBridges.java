@@ -73,6 +73,7 @@ public final class ScriptBridges {
         UseItemCallback.EVENT.register(ScriptBridges::useItem);
         UseEntityCallback.EVENT.register((player, level, hand, entity, hit) -> useEntity(player, level, hand, entity));
         ServerLivingEntityEvents.ALLOW_DAMAGE.register(ScriptBridges::allowDamage);
+        ServerLivingEntityEvents.ALLOW_DEATH.register(ScriptBridges::allowDeath);
         ServerLivingEntityEvents.AFTER_DEATH.register(ScriptBridges::afterDeath);
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> playerJoined(handler.player));
         ServerPlayerEvents.AFTER_RESPAWN.register(ScriptBridges::afterRespawn);
@@ -259,6 +260,7 @@ public final class ScriptBridges {
 
     static boolean allowDamage(LivingEntity entity, DamageSource source, float amount) {
         ScriptHost host = host(entity.level());
+        LETHAL_DAMAGE.remove(entity);
         if (host != null && host.handles(ScriptEvents.ENTITY_DAMAGED_EVENT)) {
             HEALTH_BEFORE_DAMAGE.put(entity, entity.getHealth() + entity.getAbsorptionAmount());
         }
@@ -269,8 +271,29 @@ public final class ScriptBridges {
                 new ScriptEvents.EntityHurt((ServerLevel) entity.level(), entity, amount, source));
     }
 
+    /**
+     * {@code entity.damaged} for a killing blow: Fabric calls {@code AFTER_DAMAGE} only when the entity is not dead or
+     * dying at the end of {@code hurtServer}, so a lethal hit never reaches it. {@code ALLOW_DEATH} runs in
+     * {@code hurtServer} after the damage was applied and before the totem check and {@code die}; it records what the
+     * entity lost (all it had left) and never vetoes. The event then fires once, from {@code AFTER_DEATH} before
+     * {@code entity.death}, or from {@code AFTER_DAMAGE} when the entity survived after all (a totem of undying, or
+     * another mod's veto), with the amount recorded here.
+     */
+    static boolean allowDeath(LivingEntity entity, DamageSource source, float amount) {
+        Float before = HEALTH_BEFORE_DAMAGE.remove(entity);
+        if (before != null) {
+            LETHAL_DAMAGE.put(entity, Math.max(0f, before - (entity.getHealth() + entity.getAbsorptionAmount())));
+        }
+        return true;
+    }
+
     static void afterDeath(LivingEntity entity, DamageSource source) {
         ScriptHost host = host(entity.level());
+        Float lethal = LETHAL_DAMAGE.remove(entity);
+        if (lethal != null && host != null && host.handles(ScriptEvents.ENTITY_DAMAGED_EVENT)) {
+            host.fire(ScriptEvents.ENTITY_DAMAGED_EVENT,
+                    new ScriptEvents.EntityDamaged((ServerLevel) entity.level(), entity, lethal, source));
+        }
         if (host != null && host.handles(ScriptEvents.ENTITY_DEATH_EVENT)) {
             host.fire(ScriptEvents.ENTITY_DEATH_EVENT,
                     new ScriptEvents.EntityDeath((ServerLevel) entity.level(), entity, source.getEntity()));
@@ -333,15 +356,26 @@ public final class ScriptBridges {
     private static final Map<LivingEntity, Float> HEALTH_BEFORE_DAMAGE = new WeakHashMap<>();
 
     /**
+     * The amount of a lethal hit, recorded by {@code ALLOW_DEATH} and taken by whichever of {@code AFTER_DEATH} and
+     * {@code AFTER_DAMAGE} runs first for it, so the hit fires {@code entity.damaged} exactly once; weak, and cleared by
+     * the entity's next {@code ALLOW_DAMAGE}.
+     */
+    private static final Map<LivingEntity, Float> LETHAL_DAMAGE = new WeakHashMap<>();
+
+    /**
      * {@code entity.damaged}: the amount is what the entity lost, health and absorption, between {@code ALLOW_DAMAGE}
      * and {@code AFTER_DAMAGE}, so after armour, effects and enchantments (Fabric's {@code damageTaken} is before
-     * armour); Fabric's {@code damageTaken} only when there is no snapshot.
+     * armour); Fabric's {@code damageTaken} only when there is no snapshot. A hit that was lethal until a totem of
+     * undying (or another mod's {@code ALLOW_DEATH}) saved the entity reports what {@link #allowDeath} recorded, not the
+     * difference after the totem's healing and absorption. A lethal hit fires from {@link #afterDeath} instead.
      */
     static void afterDamage(LivingEntity entity, DamageSource source, float baseDamageTaken, float damageTaken, boolean blocked) {
         Float before = HEALTH_BEFORE_DAMAGE.remove(entity);
+        Float lethal = LETHAL_DAMAGE.remove(entity);
         ScriptHost host = host(entity.level());
         if (host != null && host.handles(ScriptEvents.ENTITY_DAMAGED_EVENT)) {
-            float amount = before == null ? damageTaken
+            float amount = lethal != null ? lethal
+                    : before == null ? damageTaken
                     : Math.max(0f, before - (entity.getHealth() + entity.getAbsorptionAmount()));
             host.fire(ScriptEvents.ENTITY_DAMAGED_EVENT,
                     new ScriptEvents.EntityDamaged((ServerLevel) entity.level(), entity, amount, source));
