@@ -23,7 +23,14 @@
       "dev.mcsupermods.runtime.gametest.MsmPotionGameTest",
       "dev.mcsupermods.runtime.gametest.MsmBlockTypeGameTest",
       "dev.mcsupermods.runtime.gametest.MsmRedstoneTypeGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmPlantGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmPlantGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobMovementGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobRangedGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobTamingGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobBreedingGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobRidingGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobVariantGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobBossBarGameTest"
     ]
   },
   "depends": {
