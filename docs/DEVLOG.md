@@ -3489,3 +3489,11 @@ Next
 - User: the sample machines checklist on 26.3 and 26.4 and a Creator Storage crate and Machine; the vetoable defaults of ADRs 0074–0076; the earlier mob and block checklists.
 - Follow-ups: the `machine-recipe` corpus as a Gradle test input; `mcfunctionIds` in `library.test.ts` knowing project structures; one runtime version in the Script API 1.1 and 1.2 docs if they ship together; the 70000-byte NBT string message at GameTest shutdown; a reload check that runs on its own; B329 before more asar growth.
 - Backlog: B13 custom portal block and dimension type editing, then B14 particles, then B15 client side.
+
+## 2026-11-14 — orchestrator — machine experience GameTests no longer count orbs
+
+What: CI run 43598871331 (96a81aa, a docs commit) failed `msm_machine_game_test_breaking_drops_contents_and_experience`: "Expected experience orbs dropped to be 2: was 1". The stored experience (2, an integer) is paid without chance, but vanilla merges orbs of equal value into one orb with a private `count` (no getter on 26.3), so summing `getValue()` near the block undercounts when two value-1 orbs merge. `MsmMachineGameTest` now checks the stored experience before it is paid and that at least one orb appears (both the break test and the take-from-menu test); the `orbs` helper says why it is only a lower bound. 361 GameTests pass on 26.3.
+
+Decisions: no reflection into `ExperienceOrb.count`; the exact amount is already pinned by `storedExperience()` and by the parity test's flint recipe (experience 1, one orb).
+
+Next: none.

@@ -111,6 +111,11 @@ public class MsmMachineGameTest {
         return n;
     }
 
+    /**
+     * The values of the experience orbs near {@code at}. Vanilla merges orbs of equal value into one orb with a private
+     * count, so this is a lower bound of the experience paid: tests check the stored amount before it is paid and that
+     * at least one orb appears, never an exact total.
+     */
     private static int orbs(GameTestHelper helper, Vec3 at) {
         return helper.getLevel().getEntitiesOfClass(ExperienceOrb.class, new AABB(at, at).inflate(3)).stream()
                 .mapToInt(ExperienceOrb::getValue).sum();
@@ -437,7 +442,7 @@ public class MsmMachineGameTest {
             menu.clicked(AbstractFurnaceMenu.RESULT_SLOT, 0, ContainerInput.QUICK_MOVE, player);
             helper.assertValueEqual(player.getInventory().countItem(Items.GRAVEL), 1, "gravel taken");
             helper.assertValueEqual(be.storedExperience(), 0.0f, "experience left in the machine");
-            helper.assertValueEqual(orbs(helper, player.position()), 2, "experience orbs at the player");
+            helper.assertTrue(orbs(helper, player.position()) > 0, "no experience orb at the player");
             player.closeContainer();
             helper.succeed();
         });
@@ -449,10 +454,11 @@ public class MsmMachineGameTest {
         be.setItem(MsmMachineBlockEntity.INPUT, new ItemStack(Items.COBBLESTONE, 2));
         helper.runAfterDelay(45, () -> {
             helper.assertValueEqual(count(be, MsmMachineBlockEntity.OUTPUT, Items.GRAVEL), 1, "gravel made");
+            helper.assertValueEqual(be.storedExperience(), 2.0f, "experience stored");
             helper.getLevel().destroyBlock(helper.absolutePos(AT), true);
             helper.assertValueEqual(dropped(helper, AT, Items.GRAVEL), 1, "gravel dropped");
             helper.assertValueEqual(dropped(helper, AT, Items.COBBLESTONE), 1, "cobblestone dropped");
-            helper.assertValueEqual(orbs(helper, Vec3.atCenterOf(helper.absolutePos(AT))), 2, "experience orbs dropped");
+            helper.assertTrue(orbs(helper, Vec3.atCenterOf(helper.absolutePos(AT))) > 0, "no experience orb dropped");
             helper.succeed();
         });
     }
