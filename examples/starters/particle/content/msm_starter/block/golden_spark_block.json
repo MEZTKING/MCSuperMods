@@ -1,0 +1,40 @@
+{
+  "data": {
+    "components": {
+      "msm:ambient_particles": {
+        "chance": 0.4,
+        "offset": [
+          0.5,
+          1.1,
+          0.5
+        ],
+        "particle": "msm_starter:golden_spark",
+        "spread": [
+          0.5,
+          0.2,
+          0.5
+        ]
+      },
+      "msm:breakable": {
+        "hardness": 1.5,
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Golden Spark Block",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "model": "msm_starter:block/golden_spark_block",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:golden_spark_block",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A block that shows golden spark by itself, as a torch shows its flame: msm:ambient_particles gives a 40 per cent chance each tick of one particle just above its top (offset from the block's corner, with a random spread). The client draws them near the player only, so they cost the server nothing. It needs a pickaxe and drops itself."
+  }
+}

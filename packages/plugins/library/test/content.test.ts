@@ -6,8 +6,10 @@
 import type { ContentBundle, ExampleProject, Json, ProjectStarter } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
+import { PARTICLE_FRAMES, PARTICLE_PATTERNS } from '../src/assets/png';
 import { COLOURS } from '../src/content/bundle';
 import { SKIN_ANIMALS, SKIN_SHADES, shade } from '../src/content/mob-skins';
+import { DEFAULT_PARTICLE_COLOUR } from '../src/content/particle';
 import {
   behaviourExamples,
   categoryTag,
@@ -49,6 +51,7 @@ const STARTER_IDS = [
   'totem',
   'status-effect',
   'potion',
+  'particle',
   'throwable',
   'enchantment',
   'painting',
@@ -77,7 +80,7 @@ const STARTER_IDS = [
 ];
 
 /**
- * The 93 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
+ * The 96 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
  * items, entities, models and animations and scripting plugins, in per-kind example order.
  */
 const KIND_IDS = [
@@ -90,6 +93,7 @@ const KIND_IDS = [
   'minecraft:equipment',
   'minecraft:atlas',
   'minecraft:font',
+  'minecraft:particle',
   'minecraft:recipe',
   'minecraft:loot_table',
   'minecraft:advancement',
@@ -171,6 +175,7 @@ const KIND_IDS = [
   'msm:mod',
   'msm:biome_addition',
   'msm:loot_addition',
+  'msm:particle',
   'msm:entity',
   'msm:geo_model',
   'msm:animation',
@@ -246,10 +251,19 @@ const PLACEHOLDERS = new Set([
       ),
     ),
   ),
+  // Particle frames (ADR 0081 D3): every frame of each particle pattern, in each colour and the
+  // Particle flow's default gold.
+  ...PARTICLE_PATTERNS.flatMap((pattern) =>
+    [...Object.values(COLOURS), DEFAULT_PARTICLE_COLOUR].flatMap((colour) =>
+      [...Array(PARTICLE_FRAMES).keys()].map((frame) =>
+        Buffer.from(placeholderPng(pattern, { colour, frame })).toString('hex'),
+      ),
+    ),
+  ),
 ]);
 
 describe('project starters', () => {
-  it('lists the forty-five starters in order', () => {
+  it('lists the forty-six starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -259,7 +273,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(41).fill('content'),
+      ...Array<string>(42).fill('content'),
     ]);
   });
 
@@ -626,8 +640,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 94 per-kind examples, one per built-in kind, 31 behaviour examples and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(94);
+  it('has 96 per-kind examples, one per built-in kind, 32 behaviour examples and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(96);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -650,6 +664,7 @@ describe('examples', () => {
       'example_msm_ore_crusher',
       'example_msm_shulker_crate',
       'example_msm_sky_portal',
+      'example_msm_firefly_jar',
     ]);
     expect(entityBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_hostile_mob',
@@ -670,7 +685,7 @@ describe('examples', () => {
       'example_msm_teleport_staff',
       'example_msm_boss_fight_bar',
     ]);
-    expect(libraryExamples).toHaveLength(129);
+    expect(libraryExamples).toHaveLength(132);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -754,6 +769,12 @@ describe('every starter and example', () => {
       }
       if (entry.id === 'portal') {
         for (const element of build(entry, 'demo', { igniter: 'key' }).elements) {
+          used.add(element.kind);
+        }
+      }
+      // The Particle flow's item answer (ADR 0081 D3).
+      if (entry.id === 'particle') {
+        for (const element of build(entry, 'demo', { show: 'item' }).elements) {
           used.add(element.kind);
         }
       }
@@ -845,8 +866,10 @@ describe('every starter and example', () => {
         const effectId = id.replace(':mob_effect/', ':');
         // A font's bitmap provider names its file with the extension.
         const fileId = `${id}.png`;
+        // A particle sprite `<ns>:<name>` is textures/particle/<name>.png (ADR 0080 D2).
+        const spriteId = id.replace(':particle/', ':');
         expect(
-          [id, paintingId, equipmentId, effectId, fileId].some((candidate) =>
+          [id, paintingId, equipmentId, effectId, fileId, spriteId].some((candidate) =>
             text.includes(`"${candidate}"`),
           ),
           id,

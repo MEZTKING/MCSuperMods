@@ -523,6 +523,34 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     { portal_name: 'Isle Gate', terrain: 'floating_islands', frame: 'minecraft:prismarine_bricks' },
     { portal_name: 'Far Gate', destination: 'other', dimension_id: 'minecraft:the_nether' },
   ],
+  // ADR 0081 D3: every look, size, lifetime, movement and way to show it.
+  particle: [
+    {
+      particle_name: 'Blue Orb',
+      look: 'orb',
+      colour: '#2454c4',
+      size: 'small',
+      how_long: 'long',
+      movement: 'drifts',
+      show: 'item',
+    },
+    {
+      particle_name: 'Smoke Ring',
+      look: 'puff',
+      colour: '#d6e2ee',
+      size: 'large',
+      glows: false,
+      show: 'none',
+    },
+    {
+      particle_name: 'Autumn Leaf',
+      look: 'leaf',
+      colour: '#de9420',
+      movement: 'falls',
+      fades: false,
+    },
+    { particle_name: 'My Spark', look: 'own', picture: pngDataUrl(8, 32), how_long: 'short' },
+  ],
   'extra-drop': [
     { table: 'chests/desert_pyramid', item: 'diamond', count_min: 2, count_max: 5, chance: 100 },
     { table: 'blocks/short_grass', item: 'minecraft:wheat_seeds', chance: 50 },
@@ -884,6 +912,7 @@ const MIRRORED_STARTERS = [
   'music-disc-item',
   'dimension',
   'portal',
+  'particle',
   'status-effect',
   'throwable',
   'extra-drop',
@@ -1533,10 +1562,10 @@ function typeCheck(script: string): string[] {
 }
 
 /**
- * Kinds registered before their per-kind example exists: the particle kinds of ADR 0080 (B351),
- * whose examples come with the library's particle brief (B354), which empties this list.
+ * Kinds registered before their per-kind example exists; empty since the particle examples
+ * (ADR 0081 D5, B354). A new kind may wait here only until its library brief lands.
  */
-const KINDS_AWAITING_EXAMPLES: readonly string[] = ['minecraft:particle', 'msm:particle'];
+const KINDS_AWAITING_EXAMPLES: readonly string[] = [];
 
 // Tests --------------------------------------------------------------------------------------
 
@@ -2161,6 +2190,57 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           utf8.decode(report.contents.get('data/minecraft/tags/block/portals.json') as Uint8Array),
         );
         expect(tag.values).toEqual([{ id: `demo:${path}`, required: false }]);
+      },
+    );
+
+    it.each([
+      ['particle', {}, 'golden_spark', 'golden_spark_block'],
+      ['particle', { show: 'item' }, 'golden_spark', undefined],
+      ['example_msm_firefly_jar', {}, 'firefly_glow', 'firefly_jar'],
+    ] as const)(
+      '%s with %j creates with no problems at all; the particle only in the jar, its vanilla data pack leaves out only the block loot table (ADR 0081 D3, D5)',
+      async (id, values, particle, block) => {
+        const entry =
+          libraryStarters.find((starter) => starter.id === id) ??
+          libraryExamples.find((example) => example.id === id);
+        if (entry === undefined) throw new Error(`No ${id}`);
+        const built = await buildProject('Particle', 'demo', [
+          buildEntry(entry, 'demo', 'Particle', bundle.target, values),
+        ]);
+        const project = await reload(built.fs);
+        const ids = projectRegistryIds(project);
+        expect(ids.particle_type).toEqual([`demo:${particle}`]);
+        const registries = createRegistryIndex({ vanilla: context.vanilla, project: ids });
+        // Warnings and infos too: untouched defaults give none (ADR 0081 D3).
+        expect(validatorProblems(project, bundle.target, registries)).toEqual([]);
+        const { resourceFiles, jarFiles } = await checkProject(bundle, context, built);
+        expect(jarFiles).toEqual(
+          expect.arrayContaining([
+            `msm/demo/particle/${particle}.json`,
+            `assets/demo/particles/${particle}.json`,
+            `assets/demo/textures/particle/${particle}_0.png`,
+            `assets/demo/textures/particle/${particle}_3.png`,
+          ]),
+        );
+        // The vanilla resource pack keeps the description and pictures (ignored without the mod).
+        expect(resourceFiles).toContain(`assets/demo/particles/${particle}.json`);
+        const report = await exportProblems(
+          bundle,
+          context,
+          built.fs,
+          project,
+          registries,
+          ids,
+          vanillaSafeExporter(dataPackExporter, modOnlyIdsFor(project)),
+        );
+        expect(report.ok).toBe(true);
+        expect(
+          report.problems
+            .filter((problem) => problem.severity !== 'info')
+            .map((problem) => problem.code),
+        ).toEqual(block === undefined ? [] : [MOD_ONLY_REFERENCE]);
+        expect(report.files.filter((file) => file.includes(particle))).toEqual([]);
+        expect(report.files.some((file) => file.endsWith('.mcfunction'))).toBe(false);
       },
     );
 

@@ -1,0 +1,24 @@
+{
+  "data": {
+    "animation": "loop",
+    "emissive": true,
+    "fade": "out",
+    "format": 1,
+    "gravity": -0.1,
+    "lifetime": 20,
+    "size": 0.2,
+    "textures": [
+      "msm_starter:golden_spark_0",
+      "msm_starter:golden_spark_1",
+      "msm_starter:golden_spark_2",
+      "msm_starter:golden_spark_3"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:golden_spark",
+  "kind": "msm:particle",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A particle type of your own (msm:particle): a four-pointed spark that twinkles (animation loop, a frame every 2 ticks), drawn from textures/particle/golden_spark_0.png to _3.png, which lowering also lists in the description assets/msm_starter/particles/golden_spark.json. It lives 20 ticks, is 0.2 blocks to each side of its centre and floats up (gravity -0.1). fade out makes it see-through towards the end. emissive draws it at full brightness, so it glows in the dark. Use msm_starter:golden_spark in a spawn_particle action, as a block's ambient particle, or with /particle msm_starter:golden_spark ~ ~1 ~ 0.3 0.3 0.3 0 10. It needs the Fabric mod jar export, on the server and on every client."
+  }
+}

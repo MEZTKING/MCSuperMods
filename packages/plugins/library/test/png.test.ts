@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inflateSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
+import { PARTICLE_FRAMES, PARTICLE_PATTERNS, PARTICLE_SIZE } from '../src/assets/png';
 import {
   ARMOR_LAYER_SIZE,
   armorLayerPng,
@@ -110,7 +111,7 @@ const PINNED: Partial<Record<PlaceholderPattern, string>> = {
 const PINNED_SKIN = '224f2f4715ddc13cad76f34fd7555f720a9149052645c23f4c28c102c2ff4fd5';
 
 describe('placeholder textures', () => {
-  it('has sixty-six patterns', () => {
+  it('has seventy patterns', () => {
     expect(PLACEHOLDER_PATTERNS).toEqual([
       'plain',
       'ore',
@@ -178,6 +179,10 @@ describe('placeholder textures', () => {
       'block_front',
       'portal',
       'portal_frame',
+      'particle_spark',
+      'particle_orb',
+      'particle_puff',
+      'particle_leaf',
     ]);
   });
 
@@ -191,15 +196,21 @@ describe('placeholder textures', () => {
     expect(Buffer.from(readFileSync(file)).equals(Buffer.from(png))).toBe(true);
   });
 
-  it('draws the armour layers and the effect icon at their vanilla sizes and every other pattern at 16x16', () => {
+  it('draws the armour layers, the effect icon and the particles at their vanilla sizes and every other pattern at 16x16', () => {
+    const particle = { width: PARTICLE_SIZE, height: PARTICLE_SIZE };
     const sizes: Partial<Record<PlaceholderPattern, { width: number; height: number }>> = {
       effect_icon: { width: EFFECT_ICON_SIZE, height: EFFECT_ICON_SIZE },
+      particle_spark: particle,
+      particle_orb: particle,
+      particle_puff: particle,
+      particle_leaf: particle,
       armor_layer_1: ARMOR_LAYER_SIZE,
       armor_layer_2: ARMOR_LAYER_SIZE,
       horse_armor_layer: HORSE_ARMOR_LAYER_SIZE,
       wolf_armor_layer: WOLF_ARMOR_LAYER_SIZE,
     };
     expect(EFFECT_ICON_SIZE).toBe(18);
+    expect(PARTICLE_SIZE).toBe(8);
     expect(HORSE_ARMOR_LAYER_SIZE).toEqual({ width: 64, height: 64 });
     expect(WOLF_ARMOR_LAYER_SIZE).toEqual({ width: 64, height: 32 });
     for (const pattern of PLACEHOLDER_PATTERNS) {
@@ -377,6 +388,32 @@ describe('placeholder textures', () => {
     const inner = (5 * PLACEHOLDER_SIZE + 5) * 4;
     expect([...pixels.subarray(inner, inner + 4)]).toEqual([10, 200, 30, 255]);
   });
+
+  it.each(PARTICLE_PATTERNS)(
+    'draws %s in four distinct frames, each with clear and opaque pixels, wrapping round (ADR 0081 D3)',
+    (pattern) => {
+      expect(PARTICLE_FRAMES).toBe(4);
+      const frames = [0, 1, 2, 3].map((frame) => placeholderPng(pattern, { frame }));
+      expect(new Set(frames.map(sha256)).size).toBe(4);
+      expect(frames[0]).toEqual(placeholderPng(pattern));
+      expect(placeholderPng(pattern, { frame: 5 })).toEqual(frames[1]);
+      expect(placeholderPng(pattern, { frame: -1 })).toEqual(frames[3]);
+      for (const [frame, png] of frames.entries()) {
+        const { width, height, rgba } = decode(png);
+        expect({ width, height }).toEqual({ width: 8, height: 8 });
+        const alpha = [...rgba].filter((_, index) => index % 4 === 3);
+        expect(alpha, `frame ${frame}`).toContain(0);
+        expect(alpha, `frame ${frame}`).toContain(255);
+        // Frame 0 is the pattern's own golden; the others have theirs.
+        if (frame === 0) continue;
+        const file = join(fixtures, `${pattern}_${frame}.png`);
+        if (update) writeFileSync(file, png);
+        expect(Buffer.from(readFileSync(file)).equals(Buffer.from(png))).toBe(true);
+      }
+      // Other patterns ignore the frame.
+      expect(placeholderPng('gem', { frame: 2 })).toEqual(placeholderPng('gem'));
+    },
+  );
 
   it('rejects pixel buffers of the wrong size', () => {
     expect(() => encodePng(new Uint8Array(3), 1, 1)).toThrow(/Expected 4 RGBA bytes/);

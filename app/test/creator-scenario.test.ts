@@ -19,7 +19,11 @@
  * - the Portal flow and the Dimension flow's portal answer (ADR 0078 D2) create with their
  *   defaults and no problems at all, export (the portal only in the jar, its tag entry optional
  *   in the data pack, the dimension and travel function kept), reopen with nothing to apply,
- *   reopen with every choice changed and keep a portal field edited by hand.
+ *   reopen with every choice changed and keep a portal field edited by hand;
+ * - the Particle flow (ADR 0081 D3) creates with its defaults and no problems at all, exports
+ *   (the particle and its block only in the jar, the description and pictures also in the
+ *   resource pack), reopens with nothing to apply, with every choice changed and with a picture
+ *   of one's own, and keeps a particle field edited by hand.
  */
 
 import { createMemoryFileSystem, type Element, type Json, type Project } from '@msm/core';
@@ -737,4 +741,121 @@ describe('Creator scenario: Portal flow and the Dimension flow portal answer (AD
       expect(elementOf(session, entry.portalId)?.data).toEqual(edited);
     });
   }
+});
+
+describe('Creator scenario: Particle flow (ADR 0081 D3)', () => {
+  const PARTICLE = 'demo:golden_spark';
+
+  it('particle: defaults create with no problems; the particle and its block only in the jar', async () => {
+    const { session, calls } = await openSession();
+    const before = session.snapshot.project;
+    const flow = flowOf(session, 'particle');
+    expect(flow.creator?.group).toBe('magic');
+    const values = valuesOf(flow);
+    const { label } = await create(session, flow, values);
+    expect(label).toBe('Create Particle');
+    for (const id of [PARTICLE, `${PARTICLE}_block`]) {
+      expect(elementOf(session, id)?.meta.creator?.flowId, id).toBe('particle');
+    }
+    expect(elementOf(session, PARTICLE)?.meta.creator?.values).toEqual(creatorValues(values));
+    expect(await problemsAfterValidation(session)).toEqual([]);
+
+    const resource = await session.exportPack('resource', 'zip');
+    expect(errorsOf(resource)).toEqual([]);
+    const data = await session.exportPack('data', 'zip');
+    expect(errorsOf(data)).toEqual([]);
+    // The block's loot table is left out with a warning (ADR 0066 D3).
+    expect(
+      data.problems.filter((problem) => problem.code === 'export.mod-only-reference'),
+    ).not.toEqual([]);
+    const jar = await session.exportFabricJar({ [SEPARATE_RUNTIME_OPTION]: false });
+    expect(errorsOf(jar)).toEqual([]);
+    const [resourceZip, dataZip, modJar] = calls.saved.map((saved) =>
+      Object.keys(unzipSync(saved.data)),
+    );
+    expect(modJar).toEqual(
+      expect.arrayContaining([
+        'msm/demo/particle/golden_spark.json',
+        'assets/demo/particles/golden_spark.json',
+        'assets/demo/textures/particle/golden_spark_0.png',
+        'assets/demo/textures/particle/golden_spark_3.png',
+        'msm/demo/block/golden_spark_block.json',
+        'data/demo/loot_table/blocks/golden_spark_block.json',
+      ]),
+    );
+    // The vanilla resource pack keeps the description and pictures; the client ignores them
+    // without the mod (ADR 0080 D10).
+    expect(resourceZip).toEqual(
+      expect.arrayContaining([
+        'assets/demo/particles/golden_spark.json',
+        'assets/demo/textures/particle/golden_spark_0.png',
+      ]),
+    );
+    expect(dataZip ?? []).not.toContain('data/demo/loot_table/blocks/golden_spark_block.json');
+
+    expect(session.undo()).toBe(true);
+    expect(session.snapshot.project).toEqual(before);
+  });
+
+  it('particle: reopens with nothing to apply, then with every choice changed, and keeps a particle field edited by hand', async () => {
+    const { session } = await openSession();
+    const flow = flowOf(session, 'particle');
+    await create(session, flow, valuesOf(flow));
+
+    // Every answer is kept: reopening with the stored values changes nothing.
+    const same = await reopen(session, flow, PARTICLE, {});
+    expect(creatorChanges(same).items).toEqual([]);
+    expect(creatorChanges(same).writes).toEqual([]);
+
+    const plan = await reopen(session, flow, PARTICLE, {
+      look: 'leaf',
+      colour: '#2454c4',
+      size: 'large',
+      how_long: 'long',
+      movement: 'falls',
+      glows: false,
+      fades: false,
+      show: 'item',
+    });
+    expect(plan.mode).toBe('update');
+    expect(statusOf(plan, PARTICLE)).toBe('replace');
+    expect(statusOf(plan, `${PARTICLE}_block`)).toBe('remove');
+    expect(statusOf(plan, 'demo:block/golden_spark_block')).toBe('remove');
+    expect(statusOf(plan, `${PARTICLE}_wand`)).toBe('create');
+    expect(statusOf(plan, 'demo:textures/particle/golden_spark_0.png')).toBe('replace');
+    await applyCreatorPlan(session, creatorChanges(plan), creatorLabel(plan, flow.title));
+    expect(await errorsAfterValidation(session)).toEqual([]);
+    const changed = elementOf(session, PARTICLE)?.data as Record<string, Json>;
+    expect(changed).toMatchObject({
+      animation: 'random',
+      spin: 6,
+      size: 0.4,
+      lifetime: 40,
+      gravity: 0.1,
+    });
+    expect(changed.emissive).toBeUndefined();
+    expect(changed.fade).toBeUndefined();
+    expect(elementOf(session, `${PARTICLE}_block`)).toBeUndefined();
+    expect(elementOf(session, `${PARTICLE}_wand`)?.meta.creator?.flowId).toBe('particle');
+
+    // A picture of one's own: one frame named after the particle.
+    const own = await reopen(session, flow, PARTICLE, {
+      look: 'own',
+      picture: pngDataUrl(paintingPng(1, 1, [250, 200, 40])),
+    });
+    expect(statusOf(own, 'demo:textures/particle/golden_spark.png')).toBe('create');
+    await applyCreatorPlan(session, creatorChanges(own), creatorLabel(own, flow.title));
+    expect(await errorsAfterValidation(session)).toEqual([]);
+    expect(elementOf(session, PARTICLE)?.data).toMatchObject({ textures: [PARTICLE] });
+
+    // A particle field edited by hand, then a reopen that would change the particle: it is kept.
+    const edited = structuredClone(elementOf(session, PARTICLE)?.data) as Record<string, Json>;
+    edited.always_show = true;
+    session.setElementData(PARTICLE, edited as unknown as Json);
+    const again = await reopen(session, flow, PARTICLE, { size: 'small' });
+    expect(statusOf(again, PARTICLE)).toBe('keep');
+    await applyCreatorPlan(session, creatorChanges(again), creatorLabel(again, flow.title));
+    expect(elementOf(session, PARTICLE)?.data).toEqual(edited);
+    expect(await errorsAfterValidation(session)).toEqual([]);
+  });
 });

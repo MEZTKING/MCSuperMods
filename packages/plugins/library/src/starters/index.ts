@@ -38,6 +38,7 @@ import { musicDiscBundle } from './music-disc';
 import { MUSIC_DISC_ITEM_PARAMETERS, musicDiscItemBundle } from './music-disc-item';
 import { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
 import { PAINTING_PARAMETERS, paintingBundle } from './painting';
+import { PARTICLE_PARAMETERS, particleBundle } from './particle';
 import { PET_PARAMETERS, petBundle } from './pet';
 import { PORTAL_PARAMETERS, portalBundle } from './portal';
 import { POTION_PARAMETERS, potionBundle } from './potion';
@@ -96,6 +97,7 @@ export {
   PAINTING_PARAMETERS,
   paintingBundle,
 } from './painting';
+export { PARTICLE_PARAMETERS, particleBundle } from './particle';
 export { PET_PARAMETERS, petBundle } from './pet';
 export { PORTAL_PARAMETERS, portalBundle } from './portal';
 export {
@@ -441,6 +443,20 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
         blurb: 'A potion to brew, with longer, stronger, splash and lingering versions.',
       },
       probeValues: [{ effect: 'minecraft:speed' }],
+    },
+  ),
+  starter(
+    'particle',
+    'Particle',
+    'A particle of your own: a spark, orb, puff or leaf drawn in four frames in your colour, or your own picture, with its size, how long it lives, how it moves, whether it glows and fades, shown around a new block, sent by a new item when used, or alone for /particle and actions. Particles need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    particleBundle,
+    {
+      supports: hasFabric,
+      parameters: PARTICLE_PARAMETERS,
+      creator: { group: 'magic', blurb: 'Your own particle.' },
+      probeValues: [{ show: 'item' }],
     },
   ),
   starter(

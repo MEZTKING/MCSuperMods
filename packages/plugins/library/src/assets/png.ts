@@ -80,7 +80,11 @@ export type Rgb = readonly [number, number, number];
  *   the surface of a portal block (block texture, partly transparent so the game draws it
  *   translucent; ADR 0078 D2);
  * - `portal_frame`: dark obsidian-like stone with glowing veins in the colour, a portal's
- *   frame block (block texture).
+ *   frame block (block texture);
+ * - `particle_spark`, `particle_orb`, `particle_puff`, `particle_leaf`: 8x8 particle pictures
+ *   on a transparent background, each in {@link PARTICLE_FRAMES} frames chosen with
+ *   {@link PlaceholderOptions.frame} (a twinkling four-pointed spark, a pulsing round glow, a
+ *   cloud puff that thins out, a leaf that flutters; textures under `particle/`; ADR 0081 D3).
  *
  * Paintings have their own placeholder of any size, {@link paintingPng}.
  */
@@ -150,7 +154,11 @@ export type PlaceholderPattern =
   | 'produce'
   | 'block_front'
   | 'portal'
-  | 'portal_frame';
+  | 'portal_frame'
+  | 'particle_spark'
+  | 'particle_orb'
+  | 'particle_puff'
+  | 'particle_leaf';
 
 /** Every pattern, in documentation order. */
 export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze([
@@ -220,6 +228,10 @@ export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze
   'block_front',
   'portal',
   'portal_frame',
+  'particle_spark',
+  'particle_orb',
+  'particle_puff',
+  'particle_leaf',
 ]);
 
 /** Width and height of the armour layer patterns, the vanilla humanoid armour texture size. */
@@ -234,14 +246,34 @@ export const WOLF_ARMOR_LAYER_SIZE = Object.freeze({ width: 64, height: 32 });
 /** Edge length of the `effect_icon` pattern, the vanilla mob effect icon size (ADR 0055 D6). */
 export const EFFECT_ICON_SIZE = 18;
 
+/** Edge length of the particle patterns (ADR 0081 D3), the size of vanilla's particle pictures. */
+export const PARTICLE_SIZE = 8;
+
+/** The number of frames each particle pattern draws (ADR 0081 D3). */
+export const PARTICLE_FRAMES = 4;
+
+/** The particle patterns, drawn {@link PARTICLE_SIZE} square in {@link PARTICLE_FRAMES} frames. */
+export const PARTICLE_PATTERNS = Object.freeze([
+  'particle_spark',
+  'particle_orb',
+  'particle_puff',
+  'particle_leaf',
+] as const satisfies readonly PlaceholderPattern[]);
+
+/** Whether `pattern` is one of the {@link PARTICLE_PATTERNS}. */
+export function isParticlePattern(pattern: PlaceholderPattern): boolean {
+  return (PARTICLE_PATTERNS as readonly PlaceholderPattern[]).includes(pattern);
+}
+
 /**
  * The size of a pattern's image in pixels: {@link ARMOR_LAYER_SIZE} for the humanoid armour
  * layers, {@link HORSE_ARMOR_LAYER_SIZE} and {@link WOLF_ARMOR_LAYER_SIZE} for the body armour
- * layers, {@link EFFECT_ICON_SIZE} square for `effect_icon`, {@link PLACEHOLDER_SIZE} square for
- * every other pattern.
+ * layers, {@link EFFECT_ICON_SIZE} square for `effect_icon`, {@link PARTICLE_SIZE} square for
+ * the particle patterns, {@link PLACEHOLDER_SIZE} square for every other pattern.
  */
 export function placeholderSize(pattern: PlaceholderPattern): { width: number; height: number } {
   if (pattern === 'effect_icon') return { width: EFFECT_ICON_SIZE, height: EFFECT_ICON_SIZE };
+  if (isParticlePattern(pattern)) return { width: PARTICLE_SIZE, height: PARTICLE_SIZE };
   if (pattern === 'armor_layer_1' || pattern === 'armor_layer_2') {
     return { width: ARMOR_LAYER_SIZE.width, height: ARMOR_LAYER_SIZE.height };
   }
@@ -263,6 +295,11 @@ export interface PlaceholderOptions {
    * to a darker shade of the main colour (scaled to 71 per cent). Other patterns ignore it.
    */
   accent?: Rgb;
+  /**
+   * The frame of a particle pattern, 0 to {@link PARTICLE_FRAMES} - 1 (other values wrap round);
+   * defaults to 0. Other patterns ignore it.
+   */
+  frame?: number;
 }
 
 /** Ruby red, the default placeholder colour. */
@@ -310,6 +347,9 @@ function hash(x: number, y: number, salt: number): number {
 }
 
 type Pixel = (x: number, y: number) => Rgba;
+
+/** A pattern drawn from a palette; particle patterns also take their frame. */
+type Draw = (palette: Palette, frame: number) => Pixel;
 
 /**
  * A storage block: a bevelled outer edge, an inset panel with its own shadow and light edges,
@@ -1340,6 +1380,104 @@ function portalFrame(palette: Palette): Pixel {
   };
 }
 
+/*
+ * The particle patterns work in doubled coordinates from the centre of the 8x8 picture,
+ * `u = 2x - 7` and `v = 2y - 7` (odd numbers from -7 to 7), so every test is integer maths.
+ */
+
+/** How far each arm of the spark reaches in each frame, in pixels from its core. */
+const SPARK_ARMS: readonly number[] = [1, 2, 3, 2];
+
+/**
+ * A twinkling spark: a 2x2 core in the shine colour with four arms that grow and shrink over
+ * the frames (light along the arm, the colour at the tip), and diagonal glints in the last
+ * frame.
+ */
+function particleSpark(palette: Palette, frame: number): Pixel {
+  const arm = SPARK_ARMS[frame] ?? 1;
+  return (x, y) => {
+    const u = Math.abs(2 * x - 7);
+    const v = Math.abs(2 * y - 7);
+    if (u === 1 && v === 1) return palette.shine;
+    const along = u === 1 ? v : v === 1 ? u : 0;
+    if (along > 0) {
+      const step = (along - 1) / 2;
+      if (step < arm) return palette.light;
+      if (step === arm) return palette.mid;
+    }
+    if (frame === 3 && u === 3 && v === 3) return palette.mid;
+    return CLEAR;
+  };
+}
+
+/**
+ * The squared doubled distances (`u * u + v * v`) up to which the orb is drawn in its shine,
+ * light and edge colours in each frame: it swells and shrinks as it pulses.
+ */
+const ORB_RINGS: readonly (readonly [number, number, number])[] = [
+  [2, 10, 18],
+  [2, 18, 26],
+  [10, 26, 50],
+  [10, 18, 34],
+];
+
+/** The alpha of the orb's soft edge. */
+const ORB_EDGE_ALPHA = 160;
+
+/** A pulsing round glow: a bright core, a light body and a soft see-through edge. */
+function particleOrb(palette: Palette, frame: number): Pixel {
+  const [shine, light, edge] = ORB_RINGS[frame] ?? [2, 10, 18];
+  return (x, y) => {
+    const u = 2 * x - 7;
+    const v = 2 * y - 7;
+    const d = u * u + v * v;
+    if (d <= shine) return palette.shine;
+    if (d <= light) return palette.light;
+    if (d <= edge) return [palette.mid[0], palette.mid[1], palette.mid[2], ORB_EDGE_ALPHA];
+    return CLEAR;
+  };
+}
+
+/** The squared doubled radius of the puff in each frame: it starts full and thins out. */
+const PUFF_RADII: readonly number[] = [50, 34, 26, 18];
+
+/**
+ * A cloud puff, lit from the top left and shaded towards the bottom right, that shrinks and
+ * breaks up into more and more gaps over the frames.
+ */
+function particlePuff(palette: Palette, frame: number): Pixel {
+  const radius = PUFF_RADII[frame] ?? 50;
+  return (x, y) => {
+    const u = 2 * x - 7;
+    const v = 2 * y - 7;
+    if (u * u + v * v > radius) return CLEAR;
+    if (frame > 0 && hash(x, y, 200 + frame) % (6 - frame) === 0) return CLEAR;
+    const slope = u + v;
+    if (slope < -4) return palette.light;
+    if (slope > 4) return palette.deep;
+    return palette.mid;
+  };
+}
+
+/**
+ * A leaf on the diagonal with a dark midrib, light on one half and the colour on the other;
+ * frames 1 and 3 are mirrored and frames 2 and 3 narrower, as if it turned while it falls.
+ */
+function particleLeaf(palette: Palette, frame: number): Pixel {
+  const mirrored = frame % 2 === 1;
+  // The squared half-width of the leaf across the diagonal, in doubled units.
+  const width = frame < 2 ? 25 : 9;
+  return (x, y) => {
+    const u = 2 * (mirrored ? 7 - x : x) - 7;
+    const v = 2 * y - 7;
+    const along = u - v;
+    const across = u + v;
+    if (along * along * width + across * across * 196 >= 196 * width) return CLEAR;
+    if (across === 0) return palette.dark;
+    return across < 0 ? palette.light : palette.mid;
+  };
+}
+
 /**
  * One cuboid of an entity model as it unwraps onto its texture (vanilla box UV): the texture
  * offset `u`, `v` and the box's width, height and depth in pixels.
@@ -1529,7 +1667,7 @@ const CROSSBOW_FIREWORK: Mask = pulledMask(CROSSBOW, CROSSBOW_TIPS, [4, 11], {
   char: 'r',
 });
 
-const PATTERNS: Readonly<Record<PlaceholderPattern, (palette: Palette) => Pixel>> = {
+const PATTERNS: Readonly<Record<PlaceholderPattern, Draw>> = {
   plain,
   ore,
   gem,
@@ -1596,6 +1734,10 @@ const PATTERNS: Readonly<Record<PlaceholderPattern, (palette: Palette) => Pixel>
   block_front: blockFront,
   portal,
   portal_frame: portalFrame,
+  particle_spark: particleSpark,
+  particle_orb: particleOrb,
+  particle_puff: particlePuff,
+  particle_leaf: particleLeaf,
 };
 
 /**
@@ -1603,7 +1745,8 @@ const PATTERNS: Readonly<Record<PlaceholderPattern, (palette: Palette) => Pixel>
  * {@link placeholderSize} gives.
  *
  * @param pattern - The pattern to draw.
- * @param options - The main colour and, for `egg`, the spot colour.
+ * @param options - The main colour, for `egg` and `crop_stage3` the accent colour and for the
+ *   particle patterns the frame.
  */
 export function placeholderPixels(
   pattern: PlaceholderPattern,
@@ -1611,7 +1754,9 @@ export function placeholderPixels(
 ): Uint8Array {
   const draw = PATTERNS[pattern];
   if (draw === undefined) throw new Error(`Unknown placeholder pattern ${String(pattern)}.`);
-  const pixel = draw(paletteOf(options.colour ?? DEFAULT_COLOUR, options.accent));
+  const frame =
+    (((Math.trunc(options.frame ?? 0) % PARTICLE_FRAMES) + PARTICLE_FRAMES) % PARTICLE_FRAMES) | 0;
+  const pixel = draw(paletteOf(options.colour ?? DEFAULT_COLOUR, options.accent), frame);
   const { width, height } = placeholderSize(pattern);
   const rgba = new Uint8Array(width * height * 4);
   for (let y = 0; y < height; y += 1) {

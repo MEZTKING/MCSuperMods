@@ -126,7 +126,7 @@ export const READ_TOOLS = [
     group: 'read',
     input: listStartersInput,
     description:
-      'Lists the starters: whole bundles of elements and placeholder textures such as Custom ore (an ore block with its item, loot table, recipes and the msm:mod element), Custom sword and Custom mob (an animated entity with model, animations, spawn egg and loot), the block family flows Wood set, Stone set, Crop and Tree, the mob flows Pet, Farm animal, Mount, Flying mob, Water mob and Boss, Storage crate, Machine and Portal, each with its parameters, their types and defaults. Use add_starter to propose one; it is often the fastest correct way to make a common piece of content.',
+      'Lists the starters: whole bundles of elements and placeholder textures such as Custom ore (an ore block with its item, loot table, recipes and the msm:mod element), Custom sword and Custom mob (an animated entity with model, animations, spawn egg and loot), the block family flows Wood set, Stone set, Crop and Tree, the mob flows Pet, Farm animal, Mount, Flying mob, Water mob and Boss, Storage crate, Machine, Portal and Particle (a particle type of its own with its frames, shown around a block or sent by an item), each with its parameters, their types and defaults. Use add_starter to propose one; it is often the fastest correct way to make a common piece of content.',
   },
   {
     name: 'target_facts',

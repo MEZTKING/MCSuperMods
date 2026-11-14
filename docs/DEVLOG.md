@@ -3844,3 +3844,18 @@ Decisions
 
 Next
 - B352 (options objects, `motion`, `force`, ambient particles; removes the other two `PENDING` prefixes), B355 (eject), B356 (client GameTest with `MsmParticle.created`).
+## 2026-11-14 — executor — B354 Particle flow and examples
+
+What
+- `@msm/plugin-library`: new `content/particle.ts` (the shared builder: `particleContent`, `particleFrames`, `particleData`, `PARTICLE_LOOKS`, `PARTICLE_SIZES`, `PARTICLE_LIFETIMES`, `PARTICLE_MOVEMENTS`, `PARTICLE_SHOW`, `DEFAULT_PARTICLE_ANSWERS`, `DEFAULT_PARTICLE_COLOUR` `#ffd060`, `PARTICLE_KINDS`), the Particle Creator flow `starters/particle.ts` (id `particle`, group `magic`, card "Your own particle.", `supports: hasFabric`, after Potion in the list) and `examples/particles.ts`: per-kind examples `example_particle` ("Blue flame", `minecraft:particle` retexturing `minecraft:flame`) and `example_msm_particle` ("Drifting ember"), and the behaviour example `example_msm_firefly_jar` (particle `firefly_glow`, glass jar `firefly_jar` with `msm:ambient_particles`, `spark_wand` whose `on_use` sends a `motion` burst and a dust options object). `assets/png.ts`: four 8x8 patterns `particle_spark`, `particle_orb`, `particle_puff`, `particle_leaf`, four frames each (`PlaceholderOptions.frame`, `PARTICLE_FRAMES`, `PARTICLE_SIZE`, `PARTICLE_PATTERNS`); 70 patterns.
+- Counts: 46 starters (34 Creator flows), 132 examples (96 per-kind, 32 behaviour), 70 placeholder patterns. `KINDS_AWAITING_EXAMPLES` in `packages/exporters/test/library.test.ts` is empty; the flow has four wizard alternatives and a mirror `examples/starters/particle/`; the `examples/` mirror regenerated.
+- AI: `PLACEHOLDER_PATTERN_NAMES` and the `create_texture` description gain the particle patterns, `list_starters` names the Particle flow; catalogue hash updated. `app/test/creator-scenario.test.ts`: create with zero problems, export, reopen unchanged, every choice changed, own picture, a field edited by hand kept.
+- Verified: `pnpm lint`, `pnpm typecheck`, `turbo run test --force --concurrency=4` (21 tasks green), `pnpm build`, `dist:dir` and check-size (`app.asar` 26.9 MB of 32 MB); library vanilla data packs of the flow (defaults, alternatives, minimums) and every `examples/` mirror loaded on vanilla 26.3 and 26.4-snapshot-7 servers (`vanilla-packs.ts`: PASS on both).
+
+Decisions
+- Look patterns are drawn in the chosen colour (no `color` tint), so a picture of one's own keeps its colours; "My own picture" without a picture falls back to the spark's first frame.
+- Ids: the particle `<id>`, frames `particle/<id>_0..3` (own picture `particle/<id>`), block `<id>_block`, item `<id>_wand`; the block reuses `polished_stone` in slate, the wand the vanilla blaze rod model. Nothing names a project particle in a biome, dimension type, timeline, enchantment or function.
+- Particle kind ids live in `content/particle.ts` (`PARTICLE_KINDS`) because `content/bundle.ts` was not an owner file.
+
+Next
+- B357 (e2e particles path) uses the flow's labels; B360 documents the flow, the patterns and the counts.

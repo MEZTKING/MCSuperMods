@@ -1,0 +1,18 @@
+{
+  "data": {
+    "textures": [
+      "msm_examples:blue_flame"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:flame",
+  "kind": "minecraft:particle",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A particle description lists the pictures the client draws a particle type with, from the particle atlas: msm_examples:blue_flame is the picture textures/particle/blue_flame.png of this project. Named minecraft:flame, it replaces the pictures of vanilla's flame particle, so torches, furnaces and spawners show blue flames. A description in a resource pack needs no mod: it only changes the look, never how the particle moves or how long it lives. List several pictures to animate it; a description for a type that does not exist is ignored.",
+    "tags": [
+      "example",
+      "particles"
+    ]
+  }
+}

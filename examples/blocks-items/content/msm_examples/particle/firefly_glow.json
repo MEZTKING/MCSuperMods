@@ -1,0 +1,33 @@
+{
+  "data": {
+    "animation": "loop",
+    "emissive": true,
+    "fade": "in_out",
+    "format": 1,
+    "frame_ticks": 4,
+    "friction": 0.9,
+    "gravity": -0.02,
+    "lifetime": {
+      "max": 80,
+      "min": 40
+    },
+    "size": 0.1,
+    "textures": [
+      "msm_examples:firefly_glow_0",
+      "msm_examples:firefly_glow_1",
+      "msm_examples:firefly_glow_2",
+      "msm_examples:firefly_glow_3"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:firefly_glow",
+  "kind": "msm:particle",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A firefly of its own (msm:particle): a round glow drawn from textures/particle/firefly_glow_0.png to _3.png that pulses (animation loop, a frame every 4 ticks) and glows in the dark (emissive). Each lives 40 to 80 ticks (lifetime min and max), fades in and out (fade in_out) and rises very slowly (gravity -0.02) while friction 0.9 slows any push. Lowering lists the pictures in the description assets/msm_examples/particles/firefly_glow.json. It needs the Fabric mod jar export, on the server and on every client.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

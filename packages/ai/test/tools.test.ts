@@ -166,13 +166,13 @@ function order(group: string): number {
 }
 
 describe('tool catalogue is frozen (ADR 0055 D11)', () => {
-  // The hash last changed with B338: create_texture gained the portal and portal_frame patterns
-  // and list_starters names the Storage crate, Machine and Portal flows (ADRs 0076, 0078).
+  // The hash last changed with B354: create_texture gained the four particle patterns (and its
+  // description names the portal ones) and list_starters names the Particle flow (ADR 0081 D3).
   it('has 22 tools in the documented order with unchanged schemas', () => {
     expect(TOOL_CATALOGUE.map((tool) => tool.name)).toEqual([...AI_TOOL_NAMES]);
     expect(TOOL_CATALOGUE).toHaveLength(22);
     expect(createHash('sha256').update(JSON.stringify(TOOL_CATALOGUE)).digest('hex')).toBe(
-      '22fd4a369db3bbe4d08cc62122111ecd22d42158b999605b44cac7a1c63f85ee',
+      'da796d9f11aa2249b18de71de6a8a3aeba94df00aa94af59d01ee0a6c6a0b6de',
     );
   });
 });

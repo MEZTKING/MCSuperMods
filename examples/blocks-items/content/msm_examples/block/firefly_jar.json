@@ -1,0 +1,45 @@
+{
+  "data": {
+    "components": {
+      "msm:ambient_particles": {
+        "chance": 0.3,
+        "particle": "msm_examples:firefly_glow",
+        "spread": [
+          0.3,
+          0.3,
+          0.3
+        ]
+      },
+      "msm:breakable": {
+        "hardness": 0.3,
+        "resistance": 0.3
+      },
+      "msm:light_emitter": {
+        "level": 6
+      },
+      "msm:shape": {
+        "preset": "full",
+        "see_through": true
+      }
+    },
+    "display_name": "Firefly Jar",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "model": "minecraft:block/glass",
+    "sound_type": "glass"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:firefly_jar",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A glass jar with fireflies inside: msm:ambient_particles gives a 30 per cent chance each tick of one msm_examples:firefly_glow near its centre (the default offset), within 0.3 blocks (spread). The client draws them near the player only, so they cost the server nothing. msm:shape see_through draws it as glass, so the fireflies show through, and it gives light of level 6. It drops itself and reuses the vanilla glass model.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

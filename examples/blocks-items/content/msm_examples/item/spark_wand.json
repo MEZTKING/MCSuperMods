@@ -1,0 +1,63 @@
+{
+  "data": {
+    "components": {
+      "msm:on_use": {
+        "cooldown_ticks": 20,
+        "event": "msm_examples:spark_wand_used"
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "display_name": "Spark Wand",
+    "events": {
+      "msm_examples:spark_wand_used": {
+        "actions": [
+          {
+            "count": 12,
+            "motion": [
+              0,
+              0.15,
+              0
+            ],
+            "particle": "msm_examples:firefly_glow",
+            "spread": 0.4,
+            "type": "spawn_particle"
+          },
+          {
+            "count": 24,
+            "particle": {
+              "color": [
+                1,
+                0.82,
+                0.38
+              ],
+              "scale": 1.5,
+              "type": "minecraft:dust"
+            },
+            "spread": 0.8,
+            "type": "spawn_particle"
+          },
+          {
+            "pitch": 1.5,
+            "sound": "minecraft:block.amethyst_block.chime",
+            "type": "play_sound"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "minecraft:item/blaze_rod",
+    "rarity": "uncommon"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:spark_wand",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A wand that sends fireflies flying: msm:on_use fires msm_examples:spark_wand_used at most once a second. Its first spawn_particle sends 12 msm_examples:firefly_glow within 0.4 blocks, each starting straight up at 0.15 blocks a tick (motion, one packet per particle). The second sends 24 particles of vanilla dust through an options object: type names the particle and color (red, green and blue from 0 to 1) and scale are its options. It reuses the vanilla blaze rod model.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}
