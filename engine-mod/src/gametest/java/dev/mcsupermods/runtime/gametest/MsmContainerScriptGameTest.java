@@ -2,6 +2,7 @@ package dev.mcsupermods.runtime.gametest;
 
 import dev.mcsupermods.runtime.events.EventContext;
 import dev.mcsupermods.runtime.registry.container.MsmStorageBlockEntity;
+import dev.mcsupermods.runtime.registry.machine.MsmMachineBlockEntity;
 import dev.mcsupermods.runtime.scripting.ScriptHost;
 import java.util.List;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -27,8 +28,8 @@ import net.minecraft.world.level.block.entity.ComparatorBlockEntity;
  * the block under test. Covers a vanilla chest (read, write, stack sizes, {@code add} filling then spilling, the
  * leftover when full, comparators updated by a write, argument errors), an MSM crate that keeps its contents (refuses
  * container items through {@code add} and {@code set}), an MSM container with {@code hoppers: false} ({@code add}
- * ignores faces), stone (no container) and a container used after its block is gone. The machine input case waits for
- * machines (B316).
+ * ignores faces), stone (no container) and a container used after its block is gone. A machine (B316's smelter:
+ * input, fuel, result) takes input items and fuel only, never the result slot.
  */
 public class MsmContainerScriptGameTest {
     private static final BlockPos AT = new BlockPos(2, 2, 2);
@@ -191,6 +192,30 @@ public class MsmContainerScriptGameTest {
         call(helper, host, "container_stale", AT);
         assertNoErrors(helper, host);
         helper.assertValueEqual(last(helper, host, "stale "), "stale 27 get:Error add:Error", "stale");
+        helper.succeed();
+    }
+
+    /**
+     * A fuel machine (B316's {@code machine_smelter}): {@code size} is 3, the script reads the result slot a player
+     * could take from, writes the input, and {@code set} and {@code add} get refused by
+     * {@code MsmMachineBlockEntity.canPlaceItem}: never into the result slot, into the fuel slot only for fuel.
+     */
+    @GameTest
+    public void machineTakesInputAndFuelButNotTheResult(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        helper.setBlock(AT, BuiltInRegistries.BLOCK.getValue(id("machine_smelter")));
+        helper.assertTrue(helper.getLevel().getBlockEntity(helper.absolutePos(AT)) instanceof MsmMachineBlockEntity,
+                "machine_smelter has no machine block entity");
+        Container m = container(helper, AT);
+        m.setItem(MsmMachineBlockEntity.OUTPUT, new ItemStack(Items.IRON_NUGGET, 2));
+        call(helper, host, "container_machine", AT);
+        assertNoErrors(helper, host);
+        helper.assertValueEqual(last(helper, host, "machine "), "machine 3 minecraft:iron_nuggetx2 true minecraft:diamondx1 "
+                + "false minecraft:iron_nuggetx2 false - minecraft:iron_ingotx5 true minecraft:coalx1 - minecraft:coalx3 "
+                + "minecraft:dirtx3 true - minecraft:dirtx3 minecraft:coalx3 minecraft:iron_nuggetx2 2 3", "machine");
+        assertStack(helper, m, MsmMachineBlockEntity.INPUT, new ItemStack(Items.DIRT, 3));
+        assertStack(helper, m, MsmMachineBlockEntity.FUEL, new ItemStack(Items.COAL, 3));
+        assertStack(helper, m, MsmMachineBlockEntity.OUTPUT, new ItemStack(Items.IRON_NUGGET, 2));
         helper.succeed();
     }
 }

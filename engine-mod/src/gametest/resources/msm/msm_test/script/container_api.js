@@ -89,3 +89,23 @@ msm.actions.define("msm_test:container_stale", function (e) {
     attempt(out, "add", function () { kept.add("minecraft:apple"); });
     msm.log.info("stale " + out.join(" "));
 });
+
+// e.pos: an empty msm_test:machine_smelter (fuel machine: 0 input, 1 fuel, 2 result), with 2 iron nuggets already in the
+// result slot. Slot 2 refuses everything, slot 1 takes fuel only, slot 0 takes anything.
+msm.actions.define("msm_test:container_machine", function (e) {
+    var c = e.world.getContainer(e.pos);
+    var out = [c.size, show(c.get(2))];
+    out.push(c.set(0, "minecraft:diamond"), show(c.get(0)));
+    out.push(c.set(2, "minecraft:iron_ingot"), show(c.get(2)));
+    out.push(c.set(1, "minecraft:dirt"), show(c.get(1)));
+    // Nothing takes iron: the input holds a diamond, fuel and result refuse it, so all 5 come back.
+    out.push(show(c.add({ id: "minecraft:iron_ingot", count: 5 })));
+    out.push(c.set(1, "minecraft:coal"), show(c.get(1)));
+    // Coal merges into the fuel slot (the input holds a different item, the result refuses).
+    out.push(show(c.add({ id: "minecraft:coal", count: 2 })), show(c.get(1)));
+    // Dirt is no fuel and the input is taken, so all 3 come back; once the input is empty the input takes it.
+    out.push(show(c.add({ id: "minecraft:dirt", count: 3 })));
+    out.push(c.set(0), show(c.add({ id: "minecraft:dirt", count: 3 })), show(c.get(0)), show(c.get(1)), show(c.get(2)));
+    out.push(c.count("minecraft:iron_nugget"), c.count("minecraft:coal"));
+    msm.log.info("machine " + out.join(" "));
+});
