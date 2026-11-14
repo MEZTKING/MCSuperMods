@@ -1,0 +1,44 @@
+package dev.mcsupermods.runtime.registry.machine;
+
+import net.minecraft.world.inventory.ContainerData;
+
+/**
+ * The furnace menu's four data values of a machine (ADR 0075 D3, D4), in vanilla's order: lit time (0), lit duration (1),
+ * cooking progress (2) and total cooking time (3). A {@code redstone} or {@code always} machine shows a full flame while
+ * it works. Values are clamped to 32767: the menu sends them as shorts (limit C5).
+ */
+final class MachineData implements ContainerData {
+    static final int LIT_TIME = 0;
+    static final int LIT_DURATION = 1;
+    static final int PROGRESS = 2;
+    static final int TOTAL = 3;
+    private static final int COUNT = 4;
+    private static final int MAX = Short.MAX_VALUE;
+
+    private final MsmMachineBlockEntity machine;
+
+    MachineData(MsmMachineBlockEntity machine) {
+        this.machine = machine;
+    }
+
+    @Override
+    public int get(int index) {
+        int value = switch (index) {
+            case LIT_TIME -> machine.litTimeForMenu();
+            case LIT_DURATION -> machine.litDurationForMenu();
+            case PROGRESS -> machine.progress();
+            case TOTAL -> machine.totalTime();
+            default -> 0;
+        };
+        return Math.min(value, MAX);
+    }
+
+    /** The server never takes values from the client; the client's own menu keeps its copy in a plain array. */
+    @Override
+    public void set(int index, int value) {}
+
+    @Override
+    public int getCount() {
+        return COUNT;
+    }
+}

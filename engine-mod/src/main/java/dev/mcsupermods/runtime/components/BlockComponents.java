@@ -33,15 +33,17 @@ public record BlockComponents(
         Optional<OnEntityInside> onEntityInside,
         Optional<Flammable> flammable,
         Optional<Strippable> strippable,
-        Optional<Container> container) {
+        Optional<Container> container,
+        Optional<Machine> machine) {
 
     public static final List<String> KEYS = List.of("msm:breakable", "msm:light_emitter", "msm:on_interact", "msm:on_step", "msm:redstone",
             "msm:shape", "msm:on_break", "msm:on_place", "msm:on_random_tick", "msm:on_entity_inside",
-            "msm:flammable", "msm:strippable", "msm:container");
+            "msm:flammable", "msm:strippable", "msm:container", "msm:machine");
     public static final BlockComponents NONE = new BlockComponents(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
             Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-            Optional.empty(), Optional.empty());
+            Optional.empty(), Optional.empty(), Optional.empty());
 
+    /** 14 of the 16 fields a {@code RecordCodecBuilder} group takes (limit C18): a later component needs a nested group. */
     public static final Codec<BlockComponents> CODEC = RecordCodecBuilder.create(i -> i.group(
             optional("msm:breakable", Breakable.CODEC).forGetter(BlockComponents::breakable),
             optional("msm:light_emitter", LightEmitter.CODEC).forGetter(BlockComponents::lightEmitter),
@@ -55,13 +57,14 @@ public record BlockComponents(
             optional("msm:on_entity_inside", OnEntityInside.CODEC).forGetter(BlockComponents::onEntityInside),
             optional("msm:flammable", Flammable.CODEC).forGetter(BlockComponents::flammable),
             optional("msm:strippable", Strippable.CODEC).forGetter(BlockComponents::strippable),
-            optional("msm:container", Container.CODEC).forGetter(BlockComponents::container))
+            optional("msm:container", Container.CODEC).forGetter(BlockComponents::container),
+            optional("msm:machine", Machine.CODEC).forGetter(BlockComponents::machine))
             .apply(i, BlockComponents::new));
 
     /** The keys of the components present, in {@link #KEYS} order. */
     public List<String> present() {
         List<Optional<?>> values = List.of(breakable, lightEmitter, onInteract, onStep, redstone, shape, onBreak, onPlace, onRandomTick,
-                onEntityInside, flammable, strippable, container);
+                onEntityInside, flammable, strippable, container, machine);
         List<String> out = new ArrayList<>();
         for (int n = 0; n < KEYS.size(); n++) {
             if (values.get(n).isPresent()) {
@@ -86,13 +89,28 @@ public record BlockComponents(
                 keys.contains("msm:on_entity_inside") ? Optional.empty() : onEntityInside,
                 keys.contains("msm:flammable") ? Optional.empty() : flammable,
                 keys.contains("msm:strippable") ? Optional.empty() : strippable,
-                keys.contains("msm:container") ? Optional.empty() : container);
+                keys.contains("msm:container") ? Optional.empty() : container,
+                keys.contains("msm:machine") ? Optional.empty() : machine);
     }
 
     /** These components with {@code msm:container} replaced (empty removes it). */
     public BlockComponents withContainer(Optional<Container> other) {
         return new BlockComponents(breakable, lightEmitter, onInteract, onStep, redstone, shape, onBreak, onPlace, onRandomTick,
-                onEntityInside, flammable, strippable, other);
+                onEntityInside, flammable, strippable, other, machine);
+    }
+
+    /**
+     * The load-time rule of {@code msm:machine} (ADR 0075 D1): with {@code msm:container} on the same block it is an
+     * error and {@code msm:container} is not applied (a machine has its own three slots). Problems are added to
+     * {@code errors}.
+     */
+    public BlockComponents checkMachine(List<String> errors) {
+        if (machine.isEmpty() || container.isEmpty()) {
+            return this;
+        }
+        errors.add("components: msm:machine and msm:container are not allowed together (a machine has its own three slots);"
+                + " msm:container is not applied");
+        return withContainer(Optional.empty());
     }
 
     /**
@@ -142,6 +160,10 @@ public record BlockComponents(
         container.ifPresent(c -> {
             c.onOpen().ifPresent(e -> out.add(new String[] {"msm:container.on_open", e.toString()}));
             c.onClose().ifPresent(e -> out.add(new String[] {"msm:container.on_close", e.toString()}));
+        });
+        machine.ifPresent(c -> {
+            c.onStart().ifPresent(e -> out.add(new String[] {"msm:machine.on_start", e.toString()}));
+            c.onFinish().ifPresent(e -> out.add(new String[] {"msm:machine.on_finish", e.toString()}));
         });
         return out.build();
     }
@@ -365,6 +387,129 @@ public record BlockComponents(
         public Container withoutKeepContents() {
             return new Container(layout, rowsSetting, sizeSetting, Optional.empty(), hoppers, comparator, openSound, closeSound,
                     onOpen, onClose);
+        }
+    }
+
+    /** How a machine is powered ({@code ::msm::definition::MachinePower}, ADR 0075 D1). */
+    public enum MachinePower {
+        /** Burns {@code minecraft:cooking_fuel} items from the fuel slot, as a furnace. */
+        FUEL("fuel"),
+        /** Works only while the block receives a redstone signal; takes no fuel. */
+        REDSTONE("redstone"),
+        /** Works whenever it has a matching input. */
+        ALWAYS("always");
+
+        public static final Codec<MachinePower> CODEC = MsmCodecs.named("machine power", values(), MachinePower::id);
+        private final String id;
+
+        MachinePower(String id) {
+            this.id = id;
+        }
+
+        public String id() {
+            return id;
+        }
+    }
+
+    /** The vanilla screen a machine opens ({@code ::msm::definition::MachineMenu}, ADR 0075 D4). */
+    public enum MachineMenu {
+        FURNACE("furnace"),
+        BLAST_FURNACE("blast_furnace"),
+        SMOKER("smoker");
+
+        public static final Codec<MachineMenu> CODEC = MsmCodecs.named("machine menu", values(), MachineMenu::id);
+        private final String id;
+
+        MachineMenu(String id) {
+            this.id = id;
+        }
+
+        public String id() {
+            return id;
+        }
+    }
+
+    /** What comparators read from a machine ({@code ::msm::definition::MachineComparator}, ADR 0075 D5). */
+    public enum MachineComparator {
+        /** The container formula, as a furnace. */
+        CONTENTS("contents"),
+        /** {@code ceil(15 * progress / total)} while working, else 0. */
+        PROGRESS("progress"),
+        /** No signal. */
+        NONE("none");
+
+        public static final Codec<MachineComparator> CODEC = MsmCodecs.named("machine comparator", values(), MachineComparator::id);
+        private final String id;
+
+        MachineComparator(String id) {
+            this.id = id;
+        }
+
+        public String id() {
+            return id;
+        }
+    }
+
+    /**
+     * Processes items over time in a furnace screen ({@code ::msm::definition::Machine}, ADR 0075 D1); closed. Three slots:
+     * input (0), fuel (1), output (2).
+     *
+     * @param recipeTypesSetting {@code recipe_types} as written (1 to 5 ids); {@link #recipeTypes} applies the default
+     * @param power default {@code fuel}
+     * @param speed multiplies progress per tick, 0.1 to 10; default 1
+     * @param defaultTime ticks of a recipe without its own {@code time}, 1 to 32767; default 200
+     * @param menuSetting {@code menu} as written; {@link #menu} applies the default
+     * @param hoppers default true: a furnace's faces (ADR 0075 D5)
+     * @param comparator default {@code contents}
+     * @param litLight light while working, 0 to 15; default 13
+     * @param onStart event when a recipe starts, at the block with no actor
+     * @param onFinish event when an output is made, at the block with no actor
+     */
+    public record Machine(Optional<List<Identifier>> recipeTypesSetting, MachinePower power, float speed, int defaultTime,
+            Optional<MachineMenu> menuSetting, boolean hoppers, MachineComparator comparator, int litLight,
+            Optional<Identifier> onStart, Optional<Identifier> onFinish) {
+        public static final List<String> KEYS = List.of("recipe_types", "power", "speed", "default_time", "menu", "hoppers",
+                "comparator", "lit_light", "on_start", "on_finish");
+        /** The vanilla cooking recipe types a machine may take (the target fact {@code BlockFacts.machineRecipeTypes}). */
+        public static final List<Identifier> COOKING_TYPES = List.of(Identifier.withDefaultNamespace("smelting"),
+                Identifier.withDefaultNamespace("blasting"), Identifier.withDefaultNamespace("smoking"),
+                Identifier.withDefaultNamespace("campfire_cooking"));
+
+        public static final Codec<Machine> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                optional("recipe_types", MsmCodecs.listOfLength(ID, 1, 5)).forGetter(Machine::recipeTypesSetting),
+                optional("power", MachinePower.CODEC, MachinePower.FUEL).forGetter(Machine::power),
+                optional("speed", floatRange(0.1f, 10f), 1.0f).forGetter(Machine::speed),
+                optional("default_time", intRange(1, 32767), 200).forGetter(Machine::defaultTime),
+                optional("menu", MachineMenu.CODEC).forGetter(Machine::menuSetting),
+                optional("hoppers", Codec.BOOL, true).forGetter(Machine::hoppers),
+                optional("comparator", MachineComparator.CODEC, MachineComparator.CONTENTS).forGetter(Machine::comparator),
+                optional("lit_light", intRange(0, 15), 13).forGetter(Machine::litLight),
+                optional("on_start", ID).forGetter(Machine::onStart),
+                optional("on_finish", ID).forGetter(Machine::onFinish)).apply(i, Machine::new)), KEYS);
+
+        /** The recipe types the machine processes, in order: as written, else the machine's own id {@code self}. */
+        public List<Identifier> recipeTypes(Identifier self) {
+            return recipeTypesSetting.orElse(List.of(self));
+        }
+
+        /**
+         * The screen: as written, else from the first vanilla cooking type in {@link #recipeTypes} ({@code blasting} a
+         * blast furnace, {@code smoking} a smoker), otherwise a furnace.
+         */
+        public MachineMenu menu(Identifier self) {
+            if (menuSetting.isPresent()) {
+                return menuSetting.get();
+            }
+            for (Identifier type : recipeTypes(self)) {
+                if (COOKING_TYPES.contains(type)) {
+                    return switch (type.getPath()) {
+                        case "blasting" -> MachineMenu.BLAST_FURNACE;
+                        case "smoking" -> MachineMenu.SMOKER;
+                        default -> MachineMenu.FURNACE;
+                    };
+                }
+            }
+            return MachineMenu.FURNACE;
         }
     }
 }

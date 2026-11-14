@@ -1,0 +1,9 @@
+{
+  "count": 2,
+  "ingredient": "minecraft:andesite",
+  "result": {
+    "id": "minecraft:diorite"
+  },
+  "time": 20,
+  "type": "msm_test:machine_grinder"
+}

@@ -50,9 +50,10 @@ public enum BlockType {
 
     /**
      * Components allowed only on {@link #BLOCK}, {@link #PILLAR}, {@link #HORIZONTAL} and {@link #DIRECTIONAL} (ADR 0067 D3;
-     * {@code msm:container}, ADR 0074 D1: only the {@code MsmBlock} family can carry a block entity).
+     * {@code msm:container}, ADR 0074 D1, and {@code msm:machine}, ADR 0075 D1: only the {@code MsmBlock} family can carry
+     * a block entity).
      */
-    public static final List<String> SHAPED_ONLY_COMPONENTS = List.of("msm:shape", "msm:redstone", "msm:container");
+    public static final List<String> SHAPED_ONLY_COMPONENTS = List.of("msm:shape", "msm:redstone", "msm:container", "msm:machine");
 
     /** Every type's own top-level field names, in a stable order; the definition's known top-level keys include these. */
     public static final List<String> ALL_FIELDS;
@@ -92,7 +93,7 @@ public enum BlockType {
 
     /**
      * Whether a block of this type may carry the component {@code key} (ADR 0067 D3): {@code msm:shape},
-     * {@code msm:redstone} and {@code msm:container} (ADR 0074 D1) only on the {@link #shaped()} types; every other component (breaking, light, triggers,
+     * {@code msm:redstone}, {@code msm:container} (ADR 0074 D1) and {@code msm:machine} (ADR 0075 D1) only on the {@link #shaped()} types; every other component (breaking, light, triggers,
      * {@code msm:flammable}, {@code msm:strippable}) on every type.
      */
     public boolean allows(String key) {

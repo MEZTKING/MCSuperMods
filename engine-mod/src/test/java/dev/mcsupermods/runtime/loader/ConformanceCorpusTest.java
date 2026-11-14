@@ -33,10 +33,10 @@ class ConformanceCorpusTest {
             "../packages/schemas/mcdoc/msm/conformance/definition"));
 
     /**
-     * Prefixes whose schema reached the corpus before the runtime's Codec (ADR 0075): B316 decodes {@code machine-},
-     * removing its prefix here and adding its {@link Kind} ({@code container-} was decoded by B314).
+     * Prefixes whose schema reached the corpus before the runtime's Codec; none now ({@code container-} was decoded by
+     * B314, {@code machine-} by B316). Machine recipe files have their own corpus ({@link MachineRecipeCodecTest}).
      */
-    private static final List<String> PENDING = List.of("machine-");
+    private static final List<String> PENDING = List.of();
 
     private static boolean pending(String name) {
         return PENDING.stream().anyMatch(name::startsWith);
@@ -76,7 +76,8 @@ class ConformanceCorpusTest {
             new Kind("trigger-item-", DefinitionParser::parseItem),
             new Kind("trigger-block-", DefinitionParser::parseBlock),
             new Kind("trigger-entity-", DefinitionParser::parseEntity),
-            new Kind("container-", DefinitionParser::parseBlock))
+            new Kind("container-", DefinitionParser::parseBlock),
+            new Kind("machine-", DefinitionParser::parseBlock))
             .sorted(Comparator.comparingInt((Kind k) -> k.prefix().length()).reversed())
             .toList();
 

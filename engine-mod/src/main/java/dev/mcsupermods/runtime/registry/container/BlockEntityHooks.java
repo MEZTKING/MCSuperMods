@@ -4,6 +4,8 @@ import dev.mcsupermods.runtime.MsmRuntime;
 import dev.mcsupermods.runtime.components.BlockComponents;
 import dev.mcsupermods.runtime.loader.BlockDefinition;
 import dev.mcsupermods.runtime.loader.RawDefinition;
+import dev.mcsupermods.runtime.registry.machine.MachineRecipes;
+import dev.mcsupermods.runtime.registry.machine.MsmMachineBlockEntity;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -20,7 +22,9 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
  * machines (B316) add their classes here without editing the block class or the registrar body. Containers (B314): a
  * definition with {@code msm:container} is an {@link MsmContainerBlock} with vanilla's {@code open} property and one
  * {@link BlockEntityType} registered with the block's own id; a keep-contents block's item is an
- * {@link MsmContainerBlockItem}. Machines (B316) add their branches.
+ * {@link MsmContainerBlockItem}. Machines (B316): a definition with {@code msm:machine} is an {@link MsmContainerBlock}
+ * with vanilla's {@code lit} property, one {@link BlockEntityType} of {@link MsmMachineBlockEntity} and one recipe type
+ * and serialiser ({@link MachineRecipes}), all with the block's own id.
  */
 public final class BlockEntityHooks {
     private static int blockEntityTypes;
@@ -30,7 +34,7 @@ public final class BlockEntityHooks {
 
     /** Whether {@code definition} is built as a {@link MsmContainerBlock}: {@code msm:container} or {@code msm:machine}. */
     public static boolean wantsBlockEntity(BlockDefinition definition) {
-        return definition.components().container().isPresent();
+        return definition.components().container().isPresent() || definition.components().machine().isPresent();
     }
 
     /** Whether the block gets vanilla's {@code open} property (ADR 0074 D3: every container, whatever its layout). */
@@ -40,7 +44,7 @@ public final class BlockEntityHooks {
 
     /** Whether the block gets vanilla's {@code lit} property (ADR 0075 D1: a machine). */
     public static boolean hasLitProperty(BlockDefinition definition) {
-        return false;
+        return definition.components().machine().isPresent();
     }
 
     /**
@@ -52,7 +56,30 @@ public final class BlockEntityHooks {
         if (block instanceof MsmContainerBlock containerBlock && definition.components().container().isPresent()) {
             registerContainer(raw, containerBlock, definition.components().container().get(), errors);
         }
-        // B316: machines
+        if (block instanceof MsmContainerBlock machineBlock && definition.components().machine().isPresent()) {
+            registerMachine(raw, machineBlock, definition.components().machine().get(), errors);
+        }
+    }
+
+    /**
+     * One {@link BlockEntityType} of {@link MsmMachineBlockEntity} and one recipe type and serialiser, all with the
+     * block's id (ADR 0075 D2, D3). An id already in any of the three registries is a load error: the block stays
+     * registered without its machine (no block entity, no {@code lit} changes).
+     */
+    private static void registerMachine(RawDefinition raw, MsmContainerBlock block, BlockComponents.Machine spec, List<String> errors) {
+        Identifier id = raw.id();
+        if (BuiltInRegistries.BLOCK_ENTITY_TYPE.containsKey(id) || !MachineRecipes.isFree(id)) {
+            error(errors, raw.describe() + ": components: msm:machine: block entity type, recipe type or recipe serializer " + id
+                    + " is already registered; the block registers without its machine");
+            return;
+        }
+        MachineRecipes.register(id);
+        countMachineRecipeType();
+        BlockEntityType<MsmMachineBlockEntity> type = new BlockEntityType<>(
+                (pos, state) -> new MsmMachineBlockEntity(block.machineType(), pos, state, id, spec), Set.of(block));
+        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id, type);
+        block.attachMachine(type);
+        countBlockEntityType();
     }
 
     /**

@@ -1,0 +1,8 @@
+{
+  "experience": 2,
+  "ingredient": "minecraft:cobblestone",
+  "result": {
+    "id": "minecraft:gravel"
+  },
+  "type": "msm_test:machine_grinder"
+}

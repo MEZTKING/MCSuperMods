@@ -27,14 +27,15 @@ public class MsmSpikeGameTest {
 
     @GameTest
     public void definitionsAreRegistered(GameTestHelper helper) {
-        // msm_test/ ships eight deliberately broken files (MsmRuntimeGameTest, MsmGearGameTest, MsmBlockTypeGameTest,
-        // MsmContainerGameTest); nothing else may fail,
+        // msm_test/ ships deliberately broken files (MsmRuntimeGameTest, MsmGearGameTest, MsmBlockTypeGameTest,
+        // MsmContainerGameTest, MsmMachineGameTest); nothing else may fail,
         // except mx_tame_on_mob (MsmMobBaseGameTest) and the missing-GeckoLib error of mx_geckolib_only without GeckoLib.
         helper.assertTrue(MsmRuntime.report().errors().stream()
                 .allMatch(e -> e.contains("partly_broken.json") || e.contains("future_format.json") || e.contains("armed_helmet.json")
                         || e.contains("enchanted_blade.json") || e.contains("type_stairs_unknown_base.json")
                         || e.contains("type_stairs_redstone.json") || e.contains("seeds_clash.json")
                         || e.contains("container_slab.json") || e.contains("container_bad_keep.json")
+                        || e.contains("machine_both.json") || e.contains("machine_slab.json")
                         || e.contains("mx_tame_on_mob.json") || e.contains("needs the mod 'geckolib'")),
                 "load errors: " + MsmRuntime.report().errors());
         helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(ORE), "block " + ORE + " not registered");

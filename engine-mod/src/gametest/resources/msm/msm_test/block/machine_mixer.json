@@ -1,0 +1,28 @@
+{
+  "components": {
+    "msm:light_emitter": {
+      "level": 3
+    },
+    "msm:machine": {
+      "comparator": "progress",
+      "default_time": 20,
+      "lit_light": 15,
+      "on_finish": "msm_test:machine_finished",
+      "on_start": "msm_test:machine_started",
+      "power": "always",
+      "recipe_types": [
+        "msm_test:machine_mixer",
+        "msm_test:machine_grinder"
+      ]
+    }
+  },
+  "events": {
+    "msm_test:machine_finished": {
+      "actions": []
+    },
+    "msm_test:machine_started": {
+      "actions": []
+    }
+  },
+  "format": 1
+}

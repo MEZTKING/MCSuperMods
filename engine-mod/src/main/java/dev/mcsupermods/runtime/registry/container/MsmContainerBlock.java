@@ -3,6 +3,7 @@ package dev.mcsupermods.runtime.registry.container;
 import dev.mcsupermods.runtime.components.BlockComponents;
 import dev.mcsupermods.runtime.loader.BlockDefinition;
 import dev.mcsupermods.runtime.registry.MsmBlock;
+import dev.mcsupermods.runtime.registry.machine.MsmMachineBlockEntity;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,14 +35,50 @@ import net.minecraft.world.phys.BlockHitResult;
  * {@link #tick} rechecks the openers; breaking a non-empty keep-contents block in creative drops it with its contents, as
  * a shulker box does. When the block entity type could not be registered (its id clashed), the block keeps working as a
  * plain {@code MsmBlock} with no block entity.
+ *
+ * <p>Machines ({@code msm:machine}, B316, ADR 0075): {@link #useWithoutItem} opens the furnace menu (holding an item
+ * opens it too, through vanilla's empty-hand fallback); the server-only ticker runs {@link MsmMachineBlockEntity#serverTick};
+ * comparators read {@code comparator}; the light is {@code lit_light} while {@code lit} and the block's
+ * {@code msm:light_emitter} level otherwise.
  */
 public class MsmContainerBlock extends MsmBlock implements EntityBlock {
     private final Optional<BlockComponents.Container> container;
     private BlockEntityType<MsmStorageBlockEntity> storageType;
+    private final Optional<BlockComponents.Machine> machine;
+    private BlockEntityType<MsmMachineBlockEntity> machineType;
 
     public MsmContainerBlock(Identifier id, BlockDefinition definition, Setup setup, Properties properties) {
-        super(id, definition, setup, properties);
+        super(id, definition, setup, machineLight(definition, properties));
         this.container = definition.components().container();
+        this.machine = definition.components().machine();
+    }
+
+    /**
+     * A machine's light (ADR 0075 D1): {@code lit_light} while {@code lit}, the {@code msm:light_emitter} level otherwise.
+     * Set before the states are built, which read the light once.
+     */
+    private static Properties machineLight(BlockDefinition definition, Properties properties) {
+        if (definition.components().machine().isEmpty()) {
+            return properties;
+        }
+        int lit = definition.components().machine().get().litLight();
+        int idle = definition.components().lightEmitter().map(BlockComponents.LightEmitter::level).orElse(0);
+        return properties.lightLevel(state -> state.hasProperty(LIT) && state.getValue(LIT) ? lit : idle);
+    }
+
+    /** {@code msm:machine}, when the block has one. */
+    public Optional<BlockComponents.Machine> machine() {
+        return machine;
+    }
+
+    /** The registered block entity type of the machine; null before registration or when an id clashed. */
+    public BlockEntityType<MsmMachineBlockEntity> machineType() {
+        return machineType;
+    }
+
+    /** Set once by {@link BlockEntityHooks#afterBlockRegistered}. */
+    void attachMachine(BlockEntityType<MsmMachineBlockEntity> type) {
+        this.machineType = type;
     }
 
     /** {@code msm:container}, when the block has one. */
@@ -69,12 +106,27 @@ public class MsmContainerBlock extends MsmBlock implements EntityBlock {
         if (storageType != null && container.isPresent()) {
             return new MsmStorageBlockEntity(storageType, pos, state, container.get());
         }
-        return null; // B316: the machine's block entity
+        if (machineType != null && machine.isPresent()) {
+            return new MsmMachineBlockEntity(machineType, pos, state, id(), machine.get());
+        }
+        return null;
     }
 
+    /** Machines tick on the server only (ADR 0075 D3); containers do not tick (the opener recheck is a scheduled tick). */
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return null; // containers do not tick (the opener recheck is a scheduled block tick); B316: machines
+        if (machineType == null || type != machineType || !(level instanceof ServerLevel)) {
+            return null;
+        }
+        return (tickLevel, pos, tickState, be) -> {
+            if (tickLevel instanceof ServerLevel server && be instanceof MsmMachineBlockEntity m) {
+                m.serverTick(server, pos, tickState);
+            }
+        };
+    }
+
+    private static MsmMachineBlockEntity machineEntity(Level level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof MsmMachineBlockEntity m ? m : null;
     }
 
     private static MsmStorageBlockEntity storage(Level level, BlockPos pos) {
@@ -85,6 +137,14 @@ public class MsmContainerBlock extends MsmBlock implements EntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        MsmMachineBlockEntity machineEntity = machineEntity(level, pos);
+        if (machineEntity != null) {
+            if (level instanceof ServerLevel) {
+                player.openMenu(machineEntity); // a locked machine sends its own message and opens nothing
+            }
+            super.useWithoutItem(state, level, pos, player, hit); // msm:on_interact
+            return InteractionResult.SUCCESS;
+        }
         MsmStorageBlockEntity storage = storage(level, pos);
         if (storage == null) {
             return super.useWithoutItem(state, level, pos, player, hit);
@@ -139,15 +199,22 @@ public class MsmContainerBlock extends MsmBlock implements EntityBlock {
         }
     }
 
-    // Comparators (ADR 0074 D4): the barrel's formula.
+    // Comparators: the barrel's formula (ADR 0074 D4); a machine's comparator mode (ADR 0075 D5).
 
     @Override
     protected boolean hasAnalogOutputSignal(BlockState state) {
+        if (machineType != null) {
+            return machine.map(m -> m.comparator() != BlockComponents.MachineComparator.NONE).orElse(false);
+        }
         return storageType != null && container.map(BlockComponents.Container::comparator).orElse(false);
     }
 
     @Override
     protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
+        MsmMachineBlockEntity machineEntity = machineEntity(level, pos);
+        if (machineEntity != null) {
+            return machineEntity.comparatorSignal();
+        }
         return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(level.getBlockEntity(pos));
     }
 

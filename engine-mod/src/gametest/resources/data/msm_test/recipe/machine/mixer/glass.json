@@ -1,0 +1,11 @@
+{
+  "experience": 0.5,
+  "ingredient": [
+    "minecraft:sand",
+    "minecraft:red_sand"
+  ],
+  "result": {
+    "id": "minecraft:glass"
+  },
+  "type": "msm_test:machine_mixer"
+}

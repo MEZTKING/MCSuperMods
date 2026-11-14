@@ -35,6 +35,8 @@ import net.minecraft.resources.Identifier;
  *       error; the entity registers without them (ADR 0070 D1, ADR 0071 D1, D2, as ADR 0067 D3 for block types).</li>
  *   <li>Blocks: {@code type} selects the type's own top-level fields; a field of another type is an error (closed per
  *       type), and a component the type does not allow is an error and is not applied (ADR 0067 D2, D3).</li>
+ *   <li>Blocks: {@code msm:machine} with {@code msm:container} is an error and the container is not applied; a top-level
+ *       {@code recipes} list (element-only) is an error (ADR 0075 D1, D8).</li>
  *   <li>Blocks and items: {@code play_animation} actions are dropped with a warning (ADR 0028 D4).</li>
  *   <li>Items: two or more of {@code msm:tool}, {@code msm:armor}, {@code msm:ranged_weapon} and {@code msm:shield}
  *       are an error; the item registers without them (ADR 0042 D1, ADR 0044 D3).</li>
@@ -57,8 +59,32 @@ public final class DefinitionParser {
     public static ParseResult<BlockDefinition> parseBlock(JsonElement json) {
         ParseResult<BlockDefinition> result = parse(json, BlockDefinition.KEYS, BlockComponents.KEYS, BlockDefinition.CODEC,
                 def -> new Refs(def.events(), def.components().eventReferences(), List.of()));
-        return checkContainer(dropComponentsNotForType(dropPlayAnimation(result, BlockDefinition::events, BlockDefinition::withEvents)));
+        return checkContainer(checkMachine(json,
+                dropComponentsNotForType(dropPlayAnimation(result, BlockDefinition::events, BlockDefinition::withEvents))));
     }
+
+    /**
+     * The rules of {@code msm:machine} (ADR 0075 D1, D8): with {@code msm:container} on the same block it is an error and
+     * the container is not applied ({@link BlockComponents#checkMachine}); a top-level {@code recipes} list is
+     * element-only (lowered to data pack recipe files) and is an error here, not an unknown-key warning.
+     */
+    private static ParseResult<BlockDefinition> checkMachine(JsonElement json, ParseResult<BlockDefinition> result) {
+        List<String> errors = new ArrayList<>(result.errors());
+        List<String> warnings = result.warnings();
+        if (json instanceof JsonObject object && object.has(MACHINE_RECIPES_FIELD)) {
+            warnings = result.warnings().stream().filter(w -> !w.contains("'" + MACHINE_RECIPES_FIELD + "'")).toList();
+            errors.add(MACHINE_RECIPES_FIELD + ": unknown field (machine recipes are element-only and lowered to data pack"
+                    + " recipe files); it is ignored");
+        }
+        Optional<BlockDefinition> def = result.definition();
+        if (def.isPresent()) {
+            def = Optional.of(def.get().withComponents(def.get().components().checkMachine(errors)));
+        }
+        return errors.size() == result.errors().size() ? result : new ParseResult<>(def, List.copyOf(errors), warnings);
+    }
+
+    /** The element-only list of machine recipes (ADR 0075 D8), never part of a definition. */
+    private static final String MACHINE_RECIPES_FIELD = "recipes";
 
     /** The layout rules of {@code msm:container} ({@link BlockComponents#checkContainer}, ADR 0074 D1, D6). */
     private static ParseResult<BlockDefinition> checkContainer(ParseResult<BlockDefinition> result) {
