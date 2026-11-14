@@ -34,7 +34,8 @@ public sealed interface Action {
         APPLY_EFFECT("apply_effect", ApplyEffect.CODEC),
         LAUNCH("launch", Launch.CODEC),
         DAMAGE("damage", Damage.CODEC),
-        HEAL("heal", Heal.CODEC);
+        HEAL("heal", Heal.CODEC),
+        LIGHT_PORTAL("light_portal", LightPortal.CODEC);
 
         public final String serialName;
         final MapCodec<? extends Action> codec;
@@ -255,6 +256,21 @@ public sealed interface Action {
         @Override
         public Type type() {
             return Type.HEAL;
+        }
+    }
+
+    /**
+     * Lights the portal block {@code portal} (ADR 0077 D3 (b)) in an empty frame at the event's block (else its base) or
+     * one of its six neighbours; nothing happens when no empty frame is there. Closed: an unknown key is an error. A
+     * {@code portal} that is not a registered portal block is a load error and the action does nothing.
+     */
+    record LightPortal(Identifier portal) implements Action {
+        static final MapCodec<LightPortal> CODEC = MsmCodecs.closedMap(RecordCodecBuilder.mapCodec(i -> i.group(
+                required("portal", ID).forGetter(LightPortal::portal)).apply(i, LightPortal::new)), List.of("type", "portal"));
+
+        @Override
+        public Type type() {
+            return Type.LIGHT_PORTAL;
         }
     }
 }

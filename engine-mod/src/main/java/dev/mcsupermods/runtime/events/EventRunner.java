@@ -2,6 +2,7 @@ package dev.mcsupermods.runtime.events;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.mcsupermods.runtime.MsmRuntime;
+import dev.mcsupermods.runtime.registry.portal.PortalLighting;
 import dev.mcsupermods.runtime.scripting.ScriptHost;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +106,7 @@ public final class EventRunner {
                 case Action.Launch a -> launch(a, ctx);
                 case Action.Damage a -> damage(a, ctx);
                 case Action.Heal a -> heal(a, ctx);
+                case Action.LightPortal a -> lightPortal(a, ctx);
             }
         }
     }
@@ -219,6 +221,15 @@ public final class EventRunner {
         if (target != null && a.amount() > 0 && target.isAlive()) {
             target.hurtServer(ctx.level(), ctx.level().damageSources().magic(), a.amount());
         }
+    }
+
+    /**
+     * {@code light_portal} (ADR 0077 D3 (b)): the portal at the event's block (else its base) or a neighbour. A
+     * {@code portal} that is not a portal block was a load error; the action does nothing.
+     */
+    private static void lightPortal(Action.LightPortal a, EventContext ctx) {
+        PortalLighting.byId(a.portal()).ifPresent(portal ->
+                PortalLighting.lightNear(ctx.level(), portal, ctx.block() != null ? ctx.block() : ctx.base()));
     }
 
     /** {@code heal} (ADR 0055 D4). */

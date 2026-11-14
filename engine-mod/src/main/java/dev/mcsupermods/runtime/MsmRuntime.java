@@ -5,6 +5,7 @@ import dev.mcsupermods.runtime.loader.LoadReport;
 import dev.mcsupermods.runtime.registry.BlockExtras;
 import dev.mcsupermods.runtime.registry.MsmRegistrar;
 import dev.mcsupermods.runtime.registry.portal.PortalIndexAttachment;
+import dev.mcsupermods.runtime.registry.portal.PortalLighting;
 import dev.mcsupermods.runtime.scripting.ScriptBridges;
 import dev.mcsupermods.runtime.scripting.ScriptDataAttachment;
 import net.fabricmc.api.ModInitializer;
@@ -42,6 +43,8 @@ public final class MsmRuntime implements ModInitializer {
         ScriptDataAttachment.register();
         // Portal links (ADR 0077 D5): the persistent level attachment msm_runtime:portals.
         PortalIndexAttachment.register();
+        // Portal lighting (ADR 0077 D3): one UseBlockCallback for every portal block's igniter.
+        PortalLighting.register();
     }
 
     /** What the last scan registered, plus warnings from the start-up checks; used by GameTests and diagnostics. */

@@ -45,6 +45,9 @@ import net.minecraft.world.phys.AABB;
  *   <li>{@code leaves}: {@code Blocks.leavesProperties}: {@code randomTicks}, {@code noOcclusion},
  *       {@code isValidSpawn} for ocelots and parrots only, never suffocating or a redstone conductor,
  *       {@code ignitedByLava}, {@code pushReaction(POPPED)} (its {@code strength(0.2)} is the definition's here)</li>
+ *   <li>{@code portal}: {@code noCollision}, {@code pushReaction(IMMOVEABLE)} (the Nether portal; its unbreakable strength,
+ *       light 11, glass sounds and no loot table are the registrar's per-type defaults, ADR 0077 D1; its zombified
+ *       piglin {@code randomTicks} are not copied)</li>
  * </ul>
  * Vanilla's wooden doors, trapdoors and plates also set {@code ignitedByLava}; here {@code msm:flammable} sets it for every
  * type (the registrar), and leaves always.
@@ -69,6 +72,7 @@ public final class BlockTypes {
             case LEAVES -> props.randomTicks().noOcclusion().isValidSpawn(BlockTypes::ocelotOrParrot)
                     .isSuffocating((state, level, pos) -> false).ignitedByLava().pushReaction(PushReaction.POPPED)
                     .isRedstoneConductor((state, level, pos) -> false);
+            case PORTAL -> props.noCollision().pushReaction(PushReaction.IMMOVEABLE);
             default -> props;
         };
     }
@@ -119,6 +123,7 @@ public final class BlockTypes {
             case CROP -> crop(id, definition, props, warn);
             case SAPLING -> new MsmSaplingBlock(id, definition, props);
             case LEAVES -> leaves(id, definition, props, warn);
+            case PORTAL -> new MsmPortalBlock(id, definition, props);
             case BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL -> MsmBlock.create(id, definition, props);
         };
     }

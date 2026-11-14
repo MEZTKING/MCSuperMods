@@ -46,7 +46,8 @@ public enum BlockType {
     PANE("pane", List.of()),
     CROP("crop", List.of("max_age", "stage_heights", "soil", "bonemeal_growth")),
     SAPLING("sapling", List.of("tree", "mega_tree", "flower_tree", "soil")),
-    LEAVES("leaves", List.of("tint", "particle_chance", "falling_particle"));
+    LEAVES("leaves", List.of("tint", "particle_chance", "falling_particle")),
+    PORTAL("portal", List.of("frame", "frame_block", "igniter", "destination", "return_to", "travel", "sounds", "particles", "on_travel"));
 
     /**
      * Components allowed only on {@link #BLOCK}, {@link #PILLAR}, {@link #HORIZONTAL} and {@link #DIRECTIONAL} (ADR 0067 D3;
@@ -54,6 +55,13 @@ public enum BlockType {
      * a block entity).
      */
     public static final List<String> SHAPED_ONLY_COMPONENTS = List.of("msm:shape", "msm:redstone", "msm:container", "msm:machine");
+
+    /**
+     * The only components a {@link #PORTAL} may carry (ADR 0077 D1); any other is an error and is not applied. The
+     * plugin's {@code PORTAL_COMPONENTS} lists the same keys.
+     */
+    public static final List<String> PORTAL_COMPONENTS = List.of("msm:breakable", "msm:light_emitter", "msm:on_break", "msm:on_place",
+            "msm:on_random_tick", "msm:on_entity_inside");
 
     /** Every type's own top-level field names, in a stable order; the definition's known top-level keys include these. */
     public static final List<String> ALL_FIELDS;
@@ -94,14 +102,18 @@ public enum BlockType {
     /**
      * Whether a block of this type may carry the component {@code key} (ADR 0067 D3): {@code msm:shape},
      * {@code msm:redstone}, {@code msm:container} (ADR 0074 D1) and {@code msm:machine} (ADR 0075 D1) only on the {@link #shaped()} types; every other component (breaking, light, triggers,
-     * {@code msm:flammable}, {@code msm:strippable}) on every type.
+     * {@code msm:flammable}, {@code msm:strippable}) on every type but {@link #PORTAL}, which allows only
+     * {@link #PORTAL_COMPONENTS} (ADR 0077 D1).
      */
     public boolean allows(String key) {
+        if (this == PORTAL) {
+            return PORTAL_COMPONENTS.contains(key);
+        }
         return shaped() || !SHAPED_ONLY_COMPONENTS.contains(key);
     }
 
     /** The per-type fields of one definition; {@link None} for a type without fields of its own. */
-    public sealed interface Fields permits None, Stairs, FenceGate, Opening, Button, PressurePlate, Crop, Sapling, Leaves {}
+    public sealed interface Fields permits None, Stairs, FenceGate, Opening, Button, PressurePlate, Crop, Sapling, Leaves, Portal {}
 
     /** A type with no fields of its own. */
     public record None() implements Fields {
@@ -222,6 +234,156 @@ public enum BlockType {
                 optional("falling_particle", ID).forGetter(Leaves::fallingParticle)).apply(i, Leaves::new));
     }
 
+    /**
+     * A block id or a {@code #}-prefixed tag ({@code #[id="block"] string | #[id(registry=..., tags="required")] string}).
+     *
+     * @param id the block or item id, or the tag id without {@code #}
+     * @param tag whether {@code id} names a tag
+     */
+    public record IdOrTag(Identifier id, boolean tag) {
+        public static final Codec<IdOrTag> CODEC = MsmCodecs.ID_OR_TAG.xmap(
+                s -> s.startsWith("#") ? new IdOrTag(Identifier.parse(s.substring(1)), true) : new IdOrTag(Identifier.parse(s), false),
+                IdOrTag::toString);
+
+        @Override
+        public String toString() {
+            return tag ? "#" + id : id.toString();
+        }
+    }
+
+    /**
+     * A portal (ADR 0077 D1): the frame rule's frame, the igniter, the two dimensions and the looks.
+     *
+     * @param frame the frame block or block tag, read at use time (tags reload with {@code /reload})
+     * @param frameBlockSetting {@code frame_block} as written; {@link #frameBlock()} applies the default
+     * @param igniter the item or item tag that lights the frame; empty for {@code igniter: false} (only the
+     *     {@code light_portal} action lights it); default {@code minecraft:flint_and_steel}
+     * @param destination the dimension the portal leads to
+     * @param returnTo the dimension a portal in {@code destination} leads back to; default {@code minecraft:overworld}
+     * @param onTravel the event fired after arrival, with the traveller as self and other (B336)
+     */
+    public record Portal(IdOrTag frame, Optional<Identifier> frameBlockSetting, Optional<IdOrTag> igniter, Identifier destination,
+            Identifier returnTo, PortalTravel travel, PortalSounds sounds, PortalParticles particles, Optional<Identifier> onTravel)
+            implements Fields {
+        public static final IdOrTag DEFAULT_IGNITER = new IdOrTag(Identifier.withDefaultNamespace("flint_and_steel"), false);
+        public static final Identifier DEFAULT_RETURN_TO = Identifier.withDefaultNamespace("overworld");
+
+        /** {@code IgniterItem | #tag | false}: {@code false} is no igniter; {@code true} is an error. */
+        private static final Codec<Optional<IdOrTag>> IGNITER = Codec.either(Codec.BOOL, IdOrTag.CODEC).comapFlatMap(
+                either -> either.map(
+                        b -> b ? DataResult.error(() -> "must be an item id, an item #tag or false") : DataResult.success(Optional.<IdOrTag>empty()),
+                        ref -> DataResult.success(Optional.of(ref))),
+                opt -> opt.<com.mojang.datafixers.util.Either<Boolean, IdOrTag>>map(com.mojang.datafixers.util.Either::right)
+                        .orElse(com.mojang.datafixers.util.Either.left(false)));
+
+        static final MapCodec<Portal> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+                required("frame", IdOrTag.CODEC).forGetter(Portal::frame),
+                optional("frame_block", ID).forGetter(Portal::frameBlockSetting),
+                optional("igniter", IGNITER, Optional.of(DEFAULT_IGNITER)).forGetter(Portal::igniter),
+                required("destination", ID).forGetter(Portal::destination),
+                optional("return_to", ID, DEFAULT_RETURN_TO).forGetter(Portal::returnTo),
+                optional("travel", PortalTravel.CODEC, PortalTravel.DEFAULT).forGetter(Portal::travel),
+                optional("sounds", PortalSounds.CODEC, PortalSounds.DEFAULT).forGetter(Portal::sounds),
+                optional("particles", PortalParticles.CODEC, PortalParticles.DEFAULT).forGetter(Portal::particles),
+                optional("on_travel", ID).forGetter(Portal::onTravel)).apply(i, Portal::new));
+
+        /**
+         * The block exits are built of: {@code frame_block}, else the {@code frame} block; empty for a tag {@code frame}
+         * without {@code frame_block} (a load error; exits then fall back to {@code surface} arrival, B336).
+         */
+        public Optional<Identifier> frameBlock() {
+            return frameBlockSetting.isPresent() ? frameBlockSetting : frame.tag() ? Optional.empty() : Optional.of(frame.id());
+        }
+    }
+
+    /** {@code ::msm::definition::PortalArrival}. */
+    public enum PortalArrival {
+        /** Find or build a linked exit portal (default). */
+        PORTAL("portal"),
+        /** Land on the first standing spot at the target column; build nothing. */
+        SURFACE("surface");
+
+        public static final Codec<PortalArrival> CODEC = MsmCodecs.named("arrival", values(), PortalArrival::id);
+        private final String id;
+
+        PortalArrival(String id) {
+            this.id = id;
+        }
+
+        public String id() {
+            return id;
+        }
+    }
+
+    /**
+     * {@code ::msm::definition::PortalTravel} (closed).
+     *
+     * @param scale the destination's scale against {@code return_to}; empty: from the two dimension types
+     * @param delayTicks survival players' delay; empty: the gamerule {@code players_nether_portal_default_delay}
+     * @param cooldownTicks the cooldown on the arrived entity; empty: vanilla's
+     */
+    public record PortalTravel(Optional<Double> scale, PortalArrival arrival, Optional<Integer> delayTicks, Optional<Integer> cooldownTicks,
+            boolean playersOnly, boolean overlay) {
+        public static final PortalTravel DEFAULT = new PortalTravel(Optional.empty(), PortalArrival.PORTAL, Optional.empty(), Optional.empty(),
+                false, true);
+        public static final List<String> KEYS = List.of("scale", "arrival", "delay_ticks", "cooldown_ticks", "players_only", "overlay");
+        public static final double MIN_SCALE = 0.00001;
+        public static final double MAX_SCALE = 30000000;
+        private static final Codec<Double> SCALE = Codec.DOUBLE.validate(d -> d >= MIN_SCALE && d <= MAX_SCALE && Double.isFinite(d)
+                ? DataResult.success(d)
+                : DataResult.error(() -> "out of range: " + d + " (expected " + MIN_SCALE + ".." + (long) MAX_SCALE + ")"));
+        static final Codec<PortalTravel> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                optional("scale", SCALE).forGetter(PortalTravel::scale),
+                optional("arrival", PortalArrival.CODEC, PortalArrival.PORTAL).forGetter(PortalTravel::arrival),
+                optional("delay_ticks", intRange(0, 32767)).forGetter(PortalTravel::delayTicks),
+                optional("cooldown_ticks", intRange(0, 32767)).forGetter(PortalTravel::cooldownTicks),
+                optional("players_only", Codec.BOOL, false).forGetter(PortalTravel::playersOnly),
+                optional("overlay", Codec.BOOL, true).forGetter(PortalTravel::overlay)).apply(i, PortalTravel::new)), KEYS);
+    }
+
+    /**
+     * A portal sound setting ({@code #[id="sound_event"] string | false}).
+     *
+     * @param off {@code false} was written: no sound
+     * @param sound the sound event; empty with {@code off} false means the default sound
+     */
+    public record PortalSound(boolean off, Optional<Identifier> sound) {
+        public static final PortalSound DEFAULT = new PortalSound(false, Optional.empty());
+        public static final PortalSound OFF = new PortalSound(true, Optional.empty());
+        static final Codec<PortalSound> CODEC = Codec.either(Codec.BOOL, ID).comapFlatMap(
+                either -> either.map(
+                        b -> b ? DataResult.error(() -> "must be a sound event id or false") : DataResult.success(OFF),
+                        id -> DataResult.success(new PortalSound(false, Optional.of(id)))),
+                s -> s.sound().<com.mojang.datafixers.util.Either<Boolean, Identifier>>map(com.mojang.datafixers.util.Either::right)
+                        .orElse(com.mojang.datafixers.util.Either.left(false)));
+    }
+
+    /** {@code ::msm::definition::PortalSounds} (closed). */
+    public record PortalSounds(PortalSound ambient, PortalSound travel) {
+        public static final PortalSounds DEFAULT = new PortalSounds(PortalSound.DEFAULT, PortalSound.DEFAULT);
+        public static final List<String> KEYS = List.of("ambient", "travel");
+        static final Codec<PortalSounds> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                optional("ambient", PortalSound.CODEC, PortalSound.DEFAULT).forGetter(PortalSounds::ambient),
+                optional("travel", PortalSound.CODEC, PortalSound.DEFAULT).forGetter(PortalSounds::travel)).apply(i, PortalSounds::new)), KEYS);
+    }
+
+    /**
+     * {@code ::msm::definition::PortalParticles} (closed).
+     *
+     * @param type a particle type without options; empty: the target's portal particle
+     * @param color set: coloured dust of this RGB colour instead of {@code type}
+     * @param count particles per animation tick; 0 none
+     */
+    public record PortalParticles(Optional<Identifier> type, Optional<Integer> color, int count) {
+        public static final int DEFAULT_COUNT = 4;
+        public static final PortalParticles DEFAULT = new PortalParticles(Optional.empty(), Optional.empty(), DEFAULT_COUNT);
+        public static final List<String> KEYS = List.of("type", "color", "count");
+        static final Codec<PortalParticles> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                optional("type", ID).forGetter(PortalParticles::type),
+                optional("color", intRange(0, 0xFFFFFF)).forGetter(PortalParticles::color),
+                optional("count", intRange(0, 16), DEFAULT_COUNT).forGetter(PortalParticles::count)).apply(i, PortalParticles::new)), KEYS);
+    }
+
     /** A leaf tint: a vanilla biome colour source or a constant RGB colour ({@code LeavesTintSource | int @ 0..16777215}). */
     public sealed interface Tint permits SourceTint, ColourTint {
         Codec<Tint> CODEC = MsmCodecs.nameOrObject(SourceTint.class,
@@ -336,6 +498,7 @@ public enum BlockType {
             case CROP -> Crop.CODEC;
             case SAPLING -> Sapling.CODEC;
             case LEAVES -> Leaves.CODEC;
+            case PORTAL -> Portal.CODEC;
             case BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL, SLAB, WALL, FENCE, PANE -> MapCodec.unit(None.INSTANCE);
         };
         return (MapCodec<Fields>) codec;
@@ -374,6 +537,20 @@ public enum BlockType {
                 BlockType t = type;
                 String expected = t.fields.isEmpty() ? "it has no fields of its own" : "its fields are " + String.join(", ", t.fields);
                 return DataResult.error(() -> String.join(", ", foreign) + ": unknown field for type '" + t.id + "' (" + expected + ")");
+            }
+            if (type == PORTAL) {
+                // A portal is closed at the top level too (ADR 0077 D1): every runtime that reads the type knows all its
+                // keys, so an editor-only field such as textures or an unknown key is an error, not a warning.
+                List<String> unknown = input.entries()
+                        .map(e -> ops.getStringValue(e.getFirst()).result().orElse(String.valueOf(e.getFirst())))
+                        .filter(k -> !BlockDefinition.KEYS.contains(k))
+                        .sorted()
+                        .toList();
+                if (!unknown.isEmpty()) {
+                    return DataResult.error(() -> String.join(", ", unknown) + ": unknown field for type 'portal' (expected the block"
+                            + " fields format, type, sound_type, loot_table, item, components, events and its own fields "
+                            + String.join(", ", PORTAL.fields) + ")");
+                }
             }
             BlockType t = type;
             return t.fieldsCodec().decode(ops, input).map(fields -> new Spec(t, fields));

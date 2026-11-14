@@ -1,0 +1,8 @@
+{
+  "destination": "minecraft:the_nether",
+  "format": 1,
+  "frame": "#minecraft:beacon_base_blocks",
+  "frame_block": "minecraft:gold_block",
+  "igniter": "#minecraft:creeper_igniters",
+  "type": "portal"
+}

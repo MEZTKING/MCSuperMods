@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 2
+    }
+  },
+  "format": 1
+}

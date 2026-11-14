@@ -24,7 +24,8 @@ import net.minecraft.resources.Identifier;
  *
  * @param type the block type (ADR 0067 D1, ADR 0068 D1); {@link BlockType#BLOCK} when {@code type} is absent
  * @param typeFields the type's own top-level fields; {@link BlockType.None} for a type without any
- * @param item the block item; empty when the file says {@code "item": false}
+ * @param soundType {@code sound_type}, else {@link #defaultSoundType}
+ * @param item the block item; empty when the file says {@code "item": false}, or for a portal without {@code item}
  */
 public record BlockDefinition(
         int format,
@@ -74,13 +75,24 @@ public record BlockDefinition(
     public static final Codec<BlockDefinition> CODEC = RecordCodecBuilder.create(i -> i.group(
             required("format", intRange(1, 1)).forGetter(BlockDefinition::format),
             BlockType.SPEC_CODEC.forGetter(BlockDefinition::spec),
-            optional("sound_type", MsmSoundType.CODEC, MsmSoundType.STONE).forGetter(BlockDefinition::soundType),
+            optional("sound_type", MsmSoundType.CODEC).forGetter(d -> Optional.of(d.soundType())),
             optional("loot_table", ID).forGetter(BlockDefinition::lootTable),
-            optional("item", ITEM, Optional.of(ItemSettings.DEFAULT)).forGetter(BlockDefinition::item),
+            optional("item", ITEM).forGetter(d -> Optional.of(d.item())),
             optional("components", BlockComponents.CODEC, BlockComponents.NONE).forGetter(BlockDefinition::components),
             optional("events", Events.CODEC, Events.NONE).forGetter(BlockDefinition::events))
             .apply(i, (format, spec, soundType, lootTable, item, components, events) ->
-                    new BlockDefinition(format, spec.type(), spec.fields(), soundType, lootTable, item, components, events)));
+                    new BlockDefinition(format, spec.type(), spec.fields(), soundType.orElse(defaultSoundType(spec.type())), lootTable,
+                            item.orElse(defaultItem(spec.type())), components, events)));
+
+    /** The sound type when {@code sound_type} is absent: {@code glass} for a portal (ADR 0077 D1), else {@code stone}. */
+    public static MsmSoundType defaultSoundType(BlockType type) {
+        return type == BlockType.PORTAL ? MsmSoundType.GLASS : MsmSoundType.STONE;
+    }
+
+    /** The block item when {@code item} is absent: none for a portal (ADR 0077 D1), else the default block item. */
+    public static Optional<ItemSettings> defaultItem(BlockType type) {
+        return type == BlockType.PORTAL ? Optional.empty() : Optional.of(ItemSettings.DEFAULT);
+    }
 
     /** The type with its fields. */
     public BlockType.Spec spec() {

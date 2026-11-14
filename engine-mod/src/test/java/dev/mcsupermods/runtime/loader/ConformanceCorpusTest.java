@@ -33,12 +33,11 @@ class ConformanceCorpusTest {
             "../packages/schemas/mcdoc/msm/conformance/definition"));
 
     /**
-     * Prefixes whose schema reached the corpus before the runtime's Codec: {@code portal-} (ADR 0077; B334 removes it
-     * and adds the {@code portal-}, {@code portal-item-}, {@code portal-entity-} and {@code portal-effect-} kinds).
-     * {@code container-} was decoded by B314, {@code machine-} by B316. Machine recipe files have their own corpus
+     * Prefixes whose schema reached the corpus before the runtime's Codec; none at the moment. {@code container-} was
+     * decoded by B314, {@code machine-} by B316 and {@code portal-} by B334. Machine recipe files have their own corpus
      * ({@link MachineRecipeCodecTest}).
      */
-    private static final List<String> PENDING = List.of("portal-");
+    private static final List<String> PENDING = List.of();
 
     private static boolean pending(String name) {
         return PENDING.stream().anyMatch(name::startsWith);
@@ -79,7 +78,11 @@ class ConformanceCorpusTest {
             new Kind("trigger-block-", DefinitionParser::parseBlock),
             new Kind("trigger-entity-", DefinitionParser::parseEntity),
             new Kind("container-", DefinitionParser::parseBlock),
-            new Kind("machine-", DefinitionParser::parseBlock))
+            new Kind("machine-", DefinitionParser::parseBlock),
+            new Kind("portal-", DefinitionParser::parseBlock),
+            new Kind("portal-item-", DefinitionParser::parseItem),
+            new Kind("portal-entity-", DefinitionParser::parseEntity),
+            new Kind("portal-effect-", DefinitionParser::parseEffect))
             .sorted(Comparator.comparingInt((Kind k) -> k.prefix().length()).reversed())
             .toList();
 

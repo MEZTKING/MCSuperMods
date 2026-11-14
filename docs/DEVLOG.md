@@ -3606,3 +3606,22 @@ Next
 - At merge: add `'portal', 'portal_frame'` after `'block_front'` in `PLACEHOLDER_PATTERN_NAMES` (`packages/ai/src/tools/propose.ts`); packages/ai belonged to B340 in this wave, so this brief left it alone and `ai-patterns.test.ts` fails until then.
 - B342: flow ids `portal` and `dimension` (`travel: portal`), example `example_msm_sky_portal`.
 - B344: guide rows for the Portal flow and the Dimension flow's new answer and colour label; `examples/README.md` rows for `starters/portal` and the two patterns.
+
+## 2026-11-14 — executor — B334 runtime portal block
+
+What
+- `msm_runtime` reads the `portal` block type (ADR 0077 D1): `BlockType.PORTAL` with the closed Codecs `Portal`, `PortalTravel`, `PortalSounds` (`PortalSound`: an id, `false` or the default), `PortalParticles`, `PortalArrival` and `IdOrTag` (frame and igniter as id or `#tag`; `igniter: false`). A portal is closed at the top level too: an unknown key such as `textures` or `exit_block` is an error. Components outside the six of `BlockType.PORTAL_COMPONENTS` are an error and dropped. Per-type defaults: no item unless `item` is given, glass sounds unless `sound_type`, no loot table unless `loot_table`, unbreakable unless `msm:breakable`, light 11 unless `msm:light_emitter`, no collision, push reaction `IMMOVEABLE`.
+- New `registry/types/MsmPortalBlock` (D4): `axis` state, 4-pixel shape, turned to air when the frame around it is no longer whole and lit (`PortalFrame.find` then `isComplete`), `rotate` swaps the axis, `entityInside` on both sides (`canUsePortal`, `players_only`), `getPortalTransitionTime` (`delay_ticks` or the gamerules), `getLocalTransition` (`overlay`), `animateTick` particles (dust when `color` is set) and the ambient sound, `getCloneItemStack`. `getPortalDestination` returns null until B336 (`TODO(B336)`).
+- New `registry/portal/PortalLighting` (D3): one `UseBlockCallback` for every portal (sorted by id, first match wins; both sides answer `SUCCESS`; the server fills the frame, records it in the index and uses the igniter: one durability, or one item, nothing in creative) and `lightNear` for the new `light_portal` action (`events/Action.LightPortal`, closed; `EventRunner` lights at the event's block or a neighbour).
+- Registrar: load errors for a particle type that takes options (the default particle is used), a tag frame without `frame_block`, an undeclared `on_travel` event and a `light_portal` naming a block that is not a portal (the action does nothing); unknown portal sounds are warnings; new log line `registered N portal block(s)`.
+- `ConformanceCorpusTest`: `PENDING` emptied; kinds `portal-` (block), `portal-item-`, `portal-entity-`, `portal-effect-`; all 50 portal corpus files decode as expected.
+- `MsmPortalBlockGameTest`: 16 GameTests with `msm/msm_test/block/portal_*.json` and `item/portal_key.json` (four deliberately broken `portal_bad_*` files, added to `MsmSpikeGameTest`'s allowlist).
+- Checks: `./gradlew build` on 26.3, `-Pmc=26.4` and `-PwithoutGeckolib`: 389 GameTests each (373 + 16), 610 JUnit tests (560 + 50 corpus cases); `./gradlew -p parity build -Pmc=26.3` green.
+
+Decisions
+- The top-level closure of a portal lives in `BlockType.SPEC_CODEC` (the corpus needs `textures` and `exit_block` to fail), so `DefinitionParser` is unchanged and a portal with an unknown key does not register, as a field of another type.
+- The registry-dependent load rules (particle, tag frame, `on_travel`, `light_portal` target) are checked in `MsmRegistrar`; `light_portal` targets after every definition is registered, since effects, blocks, items and entities may name a portal registered later.
+- No sound plays when a frame is lit (the ADR names none); in vanilla the click sound comes from flint and steel placing fire, which the callback replaces. Left for the orchestrator (a follow-up, not invented here).
+
+Next
+- B336: travel and linking in `MsmPortalBlock.getPortalDestination`; B339 copies the block and lighting into the eject.

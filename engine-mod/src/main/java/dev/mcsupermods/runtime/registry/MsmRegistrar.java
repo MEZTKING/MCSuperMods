@@ -18,7 +18,9 @@ import dev.mcsupermods.runtime.loader.ParseResult;
 import dev.mcsupermods.runtime.loader.PotionDefinition;
 import dev.mcsupermods.runtime.loader.RawDefinition;
 import dev.mcsupermods.runtime.registry.container.BlockEntityHooks;
+import dev.mcsupermods.runtime.registry.portal.PortalLighting;
 import dev.mcsupermods.runtime.registry.types.BlockTypes;
+import dev.mcsupermods.runtime.registry.types.MsmPortalBlock;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
@@ -86,6 +88,10 @@ public final class MsmRegistrar {
 
     private static final List<LateCheck> LATE = new ArrayList<>();
     private static final Map<String, List<String>> LATE_STATES = new LinkedHashMap<>();
+    /** {@code light_portal} actions, checked once every block is registered (ADR 0077 D3 (b)). */
+    private record PortalAction(String where, Identifier portal) {}
+
+    private static final List<PortalAction> PORTAL_ACTIONS = new ArrayList<>();
 
     private MsmRegistrar() {}
 
@@ -175,6 +181,7 @@ public final class MsmRegistrar {
             }
         }
         registerStairs(stairs, blocks, items, errors, warnings, typeCounts);
+        MsmRuntime.LOGGER.info("[{}] registered {} portal block(s)", MsmRuntime.MOD_ID, typeCounts.getOrDefault(BlockType.PORTAL, 0));
         MsmRuntime.LOGGER.info("[{}] registered blocks by type: {}", MsmRuntime.MOD_ID, typeCounts.isEmpty() ? "none"
                 : String.join(", ", typeCounts.entrySet().stream().map(e -> e.getKey().id() + " " + e.getValue()).toList()));
         MsmRuntime.LOGGER.info("[{}] registered {} block entity type(s) and {} machine recipe type(s)", MsmRuntime.MOD_ID,
@@ -207,6 +214,7 @@ public final class MsmRegistrar {
         List<Identifier> lootAdditions = MsmAdditions.registerLootAdditions(scanned.definitions(), errors, warnings);
         MsmRuntime.LOGGER.info("[{}] registered {} biome addition(s) and {} loot addition(s)", MsmRuntime.MOD_ID, biomeAdditions.size(),
                 lootAdditions.size());
+        checkPortalActions(errors);
         return new LoadReport(scanned.filesRead(), scanned.definitions(), List.copyOf(blocks), List.copyOf(items),
                 List.copyOf(entities), List.copyOf(effects), List.copyOf(potions), sounds, biomeAdditions, lootAdditions, List.copyOf(errors), List.copyOf(warnings));
     }
@@ -353,6 +361,7 @@ public final class MsmRegistrar {
                     case Action.RunFunction a -> LATE.add(new LateCheck(raw.describe(), "run_function function", a.function()));
                     case Action.SetBlockState a -> LATE_STATES.computeIfAbsent(a.state(), s -> new ArrayList<>()).add(raw.describe());
                     case Action.ApplyEffect a -> LATE.add(new LateCheck(raw.describe(), "apply_effect effect", a.effect()));
+                    case Action.LightPortal a -> PORTAL_ACTIONS.add(new PortalAction(where, a.portal()));
                     default -> {}
                 }
             }
@@ -419,8 +428,14 @@ public final class MsmRegistrar {
                     + (itemId.get().equals(id) ? "" : " (item.id)") + "; the block is skipped");
         }
         BlockComponents c = def.components();
-        BlockComponents.Breakable breakable = c.breakable().orElse(BlockComponents.Breakable.DEFAULT);
-        int light = c.lightEmitter().map(BlockComponents.LightEmitter::level).orElse(0);
+        boolean portal = def.type() == BlockType.PORTAL;
+        // A portal is unbreakable (as bedrock, -1 hardness) and gives light 11 unless the components say otherwise
+        // (ADR 0077 D1); its glass sounds and missing item are the definition's per-type defaults.
+        BlockComponents.Breakable breakable = c.breakable().orElse(portal ? PORTAL_BREAKABLE : BlockComponents.Breakable.DEFAULT);
+        int light = c.lightEmitter().map(BlockComponents.LightEmitter::level).orElse(portal ? MsmPortalBlock.DEFAULT_LIGHT : 0);
+        if (portal) {
+            checkPortal(raw, def, errors, warnings);
+        }
         ResourceKey<Block> blockKey = ResourceKey.create(Registries.BLOCK, id);
         BlockBehaviour.Properties props = BlockBehaviour.Properties.of()
                 .setId(blockKey) // required since 1.21.2: the constructor reads the id from the properties
@@ -440,11 +455,16 @@ public final class MsmRegistrar {
         }
         if (def.lootTable().isPresent()) {
             props = props.overrideLootTable(Optional.of(ResourceKey.create(Registries.LOOT_TABLE, def.lootTable().get())));
+        } else if (portal) {
+            props = props.noLootTable(); // ADR 0077 D1: a portal drops nothing unless loot_table is given
         }
         Block block = Registry.register(BuiltInRegistries.BLOCK, blockKey,
                 BlockTypes.create(id, def, props, stairsBase, w -> warn(warnings, raw.describe() + ": " + w)));
         BlockEntityHooks.afterBlockRegistered(raw, def, block, errors); // ADR 0074 D2, ADR 0075 D3
         BlockExtras.apply(block, c); // msm:flammable, msm:strippable (ADR 0067 D3, D4)
+        if (block instanceof MsmPortalBlock portalBlock) {
+            PortalLighting.add(portalBlock); // ADR 0077 D3: tried by the igniter callback in sorted id order
+        }
         c.strippable().ifPresent(strip -> LATE.add(new LateCheck(raw.describe(), "msm:strippable into", strip.into())));
 
         if (def.item().isEmpty()) {
@@ -466,6 +486,55 @@ public final class MsmRegistrar {
                 def.type() == BlockType.DOOR ? new DoubleHighBlockItem(block, itemProps) : BlockEntityHooks.blockItem(block, itemProps));
         items.add(itemId.get());
         settings.creativeTab().ifPresent(tab -> addToTab(raw, tab, item));
+    }
+
+    /** The breaking of a portal without {@code msm:breakable}: unbreakable, as the Nether portal (ADR 0077 D1). */
+    private static final BlockComponents.Breakable PORTAL_BREAKABLE = new BlockComponents.Breakable(-1.0f, 0.0f, false);
+
+    /**
+     * The load rules of a portal that need the registries (ADR 0077 D1, D4; plan B334): a {@code particles.type} that is
+     * unknown or takes options is an error (the default particle is used); a tag {@code frame} without {@code frame_block}
+     * is an error (exits are not built: travel falls back to surface arrival); an unknown ambient or travel sound is a
+     * warning (none is played); an {@code on_travel} event that is not declared is an error.
+     */
+    private static void checkPortal(RawDefinition raw, BlockDefinition def, List<String> errors, List<String> warnings) {
+        BlockType.Portal p = (BlockType.Portal) def.typeFields();
+        if (p.particles().color().isEmpty() && MsmPortalBlock.particle(p.particles()).isEmpty()) {
+            error(errors, raw.describe() + ": particles: type " + p.particles().type().orElseThrow()
+                    + " is not a particle type without options; the portal particle is used");
+        }
+        if (p.frame().tag() && p.frameBlockSetting().isEmpty()) {
+            error(errors, raw.describe() + ": frame_block: needed when frame is a tag (" + p.frame()
+                    + "); no exit portals are built, travellers arrive at the surface");
+        }
+        checkPortalSound(raw, "ambient", p.sounds().ambient(), warnings);
+        checkPortalSound(raw, "travel", p.sounds().travel(), warnings);
+        p.onTravel().filter(event -> !def.events().contains(event)).ifPresent(event -> error(errors, raw.describe()
+                + ": on_travel names event " + event + ", which is not declared in events (or was dropped)"));
+    }
+
+    private static void checkPortalSound(RawDefinition raw, String field, BlockType.PortalSound sound, List<String> warnings) {
+        sound.sound().filter(id -> !BuiltInRegistries.SOUND_EVENT.containsKey(id)).ifPresent(id -> warn(warnings,
+                raw.describe() + ": sounds: " + field + ": unknown sound " + id + "; no " + field + " sound is played"));
+    }
+
+    /**
+     * {@code light_portal} actions naming a block that is not a registered portal block (ADR 0077 D3 (b)): one load error
+     * each; the action does nothing when it runs. Runs once every definition is registered.
+     */
+    private static void checkPortalActions(List<String> errors) {
+        for (PortalAction action : PORTAL_ACTIONS) {
+            if (PortalLighting.byId(action.portal()).isEmpty()) {
+                error(errors, action.where() + "light_portal names " + action.portal()
+                        + ", which is not a portal block; the action does nothing");
+            }
+        }
+        PORTAL_ACTIONS.clear();
+    }
+
+    private static void error(List<String> errors, String message) {
+        errors.add(message);
+        MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, message);
     }
 
     private static void registerItem(RawDefinition raw, ItemDefinition def, List<String> errors, List<String> warnings)
