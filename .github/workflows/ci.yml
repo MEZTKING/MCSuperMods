@@ -59,7 +59,8 @@ jobs:
   # JUnit and GameTests through `./gradlew build -Pmc=<mc>`, then the samples exported for target
   # mc-<mc> with that runtime nested and started on a headless Fabric dedicated server
   # (tools/run-fabric-server; the sample script twice on one world), and the sample data pack on
-  # a vanilla server (tools/run-fabric-server/vanilla-datapack.ts). 26.3 also builds the ejected
+  # a vanilla server (tools/run-fabric-server/vanilla-datapack.ts), and the library's vanilla data
+  # packs on one too (tools/run-fabric-server/vanilla-packs.ts). 26.3 also builds the ejected
   # Java projects and runs the five parity runs; other versions run parity on the content jars
   # only (the sample mob only with GeckoLib).
   # Action versions: setup-java and cache v6 (checked 2026-11-05).
@@ -211,6 +212,23 @@ jobs:
           --facts "$RUNNER_TEMP/sample-datapack/server-facts.json"
           --work "$RUNNER_TEMP/vanilla-datapack"
           --cache ~/.cache/msm-fabric-server
+      # Every library starter (defaults, wizard answers, minimums), example and examples/ mirror
+      # project meant to work as a plain vanilla data pack (no msm: kinds) is exported for this
+      # target as the app does it and loaded into one vanilla server world (more only where two
+      # packs write the same file): the server must start (one bad registry file stops it), drop
+      # no tag or function and list every pack as enabled. A failure is bisected down to the
+      # pack, its source and its files (tools/run-fabric-server/vanilla-packs.ts).
+      - name: Export the library's vanilla data packs
+        run: |
+          MSM_LIBRARY_PACKS_OUT="$RUNNER_TEMP/library-packs" \
+            pnpm --filter @msm/exporters exec vitest run test/library.test.ts -t "vanilla server data packs"
+          node -e 'const f = JSON.parse(require("node:fs").readFileSync(process.argv[1], "utf8")); console.log(`${f.packs.length} packs for Minecraft ${f.minecraft}`); if (f.packs.length === 0) process.exit(1);' "$RUNNER_TEMP/library-packs/packs.json"
+      - name: Headless vanilla server check (library data packs)
+        run: >-
+          node tools/run-fabric-server/vanilla-packs.ts
+          --packs "$RUNNER_TEMP/library-packs/packs.json"
+          --work "$RUNNER_TEMP/vanilla-packs"
+          --cache ~/.cache/msm-fabric-server
       - name: Build the parity GameTests
         working-directory: engine-mod
         run: |
@@ -353,6 +371,8 @@ jobs:
             ${{ runner.temp }}/fabric-server/crash-reports
             ${{ runner.temp }}/vanilla-datapack/vanilla-datapack.log
             ${{ runner.temp }}/vanilla-datapack/crash-reports
+            ${{ runner.temp }}/vanilla-packs/*.log
+            ${{ runner.temp }}/vanilla-packs/server/crash-reports
             ${{ runner.temp }}/fabric-server-mob/run-fabric-server.log
             ${{ runner.temp }}/fabric-server-mob/crash-reports
             ${{ runner.temp }}/fabric-server-parity/run-fabric-server.log

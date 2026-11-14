@@ -93,11 +93,13 @@ import { nestedGeckolibPath } from '../src/fabric-content-jar/index';
 import {
   createFabricContentJarExporter,
   createMemorySink,
+  createZipSink,
   dataPackExporter,
   nestedRuntimePath,
   resourcePackExporter,
   runExport,
 } from '../src/index';
+import { selectedTarget } from './selected-target';
 
 const update = process.env.UPDATE_GOLDENS === '1';
 
@@ -1982,4 +1984,114 @@ describe('examples/ mirror', () => {
       expect(Buffer.from(file).equals(Buffer.from(bytes)), path).toBe(true);
     }
   });
+});
+
+// Vanilla server packs ------------------------------------------------------------------------
+
+/**
+ * With `MSM_LIBRARY_PACKS_OUT`, the data pack of every library starter (defaults, wizard
+ * alternatives and minimums), example and `examples/` mirror project that is meant to work as
+ * a plain vanilla data pack (no `msm:` kinds, so no Fabric mod jar) is exported for the
+ * selected target as the app does it and written to that folder as `<name>.zip`, next to
+ * `packs.json` (`minecraft`, `packs`: `{ zip, source }`). `tools/run-fabric-server/vanilla-packs.ts`
+ * loads them all into a vanilla dedicated server. Each pack gets its own namespace, so packs
+ * clash only where they write into a shared namespace (`minecraft`). Without the variable this
+ * test is skipped.
+ */
+const packsOut = process.env.MSM_LIBRARY_PACKS_OUT;
+
+/** A namespace (and zip name) from a prefix and a library id. */
+const packName = (prefix: string, id: string): string =>
+  `${prefix}_${id.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`;
+
+const needsJar = (entry: ProjectStarter | ExampleProject): boolean =>
+  entry.requiresKinds.some((kind) => kind.startsWith('msm:'));
+
+describe('vanilla server data packs', () => {
+  it.skipIf(packsOut === undefined || packsOut === '')(
+    'writes the data pack of every vanilla-only starter, example and mirror project',
+    async () => {
+      const bundle = selectedTarget();
+      const context = await contextFor(bundle);
+      const outDir = packsOut as string;
+      await rm(outDir, { recursive: true, force: true });
+      await mkdir(outDir, { recursive: true });
+      const cases: { name: string; source: string; build(): Promise<BuiltProject> }[] = [];
+      for (const starter of libraryStarters) {
+        if (needsJar(starter) || !supported(starter, bundle.target)) continue;
+        const variants: [string, Readonly<Record<string, Json>>][] = [['', {}]];
+        if ((starter.parameters ?? []).length > 0) {
+          (WIZARD_ALTERNATIVES[starter.id] ?? []).forEach((values, index) => {
+            variants.push([`_a${index + 1}`, values]);
+          });
+          variants.push(['_min', minimumValues(starter)]);
+        }
+        for (const [suffix, values] of variants) {
+          const name = `${packName('s', starter.id)}${suffix}`;
+          cases.push({
+            name,
+            source: `starter ${starter.id}${suffix === '' ? '' : ` (${suffix.slice(1)})`}`,
+            build: () =>
+              buildProject(starter.title, name, [
+                buildEntry(starter, name, starter.title, bundle.target, values),
+              ]),
+          });
+        }
+      }
+      for (const example of libraryExamples) {
+        if (needsJar(example) || !supported(example, bundle.target)) continue;
+        const name = packName('e', example.id);
+        cases.push({
+          name,
+          source: `example ${example.id}`,
+          build: () =>
+            buildProject('Library Test', name, [
+              buildEntry(example, name, 'Library Test', bundle.target),
+            ]),
+        });
+      }
+      for (const entry of MIRROR) {
+        cases.push({
+          name: packName('m', entry.folder),
+          source: `examples/${entry.folder}`,
+          build: entry.build,
+        });
+      }
+      const packs: { zip: string; source: string }[] = [];
+      for (const entry of cases) {
+        const built = await entry.build();
+        const project = await reload(built.fs);
+        // The mirror's starters and the wizard answers decide kinds only once built.
+        if (hasMsmElements(project)) continue;
+        const ids = projectRegistryIds(project);
+        const registries = createRegistryIndex({ vanilla: context.vanilla, project: ids });
+        const report = await exportProblems(
+          bundle,
+          context,
+          built.fs,
+          project,
+          registries,
+          ids,
+          dataPackExporter,
+        );
+        expect(
+          report.problems.filter((problem) => problem.severity !== 'info'),
+          entry.source,
+        ).toEqual([]);
+        expect(report.ok, entry.source).toBe(true);
+        if (!report.files.some((path) => path.startsWith('data/'))) continue;
+        const sink = createZipSink();
+        for (const [path, bytes] of report.contents) await sink.writeFile(path, bytes);
+        const zip = `${entry.name}.zip`;
+        await writeFile(join(outDir, zip), sink.finish());
+        packs.push({ zip, source: entry.source });
+      }
+      expect(packs.length).toBeGreaterThan(0);
+      await writeFile(
+        join(outDir, 'packs.json'),
+        `${JSON.stringify({ minecraft: bundle.target.mcVersion, packs }, null, 2)}\n`,
+      );
+    },
+    600_000,
+  );
 });

@@ -286,7 +286,9 @@ async function fetchJson(url: string): Promise<{ json: unknown; text: string }> 
 }
 
 /** Downloads (or reuses) the vanilla server jar of `minecraft`; returns its path. */
-async function serverJar(options: DatapackOptions): Promise<string> {
+export async function serverJar(
+  options: Pick<DatapackOptions, 'minecraft' | 'cacheDir'>,
+): Promise<string> {
   await mkdir(options.cacheDir, { recursive: true });
   const entry = versionEntry((await fetchJson(VERSION_MANIFEST_URL)).json, options.minecraft);
   const versionPath = join(options.cacheDir, `minecraft-${options.minecraft}.json`);
@@ -299,7 +301,7 @@ async function serverJar(options: DatapackOptions): Promise<string> {
 }
 
 /** A running server: its lines so far, a way to send a command and wait for an answer. */
-interface Console {
+export interface Console {
   lines: string[];
   send(command: string): void;
   /** Waits for a line after `from` that matches; `undefined` after `seconds`. */
@@ -307,7 +309,11 @@ interface Console {
   exited: Promise<number | null>;
 }
 
-function startServer(options: DatapackOptions, runDir: string): Console {
+export function startServer(
+  options: Pick<DatapackOptions, 'java' | 'memory'>,
+  runDir: string,
+  echo = true,
+): Console {
   const lines: string[] = [];
   const waiters: {
     pattern: RegExp;
@@ -319,7 +325,7 @@ function startServer(options: DatapackOptions, runDir: string): Console {
   const child = spawn(options.java, args, { cwd: runDir, stdio: ['pipe', 'pipe', 'pipe'] });
   const onLine = (line: string): void => {
     lines.push(line);
-    process.stdout.write(`  | ${line}\n`);
+    if (echo) process.stdout.write(`  | ${line}\n`);
     for (const waiter of [...waiters]) {
       if (lines.length - 1 >= waiter.from && waiter.pattern.test(line)) {
         waiters.splice(waiters.indexOf(waiter), 1);
@@ -362,7 +368,7 @@ function startServer(options: DatapackOptions, runDir: string): Console {
   };
 }
 
-const DONE = /\bDone \(\d/;
+export const DONE = /\bDone \(\d/;
 /** Any console line after a command: the dedicated server answers every command with one. */
 const ANY = /\S/;
 const TEST = /Test (passed|failed)/;
