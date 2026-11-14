@@ -3988,3 +3988,20 @@ Decisions
 Next
 - B367 applies expanders (path semantics in the `ElementPatch` JSDoc: missing parent objects created, an empty path replaces `data`, the same path twice is a conflict).
 - B366 and B369: whether tags of world registries reload on `/reload` is unverified (verify at implementation).
+## 2026-11-14 — executor — B355 Java eject for particles
+
+What
+- 26.3 Java generator (ADR 0080 D11): `ModParticles.java` registers each `msm/<ns>/particle/*.json` as `FabricParticleTypes.simple(always_show)`, right after `ModSounds` and before the effects, potions and blocks (an id already registered stops the start-up). The client entrypoint (now also written for particle types alone) registers one `client/particle/ModParticleProvider.pending(id, ParticleLook.Spec.resolve(...))` per type through Fabric's `ParticleProviderRegistry`. `ModParticle`, `ModParticleProvider` and `ParticleLook` are copies of the runtime's `MsmParticle`, `MsmParticleProvider` and `ParticleLook`; `particle/ParticleSpecs` and `particle/AmbientParticles` are copies of the runtime's (all five compared code line by line in `java-project-particles.test.ts`).
+- `spawn_particle`: a plain id without `motion` and `force` keeps `Actions.spawnParticle` (projects without the new forms generate byte-identical Java: every existing golden unchanged); an options object, `motion` or `force` calls `ParticleSpecs.spawn` with a class constant (`Spec.of(id)` or `Spec.parse("<json>")`, one per distinct particle). `msm:ambient_particles` gives the block its own class with an `AmbientParticles.Spec` constant and `animateTick` (super first, then `AmbientParticles.animate`); a portal refuses it.
+- Generation is stricter than the runtime: the particle definition rules of `ParticleDefinition.CODEC`; `count` 1..1000, `spread` and `speed` at least 0, `motion` three numbers, `force` boolean; a plain id of a type with options; options objects checked per type against `PARTICLE_OPTIONS` (fields, required fields, value shapes; tied to the vendored mcdoc dispatcher by a test); a `{Name, Properties}` block state; `msm:ambient_particles` field rules. Every `spawn_particle` is checked, also in events no component fires.
+- `JavaProjectInput.particles?` (plugin API 1.14.0, CHANGELOG and type test) and the `java-project` exporter passes `msm/<ns>/particle/` definitions (before: "unknown definition folder" warning).
+- Verified: `pnpm lint`, `pnpm typecheck`, `turbo run test --force --concurrency=4` (22 of 22; two earlier runs under load average 30 hit unrelated 5 s timeouts in exporters and blocks-items, both green alone); an ejected scratch project (the Particle starter plus `firefly_glow`, `spark_wand` and `firefly_jar` from the examples, a third particle `ember` with every knob, a block with twelve spawn forms, ambient particles on a block, a slab and a horizontal machine with `states`) built with `./gradlew build` (JDK 25, about 55 s) and started on a Fabric 26.3 dedicated server with `tools/run-fabric-server --no-runtime` (PASS); a class-load log (`-Xlog:class+load`) showed no `msm_starter.client` and no `net.minecraft.client` class. Scratch project, build and server folders deleted.
+
+Decisions
+- Client particle classes go to `client/particle/` (as the runtime's `client.particle`), not `particle/`; `particle/` holds the server-safe `ParticleSpecs` and `AmbientParticles`.
+- The eject drops the runtime's start check of options objects (`queue`, `checkAfterStart`): the generator checks their shape, and a block or item id inside one is looked up on first send (one error log, nothing sent), as the runtime's `resolve`.
+- `ModParticle` drops the per-type `created` counter (a runtime GameTest hook) and the provider its `warned` test accessor.
+- Plugin API and exporter changes were outside the brief's owner list; without them the generator never receives particle definitions.
+
+Next
+- B358 can pin a particles Java golden in exporters and an ejected build in CI (the scratch project above is the shape). B360: exporters `CLAUDE.md` and targets `CLAUDE.md` lines for the particle eject; plugin-api `CLAUDE.md` 1.14.0 adds `JavaProjectInput.particles?`.

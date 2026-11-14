@@ -1,0 +1,26 @@
+{
+  "components": {
+    "msm:ambient_particles": {
+      "offset": [
+        0.5,
+        1.0,
+        0.5
+      ],
+      "particle": "minecraft:flame",
+      "spread": [
+        0.3,
+        0,
+        0.3
+      ],
+      "states": {
+        "lit": "true"
+      }
+    },
+    "msm:machine": {
+      "recipe_types": [
+        "minecraft:smelting"
+      ]
+    }
+  },
+  "format": 1
+}

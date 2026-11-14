@@ -18,6 +18,7 @@ None. A plugin that contributes expanders or reads `dev` should declare `^1.15.0
 Custom particle types (ADR 0080 D9). `API_VERSION` is `1.14.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
 
 - `TargetFacts.particles?: ParticleFacts` with `ParticleFacts { withOptions: readonly string[]; descriptionFolder: string; textureFolder: string }`: the namespaced vanilla particle types that take options (such as `minecraft:dust` or `minecraft:block`), the folder under `assets/<namespace>/` that holds particle description files, and the folder under the textures folder that holds particle pictures.
+- `JavaProjectInput.particles?: DefinitionInput[]`: the project's particle definitions (`msm/<namespace>/particle/*.json`) for Java generators (ADR 0080 D11).
 
 ### Migration from 1.13.0
 

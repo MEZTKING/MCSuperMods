@@ -335,6 +335,7 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
       const entities: DefinitionInput[] = [];
       const effects: DefinitionInput[] = [];
       const potions: DefinitionInput[] = [];
+      const particles: DefinitionInput[] = [];
       const biomeAdditions: DefinitionInput[] = [];
       const lootAdditions: DefinitionInput[] = [];
       const scripts: string[] = [];
@@ -374,6 +375,7 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
           kind !== 'entity' &&
           kind !== 'effect' &&
           kind !== 'potion' &&
+          kind !== 'particle' &&
           kind !== 'biome_addition' &&
           kind !== 'loot_addition'
         ) {
@@ -413,6 +415,7 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
         else if (match[2] === 'item') items.push(entry);
         else if (kind === 'effect') effects.push(entry);
         else if (kind === 'potion') potions.push(entry);
+        else if (kind === 'particle') particles.push(entry);
         else if (kind === 'biome_addition') biomeAdditions.push(entry);
         else if (kind === 'loot_addition') lootAdditions.push(entry);
         else entities.push(entry);
@@ -484,6 +487,7 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
           effects,
           soundEvents,
           ...(potions.length > 0 ? { potions } : {}),
+          ...(particles.length > 0 ? { particles } : {}),
           ...(biomeAdditions.length > 0 ? { biomeAdditions } : {}),
           ...(lootAdditions.length > 0 ? { lootAdditions } : {}),
           geckolib: geckolib !== undefined,

@@ -30,6 +30,10 @@
  * `light_portal` (ADR 0077 D3 (b)) lights the named portal block of the project in an empty frame
  * at the event's block (else its base) or a neighbour, through the generated
  * `portal/PortalLighting` (`portals.ts` fails generation for a `portal` that is no project portal).
+ * `spawn_particle` (ADR 0080 D5) with a plain particle id keeps `Actions.spawnParticle`; with an
+ * options object, `motion` or `force` it calls the generated `particle/ParticleSpecs.spawn` with
+ * a constant of the class holding the particle, parsed once (`particles.ts`, which also checks the
+ * particle more strictly than the runtime).
  *
  * @packageDocumentation
  */
@@ -44,6 +48,13 @@ import {
   javaString,
 } from './java';
 import { eventMethodNames } from './names';
+import {
+  needsParticleSpecs,
+  noteParticleSpecs,
+  readSpawnParticle,
+  spawnLine,
+  specExpression,
+} from './particles';
 import type { Reader } from './read';
 
 /**
@@ -143,6 +154,11 @@ export interface Events {
    * (`Actions.runFunction` then takes any entity to run as).
    */
   readonly runsFunctionsAsStepper: boolean;
+  /**
+   * Whether a `spawn_particle` has an options object, `motion` or `force` (the generated
+   * `ParticleSpecs` is then written, ADR 0080 D5).
+   */
+  readonly particleSpecs: boolean;
 }
 
 /** Actions whose `target` is `self` or `other`. */
@@ -184,10 +200,16 @@ export function readEvents(definition: Reader, kind: EventOwnerKind, triggerActo
   }
   const used = new Set<string>();
   let otherTarget = false;
+  let particleSpecs = false;
   for (const actions of byId.values()) {
     for (const action of actions) {
       const type = action.requiredString('type');
       used.add(type);
+      if (type === 'spawn_particle') {
+        // Checked here, so an event no component fires is still checked (ADR 0080 D11).
+        readSpawnParticle(action);
+        if (needsParticleSpecs(action)) particleSpecs = true;
+      }
       if (TARGETED_ACTIONS.includes(type) && effectTarget(action) === 'other') otherTarget = true;
     }
   }
@@ -203,6 +225,7 @@ export function readEvents(definition: Reader, kind: EventOwnerKind, triggerActo
     triggerActor,
     ownMob: kind === 'entity',
     runsFunctionsAsStepper: actorFunctions(kind, triggerActor) && used.has('run_function'),
+    particleSpecs,
   };
 }
 
@@ -269,6 +292,7 @@ export function noteActions(context: GenerationContext, file: JavaFile, events: 
   if (events.runsFunctionsAsStepper && events.triggerActor)
     context.usesRunFunctionAsTriggerActor = true;
   if (events.runsFunctionsAsStepper && events.ownMob) context.usesRunFunctionAsOwnMob = true;
+  if (events.particleSpecs) noteParticleSpecs(context);
   return file.use(`${context.input.javaPackage}.Actions`);
 }
 
@@ -330,6 +354,35 @@ export function eventMethods(
     ? `, ${file.use('net.minecraft.world.entity.LivingEntity')} other`
     : '';
   const lines: string[] = [];
+  // Particles of spawn_particle actions that go through ParticleSpecs, as constants parsed once.
+  const particleFields = new Map<Reader, string>();
+  if (events.particleSpecs) {
+    const modPackage =
+      MOD_PACKAGES.get(file) ??
+      [...events.byId.values()][0]?.[0]?.fail('spawn_particle: the events were not noted');
+    const specs = file.use(`${modPackage}.particle.ParticleSpecs`);
+    lines.push(
+      '',
+      '/** The particles of the spawn_particle actions below (ADR 0080 D5), parsed once. */',
+    );
+    const byExpression = new Map<string, string>();
+    for (const actions of events.byId.values()) {
+      for (const action of actions) {
+        if (action.requiredString('type') !== 'spawn_particle' || !needsParticleSpecs(action)) {
+          continue;
+        }
+        const info = readSpawnParticle(action);
+        const expression = specExpression(file, info.particle, modPackage as string);
+        let field = byExpression.get(expression);
+        if (field === undefined) {
+          field = `PARTICLE_${byExpression.size + 1}`;
+          byExpression.set(expression, field);
+          lines.push(`private static final ${specs}.Spec ${field} = ${expression};`);
+        }
+        particleFields.set(action, field);
+      }
+    }
+  }
   for (const [id, actions] of events.byId) {
     const method = events.methods.get(id) as string;
     lines.push(
@@ -343,7 +396,7 @@ export function eventMethods(
       '}',
     ];
     for (const action of actions) {
-      body.push(...actionLines(file, action, events, kind, actionsClass));
+      body.push(...actionLines(file, action, events, kind, actionsClass, particleFields));
     }
     lines.push(...indent(body), '}');
   }
@@ -356,6 +409,7 @@ function actionLines(
   events: Events,
   kind: EventOwnerKind,
   actions: string,
+  particleFields: ReadonlyMap<Reader, string>,
 ): string[] {
   const type = action.requiredString('type');
   switch (type) {
@@ -370,11 +424,18 @@ function actionLines(
       ];
     }
     case 'spawn_particle': {
-      action.onlyKeys(['type', 'particle', 'count', 'spread', 'speed'], 'spawn_particle field');
+      const info = readSpawnParticle(action);
+      const field = particleFields.get(action);
+      if (field !== undefined) {
+        const modPackage =
+          MOD_PACKAGES.get(file) ?? action.fail('spawn_particle: the events were not noted');
+        return [spawnLine(file, info, field, modPackage)];
+      }
+      // A plain particle id without motion or force: the Actions helper, as before ADR 0080.
       const particle = javaString(action.requiredString('particle'));
-      const count = javaInt(action.integer('count', 1));
-      const spread = javaFloat(action.number('spread', 0));
-      const speed = javaFloat(action.number('speed', 0));
+      const count = javaInt(info.count);
+      const spread = javaFloat(info.spread);
+      const speed = javaFloat(info.speed);
       return [
         `${actions}.spawnParticle(OWNER, level, origin, ${particle}, ${count}, ${spread}, ${speed});`,
       ];

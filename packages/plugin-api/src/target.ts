@@ -551,6 +551,12 @@ export interface JavaProjectInput {
    * Since 1.9.0 (ADR 0063 D7).
    */
   potions?: DefinitionInput[];
+  /**
+   * The project's particle definitions (`msm/<namespace>/particle/*.json`), in a stable order,
+   * for generators that register particle types and their client providers. Optional: absent
+   * means the same as an empty array. Since 1.14.0 (ADR 0080 D11).
+   */
+  particles?: DefinitionInput[];
   /** `true` when the project has entities and the target has {@link TargetFacts.geckolib} facts. */
   geckolib: boolean;
 }

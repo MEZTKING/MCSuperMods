@@ -1,6 +1,6 @@
 /**
- * The client entrypoint (when the project has entities, throwables or tinted leaves, ADR 0055
- * D10, ADR 0068 D8): vanilla's
+ * The client entrypoint (when the project has entities, throwables, tinted leaves or particle
+ * types, ADR 0055 D10, ADR 0068 D8, ADR 0080 D11): vanilla's
  * `ThrownItemRenderer` for the thrown item entity as the runtime's `MsmRuntimeClient` registers
  * it, with or without GeckoLib (ADR 0056 D4); and the GeckoLib models, mirroring the runtime's `GeckolibRenderers` and
  * `MsmGeoModel`: one `GeoModelBase.renderer(ctx, model, scale)` (a `GeoEntityRenderer` that
@@ -9,8 +9,9 @@
  * vanilla `EntityRenderers.register` (private in 26.3, widened by Fabric API's transitive
  * access wideners); and the leaf tints, mirroring `MsmRuntimeClient`: Fabric's
  * `BlockColorRegistry.register(List.of(source), block)` with vanilla's `BlockTintSources`
- * (`foliage`, `grass`, `dryFoliage`, or `constant` with full alpha). Minecraft 26.3 and
- * GeckoLib 5, Mojang names.
+ * (`foliage`, `grass`, `dryFoliage`, or `constant` with full alpha); and one particle provider per
+ * project particle type (`particles.ts`), as `MsmRuntimeClient.registerParticleProviders`.
+ * Minecraft 26.3 and GeckoLib 5, Mojang names.
  *
  * @packageDocumentation
  */
@@ -20,6 +21,7 @@ import type { LeafTintEntry } from './blocks';
 import { classPath, type GenerationContext, packageOf } from './context';
 import type { EntityNames } from './entities';
 import { identifierExpression, indent, JavaFile, javaFloat } from './java';
+import { type ParticleEntry, particleProviderLines } from './particles';
 import { geoModelBaseJava } from './templates/geo-model-base-java';
 
 /**
@@ -29,6 +31,7 @@ import { geoModelBaseJava } from './templates/geo-model-base-java';
  * @param entities - The entities, or none.
  * @param throwables - Whether the project has throwables (the thrown item entity is written).
  * @param leafTints - The tinted leaves, or none.
+ * @param particles - The project particle types, or none.
  * @returns The fully qualified client entrypoint class.
  */
 export function generateClient(
@@ -36,6 +39,7 @@ export function generateClient(
   entities: readonly EntityNames[],
   throwables: boolean,
   leafTints: readonly LeafTintEntry[] = [],
+  particles: readonly ParticleEntry[] = [],
 ): string {
   const clientPackage = packageOf(context, 'client');
   const modelPackage = packageOf(context, 'client.entity');
@@ -51,6 +55,7 @@ export function generateClient(
     entities.length > 0 ? 'the msm/<namespace>/entity/*.json definitions' : undefined,
     throwables ? 'the msm:throwable components' : undefined,
     leafTints.length > 0 ? 'the leaves in msm/<namespace>/block/*.json' : undefined,
+    particles.length > 0 ? 'the msm/<namespace>/particle/*.json definitions' : undefined,
   ]);
   const file = new JavaFile(clientPackage, source);
   const initializer = file.use('net.fabricmc.api.ClientModInitializer');
@@ -90,9 +95,13 @@ export function generateClient(
       );
     }
   }
+  if (particles.length > 0) {
+    if (body.length > 0) body.push('');
+    body.push(...particleProviderLines(context, file, particles));
+  }
   const renders = entities.length > 0 || throwables;
   const lines = [
-    `/** Client entrypoint: ${joined([throwables ? "vanilla's thrown item renderer" : undefined, entities.length > 0 ? 'a GeckoLib renderer per entity type' : undefined, leafTints.length > 0 ? 'leaf tints' : undefined])}. */`,
+    `/** Client entrypoint: ${joined([throwables ? "vanilla's thrown item renderer" : undefined, entities.length > 0 ? 'a GeckoLib renderer per entity type' : undefined, leafTints.length > 0 ? 'leaf tints' : undefined, particles.length > 0 ? 'a particle provider per particle type' : undefined])}. */`,
     `public final class ${name} implements ${initializer} {`,
     ...(renders
       ? [

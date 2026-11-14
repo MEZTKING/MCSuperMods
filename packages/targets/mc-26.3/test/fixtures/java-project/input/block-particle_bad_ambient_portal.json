@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:ambient_particles": {
+      "particle": "minecraft:flame"
+    }
+  },
+  "destination": "minecraft:the_end",
+  "format": 1,
+  "frame": "minecraft:waxed_exposed_cut_copper",
+  "igniter": false,
+  "type": "portal"
+}

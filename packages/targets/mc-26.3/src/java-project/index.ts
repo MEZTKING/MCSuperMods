@@ -21,7 +21,7 @@
  * (with `FollowTypesGoal.java` when a follow goal exists, `MobRangedAttackGoal.java` when a
  * ranged attack goal exists (ADR 0070 D8) and `ThrownItemEntity.java` with
  * throwables, ADR 0056 D7), and `client/` with `<ModClass>Client.java` when the project has
- * entities, throwables or tinted leaves (ADR 0068 D8), plus `client/entity/` GeckoLib models
+ * entities, throwables, tinted leaves (ADR 0068 D8) or particle types, plus `client/entity/` GeckoLib models
  * with entities. Additions to
  * vanilla content (ADR 0060 D9) add `ModWorldgen.java` (biome additions through Fabric's
  * `BiomeModifications`) and `ModLoot.java` (loot additions in a `LootTableEvents.MODIFY`
@@ -30,7 +30,12 @@
  * the shared classes copied from the runtime (`PortalSpec`, `PortalBlock`, `PortalFrame`,
  * `ExitPortals`, `PortalIndex`, `PortalIndexAttachment`, `PortalLighting`, `PortalTravel`), one
  * `block/<Name>Block.java` per portal extending `PortalBlock`, and the attachment, the igniter
- * callback and the levels check in the mod initialiser. Paths are sorted; text uses LF and
+ * callback and the levels check in the mod initialiser. Particle types (ADR 0080 D11) add
+ * `ModParticles.java` (registered after the sound events) and, in the client entrypoint, one
+ * provider per type with `client/particle/` (`ModParticle`, `ModParticleProvider`,
+ * `ParticleLook`, copied from the runtime); a `spawn_particle` with an options object, `motion`
+ * or `force` and `msm:ambient_particles` add `particle/ParticleSpecs.java` and
+ * `particle/AmbientParticles.java` (copied from the runtime). Paths are sorted; text uses LF and
  * four-space indentation.
  *
  * @packageDocumentation
@@ -48,6 +53,7 @@ import { generateLoot } from './loot';
 import { generateRecipes } from './machines';
 import { generateMod } from './mod';
 import { NameTable, splitId } from './names';
+import { generateParticles, writeParticleSpecFiles } from './particles';
 import { checkLightPortals, isPortal, portalInitLines } from './portals';
 import { generatePotions } from './potions';
 import { generateSounds } from './sounds';
@@ -121,6 +127,9 @@ export function generateJavaProject(input: JavaProjectInput): {
   // Sound events first (ADR 0057 D5): effects, items, events and entities name them.
   const sounds = generateSounds(context);
   if (sounds !== undefined) registrations.push(sounds);
+  // Particle types next (ADR 0080 D3, D11): effects, blocks and events name them.
+  const particles = generateParticles(context);
+  if (particles !== undefined) registrations.push(particles.className);
   const effects = generateEffects(context, classNames);
   if (effects !== undefined) registrations.push(effects);
   // Potions after the effects they name and before blocks and items (ADR 0063 D4, D8).
@@ -161,10 +170,12 @@ export function generateJavaProject(input: JavaProjectInput): {
     portals ? (file) => portalInitLines(file, context) : undefined,
   );
   const leafTints = blocks?.leafTints ?? [];
+  const particleTypes = particles?.particles ?? [];
   const client =
-    entities === undefined && !throwables && leafTints.length === 0
+    entities === undefined && !throwables && leafTints.length === 0 && particleTypes.length === 0
       ? undefined
-      : generateClient(context, entities?.entities ?? [], throwables, leafTints);
+      : generateClient(context, entities?.entities ?? [], throwables, leafTints, particleTypes);
+  writeParticleSpecFiles(context);
   if (context.usesActions) {
     context.files.push({
       path: `${context.javaRoot}/Actions.java`,
@@ -234,7 +245,7 @@ function thrownItemPath(input: JavaProjectInput): string {
 /**
  * The 26.3 `JavaProjectGenerator`. The entrypoints follow ADR 0033 D2:
  * `<package>.<ModClass>` always and `<package>.client.<ModClass>Client` when the project has
- * entities, throwables or tinted leaves (the exporter adds the client entrypoint when that file is generated).
+ * entities, throwables, tinted leaves or particle types (the exporter adds the client entrypoint when that file is generated).
  */
 export const javaProjectGenerator: JavaProjectGenerator = {
   generate(input) {

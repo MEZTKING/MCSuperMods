@@ -1,0 +1,16 @@
+{
+  "events": {
+    "msm_test:sparkle": {
+      "actions": [
+        {
+          "count": 4,
+          "particle": "msm_test:spark",
+          "spread": 0.25,
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "item": false
+}

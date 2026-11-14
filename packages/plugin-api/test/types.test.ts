@@ -354,6 +354,7 @@ describe('0.8.0 additions', () => {
       biomeAdditions?: DefinitionInput[];
       lootAdditions?: DefinitionInput[];
       potions?: DefinitionInput[];
+      particles?: DefinitionInput[];
       geckolib: boolean;
     }>();
     expectTypeOf<JavaProjectGenerator['generate']>().toEqualTypeOf<

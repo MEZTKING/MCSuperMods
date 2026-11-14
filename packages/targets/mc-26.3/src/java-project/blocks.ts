@@ -25,7 +25,9 @@
  * `FlammableBlockRegistry` (with `ignitedByLava`), `msm:strippable` through the generated
  * `BlockStripping` callback, and the block item under `item.id` (ADR 0068 D2). The plant
  * types (ADR 0068 D8) add the crop and sapling classes, the leaves' vanilla classes, the sapling
- * check after start-up and the leaf tints for the client entrypoint. Minecraft 26.3, Mojang
+ * check after start-up and the leaf tints for the client entrypoint. `msm:ambient_particles`
+ * (ADR 0080 D6) gives the block a class whose `animateTick` calls vanilla's own, then the generated
+ * `particle/AmbientParticles` (`particles.ts`; not allowed on a portal). Minecraft 26.3, Mojang
  * names.
  *
  * @packageDocumentation
@@ -90,6 +92,7 @@ import {
   writeMachineFiles,
 } from './machines';
 import { className, constantName, NameTable, splitId } from './names';
+import { type AmbientInfo, ambientMembers, readAmbient } from './particles';
 import {
   PORTAL_BREAKABLE,
   PORTAL_DEFAULT_LIGHT,
@@ -164,6 +167,7 @@ const BLOCK_COMPONENTS = [
   'msm:strippable',
   'msm:container',
   'msm:machine',
+  'msm:ambient_particles',
 ];
 
 /** `msm:shape` fields (`::msm::definition::Shape`); the editor-only `preset` is not one. */
@@ -230,6 +234,8 @@ interface BlockSpec {
   readonly machine: MachineInfo | undefined;
   /** Method of a portal's `on_travel` event (ADR 0077 D6). */
   readonly onTravel: string | undefined;
+  /** `msm:ambient_particles` (ADR 0080 D6). */
+  readonly ambient: AmbientInfo | undefined;
 }
 
 /**
@@ -364,6 +370,7 @@ function readBlock(input: DefinitionInput): BlockSpec {
   const strippable = components?.object('msm:strippable');
   strippable?.onlyKeys(['into'], 'msm:strippable field');
   const into = strippable?.requiredString('into');
+  const ambient = components?.object('msm:ambient_particles');
   if (into !== undefined && !/^([a-z0-9_.-]+:)?[a-z0-9_./-]+$/.test(into)) {
     strippable?.fail(`into '${into}' is not a block id`);
   }
@@ -451,12 +458,14 @@ function readBlock(input: DefinitionInput): BlockSpec {
           reader.fail(
             `on_travel names event ${type.portal.onTravel}, which is not declared in events`,
           )),
+    ambient: ambient === undefined ? undefined : readAmbient(ambient),
   };
 }
 
 /**
  * Whether the block needs its own class: events reachable from a component, redstone or a
- * shape, a facing type, or a vanilla family class whose constructor is protected.
+ * shape, a facing type, ambient particles, or a vanilla family class whose constructor is
+ * protected.
  */
 function needsClass(spec: BlockSpec): boolean {
   return (
@@ -472,7 +481,8 @@ function needsClass(spec: BlockSpec): boolean {
     spec.onRandomTick !== undefined ||
     spec.onEntityInside !== undefined ||
     spec.container !== undefined ||
-    spec.machine !== undefined
+    spec.machine !== undefined ||
+    spec.ambient !== undefined
   );
 }
 
@@ -1302,6 +1312,9 @@ function writeBlockClass(
       ...indent(branch),
       '}',
     );
+  }
+  if (spec.ambient !== undefined) {
+    members.push(...ambientMembers(context, file, spec.input.id, spec.ambient));
   }
   members.push(...eventMethods(file, spec.events, spec.kind, actions));
 

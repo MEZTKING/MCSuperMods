@@ -1,0 +1,20 @@
+{
+  "emissive": true,
+  "fade": "out",
+  "format": 1,
+  "gravity": -0.02,
+  "lifetime": {
+    "max": 24,
+    "min": 16
+  },
+  "textures": [
+    "minecraft:generic_7",
+    "minecraft:generic_6",
+    "minecraft:generic_5",
+    "minecraft:generic_4",
+    "minecraft:generic_3",
+    "minecraft:generic_2",
+    "minecraft:generic_1",
+    "minecraft:generic_0"
+  ]
+}
