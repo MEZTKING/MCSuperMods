@@ -90,6 +90,10 @@ describe.each(
       `${PKG}/Actions.java`,
       `${PKG}/block/RubyOreBlock.java`,
       `${PKG}/block/ChimeBlock.java`,
+      // Shaped blocks (ADR 0059 D6) get a class for their shape overrides.
+      `${PKG}/block/RubySlabBlock.java`,
+      `${PKG}/block/RubySproutBlock.java`,
+      `${PKG}/block/RubyGlassBlock.java`,
       `${PKG}/item/RubyWandItem.java`,
       `${PKG}/item/RubyAppleItem.java`,
       `${PKG}/item/RubyBowItem.java`,

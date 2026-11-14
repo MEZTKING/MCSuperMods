@@ -1,10 +1,11 @@
 /**
  * Golden over the committed kitchen-sink mod project (`fixtures/sample-mod`, ADR 0026 D6):
- * an `msm:mod`, four `msm:block` and twelve `msm:item` elements covering the block and item
+ * an `msm:mod`, seven `msm:block` and twelve `msm:item` elements covering the block and item
  * components and the actions (gear since ADR 0044: a bow, a drink, a charm with `apply_effect`,
  * horse armour; since ADRs 0055 and 0056 a drink giving a custom effect, a dart and a
  * boomerang; since ADRs 0057 and 0058 the `ruby_spring` step block and two project sound
- * events in a `minecraft:sounds` element), two `msm:effect` elements with their icons, a
+ * events in a `minecraft:sounds` element; since ADR 0059 the shaped blocks `ruby_slab`,
+ * `ruby_sprout` and `ruby_glass`), two `msm:effect` elements with their icons, a
  * `minecraft:equipment` element with its three armour layer textures (ADR 0042), three
  * functions and a loot table, namespace `msm_sample_mod`.
  *
@@ -103,7 +104,7 @@ const ns = (path: string): string => `${NAMESPACE}:${path}`;
  * `msm:light_emitter`, `msm:on_interact`, `msm:on_step`, `msm:redstone`, `msm:food`,
  * `msm:tool` with a vanilla tier and with a custom material and an attack speed override,
  * `msm:armor` with a custom material (helmet and horse armour), `msm:durability`, `msm:on_use`,
- * `msm:consumable`, `msm:ranged_weapon`, `msm:throwable`), the effect components
+ * `msm:consumable`, `msm:ranged_weapon`, `msm:throwable`, `msm:shape`), the effect components
  * (`msm:on_start`, `msm:on_tick`, `msm:on_end`) and every action (`play_sound`,
  * `spawn_particle`, `run_function`, `set_block_state`, `give_item`, `trigger_event`,
  * `apply_effect`, `damage`, `heal`). Item and block models are vanilla ones; the only textures
@@ -227,6 +228,55 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
       components: {
         'msm:breakable': { hardness: 2, tool: 'shovel', min_tier: 'netherite' },
         'msm:light_emitter': { level: 15 },
+      },
+    },
+  },
+  // Block shapes (ADR 0059): a fixed half block, a walk-through plant and a glass-like cube.
+  {
+    id: ns('ruby_slab'),
+    kind: 'msm:block',
+    data: {
+      format: 1,
+      model: 'minecraft:block/smooth_stone_slab',
+      display_name: 'Ruby Slab',
+      loot: 'self',
+      sound_type: 'stone',
+      item: { creative_tab: 'minecraft:building_blocks' },
+      components: {
+        'msm:breakable': { hardness: 2, resistance: 6, tool: 'pickaxe' },
+        'msm:shape': { preset: 'slab_bottom' },
+      },
+    },
+  },
+  {
+    id: ns('ruby_sprout'),
+    kind: 'msm:block',
+    data: {
+      format: 1,
+      model: 'minecraft:block/poppy',
+      display_name: 'Ruby Sprout',
+      loot: 'self',
+      sound_type: 'grass',
+      item: { creative_tab: 'minecraft:natural_blocks' },
+      components: {
+        'msm:breakable': { hardness: 0, resistance: 0 },
+        'msm:shape': { preset: 'cross' },
+      },
+    },
+  },
+  {
+    id: ns('ruby_glass'),
+    kind: 'msm:block',
+    data: {
+      format: 1,
+      model: 'minecraft:block/red_stained_glass',
+      display_name: 'Ruby Glass',
+      loot: 'self',
+      sound_type: 'glass',
+      item: { creative_tab: 'minecraft:building_blocks' },
+      components: {
+        'msm:breakable': { hardness: 0.3, resistance: 0.3 },
+        'msm:shape': { preset: 'full', see_through: true },
       },
     },
   },
@@ -931,6 +981,7 @@ describe('sample mod project', () => {
       'msm:on_start',
       'msm:on_tick',
       'msm:on_end',
+      'msm:shape',
     ]) {
       expect(text.includes(`"${component}"`), component).toBe(true);
     }

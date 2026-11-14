@@ -1,0 +1,28 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2,
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:shape": {
+        "preset": "slab_bottom"
+      }
+    },
+    "display_name": "Ruby Slab",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "model": "minecraft:block/smooth_stone_slab",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_slab",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

@@ -22,6 +22,11 @@
  * only: an export can still report harmless `schema.unknown-id` warnings for project sounds
  * inside `msm/` files.
  *
+ * A fourth test (ADR 0059) picks the "slab_bottom" shape preset for a "Simple block" in the Block
+ * Studio's Shape section (one outline box, see-through by default), turns on "Walk-through" and
+ * takes it back with Undo, and checks the jar: the definition's `msm:shape` holds the preset's
+ * box and no `preset` (it is editor-only).
+ *
  * "Test in Minecraft" is not covered here. Preview and WebGL are unavailable headless.
  */
 
@@ -536,6 +541,8 @@ test('blocks and items: a sounds element, its key picked from the completion lis
   await palette.getByTestId('command-exportFabricJar').click();
   const jarDialog = window.getByTestId('fabric-jar-dialog');
   await expect(jarDialog).toBeVisible();
+  // Separate runtime: the export needs no built msm_runtime jar (a clean checkout has none).
+  await jarDialog.getByTestId('exporter-option-separateRuntime').check();
   await jarDialog.getByTestId('fabric-jar-dialog-submit').click();
   await expect(jarDialog).toBeHidden();
   const jarPath = join(folders.outDir, `${NAMESPACE}.jar`);
@@ -547,4 +554,71 @@ test('blocks and items: a sounds element, its key picked from the completion lis
   expect(definition.events?.[EVENT_ID]?.actions).toEqual([{ type: 'play_sound', sound: soundKey }]);
   const sounds = zipJson(jar, `assets/${NAMESPACE}/sounds.json`) as Record<string, unknown>;
   expect(Object.keys(sounds)).toContain('block.example.chime');
+});
+
+test('blocks and items: a Block Studio shape preset lowers to boxes in the jar', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-shapes-'));
+  const folders = {
+    projectDir: join(base, NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  mkdirSync(outputDir, { recursive: true });
+  const launched = await launchApp({ reuse: folders });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-new-project').click();
+  await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
+
+  // The Shape section: no shape is the full solid cube; the preset gives one box. -----------
+  await addFromTemplate(window, 'simple block', 'msm_block_simple', BLOCK_PATH);
+  const block = window.getByTestId('block-studio');
+  await expect(block).toBeVisible();
+  const section = block.getByTestId('block-shape');
+  await expect(section).toBeVisible();
+  const preset = section.getByTestId('block-shape-preset');
+  await expect(preset).toHaveValue('');
+  await expect(section.getByTestId('block-shape-preset-label')).toContainText(
+    'Full solid cube (no shape set)',
+  );
+  await preset.selectOption('slab_bottom');
+  await expect(preset).toHaveValue('slab_bottom');
+  await expect(section.getByTestId('block-shape-preset-label')).toContainText('Bottom half');
+  await expect(section.getByTestId('block-shape-preview-box')).toHaveCount(1);
+  // A shape that is not the full cube is see-through unless the block says otherwise.
+  await expect(section.getByTestId('block-shape-see-through')).toBeChecked();
+  const walkThrough = section.getByTestId('block-shape-walk-through');
+  await expect(walkThrough).not.toBeChecked();
+  await walkThrough.check();
+  await expect(walkThrough).toBeChecked();
+  await expect(section.getByTestId('block-shape-preview')).toHaveAttribute(
+    'aria-label',
+    /walk-through/,
+  );
+  // Undo takes the walk-through back and keeps the preset.
+  await window.getByTestId('toolbar-undo').click();
+  await expect(walkThrough).not.toBeChecked();
+  await expect(preset).toHaveValue('slab_bottom');
+  await expect(await problemRows(window, 'error')).toHaveCount(0);
+
+  // The jar holds the preset's box, not the preset. ------------------------------------------
+  const palette = await openPalette(window, 'fabric mod jar');
+  await palette.getByTestId('command-exportFabricJar').click();
+  const jarDialog = window.getByTestId('fabric-jar-dialog');
+  await expect(jarDialog).toBeVisible();
+  // Separate runtime: the export needs no built msm_runtime jar (a clean checkout has none).
+  await jarDialog.getByTestId('exporter-option-separateRuntime').check();
+  await jarDialog.getByTestId('fabric-jar-dialog-submit').click();
+  await expect(jarDialog).toBeHidden();
+  const jarPath = join(folders.outDir, `${NAMESPACE}.jar`);
+  await expect.poll(() => isCompleteZip(jarPath), { timeout: 20_000 }).toBe(true);
+  const jar = readZip(jarPath);
+  const definition = zipJson(jar, `msm/${NAMESPACE}/block/${BLOCK_PATH}.json`) as {
+    components: Record<string, unknown>;
+  };
+  expect(definition.components['msm:shape']).toEqual({ boxes: [[0, 0, 0, 16, 8, 16]] });
+
+  await window.getByTestId('toolbar-save').click();
+  await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
 });

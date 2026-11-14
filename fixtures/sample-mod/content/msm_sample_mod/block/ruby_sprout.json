@@ -1,0 +1,27 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      },
+      "msm:shape": {
+        "preset": "cross"
+      }
+    },
+    "display_name": "Ruby Sprout",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "model": "minecraft:block/poppy",
+    "sound_type": "grass"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_sprout",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

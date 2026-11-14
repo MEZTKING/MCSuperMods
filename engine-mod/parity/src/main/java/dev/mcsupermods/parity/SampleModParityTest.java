@@ -33,6 +33,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -52,6 +53,7 @@ import net.minecraft.world.item.enchantment.Enchantable;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -61,6 +63,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * Behaviour parity over {@code fixtures/sample-mod} (namespace {@code msm_sample_mod}), written
@@ -92,6 +98,11 @@ import net.minecraft.world.phys.Vec3;
  * {@code ruby_spring}, whose {@code on_step} event gives whoever steps on it, mob or player,
  * Jump Boost for 5 seconds, launches it up at strength 1 and runs {@code ruby/spring}
  * ({@code tag @s add msm_sample_sprung}) as it, with a 10-tick cooldown per dimension.
+ * Since ADR 0059: the shaped blocks {@code ruby_slab} (preset {@code slab_bottom}: the bottom half, solid, see-through
+ * by default), {@code ruby_sprout} (preset {@code cross}: a 12 by 12 by 16 outline, walk-through, instant to break) and
+ * {@code ruby_glass} (preset {@code full} with {@code see_through}: a full cube that occludes nothing, lets sky light
+ * down, hides faces against itself and refuses mob spawns), observed through block state shapes, entity movement in
+ * the {@code msm_parity_tests:arena} structure and the light engine.
  * Run with {@code --gametest-filter msm_parity_tests:sample_mod_*}.
  */
 public class SampleModParityTest {
@@ -939,5 +950,166 @@ public class SampleModParityTest {
         helper.assertTrue(pig.hasEffect(MobEffects.JUMP_BOOST), "the same position in the nether shares the overworld's cooldown");
         pig.discard();
         helper.succeed();
+    }
+
+    // Block shapes (ADR 0059): ruby_slab, ruby_sprout, ruby_glass
+
+    private static final String ARENA = "msm_parity_tests:arena";
+    private static final double EPS = 1e-6;
+
+    /** A box in pixels, as the shape component writes it. */
+    private static AABB px(double x1, double y1, double z1, double x2, double y2, double z2) {
+        return new AABB(x1 / 16, y1 / 16, z1 / 16, x2 / 16, y2 / 16, z2 / 16);
+    }
+
+    private static boolean same(AABB a, AABB b) {
+        return Math.abs(a.minX - b.minX) < EPS && Math.abs(a.minY - b.minY) < EPS && Math.abs(a.minZ - b.minZ) < EPS
+                && Math.abs(a.maxX - b.maxX) < EPS && Math.abs(a.maxY - b.maxY) < EPS && Math.abs(a.maxZ - b.maxZ) < EPS;
+    }
+
+    private static boolean equal(VoxelShape a, VoxelShape b) {
+        return !Shapes.joinIsNotEmpty(a, b, BooleanOp.NOT_SAME);
+    }
+
+    private static VoxelShape outline(GameTestHelper helper, BlockState state) {
+        return state.getShape(helper.getLevel(), helper.absolutePos(AT), CollisionContext.empty());
+    }
+
+    private static VoxelShape collision(GameTestHelper helper, BlockState state) {
+        return state.getCollisionShape(helper.getLevel(), helper.absolutePos(AT), CollisionContext.empty());
+    }
+
+    /** What every see-through block shares with vanilla glass: no occlusion, light passes, no suffocation, no spawns. */
+    private static void assertSeeThrough(GameTestHelper helper, BlockState state, String what) {
+        ServerLevel level = helper.getLevel();
+        BlockPos abs = helper.absolutePos(AT);
+        helper.assertFalse(state.canOcclude(), what + " occludes");
+        helper.assertTrue(state.propagatesSkylightDown(), what + " stops sky light");
+        helper.assertValueEqual(state.getLightDampening(), 0, what + " light dampening");
+        helper.assertValueEqual(state.getShadeBrightness(level, abs), 1.0f, what + " shade brightness");
+        helper.assertFalse(state.isSuffocating(level, abs), what + " suffocates");
+        helper.assertFalse(state.isViewBlocking(level, abs, new AABB(abs)), what + " blocks the view");
+        helper.assertFalse(state.isRedstoneConductor(level, abs), what + " conducts redstone");
+        helper.assertFalse(state.isValidSpawn(level, abs, EntityTypes.ZOMBIE), what + " lets a zombie spawn on it");
+        helper.assertTrue(state.getVisualShape(level, abs, CollisionContext.empty()).isEmpty(), what + " has a visual shape");
+    }
+
+    private static void assertDropsItself(GameTestHelper helper, Block block, BlockState state, String path) {
+        helper.assertValueEqual(block.getLootTable().orElseThrow().identifier(), id("blocks/" + path), path + " loot table");
+        List<ItemStack> drops = Block.getDrops(state, helper.getLevel(), helper.absolutePos(AT), null, null, new ItemStack(Items.DIAMOND_PICKAXE));
+        helper.assertTrue(drops.size() == 1 && drops.getFirst().is(item(helper, path)) && drops.getFirst().getCount() == 1,
+                path + " drops itself (loot self): " + drops);
+    }
+
+    @GameTest
+    public void rubySlabIsTheBottomHalf(GameTestHelper helper) {
+        Block block = block(helper, "ruby_slab");
+        BlockState state = place(helper, block, 0, 2.0f, "stone", "ruby_slab");
+        helper.assertValueEqual(block.getExplosionResistance(), 6.0f, "ruby_slab resistance");
+        VoxelShape outline = outline(helper, state);
+        helper.assertTrue(same(outline.bounds(), px(0, 0, 0, 16, 8, 16)), "ruby_slab outline " + outline.bounds());
+        helper.assertTrue(equal(collision(helper, state), outline), "ruby_slab collision follows the outline: " + collision(helper, state));
+        // No see_through in the element: a shape that is not the full cube is see-through by default (ADR 0059 D1).
+        assertSeeThrough(helper, state, "ruby_slab");
+        assertDropsItself(helper, block, state, "ruby_slab");
+        assertBlockItem(helper, block, "ruby_slab", 64, Rarity.COMMON);
+        helper.succeed();
+    }
+
+    @GameTest
+    public void rubySproutIsWalkThrough(GameTestHelper helper) {
+        Block block = block(helper, "ruby_sprout");
+        BlockState state = place(helper, block, 0, 0.0f, "grass", "ruby_sprout");
+        VoxelShape outline = outline(helper, state);
+        helper.assertTrue(same(outline.bounds(), px(2, 0, 2, 14, 16, 14)), "ruby_sprout outline " + outline.bounds());
+        helper.assertTrue(collision(helper, state).isEmpty(), "ruby_sprout collision is not empty: " + collision(helper, state));
+        assertSeeThrough(helper, state, "ruby_sprout");
+        assertDropsItself(helper, block, state, "ruby_sprout");
+        assertBlockItem(helper, block, "ruby_sprout", 64, Rarity.COMMON);
+        helper.succeed();
+    }
+
+    @GameTest
+    public void rubyGlassIsLikeGlass(GameTestHelper helper) {
+        Block block = block(helper, "ruby_glass");
+        BlockState state = place(helper, block, 0, 0.3f, "glass", "ruby_glass");
+        VoxelShape outline = outline(helper, state);
+        helper.assertTrue(same(outline.bounds(), px(0, 0, 0, 16, 16, 16)), "ruby_glass outline " + outline.bounds());
+        helper.assertTrue(equal(collision(helper, state), Shapes.block()), "ruby_glass collision is not the full cube: " + collision(helper, state));
+        assertSeeThrough(helper, state, "ruby_glass");
+        helper.assertFalse(state.isSolidRender(), "ruby_glass is a solid render");
+        helper.assertTrue(state.skipRendering(state, Direction.EAST), "ruby_glass draws the face against itself");
+        helper.assertFalse(state.skipRendering(Blocks.STONE.defaultBlockState(), Direction.EAST), "ruby_glass hides a face against stone");
+        // The same answers as vanilla glass, the block it imitates.
+        BlockState glass = Blocks.GLASS.defaultBlockState();
+        helper.assertValueEqual(state.canOcclude(), glass.canOcclude(), "canOcclude against vanilla glass");
+        helper.assertValueEqual(state.propagatesSkylightDown(), glass.propagatesSkylightDown(), "propagatesSkylightDown against vanilla glass");
+        helper.assertValueEqual(state.isValidSpawn(helper.getLevel(), helper.absolutePos(AT), EntityTypes.ZOMBIE),
+                glass.isValidSpawn(helper.getLevel(), helper.absolutePos(AT), EntityTypes.ZOMBIE), "isValidSpawn against vanilla glass");
+        assertDropsItself(helper, block, state, "ruby_glass");
+        assertBlockItem(helper, block, "ruby_glass", 64, Rarity.COMMON);
+        helper.succeed();
+    }
+
+    /** An armour stand dropped onto the slab comes to rest on its top, half a block up. */
+    @GameTest(structure = ARENA, maxTicks = 100)
+    public void anEntityStandsAtTheRubySlabHeight(GameTestHelper helper) {
+        BlockPos at = new BlockPos(3, 1, 5);
+        helper.setBlock(at, block(helper, "ruby_slab"));
+        ArmorStand stand = helper.spawn(EntityTypes.ARMOR_STAND, new Vec3(3.5, 2.5, 5.5));
+        double top = helper.absolutePos(at).getY() + 0.5;
+        helper.succeedWhen(() -> {
+            helper.assertTrue(stand.onGround(), "not on the ground yet at y " + stand.getY());
+            helper.assertTrue(Math.abs(stand.getY() - top) < 1e-3, "stands at y " + stand.getY() + ", the slab top is " + top);
+            stand.discard();
+        });
+    }
+
+    /** An armour stand dropped onto the sprout falls through it to the floor. */
+    @GameTest(structure = ARENA, maxTicks = 100)
+    public void anEntityFallsThroughTheRubySprout(GameTestHelper helper) {
+        BlockPos at = new BlockPos(3, 1, 5);
+        helper.setBlock(at, block(helper, "ruby_sprout"));
+        ArmorStand stand = helper.spawn(EntityTypes.ARMOR_STAND, new Vec3(3.5, 2.5, 5.5));
+        double floor = helper.absolutePos(at).getY();
+        helper.succeedWhen(() -> {
+            helper.assertTrue(stand.onGround(), "not on the ground yet at y " + stand.getY());
+            helper.assertTrue(Math.abs(stand.getY() - floor) < 1e-3, "stands at y " + stand.getY() + ", the floor is " + floor);
+            stand.discard();
+        });
+    }
+
+    /** {@code Entity.move} applies block collision at once: through the sprout the whole way, stopped by the glass. */
+    @GameTest(structure = ARENA)
+    public void anEntityWalksThroughTheRubySproutNotTheGlass(GameTestHelper helper) {
+        helper.setBlock(new BlockPos(4, 1, 3), block(helper, "ruby_sprout"));
+        helper.setBlock(new BlockPos(4, 1, 7), block(helper, "ruby_glass"));
+        ArmorStand through = helper.spawn(EntityTypes.ARMOR_STAND, new Vec3(3.5, 1, 3.5));
+        ArmorStand blocked = helper.spawn(EntityTypes.ARMOR_STAND, new Vec3(3.5, 1, 7.5));
+        double x1 = through.getX();
+        double x2 = blocked.getX();
+        through.move(MoverType.SELF, new Vec3(2, 0, 0));
+        blocked.move(MoverType.SELF, new Vec3(2, 0, 0));
+        helper.assertTrue(Math.abs(through.getX() - (x1 + 2)) < 1e-3, "the sprout stopped the entity: " + x1 + " -> " + through.getX());
+        helper.assertTrue(blocked.getX() < x2 + 0.5, "the glass did not stop the entity: " + x2 + " -> " + blocked.getX());
+        through.discard();
+        blocked.discard();
+        helper.succeed();
+    }
+
+    /** Sky light reaches the cell below the ruby glass at full strength; below stone it is at most 14 (from the side). */
+    @GameTest(structure = ARENA, maxTicks = 100)
+    public void skyLightPassesTheRubyGlass(GameTestHelper helper) {
+        BlockPos glass = new BlockPos(3, 2, 5);
+        BlockPos stone = new BlockPos(7, 2, 5);
+        helper.setBlock(glass, block(helper, "ruby_glass"));
+        helper.setBlock(stone, Blocks.STONE);
+        ServerLevel level = helper.getLevel();
+        helper.succeedWhen(() -> {
+            int underGlass = level.getBrightness(LightLayer.SKY, helper.absolutePos(glass.below()));
+            int underStone = level.getBrightness(LightLayer.SKY, helper.absolutePos(stone.below()));
+            helper.assertValueEqual(underGlass, 15, "sky light below the ruby glass");
+            helper.assertTrue(underStone < 15, "sky light below stone is " + underStone + " (light engine not updated yet)");
+        });
     }
 }

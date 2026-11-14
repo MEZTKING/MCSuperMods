@@ -23,6 +23,7 @@ final class ParitySounds {
             case "stone" -> BlockSoundSets.STONE;
             case "wood" -> BlockSoundSets.WOOD;
             case "glass" -> BlockSoundSets.GLASS;
+            case "grass" -> BlockSoundSets.GRASS;
             default -> throw new IllegalArgumentException("No test mapping for sound_type " + msmSoundType);
         };
     }

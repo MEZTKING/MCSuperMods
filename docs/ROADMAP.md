@@ -582,6 +582,7 @@ Not committed; each needs an ADR before work starts.
 - **Marketplace**: discovery and install for third-party plugins and templates.
 - **Pre-26.1 vanilla export**: 1.21.x pack export via a target plugin, using existing mcdoc schemas.
 - **More gear and content types** (deferred from [ADR 0044](adr/0044-gear-weapons-and-consumables.md) D8): armour trim patterns (per-layer textures), banner patterns, a glider flow. Trident-style throwables and custom status effects moved to the add-on "Custom status effects and throwables" (ADRs 0055, 0056); what stays here from them: 3D thrown models, return flight, custom arrows and GeckoLib projectiles, instant effects, brewing.
+- **Block families and state-dependent shapes** (deferred from [ADR 0059](adr/0059-block-shapes-and-see-through-blocks.md) D5, coverage audit B2): rotation and new state properties (facing, axis, half), connecting shapes (fences, walls, panes), stairs, real slabs (double slabs, waterlogging), doors and trapdoors, crops, per-state shapes and models, block families from one texture. 1.x has fixed shapes and see-through blocks only.
 - **AI assistant (user request, 2026-11-04)**: moved ahead of 1.0 on 2026-11-05 as the "AI helper" add-on of Phase 7 ([ADR 0041](adr/0041-ai-helper.md)). Later ideas for it: persisted conversations with their own retention rules, a base URL setting for proxies, server-side compaction for very long build runs, a stored generator version in Creator metadata.
 
 ## Milestone Log

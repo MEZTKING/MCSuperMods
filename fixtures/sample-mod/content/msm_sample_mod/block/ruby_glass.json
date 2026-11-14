@@ -1,0 +1,28 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.3,
+        "resistance": 0.3
+      },
+      "msm:shape": {
+        "preset": "full",
+        "see_through": true
+      }
+    },
+    "display_name": "Ruby Glass",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "model": "minecraft:block/red_stained_glass",
+    "sound_type": "glass"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_glass",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

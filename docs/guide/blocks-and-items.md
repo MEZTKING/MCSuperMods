@@ -6,7 +6,7 @@ MCSuperMods makes new blocks and items with the `msm:block` and `msm:item` eleme
 
 1. Open or create a project. Any project works, including a blank one (**New** on the toolbar).
 2. Choose **Add element** on the toolbar (Ctrl+N). The **New element** dialog groups the templates by category.
-3. Under **Blocks**, pick **Simple block**, **Glowing ore** or **Interactive block**; under **Items**, pick **Food item**, **Tool item** or **Magic wand**. Type in the filter box (for example "ore") to narrow the list.
+3. Under **Blocks**, pick **Simple block**, **Glowing ore**, **Interactive block**, **Half block**, **Plant (cross)** or **Glass-like block**; under **Items**, pick **Food item**, **Tool item** or **Magic wand**. Type in the filter box (for example "ore") to narrow the list.
 4. Type a name, for example `sun_stone`, and choose **Create**.
 
 The element id (`<namespace>:sun_stone`) is also the id the block or item has in the game, so `/give @s <namespace>:sun_stone` works once the mod is installed. A block and its block item share the id; you do not make the block item separately.
@@ -23,6 +23,7 @@ Selecting a block opens the Block Studio. Empty fields use the game's defaults. 
 - **Drops**: **Drops itself** makes a loot table that drops the block's own item; **Loot table** points at a loot table of your own or a vanilla one; **None** makes no loot table.
 - **Block item**: **Has a block item** lets players hold and place the block, with **Stack size**, **Rarity** (the colour of its name) and **Creative tab**. Untick it for a block that only commands or events place; such a block cannot drop itself. Ticking it again brings back the stack size, rarity and creative tab you had before, as long as you have not left the block since; otherwise it gives the default block item (stack of 64, common, no creative tab).
 - **Behaviour**: what starts the block's events. **On interact** runs an event when a player right-clicks the block. **On step** runs one when something walks onto it, at most once per **Step cooldown (ticks)** (20 ticks are one second). **Redstone signal emitted** makes the block a constant redstone source (0 to 15), and **On powered** and **On unpowered** run events when a redstone signal next to it switches on or off.
+- **Shape**: the block's outline and collision, and whether you can see and walk through it (see [Block shapes](#block-shapes)).
 - **Events**: the block's events and their actions (see [Events and actions](#events-and-actions)).
 
 ## The Item Studio
@@ -85,6 +86,42 @@ A new sound key is a registry entry, so it needs a game restart; changing the au
 **On step** runs when something stands on or walks onto the block: a player, a pig, a zombie or any other entity. The event's actions apply to the entity that stepped, so a **Launch (push)** with **Target** `self` throws that entity up and an **Apply effect** gives it the effect, whatever it is. With **Target** `other`, the action reaches the other entity of the event, if any. `run_function` runs as the stepper too, so `@s` is the mob. The **Step cooldown (ticks)** is counted per dimension, per block and per stepping entity, so a mob standing still is not pushed every tick, and a step in the Nether does not use up the Overworld's wait.
 
 A jump pad for everything that walks is therefore one block with **On step** pointing at an event with a `launch` and a slow falling `apply_effect`. The sample mod's `ruby_spring` block is built this way.
+
+## Block shapes
+
+Without a shape a block is a full solid cube, whatever its model looks like. The **Shape** section of the Block Studio gives it another outline (the box you see when you point at it), the same collision (what you stand on and bump into) and, where it fits, lets light and the view through. The templates **Half block**, **Plant (cross)** and **Glass-like block** start with a shape; the sample mod's `ruby_slab`, `ruby_sprout` and `ruby_glass` show all three.
+
+**Shape** offers these presets. Boxes are in pixels from 0 to 16, as in a block model.
+
+| Preset | Outline and collision | See-through by default |
+|---|---|---|
+| (full solid cube) | No shape at all: a full cube that hides its neighbours' faces and stops light, as before | No |
+| `full` | The full cube; useful with **See-through** for a glass-like block | No |
+| `slab_bottom` (Bottom half) | The lower half, 16 by 8 by 16: you stand on it half a block up | Yes |
+| `slab_top` (Top half) | The upper half | Yes |
+| `carpet` | A layer one pixel thick | Yes |
+| `pillar` | An 8 by 8 post, the full height, in the middle | Yes |
+| `cross` (Plant (cross)) | A 12 by 12 by 16 box around the middle, for crossed-plane plants; **Walk-through** is on | Yes |
+| `custom` (Custom boxes) | Up to 16 boxes of your own: **Add box**, **Remove**, and six numbers per box (from x, y, z to x, y, z) | Yes, unless the only box is the full cube |
+
+**From model** reads the boxes from the block's model in one step (one Undo takes it back): the `elements` of a model of your own project, or a vanilla slab, carpet, cross or cube parent. A model it cannot read leaves the shape as it was and says why. The outline picture next to the section draws the boxes.
+
+- **Walk-through (no collision, like plants)**: players and mobs pass through the block. The outline stays, so you can still point at it and break it. A walk-through block never hides its neighbours' faces.
+- **See-through (light passes, neighbours stay visible, like glass)**: the block hides none of its neighbours' faces, lets sky light down at full strength, never suffocates or blocks the view, does not carry redstone power to its sides, and mobs do not spawn on it (as on vanilla glass). Two see-through blocks of the same kind side by side hide the face between them, so a wall of glass-like blocks shows no inner faces. Untick it for a solid half block or post that should stop light and let mobs spawn.
+
+How a texture draws comes from its pixels, not from a setting: no transparent pixels draw solid, fully transparent pixels draw cut-out (as leaves and flowers do), partly transparent pixels draw see-through (as stained glass does). The section lists which of these each project texture of the model gives.
+
+Two warnings in **Problems** point at blocks that look wrong in the game:
+
+- **`blocks-items.model-not-cube`**: the block's model is a project model that is not a full cube (it has its own elements, or comes from a slab, stairs, plant or other non-cube parent), but the block has no shape, so it collides and hides its neighbours' faces as a full cube. Give it a preset or use **From model**.
+- **`blocks-items.transparent-texture-on-solid-block`**: a texture of the block's model has transparent pixels, but the block is not see-through, so you look through the holes into the world below. Tick **See-through**, or use a texture without transparent pixels.
+
+What shapes do not do yet:
+
+- No rotation: the shape is the same whichever way the block is placed, and no shape has a facing, axis or half.
+- No stairs, doors, trapdoors, fences, walls, panes or crops, and no real slabs: a **Bottom half** block is a fixed half block. Two of them do not stack into a double slab, and none holds water.
+- No shape per block state: a block with **On powered** has the same shape powered and unpowered.
+- No block families made from one texture (a slab, stairs and wall of the same stone).
 
 ## Drops
 
@@ -217,4 +254,6 @@ Any other line with `[msm_runtime]` names the file and the problem.
 | The block drops nothing | Check **Drops**, and mine it with the **Tool** and **Minimum tier** you set; by hand it drops nothing when a tool is required. |
 | The block mines slowly with the right tool | Set **Tool**; **Hardness** sets how slow it is. |
 | An event does nothing | Check that the trigger in **Behaviour** names the event, and the action's ids (sound, particle, function, item). |
+| You can stand inside the block, or bump into thin air beside it | The block's shape does not match its model. Choose a preset in **Shape**, or **From model**. |
+| Holes in the block show the world below it | Tick **See-through** in **Shape**. |
 | Two mods with the same id | Give one of them another mod id in its **Mod metadata**. |
