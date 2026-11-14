@@ -54,6 +54,7 @@ const STARTER_IDS = [
   'painting',
   'music-disc-item',
   'dimension',
+  'portal',
   'villager-trade',
   'extra-drop',
   'mob-skin',
@@ -248,7 +249,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the forty-four starters in order', () => {
+  it('lists the forty-five starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -258,7 +259,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(40).fill('content'),
+      ...Array<string>(41).fill('content'),
     ]);
   });
 
@@ -625,7 +626,7 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 94 per-kind examples, one per built-in kind, 30 behaviour examples and 4 starter projects', () => {
+  it('has 94 per-kind examples, one per built-in kind, 31 behaviour examples and 4 starter projects', () => {
     expect(kindExamples).toHaveLength(94);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
@@ -648,6 +649,7 @@ describe('examples', () => {
       'example_msm_loot_crate',
       'example_msm_ore_crusher',
       'example_msm_shulker_crate',
+      'example_msm_sky_portal',
     ]);
     expect(entityBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_hostile_mob',
@@ -668,7 +670,7 @@ describe('examples', () => {
       'example_msm_teleport_staff',
       'example_msm_boss_fight_bar',
     ]);
-    expect(libraryExamples).toHaveLength(128);
+    expect(libraryExamples).toHaveLength(129);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -742,6 +744,17 @@ describe('every starter and example', () => {
       if (entry.id === 'mob-skin') {
         for (const animal of ['cat', 'pig', 'cow', 'chicken', 'frog']) {
           for (const element of build(entry, 'demo', { animal }).elements) used.add(element.kind);
+        }
+      }
+      // The Dimension flow's portal answer (ADR 0078 D2) and the Portal flow's key.
+      if (entry.id === 'dimension') {
+        for (const element of build(entry, 'demo', { travel: 'portal' }).elements) {
+          used.add(element.kind);
+        }
+      }
+      if (entry.id === 'portal') {
+        for (const element of build(entry, 'demo', { igniter: 'key' }).elements) {
+          used.add(element.kind);
         }
       }
       expect(entry.requiresKinds, entry.id).toEqual([...used].sort());
@@ -901,6 +914,7 @@ describe('structure and worldgen content', () => {
       'crop',
       'tree',
       'dimension',
+      'portal',
       'custom_biome',
       'jigsaw_structure',
       'worldgen_pack',
@@ -915,6 +929,7 @@ describe('structure and worldgen content', () => {
       'example_msm_tree',
       'example_msm_loot_crate',
       'example_msm_ore_crusher',
+      'example_msm_sky_portal',
       'starter_custom_ore',
     ]);
   });
@@ -944,9 +959,10 @@ describe('structure and worldgen content', () => {
             continue;
           // An item's or block's trigger names one of its own events, not an element, and a
           // run_script action a handler a script defines.
+          // A portal's on_travel (ADR 0077 D6) names one of its own events too.
           if (
             (element.kind === 'msm:item' || element.kind === 'msm:block') &&
-            (key === 'event' || key === 'handler')
+            (key === 'event' || key === 'handler' || key === 'on_travel')
           )
             continue;
           if (!/^#?other_ns:/.test(text)) continue;

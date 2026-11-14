@@ -482,6 +482,46 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
       travel: 'command',
     },
     { dimension_name: 'Flatland', terrain: 'flat', biome: 'minecraft:plains' },
+    // ADR 0078 D2: the portal answer, on flat land in the dimension's colour.
+    {
+      dimension_name: 'Gate Lands',
+      terrain: 'flat',
+      biome: 'mix',
+      sky: 'nether',
+      travel: 'portal',
+      colour: '#28a060',
+    },
+  ],
+  // ADR 0078 D2: every destination, frame, igniter, scale, particle, sound and overlay answer.
+  portal: [
+    {
+      portal_name: 'Ember Gate',
+      destination: 'minecraft:the_nether',
+      frame: 'minecraft:gold_block',
+      igniter: 'key',
+      scale: '8',
+      colour: '#de9420',
+      particles: 'dust',
+      sounds: 'quiet',
+      overlay: false,
+    },
+    {
+      portal_name: 'Void Door',
+      destination: 'minecraft:the_end',
+      frame: 'minecraft:crying_obsidian',
+      igniter: 'minecraft:fire_charge',
+    },
+    {
+      portal_name: 'Cave Door',
+      dimension_name: 'Deep Caves',
+      terrain: 'caves',
+      biome: 'minecraft:dark_forest',
+      sky: 'caves',
+      frame: 'minecraft:quartz_block',
+      igniter: 'minecraft:ender_eye',
+    },
+    { portal_name: 'Isle Gate', terrain: 'floating_islands', frame: 'minecraft:prismarine_bricks' },
+    { portal_name: 'Far Gate', destination: 'other', dimension_id: 'minecraft:the_nether' },
   ],
   'extra-drop': [
     { table: 'chests/desert_pyramid', item: 'diamond', count_min: 2, count_max: 5, chance: 100 },
@@ -843,6 +883,7 @@ const MIRRORED_STARTERS = [
   'painting',
   'music-disc-item',
   'dimension',
+  'portal',
   'status-effect',
   'throwable',
   'extra-drop',
@@ -2051,6 +2092,70 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         expect(files.filter((path) => /ore_ruby|biome_addition/.test(path))).toEqual([]);
       }
     });
+
+    it.each([
+      ['portal', {}],
+      ['dimension', { travel: 'portal' }],
+      ['example_msm_sky_portal', {}],
+    ] as const)(
+      '%s with %j creates with no problems at all, and its vanilla data pack keeps the dimension and travel function (ADR 0078 D2, D4)',
+      async (id, values) => {
+        const entry =
+          libraryStarters.find((starter) => starter.id === id) ??
+          libraryExamples.find((example) => example.id === id);
+        if (entry === undefined) throw new Error(`No ${id}`);
+        const built = await buildProject('Portal', 'demo', [
+          buildEntry(entry, 'demo', 'Portal', bundle.target, values),
+        ]);
+        const project = await reload(built.fs);
+        const ids = projectRegistryIds(project);
+        const registries = createRegistryIndex({ vanilla: context.vanilla, project: ids });
+        // Warnings and infos too: untouched defaults give none (ADR 0078 D2).
+        expect(validatorProblems(project, bundle.target, registries)).toEqual([]);
+        const { jarFiles } = await checkProject(bundle, context, built);
+        const portal = project.namespaces
+          .flatMap((namespace) => namespace.elements)
+          .find((element) => (element.data as { type?: unknown }).type === 'portal');
+        const path = (portal?.id ?? '').slice('demo:'.length);
+        expect(jarFiles).toEqual(
+          expect.arrayContaining([
+            `msm/demo/block/${path}.json`,
+            `assets/demo/blockstates/${path}.json`,
+            'data/minecraft/tags/block/portals.json',
+          ]),
+        );
+        const report = await exportProblems(
+          bundle,
+          context,
+          built.fs,
+          project,
+          registries,
+          ids,
+          vanillaSafeExporter(dataPackExporter, modOnlyIdsFor(project)),
+        );
+        expect(report.ok).toBe(true);
+        // Only the frame block's loot table and recipe (and the example beacon's loot table) are
+        // left out (ADR 0066 D3); no function names the portal, so none is flagged.
+        expect(
+          report.problems
+            .filter((problem) => problem.severity !== 'info')
+            .map((problem) => problem.code),
+        ).toEqual(Array(id === 'example_msm_sky_portal' ? 3 : 2).fill(MOD_ONLY_REFERENCE));
+        const dimension =
+          id === 'portal' ? 'sky_realm' : id === 'dimension' ? 'ruby_realm' : 'sky_isle';
+        expect(report.files).toEqual(
+          expect.arrayContaining([
+            `data/demo/dimension/${dimension}.json`,
+            `data/demo/function/${dimension}/travel.mcfunction`,
+          ]),
+        );
+        expect(report.files.some((file) => file.includes('_frame'))).toBe(false);
+        const tag = JSON.parse(
+          utf8.decode(report.contents.get('data/minecraft/tags/block/portals.json') as Uint8Array),
+        );
+        expect(tag.values).toEqual([{ id: `demo:${path}`, required: false }]);
+      },
+    );
 
     it('the Extra drop flow names only loot tables the target has and exports to the jar only (ADR 0060 D6)', async () => {
       const tables = new Set(context.vanilla.loot_table ?? []);

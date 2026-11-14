@@ -39,6 +39,7 @@ import { MUSIC_DISC_ITEM_PARAMETERS, musicDiscItemBundle } from './music-disc-it
 import { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
 import { PAINTING_PARAMETERS, paintingBundle } from './painting';
 import { PET_PARAMETERS, petBundle } from './pet';
+import { PORTAL_PARAMETERS, portalBundle } from './portal';
 import { POTION_PARAMETERS, potionBundle } from './potion';
 import { recipePackBundle } from './recipe-pack';
 import { SCRIPTED_ITEM_PARAMETERS, scriptedItemBundle } from './scripted-item';
@@ -63,7 +64,12 @@ export { customBiomeBundle, customBiomeContent, customBiomeIds } from './custom-
 export { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
 export { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
 export { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
-export { DIMENSION_PARAMETERS, dimensionBundle } from './dimension';
+export {
+  DIMENSION_PARAMETERS,
+  dimensionBundle,
+  dimensionContent,
+  dimensionWorldParameters,
+} from './dimension';
 export { ENCHANTMENT_PARAMETERS, enchantmentBundle } from './enchantment';
 export { EXTRA_DROP_PARAMETERS, EXTRA_DROP_TABLES, extraDropBundle } from './extra-drop';
 export { FARM_ANIMAL_PARAMETERS, farmAnimalBundle } from './farm-animal';
@@ -91,6 +97,7 @@ export {
   paintingBundle,
 } from './painting';
 export { PET_PARAMETERS, petBundle } from './pet';
+export { PORTAL_PARAMETERS, portalBundle } from './portal';
 export {
   BREWING_INGREDIENTS,
   OWN_EFFECT,
@@ -500,7 +507,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'dimension',
     'Dimension',
-    'A new dimension to explore: pick the terrain, the biome and the sky, and travel there and back with a key item (Fabric mod jar) or a command (vanilla packs).',
+    'A new dimension to explore: pick the terrain, the biome and the sky, and travel there and back with a key item or a portal (Fabric mod jar) or a command (vanilla packs).',
     'content',
     ['datapack', 'resourcepack', 'msm'],
     dimensionBundle,
@@ -509,9 +516,23 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       creator: {
         group: 'worlds',
         blurb:
-          'A world of its own, with the terrain, biome and sky you pick, and a key to get there.',
+          'A world of its own, with the terrain, biome and sky you pick, and a key or portal to get there.',
       },
-      probeValues: [{ travel: 'command' }, { terrain: 'flat' }],
+      probeValues: [{ travel: 'command' }, { terrain: 'flat' }, { travel: 'portal' }],
+    },
+  ),
+  starter(
+    'portal',
+    'Portal',
+    'A portal players build a frame for, light and walk through to a new dimension, the Nether or the End and back: the frame block, what lights it, the scale, its colour, particles and sounds, and the screen wobble when entering. A new dimension also gets a travel function that works in vanilla packs. Portals need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    portalBundle,
+    {
+      supports: hasFabric,
+      parameters: PORTAL_PARAMETERS,
+      creator: { group: 'worlds', blurb: 'Portal to a dimension.' },
+      probeValues: [{ igniter: 'key', destination: 'minecraft:the_nether' }],
     },
   ),
   starter(

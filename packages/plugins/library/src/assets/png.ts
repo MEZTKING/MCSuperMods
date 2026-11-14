@@ -75,7 +75,12 @@ export type Rgb = readonly [number, number, number];
  * - `seeds`: a handful of seed grains (item texture);
  * - `produce`: a round vegetable or fruit with a green leafy top (item texture);
  * - `block_front`: a bevelled face with vents and a dark opening, the front of a furnace-like
- *   block (block texture).
+ *   block (block texture);
+ * - `portal`: a see-through swirl of streaks in shades of the colour with a few bright sparks,
+ *   the surface of a portal block (block texture, partly transparent so the game draws it
+ *   translucent; ADR 0078 D2);
+ * - `portal_frame`: dark obsidian-like stone with glowing veins in the colour, a portal's
+ *   frame block (block texture).
  *
  * Paintings have their own placeholder of any size, {@link paintingPng}.
  */
@@ -143,7 +148,9 @@ export type PlaceholderPattern =
   | 'crop_stage3'
   | 'seeds'
   | 'produce'
-  | 'block_front';
+  | 'block_front'
+  | 'portal'
+  | 'portal_frame';
 
 /** Every pattern, in documentation order. */
 export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze([
@@ -211,6 +218,8 @@ export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze
   'seeds',
   'produce',
   'block_front',
+  'portal',
+  'portal_frame',
 ]);
 
 /** Width and height of the armour layer patterns, the vanilla humanoid armour texture size. */
@@ -1278,6 +1287,59 @@ function blockFront(palette: Palette): Pixel {
   };
 }
 
+// Portal patterns (ADR 0078 D2) --------------------------------------------------------------
+
+/** The alpha of a portal surface's streaks: see-through, so the game draws it translucent. */
+const PORTAL_ALPHA = 192;
+
+/** Bright sparks on the portal surface, drawn opaque. */
+const PORTAL_SPARKS: readonly (readonly [number, number])[] = [
+  [3, 2],
+  [12, 4],
+  [6, 9],
+  [14, 12],
+  [2, 13],
+  [9, 15],
+];
+
+/**
+ * A portal surface: wavy streaks in four shades of the colour that bend as they run down, all
+ * see-through (alpha {@link PORTAL_ALPHA}), with a few opaque bright sparks.
+ */
+function portal(palette: Palette): Pixel {
+  const shades = [palette.dark, palette.deep, palette.mid, palette.light];
+  return (x, y) => {
+    if (PORTAL_SPARKS.some(([sx, sy]) => sx === x && sy === y)) return palette.shine;
+    const wave = (x + ((y * 5) >> 2) + ((x * x + 3 * y) % 5)) % 8;
+    const shade = shades[wave < 3 ? 1 : wave < 5 ? 2 : wave < 7 ? 3 : 0] ?? palette.mid;
+    return [shade[0], shade[1], shade[2], PORTAL_ALPHA];
+  };
+}
+
+/**
+ * A portal frame block: dark speckled stone in the darkest shades of the colour, crossed by a
+ * few glowing veins in its light shades, like crying obsidian.
+ */
+function portalFrame(palette: Palette): Pixel {
+  const veins: readonly (readonly [number, number, number])[] = [
+    // column, first row, last row
+    [3, 1, 5],
+    [4, 5, 7],
+    [11, 8, 13],
+    [12, 3, 4],
+    [7, 12, 14],
+  ];
+  return (x, y) => {
+    for (const [column, from, to] of veins) {
+      if (x === column && y >= from && y <= to) return y === from ? palette.shine : palette.light;
+    }
+    const value = hash(x, y, 113) % 9;
+    if (value === 0) return palette.deep;
+    if (value < 3) return palette.dark;
+    return shade([palette.dark[0], palette.dark[1], palette.dark[2]], 0.6);
+  };
+}
+
 /**
  * One cuboid of an entity model as it unwraps onto its texture (vanilla box UV): the texture
  * offset `u`, `v` and the box's width, height and depth in pixels.
@@ -1532,6 +1594,8 @@ const PATTERNS: Readonly<Record<PlaceholderPattern, (palette: Palette) => Pixel>
   seeds,
   produce,
   block_front: blockFront,
+  portal,
+  portal_frame: portalFrame,
 };
 
 /**

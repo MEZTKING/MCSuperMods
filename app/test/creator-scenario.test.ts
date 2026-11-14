@@ -15,7 +15,11 @@
  *   with no blocking problems;
  * - the Storage crate and Machine flows (ADR 0076 D2) create with their defaults and no
  *   problems at all, export (machine recipes only in the jar), reopen with every choice changed
- *   and keep an Inventory field edited by hand.
+ *   and keep an Inventory field edited by hand;
+ * - the Portal flow and the Dimension flow's portal answer (ADR 0078 D2) create with their
+ *   defaults and no problems at all, export (the portal only in the jar, its tag entry optional
+ *   in the data pack, the dimension and travel function kept), reopen with nothing to apply,
+ *   reopen with every choice changed and keep a portal field edited by hand.
  */
 
 import { createMemoryFileSystem, type Element, type Json, type Project } from '@msm/core';
@@ -587,6 +591,150 @@ describe('Creator scenario: Storage crate and Machine (ADR 0076 D2)', () => {
       await applyCreatorPlan(session, creatorChanges(again), creatorLabel(again, flow.title));
       expect(elementOf(session, entry.blockId)?.data).toEqual(edited);
       expect(await errorsAfterValidation(session)).toEqual([]);
+    });
+  }
+});
+
+/** The portal flows of ADR 0078 D2: defaults, then reopens. */
+const PORTAL_FLOWS: {
+  flowId: string;
+  overrides: Record<string, Json>;
+  portalId: string;
+  dimensionId: string;
+}[] = [
+  { flowId: 'portal', overrides: {}, portalId: 'demo:sky_portal', dimensionId: 'demo:sky_realm' },
+  {
+    flowId: 'dimension',
+    overrides: { travel: 'portal' },
+    portalId: 'demo:ruby_realm_portal',
+    dimensionId: 'demo:ruby_realm',
+  },
+];
+
+describe('Creator scenario: Portal flow and the Dimension flow portal answer (ADR 0078 D2)', () => {
+  for (const entry of PORTAL_FLOWS) {
+    it(`${entry.flowId}: defaults create with no problems; the portal only in the jar`, async () => {
+      const { session, calls } = await openSession();
+      const before = session.snapshot.project;
+      const flow = flowOf(session, entry.flowId);
+      expect(flow.creator?.group).toBe('worlds');
+      const values = valuesOf(flow, entry.overrides);
+      const { label } = await create(session, flow, values);
+      expect(label).toBe(`Create ${flow.title}`);
+      const portal = elementOf(session, entry.portalId);
+      expect(portal?.meta.creator?.flowId).toBe(entry.flowId);
+      expect(portal?.meta.creator?.values).toEqual(creatorValues(values));
+      expect(await problemsAfterValidation(session)).toEqual([]);
+
+      const resource = await session.exportPack('resource', 'zip');
+      expect(errorsOf(resource)).toEqual([]);
+      const data = await session.exportPack('data', 'zip');
+      expect(errorsOf(data)).toEqual([]);
+      // The frame block's loot table and recipe are left out with a warning (ADR 0066 D3).
+      expect(
+        data.problems.filter((problem) => problem.code === 'export.mod-only-reference'),
+      ).not.toEqual([]);
+      const jar = await session.exportFabricJar({ [SEPARATE_RUNTIME_OPTION]: false });
+      expect(errorsOf(jar)).toEqual([]);
+      const zips = calls.saved.map((saved) => unzipSync(saved.data));
+      const [, dataZip, modJar] = zips.map((zip) => Object.keys(zip));
+      const path = entry.portalId.slice('demo:'.length);
+      const dimension = entry.dimensionId.slice('demo:'.length);
+      expect(modJar).toEqual(
+        expect.arrayContaining([
+          `msm/demo/block/${path}.json`,
+          `assets/demo/models/block/${path}_ns.json`,
+          `assets/demo/models/block/${path}_ew.json`,
+          `msm/demo/block/${path}_frame.json`,
+        ]),
+      );
+      expect(dataZip).toEqual(
+        expect.arrayContaining([
+          `data/demo/dimension/${dimension}.json`,
+          `data/demo/function/${dimension}/travel.mcfunction`,
+          'data/minecraft/tags/block/portals.json',
+        ]),
+      );
+      expect(dataZip).not.toContain(`data/demo/recipe/${path}_frame_from_obsidian.json`);
+      const tag = JSON.parse(
+        new TextDecoder().decode(zips[1]?.['data/minecraft/tags/block/portals.json']),
+      );
+      expect(tag.values).toEqual([{ id: entry.portalId, required: false }]);
+
+      expect(session.undo()).toBe(true);
+      expect(session.snapshot.project).toEqual(before);
+    });
+
+    it(`${entry.flowId}: reopens with nothing to apply, then with every choice changed, and keeps a portal field edited by hand`, async () => {
+      const { session } = await openSession();
+      const flow = flowOf(session, entry.flowId);
+      await create(session, flow, valuesOf(flow, entry.overrides));
+
+      // Every answer is kept: reopening with the stored values changes nothing.
+      const same = await reopen(session, flow, entry.portalId, {});
+      expect(creatorChanges(same).items).toEqual([]);
+      expect(creatorChanges(same).writes).toEqual([]);
+
+      const changed: Record<string, Json> =
+        entry.flowId === 'portal'
+          ? {
+              destination: 'minecraft:the_nether',
+              frame: 'minecraft:gold_block',
+              igniter: 'key',
+              scale: '8',
+              colour: '#de9420',
+              particles: 'dust',
+              sounds: 'quiet',
+              overlay: false,
+            }
+          : { terrain: 'flat', biome: 'minecraft:plains', sky: 'end', colour: '#28a060' };
+      const plan = await reopen(session, flow, entry.portalId, changed);
+      expect(plan.mode).toBe('update');
+      await applyCreatorPlan(session, creatorChanges(plan), creatorLabel(plan, flow.title));
+      expect(await errorsAfterValidation(session)).toEqual([]);
+      if (entry.flowId === 'portal') {
+        expect(statusOf(plan, entry.portalId)).toBe('replace');
+        expect(statusOf(plan, entry.dimensionId)).toBe('remove');
+        expect(statusOf(plan, `${entry.portalId}_frame`)).toBe('remove');
+        expect(statusOf(plan, `${entry.portalId}_key`)).toBe('create');
+        expect(elementOf(session, entry.portalId)?.data).toMatchObject({
+          frame: 'minecraft:gold_block',
+          igniter: `${entry.portalId}_key`,
+          destination: 'minecraft:the_nether',
+          travel: { scale: 8, overlay: false },
+          sounds: { ambient: false, travel: false },
+          particles: { color: 0xde9420 },
+        });
+        expect(elementOf(session, entry.dimensionId)).toBeUndefined();
+      } else {
+        // The portal block is the same; its texture and the dimension change.
+        expect(statusOf(plan, entry.portalId)).toBe('unchanged');
+        expect(statusOf(plan, entry.dimensionId)).toBe('replace');
+        expect(statusOf(plan, `demo:textures/block/${entry.portalId.slice(5)}.png`)).toBe(
+          'replace',
+        );
+        expect(elementOf(session, entry.dimensionId)?.data).toMatchObject({
+          type: 'minecraft:the_end',
+          generator: { type: 'minecraft:flat' },
+        });
+      }
+
+      // A portal field edited by hand, then a reopen that would change the portal: it is kept.
+      const portal = elementOf(session, entry.portalId) as Element;
+      const edited = structuredClone(portal.data) as { travel: Record<string, Json> };
+      edited.travel.cooldown_ticks = 100;
+      session.setElementData(entry.portalId as `${string}:${string}`, edited as unknown as Json);
+      const again = await reopen(
+        session,
+        flow,
+        entry.portalId,
+        entry.flowId === 'portal' ? { scale: '1' } : { travel: 'item' },
+      );
+      expect(statusOf(again, entry.portalId)).toBe(
+        entry.flowId === 'portal' ? 'keep' : 'keep-removed',
+      );
+      await applyCreatorPlan(session, creatorChanges(again), creatorLabel(again, flow.title));
+      expect(elementOf(session, entry.portalId)?.data).toEqual(edited);
     });
   }
 });

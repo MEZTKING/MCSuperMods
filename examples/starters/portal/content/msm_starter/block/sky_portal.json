@@ -1,0 +1,22 @@
+{
+  "data": {
+    "destination": "msm_starter:sky_realm",
+    "display_name": "Sky Portal",
+    "format": 1,
+    "frame": "msm_starter:sky_portal_frame",
+    "textures": {
+      "portal": "msm_starter:block/sky_portal"
+    },
+    "travel": {
+      "scale": 1
+    },
+    "type": "portal"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sky_portal",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The portal (type portal). Build an upright frame of sky portal frame blocks with an opening 2 to 21 blocks wide and 3 to 21 high (the corners may be left out) and use flint and steel on the inside: the opening fills with this block, which takes players, mobs and items to Sky Realm (overworld terrain with cherry grove everywhere, and the overworld sky with day and night) and back to the overworld (return_to). travel.scale 1: one block there is one block here. Arriving, it finds the nearest linked portal of the same block or builds one (of the frame block). It sparkles with the portal particles. It hums and whooshes as the Nether portal does. Standing in it wobbles the screen with the Nether portal overlay (the game draws that one picture for every portal). textures.portal is the surface, drawn see-through from textures/block/sky_portal.png. A portal has no item, no loot and cannot be mined; it needs the Fabric mod jar export, and the travel function msm_starter:sky_realm/travel still works in vanilla packs."
+  }
+}

@@ -1,6 +1,7 @@
 /**
  * The Examples gallery (ADR 0020): one commented example per registered kind, the blocks and
- * items behaviour examples (with the container and machine examples, ADR 0076 D4), the entity behaviour examples, the script behaviour examples, then
+ * items behaviour examples (with the container and machine examples, ADR 0076 D4, and the portal
+ * example, ADR 0078 D4), the entity behaviour examples, the script behaviour examples, then
  * the four content starters as complete projects.
  */
 import type { ExampleProject } from '@msm/plugin-api';
@@ -20,6 +21,7 @@ import { dataKindExamples } from './data-kinds';
 import { dataPackExamples } from './data-pack';
 import { defineExample } from './define';
 import { entityBehaviourExamples, entityKindExamples } from './entities';
+import { portalExamples } from './portals';
 import { registryExamples } from './registries';
 import { resourcePackExamples } from './resource-pack';
 import { scriptBehaviourExamples, scriptKindExamples } from './scripts';
@@ -50,11 +52,13 @@ export const kindExamples: readonly ExampleProject[] = Object.freeze([
 
 /**
  * The blocks and items behaviour examples, then the container and machine examples (ADR 0076
- * D4); the `examples/blocks-items` mirror holds them all in one project.
+ * D4) and the portal example (ADR 0078 D4); the `examples/blocks-items` mirror holds them all
+ * in one project.
  */
 export const behaviourExamples: readonly ExampleProject[] = Object.freeze([
   ...blocksItemsBehaviourExamples,
   ...containerExamples,
+  ...portalExamples,
 ]);
 
 /** The category of the starter projects in the gallery. */

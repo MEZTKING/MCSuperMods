@@ -1,0 +1,39 @@
+{
+  "data": {
+    "generator": {
+      "settings": {
+        "biome": "minecraft:plains",
+        "features": true,
+        "lakes": false,
+        "layers": [
+          {
+            "block": "minecraft:bedrock",
+            "height": 1
+          },
+          {
+            "block": "minecraft:dirt",
+            "height": 3
+          },
+          {
+            "block": "minecraft:grass_block",
+            "height": 1
+          }
+        ],
+        "structure_overrides": []
+      },
+      "type": "minecraft:flat"
+    },
+    "type": "minecraft:overworld"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sky_isle",
+  "kind": "minecraft:dimension",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The dimension Sky Isle: flat grass land with plains everywhere, and the overworld sky with day and night (the vanilla dimension type minecraft:overworld). The game loads a new dimension when a world opens, so open or reload a world after adding it.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

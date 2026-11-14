@@ -3586,3 +3586,23 @@ Decisions
 
 Next
 - B342: e2e over the test ids listed in the B337 report. Follow-up: pass `portals` from the Item, Effect and Entity Studios. B344: guide labels.
+## 2026-11-14 — executor — B338 Portal flow and example
+
+What
+- New `packages/plugins/library/src/content/portal.ts`: the shared builder of a portal (ADR 0077 D1): the `msm:block` of type `portal` (`display_name`, `frame`, optional `igniter`, `destination`, `travel.scale` always written, `travel.overlay: false`, `sounds: { ambient: false, travel: false }` for quiet, `particles: { color }` for dust, `textures.portal` = its own see-through placeholder), the new frame block `<id>_frame` (cube model, light 5, iron pickaxe, drops itself, recipe `<id>_frame_from_obsidian`: eight obsidian around an amethyst shard make eight) and the key `<id>_key` (`msm:durability` 64, recipe `<id>_key_from_gold`). Names come from `display_name` (no lang element).
+- New Portal Creator flow (`starters/portal.ts`, starter id `portal`, group `worlds`, blurb "Portal to a dimension.", `supports: hasFabric`), listed after Dimension. Groups Portal, Where it goes, Frame, Travel, Looks. With a new dimension it also writes the Dimension flow's dimension and `<id>/travel` function (through the new shared `dimensionContent` and `dimensionWorldParameters` in `starters/dimension.ts`).
+- The Dimension flow's How to get there gains "A portal (needs the Fabric mod jar)" (`travel: portal`): the portal `<id>_portal` and frame block `<id>_portal_frame` with the Portal flow's default answers in the dimension's colour; the travel function stays. The colour question is now "Key or portal colour".
+- New example "Two-way sky portal" (`example_msm_sky_portal`, category Blocks, in `behaviourExamples` and so in the `examples/blocks-items` mirror): the Portal flow on a flat dimension `sky_isle` with the overworld dimension type, the portal `sky_gate` with sapphire dust and `on_travel` running `sky_gate/arrived` (`say`), and the block `sky_gate_beacon` whose `msm:on_interact` runs `light_portal`.
+- Two placeholder patterns: `portal` (see-through streaks, alpha 192, with opaque sparks, so the game draws it translucent) and `portal_frame` (dark crying-obsidian-like stone with glowing veins); 66 patterns.
+- Tests: new `portal-flows.test.ts`; library counts (45 starters, 33 Creator flows, 129 examples); exporter library test with five Portal wizard alternatives and a Dimension portal alternative, the mirror `examples/starters/portal`, and a new case per target checking the Portal flow, the Dimension portal answer and the example create with no validator problems at all, ship the portal in the jar, and keep the dimension and travel function in the vanilla data pack with only the frame block's (and beacon's) loot and recipe left out; four new `app/test/creator-scenario.test.ts` cases (defaults, reopen with nothing to apply, every choice changed, a hand edit kept).
+- Checks: `pnpm lint`, `pnpm typecheck`, `pnpm build`, check-size (`app.asar` 33,207,556 bytes, 31.7 MB, within budget and under the 31.8 MB stop line); `turbo run test --force --concurrency=4`: 20 of 21 tasks green (library 533, exporters 1144); app 1523 of 1524, the one failure is `app/test/ai-patterns.test.ts`, which pins `@msm/ai`'s hand-kept copy of the pattern names (see Next). The library vanilla server check passes on vanilla 26.3 (255 packs) and 26.4-snapshot-7 (233 packs), the 19 (16 on 26.4) portal and dimension packs included.
+
+Decisions
+- No lang element: the portal, frame block and key carry `display_name`, so lowering writes their keys.
+- `travel.scale` is always written (1 or 8) so the answer holds whatever dimension types the two ends have.
+- The "Other dimension" answer is a string parameter `dimension_id` (default `minecraft:the_end`); an id without a namespace gets `minecraft:`.
+
+Next
+- At merge: add `'portal', 'portal_frame'` after `'block_front'` in `PLACEHOLDER_PATTERN_NAMES` (`packages/ai/src/tools/propose.ts`); packages/ai belonged to B340 in this wave, so this brief left it alone and `ai-patterns.test.ts` fails until then.
+- B342: flow ids `portal` and `dimension` (`travel: portal`), example `example_msm_sky_portal`.
+- B344: guide rows for the Portal flow and the Dimension flow's new answer and colour label; `examples/README.md` rows for `starters/portal` and the two patterns.

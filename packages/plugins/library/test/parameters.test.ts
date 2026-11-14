@@ -111,6 +111,7 @@ const WIZARDS = [
   'painting',
   'music-disc-item',
   'dimension',
+  'portal',
   'villager-trade',
   'extra-drop',
   'mob-skin',
@@ -147,6 +148,7 @@ const FLOWS: Record<string, string> = {
   painting: 'blocks',
   'music-disc-item': 'blocks',
   dimension: 'worlds',
+  portal: 'worlds',
   'villager-trade': 'worlds',
   'extra-drop': 'worlds',
   'mob-skin': 'mobs',
@@ -194,6 +196,7 @@ describe('wizard starters', () => {
     expect(groups('painting')).toEqual(['Painting', 'Picture']);
     expect(groups('music-disc-item')).toEqual(['Song', 'Disc']);
     expect(groups('dimension')).toEqual(['World', 'Travel']);
+    expect(groups('portal')).toEqual(['Portal', 'Where it goes', 'Frame', 'Travel', 'Looks']);
     expect(groups('villager-trade')).toEqual(['Villager', 'Trade']);
     expect(groups('extra-drop')).toEqual(['Where', 'Drop']);
     expect(groups('potion')).toEqual(['Potion', 'Effect', 'Brewing', 'Versions']);

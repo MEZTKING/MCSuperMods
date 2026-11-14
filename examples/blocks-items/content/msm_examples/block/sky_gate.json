@@ -1,0 +1,40 @@
+{
+  "data": {
+    "destination": "msm_examples:sky_isle",
+    "display_name": "Sky Gate",
+    "events": {
+      "msm_examples:sky_gate_travelled": {
+        "actions": [
+          {
+            "function": "msm_examples:sky_gate/arrived",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "frame": "msm_examples:sky_gate_frame",
+    "on_travel": "msm_examples:sky_gate_travelled",
+    "particles": {
+      "color": 2380996
+    },
+    "textures": {
+      "portal": "msm_examples:block/sky_gate"
+    },
+    "travel": {
+      "scale": 1
+    },
+    "type": "portal"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sky_gate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The portal (type portal). Build an upright frame of sky gate frame blocks with an opening 2 to 21 blocks wide and 3 to 21 high (the corners may be left out) and use flint and steel on the inside: the opening fills with this block, which takes players, mobs and items to Sky Isle (flat grass land with plains everywhere, and the overworld sky with day and night) and back to the overworld (return_to). travel.scale 1: one block there is one block here. Arriving, it finds the nearest linked portal of the same block or builds one (of the frame block). particles.color gives coloured dust particles. It hums and whooshes as the Nether portal does. Standing in it wobbles the screen with the Nether portal overlay (the game draws that one picture for every portal). textures.portal is the surface, drawn see-through from textures/block/sky_gate.png. A portal has no item, no loot and cannot be mined; it needs the Fabric mod jar export, and the travel function msm_examples:sky_isle/travel still works in vanilla packs. on_travel runs the event msm_examples:sky_gate_travelled after each trip, with the traveller as self: its run_function action runs msm_examples:sky_gate/arrived as the traveller, which says a line.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

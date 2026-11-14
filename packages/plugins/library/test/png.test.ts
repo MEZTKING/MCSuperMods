@@ -84,6 +84,12 @@ const OPAQUE_PATTERNS: ReadonlySet<PlaceholderPattern> = new Set<PlaceholderPatt
   'pillar_side',
   'pillar_top',
   'block_front',
+  'portal_frame',
+]);
+
+/** The see-through patterns: partly transparent everywhere, opaque only in a few sparks. */
+const TRANSLUCENT_PATTERNS: ReadonlySet<PlaceholderPattern> = new Set<PlaceholderPattern>([
+  'portal',
 ]);
 const fixtures = join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'patterns');
 
@@ -104,7 +110,7 @@ const PINNED: Partial<Record<PlaceholderPattern, string>> = {
 const PINNED_SKIN = '224f2f4715ddc13cad76f34fd7555f720a9149052645c23f4c28c102c2ff4fd5';
 
 describe('placeholder textures', () => {
-  it('has sixty-four patterns', () => {
+  it('has sixty-six patterns', () => {
     expect(PLACEHOLDER_PATTERNS).toEqual([
       'plain',
       'ore',
@@ -170,6 +176,8 @@ describe('placeholder textures', () => {
       'seeds',
       'produce',
       'block_front',
+      'portal',
+      'portal_frame',
     ]);
   });
 
@@ -293,7 +301,13 @@ describe('placeholder textures', () => {
       expect(sha256(placeholderPng(pattern))).toBe(sha256(placeholderPng(pattern)));
       const alpha = [...placeholderPixels(pattern)].filter((_, index) => index % 4 === 3);
       expect(alpha).toContain(255);
-      if (!OPAQUE_PATTERNS.has(pattern)) expect(alpha).toContain(0);
+      if (TRANSLUCENT_PATTERNS.has(pattern)) {
+        // Partly transparent, never fully: the game draws such a texture translucent.
+        expect(alpha).not.toContain(0);
+        expect(alpha.some((value) => value > 0 && value < 255)).toBe(true);
+      } else if (!OPAQUE_PATTERNS.has(pattern)) {
+        expect(alpha).toContain(0);
+      }
     },
   );
 

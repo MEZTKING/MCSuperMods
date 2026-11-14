@@ -1,0 +1,30 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 5,
+        "min_tier": "iron",
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:light_emitter": {
+        "level": 5
+      }
+    },
+    "display_name": "Sky Portal Frame",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "model": "msm_starter:block/sky_portal_frame",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sky_portal_frame",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The frame block of sky portal: build the frame of it. It glows faintly (light level 5), needs an iron pickaxe and drops itself. Exit portals built at the other end are made of it too."
+  }
+}

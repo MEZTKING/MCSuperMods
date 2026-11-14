@@ -1,0 +1,30 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "A": "minecraft:amethyst_shard",
+      "O": "minecraft:obsidian"
+    },
+    "pattern": [
+      "OOO",
+      "OAO",
+      "OOO"
+    ],
+    "result": {
+      "count": 8,
+      "id": "msm_examples:sky_gate_frame"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sky_gate_frame_from_obsidian",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Eight obsidian around an amethyst shard make eight sky gate frame blocks, enough for most of a frame. Element ids are unique across kinds, so the recipe has a name of its own.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

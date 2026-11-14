@@ -1,0 +1,19 @@
+{
+  "data": {
+    "lines": [
+      "# Run as whoever came through the Sky Gate (on_travel).",
+      "say I came through the Sky Gate."
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sky_gate/arrived",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The function the portal's on_travel event runs as the traveller after each trip: say speaks as them, so the chat shows who came through. Any function works here: give an effect, play a sound, count trips.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

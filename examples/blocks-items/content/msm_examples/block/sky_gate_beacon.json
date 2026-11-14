@@ -1,0 +1,43 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3.5,
+        "resistance": 3.5,
+        "tool": "pickaxe"
+      },
+      "msm:on_interact": {
+        "event": "msm_examples:sky_gate_beacon_used"
+      }
+    },
+    "display_name": "Sky Gate Beacon",
+    "events": {
+      "msm_examples:sky_gate_beacon_used": {
+        "actions": [
+          {
+            "portal": "msm_examples:sky_gate",
+            "type": "light_portal"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "model": "minecraft:block/lodestone",
+    "sound_type": "metal"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sky_gate_beacon",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A block that lights the Sky Gate without flint and steel. Put it on the ground just in front of the opening of a finished frame (next to the bottom of the opening) and use it: msm:on_interact fires the event msm_examples:sky_gate_beacon_used, whose light_portal action lights an empty frame of msm_examples:sky_gate at the beacon or next to it. Nothing happens with no frame there. Any trigger can run light_portal: a mob's death, an item used on a block, a pressure plate. It reuses the vanilla lodestone model.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}
