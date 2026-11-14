@@ -3569,3 +3569,20 @@ Decisions
 
 Next
 - B334 wires `PortalFrame` and `PortalIndexAttachment` to `MsmPortalBlock` and lighting; B336 calls `ExitPortals.findOrBuild` for travel.
+## 2026-11-14 — executor — B337 Portal section
+
+What
+- Block Studio: the lazy Portal section (`studios/blocks-items/PortalSection.tsx`, its own 9 kB chunk; model `portal-model.ts`), shown only for `type: portal` (ADR 0078 D1): Frame ("Frame block or #tag", "Exit portals are built of" for a tag frame, "Light it with (item or #tag)" or "Nothing: a trigger lights it"), Travel ("Destination" and "Comes back to" listing the project's dimensions then the target's vanilla ones, "Scale" from the dimensions or a number with "8:1 like the Nether", "Arrive" in a linked portal or on the ground, delay, cooldown, "Players only", "Wobble and overlay", "On travel") and Looks (particle type, "Colour" for dust only, particles per tick, ambient and travel sounds each with "None"; defaults shown from `Target.blocks.portal`). Every change is one undoable edit; clearing a group's last field removes the group.
+- The Type picker offers "Portal" (`BUILDING_BLOCK_TYPES`, last). `withBlockType` to `portal` keeps only `PORTAL_COMPONENTS`, drops a default `item` (`false` or `{}`) and then `loot: "self"`, does not carry the old look (vanilla's portal surface) and seeds `frame: minecraft:crying_obsidian` and `destination: minecraft:the_nether`; leaving `portal` drops every portal field.
+- Textures: "Portal surface" with its own note, no "Own models" for portals; no item model row for a block without an item; the preview's slot picker names the panes "Along x (seen from north and south)" and "Along z (seen from east and west)".
+- Block Studio for portals: Behaviour shows a note instead of the interact, step and redstone triggers; "Has a block item" is off until `item` is given (on writes `{}`, off removes it); glass sounds, light 11 and unbreakable named as the defaults; no full-cube warning on "On entity inside".
+- Events editor: "Light a portal (light_portal)" for every element kind, with a picker of the project's portals where the Studio passes them (the Block Studio), else a block id field.
+- Tests: `app/test/components/studios/blocks-items/portal-model.test.ts`, `PortalSection.test.tsx`; `block-type-model.test.ts` (15 building types, portal type changes, pane labels). `pnpm lint`, `pnpm typecheck`, `pnpm --filter @msm/app test` (1535), `pnpm build`, `dist:dir`, check-size green: app.asar 33,210,879 bytes (31.7 MB of 32).
+
+Decisions
+- Tests under `app/test/components/studios/blocks-items/` (tsconfig.web), not the brief's `app/test/portal-model.test.ts`.
+- BlockStudio got small portal rules beyond the lazy import (Behaviour, Block item, defaults), as B335's notes asked ("filter components with PORTAL_COMPONENTS").
+- Item, Effect and Entity Studios were not touched: their "Light a portal" is a block id field until they pass `portals={projectPortals(project)}`.
+
+Next
+- B342: e2e over the test ids listed in the B337 report. Follow-up: pass `portals` from the Item, Effect and Entity Studios. B344: guide labels.

@@ -5,7 +5,9 @@
  * from the textures on a vanilla template, or the user's own model in `models`, which can be
  * set per slot under "Own models"). A container or machine (ADR 0076 D1) adds the slot "Front
  * when open" or "Front when working" on the facing types and the model slot `open` or `lit`;
- * on a simple block only those state models are shown, under "Models".
+ * on a simple block only those state models are shown, under "Models". A portal (ADR 0078 D1)
+ * has the one slot "Portal surface" (empty: vanilla's Nether portal surface) and takes no own
+ * models: its two pane models, one per axis, are always made.
  *
  * @packageDocumentation
  */
@@ -138,6 +140,7 @@ export function TexturesSection(props: TexturesSectionProps) {
     );
   }
   const slots = textureSlotsOf(type, element.data);
+  const portal = type === 'portal';
   return (
     <Section title="Textures" testId="block-textures">
       {slots.length === 0 ? (
@@ -146,14 +149,21 @@ export function TexturesSection(props: TexturesSectionProps) {
         </p>
       ) : (
         <>
-          <p className="text-muted text-xs" data-testid="block-textures-rule">
-            "Every face" fills each texture left empty.{' '}
-            {type === 'slab' || type === 'stairs'
-              ? 'Without it, an empty top or bottom takes the sides, and empty sides take the first texture given.'
-              : 'Without it, an empty texture takes the first texture given.'}{' '}
-            The models of the {type.replace('_', ' ')} are made from these on vanilla's own
-            templates.
-          </p>
+          {portal ? (
+            <p className="text-muted text-xs" data-testid="block-textures-rule">
+              Empty shows vanilla's Nether portal surface, read from your game. The two pane models,
+              one for each way the frame can stand, are made on the Nether portal's own templates.
+            </p>
+          ) : (
+            <p className="text-muted text-xs" data-testid="block-textures-rule">
+              "Every face" fills each texture left empty.{' '}
+              {type === 'slab' || type === 'stairs'
+                ? 'Without it, an empty top or bottom takes the sides, and empty sides take the first texture given.'
+                : 'Without it, an empty texture takes the first texture given.'}{' '}
+              The models of the {type.replace('_', ' ')} are made from these on vanilla's own
+              templates.
+            </p>
+          )}
           <div className="flex flex-col gap-1">
             {slots.map((slot) => {
               const value = typeof textures[slot.key] === 'string' ? textures[slot.key] : '';
@@ -208,17 +218,20 @@ export function TexturesSection(props: TexturesSectionProps) {
           </ul>
         )}
       </div>
-      <label className="flex items-center gap-1 text-xs">
-        <input
-          type="checkbox"
-          data-testid="block-own-models-toggle"
-          checked={showOwn}
-          disabled={hasOwnModels}
-          onChange={(event) => setOwnModels(event.target.checked)}
-        />
-        Own models (instead of the made ones)
-      </label>
-      {showOwn && (
+      {!portal && (
+        <label className="flex items-center gap-1 text-xs">
+          <input
+            type="checkbox"
+            data-testid="block-own-models-toggle"
+            checked={showOwn}
+            disabled={hasOwnModels}
+            onChange={(event) => setOwnModels(event.target.checked)}
+          />
+          Own models (instead of the made ones)
+        </label>
+      )}
+      {portal && hasOwnModels && <ProblemsAt problems={problems} pointer={pointerOf(['models'])} />}
+      {!portal && showOwn && (
         <div className="flex flex-col gap-1" data-testid="block-own-models">
           {shownModelSlots(type, element.data).map((slot) => (
             <IdField

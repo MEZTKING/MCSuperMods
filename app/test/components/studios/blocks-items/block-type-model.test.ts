@@ -44,8 +44,9 @@ describe('block type helpers', () => {
     expect(blockTypeOfData({ type: 'nope' })).toBeUndefined();
   });
 
-  it('offers the 14 building types in words', () => {
-    expect(BUILDING_BLOCK_TYPES).toHaveLength(14);
+  it('offers the 15 building types in words, the portal last', () => {
+    expect(BUILDING_BLOCK_TYPES).toHaveLength(15);
+    expect(BUILDING_BLOCK_TYPES.at(-1)).toBe('portal');
     expect(BUILDING_BLOCK_TYPES).not.toContain('crop');
     for (const type of BUILDING_BLOCK_TYPES) expect(BLOCK_TYPE_LABELS[type]).toBeTruthy();
   });
@@ -60,6 +61,7 @@ describe('block type helpers', () => {
   it('lists texture slots with "Every face" first for the building types', () => {
     for (const type of BUILDING_BLOCK_TYPES) {
       if (type === 'block') expect(TEXTURE_SLOTS[type]).toEqual([]);
+      else if (type === 'portal') expect(TEXTURE_SLOTS[type][0]?.key).toBe('portal');
       else expect(TEXTURE_SLOTS[type][0]?.key).toBe('all');
     }
   });
@@ -172,6 +174,92 @@ describe('withBlockType', () => {
     const wall = withBlockType(crate, 'wall', { texture: 'demo:block/c' });
     expect(wall.components).toBeUndefined();
     expect(wall.textures).toEqual({ all: 'demo:block/c' });
+  });
+});
+
+describe('withBlockType and portals (ADR 0077 D1, B337)', () => {
+  it('keeps only the portal components, drops a default item and gets a frame and destination', () => {
+    const portal = withBlockType(
+      {
+        format: 1,
+        display_name: 'Gate',
+        model: 'minecraft:block/stone',
+        sound_type: 'glass',
+        loot: 'self',
+        item: false,
+        components: {
+          'msm:breakable': { hardness: 2 },
+          'msm:on_interact': { event: 'boom' },
+          'msm:on_step': { event: 'boom' },
+          'msm:light_emitter': { level: 7 },
+          'msm:container': {},
+        },
+        events: { boom: { actions: [] } },
+      },
+      'portal',
+      { texture: 'minecraft:block/stone' },
+    );
+    expect(portal).toEqual({
+      format: 1,
+      display_name: 'Gate',
+      sound_type: 'glass',
+      type: 'portal',
+      frame: 'minecraft:crying_obsidian',
+      destination: 'minecraft:the_nether',
+      components: { 'msm:breakable': { hardness: 2 }, 'msm:light_emitter': { level: 7 } },
+      events: { boom: { actions: [] } },
+    });
+    // An empty item object is the default too; an item with fields stays, and so do its drops.
+    expect(withBlockType({ format: 1, item: {} }, 'portal').item).toBeUndefined();
+    const kept = withBlockType({ format: 1, loot: 'self', item: { rarity: 'rare' } }, 'portal');
+    expect(kept.item).toEqual({ rarity: 'rare' });
+    expect(kept.loot).toBe('self');
+  });
+
+  it('drops the portal fields when leaving the type and keeps the shared ones', () => {
+    const portal: Json = {
+      format: 1,
+      type: 'portal',
+      display_name: 'Gate',
+      frame: '#demo:frames',
+      frame_block: 'minecraft:obsidian',
+      igniter: false,
+      destination: 'demo:sky',
+      return_to: 'minecraft:the_nether',
+      travel: { scale: 8 },
+      sounds: { ambient: false },
+      particles: { color: 255 },
+      on_travel: 'arrived',
+      textures: { portal: 'demo:block/gate' },
+      components: { 'msm:light_emitter': { level: 4 } },
+      events: { arrived: { actions: [] } },
+    };
+    expect(withBlockType(portal, 'block', { texture: appearanceTexture(null, portal) })).toEqual({
+      format: 1,
+      display_name: 'Gate',
+      components: { 'msm:light_emitter': { level: 4 } },
+      events: { arrived: { actions: [] } },
+    });
+    expect(withBlockType(portal, 'pillar', { texture: appearanceTexture(null, portal) })).toEqual({
+      format: 1,
+      type: 'pillar',
+      display_name: 'Gate',
+      components: { 'msm:light_emitter': { level: 4 } },
+      events: { arrived: { actions: [] } },
+      textures: { all: 'demo:block/gate' },
+    });
+    // Choosing the type a block already has changes nothing.
+    expect(withBlockType(portal, 'portal')).toEqual(portal);
+  });
+
+  it('names the two pane models', () => {
+    expect(modelSlotLabel('ns')).toBe('Along x (seen from north and south)');
+    expect(modelSlotLabel('ew')).toBe('Along z (seen from east and west)');
+    const rows = slotModelRows(el('demo:gate', 'msm:block', { format: 1, type: 'portal' }));
+    expect(rows.map((row) => [row.slot, row.model, row.parent])).toEqual([
+      ['ns', 'demo:block/gate_ns', 'minecraft:block/nether_portal_ns'],
+      ['ew', 'demo:block/gate_ew', 'minecraft:block/nether_portal_ew'],
+    ]);
   });
 });
 

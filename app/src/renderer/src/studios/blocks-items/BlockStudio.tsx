@@ -15,6 +15,9 @@
  * - Light level (`msm:light_emitter`) and sound type.
  * - Inventory (B318, ADR 0076 D1; simple, pillar and facing types only): storage or a machine,
  *   lazily loaded from `InventorySection`.
+ * - Portal (B337, ADR 0078 D1; `portal` type only): frame, travel and looks, lazily loaded
+ *   from `PortalSection`. A portal takes only its own components (no interact, step or
+ *   redstone triggers) and has no block item unless `item` is given.
  * - Drops: `loot` as drops itself, a loot table id, or none.
  * - Block item: on, or off as `"item": false`; stack size, rarity, creative tab, and "Fuel and
  *   compost" (ADR 0060 D4).
@@ -67,11 +70,14 @@ import { useBlocksItemsStudioHost } from './host';
 import { takesInventory } from './inventory-model';
 import { PlantSection } from './PlantSection';
 import { CheckField, EventSelect, ModelField, ProblemsAt, ShapePreview, TextField } from './parts';
+import { projectPortals } from './portal-model';
 import { TexturesSection } from './TexturesSection';
 import { FuelCompostFields, TriggersSection } from './triggers';
 
 /** The Inventory section (ADR 0076 D1), a chunk of its own. */
 const InventorySection = lazy(() => import('./InventorySection'));
+/** The Portal section (ADR 0078 D1), a chunk of its own. */
+const PortalSection = lazy(() => import('./PortalSection'));
 
 type TextureLayer = 'solid' | 'cutout' | 'translucent';
 
@@ -123,6 +129,11 @@ function useTextureLayers(
 
 type Drops = 'self' | 'table' | 'none';
 
+/** Whether `item` is a block item object (a portal's item is on only then). */
+function isItemObject(item: Json | undefined): boolean {
+  return typeof item === 'object' && item !== null && !Array.isArray(item);
+}
+
 /** The loot presets of the plant types (ADR 0068 D3, D6), shown in words. */
 const LOOT_PRESET_LABELS: Readonly<Record<string, string>> = {
   crop: 'Crop drops (produce when grown, seeds before)',
@@ -148,6 +159,9 @@ export function BlockStudio(props: StudioProps) {
   // An unknown `type` (the schema reports it) shows every section, as a simple block.
   const shaped = blockType === undefined || isShapedType(blockType);
   const takesModel = blockType === undefined || acceptsSingleModel(blockType);
+  // A portal (ADR 0077 D1): its own components only, no item unless `item` is given, and its
+  // own defaults (unbreakable, light 11, glass sounds).
+  const portal = blockType === 'portal';
   const layers = useTextureLayers(typeof data.model === 'string' ? data.model : '');
   const set = pathSetter(element.data, onChange);
   const events = eventNames(element.data);
@@ -449,8 +463,10 @@ export function BlockStudio(props: StudioProps) {
         onChange={(checked) => set([...breakablePath, 'requires_tool'], checked ? true : undefined)}
       />
       <p className="text-muted text-xs">
-        Empty fields use the defaults: hardness 1.5, resistance 6. A tool or minimum tier also makes
-        the right tool required.
+        {portal
+          ? 'With no hardness set, the portal cannot be broken (like the Nether portal).'
+          : 'Empty fields use the defaults: hardness 1.5, resistance 6.'}{' '}
+        A tool or minimum tier also makes the right tool required.
       </p>
       {['hardness', 'resistance', 'tool', 'min_tier', 'requires_tool'].map((key) => (
         <ProblemsAt key={key} problems={problems} pointer={pointerOf([...breakablePath, key])} />
@@ -483,16 +499,19 @@ export function BlockStudio(props: StudioProps) {
           label="Sound type"
           value={typeof data.sound_type === 'string' ? data.sound_type : undefined}
           choices={soundChoices}
-          emptyLabel="(default: stone)"
+          emptyLabel={portal ? '(default: glass)' : '(default: stone)'}
           testId="block-sound-type"
           onChange={(value) => set(['sound_type'], value)}
         />
       </div>
+      {portal && <p className="text-muted text-xs">Empty light level: 11, as the Nether portal.</p>}
       {at(['components', 'msm:light_emitter', 'level'])}
       {at(['sound_type'])}
     </Section>
   );
 
+  // A portal has no item unless `item` is given (ADR 0077 D1).
+  const hasItem = portal ? isItemObject(data.item) : data.item !== false;
   const lootPreset = typeof data.loot === 'string' ? LOOT_PRESET_LABELS[data.loot] : undefined;
   const drops: Drops =
     data.loot === 'self' || lootPreset !== undefined
@@ -541,7 +560,7 @@ export function BlockStudio(props: StudioProps) {
           {lootPreset}; edit them in the {data.loot === 'crop' ? 'Crop' : 'Leaves'} section above.
         </p>
       )}
-      {drops === 'self' && data.item === false && (
+      {drops === 'self' && !hasItem && (
         <p role="status" className="text-warning text-xs">
           The block has no item, so "Drops itself" generates no loot table.
         </p>
@@ -550,7 +569,6 @@ export function BlockStudio(props: StudioProps) {
     </Section>
   );
 
-  const hasItem = data.item !== false;
   const item = asObject(data.item);
   const itemSection = (
     <Section title="Block item" testId="block-item">
@@ -562,13 +580,13 @@ export function BlockStudio(props: StudioProps) {
           if (checked) {
             const restored =
               lastItem !== null && lastItem.id === element.id ? lastItem.item : undefined;
-            set(['item'], restored);
+            set(['item'], restored ?? (portal ? {} : undefined));
             return;
           }
           if (data.item !== undefined && data.item !== false) {
             setLastItem({ id: element.id, item: data.item });
           }
-          set(['item'], false);
+          set(['item'], portal ? undefined : false);
         }}
       />
       {hasItem ? (
@@ -641,7 +659,14 @@ export function BlockStudio(props: StudioProps) {
         typeof value === 'number' ? typingKey(`/components/msm:redstone/${key}`) : undefined,
       );
   };
-  const behaviour = (
+  const behaviour = portal ? (
+    <Section title="Behaviour" testId="block-behaviour">
+      <p className="text-muted text-xs" data-testid="block-behaviour-portal">
+        A portal takes no interact, step or redstone triggers: use "On travel" in the Portal
+        section, or the triggers of the Events section below.
+      </p>
+    </Section>
+  ) : (
     <Section title="Behaviour" testId="block-behaviour">
       <div className="flex flex-wrap items-end gap-2">
         <EventSelect
@@ -740,6 +765,24 @@ export function BlockStudio(props: StudioProps) {
         suggest={suggest}
         set={set}
       />
+      {portal && (
+        <Suspense
+          fallback={
+            <p className="text-muted text-xs" data-testid="block-portal-loading">
+              Loading the Portal section…
+            </p>
+          }
+        >
+          <PortalSection
+            element={element}
+            target={props.target}
+            problems={problems}
+            suggest={suggest}
+            set={set}
+            replace={(next) => onChange('', next)}
+          />
+        </Suspense>
+      )}
       {appearance}
       <TexturesSection
         key={element.id}
@@ -789,6 +832,7 @@ export function BlockStudio(props: StudioProps) {
         onChange={onChange}
         handlers={projectHandlers(project)}
         effects={projectEffects(project)}
+        portals={projectPortals(project)}
         triggers={
           <TriggersSection
             kind={element.kind}
@@ -799,7 +843,7 @@ export function BlockStudio(props: StudioProps) {
             set={set}
             notes={{
               'msm:on_entity_inside':
-                isWalkThrough(shape) || !isFullCube(effectiveBoxes(shape)) ? undefined : (
+                portal || isWalkThrough(shape) || !isFullCube(effectiveBoxes(shape)) ? undefined : (
                   <p
                     role="status"
                     className="text-warning text-xs"

@@ -5,8 +5,10 @@
  * `run_script` with its handler picked from the project's scripts or typed, ADR 0032 D4, and
  * `apply_effect` with its mob effect, seconds, amplifier and target, ADR 0044 D2, the
  * project's own effects offered first; "Hurt" (`damage`) and "Heal" (`heal`), ADR 0055 D4;
- * entity events also offer `play_animation`, ADR 0028). Action types are listed by label
- * with their format id.
+ * entity events also offer `play_animation`, ADR 0028; every element offers "Light a portal"
+ * (`light_portal`, ADR 0077 D3, ADR 0078 D1) with the project's portals to pick from, or a
+ * block id typed when the Studio gives none). Action types are listed by label with their
+ * format id.
  *
  * Renaming rewrites the references in trigger components and `trigger_event` actions in one
  * edit (one undo step); removing an event leaves its references, which the
@@ -47,6 +49,19 @@ import {
   withProjectIds,
 } from './blocks-items-model';
 import { EventSelect } from './parts';
+import { LIGHT_PORTAL_ACTION, newLightPortalAction } from './portal-model';
+
+/** "Light a portal" (ADR 0077 D3): lights the portal's empty frame at or next to the event's block. */
+export const LIGHT_PORTAL_SPEC: ActionSpec = Object.freeze({
+  type: LIGHT_PORTAL_ACTION,
+  label: 'Light a portal',
+  fields: [{ key: 'portal', label: 'Portal', type: 'id', registry: 'block', required: true }],
+} satisfies ActionSpec);
+
+/** The actions an element of `kind` offers here: its own plus "Light a portal". */
+export function editorActionsFor(kind: string): readonly ActionSpec[] {
+  return [...actionsFor(kind), LIGHT_PORTAL_SPEC];
+}
 
 export interface EventsEditorProps {
   element: Element;
@@ -61,6 +76,11 @@ export interface EventsEditorProps {
   triggers?: ReactNode;
   /** The project's own mob effect ids, offered first by `apply_effect` ({@link projectEffects}). */
   effects?: readonly string[];
+  /**
+   * The project's portal block ids, which "Light a portal" offers in a picker
+   * (`projectPortals`); without them the portal is a block id field.
+   */
+  portals?: readonly string[] | undefined;
 }
 
 /** The text of an action type's option: its label and its format id, as "Hurt (damage)". */
@@ -113,6 +133,7 @@ function ActionFieldEditor(props: {
   events: readonly string[];
   animations: readonly string[];
   handlers: readonly string[];
+  portals: readonly string[] | undefined;
   suggest(registry: string, prefix: string): string[];
   set(key: string, value: Json | undefined, coalesce?: string): void;
 }) {
@@ -120,6 +141,13 @@ function ActionFieldEditor(props: {
   const label = `${name} ${field.label.toLowerCase()}`;
   const value = action[field.key];
   const fieldPointer = `${pointer}/${field.key}`;
+  if (
+    action.type === LIGHT_PORTAL_ACTION &&
+    field.key === 'portal' &&
+    props.portals !== undefined
+  ) {
+    return <PortalPicker label={label} value={value} portals={props.portals} set={set} />;
+  }
   switch (field.type) {
     case 'id':
       return (
@@ -223,6 +251,31 @@ function ActionFieldEditor(props: {
   }
 }
 
+/** Shown under "Light a portal" when the project has no portal block yet. */
+export const NO_PORTALS_NOTE = 'No portal blocks yet: add a block and set its Type to "Portal".';
+
+/** The portal "Light a portal" lights: one of the project's portal blocks. */
+function PortalPicker(props: {
+  label: string;
+  value: Json | undefined;
+  portals: readonly string[];
+  set(key: string, value: Json | undefined): void;
+}) {
+  const current = typeof props.value === 'string' ? props.value : '';
+  return (
+    <>
+      <SelectField
+        label={props.label}
+        value={current === '' ? undefined : current}
+        choices={props.portals}
+        emptyLabel="(choose a portal)"
+        onChange={(next) => props.set('portal', next ?? '')}
+      />
+      {props.portals.length === 0 && <span className="text-muted text-xs">{NO_PORTALS_NOTE}</span>}
+    </>
+  );
+}
+
 /** Shown under a `run_script` handler when no script defines a handler yet. */
 export const NO_HANDLERS_NOTE =
   'No script defines a handler yet: add msm.actions.define("<id>", (e) => { ... }) to a script.';
@@ -274,11 +327,16 @@ function EventEditor(props: {
   actions: readonly ActionSpec[];
   animations: readonly string[];
   handlers: readonly string[];
+  portals: readonly string[] | undefined;
   problems: readonly FormProblem[];
   suggest(registry: string, prefix: string): string[];
   onChange: EventsEditorProps['onChange'];
 }) {
   const { name, data, events, problems, onChange } = props;
+  const create = (type: string) =>
+    type === LIGHT_PORTAL_ACTION
+      ? newLightPortalAction(props.portals ?? [])
+      : newAction(type, events, name);
   const [error, setError] = useState<string | null>(null);
   const [addType, setAddType] = useState<string>(props.actions[0]?.type ?? 'play_sound');
   const eventPointer = pointerOf(['events', name]);
@@ -352,7 +410,7 @@ function EventEditor(props: {
                   actions={props.actions}
                   onChange={(type) => {
                     if (type === action.type) return;
-                    onChange(pointer, newAction(type, events, name));
+                    onChange(pointer, create(type));
                   }}
                 />
                 {spec?.fields.map((field) => (
@@ -365,6 +423,7 @@ function EventEditor(props: {
                     events={events}
                     animations={props.animations}
                     handlers={props.handlers}
+                    portals={props.portals}
                     suggest={props.suggest}
                     set={set}
                   />
@@ -421,7 +480,7 @@ function EventEditor(props: {
           className="text-xs"
           aria-label={`Add action to ${name}`}
           onClick={() => {
-            const action = newAction(addType, events, name);
+            const action = create(addType);
             if (actions.length > 0) {
               onChange(`${actionsPointer}/${actions.length}`, action);
             } else {
@@ -447,10 +506,11 @@ export function EventsEditor({
   handlers = [],
   triggers,
   effects = [],
+  portals,
 }: EventsEditorProps) {
   const suggestIds = withProjectIds(suggest, 'mob_effect', effects);
   const events = eventNames(element.data);
-  const actions = actionsFor(element.kind);
+  const actions = editorActionsFor(element.kind);
   const [draft, setDraft] = useState('');
   const inputId = useId();
   const proposed = draft.trim();
@@ -484,6 +544,7 @@ export function EventsEditor({
             actions={actions}
             animations={animations}
             handlers={handlers}
+            portals={portals}
             problems={problems}
             suggest={suggestIds}
             onChange={onChange}

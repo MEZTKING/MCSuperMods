@@ -21,6 +21,7 @@ import {
   blockStateFlag,
   blockTypeModels,
   ITEM_MODEL_SLOT,
+  PORTAL_COMPONENTS,
   SHAPED_BLOCK_TYPES,
   SHAPED_ONLY_COMPONENTS,
   STATE_MODEL_SLOTS,
@@ -34,11 +35,11 @@ type JsonObject = { [key: string]: Json };
 export type { BlockTypeName };
 
 /**
- * The building types the Type picker offers (ADR 0067 D1), in the format's order. `portal`
- * (ADR 0077) is left out until the Portal section offers its fields (B337).
+ * The building types the Type picker offers (ADR 0067 D1), in the format's order, with
+ * `portal` (ADR 0077 D1; its fields in the Portal section, ADR 0078 D1) last.
  */
 export const BUILDING_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze(
-  BLOCK_TYPES.filter((type) => !['crop', 'sapling', 'leaves', 'portal'].includes(type)),
+  BLOCK_TYPES.filter((type) => !['crop', 'sapling', 'leaves'].includes(type)),
 );
 
 /** The plant types (ADR 0068 D1); their own fields come with the plant sections (B272). */
@@ -112,7 +113,27 @@ const TYPE_FIELDS: Readonly<Partial<Record<BlockTypeName, readonly string[]>>> =
   crop: ['max_age', 'stage_heights', 'soil', 'bonemeal_growth'],
   sapling: ['tree', 'mega_tree', 'flower_tree', 'soil'],
   leaves: ['tint', 'particle_chance', 'falling_particle'],
+  portal: [
+    'frame',
+    'frame_block',
+    'igniter',
+    'destination',
+    'return_to',
+    'travel',
+    'sounds',
+    'particles',
+    'on_travel',
+  ],
 });
+
+/**
+ * The required fields a block gets when it becomes a portal (ADR 0069 D5's rule): a frame no
+ * vanilla portal uses (so the Nether portal keeps lighting as before) and the Nether, as the
+ * "Portal to the Nether" template.
+ */
+export const PORTAL_TYPE_DEFAULTS: Readonly<{ frame: string; destination: string }> = Object.freeze(
+  { frame: 'minecraft:crying_obsidian', destination: 'minecraft:the_nether' },
+);
 
 /** The editor-only fields of each type besides `textures` and `models` (ADR 0067 D7). */
 const TYPE_ELEMENT_FIELDS: Readonly<Partial<Record<BlockTypeName, readonly string[]>>> =
@@ -262,6 +283,8 @@ const MODEL_SLOT_LABELS: Readonly<Record<string, string>> = Object.freeze({
   down: 'Pressed down',
   sapling: 'Sapling',
   leaves: 'Leaves',
+  ns: 'Along x (seen from north and south)',
+  ew: 'Along z (seen from east and west)',
   [ITEM_MODEL_SLOT]: 'Block item',
 });
 
@@ -404,6 +427,11 @@ export interface TypeChangeOptions {
  * fields of the new type get a default (the target's first set or wood type, the vanilla oak
  * tree for a sapling), and the old look is carried over as the new type's `all` texture (a
  * crop's first stage), or kept as `model` where the new type takes one.
+ *
+ * A portal (ADR 0077 D1) keeps only the components it takes (`PORTAL_COMPONENTS`), has no
+ * block item by default (so an `item` that only says the default, `false` or `{}`, goes, and
+ * with no item `loot: "self"` goes too), shows vanilla's portal surface rather than the old
+ * look, and gets a frame and a destination ({@link PORTAL_TYPE_DEFAULTS}).
  */
 export function withBlockType(
   data: Json | undefined,
@@ -448,6 +476,23 @@ export function withBlockType(
     out.wood_type = options.woodTypes?.[0] ?? 'oak';
   }
   if (next === 'sapling' && typeof out.tree !== 'string') out.tree = 'minecraft:oak';
+  if (next === 'portal') {
+    if (isJsonObject(out.components)) {
+      const components: JsonObject = {};
+      for (const [id, value] of Object.entries(out.components)) {
+        if (PORTAL_COMPONENTS.includes(id)) components[id] = value;
+      }
+      if (Object.keys(components).length === 0) delete out.components;
+      else out.components = components;
+    }
+    if (out.item === false || (isJsonObject(out.item) && Object.keys(out.item).length === 0)) {
+      delete out.item;
+    }
+    if (out.item === undefined && out.loot === 'self') delete out.loot;
+    if (typeof out.frame !== 'string') out.frame = PORTAL_TYPE_DEFAULTS.frame;
+    if (typeof out.destination !== 'string') out.destination = PORTAL_TYPE_DEFAULTS.destination;
+    return out;
+  }
   // The look, carried over.
   const texture = options.texture;
   const keepsModel = acceptsSingleModel(next) && typeof out.model === 'string' && out.model !== '';
@@ -480,19 +525,20 @@ function splitId(id: string): { namespace: string; path: string } {
 
 /**
  * Every model slot of a typed block with the model lowering uses for it (through the plugin's
- * own `blockTypeModels`), for the Textures section's list of generated models. `[]` for
- * `block` and for data whose `type` is not a type.
+ * own `blockTypeModels`), for the Textures section's list of generated models; no item row for
+ * a block without an item. `[]` for `block` and for data whose `type` is not a type.
  */
 export function slotModelRows(element: Pick<Element, 'id' | 'data'>): SlotModelRow[] {
   const type = blockTypeOfData(element.data);
   if (type === undefined || type === 'block') return [];
   const data = asObject(element.data);
   const { namespace, path } = splitId(element.id);
+  const itemId = blockItemIdOf(element.id, data);
   let models: ReturnType<typeof blockTypeModels>;
   try {
     models = blockTypeModels(type, {
       blockId: element.id,
-      itemId: blockItemIdOf(element.id, data),
+      itemId,
       namespace,
       path,
       data,
@@ -503,7 +549,11 @@ export function slotModelRows(element: Pick<Element, 'id' | 'data'>): SlotModelR
   const given = asObject(data.models);
   const single = acceptsSingleModel(type) && typeof data.model === 'string' ? data.model : '';
   const primary = BLOCK_TYPE_LOWERINGS[type].slots[0] ?? 'default';
-  return shownModelSlots(type, data).map((slot): SlotModelRow => {
+  // A block without an item (`"item": false`, or a portal without `item`) has no item model.
+  const slots = shownModelSlots(type, data).filter(
+    (slot) => itemId !== undefined || slot !== ITEM_MODEL_SLOT,
+  );
+  return slots.map((slot): SlotModelRow => {
     const model = models.slots[slot];
     const generated = models.generated.find((entry) => entry.slot === slot);
     if (typeof given[slot] === 'string' && given[slot] !== '') {

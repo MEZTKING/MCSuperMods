@@ -3,7 +3,8 @@
  * slot (the made models from `textures`, own models or the Model field), drawn over the
  * project with the generated models laid over it in memory (`typePreviewProject`, nothing is
  * applied). A crop shows a stage slider instead of the slot picker: each age shows the stage
- * model the game would. The host gives the folders, the project's assets and the vanilla cache
+ * model the game would. A portal (ADR 0078 D1) shows its pane for either axis ("Along x" or
+ * "Along z"), the frame standing either way. The host gives the folders, the project's assets and the vanilla cache
  * (`modelPreview`); without it the section is not shown. deepslate loads lazily, only with
  * WebGL.
  *
@@ -102,7 +103,11 @@ export function BlockTypePreview(props: BlockTypePreviewProps) {
         <>
           <p className="text-muted text-xs" data-testid="block-preview-model">
             Shows <span className="font-mono">{model}</span>
-            {type === 'leaves' ? '. The leaf tint shows in game only.' : '.'}
+            {type === 'leaves'
+              ? '. The leaf tint shows in game only.'
+              : type === 'portal'
+                ? '. The pane fills the frame; the surface moves in game.'
+                : '.'}
           </p>
           {!webgl ? (
             <p role="status" className="text-muted text-xs">
