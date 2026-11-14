@@ -2,6 +2,17 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.10.0 — 2026-11-14
+
+Block types and families (ADR 0067 D2, D9). `API_VERSION` is `1.10.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `BlockFacts { setTypes: readonly string[]; woodTypes: readonly string[] }`: the block set type names a door, trapdoor, button or pressure plate takes (`set_type`) and the wood type names a fence gate takes (`wood_type`), in lower case. The names are MSM's; how each maps to a game constant is the runtime's concern.
+- `TargetFacts.blocks?: BlockFacts`. Optional; a target without it skips the checks that need it.
+
+### Migration from 1.9.0
+
+None. A plugin that reads `blocks` should declare `^1.10.0` and treat an absent value as "no names to check against"; plugins written earlier ignore it.
+
 ## 1.9.0 — 2026-11-14
 
 Potions and the data kinds sweep (ADRs 0063 D7 and 0064 D5). `API_VERSION` is `1.9.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

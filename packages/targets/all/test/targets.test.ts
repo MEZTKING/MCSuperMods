@@ -73,6 +73,70 @@ const VENDORED_KEYS: VendoredKey[] = [
   'mcmetaBlocks',
 ];
 
+/**
+ * Vanilla block tags block types and plants join or read (ADR 0067 D6, ADR 0068 D3, D4, D6),
+ * unprefixed as in `registries.json`.
+ */
+const FAMILY_BLOCK_TAGS = [
+  'bee_growables',
+  'buttons',
+  'crops',
+  'doors',
+  'fence_gates',
+  'fences',
+  'leaves',
+  'logs',
+  'logs_that_burn',
+  'maintains_farmland',
+  'mineable/axe',
+  'mineable/hoe',
+  'mineable/pickaxe',
+  'mineable/shovel',
+  'planks',
+  'pressure_plates',
+  'saplings',
+  'slabs',
+  'stairs',
+  'stone_buttons',
+  'stone_pressure_plates',
+  'supports_crops',
+  'supports_vegetation',
+  'trapdoors',
+  'walls',
+  'wooden_buttons',
+  'wooden_doors',
+  'wooden_fences',
+  'wooden_pressure_plates',
+  'wooden_trapdoors',
+];
+
+/** The item tag counterparts vanilla has, plus `villager_plantable_seeds` (ADR 0068 D3). */
+const FAMILY_ITEM_TAGS = [
+  'buttons',
+  'doors',
+  'fence_gates',
+  'fences',
+  'leaves',
+  'logs',
+  'logs_that_burn',
+  'planks',
+  'saplings',
+  'slabs',
+  'stairs',
+  'stone_buttons',
+  'trapdoors',
+  'villager_plantable_seeds',
+  'walls',
+  'wooden_buttons',
+  'wooden_doors',
+  'wooden_fences',
+  'wooden_pressure_plates',
+  'wooden_trapdoors',
+];
+
+/** Block tags with no item counterpart: lowering writes only the block tag for these. */
+const BLOCK_ONLY_FAMILY_TAGS = ['pressure_plates', 'stone_pressure_plates'];
+
 const nodeReadFile = async (url: URL): Promise<Uint8Array> => readFile(url);
 
 describe('builtInTargets', () => {
@@ -214,6 +278,49 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         major: version.data_pack_version,
         minor: version.data_pack_version_minor,
       });
+    });
+
+    it('has every vanilla block and item tag block families use (ADR 0067 D6, ADR 0068)', async () => {
+      const registries = (await readVendoredJson(
+        bundle,
+        'mcmetaRegistries',
+        nodeReadFile,
+      )) as Record<string, string[]>;
+      const blockTags = registries['tag/block'] ?? [];
+      const itemTags = registries['tag/item'] ?? [];
+      for (const tag of FAMILY_BLOCK_TAGS) expect(blockTags, `block ${tag}`).toContain(tag);
+      for (const tag of FAMILY_ITEM_TAGS) expect(itemTags, `item ${tag}`).toContain(tag);
+      for (const tag of BLOCK_ONLY_FAMILY_TAGS) expect(itemTags, `item ${tag}`).not.toContain(tag);
+    });
+
+    it('lists the block family set and wood type names, identical on every target (ADR 0067 D9)', () => {
+      expect(target.blocks?.setTypes).toEqual([
+        'wood',
+        'cherry',
+        'bamboo',
+        'crimson',
+        'warped',
+        'iron',
+        'copper',
+        'gold',
+        'stone',
+        'polished_blackstone',
+      ]);
+      expect(target.blocks?.woodTypes).toEqual([
+        'oak',
+        'spruce',
+        'birch',
+        'acacia',
+        'cherry',
+        'jungle',
+        'dark_oak',
+        'pale_oak',
+        'poplar',
+        'crimson',
+        'warped',
+        'mangrove',
+        'bamboo',
+      ]);
     });
 
     it('loads its vanilla-mcdoc export through @msm/schemas', async () => {

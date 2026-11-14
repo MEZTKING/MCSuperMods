@@ -59,6 +59,7 @@ export { definePlugin, PluginDefinitionError } from './plugin';
 export type { Problem, ProblemReporter, ProblemSeverity } from './problems';
 export type {
   BiomeAttributeFacts,
+  BlockFacts,
   DataFolderKey,
   DefinitionInput,
   FabricFacts,

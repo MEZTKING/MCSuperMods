@@ -394,6 +394,39 @@ export const target: Target = {
       },
     },
   },
+  // blocks (ADR 0067 D2, D9): the MSM names of the set types and wood types block families
+  // take, identical on both targets. Verified 2026-11-14 with javap over the Loom-cached
+  // 26.3 merged jar: `wood` is the runtime's `BlockSetType.OAK`, every
+  // other name a `BlockSetType` or `WoodType` constant of the same name in upper case.
+  blocks: {
+    setTypes: [
+      'wood',
+      'cherry',
+      'bamboo',
+      'crimson',
+      'warped',
+      'iron',
+      'copper',
+      'gold',
+      'stone',
+      'polished_blackstone',
+    ],
+    woodTypes: [
+      'oak',
+      'spruce',
+      'birch',
+      'acacia',
+      'cherry',
+      'jungle',
+      'dark_oak',
+      'pale_oak',
+      'poplar',
+      'crimson',
+      'warped',
+      'mangrove',
+      'bamboo',
+    ],
+  },
   // Verified 2026-11-05 against maven.fabricmc.net and the FabricMC example mod's 26.3
   // branch (ADR 0027).
   fabric: {

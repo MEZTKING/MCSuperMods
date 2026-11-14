@@ -209,6 +209,28 @@ export interface BiomeAttributeFacts {
 }
 
 /**
+ * Block facts of a target: the names the `msm:block` definition format accepts for the
+ * vanilla block set types and wood types a block family borrows its sounds and behaviour from.
+ * The names are MSM's own, identical across targets where the game allows; how each maps to a
+ * game constant is the runtime's concern, not a target fact. Since 1.10.0 (ADR 0067 D2, D9).
+ */
+export interface BlockFacts {
+  /**
+   * The block set type names a `door`, `trapdoor`, `button` or `pressure_plate` block's
+   * `set_type` takes, in lower case (for example `wood`, `iron` or `stone`). A set type picks
+   * vanilla's open and close sounds, whether hands open it, whether arrows press buttons and
+   * which entities press plates. Since 1.10.0.
+   */
+  setTypes: readonly string[];
+  /**
+   * The wood type names a `fence_gate` block's `wood_type` takes, in lower case (for example
+   * `oak` or `bamboo`), the game's wood type constants. A wood type picks the gate's open and
+   * close sounds. Since 1.10.0.
+   */
+  woodTypes: readonly string[];
+}
+
+/**
  * Item facts of a target: names the definition format checks against the game's own
  * constants. Since 1.1.0 (ADR 0042 D4).
  */
@@ -537,6 +559,11 @@ export interface TargetFacts {
    * skips the checks that need them. Since 1.1.0 (ADR 0042 D4).
    */
   items?: ItemFacts;
+  /**
+   * Block facts: the set type and wood type names block families take. Optional: a target
+   * without them skips the checks that need them. Since 1.10.0 (ADR 0067 D9).
+   */
+  blocks?: BlockFacts;
 }
 
 /**

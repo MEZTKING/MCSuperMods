@@ -1,5 +1,6 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import type {
+  BlockFacts,
   DataFolderKey,
   DefinitionInput,
   Element,
@@ -352,6 +353,16 @@ describe('0.8.0 additions', () => {
       (input: JavaProjectInput) => GeneratedFile[]
     >();
     expectTypeOf<Target['javaProject']>().toEqualTypeOf<JavaProjectGenerator | undefined>();
+  });
+
+  it('carries optional block facts on a target (1.10.0)', () => {
+    expectTypeOf<TargetFacts['blocks']>().toEqualTypeOf<BlockFacts | undefined>();
+    expectTypeOf<BlockFacts['setTypes']>().toEqualTypeOf<readonly string[]>();
+    expectTypeOf<BlockFacts['woodTypes']>().toEqualTypeOf<readonly string[]>();
+    const facts: BlockFacts = { setTypes: ['wood', 'iron'], woodTypes: ['oak'] };
+    expect(facts.setTypes).toContain('iron');
+    // A 1.9.0-shaped target without block facts stays assignable.
+    expect(testTarget.blocks).toBeUndefined();
   });
 
   it('keeps a 1.8.0-shaped JavaProjectInput assignable (potions is optional, 1.9.0)', () => {

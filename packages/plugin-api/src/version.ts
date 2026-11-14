@@ -12,4 +12,4 @@
  * least one minor release, marked `@deprecated` with its replacement. Plugins declare a caret
  * range such as `^1.0.0`.
  */
-export const API_VERSION = '1.9.0' as const;
+export const API_VERSION = '1.10.0' as const;
