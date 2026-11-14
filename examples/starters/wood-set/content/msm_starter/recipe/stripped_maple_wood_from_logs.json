@@ -1,0 +1,25 @@
+{
+  "data": {
+    "category": "building",
+    "group": "bark",
+    "key": {
+      "#": "msm_starter:stripped_maple_log"
+    },
+    "pattern": [
+      "##",
+      "##"
+    ],
+    "result": {
+      "count": 3,
+      "id": "msm_starter:stripped_maple_wood"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:stripped_maple_wood_from_logs",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Four stripped logs make three stripped wood."
+  }
+}

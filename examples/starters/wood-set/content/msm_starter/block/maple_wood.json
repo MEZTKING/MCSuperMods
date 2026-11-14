@@ -1,0 +1,38 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2,
+        "requires_tool": false,
+        "resistance": 2,
+        "tool": "axe"
+      },
+      "msm:flammable": {
+        "burn_odds": 5,
+        "ignite_odds": 5
+      },
+      "msm:strippable": {
+        "into": "msm_starter:stripped_maple_wood"
+      }
+    },
+    "display_name": "Maple Wood",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "end": "msm_starter:block/maple_log",
+      "side": "msm_starter:block/maple_log"
+    },
+    "type": "pillar"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:maple_wood",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Maple wood: a log with bark on every side, as vanilla oak wood. An axe strips it into stripped wood."
+  }
+}

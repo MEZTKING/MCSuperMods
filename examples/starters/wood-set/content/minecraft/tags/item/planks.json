@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "msm_starter:maple_planks"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:planks",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds the planks to the vanilla item tag of planks, so vanilla recipes (sticks, crafting table, chest) and furnaces accept them."
+  }
+}

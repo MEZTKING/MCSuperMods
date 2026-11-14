@@ -1,0 +1,26 @@
+{
+  "data": {
+    "category": "redstone",
+    "group": "wooden_door",
+    "key": {
+      "#": "msm_starter:maple_planks"
+    },
+    "pattern": [
+      "##",
+      "##",
+      "##"
+    ],
+    "result": {
+      "count": 3,
+      "id": "msm_starter:maple_door"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:maple_door_from_planks",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Six planks make three doors."
+  }
+}

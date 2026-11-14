@@ -64,6 +64,26 @@ function decode(png: Uint8Array): { width: number; height: number; rgba: Uint8Ar
 }
 
 const update = process.env.UPDATE_GOLDENS === '1';
+
+/** The opaque block patterns; every other pattern has a transparent background. */
+const OPAQUE_PATTERNS: ReadonlySet<PlaceholderPattern> = new Set<PlaceholderPattern>([
+  'plain',
+  'ore',
+  'bark',
+  'log_top',
+  'stripped_log',
+  'stripped_log_top',
+  'planks',
+  'door_top',
+  'door_bottom',
+  'trapdoor',
+  'leaves',
+  'stone',
+  'polished_stone',
+  'bricks',
+  'pillar_side',
+  'pillar_top',
+]);
 const fixtures = join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'patterns');
 
 /**
@@ -83,7 +103,7 @@ const PINNED: Partial<Record<PlaceholderPattern, string>> = {
 const PINNED_SKIN = '224f2f4715ddc13cad76f34fd7555f720a9149052645c23f4c28c102c2ff4fd5';
 
 describe('placeholder textures', () => {
-  it('has forty-two patterns', () => {
+  it('has fifty-seven patterns', () => {
     expect(PLACEHOLDER_PATTERNS).toEqual([
       'plain',
       'ore',
@@ -127,6 +147,21 @@ describe('placeholder textures', () => {
       'boomerang',
       'flask',
       'effect_icon',
+      'bark',
+      'log_top',
+      'stripped_log',
+      'stripped_log_top',
+      'planks',
+      'door_top',
+      'door_bottom',
+      'trapdoor',
+      'leaves',
+      'sapling',
+      'stone',
+      'polished_stone',
+      'bricks',
+      'pillar_side',
+      'pillar_top',
     ]);
   });
 
@@ -250,7 +285,7 @@ describe('placeholder textures', () => {
       expect(sha256(placeholderPng(pattern))).toBe(sha256(placeholderPng(pattern)));
       const alpha = [...placeholderPixels(pattern)].filter((_, index) => index % 4 === 3);
       expect(alpha).toContain(255);
-      if (pattern !== 'plain' && pattern !== 'ore') expect(alpha).toContain(0);
+      if (!OPAQUE_PATTERNS.has(pattern)) expect(alpha).toContain(0);
     },
   );
 
@@ -259,6 +294,13 @@ describe('placeholder textures', () => {
       [...placeholderPixels(pattern)].filter((_, index) => index % 4 === 3);
     expect(alpha('plain').every((value) => value === 255)).toBe(true);
     expect(alpha('ore').every((value) => value === 255)).toBe(true);
+    for (const pattern of OPAQUE_PATTERNS) {
+      expect(
+        alpha(pattern).every((value) => value === 255),
+        pattern,
+      ).toBe(true);
+    }
+    expect(alpha('sapling')).toContain(0);
     expect(alpha('gem')).toContain(0);
     expect(alpha('disc')).toContain(0);
     expect(alpha('disc')).toContain(255);

@@ -38,10 +38,12 @@ import { SCRIPTED_ITEM_PARAMETERS, scriptedItemBundle } from './scripted-item';
 import { scriptedOreBundle } from './scripted-ore';
 import { SIMPLE_BLOCK_PARAMETERS, simpleBlockBundle } from './simple-block';
 import { STATUS_EFFECT_PARAMETERS, statusEffectBundle } from './status-effect';
+import { STONE_SET_PARAMETERS, stoneSetBundle } from './stone-set';
 import { THROWABLE_PARAMETERS, throwableBundle } from './throwable';
 import { TOTEM_PARAMETERS, totemBundle } from './totem';
 import { VILLAGER_TRADE_PARAMETERS, villagerTradeBundle } from './villager-trade';
 import { WEAPON_PARAMETERS, weaponBundle } from './weapon';
+import { WOOD_SET_PARAMETERS, woodSetBundle } from './wood-set';
 import { worldgenPackBundle } from './worldgen-pack';
 
 export { CONSUMABLE_PARAMETERS, consumableBundle } from './consumable';
@@ -82,10 +84,12 @@ export {
 export { scriptedOreBundle, scriptedOreIds } from './scripted-ore';
 export { SIMPLE_BLOCK_PARAMETERS, simpleBlockBundle } from './simple-block';
 export { STATUS_EFFECT_PARAMETERS, statusEffectBundle } from './status-effect';
+export { STONE_SET_MEMBERS, STONE_SET_PARAMETERS, stoneSetBundle } from './stone-set';
 export { THROWABLE_PARAMETERS, throwableBundle } from './throwable';
 export { TOTEM_PARAMETERS, totemBundle } from './totem';
 export { VILLAGER_TRADE_PARAMETERS, villagerTradeBundle } from './villager-trade';
 export { WEAPON_PARAMETERS, WEAPON_TYPES, weaponBundle } from './weapon';
+export { WOOD_SET_MEMBERS, WOOD_SET_PARAMETERS, woodSetBundle } from './wood-set';
 export { worldgenPackBundle } from './worldgen-pack';
 
 function starter(
@@ -217,6 +221,36 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       creator: {
         group: 'blocks',
         blurb: 'One block: how hard it is, what mines it, whether it glows and what it drops.',
+      },
+    },
+  ),
+  starter(
+    'wood-set',
+    'Wood set',
+    'A whole new kind of wood: log, wood, stripped log and wood, planks, stairs, slab, fence, fence gate, door, trapdoor, button, pressure plate, leaves and a sapling that grows its own tree, with the vanilla recipes, tags, stripping, burning and composting, and if you choose the tree growing in the world. New blocks need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    woodSetBundle,
+    {
+      parameters: WOOD_SET_PARAMETERS,
+      creator: {
+        group: 'blocks',
+        blurb: 'A whole wood set from log to sapling, with its tree, recipes and tags.',
+      },
+    },
+  ),
+  starter(
+    'stone-set',
+    'Stone set',
+    'A new stone with its stairs, slab and wall, and if you choose a button, a pressure plate, polished stone, bricks and a pillar, with crafting and stonecutting recipes. New blocks need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    stoneSetBundle,
+    {
+      parameters: STONE_SET_PARAMETERS,
+      creator: {
+        group: 'blocks',
+        blurb: 'A stone with its stairs, slab, wall and more, crafted and stonecut.',
       },
     },
   ),

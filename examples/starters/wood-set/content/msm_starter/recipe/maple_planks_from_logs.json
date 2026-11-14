@@ -1,0 +1,21 @@
+{
+  "data": {
+    "category": "building",
+    "group": "planks",
+    "ingredients": [
+      "#msm_starter:maple_logs"
+    ],
+    "result": {
+      "count": 4,
+      "id": "msm_starter:maple_planks"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:maple_planks_from_logs",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Any maple log or wood makes four planks. Recipe ids cannot share their result's id, hence _from_logs."
+  }
+}

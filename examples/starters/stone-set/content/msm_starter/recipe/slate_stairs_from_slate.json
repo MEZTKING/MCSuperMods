@@ -1,0 +1,25 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "#": "msm_starter:slate"
+    },
+    "pattern": [
+      "#  ",
+      "## ",
+      "###"
+    ],
+    "result": {
+      "count": 4,
+      "id": "msm_starter:slate_stairs"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:slate_stairs_from_slate",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Six blocks make four stairs."
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "data": {
+    "category": "redstone",
+    "group": "wooden_pressure_plate",
+    "key": {
+      "#": "msm_starter:maple_planks"
+    },
+    "pattern": [
+      "##"
+    ],
+    "result": {
+      "id": "msm_starter:maple_pressure_plate"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:maple_pressure_plate_from_planks",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Two planks make a pressure plate."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_starter:block/maple_planks"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:block/maple_planks",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A full cube drawn from textures/block/maple_planks.png. The stairs, slab, fence, gate, button and pressure plate use the same texture, so repainting it restyles them all."
+  }
+}

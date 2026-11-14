@@ -1,0 +1,25 @@
+{
+  "data": {
+    "group": "wooden_fence",
+    "key": {
+      "#": "minecraft:stick",
+      "W": "msm_starter:maple_planks"
+    },
+    "pattern": [
+      "W#W",
+      "W#W"
+    ],
+    "result": {
+      "count": 3,
+      "id": "msm_starter:maple_fence"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:maple_fence_from_planks",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Four planks and two sticks make three fences (no category, as vanilla)."
+  }
+}

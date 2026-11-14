@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "#msm_starter:maple_logs"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:logs_that_burn",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds the logs to the vanilla item tag of logs that burn, which minecraft:logs includes: they smelt into charcoal, fuel furnaces and count as logs in vanilla recipes. Tags are merged with the vanilla ones."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_starter:block/slate"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:block/slate",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A full cube drawn from textures/block/slate.png; the shapes made of slate use the same texture."
+  }
+}

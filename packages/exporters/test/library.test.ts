@@ -44,12 +44,18 @@ import type {
   ExampleProject,
   Exporter,
   Json,
+  JsonObject,
   Plugin,
   Problem,
   ProjectStarter,
   TargetFacts,
 } from '@msm/plugin-api';
-import blocksItemsPlugin, { blockItemIdOf } from '@msm/plugin-blocks-items';
+import blocksItemsPlugin, {
+  BLOCK_TYPE_LOWERINGS,
+  blockItemIdOf,
+  blockTypeModels,
+  blockTypeOf,
+} from '@msm/plugin-blocks-items';
 import dataPackPlugin from '@msm/plugin-datapack';
 import entitiesPlugin from '@msm/plugin-entities';
 import libraryPlugin, {
@@ -481,6 +487,50 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     { skin_name: 'Bog Hopper', animal: 'frog', biome: 'minecraft:mangrove_swamp' },
   ],
   // ADR 0064 D6: another call, no recipe, no goat drops, and a sound file of its own.
+  // ADR 0069 D1: other members, set and wood types, a tinted leaf, every tree shape, pictures.
+  'wood-set': [
+    {
+      wood_name: 'Dark Elm',
+      set_type: 'cherry',
+      wood_type: 'cherry',
+      leaf_tint: 'foliage',
+      tree_shape: 'fancy',
+      biomes: '#minecraft:is_taiga',
+      picture_planks: pngDataUrl(16, 16),
+      picture_leaves: pngDataUrl(32, 32),
+      picture_bark: pngDataUrl(16, 32),
+    },
+    { wood_name: 'Fir', tree_shape: 'forking', grows: false },
+    { wood_name: 'Blossom', tree_shape: 'cherry', set_type: 'bamboo' },
+    { wood_name: 'Old Oak', tree_shape: 'dark_oak', biomes: '#minecraft:is_overworld' },
+    {
+      wood_name: 'Driftwood',
+      members: ['planks', 'stairs', 'slab', 'door', 'sapling', 'leaves'],
+    },
+    { members: ['log', 'leaves', 'sapling', 'stripped_log', 'wood'], grows: true },
+  ],
+  'stone-set': [
+    {
+      stone_name: 'Marble',
+      colour: '#d6e2ee',
+      tool_tier: 'iron',
+      ingredient: 'minecraft:quartz_block',
+      members: [
+        'block',
+        'stairs',
+        'slab',
+        'wall',
+        'button',
+        'pressure_plate',
+        'polished',
+        'bricks',
+        'pillar',
+      ],
+      picture_stone: pngDataUrl(16, 16),
+    },
+    { stone_name: 'Basalt Rock', members: ['polished', 'stairs', 'wall'], tool_tier: 'any' },
+    { members: ['stairs', 'pillar', 'button'] },
+  ],
   'goat-horn': [
     {
       horn_name: 'Thunder',
@@ -570,6 +620,8 @@ const MIRRORED_STARTERS = [
   'scripted_ore',
   'gear-set',
   'simple-block',
+  'wood-set',
+  'stone-set',
   'food',
   'scripted-item',
   'weapon',
@@ -745,6 +797,26 @@ function projectRegistryIds(project: Project): Record<string, string[]> {
         // The block item's own id: `item.id` (seeds planting a crop), else the block's id.
         const itemId = blockItemIdOf(element.id, element.data);
         if (itemId !== undefined) add('item', itemId);
+        // The models a block type generates from its `textures` (ADR 0067 D7).
+        const data = element.data as JsonObject;
+        const path = element.id.slice(element.id.indexOf(':') + 1);
+        if (!Array.isArray(data) && data.type !== undefined) {
+          const models = blockTypeModels(blockTypeOf(data, element.id), {
+            blockId: element.id,
+            itemId,
+            namespace: namespace.name,
+            path,
+            data,
+          });
+          for (const model of models.generated) add('model', model.id);
+          // Doors, saplings and crops get a flat item model `<item ns>:item/<item path>`.
+          const lowering = BLOCK_TYPE_LOWERINGS[blockTypeOf(data, element.id)];
+          const hasItemTexture =
+            lowering.itemTexture !== undefined || lowering.itemTextureFromData !== undefined;
+          if (itemId !== undefined && hasItemTexture && models.slots.item === undefined) {
+            add('model', itemId.replace(':', ':item/'));
+          }
+        }
       }
       if (name === 'entity_type' && typeof element.data === 'object' && element.data !== null) {
         const egg = (element.data as { spawn_egg?: unknown }).spawn_egg;

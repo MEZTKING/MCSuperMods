@@ -1,0 +1,36 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.2,
+        "resistance": 0.2
+      },
+      "msm:flammable": {
+        "burn_odds": 30,
+        "ignite_odds": 60
+      }
+    },
+    "display_name": "Maple Leaves",
+    "format": 1,
+    "item": {
+      "compost": "30%",
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "leaves_drops": {
+      "sapling": "msm_starter:maple_sapling"
+    },
+    "loot": "leaves",
+    "sound_type": "grass",
+    "textures": {
+      "all": "msm_starter:block/maple_leaves"
+    },
+    "type": "leaves"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:maple_leaves",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Maple leaves. They decay when no block of #minecraft:logs is near, drop themselves to shears or Silk Touch, and otherwise now and then a sapling and sticks (the leaves loot preset). They keep the colours of their texture. They compost at 30%."
+  }
+}

@@ -52,7 +52,23 @@ export type Rgb = readonly [number, number, number];
  * - `flask`: a round-bottomed flask of coloured liquid with a cork, for thrown effects (item
  *   texture);
  * - `effect_icon`: 18x18 round badge with a sparkle, a status effect icon (texture under
- *   `mob_effect/`, named after the effect; ADR 0055 D6).
+ *   `mob_effect/`, named after the effect; ADR 0055 D6);
+ * - `bark`, `log_top`: the side and the cut end of a log, bark in darker shades of the colour
+ *   (block textures; ADR 0069 D2);
+ * - `stripped_log`, `stripped_log_top`: the side and the end of a stripped log, lighter wood
+ *   grain with rings on the end (block textures);
+ * - `planks`: four boards with staggered joints (block texture);
+ * - `door_top`, `door_bottom`: the two halves of a panelled door, the bottom with a handle
+ *   (block textures);
+ * - `trapdoor`: a framed hatch with cross bars (block texture);
+ * - `leaves`: dense opaque foliage in shades of the colour (block texture);
+ * - `sapling`: a young tree with a wooden stem on a transparent background, drawn as a cross
+ *   (block and item texture);
+ * - `stone`: rough speckled stone in shades of the colour (block texture);
+ * - `polished_stone`: smooth stone with a bevelled rim (block texture);
+ * - `bricks`: four courses of staggered bricks with mortar (block texture);
+ * - `pillar_side`, `pillar_top`: the fluted side and the capped end of a pillar (block
+ *   textures).
  *
  * Paintings have their own placeholder of any size, {@link paintingPng}.
  */
@@ -98,7 +114,22 @@ export type PlaceholderPattern =
   | 'knife'
   | 'boomerang'
   | 'flask'
-  | 'effect_icon';
+  | 'effect_icon'
+  | 'bark'
+  | 'log_top'
+  | 'stripped_log'
+  | 'stripped_log_top'
+  | 'planks'
+  | 'door_top'
+  | 'door_bottom'
+  | 'trapdoor'
+  | 'leaves'
+  | 'sapling'
+  | 'stone'
+  | 'polished_stone'
+  | 'bricks'
+  | 'pillar_side'
+  | 'pillar_top';
 
 /** Every pattern, in documentation order. */
 export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze([
@@ -144,6 +175,21 @@ export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze
   'boomerang',
   'flask',
   'effect_icon',
+  'bark',
+  'log_top',
+  'stripped_log',
+  'stripped_log_top',
+  'planks',
+  'door_top',
+  'door_bottom',
+  'trapdoor',
+  'leaves',
+  'sapling',
+  'stone',
+  'polished_stone',
+  'bricks',
+  'pillar_side',
+  'pillar_top',
 ]);
 
 /** Width and height of the armour layer patterns, the vanilla humanoid armour texture size. */
@@ -965,6 +1011,159 @@ function effectIcon(palette: Palette): Pixel {
   };
 }
 
+// Block family patterns (ADR 0069 D2) ------------------------------------------------------
+
+const LAST = PLACEHOLDER_SIZE - 1;
+
+/** Bark: vertical furrows in the darker shades of the colour, broken now and then. */
+function bark(palette: Palette): Pixel {
+  return (x, y) => {
+    const furrow = hash(x, 0, 21) % 3 === 0;
+    const broken = hash(x, Math.floor(y / 3), 22) % 5 === 0;
+    if (furrow && !broken) return palette.dark;
+    return hash(x, y, 23) % 4 === 0 ? palette.mid : palette.deep;
+  };
+}
+
+/** A cut log end: square growth rings, with a bark rim when `withBark` is set. */
+function logTop(withBark: boolean): (palette: Palette) => Pixel {
+  return (palette) => (x, y) => {
+    const ring = Math.min(x, y, LAST - x, LAST - y);
+    if (ring === 0) return withBark ? palette.dark : palette.deep;
+    if (ring === 7) return palette.deep;
+    return ring % 2 === 0 ? palette.mid : palette.light;
+  };
+}
+
+/** A stripped log's side: light wood with a fine vertical grain. */
+function strippedLog(palette: Palette): Pixel {
+  return (x, y) => {
+    if (hash(x, 0, 31) % 4 === 0 && hash(x, Math.floor(y / 4), 32) % 3 !== 0) {
+      return palette.mid;
+    }
+    return hash(x, y, 33) % 7 === 0 ? palette.shine : palette.light;
+  };
+}
+
+/** Planks: four boards four pixels high with a dark seam and staggered joints. */
+function planks(palette: Palette): Pixel {
+  return (x, y) => {
+    const board = Math.floor(y / 4);
+    if (y % 4 === 3) return palette.deep;
+    if ((x + board * 5) % 16 === 0) return palette.deep;
+    if (y % 4 === 0) return palette.light;
+    return hash(x, y, 41) % 6 === 0 ? palette.deep : palette.mid;
+  };
+}
+
+/** One half of a door: a dark frame and two sunken panels; the bottom half has a handle. */
+function door(bottom: boolean): (palette: Palette) => Pixel {
+  return (palette) => (x, y) => {
+    if (x === 0 || x === LAST || (bottom ? y === LAST : y === 0)) return palette.dark;
+    if (bottom && (x === 12 || x === 13) && (y === 1 || y === 2)) return palette.shine;
+    const panelY = bottom ? y >= 4 && y <= 12 : y >= 3 && y <= 13;
+    const panelX = (x >= 2 && x <= 6) || (x >= 9 && x <= 13);
+    if (panelX && panelY) {
+      const top = bottom ? 4 : 3;
+      if (y === top || x === 2 || x === 9) return palette.deep;
+      return palette.mid;
+    }
+    return palette.light;
+  };
+}
+
+/** A trapdoor: a dark frame with a cross of bars over light boards. */
+function trapdoor(palette: Palette): Pixel {
+  return (x, y) => {
+    if (x === 0 || y === 0 || x === LAST || y === LAST) return palette.dark;
+    if (x === 7 || x === 8 || y === 7 || y === 8) return palette.deep;
+    return y % 3 === 0 ? palette.mid : palette.light;
+  };
+}
+
+/** Leaves: dense, opaque foliage in shades of the colour with dark gaps. */
+function leaves(palette: Palette): Pixel {
+  return (x, y) => {
+    const value = hash(x, y, 51) % 10;
+    if (value === 0) return palette.dark;
+    if (value < 3) return palette.deep;
+    if (value < 8) return palette.mid;
+    return palette.light;
+  };
+}
+
+/** A sapling: a thin wooden stem from the bottom edge with three leafy tufts. */
+function sapling(palette: Palette): Pixel {
+  const tufts: readonly (readonly [number, number, number])[] = [
+    [7.5, 4.5, 3.2],
+    [4.5, 8, 2.4],
+    [10.5, 8.5, 2.4],
+  ];
+  return (x, y) => {
+    for (const [cx, cy, r] of tufts) {
+      const d2 = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+      if (d2 <= r * r) {
+        if (d2 > (r - 1) * (r - 1)) return palette.deep;
+        return x + y < cx + cy ? palette.light : palette.mid;
+      }
+    }
+    if ((x === 7 || x === 8) && y >= 7) return x === 7 ? GRIP : GRIP_DARK;
+    return CLEAR;
+  };
+}
+
+/** Rough stone: speckles of every shade of the colour with a few dark cracks. */
+function stone(palette: Palette): Pixel {
+  return (x, y) => {
+    const value = hash(x, y, 61) % 12;
+    if (value === 0) return palette.dark;
+    if (value < 4) return palette.deep;
+    if (value < 10) return palette.mid;
+    return palette.light;
+  };
+}
+
+/** Polished stone: a smooth face with a light top-left and a deep bottom-right rim. */
+function polishedStone(palette: Palette): Pixel {
+  return (x, y) => {
+    if (x === 0 || y === 0) return palette.light;
+    if (x === LAST || y === LAST) return palette.deep;
+    return hash(x, y, 71) % 13 === 0 ? palette.light : palette.mid;
+  };
+}
+
+/** Bricks: four courses with deep mortar lines and joints staggered every other course. */
+function bricks(palette: Palette): Pixel {
+  return (x, y) => {
+    const course = Math.floor(y / 4);
+    if (y % 4 === 3) return palette.deep;
+    if ((x + (course % 2) * 4) % 8 === 7) return palette.deep;
+    if (y % 4 === 0) return palette.light;
+    return hash(x, y, 81) % 7 === 0 ? palette.light : palette.mid;
+  };
+}
+
+/** A pillar's side: dark edges and two light flutes running from top to bottom. */
+function pillarSide(palette: Palette): Pixel {
+  return (x, y) => {
+    if (x === 0 || x === LAST) return palette.deep;
+    if (x === 4 || x === 11) return palette.light;
+    if (x === 5 || x === 12) return palette.deep;
+    return hash(x, y, 91) % 11 === 0 ? palette.light : palette.mid;
+  };
+}
+
+/** A pillar's end: a deep rim and an inner ring around a smooth centre. */
+function pillarTop(palette: Palette): Pixel {
+  return (x, y) => {
+    const ring = Math.min(x, y, LAST - x, LAST - y);
+    if (ring === 0) return palette.deep;
+    if (ring === 3) return palette.light;
+    if (ring === 4) return palette.deep;
+    return palette.mid;
+  };
+}
+
 /**
  * One cuboid of an entity model as it unwraps onto its texture (vanilla box UV): the texture
  * offset `u`, `v` and the box's width, height and depth in pixels.
@@ -1197,6 +1396,21 @@ const PATTERNS: Readonly<Record<PlaceholderPattern, (palette: Palette) => Pixel>
   boomerang: maskPattern(BOOMERANG),
   flask: maskPattern(FLASK),
   effect_icon: effectIcon,
+  bark,
+  log_top: logTop(true),
+  stripped_log: strippedLog,
+  stripped_log_top: logTop(false),
+  planks,
+  door_top: door(false),
+  door_bottom: door(true),
+  trapdoor,
+  leaves,
+  sapling,
+  stone,
+  polished_stone: polishedStone,
+  bricks,
+  pillar_side: pillarSide,
+  pillar_top: pillarTop,
 };
 
 /**

@@ -19,6 +19,7 @@ import {
   placeholderSkinPng,
   type Rgb,
 } from '../assets/png';
+import { decodePngDataUrl } from './parameters';
 
 /** Element kind ids used by the library's bundles. */
 export const KINDS = Object.freeze({
@@ -126,6 +127,8 @@ export const COLOURS = Object.freeze({
   violet: [128, 64, 176] as Rgb,
   slate: [96, 104, 120] as Rgb,
   frost: [214, 226, 238] as Rgb,
+  /** Light brown wood, the Wood set's default (ADR 0069 D2). */
+  wood: [164, 116, 68] as Rgb,
 });
 
 /** Joins a namespace and a path into a resource location. */
@@ -164,6 +167,26 @@ export function texture(
       ...(accent === undefined ? {} : { accent }),
     }),
   };
+}
+
+/**
+ * A block texture at `textures/<path>.png` of `namespace` from an `image` parameter's value
+ * (ADR 0069 D2): the picked PNG unchanged when it is square, else the generated placeholder of
+ * `pattern` in `colour`. A non-square picture would be read as an animation strip, so it keeps
+ * the placeholder.
+ */
+export function pictureTexture(
+  namespace: string,
+  path: string,
+  picked: string | null,
+  pattern: PlaceholderPattern,
+  colour: Rgb,
+): ContentBundleAsset {
+  const decoded = picked === null ? null : decodePngDataUrl(picked);
+  if (decoded !== null && decoded.width === decoded.height) {
+    return { namespace, path: `textures/${path}.png`, bytes: decoded.bytes };
+  }
+  return texture(namespace, path, pattern, colour);
 }
 
 /**

@@ -34,6 +34,8 @@ const STARTER_IDS = [
   'custom-sword',
   'gear-set',
   'simple-block',
+  'wood-set',
+  'stone-set',
   'food',
   'weapon',
   'consumable',
@@ -218,7 +220,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the thirty-two starters in order', () => {
+  it('lists the thirty-four starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -228,7 +230,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(28).fill('content'),
+      ...Array<string>(30).fill('content'),
     ]);
   });
 
@@ -849,6 +851,7 @@ describe('structure and worldgen content', () => {
   it('covers the six worldgen starters, the 19 structure and worldgen examples and the generating ores', () => {
     expect(worldgenEntries.map((entry) => entry.id)).toEqual([
       'custom_ore',
+      'wood-set',
       'dimension',
       'custom_biome',
       'jigsaw_structure',
@@ -867,6 +870,12 @@ describe('structure and worldgen content', () => {
     for (const entry of worldgenEntries) {
       const bundle = build(entry, 'other_ns');
       const ids = new Set<string>(bundle.elements.map((element) => element.id));
+      // A block type's `textures` name texture files of the bundle (ADR 0067 D7).
+      for (const asset of bundle.assets) {
+        ids.add(
+          `${asset.namespace}:${asset.path.replace(/^textures\//, '').replace(/\.png$/, '')}`,
+        );
+      }
       for (const element of bundle.elements) {
         if (element.kind === 'minecraft:lang' || element.kind === 'minecraft:pack_mcmeta') continue;
         for (const { key, text } of strings(element.data)) {

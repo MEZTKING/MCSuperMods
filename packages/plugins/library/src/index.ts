@@ -15,7 +15,8 @@
  *   (ADR 0040) name, colour and tune the content; the defaults build the ruby content.
  * - Creator flows (ADR 0043) are starters with `creator`: Gear set, Simple block, Food,
  *   Scripted behaviour, Custom ore and Custom mob, (ADR 0044) Weapon, Consumable, Totem,
- *   Enchantment, Painting and Music disc, and (ADRs 0055, 0056) Status effect and Throwable.
+ *   Enchantment, Painting and Music disc, (ADRs 0055, 0056) Status effect and Throwable, and
+ *   (ADR 0069) Wood set and Stone set.
  * - The Scripted ore starter adds three runtime scripts to the Custom ore starter's content
  *   (Phase 6, ADRs 0031 and 0032; scripts need the Fabric mod jar export and are not part of
  *   the Java project export).
@@ -92,12 +93,16 @@ export {
   SCRIPTED_ITEM_PARAMETERS,
   SIMPLE_BLOCK_PARAMETERS,
   STATUS_EFFECT_PARAMETERS,
+  STONE_SET_MEMBERS,
+  STONE_SET_PARAMETERS,
   scriptedItemIds,
   scriptedOreIds,
   THROWABLE_PARAMETERS,
   TOTEM_PARAMETERS,
   WEAPON_PARAMETERS,
   WEAPON_TYPES,
+  WOOD_SET_MEMBERS,
+  WOOD_SET_PARAMETERS,
 } from './starters/index';
 
 const plugin: Readonly<Plugin> = definePlugin({

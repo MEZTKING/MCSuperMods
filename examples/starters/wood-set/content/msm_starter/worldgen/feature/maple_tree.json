@@ -1,0 +1,40 @@
+{
+  "data": {
+    "below_trunk_provider": "minecraft:soil_beneath_tree",
+    "decorators": [],
+    "foliage_placer": {
+      "height": 3,
+      "offset": 0,
+      "radius": 2,
+      "type": "minecraft:blob_foliage_placer"
+    },
+    "foliage_provider": {
+      "id": "msm_starter:maple_leaves",
+      "properties": {
+        "distance": "7",
+        "persistent": "false"
+      }
+    },
+    "ignore_vines": true,
+    "minimum_size": {
+      "type": "minecraft:two_layers_feature_size"
+    },
+    "trunk_placer": {
+      "base_height": 4,
+      "height_rand_a": 2,
+      "height_rand_b": 0,
+      "type": "minecraft:straight_trunk_placer"
+    },
+    "trunk_provider": {
+      "id": "msm_starter:maple_log"
+    },
+    "type": "minecraft:tree"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:maple_tree",
+  "kind": "minecraft:worldgen/feature",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The maple tree: a configured tree feature of the maple log and leaves (straight, as an oak). The leaves are placed with distance 7 and persistent false, so they decay once the log is cut. Open it in the Tree Studio to change the trunk and foliage shapes."
+  }
+}

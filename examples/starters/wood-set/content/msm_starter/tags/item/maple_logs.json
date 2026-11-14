@@ -1,0 +1,17 @@
+{
+  "data": {
+    "values": [
+      "msm_starter:maple_log",
+      "msm_starter:maple_wood",
+      "msm_starter:stripped_maple_log",
+      "msm_starter:stripped_maple_wood"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:maple_logs",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The maple logs as items, as vanilla's #minecraft:oak_logs: the planks recipe takes any of them."
+  }
+}
