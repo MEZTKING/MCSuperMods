@@ -135,6 +135,7 @@ import {
   type SessionReferences,
 } from './references';
 import {
+  dataRegistryIds,
   loadSchemaContext,
   outputKindFor,
   projectRegistryIds,
@@ -167,6 +168,12 @@ import {
   runValidator,
   validatorsFor,
 } from './validator-problems';
+import {
+  MOD_ONLY_FUNCTION,
+  MOD_ONLY_REFERENCE,
+  modOnlyIdsOf,
+  vanillaSafeExporter,
+} from './vanilla-pack-safety';
 
 /** Everything the UI renders from the session. Replaced, never mutated. */
 export interface SessionSnapshot {
@@ -643,6 +650,13 @@ export const SessionProblemCodes = {
    * sound event (error; the `{ "sound_id": ... }` form names it).
    */
   unregisteredSoundEvent: UNREGISTERED_SOUND_EVENT,
+  /**
+   * A vanilla data pack file left out because it names an id or `#tag` only the Fabric mod
+   * jar provides (warning, ADR 0066).
+   */
+  modOnlyReference: MOD_ONLY_REFERENCE,
+  /** A vanilla data pack function that names mod-only content (warning, ADR 0066). */
+  modOnlyFunction: MOD_ONLY_FUNCTION,
 } as const;
 
 /**
@@ -2451,16 +2465,52 @@ export class ProjectSession {
     const sink = createZipSink();
     // ADR 0063 D6 and finding P8: a brewing recipe naming a potion the game does not know
     // stops the whole data pack from loading, so vanilla packs leave potions out entirely.
+    // ADR 0066: files naming ids only the mod jar registers stop a vanilla data pack loading,
+    // so the data pack leaves them out, makes tag entries optional and warns.
     const { report, project, target } = await this.#runPipeline(
       pack === 'data' ? dataPackExporter : resourcePackExporter,
       sink,
       undefined,
       withoutPotions,
+      pack === 'data'
+        ? (exporter, full, lowered, facts) => this.#vanillaSafe(exporter, full, lowered, facts)
+        : undefined,
     );
     const fileName = packFileName(project.name, target, pack);
     const warned = pack === 'data' ? withPotionNeedsJar(report, project) : report;
     if (!warned.ok) return { report: warned, fileName };
     return { report: warned, fileName, data: sink.finish() };
+  }
+
+  /**
+   * The vanilla data pack exporter made safe to load (ADR 0066): `exporter` wrapped with
+   * {@link vanillaSafeExporter} over the mod-only ids of `project` (the whole project, potions
+   * included), attributing files to the elements of `lowered`; `exporter` itself when the
+   * project has no mod-only ids.
+   */
+  async #vanillaSafe(
+    exporter: Exporter,
+    project: Project,
+    lowered: Project,
+    target: Target,
+  ): Promise<Exporter> {
+    const modOnly = modOnlyIdsOf(dataRegistryIds(project, this.registry));
+    if (modOnly.size === 0) return exporter;
+    const owners = new Map<string, ResourceLocation>();
+    for (const element of projectElements(lowered)) {
+      const kind = this.registry.get(element.kind);
+      if (kind === undefined) continue;
+      try {
+        for (const file of await kind.lower(element, target)) {
+          if (file.layer === 'datapack' && !owners.has(file.path)) {
+            owners.set(file.path, element.id);
+          }
+        }
+      } catch {
+        // The export reports the lowering failure itself.
+      }
+    }
+    return vanillaSafeExporter(exporter, modOnly, (path) => owners.get(path));
   }
 
   /**
@@ -2472,6 +2522,12 @@ export class ProjectSession {
     sink: OutputSink,
     options?: Record<string, Json>,
     exported: (project: Project) => Project = (project) => project,
+    prepare?: (
+      exporter: Exporter,
+      project: Project,
+      lowered: Project,
+      target: Target,
+    ) => Promise<Exporter>,
   ): Promise<{ report: ExportReport; project: Project; target: Target }> {
     const stack = this.#requireStack();
     await this.flushValidation();
@@ -2479,6 +2535,8 @@ export class ProjectSession {
     const project = stack.state;
     const lowered = exported(project);
     const context = await this.schemas();
+    const packager =
+      prepare === undefined ? exporter : await prepare(exporter, project, lowered, context.target);
     const info = await this.#platform.app.info();
     const validateText = this.#textValidator(project, context.target);
     const report = await runExport({
@@ -2494,7 +2552,7 @@ export class ProjectSession {
         registries === undefined
           ? problems
           : rewriteSoundEventProblems(problems, outputKindFor(file) ?? '', data, registries),
-      exporter,
+      exporter: packager,
       sink,
       readAsset: (namespace, path) => this.readAsset(namespace, path),
       meta: { msmVersion: info.version, plugins: [...project.plugins] },

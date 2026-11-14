@@ -21,6 +21,7 @@
     "src/renderer/src/session/validator-problems.ts",
     "src/renderer/src/session/scripting-problems.ts",
     "src/renderer/src/session/texture-layers.ts",
+    "src/renderer/src/session/vanilla-pack-safety.ts",
     "src/renderer/src/plugins",
     "src/renderer/src/changeset",
     "src/renderer/src/modpacks",

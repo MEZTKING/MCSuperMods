@@ -338,14 +338,19 @@ describe('AI helper scenario: the ruby tools mod (build mode)', () => {
     expect(lang['item.ruby.ruby_sword']).toBe('Ruby Sword');
     expect(Object.keys(dataZip ?? {})).toEqual(
       expect.arrayContaining([
-        'data/ruby/recipe/ruby_pickaxe_from_rubies.json',
-        'data/ruby/loot_table/blocks/ruby_block.json',
         // The ore generation's worldgen files.
         'data/ruby/worldgen/feature/ore_ruby.json',
         'data/ruby/worldgen/placed_feature/ore_ruby_placed.json',
       ]),
     );
+    // ADR 0066: files naming the mod's items are only in the mod jar.
+    const modOnlyFiles = [
+      'data/ruby/recipe/ruby_pickaxe_from_rubies.json',
+      'data/ruby/loot_table/blocks/ruby_block.json',
+    ];
+    for (const path of modOnlyFiles) expect(Object.keys(dataZip ?? {})).not.toContain(path);
     const modEntries = Object.keys(modJar ?? {});
+    expect(modEntries).toEqual(expect.arrayContaining(modOnlyFiles));
     expect(modEntries.some((path) => path.startsWith('msm/ruby/'))).toBe(true);
     expect(modEntries).toContain('fabric.mod.json');
 

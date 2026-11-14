@@ -187,13 +187,17 @@ describe('Creator scenario: Gear set', () => {
     );
     expect(Object.keys(dataZip ?? {})).toEqual(
       expect.arrayContaining([
-        `data/${NAMESPACE}/recipe/ruby_sword_from_ruby.json`,
         'data/minecraft/tags/item/swords.json',
         'data/minecraft/tags/item/head_armor.json',
       ]),
     );
+    // ADR 0066: a recipe naming the mod's items is only in the mod jar.
+    expect(Object.keys(dataZip ?? {})).not.toContain(
+      `data/${NAMESPACE}/recipe/ruby_sword_from_ruby.json`,
+    );
     expect(Object.keys(modJar ?? {})).toEqual(
       expect.arrayContaining([
+        `data/${NAMESPACE}/recipe/ruby_sword_from_ruby.json`,
         'fabric.mod.json',
         `msm/${NAMESPACE}/item/ruby_helmet.json`,
         `msm/${NAMESPACE}/item/ruby_sword.json`,
