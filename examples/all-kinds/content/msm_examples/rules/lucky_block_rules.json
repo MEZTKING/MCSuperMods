@@ -1,0 +1,125 @@
+{
+  "data": {
+    "counters": [
+      {
+        "name": "lucky_blocks",
+        "scope": "player",
+        "start": 0
+      }
+    ],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "amount": 1,
+            "counter": "lucky_blocks",
+            "scope": "player",
+            "step": "add_to_counter"
+          },
+          {
+            "conditions": [
+              {
+                "condition": "chance",
+                "percent": 60
+              }
+            ],
+            "do": [
+              {
+                "count": {
+                  "max": 3,
+                  "min": 1,
+                  "value": "random"
+                },
+                "item": "msm_examples:lucky_coin",
+                "step": "drop_item"
+              },
+              {
+                "sound": "minecraft:entity.player.levelup",
+                "step": "play_sound",
+                "where": "player"
+              },
+              {
+                "step": "show_action_bar",
+                "text": [
+                  "Lucky!"
+                ]
+              }
+            ],
+            "else": [
+              {
+                "count": 1,
+                "mob": "minecraft:silverfish",
+                "step": "spawn_mob"
+              },
+              {
+                "step": "show_action_bar",
+                "text": [
+                  "Unlucky..."
+                ]
+              }
+            ],
+            "match": "all",
+            "step": "if"
+          },
+          {
+            "step": "show_message",
+            "text": [
+              "Lucky blocks opened: ",
+              {
+                "counter": "lucky_blocks",
+                "scope": "player",
+                "value": "counter"
+              }
+            ]
+          }
+        ],
+        "key": "open_lucky_block",
+        "name": "Open a lucky block",
+        "when": {
+          "subject": "msm_examples:lucky_block",
+          "trigger": "block_broken"
+        }
+      },
+      {
+        "do": [
+          {
+            "count": 1,
+            "item": "msm_examples:lucky_coin",
+            "step": "take_item"
+          },
+          {
+            "effect": "minecraft:luck",
+            "seconds": 60,
+            "step": "give_effect"
+          },
+          {
+            "sound": "minecraft:block.amethyst_block.chime",
+            "step": "play_sound",
+            "where": "player"
+          }
+        ],
+        "key": "spend_coin",
+        "name": "Spend a lucky coin",
+        "when": {
+          "options": {
+            "cooldown_seconds": 1
+          },
+          "subject": "msm_examples:lucky_coin",
+          "trigger": "item_used"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:lucky_block_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A rule book: each rule says when something happens, what must be true and what to do, with no code. The first rule runs when a player breaks msm_examples:lucky_block: it adds one to the player's counter lucky_blocks, then with a 60 per cent chance drops a random number of coins, from one to three, and otherwise spawns a silverfish. The counter is saved with the world, one value per player, and the chat shows it after each block. The second rule runs when a player uses msm_examples:lucky_coin: it takes the coin and gives Luck for a minute. On export the book becomes events on the block and the coin plus a generated script, so it needs the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "rules"
+    ]
+  }
+}

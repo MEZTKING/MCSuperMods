@@ -100,7 +100,7 @@ function mob(input: MobInput): ContentBundle {
   return { elements, assets };
 }
 
-interface PresetMobInput {
+export interface PresetMobInput {
   namespace: string;
   /** The entity's path; the model is `entity/<name>`, the animations `entity/<name>_animations`. */
   name: string;
@@ -120,7 +120,7 @@ interface PresetMobInput {
  * A complete mob on a preset model (ADR 0073 D1): the entity with a spawn egg, the preset's
  * geo model and animation set, its skin, its variants' skins and the egg texture.
  */
-function presetMob(input: PresetMobInput): ContentBundle {
+export function presetMob(input: PresetMobInput): ContentBundle {
   const { namespace, name, preset } = input;
   const scale = input.scale ?? 1;
   const model = rl(namespace, `entity/${name}`);

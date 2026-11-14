@@ -1,0 +1,21 @@
+{
+  "data": {
+    "creative_tab": "minecraft:ingredients",
+    "display_name": "Lucky Coin",
+    "format": 1,
+    "max_stack_size": 64,
+    "model": "msm_examples:item/lucky_coin",
+    "rarity": "uncommon"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:lucky_coin",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The reward of the lucky block. The rule book adds the use event (msm:on_use) on export: using a coin spends it for a minute of Luck.",
+    "tags": [
+      "example",
+      "rules"
+    ]
+  }
+}

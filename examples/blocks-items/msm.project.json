@@ -13,7 +13,8 @@
     "msm.blocks-items",
     "msm.entities",
     "msm.models-anim",
-    "msm.scripting"
+    "msm.scripting",
+    "msm.rules"
   ],
   "settings": {},
   "targets": [

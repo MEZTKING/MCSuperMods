@@ -26,6 +26,7 @@
     "@msm/plugin-library": "workspace:*",
     "@msm/plugin-models-anim": "workspace:*",
     "@msm/plugin-resourcepack": "workspace:*",
+    "@msm/plugin-rules": "workspace:*",
     "@msm/plugin-scripting": "workspace:*",
     "@msm/plugin-structures": "workspace:*",
     "@msm/plugin-worldgen": "workspace:*",

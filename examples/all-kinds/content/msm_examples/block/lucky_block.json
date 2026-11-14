@@ -1,0 +1,28 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.5,
+        "resistance": 0.5
+      }
+    },
+    "display_name": "Lucky Block",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "model": "msm_examples:block/lucky_block",
+    "sound_type": "amethyst"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:lucky_block",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The lucky block itself. It has no loot of its own (no loot field), so breaking it drops only what the rule book decides. The book adds the break event (msm:on_break) when the project is exported.",
+    "tags": [
+      "example",
+      "rules"
+    ]
+  }
+}

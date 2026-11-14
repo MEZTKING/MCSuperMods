@@ -1,0 +1,81 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "do": [
+              {
+                "effect": "minecraft:glowing",
+                "seconds": 6,
+                "step": "give_effect"
+              },
+              {
+                "step": "show_action_bar",
+                "text": [
+                  "The guard is watching you."
+                ]
+              }
+            ],
+            "radius": 12,
+            "step": "for_each_player"
+          },
+          {
+            "count": 5,
+            "particle": "minecraft:end_rod",
+            "spread": 0.4,
+            "step": "spawn_particles",
+            "where": "here"
+          }
+        ],
+        "key": "watch",
+        "name": "Watch the players nearby",
+        "when": {
+          "options": {
+            "interval_seconds": 5
+          },
+          "subject": "msm_examples:guard",
+          "trigger": "mob_every"
+        }
+      },
+      {
+        "do": [
+          {
+            "sound": "minecraft:entity.villager.no",
+            "step": "play_sound",
+            "where": "here"
+          },
+          {
+            "step": "show_message",
+            "text": [
+              "The guard calls for help!"
+            ],
+            "who": {
+              "radius": 24,
+              "who": "players_nearby"
+            }
+          }
+        ],
+        "key": "call_for_help",
+        "name": "Call for help",
+        "when": {
+          "subject": "msm_examples:guard",
+          "trigger": "mob_hurt"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:guard_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A rule book for msm_examples:guard. The first rule runs every five seconds while a guard is alive: for each player within 12 blocks of it, it gives Glowing for six seconds and shows a warning above the hotbar, then sparkles at the guard. The second rule runs when a guard is hurt: it plays a sound at the guard and tells every player within 24 blocks in the chat. On export the book becomes events on the mob plus a generated script, so it needs the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "rules"
+    ]
+  }
+}

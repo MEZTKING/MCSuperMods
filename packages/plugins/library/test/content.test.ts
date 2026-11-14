@@ -24,6 +24,7 @@ import {
   placeholderPng,
   placeholderSkinPng,
   presetSkinPng,
+  rulesBehaviourExamples,
   STARTERS_CATEGORY,
   scriptBehaviourExamples,
   starterExamples,
@@ -180,6 +181,7 @@ const KIND_IDS = [
   'msm:geo_model',
   'msm:animation',
   'msm:script',
+  'msm:rules',
 ];
 
 const entries: readonly (ProjectStarter | ExampleProject)[] = [
@@ -640,8 +642,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 96 per-kind examples, one per built-in kind, 32 behaviour examples and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(96);
+  it('has 97 per-kind examples, one per built-in kind, 33 behaviour examples and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(97);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -685,7 +687,10 @@ describe('examples', () => {
       'example_msm_teleport_staff',
       'example_msm_boss_fight_bar',
     ]);
-    expect(libraryExamples).toHaveLength(132);
+    expect(rulesBehaviourExamples.map((example) => example.id)).toEqual([
+      'example_msm_rules_guard_mob',
+    ]);
+    expect(libraryExamples).toHaveLength(134);
   });
 
   it('reuses the starter builders for the starter projects', () => {

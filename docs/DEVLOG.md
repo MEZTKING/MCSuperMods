@@ -4374,3 +4374,18 @@ Decisions
 
 Next
 - B373/B379: the files and states in the B374 notes; B381: CI client GameTest step on both versions; user's in-game check on Windows with Prism: first launch, real stop and jar unlock, restart round trip, resource reload on screen.
+
+## 2026-11-14 — executor — B377 Library: rule examples and the library test
+
+What
+- New `packages/plugins/library/src/examples/rules.ts` (ADR 0082 D11), category "Rules", both `supports: hasFabric`: "Rules: a lucky block" (`example_msm_rules`, the per-kind example of `msm:rules`: the Lucky Block, the Lucky Coin, their models and placeholder textures, and the book `lucky_block_rules` with a player counter `lucky_blocks`, a `block_broken` rule that adds to it, then with a 60 per cent chance drops one to three coins (a random count) and otherwise spawns a silverfish, and shows the count; an `item_used` rule on the coin that takes it and gives Luck) and "Rules: a guard mob" (`example_msm_rules_guard_mob`, a rules behaviour example: the Guard on the biped preset and the book `guard_rules` with a `mob_every` rule every 5 s that runs `for_each_player` within 12 blocks (Glowing and an action bar warning) and a `mob_hurt` rule that warns players within 24 blocks). Registered in `examples/index.ts` (`rulesKindExamples` after the scripts in `kindExamples`, `rulesBehaviourExamples` after the script behaviour examples) and exported from the library's index. `presetMob` and `PresetMobInput` in `examples/entities.ts` are now exported for the guard.
+- `packages/exporters/test/library.test.ts` registers `@msm/plugin-rules` (after scripting, as the app) and, as the app's session, validates and exports the expanded project (`expandProject` with every plugin; zero expansion problems; `scripting.unknown-handler` warnings for handlers a generated rule script defines are dropped), also in the vanilla server data pack loop. Projects with rule books have no `rules.*` or `scripting.*` warnings; new tests: both Rules examples offered on every target with Fabric, and each compiles with zero validator warnings, its generated script parses and type-checks against the typings, the jar holds `msm/<ns>/script/rules/<book>.js` and each rule's event, and the vanilla packs hold no `msm/` or script file. New mirror folder `examples/rules/` (both examples); `all-kinds/` gains the lucky block; every mirror's `msm.project.json` lists `msm.rules`; `examples/README.md` updated. `vi.setConfig({ testTimeout: 60_000 })` in that file.
+- `@msm/plugin-rules` is a dev dependency of `@msm/exporters` (package.json, tsconfig reference, `tools/check-deps/layers.json`).
+- Counts: 97 per-kind examples, 33 behaviour examples (1 rules), 134 examples in all. Library plugin 11 files, 560 tests; exporters 33 files, 1220 passed and 79 skipped. The vanilla pack run (`MSM_LIBRARY_PACKS_OUT`) writes no pack for the rule examples on 26.3 or 26.4: their data packs hold nothing but `pack.mcmeta`. `pnpm lint`, `pnpm typecheck` pass; `pnpm build` and `dist:dir`, then check-size within budget, app.asar 27.3 MB.
+
+Decisions
+- The lucky block is the per-kind example of `msm:rules` (the per-kind test needs one per registered kind); the guard mob is a rules behaviour example, and both are mirrored together in `examples/rules/`.
+- The lucky block has no loot, so its drops come from the book only. No trigger used needs a component the subject lacks.
+
+Next
+- B380: the fixture can reuse these two books. B382 and B383: the example ids and titles above.

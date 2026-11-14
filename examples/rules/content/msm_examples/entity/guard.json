@@ -1,0 +1,59 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 0.6,
+            "type": "wander"
+          },
+          {
+            "distance": 12,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/guard_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_examples:entity/guard",
+        "renderer": "auto",
+        "shoot": "shoot",
+        "sit": "sit",
+        "texture": "msm_examples:entity/guard",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 30
+      },
+      "msm:movement": {
+        "speed": 0.2
+      }
+    },
+    "display_name": "Guard",
+    "format": 1,
+    "size": {
+      "height": 1.95,
+      "width": 0.6
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/guard_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:guard",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A calm guard that wanders slowly and watches players. It has no attack and no events of its own: the rule book adds the tick and hurt events (msm:on_tick, msm:on_hurt) on export. It does not spawn by itself; use its spawn egg.",
+    "tags": [
+      "example",
+      "rules"
+    ]
+  }
+}

@@ -70,6 +70,8 @@ export {
   entityBehaviourExamples,
   kindExamples,
   libraryExamples,
+  rulesBehaviourExamples,
+  rulesKindExamples,
   STARTERS_CATEGORY,
   scriptBehaviourExamples,
   starterExamples,

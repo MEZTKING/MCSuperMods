@@ -574,6 +574,9 @@ importers:
       '@msm/plugin-resourcepack':
         specifier: workspace:*
         version: link:../plugins/resourcepack
+      '@msm/plugin-rules':
+        specifier: workspace:*
+        version: link:../plugins/rules
       '@msm/plugin-scripting':
         specifier: workspace:*
         version: link:../plugins/scripting

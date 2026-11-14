@@ -2,8 +2,11 @@
  * Cross-plugin check of the library's starters and examples (ADR 0020, plan D6): every
  * bundle is built into a project the way the app's session does it (`newProject`), saved,
  * reloaded with the real built-in plugins (resource pack, data pack, structures, worldgen,
- * blocks and items, entities, models and animations, scripting, library), validated element by element
- * with the project's own registry ids, and exported as a resource pack and a data pack with
+ * blocks and items, entities, models and animations, scripting, rules, library), validated element
+ * by element with the project's own registry ids, expanded with every plugin's project expanders
+ * as the app's session does (ADR 0082 D9: rule books become events on their subjects and a
+ * generated script), and the expanded copy validated by the plugin validators and exported as a
+ * resource pack and a data pack with
  * every function checked by the offline mcfunction service; projects with `msm:` elements are
  * also exported as a Fabric mod jar (separate runtime, so no runtime or GeckoLib jar is
  * needed; the Custom mob starter is also exported with stub runtime and GeckoLib jars
@@ -15,8 +18,9 @@
  * The `examples/` folder at the repository root mirrors the library as ordinary MSM
  * projects: `examples/all-kinds/` (every per-kind example in one project),
  * `examples/blocks-items/` (the blocks and items behaviour examples), `examples/entities/`
- * (the entity behaviour examples), `examples/scripts/` (the script behaviour examples) and
- * `examples/starters/<starter id>/` (each content starter). It is a golden: set
+ * (the entity behaviour examples), `examples/scripts/` (the script behaviour examples),
+ * `examples/rules/` (the Rules examples, ADR 0082 D11) and `examples/starters/<starter id>/`
+ * (each content starter). It is a golden: set
  * `UPDATE_GOLDENS=1` to rewrite it from the current library.
  */
 import { readFileSync } from 'node:fs';
@@ -29,6 +33,7 @@ import {
   createEmptyProject,
   createMemoryFileSystem,
   ElementKindRegistry,
+  expandProject,
   isProjectRelativePath,
   loadProject,
   type MemoryFileSystem,
@@ -65,11 +70,17 @@ import libraryPlugin, {
   kindExamples,
   libraryExamples,
   libraryStarters,
+  rulesBehaviourExamples,
+  rulesKindExamples,
   scriptBehaviourExamples,
 } from '@msm/plugin-library';
 import modelsAnimPlugin from '@msm/plugin-models-anim';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
-import scriptingPlugin, { MSM_RUNTIME_TYPINGS } from '@msm/plugin-scripting';
+import rulesPlugin, { generatedScript, RULES_KIND, ruleScriptPath } from '@msm/plugin-rules';
+import scriptingPlugin, {
+  findHandlerDefinitions,
+  MSM_RUNTIME_TYPINGS,
+} from '@msm/plugin-scripting';
 import structuresPlugin from '@msm/plugin-structures';
 import worldgenPlugin from '@msm/plugin-worldgen';
 import {
@@ -93,7 +104,7 @@ import {
   targetById,
 } from '@msm/targets';
 import ts from 'typescript';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { nestedGeckolibPath } from '../src/fabric-content-jar/index';
 import {
   createFabricContentJarExporter,
@@ -113,6 +124,9 @@ import { selectedTarget } from './selected-target';
 
 const update = process.env.UPDATE_GOLDENS === '1';
 
+// Exports of whole projects outgrow vitest's 5 s default under load.
+vi.setConfig({ testTimeout: 60_000 });
+
 const here = dirname(fileURLToPath(import.meta.url));
 const examplesRoot = join(here, '..', '..', '..', 'examples');
 
@@ -126,6 +140,7 @@ const PLUGINS: readonly Plugin[] = [
   entitiesPlugin,
   modelsAnimPlugin,
   scriptingPlugin,
+  rulesPlugin,
   libraryPlugin,
 ];
 const PACK_KIND = 'minecraft:pack_mcmeta';
@@ -1333,21 +1348,93 @@ const hasMsmElements = (project: Project): boolean =>
     namespace.elements.some((element) => element.kind.startsWith('msm:')),
   );
 
+/** Whether a project has a rule book (ADR 0082). */
+const hasRuleBooks = (project: Project): boolean =>
+  project.namespaces.some((namespace) =>
+    namespace.elements.some((element) => element.kind === RULES_KIND),
+  );
+
+/** The generated script lines of every rule book of an expanded project, by book id. */
+function ruleScripts(expanded: Project): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  for (const namespace of expanded.namespaces) {
+    for (const element of namespace.elements) {
+      if (element.kind !== RULES_KIND) continue;
+      const lines = generatedScript(element.data);
+      if (lines !== undefined) out.set(element.id, lines);
+    }
+  }
+  return out;
+}
+
 /**
- * Builds, reloads, validates and exports one project; expects zero problems throughout.
- * `jarFiles` is empty for a project without `msm:` elements.
+ * `problems` without the `scripting.unknown-handler` warnings for handlers a generated rule
+ * script defines, as the app's session drops them (`withoutRuleHandlerWarnings`): the scripting
+ * plugin looks for handlers in `msm:script` elements only.
+ */
+function withoutRuleHandlers(problems: readonly Problem[], expanded: Project): Problem[] {
+  const defined = new Set<string>();
+  for (const lines of ruleScripts(expanded).values()) {
+    for (const definition of findHandlerDefinitions(lines)) defined.add(definition.handler);
+  }
+  return problems.filter(
+    (problem) =>
+      problem.code !== 'scripting.unknown-handler' ||
+      ![...defined].some((handler) => problem.message.includes(`"${handler}"`)),
+  );
+}
+
+/**
+ * The project as the app's session lowers, validates and exports it (ADR 0082 D9): expanded by
+ * every plugin's project expanders in registration order (rule books become events on their
+ * subjects and a generated script on the book), with zero expansion problems.
+ */
+async function expanded(project: Project, target: TargetFacts): Promise<Project> {
+  const expansion = await expandProject(project, PLUGINS, target);
+  expect(expansion.problems).toEqual([]);
+  return expansion.project;
+}
+
+/**
+ * Builds, reloads, validates and exports one project; expects zero problems throughout. The
+ * plugin validators and the exports see the expanded project, as in the app. A project with
+ * rule books also has no rules or scripting warnings (ADR 0082 D11). `jarFiles` is empty for a
+ * project without `msm:` elements; `jarContents` holds the jar's files and `warnings` the
+ * validator warnings.
  */
 async function checkProject(
   bundle: TargetBundle,
   context: TargetContext,
   built: BuiltProject,
-): Promise<{ resourceFiles: string[]; dataFiles: string[]; jarFiles: string[] }> {
-  const project = await reload(built.fs);
-  const ids = projectRegistryIds(project);
+): Promise<{
+  resourceFiles: string[];
+  dataFiles: string[];
+  jarFiles: string[];
+  jarContents: Map<string, Uint8Array>;
+  expandedProject: Project;
+  warnings: Problem[];
+}> {
+  const saved = await reload(built.fs);
+  const ids = projectRegistryIds(saved);
   const registries = createRegistryIndex({ vanilla: context.vanilla, project: ids });
-  expect(elementProblems(project, context.schemaIndex, registries)).toEqual([]);
-  const validated = validatorProblems(project, bundle.target, registries);
+  expect(elementProblems(saved, context.schemaIndex, registries)).toEqual([]);
+  const project = await expanded(saved, bundle.target);
+  const validated = withoutRuleHandlers(
+    validatorProblems(project, bundle.target, registries),
+    project,
+  );
   expect(validated.filter((problem) => problem.severity === 'error')).toEqual([]);
+  if (hasRuleBooks(saved)) {
+    // Rule books warn about nothing either: no undeclared counters, script path clashes or
+    // handlers no script defines (ADR 0082 D11).
+    expect(
+      validated.filter(
+        (problem) =>
+          problem.severity !== 'info' &&
+          (problem.code.startsWith('rules.') || problem.code.startsWith('scripting.')),
+      ),
+    ).toEqual([]);
+  }
   const results: string[][] = [];
   for (const exporter of [resourcePackExporter, dataPackExporter]) {
     const report = await exportProblems(
@@ -1364,6 +1451,7 @@ async function checkProject(
     results.push(report.files);
   }
   let jarFiles: string[] = [];
+  let jarContents = new Map<string, Uint8Array>();
   if (hasMsmElements(project)) {
     const report = await exportProblems(
       bundle,
@@ -1378,8 +1466,16 @@ async function checkProject(
     expect(report.problems.filter((problem) => problem.severity !== 'info')).toEqual([]);
     expect(report.ok).toBe(true);
     jarFiles = report.files;
+    jarContents = report.contents;
   }
-  return { resourceFiles: results[0] ?? [], dataFiles: results[1] ?? [], jarFiles };
+  return {
+    resourceFiles: results[0] ?? [],
+    dataFiles: results[1] ?? [],
+    jarFiles,
+    jarContents,
+    expandedProject: project,
+    warnings: validated.filter((problem) => problem.severity === 'warning'),
+  };
 }
 
 // Mirror -------------------------------------------------------------------------------------
@@ -1435,6 +1531,17 @@ const MIRROR: readonly MirrorProject[] = [
         'msm_examples',
         scriptBehaviourExamples.map((example) =>
           buildEntry(example, 'msm_examples', 'MSM Script Examples'),
+        ),
+      ),
+  },
+  {
+    folder: 'rules',
+    build: () =>
+      buildProject(
+        'MSM Rules Examples',
+        'msm_examples',
+        [...rulesKindExamples, ...rulesBehaviourExamples].map((example) =>
+          buildEntry(example, 'msm_examples', 'MSM Rules Examples'),
         ),
       ),
   },
@@ -1679,6 +1786,63 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         expect(bundleData.elements.some((entry) => (entry.notes ?? '').length > 0)).toBe(true);
         const built = await buildProject('Library Test', 'demo', [bundleData]);
         await checkProject(bundle, context, built);
+      },
+    );
+
+    const ruleExamples = [...rulesKindExamples, ...rulesBehaviourExamples].filter((example) =>
+      supported(example, bundle.target),
+    );
+
+    it('offers both Rules examples on every target with Fabric (ADR 0082 D11)', () => {
+      expect(ruleExamples.map((example) => example.id)).toEqual(
+        bundle.target.fabric === undefined
+          ? []
+          : ['example_msm_rules', 'example_msm_rules_guard_mob'],
+      );
+    });
+
+    it.each(ruleExamples.map((example) => [example.id, example] as const))(
+      'Rules example %s compiles into events and a jar-only script (ADR 0082 D11)',
+      async (_exampleId, example) => {
+        const built = await buildProject('Library Test', 'demo', [
+          buildEntry(example, 'demo', 'Library Test', bundle.target),
+        ]);
+        const { resourceFiles, dataFiles, jarFiles, jarContents, expandedProject, warnings } =
+          await checkProject(bundle, context, built);
+        // Zero problems: no validator warnings either (ADR 0082 D11).
+        expect(warnings).toEqual([]);
+        const scripts = ruleScripts(expandedProject);
+        const books = expandedProject.namespaces
+          .flatMap((namespace) => namespace.elements)
+          .filter((element) => element.kind === RULES_KIND);
+        expect(books.length).toBeGreaterThan(0);
+        for (const book of books) {
+          // Every rule needs logic, so each book has a script, which parses and type-checks.
+          const lines = scripts.get(book.id);
+          expect(lines, book.id).toBeDefined();
+          const source = `${(lines ?? []).join('\n')}\n`;
+          expect(syntaxErrors(source), book.id).toEqual([]);
+          expect(typeCheck(source), book.id).toEqual([]);
+          // The content jar carries it transpiled (`.js`); the vanilla packs carry nothing of it.
+          const jarScript = ruleScriptPath(book.id).replace(/\.ts$/, '.js');
+          expect(jarFiles, book.id).toContain(jarScript);
+          // Each rule's subject has the rule's event in the jar.
+          const rules = (book.data as { rules: { when: { subject: string; trigger: string } }[] })
+            .rules;
+          for (const { when } of rules) {
+            const event = `${when.subject}_rules_${when.trigger}`;
+            const holders = [...jarContents.entries()].filter(
+              ([path, bytes]) =>
+                path.startsWith('msm/') &&
+                path.endsWith('.json') &&
+                utf8.decode(bytes).includes(`"${event}"`),
+            );
+            expect(holders.length, event).toBeGreaterThan(0);
+          }
+        }
+        for (const path of [...resourceFiles, ...dataFiles]) {
+          expect(path.startsWith('msm/') || path.includes('/script/'), path).toBe(false);
+        }
       },
     );
 
@@ -2592,11 +2756,13 @@ describe('vanilla server data packs', () => {
         // fields of the default target).
         if (entry.mirror === true && mod && bundle.target.id !== DEFAULT_TARGET) continue;
         const modOnly = mod ? modOnlyIdsFor(project) : new Map();
+        // The app exports the expanded project (ADR 0082 D9); rule books add only `msm` files.
+        const lowered = await expanded(project, bundle.target);
         const report = await exportProblems(
           bundle,
           context,
           built.fs,
-          mod ? withoutPotions(project) : project,
+          mod ? withoutPotions(lowered) : lowered,
           registries,
           ids,
           vanillaSafeExporter(dataPackExporter, modOnly),

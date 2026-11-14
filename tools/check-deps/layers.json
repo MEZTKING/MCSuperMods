@@ -13,6 +13,7 @@
     "@msm/plugin-library",
     "@msm/plugin-models-anim",
     "@msm/plugin-resourcepack",
+    "@msm/plugin-rules",
     "@msm/plugin-scripting",
     "@msm/plugin-structures",
     "@msm/plugin-worldgen"
