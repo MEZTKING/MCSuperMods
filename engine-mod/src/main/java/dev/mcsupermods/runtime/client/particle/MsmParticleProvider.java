@@ -19,7 +19,7 @@ import net.minecraft.util.RandomSource;
  * {@link ParticleLook.Spec} and the frames Fabric loaded for it from the particle description (the sprite set is read
  * at each spawn, so a resource reload is seen). It never throws: a type with no frames (no description, or every
  * picture missing) or a particle that cannot be made gives {@code null}, which vanilla skips, and one warning per type
- * (limit K10). B350 registers {@link #pending} for every project type through Fabric's
+ * (limit K10). {@code MsmRuntimeClient} registers {@link #pending} for every project type through Fabric's
  * {@link ParticleProviderRegistry}.
  */
 public final class MsmParticleProvider implements ParticleProvider<SimpleParticleType> {

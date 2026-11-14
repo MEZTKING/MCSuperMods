@@ -33,12 +33,12 @@ class ConformanceCorpusTest {
             "../packages/schemas/mcdoc/msm/conformance/definition"));
 
     /**
-     * Prefixes whose schema reached the corpus before the runtime's Codec: ADR 0080's {@code particle-} (B350 decodes
-     * it), {@code action-particle-} and {@code ambient-particles-} (B352). {@code container-} was decoded by B314,
-     * {@code machine-} by B316 and {@code portal-} by B334. Machine recipe files have their own corpus
+     * Prefixes whose schema reached the corpus before the runtime's Codec: ADR 0080's {@code action-particle-} and
+     * {@code ambient-particles-} (B352). {@code container-} was decoded by B314, {@code machine-} by B316,
+     * {@code portal-} by B334 and {@code particle-} by B350. Machine recipe files have their own corpus
      * ({@link MachineRecipeCodecTest}).
      */
-    private static final List<String> PENDING = List.of("particle-", "action-particle-", "ambient-particles-");
+    private static final List<String> PENDING = List.of("action-particle-", "ambient-particles-");
 
     private static boolean pending(String name) {
         return PENDING.stream().anyMatch(name::startsWith);
@@ -74,6 +74,7 @@ class ConformanceCorpusTest {
             new Kind("potion-", DefinitionParser::parsePotion),
             new Kind("biome-addition-", DefinitionParser::parseBiomeAddition),
             new Kind("loot-addition-", DefinitionParser::parseLootAddition),
+            new Kind("particle-", DefinitionParser::parseParticle),
             new Kind("block-item-components-", DefinitionParser::parseBlock),
             new Kind("trigger-item-", DefinitionParser::parseItem),
             new Kind("trigger-block-", DefinitionParser::parseBlock),

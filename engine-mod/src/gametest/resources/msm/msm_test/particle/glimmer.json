@@ -1,0 +1,7 @@
+{
+  "always_show": true,
+  "animation": "random",
+  "color": 11206655,
+  "format": 1,
+  "textures": ["minecraft:glitter_0", "minecraft:glitter_1", "minecraft:glitter_2"]
+}

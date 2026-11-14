@@ -1,0 +1,11 @@
+{
+  "destination": "minecraft:the_end",
+  "format": 1,
+  "frame": "minecraft:purpur_block",
+  "igniter": false,
+  "particles": {
+    "count": 2,
+    "type": "msm_test:glimmer"
+  },
+  "type": "portal"
+}

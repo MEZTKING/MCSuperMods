@@ -8,6 +8,9 @@
  * (the provider registered for every project type; it never throws). Written from ADR 0080 D1 and D4, never from a
  * vanilla particle class. Every member used is the same on 26.3 and 26.4-snapshot-7: nothing here constructs or reads
  * {@code SingleQuadParticle.Layer}'s constructors or accessors, {@code uvFlip}, {@code SpriteSet.size()},
- * {@code ParticleLimit} or {@code ParticleResources}. Registration and the definitions come with B350.
+ * {@code ParticleLimit} or {@code ParticleResources}. {@code registry.MsmParticles} registers the types from the
+ * definitions on both sides and builds each {@code ParticleLook.Spec} ({@code MsmParticles.spec}); only the client
+ * entrypoint {@code MsmRuntimeClient} names the provider, so a dedicated server never loads {@code MsmParticle} or
+ * {@code MsmParticleProvider}.
  */
 package dev.mcsupermods.runtime.client.particle;

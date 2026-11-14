@@ -28,7 +28,8 @@ public class MsmSpikeGameTest {
     @GameTest
     public void definitionsAreRegistered(GameTestHelper helper) {
         // msm_test/ ships deliberately broken files (MsmRuntimeGameTest, MsmGearGameTest, MsmBlockTypeGameTest,
-        // MsmContainerGameTest, MsmMachineGameTest, MsmPortalBlockGameTest's portal_bad_*); nothing else may fail,
+        // MsmContainerGameTest, MsmMachineGameTest, MsmPortalBlockGameTest's portal_bad_*, MsmParticleGameTest's
+        // particle_bad_* and msm/minecraft/particle/flame.json); nothing else may fail,
         // except mx_tame_on_mob (MsmMobBaseGameTest) and the missing-GeckoLib error of mx_geckolib_only without GeckoLib.
         helper.assertTrue(MsmRuntime.report().errors().stream()
                 .allMatch(e -> e.contains("partly_broken.json") || e.contains("future_format.json") || e.contains("armed_helmet.json")
@@ -36,6 +37,7 @@ public class MsmSpikeGameTest {
                         || e.contains("type_stairs_redstone.json") || e.contains("seeds_clash.json")
                         || e.contains("container_slab.json") || e.contains("container_bad_keep.json")
                         || e.contains("machine_both.json") || e.contains("machine_slab.json") || e.contains("/portal_bad_")
+                        || e.contains("/particle_bad_") || e.contains("msm/minecraft/particle/flame.json")
                         || e.contains("mx_tame_on_mob.json") || e.contains("needs the mod 'geckolib'")),
                 "load errors: " + MsmRuntime.report().errors());
         helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(ORE), "block " + ORE + " not registered");

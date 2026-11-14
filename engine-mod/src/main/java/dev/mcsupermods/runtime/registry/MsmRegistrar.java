@@ -113,6 +113,9 @@ public final class MsmRegistrar {
         }
         // Sound events before everything else (ADR 0057 D1): effects, items, events and entities resolve sound ids.
         List<Identifier> sounds = registerSounds(scanned.sounds());
+        // Particle types right after sound events (ADR 0080 D3): effects, leaves, portals and events name them.
+        List<Identifier> particles = MsmParticles.registerAll(scanned.definitions(), errors, warnings);
+        MsmRuntime.LOGGER.info("[{}] registered {} particle type(s)", MsmRuntime.MOD_ID, particles.size());
         // Effects first (ADR 0055 D3): items (consumables, death protection) resolve effect ids while registering.
         for (RawDefinition raw : scanned.definitions()) {
             if (!raw.kind().equals("effect")) {
@@ -217,7 +220,7 @@ public final class MsmRegistrar {
                 lootAdditions.size());
         checkPortalActions(errors);
         return new LoadReport(scanned.filesRead(), scanned.definitions(), List.copyOf(blocks), List.copyOf(items),
-                List.copyOf(entities), List.copyOf(effects), List.copyOf(potions), sounds, biomeAdditions, lootAdditions, List.copyOf(errors), List.copyOf(warnings));
+                List.copyOf(entities), List.copyOf(effects), List.copyOf(potions), sounds, particles, biomeAdditions, lootAdditions, List.copyOf(errors), List.copyOf(warnings));
     }
 
     /**

@@ -48,6 +48,7 @@ import net.minecraft.resources.Identifier;
  *   <li>Biome and loot additions (ADR 0060 D2, D3): closed throughout, so an unknown top-level key is an error, not a
  *       warning; they have no components and no events.</li>
  *   <li>Potions (ADR 0063 D2): closed throughout as the additions; they have no components and no events.</li>
+ *   <li>Particles (ADR 0080 D1, D3): closed throughout as potions; {@code lifetime.min} above {@code max} is an error.</li>
  * </ol>
  */
 public final class DefinitionParser {
@@ -206,6 +207,11 @@ public final class DefinitionParser {
     /** A potion (ADR 0063 D2): closed, so an editor field such as {@code brewing} is an error. */
     public static ParseResult<PotionDefinition> parsePotion(JsonElement json) {
         return parseClosed(json, PotionDefinition.CODEC);
+    }
+
+    /** A particle type (ADR 0080 D1, D3): closed, so an unknown key or a value out of range registers nothing. */
+    public static ParseResult<ParticleDefinition> parseParticle(JsonElement json) {
+        return parseClosed(json, ParticleDefinition.CODEC);
     }
 
     /** Format check, then a closed Codec: every problem is an error and nothing is applied. */

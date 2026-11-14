@@ -1,19 +1,23 @@
 package dev.mcsupermods.runtime.client;
 
 import dev.mcsupermods.runtime.MsmRuntime;
+import dev.mcsupermods.runtime.client.particle.MsmParticleProvider;
 import dev.mcsupermods.runtime.client.vanilla.MsmVanillaRenderer;
 import dev.mcsupermods.runtime.loader.BlockType;
 import dev.mcsupermods.runtime.registry.MsmEntityRegistrar;
+import dev.mcsupermods.runtime.registry.MsmParticles;
 import dev.mcsupermods.runtime.registry.MsmThrownItem;
 import dev.mcsupermods.runtime.registry.types.BlockTypes;
 import java.util.List;
 import java.util.Map;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.color.block.BlockTintSources;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -26,7 +30,9 @@ import net.minecraft.world.entity.Mob;
  * renderer {@link MsmVanillaRenderer} (ADR 0072 D1, D4). Tinted leaves
  * (ADR 0068 D6) register their tint with Fabric's {@link BlockColorRegistry}: vanilla's foliage, grass or dry foliage
  * colour of the biome, or a constant colour. This is the runtime's first client block hook; it is an in-game check (CI
- * runs no client).
+ * runs no client). Every project particle type (ADR 0080 D4) gets an {@link MsmParticleProvider} through Fabric's
+ * {@link ParticleProviderRegistry}; this entrypoint is the only place that names {@code MsmParticleProvider} (and
+ * through it {@code MsmParticle}), so a dedicated server never loads them.
  */
 public final class MsmRuntimeClient implements ClientModInitializer {
     @Override
@@ -37,6 +43,19 @@ public final class MsmRuntimeClient implements ClientModInitializer {
         }
         registerVanillaRenderers();
         BlockTypes.tintedLeaves().forEach((block, tint) -> BlockColorRegistry.register(List.of(tintSource(tint)), block));
+        registerParticleProviders();
+    }
+
+    /**
+     * One pending provider per project particle type (ADR 0080 D4): Fabric hands it the type's sprites from the
+     * description {@code assets/<ns>/particles/<path>.json}, and it draws with the definition's {@code ParticleLook.Spec}.
+     */
+    private static void registerParticleProviders() {
+        ParticleProviderRegistry registry = ParticleProviderRegistry.getInstance();
+        for (Map.Entry<Identifier, SimpleParticleType> entry : MsmParticles.types().entrySet()) {
+            registry.register(entry.getValue(), MsmParticleProvider.pending(entry.getKey(), MsmParticles.spec(entry.getKey())));
+        }
+        MsmRuntime.LOGGER.info("[{}] registered {} particle provider(s)", MsmRuntime.MOD_ID, MsmParticles.types().size());
     }
 
     /** Registers the vanilla renderer for every definition entity type that is not a geo body (ADR 0072 D4). */
