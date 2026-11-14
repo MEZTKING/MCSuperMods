@@ -4309,3 +4309,21 @@ Next
 - B375: embed `RuleCard` with `fixedSubject` inside a `RulesEnvContext` built by `makeRulesEnv`.
 - B376/B378: add `'very-easy'` to `UiMode`; provide `PlainProblemWordsContext`; reuse `ThingPicker` and `thingSections` for Home.
 - B371: the book's `sessionProblems` must carry the compile problems mapped to the book (pointer into the book) for the chips to show them.
+## 2026-11-14 — orchestrator — custom particles closed (B361)
+
+What
+- ADRs 0080 and 0081 keep Accepted (set at planning) and gain "Findings from implementation" from B346–B360: ADR 0080 takes the plan's fact table (F1–F23, with F13 corrected to 301 and 307 particle pictures, F18 confirmed on 26.4, F19 settled by the probe, F20 updated with the Mesa EGL route) and limits (K1–K16, with K4 "drawing is checked in CI, the look by eye" and K5 confirmed by parity); ADR 0081 records the Studio, section, flow, templates, the three examples, the client route and the D6 parity findings (ambient particles send no packet, `force` is the packet's override flag and `always_show` the type's `getOverrideLimiter()`, the ejected glimmer resolves `bubble`, leaves' `falling_particle` not covered).
+- ADR 0066: table rows for `dimension_type` and `timeline` (whole pack fails for an unknown particle; probed by B346 on both targets) and a findings line; ADR 0077 (P3 narrowed) and ADR 0074 (C18: one `BlockComponents` field left) gain a finding line each.
+- DESIGN §8 (Particle Studio, Ambient particles, Spawn particle kinds, Particle flow), §9 (particle facts, vanilla pack safety), §10 (registration and the client particle), §11 (component table row and the particle paragraph), §12 (Script API 1.3, particles in the eject, the sample in "Checked"), §16 (particle GameTests, the `ParticleLook` golden, the headless client route, the sample particles CI checks); still 19 H2 headings.
+- ROADMAP: add-on section "Custom particles" (B346–B361 ticked, the in-game check open, deferred work and follow-ups), Milestone Log row, B123 updated with the client route (the mob test itself stays open). Coverage audit: B14 closed, rows "Particle definitions" and "Particle types", L3, L13 (closed), L15 and L16 updated.
+- HANDOFF rewritten for this close, with the Rules and Play batch and Try it listed as in progress (not shipped) with their plans; root `CLAUDE.md`, `docs/CLAUDE.md` and the engine-mod totals updated; `docs/PLAN-particles.md` deleted.
+
+Decisions
+- Counts from the plugins' contributions at e9ce3c9 (a throwaway Vitest script over the ten built-in plugins): 96 kinds and 193 templates without the in-progress Rules plugin (which adds 1 kind and 6 templates), 46 starters (34 Creator flows), 132 examples, 70 placeholder patterns. GameTests: 440 `@GameTest` methods in `engine-mod/src` (the source count matched the reported totals at 400, 429 and 435); 429 of them after the particles briefs, the rest from the Rules batch (Script API 1.4 6, dev mode 5). JUnit 691: not countable from the sources (corpus cases are dynamic); B352 and B370 reported 685 and B369 691 with `DevFilesTest` 6, and nothing in `engine-mod/src/test` or the corpus changed since. Parity sample particles 12 (11 plus 1 script test). e2e: 23 spec files of shipped work plus `tryit-path`.
+- "Since runtime 1.7.0" (Script API 1.3) and "1.8.0" (Script API 1.4) follow the contract's own sequence after 1.2's 1.6.0; they are not `mod_version`.
+- Library: `PARTICLE_KINDS` stays in `content/particle.ts` and the particle helpers of `assets/png.ts` are not re-exported (nothing outside the library uses them); recorded in ADR 0081.
+
+Next
+- The main session: clean-worktree run and CI on the merged close (the client GameTest step has not run in Actions yet), then the Milestone Log row's test totals.
+- The user: `fixtures/sample-particles/README.md` on 26.3 and 26.4, and the vetoable defaults of ADRs 0080–0081.
+- Follow-ups in ROADMAP "Custom particles" and HANDOFF; the Rules and Try it closes add their 1.15.0 text to `packages/plugin-api/CLAUDE.md`.
