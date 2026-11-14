@@ -44,18 +44,12 @@ import type {
   ExampleProject,
   Exporter,
   Json,
-  JsonObject,
   Plugin,
   Problem,
   ProjectStarter,
   TargetFacts,
 } from '@msm/plugin-api';
-import blocksItemsPlugin, {
-  BLOCK_TYPE_LOWERINGS,
-  blockItemIdOf,
-  blockTypeModels,
-  blockTypeOf,
-} from '@msm/plugin-blocks-items';
+import blocksItemsPlugin, { blockGeneratedModelIds, blockItemIdOf } from '@msm/plugin-blocks-items';
 import dataPackPlugin from '@msm/plugin-datapack';
 import entitiesPlugin from '@msm/plugin-entities';
 import libraryPlugin, {
@@ -856,26 +850,8 @@ function projectRegistryIds(project: Project): Record<string, string[]> {
         // The block item's own id: `item.id` (seeds planting a crop), else the block's id.
         const itemId = blockItemIdOf(element.id, element.data);
         if (itemId !== undefined) add('item', itemId);
-        // The models a block type generates from its `textures` (ADR 0067 D7).
-        const data = element.data as JsonObject;
-        const path = element.id.slice(element.id.indexOf(':') + 1);
-        if (!Array.isArray(data) && data.type !== undefined) {
-          const models = blockTypeModels(blockTypeOf(data, element.id), {
-            blockId: element.id,
-            itemId,
-            namespace: namespace.name,
-            path,
-            data,
-          });
-          for (const model of models.generated) add('model', model.id);
-          // Doors, saplings and crops get a flat item model `<item ns>:item/<item path>`.
-          const lowering = BLOCK_TYPE_LOWERINGS[blockTypeOf(data, element.id)];
-          const hasItemTexture =
-            lowering.itemTexture !== undefined || lowering.itemTextureFromData !== undefined;
-          if (itemId !== undefined && hasItemTexture && models.slots.item === undefined) {
-            add('model', itemId.replace(':', ':item/'));
-          }
-        }
+        // The models lowering generates for the block (ADR 0067 D7), flat item models included.
+        for (const id of blockGeneratedModelIds(element.id, element.data as Json)) add('model', id);
       }
       if (name === 'entity_type' && typeof element.data === 'object' && element.data !== null) {
         const egg = (element.data as { spawn_egg?: unknown }).spawn_egg;
