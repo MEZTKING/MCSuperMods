@@ -8,12 +8,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- Work in progress: **Try it**, a small test area inside MCSuperMods where you walk around, place your blocks and see your mobs and particles without starting Minecraft.
+- Work in progress: Try it will show what your rules and events do when you use, break and step on your blocks.
 
 ## [1.5.1] - 2026-11-14
 
 ### Added
 
+- **Try it** (F6, or the Try it button next to Play): a small test area inside MCSuperMods. Walk or fly around, place and break your blocks and see every state (stairs, doors, fences, slabs), open doors and press buttons, grow crops with **Grow**, light blocks with **Power**, hatch your mobs from their spawn eggs and watch them wander, and see your particles and portals. It needs no Minecraft, changes as you edit, and lists under **What happened** what only the real game can show. It is a preview, not the game: press **Play in Minecraft** for the real check.
 - The AI helper knows the block types, their textures and loot presets, seeds with their own item id, and the Wood set, Stone set, Crop and Tree flows.
 - **Your own sounds work in the game**: every key of a project's `sounds.json` is now a registered sound event, so in MCSuperMods' own fields (the **Play sound** action, an effect's or throwable's sound, mob sounds, `world.playSound` in scripts) you write the plain key, and the pickers list the project's sounds before the vanilla ones. In vanilla fields keep writing `{ "sound_id": "..." }`. A new sound key needs a game restart.
 - **Mob sounds**: the Mob Studio's new **Sounds** section sets the **Ambient sound**, **Hurt sound**, **Death sound** and **Step sound** of a mob, and the **Ambient interval (ticks)**.
