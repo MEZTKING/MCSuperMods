@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:ambient_particles": {
+      "particle": "minecraft:flame",
+      "spread": [0.5, 0.5, 0.5, 0.5]
+    }
+  },
+  "format": 1
+}

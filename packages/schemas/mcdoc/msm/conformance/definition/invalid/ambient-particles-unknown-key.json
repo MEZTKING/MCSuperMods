@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:ambient_particles": {
+      "particle": "minecraft:flame",
+      "speed": 1
+    }
+  },
+  "format": 1
+}

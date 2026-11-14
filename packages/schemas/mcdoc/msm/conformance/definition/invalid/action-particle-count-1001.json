@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "mymod:burst"
+    }
+  },
+  "events": {
+    "mymod:burst": {
+      "actions": [
+        {
+          "count": 1001,
+          "particle": "minecraft:flame",
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

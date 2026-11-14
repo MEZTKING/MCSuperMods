@@ -1,0 +1,7 @@
+{
+  "format": 1,
+  "lifetime": {
+    "min": 5
+  },
+  "textures": ["minecraft:generic_0"]
+}

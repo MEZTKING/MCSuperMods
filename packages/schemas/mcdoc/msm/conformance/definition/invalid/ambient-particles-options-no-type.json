@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:ambient_particles": {
+      "particle": {
+        "block_state": "minecraft:stone"
+      }
+    }
+  },
+  "format": 1
+}

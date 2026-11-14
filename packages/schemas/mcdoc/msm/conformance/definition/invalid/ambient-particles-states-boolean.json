@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:ambient_particles": {
+      "particle": "minecraft:flame",
+      "states": {
+        "lit": true
+      }
+    }
+  },
+  "format": 1
+}

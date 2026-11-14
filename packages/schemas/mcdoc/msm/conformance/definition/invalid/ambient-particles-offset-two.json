@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:ambient_particles": {
+      "offset": [0.5, 0.5],
+      "particle": "minecraft:flame"
+    }
+  },
+  "format": 1
+}

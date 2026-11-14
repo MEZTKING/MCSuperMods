@@ -1,0 +1,17 @@
+{
+  "components": {
+    "msm:ambient_particles": {
+      "chance": 0.25,
+      "count": 16,
+      "offset": [0.5, 1.1, 0.5],
+      "particle": "mymod:spark",
+      "spread": [0.3, 0, 0.3],
+      "states": {
+        "facing": "north",
+        "lit": "true"
+      },
+      "velocity": [0, 0.02, 0]
+    }
+  },
+  "format": 1
+}

@@ -3765,3 +3765,19 @@ Decisions
 Next
 - An app brief adds `particles` to `toTargetFacts`' fallback and to `target_facts` (one line each).
 - B351 reads `target.particles` for `particle-needs-options`, `particle-options-unknown-type` and the description and picture paths.
+## 2026-11-14 — executor — B347 particle format
+
+What
+- MSM mcdoc gains the `msm:particle` format of ADR 0080 D1: `::msm::definition::Particle` (`format: 1` plus `ParticleCommon`) and `::msm::element::Particle` (`format` optional), with `ParticleAnimation`, `ParticleLifetime` (an int or `ParticleLifetimeRange { min, max }`), `ParticleFade`; `textures` carry vanilla-mcdoc's own annotation for particle sprites, `#[id(registry="texture", path="particle/")]`.
+- `spawn_particle` (ADR 0080 D5): `particle` is now `::msm::action::ParticleSpec` (an id, or `ParticleOptionsObject` with a required `type` and an open map), `count` capped at 1000, new `motion` (`[double] @ 3`) and `force`.
+- Block component `msm:ambient_particles` (ADR 0080 D6, `AmbientParticles` with `AmbientParticleStates`), placed in `BlockBehaviourComponents` so both the definition's and the element's `BlockComponents` have it.
+- Schema references `MSM_SCHEMA_REFS.particle` (`msm:particle`) and `particleDefinition` (`msm:particle_definition`) with their type paths; `symbols.json` regenerated (246 to 257 types).
+- Corpus: 11 valid and 40 invalid definition files under the prefixes `particle-`, `action-particle-` and `ambient-particles-`, 3 valid and 2 invalid element files, and their `expected-errors.json` entries; the TypeScript conformance test knows the prefixes, counts them and checks every particle field is set in a valid file. The runtime's `ConformanceCorpusTest` lists the three prefixes in `PENDING` until B350 and B352 add the Codecs.
+- Verified: `pnpm lint`, `pnpm typecheck`, `pnpm test` (schemas 1059), `build-msm-mcdoc --check`, engine-mod `./gradlew test` (26.3, JUnit green with the new prefixes pending).
+
+Decisions
+- `ParticleSpec` and `ParticleOptionsObject` live in `action.mcdoc` and are imported by `definition.mcdoc`, as `Event` is; the options object's fields are left to the validators (B351).
+- The element corpus gains particle and ambient-particle files because the coverage test requires every element field to appear in a valid file.
+
+Next
+- B350 removes `particle-` from `PENDING` and decodes it; B352 removes the other two. Runtime error messages must name the last field of each expected pointer (for example `max`, `type`, `lit`, `velocity`, `speed`).

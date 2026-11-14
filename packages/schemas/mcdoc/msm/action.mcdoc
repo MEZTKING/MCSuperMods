@@ -72,16 +72,44 @@ dispatch msm:action[run_function] to struct RunFunction {
 	function: #[id="function"] string,
 }
 
+/// A vanilla particle options object (ADR 0080 D5): a particle `type` and that type's fields,
+/// as vanilla's own particle JSON, for example `{ "type": "minecraft:dust", "color": [1, 0.5,
+/// 0], "scale": 1.5 }`, `{ "type": "minecraft:block", "block_state": "minecraft:stone" }` or
+/// `{ "type": "minecraft:item", "item": { "id": "minecraft:diamond" } }`. The runtime decodes it
+/// with vanilla's particle codec when it is first used and once at server start; a failed decode
+/// is an error naming the definition and the field, and sends nothing. The type's fields are
+/// checked against the target's vanilla particle schema at edit time, not here.
+struct ParticleOptionsObject {
+	/// The particle type, vanilla or a project particle.
+	type: #[id="particle_type"] string,
+	/// The type's options.
+	[string]: any,
+}
+
+/// A particle to spawn (ADR 0080 D5, D6): a particle type id without options (vanilla or a
+/// project particle), or a vanilla particle options object. Runtimes older than the release
+/// that ships ADR 0080 reject an options object.
+type ParticleSpec = (#[id="particle_type"] string | ParticleOptionsObject)
+
 /// Sends particles from the server to nearby players.
 dispatch msm:action[spawn_particle] to struct SpawnParticle {
-	/// A particle type without options. Defaults are `count` 1, `spread` 0 and `speed` 0.
-	particle: #[id="particle_type"] string,
-	/// How many particles to spawn.
-	count?: int @ 1..,
+	/// A particle type without options, or a vanilla particle options object (ADR 0080 D5).
+	/// Defaults are `count` 1, `spread` 0 and `speed` 0.
+	particle: ParticleSpec,
+	/// How many particles to spawn, 1 to 1000 (one packet per player per action).
+	count?: int @ 1..1000,
 	/// Random offset from the position, in blocks.
 	spread?: float @ 0..,
 	/// Particle speed.
 	speed?: float @ 0..,
+	/// `[x, y, z]` in blocks per tick: each particle starts with exactly this velocity, as
+	/// vanilla's `/particle` with count 0 does (one packet per particle per player). Runtimes
+	/// older than the release that ships ADR 0080 reject the field.
+	motion?: [double] @ 3,
+	/// As vanilla's `/particle ... force`: sent to players up to 512 blocks away and drawn
+	/// whatever their Particles option; defaults to false. Runtimes older than the release that
+	/// ships ADR 0080 reject the field.
+	force?: boolean,
 }
 
 /// Places a block state relative to the event block, or to the block below the player for

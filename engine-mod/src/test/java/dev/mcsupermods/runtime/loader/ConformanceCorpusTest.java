@@ -33,11 +33,12 @@ class ConformanceCorpusTest {
             "../packages/schemas/mcdoc/msm/conformance/definition"));
 
     /**
-     * Prefixes whose schema reached the corpus before the runtime's Codec; none at the moment. {@code container-} was
-     * decoded by B314, {@code machine-} by B316 and {@code portal-} by B334. Machine recipe files have their own corpus
+     * Prefixes whose schema reached the corpus before the runtime's Codec: ADR 0080's {@code particle-} (B350 decodes
+     * it), {@code action-particle-} and {@code ambient-particles-} (B352). {@code container-} was decoded by B314,
+     * {@code machine-} by B316 and {@code portal-} by B334. Machine recipe files have their own corpus
      * ({@link MachineRecipeCodecTest}).
      */
-    private static final List<String> PENDING = List.of();
+    private static final List<String> PENDING = List.of("particle-", "action-particle-", "ambient-particles-");
 
     private static boolean pending(String name) {
         return PENDING.stream().anyMatch(name::startsWith);

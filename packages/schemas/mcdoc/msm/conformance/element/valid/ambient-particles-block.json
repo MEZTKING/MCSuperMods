@@ -1,0 +1,16 @@
+{
+  "components": {
+    "msm:ambient_particles": {
+      "chance": 0.5,
+      "count": 2,
+      "offset": [0.5, 1, 0.5],
+      "particle": "minecraft:flame",
+      "spread": [0.2, 0, 0.2],
+      "states": {
+        "lit": "true"
+      },
+      "velocity": [0, 0.01, 0]
+    }
+  },
+  "format": 1
+}

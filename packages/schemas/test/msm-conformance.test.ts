@@ -22,7 +22,10 @@ import {
  * 0074's `msm:container` and ADR 0075's `msm:machine`; `conformance/machine-recipe/` holds ADR
  * 0075's machine recipe files. `portal-` files are ADR 0077's portal blocks and blocks with the
  * `light_portal` action; `portal-item-`, `portal-entity-` and `portal-effect-` files are items,
- * entities and effects with that action. The longest matching file name prefix selects the schema;
+ * entities and effects with that action. `particle-` files are ADR 0080's `msm:particle`;
+ * `action-particle-` files are blocks with `spawn_particle` options objects, `motion` and `force`
+ * (ADR 0080 D5), and `ambient-particles-` files blocks with `msm:ambient_particles` (ADR 0080 D6).
+ * The longest matching file name prefix selects the schema;
  * `expected-errors.json` maps each invalid file to one error (pointer and code) that
  * `validateJson` must report.
  */
@@ -33,9 +36,16 @@ type Group = 'definition' | 'element' | 'geometry' | 'animation' | 'machine-reci
 /** The machine recipe file of ADR 0075 D2, checked by its type path (no schema reference yet). */
 const MACHINE_RECIPE = '::msm::recipe::MachineRecipe';
 
-/** File name prefixes of block files besides `block-` (ADRs 0061, 0074, 0075, 0077). */
+/** File name prefixes of block files besides `block-` (ADRs 0061, 0074, 0075, 0077, 0080). */
 const BLOCK_PREFIXES: Readonly<Record<string, readonly string[]>> = {
-  block: ['trigger-block', 'container', 'machine', 'portal'],
+  block: [
+    'trigger-block',
+    'container',
+    'machine',
+    'portal',
+    'action-particle',
+    'ambient-particles',
+  ],
 };
 
 /** Schema references of ADR 0060's additions. */
@@ -90,6 +100,9 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     'portal-item': MSM_SCHEMA_REFS.itemDefinition,
     'portal-entity': MSM_SCHEMA_REFS.entityDefinition,
     'portal-effect': MSM_SCHEMA_REFS.effectDefinition,
+    particle: MSM_SCHEMA_REFS.particleDefinition,
+    'action-particle': MSM_SCHEMA_REFS.blockDefinition,
+    'ambient-particles': MSM_SCHEMA_REFS.blockDefinition,
   },
   element: {
     block: MSM_SCHEMA_REFS.block,
@@ -106,6 +119,8 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     container: MSM_SCHEMA_REFS.block,
     machine: MSM_SCHEMA_REFS.block,
     portal: MSM_SCHEMA_REFS.block,
+    particle: MSM_SCHEMA_REFS.particle,
+    'ambient-particles': MSM_SCHEMA_REFS.block,
   },
   geometry: { geometry: MSM_SCHEMA_REFS.geoModel },
   animation: { animation: MSM_SCHEMA_REFS.animation },
@@ -334,8 +349,13 @@ describe('MSM conformance corpus coverage', () => {
     ['machine-recipe', 'machine-recipe-', 3, 10],
     ['definition', 'portal-', 8, 30],
     ['element', 'portal-', 2, 4],
+    ['definition', 'particle-', 4, 20],
+    ['definition', 'action-particle-', 4, 6],
+    ['definition', 'ambient-particles-', 3, 10],
+    ['element', 'particle-', 2, 1],
+    ['element', 'ambient-particles-', 1, 1],
   ] as const)(
-    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075, 0077)',
+    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075, 0077, 0080)',
     (group, prefix, minValid, minInvalid) => {
       const count = (kind: 'valid' | 'invalid') =>
         files(group, kind).filter((name) => name.startsWith(prefix)).length;
@@ -389,6 +409,8 @@ describe('MSM conformance corpus coverage', () => {
     ['geometry', 'geometry', MSM_SCHEMA_REFS.geoModel],
     ['animation', 'animation', MSM_SCHEMA_REFS.animation],
     ['machine-recipe', 'machine-recipe', MACHINE_RECIPE],
+    ['definition', 'particle', MSM_SCHEMA_REFS.particleDefinition],
+    ['element', 'particle', MSM_SCHEMA_REFS.particle],
   ] as const)('sets every %s %s field in some valid file', (group, prefix, ref) => {
     const declared = new Set<string>();
     fieldPaths(index.resolveSchemaRef(ref), '', declared);

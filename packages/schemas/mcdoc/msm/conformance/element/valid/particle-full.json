@@ -1,0 +1,20 @@
+{
+  "alpha": 1,
+  "always_show": false,
+  "animation": "loop",
+  "collision": true,
+  "color": 16777215,
+  "color_end": 8421504,
+  "emissive": true,
+  "fade": "out",
+  "format": 1,
+  "frame_ticks": 2,
+  "friction": 0.96,
+  "gravity": 0.1,
+  "lifetime": 30,
+  "size": 0.2,
+  "size_end": 0.05,
+  "spin": 4,
+  "textures": ["mymod:spark_0", "mymod:spark_1"],
+  "translucent": true
+}

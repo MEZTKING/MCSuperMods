@@ -1,0 +1,23 @@
+{
+  "alpha": 0.8,
+  "always_show": true,
+  "animation": "loop",
+  "collision": false,
+  "color": 16755200,
+  "color_end": 16711680,
+  "emissive": true,
+  "fade": "in_out",
+  "format": 1,
+  "frame_ticks": 3,
+  "friction": 0.9,
+  "gravity": -0.5,
+  "lifetime": {
+    "max": 40,
+    "min": 10
+  },
+  "size": 0.25,
+  "size_end": 0,
+  "spin": 12.5,
+  "textures": ["mymod:spark_0", "mymod:spark_1", "mymod:spark_2", "minecraft:glitter_0"],
+  "translucent": true
+}

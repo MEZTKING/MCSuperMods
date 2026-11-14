@@ -1,4 +1,68 @@
 {
+  "action-particle-count-1001.json": {
+    "code": "schema.out-of-range",
+    "path": "/events/mymod:burst/actions/0/count"
+  },
+  "action-particle-force-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/events/mymod:burst/actions/0/force"
+  },
+  "action-particle-motion-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/events/mymod:burst/actions/0/motion/1"
+  },
+  "action-particle-motion-two.json": {
+    "code": "schema.invalid-length",
+    "path": "/events/mymod:burst/actions/0/motion"
+  },
+  "action-particle-number.json": {
+    "code": "schema.no-union-match",
+    "path": "/events/mymod:burst/actions/0/particle"
+  },
+  "action-particle-options-no-type.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:burst/actions/0/particle/type"
+  },
+  "ambient-particles-chance-2.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ambient_particles/chance"
+  },
+  "ambient-particles-count-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ambient_particles/count"
+  },
+  "ambient-particles-count-17.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ambient_particles/count"
+  },
+  "ambient-particles-missing-particle.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:ambient_particles/particle"
+  },
+  "ambient-particles-offset-two.json": {
+    "code": "schema.invalid-length",
+    "path": "/components/msm:ambient_particles/offset"
+  },
+  "ambient-particles-options-no-type.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:ambient_particles/particle/type"
+  },
+  "ambient-particles-spread-four.json": {
+    "code": "schema.invalid-length",
+    "path": "/components/msm:ambient_particles/spread"
+  },
+  "ambient-particles-states-boolean.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:ambient_particles/states/lit"
+  },
+  "ambient-particles-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:ambient_particles/speed"
+  },
+  "ambient-particles-velocity-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:ambient_particles/velocity"
+  },
   "biome-addition-bad-category.json": {
     "code": "schema.invalid-enum",
     "path": "/spawns/0/category"
@@ -998,6 +1062,102 @@
   "machine-unknown-key.json": {
     "code": "schema.unknown-field",
     "path": "/components/msm:machine/slots"
+  },
+  "particle-alpha-2.json": {
+    "code": "schema.out-of-range",
+    "path": "/alpha"
+  },
+  "particle-always-show-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/always_show"
+  },
+  "particle-animation-bounce.json": {
+    "code": "schema.invalid-enum",
+    "path": "/animation"
+  },
+  "particle-collision-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/collision"
+  },
+  "particle-color-end-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/color_end"
+  },
+  "particle-color-too-large.json": {
+    "code": "schema.out-of-range",
+    "path": "/color"
+  },
+  "particle-emissive-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/emissive"
+  },
+  "particle-fade-blink.json": {
+    "code": "schema.invalid-enum",
+    "path": "/fade"
+  },
+  "particle-format-2.json": {
+    "code": "schema.invalid-literal",
+    "path": "/format"
+  },
+  "particle-frame-ticks-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/frame_ticks"
+  },
+  "particle-friction-1-5.json": {
+    "code": "schema.out-of-range",
+    "path": "/friction"
+  },
+  "particle-gravity-17.json": {
+    "code": "schema.out-of-range",
+    "path": "/gravity"
+  },
+  "particle-lifetime-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/lifetime"
+  },
+  "particle-lifetime-6001.json": {
+    "code": "schema.out-of-range",
+    "path": "/lifetime"
+  },
+  "particle-lifetime-range-missing-max.json": {
+    "code": "schema.missing-field",
+    "path": "/lifetime/max"
+  },
+  "particle-missing-textures.json": {
+    "code": "schema.missing-field",
+    "path": "/textures"
+  },
+  "particle-size-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/size"
+  },
+  "particle-size-end-17.json": {
+    "code": "schema.out-of-range",
+    "path": "/size_end"
+  },
+  "particle-spin-361.json": {
+    "code": "schema.out-of-range",
+    "path": "/spin"
+  },
+  "particle-texture-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/textures/0"
+  },
+  "particle-textures-65.json": {
+    "code": "schema.invalid-length",
+    "path": "/textures"
+  },
+  "particle-textures-empty.json": {
+    "code": "schema.invalid-length",
+    "path": "/textures"
+  },
+  "particle-translucent-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/translucent"
+  },
+  "particle-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/velocity"
   },
   "portal-action-no-portal.json": {
     "code": "schema.missing-field",

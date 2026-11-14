@@ -1,10 +1,12 @@
 // MSM definition format v1: the runtime definitions of blocks, items (ADR 0025 D2, D3),
-// entities (ADR 0028 D2), mob effects (ADR 0055 D2) and additions to vanilla content (ADR 0060
-// D2, D3). Lowering writes these to `msm/<ns>/block/<path>.json`, `msm/<ns>/item/<path>.json`,
-// `msm/<ns>/entity/<path>.json`, `msm/<ns>/effect/<path>.json`,
-// `msm/<ns>/biome_addition/<path>.json` and `msm/<ns>/loot_addition/<path>.json`.
+// entities (ADR 0028 D2), mob effects (ADR 0055 D2), additions to vanilla content (ADR 0060
+// D2, D3) and particle types (ADR 0080 D1). Lowering writes these to
+// `msm/<ns>/block/<path>.json`, `msm/<ns>/item/<path>.json`, `msm/<ns>/entity/<path>.json`,
+// `msm/<ns>/effect/<path>.json`, `msm/<ns>/biome_addition/<path>.json`,
+// `msm/<ns>/loot_addition/<path>.json` and `msm/<ns>/particle/<path>.json`.
 
 use super::action::Event
+use super::action::ParticleSpec
 
 /// A vanilla `SoundType` constant in lower case (verify the list at implementation).
 enum(string) SoundType {
@@ -221,6 +223,32 @@ struct BlockBehaviourComponents {
 	"msm:strippable"?: Strippable,
 	"msm:container"?: Container,
 	"msm:machine"?: Machine,
+	"msm:ambient_particles"?: AmbientParticles,
+}
+
+/// Particles a block shows by itself, as a torch shows its flame (ADR 0080 D6), drawn by the
+/// client near the player about every tick. Allowed on every block type except `portal`, which
+/// has its own `particles`; the runtime drops it from a portal with an error. Runtimes older
+/// than the release that ships ADR 0080 reject the component.
+struct AmbientParticles {
+	/// A particle type without options (vanilla or a project particle), or a vanilla particle
+	/// options object.
+	particle: ParticleSpec,
+	/// Chance per animation tick, 0 to 1; defaults to 1.
+	chance?: float @ 0..1,
+	/// Particles per animation tick that passes `chance`, 1 to 16; defaults to 1.
+	count?: int @ 1..16,
+	/// `[x, y, z]` in blocks from the block's corner; defaults to `[0.5, 0.5, 0.5]` (the centre).
+	offset?: [double] @ 3,
+	/// `[x, y, z]` random spread in blocks around `offset`; defaults to `[0.5, 0.5, 0.5]`.
+	spread?: [double] @ 3,
+	/// `[x, y, z]` starting velocity in blocks per tick; defaults to `[0, 0, 0]`.
+	velocity?: [double] @ 3,
+	/// Block state properties that must match, such as `{ "lit": "true" }` on a machine; without
+	/// it the particles show in every state.
+	states?: struct AmbientParticleStates {
+		[string]: string,
+	},
 }
 
 /// Makes the block catch fire and burn away (ADR 0067 D3), through Fabric's flammable block
@@ -1813,4 +1841,85 @@ struct LootAddition {
 	/// Codec. MSM mcdoc cannot name vanilla's pool type with a length bound, so the pools are
 	/// checked against the target's loot table schema by the validators.
 	pools: [any] @ 1..,
+}
+
+/// How a particle with more than one texture picks its frame (ADR 0080 D1).
+enum(string) ParticleAnimation {
+	/// The frames run once over the particle's lifetime. The default.
+	Age = "age",
+	/// The frames repeat, one every `frame_ticks`.
+	Loop = "loop",
+	/// One random frame per particle, kept for its whole life.
+	Random = "random",
+}
+
+/// A particle's lifetime in ticks, a fixed number or a random number from `min` to `max`
+/// (`min` above `max` is a load error).
+type ParticleLifetime = (int @ 1..6000 | struct ParticleLifetimeRange {
+	min: int @ 1..6000,
+	max: int @ 1..6000,
+})
+
+/// How a particle's alpha changes over its lifetime (ADR 0080 D1).
+enum(string) ParticleFade {
+	/// Constant `alpha`. The default.
+	None = "none",
+	/// Fades from `alpha` to nothing over the lifetime.
+	Out = "out",
+	/// Fades in at the start and out at the end.
+	InOut = "in_out",
+}
+
+/// Fields every particle definition and particle element share (ADR 0080 D1).
+struct ParticleCommon {
+	/// Sprite ids in the particle atlas, in frame order, 1 to 64: a project sprite `<ns>:<name>`
+	/// is the picture `assets/<ns>/textures/particle/<name>.png`; vanilla sprites such as
+	/// `minecraft:generic_0` and `minecraft:glow` may be named. Lowering also writes them to the
+	/// description `assets/<ns>/particles/<path>.json` (ADR 0080 D2).
+	textures: [#[id(registry="texture", path="particle/")] string] @ 1..64,
+	/// How the frame is picked; defaults to `age` (only matters with more than one texture).
+	animation?: ParticleAnimation,
+	/// Ticks per frame with `animation` `loop`, 1 to 1200; defaults to 2.
+	frame_ticks?: int @ 1..1200,
+	/// Lifetime in ticks, 1 to 6000; defaults to 20.
+	lifetime?: ParticleLifetime,
+	/// Quad size in blocks, 0.01 to 16; defaults to 0.2 (vanilla's).
+	size?: float @ 0.01..16,
+	/// Size at the end of the lifetime, 0 to 16; defaults to `size`.
+	size_end?: float @ 0..16,
+	/// Vanilla's gravity factor (the vertical speed drops by 0.04 times it every tick), -16 to 16;
+	/// defaults to 0.
+	gravity?: float @ -16..16,
+	/// Share of the velocity kept every tick, 0 to 1; defaults to 0.98 (vanilla's).
+	friction?: float @ 0..1,
+	/// Stops on blocks; defaults to true.
+	collision?: boolean,
+	/// Tint as `0xRRGGBB`; defaults to 16777215 (white: the picture as drawn).
+	color?: int @ 0..16777215,
+	/// Tint at the end of the lifetime; defaults to `color`.
+	color_end?: int @ 0..16777215,
+	/// Opacity, 0 to 1; defaults to 1.
+	alpha?: float @ 0..1,
+	/// How the opacity changes; defaults to `none`.
+	fade?: ParticleFade,
+	/// Drawn at full brightness, as glow and end rod particles; defaults to false.
+	emissive?: boolean,
+	/// Drawn translucent; defaults to true when `alpha` is below 1 or `fade` is not `none`, else
+	/// false (cut-out).
+	translucent?: boolean,
+	/// Rotation in degrees per tick, -360 to 360; defaults to 0.
+	spin?: float @ -360..360,
+	/// Drawn beyond 32 blocks and with Particles: Minimal; defaults to false.
+	always_show?: boolean,
+}
+
+/// A particle type definition, `msm/<ns>/particle/<path>.json` (ADR 0080 D1): an option-less
+/// particle type registered under the definition's id, usable wherever a particle type without
+/// options is (`spawn_particle`, an effect's `particle`, leaves, portals, scripts, `/particle`).
+/// Runtimes older than the release that ships ADR 0080 ignore the `particle` folder, so its ids
+/// are unknown particle types there.
+struct Particle {
+	/// Definition format; this is version 1.
+	format: 1,
+	...ParticleCommon,
 }

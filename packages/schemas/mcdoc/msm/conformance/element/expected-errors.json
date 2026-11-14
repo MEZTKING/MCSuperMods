@@ -1,4 +1,8 @@
 {
+  "ambient-particles-chance-2.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ambient_particles/chance"
+  },
   "biome-addition-neither.json": {
     "code": "schema.missing-field",
     "path": "/features"
@@ -314,6 +318,10 @@
   "mod-missing-version.json": {
     "code": "schema.missing-field",
     "path": "/version"
+  },
+  "particle-textures-empty.json": {
+    "code": "schema.invalid-length",
+    "path": "/textures"
   },
   "portal-models.json": {
     "code": "schema.unknown-field",

@@ -1,0 +1,18 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "mymod:burst"
+    }
+  },
+  "events": {
+    "mymod:burst": {
+      "actions": [
+        {
+          "particle": 5,
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

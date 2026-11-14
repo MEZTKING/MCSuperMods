@@ -1,0 +1,15 @@
+{
+  "always_show": false,
+  "animation": "random",
+  "collision": true,
+  "emissive": false,
+  "fade": "none",
+  "format": 1,
+  "friction": 1,
+  "gravity": -16,
+  "lifetime": 1,
+  "size": 0.01,
+  "spin": 360,
+  "textures": ["minecraft:generic_0", "minecraft:generic_7"],
+  "translucent": false
+}

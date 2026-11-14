@@ -456,6 +456,65 @@
       ],
       "kind": "struct"
     },
+    "::msm::action::ParticleOptionsObject": {
+      "fields": [
+        {
+          "desc": "The particle type, vanilla or a project particle.",
+          "key": "type",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "particle_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The type's options.",
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "any"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::ParticleSpec": {
+      "kind": "union",
+      "members": [
+        {
+          "attributes": [
+            {
+              "name": "id",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "particle_type"
+                }
+              }
+            }
+          ],
+          "kind": "string"
+        },
+        {
+          "kind": "reference",
+          "path": "::msm::action::ParticleOptionsObject"
+        }
+      ]
+    },
     "::msm::action::PlayAnimation": {
       "fields": [
         {
@@ -603,27 +662,16 @@
     "::msm::action::SpawnParticle": {
       "fields": [
         {
-          "desc": "A particle type without options. Defaults are `count` 1, `spread` 0 and `speed` 0.",
+          "desc": "A particle type without options, or a vanilla particle options object (ADR 0080 D5).\nDefaults are `count` 1, `spread` 0 and `speed` 0.",
           "key": "particle",
           "kind": "pair",
           "type": {
-            "attributes": [
-              {
-                "name": "id",
-                "value": {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "particle_type"
-                  }
-                }
-              }
-            ],
-            "kind": "string"
+            "kind": "reference",
+            "path": "::msm::action::ParticleSpec"
           }
         },
         {
-          "desc": "How many particles to spawn.",
+          "desc": "How many particles to spawn, 1 to 1000 (one packet per player per action).",
           "key": "count",
           "kind": "pair",
           "optional": true,
@@ -631,6 +679,7 @@
             "kind": "int",
             "valueRange": {
               "kind": 0,
+              "max": 1000,
               "min": 1
             }
           }
@@ -659,6 +708,32 @@
               "kind": 0,
               "min": 0
             }
+          }
+        },
+        {
+          "desc": "`[x, y, z]` in blocks per tick: each particle starts with exactly this velocity, as\nvanilla's `/particle` with count 0 does (one packet per particle per player). Runtimes\nolder than the release that ships ADR 0080 reject the field.",
+          "key": "motion",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "double"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        },
+        {
+          "desc": "As vanilla's `/particle ... force`: sent to players up to 512 blocks away and drawn\nwhatever their Particles option; defaults to false. Runtimes older than the release that\nships ADR 0080 reject the field.",
+          "key": "force",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
           }
         }
       ],
@@ -1181,6 +1256,133 @@
               "path": "::msm::definition::Goal"
             },
             "kind": "list"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::AmbientParticleStates": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::AmbientParticles": {
+      "fields": [
+        {
+          "desc": "A particle type without options (vanilla or a project particle), or a vanilla particle\noptions object.",
+          "key": "particle",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::ParticleSpec"
+          }
+        },
+        {
+          "desc": "Chance per animation tick, 0 to 1; defaults to 1.",
+          "key": "chance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Particles per animation tick that passes `chance`, 1 to 16; defaults to 1.",
+          "key": "count",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 16,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "`[x, y, z]` in blocks from the block's corner; defaults to `[0.5, 0.5, 0.5]` (the centre).",
+          "key": "offset",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "double"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        },
+        {
+          "desc": "`[x, y, z]` random spread in blocks around `offset`; defaults to `[0.5, 0.5, 0.5]`.",
+          "key": "spread",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "double"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        },
+        {
+          "desc": "`[x, y, z]` starting velocity in blocks per tick; defaults to `[0, 0, 0]`.",
+          "key": "velocity",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "double"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        },
+        {
+          "desc": "Block state properties that must match, such as `{ \"lit\": \"true\" }` on a machine; without\nit the particles show in every state.",
+          "key": "states",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "string"
+                }
+              }
+            ],
+            "kind": "struct"
           }
         }
       ],
@@ -2207,6 +2409,15 @@
           "type": {
             "kind": "reference",
             "path": "::msm::definition::Machine"
+          }
+        },
+        {
+          "key": "msm:ambient_particles",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::AmbientParticles"
           }
         }
       ],
@@ -5950,6 +6161,380 @@
             "valueRange": {
               "kind": 0,
               "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Particle": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ParticleCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::ParticleAnimation": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "The frames run once over the particle's lifetime. The default.",
+          "identifier": "Age",
+          "value": "age"
+        },
+        {
+          "desc": "The frames repeat, one every `frame_ticks`.",
+          "identifier": "Loop",
+          "value": "loop"
+        },
+        {
+          "desc": "One random frame per particle, kept for its whole life.",
+          "identifier": "Random",
+          "value": "random"
+        }
+      ]
+    },
+    "::msm::definition::ParticleCommon": {
+      "fields": [
+        {
+          "desc": "Sprite ids in the particle atlas, in frame order, 1 to 64: a project sprite `<ns>:<name>`\nis the picture `assets/<ns>/textures/particle/<name>.png`; vanilla sprites such as\n`minecraft:generic_0` and `minecraft:glow` may be named. Lowering also writes them to the\ndescription `assets/<ns>/particles/<path>.json` (ADR 0080 D2).",
+          "key": "textures",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "tree",
+                    "values": {
+                      "path": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "particle/"
+                        }
+                      },
+                      "registry": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "texture"
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "How the frame is picked; defaults to `age` (only matters with more than one texture).",
+          "key": "animation",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ParticleAnimation"
+          }
+        },
+        {
+          "desc": "Ticks per frame with `animation` `loop`, 1 to 1200; defaults to 2.",
+          "key": "frame_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 1200,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Lifetime in ticks, 1 to 6000; defaults to 20.",
+          "key": "lifetime",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ParticleLifetime"
+          }
+        },
+        {
+          "desc": "Quad size in blocks, 0.01 to 16; defaults to 0.2 (vanilla's).",
+          "key": "size",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 16,
+              "min": 0.01
+            }
+          }
+        },
+        {
+          "desc": "Size at the end of the lifetime, 0 to 16; defaults to `size`.",
+          "key": "size_end",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 16,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Vanilla's gravity factor (the vertical speed drops by 0.04 times it every tick), -16 to 16;\ndefaults to 0.",
+          "key": "gravity",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 16,
+              "min": -16
+            }
+          }
+        },
+        {
+          "desc": "Share of the velocity kept every tick, 0 to 1; defaults to 0.98 (vanilla's).",
+          "key": "friction",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Stops on blocks; defaults to true.",
+          "key": "collision",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Tint as `0xRRGGBB`; defaults to 16777215 (white: the picture as drawn).",
+          "key": "color",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 16777215,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Tint at the end of the lifetime; defaults to `color`.",
+          "key": "color_end",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 16777215,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Opacity, 0 to 1; defaults to 1.",
+          "key": "alpha",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "How the opacity changes; defaults to `none`.",
+          "key": "fade",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ParticleFade"
+          }
+        },
+        {
+          "desc": "Drawn at full brightness, as glow and end rod particles; defaults to false.",
+          "key": "emissive",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Drawn translucent; defaults to true when `alpha` is below 1 or `fade` is not `none`, else\nfalse (cut-out).",
+          "key": "translucent",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Rotation in degrees per tick, -360 to 360; defaults to 0.",
+          "key": "spin",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 360,
+              "min": -360
+            }
+          }
+        },
+        {
+          "desc": "Drawn beyond 32 blocks and with Particles: Minimal; defaults to false.",
+          "key": "always_show",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::ParticleFade": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Constant `alpha`. The default.",
+          "identifier": "None",
+          "value": "none"
+        },
+        {
+          "desc": "Fades from `alpha` to nothing over the lifetime.",
+          "identifier": "Out",
+          "value": "out"
+        },
+        {
+          "desc": "Fades in at the start and out at the end.",
+          "identifier": "InOut",
+          "value": "in_out"
+        }
+      ]
+    },
+    "::msm::definition::ParticleLifetime": {
+      "kind": "union",
+      "members": [
+        {
+          "kind": "int",
+          "valueRange": {
+            "kind": 0,
+            "max": 6000,
+            "min": 1
+          }
+        },
+        {
+          "fields": [
+            {
+              "key": "min",
+              "kind": "pair",
+              "type": {
+                "kind": "int",
+                "valueRange": {
+                  "kind": 0,
+                  "max": 6000,
+                  "min": 1
+                }
+              }
+            },
+            {
+              "key": "max",
+              "kind": "pair",
+              "type": {
+                "kind": "int",
+                "valueRange": {
+                  "kind": 0,
+                  "max": 6000,
+                  "min": 1
+                }
+              }
+            }
+          ],
+          "kind": "struct"
+        }
+      ]
+    },
+    "::msm::definition::ParticleLifetimeRange": {
+      "fields": [
+        {
+          "key": "min",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 6000,
+              "min": 1
+            }
+          }
+        },
+        {
+          "key": "max",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 6000,
+              "min": 1
             }
           }
         }
@@ -9946,6 +10531,31 @@
       ],
       "kind": "struct"
     },
+    "::msm::element::Particle": {
+      "fields": [
+        {
+          "desc": "Definition format; lowering writes 1.",
+          "key": "format",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ParticleCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::element::PillarElementFields": {
       "fields": [
         {
@@ -11803,5 +12413,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:80c5a85d48a9999e1e2c631baf39845f8c38dc5e15defa25f3cff69c408eaa05"
+  "ref": "msm-mcdoc:sha256:87aa3b4372db81022b05760fc184a82bbe508dd0dfcc304e4116f35002359c63"
 }
