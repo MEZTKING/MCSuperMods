@@ -20,6 +20,10 @@
           "sound": "minecraft:entity.experience_orb.pickup",
           "type": "play_sound",
           "volume": 0.1
+        },
+        {
+          "function": "msm_test:tag_arrived",
+          "type": "run_function"
         }
       ]
     },
@@ -29,6 +33,10 @@
           "sound": "minecraft:entity.experience_orb.pickup",
           "type": "play_sound",
           "volume": 0.1
+        },
+        {
+          "function": "msm_test:tag_pulsed",
+          "type": "run_function"
         }
       ]
     }

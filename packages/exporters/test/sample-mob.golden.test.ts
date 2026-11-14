@@ -6,7 +6,8 @@
  * placeholder textures, a function and a loot table, namespace `msm_sample_mob`; since ADR
  * 0057 the golem's ambient, hurt, death and step sounds are four project sound events of a
  * `minecraft:sounds` element; since ADR 0061 the triggers `msm:on_tick` (a heal every 20 ticks)
- * and `msm:on_spawn` (Glowing for 10 seconds and a second function, `golem/arrive`).
+ * and `msm:on_spawn` (Glowing for 10 seconds and a second function, `golem/arrive`, which runs
+ * as the golem and tags it `msm_sample_arrived`).
  *
  * - The fixture equals the project built from {@link SAMPLE_ELEMENTS} and
  *   {@link SAMPLE_ASSETS} now; `UPDATE_GOLDENS=1` rewrites it (the README is hand-written).
@@ -402,8 +403,9 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
     kind: 'minecraft:function',
     data: {
       lines: [
-        '# Run when a glow golem spawns (msm:on_spawn, run_function action).',
+        '# Run as a glow golem when it spawns (msm:on_spawn, run_function action).',
         'say The glow golem arrives.',
+        'tag @s add msm_sample_arrived',
       ],
     },
   },

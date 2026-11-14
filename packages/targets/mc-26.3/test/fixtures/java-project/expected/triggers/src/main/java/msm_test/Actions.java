@@ -50,8 +50,12 @@ public final class Actions {
         return true;
     }
 
-    /** Runs a data pack function at {@code origin}, as the player when there is one, with permission level 2. */
-    public static void runFunction(String owner, ServerLevel level, Vec3 origin, Player player, String id) {
+    /**
+     * Runs a data pack function at {@code origin} with permission level 2, as {@code as} when there is one: the
+     * player, or without a player the acting entity (a block's stepper, placer or entity inside, the mob
+     * attacking with or holding an item, or the mob whose own event runs).
+     */
+    public static void runFunction(String owner, ServerLevel level, Vec3 origin, Entity as, String id) {
         MinecraftServer server = level.getServer();
         Optional<CommandFunction<CommandSourceStack>> function = server.getFunctions().get(Identifier.parse(id));
         if (function.isEmpty()) {
@@ -63,8 +67,8 @@ public final class Actions {
                 .withPosition(origin)
                 .withPermission(LevelBasedPermissionSet.GAMEMASTER) // permission level 2, as for function tags
                 .withSuppressedOutput();
-        if (player != null) {
-            source = source.withEntity(player).withRotation(player.getRotationVector());
+        if (as != null) {
+            source = source.withEntity(as).withRotation(as.getRotationVector());
         }
         server.getFunctions().execute(function.get(), source);
     }

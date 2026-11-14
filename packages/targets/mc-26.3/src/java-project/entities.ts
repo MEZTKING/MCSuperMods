@@ -7,7 +7,8 @@
  * a `PathfinderMob implements GeoEntity` mirroring `MsmEntity` (attributes, goals, the four
  * trigger overrides, `msm:on_tick` from `customServerAiStep` with the shared `TickLimiter` and
  * `msm:on_spawn` from `finalizeSpawn` (ADR 0061 D3), the loot table, the mob sounds of ADR 0057
- * D6) and `MsmGeoEntity` (the
+ * D6; `run_function` in the entity's events runs as the player when there is one, else as the
+ * mob itself) and `MsmGeoEntity` (the
  * `msm_main` and `msm_triggered` controllers). A `sounds` id that is not registered keeps the
  * vanilla sound and is warned about once the server has started, as the runtime's
  * `MsmEntityRegistrar.checkAfterStart`. Minecraft 26.3 and GeckoLib 5, Mojang names.

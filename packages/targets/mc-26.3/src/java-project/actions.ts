@@ -23,7 +23,10 @@
  * `msm:while_held` or `msm:while_worn` is an `actor_item`: `self` is the player, else the mob
  * attacking with or holding the item, `other` is a parameter (the entity hit, the holder, or the
  * player of `msm:on_use` and `msm:on_use_on_block`), and `run_function` runs as the player, else
- * that mob (the runtime's `EventContext.forItemHit` and `forHolder`, ADR 0061 D1).
+ * that mob (the runtime's `EventContext.forItemHit` and `forHolder`, ADR 0061 D1). In an
+ * entity's own events `run_function` runs as the player when the event has one (the player who
+ * interacts with, hurts or kills the entity, or the player it hits), else as the entity itself,
+ * so `@s` in `msm:on_tick` and `msm:on_spawn` is the mob (the runtime's `EventRunner`).
  *
  * @packageDocumentation
  */
@@ -113,9 +116,12 @@ export interface Events {
   readonly heals: boolean;
   /**
    * Whether `run_function` runs as the player, else the event's entity (a step block's stepper,
-   * ADR 0058 D1; an ADR 0061 trigger's actor), rather than as the player only.
+   * ADR 0058 D1; an ADR 0061 trigger's actor; an entity definition's own mob), rather than as
+   * the player only.
    */
   readonly functionsAsActor: boolean;
+  /** Whether the owner is an entity definition (`run_function` then runs as the mob itself). */
+  readonly ownMob: boolean;
   /**
    * Whether the owner has an ADR 0061 trigger whose actor may be an entity that is not a player
    * (`msm:on_place`, `msm:on_entity_inside`, `msm:on_hit`, `msm:while_held`, `msm:while_worn`).
@@ -184,13 +190,17 @@ export function readEvents(definition: Reader, kind: EventOwnerKind, triggerActo
     heals: used.has('heal'),
     functionsAsActor: actorFunctions(kind, triggerActor),
     triggerActor,
+    ownMob: kind === 'entity',
     runsFunctionsAsStepper: actorFunctions(kind, triggerActor) && used.has('run_function'),
   };
 }
 
-/** Whether `run_function` runs as the actor when there is no player (ADR 0058 D1, ADR 0061 D1). */
+/**
+ * Whether `run_function` runs as the actor when there is no player (ADR 0058 D1, ADR 0061 D1;
+ * for an entity definition the mob itself).
+ */
 function actorFunctions(kind: EventOwnerKind, triggerActor: boolean): boolean {
-  return kind === 'step_block' || kind === 'actor_item' || triggerActor;
+  return kind === 'step_block' || kind === 'actor_item' || kind === 'entity' || triggerActor;
 }
 
 /** The `target` of an `apply_effect`, `launch`, `damage` or `heal`: `self` (the default) or `other`. */
@@ -246,6 +256,7 @@ export function noteActions(context: GenerationContext, file: JavaFile, events: 
   if (events.runsFunctionsAsStepper) context.usesRunFunctionAsEntity = true;
   if (events.runsFunctionsAsStepper && events.triggerActor)
     context.usesRunFunctionAsTriggerActor = true;
+  if (events.runsFunctionsAsStepper && events.ownMob) context.usesRunFunctionAsOwnMob = true;
   return file.use(`${context.input.javaPackage}.Actions`);
 }
 
@@ -332,7 +343,8 @@ function actionLines(
     case 'run_function': {
       action.onlyKeys(['type', 'function'], 'run_function field');
       // ADR 0058 D1: in a block step event without a player, the function runs as the stepper;
-      // ADR 0061 D1, D2: the same for a placer, an entity inside and an item's mob actor.
+      // ADR 0061 D1, D2: the same for a placer, an entity inside and an item's mob actor; in an
+      // entity's own event, the mob itself.
       const as = events.functionsAsActor ? 'player != null ? player : entity' : 'player';
       return [
         `${actions}.runFunction(OWNER, level, origin, ${as}, ${javaString(action.requiredString('function'))});`,

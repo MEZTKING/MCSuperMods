@@ -49,7 +49,8 @@ import net.minecraft.world.phys.Vec3;
  * {@code golem.death} and {@code golem.step}, heard as the sound packets a listening
  * {@link ParityEars} spectator receives. Since ADR 0061 the golem's {@code msm:on_tick} heals it by 2 every 20
  * ticks while its AI runs (never with {@code NoAI}), and its {@code msm:on_spawn} runs {@code golem/arrive}
- * (Glowing and {@code say The glow golem arrives.}) once for an egg spawn and not for a copy loaded from the saved golem. Run with
+ * (Glowing and {@code say The glow golem arrives.}) once for an egg spawn and not for a copy loaded from the saved golem;
+ * the function runs as the golem, so its {@code tag @s add msm_sample_arrived} tags the golem itself. Run with
  * {@code --gametest-filter msm_parity_tests:sample_mob_*}.
  */
 public class SampleMobParityTest {
@@ -62,6 +63,7 @@ public class SampleMobParityTest {
     private static final BlockPos MID = new BlockPos(5, 1, 5);
     private static final String FADES = "The glow golem fades.";
     private static final String ARRIVES = "The glow golem arrives.";
+    private static final String ARRIVED_TAG = "msm_sample_arrived";
 
     private static Identifier id(String path) {
         return Identifier.fromNamespaceAndPath(NAMESPACE, path);
@@ -267,6 +269,7 @@ public class SampleMobParityTest {
         helper.assertTrue(spawned != null, "no glow golem spawned");
         helper.assertTrue(spawned.hasEffect(MobEffects.GLOWING), "the spawned golem is not glowing");
         helper.assertTrue(ParityChat.since(mark).contains(ARRIVES), "no chat line after the egg spawn: " + ParityChat.since(mark));
+        helper.assertTrue(spawned.entityTags().contains(ARRIVED_TAG), "golem/arrive did not run as the golem: " + spawned.entityTags());
         // The effect would be saved with the golem: take it off, so a second on_spawn would show.
         spawned.removeEffect(MobEffects.GLOWING);
         TagValueOutput out = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());

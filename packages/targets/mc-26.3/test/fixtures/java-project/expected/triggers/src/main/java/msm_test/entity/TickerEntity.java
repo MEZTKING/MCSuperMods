@@ -96,6 +96,7 @@ public class TickerEntity extends PathfinderMob implements GeoEntity {
             return;
         }
         Actions.playSound(OWNER, level, origin, entity, "minecraft:entity.experience_orb.pickup", 0.1f, 1.0f);
+        Actions.runFunction(OWNER, level, origin, player != null ? player : entity, "msm_test:tag_arrived");
     }
 
     /** Event {@code msm_test:pulse}. */
@@ -104,5 +105,6 @@ public class TickerEntity extends PathfinderMob implements GeoEntity {
             return;
         }
         Actions.playSound(OWNER, level, origin, entity, "minecraft:entity.experience_orb.pickup", 0.1f, 1.0f);
+        Actions.runFunction(OWNER, level, origin, player != null ? player : entity, "msm_test:tag_pulsed");
     }
 }

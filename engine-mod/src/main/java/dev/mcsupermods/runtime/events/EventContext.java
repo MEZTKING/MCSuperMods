@@ -90,7 +90,11 @@ public record EventContext(ServerLevel level, BlockPos base, Vec3 origin, Player
                 holder instanceof LivingEntity living ? living : null, Source.ITEM);
     }
 
-    /** An entity event: offsets from the entity's block position, effects at the entity (ADR 0028 D2). */
+    /**
+     * An entity event: offsets from the entity's block position, effects at the entity (ADR 0028 D2). {@code run_function}
+     * runs as the player when there is one, else as the entity itself (its level, position and rotation), so {@code @s}
+     * in {@code msm:on_tick} and {@code msm:on_spawn} is the mob.
+     */
     public static EventContext forEntity(ServerLevel level, Entity entity, Player player) {
         return forEntity(level, entity, player, player);
     }

@@ -71,6 +71,7 @@ export function generateJavaProject(input: JavaProjectInput): {
     usesHeal: false,
     usesRunFunctionAsEntity: false,
     usesRunFunctionAsTriggerActor: false,
+    usesRunFunctionAsOwnMob: false,
     usesTickLimiter: false,
     usesCooldownMap: false,
     usesVanillaComponents: false,
@@ -139,6 +140,7 @@ export function generateJavaProject(input: JavaProjectInput): {
         context.usesHeal,
         context.usesRunFunctionAsEntity,
         context.usesRunFunctionAsTriggerActor,
+        context.usesRunFunctionAsOwnMob,
       ),
     });
   }

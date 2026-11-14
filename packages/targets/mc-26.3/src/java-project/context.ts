@@ -33,6 +33,11 @@ export interface GenerationContext {
    * `Actions.runFunction` comment then names every actor).
    */
   usesRunFunctionAsTriggerActor: boolean;
+  /**
+   * Set when an entity definition's event uses `run_function` (it runs as the mob when there is
+   * no player; the `Actions.runFunction` comment then names the mob too).
+   */
+  usesRunFunctionAsOwnMob: boolean;
   /** Set when a tick trigger is generated (`TickLimiter.java` is then written, ADR 0061 D4). */
   usesTickLimiter: boolean;
   /** Set when a block has `msm:on_entity_inside` (`CooldownMap.java` is then written). */

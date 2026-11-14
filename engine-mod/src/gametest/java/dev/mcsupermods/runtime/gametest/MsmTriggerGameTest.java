@@ -46,7 +46,8 @@ import net.minecraft.world.phys.Vec3;
  * {@code held_either} ({@code msm:while_held}, interval 5) and {@code worn_cap} ({@code msm:while_worn}, interval 5);
  * blocks {@code trigger_block} ({@code msm:on_break}, {@code msm:on_place}), {@code tick_block} and
  * {@code tick_never} ({@code msm:on_random_tick}, chance 1 and 0) and {@code inside_block} ({@code msm:on_entity_inside},
- * cooldown 5); the entity {@code ticker} ({@code msm:on_tick}, interval 5, and {@code msm:on_spawn}); the shared
+ * cooldown 5); the entity {@code ticker} ({@code msm:on_tick}, interval 5, and {@code msm:on_spawn}, each with a
+ * {@code run_function} that tags {@code @s}); the shared
  * {@link TickLimiter}.
  *
  * <p>A mock server player is not ticked by the server (its connection is not in the server's list), so the held and
@@ -457,6 +458,37 @@ public class MsmTriggerGameTest {
             helper.assertValueEqual(r.of("arrive", ctx -> ctx.entity() == spawned).size(), 1, "on_spawn fired again");
             r.close();
             copy.discard();
+            helper.succeed();
+        });
+    }
+
+    /**
+     * {@code run_function} in an entity's own events runs as the mob: {@code tag @s} in {@code msm:on_spawn}
+     * ({@code tag_arrived}) and {@code msm:on_tick} ({@code tag_pulsed}) tags the ticker itself; a {@code NoAI} ticker
+     * never gets the {@code on_tick} tag.
+     */
+    @GameTest(maxTicks = 40)
+    public void entityEventFunctionsRunAsTheMob(GameTestHelper helper) {
+        EntityType<Mob> type = ticker(helper);
+        if (type == null) {
+            helper.succeed();
+            return;
+        }
+        Mob spawned = type.spawn(helper.getLevel(), helper.absolutePos(AT), EntitySpawnReason.SPAWN_ITEM_USE);
+        helper.assertTrue(spawned != null, "no ticker spawned");
+        helper.assertTrue(spawned.entityTags().contains("msm_arrived"), "on_spawn function did not run as the mob: "
+                + spawned.entityTags());
+        spawned.setPersistenceRequired(); // as GameTestHelper.spawn: a far player of another test would despawn it
+        Mob still = helper.spawn(type, AT.east(2));
+        still.setNoAi(true);
+        Recorder r = new Recorder(ctx -> ctx.entity() == spawned);
+        helper.runAfterDelay(12, () -> {
+            int pulses = r.of("pulse", ctx -> true).size();
+            r.close();
+            helper.assertTrue(spawned.entityTags().contains("msm_pulsed"), "on_tick function did not run as the mob: "
+                    + spawned.entityTags() + " after " + pulses + " pulse(s), removed " + spawned.getRemovalReason());
+            helper.assertFalse(still.entityTags().contains("msm_pulsed"), "on_tick ran for the NoAI ticker");
+            spawned.discard();
             helper.succeed();
         });
     }
