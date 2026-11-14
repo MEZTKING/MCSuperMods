@@ -2,6 +2,7 @@ package dev.mcsupermods.runtime.events;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.mcsupermods.runtime.MsmRuntime;
+import dev.mcsupermods.runtime.dev.EventOverlay;
 import dev.mcsupermods.runtime.registry.portal.PortalLighting;
 import dev.mcsupermods.runtime.scripting.ScriptHost;
 import java.util.List;
@@ -58,9 +59,12 @@ public final class EventRunner {
         LISTENERS.remove(l);
     }
 
-    /** Fires {@code eventId} of a definition. */
+    /**
+     * Fires {@code eventId} of a definition. In dev mode the events of a dev overlay replace the installed ones (ADR 0084
+     * D6, {@link EventOverlay}); otherwise the overlay map is empty and {@code events} run as given.
+     */
     public static void fire(Identifier owner, Events events, Identifier eventId, EventContext ctx) {
-        run(owner, events, eventId, ctx, 1);
+        run(owner, EventOverlay.resolve(owner, events), eventId, ctx, 1);
     }
 
     private static void run(Identifier owner, Events events, Identifier eventId, EventContext ctx, int depth) {

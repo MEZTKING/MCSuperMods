@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "msm_dev_test:use"
+    }
+  },
+  "events": {
+    "msm_dev_test:use": {
+      "actions": [
+        {
+          "offset": [0, 1, 0],
+          "state": "minecraft:gold_block",
+          "type": "set_block_state"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

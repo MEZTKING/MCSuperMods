@@ -1,5 +1,6 @@
 package dev.mcsupermods.runtime;
 
+import dev.mcsupermods.runtime.dev.DevMode;
 import dev.mcsupermods.runtime.loader.DefinitionScanner;
 import dev.mcsupermods.runtime.loader.LoadReport;
 import dev.mcsupermods.runtime.registry.BlockExtras;
@@ -37,6 +38,8 @@ public final class MsmRuntime implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> report = report.withWarnings(MsmRegistrar.checkAfterStart(server)));
         // msm:strippable (ADR 0067 D4): one UseBlockCallback for every strippable block.
         BlockExtras.register();
+        // Dev mode (ADR 0084 D4): decided at SERVER_STARTING before the scripts load; never on a dedicated server.
+        DevMode.register();
         // Scripts (ADR 0031): loaded per server on SERVER_STARTING, after the registries are frozen.
         ScriptBridges.register();
         // Saved script data (ADR 0062 D3): the persistent attachment msm_runtime:script_data.
