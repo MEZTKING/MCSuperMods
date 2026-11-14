@@ -174,11 +174,11 @@ test('library: Custom ore starter, exports, examples gallery, template filter, o
   }
   await picker.getByTestId('starter-custom_ore').check();
   // Custom ore is a wizard (ADR 0040): step through it with the default answers.
-  await expect(newProject.getByTestId('wizard-progress')).toHaveText('Step 1 of 4');
-  for (let step = 1; step < 4; step += 1) {
+  await expect(newProject.getByTestId('wizard-progress')).toHaveText('Step 1 of 5');
+  for (let step = 1; step < 5; step += 1) {
     await newProject.getByTestId('wizard-next').click();
   }
-  await expect(newProject.getByTestId('wizard-progress')).toHaveText('Step 4 of 4');
+  await expect(newProject.getByTestId('wizard-progress')).toHaveText('Step 5 of 5');
   await newProject.getByTestId('new-project-dialog-submit').click();
   await expect(newProject).toBeHidden();
   await expect(toast(window)).toContainText(`New project from "Custom ore": ${folders.projectDir}`);

@@ -93,14 +93,14 @@ test('targets: Custom ore wizard on the default target, upgrade to the snapshot,
   await expect(dialog).toBeVisible();
   await expect(dialog.getByTestId('starter-custom_ore-wizard')).toHaveText('Wizard');
   await dialog.getByTestId('starter-picker').getByTestId('starter-custom_ore').check();
-  await expect(dialog.getByTestId('wizard-progress')).toHaveText('Step 1 of 4');
+  await expect(dialog.getByTestId('wizard-progress')).toHaveText('Step 1 of 5');
   await dialog.getByTestId('wizard-next').click();
-  await expect(dialog.getByTestId('wizard-progress')).toHaveText('Step 2 of 4');
+  await expect(dialog.getByTestId('wizard-progress')).toHaveText('Step 2 of 5');
   const oreName = dialog.getByTestId('param-ore_name');
   await expect(oreName).toHaveValue('Ruby');
   await oreName.fill('Amber');
-  for (let step = 2; step < 4; step += 1) await dialog.getByTestId('wizard-next').click();
-  await expect(dialog.getByTestId('wizard-progress')).toHaveText('Step 4 of 4');
+  for (let step = 2; step < 5; step += 1) await dialog.getByTestId('wizard-next').click();
+  await expect(dialog.getByTestId('wizard-progress')).toHaveText('Step 5 of 5');
   // The last step's Minecraft version select keeps the default (newest release) target.
   const select = dialog.getByTestId('new-project-target');
   await expect(select).toHaveValue(release.id);
