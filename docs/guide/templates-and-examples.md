@@ -4,9 +4,9 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (185) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (44) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
-| **Examples** (128) | **Help → Examples…** | A commented project or element to open or copy |
+| **Element templates** (188) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (45) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
+| **Examples** (129) | **Help → Examples…** | A commented project or element to open or copy |
 
 Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, and scripting plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
 
@@ -304,6 +304,9 @@ New blocks, items and the mod metadata exist only in the **Fabric mod jar** expo
 | Grinder machine | `msm_block_grinder_machine` | `msm:block` | A machine that burns fuel and grinds with four recipes of its own (cobblestone into gravel, gravel into flint, bones into bone meal, wool into string). |
 | Fast furnace | `msm_block_fast_furnace` | `msm:block` | A machine that smelts a furnace's recipes at twice the speed. |
 | Redstone machine | `msm_block_redstone_machine` | `msm:block` | A machine that works while it is powered by redstone and gives off light while working; it smelts a furnace's recipes. |
+| Portal to the Nether | `msm_block_portal_nether` | `msm:block` | A portal in a frame of crying obsidian, lit with flint and steel, that leads to the Nether and back, eight to one as the Nether portal, with ember-orange dust. Category Portals. Needs the Fabric mod jar. |
+| Portal to the End | `msm_block_portal_end` | `msm:block` | A portal in a frame of end stone bricks that leads to the End and back; travellers land on the ground near the same place, and the way back is a portal you build in the End. Category Portals. |
+| Trigger-lit portal | `msm_block_portal_trigger_lit` | `msm:block` | A portal to the Nether in a frame of quartz blocks that no item lights: light it from an event with the **Light a portal** action. Category Portals. |
 
 #### Items
 
@@ -426,6 +429,7 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Crop (Creator: Blocks) | `crop` | resource, data, mod | A crop that grows in stages on farmland, planted from its own seeds or from its produce, with loot, composting, villager farming and, if you choose, wild patches. |
 | Storage crate (Creator: Blocks) | `storage-crate` | resource, data, mod | A crate with a chest window of 1, 3 or 6 rows, keeping its contents when broken if you choose, in a wood or stone look, with a crafting recipe and a closed and open front picture. |
 | Machine (Creator: Blocks) | `machine` | resource, data, mod | A grinder-like machine with a power, a speed, up to three recipes of its own and the vanilla recipe types you choose, a crafting recipe and front, working-front, side and top pictures. |
+| Portal (Creator: Worlds) | `portal` | resource, data, mod | A portal block that players light in a frame and walk through to a new dimension, the Nether or the End and back, with its frame block, igniter, scale, colour, particles and sounds; a new dimension also gets a travel function for vanilla packs. Needs the Fabric mod jar. |
 | Tree (Creator: Blocks) | `tree` | resource, data, mod | A sapling that grows a tree of its own, from a new log and leaves or vanilla ones, in the shape you pick, and if you choose growing in the world. |
 | Food (Creator: Food) | `food` | resource, data, mod | A new food with its own name, colour, hunger and saturation, a texture and model, and an optional recipe. |
 | Weapon (Creator: Gear) | `weapon` | resource, data, mod | One sword, spear, mace, bow, crossbow or shield with its own name, colour and stats, a texture and model, and an optional recipe. |
@@ -441,7 +445,7 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Extra drop (Creator: Worlds) | `extra-drop` | mod | An extra item in the loot of a vanilla mob, block or chest, with a count, a chance and, for mobs, whether a player must make the kill. The vanilla drops stay. |
 | Mob skin (Creator: Mobs) | `mob-skin` | resource, data | A new skin for a vanilla wolf, cat, pig, cow, chicken or frog, with placeholder textures of the right size to paint over, appearing in a biome you choose or everywhere. |
 | Goat horn (Creator: Gear) | `goat-horn` | resource, data | A new goat horn call: its name, a vanilla sound or your own `.ogg`, how long it plays and how far it is heard, a recipe and, if you choose, goats dropping it. |
-| Dimension (Creator: Worlds) | `dimension` | resource, data, mod | A new dimension to explore: pick the terrain, the biome and the sky, and travel there and back with a key item (Fabric mod jar) or a command (vanilla packs). |
+| Dimension (Creator: Worlds) | `dimension` | resource, data, mod | A new dimension to explore: pick the terrain, the biome and the sky, and travel there and back with a key item or a portal (Fabric mod jar) or a command (vanilla packs). |
 | Recipe pack | `recipe_pack` | data | Shaped, shapeless, smelting, blasting and stonecutting recipes, an item tag used as an ingredient, a crafting advancement and a load message. |
 | Custom music disc | `music_disc` | resource, data | A jukebox song, its sound event, a disc model and texture, and a `give_disc` function. |
 | Functions | `function_starter` | data | `load` and `tick` functions wired to `#minecraft:load` and `#minecraft:tick`, a jump scoreboard, a `greet` function and a function tag of your own. |
@@ -519,7 +523,7 @@ The script examples use `msm:script`, which runs only in the Fabric mod jar (see
 
 ### All examples
 
-There is one example for each of the 94 element kinds, thirty more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; containers and machines: a loot crate in a structure, an ore crusher and a shulker crate; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn, Pet, Farm animal, Mount, Flying mob, Water mob, Boss, Storage crate, Machine) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 94 element kinds, thirty-one more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; containers and machines: a loot crate in a structure, an ore crusher and a shulker crate; portals: a two-way sky portal; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn, Pet, Farm animal, Mount, Flying mob, Water mob, Boss, Storage crate, Machine, Portal) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -624,6 +628,7 @@ There is one example for each of the 94 element kinds, thirty more behaviour exa
 | Loot crate in a structure | `example_msm_loot_crate` | Blocks | `msm:block` | A stone crate with a chest screen, placed in a small room by a structure template that gives it a loot table, so it fills on the first open as a dungeon chest does. |
 | Ore crusher | `example_msm_ore_crusher` | Blocks | `msm:block` | A machine from the Machine flow that crushes raw iron, gold and copper into two ingots each, burning fuel, with a hopper chain that feeds it and empties it into a chest. |
 | Shulker crate | `example_msm_shulker_crate` | Blocks | `msm:block` | A crate that keeps its 27 slots of items when broken and carries them in its item, as a shulker box does, from the Storage crate flow. |
+| Two-way sky portal | `example_msm_sky_portal` | Blocks | `msm:block` | A portal from the Portal flow to a flat sky dimension and back, in a frame of its own block, lit with flint and steel or by using a beacon block (the **Light a portal** action), with blue dust and an `On travel` function that says a line. |
 | Life-steal sword | `example_msm_life_steal_sword` | Items | `msm:item` | An iron sword that heals you by one heart each time it hits a mob. |
 | Night-vision helmet | `example_msm_night_vision_helmet` | Items | `msm:item` | An iron helmet that gives night vision while you wear it. |
 | Brewed with your own item | `example_msm_brewed_with_own_item` | Potions | `msm:potion` | A Moon Shard item of your own as a brewing ingredient: an awkward potion and a moon shard brew a Potion of Levitation, which vanilla does not have, with a stronger version. |

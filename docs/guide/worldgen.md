@@ -67,7 +67,7 @@ The map shows the climate points only, not real terrain: the game's noise decide
 
 ## Other worldgen elements
 
-Dimensions (**Multi-noise overworld**, **Single-biome dimension**) and the elements under **Worldgen (advanced)** (noise settings, density functions, noise, carvers, flat level presets, multi-noise parameter lists, block state providers, material conditions and rules) use the general form with templates. Each template is a minimal valid file to build on.
+Dimensions (**Multi-noise overworld**, **Single-biome dimension**) and the elements under **Worldgen (advanced)** (noise settings, density functions, noise, carvers, flat level presets, multi-noise parameter lists, block state providers, material conditions and rules) use the general form with templates. Each template is a minimal valid file to build on. To get players into a dimension of your own, use the Creator's Dimension or Portal flow: a key item, a portal block (Fabric mod jar) or a travel function (see [Portals](portals.md)).
 
 ## Check it in the game
 

@@ -60,6 +60,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Problems** checks the new content: a layout field on the wrong layout, keep contents on anything but a 3-row chest, an event the block does not declare, a block with both a container and a machine, an unknown recipe type or item, and machine recipes on a block that is no machine. Machine recipes and the crafting recipes and loot tables of these blocks stay out of vanilla data packs. New guide page [Containers and machines](docs/guide/containers-and-machines.md).
 - The Java project export writes containers and machines for 26.3 (`ModBlockEntities.java`, `ModRecipes.java`, block entity classes and the machine recipe classes). The AI helper knows the new components and flows.
 - Plugin API 1.12.0: `BlockFacts.containerSounds` and `BlockFacts.machineRecipeTypes` in `TargetFacts.blocks`.
+- **Portals**: the Block Studio's new block type **Portal** (section **Portal**: **Frame**, **Travel**, **Looks**) makes a portal like the Nether's: players build a frame of a block or tag you choose, light it with an item of your choice (flint and steel by default) or by an event, and step in to reach a dimension of your own, the Nether or the End, and back. It has a **Scale** (**8:1 like the Nether** or any number), **Arrive** (**In a linked portal**, which finds or builds an exit portal, or **On the ground**), a delay and cooldown, **Players only**, **Wobble and overlay**, particles (coloured dust in a colour of your choice), sounds and an **On travel** event. The new action **Light a portal (light_portal)** lights a portal from any event.
+- **Creator flows**: the **Portal** flow (group **Worlds**) makes the portal, its frame block with a recipe and, if you like, a new dimension with a travel function; the **Dimension** flow gains **A portal (needs the Fabric mod jar)** under **How to get there**, and its **Key colour** is now **Key or portal colour**.
+- 3 templates (**Portal to the Nether**, **Portal to the End**, **Trigger-lit portal**), 1 starter, 1 example (**Two-way sky portal**), 2 new placeholder patterns and the sample project `fixtures/sample-portals`; **Problems** checks portals (ten `blocks-items` codes). Portals need the Fabric mod jar: the vanilla packs keep the dimension and the travel function, and leave out the frame block's recipe and loot. New guide chapter **Portals**.
+- The Java project export writes portals for 26.3. The AI helper knows the Portal flow and templates.
+- Plugin API 1.13.0: `BlockFacts.portal` in `TargetFacts.blocks` (the Nether portal's sounds and particle).
 
 ### Changed
 
@@ -73,6 +78,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+- A crop (and any other block whose generated models stand in for a texture) no longer reports a false `blocks-items.type-needs-appearance` error.
 - **Vanilla data packs of mixed projects load**: a vanilla server refuses a whole data pack when one of its recipes, loot tables, advancements, tags, worldgen or other files names a block, item, effect, potion or mob that only the Fabric mod jar adds (a block's own loot table was enough). The vanilla data pack and the data half of **Both packs into a folder…** now leave such files out and say which in **Problems** (`export.mod-only-reference`), make tag entries naming them optional, and keep functions with a warning (`export.mod-only-function`); the Fabric mod jar keeps everything. Work in progress (ADR 0066).
 - In the Studios, clearing a value inside a row of a list (for example turning a potion effect's **Particles** switch back on) now removes it; before, the old value stayed.
 - The Java project export of a walk-through block (**Block shapes**) wrote a block properties line that did not compile.

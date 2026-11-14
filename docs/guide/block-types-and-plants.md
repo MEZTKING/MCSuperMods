@@ -5,7 +5,7 @@ A plain block is a cube. MCSuperMods also makes the blocks that behave like vani
 You make them in two ways:
 
 - the Creator's flows **Wood set**, **Stone set**, **Crop** and **Tree** (group **Blocks**) build a whole family with its recipes, tags and textures in one step;
-- the Block Studio's **Type** section turns a single block into one of the types, and 17 templates under **Blocks** start one (see [Templates, starters and examples](templates-and-examples.md#blocks)).
+- the Block Studio's **Type** section turns a single block into one of the types, and 17 templates under **Blocks** start one (a portal is a block type of its own: see [Portals](portals.md)) (see [Templates, starters and examples](templates-and-examples.md#blocks)).
 
 New blocks exist only in the **Fabric mod jar** export ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)) and need the runtime of MCSuperMods 1.5.0 or later; an older runtime registers every typed block as a plain cube. See [Vanilla packs](#vanilla-packs) for what the resource and data pack exports keep.
 

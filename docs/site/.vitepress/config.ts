@@ -51,6 +51,7 @@ export default defineConfig({
           { text: 'Blocks and items', link: '/blocks-and-items' },
           { text: 'Block types and plants', link: '/block-types-and-plants' },
           { text: 'Containers and machines', link: '/containers-and-machines' },
+          { text: 'Portals', link: '/portals' },
           { text: 'The Creator', link: '/creator' },
           { text: 'Status effects and throwables', link: '/effects-and-throwables' },
           { text: 'Potions and brewing', link: '/potions' },
