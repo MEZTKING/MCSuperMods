@@ -4,9 +4,14 @@
  * @packageDocumentation
  */
 
-import type { Element, OutputFile, Problem, Project, TargetFacts } from '@msm/plugin-api';
+import type { Element, OutputFile, Plugin, Problem, Project, TargetFacts } from '@msm/plugin-api';
 import { ProblemCodes } from '../problems/codes';
 import type { ElementKindRegistry } from '../registry/element-kind-registry';
+import {
+  type ExpandProjectResult,
+  expandProjectSync,
+  mapProblemsToOrigins,
+} from './expand-project';
 import { type MergeEntry, mergeOutputFiles } from './merge-outputs';
 
 /** The result of {@link lowerProject}. */
@@ -15,6 +20,29 @@ export interface LowerResult {
   files: OutputFile[];
   /** Lowering problems, in element order. */
   problems: Problem[];
+}
+
+/** Options of {@link lowerProject} and `lowerProjectAsync`. */
+export interface LowerProjectOptions {
+  /**
+   * The registered plugins, in registration order. When given, the project is expanded first
+   * (ADR 0082 D9: `expandProject`, or `expandProjectSync` for {@link lowerProject}) and the
+   * patched copy is lowered; the expansion problems come first and lowering problems on patched
+   * places are reported on the patches' origins. Omit it for a project that is already
+   * expanded (expanding twice would let expanders read their own patches as saved data).
+   */
+  plugins?: readonly Plugin[];
+}
+
+/**
+ * Prepends the expansion problems to a lowering result and reports its problems on patched
+ * places on their origins.
+ */
+export function withExpansion(result: LowerResult, expansion: ExpandProjectResult): LowerResult {
+  return {
+    files: result.files,
+    problems: [...expansion.problems, ...mapProblemsToOrigins(result.problems, expansion.origins)],
+  };
 }
 
 /** Compares two strings by UTF-16 code units. */
@@ -79,18 +107,26 @@ export function finishLowering(entries: MergeEntry[], problems: Problem[]): Lowe
  * `merge` mode (a disagreeing key is a `lowering.merge-conflict` error); otherwise the first
  * is kept and a `lowering.conflict` error names both elements. Files are returned as produced
  * (including `schema`) or merged, sorted by layer then path; merge problems follow the
- * per-element problems.
+ * per-element problems. With `options.plugins` the project is expanded first
+ * ({@link LowerProjectOptions.plugins}); an expander returning a Promise is then a
+ * `core.expansion-failed` error.
  *
- * @param project - The project to lower.
+ * @param project - The project to lower; never changed.
  * @param registry - The kind registry.
  * @param target - The Minecraft target to lower for.
+ * @param options - The plugins whose project expanders run first.
  * @returns The output files and the problems found.
  */
 export function lowerProject(
   project: Project,
   registry: ElementKindRegistry,
   target: TargetFacts,
+  options: LowerProjectOptions = {},
 ): LowerResult {
+  if (options.plugins !== undefined) {
+    const expansion = expandProjectSync(project, options.plugins, target);
+    return withExpansion(lowerProject(expansion.project, registry, target), expansion);
+  }
   const problems: Problem[] = [];
   const entries: MergeEntry[] = [];
   for (const element of elementsInLoweringOrder(project)) {

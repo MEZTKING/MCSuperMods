@@ -4061,3 +4061,21 @@ What: CI run 43624166718 (fcb5437) again failed `creator-path.spec.ts:678` on th
 Decisions: ask live state rather than track events; keep keyboard tooltips.
 
 Next: none.
+## 2026-11-14 — executor — B367 core project expanders
+
+What
+- `@msm/core` applies plugin API 1.15.0 project expanders (ADR 0082 D9): new `src/lowering/expand-project.ts` with `expandProject(project, plugins, target): Promise<ExpandProjectResult>` and `expandProjectSync` (`{ project, origins: Map<string, ElementPatchOrigin>, problems }`), `projectExpanders(plugins)`, `expansionOriginKey(elementId, pointer)` (`<id>#<pointer>`), `originForProblem` and `mapProblemsToOrigins`.
+- Every expander gets the saved elements in lowering order; patches apply in plugin, expander and patch order to deep copies of the patched elements' `data` in a structural copy of the project (unpatched elements shared). Paths: strings are object keys, numbers list indexes (0 to the length), missing parent objects are created, an empty path replaces `data` (must be an object); keys are written with `defineProperty`, so `__proto__` is an ordinary key.
+- New codes: `core.expansion-conflict` (the same element and path twice; on the later patch's origin, first value kept), `core.expansion-failed` (thrown, rejected or malformed result, or a Promise in the synchronous variant; one error per element of the expander's kinds, or one without an element), `core.expansion-invalid-patch` (unknown element, bad path, origin or value, or a path through a non-container; on the origin).
+- `lowerProject` and `lowerProjectAsync` take an optional `options: LowerProjectOptions` (`plugins?`): with it the project is expanded first, expansion problems come first and lowering problems on patched places move to the origin. Without it nothing changes (existing callers untouched).
+- Tests: `packages/core/test/expand-project.test.ts` (9): patched data lowered and the saved project byte-identical, structural copy and origins, a `validateJson` problem on a patched field mapped to the rule, plugin order and conflict, saved elements given to every expander, throwing/rejecting/malformed expanders, async versus sync, path rules and refusals.
+- Verified: `pnpm lint`, `pnpm typecheck`, full `turbo run test --force --concurrency=4` (22 tasks green).
+
+Decisions
+- Expansion is opt-in in the lowering drivers (`options.plugins`): expanding an already expanded project would let an expander read its own patches as saved data (a rules compiler would chain a generated event to itself), so a host that expands once for validation and export passes the expanded project and no plugins.
+- A mapped problem keeps code, severity, message and `file`, takes the origin's element and pointer (no `path` for `''`) and loses `range`.
+- A patch that cannot be applied gets its own code (`core.expansion-invalid-patch`), not named in the brief.
+
+Next
+- B371: call `expandProject(project, plugins, target)` once per validation, export, content jar, vanilla pack, eject and modpack path, validate and lower `result.project`, and run validator and schema problems through `mapProblemsToOrigins(problems, result.origins)`; `runExport` receives the expanded project (it does not expand).
+- B383: `packages/core/CLAUDE.md` Contents line for `src/lowering/expand-project.ts` and the three `core.expansion-*` codes.

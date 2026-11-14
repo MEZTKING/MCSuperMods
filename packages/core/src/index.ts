@@ -36,7 +36,16 @@ export { migrateDocument, UnsupportedFormatVersionError } from './io/migrate';
 export { elementMigrators, projectMigrators } from './io/migrators';
 export type { SaveManifest, SaveOptions, SaveResult } from './io/save';
 export { createSaveManifest, saveProject } from './io/save';
-export type { LowerResult } from './lowering/lower-project';
+export type { ExpandProjectResult } from './lowering/expand-project';
+export {
+  expandProject,
+  expandProjectSync,
+  expansionOriginKey,
+  mapProblemsToOrigins,
+  originForProblem,
+  projectExpanders,
+} from './lowering/expand-project';
+export type { LowerProjectOptions, LowerResult } from './lowering/lower-project';
 export { lowerProject } from './lowering/lower-project';
 export { lowerProjectAsync } from './lowering/lower-project-async';
 export type { MergeEntry, MergeOptions, MergeOutputResult } from './lowering/merge-outputs';

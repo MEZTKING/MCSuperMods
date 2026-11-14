@@ -41,6 +41,21 @@ export const ProblemCodes = {
    * element contributes no output files; hosts lower such projects with `lowerProjectAsync`.
    */
   loweringAsyncNotSupported: 'lowering.async-not-supported',
+  /**
+   * Two project expander patches set the same element and path (ADR 0082 D9). Reported on the
+   * later patch's origin; the first value is kept.
+   */
+  expansionConflict: 'core.expansion-conflict',
+  /**
+   * A project expander threw, rejected, returned a malformed result or (in synchronous
+   * lowering) a Promise. Reported on each element of its kinds; its patches are ignored.
+   */
+  expansionFailed: 'core.expansion-failed',
+  /**
+   * A project expander patch names an unknown element, has a malformed path or origin, or runs
+   * through a value that is not an object or list. Reported on its origin; not applied.
+   */
+  expansionInvalidPatch: 'core.expansion-invalid-patch',
   /** A rename's new id is already used by another element. Nothing is renamed. */
   refsRenameConflict: 'refs.rename-conflict',
 } as const;

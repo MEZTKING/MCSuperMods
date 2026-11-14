@@ -7,12 +7,15 @@
 
 import type { Element, OutputFile, Problem, Project, TargetFacts } from '@msm/plugin-api';
 import type { ElementKindRegistry } from '../registry/element-kind-registry';
+import { expandProject } from './expand-project';
 import {
   elementsInLoweringOrder,
   finishLowering,
+  type LowerProjectOptions,
   type LowerResult,
   loweringFailedProblem,
   unknownKindProblem,
+  withExpansion,
 } from './lower-project';
 import type { MergeEntry } from './merge-outputs';
 
@@ -23,18 +26,26 @@ import type { MergeEntry } from './merge-outputs';
  * and then id order, `lowering.unknown-kind` for an unregistered kind, `lowering.failed` for
  * a `lower` call that throws or whose Promise rejects (the element contributes no files),
  * and the same merge of files that share a layer and path. Elements are lowered one after
- * another, so output order and problem order do not depend on timing.
+ * another, so output order and problem order do not depend on timing. With `options.plugins`
+ * the project is expanded first with `expandProject` (expanders are awaited), as in
+ * `lowerProject`.
  *
- * @param project - The project to lower.
+ * @param project - The project to lower; never changed.
  * @param registry - The kind registry.
  * @param target - The Minecraft target to lower for.
+ * @param options - The plugins whose project expanders run first.
  * @returns The output files and the problems found.
  */
 export async function lowerProjectAsync(
   project: Project,
   registry: ElementKindRegistry,
   target: TargetFacts,
+  options: LowerProjectOptions = {},
 ): Promise<LowerResult> {
+  if (options.plugins !== undefined) {
+    const expansion = await expandProject(project, options.plugins, target);
+    return withExpansion(await lowerProjectAsync(expansion.project, registry, target), expansion);
+  }
   const problems: Problem[] = [];
   const entries: MergeEntry[] = [];
   for (const element of elementsInLoweringOrder(project)) {
