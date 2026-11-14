@@ -1,0 +1,34 @@
+{
+  "data": {
+    "components": {
+      "msm:while_held": {
+        "event": "msm_sample_particles:petal_charm_held",
+        "interval_ticks": 20
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "display_name": "Petal Charm",
+    "events": {
+      "msm_sample_particles:petal_charm_held": {
+        "actions": [
+          {
+            "count": 6,
+            "force": true,
+            "particle": "msm_sample_particles:petal",
+            "spread": 0.4,
+            "type": "spawn_particle"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_sample_particles:item/petal_charm"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_particles:petal_charm",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

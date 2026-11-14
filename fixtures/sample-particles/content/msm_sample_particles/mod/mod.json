@@ -1,0 +1,18 @@
+{
+  "data": {
+    "authors": [
+      "MCSuperMods"
+    ],
+    "description": "Sample particles: three particle types of its own, two blocks that show particles by themselves, three items that send them, an effect, a function and a script.",
+    "licence": "MIT",
+    "mod_id": "msm_sample_particles",
+    "name": "MSM Sample Particles",
+    "version": "1.0.0"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_particles:mod",
+  "kind": "msm:mod",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

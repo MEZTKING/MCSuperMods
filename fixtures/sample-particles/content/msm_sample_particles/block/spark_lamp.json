@@ -1,0 +1,42 @@
+{
+  "data": {
+    "components": {
+      "msm:ambient_particles": {
+        "chance": 0.5,
+        "count": 2,
+        "offset": [
+          0.5,
+          1.05,
+          0.5
+        ],
+        "particle": "msm_sample_particles:spark",
+        "spread": [
+          0.3,
+          0.05,
+          0.3
+        ]
+      },
+      "msm:breakable": {
+        "hardness": 0.3,
+        "resistance": 0.3
+      },
+      "msm:light_emitter": {
+        "level": 10
+      }
+    },
+    "display_name": "Spark Lamp",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "model": "msm_sample_particles:block/spark_lamp",
+    "sound_type": "glass"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_particles:spark_lamp",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

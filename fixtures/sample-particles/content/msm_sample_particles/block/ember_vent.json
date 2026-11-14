@@ -1,0 +1,53 @@
+{
+  "data": {
+    "components": {
+      "msm:ambient_particles": {
+        "chance": 0.8,
+        "count": 3,
+        "offset": [
+          0.5,
+          1.05,
+          0.5
+        ],
+        "particle": {
+          "color": [
+            1,
+            0.45,
+            0.1
+          ],
+          "scale": 1.2,
+          "type": "minecraft:dust"
+        },
+        "spread": [
+          0.25,
+          0,
+          0.25
+        ],
+        "velocity": [
+          0,
+          0.08,
+          0
+        ]
+      },
+      "msm:breakable": {
+        "hardness": 1.5,
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Ember Vent",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "model": "msm_sample_particles:block/ember_vent",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_particles:ember_vent",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

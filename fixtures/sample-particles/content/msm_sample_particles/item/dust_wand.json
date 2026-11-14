@@ -1,0 +1,41 @@
+{
+  "data": {
+    "components": {
+      "msm:on_use": {
+        "cooldown_ticks": 10,
+        "event": "msm_sample_particles:dust_wand_used"
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "display_name": "Dust Wand",
+    "events": {
+      "msm_sample_particles:dust_wand_used": {
+        "actions": [
+          {
+            "count": 40,
+            "particle": {
+              "color": [
+                0.3,
+                0.7,
+                1
+              ],
+              "scale": 2,
+              "type": "minecraft:dust"
+            },
+            "spread": 0.6,
+            "type": "spawn_particle"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_sample_particles:item/dust_wand"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_particles:dust_wand",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

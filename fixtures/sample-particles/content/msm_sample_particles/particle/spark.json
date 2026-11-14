@@ -1,0 +1,26 @@
+{
+  "data": {
+    "animation": "age",
+    "emissive": true,
+    "fade": "out",
+    "format": 1,
+    "gravity": -0.02,
+    "lifetime": {
+      "max": 24,
+      "min": 16
+    },
+    "size": 0.15,
+    "textures": [
+      "msm_sample_particles:spark_0",
+      "msm_sample_particles:spark_1",
+      "msm_sample_particles:spark_2",
+      "msm_sample_particles:spark_3"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_particles:spark",
+  "kind": "msm:particle",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

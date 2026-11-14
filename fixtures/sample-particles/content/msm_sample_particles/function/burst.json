@@ -1,0 +1,14 @@
+{
+  "data": {
+    "lines": [
+      "particle msm_sample_particles:spark ~ ~1 ~ 0.5 0.5 0.5 0 30",
+      "say A burst of 30 sparks."
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_particles:burst",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

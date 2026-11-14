@@ -1,0 +1,23 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// block.interact: a player uses the spark lamp with the main hand. Petals fall from above it,",
+      "// and pieces of the lamp itself (a block options object) burst around it.",
+      "msm.events.on(\"block.interact\", (e) => {",
+      "  if (e.hand !== \"main\") return;",
+      "  if (e.block.id !== \"msm_sample_particles:spark_lamp\") return;",
+      "  e.world.spawnParticle(\"msm_sample_particles:petal\", e.block.pos.offset(0.5, 1.5, 0.5), { count: 8, spread: 0.3 });",
+      "  e.world.spawnParticle({ type: \"minecraft:block\", block_state: \"msm_sample_particles:spark_lamp\" }, e.block.pos.offset(0.5, 0.5, 0.5), { count: 16, spread: 0.4 });",
+      "  msm.log.info(\"block.interact: \" + e.player.name + \" used the spark lamp at \" + e.block.pos);",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_particles:particles",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

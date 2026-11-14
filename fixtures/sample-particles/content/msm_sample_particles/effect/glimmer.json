@@ -1,0 +1,15 @@
+{
+  "data": {
+    "category": "beneficial",
+    "color": 14082798,
+    "display_name": "Glimmer",
+    "format": 1,
+    "particle": "msm_sample_particles:bubble"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_particles:glimmer",
+  "kind": "msm:effect",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

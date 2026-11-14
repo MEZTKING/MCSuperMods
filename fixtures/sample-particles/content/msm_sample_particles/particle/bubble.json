@@ -1,0 +1,25 @@
+{
+  "data": {
+    "always_show": true,
+    "animation": "loop",
+    "fade": "in_out",
+    "format": 1,
+    "frame_ticks": 5,
+    "gravity": -0.05,
+    "lifetime": 40,
+    "size": 0.25,
+    "textures": [
+      "msm_sample_particles:bubble_0",
+      "msm_sample_particles:bubble_1",
+      "msm_sample_particles:bubble_2",
+      "msm_sample_particles:bubble_3"
+    ],
+    "translucent": true
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_particles:bubble",
+  "kind": "msm:particle",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}
