@@ -493,30 +493,41 @@ public class SampleScriptParityTest {
         helper.succeed();
     }
 
-    /** Cross-dimension teleport of the player and a cow (D7) and {@code player.changeDimension} (D8). */
+    /**
+     * Cross-dimension teleport of the player and a cow (D7) and {@code player.changeDimension} (D8). Vanilla re-creates
+     * the cow in the Nether (same UUID) and adds it to an entity section whose chunk the entity manager does not yet
+     * track when the script's {@code setBlock} has only just loaded it, so a level lookup in the same tick does not see
+     * the cow; it is visible from a later tick (seen on the next one), so the test waits for it there.
+     */
     @GameTest(maxTicks = 200)
     public void netherTakesThePlayerAndACow(GameTestHelper helper) {
         Mob cow = helper.spawnWithNoFreeWill(EntityTypes.COW, AT.east());
         ParityEars ears = new ParityEars(helper, AT, GameType.SURVIVAL, "msm-nether");
+        ServerLevel nether;
         try {
             ears.read();
             ears.chat("!nether");
             List<String> answer = said(ears);
             helper.assertValueEqual(answer, List.of("You went from minecraft:overworld to minecraft:the_nether.",
                     "Now in minecraft:the_nether with 1 cow(s), the first now in minecraft:the_nether."), "nether answers");
-            ServerLevel nether = (ServerLevel) ears.player.level();
+            nether = (ServerLevel) ears.player.level();
             helper.assertValueEqual(nether.dimension(), Level.NETHER, "player dimension");
             helper.assertTrue(nether.getBlockState(ears.player.blockPosition().below()).is(Blocks.OBSIDIAN), "no obsidian floor");
             helper.assertTrue(cow.isRemoved() && cow.getRemovalReason() == Entity.RemovalReason.CHANGED_DIMENSION,
                     "the cow did not change dimension: " + cow.getRemovalReason());
-            List<Mob> cows = nether.getEntitiesOfClass(Mob.class, new AABB(ears.player.blockPosition()).inflate(3),
-                    m -> m.getType() == EntityTypes.COW);
-            helper.assertValueEqual(cows.size(), 1, "cows beside the player in the Nether");
-            cows.forEach(Entity::discard);
-        } finally {
+        } catch (RuntimeException | Error e) {
             ears.close();
+            throw e;
         }
-        helper.succeed();
+        BlockPos floor = ears.player.blockPosition();
+        helper.succeedWhen(() -> {
+            List<Mob> cows = nether.getEntitiesOfClass(Mob.class, new AABB(floor).inflate(3), m -> m.getType() == EntityTypes.COW);
+            helper.assertValueEqual(cows.size(), 1, "cows beside the player in the Nether");
+            helper.assertValueEqual(cows.getFirst().getUUID(), cow.getUUID(), "the cow beside the player");
+            helper.assertValueEqual(cows.getFirst().blockPosition(), floor.east(), "the cow's position");
+            cows.forEach(Entity::discard);
+            ears.close();
+        });
     }
 
     /** {@code player.tick} every 20 ticks gives Luck to a player who wears a golden helmet, and to nobody else (D8). */
