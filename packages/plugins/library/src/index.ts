@@ -34,6 +34,7 @@ export {
   ARMOR_LAYER_SIZE,
   armorLayerPng,
   bodyArmorLayerPng,
+  boxSkinPng,
   DEFAULT_COLOUR,
   EFFECT_ICON_SIZE,
   encodePng,
@@ -55,8 +56,13 @@ export {
   type Rgb,
   WOLF_ARMOR_LAYER_SIZE,
 } from './assets/png';
-
 export { COLOURS, KINDS, modIdFromNamespace } from './content/bundle';
+export {
+  MOB_PRESET_NAMES,
+  MOB_PRESETS,
+  presetAnimationFields,
+  presetSkinPng,
+} from './content/mob-presets';
 export { type DecodedPng, decodePngDataUrl, PNG_DATA_URL_PREFIX } from './content/parameters';
 export {
   behaviourExamples,

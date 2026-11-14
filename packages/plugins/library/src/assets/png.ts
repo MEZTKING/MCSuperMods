@@ -1738,6 +1738,120 @@ export function placeholderSkinPng(options: PlaceholderOptions = {}): Uint8Array
   return encodePng(placeholderSkinPixels(options), PLACEHOLDER_SKIN_SIZE, PLACEHOLDER_SKIN_SIZE);
 }
 
+// Model skins -----------------------------------------------------------------------------
+
+/**
+ * One box-UV cube of a model as it unfolds onto its texture (ADR 0073 D1): the texture offset
+ * `u`, `v` and the cube's width, height and depth in pixels, plus how it is drawn. `face`
+ * draws two eyes on the front (north) face, `side_face` one eye on each side (east and west)
+ * near the front, `saddle` draws the box in leather brown whatever the colour; `plain` (the
+ * default) draws it in the colour.
+ */
+export interface SkinBox {
+  u: number;
+  v: number;
+  w: number;
+  h: number;
+  d: number;
+  role?: 'plain' | 'face' | 'side_face' | 'saddle';
+}
+
+/** Leather brown, the saddle's colour on every model skin. */
+export const SADDLE_COLOUR: Rgb = Object.freeze([124, 78, 42]) as Rgb;
+
+const EYE: Rgba = [24, 22, 28, 255];
+const EYE_SHINE: Rgba = [236, 236, 240, 255];
+
+/**
+ * The RGBA pixels of a model skin drawn from its box-UV cubes (ADR 0073 D1): every face of
+ * every box in the colour with a darker rim, the top face lighter and the bottom face darker,
+ * eyes on the front face of `face` boxes, and nothing (transparent) outside the faces. Boxes
+ * later in the list are drawn over earlier ones.
+ *
+ * @param boxes - The model's cubes on the texture.
+ * @param width - Texture width in pixels.
+ * @param height - Texture height in pixels.
+ * @param options - The main colour.
+ */
+export function boxSkinPixels(
+  boxes: readonly SkinBox[],
+  width: number,
+  height: number,
+  options: PlaceholderOptions = {},
+): Uint8Array {
+  const body = paletteOf(options.colour ?? DEFAULT_COLOUR);
+  const leather = paletteOf(SADDLE_COLOUR);
+  const rgba = new Uint8Array(width * height * 4);
+  const fill = (
+    x0: number,
+    y0: number,
+    w: number,
+    h: number,
+    inner: Rgba,
+    rim: Rgba,
+    palette: Palette,
+  ): void => {
+    for (let y = y0; y < y0 + h; y += 1) {
+      for (let x = x0; x < x0 + w; x += 1) {
+        if (x < 0 || y < 0 || x >= width || y >= height) continue;
+        const edge = x === x0 || y === y0 || x === x0 + w - 1 || y === y0 + h - 1;
+        const speck = !edge && hash(x, y, 7) % 11 === 0;
+        rgba.set(edge ? rim : speck ? palette.deep : inner, (y * width + x) * 4);
+      }
+    }
+  };
+  for (const box of boxes) {
+    const palette = box.role === 'saddle' ? leather : body;
+    const { u, v, w, h, d } = box;
+    fill(u + d, v, w, d, palette.light, palette.mid, palette);
+    fill(u + d + w, v, w, d, palette.deep, palette.dark, palette);
+    fill(u, v + d, d, h, palette.mid, palette.deep, palette);
+    fill(u + d, v + d, w, h, palette.mid, palette.deep, palette);
+    fill(u + d + w, v + d, d, h, palette.mid, palette.deep, palette);
+    fill(u + 2 * d + w, v + d, w, h, palette.mid, palette.deep, palette);
+    if (box.role === 'face' && w >= 4 && h >= 3) {
+      const row = v + d + Math.max(1, Math.floor(h / 3));
+      const inset = Math.max(1, Math.floor(w / 4));
+      const left = u + d + inset;
+      const right = u + d + w - 1 - inset;
+      for (const [x, shine] of [
+        [left, left + 1],
+        [right, right - 1],
+      ] as const) {
+        if (row < height && x < width) rgba.set(EYE, (row * width + x) * 4);
+        if (w >= 8 && row < height && shine < width && shine !== left && shine !== right) {
+          rgba.set(EYE_SHINE, (row * width + shine) * 4);
+        }
+      }
+    }
+    if (box.role === 'side_face' && d >= 3 && h >= 3) {
+      // East is left of the front face and west right of it, so their front columns touch it.
+      const row = v + d + Math.max(1, Math.floor(h / 3));
+      for (const x of [u + d - 2, u + d + w + 1]) {
+        if (row < height && x < width) rgba.set(EYE, (row * width + x) * 4);
+      }
+    }
+  }
+  return rgba;
+}
+
+/**
+ * A byte-stable RGBA PNG of {@link boxSkinPixels}.
+ *
+ * @param boxes - The model's cubes on the texture.
+ * @param width - Texture width in pixels.
+ * @param height - Texture height in pixels.
+ * @param options - The main colour.
+ */
+export function boxSkinPng(
+  boxes: readonly SkinBox[],
+  width: number,
+  height: number,
+  options: PlaceholderOptions = {},
+): Uint8Array {
+  return encodePng(boxSkinPixels(boxes, width, height, options), width, height);
+}
+
 // PNG encoding ----------------------------------------------------------------------------
 
 const CRC_TABLE = (() => {
