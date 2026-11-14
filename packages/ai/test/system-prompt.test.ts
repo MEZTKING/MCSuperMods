@@ -164,3 +164,52 @@ describe('systemPrompt block types and plants paragraph (ADR 0069 D6)', () => {
     }
   });
 });
+
+describe('systemPrompt mobs paragraph (ADR 0073 D6)', () => {
+  it.each(['chat', 'build'] as const)(
+    'names the bases, modes, components, goals, flows and limits in %s mode',
+    (mode) => {
+      const text = systemPrompt(mode);
+      for (const term of [
+        '"base"',
+        '"animal"',
+        '"monster"',
+        '"mode"',
+        '"fly"',
+        '"swim"',
+        '"amphibious"',
+        'breathes_air',
+        '"water_animal"',
+        'msm:ranged_attack',
+        'msm:tameable',
+        'msm:breedable',
+        'msm:rideable',
+        'msm:variants',
+        'msm:boss_bar',
+        'projectileItems',
+        '"tempt"',
+        '"panic"',
+        '"leap_at_target"',
+        '"ranged_attack"',
+        '"renderer"',
+        '"auto"',
+        '"Pet" (pet:',
+        'farm-animal',
+        'mount',
+        'flying-mob',
+        'water-mob',
+        '"Boss" (boss:',
+        'pet_name',
+        'variant_count',
+        'variant_<n>_biome',
+        '"archer"',
+        'add_starter',
+        'note_missing_feature',
+        'restart',
+        'same mod jar',
+      ]) {
+        expect(text, term).toContain(term);
+      }
+    },
+  );
+});

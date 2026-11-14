@@ -77,7 +77,7 @@ export const READ_TOOLS = [
     group: 'read',
     input: listKindsInput,
     description:
-      'Lists every element kind the project can hold, with its id, label, category and whether it exports to a resource pack, a data pack or the Fabric mod jar. "minecraft:" kinds map one to one to vanilla pack files; "msm:" kinds (msm:block, msm:item, msm:entity, msm:script and the model and animation kinds) are higher-level, are exported in a Fabric mod jar and need the "msm:mod" element. An "msm:block" has a "type" (block, pillar, horizontal, directional, slab, stairs, wall, fence, fence_gate, door, trapdoor, button, pressure_plate, pane, crop, sapling or leaves) that picks its vanilla behaviour and its own fields.',
+      'Lists every element kind the project can hold, with its id, label, category and whether it exports to a resource pack, a data pack or the Fabric mod jar. "minecraft:" kinds map one to one to vanilla pack files; "msm:" kinds (msm:block, msm:item, msm:entity, msm:script and the model and animation kinds) are higher-level, are exported in a Fabric mod jar and need the "msm:mod" element. An "msm:block" has a "type" (block, pillar, horizontal, directional, slab, stairs, wall, fence, fence_gate, door, trapdoor, button, pressure_plate, pane, crop, sapling or leaves) that picks its vanilla behaviour and its own fields. An "msm:entity" has a "base" (mob, animal or monster), a movement "mode" (walk, fly, swim or amphibious) and optional components for ranged attacks, taming, breeding, riding, texture variants and a boss bar.',
   },
   {
     name: 'kind_schema',
@@ -126,7 +126,7 @@ export const READ_TOOLS = [
     group: 'read',
     input: listStartersInput,
     description:
-      'Lists the starters: whole bundles of elements and placeholder textures such as Custom ore (an ore block with its item, loot table, recipes and the msm:mod element), Custom sword and Custom mob (an animated entity with model, animations, spawn egg and loot), the block family flows Wood set, Stone set, Crop and Tree, each with its parameters, their types and defaults. Use add_starter to propose one; it is often the fastest correct way to make a common piece of content.',
+      'Lists the starters: whole bundles of elements and placeholder textures such as Custom ore (an ore block with its item, loot table, recipes and the msm:mod element), Custom sword and Custom mob (an animated entity with model, animations, spawn egg and loot), the block family flows Wood set, Stone set, Crop and Tree, the mob flows Pet, Farm animal, Mount, Flying mob, Water mob and Boss, each with its parameters, their types and defaults. Use add_starter to propose one; it is often the fastest correct way to make a common piece of content.',
   },
   {
     name: 'target_facts',

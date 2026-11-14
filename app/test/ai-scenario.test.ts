@@ -794,3 +794,145 @@ describe('AI helper scenario: the maple wood set (build mode)', () => {
     expect(session.snapshot.project).toEqual(before);
   });
 });
+
+/** The pet fox (ADR 0073 D6, brief B304): the Pet flow through `add_starter`. */
+const FOX_PROMPT = 'make a pet fox';
+
+const foxScript = (): AiModelScript =>
+  aiModelScriptSchema.parse({
+    turns: [
+      {
+        content: [
+          {
+            type: 'tool_use',
+            name: 'propose_plan',
+            input: {
+              title: 'Pet fox',
+              items: [
+                {
+                  itemId: 'fox',
+                  kind: 'msm:entity',
+                  elementId: 'pets:fox',
+                  summary: 'The Pet flow: a tameable, breedable fox with its model and skin.',
+                },
+              ],
+            },
+          },
+        ],
+      },
+      {
+        content: [
+          {
+            type: 'tool_use',
+            name: 'add_starter',
+            input: {
+              starterId: 'pet',
+              namespace: 'pets',
+              values: { pet_name: 'Fox', preset: 'quadruped', taming_food: 'berries' },
+            },
+          },
+        ],
+      },
+      { content: [{ type: 'tool_use', name: 'run_checks', input: { scope: 'all' } }] },
+      {
+        content: [
+          {
+            type: 'tool_use',
+            name: 'checkpoint',
+            input: {
+              completedItemIds: ['fox'],
+              summary: 'The pet fox is proposed and the checks report no errors.',
+            },
+          },
+        ],
+      },
+      {
+        content: [
+          {
+            type: 'text',
+            text: 'The pet fox is ready to review. Its skin is a placeholder to replace.',
+          },
+        ],
+      },
+    ],
+  }) as AiModelScript;
+
+describe('AI helper scenario: the pet fox (build mode)', () => {
+  it('builds the Pet flow through add_starter with no errors and applies in one step', async () => {
+    const { session } = await openSession();
+    const before = session.snapshot.project;
+    const changeset = new PendingChangeset();
+    const client = new ScriptedModelClient(foxScript());
+    const conversation = createConversation('conversation-5', 'claude-opus-5-5');
+
+    const { result, record } = await run(session, changeset, client, conversation, {
+      mode: 'build',
+      text: FOX_PROMPT,
+    });
+    expect(result.reason).toBe('end_turn');
+    expect(client.remaining).toBe(0);
+    expect(record.checkpoints).toBe(1);
+    expect(
+      [...record.results.entries()]
+        .filter(([, answer]) => answer.isError)
+        .map(([id, answer]) => `${id}: ${answer.content}`),
+    ).toEqual([]);
+
+    // The fox is an animal that tames, breeds and draws with the renderer that suits the target.
+    expect(changeset.items.filter((item) => item.conflict !== undefined)).toEqual([]);
+    const created = new Map<string, Record<string, Json> | undefined>(
+      changeset.items
+        .filter((item) => item.op === 'create')
+        .map((item) => [String(item.elementId), item.after as Record<string, Json> | undefined]),
+    );
+    const fox = created.get('pets:fox');
+    expect(fox).toBeDefined();
+    expect(fox?.base).toBe('animal');
+    const components = fox?.components as Record<string, Record<string, Json>>;
+    expect(components['msm:tameable']?.items).toEqual([
+      'minecraft:sweet_berries',
+      'minecraft:glow_berries',
+    ]);
+    expect(components['msm:breedable']).toBeDefined();
+    expect(components['msm:animated_model']?.renderer).toBe('auto');
+    expect(created.has('pets:entity/fox')).toBe(true);
+    expect(created.has('pets:entity/fox_animations')).toBe(true);
+    expect(changeset.items.filter((item) => item.op === 'asset').length).toBeGreaterThanOrEqual(2);
+
+    // run_checks reported no errors.
+    const checkUse = conversation.messages
+      .flatMap((message) =>
+        message.role === 'assistant' && typeof message.content !== 'string' ? message.content : [],
+      )
+      .find((block) => block.type === 'tool_use' && block.name === 'run_checks');
+    const checkId = checkUse?.type === 'tool_use' ? checkUse.id : '';
+    const checks = JSON.parse(record.results.get(checkId)?.content ?? '{}') as {
+      counts: { error: number };
+      elements: { elementId: string; problems: { severity: string; message: string }[] }[];
+    };
+    expect(
+      checks.elements.flatMap((group) =>
+        group.problems
+          .filter((problem) => problem.severity === 'error')
+          .map((problem) => `${group.elementId}: ${problem.message}`),
+      ),
+    ).toEqual([]);
+    expect(checks.counts.error).toBe(0);
+    expectAppendOnly(client);
+
+    // One undo step, no blocking problems, and the Fabric mod jar is not blocked.
+    const applied = await session.applyChangeset(changeset.items);
+    expect(applied.skipped).toEqual([]);
+    expect(session.snapshot.undoLabel).toBe(APPLY_CHANGESET_LABEL);
+    expect([...elementIds(session.snapshot.project)]).toEqual(
+      expect.arrayContaining(['pets:fox', 'pets:entity/fox', 'pets:entity/fox_animations']),
+    );
+    await session.flushValidation();
+    expect(session.snapshot.problems.filter((problem) => problem.severity === 'error')).toEqual([]);
+    const jar = await session.exportFabricJar({ [SEPARATE_RUNTIME_OPTION]: false });
+    expect(jar.problems.filter((problem) => problem.severity === 'error')).toEqual([]);
+    expect(jar.location).toBeDefined();
+    expect(session.undo()).toBe(true);
+    expect(session.snapshot.project).toEqual(before);
+  });
+});
