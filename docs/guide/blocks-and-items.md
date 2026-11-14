@@ -21,10 +21,10 @@ Selecting a block opens the Block Studio. Empty fields use the game's defaults. 
 - **Mining**: **Hardness** (how long the block takes to mine; default 1.5) and **Resistance** (against explosions; default 6). **Tool** makes the block mine fast with that tool (pickaxe, axe, shovel or hoe). **Minimum tier** is the weakest tool tier that still gets drops, for example `iron` for an iron pickaxe or better. A tool or a minimum tier also means the block drops nothing when mined by hand. **Requires the right tool for drops** sets that on its own, without a tool or tier.
 - **Light and sound**: **Light level** from 0 to 15 (empty: no light) and **Sound type**, the sounds for placing, breaking and walking (default stone).
 - **Drops**: **Drops itself** makes a loot table that drops the block's own item; **Loot table** points at a loot table of your own or a vanilla one; **None** makes no loot table.
-- **Block item**: **Has a block item** lets players hold and place the block, with **Stack size**, **Rarity** (the colour of its name) and **Creative tab**. Untick it for a block that only commands or events place; such a block cannot drop itself. Ticking it again brings back the stack size, rarity and creative tab you had before, as long as you have not left the block since; otherwise it gives the default block item (stack of 64, common, no creative tab).
+- **Block item**: **Has a block item** lets players hold and place the block, with **Stack size**, **Rarity** (the colour of its name) and **Creative tab**, and **Fuel and compost** for the item (see [Fuel and compost](#fuel-and-compost)). Untick it for a block that only commands or events place; such a block cannot drop itself. Ticking it again brings back the stack size, rarity and creative tab you had before, as long as you have not left the block since; otherwise it gives the default block item (stack of 64, common, no creative tab).
 - **Behaviour**: what starts the block's events. **On interact** runs an event when a player right-clicks the block. **On step** runs one when something walks onto it, at most once per **Step cooldown (ticks)** (20 ticks are one second). **Redstone signal emitted** makes the block a constant redstone source (0 to 15), and **On powered** and **On unpowered** run events when a redstone signal next to it switches on or off.
 - **Shape**: the block's outline and collision, and whether you can see and walk through it (see [Block shapes](#block-shapes)).
-- **Events**: the block's events and their actions (see [Events and actions](#events-and-actions)).
+- **Events**: the block's events and their actions (see [Events and actions](#events-and-actions)), with the **Triggers** that start them when the block is broken, placed, randomly ticked or has something inside it (see [Triggers](#triggers)).
 
 ## The Item Studio
 
@@ -35,17 +35,18 @@ Selecting an item opens the Item Studio, with **Advanced (all fields)** and **Ra
 - **Tool and durability**: tick **Tool** and choose a **Tool type** (pickaxe, axe, shovel, hoe, sword, spear or mace) and **Tool tier**. Tick **Durability** and set **Uses** for an item that wears out.
 - **Behaviour**: **On use** runs an event when a player uses the item (right-click), at most once per **Use cooldown (ticks)**.
 - **Throwable**: tick **Throwable** to make the item something players throw, like a snowball or a throwing knife, with its damage, speed, gravity and what happens after the throw and on a hit. See [Throwables in the Item Studio](effects-and-throwables.md#throwables-in-the-item-studio).
-- **Events**: as for blocks.
+- **Fuel and compost**: **Burns in a furnace** with its **Burn time (seconds)**, and a **Compost chance** (see [Fuel and compost](#fuel-and-compost)).
+- **Events**: as for blocks, with the item's **Triggers**: on a hit, on use on a block, while held and while worn (see [Triggers](#triggers)).
 
 Status effects have a Studio of their own, the **Effect Studio** ([Status effects and throwables](effects-and-throwables.md#the-effect-studio)). Armour, custom tool materials, weapons, consumables and totems have no section of their own in the Item Studio yet: edit them in **Advanced (all fields)** or **Raw JSON**, or let the [Creator](creator.md) make them (see [Armour](#armour) and the sections after it).
 
 ## Events and actions
 
-An event is a named list of actions that run in order on the server. A block or item can have several events; the triggers in **Behaviour** pick one from the list.
+An event is a named list of actions that run in order on the server. A block or item can have several events; the triggers in **Behaviour** and in the **Triggers** part of **Events** pick one from the list.
 
 1. In **Events**, type a **New event id** (for example `<namespace>:chime`) and choose **Add event**.
 2. Choose an action type in the list next to **Add action** and choose **Add action**. Fill in the action's fields; empty optional fields use their defaults.
-3. In **Behaviour**, choose the event for **On interact** (blocks) or **On use** (items).
+3. In **Behaviour**, choose the event for **On interact** (blocks) or **On use** (items), or pick it for one of the [Triggers](#triggers).
 
 The arrow buttons reorder the actions and the cross removes one. Renaming an event updates every trigger and action that uses it.
 
@@ -66,6 +67,35 @@ The actions (the action list shows each by its name with its id in brackets, for
 | `run_script` | Calls a handler that one of the project's scripts defines with `msm.actions.define`; pick it in the handler list or type its id. See [Scripting](scripting.md#run_script-from-the-events-editor). Scripts are not part of the Java project export. |
 
 **Problems** reports an event a trigger or `trigger_event` names but the element does not have (removing an event leaves its uses in place, so this is how you find them), and events that trigger each other in a loop. Both are errors.
+
+## Triggers
+
+Besides **On interact**, **On step**, **On use** and the redstone triggers in **Behaviour**, blocks and items have more triggers in the **Triggers** part at the top of **Events**. Pick an event for a trigger to turn it on, and **(none)** to turn it off; each pick is one Undo step. A trigger's extra fields appear once it has an event; an empty field uses the default.
+
+| Trigger | For | When it runs | Fields |
+|---|---|---|---|
+| **On hit** | Items | After the item hits a mob, by a player or by a mob holding it (a spear's stab too). `self` is the attacker; `other` is the mob hit. | None |
+| **On use on a block** | Items | When the item is used on a block. The block of the event is the block clicked. A click on a block runs this trigger, not **On use**. | **Cooldown (ticks)** (default 0) |
+| **While held** | Items | Again and again while a player or a mob holds the item; never from other inventory slots. | **Every (ticks)** (default 20), **Hand**: `main` (the default), `off` or `either` |
+| **While worn** | Items | Again and again while the item is worn in its armour slot. The item needs an armour piece (`msm:armor`, see [Armour](#armour)): without one it is never worn, a note says so and **Problems** reports the error `blocks-items.while-worn-without-armor`. | **Every (ticks)** (default 20) |
+| **On break** | Blocks | When a player breaks the block, in any game mode. `self` is the player. | None |
+| **On place** | Blocks | When the block is placed by a player or another entity. `self` is the placer when there is one. | None |
+| **On random tick** | Blocks | On a random block tick, about once every 68 seconds per block on average, as crops grow. | **Chance (0 to 1)** (default 1) |
+| **On entity inside** | Blocks | While a player, a mob or an item is inside the block, at most once per cooldown for each of them. Only a block you can be inside fires it: give it a [shape](#block-shapes) that is not the full cube, or make it **Walk-through**; on a full solid block **Problems** warns (`blocks-items.entity-inside-solid-block`). | **Cooldown (ticks)** (default 20) |
+
+Mobs have two more, **On tick** and **On spawn** ([Entities and models](entities-and-models.md#events-and-play_animation)). In an item event without a player (a mob holding the item), `run_function` runs as that mob. A `run_script` action gets the same actors in its event: `e.other` for the mob hit, `e.block` for the block clicked or broken ([Scripting](scripting.md#run_script-from-the-events-editor)). The templates **Life-steal sword (item triggers)** and **Bounce pad (block triggers)**, and the examples **Life-steal sword** and **Night-vision helmet**, show them at work.
+
+**Repeating triggers have limits**, so a busy world stays smooth:
+
+- **While held**, **While worn** and an entity's **On tick** run at most every 5 ticks (a quarter of a second); 20 ticks are one second. **On entity inside** has the same 5-tick minimum cooldown. Items and mobs with the same interval do not all run in the same tick, but spread over it.
+- Together, these triggers and **On random tick** run at most 2,000 times in one server tick. Firings beyond that are skipped until their next turn, and the game log says so at most once a minute.
+- **Problems** shows a note (`blocks-items.fast-tick-trigger`, information only) when a trigger that repeats faster than once a second runs a function or a script, which costs more than the other actions.
+
+The triggers need the runtime that ships with this release; the [Java project export](eject.md) writes them too.
+
+## Fuel and compost
+
+**Fuel and compost** (in the Item Studio, and in the Block Studio's **Block item** section for a block's item) makes an item of your own burn in a furnace and fill a composter: tick **Burns in a furnace** and set **Burn time (seconds)** (coal burns for 80 seconds), and pick a **Compost chance** from 30% to 100%. They become the vanilla components `minecraft:cooking_fuel` and `minecraft:compostable`. See [Fuel and compost](adding-to-vanilla.md#fuel-and-compost) for the details.
 
 ## Your own sounds
 
@@ -128,6 +158,8 @@ What shapes do not do yet:
 Drops are an ordinary loot table, so they work like vanilla drops and change with `/reload`. **Drops itself** covers the common case. For anything else (several items, a chance, Fortune, Silk Touch), add a loot table element, for example from the **Block loot table** template, and choose **Loot table** in **Drops** with its id. The Custom ore starter shows this: its ruby ore drops rubies from `blocks/ruby_ore`.
 
 A block with a **Minimum tier** drops nothing when mined with a weaker tool, whatever its loot table says.
+
+To add a drop to a vanilla mob, block or chest instead (a zombie that sometimes drops a ruby), use an extra drop: [Extra drops](adding-to-vanilla.md#extra-drops).
 
 ## Display names
 

@@ -2,8 +2,8 @@
  * The scripting path (Phase 6, ADRs 0031 and 0032), driven through the template picker, the
  * Script Studio, the Problems panel and the export menu: a blank project gets an `msm:script`
  * from the "Block interaction script" template; the Script Studio shows Monaco with
- * TypeScript and offers completions after `msm.`; a call to a missing API member is a
- * `typescript.semantic` warning on its line; a syntax error is a `typescript.syntax` error
+ * TypeScript and offers completions after `msm.` and after `player.data.` (saved data,
+ * ADR 0062); a call to a missing API member is a `typescript.semantic` warning on its line; a syntax error is a `typescript.syntax` error
  * that disables "Fabric mod (.jar)…" until it is fixed. The jar is exported with "Separate
  * runtime and GeckoLib (for modpacks)" and holds the script transpiled to ES5 JavaScript (no
  * TypeScript source); `.msm/msm-runtime.d.ts` is in the project folder; a second launch
@@ -206,6 +206,20 @@ test('scripting: template, Monaco TypeScript, problems, Fabric jar with ES5 scri
   const typingsPath = join(folders.projectDir, '.msm', 'msm-runtime.d.ts');
   await expect.poll(() => existsSync(typingsPath)).toBe(true);
   expect(readFileSync(typingsPath, 'utf8')).toContain('declare module "msm:runtime"');
+
+  // Saved data (ADR 0062): completion after `player.data.` lists the DataStore members. ----
+  await newLastLine(window);
+  await window.keyboard.type('declare const player: Player; player.data.');
+  const dataSuggest = window.locator('.monaco-editor .suggest-widget');
+  await expect(dataSuggest).toBeVisible({ timeout: 30_000 });
+  for (const member of ['get', 'set', 'keys']) {
+    await expect(
+      dataSuggest.locator('.monaco-list-row', { hasText: new RegExp(`^${member}\\b`) }).first(),
+    ).toBeVisible({ timeout: 30_000 });
+  }
+  await window.keyboard.press('Escape');
+  await expect(dataSuggest).toBeHidden();
+  await removeLastLine(window, templateText);
 
   // Completion after `msm.` comes from the typings through Monaco's TypeScript worker. ------
   await newLastLine(window);

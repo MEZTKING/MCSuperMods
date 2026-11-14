@@ -1,6 +1,6 @@
 # The Creator
 
-The **Creator** makes a finished piece of content from a few questions: a whole set of tools and armour, one weapon, a food or drink, a totem, an enchantment, a status effect, a throwable, a painting, a music disc, a block, a mob, a dimension or a scripted item. You answer in a form on the left and watch the result on the right; **Create** adds every element, texture, recipe, tag and name it needs to the open project in one step that a single Undo takes back. Later, **Edit in Creator** reopens the set with the same answers, so you can change the colour or add a piece without losing the changes you made by hand.
+The **Creator** makes a finished piece of content from a few questions: a whole set of tools and armour, one weapon, a food or drink, a totem, an enchantment, a status effect, a throwable, a painting, a music disc, a block, a mob, a dimension, a villager trade, an extra drop for a vanilla mob, block or chest, or a scripted item. You answer in a form on the left and watch the result on the right; **Create** adds every element, texture, recipe, tag and name it needs to the open project in one step that a single Undo takes back. Later, **Edit in Creator** reopens the set with the same answers, so you can change the colour or add a piece without losing the changes you made by hand.
 
 The Creator uses the same flows as the project starters ([Templates, starters and examples](templates-and-examples.md#project-starters)), but adds to the project you have open instead of making a new one. Its results are ordinary elements: every form, Studio and **Raw JSON** works on them as on anything else.
 
@@ -21,7 +21,7 @@ When the project has more than one namespace, choose where the new content goes 
 
 Every flow asks for a name and a colour first. Ids come from the name: "Sapphire" in the Gear set gives `sapphire`, `sapphire_sword`, `sapphire_helmet` and so on. The colour tints the placeholder textures the Creator draws (see [Replacing the placeholders](#replacing-the-placeholders)). The fields are grouped as in the form; empty or out-of-range fields show a message under them and **Create** stays disabled until they are fixed.
 
-Flows that make new items or blocks need the **Fabric mod jar** export ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)); **Enchantment** and **Painting** work in plain data and resource packs.
+Flows that make new items or blocks need the **Fabric mod jar** export ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)); **Enchantment**, **Painting** and **Villager trade** work in plain data and resource packs. **Extra drop** and the Custom ore's world generation also need the Fabric mod jar ([Adding to vanilla](adding-to-vanilla.md)).
 
 | Flow | Group | What it makes | Fields |
 |---|---|---|---|
@@ -30,10 +30,12 @@ Flows that make new items or blocks need the **Fabric mod jar** export ([Blocks 
 | **Totem** | Gear | An item that saves its holder from death, like a totem of undying | **Totem**: **Totem name**, **Colour**. **Effects**: **Clear other effects first** and up to three effects, each with seconds and level. **Recipe**: **Crafted from**. |
 | **Enchantment** | Gear | A new enchantment, offered at the enchanting table | **Enchantment**: **Enchantment name**, **Goes on**, **Highest level**. **Effect**: **What it does** (extra damage, knockback, fire, a mob effect on the target, durability or mining speed), **Mob effect on hit**. **Offering**: **Rarity**, **Cannot be combined with**, **Offered at the enchanting table**. |
 | **Throwable** | Gear | An item you throw: a ball, a knife you pick up again, a boomerang or a bomb | **Item**: **Name**, **Colour**, **Style**, **Stack size**. **Throw**: **Damage**, **Speed**, **Weight**, **Hold to throw**. **Hit**: **When it hits** (nothing more, an effect on the mob hit, a knock into the air, a block placed, or a burst) with **Effect**, **Effect: seconds**, **Block to place** or **Burst damage**. **Recipe**: **Crafted from**. |
-| **Custom ore** | Blocks | An ore that drops gems, the gem item and a storage block | **Ore**: **Gem name**, **Colour**, **Pickaxe needed**, **Add a storage block**. **Drops**: **Fewest gems per ore**, **Most gems per ore**. |
+| **Custom ore** | Blocks | An ore that drops gems, the gem item and a storage block, generating underground in the overworld | **Ore**: **Gem name**, **Colour**, **Pickaxe needed**, **Add a storage block**. **Drops**: **Fewest gems per ore**, **Most gems per ore**. **World**: **Generate in the world** (on by default), **Vein size**, **Veins per chunk**, **Lowest height**, **Highest height**. |
 | **Simple block** | Blocks | One block with its own hardness, tool, light and drops | **Block**: **Block name**, **Colour**, **Texture**, **Light level**. **Mining**: **Hardness**, **Mined with**, **Tool tier needed for drops**, **Drops itself when mined**. **Recipe**: **Crafted from**. |
 | **Painting** | Blocks | A painting of your own picture, 1 by 1 to 4 by 4 blocks | **Painting**: **Title**, **Author**, **Size**. **Picture**: **Picture** (a PNG you pick, or a placeholder landscape), **Placeholder colour**. |
 | **Dimension** | Worlds | A world of its own, with a key or a command to get there | **World**: **Dimension name**, **Terrain**, **Biome**, **Sky and rules**. **Travel**: **How to get there** (a key item, or a command only for vanilla packs), **Key colour**. |
+| **Villager trade** | Worlds | A trade that a vanilla villager or the wandering trader may offer | **Villager**: **Villager** (a profession or **Wandering trader**), **Level**. **Trade**: **The villager** (sells or buys the item), **Item**, **Number of items**, **Number of emeralds**, **Uses before restocking**, **Villager experience per trade**. |
+| **Extra drop** | Worlds | An extra item in the loot of a vanilla mob, block or chest; the vanilla drops stay | **Where**: **Drops from**, **Only when a player kills the mob**. **Drop**: **Item**, **Fewest items**, **Most items**, **Chance in per cent**. |
 | **Music disc** | Blocks | A jukebox song with its own music disc | **Song**: **Song name**, **Artist**, **Song file** (your `.ogg`), **Length in seconds**, **Comparator signal**. **Disc**: **Label colour**, **Disc** (a new music disc item, or music disc 13 with a new look for vanilla packs). |
 | **Food** | Food | Something to eat | **Food**: **Food name**, **Colour**. **Eating**: **Hunger restored**, **Saturation**, **Can be eaten when not hungry**. **Recipe**: **Crafted from**. |
 | **Consumable** | Food | A food with effects, a potion-like drink or a charm | **Item**: **Name**, **Colour**, **Kind** (food, drink or charm). **Using**: **Hunger restored**, **Saturation**, **Can be eaten when not hungry**, **Seconds to eat or drink**, **Cooldown in seconds**, **Leaves a glass bottle**. **Effects**: two effects with seconds, level and chance. **Recipe**: **Crafted from**. |
@@ -92,6 +94,14 @@ The **Status effect** flow (under **Magic**) and the **Throwable** flow (under *
 ## Make a dimension
 
 The **Dimension** flow (under **Worlds**) makes a new world to visit. Pick the **Terrain** (hills like the overworld, towering amplified peaks, floating islands, one big cave with a roof, nether-like caverns, end-like islands, or completely flat), the **Biome** (one biome everywhere, such as a cherry grove or a desert, or the overworld's mix) and the **Sky and rules** (the overworld sky, always dark, the nether haze or the end sky). **Create** adds the dimension and a travel function. With a key item (the default, which needs the Fabric mod jar), use the key to go there and use it again to come back; each trip lands you on solid ground near where you stand. In vanilla packs, run `/function <namespace>:<name>/travel` instead. The game loads new dimensions when a world opens, so reopen your world after adding one. Floating islands and end-like terrain can have no ground nearby; then the game says it could not find a spot, and you stay where you are.
+
+## Add to vanilla content
+
+Three flows change what the game already has instead of making something new; [Adding to vanilla](adding-to-vanilla.md) explains them with their limits:
+
+- **Custom ore** (under **Blocks**): with **Generate in the world** on (the default), the ore generates underground in every overworld biome through a world addition, a placed feature and an ore feature. Only newly generated chunks get it. Untick it for an ore without generation.
+- **Extra drop** (under **Worlds**): an extra item from a zombie, a skeleton, a block such as gravel or a chest such as a dungeon's, with a count and a chance. The vanilla drops stay, and a world's own data pack that replaces the table wins.
+- **Villager trade** (under **Worlds**): a trade for a villager profession and level, or the wandering trader. It joins the villager's list of possible trades, so it is a candidate, not a guarantee.
 
 ## Add your own song
 

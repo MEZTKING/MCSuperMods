@@ -19,6 +19,10 @@
  *    drink; the Throwable flow's Card tab shows the item picture and the throw sketch. "Edit in
  *    Creator" on the effect changes one answer (good to bad), and the Fabric mod jar holds the
  *    effect definition, its icon and the throwable item definition.
+ * 4. Custom ore with generation (ADR 0060 D6): the Custom ore flow's "World" questions are on
+ *    by default; a smaller vein size gives an ore feature, a placed feature and a world addition
+ *    (sidebar "World additions") next to the ore, with no problems at all; the Fabric mod jar
+ *    holds the world addition under `msm/` and the two worldgen files as data.
  */
 
 import {
@@ -563,4 +567,97 @@ test('Creator: Status effect with a drink and a Throwable (ADRs 0055, 0056)', as
   ) as { components: Record<string, Record<string, unknown>> };
   expect(knifeDefinition.components['msm:throwable']).toMatchObject({ after_throw: 'drop' });
   await window.screenshot({ path: join(outputDir, 'creator-path-magic.png') });
+});
+
+test('Creator: Custom ore that generates in the world (ADR 0060 D6)', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-creator-ore-'));
+  const folders = {
+    projectDir: join(base, NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  const launched = await launchApp({ reuse: folders });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-new-project').click();
+  await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
+
+  // The Custom ore flow: "Generate in the world" is on by default; a smaller vein.
+  const ore = await openFlow(window, 'custom_ore');
+  await expect(ore.getByRole('heading', { name: 'Create: Custom ore' })).toBeVisible();
+  await expect(ore.getByTestId('param-generate')).toBeChecked();
+  await ore.getByTestId('param-vein_size').fill('5');
+  await ore.getByTestId('creator-tab-elements').click();
+  for (const element of ['ore_ruby', 'ore_ruby_placed', 'ruby_ore_generation']) {
+    await expect(ore.getByTestId(`creator-element-${id(element)}`)).toBeVisible();
+  }
+  await ore.getByTestId('creator-create').click();
+  await expect(ore).toBeHidden();
+  await expect(
+    window.getByText(/^Create Custom ore: \d+ element\(s\) and file\(s\) changed/),
+  ).toBeVisible();
+  for (const element of [
+    'ruby_ore',
+    'ruby',
+    'ore_ruby',
+    'ore_ruby_placed',
+    'ruby_ore_generation',
+  ]) {
+    await expect(window.getByTestId(`element-row-${id(element)}`)).toBeVisible();
+  }
+  // The sidebar heading reads "World additions" with the kind id beside it.
+  await expect(window.getByRole('heading', { name: /^World additions\b/ })).toBeVisible();
+
+  // The world addition opens in its Studio, with the overworld tag and the placed feature.
+  await window.getByTestId(`element-row-${id('ruby_ore_generation')}`).click();
+  const studio = window.getByTestId('world-addition-studio');
+  await expect(studio).toBeVisible();
+  await expect(studio.getByTestId('world-addition-feature-0-id')).toHaveValue(
+    id('ore_ruby_placed'),
+  );
+  await expect(studio.getByTestId('world-addition-feature-0-step')).toHaveValue('underground_ores');
+
+  // Zero problems, not only zero errors.
+  await window.getByTestId('dock-tab-problems').click();
+  await expect(
+    window.getByTestId('problems-panel').locator('[data-testid="problem-row"]'),
+  ).toHaveCount(0);
+  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await save(window);
+
+  // The jar: the world addition in the msm layer, the two worldgen files as data.
+  const jar = await exportJar(window, folders.outDir);
+  const names = Object.keys(jar.files);
+  expect(names).toEqual(
+    expect.arrayContaining([
+      `msm/${NAMESPACE}/block/ruby_ore.json`,
+      `msm/${NAMESPACE}/biome_addition/ruby_ore_generation.json`,
+    ]),
+  );
+  const addition = JSON.parse(
+    strFromU8(
+      jar.files[`msm/${NAMESPACE}/biome_addition/ruby_ore_generation.json`] ?? new Uint8Array(),
+    ),
+  ) as unknown;
+  expect(addition).toEqual({
+    format: 1,
+    biomes: ['#minecraft:is_overworld'],
+    features: [{ feature: id('ore_ruby_placed'), step: 'underground_ores' }],
+  });
+  const featureFile = names.find((name) =>
+    new RegExp(`^data/${NAMESPACE}/worldgen/[a-z_]*feature/ore_ruby\\.json$`).test(name),
+  );
+  const placedFile = names.find(
+    (name) => name === `data/${NAMESPACE}/worldgen/placed_feature/ore_ruby_placed.json`,
+  );
+  expect(featureFile).toBeDefined();
+  expect(placedFile).toBeDefined();
+  const feature = JSON.parse(strFromU8(jar.files[featureFile ?? ''] ?? new Uint8Array())) as {
+    type?: string;
+    size?: number;
+    config?: { size?: number };
+  };
+  expect(feature.type).toBe('minecraft:ore');
+  expect(feature.config?.size ?? feature.size).toBe(5);
 });

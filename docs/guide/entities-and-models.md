@@ -79,7 +79,12 @@ With **Has a spawn egg** (on by default) the mod adds the item `<namespace>:<nam
 
 ## Events and play_animation
 
-Events work as for blocks and items ([Events and actions](blocks-and-items.md#events-and-actions)): a named list of actions run in order on the server. Entities have four triggers: **On hurt** (after the mob takes damage and survives it), **On death**, **On interact** (a player right-clicks it) and **On attack** in the **Attack** section (after each melee hit).
+Events work as for blocks and items ([Events and actions](blocks-and-items.md#events-and-actions)): a named list of actions run in order on the server. Entities have six triggers: **On hurt** (after the mob takes damage and survives it), **On death**, **On interact** (a player right-clicks it) and **On attack** in the **Attack** section (after each melee hit), and two more in the **Triggers** part of **Events**:
+
+- **On tick** runs again and again while the mob is alive, every **Every (ticks)** ticks (default 20, one second; at least 5). A mob with `NoAI` set never runs it. Mobs with the same interval are spread over the ticks, and all repeating triggers together run at most 2,000 times in one server tick (see [Triggers](blocks-and-items.md#triggers)).
+- **On spawn** runs once when the mob spawns naturally, from a spawn egg or from a spawner, just before it enters the world. It does not run again when its chunk is loaded or the world is reopened, so it suits setting a mob up once.
+
+Like every trigger, both need the runtime that ships with this release; the [Java project export](eject.md) writes them too.
 
 Entities also have an eighth action, `play_animation` (after the seven that blocks and items share, `run_script` among them): it plays one animation of the animation set once, chosen in the action's animation field (a list of the names in the chosen **Animation set**). The controller field is optional; leave it empty unless two animations should play at the same time, each in its own controller. Example: an **On interact** event with `play_sound` and `play_animation` `wave` makes the mob wave and chime when right-clicked. Blocks and items cannot use `play_animation`.
 

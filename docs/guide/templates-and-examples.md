@@ -4,9 +4,9 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (129) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (27) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
-| **Examples** (73) | **Help → Examples…** | A commented project or element to open or copy |
+| **Element templates** (141) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (29) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
+| **Examples** (82) | **Help → Examples…** | A commented project or element to open or copy |
 
 Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, and scripting plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
 
@@ -181,6 +181,17 @@ The id is the template's identifier (the app uses it as `template-<id>` in tests
 | Notice dialog | `dialog_notice` | `minecraft:dialog` | A message screen with one button, shown with /dialog show. |
 | Confirmation dialog | `dialog_confirmation` | `minecraft:dialog` | A yes or no question; each button can run a command. |
 
+#### Trades
+
+A trade reaches a villager through the vanilla trade tag of its profession and level; see [Villager trades](adding-to-vanilla.md#villager-trades).
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Trade: emeralds for an item | `trade_emeralds_for_item` | `minecraft:villager_trade` | The villager sells an item for emeralds. List it in a villager trade tag to add it to a villager. |
+| Trade: item for emeralds | `trade_item_for_emeralds` | `minecraft:villager_trade` | The villager buys an item for emeralds. List it in a villager trade tag to add it to a villager. |
+| Trade set | `trade_set` | `minecraft:trade_set` | Draws a number of trades from a trade tag. A project set with a vanilla name replaces the vanilla one. |
+| Villager trade tag: fletcher, level 1 | `tag_villager_trade_fletcher` | `minecraft:tag/villager_trade` | Adds trades to novice fletchers (`minecraft:fletcher/level_1`); add trade ids to `values`. Each is a candidate, not a certainty. |
+
 #### Structures
 
 | Template | id | Kind | Notes |
@@ -245,6 +256,10 @@ New blocks, items and the mod metadata exist only in the **Fabric mod jar** expo
 | Simple block | `msm_block_simple` | `msm:block` | A stone-like building block that drops itself and is mined with a pickaxe. |
 | Glowing ore | `msm_block_glowing_ore` | `msm:block` | An ore that gives off light and drops itself only when mined with an iron pickaxe or better. |
 | Interactive block | `msm_block_interactive` | `msm:block` | A block that chimes when used and sparkles when stepped on, with one event triggering another. |
+| Half block | `msm_block_half` | `msm:block` | A fixed bottom half block (shape preset `slab_bottom`): you stand on it half a block up. It is not a stackable vanilla slab. |
+| Plant (cross) | `msm_block_plant` | `msm:block` | A plant drawn as two crossed planes (shape preset `cross`): it breaks instantly, lets light through and you walk through it. |
+| Glass-like block | `msm_block_glass_like` | `msm:block` | A full block you can see through, as glass: light passes and faces between two of them are hidden. It drops nothing unless you add loot. |
+| Bounce pad (block triggers) | `msm_block_bounce_pad` | `msm:block` | A thin pad (shape preset `carpet`) that launches anything standing in it upwards, at most once a second per entity, and plays a sound when broken. Shows the block triggers **On entity inside** and **On break**. |
 
 #### Items
 
@@ -261,6 +276,8 @@ New blocks, items and the mod metadata exist only in the **Fabric mod jar** expo
 | Drink | `msm_item_drink` | `msm:item` | A potion-like drink that gives speed and regeneration and leaves a glass bottle, shown with the honey bottle model. |
 | Totem | `msm_item_totem` | `msm:item` | Saves its holder from death like a totem of undying and gives regeneration, absorption and fire resistance. |
 | Throwable item | `msm_item_throwable` | `msm:item` | Thrown like a snowball: it flies as its own picture, deals a heart of damage and slows the mob it hits. |
+| Fuel item | `msm_item_fuel` | `msm:item` | A lump that burns in a furnace for 40 seconds (half a piece of coal) and can be composted, shown with the charcoal model. |
+| Life-steal sword (item triggers) | `msm_item_life_steal_sword` | `msm:item` | An iron sword that heals its holder by one heart on every hit and shows hearts while held. Shows the item triggers **On hit** and **While held**. |
 
 Armour, custom tool materials, weapons, consumables and totems are explained in [Blocks and items](blocks-and-items.md#armour), throwables in [Status effects and throwables](effects-and-throwables.md#throwables-in-the-item-studio).
 
@@ -273,6 +290,15 @@ Status effects of your own (`msm:effect`), like the vanilla ones, need the Fabri
 | Status effect | `msm_effect_status` | `msm:effect` | A good effect with its own colour that plays a chime and sparkles once when it starts. Give it with a drink, a throwable or the /effect command. |
 | Damage over time effect | `msm_effect_damage_over_time` | `msm:effect` | A harmful effect like poison: it hurts its holder by half a heart every second, faster at higher levels. |
 | Stat boost effect | `msm_effect_stat_boost` | `msm:effect` | A good effect that makes its holder 20% faster and hit 1 harder per level, removed again when the effect ends. |
+
+#### Additions
+
+Additions to vanilla content need the Fabric mod jar too; see [Adding to vanilla](adding-to-vanilla.md).
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Ore in the overworld | `msm_biome_addition_overworld_ore` | `msm:biome_addition` | Generates an ore in every overworld biome, at the underground ores step. It adds the placed feature `<this id>_placed`: make that placed feature (and its feature) in the Worldgen Studio, or pick your own. Only newly generated chunks get the ore. |
+| Extra mob drop | `msm_loot_addition_mob_drop` | `msm:loot_addition` | Adds a drop to the zombie: one emerald, one time in ten, only when a player kills it. The zombie keeps its usual drops. A world data pack that replaces the zombie loot table wins. |
 
 #### Mod
 
@@ -336,7 +362,7 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Resource pack | `resource_pack` | resource | The vanilla stick gets a new model, a placeholder texture and an English name. |
 | Data pack | `data_pack` | data | A load message, a `greet` function and one crafting recipe. |
 | Resource and data pack | `combined` | resource, data | Both of the above in one project. |
-| Custom ore (Creator: Blocks) | `custom_ore` | resource, data, mod | A real Ruby Ore block that drops one or two rubies when mined with an iron pickaxe or better, the Ruby item and a Block of Ruby: textures, models, a loot table, three recipes, a `gems` item tag, two advancements and the mod metadata. |
+| Custom ore (Creator: Blocks) | `custom_ore` | resource, data, mod | A real Ruby Ore block that drops one or two rubies when mined with an iron pickaxe or better, the Ruby item and a Block of Ruby: textures, models, a loot table, three recipes, a `gems` item tag, two advancements and the mod metadata; unless you untick **Generate in the world**, also the ore feature, placed feature and world addition that generate it in the overworld. |
 | Custom sword | `custom-sword` | resource, data, mod | A new sword with its own name, colour, tier and durability: a handheld texture and model, a crafting recipe, its English name and the mod metadata. |
 | Gear set (Creator: Gear) | `gear-set` | resource, data, mod | Tools and armour of one new material: a sword, pickaxe, axe, shovel and hoe, a helmet, chestplate, leggings and boots (optionally a spear, mace, bow, crossbow, shield, horse armour and wolf armour), the material from a new ore or as an ingot (optionally an armour trim material), recipes or smithing upgrades, the worn armour look and the vanilla tags. |
 | Simple block (Creator: Blocks) | `simple-block` | resource, data, mod | One new block with its own name, colour, hardness, tool, light level and drops, a texture and model, and an optional recipe. |
@@ -349,6 +375,8 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Enchantment (Creator: Gear) | `enchantment` | data | A new enchantment: what it goes on, its highest level, how rare it is and what it does, offered at the enchanting table. |
 | Painting (Creator: Blocks) | `painting` | resource, data | A new painting with its title, author, size and your own picture (or a placeholder landscape), in the `minecraft:placeable` tag. |
 | Music disc (Creator: Blocks) | `music-disc-item` | resource, data, mod | A new jukebox song and a music disc that plays it: a real disc item in the Fabric mod jar, or music disc 13 with a new look in vanilla packs. |
+| Villager trade (Creator: Worlds) | `villager-trade` | data | A new trade for a vanilla villager or the wandering trader: what it costs, what it gives and which profession and level offer it. A candidate among the villager's trades, not a certainty. |
+| Extra drop (Creator: Worlds) | `extra-drop` | mod | An extra item in the loot of a vanilla mob, block or chest, with a count, a chance and, for mobs, whether a player must make the kill. The vanilla drops stay. |
 | Dimension (Creator: Worlds) | `dimension` | resource, data, mod | A new dimension to explore: pick the terrain, the biome and the sky, and travel there and back with a key item (Fabric mod jar) or a command (vanilla packs). |
 | Recipe pack | `recipe_pack` | data | Shaped, shapeless, smelting, blasting and stonecutting recipes, an item tag used as an ingredient, a crafting advancement and a load message. |
 | Custom music disc | `music_disc` | resource, data | A jukebox song, its sound event, a disc model and texture, and a `give_disc` function. |
@@ -415,7 +443,7 @@ The script examples use `msm:script`, which runs only in the Fabric mod jar (see
 
 ### All examples
 
-There is one example for each of the 62 element kinds, seven more behaviour examples (blocks and items: a tool and an event chain; entities: a hostile mob and natural spawning; scripts: scheduled effects, an action handler and a scripted effect), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Throwable) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 67 element kinds, eleven more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; entities: a hostile mob and natural spawning; scripts: scheduled effects, an action handler, a scripted effect and a kill counter), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Throwable, Villager trade, Extra drop) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -440,6 +468,7 @@ There is one example for each of the 62 element kinds, seven more behaviour exam
 | Function tag | `example_tag_function` | Tags | `minecraft:tag/function` | A group of functions run together with /function `#<tag>`. |
 | Damage type tag | `example_tag_damage_type` | Tags | `minecraft:tag/damage_type` | A group of damage types, used in damage predicates and enchantments. |
 | Enchantment tag | `example_tag_enchantment` | Tags | `minecraft:tag/enchantment` | A group of enchantments, used for exclusivity and enchanting tables. |
+| Villager trade tag | `example_tag_villager_trade` | Tags | `minecraft:tag/villager_trade` | A group of villager trades; vanilla villagers draw theirs from tags such as `minecraft:fletcher/level_1`. |
 | Painting variant tag | `example_tag_painting_variant` | Tags | `minecraft:tag/painting_variant` | A group of painting variants; `minecraft:placeable` lists those a placed painting can pick. |
 | Biome tag | `example_tag_worldgen_biome` | Tags | `minecraft:tag/worldgen/biome` | A group of biomes, used to decide where structures generate. |
 | Structure tag | `example_tag_worldgen_structure` | Tags | `minecraft:tag/worldgen/structure` | A group of structures, used by /locate, maps and explorer trades. |
@@ -454,6 +483,8 @@ There is one example for each of the 62 element kinds, seven more behaviour exam
 | Trim material | `example_trim_material` | Armour trims | `minecraft:trim_material` | An armour trim material that reuses the quartz colour palette. |
 | Trim pattern | `example_trim_pattern` | Armour trims | `minecraft:trim_pattern` | An armour trim pattern that reuses the coast design. |
 | Notice dialog | `example_dialog` | Dialogs | `minecraft:dialog` | A welcome screen with a message and an OK button, opened from a function. |
+| Villager trade | `example_villager_trade` | Villager trades | `minecraft:villager_trade` | A fletcher trade selling spectral arrows for emeralds, offered to apprentice fletchers through their trade tag. |
+| Trade set | `example_trade_set` | Villager trades | `minecraft:trade_set` | Draws three different trades from a villager trade tag. |
 | Structure template | `example_structure_template` | Structures | `minecraft:structure_template` | A small stone well, stored as JSON and exported as a structure `.nbt` file. |
 | Template pool | `example_template_pool` | Structures | `minecraft:worldgen/template_pool` | A pool that picks a flower bed or nothing, as jigsaw blocks do. |
 | Jigsaw structure | `example_structure` | Structures | `minecraft:worldgen/structure` | A lone tower in mountains and hills, built from one template. |
@@ -476,9 +507,14 @@ There is one example for each of the 62 element kinds, seven more behaviour exam
 | Switch lamp | `example_msm_block` | Blocks | `msm:block` | A custom block that lights up when used or powered by redstone, by swapping itself for a lit twin. |
 | Sparkle berries | `example_msm_item` | Items | `msm:item` | A custom food item that sparkles and chimes when you start eating it. |
 | Frost bomb | `example_msm_effect` | Effects | `msm:effect` | A custom Frostbite effect that slows and chills its holder, and a throwable Frost Bomb that gives it to the mob it hits. |
+| Ore that generates | `example_msm_biome_addition` | Additions | `msm:biome_addition` | Jade ore that generates underground in every overworld biome: the ore block, its ore feature, the placed feature and the world addition that adds it to vanilla biomes. |
+| Zombie drops a ruby | `example_msm_loot_addition` | Additions | `msm:loot_addition` | Zombies killed by a player sometimes drop a ruby, on top of their usual drops: a ruby item and the extra drop that adds it to the vanilla zombie loot table. |
 | Mod metadata | `example_msm_mod` | Mod | `msm:mod` | The name, version, authors and licence of the Fabric mod jar. |
 | Sturdy pickaxe | `example_msm_tool` | Items | `msm:item` | A custom iron-tier pickaxe with extra durability and a crafting recipe. |
 | Beacon stone | `example_msm_event_chain` | Blocks | `msm:block` | A block whose use event triggers a second event that spawns particles and runs a function. |
+| Fuel log | `example_msm_fuel_log` | Blocks | `msm:block` | A dense log block whose item burns in a furnace three times as long as an oak log. |
+| Life-steal sword | `example_msm_life_steal_sword` | Items | `msm:item` | An iron sword that heals you by one heart each time it hits a mob. |
+| Night-vision helmet | `example_msm_night_vision_helmet` | Items | `msm:item` | An iron helmet that gives night vision while you wear it. |
 | Wandering creature | `example_msm_entity` | Entities | `msm:entity` | A peaceful mob that strolls about, looks at players and has a spawn egg, with its model, animations and textures. |
 | Cube creature model | `example_msm_geo_model` | Entity models | `msm:geo_model` | A box-shaped GeckoLib model with a body and a head bone over a 64x64 texture, shown on a small mob. |
 | Idle and walk animations | `example_msm_animation` | Entity animations | `msm:animation` | An idle bob and a walk cycle that swings the arms and legs of a biped model, shown on a small mob. |
@@ -488,6 +524,7 @@ There is one example for each of the 62 element kinds, seven more behaviour exam
 | Script: scheduled effects | `example_msm_script_schedule` | Scripts | `msm:script` | A script that turns using an amethyst shard into a rising spiral of particles over two seconds, one `msm.schedule` step after another. |
 | Script: action handler | `example_msm_script_action` | Scripts | `msm:script` | A chime block whose use event runs a script through a `run_script` action, and the script that defines that handler. |
 | Script: scripted effect | `example_msm_scripted_effect` | Scripts | `msm:effect` | An Antidote status effect whose tick event runs a script: it cures poison and heals more at higher levels. |
+| Script: kill counter | `example_msm_kill_counter` | Scripts | `msm:script` | A script that counts each player's kills in saved player data and the world's total in `msm.storage`, and tells players their count when they join. |
 | Custom ore project | `starter_custom_ore` | Starters | `msm:block` | The Custom ore starter: a real ruby ore block, the ruby item and a block of ruby, with loot, recipes, a tag, advancements and the mod metadata. |
 | Recipe pack project | `starter_recipe_pack` | Starters | `minecraft:recipe` | The Recipe pack starter: one recipe of each common type and an advancement. |
 | Custom music disc project | `starter_music_disc` | Starters | `minecraft:jukebox_song` | The Custom music disc starter: a jukebox song, its disc model and texture. |

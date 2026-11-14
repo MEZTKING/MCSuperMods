@@ -83,6 +83,10 @@ The `run_script` action lets a block, item or entity event call a script, so peo
 
 **Problems** warns when a `run_script` action names a handler that no script in the project defines.
 
+### Scripts on the triggers
+
+Every trigger of a block, item or mob can run a script this way, including the triggers in the **Triggers** part of **Events** ([Triggers](blocks-and-items.md#triggers)). In an **On hit** event `e.player` (or `e.entity` for a mob) is the attacker and `e.other` the mob hit; in **On use on a block**, **On break** and **On place** events `e.block` is the block clicked, broken or placed; in **On entity inside** and **On place** events the entity inside or the placer is `e.player` when it is a player and `e.entity` otherwise (and `e.other` too when it is a living entity). A handler on a trigger that repeats often (**While held**, **While worn**, **On tick**) runs many times a minute: keep it short, and choose an interval of 20 ticks or more unless it must be faster (**Problems** notes a faster one).
+
 ### A script for a status effect
 
 A [status effect](effects-and-throwables.md) runs a script every few seconds while it is active: in the Effect Studio, choose **New event** next to **While active**, add a `run_script` action to that event and pick the handler. The handler's `e.entity` and `e.other` are both the holder, so `e.entity.effectLevel("<namespace>:<effect name>")` gives the effect's level (0 when the holder no longer has it) and `e.entity.removeEffect("minecraft:poison")` cures poison. The example **Script: scripted effect** (Help → Examples…) is an antidote that works this way. In a throwable's **On hit entity** event, `e.player` is the thrower and `e.other` the mob or player hit.
@@ -105,6 +109,7 @@ msm.events.on("player.join", (e) => {
 - **How long it lasts:** saved data survive `/reload`, closing and reopening the world, a player's death and respawn, and travel to another dimension. Data on a mob go when the mob is gone.
 - **Size limits:** a key is at most 64 characters; one namespace may keep at most 16 KiB on each entity and 1 MiB in `msm.storage`. Saving over a limit is a script error and the old value stays.
 - **`get` returns `unknown`:** the editor cannot know what was saved, so check it first (`typeof visits === "number"`).
+- **An example:** **Script: kill counter** (Help → Examples…) counts each player's kills in `player.data` and the world's total in `msm.storage`, and tells players their count when they join.
 - **Timers are not saved.** `msm.schedule` is cleared by `/reload` and when the world closes. To keep a timer going, save when it should fire and start it again in `server.started`:
 
 ```ts

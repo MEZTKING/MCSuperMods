@@ -27,6 +27,13 @@
  * takes it back with Undo, and checks the jar: the definition's `msm:shape` holds the preset's
  * box and no `preset` (it is editor-only).
  *
+ * A fifth test (ADRs 0060, 0061) adds the "Extra mob drop" template (sidebar "Extra drops"): the
+ * Extra drops Studio raises the count, drops the player-kill condition and adds a diamond drop,
+ * Undo takes the diamond away again; a "Tool item" gets an event with a Heal action picked for
+ * the "On hit" trigger of the Item Studio's Triggers section (Undo clears the pick) and a burn
+ * time in "Fuel and compost". The jar holds the extra drop under `msm/`, the item's
+ * `msm:on_hit` and the fuel lowered to `minecraft:cooking_fuel` with no editor-only `fuel`.
+ *
  * "Test in Minecraft" is not covered here. Preview and WebGL are unavailable headless.
  */
 
@@ -618,6 +625,123 @@ test('blocks and items: a Block Studio shape preset lowers to boxes in the jar',
     components: Record<string, unknown>;
   };
   expect(definition.components['msm:shape']).toEqual({ boxes: [[0, 0, 0, 16, 8, 16]] });
+
+  await window.getByTestId('toolbar-save').click();
+  await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
+});
+
+test('blocks and items: an extra drop and an on-hit trigger, with Undo, in the jar', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-additions-'));
+  const folders = {
+    projectDir: join(base, NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  mkdirSync(outputDir, { recursive: true });
+  const launched = await launchApp({ reuse: folders });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-new-project').click();
+  await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
+
+  // The Extra drops Studio: the template's emerald, then a diamond. --------------------------
+  const dropId = `${NAMESPACE}:zombie_bonus`;
+  await addFromTemplate(window, 'extra mob drop', 'msm_loot_addition_mob_drop', 'zombie_bonus');
+  await expect(window.getByTestId(`element-row-${dropId}`)).toBeVisible();
+  await expect(window.getByRole('heading', { name: /^Extra drops\b/ })).toBeVisible();
+  const drops = window.getByTestId('extra-drops-studio');
+  await expect(drops).toBeVisible();
+  await expect(drops.getByTestId('extra-drops-table-groups')).toContainText(
+    'minecraft:entities/zombie (Mobs)',
+  );
+  await expect(drops.getByTestId('extra-drops-0-item')).toHaveValue('minecraft:emerald');
+  await expect(drops.getByTestId('extra-drops-0-chance')).toHaveValue('10');
+  const max = drops.getByTestId('extra-drops-0-max');
+  await max.fill('3');
+  await max.press('Tab');
+  const playerKill = drops.getByTestId('extra-drops-0-player-kill');
+  await expect(playerKill).toBeChecked();
+  await playerKill.uncheck();
+  await expect(playerKill).not.toBeChecked();
+  await drops.getByTestId('extra-drops-add').click();
+  const diamond = drops.getByTestId('extra-drops-1-item');
+  await expect(diamond).toBeVisible();
+  // Undo takes the new drop away; the first drop keeps its edits.
+  await window.getByTestId('toolbar-undo').click();
+  await expect(diamond).toHaveCount(0);
+  await expect(playerKill).not.toBeChecked();
+  await drops.getByTestId('extra-drops-add').click();
+  await diamond.fill('minecraft:diamond');
+  await diamond.press('Tab');
+  await expect(diamond).toHaveValue('minecraft:diamond');
+  await expect(await problemRows(window, 'error')).toHaveCount(0);
+
+  // The Item Studio: On hit runs a Heal event; the item also burns. -------------------------
+  const itemId = `${NAMESPACE}:ruby_blade`;
+  const eventId = `${NAMESPACE}:life_steal`;
+  await addFromTemplate(window, 'tool item', 'msm_item_tool', 'ruby_blade');
+  await expect(window.getByTestId(`element-row-${itemId}`)).toBeVisible();
+  const item = window.getByTestId('item-studio');
+  await expect(item).toBeVisible();
+  const events = item.getByTestId('msm-events');
+  await events.getByLabel('New event id').fill(eventId);
+  await events.getByRole('button', { name: 'Add event' }).click();
+  const event = events.getByTestId(`msm-event-${eventId}`);
+  await event.getByLabel(`New action type for ${eventId}`).selectOption('heal');
+  await event.getByRole('button', { name: `Add action to ${eventId}` }).click();
+  await expect(event.getByTestId('msm-action-0')).toBeVisible();
+  const triggers = item.getByTestId('msm-triggers');
+  await expect(triggers).toBeVisible();
+  const onHit = triggers.getByTestId('trigger-on-hit');
+  await expect(onHit).toHaveValue('');
+  await onHit.selectOption(eventId);
+  await expect(onHit).toHaveValue(eventId);
+  // Undo clears the pick and keeps the event.
+  await window.getByTestId('toolbar-undo').click();
+  await expect(onHit).toHaveValue('');
+  await expect(event).toBeVisible();
+  await onHit.selectOption(eventId);
+  await expect(onHit).toHaveValue(eventId);
+  const fuel = item.getByTestId('item-fuel-toggle');
+  await fuel.check();
+  const seconds = item.getByTestId('item-fuel-seconds');
+  await seconds.fill('40');
+  await seconds.press('Tab');
+  await expect(seconds).toHaveValue('40');
+  await expect(await problemRows(window, 'error')).toHaveCount(0);
+
+  // The jar: the extra drop, the trigger and the fuel component. ----------------------------
+  const palette = await openPalette(window, 'fabric mod jar');
+  await palette.getByTestId('command-exportFabricJar').click();
+  const jarDialog = window.getByTestId('fabric-jar-dialog');
+  await expect(jarDialog).toBeVisible();
+  // Separate runtime: the export needs no built msm_runtime jar (a clean checkout has none).
+  await jarDialog.getByTestId('exporter-option-separateRuntime').check();
+  await jarDialog.getByTestId('fabric-jar-dialog-submit').click();
+  await expect(jarDialog).toBeHidden();
+  const jarPath = join(folders.outDir, `${NAMESPACE}.jar`);
+  await expect.poll(() => isCompleteZip(jarPath), { timeout: 20_000 }).toBe(true);
+  const jar = readZip(jarPath);
+  const addition = zipJson(jar, `msm/${NAMESPACE}/loot_addition/zombie_bonus.json`) as {
+    tables: string[];
+    pools: { entries: { name: string }[]; condition?: unknown }[];
+  };
+  expect(addition.tables).toEqual(['minecraft:entities/zombie']);
+  expect(addition.pools.map((pool) => pool.entries[0]?.name)).toEqual([
+    'minecraft:emerald',
+    'minecraft:diamond',
+  ]);
+  expect(addition.pools[0]?.condition).toEqual({ type: 'minecraft:random_chance', chance: 0.1 });
+  const blade = zipJson(jar, `msm/${NAMESPACE}/item/ruby_blade.json`) as {
+    fuel?: unknown;
+    components: Record<string, Record<string, unknown>>;
+  };
+  expect(blade.components['msm:on_hit']).toEqual({ event: eventId });
+  expect(blade.fuel).toBeUndefined();
+  expect(blade.components['msm:components']?.['minecraft:cooking_fuel']).toMatchObject({
+    burn_time: 800,
+  });
 
   await window.getByTestId('toolbar-save').click();
   await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
