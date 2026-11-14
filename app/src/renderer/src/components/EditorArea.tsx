@@ -43,6 +43,10 @@ export interface EditorAreaProps {
   previewShown?: boolean;
   /** Shows or hides the preview pane. */
   onTogglePreview?(): void;
+  /** Shown instead of the empty editor when no element is selected (Very easy's Home, ADR 0083 D2). */
+  home?: ReactNode;
+  /** Hides the element's id and kind in the header (Very easy shows no ids, ADR 0083 D3). */
+  hideIds?: boolean;
 }
 
 /**
@@ -64,11 +68,14 @@ export function EditorArea({
   preview,
   previewShown = true,
   onTogglePreview,
+  home,
+  hideIds = false,
 }: EditorAreaProps) {
   const [ownTab, setOwnTab] = useState<EditorTab>('form');
   const current = hideRawJson ? 'form' : (tab ?? ownTab);
   const previewDrop = useTextureDrop(element?.id ?? null);
 
+  if (element === null && home !== undefined) return home;
   if (element === null) {
     return (
       <section
@@ -127,9 +134,13 @@ export function EditorArea({
             </Tabs.Trigger>
           )}
         </Tabs.List>
-        <span className="ml-auto truncate text-xs text-muted">
-          <code className="font-mono">{element.id}</code> ({element.kind})
-        </span>
+        {hideIds ? (
+          <span className="ml-auto" />
+        ) : (
+          <span className="ml-auto truncate text-xs text-muted">
+            <code className="font-mono">{element.id}</code> ({element.kind})
+          </span>
+        )}
         {onEditInCreator !== undefined && element.meta.creator !== undefined && (
           <button
             type="button"

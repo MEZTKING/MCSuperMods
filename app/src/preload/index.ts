@@ -247,6 +247,7 @@ const bridge: MsmBridge = {
     createRoot: (path) => ipcRenderer.invoke(InvokeChannels.projectCreateRoot, { path }),
     closeRoot: () => ipcRenderer.invoke(InvokeChannels.projectCloseRoot),
     currentRoot: () => ipcRenderer.invoke(InvokeChannels.projectCurrentRoot),
+    defaultParent: () => ipcRenderer.invoke(InvokeChannels.projectDefaultParent),
     recent: () => ipcRenderer.invoke(InvokeChannels.projectRecent),
     openRecent: (root) => ipcRenderer.invoke(InvokeChannels.projectOpenRecent, { root }),
     removeRecent: (root) => ipcRenderer.invoke(InvokeChannels.projectRemoveRecent, { root }),

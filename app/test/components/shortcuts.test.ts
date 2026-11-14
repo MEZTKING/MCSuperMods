@@ -28,6 +28,16 @@ describe('shortcutFor', () => {
     expect(shortcutFor(key('n', { metaKey: true }))).toBe('newElement');
   });
 
+  it('maps F5 to Play and Ctrl/Cmd+R to Reload in game, leaving Ctrl/Cmd+Shift+R alone', () => {
+    expect(shortcutFor(key('F5'))).toBe('play');
+    expect(shortcutFor(key('F5', { ctrlKey: true }))).toBeNull();
+    expect(shortcutFor(key('F5', { shiftKey: true }))).toBeNull();
+    expect(shortcutFor(key('r', { ctrlKey: true }))).toBe('reloadGame');
+    expect(shortcutFor(key('R', { metaKey: true }))).toBe('reloadGame');
+    expect(shortcutFor(key('R', { ctrlKey: true, shiftKey: true }))).toBeNull();
+    expect(shortcutFor(key('r'))).toBeNull();
+  });
+
   it('maps the command palette and rename shortcuts', () => {
     expect(shortcutFor(key('P', { ctrlKey: true, shiftKey: true }))).toBe('commandPalette');
     expect(shortcutFor(key('p', { metaKey: true, shiftKey: true }))).toBe('commandPalette');

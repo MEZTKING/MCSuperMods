@@ -24,6 +24,7 @@ import { pngDataUrl } from '../../components/AssetList';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
+import { RulesSlot } from '../RulesSlot';
 import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
@@ -499,20 +500,22 @@ export function EffectStudio(props: StudioProps) {
       {statSection}
       {behaviour}
       {potionSection}
-      <Suspense
-        fallback={
-          <p className="text-muted text-xs" data-testid="rules-section-loading">
-            Loading the Rules section…
-          </p>
-        }
-      >
-        <RulesSection
-          project={project}
-          element={element}
-          target={props.target}
-          context={props.context}
-        />
-      </Suspense>
+      <RulesSlot>
+        <Suspense
+          fallback={
+            <p className="text-muted text-xs" data-testid="rules-section-loading">
+              Loading the Rules section…
+            </p>
+          }
+        >
+          <RulesSection
+            project={project}
+            element={element}
+            target={props.target}
+            context={props.context}
+          />
+        </Suspense>
+      </RulesSlot>
       <EventsEditor
         element={element}
         project={project}

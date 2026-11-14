@@ -77,4 +77,9 @@ export interface StudioEntry {
    * through `formRef`.
    */
   handlesFocus?: boolean;
+  /**
+   * The section test ids this Studio shows in Very easy mode (ADR 0083 D3), in no particular
+   * order; every other `Section` is hidden there. Without it, Very easy shows Easy's layout.
+   */
+  veryEasy?: readonly string[];
 }

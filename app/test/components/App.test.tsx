@@ -26,6 +26,7 @@ import { builtInPlugins } from '../../src/renderer/src/plugins/built-in';
 import type { McfunctionChecker } from '../../src/renderer/src/session/mcfunction-problems';
 import { type ExportResult, ProjectSession } from '../../src/renderer/src/session/project-session';
 import { useAiStore } from '../../src/renderer/src/store/ai-store';
+import { usePreferences } from '../../src/renderer/src/store/preferences';
 import { useUiStore } from '../../src/renderer/src/store/ui-store';
 import {
   MSM_CONTENT_NOTE,
@@ -467,6 +468,8 @@ const toast = (text: RegExp | string) => screen.findByText(text);
 
 beforeEach(() => {
   window.msmNoMonaco = true;
+  // A fresh profile (ADR 0047 D1): Advanced, no mode chosen yet.
+  usePreferences.setState({ mode: 'advanced', modeChosen: false });
   useAiStore.setState({ conversations: {} });
   useAiPanelStore.setState({ keyStatus: null, settings: null, models: {}, drafts: {} });
   useUiStore.setState({
@@ -604,8 +607,15 @@ describe('App menu commands', () => {
     expect(within(welcome).getByTestId('welcome-guide-link').getAttribute('href')).toBe(
       'https://meztking.github.io/MCSuperMods/first-mod',
     );
+    // A brand-new install starts in Very easy (ADR 0083 D1), the Welcome offering the three.
+    expect(usePreferences.getState().mode).toBe('very-easy');
+    expect(within(welcome).getByTestId('welcome-mode-very-easy').getAttribute('aria-pressed')).toBe(
+      'true',
+    );
     fireEvent.click(within(welcome).getByRole('button', { name: 'Got it' }));
     await waitFor(() => expect(screen.queryByTestId('welcome-dialog')).toBeNull());
+    expect(screen.getByTestId('toolbar-very-easy')).toBeTruthy();
+    expect(screen.getByTestId('home')).toBeTruthy();
     await harness.menu('firstMod');
     expect(await screen.findByTestId('welcome-dialog')).toBeTruthy();
   });
@@ -1675,5 +1685,79 @@ describe('App Creator (ADR 0043 D3)', () => {
     act(() => useUiStore.getState().select('demo:greet'));
     expect(await screen.findByTestId('editor-tab-form')).toBeTruthy();
     expect(screen.queryByTestId('editor-edit-in-creator')).toBeNull();
+  });
+});
+
+describe('App Very easy mode (ADR 0083)', () => {
+  it('shows Home, runs a tile, lists My things, and hides the sidebar and Problems', async () => {
+    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    expect(screen.getByTestId('toolbar-very-easy')).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: 'Elements' })).toBeNull();
+    expect(screen.queryByTestId('dock-tab-problems')).toBeNull();
+    expect(screen.queryByTestId('project-target')).toBeNull();
+    expect(screen.getByTestId('things-to-fix')).toBeTruthy();
+    expect(screen.getByTestId('my-things-empty')).toBeTruthy();
+
+    // The food tile offers its flows; the set lands in My things.
+    await user.click(screen.getByTestId('home-tile-food'));
+    await user.click(await screen.findByTestId('creator-flow-food'));
+    await waitFor(() =>
+      expect((screen.getByTestId('creator-create') as HTMLButtonElement).disabled).toBe(false),
+    );
+    await user.click(screen.getByTestId('creator-create'));
+    await waitFor(() => expect(harness.session.snapshot.undoLabel).toBe('Create Food'));
+    await user.click(screen.getByTestId('toolbar-home'));
+    const things = await screen.findByTestId('my-things');
+    expect(things.querySelectorAll('li').length).toBe(1);
+    expect(things.textContent).toContain('Food');
+
+    // Delete is one undo step.
+    const card = things.querySelector('li');
+    const key = card?.getAttribute('data-testid')?.replace('my-thing-', '') ?? '';
+    await user.click(screen.getByTestId(`my-thing-menu-${key}`));
+    await user.click(await screen.findByTestId('my-thing-delete'));
+    await waitFor(() => expect(screen.queryByTestId('my-things')).toBeNull());
+    expect(harness.session.snapshot.undoLabel).toMatch(/^Delete /);
+    await user.click(screen.getByTestId('toolbar-undo'));
+    expect(await screen.findByTestId('my-things')).toBeTruthy();
+
+    // Back to Advanced from the row: the sidebar returns.
+    await user.click(screen.getByTestId('toolbar-mode-advanced'));
+    expect(usePreferences.getState().mode).toBe('advanced');
+    expect(screen.getByRole('navigation', { name: 'Elements' })).toBeTruthy();
+  });
+
+  it('opens the rule book from "Make things happen", making one when there is none', async () => {
+    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('home-tile-rules'));
+    await waitFor(() => expect(useUiStore.getState().selectedId).toMatch(/:rules$/));
+    const id = useUiStore.getState().selectedId ?? '';
+    expect(
+      harness.session.snapshot.project?.namespaces
+        .flatMap((namespace) => namespace.elements)
+        .find((element) => element.id === id)?.kind,
+    ).toBe('msm:rules');
+    expect(screen.queryByTestId('home')).toBeNull();
+    await harness.menu('home');
+    expect(await screen.findByTestId('home')).toBeTruthy();
+  });
+
+  it('switches modes from the View menu and the palette', async () => {
+    const harness = await renderApp();
+    await harness.menu('modeVeryEasy');
+    expect(usePreferences.getState().mode).toBe('very-easy');
+    await harness.menu('toggleMode');
+    expect(usePreferences.getState().mode).toBe('easy');
+    await harness.menu('modeAdvanced');
+    expect(usePreferences.getState().mode).toBe('advanced');
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    expect(within(palette).queryByTestId('command-advancedMode')).toBeNull();
+    await userEvent.setup().click(within(palette).getByTestId('command-veryEasyMode'));
+    expect(usePreferences.getState().mode).toBe('very-easy');
   });
 });

@@ -37,6 +37,7 @@ import { isSeeThroughBlock } from '@msm/plugin-blocks-items';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { buttonClass } from '../../components/ui/Button';
 import { typingKey } from '../../forms/context';
+import { RulesSlot } from '../RulesSlot';
 import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
@@ -851,20 +852,22 @@ export function BlockStudio(props: StudioProps) {
       {dropsSection}
       {itemSection}
       {behaviour}
-      <Suspense
-        fallback={
-          <p className="text-muted text-xs" data-testid="rules-section-loading">
-            Loading the Rules section…
-          </p>
-        }
-      >
-        <RulesSection
-          project={project}
-          element={element}
-          target={props.target}
-          context={props.context}
-        />
-      </Suspense>
+      <RulesSlot>
+        <Suspense
+          fallback={
+            <p className="text-muted text-xs" data-testid="rules-section-loading">
+              Loading the Rules section…
+            </p>
+          }
+        >
+          <RulesSection
+            project={project}
+            element={element}
+            target={props.target}
+            context={props.context}
+          />
+        </Suspense>
+      </RulesSlot>
       <EventsEditor
         element={element}
         project={project}

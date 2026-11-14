@@ -56,6 +56,12 @@ export const BUILT_IN_COMMAND_IDS = [
   'aiExplainProblem',
   'aiAskElement',
   'creator',
+  'play',
+  'reloadGame',
+  'home',
+  'veryEasyMode',
+  'easyMode',
+  'advancedMode',
 ] as const;
 
 /** A built-in command id. */
@@ -107,6 +113,12 @@ export const BUILT_IN_COMMANDS: Readonly<
   aiExplainProblem: { title: 'Explain this problem with the AI helper' },
   aiAskElement: { title: 'Ask the AI helper about this element' },
   creator: { title: 'Create with the Creator…' },
+  play: { title: 'Play: test the mod in Minecraft', shortcut: 'F5' },
+  reloadGame: { title: 'Reload the mod in the running game', shortcut: 'Mod+R' },
+  home: { title: 'Home: my things and what I can make' },
+  veryEasyMode: { title: 'Very easy mode' },
+  easyMode: { title: 'Easy mode' },
+  advancedMode: { title: 'Advanced mode' },
 };
 
 /** Handlers of the available built-in commands; a missing or `null` one is unavailable. */

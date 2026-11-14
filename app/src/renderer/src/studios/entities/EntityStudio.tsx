@@ -46,6 +46,7 @@ import { EventsEditor } from '../blocks-items/EventsEditor';
 import { CheckField, EventSelect, ProblemsAt, TextField } from '../blocks-items/parts';
 import { projectPortals } from '../blocks-items/portal-model';
 import { TriggersSection } from '../blocks-items/triggers';
+import { RulesSlot } from '../RulesSlot';
 import { projectHandlers } from '../scripting/script-model';
 import { useStructureStudioHost } from '../structures/host';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
@@ -963,20 +964,22 @@ export function EntityStudio(props: StudioProps) {
       <BossBarSection {...mobProps} />
       {spawning}
       {eggSection}
-      <Suspense
-        fallback={
-          <p className="text-muted text-xs" data-testid="rules-section-loading">
-            Loading the Rules section…
-          </p>
-        }
-      >
-        <RulesSection
-          project={project}
-          element={element}
-          target={props.target}
-          context={props.context}
-        />
-      </Suspense>
+      <RulesSlot>
+        <Suspense
+          fallback={
+            <p className="text-muted text-xs" data-testid="rules-section-loading">
+              Loading the Rules section…
+            </p>
+          }
+        >
+          <RulesSection
+            project={project}
+            element={element}
+            target={props.target}
+            context={props.context}
+          />
+        </Suspense>
+      </RulesSlot>
       <EventsEditor
         element={element}
         project={project}

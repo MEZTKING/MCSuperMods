@@ -727,6 +727,7 @@ export const ipcContract = {
   [InvokeChannels.projectCreateRoot]: { request: pathRequest, response: rootResult },
   [InvokeChannels.projectCloseRoot]: { request: noRequest, response: voidResponse },
   [InvokeChannels.projectCurrentRoot]: { request: noRequest, response: z.string().nullable() },
+  [InvokeChannels.projectDefaultParent]: { request: noRequest, response: z.string().max(4096) },
   [InvokeChannels.projectRecent]: {
     request: noRequest,
     response: z.array(recentProjectView).max(RECENT_PROJECTS_MAX),

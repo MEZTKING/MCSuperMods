@@ -314,3 +314,143 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
     </Dialog.Root>
   );
 }
+
+// Very easy: a name only (ADR 0083 D6) -----------------------------------------------------
+
+/** The characters a folder name cannot hold on Windows, macOS or Linux, and control characters. */
+// biome-ignore lint/suspicious/noControlCharactersInRegex: control characters are what it rejects.
+const BAD_FOLDER_CHARACTERS = /[<>:"/\\|?*\u0000-\u001f]/;
+
+/** Why `name` cannot be a mod's folder name, or `null` when it can. */
+export function modNameError(name: string): string | null {
+  const trimmed = name.trim();
+  if (trimmed === '') return 'Type a name for your mod.';
+  if (trimmed.length > 60) return 'Use a shorter name (at most 60 letters).';
+  if (BAD_FOLDER_CHARACTERS.test(trimmed)) {
+    return 'Leave out these characters: < > : " / \\ | ? *';
+  }
+  if (/^\.+$/.test(trimmed) || trimmed.endsWith('.')) return 'Do not end the name with a dot.';
+  return null;
+}
+
+/** The folder a mod named `name` goes in: `<parent>/<name>`, with the parent's separator. */
+export function modFolder(parent: string, name: string): string {
+  const separator = parent.includes('\\') && !parent.includes('/') ? '\\' : '/';
+  const base = parent.endsWith(separator) ? parent.slice(0, -1) : parent;
+  return `${base}${separator}${name.trim()}`;
+}
+
+/** Props of {@link NewModDialog}. */
+export interface NewModDialogProps {
+  /** Where new mods go (`<Documents>/MCSuperMods`, or the last folder used). */
+  parent: string;
+  /** Asks for another parent folder; resolves with it, or `null` when cancelled. */
+  onChangeFolder?(): Promise<string | null>;
+  onCancel(): void;
+  /** Creates the mod in `folder`; rejects or resolves with an error message to show. */
+  onCreate(folder: string, name: string): Promise<string | null>;
+}
+
+/**
+ * Very easy's "New" (ADR 0083 D6): asks only for a name and creates the mod in
+ * `<parent>/<name>`, with a "Change folder" link. The namespace comes from the name, the target
+ * is the default one.
+ */
+export function NewModDialog(props: NewModDialogProps) {
+  const [name, setName] = useState('');
+  const [parent, setParent] = useState(props.parent);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const nameId = useId();
+
+  const submit = (event: FormEvent): void => {
+    event.preventDefault();
+    const problem = modNameError(name);
+    if (problem !== null) {
+      setError(problem);
+      return;
+    }
+    setBusy(true);
+    props.onCreate(modFolder(parent, name), name.trim()).then(
+      (message) => {
+        setBusy(false);
+        setError(message);
+      },
+      (failure: unknown) => {
+        setBusy(false);
+        setError(failure instanceof Error ? failure.message : String(failure));
+      },
+    );
+  };
+
+  return (
+    <Dialog.Root
+      open
+      onOpenChange={(open) => {
+        if (!open) props.onCancel();
+      }}
+    >
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
+        <Dialog.Content
+          aria-describedby={undefined}
+          data-testid="new-mod-dialog"
+          className="fixed top-1/2 left-1/2 z-50 w-[min(90vw,420px)] -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-panel p-4 text-text shadow-lg"
+        >
+          <form onSubmit={submit} className="flex flex-col gap-2">
+            <Dialog.Title className="font-semibold text-base">Start a new mod</Dialog.Title>
+            <label htmlFor={nameId} className="text-sm">
+              What is your mod called?
+            </label>
+            <input
+              id={nameId}
+              data-testid="new-mod-name"
+              className="rounded border border-border bg-bg px-2 py-1"
+              placeholder="Ruby mod"
+              // biome-ignore lint/a11y/noAutofocus: the dialog asks one thing; typing starts at once.
+              autoFocus
+              value={name}
+              onChange={(event) => {
+                setName(event.target.value);
+                setError(null);
+              }}
+            />
+            <p className="text-muted text-xs" data-testid="new-mod-folder">
+              It is saved in {name.trim() === '' ? parent : modFolder(parent, name)}
+            </p>
+            {props.onChangeFolder !== undefined && (
+              <button
+                type="button"
+                data-testid="new-mod-change-folder"
+                className="self-start cursor-pointer text-accent text-xs underline-offset-2 hover:underline"
+                onClick={() => {
+                  props.onChangeFolder?.().then(
+                    (picked) => {
+                      if (picked !== null) setParent(picked);
+                    },
+                    () => undefined,
+                  );
+                }}
+              >
+                Change folder
+              </button>
+            )}
+            {error !== null && (
+              <p role="alert" className="text-error text-sm" data-testid="new-mod-error">
+                {error}
+              </p>
+            )}
+            <div className="mt-1 flex gap-1.5">
+              <Button type="submit" disabled={busy} data-testid="new-mod-dialog-submit">
+                Start
+              </Button>
+              <Dialog.Close asChild>
+                <Button>Cancel</Button>
+              </Dialog.Close>
+            </div>
+          </form>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}

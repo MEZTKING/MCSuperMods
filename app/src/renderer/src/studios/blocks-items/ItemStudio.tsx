@@ -12,6 +12,7 @@
 
 import { lazy, Suspense, useState } from 'react';
 import { typingKey } from '../../forms/context';
+import { RulesSlot } from '../RulesSlot';
 import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
@@ -434,20 +435,22 @@ export function ItemStudio(props: StudioProps) {
         set={set}
         testId="item"
       />
-      <Suspense
-        fallback={
-          <p className="text-muted text-xs" data-testid="rules-section-loading">
-            Loading the Rules section…
-          </p>
-        }
-      >
-        <RulesSection
-          project={project}
-          element={element}
-          target={props.target}
-          context={props.context}
-        />
-      </Suspense>
+      <RulesSlot>
+        <Suspense
+          fallback={
+            <p className="text-muted text-xs" data-testid="rules-section-loading">
+              Loading the Rules section…
+            </p>
+          }
+        >
+          <RulesSection
+            project={project}
+            element={element}
+            target={props.target}
+            context={props.context}
+          />
+        </Suspense>
+      </RulesSlot>
       <EventsEditor
         element={element}
         project={project}

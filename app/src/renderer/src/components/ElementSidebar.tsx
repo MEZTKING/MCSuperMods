@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, Search, Trash2 } from 'lucide-react';
 import { ScrollArea } from 'radix-ui';
 import { useState } from 'react';
 import type { RecentProjectView } from '../../../shared/platform';
+import type { UiMode } from '../store/preferences';
 import { useTextureDrop } from '../textures/texture-drop';
 import { type AssetActions, AssetList } from './AssetList';
 import { buttonClass, iconButtonClass } from './ui/Button';
@@ -21,8 +22,11 @@ export interface ElementSidebarProps {
   onOpenRecent?(root: string): void;
   /** Removes a recent project from the list by its root. */
   onRemoveRecent?(root: string): void;
-  /** Easy groups by Creator set and folds technical groups; Advanced shows kind ids (ADR 0047). */
-  mode?: 'easy' | 'advanced';
+  /**
+   * Easy groups by Creator set and folds technical groups; Advanced shows kind ids (ADR 0047).
+   * Very easy hides the sidebar (ADR 0083 D4); given here, it lists as Easy does.
+   */
+  mode?: UiMode;
   /** Collapsed group keys (`<namespace>/<group>`). */
   collapsed?: ReadonlySet<string>;
   /** Collapses or expands a group. */
@@ -361,7 +365,7 @@ function NamespaceSection(props: {
   onSelect(id: ResourceLocation): void;
   onRemove(id: ResourceLocation): void;
   assetActions: AssetActions;
-  mode: 'easy' | 'advanced';
+  mode: UiMode;
   query: string;
   collapsed: ReadonlySet<string>;
   onToggleGroup(key: string): void;

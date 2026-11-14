@@ -119,6 +119,11 @@ export interface NodePlatformDeps {
   msmHome: string;
   /** Host facts used to detect the default Minecraft and launcher folders. */
   installEnv: InstallEnv;
+  /**
+   * The user's documents folder; Very easy's new projects go in `<documentsDir>/MCSuperMods`
+   * (ADR 0083 D6). Default `<home>/Documents`.
+   */
+  documentsDir?: string;
   /** File access for the Minecraft service. Defaults to the Node adapter. */
   installFs?: InstallFileSystem;
   /** ISO 8601 timestamp source for the asset cache and the recent-projects list. */
@@ -503,6 +508,15 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
       },
       async currentRoot() {
         return currentRoot;
+      },
+      async defaultParent() {
+        try {
+          const last = await settings.lastProjectParent();
+          if (last !== null) return last;
+        } catch {
+          // Unreadable settings: the documents folder.
+        }
+        return join(deps.documentsDir ?? join(deps.installEnv.home, 'Documents'), 'MCSuperMods');
       },
       async recent() {
         const list = await settings.recentProjects();

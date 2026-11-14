@@ -77,6 +77,8 @@ export function createIpcHandlers(
     [InvokeChannels.projectCreateRoot]: (req) => platform.project.createRoot(req.path),
     [InvokeChannels.projectCloseRoot]: () => platform.project.closeRoot(),
     [InvokeChannels.projectCurrentRoot]: () => platform.project.currentRoot(),
+    [InvokeChannels.projectDefaultParent]: () =>
+      platform.project.defaultParent?.() ?? Promise.resolve(''),
     [InvokeChannels.projectRecent]: () => platform.project.recent(),
     [InvokeChannels.projectOpenRecent]: (req) => platform.project.openRecent(req.root),
     [InvokeChannels.projectRemoveRecent]: (req) => platform.project.removeRecent(req.root),

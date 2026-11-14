@@ -145,6 +145,11 @@ export function installMenu(recent: readonly RecentProject[] = currentRecent): v
         { label: 'Upgrade Project Target…', click: () => send('upgradeTarget') },
         { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => send('save') },
         { type: 'separator' },
+        // ADR 0084 D1, D6: one-click Play and Reload. F5 and Ctrl/Cmd+R were the window's
+        // reload keys (Electron's "reload" role); View > Reload Window keeps Ctrl/Cmd+Shift+R.
+        { label: 'Play', accelerator: 'F5', click: () => send('play') },
+        { label: 'Reload in Game', accelerator: 'CmdOrCtrl+R', click: () => send('reloadGame') },
+        { type: 'separator' },
         { label: 'Import Assets…', click: () => send('importAssets') },
         { label: 'Import Structure…', click: () => send('importStructure') },
         { label: 'Import Blockbench Model…', click: () => send('importBlockbench') },
@@ -210,10 +215,16 @@ export function installMenu(recent: readonly RecentProject[] = currentRecent): v
           accelerator: 'CmdOrCtrl+Shift+A',
           click: () => send('toggleAiHelper'),
         },
-        // ADR 0047 D1.
+        // ADR 0083 D1: the three modes; ADR 0047 D1's switch stays.
+        { label: 'Very Easy Mode', click: () => send('modeVeryEasy') },
+        { label: 'Easy Mode', click: () => send('modeEasy') },
+        { label: 'Advanced Mode', click: () => send('modeAdvanced') },
         { label: 'Switch Easy / Advanced Mode', click: () => send('toggleMode') },
+        // ADR 0083 D2: Very easy's Home.
+        { label: 'Home', click: () => send('home') },
         { type: 'separator' },
-        { role: 'reload' },
+        // Ctrl/Cmd+R is File > Reload in Game (ADR 0084 D6), so the window reload moves.
+        { role: 'reload', label: 'Reload Window', accelerator: 'CmdOrCtrl+Shift+R' },
         { role: 'toggleDevTools' },
       ],
     },

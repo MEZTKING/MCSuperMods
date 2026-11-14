@@ -8,8 +8,14 @@
 
 import { ENTITY_KIND } from '../blocks-items/blocks-items-model';
 import type { StudioEntry } from '../types';
+import { MOB_VERY_EASY_SECTIONS } from '../very-easy';
 import { EntityStudio } from './EntityStudio';
 
 export const studios: StudioEntry[] = [
-  { id: 'msm.entities.entity', kindId: ENTITY_KIND, component: EntityStudio },
+  {
+    id: 'msm.entities.entity',
+    kindId: ENTITY_KIND,
+    component: EntityStudio,
+    veryEasy: MOB_VERY_EASY_SECTIONS,
+  },
 ];

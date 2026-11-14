@@ -18,9 +18,13 @@ import {
   isWithin,
   SchemaForm,
 } from '../../forms';
+import { useSectionShown, useVeryEasyLayout } from '../very-easy';
 import { moved } from './worldgen-model';
 
-/** A titled section of a Studio. */
+/**
+ * A titled section of a Studio. In Very easy mode a Studio with a section list shows only the
+ * sections on it (ADR 0083 D3, `studios/very-easy.ts`).
+ */
 export function Section({
   title,
   children,
@@ -30,6 +34,8 @@ export function Section({
   children: ReactNode;
   testId?: string;
 }) {
+  const shown = useSectionShown(testId);
+  if (!shown) return null;
   return (
     <section aria-label={title} data-testid={testId} className="flex flex-col gap-2">
       <h3 className="font-medium text-sm">{title}</h3>
@@ -203,6 +209,9 @@ export function AdvancedToggle({
   onChange(next: boolean): void;
   testId: string;
 }) {
+  // Very easy shows the beginner's sections only, so there are no extra fields to turn on.
+  const veryEasy = useVeryEasyLayout();
+  if (veryEasy) return null;
   return (
     <label className="flex items-center gap-1 self-end text-sm">
       <input

@@ -15,6 +15,8 @@ export const InvokeChannels = {
   projectCreateRoot: 'msm:v1:project:createRoot',
   projectCloseRoot: 'msm:v1:project:closeRoot',
   projectCurrentRoot: 'msm:v1:project:currentRoot',
+  /** Where Very easy's name-only New puts projects (ADR 0083 D6). */
+  projectDefaultParent: 'msm:v1:project:defaultParent',
   projectRecent: 'msm:v1:project:recent',
   projectOpenRecent: 'msm:v1:project:openRecent',
   projectRemoveRecent: 'msm:v1:project:removeRecent',
@@ -165,6 +167,14 @@ export const MENU_COMMANDS = [
   'toggleAiHelper',
   // ADR 0043: File > "Create…" opens the Creator.
   'creator',
+  // ADR 0084 D1, D6: File > "Play" (F5) and "Reload in Game" (Ctrl/Cmd+R).
+  'play',
+  'reloadGame',
+  // ADR 0083 D1, D2: View > the three modes and "Home".
+  'modeVeryEasy',
+  'modeEasy',
+  'modeAdvanced',
+  'home',
 ] as const;
 
 /** A command the application menu sends to the renderer. */

@@ -403,6 +403,11 @@ export interface NewProjectOptions {
    * defaults.
    */
   values?: Record<string, Json>;
+  /**
+   * The project folder (absolute; created when missing, must be empty), so no folder picker is
+   * shown: Very easy's name-only New (ADR 0083 D6). Its base name is the project name.
+   */
+  folder?: string;
 }
 
 /** Options of {@link ProjectSession.addBundle}. */
@@ -1350,11 +1355,13 @@ export class ProjectSession {
       return { ok: false, reason: `Unknown target ${JSON.stringify(options.targetId)}.` };
     }
     if (!(await this.#confirmDiscard())) return { ok: false, cancelled: true };
-    const path = await this.#platform.dialogs.pickDirectory({
-      title: 'Choose an empty folder for the new project',
-      mustBeEmpty: true,
-      purpose: 'project',
-    });
+    const path =
+      options.folder ??
+      (await this.#platform.dialogs.pickDirectory({
+        title: 'Choose an empty folder for the new project',
+        mustBeEmpty: true,
+        purpose: 'project',
+      }));
     if (path === null) return { ok: false, cancelled: true };
     const name = baseName(path);
     const namespace = namespaceFromFolderName(name);

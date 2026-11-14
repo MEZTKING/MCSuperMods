@@ -921,6 +921,12 @@ export interface PlatformAdapter {
     createRoot(path: string): Promise<RootResult>;
     closeRoot(): Promise<void>;
     currentRoot(): Promise<string | null>;
+    /**
+     * The folder Very easy's name-only New creates projects in (ADR 0083 D6): the parent of the
+     * last project folder chosen when there is one, else `<Documents>/MCSuperMods`. Optional so
+     * that test doubles may omit it.
+     */
+    defaultParent?(): Promise<string>;
     /** The recent projects, newest first, each checked for `msm.project.json`. */
     recent(): Promise<RecentProjectView[]>;
     /**

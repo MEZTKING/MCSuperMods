@@ -6,8 +6,9 @@ import type {
   ResourceLocation,
 } from '@msm/core';
 import type { Target } from '@msm/plugin-api';
+import { RULES_KIND } from '@msm/plugin-rules';
 import { Toast, Tooltip } from 'radix-ui';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MenuCommand } from '../../shared/ipc-channels';
 import type {
   AppSettingsPatch,
@@ -34,10 +35,12 @@ import type { AiPicture } from './components/ai/ai-pictures';
 import { CommandPalette, type PaletteCommand } from './components/CommandPalette';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { CreatorDialog, type CreatorEditRequest } from './components/creator/CreatorDialog';
+import { creatorFlows } from './components/creator/creator-model';
 import { EditorArea } from './components/EditorArea';
 import { ElementSidebar } from './components/ElementSidebar';
 import { ExamplesDialog, mergedPhrase } from './components/ExamplesDialog';
 import {
+  defaultOptionValues,
   ExportFabricJarDialog,
   GECKOLIB_DOWNLOAD_MESSAGE,
   GECKOLIB_MISSING_CODE,
@@ -57,6 +60,10 @@ import {
   monacoCaret,
 } from './components/function-editor/caret';
 import { lineOffset } from './components/function-editor/source-text';
+import { Home } from './components/home/Home';
+import { RenameThingDialog } from './components/home/MyThings';
+import { copyData, copyId, type ThingCard, thingCards } from './components/home/things';
+import { type ShownTile, shownTiles } from './components/home/tiles';
 import { ImportAssetsDialog, importFileFilters } from './components/ImportAssetsDialog';
 import { BLOCKBENCH_IMPORT_NOTE, ImportFilesDialog } from './components/ImportFilesDialog';
 import {
@@ -68,7 +75,7 @@ import {
 } from './components/install-target';
 import { ModpacksDialog } from './components/ModpacksDialog';
 import { NewElementDialog, NewNamespaceDialog } from './components/NewElementDialog';
-import { NewProjectDialog } from './components/NewProjectDialog';
+import { NewModDialog, NewProjectDialog } from './components/NewProjectDialog';
 import { PluginExportDialog } from './components/PluginExportDialog';
 import { RenameElementDialog } from './components/RenameElementDialog';
 import { RightDock } from './components/RightDock';
@@ -76,6 +83,7 @@ import { SettingsDialog } from './components/SettingsDialog';
 import { StatusBar } from './components/StatusBar';
 import { StatusToast } from './components/StatusToast';
 import { TestInMinecraftDialog, testInMinecraftMessage } from './components/TestInMinecraftDialog';
+import { ThingsToFix } from './components/ThingsToFix';
 import { modKey, Toolbar, type ToolbarPluginExport } from './components/Toolbar';
 import { NewTextureDialog } from './components/texture-editor/NewTextureDialog';
 import { PictureToTextureDialog } from './components/texture-editor/PictureToTextureDialog';
@@ -95,6 +103,14 @@ import {
   functionElementUri,
   mcfunctionProjectIds,
 } from './session/mcfunction-problems';
+import {
+  displayNameOf,
+  missingPictureOf,
+  type PlainFix,
+  plainProblemWords,
+  removeAtPointer,
+  stepPointerOf,
+} from './session/plain-problems';
 import type {
   ExportResult,
   OpenOutcome,
@@ -105,7 +121,8 @@ import type {
 import { createRenderLowering } from './session/render-lowering';
 import { kindRegistry } from './session/schema-context';
 import { type CommandSource, createCommandDeduper, shortcutFor } from './shortcuts';
-import { usePreferences } from './store/preferences';
+import { connectPlay, usePlayStore } from './store/play-store';
+import { type UiMode, usePreferences } from './store/preferences';
 import { useUiStore } from './store/ui-store';
 import {
   type BlocksItemsStudioHost,
@@ -129,13 +146,14 @@ import {
   userFacingExportProblems,
 } from './studios/export-state';
 import type { CompleteFunction } from './studios/FunctionEditor';
+import { type PlainProblemWords, PlainProblemWordsContext } from './studios/rules/problem-words';
 import { ScriptStudioHostContext } from './studios/scripting/host';
 import { projectScripts } from './studios/scripting/script-model';
 import { type StructureStudioHost, StructureStudioHostContext } from './studios/structures/host';
 import { templateContext, templatesFor } from './studios/templates';
 import { useSchemaContext } from './studios/use-schema-context';
 import { retexture, textureIdOf } from './textures/retexture';
-import { TextureDropContext } from './textures/texture-drop';
+import { TextureDropContext, type TextureDropHandler } from './textures/texture-drop';
 
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -167,6 +185,8 @@ const menuEquivalent = {
   renameElement: 'renameElement',
   commandPalette: 'commandPalette',
   toggleAiHelper: 'toggleAiHelper',
+  play: 'play',
+  reloadGame: 'reloadGame',
 } as const satisfies Record<string, MenuCommand>;
 
 /** Whether an export report was blocked because the GeckoLib jar could not be had. */
@@ -183,7 +203,9 @@ type DialogState =
   | { type: 'element' }
   | { type: 'new-project' }
   | { type: 'examples' }
-  | { type: 'creator'; edit?: CreatorEditRequest }
+  | { type: 'creator'; edit?: CreatorEditRequest; flowIds?: readonly string[] }
+  | { type: 'new-mod'; parent: string }
+  | { type: 'rename-thing'; id: ResourceLocation; name: string }
   | { type: 'import'; namespace?: string }
   | { type: 'import-files'; mode: ImportMode }
   | { type: 'settings' }
@@ -307,6 +329,21 @@ const STRUCTURE_EXPORTER_IDS: ReadonlySet<string> = new Set(['structure-nbt', 's
 type Action = () => void;
 
 /** The application shell: toolbar, sidebar, editor (Form and Raw JSON), Preview and Problems. */
+/** The contexts around the shell: texture drops and the plain-language problem words. */
+function ShellProviders(props: {
+  textureDrop: TextureDropHandler | null;
+  plainWords: PlainProblemWords;
+  children: ReactNode;
+}) {
+  return (
+    <TextureDropContext.Provider value={props.textureDrop}>
+      <PlainProblemWordsContext.Provider value={props.plainWords}>
+        {props.children}
+      </PlainProblemWordsContext.Provider>
+    </TextureDropContext.Provider>
+  );
+}
+
 export function App({ session, bridge }: { session: ProjectSession; bridge: MsmBridge }) {
   const snapshot = useUiStore((state) => state.snapshot) ?? session.snapshot;
   const selectedId = useUiStore((state) => state.selectedId);
@@ -321,6 +358,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   const clearPointer = useCallback(() => useUiStore.getState().selectPointer(null), []);
   const [dialog, setDialog] = useState<DialogState | null>(null);
   const [exporting, setExporting] = useState(false);
+  /** Where "Share my mod" last saved the jar, for "Where is it?" (ADR 0083 D4). */
+  const [sharedJar, setSharedJar] = useState<string | null>(null);
   const [assetRevision, setAssetRevision] = useState(0);
   const [recentProjects, setRecentProjects] = useState<readonly RecentProjectView[]>([]);
   const [recentPickerOpen, setRecentPickerOpen] = useState(false);
@@ -540,6 +579,48 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       ),
     [session],
   );
+  // Play (ADR 0084): the controls read the store; Very easy shows blocking problems in
+  // "Things to fix" instead of the Problems panel (ADR 0083 D5).
+  useEffect(
+    () =>
+      connectPlay(session, bridge, {
+        notify(message) {
+          const veryEasy = usePreferences.getState().mode === 'very-easy';
+          useUiStore
+            .getState()
+            .setMessage(
+              veryEasy
+                ? { ...message, text: message.text.replace('See Problems.', 'See Things to fix.') }
+                : message,
+            );
+        },
+        showProblems(problems) {
+          const ui = useUiStore.getState();
+          ui.setExportProblems(problems);
+          if (usePreferences.getState().mode !== 'very-easy') ui.setRightDock('problems');
+        },
+      }),
+    [session, bridge],
+  );
+  const playConnected = usePlayStore((state) => state.host !== null);
+  const canReloadGame = usePlayStore((state) => state.status?.canReload === true);
+  const veryEasy = uiMode === 'very-easy';
+  // The plain-language words for Rule cards and "Things to fix" (ADR 0083 D5).
+  const plainWords = useMemo(() => plainProblemWords(project), [project]);
+  const homeTiles = useMemo(() => {
+    if (target === null) return [];
+    const available = new Set(
+      creatorFlows(session.library.starters, target)
+        .filter((flow) => flow.unavailable === null)
+        .map((flow) => flow.starter.id),
+    );
+    return shownTiles({
+      flowAvailable: (id) => available.has(id),
+      rules: session.registry.get(RULES_KIND) !== undefined,
+      ai: aiController !== null,
+    });
+  }, [session, target, aiController]);
+  const homeCards = useMemo(() => thingCards(project, flowTitles), [project, flowTitles]);
   const aiConversationModel = useAiPanelStore((state) =>
     snapshot.root === null ? null : (state.models[snapshot.root] ?? null),
   );
@@ -685,23 +766,34 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   };
 
   /** Runs the Fabric mod jar export with the dialog's option values and reports the outcome. */
-  const runFabricJarExport = async (values: Record<string, Json>): Promise<void> => {
+  const runFabricJarExport = async (values: Record<string, Json>, share = false): Promise<void> => {
     setExporting(true);
     try {
       const result = await session.exportFabricJar(values);
       setExportProblems(userFacingExportProblems(result.problems));
       if (!result.ok) {
-        setRightDock('problems');
+        if (!share) setRightDock('problems');
         const errors = errorCount(result.problems);
         setMessage({
           kind: 'error',
           text: hasGeckolibMissing(result.problems)
             ? GECKOLIB_DOWNLOAD_MESSAGE
-            : `Export blocked by ${errors} error(s); nothing was written. See Problems.`,
+            : share
+              ? `Your mod could not be made: ${errors} thing(s) to fix first. See Things to fix.`
+              : `Export blocked by ${errors} error(s); nothing was written. See Problems.`,
         });
         return;
       }
       if (result.cancelled === true) return;
+      if (share && result.location !== undefined) {
+        // "Share my mod" (ADR 0083 D4): say where the file is, with "Where is it?".
+        setSharedJar(result.location);
+        setMessage({
+          kind: 'info',
+          text: 'Your mod is saved as one file. Friends put it in their mods folder, next to Fabric API.',
+        });
+        return;
+      }
       const warnings = result.problems.filter((problem) => problem.severity === 'warning').length;
       const suffix = warnings > 0 ? ` ${warnings} warning(s), see Problems.` : '';
       setMessage({
@@ -847,6 +939,11 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       void runPackExport('resource', 'install', () => session.exportPack('resource', 'install')),
   );
   const exportFabricJar = guarded(fabricJarReason, () => setDialog({ type: 'fabric-jar' }));
+  // Very easy's "Share my mod": the jar export with the dialog's defaults (ADR 0083 D4).
+  const shareMyMod = guarded(
+    fabricJarReason,
+    () => void runFabricJarExport(defaultOptionValues(session.fabricJarOptions), true),
+  );
   // The eject generates code from every layer, so every error blocks it, as for the jar.
   const exportJavaProject = guarded(fabricJarReason, () => setDialog({ type: 'java-project' }));
   const testInMinecraft = guarded(fabricJarReason, () => setDialog({ type: 'test-in-minecraft' }));
@@ -1192,8 +1289,9 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       .then(async (notice) => {
         if (notice === null || !live) return;
         if (notice === 'welcome') {
-          // A brand-new install starts in Easy mode unless a mode was already chosen.
-          if (!usePreferences.getState().modeChosen) usePreferences.getState().setMode('easy');
+          // A brand-new install starts in Very easy mode unless a mode was already chosen
+          // (ADR 0083 D1; ADR 0047's Easy before).
+          if (!usePreferences.getState().modeChosen) usePreferences.getState().setMode('very-easy');
           setDialog((current) => current ?? { type: 'welcome' });
           return;
         }
@@ -1348,21 +1446,188 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     aiController.setMode('build');
     void aiController.send(description, [], pictures);
   };
-  const toggleMode = (): void => {
-    const next = usePreferences.getState().mode === 'easy' ? 'advanced' : 'easy';
+  const chooseMode = (next: UiMode): void => {
     usePreferences.getState().setMode(next);
-    if (next === 'easy') setActiveTab('form');
+    if (next !== 'advanced') setActiveTab('form');
     setMessage({
       kind: 'info',
       text:
-        next === 'easy'
-          ? 'Easy mode: your content first; technical files are under More, and Raw JSON is hidden.'
-          : 'Advanced mode: every element, kind ids and Raw JSON.',
+        next === 'very-easy'
+          ? 'Very easy mode: Home, Play and plain words. Everything else is in the menus.'
+          : next === 'easy'
+            ? 'Easy mode: your content first; technical files are under More, and Raw JSON is hidden.'
+            : 'Advanced mode: every element, kind ids and Raw JSON.',
+    });
+  };
+  /** Easy and Advanced swap (ADR 0047 D1); Very easy goes to Easy. */
+  const toggleMode = (): void =>
+    chooseMode(usePreferences.getState().mode === 'easy' ? 'advanced' : 'easy');
+  const goHome = (): void => {
+    if (usePreferences.getState().mode !== 'very-easy') chooseMode('very-easy');
+    select(null);
+  };
+  const playNow = (): void => {
+    if (usePlayStore.getState().host === null) {
+      setMessage({ kind: 'error', text: 'Play is not available here.' });
+      return;
+    }
+    if (project === null) {
+      setMessage({ kind: 'error', text: 'Open a project to play it.' });
+      return;
+    }
+    void usePlayStore.getState().play();
+  };
+  const reloadGame = (): void => {
+    // A no-op unless the game is in the test world (the store checks `canReload`).
+    if (project !== null) void usePlayStore.getState().reload();
+  };
+  /** Very easy's New: a name only, in `<Documents>/MCSuperMods` (ADR 0083 D6). */
+  const newMod = (): void => {
+    const fallback = (): void => void openWith('New project', () => session.newProject());
+    const ask = bridge.project.defaultParent;
+    if (ask === undefined) {
+      fallback();
+      return;
+    }
+    ask().then(
+      (parent) => (parent === '' ? fallback() : setDialog({ type: 'new-mod', parent })),
+      fallback,
+    );
+  };
+
+  // Home (ADR 0083 D2) ----------------------------------------------------------------------
+
+  const ownNamespace = project?.namespaces.find((entry) => entry.name !== 'minecraft')?.name;
+  /** Opens the project's first rule book, or makes `<namespace>:rules` (ADR 0082 D2). */
+  const openRuleBook = (): void => {
+    if (project === null || ownNamespace === undefined) return;
+    const book = project.namespaces
+      .flatMap((namespace) => namespace.elements)
+      .filter((element) => element.kind === RULES_KIND)
+      .sort((a, b) => a.id.localeCompare(b.id))[0];
+    if (book !== undefined) {
+      navigateTo(book.id, null);
+      return;
+    }
+    const id: ResourceLocation = `${ownNamespace}:rules`;
+    try {
+      session.addElement({ id, kind: RULES_KIND });
+      navigateTo(id, null);
+    } catch (error) {
+      setMessage({ kind: 'error', text: `Make things happen: ${messageOf(error)}` });
+    }
+  };
+  const openTile = (shown: ShownTile): void => {
+    const action = shown.tile.action;
+    if (project === null) {
+      setMessage({ kind: 'error', text: 'Start or open a mod first.' });
+      return;
+    }
+    switch (action.type) {
+      case 'flows':
+        setDialog({ type: 'creator', flowIds: shown.flowIds });
+        return;
+      case 'rules':
+        openRuleBook();
+        return;
+      case 'paint':
+        if (ownNamespace !== undefined) setDialog({ type: 'new-texture', namespace: ownNamespace });
+        return;
+      default:
+        buildWithAi();
+    }
+  };
+  const renameThing = (card: ThingCard): void => {
+    if (card.main.kind === RULES_KIND) {
+      // A rule book has no shown name of its own: the id rename.
+      const references = session.references.to(card.main.id).length;
+      setDialog({ type: 'rename', id: card.main.id, references });
+      return;
+    }
+    setDialog({ type: 'rename-thing', id: card.main.id, name: displayNameOf(card.main) });
+  };
+  const duplicateThing = (card: ThingCard): void => {
+    if (project === null) return;
+    const id = copyId(project, card.main.id);
+    session
+      .applyChangeset(
+        [
+          {
+            itemId: 'duplicate',
+            op: 'create',
+            elementId: id,
+            kind: card.main.kind,
+            after: copyData(card.main.data),
+            accepted: true,
+            problems: [],
+          },
+        ],
+        `Duplicate ${card.name}`,
+      )
+      .then(
+        () => setMessage({ kind: 'info', text: `Made a copy of ${card.name}.` }),
+        (error: unknown) => setMessage({ kind: 'error', text: `Duplicate: ${messageOf(error)}` }),
+      );
+  };
+  const deleteThing = (card: ThingCard): void => {
+    session
+      .applyChangeset(
+        card.elements.map((element, index) => ({
+          itemId: `delete-${index}`,
+          op: 'delete' as const,
+          elementId: element.id,
+          kind: element.kind,
+          before: element.data,
+          accepted: true,
+          problems: [],
+        })),
+        `Delete ${card.name}`,
+      )
+      .then(
+        () => {
+          if (card.elements.some((element) => element.id === selectedId)) select(null);
+          setMessage({ kind: 'info', text: `Deleted ${card.name}. Undo brings it back.` });
+        },
+        (error: unknown) => setMessage({ kind: 'error', text: `Delete: ${messageOf(error)}` }),
+      );
+  };
+  /** "Fix it" in Things to fix (ADR 0083 D5). */
+  const fixProblem = (problem: Problem, fix: PlainFix): void => {
+    if (problem.elementId === undefined || project === null) return;
+    const element = project.namespaces
+      .flatMap((namespace) => namespace.elements)
+      .find((entry) => entry.id === problem.elementId);
+    if (element === undefined) return;
+    if (fix === 'remove-step') {
+      const pointer = stepPointerOf(problem.path);
+      const next = pointer === null ? null : removeAtPointer(element.data, pointer);
+      if (next === null) {
+        setMessage({ kind: 'error', text: 'That step could not be found any more.' });
+        return;
+      }
+      run('Remove this step', () => session.setElementData(element.id, next));
+      return;
+    }
+    const picture = missingPictureOf(project, problem, target?.folders.resource.textures);
+    if (picture === null) {
+      setMessage({ kind: 'error', text: 'The missing picture could not be found.' });
+      return;
+    }
+    setDialog({
+      type: 'paint',
+      namespace: picture.namespace,
+      path: picture.path,
+      bytes: null,
+      size: { width: 16, height: 16 },
+      isNew: true,
     });
   };
 
   const handlers: Record<MenuCommand, Action> = {
-    new: () => void openWith('New project', () => session.newProject()),
+    new: () => {
+      if (uiMode === 'very-easy') newMod();
+      else void openWith('New project', () => session.newProject());
+    },
     newProjectFromStarter: () => setDialog({ type: 'new-project' }),
     examples: () => setDialog({ type: 'examples' }),
     open: () => void openWith('Open project', () => session.openProject()),
@@ -1439,6 +1704,12 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       }
       setDialog({ type: 'creator' });
     },
+    play: playNow,
+    reloadGame,
+    modeVeryEasy: () => chooseMode('very-easy'),
+    modeEasy: () => chooseMode('easy'),
+    modeAdvanced: () => chooseMode('advanced'),
+    home: goHome,
   };
 
   const commandHandlers: CommandHandlers = {
@@ -1497,6 +1768,12 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         ? null
         : () => aiController.askAboutElement(selected.id),
     creator: project === null ? null : handlers.creator,
+    play: project === null || !playConnected ? null : playNow,
+    reloadGame: project === null || !canReloadGame ? null : reloadGame,
+    home: goHome,
+    veryEasyMode: uiMode === 'very-easy' ? null : handlers.modeVeryEasy,
+    easyMode: uiMode === 'easy' ? null : handlers.modeEasy,
+    advancedMode: uiMode === 'advanced' ? null : handlers.modeAdvanced,
   } satisfies Record<BuiltInCommandId, Action | null>;
 
   const palette = [
@@ -1787,8 +2064,58 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       preview
     );
 
+  const editorArea = (
+    <EditorArea
+      element={selected}
+      form={form}
+      tab={activeTab}
+      onTabChange={setActiveTab}
+      onApply={(id: ResourceLocation, data: Json) =>
+        run('Apply', () => session.setElementData(id, data))
+      }
+      {...(aiController === null
+        ? {}
+        : { onAskAi: (id: ResourceLocation) => aiController.askAboutElement(id) })}
+      onEditInCreator={editInCreator}
+      {...(project === null ? {} : { onOpenCreator: handlers.creator })}
+      {...(aiController === null ? {} : { onBuildWithAi: buildWithAi })}
+      hideRawJson={uiMode !== 'advanced'}
+      hideIds={veryEasy}
+      {...(preview === undefined ? {} : { preview })}
+      previewShown={centrePreview}
+      onTogglePreview={() => usePreferences.getState().toggleCentrePreview()}
+      {...(veryEasy
+        ? {
+            home: (
+              <Home
+                project={project}
+                tiles={homeTiles}
+                onTile={openTile}
+                cards={homeCards}
+                texturesFolder={target?.folders.resource.textures ?? 'textures'}
+                pictures={{
+                  project: thumbnail,
+                  vanilla: vanilla === null ? undefined : (path: string) => vanilla.readAsset(path),
+                  revision: assetRevision,
+                }}
+                onOpenThing={(card) => navigateTo(card.main.id, null)}
+                onEditInCreator={(card) => editInCreator(card.main)}
+                onRenameThing={renameThing}
+                onDuplicateThing={duplicateThing}
+                onDeleteThing={deleteThing}
+                onNewProject={handlers.new}
+                onOpenProject={handlers.open}
+                recentProjects={recentProjects}
+                onOpenRecent={openRecent}
+              />
+            ),
+          }
+        : {})}
+    />
+  );
+
   return (
-    <TextureDropContext.Provider value={project === null ? null : dropTexture}>
+    <ShellProviders textureDrop={project === null ? null : dropTexture} plainWords={plainWords}>
       <Tooltip.Provider delayDuration={400}>
         <Toast.Provider swipeDirection="right" label="Notification">
           <div className="grid h-full grid-rows-[auto_minmax(0,1fr)_auto]">
@@ -1815,6 +2142,12 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 {...(aiController === null ? {} : { onNewWithAi: buildWithAi })}
                 mode={uiMode}
                 onToggleMode={toggleMode}
+                onSetMode={chooseMode}
+                onHome={goHome}
+                onShare={shareMyMod}
+                shareDisabledReason={fabricJarReason}
+                onFirstMod={handlers.firstMod}
+                onWhatsNew={whatsNew}
                 onCreator={handlers.creator}
                 onOpen={handlers.open}
                 recentProjects={recentProjects}
@@ -1847,63 +2180,85 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 installTargets={installTargets}
                 onChooseInstallTarget={(id) => void chooseInstallTarget(id)}
               />
+              {veryEasy && sharedJar !== null && (
+                <div
+                  role="status"
+                  data-testid="share-done"
+                  className="flex flex-wrap items-center gap-2 border-b border-border bg-panel px-3 py-1.5 text-sm"
+                >
+                  <span>
+                    Your mod is saved. Give the file to friends: they put it in their mods folder.
+                  </span>
+                  <button
+                    type="button"
+                    data-testid="share-where"
+                    className="cursor-pointer text-accent underline-offset-2 hover:underline"
+                    onClick={() => {
+                      bridge.shell.showItemInFolder(sharedJar).catch((error: unknown) => {
+                        setMessage({ kind: 'error', text: `Where is it? ${messageOf(error)}` });
+                      });
+                    }}
+                  >
+                    Where is it?
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="share-done-close"
+                    className="ml-auto cursor-pointer text-muted text-xs hover:text-text"
+                    onClick={() => setSharedJar(null)}
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
             </div>
-            <main className="grid min-h-0 grid-cols-[minmax(200px,280px)_minmax(0,1fr)_minmax(260px,360px)]">
-              <ElementSidebar
-                project={project}
-                selectedId={selectedId}
-                onSelect={(id) => select(id)}
-                onRemove={(id: ResourceLocation) =>
-                  run('Remove element', () => session.removeElement(id))
-                }
-                assetActions={{
-                  onImport: (namespace) => setDialog({ type: 'import', namespace }),
-                  onRemove: (namespace, path) =>
-                    setDialog({ type: 'remove-asset', namespace, path }),
-                  onReveal: (namespace, path) => reveal(`assets/${namespace}/${path}`),
-                  onPaint: (namespace, path) => {
-                    session.readAsset(namespace, path).then(
-                      (bytes) => setDialog({ type: 'paint', namespace, path, bytes }),
-                      (error: unknown) =>
-                        setMessage({
-                          kind: 'error',
-                          text: `Cannot open ${path}: ${messageOf(error)}`,
-                        }),
-                    );
-                  },
-                  onNewTexture: (namespace) => setDialog({ type: 'new-texture', namespace }),
-                  onPicture: (namespace) => setDialog({ type: 'picture', namespace }),
-                  thumbnail,
-                  revision: assetRevision,
-                }}
-                recentProjects={recentProjects}
-                onOpenRecent={openRecent}
-                onRemoveRecent={removeRecent}
-                mode={uiMode}
-                collapsed={collapsedGroups}
-                onToggleGroup={(key) => usePreferences.getState().toggleCollapsed(key)}
-                flowTitles={flowTitles}
-              />
-              <EditorArea
-                element={selected}
-                form={form}
-                tab={activeTab}
-                onTabChange={setActiveTab}
-                onApply={(id: ResourceLocation, data: Json) =>
-                  run('Apply', () => session.setElementData(id, data))
-                }
-                {...(aiController === null
-                  ? {}
-                  : { onAskAi: (id: ResourceLocation) => aiController.askAboutElement(id) })}
-                onEditInCreator={editInCreator}
-                {...(project === null ? {} : { onOpenCreator: handlers.creator })}
-                {...(aiController === null ? {} : { onBuildWithAi: buildWithAi })}
-                hideRawJson={uiMode === 'easy'}
-                {...(preview === undefined ? {} : { preview })}
-                previewShown={centrePreview}
-                onTogglePreview={() => usePreferences.getState().toggleCentrePreview()}
-              />
+            <main
+              className={
+                veryEasy
+                  ? 'grid min-h-0 grid-cols-[minmax(0,1fr)_minmax(260px,360px)]'
+                  : 'grid min-h-0 grid-cols-[minmax(200px,280px)_minmax(0,1fr)_minmax(260px,360px)]'
+              }
+            >
+              {!veryEasy && (
+                <ElementSidebar
+                  project={project}
+                  selectedId={selectedId}
+                  onSelect={(id) => select(id)}
+                  onRemove={(id: ResourceLocation) =>
+                    run('Remove element', () => session.removeElement(id))
+                  }
+                  assetActions={{
+                    onImport: (namespace) => setDialog({ type: 'import', namespace }),
+                    onRemove: (namespace, path) =>
+                      setDialog({ type: 'remove-asset', namespace, path }),
+                    onReveal: (namespace, path) => reveal(`assets/${namespace}/${path}`),
+                    onPaint: (namespace, path) => {
+                      session.readAsset(namespace, path).then(
+                        (bytes) => setDialog({ type: 'paint', namespace, path, bytes }),
+                        (error: unknown) =>
+                          setMessage({
+                            kind: 'error',
+                            text: `Cannot open ${path}: ${messageOf(error)}`,
+                          }),
+                      );
+                    },
+                    onNewTexture: (namespace) => setDialog({ type: 'new-texture', namespace }),
+                    onPicture: (namespace) => setDialog({ type: 'picture', namespace }),
+                    thumbnail,
+                    revision: assetRevision,
+                  }}
+                  recentProjects={recentProjects}
+                  onOpenRecent={openRecent}
+                  onRemoveRecent={removeRecent}
+                  mode={uiMode}
+                  collapsed={collapsedGroups}
+                  onToggleGroup={(key) => usePreferences.getState().toggleCollapsed(key)}
+                  flowTitles={flowTitles}
+                />
+              )}
+              {editorArea}
               <RightDock
+                hideProblems={veryEasy}
                 problems={snapshot.problems}
                 exportProblems={exportProblems}
                 tab={rightDock}
@@ -1924,7 +2279,23 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                     })}
               />
             </main>
-            <StatusBar snapshot={snapshot} target={project === null ? null : target} />
+            <div>
+              {veryEasy && project !== null && (
+                <ThingsToFix
+                  project={project}
+                  problems={[...snapshot.problems, ...exportProblems]}
+                  onShow={(problem) => {
+                    if (problem.elementId === undefined) return;
+                    navigateTo(problem.elementId, problem.path ?? null, problem.range ?? null);
+                  }}
+                  onFix={fixProblem}
+                />
+              )}
+              <StatusBar
+                snapshot={snapshot}
+                target={project === null || veryEasy ? null : target}
+              />
+            </div>
           </div>
           <StatusToast />
           {dialog?.type === 'namespace' && (
@@ -2038,6 +2409,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               project={project}
               namespaces={namespaces.filter((name) => name !== 'minecraft')}
               edit={dialog.edit ?? null}
+              {...(dialog.flowIds === undefined ? {} : { flowIds: dialog.flowIds })}
               folders={target.folders.resource}
               readProjectAsset={readProjectAsset}
               vanilla={vanilla}
@@ -2133,7 +2505,10 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 const files = await bridge.dialogs.pickFiles({
                   title: 'Choose pictures',
                   filters: [
-                    { name: 'Pictures', extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'] },
+                    {
+                      name: 'Pictures',
+                      extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'],
+                    },
                   ],
                 });
                 return files.map((file) => ({ name: file.name, data: file.data }));
@@ -2201,6 +2576,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               onCreator={handlers.creator}
               {...(aiController === null ? {} : { onBuildWithAi: buildWithAi })}
               onClose={() => setDialog(null)}
+              mode={uiMode}
+              onMode={(mode) => usePreferences.getState().setMode(mode)}
             />
           )}
           {dialog?.type === 'whats-new' && (
@@ -2242,6 +2619,35 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                   (error: unknown) =>
                     setMessage({ kind: 'error', text: `Remove asset: ${messageOf(error)}` }),
                 );
+              }}
+            />
+          )}
+          {dialog?.type === 'new-mod' && (
+            <NewModDialog
+              parent={dialog.parent}
+              onChangeFolder={() =>
+                bridge.dialogs.pickDirectory({ title: 'Choose where your mods are saved' })
+              }
+              onCancel={() => setDialog(null)}
+              onCreate={async (folder) => {
+                const outcome = await session.newProject({ folder });
+                if (outcome.ok) {
+                  setDialog(null);
+                  await openWith('New mod', async () => outcome);
+                  return null;
+                }
+                if ('cancelled' in outcome) return null;
+                return outcome.reason;
+              }}
+            />
+          )}
+          {dialog?.type === 'rename-thing' && (
+            <RenameThingDialog
+              name={dialog.name}
+              onCancel={() => setDialog(null)}
+              onSubmit={(name) => {
+                setDialog(null);
+                run('Rename', () => session.setElementValue(dialog.id, '/display_name', name));
               }}
             />
           )}
@@ -2403,6 +2809,6 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
           )}
         </Toast.Provider>
       </Tooltip.Provider>
-    </TextureDropContext.Provider>
+    </ShellProviders>
   );
 }

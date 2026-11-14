@@ -10,6 +10,12 @@
 
 import { lazy, Suspense } from 'react';
 import type { StudioEntry, StudioProps } from '../types';
+import {
+  BLOCK_VERY_EASY_SECTIONS,
+  EFFECT_VERY_EASY_SECTIONS,
+  ITEM_VERY_EASY_SECTIONS,
+  POTION_VERY_EASY_SECTIONS,
+} from '../very-easy';
 import { ExtraDropsStudio, WorldAdditionStudio } from './AdditionStudios';
 import { BIOME_ADDITION_KIND, LOOT_ADDITION_KIND } from './additions-model';
 import { BlockStudio } from './BlockStudio';
@@ -38,10 +44,30 @@ function LazyParticleStudio(props: StudioProps) {
 }
 
 export const studios: StudioEntry[] = [
-  { id: 'msm.blocks-items.block', kindId: BLOCK_KIND, component: BlockStudio },
-  { id: 'msm.blocks-items.item', kindId: ITEM_KIND, component: ItemStudio },
-  { id: 'msm.blocks-items.effect', kindId: EFFECT_KIND, component: EffectStudio },
-  { id: 'msm.blocks-items.potion', kindId: POTION_KIND, component: PotionStudio },
+  {
+    id: 'msm.blocks-items.block',
+    kindId: BLOCK_KIND,
+    component: BlockStudio,
+    veryEasy: BLOCK_VERY_EASY_SECTIONS,
+  },
+  {
+    id: 'msm.blocks-items.item',
+    kindId: ITEM_KIND,
+    component: ItemStudio,
+    veryEasy: ITEM_VERY_EASY_SECTIONS,
+  },
+  {
+    id: 'msm.blocks-items.effect',
+    kindId: EFFECT_KIND,
+    component: EffectStudio,
+    veryEasy: EFFECT_VERY_EASY_SECTIONS,
+  },
+  {
+    id: 'msm.blocks-items.potion',
+    kindId: POTION_KIND,
+    component: PotionStudio,
+    veryEasy: POTION_VERY_EASY_SECTIONS,
+  },
   {
     id: 'msm.blocks-items.biome-addition',
     kindId: BIOME_ADDITION_KIND,

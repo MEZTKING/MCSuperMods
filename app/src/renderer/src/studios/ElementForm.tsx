@@ -30,6 +30,7 @@ import { DISCOVERED_STUDIOS, mergeStudios, studioFor } from './studio-registry';
 import { TagStudio } from './TagStudio';
 import type { StudioEntry, StudioProps } from './types';
 import type { SchemaContextState } from './use-schema-context';
+import { useVeryEasy, VeryEasySectionsContext } from './very-easy';
 
 /** The kinds with their own Studio. */
 export const RECIPE_KIND = 'minecraft:recipe';
@@ -273,6 +274,13 @@ export function ElementForm(props: ElementFormProps & { studios?: readonly Studi
   );
   const problems = useMemo(() => formProblems(props.problems), [props.problems]);
   const studio = kind === undefined ? undefined : studioFor(element, kind, studios);
+  // Very easy shows only the sections the Studio lists for it (ADR 0083 D3).
+  const veryEasy = useVeryEasy();
+  const veryEasyList = studio?.veryEasy;
+  const veryEasySections = useMemo(
+    () => (veryEasy && veryEasyList !== undefined ? new Set(veryEasyList) : null),
+    [veryEasy, veryEasyList],
+  );
   const onChange = props.onChange;
   const withGesture = useGestureCoalesce(studio?.coalesceKeys ?? NO_KEYS);
   const change = useCallback(
@@ -339,24 +347,26 @@ export function ElementForm(props: ElementFormProps & { studios?: readonly Studi
   if (studio === undefined) return <div data-testid="schema-form">{form}</div>;
   const Studio = studio.component;
   return (
-    <Studio
-      project={project}
-      element={element}
-      kind={kind}
-      node={node}
-      context={schema.context}
-      target={schema.context.target}
-      problems={problems}
-      sessionProblems={props.problems}
-      completions={completions}
-      suggest={suggest}
-      onChange={change}
-      form={form}
-      formRef={formRef}
-      focusPointer={focusPointer}
-      focusColumn={props.focusColumn}
-      onFocused={onFocused}
-      complete={props.complete}
-    />
+    <VeryEasySectionsContext.Provider value={veryEasySections}>
+      <Studio
+        project={project}
+        element={element}
+        kind={kind}
+        node={node}
+        context={schema.context}
+        target={schema.context.target}
+        problems={problems}
+        sessionProblems={props.problems}
+        completions={completions}
+        suggest={suggest}
+        onChange={change}
+        form={form}
+        formRef={formRef}
+        focusPointer={focusPointer}
+        focusColumn={props.focusColumn}
+        onFocused={onFocused}
+        complete={props.complete}
+      />
+    </VeryEasySectionsContext.Provider>
   );
 }

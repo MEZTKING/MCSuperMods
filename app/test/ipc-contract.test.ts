@@ -204,6 +204,10 @@ const samples: Record<
     request: [undefined, 'x'],
     response: ['/tmp/p', 1],
   },
+  [InvokeChannels.projectDefaultParent]: {
+    request: [undefined, 'x'],
+    response: ['/home/a/Documents/MCSuperMods', 1],
+  },
   [InvokeChannels.projectRecent]: {
     request: [undefined, { all: true }],
     response: [

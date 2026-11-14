@@ -62,6 +62,54 @@ type MenuEntry = {
   click?: () => void;
 };
 
+describe('Play and the modes (ADR 0083, ADR 0084)', () => {
+  it('offers File > "Play" on F5 and "Reload in Game" on CmdOrCtrl+R', () => {
+    installMenu();
+    const template = templates.at(-1) as MenuEntry[];
+    const file = template.find((entry) => entry.label === 'File')?.submenu ?? [];
+    const play = file.find((entry) => entry.label === 'Play');
+    expect(play?.accelerator).toBe('F5');
+    play?.click?.();
+    expect(sent.at(-1)).toBe('play');
+    const reload = file.find((entry) => entry.label === 'Reload in Game');
+    expect(reload?.accelerator).toBe('CmdOrCtrl+R');
+    reload?.click?.();
+    expect(sent.at(-1)).toBe('reloadGame');
+  });
+
+  it('moves the window reload off F5 and CmdOrCtrl+R', () => {
+    installMenu();
+    const template = templates.at(-1) as (MenuEntry & { role?: string })[];
+    const all = template.flatMap(
+      (entry) => (entry.submenu ?? []) as (MenuEntry & { role?: string })[],
+    );
+    const reloadWindow = all.find((entry) => entry.role === 'reload');
+    expect(reloadWindow?.accelerator).toBe('CmdOrCtrl+Shift+R');
+    const keys = all.map((entry) => entry.accelerator).filter((key) => key !== undefined);
+    expect(keys.filter((key) => key === 'F5' || key === 'CmdOrCtrl+R')).toEqual([
+      'F5',
+      'CmdOrCtrl+R',
+    ]);
+  });
+
+  it('offers the three modes and Home in the View menu', () => {
+    installMenu();
+    const template = templates.at(-1) as MenuEntry[];
+    const view = template.find((entry) => entry.label === 'View')?.submenu ?? [];
+    for (const [label, command] of [
+      ['Very Easy Mode', 'modeVeryEasy'],
+      ['Easy Mode', 'modeEasy'],
+      ['Advanced Mode', 'modeAdvanced'],
+      ['Switch Easy / Advanced Mode', 'toggleMode'],
+      ['Home', 'home'],
+    ] as const) {
+      const item = view.find((entry) => entry.label === label);
+      item?.click?.();
+      expect(sent.at(-1), label).toBe(command);
+    }
+  });
+});
+
 describe('AI helper and Creator menu items', () => {
   it('offers View > "AI Helper" with CmdOrCtrl+Shift+A (ADR 0041 D8)', () => {
     installMenu();

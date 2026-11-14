@@ -16,6 +16,8 @@ export interface RightDockProps extends ProblemsPanelProps {
   /** The selected tab when controlled. */
   tab?: DockTab;
   onTabChange?(tab: DockTab): void;
+  /** Leaves the Problems tab out (Very easy shows "Things to fix" instead, ADR 0083 D5). */
+  hideProblems?: boolean;
 }
 
 function Scrolling({ children }: { children: ReactNode }) {
@@ -32,24 +34,24 @@ function Scrolling({ children }: { children: ReactNode }) {
   );
 }
 
-function dockTab(value: string, hasAssistant: boolean): DockTab {
+function dockTab(value: string, hasAssistant: boolean, hideProblems = false): DockTab {
   if (value === 'preview') return 'preview';
   if (value === 'assistant' && hasAssistant) return 'assistant';
-  return 'problems';
+  return hideProblems ? (hasAssistant ? 'assistant' : 'preview') : 'problems';
 }
 
 /** The right dock: Preview, Problems and (when given) the AI helper. */
 export function RightDock(props: RightDockProps) {
-  const { preview, assistant, onTabChange, tab: controlled, ...problems } = props;
+  const { preview, assistant, onTabChange, tab: controlled, hideProblems, ...problems } = props;
   const [ownTab, setOwnTab] = useState<DockTab>('problems');
   const hasAssistant = assistant !== undefined;
-  const tab = dockTab(controlled ?? ownTab, hasAssistant);
+  const tab = dockTab(controlled ?? ownTab, hasAssistant, hideProblems === true);
   const count = props.problems.length + (props.exportProblems?.length ?? 0);
   return (
     <Tabs.Root
       value={tab}
       onValueChange={(value) => {
-        const next = dockTab(value, hasAssistant);
+        const next = dockTab(value, hasAssistant, hideProblems === true);
         setOwnTab(next);
         onTabChange?.(next);
       }}
@@ -60,10 +62,16 @@ export function RightDock(props: RightDockProps) {
           <Box size={14} aria-hidden />
           Preview
         </Tabs.Trigger>
-        <Tabs.Trigger value="problems" className={tabTriggerClass} data-testid="dock-tab-problems">
-          <ListChecks size={14} aria-hidden />
-          Problems ({count})
-        </Tabs.Trigger>
+        {hideProblems !== true && (
+          <Tabs.Trigger
+            value="problems"
+            className={tabTriggerClass}
+            data-testid="dock-tab-problems"
+          >
+            <ListChecks size={14} aria-hidden />
+            Problems ({count})
+          </Tabs.Trigger>
+        )}
         {hasAssistant && (
           <Tabs.Trigger
             value="assistant"
@@ -82,11 +90,13 @@ export function RightDock(props: RightDockProps) {
           </div>
         </Scrolling>
       </Tabs.Content>
-      <Tabs.Content value="problems" className="min-h-0 flex-1">
-        <Scrolling>
-          <ProblemsPanel {...problems} />
-        </Scrolling>
-      </Tabs.Content>
+      {hideProblems !== true && (
+        <Tabs.Content value="problems" className="min-h-0 flex-1">
+          <Scrolling>
+            <ProblemsPanel {...problems} />
+          </Scrolling>
+        </Tabs.Content>
+      )}
       {hasAssistant && (
         <Tabs.Content
           value="assistant"

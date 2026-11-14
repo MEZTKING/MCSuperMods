@@ -103,6 +103,11 @@ export interface CreatorDialogProps {
   namespaces: readonly string[];
   /** Reopens a set instead of starting with the flow picker. */
   edit?: CreatorEditRequest | null;
+  /**
+   * Offers only these flows (Very easy's Home tiles, ADR 0083 D2): one available flow opens
+   * directly, several open the picker with just their cards.
+   */
+  flowIds?: readonly string[];
   folders: ResourceFolders;
   readProjectAsset(namespace: string, path: string): Promise<Uint8Array | null>;
   vanilla: VanillaAssetReader | null;
@@ -203,14 +208,26 @@ export function CreatorDialog(props: CreatorDialogProps) {
     edit === null || edit === undefined
       ? undefined
       : flows.find((flow) => flow.starter.id === edit.flowId);
-  const [flowId, setFlowId] = useState<string | null>(editFlow?.starter.id ?? null);
+  const flowIds = props.flowIds;
+  const offered = useMemo(
+    () =>
+      flowIds === undefined ? flows : flows.filter((entry) => flowIds.includes(entry.starter.id)),
+    [flows, flowIds],
+  );
+  const offeredAvailable = offered.filter((entry) => entry.unavailable === null);
+  const startFlow =
+    editFlow ??
+    (flowIds !== undefined && offeredAvailable.length === 1 ? offeredAvailable[0] : undefined);
+  const [flowId, setFlowId] = useState<string | null>(startFlow?.starter.id ?? null);
   const flow = flows.find((entry) => entry.starter.id === flowId) ?? null;
   const starter = flow?.starter ?? null;
   const parameters = starter?.parameters;
   const [raw, setRaw] = useState<RawValues>(() =>
     editFlow !== undefined && edit !== null && edit !== undefined
       ? rawValuesFromStored(editFlow.starter.parameters, edit.values)
-      : {},
+      : startFlow !== undefined
+        ? defaultRawValues(startFlow.starter.parameters)
+        : {},
   );
   const namespaceOptions = edit?.namespace !== undefined ? [edit.namespace] : props.namespaces;
   const [namespace, setNamespace] = useState(namespaceOptions[0] ?? '');
@@ -391,7 +408,7 @@ export function CreatorDialog(props: CreatorDialogProps) {
                 The flow {edit.flowId} is not available, so this set cannot be reopened.
               </p>
             ) : (
-              <FlowPicker flows={flows} onPick={pick} />
+              <FlowPicker flows={offered} onPick={pick} />
             )
           ) : (
             <div className="grid min-h-0 flex-1 grid-cols-[minmax(16rem,24rem)_minmax(0,1fr)] gap-3">

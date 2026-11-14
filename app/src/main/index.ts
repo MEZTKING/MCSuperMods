@@ -152,6 +152,8 @@ const platform = createNodePlatform({
   resizePng,
   msmHome,
   installEnv: nodeEnv(),
+  // ADR 0083 D6: Very easy's new projects; test runs keep them under the MSM home.
+  documentsDir: isTestRun(process.env) ? join(msmHome, 'Documents') : app.getPath('documents'),
   // "What's new" never opens by itself in smoke and end-to-end runs.
   suppressWhatsNew: isTestRun(process.env),
   // The menu exists only once the app is ready; before that the start-up read installs it.
