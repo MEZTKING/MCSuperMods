@@ -245,3 +245,5 @@ The hard limits of this batch, in the style of the coverage audit's L rows; they
 ## Notes from implementation
 
 Appended by the orchestrator from each brief's "Notes for the plan", with the brief number.
+
+- B362 (857d0eb): `@msm/plugin-rules` scaffold (`msm.rules`, `^1.0.0`, no kinds; `typescript` dev dependency for B365), listed after scripting in the app's built-ins; stubs `MsmDevModeGameTest` (B369), `MsmScriptApi14GameTest` (B368/B370), `MsmDevClientGameTest` (`fabric-client-gametest`, B374, must implement `FabricClientGameTest`), parity `SampleRulesParityTest` (filter `sample_rules_*`). The full app suite takes about 5 minutes and can flake when run beside Gradle builds.
