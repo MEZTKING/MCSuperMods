@@ -19,6 +19,7 @@ import plugin, {
   blocksItemsTemplates,
   blocksItemsValidators,
   MOD_ID_PATTERN,
+  machineOf,
   modIdFromNamespace,
 } from '../src/index';
 import { BLOCK_KIND } from '../src/kinds';
@@ -65,6 +66,14 @@ const IDS = [
   'msm_block_crop',
   'msm_block_sapling',
   'msm_block_leaves',
+  'msm_block_storage_crate',
+  'msm_block_small_crate',
+  'msm_block_item_holder',
+  'msm_block_hopper_box',
+  'msm_block_dispenser_box',
+  'msm_block_grinder_machine',
+  'msm_block_fast_furnace',
+  'msm_block_redstone_machine',
   'msm_item_food',
   'msm_item_tool',
   'msm_item_tool_custom_material',
@@ -123,8 +132,9 @@ function contextFor(
 
 /**
  * The test indexes plus the ids a new element brings into the project, as the app's registry
- * index counts them: its block item's own id (`blockItemId`, the Crop template's seeds) and the
- * block models its lowering generates from `textures` (ADR 0067 D7).
+ * index counts them: its block item's own id (`blockItemId`, the Crop template's seeds), the
+ * block models its lowering generates from `textures` (ADR 0067 D7) and, for a machine, its own
+ * id as a recipe type and serialiser (ADR 0075 D2).
  */
 function withOwnIds(indexes: TargetIndexes, created: Element, files: OutputFile[]): TargetIndexes {
   const itemId = created.kind === BLOCK_KIND ? blockItemId(created) : undefined;
@@ -132,11 +142,13 @@ function withOwnIds(indexes: TargetIndexes, created: Element, files: OutputFile[
     .map((file) => /^assets\/([^/]+)\/models\/(.+)\.json$/.exec(file.path))
     .filter((match) => match !== null)
     .map((match) => `${match[1]}:${match[2]}`);
-  if (itemId === undefined && modelIds.length === 0) return indexes;
+  const machine = created.kind === BLOCK_KIND && machineOf(created.data) !== undefined;
+  if (itemId === undefined && modelIds.length === 0 && !machine) return indexes;
   const project: Record<string, readonly string[]> = {
     ...PROJECT_IDS,
     item: [...(PROJECT_IDS.item ?? []), ...(itemId === undefined ? [] : [itemId])],
     model: [...(PROJECT_IDS.model ?? []), ...modelIds],
+    ...(machine ? { recipe_type: [created.id], recipe_serializer: [created.id] } : {}),
   };
   return { ...indexes, registries: createRegistryIndex({ vanilla: indexes.vanilla, project }) };
 }

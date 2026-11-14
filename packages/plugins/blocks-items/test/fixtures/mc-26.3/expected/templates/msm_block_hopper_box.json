@@ -1,0 +1,129 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 3,
+          "requires_tool": true,
+          "resistance": 4.8
+        },
+        "msm:container": {
+          "layout": "hopper"
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:functional_blocks"
+      },
+      "sound_type": "metal",
+      "type": "pillar"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cube_column",
+      "textures": {
+        "end": "minecraft:block/hopper_top",
+        "side": "minecraft:block/hopper_outside"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cube_column_horizontal",
+      "textures": {
+        "end": "minecraft:block/hopper_top",
+        "side": "minecraft:block/hopper_outside"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_horizontal.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "axis=x,open=false": {
+          "model": "demo:block/sample_horizontal",
+          "x": 90,
+          "y": 90
+        },
+        "axis=x,open=true": {
+          "model": "demo:block/sample_horizontal",
+          "x": 90,
+          "y": 90
+        },
+        "axis=y,open=false": {
+          "model": "demo:block/sample"
+        },
+        "axis=y,open=true": {
+          "model": "demo:block/sample"
+        },
+        "axis=z,open=false": {
+          "model": "demo:block/sample_horizontal",
+          "x": 90
+        },
+        "axis=z,open=true": {
+          "model": "demo:block/sample_horizontal",
+          "x": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:block/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/pickaxe.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

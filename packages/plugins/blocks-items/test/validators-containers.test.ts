@@ -44,8 +44,8 @@ const machine = (id: Id, fields: Record<string, unknown> = {}, data = {}): Eleme
 const recipe = { ingredient: 'minecraft:gravel', result: 'minecraft:flint' };
 
 describe('container and machine validators', () => {
-  it('lists eleven codes, none shared with the other validators', () => {
-    expect(CONTAINER_PROBLEM_CODES).toHaveLength(11);
+  it('lists twelve codes, none shared with the other validators', () => {
+    expect(CONTAINER_PROBLEM_CODES).toHaveLength(12);
     const all = [
       ...CONTAINER_PROBLEM_CODES,
       ...BLOCK_TYPE_PROBLEM_CODES,
@@ -243,6 +243,23 @@ describe('container and machine validators', () => {
     expect(withCode(problems, 'machine-time-range')).toEqual([
       ['demo:a', '/components/msm:machine/default_time', 'warning'],
       ['demo:a', '/recipes/1/time', 'warning'],
+    ]);
+  });
+
+  it('machine-recipes-without-machine: recipes need a machine on a type that takes one', async () => {
+    const slab = { type: 'slab', model: undefined, textures: { all: 'minecraft:block/stone' } };
+    const problems = await validate([
+      block('demo:a', { recipes: [recipe] }),
+      container('demo:b', {}, { recipes: [recipe] }),
+      machine('demo:c', {}, { ...slab, recipes: [recipe] }),
+      machine('demo:d', {}, { type: 'pillar', recipes: [recipe] }),
+      machine('demo:e', {}, { recipes: [recipe] }),
+      block('demo:f', { recipes: [] }),
+    ]);
+    expect(withCode(problems, 'machine-recipes-without-machine')).toEqual([
+      ['demo:a', '/recipes', 'warning'],
+      ['demo:b', '/recipes', 'warning'],
+      ['demo:c', '/recipes', 'warning'],
     ]);
   });
 

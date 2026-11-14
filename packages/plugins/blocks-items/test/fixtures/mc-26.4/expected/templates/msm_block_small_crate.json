@@ -1,0 +1,138 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 2.5,
+          "requires_tool": false,
+          "resistance": 2.5
+        },
+        "msm:container": {
+          "layout": "chest",
+          "rows": 1
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:functional_blocks"
+      },
+      "sound_type": "wood",
+      "type": "horizontal"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "minecraft:block/barrel_top",
+        "side": "minecraft:block/barrel_side",
+        "top": "minecraft:block/barrel_bottom"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "minecraft:block/barrel_top_open",
+        "side": "minecraft:block/barrel_side",
+        "top": "minecraft:block/barrel_bottom"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_open.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,open=false": {
+          "model": "demo:block/sample",
+          "y": 90
+        },
+        "facing=east,open=true": {
+          "model": "demo:block/sample_open",
+          "y": 90
+        },
+        "facing=north,open=false": {
+          "model": "demo:block/sample"
+        },
+        "facing=north,open=true": {
+          "model": "demo:block/sample_open"
+        },
+        "facing=south,open=false": {
+          "model": "demo:block/sample",
+          "y": 180
+        },
+        "facing=south,open=true": {
+          "model": "demo:block/sample_open",
+          "y": 180
+        },
+        "facing=west,open=false": {
+          "model": "demo:block/sample",
+          "y": 270
+        },
+        "facing=west,open=true": {
+          "model": "demo:block/sample_open",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:block/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/axe.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

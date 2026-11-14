@@ -28,6 +28,8 @@
  *   machine's `speed` is above 32767 ticks, which the screen cannot show (16-bit menu data).
  * - `blocks-items.machine-event-unknown` (error): an `on_start` or `on_finish` event the
  *   element does not declare in `events`.
+ * - `blocks-items.machine-recipes-without-machine` (warning): `recipes` on a block without
+ *   `msm:machine`, or on a type that takes no machine; lowering writes no recipe files there.
  */
 import type {
   Element,
@@ -65,6 +67,7 @@ export const CONTAINER_PROBLEM_CODES = Object.freeze([
   'blocks-items.machine-fuel-unused',
   'blocks-items.machine-time-range',
   'blocks-items.machine-event-unknown',
+  'blocks-items.machine-recipes-without-machine',
 ] as const);
 
 /** The largest time a furnace screen can show: menu data are shorts (ADR 0075 D12). */
@@ -425,6 +428,31 @@ function timeRanges(blocks: readonly ComponentBlock[]): Problem[] {
   return problems;
 }
 
+/**
+ * Blocks with machine `recipes` that lowering leaves out (`lowerMachineRecipes`): no
+ * `msm:machine`, or a type that takes none.
+ */
+function recipesWithoutMachine(elements: readonly Element[]): Problem[] {
+  return blockElements(elements).flatMap((element): Problem[] => {
+    const data = dataOf(element);
+    if (machineRecipeEntries(data).length === 0) return [];
+    const machine = machineOf(data) !== undefined;
+    if (machine && takesComponents(data)) return [];
+    const message = machine
+      ? `A block of type "${String(data.type)}" cannot be a machine, so its recipes are never written and do nothing. Use the block, pillar, horizontal or directional type, or remove "recipes".`
+      : 'This block has recipes but no "msm:machine" component, so its recipes are never written and do nothing. Add "msm:machine", or remove "recipes".';
+    return [
+      {
+        severity: 'warning',
+        code: 'blocks-items.machine-recipes-without-machine',
+        elementId: element.id,
+        path: pointer('recipes'),
+        message,
+      },
+    ];
+  });
+}
+
 // ---------------------------------------------------------------------------------------------
 
 /** Whether `id` is a valid resource location (other checks report bad element ids). */
@@ -474,6 +502,7 @@ export const containerValidators: readonly ProjectValidator[] = Object.freeze([
           ['on_start', 'on_finish'],
           'blocks-items.machine-event-unknown',
         ),
+        ...recipesWithoutMachine(elements),
       ];
     },
   },
