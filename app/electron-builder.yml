@@ -40,13 +40,27 @@ win:
     owner: MEZTKING
     repo: MCSuperMods
     releaseType: draft
+  # Unsigned (ADR 0013): no certificate and no `publisherName`, so `app-update.yml` carries no
+  # publisherName and electron-updater skips the installer signature check. When signing
+  # arrives, the certificate's publisher name turns the check on by itself.
 # NSIS writes `latest.yml` and a differential `.blockmap` next to the installer whenever a
-# publish provider is configured.
+# publish provider is configured. `appId` above is the NSIS GUID source: never change it, or
+# updates install a second copy beside the first.
+# Updates (audited 2026-11-14): "Restart to update" runs the downloaded installer with
+# `--updated /S --force-run`, which reuses the folder and install mode from the registry,
+# skips the pages and starts the app when done. `oneClick: false` with `perMachine: false`
+# installs "Only for me" by default (per user, under %LOCALAPPDATA%\Programs, no
+# administrator rights), so updates are silent; choosing "Anyone who uses this computer" or a
+# protected folder on the directory page makes each later update ask for elevation once
+# (`allowElevation`, the default). `runAfterFinish` keeps "Run MCSuperMods" ticked on the
+# finish page, so the app starts after a manual install from the `.exe`.
 nsis:
   differentialPackage: true
   oneClick: false
   perMachine: false
+  allowElevation: true
   allowToChangeInstallationDirectory: true
+  runAfterFinish: true
 
 # Linux `dir` is the local and CI verification build only (packaged smoke runs on Linux).
 # It is not published.

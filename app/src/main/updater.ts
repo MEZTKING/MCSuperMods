@@ -13,9 +13,15 @@
  * - When a download finishes, `notify` runs once per version (the native OS notification).
  * - `available` and `downloaded` carry the release notes as Markdown ({@link releaseNotesOf});
  *   `downloading` carries the version being downloaded.
+ * - Only published, non-prerelease releases newer than the running version are offered
+ *   (`allowPrerelease` and `allowDowngrade` off): an installed 1.5.1 never "updates" to 1.0.0.
  * - Updates download automatically; installing happens only when the user asks
  *   ({@link Updater.install}), after every window has closed through the unsaved-changes
- *   prompt. Nothing installs on an ordinary quit.
+ *   prompt, as a silent install that starts the new version (`quitAndInstall(true, true)`).
+ *   Nothing installs on an ordinary quit (`autoInstallOnAppQuit` off, ADR 0018); a downloaded
+ *   update stays cached and is offered again on the next start.
+ * - When the installer cannot start, {@link Updater.finishInstall} answers `failed` so the
+ *   host opens a window again instead of leaving a running app with no window.
  * - Errors never throw out of the updater. Each is classified ({@link classifyUpdateError}):
  *   "no published release" (for example only a draft exists) becomes `not-available` with
  *   reason `no-published-release` (so the UI does not claim the app is up to date), network
@@ -45,6 +51,12 @@ export type AutoUpdaterEvent =
 export interface AutoUpdaterLike {
   autoDownload: boolean;
   autoInstallOnAppQuit: boolean;
+  /** Pre-releases are never offered (electron-updater turns this on for a pre-release app). */
+  allowPrerelease: boolean;
+  /** An older published release is never offered. */
+  allowDowngrade: boolean;
+  /** MSM ships a full NSIS installer, never a web installer. */
+  disableWebInstaller: boolean;
   on(event: AutoUpdaterEvent, listener: (payload: unknown) => void): unknown;
   checkForUpdates(): Promise<unknown>;
   quitAndInstall(isSilent?: boolean, isForceRunAfter?: boolean): void;
@@ -106,16 +118,29 @@ export interface Updater {
    */
   install(): Promise<void>;
   /**
-   * Called once every window has closed. Runs the installer and quits when the user asked to
-   * install; returns whether it did (otherwise the caller quits as usual).
+   * Called once every window has closed. When the user asked to install, starts the silent
+   * installer, which quits the app and starts the new version (`installing`); `failed` when the
+   * installer could not start (the status is then an `error`, and the host should open a
+   * window again); `none` when no install was asked for (the host quits as usual).
    */
-  finishInstall(): boolean;
+  finishInstall(): FinishInstallResult;
 }
+
+/** What {@link Updater.finishInstall} did. */
+export type FinishInstallResult = 'installing' | 'failed' | 'none';
 
 /** The start-up check's default delay after the window has loaded. */
 export const STARTUP_CHECK_DELAY_MS = 5_000;
 /** The time between automatic checks after the start-up check: six hours. */
 export const UPDATE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
+
+/** The message shown when GitHub limits the requests (HTTP 429, or 403 "rate limit"). */
+export const UPDATE_RATE_LIMITED_MESSAGE =
+  'GitHub is limiting update checks right now. MCSuperMods will try again later.';
+/** The start of the message shown when a found update failed to download. */
+export const UPDATE_DOWNLOAD_FAILED_MESSAGE = 'Could not download the update.';
+/** The start of the message shown when the installer could not start. */
+export const UPDATE_INSTALL_FAILED_MESSAGE = 'Could not start the update installer.';
 
 /** The message shown when GitHub could not be reached. */
 export const UPDATE_OFFLINE_MESSAGE =
@@ -157,6 +182,7 @@ const NETWORK_MESSAGE =
 export type UpdateErrorClass =
   | { kind: 'no-release' }
   | { kind: 'network'; message: string }
+  | { kind: 'rate-limited'; message: string }
   | { kind: 'other'; message: string };
 
 function rawMessageOf(error: unknown): string {
@@ -222,11 +248,14 @@ export function classifyUpdateError(error: unknown): UpdateErrorClass {
   if ((code !== null && NETWORK_CODES.has(code)) || NETWORK_MESSAGE.test(raw)) {
     return { kind: 'network', message: UPDATE_OFFLINE_MESSAGE };
   }
+  const status = statusCodeOf(error);
+  if (status === 429 || (status === 403 && /rate limit/i.test(raw))) {
+    return { kind: 'rate-limited', message: UPDATE_RATE_LIMITED_MESSAGE };
+  }
   if (code !== null && NO_RELEASE_CODES.has(code)) return { kind: 'no-release' };
   if (code === 'ERR_XML_MISSED_ELEMENT' && NO_RELEASE_MESSAGE.test(raw)) {
     return { kind: 'no-release' };
   }
-  const status = statusCodeOf(error);
   // 404 or 406 from the releases feed or `/releases/latest` (not an installer download).
   if ((status === 404 || status === 406) && !/\/releases\/download\/(?!.*latest\.yml)/.test(raw)) {
     return { kind: 'no-release' };
@@ -241,8 +270,24 @@ function failureMessage(lead: string, raw: string): string {
   return reason === '' ? lead : `${lead} ${reason}`;
 }
 
-/** The status an updater error becomes. */
-export function statusForError(error: unknown): UpdateStatus {
+/** What the updater was doing when an error arrived. */
+export type UpdateErrorPhase = 'check' | 'download' | 'install';
+
+/**
+ * The status an updater error becomes. While checking, "no published release" is
+ * `not-available`; once an update was found (`download`) or the installer was starting
+ * (`install`) every failure is an `error` that says which step failed, never "up to date".
+ */
+export function statusForError(error: unknown, phase: UpdateErrorPhase = 'check'): UpdateStatus {
+  if (phase !== 'check') {
+    const classified = classifyUpdateError(error);
+    if (classified.kind === 'network' || classified.kind === 'rate-limited') {
+      return { state: 'error', message: classified.message };
+    }
+    const lead =
+      phase === 'download' ? UPDATE_DOWNLOAD_FAILED_MESSAGE : UPDATE_INSTALL_FAILED_MESSAGE;
+    return { state: 'error', message: failureMessage(lead, rawMessageOf(error)) };
+  }
   const classified = classifyUpdateError(error);
   return classified.kind === 'no-release'
     ? { state: 'not-available', reason: 'no-published-release' }
@@ -306,6 +351,13 @@ function sameStatus(a: UpdateStatus, b: UpdateStatus): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
+/** The download promise `checkForUpdates` resolves with when `autoDownload` is on. */
+function downloadPromiseOf(result: unknown): Promise<unknown> | null {
+  if (typeof result !== 'object' || result === null) return null;
+  const download = (result as Record<string, unknown>).downloadPromise;
+  return download instanceof Promise ? download : null;
+}
+
 /** Creates the updater. It loads electron-updater only when a check runs while active. */
 export function createUpdater(deps: UpdaterDeps): Updater {
   const disabled = updateDisabledReason(deps.gate);
@@ -314,6 +366,10 @@ export function createUpdater(deps: UpdaterDeps): Updater {
   let loading: Promise<AutoUpdaterLike> | null = null;
   let loaded: AutoUpdaterLike | null = null;
   let installRequested = false;
+  // True only while `quitAndInstall` runs: electron-updater reports a failure to start the
+  // installer through a synchronous `error` event and then returns without quitting.
+  let installing = false;
+  let installError = false;
   let running: Promise<UpdateStatus> | null = null;
   // The update being fetched (from `update-available`), for the download statuses.
   let pending: { version: string; notes?: string } | null = null;
@@ -352,13 +408,26 @@ export function createUpdater(deps: UpdaterDeps): Updater {
 
   const ensureLoaded = (): Promise<AutoUpdaterLike> => {
     loading ??= deps.load().then((updater) => {
-      // Download in the background; install only when the user asks (never on quit).
+      // Download in the background; install only when the user asks (never on quit, ADR
+      // 0018). Only newer published releases: no pre-releases, no downgrades.
       updater.autoDownload = true;
       updater.autoInstallOnAppQuit = false;
+      updater.allowPrerelease = false;
+      updater.allowDowngrade = false;
+      updater.disableWebInstaller = true;
       for (const event of EVENTS) {
         updater.on(event, (payload) => {
-          if (event === 'error') deps.log('MSM updates: error.', payload);
-          setStatus(statusForEvent(event, payload));
+          if (event !== 'error') {
+            setStatus(statusForEvent(event, payload));
+            return;
+          }
+          deps.log('MSM updates: error.', payload);
+          if (installing) {
+            installError = true;
+            setStatus(statusForError(payload, 'install'));
+          } else {
+            setStatus(statusForError(payload, errorPhase()));
+          }
         });
       }
       loaded = updater;
@@ -367,11 +436,20 @@ export function createUpdater(deps: UpdaterDeps): Updater {
     return loading;
   };
 
+  // A failure after an update was found belongs to its download.
+  const errorPhase = (): UpdateErrorPhase =>
+    status.state === 'available' || status.state === 'downloading' ? 'download' : 'check';
+
   const runCheck = async (): Promise<UpdateStatus> => {
     setStatus({ state: 'checking' });
     try {
       const updater = await ensureLoaded();
       const result = await updater.checkForUpdates();
+      // With `autoDownload` the result carries the download's promise. A failed download is
+      // reported through the `error` event (and logged); its rejection must not also escape
+      // as an unhandled rejection in the main process.
+      const download = downloadPromiseOf(result);
+      if (download !== null) download.catch(() => {});
       // electron-updater resolves `null` when it considers itself inactive.
       if (status.state === 'checking') setStatus(result === null ? { state: 'idle' } : status);
     } catch (error) {
@@ -431,20 +509,23 @@ export function createUpdater(deps: UpdaterDeps): Updater {
       deps.closeWindows();
     },
     finishInstall() {
-      if (!installRequested || loaded === null) return false;
+      if (!installRequested || loaded === null) return 'none';
+      installing = true;
+      installError = false;
       try {
-        // Silent install, then start the new version.
+        // Silent install (`/S`), then start the new version (`--force-run`). electron-updater
+        // quits the app on the next tick; the windows are already closed.
         loaded.quitAndInstall(true, true);
-        return true;
       } catch (error) {
-        installRequested = false;
+        installError = true;
         deps.log('MSM updates: the installer could not start.', error);
-        setStatus({
-          state: 'error',
-          message: failureMessage('Could not start the update installer.', rawMessageOf(error)),
-        });
-        return false;
+        setStatus(statusForError(error, 'install'));
+      } finally {
+        installing = false;
       }
+      if (!installError) return 'installing';
+      installRequested = false;
+      return 'failed';
     },
   };
 }

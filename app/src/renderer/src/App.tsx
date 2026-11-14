@@ -116,6 +116,7 @@ import {
   functionElementUri,
   mcfunctionProjectIds,
 } from './session/mcfunction-problems';
+import { flushPendingEdits } from './session/pending-edits';
 import {
   displayNameOf,
   missingPictureOf,
@@ -1310,6 +1311,13 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       () => setMessage({ kind: 'error', text: 'Could not check for updates.' }),
     );
   };
+  // "Restart to update" closes the window through main's unsaved-changes prompt. Report
+  // typing an editor still holds back and the unsaved state first, synchronously, so the
+  // prompt sees it (the effect that normally reports `dirty` runs only after a render).
+  const reportUnsavedBeforeUpdate = useCallback((): void => {
+    flushPendingEdits();
+    bridge.setDirty(session.snapshot.dirty);
+  }, [bridge, session]);
   // What's new (B145) ------------------------------------------------------------------------
 
   const openWhatsNew = useCallback((version: string, notes?: string): void => {
@@ -2321,7 +2329,11 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         <Toast.Provider swipeDirection="right" label="Notification">
           <div className="grid h-full grid-rows-[auto_minmax(0,1fr)_auto]">
             <div>
-              <UpdateBanner updates={bridge.updates} onWhatsNew={openWhatsNew} />
+              <UpdateBanner
+                updates={bridge.updates}
+                onWhatsNew={openWhatsNew}
+                beforeInstall={reportUnsavedBeforeUpdate}
+              />
               <Toolbar
                 hasProject={project !== null}
                 canUndo={snapshot.canUndo}

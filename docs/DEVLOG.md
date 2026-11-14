@@ -4799,3 +4799,22 @@ Decisions
 
 Next
 - Orchestrator: W-D1 (vanilla feature order as a target fact, warnings for out-of-order biomes and additions naming vanilla placed features; needs an ADR), W-D3 (same-step duplicate from a biome addition is likely a crash), W-D4 (guide note on index shifts), W-D5 to W-D7.
+## 2026-11-14 — executor — Updater and relaunch audit
+
+What
+- Audited the in-app updater end to end (ADR 0018): feed and version check, download, Restart to update, the relaunch, the first launch after a fresh install and after an update, error paths. Most of it was already right (GitHub provider for `MEZTKING/MCSuperMods`, published releases only, `quitAndInstall(true, true)`, What's new once through `lastSeenVersion`, the setting read at every tick, no single-instance lock to refuse the relaunch, unsigned with no `publisherName`). Fixed:
+  - `app/src/main/updater.ts`: `allowPrerelease` and `allowDowngrade` off and `disableWebInstaller` on, set explicitly. `finishInstall` answers `installing`, `failed` or `none`: electron-updater reports a missing or unstartable installer through a synchronous `error` event and returns without quitting, which left a running app with no window; `index.ts` now opens the window again with an error box. The download promise of `checkForUpdates` is handled (a failed download was an unhandled rejection in main). Errors after an update was found read "Could not download the update." (not "Could not check"); HTTP 429 or 403 "rate limit" read "GitHub is limiting update checks right now…".
+  - Restart to update reports held-back editor typing (`flushPendingEdits`) and the unsaved state synchronously before main closes the windows (`UpdateBanner` `beforeInstall`, `App.tsx`); before, typing within the editors' pause was not yet dirty in main, so the window closed without the prompt and lost it. The banner says "MCSuperMods will close, install the update and open again."
+  - `app/src/main/close-guard.ts`: the window close guard, out of `window.ts` and tested; it no longer stacks a second prompt.
+  - `app/electron-builder.yml`: `runAfterFinish: true` and `allowElevation: true` explicit, with notes on the install mode, the folder choice and `appId`. `publish-release.yml` checks the exact installer names and that `latest.yml` names the version, the installer and a sha512.
+- Tests: `main-updater.test.ts` (options, sync install failure, cancelled prompt keeps the request, download errors, rate limit, handled download promise), `main-close-guard.test.ts`, `main-updater-feed.test.ts` (electron-updater's real `NsisUpdater` against a local `generic` feed: 1.5.2 found, downloaded with the sha512 check and installed with `--updated /S --force-run` then quit; 1.0.0 and 1.5.1 not offered to 1.5.1; a bad sha512, a 404 installer, an empty feed and an unreachable server; the packaging config; Welcome then What's new once), `UpdateBanner.test.tsx`, `App.test.tsx` (flush, then `setDirty`, then install). App tests 1975 green; `pnpm lint`, `pnpm typecheck` and `pnpm build` pass.
+- Docs: ADR 0018 amendment, `app/CLAUDE.md`, `docs/guide/getting-started.md`, HANDOFF "Waiting on the user" item 1 (the Windows steps).
+
+Decisions
+- `autoInstallOnAppQuit` stays off: the brief asked for install on quit, but DESIGN Open Question 4, ADR 0018 and the user guide say nothing installs until the user chooses Restart to update. Reported to the orchestrator as a conflict; not changed.
+- `oneClick: false` and `perMachine: false` kept: "Only for me" is the default and needs no elevation; electron-builder has no assisted per-user-only mode, and switching to one-click would drop the folder choice. A per-machine or protected-folder install asks for elevation once per update.
+- A failed installer start reopens the window rather than relaunching the process, so the error stays visible.
+
+Next
+- The Windows check in HANDOFF (install, publish 1.5.2, banner, Restart to update, reopen on the new version with What's new once). The 1.5.1 → 1.5.2 update runs 1.5.1's updater code; these fixes apply from 1.5.2 on.
+- Main's window close fires before the renderer can flush held-back typing, so closing the window with the X within the editors' pause still skips the prompt; a flush-on-close round trip would fix every close, not only Restart to update.

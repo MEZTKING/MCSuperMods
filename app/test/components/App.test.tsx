@@ -24,6 +24,7 @@ import { registerCaretReader } from '../../src/renderer/src/components/function-
 import { BLOCKBENCH_IMPORT_NOTE } from '../../src/renderer/src/components/ImportFilesDialog';
 import { builtInPlugins } from '../../src/renderer/src/plugins/built-in';
 import type { McfunctionChecker } from '../../src/renderer/src/session/mcfunction-problems';
+import { registerPendingEdit } from '../../src/renderer/src/session/pending-edits';
 import { type ExportResult, ProjectSession } from '../../src/renderer/src/session/project-session';
 import { useAiStore } from '../../src/renderer/src/store/ai-store';
 import { usePreferences } from '../../src/renderer/src/store/preferences';
@@ -148,6 +149,8 @@ interface Harness {
   saved: { defaultName: string }[];
   worlds: WorldInfo[] | Error;
   installs: string[];
+  /** `setDirty` reports (`dirty:<value>`) and update installs (`install`), in order. */
+  updateEvents: string[];
   picks: number;
   written: string[];
   /** What `exports.runtimeJar()` resolves to (default `null`: no runtime jar). */
@@ -226,6 +229,7 @@ async function renderApp(
     geckolibJar: null,
     worlds: [{ dir: 'Survival', name: 'Survival', lastModified: '2026-01-01T00:00:00.000Z' }],
     installs: [],
+    updateEvents: [],
     picks: 0,
     written: [],
     locations: [officialLocation, prismLocation, unstartedLocation],
@@ -402,6 +406,7 @@ async function renderApp(
       current: async () => ({ state: 'idle' }),
       install: async () => {
         harness.installs.push('update');
+        harness.updateEvents.push('install');
       },
       onStatus: (listener) => {
         updateListeners.add(listener);
@@ -452,7 +457,9 @@ async function renderApp(
       };
     },
     onMinecraftProgress: () => () => {},
-    setDirty: () => {},
+    setDirty: (dirty) => {
+      harness.updateEvents.push(`dirty:${dirty}`);
+    },
     smokeReady: () => {},
   };
   await session.newProject();
@@ -558,8 +565,20 @@ describe('App menu commands', () => {
     expect(screen.queryByTestId('update-banner')).toBeNull();
     harness.pushUpdate({ state: 'downloaded', version: '9.9.9' });
     expect(await screen.findByText('Version 9.9.9 is ready \u2014')).toBeTruthy();
-    await userEvent.setup().click(screen.getByTestId('update-install'));
+    // Held-back editor typing is reported, then the unsaved state, then main closes the
+    // window through its unsaved-changes prompt (2026-11-14 updater audit).
+    const unregister = registerPendingEdit(() => harness.updateEvents.push('flush'));
+    try {
+      await userEvent.setup().click(screen.getByTestId('update-install'));
+    } finally {
+      unregister();
+    }
     expect(harness.installs).toEqual(['update']);
+    expect(harness.updateEvents.slice(-3)).toEqual([
+      'flush',
+      `dirty:${harness.session.snapshot.dirty}`,
+      'install',
+    ]);
   });
 
   it("opens What's new from the menu, the palette and the update banner", async () => {

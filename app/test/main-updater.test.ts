@@ -9,6 +9,7 @@ import {
   statusForEvent,
   UPDATE_CHECK_INTERVAL_MS,
   UPDATE_OFFLINE_MESSAGE,
+  UPDATE_RATE_LIMITED_MESSAGE,
   UPDATE_REASON_MAX,
   type UpdaterGate,
   updateDisabledReason,
@@ -21,6 +22,9 @@ const windows: UpdaterGate = { isPackaged: true, platform: 'win32', env: {} };
 class FakeAutoUpdater implements AutoUpdaterLike {
   autoDownload = false;
   autoInstallOnAppQuit = true;
+  allowPrerelease = true;
+  allowDowngrade = true;
+  disableWebInstaller = false;
   checks = 0;
   installs: [boolean | undefined, boolean | undefined][] = [];
   script: [AutoUpdaterEvent, unknown][] = [['update-not-available', { version: '0.1.0' }]];
@@ -131,7 +135,7 @@ describe('createUpdater', () => {
     expect(deps.log).toHaveBeenCalledWith('MSM updates: inactive (unsupported-platform).');
     expect(await updater.check()).toEqual({ state: 'disabled', reason: 'unsupported-platform' });
     await updater.install();
-    expect(updater.finishInstall()).toBe(false);
+    expect(updater.finishInstall()).toBe('none');
     expect(deps.load).not.toHaveBeenCalled();
     expect(deps.closeWindows).not.toHaveBeenCalled();
   });
@@ -156,6 +160,10 @@ describe('createUpdater', () => {
     await vi.waitFor(() => expect(fake.checks).toBe(1));
     expect(fake.autoDownload).toBe(true);
     expect(fake.autoInstallOnAppQuit).toBe(false);
+    // Only newer published releases: no pre-releases, no downgrades, no web installer.
+    expect(fake.allowPrerelease).toBe(false);
+    expect(fake.allowDowngrade).toBe(false);
+    expect(fake.disableWebInstaller).toBe(true);
     await vi.waitFor(() => expect(updater.status).toEqual({ state: 'not-available' }));
     expect(sent).toEqual([{ state: 'checking' }, { state: 'not-available' }]);
     // And again every six hours.
@@ -183,7 +191,7 @@ describe('createUpdater', () => {
       ['download-progress', { percent: 75 }],
       ['update-downloaded', { version: '0.2.0' }],
     ];
-    expect(updater.finishInstall()).toBe(false);
+    expect(updater.finishInstall()).toBe('none');
     expect(await updater.check()).toEqual({ state: 'downloaded', version: '0.2.0' });
     expect(sent).toEqual([
       { state: 'checking' },
@@ -194,7 +202,7 @@ describe('createUpdater', () => {
     ]);
     // Downloaded, but nothing installs until the user asks.
     expect(fake.installs).toEqual([]);
-    expect(updater.finishInstall()).toBe(false);
+    expect(updater.finishInstall()).toBe('none');
     // A further check is not needed once downloaded.
     expect(await updater.check()).toEqual({ state: 'downloaded', version: '0.2.0' });
     expect(fake.checks).toBe(1);
@@ -204,7 +212,7 @@ describe('createUpdater', () => {
     expect(deps.closeWindows).toHaveBeenCalledOnce();
     expect(fake.installs).toEqual([]);
     // Every window has closed (through the unsaved-changes prompt): now it installs.
-    expect(updater.finishInstall()).toBe(true);
+    expect(updater.finishInstall()).toBe('installing');
     expect(fake.installs).toEqual([[true, true]]);
   });
 
@@ -214,7 +222,7 @@ describe('createUpdater', () => {
     await updater.check();
     await updater.install();
     expect(deps.closeWindows).not.toHaveBeenCalled();
-    expect(updater.finishInstall()).toBe(false);
+    expect(updater.finishInstall()).toBe('none');
     expect(fake.installs).toEqual([]);
   });
 
@@ -339,12 +347,131 @@ describe('createUpdater', () => {
       throw new Error('spawn EPERM');
     };
     await updater.install();
-    expect(updater.finishInstall()).toBe(false);
+    expect(updater.finishInstall()).toBe('failed');
     expect(updater.status).toEqual({
       state: 'error',
       message: 'Could not start the update installer. spawn EPERM',
     });
     expect(updater.installRequested).toBe(false);
+  });
+});
+
+describe('createUpdater install and error paths (2026-11-14 audit)', () => {
+  it('reports a synchronous installer failure as failed, not as installing', async () => {
+    const { fake, updater } = setup();
+    fake.script = [['update-downloaded', { version: '1.5.2' }]];
+    await updater.check();
+    // electron-updater's quitAndInstall emits `error` and returns without quitting when the
+    // downloaded installer is missing; the host must not wait for a quit that never comes.
+    fake.quitAndInstall = () => {
+      fake.emit('error', new Error("No update filepath provided, can't quit and install"));
+    };
+    await updater.install();
+    expect(updater.finishInstall()).toBe('failed');
+    expect(updater.status).toEqual({
+      state: 'error',
+      message:
+        "Could not start the update installer. No update filepath provided, can't quit and install",
+    });
+    expect(updater.installRequested).toBe(false);
+    // Asking again is possible once a download is back.
+    expect(updater.finishInstall()).toBe('none');
+  });
+
+  it('keeps the install request when the unsaved-changes prompt is cancelled', async () => {
+    const { fake, deps, updater } = setup();
+    fake.script = [['update-downloaded', { version: '1.5.2' }]];
+    await updater.check();
+    await updater.install();
+    // The window stayed open (the prompt was cancelled): nothing has installed yet.
+    expect(deps.closeWindows).toHaveBeenCalledOnce();
+    expect(fake.installs).toEqual([]);
+    expect(updater.installRequested).toBe(true);
+    // A later close of the last window installs and relaunches.
+    expect(updater.finishInstall()).toBe('installing');
+    expect(fake.installs).toEqual([[true, true]]);
+  });
+
+  it('reports a failed download as a download error, never as up to date', async () => {
+    const { fake, updater, sent } = setup();
+    fake.script = [
+      ['update-available', { version: '1.5.2' }],
+      ['download-progress', { percent: 40 }],
+      [
+        'error',
+        updaterError('sha512 checksum mismatch, expected abc, got def', 'ERR_CHECKSUM_MISMATCH'),
+      ],
+    ];
+    await updater.check();
+    expect(updater.status).toEqual({
+      state: 'error',
+      message: 'Could not download the update. sha512 checksum mismatch, expected abc, got def',
+    });
+    // A 404 on the installer during the download is also a download error.
+    const second = setup();
+    second.fake.script = [
+      ['update-available', { version: '1.5.2' }],
+      [
+        'error',
+        updaterError(
+          'Cannot download "https://github.com/MEZTKING/MCSuperMods/releases/download/v1.5.2/MCSuperMods-1.5.2-win-x64.exe", status 404: Not Found',
+          'HTTP_ERROR_404',
+          404,
+        ),
+      ],
+    ];
+    await second.updater.check();
+    expect(second.updater.status.state).toBe('error');
+    expect(sent.some((status) => status.state === 'not-available')).toBe(false);
+    // The next check starts again (an error does not block it).
+    fake.script = [['update-not-available', { version: '1.5.1' }]];
+    expect(await updater.check()).toEqual({ state: 'not-available' });
+  });
+
+  it('handles the rejected download promise, so a failed download is no unhandled rejection', async () => {
+    const { fake, updater } = setup();
+    const failed = Promise.reject(new Error('Cannot download, status 404'));
+    const handled = vi.spyOn(failed, 'catch');
+    fake.checkForUpdates = async () => {
+      fake.checks += 1;
+      fake.emit('update-available', { version: '1.5.2' });
+      return { isUpdateAvailable: true, downloadPromise: failed };
+    };
+    await updater.check();
+    expect(handled).toHaveBeenCalledOnce();
+    fake.emit('error', new Error('Cannot download, status 404'));
+    expect(updater.status).toEqual({
+      state: 'error',
+      message: 'Could not download the update. Cannot download, status 404',
+    });
+  });
+
+  it('reports a GitHub rate limit quietly', () => {
+    expect(
+      classifyUpdateError(updaterError('HttpError: 429 Too Many Requests', undefined, 429)),
+    ).toEqual({
+      kind: 'rate-limited',
+      message: UPDATE_RATE_LIMITED_MESSAGE,
+    });
+    expect(
+      classifyUpdateError(
+        updaterError('HttpError: 403 Forbidden: API rate limit exceeded', 'HTTP_ERROR_403'),
+      ),
+    ).toEqual({ kind: 'rate-limited', message: UPDATE_RATE_LIMITED_MESSAGE });
+    // A plain 403 without the rate limit text stays a short failure.
+    expect(classifyUpdateError(updaterError('HttpError: 403 Forbidden', undefined, 403)).kind).toBe(
+      'other',
+    );
+  });
+
+  it('turns a rate limit during an automatic check into an error status, without throwing', async () => {
+    const { fake, updater, runScheduled } = setup();
+    fake.failWith = updaterError('HttpError: 429 Too Many Requests', undefined, 429);
+    updater.scheduleStartupCheck();
+    await runScheduled();
+    await vi.waitFor(() =>
+      expect(updater.status).toEqual({ state: 'error', message: UPDATE_RATE_LIMITED_MESSAGE }),
+    );
   });
 });
 

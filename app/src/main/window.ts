@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import { EventChannels } from '../shared/ipc-channels';
 import { APP_INDEX_URL, serveAppScheme } from './app-scheme';
+import { createCloseGuard } from './close-guard';
 
 /** The built renderer folder (`out/renderer/`, inside `app.asar` when packaged). */
 export const RENDERER_DIR = fileURLToPath(new URL('../renderer/', import.meta.url));
@@ -58,26 +59,24 @@ export function createMainWindow(options: { show?: boolean } = {}): BrowserWindo
   });
   window.webContents.on('will-navigate', (event) => event.preventDefault());
 
-  let closeConfirmed = false;
-  window.on('close', (event) => {
-    if (closeConfirmed || !dirtyWindows.has(contentsId)) return;
-    event.preventDefault();
-    void dialog
-      .showMessageBox(window, {
-        type: 'warning',
-        buttons: ['Discard changes', 'Cancel'],
-        defaultId: 1,
-        cancelId: 1,
-        message: 'The project has unsaved changes.',
-        detail: 'Close the window and discard them?',
-      })
-      .then(({ response }) => {
-        if (response === 0) {
-          closeConfirmed = true;
-          window.close();
-        }
-      });
-  });
+  window.on(
+    'close',
+    createCloseGuard({
+      isDirty: () => dirtyWindows.has(contentsId),
+      async confirmDiscard() {
+        const { response } = await dialog.showMessageBox(window, {
+          type: 'warning',
+          buttons: ['Discard changes', 'Cancel'],
+          defaultId: 1,
+          cancelId: 1,
+          message: 'The project has unsaved changes.',
+          detail: 'Close the window and discard them?',
+        });
+        return response === 0;
+      },
+      close: () => window.close(),
+    }),
+  );
   window.on('closed', () => dirtyWindows.delete(contentsId));
 
   const devUrl = process.env.ELECTRON_RENDERER_URL;

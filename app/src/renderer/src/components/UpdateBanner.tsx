@@ -58,6 +58,12 @@ export interface UpdateBannerProps {
   updates: Pick<PlatformAdapter['updates'], 'install' | 'onStatus' | 'current'>;
   /** Opens "What's new" for the update's version, with the feed's release notes if any. */
   onWhatsNew?(version: string, notes?: string): void;
+  /**
+   * Runs synchronously before "Restart to update" asks main to close the windows: reports
+   * edits an editor still holds back and the unsaved state, so main's unsaved-changes prompt
+   * sees them and no typing is lost.
+   */
+  beforeInstall?(): void;
 }
 
 /** What the banner shows: the update's version and, once known, its notes and progress. */
@@ -110,7 +116,7 @@ export function bannerNotice(status: UpdateStatus, previous: Notice | null): Not
  * newly downloaded update shows it again. On mount it asks main for the current status, so a
  * reload or a late subscription does not miss an update.
  */
-export function UpdateBanner({ updates, onWhatsNew }: UpdateBannerProps) {
+export function UpdateBanner({ updates, onWhatsNew, beforeInstall }: UpdateBannerProps) {
   const [notice, setNotice] = useState<Notice | null>(null);
   // The notice the user dismissed: `downloading`, or `downloaded:<version>`. A finished
   // download is news even after the progress notice was dismissed.
@@ -189,7 +195,7 @@ export function UpdateBanner({ updates, onWhatsNew }: UpdateBannerProps) {
         <>
           <span role="status" data-testid="update-banner-text">
             {installing
-              ? 'MCSuperMods will close and install the update.'
+              ? 'MCSuperMods will close, install the update and open again.'
               : `Version ${notice.version} is ready \u2014`}
           </span>
           <Button
@@ -197,6 +203,11 @@ export function UpdateBanner({ updates, onWhatsNew }: UpdateBannerProps) {
             disabled={installing}
             onClick={() => {
               setInstalling(true);
+              try {
+                beforeInstall?.();
+              } catch {
+                // Reporting held-back edits failed: main's prompt still guards a dirty project.
+              }
               void updates.install().catch(() => setInstalling(false));
             }}
           >

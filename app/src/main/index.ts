@@ -327,7 +327,29 @@ void app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
-  // After "Restart to update" every window has closed: run the installer, which quits.
-  if (updater.finishInstall()) return;
+  // After "Restart to update" every window has closed: start the silent installer, which
+  // quits this app and starts the new version (ADR 0018).
+  const install = updater.finishInstall();
+  if (install === 'installing') return;
+  if (install === 'failed') {
+    // Never leave a running app with no window: open it again and say why.
+    reopenAfterFailedInstall();
+    return;
+  }
   if (process.platform !== 'darwin') app.quit();
 });
+
+/** Opens the main window again after the update installer could not start. */
+function reopenAfterFailedInstall(): void {
+  const window = createMainWindow();
+  const status = updater.status;
+  const detail =
+    status.state === 'error' ? status.message : 'The update installer could not start.';
+  window.webContents.once('did-finish-load', () => {
+    void dialog.showMessageBox(window, {
+      type: 'error',
+      message: 'MCSuperMods could not install the update.',
+      detail: `${detail} The version you have keeps working. Details are in ${updateLogFile().path}.`,
+    });
+  });
+}

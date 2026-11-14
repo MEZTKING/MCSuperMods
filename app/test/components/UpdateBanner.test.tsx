@@ -11,7 +11,9 @@ import type { UpdateStatus } from '../../src/shared/ipc-channels';
 
 afterEach(cleanup);
 
-function renderBanner(options: { current?: UpdateStatus | Promise<UpdateStatus> } = {}) {
+function renderBanner(
+  options: { current?: UpdateStatus | Promise<UpdateStatus>; beforeInstall?: () => void } = {},
+) {
   let listener: ((status: UpdateStatus) => void) | null = null;
   const install = vi.fn(async () => {});
   const unsubscribe = vi.fn();
@@ -27,6 +29,7 @@ function renderBanner(options: { current?: UpdateStatus | Promise<UpdateStatus> 
         },
       }}
       onWhatsNew={whatsNew}
+      {...(options.beforeInstall === undefined ? {} : { beforeInstall: options.beforeInstall })}
     />,
   );
   const push = (status: UpdateStatus) => act(() => listener?.(status));
@@ -75,8 +78,30 @@ describe('UpdateBanner', () => {
     expect(install).not.toHaveBeenCalled();
     await userEvent.setup().click(screen.getByRole('button', { name: 'Restart to update' }));
     expect(install).toHaveBeenCalledOnce();
-    expect(screen.getByText('MCSuperMods will close and install the update.')).toBeTruthy();
+    expect(
+      screen.getByText('MCSuperMods will close, install the update and open again.'),
+    ).toBeTruthy();
     expect((screen.getByTestId('update-install') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('reports held-back edits before asking main to install, and still installs if that throws', async () => {
+    const order: string[] = [];
+    const first = renderBanner({ beforeInstall: () => order.push('before') });
+    first.install.mockImplementation(async () => {
+      order.push('install');
+    });
+    first.push({ state: 'downloaded', version: '1.5.2' });
+    await userEvent.setup().click(screen.getByTestId('update-install'));
+    expect(order).toEqual(['before', 'install']);
+    first.view.unmount();
+    const second = renderBanner({
+      beforeInstall: () => {
+        throw new Error('editor gone');
+      },
+    });
+    second.push({ state: 'downloaded', version: '1.5.2' });
+    await userEvent.setup().click(screen.getByTestId('update-install'));
+    expect(second.install).toHaveBeenCalledOnce();
   });
 
   it('starts from the current status, so a reload does not lose a downloaded update', async () => {

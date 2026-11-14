@@ -23,6 +23,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
       TAG: v${{ inputs.version }}
+      VERSION: ${{ inputs.version }}
     steps:
       - name: Check and publish the draft
         shell: bash
@@ -40,15 +41,26 @@ jobs:
           fi
           assets=$(jq -r '.[0].assets[].name' <<<"$releases" | sort)
           echo "Assets:"; echo "$assets"
-          exe=$(grep -c '\.exe$' <<<"$assets" || true)
-          map=$(grep -c '\.exe\.blockmap$' <<<"$assets" || true)
+          # The names electron-builder gives the NSIS installer (artifactName in
+          # app/electron-builder.yml), which latest.yml's `path` and `files[].url` point at.
+          installer="MCSuperMods-${VERSION}-win-x64.exe"
+          exe=$(grep -cxF "$installer" <<<"$assets" || true)
+          map=$(grep -cxF "${installer}.blockmap" <<<"$assets" || true)
           yml=$(grep -cx 'latest.yml' <<<"$assets" || true)
           tgz=$(grep -c '^msm-plugin-api-.*\.tgz$' <<<"$assets" || true)
           total=$(grep -c . <<<"$assets" || true)
           if [ "$exe" -ne 1 ] || [ "$map" -ne 1 ] || [ "$yml" -ne 1 ] || [ "$tgz" -ne 1 ] || [ "$total" -ne 4 ]; then
-            echo "::error::The ${TAG} draft must hold exactly the .exe, .exe.blockmap, latest.yml and the msm-plugin-api tarball."
+            echo "::error::The ${TAG} draft must hold exactly ${installer}, ${installer}.blockmap, latest.yml and the msm-plugin-api tarball."
             exit 1
           fi
+          # The updater reads latest.yml: it must name this version and this installer.
           id=$(jq -r '.[0].id' <<<"$releases")
+          yml_id=$(jq -r '.[0].assets[] | select(.name == "latest.yml") | .id' <<<"$releases")
+          gh api -H "Accept: application/octet-stream" "repos/${GH_REPO}/releases/assets/${yml_id}" > latest.yml
+          cat latest.yml
+          if ! grep -qx "version: ${VERSION}" latest.yml || ! grep -qx "path: ${installer}" latest.yml || ! grep -q '^sha512: ' latest.yml; then
+            echo "::error::latest.yml in the ${TAG} draft does not name version ${VERSION}, ${installer} and a sha512."
+            exit 1
+          fi
           gh api -X PATCH "repos/${GH_REPO}/releases/${id}" -F draft=false -f make_latest=true >/dev/null
           echo "Published ${TAG}."
