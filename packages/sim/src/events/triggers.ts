@@ -444,6 +444,22 @@ export class TriggerEngine {
     }
   }
 
+  /**
+   * Someone stands on the block at `pos` (the player by default): its `msm:on_step`, with the
+   * per position and entity cooldown. The tick does this for the block under each entity on the
+   * ground; the parity test (B399) calls it directly, as the runtime's GameTest steps without a
+   * tick.
+   */
+  blockSteppedOn(pos: BlockPos, actor: Actor = PLAYER): void {
+    this.steppedOn(pos, actor, actor.kind === 'player' ? 'You' : this.host.names.mob(actor.id));
+  }
+
+  private steppedOn(pos: BlockPos, actor: Actor, who: string): void {
+    const owner = this.blockOwner(pos);
+    if (owner === undefined) return;
+    this.fireWithCooldown(owner, T.blockStep, pos, actor, `${who} stepped on ${owner.displayName}`);
+  }
+
   private stepAndInside(one: {
     actor: Actor;
     box: WorldBox;
@@ -460,16 +476,7 @@ export class TriggerEngine {
         y: Math.floor(one.feet.y - 0.2),
         z: Math.floor(one.feet.z),
       };
-      const owner = this.blockOwner(under);
-      if (owner !== undefined) {
-        this.fireWithCooldown(
-          owner,
-          T.blockStep,
-          under,
-          one.actor,
-          `${who} stepped on ${owner.displayName}`,
-        );
-      }
+      this.steppedOn(under, one.actor, who);
     }
     const e = 1e-7;
     const x0 = Math.floor(one.box[0] + e);
@@ -559,6 +566,7 @@ export class TriggerEngine {
       },
       trigger: bound.spec.id,
       depth: 1,
+      ...(ctx.block === undefined ? {} : { pos: ctx.block }),
     };
     this.options.trace.add(entry);
     runEvent(this.host, { owner, ctx }, bound.event);

@@ -25,6 +25,11 @@
  *     block was placed), then the island is in, something is drawn, and "Clear the area" brings
  *     the island back.
  *
+ * A second test (B399) adds a project rule to a copy of `fixtures/sample-rules`: "when the Chime
+ * Block is used, play a sound, give a Ruby and run a function". Using the block in Try it shows
+ * the rule's sentence and its actions in "What happened", the Ruby in "Your items", the sound's
+ * caption, and the `run_function` action as an "Only in Minecraft" line.
+ *
  * With `MSM_TRYIT_SHOT=<file.png>` the run also saves a picture of the area with a few blocks, a
  * mob and particles (launch with `--force-device-scale-factor=2` for a sharp one). With
  * `MSM_TRYIT_GROUND_SHOTS=<folder>` it saves the grounds picker, the island with a block and a
@@ -473,4 +478,110 @@ test('Try it: place, break, open a door, spawn, hit, keep the area through edits
     'data-last-log',
     'You cleared the area; the ground is back as it was.',
   );
+});
+
+const RULES_NAMESPACE = 'msm_sample_rules';
+const CHIME_ID = `${RULES_NAMESPACE}:chime_block`;
+
+/**
+ * The sample rules project with its rule books taken out and one rule added: when the Chime Block
+ * is used, play the chime, give a Ruby and run the function `noted` (which does nothing).
+ */
+function makeRulesProject(projectDir: string): void {
+  cpSync(join(appDir, '..', 'fixtures', 'sample-rules'), projectDir, { recursive: true });
+  const content = join(projectDir, 'content', RULES_NAMESPACE);
+  rmSync(join(content, 'rules'), { recursive: true, force: true });
+  const meta = { createdAt: '2026-11-14T00:00:00.000Z' };
+  const write = (folder: string, path: string, element: object): void => {
+    const file = join(content, folder, `${path}.json`);
+    mkdirSync(join(file, '..'), { recursive: true });
+    writeFileSync(file, `${JSON.stringify(element, null, 2)}\n`);
+  };
+  write('function', 'noted', {
+    data: { lines: ['# Run by the chime rule; it changes nothing.'] },
+    formatVersion: 1,
+    id: `${RULES_NAMESPACE}:noted`,
+    kind: 'minecraft:function',
+    meta,
+  });
+  write('rules', 'chime_block_rules', {
+    data: {
+      counters: [],
+      format: 1,
+      rules: [
+        {
+          do: [
+            { sound: 'minecraft:block.note_block.chime', step: 'play_sound', where: 'here' },
+            { count: 1, item: `${RULES_NAMESPACE}:ruby`, step: 'give_item' },
+            { function: `${RULES_NAMESPACE}:noted`, step: 'run_function' },
+          ],
+          key: 'ring_and_note',
+          name: 'Ring and note',
+          when: { subject: CHIME_ID, trigger: 'block_used' },
+        },
+      ],
+    },
+    formatVersion: 1,
+    id: `${RULES_NAMESPACE}:chime_block_rules`,
+    kind: 'msm:rules',
+    meta,
+  });
+}
+
+test('Try it: a rule gives an item and plays a sound, and run_function is only in Minecraft', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-tryit-rules-'));
+  const folders = {
+    projectDir: join(base, RULES_NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  makeRulesProject(folders.projectDir);
+  const launched = await launchApp({ reuse: folders, args: WEBGL_ARGS });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-open-project').click();
+  await expect(window.getByTestId(`element-row-${CHIME_ID}`)).toBeVisible();
+
+  const { canvas, state } = await openTryIt(window);
+  await window.getByTestId('tryit-card-close').click();
+  await expect(window.getByTestId('tryit-inventory-empty')).toBeVisible();
+
+  // Place the Chime Block, then use it: the block takes the click and the rule runs.
+  await expect(window.getByTestId('tryit-slot-1')).toHaveAttribute('data-thing', CHIME_ID);
+  await press(canvas, 'ArrowDown', 'ArrowDown', 'ArrowDown');
+  await expect(state).toHaveAttribute('data-pointed', 'the floor');
+  await press(canvas, 'Digit1', 'KeyC');
+  await expect(state).toHaveAttribute('data-blocks', '1');
+  await expect(state).toHaveAttribute('data-pointed', CHIME_ID);
+  // A paused clock keeps the sound's caption on screen.
+  await window.getByTestId('tryit-clock-pause').click();
+  await expect(state).toHaveAttribute('data-paused', 'true');
+  await press(canvas, 'KeyC');
+  await expect(state).toHaveAttribute('data-blocks', '1');
+
+  const log = window.getByTestId('tryit-log');
+  const lines = log.getByTestId('tryit-log-line');
+  const ran = lines.filter({ hasText: 'You used Chime Block, so rule "Ring and note" ran.' });
+  await expect(ran).toHaveCount(1);
+  await expect(ran.getByTestId('tryit-log-link')).toHaveAttribute(
+    'data-element',
+    `${RULES_NAMESPACE}:chime_block_rules`,
+  );
+  await expect(lines.filter({ hasText: 'Played sound' })).toHaveCount(1);
+  await expect(lines.filter({ hasText: 'Gave you 1 Ruby.' })).toHaveCount(1);
+  const only = log
+    .getByTestId('tryit-log-only')
+    .filter({ hasText: `run function ${RULES_NAMESPACE}:noted` });
+  await expect(only).toHaveCount(1);
+  await expect(only).toHaveAttribute('data-kind', 'onlyInMinecraft');
+  await expect(only).toContainText('Only in Minecraft:');
+  await expect(only).toBeVisible();
+
+  // The Ruby is in "Your items"; the chime shows as a caption (a Minecraft sound).
+  const ruby = window.getByTestId('tryit-inventory-slot');
+  await expect(ruby).toHaveCount(1);
+  await expect(ruby).toHaveAttribute('data-item', `${RULES_NAMESPACE}:ruby`);
+  await expect(ruby).toHaveAttribute('data-count', '1');
+  await expect(window.getByTestId('tryit-caption').first()).toBeVisible();
 });

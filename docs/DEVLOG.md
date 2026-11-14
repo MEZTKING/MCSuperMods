@@ -4954,3 +4954,18 @@ Decisions
 
 Next
 - A one-click "Give it its own model" action, if wanted, would need its own brief.
+## 2026-11-14 — executor — B399 e2e and the sim side of the parity test
+
+What
+- `packages/sim/test/sim-parity.test.ts`: lowers `fixtures/sim-parity/project` on both built-in targets (`test/lower-fixture.ts`) and plays all 63 scenarios of `scenarios.json` through `@msm/sim`, with B397's step mapping: `place` to `placeBlock` (the step's face, hit, yaw, pitch) then `on_place`; `use` to `useBlock` and `BlockTimers.afterUse` for doors, trapdoors, gates and buttons, then `on_interact`; `wait` to ticks of `timers.tick([])` and the tick triggers; `break` to `on_break` then `breakBlock`; `step_on` to one `timers.tick` with the player box on a plate, else `on_step` with no tick. Blocks compare only the listed properties, shapes are outline and collision unions in pixels, and `events` `{owner, event, depth, pos}` and `actions` `{event, type}` come from the trace in order. A mismatch names the scenario, the step (with what it did), both values and the target. 63 of 63 pass on mc-26.3 and mc-26.4 (127 tests with the format check).
+- Trace (`src/events/trace.ts`): `TraceEntry` gains `pos` (the event's block, on trigger and action entries) and `ranEvent` (the event a `trigger_event` ran). `TriggerEngine.blockSteppedOn(pos, actor?)` fires `msm:on_step` with its cooldown; the tick's step check now goes through it.
+- `fixtures/sim-parity/lower.test.ts` now runs with the sim tests (`packages/sim/vitest.config.ts` include), so `pnpm test` and CI check `mod/` against the lowering; no CI step needed.
+- `app/e2e/tryit-path.spec.ts`: a second test on a copy of `fixtures/sample-rules` with its rule books replaced by one rule "Ring and note" (Chime Block used: play the chime, give a Ruby, run `msm_sample_rules:noted`). In Try it the panel shows "You used Chime Block, so rule "Ring and note" ran." linking to the rule book, "Played sound", "Gave you 1 Ruby.", and "Only in Minecraft: run function msm_sample_rules:noted"; the Ruby is in "Your items" and the chime's caption shows (clock paused).
+- Checks: sim 463 tests, app 2048, `tryit-path` (both tests) green three times in a row under `xvfb-run -a`, `pnpm lint`, `pnpm typecheck`. A deliberately wrong expectation (the wooden button released at 25 ticks; `run_function` changed to `play_sound`) failed the sim test on both targets with the scenario, step and both values; reverted. The GameTest side was not rerun (Gradle left alone: another brief works in engine-mod).
+
+Decisions
+- Lower-level APIs rather than `LocalWorldSource`: the scenarios set the look per click without ticks in between and step on blocks without a tick, which the source cannot do without extra ticks. The harness follows `LocalWorldSource.use`'s order.
+- No sim bug found: the sim agrees with the runtime in every scenario. A first try that stood the player on the signal block failed only because `on_place` puts a lamp above it (the player cannot stand there); the GameTest fires the step directly, so the test does too.
+
+Next
+- Slice close: `packages/sim/CLAUDE.md` (the parity test, `events/`), the fixture README's "not in `pnpm test` yet" wording in the plan; turbo caches `@msm/sim#test` on the package's own files, so a change to `fixtures/sim-parity/` or a plugin alone does not invalidate a local cached run (CI starts clean).

@@ -5,7 +5,7 @@
  * words, so the panel works from the log alone; the trace keeps every firing (the log says each
  * "Only in Minecraft" line once) for the panel's links and for tests. B398 draws it.
  */
-import type { SimLog, SimOrigin } from '../types.js';
+import type { BlockPos, SimLog, SimOrigin } from '../types.js';
 
 /** What a trace entry records. */
 export type TraceKind =
@@ -35,6 +35,10 @@ export interface TraceEntry {
   readonly actionIndex?: number;
   /** How deep in a `trigger_event` chain: the fired event is 1. */
   readonly depth?: number;
+  /** The event's block, when it has one (a block's trigger or an action of its event). */
+  readonly pos?: BlockPos;
+  /** For a `trigger_event` action, the event it ran (at `depth + 1`). */
+  readonly ranEvent?: string;
 }
 
 /** The most entries a trace keeps. */

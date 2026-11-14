@@ -313,8 +313,22 @@ function runAction(
 ): TraceEntry[] {
   const { ctx, owner } = firing;
   const type = str(action.type) ?? '';
-  const add = (kind: TraceEntry['kind'], text: string, at: SimOrigin = origin): TraceEntry =>
-    host.trace.add({ kind, text, origin: at, action: type, actionIndex: index, depth });
+  const add = (
+    kind: TraceEntry['kind'],
+    text: string,
+    at: SimOrigin = origin,
+    extra: Pick<TraceEntry, 'ranEvent'> = {},
+  ): TraceEntry =>
+    host.trace.add({
+      kind,
+      text,
+      origin: at,
+      action: type,
+      actionIndex: index,
+      depth,
+      ...(ctx.block === undefined ? {} : { pos: ctx.block }),
+      ...extra,
+    });
   const actorName = (actor: Actor): string =>
     actor.kind === 'player' ? 'you' : host.names.mob(actor.id);
   const mobThere = (actor: Actor | undefined): boolean =>
@@ -433,7 +447,11 @@ function runAction(
     }
     case 'trigger_event': {
       const next = str(action.event) ?? '';
-      const out = [add('action', `Ran ${owner.displayName}'s event "${next}" too.`)];
+      const out = [
+        add('action', `Ran ${owner.displayName}'s event "${next}" too.`, origin, {
+          ranEvent: next,
+        }),
+      ];
       out.push(...runEvent(host, firing, next, depth + 1));
       return out;
     }
