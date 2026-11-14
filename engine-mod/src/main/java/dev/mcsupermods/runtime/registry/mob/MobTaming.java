@@ -159,13 +159,7 @@ public final class MobTaming {
     /** A wolf's taming: owner, {@code tamed_health} (healed to full), sitting when {@code sit}, hearts, {@code on_tame}. */
     private void tame(ServerLevel level, TamableAnimal self, Player player) {
         self.tame(player);
-        tameable.tamedHealth().ifPresent(health -> {
-            AttributeInstance max = self.getAttribute(Attributes.MAX_HEALTH);
-            if (max != null) {
-                max.setBaseValue(health);
-            }
-            self.setHealth(self.getMaxHealth());
-        });
+        applyTamedHealth(self);
         self.getNavigation().stop();
         self.setTarget(null);
         if (tameable.sit()) {
@@ -174,6 +168,32 @@ public final class MobTaming {
         level.broadcastEntityEvent(self, HEARTS);
         tameable.onTame().ifPresent(event -> EventRunner.fire(mob.definitionId(), definition.events(), event,
                 EventContext.forEntity(level, self, player)));
+    }
+
+    /** {@code tamed_health}, healed to full. */
+    private void applyTamedHealth(TamableAnimal self) {
+        tameable.tamedHealth().ifPresent(health -> {
+            AttributeInstance max = self.getAttribute(Attributes.MAX_HEALTH);
+            if (max != null) {
+                max.setBaseValue(health);
+            }
+            self.setHealth(self.getMaxHealth());
+        });
+    }
+
+    /**
+     * Called by {@link MobBreeding#getBreedOffspring} on the new baby: the baby of a tamed parent belongs to the same
+     * owner, tamed with {@code tamed_health} ({@code Wolf.getBreedOffspring} and {@code Cat.getBreedOffspring}:
+     * {@code setOwnerReference}, {@code setTame(true, true)}). It does not sit, show hearts or fire {@code on_tame}.
+     */
+    void adoptFrom(TamableAnimal parent) {
+        TamableAnimal self = animal();
+        if (tameable == null || self == null || !parent.isTame()) {
+            return;
+        }
+        self.setOwnerReference(parent.getOwnerReference());
+        self.setTame(true, true);
+        applyTamedHealth(self);
     }
 
     /** {@code TamableAnimal.canFlyToOwner}: {@code mode} {@code fly} pets teleport to an owner in the air. */

@@ -12,6 +12,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
 import net.minecraft.world.entity.ai.goal.FollowParentGoal;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
@@ -26,6 +27,12 @@ import net.minecraft.world.item.ItemStack;
  * them the definition's food, {@code baby_scale}, {@code grow_up_ticks}, {@code on_breed} and the goals. Never overrides
  * or calls {@code canBeABaby} or {@code setAgeLocked} (plan limit M9).
  *
+ * <p>A tameable animal ({@code msm:tameable} too) breeds only once tamed, as wolves and cats do (vanilla
+ * {@code Wolf.canMate} and {@code Cat.canMate} need both parents tamed): while it is wild its taming food goes to
+ * {@link MobTaming}, its breeding food starts no love mode ({@link #isFood} is false) but still grows a wild baby (a
+ * wild wolf pup eats meat through {@code Animal.mobInteract}), and a bred baby of a tamed parent belongs to the same
+ * owner ({@code Wolf.getBreedOffspring}, {@link MobTaming#adoptFrom}).
+ *
  * <p>Goal priorities follow {@link MobTaming#afterFighting} ({@code n}): {@code BreedGoal} at n + 1, {@code TemptGoal}
  * with the food at n + 2, {@code FollowParentGoal} at n + 3, at a cow's speeds (1.0, 1.25, 1.25).
  */
@@ -39,6 +46,9 @@ public final class MobBreeding {
     /** Null without {@code msm:breedable}. */
     private final EntityComponents.Breedable breedable;
     private final Predicate<ItemStack> food;
+    /** Null without {@code msm:tameable}. */
+    private final EntityComponents.Tameable tameable;
+    private final Predicate<ItemStack> tamingFood;
     /** The child {@link #getBreedOffspring} made last, read back by {@link #spawnChildFromBreeding}. */
     private AgeableMob lastOffspring;
 
@@ -47,10 +57,18 @@ public final class MobBreeding {
         this.definition = definition;
         this.breedable = definition == null ? null : definition.components().breedable().orElse(null);
         this.food = breedable == null ? stack -> false : MobGoals.ofItems(breedable.items());
+        this.tameable = definition == null ? null : definition.components().tameable().orElse(null);
+        this.tamingFood = tameable == null ? stack -> false : MobGoals.ofItems(tameable.items());
     }
 
     private Animal animal() {
         return mob.asMob() instanceof Animal animal ? animal : null;
+    }
+
+    /** A {@code msm:tameable} animal that is not tamed yet: it does not breed. */
+    private static boolean wild(Animal animal) {
+        return animal instanceof MsmMob msm && msm.definition() != null && msm.definition().components().tameable().isPresent()
+                && animal instanceof TamableAnimal pet && !pet.isTame();
     }
 
     /** Called by {@link MobGoals#registerGoals} after the definition's goals, inside the {@code Mob} constructor. */
@@ -72,7 +90,9 @@ public final class MobBreeding {
     /**
      * First step of {@code mobInteract}: the breeding food does what vanilla's {@code Animal.mobInteract} does (love
      * mode for a grown mob that can fall in love, a growth step for a baby), here rather than in vanilla's so that
-     * {@code msm:on_interact}, which answers every other right click, never swallows it. {@code null} passes on.
+     * {@code msm:on_interact}, which answers every other right click, never swallows it. A wild tameable mob gets no
+     * love mode: its taming food passes on to {@link MobTaming} (a cat's fish tames before it breeds), and its breeding
+     * food only grows a baby (a wild wolf pup's meat). {@code null} passes on.
      */
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         Animal self = animal();
@@ -83,8 +103,12 @@ public final class MobBreeding {
         if (!food.test(stack)) {
             return null;
         }
+        boolean wild = tameable != null && self instanceof TamableAnimal pet && !pet.isTame();
+        if (wild && tamingFood.test(stack)) {
+            return null;
+        }
         int age = self.getAge();
-        if (player instanceof ServerPlayer && age == 0 && self.canFallInLove()) {
+        if (!wild && player instanceof ServerPlayer && age == 0 && self.canFallInLove()) {
             stack.consume(1, player);
             self.setInLove(player);
             return InteractionResult.SUCCESS_SERVER;
@@ -94,23 +118,31 @@ public final class MobBreeding {
             self.ageUp(AgeableMob.getSpeedUpSecondsWhenFeeding(-age), true);
             return InteractionResult.SUCCESS;
         }
-        return self.level().isClientSide() ? InteractionResult.CONSUME : null;
+        return self.level().isClientSide() && !wild ? InteractionResult.CONSUME : null;
     }
 
-    /** {@code Animal.isFood}: the {@code items}. */
+    /**
+     * {@code Animal.isFood}: the {@code items}, and nothing while the mob is wild and tameable, so that vanilla's
+     * {@code Animal.mobInteract} (reached when every module passes on) cannot put it in love either.
+     */
     public boolean isFood(ItemStack stack) {
-        return food.test(stack);
+        Animal self = animal();
+        return food.test(stack) && !(tameable != null && self != null && wild(self));
     }
 
     /**
      * {@code AgeableMob.getBreedOffspring}: a new mob of the same type (also for a spawn egg used on an adult, where the
      * partner is the adult itself), which takes one parent's variant (ADR 0071 D4, {@link MobVariants#inheritFrom}):
-     * neither breeding nor a spawn egg on an adult runs {@code finalizeSpawn}.
+     * neither breeding nor a spawn egg on an adult runs {@code finalizeSpawn}. A tamed parent's baby belongs to the same
+     * owner ({@code Wolf.getBreedOffspring}, {@code Cat.getBreedOffspring}; {@link MobTaming#adoptFrom}).
      */
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob partner) {
         AgeableMob child = mob.asMob().getType().create(level, EntitySpawnReason.BREEDING) instanceof AgeableMob made ? made : null;
         if (child instanceof MsmMob childMob) {
             childMob.driver().variants().inheritFrom(mob.asMob(), partner);
+            if (mob.asMob() instanceof TamableAnimal parent) {
+                childMob.driver().taming().adoptFrom(parent);
+            }
         }
         lastOffspring = child;
         return child;
@@ -118,7 +150,8 @@ public final class MobBreeding {
 
     /**
      * {@code Animal.spawnChildFromBreeding}: vanilla's (the baby, the parents' cooldown, hearts, experience), refused
-     * between two types (both share the body class, which is all {@code Animal.canMate} compares); then the baby's
+     * between two types (both share the body class, which is all {@code Animal.canMate} compares) and while either parent
+     * is wild and tameable (the wolf's and cat's {@code canMate}, which the bodies do not override); then the baby's
      * grow-up time and {@code on_breed} (self the baby, player the one who fed a parent).
      */
     public void spawnChildFromBreeding(ServerLevel level, Animal partner, Runnable vanilla) {
@@ -127,7 +160,7 @@ public final class MobBreeding {
             vanilla.run();
             return;
         }
-        if (partner.getType() != self.getType()) {
+        if (partner.getType() != self.getType() || wild(self) || wild(partner)) {
             self.resetLove();
             partner.resetLove();
             return;

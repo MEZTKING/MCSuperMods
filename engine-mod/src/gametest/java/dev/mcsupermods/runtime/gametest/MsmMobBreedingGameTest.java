@@ -28,7 +28,9 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Breeding and babies (ADR 0071 D2, B292) on {@code tb_farm} (wheat, {@code baby_scale} 0.4, {@code grow_up_ticks}
  * 1200, {@code on_breed}, and {@code msm:on_interact}, which must not swallow the food) and {@code tb_farm_other}
- * (another type with the same food). Interactions go through {@code Player.interactOn}.
+ * (another type with the same food). Interactions go through {@code Player.interactOn}. A tameable animal breeds only
+ * once tamed, as wolves and cats do: {@code tb_tame_first} (tamed with a bone, bred with wheat, {@code tamed_health} 30,
+ * like a wolf) and {@code tb_tame_same} (one food for both, like a cat).
  */
 public class MsmMobBreedingGameTest {
     private static final String ARENA = "msm_runtime_gametest:arena";
@@ -204,6 +206,105 @@ public class MsmMobBreedingGameTest {
             helper.assertTrue(helper.getEntities(type("tb_farm")).stream().noneMatch(MsmAnimal::isBaby), "a tb_farm baby");
             helper.assertTrue(helper.getEntities(type("tb_farm_other")).stream().noneMatch(MsmAnimal::isBaby), "a tb_farm_other baby");
             helper.succeed();
+        });
+    }
+
+    /** A wild wolf-like pet: wheat starts no love mode and is not used up; after the bone tames it, wheat does. */
+    @GameTest
+    public void wildPetIgnoresBreedingFoodUntilTamed(GameTestHelper helper) {
+        MsmAnimal pet = helper.spawnWithNoFreeWill(type("tb_tame_first"), MID);
+        ServerPlayer player = player(helper, MID.east());
+        try {
+            helper.assertFalse(pet.isFood(new ItemStack(Items.WHEAT)), "wheat is food for a wild pet");
+            ItemStack wheat = new ItemStack(Items.WHEAT, 5);
+            use(player, pet, wheat);
+            helper.assertFalse(pet.isInLove(), "wheat put a wild pet in love");
+            helper.assertValueEqual(wheat.getCount(), 5, "wheat after feeding a wild pet");
+            use(player, pet, new ItemStack(Items.BONE));
+            helper.assertTrue(pet.isTame() && pet.isOwnedBy(player), "the bone did not tame the pet");
+            helper.assertTrue(pet.isFood(new ItemStack(Items.WHEAT)), "wheat is not food for a tamed pet");
+            use(player, pet, wheat);
+            helper.assertTrue(pet.isInLove(), "wheat did not put a tamed pet in love");
+            helper.assertValueEqual(wheat.getCount(), 4, "wheat after feeding a tamed pet");
+        } finally {
+            leave(helper, player);
+        }
+        helper.succeed();
+    }
+
+    /** A wild pup still grows when fed the breeding food (vanilla {@code Animal.mobInteract} on a wild wolf pup). */
+    @GameTest
+    public void wildPetBabyGrowsOnBreedingFood(GameTestHelper helper) {
+        MsmAnimal baby = helper.spawnWithNoFreeWill(type("tb_tame_first"), MID);
+        baby.setBaby(true);
+        ServerPlayer player = player(helper, MID.east());
+        try {
+            int before = baby.getAge();
+            ItemStack wheat = new ItemStack(Items.WHEAT, 2);
+            use(player, baby, wheat);
+            helper.assertTrue(baby.getAge() > before, "feeding did not grow the wild baby: " + before + " -> " + baby.getAge());
+            helper.assertValueEqual(wheat.getCount(), 1, "wheat after feeding a wild baby");
+            helper.assertFalse(baby.isTame(), "wheat tamed the baby");
+        } finally {
+            leave(helper, player);
+        }
+        helper.succeed();
+    }
+
+    /** One food for both, like a cat's fish: on a wild pet it tames, on a tamed one at full health it starts love mode. */
+    @GameTest
+    public void sharedFoodTamesBeforeItBreeds(GameTestHelper helper) {
+        MsmAnimal pet = helper.spawnWithNoFreeWill(type("tb_tame_same"), MID);
+        ServerPlayer player = player(helper, MID.east());
+        try {
+            ItemStack cod = new ItemStack(Items.COD, 3);
+            use(player, pet, cod);
+            helper.assertTrue(pet.isTame() && pet.isOwnedBy(player), "cod did not tame the pet");
+            helper.assertFalse(pet.isInLove(), "the taming cod also put the pet in love");
+            helper.assertValueEqual(cod.getCount(), 2, "cod after taming");
+            use(player, pet, cod);
+            helper.assertTrue(pet.isInLove(), "cod did not put the tamed pet in love");
+            helper.assertValueEqual(cod.getCount(), 1, "cod after feeding the tamed pet");
+        } finally {
+            leave(helper, player);
+        }
+        helper.succeed();
+    }
+
+    /** Two wild pets in love (set directly, as {@code /data} could) never breed: the wolf's and cat's {@code canMate}. */
+    @GameTest(structure = ARENA, maxTicks = 200)
+    public void wildPetsInLoveDoNotBreed(GameTestHelper helper) {
+        MsmAnimal a = helper.spawn(type("tb_tame_first"), new BlockPos(4, 1, 5));
+        MsmAnimal b = helper.spawn(type("tb_tame_first"), new BlockPos(6, 1, 5));
+        a.setInLove(null);
+        b.setInLove(null);
+        helper.runAfterDelay(150, () -> {
+            helper.assertTrue(helper.getEntities(type("tb_tame_first")).stream().noneMatch(MsmAnimal::isBaby), "two wild pets bred");
+            helper.succeed();
+        });
+    }
+
+    /** Two tamed pets fed wheat breed; the baby belongs to their owner with {@code tamed_health} ({@code Wolf.getBreedOffspring}). */
+    @GameTest(structure = ARENA, maxTicks = 200)
+    public void tamedPetsMakeAnOwnedBaby(GameTestHelper helper) {
+        MsmAnimal a = helper.spawn(type("tb_tame_first"), new BlockPos(4, 1, 5));
+        MsmAnimal b = helper.spawn(type("tb_tame_first"), new BlockPos(6, 1, 5));
+        ServerPlayer player = player(helper, new BlockPos(5, 1, 3));
+        ItemStack bones = new ItemStack(Items.BONE, 2);
+        use(player, a, bones);
+        use(player, b, bones);
+        helper.assertTrue(a.isTame() && b.isTame(), "the bones did not tame both pets");
+        ItemStack wheat = new ItemStack(Items.WHEAT, 2);
+        use(player, a, wheat);
+        use(player, b, wheat);
+        helper.assertTrue(a.isInLove() && b.isInLove(), "wheat did not put both tamed pets in love");
+        helper.succeedWhen(() -> {
+            List<MsmAnimal> babies = helper.getEntities(type("tb_tame_first")).stream().filter(MsmAnimal::isBaby).toList();
+            helper.assertValueEqual(babies.size(), 1, "babies");
+            MsmAnimal baby = babies.getFirst();
+            helper.assertTrue(baby.isTame() && baby.isOwnedBy(player), "the baby is not the owner's");
+            assertNear(helper, baby.getMaxHealth(), 30.0, "the baby's tamed_health");
+            leave(helper, player);
         });
     }
 }
