@@ -1,16 +1,23 @@
 package dev.mcsupermods.runtime.scripting;
 
 import net.fabricmc.fabric.api.entity.FakePlayer;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import java.util.Map;
+import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
@@ -68,6 +75,12 @@ public final class ScriptBridges {
         ServerLivingEntityEvents.ALLOW_DAMAGE.register(ScriptBridges::allowDamage);
         ServerLivingEntityEvents.AFTER_DEATH.register(ScriptBridges::afterDeath);
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> playerJoined(handler.player));
+        ServerPlayerEvents.AFTER_RESPAWN.register(ScriptBridges::afterRespawn);
+        ServerPlayerEvents.LEAVE.register(ScriptBridges::playerLeft);
+        ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register(ScriptBridges::changedDimension);
+        ServerEntityLevelChangeEvents.AFTER_ENTITY_CHANGE_LEVEL.register((from, to, origin, destination) -> EntityHandle.moved(from, to));
+        ServerMessageEvents.ALLOW_CHAT_MESSAGE.register(ScriptBridges::allowChat);
+        ServerLivingEntityEvents.AFTER_DAMAGE.register(ScriptBridges::afterDamage);
     }
 
     /** The running host when it belongs to {@code server}. */
@@ -246,11 +259,14 @@ public final class ScriptBridges {
 
     static boolean allowDamage(LivingEntity entity, DamageSource source, float amount) {
         ScriptHost host = host(entity.level());
+        if (host != null && host.handles(ScriptEvents.ENTITY_DAMAGED_EVENT)) {
+            HEALTH_BEFORE_DAMAGE.put(entity, entity.getHealth() + entity.getAbsorptionAmount());
+        }
         if (host == null || !host.handles(ScriptEvents.ENTITY_HURT_EVENT)) {
             return true;
         }
         return !host.fire(ScriptEvents.ENTITY_HURT_EVENT,
-                new ScriptEvents.EntityHurt((ServerLevel) entity.level(), entity, amount, source.getEntity()));
+                new ScriptEvents.EntityHurt((ServerLevel) entity.level(), entity, amount, source));
     }
 
     static void afterDeath(LivingEntity entity, DamageSource source) {
@@ -265,6 +281,70 @@ public final class ScriptBridges {
         ScriptHost host = host(player.level());
         if (host != null && host.handles(ScriptEvents.PLAYER_JOIN_EVENT)) {
             host.fire(ScriptEvents.PLAYER_JOIN_EVENT, new ScriptEvents.PlayerJoin(player.level(), player));
+        }
+    }
+
+    // ---- script API 1.1 events (ADR 0065 D8) -------------------------------------------------------------
+
+    static void afterRespawn(ServerPlayer oldPlayer, ServerPlayer newPlayer, boolean alive) {
+        ScriptHost host = host(newPlayer.level());
+        if (host == null) {
+            return;
+        }
+        host.playerRespawned(oldPlayer, newPlayer);
+        if (host.handles(ScriptEvents.PLAYER_RESPAWN_EVENT)) {
+            host.fire(ScriptEvents.PLAYER_RESPAWN_EVENT, new ScriptEvents.PlayerOnly(newPlayer.level(), newPlayer));
+        }
+    }
+
+    /** Fires before the player is removed from the player list; the player is then taken off every boss bar. */
+    static void playerLeft(ServerPlayer player) {
+        ScriptHost host = host(player.level());
+        if (host == null) {
+            return;
+        }
+        if (host.handles(ScriptEvents.PLAYER_LEAVE_EVENT)) {
+            host.fire(ScriptEvents.PLAYER_LEAVE_EVENT, new ScriptEvents.PlayerOnly(player.level(), player));
+        }
+        host.playerLeft(player);
+    }
+
+    static void changedDimension(ServerPlayer player, ServerLevel from, ServerLevel to) {
+        ScriptHost host = host(to);
+        if (host != null && host.handles(ScriptEvents.PLAYER_CHANGE_DIMENSION_EVENT)) {
+            host.fire(ScriptEvents.PLAYER_CHANGE_DIMENSION_EVENT, new ScriptEvents.PlayerChangeDimension(player, from, to));
+        }
+    }
+
+    /** {@code player.chat}: a cancelled message is not broadcast to anyone ({@code ALLOW_CHAT_MESSAGE} returns false). */
+    static boolean allowChat(PlayerChatMessage message, ServerPlayer sender, ChatType.Bound params) {
+        ScriptHost host = host(sender.level());
+        if (host == null || !host.handles(ScriptEvents.PLAYER_CHAT_EVENT)) {
+            return true;
+        }
+        return !host.fire(ScriptEvents.PLAYER_CHAT_EVENT,
+                new ScriptEvents.PlayerChat(sender.level(), sender, message.signedContent()));
+    }
+
+    /**
+     * Health plus absorption of a living entity when {@code ALLOW_DAMAGE} let its damage through, while
+     * {@code entity.damaged} has handlers; weak, so a damage that never completes leaves nothing behind.
+     */
+    private static final Map<LivingEntity, Float> HEALTH_BEFORE_DAMAGE = new WeakHashMap<>();
+
+    /**
+     * {@code entity.damaged}: the amount is what the entity lost, health and absorption, between {@code ALLOW_DAMAGE}
+     * and {@code AFTER_DAMAGE}, so after armour, effects and enchantments (Fabric's {@code damageTaken} is before
+     * armour); Fabric's {@code damageTaken} only when there is no snapshot.
+     */
+    static void afterDamage(LivingEntity entity, DamageSource source, float baseDamageTaken, float damageTaken, boolean blocked) {
+        Float before = HEALTH_BEFORE_DAMAGE.remove(entity);
+        ScriptHost host = host(entity.level());
+        if (host != null && host.handles(ScriptEvents.ENTITY_DAMAGED_EVENT)) {
+            float amount = before == null ? damageTaken
+                    : Math.max(0f, before - (entity.getHealth() + entity.getAbsorptionAmount()));
+            host.fire(ScriptEvents.ENTITY_DAMAGED_EVENT,
+                    new ScriptEvents.EntityDamaged((ServerLevel) entity.level(), entity, amount, source));
         }
     }
 }

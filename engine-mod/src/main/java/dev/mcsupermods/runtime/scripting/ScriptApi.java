@@ -1,10 +1,13 @@
 package dev.mcsupermods.runtime.scripting;
 
+import com.google.gson.JsonElement;
+import com.mojang.serialization.JsonOps;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -13,7 +16,7 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
 /**
- * The script API v1 (ADR 0032 D2), built from Java: the {@code msm} tree each script receives and the object types
+ * The script API v1 (ADR 0032 D2, with the 1.1 additions of ADR 0065), built from Java: the {@code msm} tree each script receives and the object types
  * of the event objects. One instance per {@link ScriptHost} load (it holds the shared, sealed standard-object scope);
  * {@link #describe()} returns the installed member tree, which the JUnit {@code ScriptApiContractTest} compares with
  * {@code packages/plugins/scripting/api/script-api-v1.json}.
@@ -25,8 +28,9 @@ public final class ScriptApi {
             .method("error", 1, 1, ScriptHost.Module.class, (api, m, args) -> api.host.log(m, "error", args));
 
     static final ScriptType MSM_EVENTS = ScriptType.of("MsmEvents")
-            .method("on", 2, 2, ScriptHost.Module.class, (api, m, args) ->
-                    api.host.on(m, ScriptValues.string(args, 0, "event name"), ScriptValues.function(args, 1, "handler")));
+            .method("on", 2, 3, ScriptHost.Module.class, (api, m, args) ->
+                    api.host.on(m, ScriptValues.string(args, 0, "event name"), ScriptValues.function(args, 1, "handler"),
+                            ScriptValues.options(args, 2, "options")));
 
     static final ScriptType MSM_ACTIONS = ScriptType.of("MsmActions")
             .method("define", 2, 2, ScriptHost.Module.class, (api, m, args) ->
@@ -40,16 +44,26 @@ public final class ScriptApi {
             .method("schedule", 2, 2, ScriptHost.Module.class, (api, m, args) ->
                     api.host.schedule(m, ScriptValues.number(args, 0, "ticks"), ScriptValues.function(args, 1, "fn")))
             .constant("storage", ScriptHost.Module.class, (api, m) -> api.store(
-                    ScriptDataAttachment.world(api.host.server()), m.id().getNamespace(), ScriptData.WORLD_LIMIT_BYTES, "msm.storage"));
+                    ScriptDataAttachment.world(api.host.server()), m.id().getNamespace(), ScriptData.WORLD_LIMIT_BYTES, "msm.storage"))
+            .namespace("bossBars", ScriptBossBars.NAMESPACE)
+            .method("getWorld", 1, 1, ScriptHost.Module.class, (api, m, args) -> {
+                ServerLevel level = ScriptEntity.world(api.host.server(), ScriptValues.string(args, 0, "dimension"));
+                return level == null ? null : api.world(level);
+            })
+            .method("players", 0, 0, ScriptHost.Module.class, (api, m, args) ->
+                    api.array(api.host.server().getPlayerList().getPlayers().stream().map(api::player).toArray()));
 
     /** The object types, in the order of {@code script-api-v1.json}. */
     static final List<ScriptType> TYPES = List.of(ScriptPos.TYPE, ScriptWorld.TYPE, ScriptEntity.TYPE, ScriptPlayer.TYPE,
             BlockRef.TYPE, ItemRef.TYPE, DataStore.TYPE, ScriptEvents.GAME_EVENT, ScriptEvents.BLOCK_INTERACT, ScriptEvents.BLOCK_BREAK,
             ScriptEvents.ITEM_USE, ScriptEvents.ENTITY_INTERACT, ScriptEvents.ENTITY_HURT, ScriptEvents.ENTITY_DEATH,
-            ScriptEvents.PLAYER_JOIN, ScriptEvents.SERVER_STARTED, ScriptEvents.SERVER_TICK, ScriptEvents.ACTION);
+            ScriptEvents.PLAYER_JOIN, ScriptEvents.SERVER_STARTED, ScriptEvents.SERVER_TICK, ScriptEvents.ACTION,
+            ScriptInventory.TYPE, ScriptBossBars.TYPE, ScriptRaycast.TYPE, ScriptEvents.PLAYER_TICK, ScriptEvents.PLAYER_RESPAWN,
+            ScriptEvents.PLAYER_LEAVE, ScriptEvents.PLAYER_CHANGE_DIMENSION, ScriptEvents.PLAYER_CHAT, ScriptEvents.ENTITY_DAMAGED);
 
     private final ScriptHost host;
     private final ScriptableObject scope;
+    private RegistryOps<JsonElement> jsonOps;
 
     ScriptApi(ScriptHost host, ScriptableObject scope) {
         this.host = host;
@@ -74,17 +88,46 @@ public final class ScriptApi {
         return new HostObject(this, ScriptWorld.TYPE, level);
     }
 
-    /** An entity; players get the {@code Player} type. */
+    /** An entity; players get the {@code Player} type, other entities follow a dimension change ({@link EntityHandle}). */
     Scriptable entity(Entity entity) {
-        return entity instanceof ServerPlayer p ? player(p) : new HostObject(this, ScriptEntity.TYPE, entity);
+        return entity instanceof ServerPlayer p ? player(p) : new HostObject(this, ScriptEntity.TYPE, new EntityHandle(entity));
     }
 
     Scriptable player(ServerPlayer player) {
         return new HostObject(this, ScriptPlayer.TYPE, player);
     }
 
+    Scriptable inventory(ServerPlayer player) {
+        return new HostObject(this, ScriptInventory.TYPE, player);
+    }
+
+    Scriptable rayHit(ScriptRaycast.Hit hit) {
+        return new HostObject(this, ScriptRaycast.TYPE, hit);
+    }
+
+    Scriptable bossBar(ScriptBossBars.Bar bar) {
+        return new HostObject(this, ScriptBossBars.TYPE, bar);
+    }
+
+    ScriptHost host() {
+        return host;
+    }
+
     Scriptable block(BlockRef block) {
         return new HostObject(this, BlockRef.TYPE, block);
+    }
+
+    /** A copy of a stack as {@code ItemRef}, or null ({@code undefined}) for an empty stack. */
+    Scriptable itemOrUndefined(net.minecraft.world.item.ItemStack stack) {
+        return stack.isEmpty() ? null : item(new ItemRef(stack));
+    }
+
+    /** Registry-aware JSON ops of the running server, for data component values (ADR 0065 D1, D9). */
+    RegistryOps<JsonElement> jsonOps() {
+        if (jsonOps == null) {
+            jsonOps = host.server().registryAccess().createSerializationContext(JsonOps.INSTANCE);
+        }
+        return jsonOps;
     }
 
     Scriptable item(ItemRef item) {

@@ -84,7 +84,9 @@ final class ScriptWorld {
                 List<LivingEntity> found = l.getEntitiesOfClass(LivingEntity.class, AABB.ofSize(at, radius * 2, radius * 2, radius * 2),
                         e -> e.position().distanceToSqr(at) <= radius * radius);
                 return api.array(found.stream().map(api::entity).toArray());
-            });
+            })
+            .method("raycast", 3, 4, ServerLevel.class, (api, l, args) -> ScriptRaycast.cast(api, l,
+                    ScriptPos.arg(args, 0, "from").vec(), ScriptPos.arg(args, 1, "direction").vec(), args, 2, null));
 
     /**
      * The server's source in {@code level} with permission level 2 and suppressed output: at the world spawn point

@@ -24,6 +24,27 @@ import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.PlayerChatMessage;
+import net.minecraft.network.protocol.game.ClientboundBossEventPacket;
+import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
+import net.minecraft.network.protocol.game.ClientboundDisguisedChatPacket;
+import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
+import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetExperiencePacket;
+import net.minecraft.network.protocol.game.ClientboundSetHealthPacket;
+import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
@@ -156,12 +177,12 @@ public class MsmScriptGameTest {
     @GameTest
     public void scriptsLoadWithTwoErrors(GameTestHelper helper) {
         ScriptHost host = host(helper);
-        helper.assertValueEqual(host.summary(), "[msm_runtime] loaded 19 script(s); 2 error(s)", "load summary");
+        helper.assertValueEqual(host.summary(), "[msm_runtime] loaded 21 script(s); 2 error(s)", "load summary");
         helper.assertValueEqual(host.loadErrors(), List.of(
                 "script msm_test:broken: syntax error (msm/msm_test/script/broken.js#5)",
                 "script msm_test:events: unknown event 'no.such.event' (msm/msm_test/script/events.js)"), "load errors");
         ScriptHost.Report report = host.report();
-        helper.assertValueEqual(report.scripts().size(), 19, "scripts found");
+        helper.assertValueEqual(report.scripts().size(), 21, "scripts found");
         helper.assertFalse(report.loaded().contains(id("broken")), "broken.js loaded");
         helper.assertTrue(report.loaded().contains(id("events")), "events.js with an unknown event name did not load");
         // events.js still registered its other handlers.
@@ -615,8 +636,13 @@ public class MsmScriptGameTest {
      * {@code EmbeddedChannel}, {@code PlayerList.placeNewPlayer}), with a recording connection.
      */
     private static Recorded recordingPlayer(GameTestHelper helper) {
+        return recordingPlayer(helper, "msm-resync");
+    }
+
+    /** As {@link #recordingPlayer(GameTestHelper)} with a player name. */
+    private static Recorded recordingPlayer(GameTestHelper helper, String name) {
         ServerLevel level = helper.getLevel();
-        CommonListenerCookie cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "msm-resync"), false);
+        CommonListenerCookie cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), name), false);
         ServerPlayer player = new ServerPlayer(level.getServer(), level, cookie.gameProfile(), cookie.clientInformation());
         RecordingConnection connection = new RecordingConnection();
         new EmbeddedChannel(connection);
@@ -909,6 +935,423 @@ public class MsmScriptGameTest {
         host.action(id("data"), id("data"), id("data_reload"), ctx);
         helper.assertValueEqual(storage(helper).get("msm_test", "reload_count").getAsDouble(), count + 1, "counted on after reload");
         helper.assertValueEqual(logged(host, DATA + "reload count " + (long) (count + 1)), 1L, "read back after reload");
+        helper.succeed();
+    }
+
+    // ---- script API 1.1 (ADR 0065) ----------------------------------------------------------------------------
+
+    private static final String API = "msm_test:api: ";
+    private static final String PLAYER_EVENTS = "msm_test:player_events: ";
+
+    /** Calls a {@code run_script} handler of {@code api.js} on the running host. */
+    private static void api(ScriptHost host, String handler, EventContext ctx) {
+        host.action(id("api"), id("api"), id(handler), ctx);
+    }
+
+    private static void assertNoApiErrors(GameTestHelper helper, ScriptHost host) {
+        helper.assertTrue(host.handlerErrors().stream().noneMatch(e -> e.startsWith("script msm_test:api:")
+                        || e.startsWith("script msm_test:player_events:")),
+                "api.js or player_events.js errors: " + host.handlerErrors());
+    }
+
+    /** Every packet the recording connection saw that the script API 1.1 sends or causes, as text. */
+    private static List<String> apiPackets(RecordingConnection connection) {
+        List<String> out = new ArrayList<>();
+        for (Packet<?> p : connection.sent) {
+            switch (p) {
+                case ClientboundSetTitlesAnimationPacket t -> out.add("times " + t.getFadeIn() + " " + t.getStay() + " " + t.getFadeOut());
+                case ClientboundSetSubtitleTextPacket t -> out.add("subtitle " + t.text().getString());
+                case ClientboundSetTitleTextPacket t -> out.add("title " + t.text().getString());
+                case ClientboundSetActionBarTextPacket t -> out.add("actionbar " + t.text().getString());
+                case ClientboundClearTitlesPacket t -> out.add("clear " + t.shouldResetTimes());
+                case ClientboundSetExperiencePacket x -> out.add("xp level " + x.getExperienceLevel() + " total " + x.getTotalExperience());
+                case ClientboundSetHealthPacket h -> out.add("food " + h.getFood() + " saturation " + h.getSaturation());
+                case ClientboundGameEventPacket g when g.getEvent() == ClientboundGameEventPacket.CHANGE_GAME_MODE ->
+                        out.add("game mode " + (int) g.getParam());
+                case ClientboundBossEventPacket b -> b.dispatch(new ClientboundBossEventPacket.Handler() {
+                    @Override
+                    public void add(UUID id, Component name, float progress, BossEvent.BossBarColor color,
+                            BossEvent.BossBarOverlay overlay, boolean darken, boolean music, boolean fog) {
+                        out.add("boss add " + name.getString() + " " + progress + " " + color.getName() + " " + overlay.getName());
+                    }
+
+                    @Override
+                    public void remove(UUID id) {
+                        out.add("boss remove");
+                    }
+
+                    @Override
+                    public void updateProgress(UUID id, float progress) {
+                        out.add("boss progress " + progress);
+                    }
+
+                    @Override
+                    public void updateName(UUID id, Component name) {
+                        out.add("boss name " + name.getString());
+                    }
+
+                    @Override
+                    public void updateStyle(UUID id, BossEvent.BossBarColor color, BossEvent.BossBarOverlay overlay) {
+                        out.add("boss style " + color.getName() + " " + overlay.getName());
+                    }
+                });
+                case ClientboundPlayerChatPacket c -> out.add("chat");
+                case ClientboundDisguisedChatPacket c -> out.add("chat " + c.message().getString());
+                case ClientboundSystemChatPacket c when !c.overlay() -> out.add("system " + c.content().getString());
+                default -> { }
+            }
+        }
+        return out;
+    }
+
+    /** Inventory get, set, count, remove and find over numbered and named slots, and mob and player equipment (D2). */
+    @GameTest
+    public void inventoryAndEquipment(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        ServerPlayer player = survivalPlayer(helper);
+        player.getInventory().setSelectedSlot(0);
+        Mob zombie = helper.spawnWithNoFreeWill(EntityTypes.ZOMBIE, AT);
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            zombie.setItemSlot(slot, ItemStack.EMPTY);
+        }
+        api(host, "api_inventory", EventContext.forEntity(helper.getLevel(), zombie, player));
+        assertLogged(helper, host, API + "inventory 36 0 minecraft:diamond 10 minecraft:emerald minecraft:iron_helmet "
+                + "minecraft:shield minecraft:diamond true minecraft:diamond 12 35 0 -1 5 7 6 7 0 true true 0 true true 64 "
+                + "36:RangeError neg:RangeError frac:RangeError body:RangeError unknownItem:TypeError minecraft:iron_sword "
+                + "minecraft:golden_helmet true true minecraft:iron_helmet minecraft:shield mobSlot:RangeError");
+        helper.assertTrue(player.getInventory().getItem(1).is(Items.STICK) && player.getInventory().getItem(1).getCount() == 64,
+                "slot 1: " + player.getInventory().getItem(1));
+        helper.assertTrue(player.getItemBySlot(EquipmentSlot.HEAD).is(Items.IRON_HELMET), "player head");
+        helper.assertTrue(player.getItemBySlot(EquipmentSlot.OFFHAND).is(Items.SHIELD), "player off hand");
+        helper.assertValueEqual(count(player, Items.DIAMOND), 0, "diamonds left");
+        helper.assertTrue(zombie.getItemBySlot(EquipmentSlot.MAINHAND).is(Items.IRON_SWORD), "zombie main hand");
+        helper.assertTrue(zombie.getItemBySlot(EquipmentSlot.HEAD).isEmpty(), "zombie head emptied");
+        assertNoApiErrors(helper, host);
+        helper.succeed();
+    }
+
+    /**
+     * {@code ItemRef} reads, {@code getComponent} for a default and a patched component, {@code setComponent} writes
+     * and removes, invalid values and the 64 KiB limit are errors that change nothing, {@code give} with an
+     * {@code ItemSpec} (D1, D2, D9).
+     */
+    @GameTest
+    public void itemComponents(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        ServerPlayer player = survivalPlayer(helper);
+        ItemStack huge = new ItemStack(Items.STICK);
+        huge.set(DataComponents.CUSTOM_NAME, Component.literal("n".repeat(70_000)));
+        player.getInventory().setItem(2, huge);
+        api(host, "api_items", EventContext.forItem(helper.getLevel(), player));
+        assertLogged(helper, host, API + "items Edge 1 5 1561 true true false 1561 \"Edge\" 5 true Renamed "
+                + "{\"level\":3,\"tags\":[\"a\"]} Diamond Sword false badValue:TypeError invalidStack:TypeError "
+                + "unknownComponent:TypeError notJson:TypeError setOver64k:RangeError specOver64k:RangeError "
+                + "getOver64k:RangeError badSpec:TypeError noId:TypeError 5 1 true 70 4");
+        ItemStack sword = player.getInventory().getItem(0);
+        helper.assertTrue(sword.is(Items.DIAMOND_SWORD) && sword.getDamageValue() == 5 && sword.get(DataComponents.CUSTOM_NAME) == null
+                && sword.get(DataComponents.CUSTOM_DATA) != null, "sword: " + sword.getComponentsPatch());
+        helper.assertValueEqual(count(player, Items.STONE), 0, "no stone given by a failed give");
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack apple = player.getInventory().getItem(i);
+            if (apple.is(Items.APPLE)) {
+                helper.assertValueEqual(apple.getHoverName().getString(), "Gold", "given apple name in slot " + i);
+                helper.assertTrue(apple.getCount() <= 64, "given apple stack " + apple.getCount());
+            }
+        }
+        assertNoApiErrors(helper, host);
+        helper.succeed();
+    }
+
+    /** XP, food and game mode writes change the server state, and the client is told (D3). */
+    @GameTest
+    public void playerStateReachesTheClient(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        Recorded r = recordingPlayer(helper, "msm-api-state");
+        ServerPlayer player = r.player();
+        player.doTick();
+        r.connection().sent.clear();
+        api(host, "api_state", EventContext.forItem(helper.getLevel(), player));
+        assertLogged(helper, host, API + "state 5 7 10 0 5 5 20 5 17 3 survival true false adventure mode:TypeError");
+        helper.assertValueEqual(player.experienceLevel, 7, "server xp level");
+        helper.assertValueEqual(player.totalExperience, 10, "server total xp");
+        helper.assertValueEqual(player.getFoodData().getFoodLevel(), 17, "server food");
+        helper.assertValueEqual(player.getFoodData().getSaturationLevel(), 3f, "server saturation");
+        helper.assertValueEqual(player.gameMode(), GameType.ADVENTURE, "server game mode");
+        helper.assertValueEqual(apiPackets(r.connection()), List.of("game mode " + GameType.ADVENTURE.getId()), "sent at once");
+        r.connection().sent.clear();
+        player.doTick(); // mock players are not ticked by the server; vanilla sends XP and food from doTick
+        List<String> sent = apiPackets(r.connection());
+        helper.assertTrue(sent.contains("xp level 7 total 10") && sent.contains("food 17 saturation 3.0"),
+                "sent on the next tick: " + sent);
+        assertNoApiErrors(helper, host);
+        helper.succeed();
+    }
+
+    /** Title, subtitle, times, action bar and clear packets with the default times 10, 70 and 20 (D4). */
+    @GameTest
+    public void titlesAndActionBar(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        Recorded r = recordingPlayer(helper, "msm-api-titles");
+        api(host, "api_titles", EventContext.forItem(helper.getLevel(), r.player()));
+        helper.assertValueEqual(apiPackets(r.connection()), List.of("times 10 40 20", "subtitle Get ready", "title Wave 3",
+                "times 10 70 20", "subtitle ", "title Plain", "actionbar Mana: 7", "clear false"), "title packets");
+        assertNoApiErrors(helper, host);
+        helper.succeed();
+    }
+
+    /** Boss bar create, progress, name, style, add and remove player packets, errors, and 32 bars per namespace (D4). */
+    @GameTest
+    public void bossBars(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        Recorded r = recordingPlayer(helper, "msm-api-bar");
+        Mob cow = helper.spawnWithNoFreeWill(EntityTypes.COW, AT);
+        api(host, "api_bossbar", EventContext.forEntity(helper.getLevel(), cow, r.player()));
+        assertLogged(helper, host, API + "bossbar 1 true true true 0 colour:TypeError style:TypeError noTitle:TypeError "
+                + "badId:TypeError notPlayer:TypeError 33rd:RangeError replace:ok true 0");
+        helper.assertValueEqual(apiPackets(r.connection()), List.of("boss add Time left 0.5 red notched_10", "boss progress 0.25",
+                "boss progress 1.0", "boss name Hurry", "boss style green notched_10", "boss style green progress", "boss remove",
+                "boss add Hurry 1.0 green progress", "boss remove"), "boss bar packets");
+        helper.assertValueEqual(host.bossBarCount("msm_test"), 0, "bars left");
+        assertNoApiErrors(helper, host);
+        helper.succeed();
+    }
+
+    /** A reload removes the bars, which hides them from their players (D4). */
+    @GameTest
+    public void bossBarsAreRemovedOnReload(GameTestHelper helper) {
+        ScriptHost host = ScriptHost.detached(helper.getLevel().getServer());
+        Recorded r = recordingPlayer(helper, "msm-api-bar-reload");
+        host.action(id("api"), id("api"), id("api_bossbar_reload"), EventContext.forItem(helper.getLevel(), r.player()));
+        helper.assertValueEqual(host.bossBarCount("msm_test"), 1, "bars before reload");
+        helper.assertValueEqual(apiPackets(r.connection()), List.of("boss add Until reload 1.0 white progress"), "shown");
+        r.connection().sent.clear();
+        host.reload();
+        helper.assertValueEqual(host.bossBarCount("msm_test"), 0, "bars after reload");
+        helper.assertValueEqual(apiPackets(r.connection()), List.of("boss remove"), "hidden by the reload");
+        helper.succeed();
+    }
+
+    private static int dropped(GameTestHelper helper, Entity around, Item item) {
+        return helper.getLevel().getEntitiesOfClass(ItemEntity.class, around.getBoundingBox().inflate(3), e -> e.getItem().is(item))
+                .stream().mapToInt(e -> e.getItem().getCount()).sum();
+    }
+
+    /**
+     * {@code damage} with a player attacker gives kill credit (the breeze's {@code killed_by_player} pool drops its
+     * rods); without options it stays generic and gives none; a project damage type applies; an unknown type is an
+     * error (D5).
+     */
+    @GameTest
+    public void typedDamageWithAnAttacker(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        ServerLevel level = helper.getLevel();
+        ServerPlayer player = survivalPlayer(helper);
+        Mob credited = helper.spawnWithNoFreeWill(EntityTypes.BREEZE, AT);
+        Mob plain = helper.spawnWithNoFreeWill(EntityTypes.BREEZE, AT.east(5));
+        Mob pig = helper.spawnWithNoFreeWill(EntityTypes.PIG, AT.south(5));
+        api(host, "api_damage_by_player", EventContext.forEntity(level, credited, player));
+        helper.assertFalse(credited.isAlive(), "breeze killed by the script");
+        helper.assertTrue(credited.getLastHurtByPlayer() == player, "kill credit: " + credited.getLastHurtByPlayer());
+        helper.assertTrue(dropped(helper, credited, Items.BREEZE_ROD) >= 1, "killed_by_player pool dropped no breeze rod");
+        api(host, "api_damage_plain", EventContext.forEntity(level, plain, player));
+        helper.assertFalse(plain.isAlive(), "breeze killed by plain damage");
+        helper.assertTrue(plain.getLastDamageSource() != null && plain.getLastDamageSource().is(DamageTypes.GENERIC),
+                "plain damage type: " + plain.getLastDamageSource());
+        helper.assertValueEqual(dropped(helper, plain, Items.BREEZE_ROD), 0, "rods without kill credit");
+        api(host, "api_damage_typed", EventContext.forEntity(level, pig, null));
+        assertLogged(helper, host, API + "damage 7 unknownType:TypeError badAttacker:TypeError");
+        helper.assertTrue(pig.getLastDamageSource() != null && "msm_test:script_zap".equals(
+                pig.getLastDamageSource().typeHolder().unwrapKey().map(k -> k.identifier().toString()).orElse("")),
+                "project damage type: " + pig.getLastDamageSource());
+        helper.assertValueEqual(pig.getHealth(), pig.getMaxHealth() - 3, "pig health");
+        assertNoApiErrors(helper, host);
+        helper.succeed();
+    }
+
+    /** Raycasts hit a block face, an entity, nothing; {@code ignore}, {@code entities: false}, the 128 limit (D6). */
+    @GameTest
+    public void raycasts(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        helper.setBlock(AT.east(3), Blocks.STONE);
+        helper.setBlock(AT.east(3).above(), Blocks.STONE);
+        helper.setBlock(AT.south(6), Blocks.STONE);
+        helper.spawnWithNoFreeWill(EntityTypes.PIG, AT.south(3));
+        ServerPlayer player = survivalPlayer(helper);
+        Vec3 stand = Vec3.atBottomCenterOf(helper.absolutePos(AT.west()));
+        player.snapTo(stand.x, stand.y, stand.z, -90f, 0f);
+        player.setYHeadRot(-90f);
+        api(host, "api_raycast", EventContext.forBlock(helper.getLevel(), helper.absolutePos(AT), player));
+        assertLogged(helper, host, API + "raycast block minecraft:stone west 2.5 3 true true entity minecraft:pig true true true "
+                + "block minecraft:stone north block 5.5 true 129:RangeError 128:ok negative:RangeError zero:TypeError "
+                + "block minecraft:stone west eye129:RangeError");
+        assertNoApiErrors(helper, host);
+        helper.succeed();
+    }
+
+    /**
+     * Teleport to another dimension for a mob and a player; the mob's wrapper follows the re-created mob; an unknown
+     * dimension is an error; {@code msm.getWorld} and {@code msm.players} (D7).
+     */
+    @GameTest
+    public void teleportAcrossDimensions(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        ServerLevel level = helper.getLevel();
+        Recorded r = recordingPlayer(helper, "msm-api-teleport");
+        Mob cow = helper.spawnWithNoFreeWill(EntityTypes.COW, AT);
+        api(host, "api_teleport", EventContext.forEntity(level, cow, r.player()));
+        assertLogged(helper, host, API + "teleport minecraft:the_nether true 120 minecraft:cow minecraft:the_nether 1.5 "
+                + "minecraft:the_end 100 unknownDimension:TypeError badDimension:TypeError minecraft:the_nether true true true true");
+        helper.assertTrue(cow.isRemoved() && cow.getRemovalReason() == Entity.RemovalReason.CHANGED_DIMENSION,
+                "the cow was re-created in the nether: " + cow.getRemovalReason());
+        helper.assertValueEqual(r.player().level().dimension(), Level.END, "player dimension");
+        helper.assertValueEqual(r.player().getYRot(), 90f, "player yaw");
+        assertNoApiErrors(helper, host);
+        level.getServer().getPlayerList().remove(r.player());
+        helper.succeed();
+    }
+
+    // ---- script API 1.1 events (ADR 0065 D8) ---------------------------------------------------------------------
+
+    private static List<Long> playerTicks(ScriptHost host, String series, String name, long since) {
+        Pattern line = Pattern.compile(Pattern.quote(PLAYER_EVENTS + "player.tick/" + series + " " + name + " at ") + "(\\d+)");
+        List<Long> out = new ArrayList<>();
+        for (String log : host.recentLogs()) {
+            Matcher m = line.matcher(log);
+            if (m.matches() && Long.parseLong(m.group(1)) >= since) {
+                out.add(Long.parseLong(m.group(1)));
+            }
+        }
+        return out;
+    }
+
+    private static void assertInterval(GameTestHelper helper, List<Long> ticks, ServerPlayer player, int interval, int atLeast) {
+        helper.assertTrue(ticks.size() >= atLeast, player.getName().getString() + " every " + interval + ": " + ticks);
+        for (int i = 0; i < ticks.size(); i++) {
+            helper.assertValueEqual(Math.floorMod(ticks.get(i) + player.getId(), (long) interval), 0L,
+                    "staggered by entity id " + player.getId() + ": " + ticks);
+            if (i > 0) {
+                helper.assertValueEqual(ticks.get(i) - ticks.get(i - 1), (long) interval, "interval: " + ticks);
+            }
+        }
+    }
+
+    /** {@code player.tick} at its interval (7), an interval under 5 counted as 5, staggered by entity id (D8). */
+    @GameTest(maxTicks = 60)
+    public void playerTickRunsAtItsInterval(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        long start = helper.getLevel().getServer().getTickCount() + 1;
+        ServerPlayer a = recordingPlayer(helper, "msm-ev-tick-a").player();
+        ServerPlayer b = recordingPlayer(helper, "msm-ev-tick-b").player();
+        helper.runAfterDelay(45, () -> {
+            for (ServerPlayer p : List.of(a, b)) {
+                String name = p.getName().getString();
+                assertInterval(helper, playerTicks(host, "7", name, start), p, 7, 5);
+                assertInterval(helper, playerTicks(host, "1", name, start), p, 5, 7);
+            }
+            if (Math.floorMod(a.getId() - b.getId(), 7) != 0) {
+                helper.assertFalse(playerTicks(host, "7", "msm-ev-tick-a", start).getFirst()
+                        .equals(playerTicks(host, "7", "msm-ev-tick-b", start).getFirst()), "two players on the same tick");
+            }
+            assertNoApiErrors(helper, host);
+            helper.succeed();
+        });
+    }
+
+    /** {@code player.respawn} fires once for the new player (D8). */
+    @GameTest
+    public void playerRespawnFires(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        ServerPlayer player = recordingPlayer(helper, "msm-ev-respawn").player();
+        String line = PLAYER_EVENTS + "player.respawn msm-ev-respawn in minecraft:overworld health 20";
+        long before = logged(host, line);
+        helper.getLevel().getServer().getPlayerList().respawn(player, false, Entity.RemovalReason.KILLED);
+        helper.assertValueEqual(logged(host, line) - before, 1L, "player.respawn; recent: " + tail(host));
+        helper.succeed();
+    }
+
+    /** {@code player.leave} fires once when the player is removed from the player list (D8). */
+    @GameTest
+    public void playerLeaveFires(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        ServerPlayer player = recordingPlayer(helper, "msm-ev-leave").player();
+        String line = PLAYER_EVENTS + "player.leave msm-ev-leave in minecraft:overworld";
+        long before = logged(host, line);
+        helper.getLevel().getServer().getPlayerList().remove(player);
+        helper.assertValueEqual(logged(host, line) - before, 1L, "player.leave; recent: " + tail(host));
+        helper.succeed();
+    }
+
+    /** {@code player.changeDimension} fires once with {@code from} and {@code to} (D8). */
+    @GameTest
+    public void playerChangeDimensionFires(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        ServerLevel level = helper.getLevel();
+        ServerPlayer player = recordingPlayer(helper, "msm-ev-dim").player();
+        ServerLevel nether = level.getServer().getLevel(Level.NETHER);
+        helper.assertTrue(nether != null, "no nether");
+        String line = PLAYER_EVENTS + "player.changeDimension msm-ev-dim minecraft:overworld -> minecraft:the_nether world "
+                + "minecraft:the_nether now minecraft:the_nether";
+        long before = logged(host, line);
+        player.teleport(new TeleportTransition(nether, new Vec3(0.5, 100, 0.5), Vec3.ZERO, 0f, 0f, TeleportTransition.DO_NOTHING));
+        helper.assertValueEqual(logged(host, line) - before, 1L, "player.changeDimension; recent: " + tail(host));
+        level.getServer().getPlayerList().remove(player);
+        helper.succeed();
+    }
+
+    /** {@code player.chat} sees the message; a cancelled message reaches nobody (D8). */
+    @GameTest
+    public void playerChatCancelStopsTheMessage(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        PlayerList players = helper.getLevel().getServer().getPlayerList();
+        ServerPlayer sender = recordingPlayer(helper, "msm-ev-chat").player();
+        Recorded listener = recordingPlayer(helper, "msm-chat-listener");
+        listener.connection().sent.clear();
+        players.broadcastChatMessage(PlayerChatMessage.system("hello there"), sender, ChatType.bind(ChatType.CHAT, sender));
+        List<String> shown = apiPackets(listener.connection());
+        helper.assertTrue(shown.stream().anyMatch(p -> p.startsWith("chat")), "the message reached the listener: " + shown);
+        assertLogged(helper, host, PLAYER_EVENTS + "player.chat msm-ev-chat: hello there");
+        listener.connection().sent.clear();
+        players.broadcastChatMessage(PlayerChatMessage.system("a secret"), sender, ChatType.bind(ChatType.CHAT, sender));
+        List<String> hidden = apiPackets(listener.connection());
+        helper.assertTrue(hidden.stream().noneMatch(p -> p.startsWith("chat")), "a cancelled message reached the listener: " + hidden);
+        assertLogged(helper, host, PLAYER_EVENTS + "player.chat msm-ev-chat: a secret");
+        assertNoApiErrors(helper, host);
+        helper.succeed();
+    }
+
+    /** {@code entity.damaged} carries the amount after armour; {@code entity.hurt} gains {@code source} and {@code direct}. */
+    @GameTest
+    public void entityDamagedCarriesTheFinalAmount(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        ServerLevel level = helper.getLevel();
+        ServerPlayer player = survivalPlayer(helper);
+        Mob zombie = named(helper.spawnWithNoFreeWill(EntityTypes.ZOMBIE, AT), "msm-ev-damaged");
+        zombie.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.DIAMOND_CHESTPLATE));
+        float before = zombie.getHealth();
+        zombie.hurtServer(level, level.damageSources().playerAttack(player), 10);
+        float taken = before - zombie.getHealth();
+        helper.assertTrue(taken > 0 && taken < 10, "armour reduced the damage: " + taken);
+        Pattern line = Pattern.compile(Pattern.quote(PLAYER_EVENTS + "entity.damaged minecraft:zombie amount ") + "([0-9.]+)"
+                + Pattern.quote(" source minecraft:player_attack attacker minecraft:player direct minecraft:player health ")
+                + "([0-9.]+)");
+        double[] seen = null;
+        for (String log : host.recentLogs()) {
+            Matcher m = line.matcher(log);
+            if (m.matches()) {
+                seen = new double[] {Double.parseDouble(m.group(1)), Double.parseDouble(m.group(2))};
+            }
+        }
+        helper.assertTrue(seen != null, "entity.damaged not logged; recent: " + tail(host));
+        helper.assertTrue(Math.abs(seen[0] - taken) < 1e-4 && Math.abs(seen[1] - zombie.getHealth()) < 1e-4,
+                "final amount " + seen[0] + " and health " + seen[1] + ", expected " + taken + " and " + zombie.getHealth());
+
+        Mob pig = named(helper.spawnWithNoFreeWill(EntityTypes.PIG, AT.east(3)), "msm-ev-hurt");
+        Arrow arrow = helper.spawn(EntityTypes.ARROW, AT.east(3).above(2));
+        pig.hurtServer(level, level.damageSources().arrow(arrow, player), 1);
+        assertLogged(helper, host, PLAYER_EVENTS + "entity.hurt minecraft:pig source minecraft:arrow attacker minecraft:player "
+                + "direct minecraft:arrow");
+        arrow.discard();
+        assertNoApiErrors(helper, host);
         helper.succeed();
     }
 }

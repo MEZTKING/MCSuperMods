@@ -7,21 +7,30 @@ import java.util.Set;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.mozilla.javascript.ScriptRuntime;
+import org.mozilla.javascript.Scriptable;
 
 /**
  * {@code Entity} (ADR 0032 D2) over any {@link Entity}; health, healing and effects apply to living entities and do
  * nothing (health 0) on others. {@code playAnimation} reaches MSM entities through {@link AnimationTarget} and does
  * nothing on others. {@code runCommand} and {@code runFunction} run as and at the entity (ADR 0058 D2) and do nothing
- * (0 or false) when it is not in a server level.
+ * (0 or false) when it is not in a server level. Script API 1.1 (ADR 0065 D2, D5 to D7): equipment of living
+ * entities (nothing on others), typed damage with an attacker, raycasts from the eyes, teleport to another dimension.
  */
 final class ScriptEntity {
     private ScriptEntity() {}
@@ -47,10 +56,15 @@ final class ScriptEntity {
                 Motion.add(e, ScriptValues.number(args, 0, "x"), ScriptValues.number(args, 1, "y"), ScriptValues.number(args, 2, "z"));
                 return null;
             })
-            .method("damage", 1, 1, Entity.class, (api, e, args) -> {
+            .method("damage", 1, 2, Entity.class, (api, e, args) -> {
                 float amount = (float) ScriptValues.number(args, 0, "amount");
-                if (e.level() instanceof ServerLevel l && amount > 0) {
-                    e.hurtServer(l, l.damageSources().generic(), amount);
+                Scriptable options = ScriptValues.options(args, 1, "options");
+                if (!(e.level() instanceof ServerLevel l)) {
+                    return null;
+                }
+                DamageSource source = options == null ? l.damageSources().generic() : damageSource(l, options);
+                if (amount > 0) {
+                    e.hurtServer(l, source, amount);
                 }
                 return null;
             })
@@ -67,11 +81,23 @@ final class ScriptEntity {
                 }
                 return null;
             })
-            .method("teleport", 1, 1, Entity.class, (api, e, args) -> {
+            .method("teleport", 1, 2, Entity.class, (api, e, args) -> {
                 ScriptPos pos = ScriptPos.arg(args, 0, "pos");
-                if (e.level() instanceof ServerLevel l) {
-                    e.teleportTo(l, pos.x(), pos.y(), pos.z(), Set.of(), e.getYRot(), e.getXRot(), true);
+                Scriptable options = ScriptValues.options(args, 1, "options");
+                if (!(e.level() instanceof ServerLevel l)) {
+                    return null;
                 }
+                ServerLevel target = l;
+                String dimension = ScriptValues.stringMember(options, "dimension", null);
+                if (dimension != null) {
+                    target = world(l.getServer(), dimension);
+                    if (target == null) {
+                        throw ScriptRuntime.typeError("unknown dimension '" + dimension + "'");
+                    }
+                }
+                float yaw = (float) ScriptValues.numberMember(options, "yaw", e.getYRot());
+                float pitch = (float) Math.clamp(ScriptValues.numberMember(options, "pitch", e.getXRot()), -90.0, 90.0);
+                e.teleportTo(target, pos.x(), pos.y(), pos.z(), Set.of(), yaw, pitch, true);
                 return null;
             })
             .method("addEffect", 2, 3, Entity.class, (api, e, args) -> {
@@ -115,7 +141,45 @@ final class ScriptEntity {
                 String id = ScriptValues.string(args, 0, "id");
                 CommandSourceStack source = source(e);
                 return source != null && ScriptWorld.runFunction(source, id);
-            });
+            })
+            .method("equipment", 1, 1, Entity.class, (api, e, args) -> {
+                EquipmentSlot slot = ScriptItems.equipmentSlot(args, 0);
+                return e instanceof LivingEntity l ? api.itemOrUndefined(l.getItemBySlot(slot)) : null;
+            })
+            .method("setEquipment", 1, 2, Entity.class, (api, e, args) -> {
+                EquipmentSlot slot = ScriptItems.equipmentSlot(args, 0);
+                ItemStack stack = ScriptValues.present(args, 1) ? ScriptInventory.capped(ScriptItems.spec(api, args, 1)) : ItemStack.EMPTY;
+                if (e instanceof LivingEntity l) {
+                    l.setItemSlot(slot, stack);
+                }
+                return null;
+            })
+            .method("raycast", 1, 2, Entity.class, (api, e, args) -> e.level() instanceof ServerLevel l
+                    ? ScriptRaycast.cast(api, l, e.getEyePosition(), e.getLookAngle(), args, 0, e)
+                    : null);
+
+    /** A loaded dimension by id, or null; an invalid id is a script type error. */
+    static ServerLevel world(MinecraftServer server, String dimension) {
+        return server.getLevel(ResourceKey.create(Registries.DIMENSION, ScriptValues.id(dimension, "dimension")));
+    }
+
+    /**
+     * The damage source of {@code damage(amount, options)} (ADR 0065 D5): {@code type} (default
+     * {@code minecraft:generic}; an unknown type is a script type error), {@code attacker} the causing entity and
+     * {@code direct} the entity that hit ({@code attacker} when not given), so a player attacker gives kill credit.
+     */
+    private static DamageSource damageSource(ServerLevel level, Scriptable options) {
+        String typeId = ScriptValues.stringMember(options, "type", "minecraft:generic");
+        Holder<DamageType> type = level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE)
+                .get(ResourceKey.create(Registries.DAMAGE_TYPE, ScriptValues.id(typeId, "damage type")))
+                .<Holder<DamageType>>map(h -> h)
+                .orElseThrow(() -> ScriptRuntime.typeError("unknown damage type '" + typeId + "'"));
+        Object attackerValue = ScriptValues.member(options, "attacker");
+        Object directValue = ScriptValues.member(options, "direct");
+        Entity attacker = attackerValue == null ? null : ScriptValues.entity(attackerValue, "options.attacker");
+        Entity direct = directValue == null ? attacker : ScriptValues.entity(directValue, "options.direct");
+        return new DamageSource(type, direct, attacker);
+    }
 
     /**
      * The source of {@code Entity.runCommand} and {@code Entity.runFunction} (ADR 0058 D2): the server's source as and

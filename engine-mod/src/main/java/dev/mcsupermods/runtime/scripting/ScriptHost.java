@@ -2,6 +2,7 @@ package dev.mcsupermods.runtime.scripting;
 
 import dev.mcsupermods.runtime.MsmRuntime;
 import dev.mcsupermods.runtime.events.EventContext;
+import dev.mcsupermods.runtime.events.TickLimiter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -62,6 +63,7 @@ public final class ScriptHost {
     private final Map<String, List<Handler>> handlers = new HashMap<>();
     private final Map<Identifier, Handler> actions = new HashMap<>();
     private final List<Scheduled> scheduled = new ArrayList<>();
+    private final ScriptBossBars bossBars = new ScriptBossBars();
     private final List<String> loadErrors = new ArrayList<>();
     private final Set<Identifier> undefinedLogged = new HashSet<>();
     private int scriptCount;
@@ -102,12 +104,19 @@ public final class ScriptHost {
         final Module module;
         final String label;
         final Function fn;
+        /** {@code player.tick} only: run every this many ticks per player (ADR 0065 D8); 0 for other handlers. */
+        final int interval;
         long lastLoggedTick = Long.MIN_VALUE;
 
         Handler(Module module, String label, Function fn) {
+            this(module, label, fn, 0);
+        }
+
+        Handler(Module module, String label, Function fn, int interval) {
             this.module = module;
             this.label = label;
             this.fn = fn;
+            this.interval = interval;
         }
     }
 
@@ -129,9 +138,13 @@ public final class ScriptHost {
         current = host;
     }
 
-    /** {@code SERVER_STOPPED}: the host and its scopes are discarded. */
+    /** {@code SERVER_STOPPED}: the host and its scopes are discarded, its boss bars removed. */
     public static void stop() {
+        ScriptHost host = current;
         current = null;
+        if (host != null) {
+            host.bossBars.clear();
+        }
     }
 
     /** The running server's host, or null before {@code SERVER_STARTING} and after {@code SERVER_STOPPED}. */
@@ -149,7 +162,10 @@ public final class ScriptHost {
         return host;
     }
 
-    /** {@code END_DATA_PACK_RELOAD}: a fresh scope; handlers, action handlers, schedules and module cache cleared. */
+    /**
+     * {@code END_DATA_PACK_RELOAD}: a fresh scope; handlers, action handlers, schedules, boss bars and module cache
+     * cleared.
+     */
     public void reload() {
         if (depth > 0) {
             // Requested from inside a script call: reloading now would clear the handlers that are running.
@@ -163,11 +179,32 @@ public final class ScriptHost {
         return server;
     }
 
+    /** The boss bars of this host (ADR 0065 D4). */
+    ScriptBossBars bossBars() {
+        return bossBars;
+    }
+
+    /** How many boss bars scripts of {@code namespace} have now. */
+    public int bossBarCount(String namespace) {
+        return bossBars.count(namespace);
+    }
+
+    /** A player left: off every boss bar. */
+    public void playerLeft(ServerPlayer player) {
+        bossBars.playerLeft(player);
+    }
+
+    /** A respawn replaced a player object: the new one takes the old one's place on the boss bars. */
+    public void playerRespawned(ServerPlayer oldPlayer, ServerPlayer newPlayer) {
+        bossBars.playerRespawned(oldPlayer, newPlayer);
+    }
+
     private void load(ScriptScanner.Result scanned) {
         modules.clear();
         handlers.clear();
         actions.clear();
         scheduled.clear();
+        bossBars.clear();
         loadErrors.clear();
         undefinedLogged.clear();
         loadErrors.addAll(scanned.errors());
@@ -321,14 +358,23 @@ public final class ScriptHost {
         return null;
     }
 
-    Object on(Module m, String name, Function fn) {
+    /** {@code player.tick} handlers run every 20 ticks by default and at most every 5 (ADR 0065 D8, as ADR 0061 D4). */
+    public static final int PLAYER_TICK_DEFAULT_INTERVAL = 20;
+    public static final int PLAYER_TICK_MIN_INTERVAL = 5;
+
+    Object on(Module m, String name, Function fn, Scriptable options) {
         if (!ScriptEvents.EVENTS.containsKey(name)) {
             // ADR 0032 D2: an unknown name is a load-time error for that call; the rest of the script loads.
             String line = "script " + m.id() + ": unknown event '" + name + "' (" + m.source.file() + ")";
             error(m.state == State.LOADING ? loadErrors : handlerErrors, line);
             return null;
         }
-        Handler h = new Handler(m, name, fn);
+        int interval = 0;
+        if (ScriptEvents.PLAYER_TICK_EVENT.equals(name)) {
+            double asked = ScriptValues.numberMember(options, "interval", PLAYER_TICK_DEFAULT_INTERVAL);
+            interval = (int) Math.max(PLAYER_TICK_MIN_INTERVAL, Math.min(Integer.MAX_VALUE, Math.floor(asked)));
+        }
+        Handler h = new Handler(m, name, fn, interval);
         if (m.state == State.LOADING) {
             m.pendingHandlers.add(h);
         } else {
@@ -415,7 +461,12 @@ public final class ScriptHost {
         }
     }
 
-    /** {@code END_SERVER_TICK}: due {@code msm.schedule} callbacks, then the {@code server.tick} handlers. */
+    /**
+     * {@code END_SERVER_TICK}: due {@code msm.schedule} callbacks, then the {@code server.tick} handlers, then the
+     * {@code player.tick} handlers: each runs for an online player when {@code (tick + player entity id) % interval}
+     * is 0, so players are spread over the interval, and each such call counts against the shared tick limiter of
+     * ADR 0061 D4 ({@link TickLimiter}); a call over its cap is skipped.
+     */
     public void tick() {
         long now = server.getTickCount();
         cancelledMainHand.values().removeIf(t -> t < now);
@@ -424,7 +475,8 @@ public final class ScriptHost {
             reload();
         }
         boolean ticking = handles(ScriptEvents.SERVER_TICK_EVENT);
-        if (scheduled.isEmpty() && !ticking) {
+        boolean playerTicking = handles(ScriptEvents.PLAYER_TICK_EVENT);
+        if (scheduled.isEmpty() && !ticking && !playerTicking) {
             return;
         }
         try (Context cx = factory.enterContext()) {
@@ -444,6 +496,21 @@ public final class ScriptHost {
                 Scriptable ev = api.event(ScriptEvents.SERVER_TICK, new ScriptEvents.ServerTick(overworld, now));
                 for (Handler h : List.copyOf(handlers.get(ScriptEvents.SERVER_TICK_EVENT))) {
                     call(cx, h, ev);
+                }
+            }
+            if (playerTicking) {
+                List<Handler> tickers = List.copyOf(handlers.get(ScriptEvents.PLAYER_TICK_EVENT));
+                for (ServerPlayer player : List.copyOf(server.getPlayerList().getPlayers())) {
+                    Scriptable ev = null;
+                    for (Handler h : tickers) {
+                        if (Math.floorMod(now + player.getId(), (long) h.interval) != 0 || !TickLimiter.tryFire(player.level())) {
+                            continue;
+                        }
+                        if (ev == null) {
+                            ev = api.event(ScriptEvents.PLAYER_TICK, new ScriptEvents.PlayerOnly(player.level(), player));
+                        }
+                        call(cx, h, ev);
+                    }
                 }
             }
             cx.processMicrotasks();

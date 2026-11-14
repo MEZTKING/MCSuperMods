@@ -11,7 +11,8 @@ import org.mozilla.javascript.Undefined;
 /**
  * A Java object as a script sees it: the members of its {@link ScriptType}, read-only. Methods are bound to the
  * target (so {@code const f = e.cancel; f()} works), created on first access and cached per object, as are
- * {@code constant} properties and namespaces. Assigning to any property throws a {@code TypeError}.
+ * {@code constant} properties and namespaces. Assigning to any property throws a {@code TypeError}. A
+ * {@link LiveTarget} is resolved on every access, so an entity wrapper follows the entity across a dimension change.
  */
 final class HostObject extends ScriptableObject {
     private final transient ScriptApi api;
@@ -26,8 +27,9 @@ final class HostObject extends ScriptableObject {
         this.target = target;
     }
 
+    /** The current target: a {@link LiveTarget} resolves to the object it stands for now. */
     Object target() {
-        return target;
+        return target instanceof LiveTarget live ? live.resolve() : target;
     }
 
     ScriptType type() {
@@ -46,7 +48,7 @@ final class HostObject extends ScriptableObject {
             return super.get(name, start);
         }
         if (m.kind() == ScriptType.Kind.PROPERTY && !m.constant()) {
-            return value(m.getter().get(api, target));
+            return value(m.getter().get(api, target()));
         }
         if (cache == null) {
             cache = new HashMap<>();
@@ -54,14 +56,14 @@ final class HostObject extends ScriptableObject {
         Object cached = cache.get(name);
         if (cached == null) {
             cached = switch (m.kind()) {
-                case PROPERTY -> value(m.getter().get(api, target));
+                case PROPERTY -> value(m.getter().get(api, target()));
                 case NAMESPACE -> new HostObject(api, m.namespace(), target);
                 case METHOD -> new LambdaFunction(api.scope(), name, m.maxArgs(), (cx, scope, thisObj, args) -> {
                     if (args.length < m.minArgs()) {
                         throw ScriptRuntime.typeError(type.name() + "." + name + " needs " + m.minArgs() + " argument(s), got "
                                 + args.length);
                     }
-                    return value(m.method().call(api, target, args));
+                    return value(m.method().call(api, target(), args));
                 });
             };
             cache.put(name, cached);
