@@ -1,0 +1,31 @@
+{
+  "data": {
+    "attribute_modifiers": [
+      {
+        "amount": -0.4,
+        "attribute": "minecraft:gravity",
+        "operation": "add_multiplied_base"
+      },
+      {
+        "amount": 0.2,
+        "attribute": "minecraft:jump_strength",
+        "operation": "add_multiplied_base"
+      }
+    ],
+    "category": "beneficial",
+    "color": 14082798,
+    "display_name": "Featherweight",
+    "format": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:featherweight_effect",
+  "kind": "msm:effect",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The effect the potion gives: 40 per cent less gravity and 20 per cent higher jumps per level. Its icon is textures/mob_effect/featherweight_effect.png. Element ids are shared across kinds, so the effect is msm_examples:featherweight_effect and the potion msm_examples:featherweight.",
+    "tags": [
+      "example",
+      "potions"
+    ]
+  }
+}

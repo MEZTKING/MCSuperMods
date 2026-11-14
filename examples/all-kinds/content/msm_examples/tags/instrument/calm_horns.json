@@ -1,0 +1,20 @@
+{
+  "data": {
+    "values": [
+      "minecraft:ponder_goat_horn",
+      "minecraft:feel_goat_horn",
+      "minecraft:dream_goat_horn"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:calm_horns",
+  "kind": "minecraft:tag/instrument",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A instrument tag gives one name to several instrument ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. The set_instrument loot function picks a random call from a tag such as #msm_examples:calm_horns; goats drop a horn from #minecraft:regular_goat_horns, or #minecraft:screaming_goat_horns when they scream.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

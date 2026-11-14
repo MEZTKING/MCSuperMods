@@ -1,0 +1,18 @@
+{
+  "data": {
+    "values": [
+      "minecraft:server_links"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:help_screens",
+  "kind": "minecraft:tag/dialog",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A dialog tag gives one name to several dialog ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. Dialogs in the vanilla tags #minecraft:pause_screen_additions and #minecraft:quick_actions get a button on the pause screen or open with the quick actions key; a tag of your own such as #msm_examples:help_screens is for grouping and reuse, for example in a dialog list.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

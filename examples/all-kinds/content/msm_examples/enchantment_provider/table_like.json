@@ -1,0 +1,19 @@
+{
+  "data": {
+    "enchantments": "#minecraft:in_enchanting_table",
+    "max_cost_span": 15,
+    "min_cost": 5,
+    "type": "minecraft:by_cost_with_difficulty"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:table_like",
+  "kind": "minecraft:enchantment_provider",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An enchantment provider is a rule the game uses to enchant items it hands out itself. by_cost_with_difficulty enchants as an enchanting table would at a cost from min_cost up to min_cost plus max_cost_span, higher on harder local difficulty, picking from the enchantments listed. Vanilla uses providers such as minecraft:mob_spawn_equipment for the gear of spawned mobs and minecraft:raid/vindicator for raid axes. A project provider with one of those names replaces vanilla's; under a name of its own, like this one, nothing uses it yet.",
+    "tags": [
+      "example",
+      "enchantments"
+    ]
+  }
+}

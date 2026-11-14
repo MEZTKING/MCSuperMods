@@ -1,0 +1,30 @@
+{
+  "data": {
+    "assets": {
+      "angry": "msm_starter:entity/wolf/ember_coat_angry",
+      "tame": "msm_starter:entity/wolf/ember_coat_tame",
+      "wild": "msm_starter:entity/wolf/ember_coat"
+    },
+    "baby_assets": {
+      "angry": "msm_starter:entity/wolf/ember_coat_angry_baby",
+      "tame": "msm_starter:entity/wolf/ember_coat_tame_baby",
+      "wild": "msm_starter:entity/wolf/ember_coat_baby"
+    },
+    "spawn_conditions": [
+      {
+        "condition": {
+          "biomes": "#minecraft:is_forest",
+          "type": "minecraft:biome"
+        },
+        "priority": 1
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ember_coat",
+  "kind": "minecraft:wolf_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new wolf skin with six textures: wild, tame and angry, each for a grown wolf (64 by 32 pixels) and a pup (32 by 32), under textures/entity/wolf/. Its spawn condition ties it to forests (#minecraft:is_forest) with priority 1, so it joins the vanilla skins of that biome; the game picks among the matching skins of the highest priority. Wolves spawn in forests, taigas, groves, savannas and badlands. Paint over the placeholders, keeping their size, to make the skin. Try /summon minecraft:wolf ~ ~ ~ {variant:\"msm_starter:ember_coat\"}."
+  }
+}

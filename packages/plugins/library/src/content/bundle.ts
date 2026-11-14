@@ -13,6 +13,7 @@ import type {
   ResourceLocation,
 } from '@msm/plugin-api';
 import {
+  mobSkinPng,
   type PlaceholderPattern,
   placeholderPng,
   placeholderSkinPng,
@@ -28,6 +29,8 @@ export const KINDS = Object.freeze({
   sounds: 'minecraft:sounds',
   pack: 'minecraft:pack_mcmeta',
   equipment: 'minecraft:equipment',
+  atlas: 'minecraft:atlas',
+  font: 'minecraft:font',
   recipe: 'minecraft:recipe',
   lootTable: 'minecraft:loot_table',
   advancement: 'minecraft:advancement',
@@ -47,6 +50,14 @@ export const KINDS = Object.freeze({
   tagWorldgenStructure: 'minecraft:tag/worldgen/structure',
   tagWorldgenWorldPreset: 'minecraft:tag/worldgen/world_preset',
   tagVillagerTrade: 'minecraft:tag/villager_trade',
+  tagBannerPattern: 'minecraft:tag/banner_pattern',
+  tagDialog: 'minecraft:tag/dialog',
+  tagInstrument: 'minecraft:tag/instrument',
+  tagPointOfInterestType: 'minecraft:tag/point_of_interest_type',
+  tagPotion: 'minecraft:tag/potion',
+  tagTimeline: 'minecraft:tag/timeline',
+  tagWorldgenFeature: 'minecraft:tag/worldgen/feature',
+  tagWorldgenFlatLevelGeneratorPreset: 'minecraft:tag/worldgen/flat_level_generator_preset',
   enchantment: 'minecraft:enchantment',
   damageType: 'minecraft:damage_type',
   dimensionType: 'minecraft:dimension_type',
@@ -59,6 +70,21 @@ export const KINDS = Object.freeze({
   dialog: 'minecraft:dialog',
   villagerTrade: 'minecraft:villager_trade',
   tradeSet: 'minecraft:trade_set',
+  wolfVariant: 'minecraft:wolf_variant',
+  catVariant: 'minecraft:cat_variant',
+  pigVariant: 'minecraft:pig_variant',
+  cowVariant: 'minecraft:cow_variant',
+  chickenVariant: 'minecraft:chicken_variant',
+  frogVariant: 'minecraft:frog_variant',
+  zombieNautilusVariant: 'minecraft:zombie_nautilus_variant',
+  catSoundVariant: 'minecraft:cat_sound_variant',
+  pigSoundVariant: 'minecraft:pig_sound_variant',
+  cowSoundVariant: 'minecraft:cow_sound_variant',
+  chickenSoundVariant: 'minecraft:chicken_sound_variant',
+  instrument: 'minecraft:instrument',
+  enchantmentProvider: 'minecraft:enchantment_provider',
+  timeline: 'minecraft:timeline',
+  worldClock: 'minecraft:world_clock',
   structureTemplate: 'minecraft:structure_template',
   templatePool: 'minecraft:worldgen/template_pool',
   structure: 'minecraft:worldgen/structure',
@@ -82,6 +108,7 @@ export const KINDS = Object.freeze({
   item: 'msm:item',
   mod: 'msm:mod',
   effect: 'msm:effect',
+  potion: 'msm:potion',
   biomeAddition: 'msm:biome_addition',
   lootAddition: 'msm:loot_addition',
   entity: 'msm:entity',
@@ -90,7 +117,7 @@ export const KINDS = Object.freeze({
   script: 'msm:script',
 } as const);
 
-/** Ruby red, gem blue and the other placeholder colours the library uses. */
+/** Ruby red, gem blue, frost white and the other placeholder colours the library uses. */
 export const COLOURS = Object.freeze({
   ruby: [196, 28, 52] as Rgb,
   sapphire: [36, 84, 196] as Rgb,
@@ -98,6 +125,7 @@ export const COLOURS = Object.freeze({
   jade: [40, 160, 96] as Rgb,
   violet: [128, 64, 176] as Rgb,
   slate: [96, 104, 120] as Rgb,
+  frost: [214, 226, 238] as Rgb,
 });
 
 /** Joins a namespace and a path into a resource location. */
@@ -144,6 +172,20 @@ export function texture(
  */
 export function skinTexture(namespace: string, path: string, colour: Rgb): ContentBundleAsset {
   return { namespace, path: `textures/${path}.png`, bytes: placeholderSkinPng({ colour }) };
+}
+
+/**
+ * A generated two-tone mob texture of `width` by `height` at `textures/<path>.png` of
+ * `namespace` (texture id `<namespace>:<path>`), for vanilla mob variants (ADR 0064 D6).
+ */
+export function mobSkinTexture(
+  namespace: string,
+  path: string,
+  width: number,
+  height: number,
+  colour: Rgb,
+): ContentBundleAsset {
+  return { namespace, path: `textures/${path}.png`, bytes: mobSkinPng(width, height, { colour }) };
 }
 
 /** Reserved mod ids (ADR 0026 D2). */

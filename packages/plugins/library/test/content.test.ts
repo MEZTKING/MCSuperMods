@@ -7,6 +7,7 @@ import type { ContentBundle, ExampleProject, Json, ProjectStarter } from '@msm/p
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import { COLOURS } from '../src/content/bundle';
+import { SKIN_ANIMALS, SKIN_SHADES, shade } from '../src/content/mob-skins';
 import {
   behaviourExamples,
   categoryTag,
@@ -14,6 +15,7 @@ import {
   kindExamples,
   libraryExamples,
   libraryStarters,
+  mobSkinPng,
   PLACEHOLDER_PATTERNS,
   paintingPng,
   placeholderPng,
@@ -37,6 +39,7 @@ const STARTER_IDS = [
   'consumable',
   'totem',
   'status-effect',
+  'potion',
   'throwable',
   'enchantment',
   'painting',
@@ -44,6 +47,8 @@ const STARTER_IDS = [
   'dimension',
   'villager-trade',
   'extra-drop',
+  'mob-skin',
+  'goat-horn',
   'recipe_pack',
   'music_disc',
   'function_starter',
@@ -56,7 +61,7 @@ const STARTER_IDS = [
 ];
 
 /**
- * The 67 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
+ * The 93 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
  * items, entities, models and animations and scripting plugins, in per-kind example order.
  */
 const KIND_IDS = [
@@ -67,6 +72,8 @@ const KIND_IDS = [
   'minecraft:sounds',
   'minecraft:pack_mcmeta',
   'minecraft:equipment',
+  'minecraft:atlas',
+  'minecraft:font',
   'minecraft:recipe',
   'minecraft:loot_table',
   'minecraft:advancement',
@@ -86,6 +93,14 @@ const KIND_IDS = [
   'minecraft:tag/worldgen/structure',
   'minecraft:tag/worldgen/world_preset',
   'minecraft:tag/villager_trade',
+  'minecraft:tag/banner_pattern',
+  'minecraft:tag/dialog',
+  'minecraft:tag/instrument',
+  'minecraft:tag/point_of_interest_type',
+  'minecraft:tag/potion',
+  'minecraft:tag/timeline',
+  'minecraft:tag/worldgen/feature',
+  'minecraft:tag/worldgen/flat_level_generator_preset',
   'minecraft:enchantment',
   'minecraft:damage_type',
   'minecraft:dimension_type',
@@ -98,6 +113,21 @@ const KIND_IDS = [
   'minecraft:dialog',
   'minecraft:villager_trade',
   'minecraft:trade_set',
+  'minecraft:wolf_variant',
+  'minecraft:cat_variant',
+  'minecraft:pig_variant',
+  'minecraft:cow_variant',
+  'minecraft:chicken_variant',
+  'minecraft:frog_variant',
+  'minecraft:zombie_nautilus_variant',
+  'minecraft:cat_sound_variant',
+  'minecraft:pig_sound_variant',
+  'minecraft:cow_sound_variant',
+  'minecraft:chicken_sound_variant',
+  'minecraft:instrument',
+  'minecraft:enchantment_provider',
+  'minecraft:timeline',
+  'minecraft:world_clock',
   'minecraft:structure_template',
   'minecraft:worldgen/template_pool',
   'minecraft:worldgen/structure',
@@ -120,6 +150,7 @@ const KIND_IDS = [
   'msm:block',
   'msm:item',
   'msm:effect',
+  'msm:potion',
   'msm:mod',
   'msm:biome_addition',
   'msm:loot_addition',
@@ -147,8 +178,8 @@ const build = (
 };
 
 /**
- * Every placeholder the library may produce: each pattern, the entity skin and the painting
- * placeholder of every size up to 4 by 4 in each library colour.
+ * Every placeholder the library may produce: each pattern, the entity skin, the mob variant
+ * skins and the painting placeholder of every size up to 4 by 4 in each library colour.
  */
 const PLACEHOLDERS = new Set([
   ...PLACEHOLDER_PATTERNS.flatMap((pattern) =>
@@ -158,6 +189,24 @@ const PLACEHOLDERS = new Set([
   ),
   ...Object.values(COLOURS).map((colour) =>
     Buffer.from(placeholderSkinPng({ colour })).toString('hex'),
+  ),
+  // Mob variant skins (ADR 0064 D6): every vanilla size, in each colour and its shades.
+  ...[
+    ...Object.values(SKIN_ANIMALS).flatMap((facts) => [facts.adult, facts.baby]),
+    {
+      width: 128,
+      height: 128,
+    },
+  ].flatMap((size) =>
+    size === undefined
+      ? []
+      : Object.values(COLOURS).flatMap((colour) =>
+          SKIN_SHADES.map((amount) =>
+            Buffer.from(
+              mobSkinPng(size.width, size.height, { colour: shade(colour, amount) }),
+            ).toString('hex'),
+          ),
+        ),
   ),
   ...[1, 2, 3, 4].flatMap((width) =>
     [1, 2, 3, 4].flatMap((height) =>
@@ -169,7 +218,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the twenty-nine starters in order', () => {
+  it('lists the thirty-two starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -179,7 +228,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(25).fill('content'),
+      ...Array<string>(28).fill('content'),
     ]);
   });
 
@@ -546,8 +595,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 67 per-kind examples, one per built-in kind, 11 behaviour examples and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(67);
+  it('has 93 per-kind examples, one per built-in kind, 15 behaviour examples and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(93);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -559,6 +608,7 @@ describe('examples', () => {
       'example_msm_fuel_log',
       'example_msm_life_steal_sword',
       'example_msm_night_vision_helmet',
+      'example_msm_brewed_with_own_item',
     ]);
     expect(entityBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_hostile_mob',
@@ -569,8 +619,11 @@ describe('examples', () => {
       'example_msm_script_action',
       'example_msm_scripted_effect',
       'example_msm_kill_counter',
+      'example_msm_full_set_bonus',
+      'example_msm_teleport_staff',
+      'example_msm_boss_fight_bar',
     ]);
-    expect(libraryExamples).toHaveLength(82);
+    expect(libraryExamples).toHaveLength(112);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -629,8 +682,18 @@ describe('every starter and example', () => {
         }
       }
       if (entry.id === 'status-effect') {
-        for (const element of build(entry, 'demo', { behaviour: 'function' }).elements) {
+        for (const values of [{ behaviour: 'function' }, { source: 'potion' }]) {
+          for (const element of build(entry, 'demo', values).elements) used.add(element.kind);
+        }
+      }
+      if (entry.id === 'potion') {
+        for (const element of build(entry, 'demo', { effect: 'minecraft:speed' }).elements) {
           used.add(element.kind);
+        }
+      }
+      if (entry.id === 'mob-skin') {
+        for (const animal of ['cat', 'pig', 'cow', 'chicken', 'frog']) {
+          for (const element of build(entry, 'demo', { animal }).elements) used.add(element.kind);
         }
       }
       expect(entry.requiresKinds, entry.id).toEqual([...used].sort());
@@ -719,8 +782,10 @@ describe('every starter and example', () => {
         const equipmentId = id.replace(/:entity\/equipment\/[a-z_]+\//, ':');
         // An effect icon is textures/mob_effect/<path>.png of the effect `<ns>:<path>`.
         const effectId = id.replace(':mob_effect/', ':');
+        // A font's bitmap provider names its file with the extension.
+        const fileId = `${id}.png`;
         expect(
-          [id, paintingId, equipmentId, effectId].some((candidate) =>
+          [id, paintingId, equipmentId, effectId, fileId].some((candidate) =>
             text.includes(`"${candidate}"`),
           ),
           id,

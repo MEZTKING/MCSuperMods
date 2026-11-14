@@ -1,0 +1,29 @@
+{
+  "data": {
+    "brewing": {
+      "reagent": "minecraft:feather"
+    },
+    "display_name": "Featherweight",
+    "effects": [
+      {
+        "duration_ticks": 3600,
+        "id": "msm_examples:featherweight_effect"
+      }
+    ],
+    "format": 1,
+    "long": {
+      "duration_ticks": 9600
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:featherweight",
+  "kind": "msm:potion",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A potion is a list of effects with their durations in ticks: here Featherweight for 3 minutes. brewing adds it to the brewing stand: an awkward potion (the default base) and a feather make it. long adds msm_examples:long_featherweight, 8 minutes, brewed with redstone; strong would add a stronger level brewed with glowstone dust. Splash and lingering bottles (gunpowder, then dragon's breath) and tipped arrows come with it, and display_name names all four \"Potion of Featherweight\" and so on. Its colour comes from the effect. Potions need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "potions"
+    ]
+  }
+}

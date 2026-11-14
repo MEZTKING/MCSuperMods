@@ -1,0 +1,19 @@
+{
+  "data": {
+    "values": [
+      "minecraft:fletcher",
+      "minecraft:cartographer"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ranged_job_sites",
+  "kind": "minecraft:tag/point_of_interest_type",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A point_of_interest_type tag gives one name to several point_of_interest_type ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. Vanilla uses #minecraft:acquirable_job_site for the blocks a villager can take a job at and #minecraft:bee_home for hives and nests; a tag of your own such as #msm_examples:ranged_job_sites is for grouping and reuse.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

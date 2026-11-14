@@ -1,0 +1,53 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// The slots and items of the set.",
+      "const SET: [EquipmentSlot, string][] = [",
+      "  [\"head\", \"minecraft:golden_helmet\"],",
+      "  [\"chest\", \"minecraft:golden_chestplate\"],",
+      "  [\"legs\", \"minecraft:golden_leggings\"],",
+      "  [\"feet\", \"minecraft:golden_boots\"],",
+      "];",
+      "",
+      "function wearsFullSet(player: Player): boolean {",
+      "  for (let i = 0; i < SET.length; i++) {",
+      "    const worn = player.equipment(SET[i][0]);",
+      "    if (worn === undefined || worn.id !== SET[i][1]) return false;",
+      "  }",
+      "  return true;",
+      "}",
+      "",
+      "// Once a second for each player: renew the bonus while the full set is worn.",
+      "msm.events.on(",
+      "  \"player.tick\",",
+      "  (e) => {",
+      "    const player = e.player;",
+      "    const wearing = wearsFullSet(player);",
+      "    if (wearing) {",
+      "      player.addEffect(\"minecraft:haste\", 60, 1);",
+      "      player.addEffect(\"minecraft:luck\", 60, 0);",
+      "    }",
+      "    // Tell the player when the bonus starts and ends.",
+      "    if (wearing !== (player.data.get(\"golden_set\") === true)) {",
+      "      player.data.set(\"golden_set\", wearing);",
+      "      player.showActionBar(wearing ? \"Golden set bonus: Haste II and Luck\" : \"Golden set bonus lost\");",
+      "    }",
+      "  },",
+      "  { interval: 20 },",
+      ");"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:full_set_bonus",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A script on the player.tick event, which runs for each online player every interval ticks (here 20, once a second; never more often than every 5), spread over the interval so not every player is checked in the same tick. player.equipment(slot) returns a copy of what is worn in a slot, or undefined, so the script compares the four armour slots with the golden set. While the set is worn it renews three seconds of Haste II and Luck, which run out soon after a piece comes off. player.data remembers whether the bonus was on, so the action bar text shows only when it changes. Scripts run only in the Fabric mod jar export, with msm_runtime; the Java project export leaves them out.",
+    "tags": [
+      "example",
+      "scripts"
+    ]
+  }
+}

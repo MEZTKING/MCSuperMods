@@ -1,0 +1,22 @@
+{
+  "data": {
+    "attribute_modifiers": [
+      {
+        "amount": 0.3,
+        "attribute": "minecraft:jump_strength",
+        "operation": "add_multiplied_base"
+      }
+    ],
+    "category": "beneficial",
+    "color": 2380996,
+    "display_name": "Moon Leap",
+    "format": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:moon_leap_effect",
+  "kind": "msm:effect",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The new status effect the potion gives, shown in the colour #2454c4, which also colours the potion. It changes jump strength +30 per cent per level, until it ends. Its icon is textures/mob_effect/moon_leap_effect.png; paint over the placeholder to restyle it."
+  }
+}

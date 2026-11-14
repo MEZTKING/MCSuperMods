@@ -1,0 +1,23 @@
+{
+  "data": {
+    "category": "misc",
+    "ingredients": [
+      "minecraft:goat_horn",
+      "minecraft:echo_shard"
+    ],
+    "result": {
+      "components": {
+        "minecraft:instrument": "msm_starter:storm_call"
+      },
+      "id": "minecraft:goat_horn"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:storm_call_goat_horn",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Any goat horn and an echo shard anywhere in the crafting grid make a goat horn that plays the storm call: the result carries the minecraft:instrument component."
+  }
+}

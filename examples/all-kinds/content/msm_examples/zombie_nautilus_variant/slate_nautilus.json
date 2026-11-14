@@ -1,0 +1,21 @@
+{
+  "data": {
+    "asset_id": "msm_examples:entity/nautilus/slate_nautilus",
+    "spawn_conditions": [
+      {
+        "priority": 0
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:slate_nautilus",
+  "kind": "minecraft:zombie_nautilus_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A zombie nautilus variant: asset_id is its texture (128 by 128 pixels) under textures/entity/nautilus/. An optional model chooses the vanilla warm body shape with its coral. One spawn condition with priority 0 mixes it in wherever no variant of a higher priority matches. Try /summon minecraft:zombie_nautilus ~ ~ ~ {variant:\"msm_examples:slate_nautilus\"}.",
+    "tags": [
+      "example",
+      "mob-variants"
+    ]
+  }
+}

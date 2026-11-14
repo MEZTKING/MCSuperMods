@@ -1,0 +1,63 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// The boss of the current fight, if there is one.",
+      "let boss: Entity | undefined;",
+      "",
+      "// Using a nether star summons the boss in front of the player.",
+      "msm.events.on(\"item.use\", (e) => {",
+      "  if (e.item.id !== \"minecraft:nether_star\" || boss !== undefined) return;",
+      "  const look = e.player.look;",
+      "  const at = e.player.pos.offset(look.x * 4, 0, look.z * 4);",
+      "  boss = e.world.spawnEntity(\"minecraft:ravager\", at);",
+      "  if (boss === undefined) return;",
+      "  e.player.inventory.remove(\"minecraft:nether_star\", 1);",
+      "  const bar = msm.bossBars.create(\"ravager\", {",
+      "    title: \"The Ravager King\",",
+      "    color: \"red\",",
+      "    style: \"notched_10\",",
+      "  });",
+      "  const players = msm.players();",
+      "  for (let i = 0; i < players.length; i++) {",
+      "    bar.addPlayer(players[i]);",
+      "    players[i].showTitle(\"The Ravager King\", { subtitle: \"has awoken\", stay: 40 });",
+      "  }",
+      "});",
+      "",
+      "// Players who join during the fight see the bar too.",
+      "msm.events.on(\"player.join\", (e) => {",
+      "  msm.bossBars.get(\"ravager\")?.addPlayer(e.player);",
+      "});",
+      "",
+      "// After each hit, the bar shows the health left.",
+      "msm.events.on(\"entity.damaged\", (e) => {",
+      "  if (boss === undefined || e.entity.uuid !== boss.uuid) return;",
+      "  msm.bossBars.get(\"ravager\")?.setProgress(e.entity.health / e.entity.maxHealth);",
+      "});",
+      "",
+      "// When the boss falls: remove the bar and reward whoever killed it.",
+      "msm.events.on(\"entity.death\", (e) => {",
+      "  if (boss === undefined || e.entity.uuid !== boss.uuid) return;",
+      "  boss = undefined;",
+      "  msm.bossBars.get(\"ravager\")?.remove();",
+      "  const winner = e.attacker?.asPlayer();",
+      "  if (winner === undefined) return;",
+      "  winner.addXpLevels(5);",
+      "  winner.showTitle(\"Victory!\", { subtitle: \"+5 levels\" });",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:boss_fight",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A script with a boss bar. msm.bossBars.create makes a bar of this project's namespace (at most 32), shown to the players added to it; setProgress sets how full it is, from 0 to 1. entity.damaged runs after every hit with the health already lowered, so the bar follows the boss's health, and entity.death removes the bar, shows the killer a title and gives five experience levels. Boss bars are not saved: after /reload or a restart the bar is gone and the ravager is an ordinary one. Scripts run only in the Fabric mod jar export, with msm_runtime; the Java project export leaves them out.",
+    "tags": [
+      "example",
+      "scripts"
+    ]
+  }
+}

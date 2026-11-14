@@ -12,6 +12,7 @@ import {
   recipePackBundle,
 } from '../starters/index';
 import { behaviourExamples, blocksItemsExamples } from './blocks-items';
+import { dataKindExamples } from './data-kinds';
 import { dataPackExamples } from './data-pack';
 import { defineExample } from './define';
 import { entityBehaviourExamples, entityKindExamples } from './entities';
@@ -29,13 +30,14 @@ export { scriptBehaviourExamples } from './scripts';
 
 /**
  * The per-kind examples, in gallery order: resource pack, data pack, tags, registries,
- * structures, worldgen, blocks and items, entities, models and animations, scripts.
+ * the data kinds sweep, structures, worldgen, blocks and items, entities, models and animations, scripts.
  */
 export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...resourcePackExamples,
   ...dataPackExamples,
   ...tagExamples,
   ...registryExamples,
+  ...dataKindExamples,
   ...structureExamples,
   ...worldgenExamples,
   ...blocksItemsExamples,

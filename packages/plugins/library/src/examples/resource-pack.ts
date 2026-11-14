@@ -222,4 +222,59 @@ export const resourcePackExamples: readonly ExampleProject[] = [
       };
     },
   }),
+  defineExample({
+    id: 'example_atlas',
+    title: 'Atlas source',
+    description:
+      'Adds a texture from a folder of its own to the block atlas, so block models can use it.',
+    kind: KINDS.atlas,
+    category: 'Atlases',
+    tags: ['atlas', 'texture', 'sprites'],
+    build: ({ namespace }) => {
+      const tile = rl(namespace, 'decor/ruby_tile');
+      return {
+        elements: [
+          element(
+            'minecraft:blocks',
+            KINDS.atlas,
+            { sources: [{ type: 'minecraft:single', resource: tile }] },
+            `The game stitches textures into atlases before models can use them, and each atlas file lists its sources. Vanilla's minecraft:blocks atlas takes every texture under textures/block/, so a texture elsewhere, such as ${tile} (textures/decor/ruby_tile.png), needs a source: single adds one texture, directory a whole folder. Atlas files of every pack are merged, so this adds to the vanilla list instead of replacing it. Block models can then name ${tile} like any block texture.`,
+          ),
+        ],
+        assets: [texture(namespace, 'decor/ruby_tile', 'plain', COLOURS.ruby)],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_font',
+    title: 'Icon font',
+    description: 'A font with one icon glyph drawn from a texture, for use in chat and signs.',
+    kind: KINDS.font,
+    category: 'Fonts',
+    tags: ['font', 'glyph', 'bitmap', 'text'],
+    build: ({ namespace }) => {
+      const id = rl(namespace, 'icons');
+      return {
+        elements: [
+          element(
+            id,
+            KINDS.font,
+            {
+              providers: [
+                {
+                  type: 'bitmap',
+                  file: `${namespace}:font/icons.png`,
+                  ascent: 7,
+                  height: 8,
+                  chars: [''],
+                },
+              ],
+            },
+            `A font is a list of glyph providers. A bitmap provider cuts its texture (textures/font/icons.png) into a grid with one cell per character in chars, here one icon on the private-use character U+E000; height is the glyph's height in text and ascent how far it sits above the baseline. Use it in any text component: {"text": "\\uE000", "font": "${id}"}. Characters this font lacks show nothing, so add a reference provider to minecraft:default to keep the normal letters.`,
+          ),
+        ],
+        assets: [texture(namespace, 'font/icons', 'gem', COLOURS.amber)],
+      };
+    },
+  }),
 ];

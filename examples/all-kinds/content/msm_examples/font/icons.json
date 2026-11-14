@@ -1,0 +1,26 @@
+{
+  "data": {
+    "providers": [
+      {
+        "ascent": 7,
+        "chars": [
+          ""
+        ],
+        "file": "msm_examples:font/icons.png",
+        "height": 8,
+        "type": "bitmap"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:icons",
+  "kind": "minecraft:font",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A font is a list of glyph providers. A bitmap provider cuts its texture (textures/font/icons.png) into a grid with one cell per character in chars, here one icon on the private-use character U+E000; height is the glyph's height in text and ascent how far it sits above the baseline. Use it in any text component: {\"text\": \"\\uE000\", \"font\": \"msm_examples:icons\"}. Characters this font lacks show nothing, so add a reference provider to minecraft:default to keep the normal letters.",
+    "tags": [
+      "example",
+      "fonts"
+    ]
+  }
+}

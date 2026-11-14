@@ -1,0 +1,19 @@
+{
+  "data": {
+    "ambient_sound": "minecraft:entity.cow_moody.ambient",
+    "death_sound": "minecraft:entity.cow_moody.death",
+    "hurt_sound": "minecraft:entity.cow.hurt",
+    "step_sound": "minecraft:entity.cow.step"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:grumpy_cow",
+  "kind": "minecraft:cow_sound_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A cow sound variant names the sound event of each noise a cow makes; unlike cats, pigs and chickens, cows have one set for every age. This one moos and dies like the vanilla moody cow and keeps the classic hurt and step sounds. The cow keeps it in its minecraft:cow/sound_variant component. Each value is a vanilla sound event id; a sound of your own needs the object form { \"sound_id\": \"<namespace>:<event>\" }.",
+    "tags": [
+      "example",
+      "mob-sounds"
+    ]
+  }
+}

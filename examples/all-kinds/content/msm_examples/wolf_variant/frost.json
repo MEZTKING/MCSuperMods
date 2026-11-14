@@ -1,0 +1,37 @@
+{
+  "data": {
+    "assets": {
+      "angry": "msm_examples:entity/wolf/frost_angry",
+      "tame": "msm_examples:entity/wolf/frost_tame",
+      "wild": "msm_examples:entity/wolf/frost"
+    },
+    "baby_assets": {
+      "angry": "msm_examples:entity/wolf/frost_angry_baby",
+      "tame": "msm_examples:entity/wolf/frost_tame_baby",
+      "wild": "msm_examples:entity/wolf/frost_baby"
+    },
+    "spawn_conditions": [
+      {
+        "condition": {
+          "biomes": [
+            "minecraft:snowy_taiga",
+            "minecraft:grove"
+          ],
+          "type": "minecraft:biome"
+        },
+        "priority": 1
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:frost",
+  "kind": "minecraft:wolf_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A wolf variant: assets names the wild, tame and angry textures of a grown wolf and baby_assets those of a pup, as texture ids under textures/entity/wolf/ (64 by 32 pixels, pups 32 by 32). spawn_conditions decides where it appears: in a snowy taiga or a grove with priority 1, so it joins the vanilla wolves of those biomes and the game picks among the highest priority that matches. Paint over the placeholders to make it yours. Try /summon minecraft:wolf ~ ~ ~ {variant:\"msm_examples:frost\"}.",
+    "tags": [
+      "example",
+      "mob-variants"
+    ]
+  }
+}

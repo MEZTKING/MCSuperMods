@@ -1,0 +1,18 @@
+{
+  "data": {
+    "values": [
+      "msm_examples:slime_days"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:in_overworld",
+  "kind": "minecraft:tag/timeline",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The overworld's dimension type runs the timelines of this vanilla tag, so adding the timeline here makes it count. The export merges it into vanilla's tag.",
+    "tags": [
+      "example",
+      "time"
+    ]
+  }
+}

@@ -99,6 +99,7 @@ const WIZARDS = [
   'consumable',
   'totem',
   'status-effect',
+  'potion',
   'throwable',
   'enchantment',
   'painting',
@@ -106,6 +107,8 @@ const WIZARDS = [
   'dimension',
   'villager-trade',
   'extra-drop',
+  'mob-skin',
+  'goat-horn',
   'custom_mob',
   'scripted-item',
 ];
@@ -120,6 +123,7 @@ const FLOWS: Record<string, string> = {
   consumable: 'food',
   totem: 'gear',
   'status-effect': 'magic',
+  potion: 'magic',
   throwable: 'gear',
   enchantment: 'gear',
   painting: 'blocks',
@@ -127,6 +131,8 @@ const FLOWS: Record<string, string> = {
   dimension: 'worlds',
   'villager-trade': 'worlds',
   'extra-drop': 'worlds',
+  'mob-skin': 'mobs',
+  'goat-horn': 'gear',
   custom_mob: 'mobs',
   'scripted-item': 'scripts',
 };
@@ -162,6 +168,9 @@ describe('wizard starters', () => {
     expect(groups('dimension')).toEqual(['World', 'Travel']);
     expect(groups('villager-trade')).toEqual(['Villager', 'Trade']);
     expect(groups('extra-drop')).toEqual(['Where', 'Drop']);
+    expect(groups('potion')).toEqual(['Potion', 'Effect', 'Brewing', 'Versions']);
+    expect(groups('mob-skin')).toEqual(['Skin', 'Where']);
+    expect(groups('goat-horn')).toEqual(['Horn', 'Getting it']);
   });
 
   it('lists the Creator flows with their groups and blurbs (ADR 0043 D1)', () => {
@@ -1387,6 +1396,150 @@ describe('Creator flows', () => {
       expect(source).not.toContain('{{');
     },
   );
+});
+
+describe('potion, mob skin and goat horn flows (ADRs 0063, 0064)', () => {
+  it('Potion: the defaults make a new effect with its icon and a potion with every version', () => {
+    const bundle = build(starter('potion'), {});
+    expect(bundle.elements.map((entry) => `${entry.kind} ${entry.id}`)).toEqual([
+      'minecraft:pack_mcmeta demo:pack',
+      'msm:mod demo:mod',
+      'msm:effect demo:moon_leap_effect',
+      'msm:potion demo:moon_leap',
+    ]);
+    expect(bundle.assets.map((asset) => asset.path)).toEqual([
+      'textures/mob_effect/moon_leap_effect.png',
+    ]);
+    expect(data(bundle, 'demo:moon_leap_effect')).toMatchObject({
+      display_name: 'Moon Leap',
+      attribute_modifiers: [
+        { attribute: 'minecraft:jump_strength', amount: 0.3, operation: 'add_multiplied_base' },
+      ],
+    });
+    expect(data(bundle, 'demo:moon_leap')).toEqual({
+      format: 1,
+      display_name: 'Moon Leap',
+      effects: [{ id: 'demo:moon_leap_effect', duration_ticks: 3600 }],
+      brewing: { reagent: 'minecraft:amethyst_shard' },
+      long: { duration_ticks: 9600 },
+      strong: { amplifier: 1, duration_ticks: 1800 },
+    });
+  });
+
+  it('Potion: a vanilla effect makes no effect element; the answers reach the potion', () => {
+    const bundle = build(starter('potion'), {
+      potion_name: 'Quick Mining',
+      effect: 'minecraft:haste',
+      level: 2,
+      seconds: 60,
+      base: 'minecraft:thick',
+      ingredient: 'minecraft:honeycomb',
+      longer: false,
+      splash: false,
+      lingering: false,
+    });
+    expect(bundle.elements.some((entry) => entry.kind === 'msm:effect')).toBe(false);
+    expect(bundle.assets).toEqual([]);
+    expect(data(bundle, 'demo:quick_mining')).toEqual({
+      format: 1,
+      display_name: 'Quick Mining',
+      effects: [{ id: 'minecraft:haste', duration_ticks: 1200, amplifier: 1 }],
+      brewing: { reagent: 'minecraft:honeycomb', base: 'minecraft:thick' },
+      strong: { amplifier: 2, duration_ticks: 1800 },
+      splash: false,
+      lingering: false,
+    });
+    const unbrewed = build(starter('potion'), { ingredient: 'none' });
+    expect(data(unbrewed, 'demo:moon_leap').brewing).toBeUndefined();
+  });
+
+  it('Status effect: a brewed potion of the effect instead of an item', () => {
+    const bundle = build(starter('status-effect'), { source: 'potion', level: 2 });
+    expect(bundle.elements.map((entry) => entry.kind)).not.toContain('msm:item');
+    expect(data(bundle, 'demo:ruby_rush_potion')).toEqual({
+      format: 1,
+      display_name: 'Ruby Rush',
+      effects: [{ id: 'demo:ruby_rush', duration_ticks: 600, amplifier: 1 }],
+      brewing: { reagent: 'minecraft:amethyst_shard' },
+    });
+    const unbrewed = build(starter('status-effect'), {
+      source: 'potion',
+      brew_ingredient: 'none',
+    });
+    expect(data(unbrewed, 'demo:ruby_rush_potion').brewing).toBeUndefined();
+  });
+
+  it('Mob skin: each animal gets its variant kind and textures of the vanilla sizes', () => {
+    const sizes: Record<string, string[]> = {
+      wolf: ['64x32', '64x32', '64x32', '32x32', '32x32', '32x32'],
+      cat: ['64x32', '32x32'],
+      pig: ['64x64', '32x32'],
+      cow: ['64x64', '64x64'],
+      chicken: ['64x32', '16x16'],
+      frog: ['48x48'],
+    };
+    for (const [animal, expected] of Object.entries(sizes)) {
+      const bundle = build(starter('mob-skin'), { animal });
+      const variant = bundle.elements.find((entry) => entry.id === 'demo:ember_coat');
+      expect(variant?.kind, animal).toBe(`minecraft:${animal}_variant`);
+      expect(
+        bundle.assets.map((asset) => {
+          const view = new DataView(asset.bytes.buffer, asset.bytes.byteOffset);
+          return `${view.getUint32(16)}x${view.getUint32(20)}`;
+        }),
+        animal,
+      ).toEqual(expected);
+      for (const asset of bundle.assets) {
+        expect(asset.path.startsWith(`textures/entity/${animal}/ember_coat`), asset.path).toBe(
+          true,
+        );
+      }
+    }
+    expect(data(build(starter('mob-skin'), {}), 'demo:ember_coat').spawn_conditions).toEqual([
+      { priority: 1, condition: { type: 'minecraft:biome', biomes: '#minecraft:is_forest' } },
+    ]);
+    expect(
+      data(build(starter('mob-skin'), { where: 'everywhere' }), 'demo:ember_coat').spawn_conditions,
+    ).toEqual([{ priority: 0 }]);
+  });
+
+  it('Goat horn: a vanilla call by id, or an own sound file in the { sound_id } form', () => {
+    const bundle = build(starter('goat-horn'), {});
+    expect(bundle.elements.map((entry) => `${entry.kind} ${entry.id}`)).toEqual([
+      'minecraft:pack_mcmeta demo:pack',
+      'minecraft:instrument demo:storm_call',
+      'minecraft:recipe demo:storm_call_goat_horn',
+      'minecraft:tag/instrument minecraft:regular_goat_horns',
+      'minecraft:lang demo:en_us',
+    ]);
+    expect(data(bundle, 'demo:storm_call')).toEqual({
+      description: { translate: 'instrument.demo.storm_call' },
+      sound_event: 'minecraft:item.goat_horn.sound.5',
+      use_duration: 7,
+      range: 256,
+    });
+    expect(data(bundle, 'demo:storm_call_goat_horn')).toMatchObject({
+      result: {
+        id: 'minecraft:goat_horn',
+        components: { 'minecraft:instrument': 'demo:storm_call' },
+      },
+    });
+    const own = build(starter('goat-horn'), {
+      sound_file: `data:audio/ogg;base64,${Buffer.from(oggBytes(2, 1)).toString('base64')}`,
+      ingredient: 'none',
+      goats_drop: false,
+    });
+    expect(data(own, 'demo:storm_call').sound_event).toEqual({
+      sound_id: 'demo:item.goat_horn.storm_call',
+    });
+    expect(own.assets.map((asset) => asset.path)).toEqual(['sounds/item/goat_horn/storm_call.ogg']);
+    expect(own.elements.map((entry) => entry.kind)).toEqual([
+      'minecraft:pack_mcmeta',
+      'minecraft:sounds',
+      'minecraft:instrument',
+      'minecraft:lang',
+    ]);
+  });
 });
 
 describe('parameter helpers', () => {

@@ -1,0 +1,22 @@
+{
+  "data": {
+    "asset_id": "msm_examples:entity/cat/ruby_cat",
+    "baby_asset_id": "msm_examples:entity/cat/ruby_cat_baby",
+    "spawn_conditions": [
+      {
+        "priority": 0
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ruby_cat",
+  "kind": "minecraft:cat_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A cat variant: asset_id is the grown cat's texture (64 by 32 pixels) and baby_asset_id the kitten's (32 by 32), under textures/entity/cat/. One spawn condition with priority 0 and no condition puts it among the vanilla cats wherever cats spawn, in villages and swamp huts. Try /summon minecraft:cat ~ ~ ~ {variant:\"msm_examples:ruby_cat\"}.",
+    "tags": [
+      "example",
+      "mob-variants"
+    ]
+  }
+}

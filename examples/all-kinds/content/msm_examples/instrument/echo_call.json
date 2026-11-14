@@ -1,0 +1,21 @@
+{
+  "data": {
+    "description": {
+      "text": "Echo Call"
+    },
+    "range": 128,
+    "sound_event": "minecraft:item.goat_horn.sound.7",
+    "use_duration": 5
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:echo_call",
+  "kind": "minecraft:instrument",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An instrument is what a goat horn plays. sound_event is the call, here the vanilla Dream horn; for a sound of your own use the object form { \"sound_id\": \"msm_examples:<event>\" }. use_duration is how long one blow lasts and how long the horn then cools down, in seconds, and range how far away players hear it, in blocks. description is the tooltip line; a translate key works too. A goat horn plays it when its minecraft:instrument component names msm_examples:echo_call.",
+    "tags": [
+      "example",
+      "goat-horns"
+    ]
+  }
+}

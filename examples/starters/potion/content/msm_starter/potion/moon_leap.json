@@ -1,0 +1,29 @@
+{
+  "data": {
+    "brewing": {
+      "reagent": "minecraft:amethyst_shard"
+    },
+    "display_name": "Moon Leap",
+    "effects": [
+      {
+        "duration_ticks": 3600,
+        "id": "msm_starter:moon_leap_effect"
+      }
+    ],
+    "format": 1,
+    "long": {
+      "duration_ticks": 9600
+    },
+    "strong": {
+      "amplifier": 1,
+      "duration_ticks": 1800
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:moon_leap",
+  "kind": "msm:potion",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The potion gives Moon Leap for 3 minutes; its colour comes from the effect. In a brewing stand, amethyst shard added to an awkward potion (water bottle and nether wart) brews it. Redstone dust makes msm_starter:long_moon_leap, which lasts 8 minutes. Glowstone dust makes msm_starter:strong_moon_leap, level 2 for 1:30. Gunpowder makes the splash potion; dragon's breath makes the lingering one from the splash potion, and a lingering potion with eight arrows crafts tipped arrows. Potions need the Fabric mod jar export."
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "data": {
+    "asset_id": "msm_examples:entity/pig/blossom_pig",
+    "baby_asset_id": "msm_examples:entity/pig/blossom_pig_baby",
+    "spawn_conditions": [
+      {
+        "condition": {
+          "biomes": "minecraft:cherry_grove",
+          "type": "minecraft:biome"
+        },
+        "priority": 1
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:blossom_pig",
+  "kind": "minecraft:pig_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A pig variant: asset_id is the grown pig's texture (64 by 64 pixels) and baby_asset_id the piglet's (32 by 32), under textures/entity/pig/. Its spawn condition picks cherry groves with priority 1, above the everywhere variant. An optional model chooses the vanilla cold or warm body shape. Try /summon minecraft:pig ~ ~ ~ {variant:\"msm_examples:blossom_pig\"}.",
+    "tags": [
+      "example",
+      "mob-variants"
+    ]
+  }
+}

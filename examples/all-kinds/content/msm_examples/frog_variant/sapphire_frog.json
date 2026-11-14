@@ -1,0 +1,25 @@
+{
+  "data": {
+    "asset_id": "msm_examples:entity/frog/sapphire_frog",
+    "spawn_conditions": [
+      {
+        "condition": {
+          "biomes": "minecraft:mangrove_swamp",
+          "type": "minecraft:biome"
+        },
+        "priority": 1
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sapphire_frog",
+  "kind": "minecraft:frog_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A frog variant: asset_id is its texture (48 by 48 pixels) under textures/entity/frog/; frogs have no baby texture, as tadpoles are a mob of their own. A tadpole picks its variant from the biome it grows up in, here a mangrove swamp with priority 1. Try /summon minecraft:frog ~ ~ ~ {variant:\"msm_examples:sapphire_frog\"}.",
+    "tags": [
+      "example",
+      "mob-variants"
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "data": {
+    "adult_sounds": {
+      "ambient_sound": "minecraft:entity.cat.ambient",
+      "beg_for_food_sound": "minecraft:entity.cat.beg_for_food",
+      "death_sound": "minecraft:entity.cat.death",
+      "eat_sound": "minecraft:entity.cat.eat",
+      "hiss_sound": "minecraft:entity.cat.hiss",
+      "hurt_sound": "minecraft:entity.cat.hurt",
+      "purr_sound": "minecraft:entity.cat_royal.purr",
+      "purreow_sound": "minecraft:entity.cat_royal.purreow",
+      "stray_ambient_sound": "minecraft:entity.cat.stray_ambient"
+    },
+    "baby_sounds": {
+      "ambient_sound": "minecraft:entity.baby_cat.ambient",
+      "beg_for_food_sound": "minecraft:entity.baby_cat.beg_for_food",
+      "death_sound": "minecraft:entity.baby_cat.death",
+      "eat_sound": "minecraft:entity.baby_cat.eat",
+      "hiss_sound": "minecraft:entity.baby_cat.hiss",
+      "hurt_sound": "minecraft:entity.baby_cat.hurt",
+      "purr_sound": "minecraft:entity.baby_cat.purr",
+      "purreow_sound": "minecraft:entity.baby_cat.purreow",
+      "stray_ambient_sound": "minecraft:entity.baby_cat.stray_ambient"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:mixed_cat",
+  "kind": "minecraft:cat_sound_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A cat sound variant: adult_sounds and baby_sounds name the sound event of each noise a grown cat and a kitten make. This one mixes the classic cat with the royal cat purr. The cat keeps it in its minecraft:cat/sound_variant component, which new cats get from the registered variants. Each value is a vanilla sound event id; a sound of your own needs the object form { \"sound_id\": \"<namespace>:<event>\" }.",
+    "tags": [
+      "example",
+      "mob-sounds"
+    ]
+  }
+}

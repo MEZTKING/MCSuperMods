@@ -145,6 +145,90 @@ const TAGS: readonly TagExample[] = [
     usage: (id) =>
       `A trade set draws its trades from a tag ("trades": "#${id}"). To offer a trade to a vanilla villager, add it to the vanilla tag of its profession and level, such as minecraft:fletcher/level_1, without replace.`,
   },
+  {
+    registry: 'banner_pattern',
+    kind: KINDS.tagBannerPattern,
+    title: 'Banner pattern tag',
+    description:
+      'A group of banner patterns, such as those a banner pattern item unlocks in the loom.',
+    path: 'borders',
+    values: ['minecraft:border', 'minecraft:curly_border'],
+    usage: (id) =>
+      `A banner pattern item's minecraft:provides_banner_patterns component names a tag like #${id}, and the loom then offers its patterns; vanilla's minecraft:no_item_required lists the patterns the loom offers without one.`,
+  },
+  {
+    registry: 'dialog',
+    kind: KINDS.tagDialog,
+    title: 'Dialog tag',
+    description:
+      'A group of dialogs; vanilla tags put dialogs on the pause screen and the quick actions key.',
+    path: 'help_screens',
+    values: ['minecraft:server_links'],
+    usage: (id) =>
+      `Dialogs in the vanilla tags #minecraft:pause_screen_additions and #minecraft:quick_actions get a button on the pause screen or open with the quick actions key; a tag of your own such as #${id} is for grouping and reuse, for example in a dialog list.`,
+  },
+  {
+    registry: 'instrument',
+    kind: KINDS.tagInstrument,
+    title: 'Instrument tag',
+    description: 'A group of goat horn calls, used by goats and by loot that hands out horns.',
+    path: 'calm_horns',
+    values: ['minecraft:ponder_goat_horn', 'minecraft:feel_goat_horn', 'minecraft:dream_goat_horn'],
+    usage: (id) =>
+      `The set_instrument loot function picks a random call from a tag such as #${id}; goats drop a horn from #minecraft:regular_goat_horns, or #minecraft:screaming_goat_horns when they scream.`,
+  },
+  {
+    registry: 'point_of_interest_type',
+    kind: KINDS.tagPointOfInterestType,
+    title: 'Point of interest tag',
+    description:
+      'A group of point of interest types, the job sites, beds and nests villagers and bees look for.',
+    path: 'ranged_job_sites',
+    values: ['minecraft:fletcher', 'minecraft:cartographer'],
+    usage: (id) =>
+      `Vanilla uses #minecraft:acquirable_job_site for the blocks a villager can take a job at and #minecraft:bee_home for hives and nests; a tag of your own such as #${id} is for grouping and reuse.`,
+  },
+  {
+    registry: 'potion',
+    kind: KINDS.tagPotion,
+    title: 'Potion tag',
+    description: 'A group of potions, used by brewing recipes and by the trader potion list.',
+    path: 'swiftness_potions',
+    values: ['minecraft:swiftness', 'minecraft:long_swiftness', 'minecraft:strong_swiftness'],
+    usage: (id) =>
+      `A brewing recipe's input can take every potion of a tag ("potion_contents": { "potions": "#${id}" }). Vanilla's #minecraft:tradeable lists the potions villagers sell as tipped arrows.`,
+  },
+  {
+    registry: 'timeline',
+    kind: KINDS.tagTimeline,
+    title: 'Timeline tag',
+    description: 'A group of timelines; a dimension type runs the timelines of its tag.',
+    path: 'calm_skies',
+    values: ['minecraft:day', 'minecraft:moon'],
+    usage: (id) =>
+      `A dimension type names a tag in its timelines field, so a dimension type with "timelines": "#${id}" runs the day and moon timelines only. The overworld uses #minecraft:in_overworld.`,
+  },
+  {
+    registry: 'worldgen/feature',
+    kind: KINDS.tagWorldgenFeature,
+    title: 'Feature tag',
+    description: 'A group of configured features, such as the flowers bone meal can grow.',
+    path: 'meadow_flowers',
+    values: ['minecraft:flower_meadow', 'minecraft:flower_plain'],
+    usage: (id) =>
+      `Vanilla's #minecraft:can_spawn_from_bone_meal lists the flower features bone meal on grass can grow; a tag of your own such as #${id} is for grouping and reuse.`,
+  },
+  {
+    registry: 'worldgen/flat_level_generator_preset',
+    kind: KINDS.tagWorldgenFlatLevelGeneratorPreset,
+    title: 'Superflat preset tag',
+    description:
+      'A group of superflat presets; minecraft:visible lists those on the Presets screen.',
+    path: 'favourite_flats',
+    values: ['minecraft:classic_flat', 'minecraft:the_void'],
+    usage: (id) =>
+      `Only presets in the vanilla tag #minecraft:visible appear under Customise, then Presets, for a Superflat world; a tag of your own such as #${id} is for grouping and reuse.`,
+  },
 ];
 
 function notes(id: string, tag: TagExample): string {

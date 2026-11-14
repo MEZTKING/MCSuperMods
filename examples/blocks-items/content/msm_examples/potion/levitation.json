@@ -1,0 +1,31 @@
+{
+  "data": {
+    "brewing": {
+      "reagent": "msm_examples:moon_shard"
+    },
+    "display_name": "Levitation",
+    "effects": [
+      {
+        "duration_ticks": 200,
+        "id": "minecraft:levitation"
+      }
+    ],
+    "format": 1,
+    "lingering": false,
+    "strong": {
+      "amplifier": 1,
+      "duration_ticks": 100
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:levitation",
+  "kind": "msm:potion",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A potion of a vanilla effect that has no vanilla potion: Levitation for 10 seconds. brewing.reagent names the project item msm_examples:moon_shard, so an awkward potion and a moon shard brew it; strong adds msm_examples:strong_levitation (Levitation II for 5 seconds, brewed with glowstone dust). lingering false leaves out the lingering bottle, and with it the tipped arrows; the splash bottle stays. Potions and items need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "potions"
+    ]
+  }
+}

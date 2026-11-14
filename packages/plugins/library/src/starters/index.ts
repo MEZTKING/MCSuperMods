@@ -25,11 +25,14 @@ import { EXTRA_DROP_PARAMETERS, extraDropBundle } from './extra-drop';
 import { FOOD_PARAMETERS, foodBundle } from './food';
 import { functionStarterBundle } from './function-starter';
 import { GEAR_SET_PARAMETERS, gearSetBundle } from './gear-set';
+import { GOAT_HORN_PARAMETERS, goatHornBundle } from './goat-horn';
 import { jigsawStructureBundle } from './jigsaw-structure';
+import { MOB_SKIN_PARAMETERS, mobSkinBundle } from './mob-skin';
 import { musicDiscBundle } from './music-disc';
 import { MUSIC_DISC_ITEM_PARAMETERS, musicDiscItemBundle } from './music-disc-item';
 import { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
 import { PAINTING_PARAMETERS, paintingBundle } from './painting';
+import { POTION_PARAMETERS, potionBundle } from './potion';
 import { recipePackBundle } from './recipe-pack';
 import { SCRIPTED_ITEM_PARAMETERS, scriptedItemBundle } from './scripted-item';
 import { scriptedOreBundle } from './scripted-ore';
@@ -52,7 +55,9 @@ export { EXTRA_DROP_PARAMETERS, EXTRA_DROP_TABLES, extraDropBundle } from './ext
 export { FOOD_PARAMETERS, foodBundle } from './food';
 export { functionStarterBundle } from './function-starter';
 export { GEAR_SET_PARAMETERS, gearSetBundle, gearSetIds, nearestTrimPalette } from './gear-set';
+export { GOAT_HORN_PARAMETERS, goatHornBundle } from './goat-horn';
 export { hamletIds, jigsawStructureBundle, jigsawStructureContent } from './jigsaw-structure';
+export { MOB_SKIN_BIOMES, MOB_SKIN_PARAMETERS, mobSkinBundle } from './mob-skin';
 export { musicDiscBundle, SONG } from './music-disc';
 export { MUSIC_DISC_ITEM_PARAMETERS, musicDiscItemBundle } from './music-disc-item';
 export { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
@@ -62,6 +67,12 @@ export {
   PAINTING_PARAMETERS,
   paintingBundle,
 } from './painting';
+export {
+  BREWING_INGREDIENTS,
+  OWN_EFFECT,
+  POTION_PARAMETERS,
+  potionBundle,
+} from './potion';
 export { recipePackBundle } from './recipe-pack';
 export {
   SCRIPTED_ITEM_PARAMETERS,
@@ -270,7 +281,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'status-effect',
     'Status effect',
-    'A new status effect with its own name, colour and icon: what it does every few seconds, the stats it changes and how players get it (a drink or a throwable flask, with an optional recipe). Custom effects need the Fabric mod jar export.',
+    'A new status effect with its own name, colour and icon: what it does every few seconds, the stats it changes and how players get it (a drink or a throwable flask with an optional recipe, or a brewed potion). Custom effects need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'datapack', 'msm'],
     statusEffectBundle,
@@ -279,9 +290,25 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       creator: {
         group: 'magic',
         blurb:
-          'A status effect with its icon, what it does, its stat changes and a drink or flask.',
+          'A status effect with its icon, what it does, its stat changes and a drink, flask or potion.',
       },
-      probeValues: [{ behaviour: 'function' }],
+      probeValues: [{ behaviour: 'function' }, { source: 'potion' }],
+    },
+  ),
+  starter(
+    'potion',
+    'Potion',
+    'A new potion for the brewing stand: the effect it gives (a vanilla one or a new one with its icon), how long and how strong, the ingredient that brews it, longer and stronger versions, and splash and lingering bottles with tipped arrows. Potions need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    potionBundle,
+    {
+      parameters: POTION_PARAMETERS,
+      creator: {
+        group: 'magic',
+        blurb: 'A potion to brew, with longer, stronger, splash and lingering versions.',
+      },
+      probeValues: [{ effect: 'minecraft:speed' }],
     },
   ),
   starter(
@@ -389,6 +416,37 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       creator: {
         group: 'worlds',
         blurb: 'An extra item a vanilla mob, block or chest drops, with its chance.',
+      },
+    },
+  ),
+  starter(
+    'mob-skin',
+    'Mob skin',
+    'A new skin for a vanilla wolf, cat, pig, cow, chicken or frog, with placeholder textures of the right size to paint over, appearing in a biome you choose or everywhere. Works in vanilla packs.',
+    'content',
+    BOTH,
+    mobSkinBundle,
+    {
+      parameters: MOB_SKIN_PARAMETERS,
+      creator: {
+        group: 'mobs',
+        blurb: 'A new skin for a wolf, cat, pig, cow, chicken or frog, and where it appears.',
+      },
+      probeValues: ['cat', 'pig', 'cow', 'chicken', 'frog'].map((animal) => ({ animal })),
+    },
+  ),
+  starter(
+    'goat-horn',
+    'Goat horn',
+    'A new goat horn call: its name, a vanilla sound or your own .ogg, how long it plays and how far it is heard, a recipe and, if you choose, goats dropping it. Works in vanilla packs.',
+    'content',
+    BOTH,
+    goatHornBundle,
+    {
+      parameters: GOAT_HORN_PARAMETERS,
+      creator: {
+        group: 'gear',
+        blurb: 'A goat horn with its own call, length and range, and how to get it.',
       },
     },
   ),

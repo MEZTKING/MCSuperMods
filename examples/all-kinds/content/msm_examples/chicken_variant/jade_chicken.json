@@ -1,0 +1,26 @@
+{
+  "data": {
+    "asset_id": "msm_examples:entity/chicken/jade_chicken",
+    "baby_asset_id": "msm_examples:entity/chicken/jade_chicken_baby",
+    "spawn_conditions": [
+      {
+        "condition": {
+          "biomes": "minecraft:flower_forest",
+          "type": "minecraft:biome"
+        },
+        "priority": 1
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:jade_chicken",
+  "kind": "minecraft:chicken_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A chicken variant: asset_id is the grown chicken's texture (64 by 32 pixels) and baby_asset_id the chick's (16 by 16), under textures/entity/chicken/. Its spawn condition picks flower forests with priority 1. Eggs thrown by a chicken hatch chicks of its variant. Try /summon minecraft:chicken ~ ~ ~ {variant:\"msm_examples:jade_chicken\"}.",
+    "tags": [
+      "example",
+      "mob-variants"
+    ]
+  }
+}

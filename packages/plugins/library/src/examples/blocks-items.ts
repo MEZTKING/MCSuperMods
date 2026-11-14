@@ -17,6 +17,9 @@ import { defineExample } from './define';
 /** The gallery category of the additions to vanilla content. */
 const ADDITIONS = 'Additions';
 
+/** The gallery category of the potion examples (ADR 0063 D10). */
+const POTIONS = 'Potions';
+
 /** The per-kind examples of the blocks and items plugin, in kind order. */
 export const blocksItemsExamples: readonly ExampleProject[] = [
   defineExample({
@@ -279,6 +282,59 @@ export const blocksItemsExamples: readonly ExampleProject[] = [
           effectIconAsset(namespace, 'frostbite', COLOURS.sapphire),
           texture(namespace, 'item/frost_bomb', 'ball', COLOURS.sapphire),
         ],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_msm_potion',
+    title: 'Potion of the custom effect',
+    description:
+      'A custom Featherweight effect and its potion, brewed from an awkward potion and a feather, with a longer version and splash and lingering bottles.',
+    kind: KINDS.potion,
+    category: POTIONS,
+    tags: ['potion', 'brewing', 'status effect', 'tipped arrow', 'mod'],
+    build: ({ namespace }) => {
+      const potion = rl(namespace, 'featherweight');
+      const effect = rl(namespace, 'featherweight_effect');
+      return {
+        elements: [
+          element(
+            effect,
+            KINDS.effect,
+            {
+              format: 1,
+              display_name: 'Featherweight',
+              category: 'beneficial',
+              color: colourInt(COLOURS.frost),
+              attribute_modifiers: [
+                {
+                  attribute: 'minecraft:gravity',
+                  amount: -0.4,
+                  operation: 'add_multiplied_base',
+                },
+                {
+                  attribute: 'minecraft:jump_strength',
+                  amount: 0.2,
+                  operation: 'add_multiplied_base',
+                },
+              ],
+            },
+            `The effect the potion gives: 40 per cent less gravity and 20 per cent higher jumps per level. Its icon is textures/mob_effect/featherweight_effect.png. Element ids are shared across kinds, so the effect is ${effect} and the potion ${potion}.`,
+          ),
+          element(
+            potion,
+            KINDS.potion,
+            {
+              format: 1,
+              display_name: 'Featherweight',
+              effects: [{ id: effect, duration_ticks: 3600 }],
+              brewing: { reagent: 'minecraft:feather' },
+              long: { duration_ticks: 9600 },
+            },
+            `A potion is a list of effects with their durations in ticks: here Featherweight for 3 minutes. brewing adds it to the brewing stand: an awkward potion (the default base) and a feather make it. long adds ${namespace}:long_featherweight, 8 minutes, brewed with redstone; strong would add a stronger level brewed with glowstone dust. Splash and lingering bottles (gunpowder, then dragon's breath) and tipped arrows come with it, and display_name names all four "Potion of Featherweight" and so on. Its colour comes from the effect. Potions need the Fabric mod jar export.`,
+          ),
+        ],
+        assets: [effectIconAsset(namespace, 'featherweight_effect', COLOURS.frost)],
       };
     },
   }),
@@ -685,6 +741,55 @@ export const behaviourExamples: readonly ExampleProject[] = [
           ),
         ],
         assets: [],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_msm_brewed_with_own_item',
+    title: 'Brewed with your own item',
+    description:
+      'A Moon Shard item of your own as a brewing ingredient: an awkward potion and a moon shard brew a Potion of Levitation, which vanilla does not have, with a stronger version.',
+    kind: KINDS.potion,
+    category: POTIONS,
+    tags: ['potion', 'brewing', 'item', 'levitation', 'mod'],
+    build: ({ namespace }) => {
+      const shard = rl(namespace, 'moon_shard');
+      const shardModel = rl(namespace, 'item/moon_shard');
+      const potion = rl(namespace, 'levitation');
+      return {
+        elements: [
+          element(
+            shard,
+            KINDS.item,
+            {
+              format: 1,
+              model: shardModel,
+              display_name: 'Moon Shard',
+              creative_tab: 'minecraft:ingredients',
+            },
+            'A plain item of the project, used as the brewing ingredient. Add a recipe or a loot table to get it in survival; in creative it is in the Ingredients tab.',
+          ),
+          element(
+            shardModel,
+            KINDS.model,
+            { parent: 'minecraft:item/generated', textures: { layer0: shardModel } },
+            'A flat item model drawn from textures/item/moon_shard.png.',
+          ),
+          element(
+            potion,
+            KINDS.potion,
+            {
+              format: 1,
+              display_name: 'Levitation',
+              effects: [{ id: 'minecraft:levitation', duration_ticks: 200 }],
+              brewing: { reagent: shard },
+              strong: { amplifier: 1, duration_ticks: 100 },
+              lingering: false,
+            },
+            `A potion of a vanilla effect that has no vanilla potion: Levitation for 10 seconds. brewing.reagent names the project item ${shard}, so an awkward potion and a moon shard brew it; strong adds ${namespace}:strong_levitation (Levitation II for 5 seconds, brewed with glowstone dust). lingering false leaves out the lingering bottle, and with it the tipped arrows; the splash bottle stays. Potions and items need the Fabric mod jar export.`,
+          ),
+        ],
+        assets: [texture(namespace, 'item/moon_shard', 'gem', COLOURS.violet)],
       };
     },
   }),

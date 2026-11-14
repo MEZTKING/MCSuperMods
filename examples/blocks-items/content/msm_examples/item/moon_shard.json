@@ -1,0 +1,19 @@
+{
+  "data": {
+    "creative_tab": "minecraft:ingredients",
+    "display_name": "Moon Shard",
+    "format": 1,
+    "model": "msm_examples:item/moon_shard"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:moon_shard",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A plain item of the project, used as the brewing ingredient. Add a recipe or a loot table to get it in survival; in creative it is in the Ingredients tab.",
+    "tags": [
+      "example",
+      "potions"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "data": {
+    "values": [
+      "minecraft:day",
+      "minecraft:moon"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:calm_skies",
+  "kind": "minecraft:tag/timeline",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A timeline tag gives one name to several timeline ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. A dimension type names a tag in its timelines field, so a dimension type with \"timelines\": \"#msm_examples:calm_skies\" runs the day and moon timelines only. The overworld uses #minecraft:in_overworld.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "data": {
+    "adult_sounds": {
+      "ambient_sound": "minecraft:entity.chicken_picky.ambient",
+      "death_sound": "minecraft:entity.chicken.death",
+      "hurt_sound": "minecraft:entity.chicken_picky.hurt",
+      "step_sound": "minecraft:entity.chicken.step"
+    },
+    "baby_sounds": {
+      "ambient_sound": "minecraft:entity.baby_chicken.ambient",
+      "death_sound": "minecraft:entity.baby_chicken.death",
+      "hurt_sound": "minecraft:entity.baby_chicken.hurt",
+      "step_sound": "minecraft:entity.baby_chicken.step"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:fussy_chicken",
+  "kind": "minecraft:chicken_sound_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A chicken sound variant: adult_sounds and baby_sounds name the sound event of each noise a grown chicken and a chick make. This one clucks and squawks like the vanilla picky chicken. The chicken keeps it in its minecraft:chicken/sound_variant component. Each value is a vanilla sound event id; a sound of your own needs the object form { \"sound_id\": \"<namespace>:<event>\" }.",
+    "tags": [
+      "example",
+      "mob-sounds"
+    ]
+  }
+}

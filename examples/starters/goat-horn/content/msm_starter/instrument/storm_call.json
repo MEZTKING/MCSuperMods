@@ -1,0 +1,17 @@
+{
+  "data": {
+    "description": {
+      "translate": "instrument.msm_starter.storm_call"
+    },
+    "range": 256,
+    "sound_event": "minecraft:item.goat_horn.sound.5",
+    "use_duration": 7
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:storm_call",
+  "kind": "minecraft:instrument",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The call a goat horn plays. sound_event is the vanilla Call call, named by its sound event id. One blow lasts 7 seconds and the horn then cools down as long (use_duration); players hear it 256 blocks away (range). A goat horn plays it when its minecraft:instrument component names msm_starter:storm_call: /give @s minecraft:goat_horn[minecraft:instrument=\"msm_starter:storm_call\"]."
+  }
+}

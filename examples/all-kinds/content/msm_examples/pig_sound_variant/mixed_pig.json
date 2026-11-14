@@ -1,0 +1,29 @@
+{
+  "data": {
+    "adult_sounds": {
+      "ambient_sound": "minecraft:entity.pig_big.ambient",
+      "death_sound": "minecraft:entity.pig_big.death",
+      "eat_sound": "minecraft:entity.pig_big.eat",
+      "hurt_sound": "minecraft:entity.pig_mini.hurt",
+      "step_sound": "minecraft:entity.pig.step"
+    },
+    "baby_sounds": {
+      "ambient_sound": "minecraft:entity.baby_pig.ambient",
+      "death_sound": "minecraft:entity.baby_pig.death",
+      "eat_sound": "minecraft:entity.baby_pig.eat",
+      "hurt_sound": "minecraft:entity.baby_pig.hurt",
+      "step_sound": "minecraft:entity.baby_pig.step"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:mixed_pig",
+  "kind": "minecraft:pig_sound_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A pig sound variant: adult_sounds and baby_sounds name the sound event of each noise a grown pig and a piglet make. This one grunts like the vanilla big pig and squeals like the mini pig when hurt. The pig keeps it in its minecraft:pig/sound_variant component. Each value is a vanilla sound event id; a sound of your own needs the object form { \"sound_id\": \"<namespace>:<event>\" }.",
+    "tags": [
+      "example",
+      "mob-sounds"
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "data": {
+    "sources": [
+      {
+        "resource": "msm_examples:decor/ruby_tile",
+        "type": "minecraft:single"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:blocks",
+  "kind": "minecraft:atlas",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The game stitches textures into atlases before models can use them, and each atlas file lists its sources. Vanilla's minecraft:blocks atlas takes every texture under textures/block/, so a texture elsewhere, such as msm_examples:decor/ruby_tile (textures/decor/ruby_tile.png), needs a source: single adds one texture, directory a whole folder. Atlas files of every pack are merged, so this adds to the vanilla list instead of replacing it. Block models can then name msm_examples:decor/ruby_tile like any block texture.",
+    "tags": [
+      "example",
+      "atlases"
+    ]
+  }
+}

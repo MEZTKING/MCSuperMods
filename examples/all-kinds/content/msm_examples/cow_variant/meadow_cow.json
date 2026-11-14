@@ -1,0 +1,26 @@
+{
+  "data": {
+    "asset_id": "msm_examples:entity/cow/meadow_cow",
+    "baby_asset_id": "msm_examples:entity/cow/meadow_cow_baby",
+    "spawn_conditions": [
+      {
+        "condition": {
+          "biomes": "minecraft:meadow",
+          "type": "minecraft:biome"
+        },
+        "priority": 1
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:meadow_cow",
+  "kind": "minecraft:cow_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A cow variant: asset_id and baby_asset_id name the textures of a grown cow and a calf (both 64 by 64 pixels) under textures/entity/cow/. Its spawn condition picks meadows with priority 1. An optional model chooses the vanilla cold or warm body shape. Try /summon minecraft:cow ~ ~ ~ {variant:\"msm_examples:meadow_cow\"}.",
+    "tags": [
+      "example",
+      "mob-variants"
+    ]
+  }
+}

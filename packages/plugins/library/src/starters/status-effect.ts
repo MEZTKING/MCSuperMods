@@ -4,7 +4,8 @@
  * every few seconds (nothing extra, heal, hurt, particles or a data pack function, optionally
  * faster at higher levels); up to two stat changes; and how players get it: a drink
  * (`msm:consumable`, a glass bottle back), a throwable flask (`msm:throwable`, ADR 0056) whose
- * hit gives the effect to the mob hit, or nothing (commands and other elements). The item has a
+ * hit gives the effect to the mob hit, a brewed potion (`msm:potion` `<id>_potion`, ADR 0063
+ * D10) or nothing (commands and other elements). The item has a
  * flat model and texture and an optional shapeless recipe; the mod metadata is added. Ids
  * derive from `effect_name`: the effect is `<id>`, the drink `<id>_tonic`, the flask
  * `<id>_flask`. Custom effects need the Fabric mod jar export (with `msm_runtime`).
@@ -42,6 +43,7 @@ import {
   rgbFromHex,
   stringValue,
 } from '../content/parameters';
+import { BREWING_INGREDIENTS } from './potion';
 
 /** The number of stat slots the flow asks. */
 const STAT_SLOTS = 2;
@@ -59,6 +61,7 @@ const BEHAVIOURS: readonly { value: string; label: string }[] = [
 const SOURCES: readonly { value: string; label: string }[] = [
   { value: 'drink', label: 'A drink' },
   { value: 'flask', label: 'A throwable flask' },
+  { value: 'potion', label: 'A brewed potion' },
   { value: 'none', label: 'Nothing (commands and other elements)' },
 ];
 
@@ -167,7 +170,7 @@ export const STATUS_EFFECT_PARAMETERS: readonly StarterParameter[] = Object.free
     id: 'source',
     label: 'How players get it',
     description:
-      'A drink gives the effect to whoever drinks it; a flask gives it to the mob or player it hits. Either way the /effect command works too.',
+      'A drink gives the effect to whoever drinks it; a flask gives it to the mob or player it hits; a brewed potion comes from the brewing stand, with splash and lingering bottles and tipped arrows. Either way the /effect command works too.',
     group: 'Getting it',
     type: 'choice',
     default: 'drink',
@@ -176,7 +179,7 @@ export const STATUS_EFFECT_PARAMETERS: readonly StarterParameter[] = Object.free
   {
     id: 'seconds',
     label: 'Seconds it lasts',
-    description: 'How long the drink or flask gives the effect for.',
+    description: 'How long the drink, flask or potion gives the effect for.',
     group: 'Getting it',
     type: 'number',
     default: 30,
@@ -205,7 +208,28 @@ export const STATUS_EFFECT_PARAMETERS: readonly StarterParameter[] = Object.free
     default: 'minecraft:glistering_melon_slice',
     choices: INGREDIENTS.map((entry) => ({ ...entry })),
   },
+  {
+    id: 'brew_ingredient',
+    label: 'Brewed from',
+    description:
+      'Added to an awkward potion in a brewing stand, it brews the potion. Used when How players get it is A brewed potion; none of these is a vanilla brewing ingredient.',
+    group: 'Getting it',
+    type: 'choice',
+    default: 'minecraft:amethyst_shard',
+    choices: [
+      ...BREWING_INGREDIENTS.map((entry) => ({ ...entry })),
+      { value: 'none', label: 'Not brewed (commands and creative only)' },
+    ],
+  },
 ]);
+
+/** How the mod description ends, by source. */
+const GIVEN_BY: Readonly<Record<string, string>> = {
+  drink: ' and a drink that gives it',
+  flask: ' and a flask that gives it',
+  potion: ' and a potion of it',
+  none: '',
+};
 
 /** `1 half heart`, `2.5 half hearts`. */
 const halfHearts = (amount: number): string => `${amount} half heart${amount === 1 ? '' : 's'}`;
@@ -224,7 +248,10 @@ export function statusEffectBundle(context: BundleContext): ContentBundle {
   const behaviour =
     BEHAVIOURS.find((entry) => entry.value === stringValue(values, 'behaviour'))?.value ?? 'heal';
   const sourceValue = stringValue(values, 'source');
-  const source = sourceValue === 'flask' || sourceValue === 'none' ? sourceValue : 'drink';
+  const source =
+    sourceValue === 'flask' || sourceValue === 'potion' || sourceValue === 'none'
+      ? sourceValue
+      : 'drink';
   const amount = tidy(numberValue(values, 'amount'));
   const intervalTicks = Math.max(1, Math.round(numberValue(values, 'interval_seconds') * 20));
   const faster = booleanValue(values, 'faster_per_level');
@@ -280,11 +307,7 @@ export function statusEffectBundle(context: BundleContext): ContentBundle {
 
   const elements = [
     packElement(namespace, `${projectName}: ${name.lower}`, PACK_NOTES),
-    modElement(
-      namespace,
-      projectName,
-      `Adds the ${name.lower} status effect${source === 'none' ? '' : source === 'drink' ? ' and a drink that gives it' : ' and a flask that gives it'}.`,
-    ),
+    modElement(namespace, projectName, `Adds the ${name.lower} status effect${GIVEN_BY[source]}.`),
     element(effect, KINDS.effect, data, effectNotes),
   ];
   const assets = [effectIconAsset(namespace, name.id, colour)];
@@ -306,7 +329,28 @@ export function statusEffectBundle(context: BundleContext): ContentBundle {
   }
 
   // How players get it -------------------------------------------------------------------------
-  if (source !== 'none') {
+  if (source === 'potion') {
+    const potion = rl(namespace, `${name.id}_potion`);
+    const brewWith = BREWING_INGREDIENTS.find(
+      (entry) => entry.value === stringValue(values, 'brew_ingredient'),
+    );
+    const given: JsonObject = { id: effect, duration_ticks: seconds * 20 };
+    if (amplifier > 0) given.amplifier = amplifier;
+    const potionData: JsonObject = {
+      format: 1,
+      display_name: name.display,
+      effects: [given],
+    };
+    if (brewWith !== undefined) potionData.brewing = { reagent: brewWith.value };
+    elements.push(
+      element(
+        potion,
+        KINDS.potion,
+        potionData,
+        `A potion of the effect: it gives ${effect} (level ${amplifier + 1}) for ${seconds} seconds and takes its colour. ${brewWith === undefined ? 'It is not brewed: get it from the creative menu or with /give.' : `An awkward potion and ${articleFor(brewWith.label)} ${brewWith.label.toLowerCase()} brew it in a brewing stand.`} Gunpowder makes the splash potion and dragon's breath the lingering one, which crafts tipped arrows; the Potion Studio adds longer and stronger versions. Its names are "Potion of ${name.display}" and so on. Potions need the Fabric mod jar export.`,
+      ),
+    );
+  } else if (source !== 'none') {
     const itemPath = source === 'drink' ? `${name.id}_tonic` : `${name.id}_flask`;
     const item = rl(namespace, itemPath);
     const display = `${name.display} ${source === 'drink' ? 'Tonic' : 'Flask'}`;

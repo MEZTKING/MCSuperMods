@@ -1,0 +1,19 @@
+{
+  "data": {
+    "values": [
+      "minecraft:classic_flat",
+      "minecraft:the_void"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:favourite_flats",
+  "kind": "minecraft:tag/worldgen/flat_level_generator_preset",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A worldgen/flat_level_generator_preset tag gives one name to several worldgen/flat_level_generator_preset ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. Only presets in the vanilla tag #minecraft:visible appear under Customise, then Presets, for a Superflat world; a tag of your own such as #msm_examples:favourite_flats is for grouping and reuse.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

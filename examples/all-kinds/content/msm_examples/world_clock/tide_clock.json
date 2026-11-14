@@ -1,0 +1,14 @@
+{
+  "data": {},
+  "formatVersion": 1,
+  "id": "msm_examples:tide_clock",
+  "kind": "minecraft:world_clock",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A world clock is a counter of ticks with no settings of its own, which is why its data is empty. The game keeps one value per clock and advances it every tick; vanilla has minecraft:overworld and minecraft:the_end. A timeline follows a clock through its clock field, and a dimension type names its default_clock, the one /time changes. A timeline with \"clock\": \"msm_examples:tide_clock\" runs on its own time, untouched by /time set or sleeping.",
+    "tags": [
+      "example",
+      "time"
+    ]
+  }
+}

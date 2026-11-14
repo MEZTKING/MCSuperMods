@@ -1361,16 +1361,37 @@ const SKIN_CELL = 4;
  * @param options - The main colour.
  */
 export function placeholderSkinPixels(options: PlaceholderOptions = {}): Uint8Array {
+  return checkerPixels(PLACEHOLDER_SKIN_SIZE, PLACEHOLDER_SKIN_SIZE, options);
+}
+
+/** The two-tone checker of {@link placeholderSkinPixels} at any size. */
+function checkerPixels(width: number, height: number, options: PlaceholderOptions): Uint8Array {
   const palette = paletteOf(options.colour ?? DEFAULT_COLOUR);
-  const size = PLACEHOLDER_SKIN_SIZE;
-  const rgba = new Uint8Array(size * size * 4);
-  for (let y = 0; y < size; y += 1) {
-    for (let x = 0; x < size; x += 1) {
+  const rgba = new Uint8Array(width * height * 4);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
       const odd = (Math.floor(x / SKIN_CELL) + Math.floor(y / SKIN_CELL)) % 2 === 1;
-      rgba.set(odd ? palette.dark : palette.light, (y * size + x) * 4);
+      rgba.set(odd ? palette.dark : palette.light, (y * width + x) * 4);
     }
   }
   return rgba;
+}
+
+/**
+ * A byte-stable RGBA PNG of the two-tone skin checker at a given size, for vanilla mob
+ * variant textures (ADR 0064 D6): the size must match the vanilla texture the model maps,
+ * for example 64 by 32 for a wolf.
+ *
+ * @param width - Width in pixels.
+ * @param height - Height in pixels.
+ * @param options - The main colour.
+ */
+export function mobSkinPng(
+  width: number,
+  height: number,
+  options: PlaceholderOptions = {},
+): Uint8Array {
+  return encodePng(checkerPixels(width, height, options), width, height);
 }
 
 /**

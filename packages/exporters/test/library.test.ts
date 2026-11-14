@@ -434,6 +434,56 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
       ingredient: 'minecraft:amethyst_shard',
     },
     { effect_name: 'Arcane Pulse', behaviour: 'function', faster_per_level: false },
+    // ADR 0063 D10: a brewed potion, and one that is not brewed.
+    {
+      effect_name: 'Moon Dust',
+      source: 'potion',
+      brew_ingredient: 'minecraft:echo_shard',
+      level: 3,
+    },
+    { effect_name: 'Still Water', source: 'potion', brew_ingredient: 'none' },
+  ],
+  // ADR 0063 D10: a vanilla effect, no versions, other bases and bottles.
+  potion: [
+    {
+      potion_name: 'Quick Mining',
+      effect: 'minecraft:haste',
+      seconds: 60,
+      level: 2,
+      base: 'minecraft:thick',
+      ingredient: 'minecraft:honeycomb',
+      longer: false,
+    },
+    {
+      potion_name: 'Bounce',
+      stat_1: 'minecraft:gravity',
+      stat_1_amount: -40,
+      base: 'minecraft:water',
+      stronger: false,
+      splash: false,
+    },
+    { potion_name: 'Plain Brew', stat_1: 'none', ingredient: 'none', lingering: false },
+  ],
+  // ADR 0064 D6: every animal, in a biome and everywhere.
+  'mob-skin': [
+    { skin_name: 'Snow Coat', animal: 'wolf', where: 'everywhere', colour: '#d6e2ee' },
+    { skin_name: 'Tabby Night', animal: 'cat', biome: 'minecraft:swamp' },
+    { skin_name: 'Blossom', animal: 'pig', biome: 'minecraft:cherry_grove' },
+    { skin_name: 'Spotted', animal: 'cow', where: 'everywhere' },
+    { skin_name: 'Golden Hen', animal: 'chicken', biome: '#minecraft:is_savanna' },
+    { skin_name: 'Bog Hopper', animal: 'frog', biome: 'minecraft:mangrove_swamp' },
+  ],
+  // ADR 0064 D6: another call, no recipe, no goat drops, and a sound file of its own.
+  'goat-horn': [
+    {
+      horn_name: 'Thunder',
+      call: 'minecraft:item.goat_horn.sound.0',
+      seconds: 3.5,
+      range: 64,
+      ingredient: 'none',
+      goats_drop: false,
+    },
+    { horn_name: 'Own Call', sound_file: songDataUrl(), ingredient: 'minecraft:note_block' },
   ],
   // ADR 0056 D8: every style, weight and hit.
   throwable: [
@@ -525,6 +575,9 @@ const MIRRORED_STARTERS = [
   'status-effect',
   'throwable',
   'extra-drop',
+  'potion',
+  'mob-skin',
+  'goat-horn',
 ];
 
 function kindRegistry(): ElementKindRegistry {
@@ -664,7 +717,9 @@ const NON_DATA_KINDS = new Set([
  * so its id goes to `item` too. An element in the `entity_type` registry with a spawn egg
  * (any `spawn_egg` but `false`) registers the item `<id>_spawn_egg`, and an egg with a
  * texture also gets the generated item model `<ns>:item/<path>_spawn_egg` (as lowering
- * writes it). `msm:script` has no registry, so script ids register nothing.
+ * writes it). An `msm:potion` with `long` or `strong` also registers `<ns>:long_<path>` and
+ * `<ns>:strong_<path>` (ADR 0063 D9). `msm:script` has no registry, so script ids register
+ * nothing.
  */
 function projectRegistryIds(project: Project): Record<string, string[]> {
   const ids: Record<string, string[]> = { model: [], sound: [], sound_event: [], texture: [] };
@@ -695,6 +750,22 @@ function projectRegistryIds(project: Project): Record<string, string[]> {
             const path = element.id.slice(element.id.indexOf(':') + 1);
             add('model', `${namespace.name}:item/${path}_spawn_egg`);
           }
+        }
+      }
+      if (
+        name === 'potion' &&
+        typeof element.data === 'object' &&
+        element.data !== null &&
+        !Array.isArray(element.data)
+      ) {
+        // An msm:potion also registers its longer and stronger versions (ADR 0063 D3, D9).
+        const data = element.data as { long?: unknown; strong?: unknown };
+        const path = element.id.slice(element.id.indexOf(':') + 1);
+        if (typeof data.long === 'object' && data.long !== null) {
+          add('potion', `${namespace.name}:long_${path}`);
+        }
+        if (typeof data.strong === 'object' && data.strong !== null) {
+          add('potion', `${namespace.name}:strong_${path}`);
         }
       }
       if (name === 'model') add('model', element.id);
@@ -1153,7 +1224,7 @@ describe('library bundles', () => {
     expect(kindExamples.map((example: ExampleProject) => example.kind).sort()).toEqual(kinds);
   });
 
-  it('has scripts in the Scripted ore and Scripted behaviour starters and the three script examples', () => {
+  it('has scripts in the Scripted ore and Scripted behaviour starters and the script examples', () => {
     expect(libraryScripts().map(([label]) => label)).toEqual([
       'scripted_ore demo:ore_glow',
       'scripted_ore demo:ruby_block_guard',
@@ -1167,6 +1238,9 @@ describe('library bundles', () => {
       'example_msm_script_action demo:chime_handler',
       'example_msm_scripted_effect demo:antidote_handler',
       'example_msm_kill_counter demo:kill_counter',
+      'example_msm_full_set_bonus demo:full_set_bonus',
+      'example_msm_teleport_staff demo:teleport_staff',
+      'example_msm_boss_fight_bar demo:boss_fight',
     ]);
   });
 
@@ -1402,6 +1476,103 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           expect(resourceFiles).toContain(`assets/demo/textures/item/${item}.png`);
         }
       }
+    });
+
+    it('the Potion, Mob skin and Goat horn flows name only effects, items, potions, biomes and sounds the target has (ADRs 0063, 0064)', () => {
+      const vanilla = (registry: string) => new Set(context.vanilla[registry] ?? []);
+      const has = (registry: string, ids: readonly string[]) => {
+        expect(ids.length, registry).toBeGreaterThan(0);
+        for (const id of ids) {
+          expect(vanilla(registry).has(id.replace(/^#?minecraft:/, '')), `${registry} ${id}`).toBe(
+            true,
+          );
+        }
+      };
+      const choices = (starter: string, id: string): string[] => {
+        const parameter = (starterById(starter).parameters ?? []).find((entry) => entry.id === id);
+        return parameter?.type === 'choice'
+          ? parameter.choices.map((choice) => choice.value).filter((value) => value.includes(':'))
+          : [];
+      };
+      has('mob_effect', choices('potion', 'effect'));
+      has('attribute', choices('potion', 'stat_1'));
+      has('potion', choices('potion', 'base'));
+      has('item', [
+        ...choices('potion', 'ingredient'),
+        ...choices('status-effect', 'brew_ingredient'),
+      ]);
+      has('item', choices('goat-horn', 'ingredient'));
+      has('sound_event', choices('goat-horn', 'call'));
+      const biomes = choices('mob-skin', 'biome');
+      has(
+        'worldgen/biome',
+        biomes.filter((id) => !id.startsWith('#')),
+      );
+      has(
+        'tag/worldgen/biome',
+        biomes.filter((id) => id.startsWith('#')),
+      );
+      // No brewing ingredient of the flows is a vanilla one: every vanilla brewing reagent
+      // appears in a vanilla recipe the target lists, so none of ours may.
+      const reagents = new Set([
+        'minecraft:redstone',
+        'minecraft:glowstone_dust',
+        'minecraft:gunpowder',
+      ]);
+      for (const id of [
+        ...choices('potion', 'ingredient'),
+        ...choices('status-effect', 'brew_ingredient'),
+      ]) {
+        expect(reagents.has(id), id).toBe(false);
+      }
+    });
+
+    it('the Potion flow and the brewed potion of the Status effect flow export to the Fabric mod jar (ADR 0063)', async () => {
+      const potion = await buildProject('Potion', 'demo', [
+        buildEntry(starterById('potion'), 'demo', 'Potion', bundle.target),
+      ]);
+      const made = await checkProject(bundle, context, potion);
+      for (const id of ['moon_leap', 'long_moon_leap', 'strong_moon_leap']) {
+        expect(made.jarFiles).toContain(`msm/demo/potion/${id}.json`);
+      }
+      expect(made.jarFiles).toContain('msm/demo/effect/moon_leap_effect.json');
+      expect(made.dataFiles).toContain('data/demo/recipe/brewing/potion_moon_leap.json');
+      expect(
+        made.jarFiles.filter((path) => path.startsWith('data/demo/recipe/brewing/')),
+      ).toHaveLength(15);
+      const brewed = await buildProject('Effect', 'demo', [
+        buildEntry(starterById('status-effect'), 'demo', 'Effect', bundle.target, {
+          source: 'potion',
+        }),
+      ]);
+      const effect = await checkProject(bundle, context, brewed);
+      expect(effect.jarFiles).toContain('msm/demo/potion/ruby_rush_potion.json');
+      expect(effect.jarFiles).toContain('data/demo/recipe/brewing/potion_ruby_rush_potion.json');
+      expect(effect.jarFiles.some((path) => path.startsWith('msm/demo/item/'))).toBe(false);
+    });
+
+    it('the Mob skin and Goat horn flows are data only and export to vanilla packs (ADR 0064 D6)', async () => {
+      const skin = await buildProject('Skin', 'demo', [
+        buildEntry(starterById('mob-skin'), 'demo', 'Skin', bundle.target),
+      ]);
+      const skinFiles = await checkProject(bundle, context, skin);
+      expect(skinFiles.jarFiles).toEqual([]);
+      expect(skinFiles.dataFiles).toContain('data/demo/wolf_variant/ember_coat.json');
+      expect(skinFiles.resourceFiles).toContain(
+        'assets/demo/textures/entity/wolf/ember_coat_tame_baby.png',
+      );
+      const horn = await buildProject('Horn', 'demo', [
+        buildEntry(starterById('goat-horn'), 'demo', 'Horn', bundle.target),
+      ]);
+      const hornFiles = await checkProject(bundle, context, horn);
+      expect(hornFiles.jarFiles).toEqual([]);
+      expect(hornFiles.dataFiles).toEqual(
+        expect.arrayContaining([
+          'data/demo/instrument/storm_call.json',
+          'data/demo/recipe/storm_call_goat_horn.json',
+          'data/minecraft/tags/instrument/regular_goat_horns.json',
+        ]),
+      );
     });
 
     it('the Throwable flow exports each style as an item with msm:throwable (ADR 0056)', async () => {

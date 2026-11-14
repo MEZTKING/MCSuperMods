@@ -1,0 +1,33 @@
+{
+  "data": {
+    "clock": "minecraft:overworld",
+    "period_ticks": 48000,
+    "tracks": {
+      "minecraft:gameplay/surface_slime_spawn_chance": {
+        "ease": "constant",
+        "keyframes": [
+          {
+            "ticks": 0,
+            "value": 1
+          },
+          {
+            "ticks": 24000,
+            "value": 0
+          }
+        ],
+        "modifier": "maximum"
+      }
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:slime_days",
+  "kind": "minecraft:timeline",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A timeline changes environment attributes over time. clock is the world clock it follows and period_ticks how long one round lasts, here two days. Each track sets one attribute through keyframes; ease constant holds each value until the next keyframe, and modifier maximum keeps the higher of this value and the one before. So every other day, slimes spawn on the surface as on a full moon.",
+    "tags": [
+      "example",
+      "time"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "data": {
+    "values": [
+      "minecraft:swiftness",
+      "minecraft:long_swiftness",
+      "minecraft:strong_swiftness"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:swiftness_potions",
+  "kind": "minecraft:tag/potion",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A potion tag gives one name to several potion ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. A brewing recipe's input can take every potion of a tag (\"potion_contents\": { \"potions\": \"#msm_examples:swiftness_potions\" }). Vanilla's #minecraft:tradeable lists the potions villagers sell as tipped arrows.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}
