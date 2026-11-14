@@ -11,6 +11,10 @@
  * see-through pass when one of its faces uses a texture with partly transparent pixels; a full
  * cube that is not opaque culls the faces it shares with itself (glass).
  *
+ * A Minecraft block with no definition (no client jar, or a block the jar does not have) and the
+ * liquids (always: the game draws them in code) draw as MSM's own plain coloured cubes from
+ * `fallback-colours.ts` (B405), so a ground's blocks stay visible without the jar.
+ *
  * Part of the lazy Try it chunk: it imports deepslate.
  */
 
@@ -41,6 +45,13 @@ import {
   type VanillaAssetReader,
   vanillaJsonPath,
 } from '../../preview/model-chain';
+import {
+  alwaysFallback,
+  fallbackDefinition,
+  fallbackModel,
+  fallbackPicture,
+  parseFallbackTextureId,
+} from './fallback-colours';
 
 /** Where Try it's pictures come from. */
 export interface TryItResourceOptions {
@@ -81,6 +92,8 @@ export interface TryItResources {
   missingTextures: string[];
   /** True when at least one MSM fallback parent was used. */
   usedFallback: boolean;
+  /** Minecraft blocks drawn as MSM's plain coloured cubes (no client jar, or liquids). */
+  fallbackBlocks: string[];
 }
 
 const isObject = (value: Json | undefined): value is JsonObject =>
@@ -281,22 +294,38 @@ export async function prepareTryItResources(
     (options.vanilla === null ? null : createVanillaJsonCache(options.vanilla));
 
   // 1. Block state definitions: lowered files, then the vanilla cache.
+  const fallbackBlocks = new Set<string>();
+  const fallback = (id: string): { json: JsonObject; source: 'project' } => {
+    fallbackBlocks.add(id);
+    return { json: fallbackDefinition(id), source: 'project' };
+  };
   const definitionLookup = async (
     id: string,
   ): Promise<{ json: JsonObject; source: 'project' | 'vanilla' } | null> => {
+    if (alwaysFallback(id)) return fallback(id);
     // Lowered files use the jar's own paths: `assets/<ns>/<folder>/<path>.json`.
     const json = fileJson(files, vanillaJsonPath(id, folders.block_definition));
     if (json !== null) return { json, source: 'project' };
-    if (vanillaJson === null) return null;
+    const isVanilla = id.startsWith('minecraft:');
+    if (vanillaJson === null) return isVanilla ? fallback(id) : null;
     const vanilla = await vanillaJson(vanillaJsonPath(id, folders.block_definition));
-    return vanilla === null ? null : { json: vanilla, source: 'vanilla' };
+    if (vanilla === null) return isVanilla ? fallback(id) : null;
+    return { json: vanilla, source: 'vanilla' };
   };
   const ids = [...new Set([...blockIds].map(normaliseId))].sort();
   const blocks = await prepareBlockResources(ids, definitionLookup);
 
   // 2. Models: lowered files, then the vanilla cache, then MSM's fallback parents.
+  const fallbackModels = new Map<string, JsonObject>();
+  for (const block of fallbackBlocks) {
+    const definition = fallbackDefinition(block);
+    const variant = (definition.variants as Record<string, { model: string }>)[''];
+    if (variant !== undefined) fallbackModels.set(variant.model, fallbackModel(block));
+  }
   const modelLookup: ModelLookup = async (rawId) => {
     const id = normaliseId(rawId);
+    const plain = fallbackModels.get(id);
+    if (plain !== undefined) return { id, json: plain, source: 'project' };
     const json = fileJson(files, vanillaJsonPath(id, folders.model));
     if (json !== null) return { id, json, source: 'project' };
     if (vanillaJson !== null) {
@@ -344,6 +373,12 @@ export async function prepareTryItResources(
   const blobs: Record<string, Blob> = {};
   const missingTextures: string[] = [];
   for (const id of [...textureIds].sort()) {
+    const plain = parseFallbackTextureId(id);
+    if (plain !== null) {
+      const bytes = fallbackPicture(plain.colour, plain.holes);
+      blobs[id] = new Blob([bytes.slice()], { type: 'image/png' });
+      continue;
+    }
     const { namespace, projectPath, vanillaPath } = textureLocations(id, folders);
     const lowered = files.get(vanillaPath);
     let bytes: Uint8Array | null = lowered instanceof Uint8Array ? lowered : null;
@@ -405,5 +440,6 @@ export async function prepareTryItResources(
     missingModels: [...missingModels].sort(),
     missingTextures,
     usedFallback: [...resolved.values()].some((model) => model.source === 'fallback'),
+    fallbackBlocks: [...fallbackBlocks].sort(),
   };
 }

@@ -34,6 +34,13 @@ import type { SimInventory } from './events/actions.js';
 import { type RuleBookInfo, readEventDefinitions } from './events/definitions.js';
 import { SimTrace, type TraceEntry } from './events/trace.js';
 import { type ChanceMode, TriggerEngine } from './events/triggers.js';
+import {
+  emptyGround,
+  GROUND_AIR,
+  type GroundBlocks,
+  type GroundKind,
+  groundState,
+} from './grounds/ground.js';
 import type { BlockLookup } from './player/collide.js';
 import { REACH } from './player/constants.js';
 import { IDLE_INPUT, PlayerController, type PlayerInput } from './player/controller.js';
@@ -102,6 +109,18 @@ export interface OpenScreen {
   readonly origin: SimOrigin;
 }
 
+/** What {@link LocalWorldSource.loadGround} did. */
+export interface GroundLoadResult {
+  /** Cells filled. */
+  readonly blocks: number;
+  /** Kinds of vanilla blocks in the ground (each a prop). */
+  readonly props: number;
+  /** Blocks left out because neither the project nor Minecraft has them (another mod's), by id. */
+  readonly leftOut: ReadonlyMap<string, number>;
+  /** Where the player now stands (feet). */
+  readonly start: Vec3;
+}
+
 /** The id the floor reports in a pick result's state readouts. */
 export const FLOOR_NAME = 'msm:try_it_floor';
 
@@ -168,6 +187,10 @@ export class LocalWorldSource implements WorldSource {
   private screenNow: OpenScreen | null = null;
   private ticks = 0;
   private readonly unsubscribeWorld: () => void;
+  private groundKind: GroundKind = 'grid';
+  private groundBlocks: GroundBlocks = emptyGround();
+  /** Vanilla ids of the loaded ground: summed up in one line, not one line each. */
+  private groundIds = new Set<string>();
 
   /** The log every part of the simulation writes to; lines go out as `log` events. */
   readonly log: SimLog = {
@@ -229,12 +252,118 @@ export class LocalWorldSource implements WorldSource {
   }
 
   private buildBlocks(): BlockCatalogue {
-    return buildCatalogue(
-      this.files,
-      this.target,
-      this.log,
-      this.vanillaBlockstates === undefined ? {} : { vanillaBlockstates: this.vanillaBlockstates },
-    );
+    return buildCatalogue(this.files, this.target, this.log, {
+      ...(this.vanillaBlockstates === undefined
+        ? {}
+        : { vanillaBlockstates: this.vanillaBlockstates }),
+      quietProps: (id) => this.groundIds.has(id),
+    });
+  }
+
+  /** The ground the area was last loaded with (B405). */
+  get ground(): GroundKind {
+    return this.groundKind;
+  }
+
+  /**
+   * Replaces the whole area with a ground (B405, ADR 0087 D1): blocks, mobs, timers, the open
+   * screen and the trace go, the ground's blocks come in, and the player stands on the surface
+   * at the centre. Vanilla states become props through the catalogue (unknown properties
+   * dropped, missing ones set to their defaults); blocks neither the project nor Minecraft has
+   * (another mod's) are left out with a line. "Clear the area" later brings this ground back.
+   */
+  loadGround(kind: GroundKind, ground: GroundBlocks = emptyGround()): GroundLoadResult {
+    this.groundKind = kind;
+    this.groundBlocks = ground;
+    const ids = new Set<string>();
+    for (const text of ground.palette) {
+      const id = groundState(text).name;
+      if (id.startsWith('minecraft:') && id !== GROUND_AIR) ids.add(id);
+    }
+    this.groundIds = ids;
+    const result = this.fillGround();
+    this.traceNow.clear();
+    if (kind !== 'grid') {
+      if (result.props > 0) {
+        this.log.onlyInMinecraft(
+          `The ground's Minecraft blocks (${result.props} kind${result.props === 1 ? '' : 's'}) are props here: drawn and solid, nothing more`,
+        );
+      }
+      if ([...ids].some((id) => this.blockCatalogue.isLiquid({ name: id, properties: {} }))) {
+        this.log.onlyInMinecraft(
+          'Water and lava are drawn but do not flow, and you walk through them as through air',
+        );
+      }
+      for (const [id, count] of result.leftOut) {
+        this.log.info(
+          `${count} block${count === 1 ? '' : 's'} of ${id} ${count === 1 ? 'was' : 'were'} left out: neither your project nor Minecraft has that block.`,
+        );
+      }
+    }
+    return result;
+  }
+
+  /** Empties the area and fills it with the current ground. */
+  private fillGround(): GroundLoadResult {
+    this.screenNow = null;
+    this.timers.clear();
+    this.entities.clear();
+    this.world.clear();
+    this.triggers.clear();
+    this.emit({ type: 'entities', entities: [] });
+    const ground = this.groundBlocks;
+    const { size } = ground;
+    // One state per palette entry, through the catalogue.
+    const leftOutBySlot = new Map<number, string>();
+    const states = ground.palette.map((text, slot): BlockState | null => {
+      if (slot === 0) return null;
+      const parsed = groundState(text);
+      if (parsed.name === GROUND_AIR) return null;
+      const normal = this.blockCatalogue.normalise(parsed);
+      if (normal === null) leftOutBySlot.set(slot, parsed.name);
+      return normal;
+    });
+    const leftOut = new Map<string, number>();
+    let blocks = 0;
+    const sizeX = Math.min(size.x, this.world.sizeX);
+    const sizeY = Math.min(size.y, this.world.sizeY);
+    const sizeZ = Math.min(size.z, this.world.sizeZ);
+    for (let y = 0; y < sizeY; y += 1) {
+      for (let z = 0; z < sizeZ; z += 1) {
+        for (let x = 0; x < sizeX; x += 1) {
+          const slot = ground.blocks[(y * size.z + z) * size.x + x] as number;
+          if (slot === 0) continue;
+          const state = states[slot] ?? null;
+          if (state === null) {
+            const id = leftOutBySlot.get(slot);
+            if (id !== undefined) leftOut.set(id, (leftOut.get(id) ?? 0) + 1);
+            continue;
+          }
+          this.world.set({ x, y, z }, state);
+          blocks += 1;
+        }
+      }
+    }
+    const start = this.surfaceStart();
+    this.player.teleport(start);
+    this.player.setFlying(false);
+    return { blocks, props: this.groundIds.size, leftOut, start };
+  }
+
+  /** Feet on the highest block something can stand on in the centre column (or the floor). */
+  private surfaceStart(): Vec3 {
+    const x = Math.floor(this.world.sizeX / 2);
+    const z = Math.floor(this.world.sizeZ / 2);
+    let top = 0;
+    for (let y = this.world.sizeY - 1; y >= 0; y -= 1) {
+      const state = this.world.get({ x, y, z });
+      if (state === null) continue;
+      const boxes = this.blockCatalogue.collision(state);
+      if (boxes.length === 0) continue;
+      top = y + Math.max(...boxes.map((box) => box[4]));
+      break;
+    }
+    return { x: x + 0.5, y: top, z: z + 0.5 };
   }
 
   /** The block catalogue of the current files. */
@@ -433,15 +562,23 @@ export class LocalWorldSource implements WorldSource {
     this.entityCatalogue = buildEntityCatalogue(files, target, this.log);
     this.screens = screensFromFiles(files);
     const removed = new Map<string, string>();
+    // The world shares one frozen object per state, so each is looked at once (a ground holds
+    // tens of thousands of blocks of a few dozen states).
+    const memo = new Map<BlockState, BlockState | null | 'same'>();
     for (const { pos, state } of [...this.world.blocks()]) {
-      const block = this.blockCatalogue.blockFor(state.name);
-      if (block === undefined) {
-        this.world.set(pos, null);
-        removed.set(state.name, before.get(state.name)?.displayName ?? state.name);
-        continue;
+      let next = memo.get(state);
+      if (next === undefined) {
+        const block = this.blockCatalogue.blockFor(state.name);
+        if (block === undefined) {
+          next = null;
+          removed.set(state.name, before.get(state.name)?.displayName ?? state.name);
+        } else {
+          const normal = this.blockCatalogue.normalise(state);
+          next = normal === null || sameState(normal, state) ? 'same' : normal;
+        }
+        memo.set(state, next);
       }
-      const normal = this.blockCatalogue.normalise(state);
-      if (normal !== null && !sameState(normal, state)) this.world.set(pos, normal);
+      if (next !== 'same') this.world.set(pos, next);
     }
     for (const [id, name] of removed) {
       this.log.info(`${name} is no longer in the project; it was taken out of the preview.`, {
@@ -460,8 +597,17 @@ export class LocalWorldSource implements WorldSource {
     }
   }
 
-  /** Empties the area: blocks, mobs and timers ("Clear the area"). The player stays. */
+  /**
+   * "Clear the area": blocks, mobs and timers go. On the grid the player stays; on another
+   * ground (B405) the ground comes back as it was loaded and the player stands on it again.
+   */
   clear(): void {
+    if (this.groundKind !== 'grid') {
+      this.fillGround();
+      this.traceNow.clear();
+      this.log.info('You cleared the area; the ground is back as it was.');
+      return;
+    }
     this.screenNow = null;
     this.timers.clear();
     this.entities.clear();

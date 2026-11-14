@@ -121,7 +121,24 @@ export interface CatalogueOptions {
    * They give a vanilla prop its properties; without them a prop has none.
    */
   readonly vanillaBlockstates?: ReadonlyMap<string, string>;
+  /**
+   * Vanilla ids that get no "prop for looks only" line of their own: the blocks of a loaded
+   * ground (B405), which the local source sums up in one line instead.
+   */
+  readonly quietProps?: (id: string) => boolean;
 }
+
+/**
+ * Liquids, drawn as see-through props that nothing collides with or points at (B405; physics
+ * is out of scope, limit L7). Their ids have been the same in every version MSM targets.
+ */
+export const LIQUID_PROP_IDS: ReadonlySet<string> = new Set([
+  'minecraft:water',
+  'minecraft:lava',
+  'minecraft:bubble_column',
+]);
+
+const NO_BOXES: readonly Box[] = Object.freeze([]);
 
 const isRecord = (value: Json | undefined): value is JsonObject =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -412,11 +429,13 @@ export class BlockCatalogue implements BlockShapes {
     }
     const block = propBlock(id, plainName(id), blockstate);
     this.blocks.set(id, block);
-    this.sayOnce(
-      `prop:${id}`,
-      `${block.displayName} is a vanilla block; here it is a prop for looks only`,
-      block.origin,
-    );
+    if (this.options.quietProps?.(id) !== true) {
+      this.sayOnce(
+        `prop:${id}`,
+        `${block.displayName} is a vanilla block; here it is a prop for looks only`,
+        block.origin,
+      );
+    }
     return block;
   }
 
@@ -473,7 +492,9 @@ export class BlockCatalogue implements BlockShapes {
     }
     const block = this.blocks.get(state.name);
     const facts: ShapeFacts = block ?? { type: 'prop' };
-    const shapes = { collision: collisionBoxes(facts, state), outline: outlineBoxes(facts, state) };
+    const shapes = this.isLiquid(state)
+      ? { collision: NO_BOXES, outline: NO_BOXES }
+      : { collision: collisionBoxes(facts, state), outline: outlineBoxes(facts, state) };
     this.shapeCache.set(key, shapes);
     this.shapeByObject.set(state, shapes);
     return shapes;
@@ -487,6 +508,11 @@ export class BlockCatalogue implements BlockShapes {
   /** The boxes a pointing ray hits. */
   outline(state: BlockState): readonly Box[] {
     return this.shapes(state).outline;
+  }
+
+  /** Whether the state is a liquid prop ({@link LIQUID_PROP_IDS}): no boxes, replaced on placing. */
+  isLiquid(state: BlockState): boolean {
+    return LIQUID_PROP_IDS.has(state.name) && this.blocks.get(state.name)?.prop !== false;
   }
 
   /** Whether the block is a solid full cube, as fences, walls and panes connect to. */

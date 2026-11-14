@@ -96,6 +96,9 @@ function trimSlashes(dir: string): string {
   return dir.replace(/[/\\]+$/, '');
 }
 
+/** Where 26.x saves keep the Overworld's `region/` and `entities/` folders. */
+const OVERWORLD_26X = 'dimensions/minecraft/overworld';
+
 function folderName(dir: string): string {
   const parts = trimSlashes(dir).split(/[/\\]/);
   return parts[parts.length - 1] || dir;
@@ -189,21 +192,33 @@ export async function readWorldArea(
   const chunkX1 = Math.floor((originX + size.x - 1) / 16);
   const chunkZ0 = Math.floor(originZ / 16);
   const chunkZ1 = Math.floor((originZ + size.z - 1) / 16);
-  const regions = new Map<string, Uint8Array | null>();
+  // 26.x saves keep the Overworld under `dimensions/minecraft/overworld/` (the worldgen reference
+  // pack's tools read `world/dimensions/minecraft/overworld/region`); older saves at the top.
+  const regions = new Map<string, { bytes: Uint8Array; folder: string } | null>();
   const regionOf = async (folder: string, cx: number, cz: number) => {
-    const path = `${folder}/${regionFileName(cx, cz)}`;
-    if (!regions.has(path)) regions.set(path, await read(path));
-    return regions.get(path) ?? null;
+    const key = `${folder}/${regionFileName(cx, cz)}`;
+    if (!regions.has(key)) {
+      let found: { bytes: Uint8Array; folder: string } | null = null;
+      for (const candidate of [`${OVERWORLD_26X}/${folder}`, folder]) {
+        const bytes = await read(`${candidate}/${regionFileName(cx, cz)}`);
+        if (bytes !== null) {
+          found = { bytes, folder: candidate };
+          break;
+        }
+      }
+      regions.set(key, found);
+    }
+    return regions.get(key) ?? null;
   };
   /** The uncompressed NBT of a chunk, `null` when not generated; throws format errors. */
   const chunkBytes = async (folder: string, cx: number, cz: number) => {
     const region = await regionOf(folder, cx, cz);
     if (region === null) return null;
-    const stored = locateChunk(region, cx, cz);
+    const stored = locateChunk(region.bytes, cx, cz);
     if (stored === null) return null;
     let payload = stored.payload;
     if (stored.external) {
-      const external = await read(`${folder}/${externalChunkFileName(cx, cz)}`);
+      const external = await read(`${region.folder}/${externalChunkFileName(cx, cz)}`);
       if (external === null) {
         throw new RegionFormatError(
           `The external chunk file ${externalChunkFileName(cx, cz)} is missing.`,

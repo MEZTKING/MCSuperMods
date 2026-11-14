@@ -217,7 +217,8 @@ export function placeBlock(
   const at = offset(input.pos, input.face);
   if (!world.inBounds(at)) return { placed: false, reason: 'that is outside the test area' };
   const there = world.get(at);
-  if (there !== null) {
+  // A liquid prop gives way to the block placed into it (B405).
+  if (there !== null && !catalogue.isLiquid(there)) {
     if (block.type === 'slab' && there.name === block.id && there.properties.type !== 'double') {
       return finish(world, catalogue, block, [
         { pos: at, state: catalogue.withProperties(there, { type: 'double' }) },
@@ -231,7 +232,8 @@ export function placeBlock(
 
   if (block.type === 'door') {
     const above = offset(at, 'up');
-    if (!world.inBounds(above) || world.get(above) !== null) {
+    const aboveState = world.get(above);
+    if (!world.inBounds(above) || (aboveState !== null && !catalogue.isLiquid(aboveState))) {
       return { placed: false, reason: 'a door needs two blocks of room' };
     }
     const below = offset(at, 'down');

@@ -19,9 +19,17 @@
  *    and the block's name too; back in Try it (F6) the hotbar shows the new name and both blocks
  *    are still there.
  * 9. With a mob hatched again, "Clear the area" leaves no blocks and no mobs.
+ * 10. Ground (B405): "Change ground…" to the Flat world: the readout says `ground=flat`, the
+ *     player stands on the grass, and placing still works on it.
+ * 11. Ground to a Quick world, the Island preset with a typed seed: the picker asks first (a
+ *     block was placed), then the island is in, something is drawn, and "Clear the area" brings
+ *     the island back.
  *
  * With `MSM_TRYIT_SHOT=<file.png>` the run also saves a picture of the area with a few blocks, a
- * mob and particles (launch with `--force-device-scale-factor=2` for a sharp one).
+ * mob and particles (launch with `--force-device-scale-factor=2` for a sharp one). With
+ * `MSM_TRYIT_GROUND_SHOTS=<folder>` it saves the grounds picker, the island with a block and a
+ * mob, and the flat world (`40-tryit-grounds.png`, `41-tryit-quick-island.png`,
+ * `42-tryit-flat.png`), also at device scale 2.
  */
 
 import { copyFileSync, cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -37,6 +45,8 @@ const SLAB_ID = `${NAMESPACE}:ruby_slab`;
 const EGG_ID = `${NAMESPACE}:glow_golem_spawn_egg`;
 const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] as const;
 const SHOT = process.env.MSM_TRYIT_SHOT;
+const GROUND_SHOTS = process.env.MSM_TRYIT_GROUND_SHOTS;
+const SHARP = SHOT !== undefined || GROUND_SHOTS !== undefined;
 
 let base: string | undefined;
 const launches: LaunchedApp[] = [];
@@ -221,12 +231,12 @@ test('Try it: place, break, open a door, spawn, hit, keep the area through edits
   makeProject(folders.projectDir);
   const launched = await launchApp({
     reuse: folders,
-    args: SHOT === undefined ? WEBGL_ARGS : [...WEBGL_ARGS, '--force-device-scale-factor=2'],
+    args: SHARP ? [...WEBGL_ARGS, '--force-device-scale-factor=2'] : WEBGL_ARGS,
   });
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  if (SHOT !== undefined) {
+  if (SHARP) {
     await launched.app.evaluate(({ BrowserWindow }) =>
       BrowserWindow.getAllWindows()[0]?.setSize(1440, 900),
     );
@@ -367,4 +377,100 @@ test('Try it: place, break, open a door, spawn, hit, keep the area through edits
   await expect(state).toHaveAttribute('data-entities', '0');
   await expect(state).toHaveAttribute('data-last-log', 'You cleared the area.');
   await expect(state).toHaveAttribute('data-pointed', 'the floor');
+  await expect(state).toHaveAttribute('data-ground', 'grid');
+
+  // 10. The Flat world. ---------------------------------------------------------------------------
+  const flatBlocks = 4 * 48 * 48;
+  await window.getByTestId('tryit-ground-change').click();
+  const grounds = window.getByTestId('tryit-grounds');
+  await expect(grounds).toBeVisible();
+  await grounds.getByTestId('tryit-ground-flat').click();
+  await grounds.getByTestId('tryit-ground-apply').click();
+  await expect(grounds).toBeHidden();
+  await expect(state).toHaveAttribute('data-ground', 'flat');
+  await expect(state).toHaveAttribute('data-blocks', String(flatBlocks));
+  await expect(state).toHaveAttribute('data-position', '24.50 4.00 24.50');
+  await expect(window.getByTestId('tryit-ground-current')).toHaveText('Flat world');
+  await press(canvas, 'ArrowDown', 'ArrowDown', 'ArrowDown');
+  await expect(state).toHaveAttribute('data-pointed', /^minecraft:grass_block/);
+  await press(canvas, 'Digit1', 'KeyC');
+  await expect(state).toHaveAttribute('data-blocks', String(flatBlocks + 1));
+  await expect(state).toHaveAttribute('data-pointed', BLOCK_ID);
+  await expect.poll(() => pictureColours(view), { timeout: 10_000 }).toBeGreaterThan(1);
+  if (GROUND_SHOTS !== undefined) {
+    // Step back from the block with the clock running, then look at it across the grass.
+    if ((await state.getAttribute('data-paused')) === 'true') {
+      await window.getByTestId('tryit-clock-pause').click();
+    }
+    await canvas.focus();
+    await window.keyboard.down('KeyS');
+    await window.waitForTimeout(900);
+    await window.keyboard.up('KeyS');
+    await press(canvas, 'ArrowUp', 'ArrowUp');
+    await window.waitForTimeout(1500);
+    await view.screenshot({ path: join(GROUND_SHOTS, '42-tryit-flat.png') });
+    await window.keyboard.down('KeyW');
+    await window.waitForTimeout(900);
+    await window.keyboard.up('KeyW');
+    await press(canvas, 'ArrowDown', 'ArrowDown');
+    await expect(state).toHaveAttribute('data-pointed', BLOCK_ID);
+  }
+
+  // 11. A Quick world: the Island with a typed seed; the picker asks first. ----------------------
+  await window.getByTestId('tryit-ground-change').click();
+  await grounds.getByTestId('tryit-ground-quick').click();
+  await grounds.getByTestId('tryit-quick-preset-island').click();
+  await expect(grounds.getByTestId('tryit-quick-shape')).toHaveValue('island');
+  await grounds.getByTestId('tryit-quick-seed').fill('1234');
+  if (GROUND_SHOTS !== undefined) {
+    await view.screenshot({ path: join(GROUND_SHOTS, '40-tryit-grounds.png') });
+  }
+  await grounds.getByTestId('tryit-ground-apply').click();
+  await expect(grounds.getByTestId('tryit-ground-confirm')).toBeVisible();
+  await grounds.getByTestId('tryit-ground-confirm-yes').click();
+  await expect(grounds).toBeHidden();
+  await expect(state).toHaveAttribute('data-ground', 'quick');
+  await expect(window.getByTestId('tryit-ground-current')).toHaveText(
+    'Quick world: Island in water, seed 1234',
+  );
+  const islandBlocks = Number(await state.getAttribute('data-blocks'));
+  expect(islandBlocks).toBeGreaterThan(20_000);
+  // The player stands on the island, above the water (level 8).
+  expect(Number((await state.getAttribute('data-position'))?.split(' ')[1])).toBeGreaterThan(8);
+  await expect.poll(() => pictureColours(view), { timeout: 10_000 }).toBeGreaterThan(1);
+  await press(canvas, 'ArrowDown', 'ArrowDown', 'ArrowDown', 'Digit1', 'KeyC');
+  await expect(state).toHaveAttribute('data-blocks', String(islandBlocks + 1));
+  if (GROUND_SHOTS !== undefined) {
+    // A mob beside the block, then up into the air (fly) and back, looking over the island;
+    // the clock is paused for the picture so the mob stays.
+    if ((await state.getAttribute('data-paused')) === 'true') {
+      await window.getByTestId('tryit-clock-pause').click();
+    }
+    await press(canvas, 'ArrowLeft', 'ArrowLeft', 'Digit4', 'KeyC');
+    await expect(state).toHaveAttribute('data-entities', '1');
+    await press(canvas, 'ArrowRight', 'ArrowRight', 'ArrowUp');
+    await canvas.focus();
+    await window.keyboard.press('Space');
+    await window.keyboard.press('Space');
+    await expect(state).toHaveAttribute('data-flying', 'true');
+    await window.keyboard.down('Space');
+    await window.waitForTimeout(700);
+    await window.keyboard.up('Space');
+    await window.keyboard.down('KeyS');
+    await window.waitForTimeout(1300);
+    await window.keyboard.up('KeyS');
+    await window.waitForTimeout(800);
+    await window.getByTestId('tryit-clock-pause').click();
+    await window.waitForTimeout(1000);
+    await view.screenshot({ path: join(GROUND_SHOTS, '41-tryit-quick-island.png') });
+    await window.getByTestId('tryit-clock-pause').click();
+  }
+  // "Clear the area" brings the island back as it was.
+  await window.getByTestId('tryit-clear').click();
+  await expect(state).toHaveAttribute('data-blocks', String(islandBlocks));
+  await expect(state).toHaveAttribute('data-entities', '0');
+  await expect(state).toHaveAttribute(
+    'data-last-log',
+    'You cleared the area; the ground is back as it was.',
+  );
 });

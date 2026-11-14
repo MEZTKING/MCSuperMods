@@ -20,6 +20,9 @@
 import { type Json, type Project, stableStringify } from '@msm/core';
 import type { JsonObject, OutputFile, Target } from '@msm/plugin-api';
 import {
+  type GroundBlocks,
+  type GroundKind,
+  type GroundLoadResult,
   LocalWorldSource,
   type PlayerAction,
   type RuleBookInfo,
@@ -247,6 +250,9 @@ export class TryItArea {
   private notifyQueued = false;
   private versionCount = 0;
   private readonly stop: () => void;
+  private groundText = 'Grid';
+  private loadingGround = false;
+  private changedSinceGround = false;
 
   constructor(options: TryItAreaOptions) {
     this.filesNow = options.files;
@@ -378,9 +384,57 @@ export class TryItArea {
     this.changed();
   }
 
+  /** The ground the area was last loaded with (B405). */
+  get ground(): GroundKind {
+    return this.source.ground;
+  }
+
+  /** The side panel's words for the current ground (`grounds.ts` `describeGround`). */
+  get groundDescription(): string {
+    return this.groundText;
+  }
+
+  /** Whether changing the ground would lose something: a block changed or a mob is out. */
+  get hasChanges(): boolean {
+    return this.changedSinceGround || this.source.entities.count > 0;
+  }
+
+  /**
+   * Replaces the area with a ground (B405): the simulation's `loadGround`, then the particles,
+   * mobs, chips and captions go. `lines` are written to "What happened" after the ground's own.
+   */
+  loadGround(
+    kind: GroundKind,
+    ground: GroundBlocks | undefined,
+    description: string,
+    lines: readonly string[] = [],
+  ): GroundLoadResult {
+    this.loadingGround = true;
+    let result: GroundLoadResult;
+    try {
+      result = this.source.loadGround(kind, ground);
+    } finally {
+      this.loadingGround = false;
+    }
+    this.changedSinceGround = false;
+    this.groundText = description;
+    this.particles.clear();
+    this.mobField.clear();
+    this.effects.clear();
+    for (const line of lines) this.source.log.info(line);
+    this.changed();
+    return result;
+  }
+
   /** "Clear the area": blocks, mobs, timers and particles go; the clock keeps its speed. */
   clear(): void {
-    this.source.act({ type: 'clear' });
+    this.loadingGround = true;
+    try {
+      this.source.act({ type: 'clear' });
+    } finally {
+      this.loadingGround = false;
+    }
+    this.changedSinceGround = false;
     this.particles.clear();
     this.mobField.clear();
     this.effects.clear();
@@ -431,6 +485,9 @@ export class TryItArea {
         break;
       }
       case 'blockChanged':
+        if (!this.loadingGround) this.changedSinceGround = true;
+        // Filling a ground sends tens of thousands; the view hears once at the end.
+        if (this.loadingGround) return;
         break;
     }
     this.changed();

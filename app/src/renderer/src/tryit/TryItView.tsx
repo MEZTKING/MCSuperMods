@@ -9,6 +9,11 @@
  * (`Chips.tsx`, `effects.ts`), using a mob (its `on_interact`) and the mock-up screens of
  * containers and machines (`MockScreen.tsx`).
  *
+ * B405 adds the grounds (ADR 0087): "Start on" in the first-run card and the side panel's
+ * "Ground" with "Change ground…" open the picker (`GroundPicker.tsx`); the view makes or reads
+ * the ground, reads Minecraft's block states for it when the client jar is set up, and loads it
+ * into the area. Without the jar, a hint says Minecraft's blocks are plain coloured cubes.
+ *
  * The view lowers the open project through {@link SessionFiles} while it is shown and keeps one
  * {@link TryItArea} in the Try it store, so the area survives a trip to a Studio and back. Every
  * mouse action has a key (`input.ts`). The labels are the same words in every mode (ADR 0083 D7:
@@ -18,7 +23,16 @@
  */
 
 import type { Project, ResourceLocation } from '@msm/core';
-import { type BlockState, type PointedAt, SIM_TOOLS, type SimLogLine } from '@msm/sim';
+import {
+  type BlockState,
+  blockIdOf,
+  type GroundBlocks,
+  type GroundKind,
+  type PointedAt,
+  type QuickWorldOptions,
+  SIM_TOOLS,
+  type SimLogLine,
+} from '@msm/sim';
 import { Box, Egg, Hand, Pause, Play, StepForward, X } from 'lucide-react';
 import {
   type KeyboardEvent,
@@ -32,11 +46,22 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
+import type { TryItWorldArea, TryItWorldsPlatform } from '../../../shared/platform';
 import { Button } from '../components/ui/Button';
 import type { ResourceFolders, VanillaAssetReader } from '../preview/model-chain';
 import { useUiStore } from '../store/ui-store';
 import { Chips } from './Chips';
 import { webAudioOut } from './effects';
+import { GroundPicker } from './GroundPicker';
+import {
+  describeGround,
+  GROUND_CHOICES,
+  type GroundChoice,
+  groundBlocksFor,
+  worldAreaLine,
+  worldErrorText,
+  worldGround,
+} from './grounds';
 import {
   blockTexture,
   hotbarSlots,
@@ -109,9 +134,24 @@ export interface TryItViewProps {
    * the element on the Form tab with the field focused.
    */
   onOpenElement?(elementId: string, pointer: string | null): void;
+  /**
+   * Reads the user's worlds for "From my world" (ADR 0087 D7). Default: the preload's
+   * `window.msm.tryItWorlds`; `null` turns the choice off.
+   */
+  worlds?: TryItWorldsPlatform | null;
   /** Test hook: overrides WebGL detection. */
   webgl?: boolean;
 }
+
+/** The preload's world reader, when there is one. */
+function defaultWorlds(): TryItWorldsPlatform | null {
+  const bridge = (globalThis as { msm?: { tryItWorlds?: TryItWorldsPlatform } }).msm;
+  return bridge?.tryItWorlds ?? null;
+}
+
+/** The hint beside the ground without the client jar. */
+export const NO_VANILLA_GROUND_TEXT =
+  'Minecraft’s own blocks show as plain coloured cubes. Set up your Minecraft folder to see their pictures.';
 
 /** The default of {@link TryItViewProps.onOpenElement}. */
 function openElement(elementId: string, pointer: string | null): void {
@@ -262,6 +302,9 @@ export default function TryItView(props: TryItViewProps) {
   const flyPending = useRef(false);
   const vanillaStatesRef = useRef(vanillaStates);
   vanillaStatesRef.current = vanillaStates;
+  const [groundsOpen, setGroundsOpen] = useState<GroundKind | null>(null);
+  const [lastQuick, setLastQuick] = useState<QuickWorldOptions | undefined>(undefined);
+  const worlds = props.worlds === undefined ? defaultWorlds() : props.worlds;
 
   // Lower the project while the view is shown; the first files make the area.
   const filesRef = useRef<SessionFiles | null>(null);
@@ -528,23 +571,72 @@ export default function TryItView(props: TryItViewProps) {
     );
   };
 
-  const choose = async (thing: TryItThing): Promise<void> => {
-    if (thing.kind === 'prop' && vanilla !== null && area !== null) {
-      const path = thing.id.slice('minecraft:'.length);
-      if (!vanillaStates.has(thing.id)) {
-        const bytes = await vanilla
-          .readAsset(
-            `assets/minecraft/${area.target.folders.resource.block_definition}/${path}.json`,
-          )
-          .catch(() => null);
-        if (bytes !== null) {
-          const next = new Map(vanillaStates);
-          next.set(thing.id, new TextDecoder().decode(bytes));
-          setVanillaStates(next);
-          area.setFiles(area.files, area.target, next);
-        }
+  /**
+   * Reads Minecraft's block state definitions of `ids` from the client jar (once each), so the
+   * catalogue gives their props real properties, and hands them to the area.
+   */
+  const loadVanillaStates = async (ids: Iterable<string>): Promise<void> => {
+    if (vanilla === null || area === null) return;
+    const before = vanillaStatesRef.current;
+    const wanted = [...new Set(ids)].filter((id) => id.startsWith('minecraft:') && !before.has(id));
+    if (wanted.length === 0) return;
+    const folder = area.target.folders.resource.block_definition;
+    const read = await Promise.all(
+      wanted.map((id) =>
+        vanilla
+          .readAsset(`assets/minecraft/${folder}/${id.slice('minecraft:'.length)}.json`)
+          .catch(() => null),
+      ),
+    );
+    const next = new Map(vanillaStatesRef.current);
+    wanted.forEach((id, index) => {
+      const bytes = read[index];
+      if (bytes !== null && bytes !== undefined) next.set(id, new TextDecoder().decode(bytes));
+    });
+    if (next.size === vanillaStatesRef.current.size) return;
+    vanillaStatesRef.current = next;
+    setVanillaStates(next);
+    area.setFiles(area.files, area.target, next);
+  };
+
+  /** Makes or reads a ground and loads it into the area (the picker's "Use this ground"). */
+  const applyGround = async (
+    choice: GroundChoice,
+    progress: (text: string) => void = () => {},
+  ): Promise<void> => {
+    if (area === null) throw new Error('The test area is not ready yet.');
+    let ground: GroundBlocks | undefined;
+    const lines: string[] = [];
+    if (choice.kind === 'world') {
+      if (worlds === null) throw new Error('Your worlds cannot be read in this window.');
+      progress(`Reading the area of ${choice.worldName}…`);
+      let read: TryItWorldArea;
+      try {
+        read = await worlds.readArea({ worldId: choice.worldId, centre: choice.centre });
+      } catch (failure) {
+        throw new Error(worldErrorText(failure));
       }
+      ground = worldGround(read);
+      lines.push(worldAreaLine(read), ...read.warnings);
+    } else {
+      progress('Making the ground…');
+      ground = groundBlocksFor(choice);
     }
+    if (ground !== undefined) {
+      progress('Reading Minecraft’s blocks…');
+      await loadVanillaStates(ground.palette.map(blockIdOf));
+    }
+    progress('Filling the area…');
+    // Let the words show before the fill takes the thread.
+    await new Promise((done) => setTimeout(done, 0));
+    area.loadGround(choice.kind, ground, describeGround(choice), lines);
+    if (choice.kind === 'quick') setLastQuick(choice.options);
+    look.current = { yaw: look.current.yaw, pitch: 0 };
+    wrapperRef.current?.focus({ preventScroll: true });
+  };
+
+  const choose = async (thing: TryItThing): Promise<void> => {
+    if (thing.kind === 'prop') await loadVanillaStates([thing.id]);
     useTryItStore.getState().setSlot(selected, thing.id);
     setPickerOpen(false);
     wrapperRef.current?.focus({ preventScroll: true });
@@ -562,6 +654,7 @@ export default function TryItView(props: TryItViewProps) {
           const last = area.lines.at(-1);
           return {
             position: area.source.player.position,
+            ground: area.ground,
             flying: area.source.player.flying,
             blocks: area.source.world.count,
             entities: area.source.entities.count,
@@ -724,6 +817,28 @@ export default function TryItView(props: TryItViewProps) {
                 {CARD_LINES.map((line) => (
                   <p key={line}>{line}</p>
                 ))}
+                <div className="flex flex-wrap items-center gap-1" data-testid="tryit-card-grounds">
+                  <span>Start on:</span>
+                  {GROUND_CHOICES.map((entry) => (
+                    <Button
+                      key={entry.kind}
+                      data-testid={`tryit-card-ground-${entry.kind}`}
+                      aria-pressed={area?.ground === entry.kind}
+                      disabled={area === null}
+                      onClick={() => {
+                        if (entry.kind === 'grid' || entry.kind === 'flat') {
+                          if (area?.hasChanges === true) setGroundsOpen(entry.kind);
+                          else void applyGround({ kind: entry.kind });
+                        } else {
+                          setGroundsOpen(entry.kind);
+                        }
+                      }}
+                    >
+                      {entry.label}
+                      {entry.kind === 'quick' || entry.kind === 'world' ? '…' : ''}
+                    </Button>
+                  ))}
+                </div>
                 <p className="text-muted">
                   The full list is in the guide:{' '}
                   <a
@@ -765,6 +880,28 @@ export default function TryItView(props: TryItViewProps) {
               />
             )}
             {screenOpen !== null && <MockScreen screen={screenOpen} onClose={closeScreen} />}
+            {groundsOpen !== null && area !== null && (
+              <GroundPicker
+                initial={groundsOpen}
+                {...(lastQuick === undefined ? {} : { quick: lastQuick })}
+                hasChanges={area.hasChanges}
+                worlds={worlds}
+                {...(props.vanillaBlockIds === undefined
+                  ? {}
+                  : { blockIds: props.vanillaBlockIds })}
+                pictures={
+                  vanilla === null
+                    ? null
+                    : { vanilla: (path: string) => vanilla.readAsset(path).catch(() => null) }
+                }
+                texturesFolder={area.target.folders.resource.textures}
+                onApply={applyGround}
+                onClose={() => {
+                  setGroundsOpen(null);
+                  wrapperRef.current?.focus({ preventScroll: true });
+                }}
+              />
+            )}
             {pickerOpen && (
               <div
                 role="dialog"
@@ -928,6 +1065,35 @@ export default function TryItView(props: TryItViewProps) {
               Clear the area
             </Button>
           </div>
+          <fieldset className="flex flex-col gap-1 rounded border border-border p-1">
+            <legend className="px-1 text-xs text-muted">Ground</legend>
+            <span data-testid="tryit-ground-current" data-ground={area?.ground ?? 'grid'}>
+              {area?.groundDescription ?? 'Grid'}
+            </span>
+            <div>
+              <Button
+                data-testid="tryit-ground-change"
+                disabled={area === null}
+                onClick={() => setGroundsOpen(area?.ground ?? 'grid')}
+              >
+                Change ground…
+              </Button>
+            </div>
+            {vanilla === null && area !== null && area.ground !== 'grid' && (
+              <p className="text-xs text-muted" data-testid="tryit-ground-no-vanilla">
+                {NO_VANILLA_GROUND_TEXT}{' '}
+                {props.onSetUpVanilla !== undefined && (
+                  <button
+                    type="button"
+                    className="cursor-pointer text-accent underline"
+                    onClick={props.onSetUpVanilla}
+                  >
+                    Set it up
+                  </button>
+                )}
+              </p>
+            )}
+          </fieldset>
           <fieldset className="flex flex-wrap items-center gap-1 rounded border border-border p-1">
             <legend className="px-1 text-xs text-muted">Clock</legend>
             <Button

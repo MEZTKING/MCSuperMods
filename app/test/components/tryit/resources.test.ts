@@ -191,10 +191,26 @@ describe('Try it resources', () => {
     expect(flagsOf(prepared, 'minecraft:stone')).toEqual({ opaque: true });
   });
 
-  it('lists vanilla blocks as missing without the client jar', async () => {
-    const { prepared } = await prepare(['stone']);
-    expect([...prepared.blockIds]).toEqual(['minecraft:stone']);
-    expect(prepared.missingDefinitions).toEqual(['minecraft:stone']);
+  it('draws vanilla blocks as MSM’s plain coloured cubes without the client jar', async () => {
+    const { prepared, atlases } = await prepare(['stone', 'minecraft:grass_block']);
+    expect([...prepared.blockIds]).toEqual(['minecraft:grass_block', 'minecraft:stone']);
+    expect(prepared.missingDefinitions).toEqual([]);
+    expect(prepared.missingModels).toEqual([]);
+    expect(prepared.missingTextures).toEqual([]);
+    expect(prepared.fallbackBlocks).toEqual(['minecraft:grass_block', 'minecraft:stone']);
+    expect(flagsOf(prepared, 'minecraft:stone')).toEqual({ opaque: true });
+    // Grass has its own top, side and bottom colours; stone one colour.
+    expect(atlases[0]?.filter((id) => id.startsWith('msm:tryit_colour/'))).toHaveLength(4);
+    // A project block without a definition is still the missing cube.
+    const missing = await prepare(['demo:nothing']);
+    expect(missing.prepared.missingDefinitions).toEqual(['demo:nothing']);
+    expect(missing.prepared.fallbackBlocks).toEqual([]);
+  });
+
+  it('always draws liquids as see-through fallback cubes, also with the client jar', async () => {
+    const { prepared } = await prepare(['minecraft:water', 'stone'], { vanilla });
+    expect(prepared.fallbackBlocks).toEqual(['minecraft:water']);
+    expect(prepared.missingDefinitions).toEqual([]);
   });
 
   it('treats missing textures as opaque', async () => {

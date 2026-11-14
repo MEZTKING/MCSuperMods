@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   bitsForPalette,
   blockStateString,
+  isFullChunk,
   ChunkFormatError,
   decompressChunk,
-  isFullChunk,
   locateChunk,
   parseChunk,
   RegionFormatError,
@@ -271,7 +271,21 @@ describe('readWorldArea', () => {
     expect(area.skipped).toEqual({ blockEntities: 0, entities: 0, missingChunks: 0 });
     expect(area.warnings).toEqual([]);
     // Each region file is read once.
-    expect(save.reads.filter((path) => path.endsWith('region/r.0.0.mca'))).toHaveLength(2);
+    expect(save.reads.filter((path) => path === `${save.dir}/region/r.0.0.mca`)).toHaveLength(2);
+  });
+
+  it('reads a 26.x save whose Overworld lives under dimensions/minecraft/overworld', async () => {
+    const save = flatSave([-2, 1], [-2, 1], {
+      marks: [{ x: 0, y: 61, z: 0, state: 'minecraft:gold_block' }],
+    });
+    for (const [path, bytes] of [...save.files]) {
+      if (!path.startsWith('region/')) continue;
+      save.files.delete(path);
+      save.files.set(`dimensions/minecraft/overworld/${path}`, bytes);
+    }
+    const area = await readWorldArea(save.read, save.dir, { centre: 'spawn' });
+    expect(stateAt(area, 0, 61, 0)).toBe('minecraft:gold_block');
+    expect(area.skipped.missingChunks).toBe(0);
   });
 
   it('reads chunks that are not generated as air, with a warning', async () => {

@@ -5,11 +5,13 @@
  * are checked at most as "something was drawn", limit L17); screen readers hear it politely.
  */
 
-import type { BlockState, SimLogLine, Vec3 } from '@msm/sim';
+import type { BlockState, GroundKind, SimLogLine, Vec3 } from '@msm/sim';
 
 /** What the readout shows. */
 export interface TryItReadout {
   readonly position: Vec3;
+  /** The ground the area was loaded with (B405); default `grid`. */
+  readonly ground?: GroundKind;
   readonly flying: boolean;
   readonly blocks: number;
   readonly entities: number;
@@ -57,6 +59,7 @@ export function StateReadout({ readout }: { readout: TryItReadout }) {
       aria-live="polite"
       className="sr-only"
       data-position={where}
+      data-ground={readout.ground ?? 'grid'}
       data-flying={String(readout.flying)}
       data-blocks={readout.blocks}
       data-entities={readout.entities}
@@ -69,7 +72,7 @@ export function StateReadout({ readout }: { readout: TryItReadout }) {
       data-last-log={lineText}
     >
       {`At ${where}${readout.flying ? ', flying' : ''}. ` +
-        `${readout.blocks} block${readout.blocks === 1 ? '' : 's'} placed, ` +
+        `${readout.blocks} block${readout.blocks === 1 ? '' : 's'} in the area, ` +
         `${readout.entities} mob${readout.entities === 1 ? '' : 's'}. ` +
         `Holding ${readout.selected?.name ?? 'nothing'}. ` +
         `Pointing at ${pointedText(readout.pointed)}. ` +

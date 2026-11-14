@@ -78,7 +78,7 @@ export interface TryItFrameStats {
 /** What the resources found, for notes beside the view. */
 export type TryItResourceInfo = Pick<
   TryItResources,
-  'missingDefinitions' | 'missingModels' | 'missingTextures' | 'usedFallback'
+  'missingDefinitions' | 'missingModels' | 'missingTextures' | 'usedFallback' | 'fallbackBlocks'
 >;
 
 /** Props of {@link TryItCanvas}. */
@@ -674,6 +674,7 @@ export default function TryItCanvas(props: TryItCanvasProps) {
             missingModels: prepared.missingModels,
             missingTextures: prepared.missingTextures,
             usedFallback: prepared.usedFallback,
+            fallbackBlocks: prepared.fallbackBlocks,
           });
         })
         .catch((error: unknown) => {

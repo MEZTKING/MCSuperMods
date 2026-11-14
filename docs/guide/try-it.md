@@ -6,7 +6,7 @@ It is a preview, not the game. A strip across the top always says **Preview, not
 
 ## What it is
 
-- A flat floor of 48 by 48 blocks, with room for 32 blocks of height above it. You stand in the middle.
+- An area of 48 by 48 blocks, 32 high. It starts on a plain grid floor; you can start on a flat world, a quick landscape or an area of one of your own worlds instead ([Grounds](#grounds)). You stand in the middle.
 - Your project's blocks and spawn eggs are in the hotbar. Minecraft's own blocks can be placed too, for looks only.
 - A clock runs the area 20 times a second, as the game does: buttons let go, pressure plates spring back, mobs wander and particles fly. You can pause it and step it.
 - **What happened** lists what the area did, and what it could not do ("Only in Minecraft: …").
@@ -70,6 +70,23 @@ Doors, trapdoors and fence gates open and close with C. Iron and gold doors and 
 
 Slabs, stairs, walls, fences, panes, doors and the other block types place and join as their type says ([Block types, families and plants](block-types-and-plants.md)): a slab becomes a double slab, stairs turn their corners and fences join their neighbours.
 
+## Grounds
+
+What the area stands on. Choose it in the first-run card (**Start on:**) or with **Change ground…** under **Ground** in the side panel. Changing the ground replaces the whole area, so when you have placed blocks or hatched mobs, Try it asks first (**Replace the area** or **Keep my area**). **Clear the area** takes away what you placed and brings the ground back as it was loaded.
+
+- **Grid**: MCSuperMods' own floor, with nothing in the way of your blocks. The default.
+- **Flat world**: bedrock, two layers of dirt and grass, like a superflat world.
+- **Quick world**: a small landscape you set up:
+  - **Shape**: Flat, Gentle hills, Island in water or Valley.
+  - **Layers, top to bottom**: a block (chosen in the picker) and a thickness for each. The thickest layer stretches with hills and valleys (it says "(stretches)"); on flat land the layers stack exactly.
+  - **Water**: on or off, and its **Level**. Grass and dirt by the water turn to sand.
+  - **Trees**: None, A few or Many. Simple oak trees of MCSuperMods' own shape, only on grass, dirt and similar soil above the water.
+  - **Seed**: the same seed always makes the same world; **New seed** picks another.
+  - **Presets**: Classic flat, Island, Hills and Sandbox. **Save as my preset** keeps your settings under a name, on this computer for you, not in the project.
+- **From my world**: an area copied from one of your own saves. Pick a world from the list (its picture, name, game folder and when it was last played; worlds that cannot be read are greyed out with the reason), then the centre: **The world spawn**, or **Here:** with a block X and Z. The area is 48 by 48 around the centre and 32 high, from 8 blocks below the ground there. Your save is only read, never changed, and a world that is open in Minecraft can still be read. What was left out (chests' contents, signs, mobs, chunks not generated yet) is listed in **What happened**.
+
+Minecraft's blocks in a ground are props (see [Limits](#limits)). With your Minecraft folder set up they show their real pictures; without it they are plain coloured cubes, and the panel says so with a **Set it up** link. Water and lava are always drawn as plain see-through blocks.
+
 ## Mobs, particles and portals
 
 - **Mobs.** Hatch a mob from its spawn egg. It wanders: it stands for 2 to 6 seconds, walks for 1 to 4 seconds in a random direction (about 2.5 blocks a second at a speed of 0.25) and stops at walls. Flyers hover 1.5 to 4 blocks above the ground; swimmers stand still; amphibians walk. A plate over each nearby mob shows its name and "wanders only in the preview". A hit removes it at once. At most 24 mobs fit in the area. Mobs play their walk animation (fly for flyers) while they move and their idle animation otherwise, as in the Entity Studio's preview. A mob without a model is drawn as a box of its size.
@@ -98,17 +115,19 @@ Try it runs MCSuperMods' own simulation, not Minecraft. What it cannot show:
 | **No commands or functions** | Nothing runs commands or functions. |
 | **No scripts or rules yet** | Your events, rules and scripts do not run in Try it yet; a later version runs plain rules first. Use **Play**. |
 | **No redstone** | **Power** changes one block's own picture; nothing travels along dust, and powering a block runs nothing. |
-| **No light, shadows or liquids** | A glowing block looks the same lit or unlit around it. There is no water or lava. |
+| **No light, shadows or liquids** | A glowing block looks the same lit or unlit around it. Water and lava in a ground are drawn as plain see-through blocks: they do not flow, and you walk through them as through air. |
 | **No survival** | No health, hunger, damage, armour, mining speed, tool wear, drops or loot. Blocks break at once and drop nothing. |
 | **Growth only with Grow** | Crops and saplings grow only when you use **Grow**. Saplings never become trees, leaves never fall and crops plant on anything. |
 | **Minecraft's blocks are props** | They are drawn and solid, nothing more: chests do not open and pistons do not move. |
 | **Containers and machines do not open** | Their windows are Minecraft's own menus and are not shown here. |
 | **Portals do not take you anywhere** | There are no other dimensions here, and frames are not checked. |
-| **Minecraft's looks need your Minecraft folder; sounds are not played** | Minecraft's pictures are never shipped with MCSuperMods. Without your Minecraft folder, project blocks that build on Minecraft's models use MCSuperMods' own simple shapes and Minecraft's blocks cannot be placed. Try it plays no sounds. |
+| **Minecraft's looks need your Minecraft folder; sounds are not played** | Minecraft's pictures are never shipped with MCSuperMods. Without your Minecraft folder, project blocks that build on Minecraft's models use MCSuperMods' own simple shapes, Minecraft's blocks cannot be placed, and the Minecraft blocks of a ground are plain coloured cubes. Try it plays no sounds. |
 | **Needs WebGL** | Without it, Try it says so and offers **Play in Minecraft**. |
 | **A small area that is not saved** | 48 by 48 blocks, 32 high, so it stays fast on any computer. Placing stops at the edge, and the area is cleared when you close the project. |
 | **Animations as in the preview** | Mobs move as in the Entity Studio's preview: smooth steps are straight lines and Molang counts as 0. GeckoLib plays more in the game. |
 | **Pictures** | Animated pictures show their first frame; pictures larger than 16 by 16 are cut down to 16 by 16. |
 | **Other plugins' blocks** | A block from a third-party plugin is drawn from its files, but its own behaviour does not run. |
+| **Grounds from your worlds** | Only the Overworld, and only saves from Minecraft 1.18 on (open an older world once in 1.18 or later). Chests' contents, signs and other block entities, and mobs and items, are not copied. Another mod's blocks are left out. Its Minecraft blocks are props like any other. |
+| **Quick worlds are not Minecraft's world generation** | Their hills, islands, valleys and trees are MCSuperMods' own simple shapes, made to look natural around your blocks, not to match a real seed. |
 
 The tests check what Try it does (counts, states, what you point at), and that it draws something, not exactly how it looks. If a picture looks wrong in Try it but right in the game, the game is right.
