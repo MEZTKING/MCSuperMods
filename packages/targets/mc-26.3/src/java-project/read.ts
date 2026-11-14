@@ -189,3 +189,24 @@ export function checkFormat(reader: Reader): void {
   if (format !== 1)
     reader.fail(`format ${format} is not the definition format this generator reads (1)`);
 }
+
+/**
+ * The id of the item a block definition registers (ADR 0068 D2), as the runtime reads it:
+ * `undefined` for `"item": false`, `item.id` when set, else the block's own id. A crop's seeds
+ * (`item.id`) are the first block item whose id is not the block's, so the generator names the
+ * item key, the item model and the name key from this id, never from the block id.
+ *
+ * @param input - A block definition.
+ * @returns The block item id, or `undefined` when the block has no item.
+ */
+export function blockItemId(input: DefinitionInput): string | undefined {
+  const reader = readDefinition(input);
+  const raw = input.definition.item;
+  if (raw === false) return undefined;
+  if (raw === undefined) return input.id;
+  const item = reader.object('item');
+  const id = item?.optionalString('id');
+  if (id === undefined) return input.id;
+  if (!/^[a-z0-9_.-]+:[a-z0-9_./-]+$/.test(id)) item?.fail(`id '${id}' is not an item id`);
+  return id;
+}

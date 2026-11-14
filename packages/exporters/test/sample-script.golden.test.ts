@@ -46,7 +46,7 @@ import {
   utf8,
 } from '@msm/core';
 import type { Element, Json, Plugin, Project, Target } from '@msm/plugin-api';
-import blocksItemsPlugin from '@msm/plugin-blocks-items';
+import blocksItemsPlugin, { blockItemIdOf } from '@msm/plugin-blocks-items';
 import dataPackPlugin from '@msm/plugin-datapack';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
 import scriptingPlugin, { MSM_RUNTIME_TYPINGS } from '@msm/plugin-scripting';
@@ -751,8 +751,10 @@ function projectIds(project: Project): Record<string, string[]> {
     const name = registry.get(element.kind)?.registry;
     if (name === undefined) continue;
     add(name, element.id);
-    if (element.kind === 'msm:block' && (element.data as { item?: Json }).item !== false) {
-      add('item', element.id);
+    if (element.kind === 'msm:block') {
+      // The block item's own id (`item.id`, else the block's; ADR 0068 D2).
+      const itemId = blockItemIdOf(element.id, element.data);
+      if (itemId !== undefined) add('item', itemId);
     }
   }
   for (const [name, list] of Object.entries(ids)) ids[name] = [...new Set(list)].sort();

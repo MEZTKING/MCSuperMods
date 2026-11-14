@@ -49,7 +49,7 @@ import type {
   ProjectStarter,
   TargetFacts,
 } from '@msm/plugin-api';
-import blocksItemsPlugin from '@msm/plugin-blocks-items';
+import blocksItemsPlugin, { blockItemIdOf } from '@msm/plugin-blocks-items';
 import dataPackPlugin from '@msm/plugin-datapack';
 import entitiesPlugin from '@msm/plugin-entities';
 import libraryPlugin, {
@@ -720,8 +720,9 @@ const NON_DATA_KINDS = new Set([
  * A copy of the app's `projectRegistryIds` (the app cannot be imported here): a registered
  * kind's ids go to `ElementKind.registry`, else to the kind id without `minecraft:`; a kind
  * of another namespace counts only with a plain registry name (no `:`). An element in the
- * `block` registry also registers its block item under the same id (any `item` but `false`),
- * so its id goes to `item` too. An element in the `entity_type` registry with a spawn egg
+ * `block` registry also registers its block item (any `item` but `false`) under
+ * `blockItemIdOf` (`item.id` when set, else the block's id; ADR 0068 D2), so that id goes to
+ * `item` too. An element in the `entity_type` registry with a spawn egg
  * (any `spawn_egg` but `false`) registers the item `<id>_spawn_egg`, and an egg with a
  * texture also gets the generated item model `<ns>:item/<path>_spawn_egg` (as lowering
  * writes it). An `msm:potion` with `long` or `strong` also registers `<ns>:long_<path>` and
@@ -740,13 +741,10 @@ function projectRegistryIds(project: Project): Record<string, string[]> {
       const kind = registry.get(element.kind);
       const name = kind?.registry ?? element.kind.replace(/^minecraft:/, '');
       if (name.includes(':')) continue;
-      if (
-        name === 'block' &&
-        typeof element.data === 'object' &&
-        element.data !== null &&
-        (element.data as { item?: unknown }).item !== false
-      ) {
-        add('item', element.id);
+      if (name === 'block' && typeof element.data === 'object' && element.data !== null) {
+        // The block item's own id: `item.id` (seeds planting a crop), else the block's id.
+        const itemId = blockItemIdOf(element.id, element.data);
+        if (itemId !== undefined) add('item', itemId);
       }
       if (name === 'entity_type' && typeof element.data === 'object' && element.data !== null) {
         const egg = (element.data as { spawn_egg?: unknown }).spawn_egg;
