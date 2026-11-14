@@ -24,6 +24,7 @@ const IDS = [
   'biome_desert',
   'feature_ore_vein',
   'feature_tree',
+  'feature_sapling_tree',
   'feature_flower_patch',
   'feature_single_block',
   'placed_feature_ore',
@@ -124,7 +125,10 @@ describe('worldgen templates', () => {
   it('uses only vanilla ids or the new element id', () => {
     for (const template of worldgenTemplates) {
       const context = { ...contextFor(template), id: 'zz:own' as const, projectNamespace: 'zz' };
-      const text = JSON.stringify(template.data(context)).replaceAll('"zz:own"', '');
+      const text = JSON.stringify(template.data(context))
+        .replaceAll('"zz:own"', '')
+        // "Tree for a sapling" names the project's own log and leaves (ADR 0068 D5).
+        .replaceAll(/"zz:[a-z0-9_]+_(log|leaves)"/g, '');
       expect(text, template.id).not.toMatch(/"(?!minecraft:)[a-z0-9_.-]+:[a-z0-9_./-]+"/);
     }
   });
@@ -140,6 +144,29 @@ describe('worldgen templates', () => {
     }
     const single = worldgenTemplates.find((entry) => entry.id === 'dimension_single_biome');
     expect(JSON.stringify(single?.data(context))).toContain('"biome":"zz:ruby"');
+  });
+
+  it('grows the sapling tree from project blocks named after the tree', () => {
+    const template = worldgenTemplates.find((entry) => entry.id === 'feature_sapling_tree');
+    if (template === undefined) throw new Error('no feature_sapling_tree');
+    const context = {
+      ...contextFor(template),
+      id: 'other:maple_tree' as const,
+      path: 'maple_tree',
+      projectNamespace: 'zz',
+    };
+    const data = template.data(context) as Record<string, Json>;
+    expect(data.type).toBe('minecraft:tree');
+    expect(data.trunk_provider).toEqual({ id: 'zz:maple_log' });
+    expect(data.foliage_provider).toEqual({
+      id: 'zz:maple_leaves',
+      properties: { distance: '7', persistent: 'false' },
+    });
+    expect(data.below_trunk_provider).toBe('minecraft:soil_beneath_tree');
+    const bare = { ...context, id: 'zz:tree' as const, path: 'tree' };
+    expect((template.data(bare) as Record<string, Json>).trunk_provider).toEqual({
+      id: 'zz:tree_log',
+    });
   });
 
   it('places biome features at the steps the target names', () => {

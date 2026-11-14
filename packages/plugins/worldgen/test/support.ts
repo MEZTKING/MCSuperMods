@@ -23,6 +23,8 @@ const nodeReadFile = async (url: URL): Promise<Uint8Array> => readFile(url);
  * own id as a placeholder reference (a placed feature's `feature`, a dimension's biome) resolve. The `example:` ids are the golden samples' cross-references.
  */
 export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
+  // "Tree for a sapling" grows the project's own log and leaves.
+  block: ['demo:sample_leaves', 'demo:sample_log'],
   'worldgen/biome': ['demo:sample', 'example:ruby_grove'],
   'worldgen/feature': ['demo:sample', 'example:ruby_ore'],
   'worldgen/placed_feature': ['demo:sample', 'example:ruby_ore'],

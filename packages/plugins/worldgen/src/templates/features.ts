@@ -4,11 +4,25 @@
  * so no configured feature can have that id: the user points `feature` at their configured
  * feature (for example a placed feature `ruby_ore_placed` placing `ruby_ore`), and until then
  * the schema check reports the unknown id.
+ *
+ * "Tree for a sapling" (ADR 0068 D5) names project blocks: the log and leaves ids come from
+ * the project namespace and the tree's own path without a trailing `_tree` (`demo:maple_tree`
+ * grows `demo:maple_log` and `demo:maple_leaves`), so the user makes those blocks or points
+ * the providers elsewhere.
  */
-import type { ElementTemplate, Json } from '@msm/plugin-api';
+import type { ElementTemplate, Json, TemplateContext } from '@msm/plugin-api';
 import { FEATURES, fixed, ownId } from './shared';
 
 const simple = (state: Json): Json => ({ type: 'minecraft:simple', state });
+
+/** The base name of a sapling tree's own blocks: its path without a trailing `_tree`. */
+function treeBlockBase(context: TemplateContext): string {
+  const base = context.path.replace(/_tree$/, '');
+  return `${context.projectNamespace}:${base === '' ? context.path : base}`;
+}
+
+/** Vanilla's leaf state in tree features: not persistent, as far from a log as possible. */
+const TREE_LEAVES_STATE: Json = { distance: '7', persistent: 'false' };
 
 export const featureTemplates: readonly ElementTemplate[] = [
   fixed(
@@ -68,6 +82,33 @@ export const featureTemplates: readonly ElementTemplate[] = [
       decorators: [],
     },
   ),
+  {
+    id: 'feature_sapling_tree',
+    kind: 'minecraft:worldgen/feature',
+    category: FEATURES,
+    title: 'Tree for a sapling',
+    description:
+      "Oak's shape grown from your own log and leaves (named after this tree, such as maple_log and maple_leaves for maple_tree), with the soil under the trunk turned to dirt as vanilla trees do. Name it as a sapling's tree.",
+    data: (context) => {
+      const base = treeBlockBase(context);
+      return {
+        type: 'minecraft:tree',
+        ignore_vines: true,
+        minimum_size: { type: 'minecraft:two_layers_feature_size' },
+        below_trunk_provider: 'minecraft:soil_beneath_tree',
+        trunk_provider: { id: `${base}_log` },
+        foliage_provider: { id: `${base}_leaves`, properties: structuredClone(TREE_LEAVES_STATE) },
+        trunk_placer: {
+          type: 'minecraft:straight_trunk_placer',
+          base_height: 4,
+          height_rand_a: 2,
+          height_rand_b: 0,
+        },
+        foliage_placer: { type: 'minecraft:blob_foliage_placer', radius: 2, offset: 0, height: 3 },
+        decorators: [],
+      };
+    },
+  },
   fixed(
     {
       id: 'feature_flower_patch',
