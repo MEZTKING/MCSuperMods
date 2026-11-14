@@ -266,12 +266,21 @@ public class MsmEntityGameTest {
                 "follower", "singer", "off_key", "ticker", "mx_animal", "mx_monster", "mx_swimmer", "mx_tame_on_mob", "mx_tempter", "mx_panicker");
         withoutGeckolib(helper, auto.toArray(String[]::new));
         int geo = geckolib() ? auto.size() + 1 : 0; // plus mx_geckolib_only, which needs GeckoLib; never mx_vanilla
-        helper.assertValueEqual(MsmRuntime.report().entities().size(), auto.size() + 1 + (geckolib() ? 1 : 0), "entity types in the report");
-        helper.assertValueEqual(MsmEntityRegistrar.geoTypes().size(), geo, "geo types");
+        // The mob feature modules' own definitions (prefixes mv_, rg_, tb_, rd_, vb_) are counted by their own GameTests.
+        long reported = MsmRuntime.report().entities().stream().filter(id -> !featureDefinition(id.getPath())).count();
+        long geoTypes = MsmEntityRegistrar.geoTypes().stream()
+                .filter(type -> !featureDefinition(BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath())).count();
+        helper.assertValueEqual((int) reported, auto.size() + 1 + (geckolib() ? 1 : 0), "entity types in the report");
+        helper.assertValueEqual((int) geoTypes, geo, "geo types");
         helper.assertFalse(MsmRuntime.report().errors().stream().anyMatch(e -> e.contains("/entity/") && !e.contains("future_format.json")
                         && !e.contains("mx_tame_on_mob.json") && !(e.contains("mx_geckolib_only.json") && !geckolib())),
                 "entity errors: " + MsmRuntime.report().errors());
         helper.succeed();
+    }
+
+    private static boolean featureDefinition(String path) {
+        return path.startsWith("mv_") || path.startsWith("rg_") || path.startsWith("tb_") || path.startsWith("rd_")
+                || path.startsWith("vb_");
     }
 
     // Goals
