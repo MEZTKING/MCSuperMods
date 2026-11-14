@@ -105,6 +105,7 @@ const WIZARDS = [
   'music-disc-item',
   'dimension',
   'villager-trade',
+  'extra-drop',
   'custom_mob',
   'scripted-item',
 ];
@@ -125,6 +126,7 @@ const FLOWS: Record<string, string> = {
   'music-disc-item': 'blocks',
   dimension: 'worlds',
   'villager-trade': 'worlds',
+  'extra-drop': 'worlds',
   custom_mob: 'mobs',
   'scripted-item': 'scripts',
 };
@@ -142,7 +144,7 @@ describe('wizard starters', () => {
     const groups = (id: string) => [
       ...new Set((starter(id).parameters ?? []).map((parameter) => parameter.group)),
     ];
-    expect(groups('custom_ore')).toEqual(['Ore', 'Drops']);
+    expect(groups('custom_ore')).toEqual(['Ore', 'Drops', 'World']);
     expect(groups('custom-sword')).toEqual(['Sword', 'Stats', 'Recipe']);
     expect(groups('custom_mob')).toEqual(['Mob', 'Behaviour', 'Spawning']);
     expect(groups('gear-set')).toEqual(['Material', 'Pieces', 'Tools', 'Armour']);
@@ -159,6 +161,7 @@ describe('wizard starters', () => {
     expect(groups('music-disc-item')).toEqual(['Song', 'Disc']);
     expect(groups('dimension')).toEqual(['World', 'Travel']);
     expect(groups('villager-trade')).toEqual(['Villager', 'Trade']);
+    expect(groups('extra-drop')).toEqual(['Where', 'Drop']);
   });
 
   it('lists the Creator flows with their groups and blurbs (ADR 0043 D1)', () => {
@@ -291,6 +294,9 @@ describe('wizard starters', () => {
       'demo:gems',
       'demo:root',
       'demo:get_blue_topaz',
+      'demo:ore_blue_topaz',
+      'demo:ore_blue_topaz_placed',
+      'demo:blue_topaz_ore_generation',
     ]);
     expect(data(bundle, 'demo:blue_topaz_ore')).toMatchObject({
       display_name: 'Blue Topaz Ore',

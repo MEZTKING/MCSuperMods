@@ -1,0 +1,20 @@
+{
+  "data": {
+    "creative_tab": "minecraft:ingredients",
+    "display_name": "Ruby",
+    "format": 1,
+    "max_stack_size": 64,
+    "model": "msm_examples:item/ruby_gem"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ruby_gem",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The item the zombie drops: a plain gem with its own model.",
+    "tags": [
+      "example",
+      "additions"
+    ]
+  }
+}

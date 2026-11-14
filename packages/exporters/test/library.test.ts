@@ -54,6 +54,7 @@ import dataPackPlugin from '@msm/plugin-datapack';
 import entitiesPlugin from '@msm/plugin-entities';
 import libraryPlugin, {
   behaviourExamples,
+  EXTRA_DROP_TABLES,
   encodePng,
   entityBehaviourExamples,
   kindExamples,
@@ -175,6 +176,9 @@ function skinDataUrl(height: number): string {
 const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>[]>> = {
   custom_ore: [
     { ore_name: 'Amber', colour: '#de9420', drop_max: 9, tool_tier: 'diamond', make_block: false },
+    // World step (ADR 0060 D6): generation off, and big veins high up with the heights swapped.
+    { ore_name: 'Jade', colour: '#28a060', generate: false },
+    { vein_size: 32, veins_per_chunk: 32, min_y: 320, max_y: 100 },
   ],
   'custom-sword': [
     {
@@ -362,6 +366,11 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     },
     { dimension_name: 'Flatland', terrain: 'flat', biome: 'minecraft:plains' },
   ],
+  'extra-drop': [
+    { table: 'chests/desert_pyramid', item: 'diamond', count_min: 2, count_max: 5, chance: 100 },
+    { table: 'blocks/short_grass', item: 'minecraft:wheat_seeds', chance: 50 },
+    { table: 'entities/creeper', player_kill: false, item: 'minecraft:tnt', chance: 5 },
+  ],
   'villager-trade': [
     { profession: 'farmer', level: '3', direction: 'buys', item: 'pumpkin', item_count: 6 },
     { profession: 'wandering_trader', item: 'minecraft:nautilus_shell', emeralds: 5 },
@@ -515,6 +524,7 @@ const MIRRORED_STARTERS = [
   'dimension',
   'status-effect',
   'throwable',
+  'extra-drop',
 ];
 
 function kindRegistry(): ElementKindRegistry {
@@ -1156,6 +1166,7 @@ describe('library bundles', () => {
       'example_msm_script_schedule demo:amethyst_spiral',
       'example_msm_script_action demo:chime_handler',
       'example_msm_scripted_effect demo:antidote_handler',
+      'example_msm_kill_counter demo:kill_counter',
     ]);
   });
 
@@ -1564,6 +1575,44 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         ]),
       );
       expect(jarFiles).not.toContain('pack.mcmeta');
+      // It generates (ADR 0060 D6): the feature files go into the data pack and the jar, the
+      // biome addition into the jar only (D7).
+      const worldgen = [
+        `data/demo/${data.worldgen}/feature/ore_ruby.json`,
+        `data/demo/${data.worldgen}/placed_feature/ore_ruby_placed.json`,
+      ];
+      expect(dataFiles).toEqual(expect.arrayContaining(worldgen));
+      expect(jarFiles).toEqual(
+        expect.arrayContaining([...worldgen, 'msm/demo/biome_addition/ruby_ore_generation.json']),
+      );
+    });
+
+    it('the Custom ore starter with generate off exports nothing of world generation (ADR 0060 D6)', async () => {
+      const built = await buildProject('Ore', 'demo', [
+        buildEntry(starterById('custom_ore'), 'demo', 'Ore', bundle.target, { generate: false }),
+      ]);
+      const { dataFiles, jarFiles } = await checkProject(bundle, context, built);
+      for (const files of [dataFiles, jarFiles]) {
+        expect(files.filter((path) => /ore_ruby|biome_addition/.test(path))).toEqual([]);
+      }
+    });
+
+    it('the Extra drop flow names only loot tables the target has and exports to the jar only (ADR 0060 D6)', async () => {
+      const tables = new Set(context.vanilla.loot_table ?? []);
+      for (const id of EXTRA_DROP_TABLES) expect(tables.has(id.slice(10)), id).toBe(true);
+      const built = await buildProject('Drop', 'demo', [
+        buildEntry(starterById('extra-drop'), 'demo', 'Drop', bundle.target),
+      ]);
+      const { resourceFiles, dataFiles, jarFiles } = await checkProject(bundle, context, built);
+      for (const files of [resourceFiles, dataFiles]) {
+        expect(files.some((path) => path.startsWith('msm/'))).toBe(false);
+      }
+      expect(jarFiles).toEqual(
+        expect.arrayContaining([
+          'msm/demo/loot_addition/zombie_drops_emerald.json',
+          'fabric.mod.json',
+        ]),
+      );
     });
 
     it('the Scripted ore starter exports its scripts in the Fabric mod jar only (ADRs 0031, 0032)', async () => {
@@ -1739,4 +1788,27 @@ describe('examples/ mirror', () => {
       await reload(diskFs(root));
     },
   );
+
+  it('the Custom ore starter with generate off equals the mirror without its world generation (ADR 0060 D6)', async () => {
+    const root = join(examplesRoot, 'starters', 'custom_ore');
+    const starter = starterById('custom_ore');
+    const { fs } = await buildProject(starter.title, 'msm_starter', [
+      buildEntry(starter, 'msm_starter', starter.title, DEFAULT_BUNDLE.target, { generate: false }),
+    ]);
+    const generated = fs.snapshot();
+    const worldgen = [
+      'content/msm_starter/worldgen/feature/ore_ruby.json',
+      'content/msm_starter/worldgen/placed_feature/ore_ruby_placed.json',
+      'content/msm_starter/biome_addition/ruby_ore_generation.json',
+    ];
+    const onDisk = await listFiles(root);
+    expect(onDisk).toEqual(expect.arrayContaining(worldgen));
+    expect(Object.keys(generated).sort()).toEqual(
+      onDisk.filter((path) => !worldgen.includes(path)),
+    );
+    for (const [path, bytes] of Object.entries(generated)) {
+      const file = new Uint8Array(await readFile(join(root, ...path.split('/'))));
+      expect(Buffer.from(file).equals(Buffer.from(bytes)), path).toBe(true);
+    }
+  });
 });

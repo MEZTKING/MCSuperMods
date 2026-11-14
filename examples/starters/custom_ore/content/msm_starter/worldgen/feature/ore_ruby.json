@@ -1,0 +1,30 @@
+{
+  "data": {
+    "discard_chance_on_air_exposure": 0,
+    "size": 6,
+    "targets": [
+      {
+        "state": "msm_starter:ruby_ore",
+        "target": {
+          "block": "minecraft:stone",
+          "predicate_type": "minecraft:block_match"
+        }
+      },
+      {
+        "state": "msm_starter:ruby_ore",
+        "target": {
+          "block": "minecraft:deepslate",
+          "predicate_type": "minecraft:block_match"
+        }
+      }
+    ],
+    "type": "minecraft:ore"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ore_ruby",
+  "kind": "minecraft:worldgen/feature",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A configured ore feature: one vein of up to 6 ruby ore blocks. Each target replaces one kind of block, here stone and deepslate, with the ore. On its own a feature places nothing: the placed feature msm_starter:ore_ruby_placed says where and how often."
+  }
+}

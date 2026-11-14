@@ -6,6 +6,13 @@
  * build the ruby ore, rubies and block of ruby of earlier versions byte for byte. New blocks
  * and items need the Fabric mod jar export (with `msm_runtime`); the vanilla pack exports carry
  * only the models, textures, language keys, loot tables, tags, recipes and advancements.
+ *
+ * Step "World" (ADR 0060 D6): with "generate" on (the default) the ore also generates in every
+ * overworld biome: an ore feature that replaces stone and deepslate, a placed feature with the
+ * veins per chunk and height range, and an `msm:biome_addition` that adds it at the
+ * underground ores step. The two worldgen files go in the data pack too; the biome addition
+ * exists only in the Fabric mod jar. With "generate" off the bundle is the one of earlier
+ * versions byte for byte: the three elements are left out and nothing else changes.
  */
 import type {
   BundleContext,
@@ -28,15 +35,17 @@ import {
   hexFromRgb,
   NAME_MAX_LENGTH,
   NAME_PATTERN,
+  type NameForms,
   nameForms,
   numberValue,
   numberWord,
+  type ParameterValues,
   readValues,
   rgbFromHex,
   stringValue,
 } from '../content/parameters';
 
-/** The Custom ore wizard's questions (ADR 0040 D2), steps "Ore" and "Drops". */
+/** The Custom ore wizard's questions (ADR 0040 D2), steps "Ore", "Drops" and "World" (ADR 0060 D6). */
 export const CUSTOM_ORE_PARAMETERS: readonly StarterParameter[] = Object.freeze([
   {
     id: 'ore_name',
@@ -99,6 +108,60 @@ export const CUSTOM_ORE_PARAMETERS: readonly StarterParameter[] = Object.freeze(
     max: 9,
     step: 1,
   },
+  {
+    id: 'generate',
+    label: 'Generate in the world',
+    description:
+      'The ore appears underground in every overworld biome, in newly generated chunks only. Needs the Fabric mod jar export.',
+    group: 'World',
+    type: 'boolean',
+    default: true,
+  },
+  {
+    id: 'vein_size',
+    label: 'Vein size',
+    description: 'How many ore blocks one vein holds at most (iron ore uses 9, diamond ore 4).',
+    group: 'World',
+    type: 'number',
+    default: 6,
+    min: 1,
+    max: 32,
+    step: 1,
+  },
+  {
+    id: 'veins_per_chunk',
+    label: 'Veins per chunk',
+    description: 'How many veins each chunk tries to place (iron ore uses 10).',
+    group: 'World',
+    type: 'number',
+    default: 6,
+    min: 1,
+    max: 32,
+    step: 1,
+  },
+  {
+    id: 'min_y',
+    label: 'Lowest height',
+    description: 'The lowest y the veins appear at; the overworld starts at y -64.',
+    group: 'World',
+    type: 'number',
+    default: -64,
+    min: -64,
+    max: 320,
+    step: 1,
+  },
+  {
+    id: 'max_y',
+    label: 'Highest height',
+    description:
+      'The highest y the veins appear at. A value below the lowest is treated as equal to it.',
+    group: 'World',
+    type: 'number',
+    default: 32,
+    min: -64,
+    max: 320,
+    step: 1,
+  },
 ]);
 
 /** "one or two rubies", "three rubies", "one to nine rubies". */
@@ -120,6 +183,7 @@ export function customOreBundle(context: BundleContext): ContentBundle {
   const dropMin = Math.min(first, second);
   const dropMax = Math.max(first, second);
   const isRuby = gem.id === 'ruby';
+  const generate = booleanValue(values, 'generate');
 
   const ore = rl(namespace, `${gem.id}_ore`);
   const ruby = rl(namespace, gem.id);
@@ -341,6 +405,7 @@ export function customOreBundle(context: BundleContext): ContentBundle {
         },
         `A child advancement under the root. It shows a toast and a chat message when you first hold ${articleFor(gem.lower)} ${gem.lower}.`,
       ),
+      ...(generate ? generationElements(namespace, gem, ore, values) : []),
     ],
     assets: [
       texture(namespace, `block/${gem.id}_ore`, 'ore', colour),
@@ -348,4 +413,73 @@ export function customOreBundle(context: BundleContext): ContentBundle {
       texture(namespace, `item/${gem.id}`, 'gem', colour),
     ],
   };
+}
+
+/**
+ * The three world generation elements (ADR 0060 D6): the ore feature, its placed feature and
+ * the biome addition that puts it into every overworld biome.
+ */
+function generationElements(
+  namespace: string,
+  gem: NameForms,
+  ore: string,
+  values: ParameterValues,
+): ContentBundleElement[] {
+  const veinSize = Math.round(numberValue(values, 'vein_size'));
+  const veins = Math.round(numberValue(values, 'veins_per_chunk'));
+  const first = Math.round(numberValue(values, 'min_y'));
+  const second = Math.round(numberValue(values, 'max_y'));
+  const minY = Math.min(first, second);
+  const maxY = Math.max(first, second);
+  const feature = rl(namespace, `ore_${gem.id}`);
+  const placed = rl(namespace, `ore_${gem.id}_placed`);
+  const addition = rl(namespace, `${gem.id}_ore_generation`);
+  const replace = (block: string) => ({
+    target: { predicate_type: 'minecraft:block_match', block },
+    state: ore,
+  });
+  return [
+    element(
+      feature,
+      KINDS.feature,
+      {
+        type: 'minecraft:ore',
+        size: veinSize,
+        discard_chance_on_air_exposure: 0,
+        targets: [replace('minecraft:stone'), replace('minecraft:deepslate')],
+      },
+      `A configured ore feature: one vein of up to ${veinSize} ${gem.lower} ore blocks. Each target replaces one kind of block, here stone and deepslate, with the ore. On its own a feature places nothing: the placed feature ${placed} says where and how often.`,
+    ),
+    element(
+      placed,
+      KINDS.placedFeature,
+      {
+        feature,
+        placement: [
+          { type: 'minecraft:count', count: veins },
+          { type: 'minecraft:in_square' },
+          {
+            type: 'minecraft:height_range',
+            height: {
+              type: 'minecraft:uniform',
+              min_inclusive: { absolute: minY },
+              max_inclusive: { absolute: maxY },
+            },
+          },
+          { type: 'minecraft:biome' },
+        ],
+      },
+      `Where the ore goes: ${veins} tries per chunk (count), each moved to a random spot in the chunk (in_square) and to a random height from y ${minY} to y ${maxY} (height_range). The biome filter keeps it to the biomes that list it. The world addition ${addition} lists it in the overworld biomes.`,
+    ),
+    element(
+      addition,
+      KINDS.biomeAddition,
+      {
+        format: 1,
+        biomes: ['#minecraft:is_overworld'],
+        features: [{ feature: placed, step: 'underground_ores' }],
+      },
+      `A world addition: it adds the placed feature ${placed} to every biome in #minecraft:is_overworld at the underground ores step, as vanilla ores are, without replacing any vanilla file. Only chunks generated after you install the mod get the ore, so explore new land or start a new world. World additions need the Fabric mod jar export; the vanilla data pack carries the feature files but cannot add them to vanilla biomes.`,
+    ),
+  ];
 }

@@ -1,0 +1,31 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 3,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Jade Ore",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "model": "msm_examples:block/jade_ore",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:jade_ore",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The ore block the feature places. It needs a stone pickaxe or better and drops itself.",
+    "tags": [
+      "example",
+      "additions"
+    ]
+  }
+}

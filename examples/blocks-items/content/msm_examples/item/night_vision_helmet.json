@@ -1,0 +1,42 @@
+{
+  "data": {
+    "components": {
+      "msm:armor": {
+        "material": "iron",
+        "slot": "helmet"
+      },
+      "msm:while_worn": {
+        "event": "msm_examples:night_vision_helmet_worn",
+        "interval_ticks": 100
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Night-vision Helmet",
+    "events": {
+      "msm_examples:night_vision_helmet_worn": {
+        "actions": [
+          {
+            "effect": "minecraft:night_vision",
+            "seconds": 20,
+            "target": "self",
+            "type": "apply_effect"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "minecraft:item/iron_helmet"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:night_vision_helmet",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An item trigger. msm:while_worn fires msm_examples:night_vision_helmet_worn every 100 ticks (five seconds) while the helmet is in the head slot, and only there: it needs msm:armor. The event gives the wearer 20 seconds of night vision, so the effect never runs low enough to flicker and ends shortly after the helmet comes off. msm:armor makes it an iron helmet. It reuses the vanilla iron helmet model.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

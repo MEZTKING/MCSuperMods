@@ -66,3 +66,35 @@ describe('systemPrompt effects and throwables paragraph (ADR 0055 D11)', () => {
     },
   );
 });
+
+describe('systemPrompt vanilla additions, triggers and saved data paragraphs (ADRs 0060-0062)', () => {
+  it.each(['chat', 'build'] as const)('names the kinds, triggers and stores in %s mode', (mode) => {
+    const text = systemPrompt(mode);
+    for (const term of [
+      'msm:biome_addition',
+      'msm:loot_addition',
+      'underground_ores',
+      'minecraft:block_match',
+      'minecraft:all_of',
+      '"condition"',
+      '"burn_seconds"',
+      'minecraft:villager_trade',
+      'Extra drop',
+      'msm:on_hit',
+      'msm:on_use_on_block',
+      'msm:while_held',
+      'msm:while_worn',
+      'msm:on_break',
+      'msm:on_place',
+      'msm:on_random_tick',
+      'msm:on_entity_inside',
+      'msm:on_spawn',
+      'player.data',
+      'msm.storage',
+      '16 KiB',
+      'server.started',
+    ]) {
+      expect(text, term).toContain(term);
+    }
+  });
+});

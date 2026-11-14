@@ -82,6 +82,8 @@ export const KINDS = Object.freeze({
   item: 'msm:item',
   mod: 'msm:mod',
   effect: 'msm:effect',
+  biomeAddition: 'msm:biome_addition',
+  lootAddition: 'msm:loot_addition',
   entity: 'msm:entity',
   geoModel: 'msm:geo_model',
   animation: 'msm:animation',

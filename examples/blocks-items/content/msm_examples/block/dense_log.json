@@ -1,0 +1,33 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2,
+        "resistance": 2,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Dense Log",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks",
+      "fuel": {
+        "burn_seconds": 45
+      }
+    },
+    "loot": "self",
+    "model": "minecraft:block/stripped_dark_oak_log",
+    "sound_type": "wood"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:dense_log",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A block whose item is a furnace fuel. fuel on the block item gives the burn time in seconds: 45, three times an oak log, so one log smelts 22 items. It is lowered to the vanilla minecraft:cooking_fuel component, so no code is needed, but new blocks still need the Fabric mod jar export. It reuses the vanilla stripped dark oak log model.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

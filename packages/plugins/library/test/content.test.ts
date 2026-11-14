@@ -43,6 +43,7 @@ const STARTER_IDS = [
   'music-disc-item',
   'dimension',
   'villager-trade',
+  'extra-drop',
   'recipe_pack',
   'music_disc',
   'function_starter',
@@ -55,7 +56,7 @@ const STARTER_IDS = [
 ];
 
 /**
- * The 65 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
+ * The 67 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
  * items, entities, models and animations and scripting plugins, in per-kind example order.
  */
 const KIND_IDS = [
@@ -120,6 +121,8 @@ const KIND_IDS = [
   'msm:item',
   'msm:effect',
   'msm:mod',
+  'msm:biome_addition',
+  'msm:loot_addition',
   'msm:entity',
   'msm:geo_model',
   'msm:animation',
@@ -166,7 +169,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the twenty-eight starters in order', () => {
+  it('lists the twenty-nine starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -176,7 +179,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(24).fill('content'),
+      ...Array<string>(25).fill('content'),
     ]);
   });
 
@@ -220,6 +223,9 @@ describe('project starters', () => {
       'minecraft:tag/item demo:gems',
       'minecraft:advancement demo:root',
       'minecraft:advancement demo:get_ruby',
+      'minecraft:worldgen/feature demo:ore_ruby',
+      'minecraft:worldgen/placed_feature demo:ore_ruby_placed',
+      'msm:biome_addition demo:ruby_ore_generation',
     ]);
     const rubyOre = bundle.elements.find((entry) => entry.id === 'demo:ruby_ore');
     expect(rubyOre?.data).toMatchObject({
@@ -239,6 +245,126 @@ describe('project starters', () => {
       'textures/block/ruby_block.png',
       'textures/item/ruby.png',
     ]);
+  });
+
+  it('makes the Custom ore generate in overworld biomes, and leaves it out with generate off (ADR 0060 D6)', () => {
+    const ore = libraryStarters.find((starter) => starter.id === 'custom_ore') as ProjectStarter;
+    const on = build(ore);
+    const off = build(ore, 'demo', { generate: false });
+    const worldgen = new Set(['demo:ore_ruby', 'demo:ore_ruby_placed', 'demo:ruby_ore_generation']);
+    // Off: exactly the bundle of earlier versions, which is the generating one without the three.
+    expect(off).toEqual({
+      elements: on.elements.filter((entry) => !worldgen.has(entry.id)),
+      assets: on.assets,
+    });
+    expect(off.elements.some((entry) => worldgen.has(entry.id))).toBe(false);
+    const data = (id: string) => on.elements.find((entry) => entry.id === id)?.data;
+    expect(data('demo:ore_ruby')).toMatchObject({
+      type: 'minecraft:ore',
+      size: 6,
+      targets: [
+        {
+          target: { predicate_type: 'minecraft:block_match', block: 'minecraft:stone' },
+          state: 'demo:ruby_ore',
+        },
+        {
+          target: { predicate_type: 'minecraft:block_match', block: 'minecraft:deepslate' },
+          state: 'demo:ruby_ore',
+        },
+      ],
+    });
+    expect(data('demo:ore_ruby_placed')).toMatchObject({
+      feature: 'demo:ore_ruby',
+      placement: [{ type: 'minecraft:count', count: 6 }, {}, {}, { type: 'minecraft:biome' }],
+    });
+    expect(data('demo:ruby_ore_generation')).toEqual({
+      format: 1,
+      biomes: ['#minecraft:is_overworld'],
+      features: [{ feature: 'demo:ore_ruby_placed', step: 'underground_ores' }],
+    });
+    // The wizard's answers reach the feature and the placement; heights are put in order.
+    const custom = build(ore, 'demo', { vein_size: 3, veins_per_chunk: 2, min_y: 40, max_y: -10 });
+    const customData = (id: string) => custom.elements.find((entry) => entry.id === id)?.data;
+    expect(customData('demo:ore_ruby')).toMatchObject({ size: 3 });
+    expect(JSON.stringify(customData('demo:ore_ruby_placed'))).toContain(
+      '"min_inclusive":{"absolute":-10},"max_inclusive":{"absolute":40}',
+    );
+    expect(ore.requiresKinds).toEqual(
+      expect.arrayContaining([
+        'minecraft:worldgen/feature',
+        'minecraft:worldgen/placed_feature',
+        'msm:biome_addition',
+      ]),
+    );
+  });
+
+  it('builds the Extra drop flow as one loot addition with a single pool condition (ADR 0060 D6)', () => {
+    const flow = libraryStarters.find((starter) => starter.id === 'extra-drop') as ProjectStarter;
+    expect(flow.creator?.group).toBe('worlds');
+    expect(flow.description).toMatch(/Fabric mod jar/);
+    const bundle = build(flow);
+    expect(bundle.elements.map((entry) => `${entry.kind} ${entry.id}`)).toEqual([
+      'minecraft:pack_mcmeta demo:pack',
+      'msm:mod demo:mod',
+      'msm:loot_addition demo:zombie_drops_emerald',
+    ]);
+    expect(bundle.elements[2]?.data).toEqual({
+      format: 1,
+      tables: ['minecraft:entities/zombie'],
+      pools: [
+        {
+          rolls: 1,
+          entries: [{ type: 'minecraft:item', name: 'minecraft:emerald' }],
+          condition: {
+            type: 'minecraft:all_of',
+            terms: [
+              { type: 'minecraft:killed_by_player' },
+              { type: 'minecraft:random_chance', chance: 0.1 },
+            ],
+          },
+        },
+      ],
+    });
+    // A chest, every time, two to four: no condition, a set_count modifier, no player check.
+    const chest = build(flow, 'demo', {
+      table: 'chests/simple_dungeon',
+      item: 'diamond',
+      count_min: 4,
+      count_max: 2,
+      chance: 100,
+    });
+    expect(chest.elements[2]?.id).toBe('demo:simple_dungeon_drops_diamond');
+    expect(chest.elements[2]?.data).toEqual({
+      format: 1,
+      tables: ['minecraft:chests/simple_dungeon'],
+      pools: [
+        {
+          rolls: 1,
+          entries: [
+            {
+              type: 'minecraft:item',
+              name: 'minecraft:diamond',
+              modifier: [
+                {
+                  type: 'minecraft:set_count',
+                  count: { type: 'minecraft:uniform', min: 2, max: 4 },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    // One check only: the condition is that check, not all_of.
+    const block = build(flow, 'demo', { table: 'blocks/gravel', count_min: 3, count_max: 3 });
+    expect(block.elements[2]?.data).toMatchObject({
+      pools: [
+        {
+          entries: [{ modifier: [{ type: 'minecraft:set_count', count: 3 }] }],
+          condition: { type: 'minecraft:random_chance', chance: 0.1 },
+        },
+      ],
+    });
   });
 
   it('builds the Custom mob starter: an animated Ruby Golem with its model, loot and egg', () => {
@@ -420,8 +546,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 65 per-kind examples, one per built-in kind, 7 behaviour examples and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(65);
+  it('has 67 per-kind examples, one per built-in kind, 11 behaviour examples and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(67);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -430,6 +556,9 @@ describe('examples', () => {
     expect(behaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_tool',
       'example_msm_event_chain',
+      'example_msm_fuel_log',
+      'example_msm_life_steal_sword',
+      'example_msm_night_vision_helmet',
     ]);
     expect(entityBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_hostile_mob',
@@ -439,8 +568,9 @@ describe('examples', () => {
       'example_msm_script_schedule',
       'example_msm_script_action',
       'example_msm_scripted_effect',
+      'example_msm_kill_counter',
     ]);
-    expect(libraryExamples).toHaveLength(76);
+    expect(libraryExamples).toHaveLength(82);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -651,16 +781,20 @@ describe('structure and worldgen content', () => {
     entry.requiresKinds.some((kind) => WORLDGEN_KINDS.has(kind)),
   );
 
-  it('covers the four worldgen starters and the 19 structure and worldgen examples', () => {
+  it('covers the six worldgen starters, the 19 structure and worldgen examples and the generating ores', () => {
     expect(worldgenEntries.map((entry) => entry.id)).toEqual([
+      'custom_ore',
       'dimension',
       'custom_biome',
       'jigsaw_structure',
       'worldgen_pack',
+      'scripted_ore',
       ...WORLDGEN_KIND_IDS.map((kind) => {
         const example = kindExamples.find((entry) => entry.kind === kind);
         return example?.id;
       }),
+      'example_msm_biome_addition',
+      'starter_custom_ore',
     ]);
   });
 
@@ -676,8 +810,13 @@ describe('structure and worldgen content', () => {
             (key === 'name' || key === 'target')
           )
             continue;
-          // An item's trigger names one of its own events, not an element.
-          if (element.kind === 'msm:item' && key === 'event') continue;
+          // An item's or block's trigger names one of its own events, not an element, and a
+          // run_script action a handler a script defines.
+          if (
+            (element.kind === 'msm:item' || element.kind === 'msm:block') &&
+            (key === 'event' || key === 'handler')
+          )
+            continue;
           if (!/^#?other_ns:/.test(text)) continue;
           expect(ids.has(text.replace(/^#/, '')), `${entry.id} ${element.id} ${key} ${text}`).toBe(
             true,

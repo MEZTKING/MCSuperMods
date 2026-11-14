@@ -1,0 +1,25 @@
+{
+  "data": {
+    "biomes": [
+      "#minecraft:is_overworld"
+    ],
+    "features": [
+      {
+        "feature": "msm_examples:ore_jade_placed",
+        "step": "underground_ores"
+      }
+    ],
+    "format": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:jade_ore_generation",
+  "kind": "msm:biome_addition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A world addition: it adds the placed feature msm_examples:ore_jade_placed to every biome in the tag #minecraft:is_overworld, without replacing any vanilla biome file. step says when the feature runs; underground_ores is where vanilla ores generate. Only chunks generated after the mod is installed get the ore, so try it in a new world. World additions need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "additions"
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "data": {
+    "feature": "msm_starter:ore_ruby",
+    "placement": [
+      {
+        "count": 6,
+        "type": "minecraft:count"
+      },
+      {
+        "type": "minecraft:in_square"
+      },
+      {
+        "height": {
+          "max_inclusive": {
+            "absolute": 32
+          },
+          "min_inclusive": {
+            "absolute": -64
+          },
+          "type": "minecraft:uniform"
+        },
+        "type": "minecraft:height_range"
+      },
+      {
+        "type": "minecraft:biome"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ore_ruby_placed",
+  "kind": "minecraft:worldgen/placed_feature",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Where the ore goes: 6 tries per chunk (count), each moved to a random spot in the chunk (in_square) and to a random height from y -64 to y 32 (height_range). The biome filter keeps it to the biomes that list it. The world addition msm_starter:ruby_ore_generation lists it in the overworld biomes."
+  }
+}

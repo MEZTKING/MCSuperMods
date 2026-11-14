@@ -1,0 +1,42 @@
+{
+  "data": {
+    "format": 1,
+    "pools": [
+      {
+        "condition": {
+          "terms": [
+            {
+              "type": "minecraft:killed_by_player"
+            },
+            {
+              "chance": 0.2,
+              "type": "minecraft:random_chance"
+            }
+          ],
+          "type": "minecraft:all_of"
+        },
+        "entries": [
+          {
+            "name": "msm_examples:ruby_gem",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "tables": [
+      "minecraft:entities/zombie"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:zombie_drops_ruby",
+  "kind": "msm:loot_addition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An extra drop: it adds a pool to the vanilla zombie loot table, which keeps its own pools. The pool rolls once and drops one msm_examples:ruby_gem. Its condition uses minecraft:all_of, so both terms must hold: a player made the kill, and a one in five chance. A world data pack that replaces the zombie table wins over the extra drop. Extra drops need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "additions"
+    ]
+  }
+}

@@ -2,13 +2,20 @@
  * Phase 4 examples (ADR 0025): one per-kind example each for `msm:block`, `msm:item`,
  * `msm:effect` (ADR 0055: the Frost bomb, a throwable that gives a custom slowing effect) and
  * `msm:mod`, plus behaviour examples (a tool with its recipe, and an event chain that runs a
- * function). New blocks and items need the Fabric mod jar export; the vanilla pack exports
- * carry only their models, textures, language keys, loot tables and tags.
+ * function). Additions to vanilla content (ADR 0060): the per-kind examples of
+ * `msm:biome_addition` (Ore that generates) and `msm:loot_addition` (Zombie drops a ruby), and
+ * the behaviour examples Fuel log (a block item that burns), Life-steal sword (`msm:on_hit`)
+ * and Night-vision helmet (`msm:while_worn`, ADR 0061). New blocks and items need the Fabric
+ * mod jar export; the vanilla pack exports carry only their models, textures, language keys,
+ * loot tables and tags.
  */
 import type { ExampleProject } from '@msm/plugin-api';
 import { COLOURS, element, KINDS, modIdFromNamespace, rl, texture } from '../content/bundle';
 import { colourInt, effectIconAsset } from '../content/effects';
 import { defineExample } from './define';
+
+/** The gallery category of the additions to vanilla content. */
+const ADDITIONS = 'Additions';
 
 /** The per-kind examples of the blocks and items plugin, in kind order. */
 export const blocksItemsExamples: readonly ExampleProject[] = [
@@ -301,6 +308,153 @@ export const blocksItemsExamples: readonly ExampleProject[] = [
       assets: [],
     }),
   }),
+  defineExample({
+    id: 'example_msm_biome_addition',
+    title: 'Ore that generates',
+    description:
+      'Jade ore that generates underground in every overworld biome: the ore block, its ore feature, the placed feature and the world addition that adds it to vanilla biomes.',
+    kind: KINDS.biomeAddition,
+    category: ADDITIONS,
+    tags: ['ore', 'world generation', 'biome_addition', 'mod'],
+    build: ({ namespace }) => {
+      const ore = rl(namespace, 'jade_ore');
+      const oreModel = rl(namespace, 'block/jade_ore');
+      const feature = rl(namespace, 'ore_jade');
+      const placed = rl(namespace, 'ore_jade_placed');
+      const generation = rl(namespace, 'jade_ore_generation');
+      const replace = (block: string) => ({
+        target: { predicate_type: 'minecraft:block_match', block },
+        state: ore,
+      });
+      return {
+        elements: [
+          element(
+            generation,
+            KINDS.biomeAddition,
+            {
+              format: 1,
+              biomes: ['#minecraft:is_overworld'],
+              features: [{ feature: placed, step: 'underground_ores' }],
+            },
+            `A world addition: it adds the placed feature ${placed} to every biome in the tag #minecraft:is_overworld, without replacing any vanilla biome file. step says when the feature runs; underground_ores is where vanilla ores generate. Only chunks generated after the mod is installed get the ore, so try it in a new world. World additions need the Fabric mod jar export.`,
+          ),
+          element(
+            ore,
+            KINDS.block,
+            {
+              format: 1,
+              model: oreModel,
+              display_name: 'Jade Ore',
+              sound_type: 'stone',
+              loot: 'self',
+              item: { creative_tab: 'minecraft:natural_blocks' },
+              components: {
+                'msm:breakable': { hardness: 3, resistance: 3, tool: 'pickaxe', min_tier: 'stone' },
+              },
+            },
+            'The ore block the feature places. It needs a stone pickaxe or better and drops itself.',
+          ),
+          element(
+            oreModel,
+            KINDS.model,
+            { parent: 'minecraft:block/cube_all', textures: { all: oreModel } },
+            'A full cube drawn from textures/block/jade_ore.png.',
+          ),
+          element(
+            feature,
+            KINDS.feature,
+            {
+              type: 'minecraft:ore',
+              size: 8,
+              discard_chance_on_air_exposure: 0,
+              targets: [replace('minecraft:stone'), replace('minecraft:deepslate')],
+            },
+            'One vein of up to eight jade ore blocks that replaces stone and deepslate.',
+          ),
+          element(
+            placed,
+            KINDS.placedFeature,
+            {
+              feature,
+              placement: [
+                { type: 'minecraft:count', count: 8 },
+                { type: 'minecraft:in_square' },
+                {
+                  type: 'minecraft:height_range',
+                  height: {
+                    type: 'minecraft:uniform',
+                    min_inclusive: { absolute: -32 },
+                    max_inclusive: { absolute: 48 },
+                  },
+                },
+                { type: 'minecraft:biome' },
+              ],
+            },
+            'Eight veins per chunk at random spots from y -32 to y 48. The biome filter keeps them to the biomes that list the feature, here through the world addition.',
+          ),
+        ],
+        assets: [texture(namespace, 'block/jade_ore', 'ore', COLOURS.jade)],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_msm_loot_addition',
+    title: 'Zombie drops a ruby',
+    description:
+      'Zombies killed by a player sometimes drop a ruby, on top of their usual drops: a ruby item and the extra drop that adds it to the vanilla zombie loot table.',
+    kind: KINDS.lootAddition,
+    category: ADDITIONS,
+    tags: ['loot', 'extra drop', 'zombie', 'loot_addition', 'mod'],
+    build: ({ namespace }) => {
+      const ruby = rl(namespace, 'ruby_gem');
+      const rubyModel = rl(namespace, 'item/ruby_gem');
+      return {
+        elements: [
+          element(
+            rl(namespace, 'zombie_drops_ruby'),
+            KINDS.lootAddition,
+            {
+              format: 1,
+              tables: ['minecraft:entities/zombie'],
+              pools: [
+                {
+                  rolls: 1,
+                  entries: [{ type: 'minecraft:item', name: ruby }],
+                  condition: {
+                    type: 'minecraft:all_of',
+                    terms: [
+                      { type: 'minecraft:killed_by_player' },
+                      { type: 'minecraft:random_chance', chance: 0.2 },
+                    ],
+                  },
+                },
+              ],
+            },
+            `An extra drop: it adds a pool to the vanilla zombie loot table, which keeps its own pools. The pool rolls once and drops one ${ruby}. Its condition uses minecraft:all_of, so both terms must hold: a player made the kill, and a one in five chance. A world data pack that replaces the zombie table wins over the extra drop. Extra drops need the Fabric mod jar export.`,
+          ),
+          element(
+            ruby,
+            KINDS.item,
+            {
+              format: 1,
+              model: rubyModel,
+              display_name: 'Ruby',
+              max_stack_size: 64,
+              creative_tab: 'minecraft:ingredients',
+            },
+            'The item the zombie drops: a plain gem with its own model.',
+          ),
+          element(
+            rubyModel,
+            KINDS.model,
+            { parent: 'minecraft:item/generated', textures: { layer0: rubyModel } },
+            'A flat item model drawn from textures/item/ruby_gem.png.',
+          ),
+        ],
+        assets: [texture(namespace, 'item/ruby_gem', 'gem', COLOURS.ruby)],
+      };
+    },
+  }),
 ];
 
 /** Behaviour examples of blocks and items beyond the one per kind, in gallery order. */
@@ -413,6 +567,121 @@ export const behaviourExamples: readonly ExampleProject[] = [
               ],
             },
             'The function the flare event runs. It runs as the player who used the block, at the block, so @s is that player.',
+          ),
+        ],
+        assets: [],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_msm_fuel_log',
+    title: 'Fuel log',
+    description:
+      'A dense log block whose item burns in a furnace three times as long as an oak log.',
+    kind: KINDS.block,
+    category: 'Blocks',
+    tags: ['fuel', 'furnace', 'block item', 'mod'],
+    build: ({ namespace }) => ({
+      elements: [
+        element(
+          rl(namespace, 'dense_log'),
+          KINDS.block,
+          {
+            format: 1,
+            model: 'minecraft:block/stripped_dark_oak_log',
+            display_name: 'Dense Log',
+            sound_type: 'wood',
+            loot: 'self',
+            item: { creative_tab: 'minecraft:building_blocks', fuel: { burn_seconds: 45 } },
+            components: { 'msm:breakable': { hardness: 2, resistance: 2, tool: 'axe' } },
+          },
+          'A block whose item is a furnace fuel. fuel on the block item gives the burn time in seconds: 45, three times an oak log, so one log smelts 22 items. It is lowered to the vanilla minecraft:cooking_fuel component, so no code is needed, but new blocks still need the Fabric mod jar export. It reuses the vanilla stripped dark oak log model.',
+        ),
+      ],
+      assets: [],
+    }),
+  }),
+  defineExample({
+    id: 'example_msm_life_steal_sword',
+    title: 'Life-steal sword',
+    description: 'An iron sword that heals you by one heart each time it hits a mob.',
+    kind: KINDS.item,
+    category: 'Items',
+    tags: ['on_hit', 'heal', 'trigger', 'mod'],
+    build: ({ namespace }) => {
+      const sword = rl(namespace, 'life_steal_sword');
+      const hit = rl(namespace, 'life_steal_sword_hit');
+      return {
+        elements: [
+          element(
+            sword,
+            KINDS.item,
+            {
+              format: 1,
+              model: 'minecraft:item/iron_sword',
+              display_name: 'Life-steal Sword',
+              max_stack_size: 1,
+              rarity: 'rare',
+              creative_tab: 'minecraft:combat',
+              components: {
+                'msm:tool': { type: 'sword', tier: 'iron' },
+                'msm:on_hit': { event: hit },
+              },
+              events: {
+                [hit]: {
+                  actions: [
+                    { type: 'heal', amount: 2 },
+                    { type: 'spawn_particle', particle: 'minecraft:heart', count: 2, spread: 0.4 },
+                  ],
+                },
+              },
+            },
+            `An item trigger. msm:on_hit fires ${hit} each time the sword hits a living entity, whoever holds it: a player or a mob. heal acts on self, the attacker, and gives back one heart (2 half hearts); hearts show above it. msm:tool makes it an iron sword. It reuses the vanilla iron sword model.`,
+          ),
+        ],
+        assets: [],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_msm_night_vision_helmet',
+    title: 'Night-vision helmet',
+    description: 'An iron helmet that gives night vision while you wear it.',
+    kind: KINDS.item,
+    category: 'Items',
+    tags: ['while_worn', 'armour', 'apply_effect', 'trigger', 'mod'],
+    build: ({ namespace }) => {
+      const helmet = rl(namespace, 'night_vision_helmet');
+      const worn = rl(namespace, 'night_vision_helmet_worn');
+      return {
+        elements: [
+          element(
+            helmet,
+            KINDS.item,
+            {
+              format: 1,
+              model: 'minecraft:item/iron_helmet',
+              display_name: 'Night-vision Helmet',
+              max_stack_size: 1,
+              creative_tab: 'minecraft:combat',
+              components: {
+                'msm:armor': { slot: 'helmet', material: 'iron' },
+                'msm:while_worn': { event: worn, interval_ticks: 100 },
+              },
+              events: {
+                [worn]: {
+                  actions: [
+                    {
+                      type: 'apply_effect',
+                      effect: 'minecraft:night_vision',
+                      seconds: 20,
+                      target: 'self',
+                    },
+                  ],
+                },
+              },
+            },
+            `An item trigger. msm:while_worn fires ${worn} every 100 ticks (five seconds) while the helmet is in the head slot, and only there: it needs msm:armor. The event gives the wearer 20 seconds of night vision, so the effect never runs low enough to flicker and ends shortly after the helmet comes off. msm:armor makes it an iron helmet. It reuses the vanilla iron helmet model.`,
           ),
         ],
         assets: [],

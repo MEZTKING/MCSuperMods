@@ -1,0 +1,19 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_examples:block/jade_ore"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:block/jade_ore",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A full cube drawn from textures/block/jade_ore.png.",
+    "tags": [
+      "example",
+      "additions"
+    ]
+  }
+}

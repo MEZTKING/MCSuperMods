@@ -1,0 +1,21 @@
+{
+  "data": {
+    "biomes": [
+      "#minecraft:is_overworld"
+    ],
+    "features": [
+      {
+        "feature": "msm_starter:ore_ruby_placed",
+        "step": "underground_ores"
+      }
+    ],
+    "format": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:ruby_ore_generation",
+  "kind": "msm:biome_addition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A world addition: it adds the placed feature msm_starter:ore_ruby_placed to every biome in #minecraft:is_overworld at the underground ores step, as vanilla ores are, without replacing any vanilla file. Only chunks generated after you install the mod get the ore, so explore new land or start a new world. World additions need the Fabric mod jar export; the vanilla data pack carries the feature files but cannot add them to vanilla biomes."
+  }
+}

@@ -21,6 +21,7 @@ import { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
 import { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
 import { DIMENSION_PARAMETERS, dimensionBundle } from './dimension';
 import { ENCHANTMENT_PARAMETERS, enchantmentBundle } from './enchantment';
+import { EXTRA_DROP_PARAMETERS, extraDropBundle } from './extra-drop';
 import { FOOD_PARAMETERS, foodBundle } from './food';
 import { functionStarterBundle } from './function-starter';
 import { GEAR_SET_PARAMETERS, gearSetBundle } from './gear-set';
@@ -47,6 +48,7 @@ export { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
 export { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
 export { DIMENSION_PARAMETERS, dimensionBundle } from './dimension';
 export { ENCHANTMENT_PARAMETERS, enchantmentBundle } from './enchantment';
+export { EXTRA_DROP_PARAMETERS, EXTRA_DROP_TABLES, extraDropBundle } from './extra-drop';
 export { FOOD_PARAMETERS, foodBundle } from './food';
 export { functionStarterBundle } from './function-starter';
 export { GEAR_SET_PARAMETERS, gearSetBundle, gearSetIds, nearestTrimPalette } from './gear-set';
@@ -372,6 +374,21 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       creator: {
         group: 'worlds',
         blurb: 'A trade a villager may offer: the profession, level, price and item.',
+      },
+    },
+  ),
+  starter(
+    'extra-drop',
+    'Extra drop',
+    'An extra item in the loot of a vanilla mob, block or chest, with a count, a chance and, for mobs, whether a player must make the kill. The vanilla drops stay. Extra drops need the Fabric mod jar export.',
+    'content',
+    ['msm'],
+    extraDropBundle,
+    {
+      parameters: EXTRA_DROP_PARAMETERS,
+      creator: {
+        group: 'worlds',
+        blurb: 'An extra item a vanilla mob, block or chest drops, with its chance.',
       },
     },
   ),

@@ -1,0 +1,46 @@
+{
+  "data": {
+    "components": {
+      "msm:on_hit": {
+        "event": "msm_examples:life_steal_sword_hit"
+      },
+      "msm:tool": {
+        "tier": "iron",
+        "type": "sword"
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Life-steal Sword",
+    "events": {
+      "msm_examples:life_steal_sword_hit": {
+        "actions": [
+          {
+            "amount": 2,
+            "type": "heal"
+          },
+          {
+            "count": 2,
+            "particle": "minecraft:heart",
+            "spread": 0.4,
+            "type": "spawn_particle"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "minecraft:item/iron_sword",
+    "rarity": "rare"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:life_steal_sword",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An item trigger. msm:on_hit fires msm_examples:life_steal_sword_hit each time the sword hits a living entity, whoever holds it: a player or a mob. heal acts on self, the attacker, and gives back one heart (2 half hearts); hearts show above it. msm:tool makes it an iron sword. It reuses the vanilla iron sword model.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// Reads a saved number, or 0 when nothing is stored yet.",
+      "function count(value: unknown): number {",
+      "  return typeof value === \"number\" ? value : 0;",
+      "}",
+      "",
+      "// Each kill by a player adds one to that player's count and to the world total.",
+      "msm.events.on(\"entity.death\", (e) => {",
+      "  const killer = e.attacker?.asPlayer();",
+      "  if (killer === undefined) return;",
+      "  const kills = count(killer.data.get(\"kills\")) + 1;",
+      "  killer.data.set(\"kills\", kills);",
+      "  msm.storage.set(\"total_kills\", count(msm.storage.get(\"total_kills\")) + 1);",
+      "  if (kills % 10 === 0) killer.sendMessage(\"That makes \" + kills + \" kills!\");",
+      "});",
+      "",
+      "// The counts are still there after quitting, a restart, /reload and death.",
+      "msm.events.on(\"player.join\", (e) => {",
+      "  const kills = count(e.player.data.get(\"kills\"));",
+      "  const total = count(msm.storage.get(\"total_kills\"));",
+      "  e.player.sendMessage(\"Your kills: \" + kills + \". Everyone's: \" + total + \".\");",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:kill_counter",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A script with saved data (ADR 0062). player.data keeps values on the player, so each player has an own kills count, kept through death and dimension changes; msm.storage keeps values with the world. Both survive /reload and restarts and hold JSON values only, copied in and out, so the script reads, adds one and stores again. Keys belong to this project's namespace, so other mods cannot clash with them. Scripts run only in the Fabric mod jar export, with msm_runtime; the Java project export leaves them out.",
+    "tags": [
+      "example",
+      "scripts"
+    ]
+  }
+}

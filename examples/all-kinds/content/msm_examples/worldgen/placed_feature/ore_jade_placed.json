@@ -1,0 +1,40 @@
+{
+  "data": {
+    "feature": "msm_examples:ore_jade",
+    "placement": [
+      {
+        "count": 8,
+        "type": "minecraft:count"
+      },
+      {
+        "type": "minecraft:in_square"
+      },
+      {
+        "height": {
+          "max_inclusive": {
+            "absolute": 48
+          },
+          "min_inclusive": {
+            "absolute": -32
+          },
+          "type": "minecraft:uniform"
+        },
+        "type": "minecraft:height_range"
+      },
+      {
+        "type": "minecraft:biome"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ore_jade_placed",
+  "kind": "minecraft:worldgen/placed_feature",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Eight veins per chunk at random spots from y -32 to y 48. The biome filter keeps them to the biomes that list the feature, here through the world addition.",
+    "tags": [
+      "example",
+      "additions"
+    ]
+  }
+}

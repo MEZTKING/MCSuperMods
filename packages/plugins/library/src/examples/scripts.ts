@@ -2,7 +2,8 @@
  * Phase 6 examples (ADRs 0031, 0032): the per-kind example of `msm:script` (a block
  * interaction that cancels the use and gives an item), and two script behaviour examples (a
  * scheduled chain of effects, a block whose event calls a script through a `run_script`
- * action, and a status effect whose `msm:on_tick` event runs a script; ADR 0055 D5). Scripts run only in the Fabric mod jar export, with `msm_runtime`; the vanilla
+ * action, a status effect whose `msm:on_tick` event runs a script, ADR 0055 D5, and a kill
+ * counter kept in saved data, ADR 0062). Scripts run only in the Fabric mod jar export, with `msm_runtime`; the vanilla
  * packs and the Java project export leave them out.
  */
 import type { ExampleProject } from '@msm/plugin-api';
@@ -215,5 +216,51 @@ export const scriptBehaviourExamples: readonly ExampleProject[] = [
         assets: [effectIconAsset(namespace, 'antidote', COLOURS.jade)],
       };
     },
+  }),
+  defineExample({
+    id: 'example_msm_kill_counter',
+    title: 'Script: kill counter',
+    description:
+      "A script that counts each player's kills in saved player data and the world's total in msm.storage, and tells players their count when they join.",
+    kind: KINDS.script,
+    category: CATEGORY,
+    tags: ['entity.death', 'player.data', 'msm.storage', 'saved data', 'script'],
+    build: ({ namespace }) => ({
+      elements: [
+        element(
+          rl(namespace, 'kill_counter'),
+          KINDS.script,
+          {
+            lines: [
+              IMPORT,
+              '',
+              '// Reads a saved number, or 0 when nothing is stored yet.',
+              'function count(value: unknown): number {',
+              '  return typeof value === "number" ? value : 0;',
+              '}',
+              '',
+              "// Each kill by a player adds one to that player's count and to the world total.",
+              'msm.events.on("entity.death", (e) => {',
+              '  const killer = e.attacker?.asPlayer();',
+              '  if (killer === undefined) return;',
+              '  const kills = count(killer.data.get("kills")) + 1;',
+              '  killer.data.set("kills", kills);',
+              '  msm.storage.set("total_kills", count(msm.storage.get("total_kills")) + 1);',
+              '  if (kills % 10 === 0) killer.sendMessage("That makes " + kills + " kills!");',
+              '});',
+              '',
+              '// The counts are still there after quitting, a restart, /reload and death.',
+              'msm.events.on("player.join", (e) => {',
+              '  const kills = count(e.player.data.get("kills"));',
+              '  const total = count(msm.storage.get("total_kills"));',
+              '  e.player.sendMessage("Your kills: " + kills + ". Everyone\'s: " + total + ".");',
+              '});',
+            ],
+          },
+          `A script with saved data (ADR 0062). player.data keeps values on the player, so each player has an own kills count, kept through death and dimension changes; msm.storage keeps values with the world. Both survive /reload and restarts and hold JSON values only, copied in and out, so the script reads, adds one and stores again. Keys belong to this project's namespace, so other mods cannot clash with them. ${JAR_ONLY}`,
+        ),
+      ],
+      assets: [],
+    }),
   }),
 ];
