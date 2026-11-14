@@ -59,7 +59,7 @@ describe('NewProjectDialog with targets and wizards', () => {
     expect(screen.getByTestId('starter-custom_ore-wizard').textContent).toBe('Wizard');
     await user.click(screen.getByTestId('starter-custom_ore'));
     expect(screen.queryByTestId('new-project-target')).toBeNull();
-    expect(screen.getByTestId('wizard-progress').textContent).toBe('Step 1 of 4');
+    expect(screen.getByTestId('wizard-progress').textContent).toBe('Step 1 of 5');
     await user.click(screen.getByTestId('wizard-next'));
     expect(screen.getByTestId('wizard-step-2')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Custom ore: Ore' })).toBeTruthy();
@@ -75,6 +75,14 @@ describe('NewProjectDialog with targets and wizards', () => {
     await user.type(most, '9');
     await user.click(screen.getByTestId('wizard-next'));
     expect(screen.getByTestId('wizard-step-4')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Custom ore: World' })).toBeTruthy();
+    // Generation is on by default; keep it and change the veins per chunk.
+    expect((screen.getByTestId('param-generate') as HTMLInputElement).checked).toBe(true);
+    const veins = screen.getByTestId('param-veins_per_chunk');
+    await user.clear(veins);
+    await user.type(veins, '10');
+    await user.click(screen.getByTestId('wizard-next'));
+    expect(screen.getByTestId('wizard-step-5')).toBeTruthy();
     expect((screen.getByTestId('new-project-target') as HTMLSelectElement).value).toBe(
       defaultTargetId,
     );
@@ -90,6 +98,11 @@ describe('NewProjectDialog with targets and wizards', () => {
         make_block: false,
         drop_min: 1,
         drop_max: 9,
+        generate: true,
+        vein_size: 6,
+        veins_per_chunk: 10,
+        min_y: -64,
+        max_y: 32,
       },
     });
   });
@@ -126,9 +139,9 @@ describe('NewProjectDialog with targets and wizards', () => {
     render(<NewProjectDialog starters={[ore]} onSubmit={onSubmit} onCancel={vi.fn()} />);
     const user = userEvent.setup();
     await user.click(screen.getByTestId('starter-custom_ore'));
-    await user.click(screen.getByTestId('wizard-next'));
-    await user.click(screen.getByTestId('wizard-next'));
-    await user.click(screen.getByTestId('wizard-next'));
+    // Starter list, Ore, Drops and World steps.
+    for (let step = 0; step < 4; step += 1) await user.click(screen.getByTestId('wizard-next'));
+    expect(screen.getByTestId('wizard-step-5')).toBeTruthy();
     // Without targets there is no select on the last step.
     expect(screen.queryByTestId('new-project-target')).toBeNull();
     await user.click(screen.getByTestId('new-project-dialog-submit'));

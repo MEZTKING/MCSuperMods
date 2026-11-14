@@ -163,6 +163,10 @@ const RUBY_ELEMENTS = [
   'ruby:gems',
   'ruby:root',
   'ruby:get_ruby',
+  // Its "World" step (generate on by default): ore feature, placed feature, biome addition.
+  'ruby:ore_ruby',
+  'ruby:ore_ruby_placed',
+  'ruby:ruby_ore_generation',
   // Custom sword starter (pack and mod already proposed).
   'ruby:ruby_sword',
   'ruby:item/ruby_sword',
@@ -336,6 +340,9 @@ describe('AI helper scenario: the ruby tools mod (build mode)', () => {
       expect.arrayContaining([
         'data/ruby/recipe/ruby_pickaxe_from_rubies.json',
         'data/ruby/loot_table/blocks/ruby_block.json',
+        // The ore generation's worldgen files.
+        'data/ruby/worldgen/feature/ore_ruby.json',
+        'data/ruby/worldgen/placed_feature/ore_ruby_placed.json',
       ]),
     );
     const modEntries = Object.keys(modJar ?? {});

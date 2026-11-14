@@ -31,6 +31,7 @@ import { AdvancedToggle, Section } from '../worldgen/parts';
 import {
   asObject,
   choicesAt,
+  choicesThrough,
   effectiveBoxes,
   eventNames,
   isFullCube,
@@ -526,7 +527,8 @@ export function BlockStudio(props: StudioProps) {
           <SelectField
             label="Rarity"
             value={typeof item.rarity === 'string' ? item.rarity : undefined}
-            choices={choices(['item', 'rarity'])}
+            // `item` is a union (BlockItem | false): follow it to the struct member.
+            choices={choicesThrough(node, element.data, ['item', 'rarity'])}
             emptyLabel="(default: common)"
             testId="block-item-rarity"
             onChange={(value) => set(['item', 'rarity'], value)}

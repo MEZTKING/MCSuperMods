@@ -73,7 +73,7 @@ describe('wizard model', () => {
       wizardSteps(libraryStarters.find((starter) => starter.id === id)?.parameters).map(
         (step) => step.title,
       );
-    expect(titles('custom_ore')).toEqual(['Ore', 'Drops']);
+    expect(titles('custom_ore')).toEqual(['Ore', 'Drops', 'World']);
     expect(titles('custom-sword')).toEqual(['Sword', 'Stats', 'Recipe']);
     expect(titles('custom_mob')).toEqual(['Mob', 'Behaviour', 'Spawning']);
     expect(hasParameters(libraryStarters.find((starter) => starter.id === 'blank'))).toBe(false);
