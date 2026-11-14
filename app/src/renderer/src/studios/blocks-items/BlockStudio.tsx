@@ -13,6 +13,8 @@
  *   outline of the boxes.
  * - Mining: `msm:breakable` hardness, resistance, tool, minimum tier, requires tool.
  * - Light level (`msm:light_emitter`) and sound type.
+ * - Inventory (B318, ADR 0076 D1; simple, pillar and facing types only): storage or a machine,
+ *   lazily loaded from `InventorySection`.
  * - Drops: `loot` as drops itself, a loot table id, or none.
  * - Block item: on, or off as `"item": false`; stack size, rarity, creative tab, and "Fuel and
  *   compost" (ADR 0060 D4).
@@ -27,7 +29,7 @@
 
 import type { Json } from '@msm/core';
 import { isSeeThroughBlock } from '@msm/plugin-blocks-items';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { buttonClass } from '../../components/ui/Button';
 import { typingKey } from '../../forms/context';
 import { projectHandlers } from '../scripting/script-model';
@@ -62,10 +64,14 @@ import {
 } from './blocks-items-model';
 import { EventsEditor } from './EventsEditor';
 import { useBlocksItemsStudioHost } from './host';
+import { takesInventory } from './inventory-model';
 import { PlantSection } from './PlantSection';
 import { CheckField, EventSelect, ModelField, ProblemsAt, ShapePreview, TextField } from './parts';
 import { TexturesSection } from './TexturesSection';
 import { FuelCompostFields, TriggersSection } from './triggers';
+
+/** The Inventory section (ADR 0076 D1), a chunk of its own. */
+const InventorySection = lazy(() => import('./InventorySection'));
 
 type TextureLayer = 'solid' | 'cutout' | 'translucent';
 
@@ -755,6 +761,24 @@ export function BlockStudio(props: StudioProps) {
       )}
       {mining}
       {looks}
+      {takesInventory(blockType) && (
+        <Suspense
+          fallback={
+            <p className="text-muted text-xs" data-testid="block-inventory-loading">
+              Loading the Inventory section…
+            </p>
+          }
+        >
+          <InventorySection
+            element={element}
+            target={props.target}
+            problems={problems}
+            suggest={suggest}
+            set={set}
+            replace={(next) => onChange('', next)}
+          />
+        </Suspense>
+      )}
       {dropsSection}
       {itemSection}
       {behaviour}

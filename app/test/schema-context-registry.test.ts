@@ -6,6 +6,7 @@ import {
   blockHasItem,
   dataRegistryIds,
   entityHasSpawnEgg,
+  isMachineBlock,
   kindLookupFor,
   kindRegistry,
   projectRegistryIds,
@@ -203,5 +204,46 @@ describe('dataRegistryIds', () => {
     expect(ids.model).toEqual(['demo:cube']);
     expect(ids.structure).toEqual(['demo:hut']);
     expect(ids).not.toHaveProperty('pack_mcmeta');
+  });
+
+  it('counts each machine block id as a recipe_type and a recipe_serializer (B318)', () => {
+    const ids = dataRegistryIds(
+      project([
+        { id: 'demo:grinder', kind: 'msm:block', data: { components: { 'msm:machine': {} } } },
+        {
+          id: 'demo:oven',
+          kind: 'msm:block',
+          data: { type: 'horizontal', components: { 'msm:machine': { power: 'redstone' } } },
+        },
+        { id: 'demo:crate', kind: 'msm:block', data: { components: { 'msm:container': {} } } },
+        // A type that takes no machine: the runtime registers no recipe type for it.
+        {
+          id: 'demo:slab',
+          kind: 'msm:block',
+          data: { type: 'slab', components: { 'msm:machine': {} } },
+        },
+      ]),
+    );
+    expect(ids.recipe_type).toEqual(['demo:grinder', 'demo:oven']);
+    expect(ids.recipe_serializer).toEqual(['demo:grinder', 'demo:oven']);
+    expect(ids.block).toContain('demo:crate');
+  });
+
+  it('has no recipe_type ids without a machine', () => {
+    const ids = dataRegistryIds(
+      project([
+        { id: 'demo:crate', kind: 'msm:block', data: { components: { 'msm:container': {} } } },
+      ]),
+    );
+    expect(ids).not.toHaveProperty('recipe_type');
+    expect(ids).not.toHaveProperty('recipe_serializer');
+  });
+
+  it('isMachineBlock reads the type and the component', () => {
+    expect(isMachineBlock({ components: { 'msm:machine': {} } })).toBe(true);
+    expect(isMachineBlock({ type: 'directional', components: { 'msm:machine': {} } })).toBe(true);
+    expect(isMachineBlock({ type: 'door', components: { 'msm:machine': {} } })).toBe(false);
+    expect(isMachineBlock({ type: 'nonsense', components: { 'msm:machine': {} } })).toBe(false);
+    expect(isMachineBlock({ components: { 'msm:container': {} } })).toBe(false);
   });
 });

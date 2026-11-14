@@ -7,7 +7,13 @@
 
 import { defaultKindRegistry, type Project, parseJsonPointer } from '@msm/core';
 import type { Element, Json, OutputFile, Plugin, Target } from '@msm/plugin-api';
-import { blockGeneratedModelIds, blockItemIdOf, potionVariantIds } from '@msm/plugin-blocks-items';
+import {
+  blockGeneratedModelIds,
+  blockItemIdOf,
+  blockStateFlag,
+  blockTypeOf,
+  potionVariantIds,
+} from '@msm/plugin-blocks-items';
 import {
   BUILT_IN_EXTENSIONS,
   createRegistryIndex,
@@ -172,6 +178,9 @@ function sortedRecord(map: Map<string, string[]>): Record<string, string[]> {
  * `<id>_spawn_egg` in `item` unless `spawn_egg` is `false` ({@link entityHasSpawnEgg}); `msm:geo_model` and `msm:animation` ids land in their own
  * plain registries, which no vanilla schema reads. An `msm:potion` element (registry `potion`)
  * also registers its `long_` and `strong_` versions ({@link potionRegistryIds}, ADR 0063 D9).
+ * An `msm:block` machine (`msm:machine` on a type that takes it) also registers its id as a
+ * `recipe_type` and a `recipe_serializer` (ADR 0075 D2; {@link isMachineBlock}), as the
+ * runtime does, so its own recipes and other machines' `recipe_types` resolve.
  * Only registries with at least one id appear. Sorted,
  * namespaced, without duplicates.
  *
@@ -205,6 +214,10 @@ export function dataRegistryIds(
         if (element.kind === POTION_KIND) {
           for (const id of potionRegistryIds(element)) add(registered, id);
         }
+        if (element.kind === BLOCK_KIND && isMachineBlock(element.data)) {
+          add(RECIPE_TYPE_REGISTRY, element.id);
+          add(RECIPE_SERIALIZER_REGISTRY, element.id);
+        }
         continue;
       }
       const registry = registered ?? defaultKindRegistry(element.kind);
@@ -228,6 +241,22 @@ const ITEM_REGISTRY = 'item';
 const BLOCK_KIND = 'msm:block';
 const ENTITY_KIND = 'msm:entity';
 const POTION_KIND = 'msm:potion';
+const RECIPE_TYPE_REGISTRY = 'recipe_type';
+const RECIPE_SERIALIZER_REGISTRY = 'recipe_serializer';
+
+/**
+ * Whether `msm:block` data is a machine the runtime registers a recipe type for: `msm:machine`
+ * on a type that takes it (`blockStateFlag` is `lit`). False for data whose `type` is unknown.
+ *
+ * @param data - The block element's data.
+ */
+export function isMachineBlock(data: Json | undefined): boolean {
+  try {
+    return blockStateFlag(blockTypeOf(data), data) === 'lit';
+  } catch {
+    return false;
+  }
+}
 
 /**
  * The `potion` registry ids an `msm:potion` element registers (ADR 0063 D3, D9): its own id

@@ -3,7 +3,9 @@
  * the type's texture slots in words (`textures`), a thumbnail of each project texture, and the
  * models lowering makes for the type's model slots, each with where it comes from (generated
  * from the textures on a vanilla template, or the user's own model in `models`, which can be
- * set per slot under "Own models").
+ * set per slot under "Own models"). A container or machine (ADR 0076 D1) adds the slot "Front
+ * when open" or "Front when working" on the facing types and the model slot `open` or `lit`;
+ * on a simple block only those state models are shown, under "Models".
  *
  * @packageDocumentation
  */
@@ -18,10 +20,11 @@ import {
   blockTypeOfData,
   isRequiredSlot,
   modelSlotLabel,
-  modelSlots,
+  shownModelSlots,
+  shownStateModelSlots,
   slotModelRows,
-  TEXTURE_SLOTS,
   textureAssetPath,
+  textureSlotsOf,
 } from './block-type-model';
 import { asObject, pointerOf } from './blocks-items-model';
 import { useBlocksItemsStudioHost } from './host';
@@ -84,7 +87,7 @@ export function TexturesSection(props: TexturesSectionProps) {
   const { element, problems, set, suggest } = props;
   const [ownModels, setOwnModels] = useState(false);
   const type = blockTypeOfData(element.data);
-  if (type === undefined || type === 'block') return null;
+  if (type === undefined) return null;
   const data = asObject(element.data);
   const textures = asObject(data.textures);
   const models = asObject(data.models);
@@ -108,7 +111,33 @@ export function TexturesSection(props: TexturesSectionProps) {
     }
     set(['models', slot], value);
   };
-  const slots = TEXTURE_SLOTS[type];
+  if (type === 'block') {
+    // A simple block's look is its Model field; a container or machine adds the model of its
+    // `open` or `lit` state (ADR 0076 D1).
+    const stateSlots = shownStateModelSlots(type, element.data);
+    if (stateSlots.length === 0) return null;
+    return (
+      <Section title="Models" testId="block-state-models">
+        {stateSlots.map((slot) => (
+          <IdField
+            key={slot}
+            label={`${modelSlotLabel(slot)} (optional)`}
+            value={typeof models[slot] === 'string' ? String(models[slot]) : ''}
+            registry="model"
+            suggest={suggest}
+            testId={`block-own-model-${slot}`}
+            onCommit={(text) => setModel(slot, text)}
+          />
+        ))}
+        <p className="text-muted text-xs">Empty uses the Model field above.</p>
+        {Object.keys(models).map((slot) => (
+          <ProblemsAt key={slot} problems={problems} pointer={pointerOf(['models', slot])} />
+        ))}
+        <ProblemsAt problems={problems} pointer={pointerOf(['models'])} />
+      </Section>
+    );
+  }
+  const slots = textureSlotsOf(type, element.data);
   return (
     <Section title="Textures" testId="block-textures">
       {slots.length === 0 ? (
@@ -191,7 +220,7 @@ export function TexturesSection(props: TexturesSectionProps) {
       </label>
       {showOwn && (
         <div className="flex flex-col gap-1" data-testid="block-own-models">
-          {modelSlots(type).map((slot) => (
+          {shownModelSlots(type, element.data).map((slot) => (
             <IdField
               key={slot}
               label={`${modelSlotLabel(slot)}${isRequiredSlot(type, slot) ? '' : ' (optional)'}`}

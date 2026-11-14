@@ -18,10 +18,12 @@ import {
   BLOCK_TYPES,
   type BlockTypeName,
   blockItemIdOf,
+  blockStateFlag,
   blockTypeModels,
   ITEM_MODEL_SLOT,
   SHAPED_BLOCK_TYPES,
   SHAPED_ONLY_COMPONENTS,
+  STATE_MODEL_SLOTS,
 } from '@msm/plugin-blocks-items';
 import { isJsonObject } from '../../forms/pointer';
 import { bundlePreviewProject } from '../../preview/bundle-source';
@@ -249,6 +251,7 @@ const MODEL_SLOT_LABELS: Readonly<Record<string, string>> = Object.freeze({
   top_left_open: 'Upper half, hinge left, open',
   top_right: 'Upper half, hinge right',
   top_right_open: 'Upper half, hinge right, open',
+  lit: 'Working',
   pressed: 'Pressed',
   up: 'Up',
   down: 'Pressed down',
@@ -256,6 +259,70 @@ const MODEL_SLOT_LABELS: Readonly<Record<string, string>> = Object.freeze({
   leaves: 'Leaves',
   [ITEM_MODEL_SLOT]: 'Block item',
 });
+
+/**
+ * The texture slots of the block states a container (`open`) or machine (`lit`) adds (ADR 0076
+ * D1), on the types with a `front` texture.
+ */
+export const STATE_TEXTURE_SLOTS: Readonly<Record<'open' | 'lit', TextureSlot>> = Object.freeze({
+  open: { key: 'front_open', label: 'Front when open' },
+  lit: { key: 'front_lit', label: 'Front when working' },
+});
+
+/**
+ * Whether the state slot `state` (`open` or `lit`) belongs on the block now: its component
+ * makes the state, or the element already sets the slot in `holder` (so it can be cleared).
+ */
+function stateSlotShown(
+  type: BlockTypeName,
+  data: Json | undefined,
+  state: string,
+  holder: 'textures' | 'models',
+  key: string,
+): boolean {
+  return (
+    blockStateFlag(type, data) === state || asObject(asObject(data)[holder])[key] !== undefined
+  );
+}
+
+/**
+ * The texture slots the Textures section shows for block data: the type's slots, plus "Front
+ * when open" or "Front when working" for a facing type with a container or machine (or with
+ * that texture already set).
+ */
+export function textureSlotsOf(type: BlockTypeName, data: Json | undefined): TextureSlot[] {
+  const slots = [...TEXTURE_SLOTS[type]];
+  if (!slots.some((slot) => slot.key === 'front')) return slots;
+  for (const state of STATE_MODEL_SLOTS) {
+    const slot = STATE_TEXTURE_SLOTS[state];
+    if (stateSlotShown(type, data, state, 'textures', slot.key)) slots.push(slot);
+  }
+  return slots;
+}
+
+/**
+ * The model slots shown for block data: {@link modelSlots} without the state slots `open` and
+ * `lit` the block does not use (no container or machine, and not set in `models`).
+ */
+export function shownModelSlots(type: BlockTypeName, data: Json | undefined): string[] {
+  return modelSlots(type).filter(
+    (slot) => !isStateSlot(type, slot) || stateSlotShown(type, data, slot, 'models', slot),
+  );
+}
+
+/** The container or machine state slots (`open`, `lit`) {@link shownModelSlots} shows. */
+export function shownStateModelSlots(type: BlockTypeName, data: Json | undefined): string[] {
+  return shownModelSlots(type, data).filter((slot) => isStateSlot(type, slot));
+}
+
+/** Whether `slot` is a container or machine state slot of `type` (not a trapdoor's `open`). */
+function isStateSlot(type: BlockTypeName, slot: string): boolean {
+  return (
+    (STATE_MODEL_SLOTS as readonly string[]).includes(slot) &&
+    !BLOCK_TYPE_LOWERINGS[type].slots.includes(slot) &&
+    !(BLOCK_TYPE_LOWERINGS[type].optionalSlots ?? []).includes(slot)
+  );
+}
 
 /** A model slot in words: `stage3` is "Stage 3"; unknown slots show with spaces. */
 export function modelSlotLabel(slot: string): string {
@@ -427,7 +494,7 @@ export function slotModelRows(element: Pick<Element, 'id' | 'data'>): SlotModelR
   const given = asObject(data.models);
   const single = acceptsSingleModel(type) && typeof data.model === 'string' ? data.model : '';
   const primary = BLOCK_TYPE_LOWERINGS[type].slots[0] ?? 'default';
-  return modelSlots(type).map((slot): SlotModelRow => {
+  return shownModelSlots(type, data).map((slot): SlotModelRow => {
     const model = models.slots[slot];
     const generated = models.generated.find((entry) => entry.slot === slot);
     if (typeof given[slot] === 'string' && given[slot] !== '') {
