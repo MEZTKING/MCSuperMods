@@ -4756,3 +4756,18 @@ Decisions
 
 Next
 - None.
+## 2026-11-14 — orchestrator — Vehicles and the client side planned
+
+What
+- Planned the next batch, "Vehicles and the client side", for the user's "keep going, add the vehicles too" and coverage audit B15: ADRs 0088 (the client channel and key binds), 0089 (HUD elements), 0090 (vehicles) and 0091 (flows, Studios, Try it, tests), all Proposed, and `docs/PLAN-vehicles-and-client.md` with facts V1–V24 (javap over the Loom-cached Minecraft and Fabric API jars of 26.3 and 26.4-snapshot-7: payload registry, key mapping helper, HUD registry, `VehicleEntity`, the riding members of `Entity`, `ServerPlayer.getLastClientInput`, the client GameTest input and dedicated-server APIs), limits V1–V17, rules for every brief, eight waves and briefs B406–B433. ROADMAP has an "in planning" add-on section; HANDOFF "Next" and the coverage audit's B15 line point at the plan.
+- Read the research report on popular mods (`popular-mods.md`, 2026-11-14) and used its vehicle section and ranking (keys, vehicle kind, HUD) for the wave order and the flows.
+
+Decisions
+- A direct `msm:vehicle` kind on vanilla's `VehicleEntity`, not a mob-route "Vehicle" Creator flow first (the research's two-step proposal): the mob route's gaps are properties of a living base class, so a flow on it would make vehicles that need rebuilding later. Vetoable (ADR 0090 D1).
+- Vanilla's movement model: the driver's client moves the vehicle and the server checks it; fuel, damage, weapons and storage are server-side; a speed cap of 3 blocks a tick keeps legal vehicles inside vanilla's 10-block check. Reserve B433 moves vehicles on the server if the spike B406 finds the client route does not work for a custom vehicle.
+- One channel `msm_runtime:*_v1`; key payloads carry only an id and a bit; rate limit, cooldowns and `when` on the server.
+- Found: `HudElement` differs between 26.3 and 26.4 (seam), and Fabric's rendering module on 26.4 has no entity or block entity renderer registry; vehicles get the runtime's own renderer (no GeckoLib).
+- Deferred with reasons (ADR 0088 D11): custom screens and block entity renderers (C3, C9), the portal overlay (P2), particle trails (ADR 0080 D12), scripts and client code in the eject (B142), the server-side R10 triggers.
+
+Next
+- Show the user the vetoable defaults of ADRs 0088–0091; then run B406 (spike), B407 (renderer budget) and B408 (scaffold, merged on "go").

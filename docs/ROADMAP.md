@@ -760,6 +760,20 @@ User request of 2026-11-14: "Make an easy to use, very easy to use mode ... anyo
 - Deferred (ADR 0082 R10, ADR 0084): triggers for crafting, picking up, eating, sleeping, advancements, keys and the HUD (client side, backlog B15); Play through MultiMC, the official launcher or CurseForge; dev mode on servers; Reload of new things (the registry freeze).
 - Follow-ups: "Copy as my own script" (ADR 0082 D7 d); the AI's `kind_schema` for `msm:rules` (`MAX_LIST` 40 against 43 triggers) and its `validateElementData` on expanded data; `elementId` on lowered files from core (Play derives it from the path) and exported-file schema problems mapped to elements; schema problems at the chips of the Rules section in subject Studios; a `before` check on book edits from the section; "Turn into rules" for `spawn_particle` with `motion` or `force` and `launch` with `add`; "What this becomes" recompiling only when shown; field-level Very easy lists (ids, offsets, ticks as seconds); "Change folder" remembered; the status bar's "Undo: Edit <ns>:rules" and a book's problems named by id; exporter test timeouts (`sample-mod`, `sample-portals` at 5 s); `sample-java.ts` `exportJavaProject` taking `expand`.
 
+### Add-on after 1.0 — Vehicles and the client side (in planning)
+
+User requests of 2026-11-14: "would it be possible to make things like tanks", then "keep going, add the vehicles too", under the rule "anything that can be made in vanilla java should be possible through this app"; with coverage audit backlog B15 (client side for power users). Design (Proposed): [ADR 0088](adr/0088-client-channel-and-key-binds.md) (the runtime's first networking channel, `msm:key_bind`, the security model of client input), [ADR 0089](adr/0089-hud-elements.md) (`msm:hud`: text, bars and icons from synced values), [ADR 0090](adr/0090-vehicles.md) (`msm:vehicle` on vanilla's `VehicleEntity`: ground, water, amphibious, air and hover modes, seats, fuel, health and repair, storage, paint, weapons with a fire key, a turret that follows the view, the runtime's own renderer) and [ADR 0091](adr/0091-vehicle-flows-studios-try-it-and-tests.md) (Studios, the Car, Tank, Plane and Boat flows, the Very easy tile "Make a vehicle", Try it, tests). Plan: [`PLAN-vehicles-and-client.md`](PLAN-vehicles-and-client.md) (facts V1–V24, limits V1–V17, briefs B406–B433). Nothing starts before the user has seen the vetoable defaults; nothing after Wave 0 before the spike B406 says go. Deferred to the next client batch with reasons in ADR 0088 D11: custom screens and block entity renderers (C3, C9), a portal overlay of our own (P2), particle trails (ADR 0080 D12), scripts and client code in the eject (B142), the server-side R10 triggers.
+
+- [ ] Wave 0: B406 spike (vehicles and input in the real client), B407 renderer budget, B408 scaffold and stubs.
+- [ ] Wave 1: B409 format, B410 plugin API 1.16.0 and target facts.
+- [ ] Wave 2: B411 channel and key binds, B412 vehicles core, B413 controls plugin, B414 `msm:vehicle` kind, B415 exporters.
+- [ ] Wave 3: B416 HUD, B417 weapons and turret, B418 vehicle client, B419 Vehicle Studio, B420 Key bind and HUD Studios.
+- [ ] Wave 4: B421 Script API 1.5, B422 Creator flows and the Very easy tile, B423 library examples.
+- [ ] Wave 5: B424 Rules cards, B425 sample vehicles fixture.
+- [ ] Wave 6: B426 parity and CI, B427 e2e, B428 and B429 Try it (or moved to the Try it plan).
+- [ ] Wave 7: B430 AI helper, B431 guide, B432 close. Reserve: B433 server-moved vehicles.
+- [ ] The user checks in game (`fixtures/sample-vehicles/README.md` on 26.3 and 26.4, singleplayer and a dedicated server with two players).
+
 ### Exit criteria
 
 Two targets supported; an external plugin works; 1.0 released.
