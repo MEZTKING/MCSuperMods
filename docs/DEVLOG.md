@@ -4771,3 +4771,16 @@ Decisions
 
 Next
 - Show the user the vetoable defaults of ADRs 0088–0091; then run B406 (spike), B407 (renderer budget) and B408 (scaffold, merged on "go").
+
+## 2026-11-14 — executor — Changeset create then update
+
+What
+- Bug: `ProjectSession.applyChangeset` threw "Cannot assign to read only property 'data'" when one changeset created an element and then updated it. Root cause: `commands.addElement` (core) spliced one pre-made copy of the element into the draft on every run. `planChangeItems` runs the commands on a scratch stack, Immer freezes what a run inserts, and the session then replays the same command objects in `stack.execute`; the second run found the frozen copy in the draft, and `setElementData` assigned to it. `setElementData`, `setElementValue` and `setSetting` shared their copied value the same way.
+- Fix: `packages/core/src/commands/commands.ts` clones the stored copy at each `apply`, so every run inserts a fresh object. Nothing is unfrozen.
+- Tests: `app/test/session-ai-apply.test.ts` (create then update through the session; the saved state is byte-for-byte equal after undo, redo and undo again) and `packages/core/test/edit-commands.test.ts` (commands replayed on a second stack). Both fail without the fix. Core 206 and app 1957 tests, `pnpm lint` and `pnpm typecheck` pass.
+
+Decisions
+- Fixed in core, not the session, because any caller that replays a command hits it. The "Surprise me" `foldItems` workaround is kept.
+
+Next
+- None.

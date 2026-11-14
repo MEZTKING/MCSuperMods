@@ -246,3 +246,38 @@ function countUndos(stack: CommandStack): number {
   while (stack.undo()) count++;
   return count;
 }
+
+describe('commands run more than once', () => {
+  it('add then edit in one command can be replayed on another stack', () => {
+    const element = createElement({
+      id: 'ns:x',
+      kind: 'test:thing',
+      data: { n: 1 },
+      now: fixedNow,
+    });
+    const parts = [
+      commands.addElement(element),
+      commands.setElementData('ns:x', { n: 2 }),
+      commands.setElementValue('ns:x', '/m', { k: 1 }),
+      commands.setElementData('ns:x', { n: 3 }),
+    ];
+    const run = () => {
+      const stack = new CommandStack(projectWith({}));
+      stack.execute({
+        id: 't',
+        label: 't',
+        apply(draft) {
+          for (const part of parts) part.apply(draft);
+        },
+      });
+      return stack;
+    };
+    const first = run();
+    const second = run();
+    expect(second.state).toEqual(first.state);
+    expect(second.state.namespaces[0]?.elements[1]?.data).toEqual({ n: 3 });
+    second.undo();
+    second.redo();
+    expect(second.state).toEqual(first.state);
+  });
+});

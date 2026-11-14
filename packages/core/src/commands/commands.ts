@@ -328,7 +328,8 @@ export const commands = {
           }
         }
         const index = sortedIndex(namespace.elements, (existing) => existing.id, element.id);
-        namespace.elements.splice(index, 0, copy as Draft<Element>);
+        // A fresh copy per run: Immer freezes what a run inserts, and a command may run again.
+        namespace.elements.splice(index, 0, structuredClone(copy) as Draft<Element>);
       },
     };
   },
@@ -362,7 +363,7 @@ export const commands = {
       ...(options.coalesce === undefined ? {} : { coalesce: options.coalesce }),
       apply(draft) {
         const { namespace, index } = locate(draft, id);
-        (namespace.elements[index] as Draft<Element>).data = copy;
+        (namespace.elements[index] as Draft<Element>).data = structuredClone(copy);
       },
     };
   },
@@ -400,7 +401,11 @@ export const commands = {
       apply(draft) {
         const { namespace, index } = locate(draft, id);
         const element = namespace.elements[index] as Draft<Element>;
-        const next = setAt(element.data as Json, segments, copy);
+        const next = setAt(
+          element.data as Json,
+          segments,
+          copy === undefined ? undefined : structuredClone(copy),
+        );
         if (next !== element.data) element.data = next;
       },
     };
@@ -555,7 +560,7 @@ export const commands = {
       id: 'core.set-setting',
       label: `Change setting "${key}"`,
       apply(draft) {
-        draft.settings[key] = copy;
+        draft.settings[key] = structuredClone(copy);
       },
     };
   },

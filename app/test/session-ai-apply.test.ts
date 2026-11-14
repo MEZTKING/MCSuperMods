@@ -1,4 +1,4 @@
-import { createMemoryFileSystem, type Project } from '@msm/core';
+import { createMemoryFileSystem, type Json, type Project, stableStringify } from '@msm/core';
 import { placeholderPng } from '@msm/plugin-library';
 import { describe, expect, it } from 'vitest';
 import { PendingChangeset } from '../src/renderer/src/changeset/changeset';
@@ -76,6 +76,40 @@ describe('ProjectSession.applyChangeset (ADR 0041 D5)', () => {
     expect(session.redo()).toBe(true);
     await session.flushAssetFiles();
     expect(await fs.readFile('assets/ruby/textures/item/ruby.png')).toEqual(bytes);
+  });
+
+  it('applies a create followed by an update of the same element, with exact undo and redo', async () => {
+    const { session } = await openDemo();
+    const saved = () => stableStringify(session.snapshot.project as unknown as Json);
+    const before = saved();
+    const changeset = new PendingChangeset();
+    changeset.add(
+      {
+        op: 'create',
+        elementId: 'demo:fresh',
+        kind: 'minecraft:function',
+        after: { lines: ['say one'] },
+      },
+      {
+        op: 'update',
+        elementId: 'demo:fresh',
+        kind: 'minecraft:function',
+        before: { lines: ['say one'] },
+        after: { lines: ['say one', 'say two'] },
+      },
+    );
+    const result = await session.applyChangeset(changeset.items);
+    expect(result.skipped).toEqual([]);
+    expect(result.applied).toHaveLength(2);
+    const applied = saved();
+    expect(applied).toContain('say two');
+
+    expect(session.undo()).toBe(true);
+    expect(saved()).toBe(before);
+    expect(session.redo()).toBe(true);
+    expect(saved()).toBe(applied);
+    expect(session.undo()).toBe(true);
+    expect(saved()).toBe(before);
   });
 
   it('skips items that no longer fit the live project and applies the rest', async () => {
