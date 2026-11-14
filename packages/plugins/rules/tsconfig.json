@@ -8,8 +8,20 @@
   "include": ["src", "test", "vitest.config.ts"],
   "exclude": ["test/fixtures"],
   "references": [
-    { "path": "../../plugin-api" },
-    { "path": "../../schemas" },
-    { "path": "../../targets/all" }
+    {
+      "path": "../../plugin-api"
+    },
+    {
+      "path": "../../schemas"
+    },
+    {
+      "path": "../../targets/all"
+    },
+    {
+      "path": "../../core"
+    },
+    {
+      "path": "../blocks-items"
+    }
   ]
 }

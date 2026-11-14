@@ -246,7 +246,7 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
     label: 'Drop an item',
     sentence: 'drop {count} {item} {where}',
     group: 'world',
-    slots: [COUNT, { name: 'item', type: 'item' }, WHERE],
+    slots: [{ ...COUNT, max: 64 }, { name: 'item', type: 'item' }, WHERE],
   }),
   step({
     id: 'explode',
@@ -291,7 +291,7 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
           { value: 'thunder', label: 'thunder' },
         ],
       },
-      { name: 'seconds', type: 'seconds', optional: true, min: 0, prefix: 'for' },
+      { name: 'seconds', type: 'seconds', optional: true, min: 0, max: 1000000, prefix: 'for' },
     ],
   }),
   step({

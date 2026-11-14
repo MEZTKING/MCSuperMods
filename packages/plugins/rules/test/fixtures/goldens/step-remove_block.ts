@@ -28,6 +28,6 @@ msm.actions.define("demo:rules/rules/plain_block/block_used", (e) => {
   const player: Player | undefined = e.player;
   // When a player uses Plain Block, remove the block above here.
   rule("sample", () => { // rule:sample
-    withPos(here.offset(0, 1, 0), (at) => world.setBlock(blockPos(at), "minecraft:air")); // rule:sample
+    withPos(here.offset(0, 1, 0), (at) => world.breakBlock(blockPos(at), { drops: false })); // rule:sample
   }); // rule:sample
 });

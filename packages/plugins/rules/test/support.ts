@@ -4,7 +4,7 @@
  */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import type { Element, Json, JsonObject, ResourceLocation } from '@msm/plugin-api';
+import type { Element, ElementPatch, Json, JsonObject, ResourceLocation } from '@msm/plugin-api';
 import {
   createRegistryIndex,
   createSchemaIndex,
@@ -16,7 +16,6 @@ import {
   validateJson,
 } from '@msm/schemas';
 import { readVendoredJson, type TargetBundle } from '@msm/targets';
-import type { ElementPatch } from '../src/compile';
 
 export const UPDATE = process.env.UPDATE_GOLDENS === '1';
 

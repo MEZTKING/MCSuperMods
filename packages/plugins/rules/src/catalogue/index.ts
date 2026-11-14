@@ -64,3 +64,7 @@ export const MAX_REPEAT = 100;
 export const MAX_RADIUS = 64;
 /** The largest explosion power the Script API takes (Script API 1.4, B370). */
 export const MAX_EXPLOSION_POWER = 10;
+/** The most items one "Drop an item" step drops (Script API 1.4 `World.dropItem`). */
+export const MAX_DROP_COUNT = 64;
+/** The longest weather a step sets, in seconds (Script API 1.4 `World.setWeather`). */
+export const MAX_WEATHER_SECONDS = 1000000;

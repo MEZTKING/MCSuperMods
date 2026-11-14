@@ -1,23 +1,8 @@
 /**
- * Types of the rule book compiler (ADR 0082 D3, D9).
- *
- * `ElementPatch` mirrors the plugin API 1.15.0 type of the same name (ADR 0082 D9, brief B364).
- * It is declared here structurally until that API version is merged; B368 replaces it with the
- * import from `@msm/plugin-api`.
+ * Types of the rule book compiler (ADR 0082 D3, D9). `ElementPatch` is the plugin API 1.15.0
+ * type (ADR 0082 D9).
  */
-import type { Json, Problem, ResourceLocation } from '@msm/plugin-api';
-
-/**
- * One change to a copy of an element's data before lowering (ADR 0082 D9): `value` is written at
- * `path` (keys and array indexes from the root of `data`). `origin` is the rule the change comes
- * from, so problems on the patched field point at the rule.
- */
-export interface ElementPatch {
-  readonly elementId: ResourceLocation;
-  readonly path: readonly (string | number)[];
-  readonly value: Json;
-  readonly origin: { readonly elementId: ResourceLocation; readonly pointer: string };
-}
+import type { ElementPatch, Problem, ResourceLocation } from '@msm/plugin-api';
 
 /** What `compileRuleBook` returns. */
 export interface CompiledRuleBook {
@@ -29,6 +14,19 @@ export interface CompiledRuleBook {
    */
   readonly script: string[] | null;
   /** Problems found while compiling, with the book's id and a pointer into the book. */
+  readonly problems: Problem[];
+}
+
+/** What `compileRuleBooks` returns for all of a project's books together. */
+export interface CompiledRuleBooks {
+  /**
+   * Changes to the subjects' definitions. Books sharing a subject and trigger share one
+   * generated event (each book's part in book order), so no path is patched twice.
+   */
+  readonly patches: ElementPatch[];
+  /** The generated script of each book that needs one, by book id, in book order. */
+  readonly scripts: ReadonlyMap<ResourceLocation, string[]>;
+  /** Problems of every book, in book order. */
   readonly problems: Problem[];
 }
 
@@ -61,8 +59,6 @@ export const RULES_COMPILE_CODES = Object.freeze({
   cannotStop: 'rules.cannot-stop',
   /** "Light a portal" in a rule that compiles to script: only the format action lights portals. */
   needsPlain: 'rules.needs-plain',
-  /** Removing a block "with drops": the Script API has no way to break a block with its drops. */
-  dropsNotSupported: 'rules.drops-not-supported',
   /** The generated event id is already an event of the subject. */
   eventIdClash: 'rules.event-id-clash',
   /** Logic steps nested deeper than three levels. */

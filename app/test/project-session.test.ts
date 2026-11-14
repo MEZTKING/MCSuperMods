@@ -49,6 +49,7 @@ describe('ProjectSession: projects', () => {
       'msm.models-anim',
       'msm.entities',
       'msm.scripting',
+      'msm.rules',
     ]);
     expect(project?.plugins).not.toContain('msm.library');
     expect(project?.namespaces.map((namespace) => namespace.name)).toEqual(['demo']);

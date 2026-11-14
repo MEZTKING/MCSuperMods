@@ -11,14 +11,26 @@
  *   values win, else the first rule's (R16).
  * - Script-only triggers: `msm.events.on` handlers in the script, one per trigger and subject.
  */
-import type { Element, Json, JsonObject, ResourceLocation, TargetFacts } from '@msm/plugin-api';
+import type {
+  Element,
+  ElementPatch,
+  Json,
+  JsonObject,
+  Problem,
+  ResourceLocation,
+  TargetFacts,
+} from '@msm/plugin-api';
 import { asObject, bookCounters, bookRules, pointer, ruleEnabled, stepList, str } from '../book';
 import { type TriggerEntry, triggerById } from '../catalogue';
 import { ruleSentence, whenSentence } from '../sentence';
 import { checkRule, Reporter } from './check';
 import { plainActions } from './plain';
 import { ScriptBuilder, type ScriptRule } from './script';
-import { RULES_COMPILE_CODES as CODES, type CompiledRuleBook, type ElementPatch } from './types';
+import {
+  RULES_COMPILE_CODES as CODES,
+  type CompiledRuleBook,
+  type CompiledRuleBooks,
+} from './types';
 
 export { plainAction, plainActions } from './plain';
 export { literal } from './script';
@@ -29,12 +41,6 @@ interface Compiled {
   readonly rule: JsonObject;
   readonly index: number;
   readonly key: string;
-}
-
-interface DefinitionGroup {
-  readonly trigger: TriggerEntry;
-  readonly subject: Element;
-  readonly rules: Compiled[];
 }
 
 interface ScriptGroup {
@@ -114,20 +120,189 @@ function optionFields(trigger: TriggerEntry, options: JsonObject | undefined): J
 /**
  * Compiles one rule book (an `msm:rules` element) against the project's elements and a target.
  * Disabled rules are left out; a rule with an error is reported and left out; the others still
- * compile.
+ * compile. A project with several books compiles them together with {@link compileRuleBooks}.
  */
 export function compileRuleBook(
   book: Element,
   elements: readonly Element[],
   target: TargetFacts,
 ): CompiledRuleBook {
-  const data = asObject(book.data) ?? {};
-  const reporter = new Reporter(book.id);
+  const result = compileRuleBooks([book], elements, target);
+  return {
+    patches: result.patches,
+    script: result.scripts.get(book.id) ?? null,
+    problems: result.problems,
+  };
+}
+
+/** One book's part of a compilation. */
+interface BookPass {
+  readonly book: Element;
+  readonly reporter: Reporter;
+  readonly builder: ScriptBuilder;
+  readonly scriptGroups: Map<string, ScriptGroup>;
+}
+
+/** The rules of every book on one subject and trigger. */
+interface SharedGroup {
+  readonly trigger: TriggerEntry;
+  readonly subject: Element;
+  readonly parts: { readonly pass: BookPass; readonly rules: Compiled[] }[];
+}
+
+/**
+ * Compiles every rule book of a project together (ADR 0082 D3). Books are taken in the order
+ * given. When several books have rules on the same subject and trigger, they share the one
+ * generated event `<subject id>_rules_<trigger>`: a hand-made event first, then each book's
+ * part in book order (its plain actions, or a `run_script` to that book's own handler); the
+ * trigger options come from the first book's first rule (R16). So no element path is patched
+ * twice, however many books there are.
+ */
+export function compileRuleBooks(
+  books: readonly Element[],
+  elements: readonly Element[],
+  target: TargetFacts,
+): CompiledRuleBooks {
   const names = namesFromElements(elements);
   const byId = new Map(elements.map((element) => [element.id as string, element]));
-  const definitionGroups = new Map<string, DefinitionGroup>();
-  const scriptGroups = new Map<string, ScriptGroup>();
+  const shared = new Map<string, SharedGroup>();
+  const passes: BookPass[] = [];
 
+  for (const book of books) {
+    const data = asObject(book.data) ?? {};
+    const pass: BookPass = {
+      book,
+      reporter: new Reporter(book.id),
+      builder: new ScriptBuilder(book.id, bookCounters(data)),
+      scriptGroups: new Map(),
+    };
+    passes.push(pass);
+    collectRules(pass, data, byId, shared);
+  }
+
+  const scriptRule = (compiled: Compiled): ScriptRule => ({
+    rule: compiled.rule,
+    key: compiled.key,
+    sentence: ruleSentence(compiled.rule, names),
+  });
+  const subjects = new Map<string, SubjectPatches>();
+
+  for (const group of shared.values()) {
+    const { trigger, subject } = group;
+    const parts: {
+      pass: BookPass;
+      rules: Compiled[];
+      plain: (Json[] | undefined)[];
+      isPlain: boolean;
+    }[] = [];
+    for (const part of group.parts) {
+      const plain = part.rules.map((compiled) => plainActions(compiled.rule, trigger));
+      const isPlain = plain.every((actions) => actions !== undefined);
+      let rules = part.rules;
+      if (!isPlain) {
+        rules = part.rules.filter((compiled) => {
+          if (!hasLightPortal(compiled.rule)) return true;
+          part.pass.reporter.error(
+            CODES.needsPlain,
+            pointer(`/rules/${compiled.index}`, 'do'),
+            '"Light a portal" works only when every rule on this trigger is a plain one, without conditions, waits or other logic.',
+          );
+          return false;
+        });
+        if (rules.length === 0) continue;
+      }
+      parts.push({ pass: part.pass, rules, plain, isPlain });
+    }
+    const first = parts[0];
+    if (first === undefined) continue;
+    const subjectData = asObject(subject.data) ?? {};
+    const eventId = ruleEventId(subject.id, trigger.id);
+    const origin = {
+      elementId: first.pass.book.id,
+      pointer: `/rules/${first.rules[0]?.index ?? 0}`,
+    };
+    const existingEvents = asObject(subjectData.events) ?? {};
+    const handMade = handMadeEvent(subjectData, trigger);
+    if (existingEvents[eventId] !== undefined || handMade === eventId) {
+      first.pass.reporter.error(
+        CODES.eventIdClash,
+        pointer(origin.pointer, 'when', 'subject'),
+        `"${subject.id}" already has an event "${eventId}"; rename that event so Rules can use the id.`,
+      );
+      continue;
+    }
+    const actions: Json[] = [];
+    if (handMade !== undefined) actions.push({ type: 'trigger_event', event: handMade });
+    for (const part of parts) {
+      if (part.isPlain) {
+        for (const list of part.plain) actions.push(...(list ?? []));
+        continue;
+      }
+      const handler = ruleHandlerId(part.pass.book.id, subject.id, trigger.id);
+      actions.push({ type: 'run_script', handler });
+      part.pass.builder.addDefinitionHandler(
+        handler,
+        trigger,
+        `${names(subject.id) ?? subject.id}: ${trigger.label.toLowerCase()}.`,
+        part.rules.map(scriptRule),
+      );
+    }
+    let patches = subjects.get(subject.id);
+    if (patches === undefined) {
+      patches = new SubjectPatches(subject);
+      subjects.set(subject.id, patches);
+    }
+    patches.event(eventId, { actions }, origin);
+    patches.trigger(
+      trigger,
+      eventId,
+      asObject(asObject(first.rules[0]?.rule.when)?.options),
+      origin,
+    );
+  }
+
+  const scripts = new Map<ResourceLocation, string[]>();
+  const problems: Problem[] = [];
+  for (const pass of passes) {
+    for (const group of pass.scriptGroups.values()) {
+      const first = group.rules[0];
+      const options = asObject(asObject(first?.rule.when)?.options) ?? {};
+      pass.builder.addEventHandler(
+        group.trigger,
+        group.subject,
+        options,
+        `${whenSentence(asObject(first?.rule.when), names)}.`,
+        group.rules.map(scriptRule),
+      );
+    }
+    const script = pass.builder.lines();
+    if (script !== null && target.fabric === undefined) {
+      pass.reporter.error(
+        CODES.noScripts,
+        '/rules',
+        `Some rules need a script, and ${target.mcVersion} has no script runtime in MSM.`,
+      );
+    } else if (script !== null) {
+      scripts.set(pass.book.id, script);
+    }
+    problems.push(...pass.reporter.problems);
+  }
+
+  return {
+    patches: [...subjects.values()].flatMap((subject) => subject.patches()),
+    scripts,
+    problems,
+  };
+}
+
+/** Sorts one book's enabled, checked rules into the shared and the script-only groups. */
+function collectRules(
+  pass: BookPass,
+  data: JsonObject,
+  byId: ReadonlyMap<string, Element>,
+  shared: Map<string, SharedGroup>,
+): void {
+  const { reporter } = pass;
   for (const { rule, index } of bookRules(data)) {
     if (!ruleEnabled(rule)) continue;
     const base = `/rules/${index}`;
@@ -147,10 +322,10 @@ export function compileRuleBook(
     const subjectId = str(when, 'subject');
     if (trigger.definition === undefined) {
       const groupKey = `${trigger.id}|${subjectId ?? ''}`;
-      let group = scriptGroups.get(groupKey);
+      let group = pass.scriptGroups.get(groupKey);
       if (group === undefined) {
         group = { trigger, subject: subjectId, rules: [] };
-        scriptGroups.set(groupKey, group);
+        pass.scriptGroups.set(groupKey, group);
       }
       group.rules.push(compiled);
       continue;
@@ -168,102 +343,18 @@ export function compileRuleBook(
     }
     if (!subjectFits(subject, trigger, pointer(base, 'when'), reporter)) continue;
     const groupKey = `${subject.id}|${trigger.id}`;
-    let group = definitionGroups.get(groupKey);
+    let group = shared.get(groupKey);
     if (group === undefined) {
-      group = { trigger, subject, rules: [] };
-      definitionGroups.set(groupKey, group);
+      group = { trigger, subject, parts: [] };
+      shared.set(groupKey, group);
     }
-    group.rules.push(compiled);
+    let part = group.parts[group.parts.length - 1];
+    if (part?.pass !== pass) {
+      part = { pass, rules: [] };
+      group.parts.push(part);
+    }
+    part.rules.push(compiled);
   }
-
-  const builder = new ScriptBuilder(book.id, bookCounters(data));
-  const scriptRule = (compiled: Compiled): ScriptRule => ({
-    rule: compiled.rule,
-    key: compiled.key,
-    sentence: ruleSentence(compiled.rule, names),
-  });
-  const subjects = new Map<string, SubjectPatches>();
-
-  for (const group of definitionGroups.values()) {
-    const { trigger, subject } = group;
-    const plain = group.rules.map((compiled) => plainActions(compiled.rule, trigger));
-    let rules = group.rules;
-    const isPlain = plain.every((actions) => actions !== undefined);
-    if (!isPlain) {
-      rules = group.rules.filter((compiled) => {
-        if (!hasLightPortal(compiled.rule)) return true;
-        reporter.error(
-          CODES.needsPlain,
-          pointer(`/rules/${compiled.index}`, 'do'),
-          '"Light a portal" works only when every rule on this trigger is a plain one, without conditions, waits or other logic.',
-        );
-        return false;
-      });
-      if (rules.length === 0) continue;
-    }
-    const subjectData = asObject(subject.data) ?? {};
-    const eventId = ruleEventId(subject.id, trigger.id);
-    const origin = { elementId: book.id, pointer: `/rules/${rules[0]?.index ?? 0}` };
-    const existingEvents = asObject(subjectData.events) ?? {};
-    const handMade = handMadeEvent(subjectData, trigger);
-    if (existingEvents[eventId] !== undefined || handMade === eventId) {
-      reporter.error(
-        CODES.eventIdClash,
-        pointer(origin.pointer, 'when', 'subject'),
-        `"${subject.id}" already has an event "${eventId}"; rename that event so Rules can use the id.`,
-      );
-      continue;
-    }
-    const actions: Json[] = [];
-    if (handMade !== undefined) actions.push({ type: 'trigger_event', event: handMade });
-    if (isPlain) {
-      for (const list of plain) actions.push(...(list ?? []));
-    } else {
-      const handler = ruleHandlerId(book.id, subject.id, trigger.id);
-      actions.push({ type: 'run_script', handler });
-      builder.addDefinitionHandler(
-        handler,
-        trigger,
-        `${names(subject.id) ?? subject.id}: ${trigger.label.toLowerCase()}.`,
-        rules.map(scriptRule),
-      );
-    }
-    let patches = subjects.get(subject.id);
-    if (patches === undefined) {
-      patches = new SubjectPatches(subject);
-      subjects.set(subject.id, patches);
-    }
-    patches.event(eventId, { actions }, origin);
-    patches.trigger(trigger, eventId, asObject(asObject(rules[0]?.rule.when)?.options), origin);
-  }
-
-  for (const group of scriptGroups.values()) {
-    const first = group.rules[0];
-    const options = asObject(asObject(first?.rule.when)?.options) ?? {};
-    builder.addEventHandler(
-      group.trigger,
-      group.subject,
-      options,
-      `${whenSentence(asObject(first?.rule.when), names)}.`,
-      group.rules.map(scriptRule),
-    );
-  }
-
-  let script = builder.lines();
-  if (script !== null && target.fabric === undefined) {
-    reporter.error(
-      CODES.noScripts,
-      '/rules',
-      `Some rules need a script, and ${target.mcVersion} has no script runtime in MSM.`,
-    );
-    script = null;
-  }
-
-  return {
-    patches: [...subjects.values()].flatMap((subject) => subject.patches()),
-    script,
-    problems: reporter.problems,
-  };
 }
 
 /** Whether `subject` can have `trigger` (component and type checks). */

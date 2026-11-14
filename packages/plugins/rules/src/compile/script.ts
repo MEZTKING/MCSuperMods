@@ -22,7 +22,14 @@ import {
   stepList,
   str,
 } from '../book';
-import { MAX_EXPLOSION_POWER, MAX_RADIUS, MAX_REPEAT, type TriggerEntry } from '../catalogue';
+import {
+  MAX_DROP_COUNT,
+  MAX_EXPLOSION_POWER,
+  MAX_RADIUS,
+  MAX_REPEAT,
+  MAX_WEATHER_SECONDS,
+  type TriggerEntry,
+} from '../catalogue';
 
 /** A string literal that is safe in TypeScript and ES5 (line separators escaped). */
 export function literal(text: string): string {
@@ -910,7 +917,12 @@ class RuleWriter {
           at(`world.setBlock(${this.use('blockPos')}(at), ${literal(str(step, 'block') ?? '')})`),
         ];
       case 'remove_block':
-        return [at(`world.setBlock(${this.use('blockPos')}(at), "minecraft:air")`)];
+        // Script API 1.4: broken as if mined (sound and particles), with or without its drops.
+        return [
+          at(
+            `world.breakBlock(${this.use('blockPos')}(at)${bool(step, 'drop_items') === true ? '' : ', { drops: false }'})`,
+          ),
+        ];
       case 'spawn_mob':
         return [
           at(
@@ -920,7 +932,7 @@ class RuleWriter {
       case 'drop_item':
         return [
           at(
-            `world.dropItem(at, { id: ${literal(str(step, 'item') ?? '')}, count: ${this.whole(step.count, env, 1)} })`,
+            `world.dropItem(at, { id: ${literal(str(step, 'item') ?? '')}, count: ${this.whole(step.count, env, 1, MAX_DROP_COUNT)} })`,
           ),
         ];
       case 'explode': {
@@ -928,7 +940,7 @@ class RuleWriter {
         const powerCode =
           typeof power === 'number'
             ? numberLiteral(Math.min(MAX_EXPLOSION_POWER, Math.max(0, power)))
-            : `Math.min(${MAX_EXPLOSION_POWER}, ${this.number(power, env)})`;
+            : `Math.min(${MAX_EXPLOSION_POWER}, Math.max(0, ${this.number(power, env)}))`;
         return [
           at(
             `world.explode(at, ${powerCode}, { fire: ${bool(step, 'fire') === true}, breaksBlocks: ${bool(step, 'break_blocks') !== false} })`,
@@ -936,7 +948,15 @@ class RuleWriter {
         ];
       }
       case 'set_weather': {
-        const seconds = step.seconds === undefined ? '' : `, ${this.number(step.seconds, env)}`;
+        // Script API 1.4 takes more than 0 and at most 1000000 seconds; 0 or less leaves the
+        // length to the game.
+        const raw = step.seconds;
+        let seconds = '';
+        if (typeof raw === 'number') {
+          if (raw > 0) seconds = `, ${numberLiteral(Math.min(MAX_WEATHER_SECONDS, raw))}`;
+        } else if (raw !== undefined) {
+          seconds = `, Math.min(${MAX_WEATHER_SECONDS}, Math.max(0.05, ${this.number(raw, env)}))`;
+        }
         return [`world.setWeather(${literal(str(step, 'weather') ?? 'clear')}${seconds});`];
       }
       case 'run_function':
@@ -969,7 +989,11 @@ class RuleWriter {
         ];
       }
       case 'remove_mob':
-        return [`${who('mob')}.forEach((target) => target.kill());`];
+        // Script API 1.4 `Entity.remove()`: gone without loot or death events; players are
+        // skipped (removing a player is a TypeError).
+        return [
+          `${who('mob')}.forEach((target) => { if (target.asPlayer() === undefined) target.remove(); });`,
+        ];
       case 'show_boss_bar': {
         const title = step.title === undefined ? 'undefined' : this.text(step.title, env);
         const progress =

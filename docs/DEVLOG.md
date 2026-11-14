@@ -4126,3 +4126,25 @@ Decisions
 
 Next
 - B387 (world, blocks), B388 (player) and B389 (view) build against `src/types.ts`; any change to it is the orchestrator's call.
+
+## 2026-11-14 — executor — B368 Rules plugin
+
+What
+- `@msm/plugin-rules` now contributes the kind `msm:rules` (folder `rules`, schema `msm:rules`, default `{ counters: [], format: 1, rules: [] }`, no registry, no preview, hidden path `/generated_script`), the project expander `msm.rules.expand` (plugin API 1.15.0), the validator `msm.rules.book` and six templates in the category "Rules": Welcome message, Jump pad, Lucky block, Healing spring, Click counter, Mob drops a reward (ids `msm_rules_welcome_message`, `_jump_pad`, `_lucky_block`, `_healing_spring`, `_click_counter`, `_mob_reward`; vanilla subjects only, so each validates and compiles alone).
+- Compiler: `compileRuleBooks(books, elements, target)` compiles every book of a project together; books with rules on the same subject and trigger share the one event `<subject>_rules_<trigger>` (hand-made event first, then each book's part in id order: its plain actions or a `run_script` to its own handler; options from the first book's first rule), and one subject's events and components from several books are one patch each, so core never sees the same path twice. `compileRuleBook` is the one-book case. `ElementPatch` comes from `@msm/plugin-api`; the local copy is gone.
+- Lowering: `lower(element, target)` sees one element, but the script needs the whole project, so the expander writes each book's generated lines into the book's expanded copy at `generated_script` (cleared with `null` when a saved book has one by hand) and the kind lowers it to `msm/<ns>/script/rules/<book path>.ts` (layer `msm`, `language: 'typescript'`). A plain, empty or unexpanded book lowers to nothing. F24 confirmed: the content jar transpiles every `msm`-layer `typescript` output (`isScript` in `fabric-content-jar`).
+- Script API 1.4 (B370 merged into the branch): "Remove the mob" is `target.remove()` and skips players; "Remove a block" is `world.breakBlock(blockPos(at))` with drops, `{ drops: false }` without; `rules.drops-not-supported` removed; drop counts capped at 64 (`MAX_DROP_COUNT`), weather seconds in (0, 1000000] (`MAX_WEATHER_SECONDS`; 0 or less leaves the length to the game), explosion power clamped to 0..10 for readings too; block places were already block centres. `test/fixtures/script-api-1-4.d.ts` deleted; the type check reads only the real typings (moved into `test/ts-check.ts`). Goldens `step-remove_block`, `step-remove_mob` updated.
+- Problems: the expander reports the compiler's codes once (on the saved project); the validator adds `rules.duplicate-key`, `rules.bad-counter-name`, `rules.duplicate-counter` (errors), `rules.undeclared-counter`, `rules.script-path-clash` (warnings) and `rules.unknown-subject` for `any_` triggers naming an id the target and project lack. `RULES_PROBLEM_CODES` lists all 22.
+- Tests: plugin, expander, lowering goldens per target (`test/fixtures/<target>/expected/msm/demo/script/rules/rules.ts`), validators, templates per target (schema, validators, compile, type check, ES5), and an end-to-end test through `@msm/core`'s `lowerProjectAsync` with `plugins` (B367) on both targets. `app/test/project-session.test.ts`: a new project now lists `msm.rules` (it contributes a kind).
+- Checked: rules tests (282), `pnpm lint`, `pnpm typecheck`, the full `turbo run test --force --concurrency=4` (see the report).
+
+Decisions
+- Expander problems and validator problems do not overlap, so nothing is reported twice; the validators never compile, so they are the same on saved and expanded projects.
+- The expander's `kinds` are `msm:rules` plus every subject kind (`msm:block`, `msm:effect`, `msm:entity`, `msm:item`), since a changed subject changes the patches.
+- The end-to-end test imports `@msm/core` and `@msm/plugin-blocks-items` by relative path (tsconfig references added): a dev dependency would change the lockfile.
+- `apiVersion` stays `^1.0.0` (ADR 0082 D9: built-ins keep it).
+
+Next
+- B371: `scripting.unknown-handler` will warn about every rules `run_script` handler on the expanded project (the generated script is not an `msm:script`); skip handlers defined in a book's `generated_script`. Filter `/generated_script` problems through `hiddenPaths` after origin mapping too.
+- B372/B375: read `MAX_DROP_COUNT`, `MAX_WEATHER_SECONDS` from the catalogue; `remove_block` `drop_items` is now real.
+- B377: the library test must register `@msm/plugin-rules` with its expander; B380: the fixture can use breaking with drops and removing mobs.

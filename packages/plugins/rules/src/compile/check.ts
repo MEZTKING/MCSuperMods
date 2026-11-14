@@ -4,7 +4,7 @@
  * left out of the output. The plugin validators (B368) report the same codes on the cards.
  */
 import type { Json, JsonObject, Problem, ResourceLocation } from '@msm/plugin-api';
-import { asArray, asObject, bool, conditionList, pointer, stepList, str } from '../book';
+import { asArray, asObject, conditionList, pointer, stepList, str } from '../book';
 import {
   type Actor,
   conditionById,
@@ -156,13 +156,6 @@ class RuleChecker {
         CODES.cannotStop,
         path,
         `"${this.trigger.label}" cannot be stopped; "Stop the normal action" works only when a player uses or breaks a block, uses an item or a mob, hurts a mob, or chats.`,
-      );
-    }
-    if (id === 'remove_block' && bool(step, 'drop_items') === true) {
-      this.reporter.warning(
-        CODES.dropsNotSupported,
-        pointer(path, 'drop_items'),
-        'Removing a block with its drops is not supported yet; the block is removed without drops.',
       );
     }
     this.slots(entry.slots, step, path, scope, entry.defaultWho);

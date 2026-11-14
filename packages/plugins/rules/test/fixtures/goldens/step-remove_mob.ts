@@ -24,6 +24,6 @@ msm.actions.define("demo:rules/rules/guard/mob_used", (e) => {
   const mob: Entity | undefined = e.entity;
   // When a player uses Guard, remove the mob.
   rule("sample", () => { // rule:sample
-    entities([mob]).forEach((target) => target.kill()); // rule:sample
+    entities([mob]).forEach((target) => { if (target.asPlayer() === undefined) target.remove(); }); // rule:sample
   }); // rule:sample
 });

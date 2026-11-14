@@ -361,21 +361,58 @@ describe('compileRuleBook', () => {
       expect((result.script ?? []).join('\n')).not.toContain('rule("light"');
     });
 
-    it('warns that removing a block with drops is not supported yet', () => {
+    it('breaks a block with or without its drops (Script API 1.4)', () => {
       const result = compile([
         rule('a', { subject: 'demo:plain_block', trigger: 'block_used' }, [
           { drop_items: true, step: 'remove_block' },
+          { step: 'remove_block', where: 'above_here' },
         ]),
       ]);
-      expect(result.problems).toEqual([
-        expect.objectContaining({
-          code: RULES_COMPILE_CODES.dropsNotSupported,
-          elementId: 'demo:rules',
-          path: '/rules/0/do/0/drop_items',
-          severity: 'warning',
-        }),
+      expect(result.problems).toEqual([]);
+      const text = (result.script ?? []).join('\n');
+      expect(text).toContain('world.breakBlock(blockPos(at)));');
+      expect(text).toContain('world.breakBlock(blockPos(at), { drops: false }));');
+      expect(text).not.toContain('minecraft:air');
+    });
+
+    it('removes mobs without loot and never players', () => {
+      const result = compile([
+        rule('a', { subject: 'demo:guard', trigger: 'mob_used' }, [{ step: 'remove_mob' }]),
       ]);
-      expect(result.script).not.toBeNull();
+      const text = (result.script ?? []).join('\n');
+      expect(text).toContain('if (target.asPlayer() === undefined) target.remove();');
+      expect(text).not.toContain('kill()');
+    });
+
+    it('caps drops at 64, weather at 1000000 seconds and explosions at 0..10', () => {
+      const result = compile([
+        rule('a', { subject: 'demo:plain_block', trigger: 'block_used' }, [
+          { count: 500, item: 'minecraft:emerald', step: 'drop_item' },
+          {
+            count: { max: 200, min: 1, value: 'random' },
+            item: 'minecraft:emerald',
+            step: 'drop_item',
+          },
+          { seconds: 5000000, step: 'set_weather', weather: 'rain' },
+          { seconds: 0, step: 'set_weather', weather: 'clear' },
+          { seconds: { value: 'player_level' }, step: 'set_weather', weather: 'thunder' },
+          { power: 50, step: 'explode' },
+          { power: { value: 'player_level' }, step: 'explode' },
+        ]),
+      ]);
+      expect(result.problems).toEqual([]);
+      const text = (result.script ?? []).join('\n');
+      expect(text).toContain('count: 64 }');
+      expect(text).toContain('count: Math.min(64, ');
+      expect(text).toContain('world.setWeather("rain", 1000000);');
+      expect(text).toContain('world.setWeather("clear");');
+      expect(text).toContain('world.setWeather("thunder", Math.min(1000000, Math.max(0.05, ');
+      expect(text).toContain('world.explode(at, 10, ');
+      expect(text).toContain('world.explode(at, Math.min(10, Math.max(0, ');
+      // Block places are block centres.
+      expect(text).toContain(
+        'const here = e.block !== undefined ? e.block.pos.offset(0.5, 0.5, 0.5) : e.pos;',
+      );
     });
 
     it('reports a book that needs a script on a target without a script runtime', () => {
