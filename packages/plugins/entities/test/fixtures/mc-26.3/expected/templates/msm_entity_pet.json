@@ -1,0 +1,117 @@
+[
+  {
+    "contents": {
+      "base": "animal",
+      "category": "creature",
+      "components": {
+        "msm:ai_goals": {
+          "goals": [
+            {
+              "height": 0.4,
+              "type": "leap_at_target"
+            },
+            {
+              "retaliate": true,
+              "speed": 1,
+              "type": "melee_attack"
+            },
+            {
+              "speed": 1,
+              "type": "wander"
+            },
+            {
+              "distance": 8,
+              "type": "look_at_player"
+            },
+            {
+              "type": "look_around"
+            }
+          ]
+        },
+        "msm:animated_model": {
+          "animations": "demo:entity/sample_animations",
+          "attack": "attack",
+          "idle": "idle",
+          "model": "demo:entity/sample",
+          "renderer": "auto",
+          "sit": "sit",
+          "texture": "demo:entity/sample",
+          "walk": "walk"
+        },
+        "msm:attack": {
+          "damage": 4
+        },
+        "msm:breedable": {
+          "baby_scale": 0.5,
+          "items": [
+            "minecraft:cooked_beef",
+            "minecraft:cooked_porkchop",
+            "minecraft:cooked_chicken"
+          ]
+        },
+        "msm:health": {
+          "max": 8
+        },
+        "msm:movement": {
+          "speed": 0.3
+        },
+        "msm:tameable": {
+          "chance": 0.33,
+          "defends_owner": true,
+          "follows_owner": true,
+          "items": [
+            "minecraft:bone"
+          ],
+          "sit": true,
+          "tamed_health": 40
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 0.85,
+        "width": 0.6
+      },
+      "spawn": {
+        "biomes": [
+          "#minecraft:is_forest"
+        ],
+        "max_group": 4,
+        "min_group": 2,
+        "rule": "animal",
+        "weight": 5
+      },
+      "spawn_egg": {}
+    },
+    "layer": "msm",
+    "path": "msm/demo/entity/sample.json"
+  },
+  {
+    "contents": {
+      "entity.demo.sample": "Sample",
+      "item.demo.sample_spawn_egg": "Sample Spawn Egg"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample_spawn_egg",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample_spawn_egg.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "demo:item/sample_spawn_egg"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample_spawn_egg.json"
+  }
+]

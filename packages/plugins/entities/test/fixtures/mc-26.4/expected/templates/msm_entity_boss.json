@@ -1,0 +1,100 @@
+[
+  {
+    "contents": {
+      "base": "monster",
+      "category": "monster",
+      "components": {
+        "msm:ai_goals": {
+          "goals": [
+            {
+              "retaliate": true,
+              "speed": 1,
+              "targets": [
+                "minecraft:player"
+              ],
+              "type": "melee_attack"
+            },
+            {
+              "speed": 0.8,
+              "type": "wander"
+            },
+            {
+              "distance": 16,
+              "type": "look_at_player"
+            },
+            {
+              "type": "look_around"
+            }
+          ]
+        },
+        "msm:animated_model": {
+          "animations": "demo:entity/sample_animations",
+          "attack": "attack",
+          "idle": "idle",
+          "model": "demo:entity/sample",
+          "renderer": "auto",
+          "scale": 1.5,
+          "texture": "demo:entity/sample",
+          "walk": "walk"
+        },
+        "msm:attack": {
+          "damage": 12,
+          "knockback": 1.5
+        },
+        "msm:boss_bar": {
+          "colour": "purple",
+          "darken_sky": true,
+          "fog": false,
+          "music": false,
+          "overlay": "notched_10"
+        },
+        "msm:health": {
+          "max": 200
+        },
+        "msm:movement": {
+          "fire_immune": true,
+          "follow_range": 40,
+          "knockback_resistance": 1,
+          "speed": 0.3
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 3,
+        "width": 1.2
+      },
+      "spawn_egg": {}
+    },
+    "layer": "msm",
+    "path": "msm/demo/entity/sample.json"
+  },
+  {
+    "contents": {
+      "entity.demo.sample": "Sample",
+      "item.demo.sample_spawn_egg": "Sample Spawn Egg"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample_spawn_egg",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample_spawn_egg.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "demo:item/sample_spawn_egg"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample_spawn_egg.json"
+  }
+]

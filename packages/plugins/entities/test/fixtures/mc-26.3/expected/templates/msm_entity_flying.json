@@ -1,0 +1,89 @@
+[
+  {
+    "contents": {
+      "category": "creature",
+      "components": {
+        "msm:ai_goals": {
+          "goals": [
+            {
+              "speed": 1,
+              "type": "wander"
+            },
+            {
+              "distance": 6,
+              "type": "look_at_player"
+            },
+            {
+              "type": "look_around"
+            }
+          ]
+        },
+        "msm:animated_model": {
+          "animations": "demo:entity/sample_animations",
+          "fly": "fly",
+          "idle": "idle",
+          "model": "demo:entity/sample",
+          "renderer": "auto",
+          "texture": "demo:entity/sample",
+          "walk": "walk"
+        },
+        "msm:health": {
+          "max": 10
+        },
+        "msm:movement": {
+          "flying_speed": 0.6,
+          "hovers": true,
+          "mode": "fly",
+          "speed": 0.3
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 0.6,
+        "width": 0.7
+      },
+      "spawn": {
+        "biomes": [
+          "minecraft:flower_forest",
+          "minecraft:meadow"
+        ],
+        "max_group": 3,
+        "min_group": 1,
+        "rule": "animal",
+        "weight": 6
+      },
+      "spawn_egg": {}
+    },
+    "layer": "msm",
+    "path": "msm/demo/entity/sample.json"
+  },
+  {
+    "contents": {
+      "entity.demo.sample": "Sample",
+      "item.demo.sample_spawn_egg": "Sample Spawn Egg"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample_spawn_egg",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample_spawn_egg.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "demo:item/sample_spawn_egg"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample_spawn_egg.json"
+  }
+]

@@ -13,6 +13,7 @@ import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, {
   displayName,
+  entitiesMobValidators,
   entitiesTemplates,
   entitiesValidators,
   entityKind,
@@ -28,7 +29,24 @@ const {
 
 const UPDATE = process.env.UPDATE_GOLDENS === '1';
 
-const IDS = ['msm_entity_creature', 'msm_entity_monster', 'msm_entity_ambient'];
+const IDS = [
+  'msm_entity_creature',
+  'msm_entity_monster',
+  'msm_entity_ambient',
+  'msm_entity_pet',
+  'msm_entity_farm_animal',
+  'msm_entity_mount',
+  'msm_entity_flying',
+  'msm_entity_fish',
+  'msm_entity_archer',
+  'msm_entity_boss',
+];
+
+/** The mob templates of ADR 0073 D3, which draw with renderer `auto`. */
+const MOB_IDS = IDS.slice(3);
+
+/** Every validator the plugin contributes: the older checks and the mob checks. */
+const VALIDATORS = [...entitiesValidators, ...entitiesMobValidators];
 
 /**
  * What the validators report for a fresh template: the model, the animation set and the
@@ -83,7 +101,15 @@ describe('entities templates', () => {
       'Creature',
       'Monster',
       'Ambient critter',
+      'Pet',
+      'Farm animal',
+      'Mount',
+      'Flying creature',
+      'Fish',
+      'Archer',
+      'Boss',
     ]);
+    expect(entitiesTemplates).toHaveLength(10);
   });
 
   it('returns fresh data on every call and never mutates the context', async () => {
@@ -135,6 +161,38 @@ describe('entities templates', () => {
     expect(data.spawn_egg).toEqual({ texture: 'mod:item/mobs/ghoul_spawn_egg' });
     expect(displayName('mobs/ghoul')).toBe('Ghoul');
   });
+
+  it('draws the mob templates with renderer auto and ids derived from the template id', async () => {
+    for (const id of MOB_IDS) {
+      const template = entitiesTemplates.find((entry) => entry.id === id) as ElementTemplate;
+      const data = (await template.data({
+        ...contextFor(template),
+        id: 'mod:mobs/thing',
+        namespace: 'mod',
+        path: 'mobs/thing',
+      })) as { components: Record<string, unknown> };
+      expect(data.components['msm:animated_model'], id).toMatchObject({
+        model: 'mod:entity/mobs/thing',
+        animations: 'mod:entity/mobs/thing_animations',
+        texture: 'mod:entity/mobs/thing',
+        renderer: 'auto',
+      });
+    }
+  });
+
+  it('gives swimmers a speed near 1 (B290) and keeps them in a water category', async () => {
+    for (const template of entitiesTemplates) {
+      const data = (await template.data(contextFor(template))) as {
+        category: string;
+        components: Record<string, { mode?: string; speed?: number } | undefined>;
+      };
+      const movement = data.components['msm:movement'];
+      if (movement?.mode !== 'swim') continue;
+      expect(movement.speed, template.id).toBeGreaterThanOrEqual(0.8);
+      expect(movement.speed, template.id).toBeLessThanOrEqual(1.2);
+      expect(['water_creature', 'water_ambient'], template.id).toContain(data.category);
+    }
+  });
 });
 
 describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const))(
@@ -151,7 +209,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         const created = element(entityKind.id, context.id, data);
         const problems = (
           await Promise.all(
-            entitiesValidators.map((validator) =>
+            VALIDATORS.map((validator) =>
               validator.validate({
                 elements: [created],
                 target: bundle.target,

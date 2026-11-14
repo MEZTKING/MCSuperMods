@@ -1,0 +1,92 @@
+[
+  {
+    "contents": {
+      "category": "water_ambient",
+      "components": {
+        "msm:ai_goals": {
+          "goals": [
+            {
+              "distance": 8,
+              "from": [
+                "minecraft:player"
+              ],
+              "speed": 1.6,
+              "sprint_speed": 1.4,
+              "type": "flee"
+            },
+            {
+              "speed": 1,
+              "type": "wander"
+            }
+          ]
+        },
+        "msm:animated_model": {
+          "animations": "demo:entity/sample_animations",
+          "idle": "idle",
+          "model": "demo:entity/sample",
+          "renderer": "auto",
+          "swim": "swim",
+          "texture": "demo:entity/sample",
+          "walk": "walk"
+        },
+        "msm:health": {
+          "max": 3
+        },
+        "msm:movement": {
+          "breathes_air": false,
+          "dry_out_ticks": 300,
+          "mode": "swim",
+          "speed": 1
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 0.3,
+        "width": 0.5
+      },
+      "spawn": {
+        "biomes": [
+          "#minecraft:is_ocean",
+          "#minecraft:is_river"
+        ],
+        "max_group": 6,
+        "min_group": 3,
+        "placement": "in_water",
+        "rule": "water_animal",
+        "weight": 10
+      },
+      "spawn_egg": {}
+    },
+    "layer": "msm",
+    "path": "msm/demo/entity/sample.json"
+  },
+  {
+    "contents": {
+      "entity.demo.sample": "Sample",
+      "item.demo.sample_spawn_egg": "Sample Spawn Egg"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample_spawn_egg",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample_spawn_egg.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "demo:item/sample_spawn_egg"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample_spawn_egg.json"
+  }
+]

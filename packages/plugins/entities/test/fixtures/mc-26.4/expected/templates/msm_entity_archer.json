@@ -1,0 +1,112 @@
+[
+  {
+    "contents": {
+      "base": "monster",
+      "category": "monster",
+      "components": {
+        "msm:ai_goals": {
+          "goals": [
+            {
+              "retaliate": true,
+              "speed": 1,
+              "strafe": true,
+              "targets": [
+                "minecraft:player"
+              ],
+              "type": "ranged_attack"
+            },
+            {
+              "speed": 1,
+              "type": "wander"
+            },
+            {
+              "distance": 8,
+              "type": "look_at_player"
+            },
+            {
+              "type": "look_around"
+            }
+          ]
+        },
+        "msm:animated_model": {
+          "animations": "demo:entity/sample_animations",
+          "idle": "idle",
+          "model": "demo:entity/sample",
+          "renderer": "auto",
+          "shoot": "shoot",
+          "texture": "demo:entity/sample",
+          "walk": "walk"
+        },
+        "msm:health": {
+          "max": 20
+        },
+        "msm:movement": {
+          "follow_range": 16,
+          "speed": 0.25
+        },
+        "msm:ranged_attack": {
+          "charge_ticks": 20,
+          "damage": 2,
+          "inaccuracy": 6,
+          "interval_ticks": 40,
+          "projectile": "minecraft:arrow",
+          "range": 15,
+          "sound": "minecraft:entity.skeleton.shoot",
+          "speed": 1.6
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 1.99,
+        "width": 0.6
+      },
+      "sounds": {
+        "ambient": "minecraft:entity.skeleton.ambient",
+        "death": "minecraft:entity.skeleton.death",
+        "hurt": "minecraft:entity.skeleton.hurt",
+        "step": "minecraft:entity.skeleton.step"
+      },
+      "spawn": {
+        "biomes": [
+          "#minecraft:is_overworld"
+        ],
+        "max_group": 2,
+        "min_group": 1,
+        "rule": "monster",
+        "weight": 40
+      },
+      "spawn_egg": {}
+    },
+    "layer": "msm",
+    "path": "msm/demo/entity/sample.json"
+  },
+  {
+    "contents": {
+      "entity.demo.sample": "Sample",
+      "item.demo.sample_spawn_egg": "Sample Spawn Egg"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample_spawn_egg",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample_spawn_egg.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "demo:item/sample_spawn_egg"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample_spawn_egg.json"
+  }
+]

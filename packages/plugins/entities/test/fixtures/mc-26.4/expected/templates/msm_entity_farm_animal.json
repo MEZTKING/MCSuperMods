@@ -1,0 +1,100 @@
+[
+  {
+    "contents": {
+      "base": "animal",
+      "category": "creature",
+      "components": {
+        "msm:ai_goals": {
+          "goals": [
+            {
+              "speed": 2,
+              "type": "panic"
+            },
+            {
+              "speed": 1,
+              "type": "wander"
+            },
+            {
+              "distance": 6,
+              "type": "look_at_player"
+            },
+            {
+              "type": "look_around"
+            }
+          ]
+        },
+        "msm:animated_model": {
+          "animations": "demo:entity/sample_animations",
+          "idle": "idle",
+          "model": "demo:entity/sample",
+          "renderer": "auto",
+          "texture": "demo:entity/sample",
+          "walk": "walk"
+        },
+        "msm:breedable": {
+          "baby_scale": 0.5,
+          "follow_parents": true,
+          "grow_up_ticks": 24000,
+          "items": [
+            "minecraft:wheat"
+          ],
+          "tempted": true
+        },
+        "msm:health": {
+          "max": 10
+        },
+        "msm:movement": {
+          "speed": 0.2
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 1.4,
+        "width": 0.9
+      },
+      "spawn": {
+        "biomes": [
+          "minecraft:plains",
+          "minecraft:sunflower_plains",
+          "minecraft:meadow"
+        ],
+        "max_group": 4,
+        "min_group": 2,
+        "rule": "animal",
+        "weight": 8
+      },
+      "spawn_egg": {}
+    },
+    "layer": "msm",
+    "path": "msm/demo/entity/sample.json"
+  },
+  {
+    "contents": {
+      "entity.demo.sample": "Sample",
+      "item.demo.sample_spawn_egg": "Sample Spawn Egg"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample_spawn_egg",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample_spawn_egg.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "demo:item/sample_spawn_egg"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample_spawn_egg.json"
+  }
+]
