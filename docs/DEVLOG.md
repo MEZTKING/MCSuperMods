@@ -3676,3 +3676,17 @@ Next
 **Decisions:** "a column whose top is lava" read as the first spot with room for the traveller; lava below solid rock without room above it does not end the scan (a lava pocket in the Nether's roof does not skip the column).
 
 **Next:** B339 copies the lava rule into the ejected `PortalTravel`.
+## 2026-11-14 — executor — B342 portals e2e
+
+What
+- New `app/e2e/portals-path.spec.ts` (ADRs 0077, 0078), two tests in blank projects (namespace `gates`):
+  1. The Portal flow with untouched defaults creates `sky_portal`, `sky_portal_frame`, `sky_realm` and its travel function with no problem at all. The Type picker: the portal to `block` drops its fields and one Undo restores it; the frame block to `portal` gets the portal defaults (crying obsidian, the Nether) and one Undo restores it. One edit per Portal section field (tag frame and "Exit portals are built of", igniter, destination, "Comes back to", 8:1 then a number, arrival on the ground, delay, cooldown, players only, wobble off, on travel, dust with a colour, count, ambient sound, travel sound "None"), checked in the saved file, and "Edit in Creator" keeps the portal exactly as edited.
+  2. The Dimension flow's portal answer with otherwise untouched defaults creates `ruby_realm` and `ruby_realm_portal` (no key) with no problem at all. "Light a portal" in an event of the frame block picks the project's portal. "Nothing: a trigger lights it", scale from the dimensions (the travel group goes), ambient "None", a travel sound, count 0, a colour set and cleared; kept on "Edit in Creator" (Dimension flow). A function typed in Monaco that `setblock`s the portal. The vanilla data pack keeps the dimension and both functions, writes `#minecraft:portals` as `{ id, required: false }`, flags the frame's recipe and loot table (`export.mod-only-reference`, two rows) and the function (`export.mod-only-function`, one row). The Fabric mod jar on 26.3 and, after "Upgrade project target", 26.4 holds the definition (no `textures`), blockstate, `_ns`/`_ew` models, the tag and the dimension, and no item model for the portal.
+- Checks: `pnpm build`; `xvfb-run -a pnpm --filter @msm/app e2e` 43 of 43 (4.4 min); the new spec with `--repeat-each=3` 6 of 6 (46 s); `pnpm lint`, `pnpm typecheck`.
+
+Decisions
+- Switching a block whose `item` says more than the default (the frame block's creative tab) to a portal keeps that item and its `loot: "self"`, as `withBlockType` documents; the spec asserts that rather than a dropped item.
+- Monaco's view is clicked near its top left: in this layout the overview ruler covers the middle of the narrow editor.
+
+Next
+- None for the spec. The B337 follow-up (passing `portals` to the Events editor in the Item, Effect and Entity Studios) is still open.
