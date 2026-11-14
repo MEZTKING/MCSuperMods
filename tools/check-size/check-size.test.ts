@@ -7,9 +7,11 @@ import {
   checkBudgets,
   type FileSize,
   formatBytes,
+  LICENSED_VENDOR_FOLDERS,
   listFiles,
   type Measurements,
   measure,
+  missingLicences,
   report,
   summarise,
   typescriptWorkerChunks,
@@ -25,6 +27,13 @@ const passing: Measurements = {
     { path: 'index.html', bytes: 900 },
   ],
   mainFiles: [{ path: 'index.js', bytes: 4 * MB }],
+  vendorFiles: [
+    { path: 'mc-26.3/mcmeta/registries.json', bytes: 900_000 },
+    { path: 'mc-26.3/vanilla-mcdoc/LICENSE', bytes: 1_000 },
+    { path: 'mc-26.3/vanilla-mcdoc/symbols.json', bytes: 1_600_000 },
+  ],
+  looseVendorJson: [],
+  missingVendorLicences: [],
   unpackedBytes: 280 * MB,
 };
 
@@ -70,6 +79,9 @@ describe('checkBudgets', () => {
           { path: 'data.json', bytes: BUDGETS.rendererJsonBytes },
         ],
         mainFiles: null,
+        vendorFiles: null,
+        looseVendorJson: [],
+        missingVendorLicences: [],
         unpackedBytes: null,
       }),
     ).toEqual([]);
@@ -120,9 +132,49 @@ describe('checkBudgets', () => {
         asarBytes: null,
         rendererFiles: null,
         mainFiles: null,
+        vendorFiles: null,
+        looseVendorJson: [],
+        missingVendorLicences: [],
         unpackedBytes: null,
       }),
     ).toEqual([expect.stringContaining('dist:dir'), expect.stringContaining('pnpm build')]);
+  });
+
+  it('fails each vendored JSON file that is not compact, naming it (ADR 0079)', () => {
+    const violations = checkBudgets({
+      ...passing,
+      looseVendorJson: ['mc-26.4/vanilla-mcdoc/symbols.json'],
+    });
+    expect(violations).toEqual([
+      'Vendored JSON out/main/vendor/mc-26.4/vanilla-mcdoc/symbols.json is not compact (has line breaks): bundleVendoredData must compact it (ADR 0079).',
+    ]);
+  });
+
+  it('fails a main build without its vendor folder', () => {
+    expect(checkBudgets({ ...passing, vendorFiles: null })).toEqual([
+      'app/out/main/vendor not found: the main build lost the vendored target data (ADR 0079).',
+    ]);
+  });
+
+  it('adds no vendor violation when main itself is missing', () => {
+    expect(checkBudgets({ ...passing, mainFiles: null, vendorFiles: null })).toEqual([]);
+  });
+
+  it('fails a licensed vendored folder without its LICENSE', () => {
+    expect(LICENSED_VENDOR_FOLDERS).toContain('vanilla-mcdoc');
+    expect(
+      missingLicences([
+        { path: 'mc-26.3/vanilla-mcdoc/symbols.json', bytes: 1 },
+        { path: 'mc-26.3/mcmeta/registries.json', bytes: 1 },
+        { path: 'mc-26.4/vanilla-mcdoc/LICENSE', bytes: 1 },
+        { path: 'mc-26.4/vanilla-mcdoc/symbols.json', bytes: 1 },
+      ]),
+    ).toEqual(['mc-26.3/vanilla-mcdoc']);
+    expect(checkBudgets({ ...passing, missingVendorLicences: ['mc-26.3/vanilla-mcdoc'] })).toEqual([
+      expect.stringMatching(
+        /^Vendored folder out\/main\/vendor\/mc-26\.3\/vanilla-mcdoc has no LICENSE/,
+      ),
+    ]);
   });
 });
 
@@ -147,6 +199,10 @@ describe('measure and report', () => {
     mkdirSync(join(main, 'chunks'), { recursive: true });
     writeFileSync(join(main, 'index.js'), 'x'.repeat(2048));
     writeFileSync(join(main, 'chunks', 'lazy.js'), 'x'.repeat(1024));
+    const vendor = join(main, 'vendor', 'mc-26.3', 'vanilla-mcdoc');
+    mkdirSync(vendor, { recursive: true });
+    writeFileSync(join(vendor, 'symbols.json'), '{"a":[1,2]}');
+    writeFileSync(join(vendor, 'LICENSE'), 'MIT\nLicence text\n');
     writeFileSync(join(root, 'app', 'dist', 'linux-unpacked', 'mcsupermods'), 'x'.repeat(5000));
 
     const measured = measure(root);
@@ -160,7 +216,15 @@ describe('measure and report', () => {
       mainFiles: [
         { path: 'chunks/lazy.js', bytes: 1024 },
         { path: 'index.js', bytes: 2048 },
+        { path: 'vendor/mc-26.3/vanilla-mcdoc/LICENSE', bytes: 17 },
+        { path: 'vendor/mc-26.3/vanilla-mcdoc/symbols.json', bytes: 11 },
       ],
+      vendorFiles: [
+        { path: 'mc-26.3/vanilla-mcdoc/LICENSE', bytes: 17 },
+        { path: 'mc-26.3/vanilla-mcdoc/symbols.json', bytes: 11 },
+      ],
+      looseVendorJson: [],
+      missingVendorLicences: [],
       unpackedBytes: 6000,
     });
     expect(listFiles(join(root, 'app', 'out', 'renderer'))).toEqual(measured.rendererFiles);
@@ -174,6 +238,9 @@ describe('measure and report', () => {
       'Main output: index.js 2.0 kB, 3.0 kB in total (reported only), largest files:',
     );
     expect(lines).toContain('     1.0 kB  chunks/lazy.js');
+    expect(lines).toContain(
+      'Vendored target data: 28 B in app/out/main/vendor (compact JSON, ADR 0079)',
+    );
     expect(lines.at(-1)).toMatch(/^Unpacked app: 5\.9 kB/);
   });
 
@@ -183,7 +250,31 @@ describe('measure and report', () => {
       asarBytes: null,
       rendererFiles: null,
       mainFiles: null,
+      vendorFiles: null,
+      looseVendorJson: [],
+      missingVendorLicences: [],
       unpackedBytes: null,
     });
+  });
+
+  it('finds indented vendored JSON and a missing licence in a built tree', () => {
+    root = mkdtempSync(join(tmpdir(), 'msm-check-size-'));
+    const vendor = join(root, 'app', 'out', 'main', 'vendor', 'mc-26.4');
+    mkdirSync(join(vendor, 'mcmeta'), { recursive: true });
+    mkdirSync(join(vendor, 'vanilla-mcdoc'), { recursive: true });
+    writeFileSync(join(vendor, 'mcmeta', 'compact.json'), JSON.stringify({ a: 'line\nbreak' }));
+    writeFileSync(join(vendor, 'mcmeta', 'indented.json'), JSON.stringify({ a: [1] }, null, 2));
+    writeFileSync(join(vendor, 'vanilla-mcdoc', 'symbols.json'), '{}');
+    writeFileSync(join(vendor, 'mcmeta', 'notes.txt'), 'a\nb\n');
+
+    const measured = measure(root);
+    expect(measured.looseVendorJson).toEqual(['mc-26.4/mcmeta/indented.json']);
+    expect(measured.missingVendorLicences).toEqual(['mc-26.4/vanilla-mcdoc']);
+    expect(checkBudgets(measured)).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('out/main/vendor/mc-26.4/mcmeta/indented.json is not compact'),
+        expect.stringContaining('out/main/vendor/mc-26.4/vanilla-mcdoc has no LICENSE'),
+      ]),
+    );
   });
 });

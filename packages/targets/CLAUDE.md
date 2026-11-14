@@ -14,7 +14,7 @@ One package per Minecraft version, `@msm/target-mc-<version>`, holding every ver
 - `mc-26.3/vendor/mcmeta/`: `version.json`, `registries.json`, `commands.json` (pretty-printed, about 583 kB), `blocks.json`, `SOURCE.json` (ADR 0006).
 - `mc-26.3/CHANGES.md`: verified facts with sources, and what Mojang changed that affected us.
 - `mc-26.4/`: same layout; `src/removed-ids.ts` (registry → ids removed since 26.3, moved registries, ids still registered elsewhere, known renames) and `src/migrate.ts` (`migrateFrom`: `target.removed-id` with element and RFC 6901 path, renames applied only when the mcdoc shape matches, `target.no-migration-path` from an unknown target).
-- `all/src/index.ts` (`@msm/targets`): `builtInTargets` (newest first by `mcVersion`, snapshots included), `releaseTargets`, `defaultTargetId` (the first `release` target, never a snapshot), `targetById`, `targetFacts` (hooks stripped, safe to `structuredClone`), `readVendoredJson`. The only way code outside this tree reaches a target; plugin and exporter `src/` may not import it (tests only). The app's main build bundles every target's vendored data into `out/main/vendor/`.
+- `all/src/index.ts` (`@msm/targets`): `builtInTargets` (newest first by `mcVersion`, snapshots included), `releaseTargets`, `defaultTargetId` (the first `release` target, never a snapshot), `targetById`, `targetFacts` (hooks stripped, safe to `structuredClone`), `readVendoredJson`. The only way code outside this tree reaches a target; plugin and exporter `src/` may not import it (tests only). The app's main build bundles every target's vendored data into `out/main/vendor/` (compacted, ADR 0079; vanilla-mcdoc's `LICENSE` copied beside it).
 
 ## Conventions
 

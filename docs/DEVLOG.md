@@ -3625,3 +3625,20 @@ Decisions
 
 Next
 - B336: travel and linking in `MsmPortalBlock.getPortalDestination`; B339 copies the block and lighting into the eject.
+
+## 2026-11-14 — executor — B329 compact vendored target data
+
+What
+- `bundleVendoredData` (`app/electron.vite.config.ts`) emits every vendored `.json` file as `JSON.stringify(JSON.parse(text))` (strict UTF-8 decode; a file that does not parse fails the build with its path); other files are copied byte for byte. The sources under `packages/targets/*/vendor/` stay pretty-printed (ADR 0079 D1).
+- The same step copies a `LICENSE` that sits beside a vendored file (vanilla-mcdoc's MIT licence, identical to the vendored one) to `out/main/vendor/<target>/vanilla-mcdoc/LICENSE`, so the app ships the upstream notice with `symbols.json` (the ADR's LICENSE finding).
+- `tools/check-size`: new enforced rules (missing `app/out/main/vendor` when `app/out/main` exists; any vendored `*.json` with a line feed, named; a `vanilla-mcdoc` folder without its `LICENSE`) and a reported "Vendored target data" total; README, DESIGN §14, ROADMAP follow-ups, HANDOFF and `packages/targets/CLAUDE.md` updated.
+- `app.asar`: 33,213,535 bytes (31.7 MB) before, 27,997,478 bytes (26.7 MB) after, 5,216,057 bytes less; vendored total 5.5 MB in `out/main/vendor`.
+- Equivalence: every one of the ten vendored JSON files (five keys on two targets) in `app/out/main/vendor` deep-equals its source and has no line feed. Copying the indented `mc-26.3/mcmeta/blocks.json` over its built counterpart made `check-size` exit 1 naming it; removing a built `LICENSE` did the same; both restored afterwards.
+- Checks: `pnpm lint`, `pnpm typecheck`, `@msm/tools` tests (171), `@msm/app` tests (1535), `pnpm build`, `smoke`, `dist:dir`, `smoke:packaged`, `check-size` and the full `e2e` suite (41 passed).
+
+Decisions
+- The brief's one-off equivalence command parses every file in the vendor folders; with the licence copied it skips non-JSON files (the `LICENSE`).
+- The licence rule is a check-size rule over `LICENSED_VENDOR_FOLDERS` (`vanilla-mcdoc`); mcmeta has no licence file vendored.
+
+Next
+- Orchestrator: review and set ADR 0079's status line. D4 (gzip) only if `app.asar` comes within 1 MB of 32 MB.

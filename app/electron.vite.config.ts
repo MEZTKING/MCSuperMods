@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
@@ -8,11 +8,31 @@ import { minify, type Plugin } from 'vite';
 // The renderer CSP keeps style-src 'unsafe-inline' in production: Monaco and Radix inject
 // runtime <style> elements without nonce support. Scripts stay 'self' only (DEVLOG 2026-11-04).
 
+/** A vendored file's emitted bytes: `.json` compacted (ADR 0079 D1), anything else as is. */
+function vendoredSource(path: string): Uint8Array | string {
+  const bytes = readFileSync(path);
+  if (!path.endsWith('.json')) return bytes;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Vendored file ${path} is not valid JSON: ${message}`);
+  }
+  return JSON.stringify(parsed);
+}
+
 /**
- * Copies each built-in target's vendored data into `out/main/vendor/<package folder>/` and
+ * Emits each built-in target's vendored data into `out/main/vendor/<package folder>/` and
  * rewrites its `new URL('../vendor/…', import.meta.url)` to point there (plan D10). Vite does
  * not emit `new URL` assets in SSR builds, so without this the bundled main process would look
  * for the files next to `out/`.
+ *
+ * Every `.json` file is compacted (`JSON.stringify(JSON.parse(text))`, key order kept; ADR 0079
+ * D1): the sources under `packages/targets/<target>/vendor/` stay pretty-printed for reviewable sync
+ * diffs, and about half their bytes are indentation. A file that does not parse fails the build.
+ * Other files are copied byte for byte. A `LICENSE` beside a vendored file (vanilla-mcdoc's) is
+ * copied with it, so the packaged app carries the upstream licence next to the data.
  */
 function bundleVendoredData(): Plugin {
   return {
@@ -23,15 +43,19 @@ function bundleVendoredData(): Plugin {
       if (match === null) return null;
       const folder = match[1] as string;
       const packageDir = join(dirname(id), '..');
+      const licences = new Set<string>();
       return code.replace(
         /new URL\((['"])\.\.\/vendor\/([^'"]+)\1, import\.meta\.url\)/g,
         (_whole, _quote, file: string) => {
           const fileName = `vendor/${folder}/${file}`;
-          this.emitFile({
-            type: 'asset',
-            fileName,
-            source: readFileSync(join(packageDir, 'vendor', ...file.split('/'))),
-          });
+          const path = join(packageDir, 'vendor', ...file.split('/'));
+          this.emitFile({ type: 'asset', fileName, source: vendoredSource(path) });
+          const licence = join(dirname(path), 'LICENSE');
+          const licenceName = `${fileName.slice(0, fileName.lastIndexOf('/'))}/LICENSE`;
+          if (!licences.has(licenceName) && existsSync(licence)) {
+            licences.add(licenceName);
+            this.emitFile({ type: 'asset', fileName: licenceName, source: readFileSync(licence) });
+          }
           return `new URL(${JSON.stringify(`./${fileName}`)}, import.meta.url)`;
         },
       );

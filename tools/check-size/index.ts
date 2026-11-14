@@ -7,21 +7,27 @@
  *
  * Enforced (thresholds in {@link BUDGETS}, rationale in README.md):
  *
- * 1. `app.asar` in the unpacked build is at most 32 MB (ADR 0037: two targets' vendored data).
+ * 1. `app.asar` in the unpacked build is at most 32 MB (ADR 0037: room for two targets'
+ *    vendored data; ADR 0079: that data is compacted at build, so the budget is kept).
  * 2. The renderer output (`app/out/renderer`) is at most 16 MB in total (ADR 0031 D6: the
  *    lazy Monaco TypeScript worker is about 7 MB on its own).
  * 3. No `*.json` file in the renderer output is larger than 100 kB (vendored data belongs in
  *    main, not in the renderer bundle).
  * 4. The Monaco TypeScript worker is a chunk of its own (a file whose name contains
  *    `ts.worker`), so it loads only with the script editor.
+ * 5. `app/out/main/vendor` exists whenever `app/out/main` does, and every `*.json` file under it
+ *    is compact: no line feed byte (0x0A). Compact `JSON.stringify` output never has one, since
+ *    line breaks inside strings are escaped (ADR 0079 D1, D3).
+ * 6. Every vendored folder whose upstream licence must travel with it (`vanilla-mcdoc`, MIT)
+ *    has its `LICENSE` beside the data in `app/out/main/vendor`.
  *
  * Reported only: the largest renderer chunks, the main-process bundle (`app/out/main/index.js`,
  * the `app/out/main` total and its largest chunks, such as the lazy TypeScript service) and
- * the unpacked app total (dominated by the Electron binary,
+ * the vendored target data total (`app/out/main/vendor`), the unpacked app total (dominated by the Electron binary,
  * which MSM does not control). The 150 MB installer budget is checked on the
  * Windows installer in `.github/workflows/release.yml`.
  */
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -49,6 +55,12 @@ export interface Measurements {
   rendererFiles: FileSize[] | null;
   /** Files of the main-process build output (`app/out/main`). Reported, never budgeted. */
   mainFiles: FileSize[] | null;
+  /** Files under `app/out/main/vendor` (the vendored target data, ADR 0079). */
+  vendorFiles: FileSize[] | null;
+  /** `*.json` files under `app/out/main/vendor` that contain a line feed (not compacted). */
+  looseVendorJson: string[];
+  /** Licensed vendored folders under `app/out/main/vendor` that lack their `LICENSE`. */
+  missingVendorLicences: string[];
   unpackedBytes: number | null;
 }
 
@@ -101,6 +113,31 @@ export function typescriptWorkerChunks(files: readonly FileSize[]): FileSize[] {
   });
 }
 
+/** Vendored folder names whose upstream `LICENSE` must ship beside the data. */
+export const LICENSED_VENDOR_FOLDERS = ['vanilla-mcdoc'] as const;
+
+/** Paths of the `*.json` files in `files` (relative to `vendorDir`) that contain a line feed. */
+export function looseJsonFiles(vendorDir: string, files: readonly FileSize[]): string[] {
+  return files
+    .filter((file) => file.path.endsWith('.json'))
+    .filter((file) => readFileSync(join(vendorDir, ...file.path.split('/'))).includes(0x0a))
+    .map((file) => file.path);
+}
+
+/** Folders (relative paths) in `files` named in {@link LICENSED_VENDOR_FOLDERS} with no `LICENSE`. */
+export function missingLicences(files: readonly FileSize[]): string[] {
+  const paths = new Set(files.map((file) => file.path));
+  const folders = new Set<string>();
+  for (const file of files) {
+    const slash = file.path.lastIndexOf('/');
+    if (slash < 0) continue;
+    const folder = file.path.slice(0, slash);
+    const name = folder.slice(folder.lastIndexOf('/') + 1);
+    if ((LICENSED_VENDOR_FOLDERS as readonly string[]).includes(name)) folders.add(folder);
+  }
+  return [...folders].filter((folder) => !paths.has(`${folder}/LICENSE`)).sort();
+}
+
 /** Returns one message per broken budget or missing input; empty when everything passes. */
 export function checkBudgets(measured: Measurements, budgets: Budgets = BUDGETS): string[] {
   const violations: string[] = [];
@@ -133,6 +170,21 @@ export function checkBudgets(measured: Measurements, budgets: Budgets = BUDGETS)
       );
     }
   }
+  if (measured.mainFiles !== null && measured.vendorFiles === null) {
+    violations.push(
+      'app/out/main/vendor not found: the main build lost the vendored target data (ADR 0079).',
+    );
+  }
+  for (const path of measured.looseVendorJson) {
+    violations.push(
+      `Vendored JSON out/main/vendor/${path} is not compact (has line breaks): bundleVendoredData must compact it (ADR 0079).`,
+    );
+  }
+  for (const folder of measured.missingVendorLicences) {
+    violations.push(
+      `Vendored folder out/main/vendor/${folder} has no LICENSE: bundleVendoredData must copy the upstream licence beside the data.`,
+    );
+  }
   return violations;
 }
 
@@ -151,6 +203,7 @@ export function measure(root: string): Measurements {
   const appDir = join(root, 'app');
   const rendererDir = join(appDir, 'out', 'renderer');
   const mainDir = join(appDir, 'out', 'main');
+  const vendorDir = join(mainDir, 'vendor');
   const unpacked = unpackedDir(appDir);
   let asarBytes: number | null = null;
   let unpackedBytes: number | null = null;
@@ -161,10 +214,14 @@ export function measure(root: string): Measurements {
     if (existsSync(asar)) asarBytes = statSync(asar).size;
     unpackedBytes = summarise(listFiles(unpacked), 0).totalBytes;
   }
+  const vendorFiles = existsSync(vendorDir) ? listFiles(vendorDir) : null;
   return {
     asarBytes,
     rendererFiles: existsSync(rendererDir) ? listFiles(rendererDir) : null,
     mainFiles: existsSync(mainDir) ? listFiles(mainDir) : null,
+    vendorFiles,
+    looseVendorJson: vendorFiles === null ? [] : looseJsonFiles(vendorDir, vendorFiles),
+    missingVendorLicences: vendorFiles === null ? [] : missingLicences(vendorFiles),
     unpackedBytes,
   };
 }
@@ -196,6 +253,11 @@ export function report(measured: Measurements, budgets: Budgets = BUDGETS): stri
     for (const file of summarise(measured.mainFiles, 5).largest) {
       lines.push(`  ${formatBytes(file.bytes).padStart(9)}  ${file.path}`);
     }
+  }
+  if (measured.vendorFiles !== null) {
+    lines.push(
+      `Vendored target data: ${formatBytes(summarise(measured.vendorFiles, 0).totalBytes)} in app/out/main/vendor (compact JSON, ADR 0079)`,
+    );
   }
   if (measured.asarBytes !== null) {
     lines.push(
