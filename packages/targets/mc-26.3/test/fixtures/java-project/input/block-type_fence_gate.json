@@ -1,0 +1,16 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "msm_test:gate_used"
+    }
+  },
+  "events": {
+    "msm_test:gate_used": {
+      "actions": []
+    }
+  },
+  "format": 1,
+  "sound_type": "wood",
+  "type": "fence_gate",
+  "wood_type": "oak"
+}

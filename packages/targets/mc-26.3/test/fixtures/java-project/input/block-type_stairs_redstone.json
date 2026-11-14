@@ -1,0 +1,10 @@
+{
+  "base_block": "minecraft:stone",
+  "components": {
+    "msm:redstone": {
+      "emit": 15
+    }
+  },
+  "format": 1,
+  "type": "stairs"
+}

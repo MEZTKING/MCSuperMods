@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:shape": {
+      "boxes": [
+        [
+          4,
+          0,
+          4,
+          12,
+          16,
+          12
+        ]
+      ],
+      "see_through": false
+    }
+  },
+  "format": 1,
+  "type": "pillar"
+}

@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:flammable": {
+      "burn_odds": 5,
+      "ignite_odds": 5
+    },
+    "msm:strippable": {
+      "into": "msm_test:type_stripped_log"
+    }
+  },
+  "format": 1,
+  "sound_type": "wood",
+  "type": "pillar"
+}

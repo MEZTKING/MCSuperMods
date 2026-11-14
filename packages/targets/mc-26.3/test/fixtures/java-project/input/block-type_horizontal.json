@@ -1,0 +1,27 @@
+{
+  "components": {
+    "msm:redstone": {
+      "on_powered": "msm_test:horizontal_powered"
+    },
+    "msm:shape": {
+      "boxes": [
+        [
+          0,
+          0,
+          0,
+          16,
+          16,
+          8
+        ]
+      ],
+      "see_through": false
+    }
+  },
+  "events": {
+    "msm_test:horizontal_powered": {
+      "actions": []
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

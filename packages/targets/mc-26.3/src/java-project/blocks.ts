@@ -17,7 +17,14 @@
  * `msm:on_random_tick` (`randomTicks()` in the properties; `randomTick` with its chance) and
  * `msm:on_entity_inside` (`entityInside`, a generated `CooldownMap` before the shared
  * `TickLimiter`). A block item's `components."msm:components"` (ADR 0060 D4) goes through the
- * generated `VanillaComponents` helper before the item's own fields. Minecraft 26.3, Mojang names.
+ * generated `VanillaComponents` helper before the item's own fields. Block types (ADR 0067 D10,
+ * `block-types.ts`) mirror `MsmRegistrar` and `registry/types/`: the vanilla family class (a
+ * generated subclass when its constructor is protected or the block has events, with
+ * `msm:on_interact` after vanilla's own use), the family's `Properties`, stairs registered after
+ * their base, `DoubleHighBlockItem` for doors, `msm:flammable` through Fabric's
+ * `FlammableBlockRegistry` (with `ignitedByLava`), `msm:strippable` through the generated
+ * `BlockStripping` callback, and the block item under `item.id` (ADR 0068 D2). Minecraft 26.3,
+ * Mojang names.
  *
  * @packageDocumentation
  */
@@ -32,6 +39,19 @@ import {
   noteActions,
   readEvents,
 } from './actions';
+import {
+  boxExpression,
+  constructorArguments,
+  facingTurns,
+  familyClass,
+  isFacing,
+  isShaped,
+  PILLAR_TURNS,
+  readType,
+  type TypeSpec,
+  typeKeys,
+  typeProperties,
+} from './block-types';
 import { classPath, type GenerationContext, packageOf } from './context';
 import { closeLine } from './items';
 import {
@@ -44,7 +64,8 @@ import {
   trimBlank,
 } from './java';
 import { className, constantName, NameTable, splitId } from './names';
-import { checkFormat, type Reader, readDefinition } from './read';
+import { blockItemId, checkFormat, type Reader, readDefinition } from './read';
+import { blockStrippingJava } from './templates/block-stripping-java';
 
 /** The block sound types (`::msm::definition::SoundType`), each a `SoundType` constant. */
 export const SOUND_TYPES = [
@@ -105,6 +126,8 @@ const BLOCK_COMPONENTS = [
   'msm:on_place',
   'msm:on_random_tick',
   'msm:on_entity_inside',
+  'msm:flammable',
+  'msm:strippable',
 ];
 
 /** `msm:shape` fields (`::msm::definition::Shape`); the editor-only `preset` is not one. */
@@ -123,6 +146,14 @@ interface ShapeSpec {
 interface BlockSpec {
   readonly input: DefinitionInput;
   readonly reader: Reader;
+  /** The type and its own fields (ADR 0067 D1, D2). */
+  readonly type: TypeSpec;
+  /** The block item's id: `item.id`, else the block's (ADR 0068 D2); unused without an item. */
+  readonly itemId: string;
+  /** `msm:flammable` (ADR 0067 D3): vanilla's spread and burn odds, in that order. */
+  readonly flammable: { burnOdds: number; igniteOdds: number } | undefined;
+  /** `msm:strippable` `into` (ADR 0067 D3). */
+  readonly strippable: string | undefined;
   readonly soundType: string;
   readonly lootTable: string | undefined;
   readonly item:
@@ -204,10 +235,11 @@ function readShape(shape: Reader): ShapeSpec {
 
 function readBlock(input: DefinitionInput): BlockSpec {
   const reader = readDefinition(input);
-  reader.onlyKeys(BLOCK_KEYS, 'top-level key');
+  reader.onlyKeys([...BLOCK_KEYS, ...typeKeys(reader)], 'top-level key');
   checkFormat(reader);
   const components = reader.object('components');
   components?.onlyKeys(BLOCK_COMPONENTS, 'component');
+  const type = readType(reader, components);
   const actorTrigger =
     components?.has('msm:on_place') === true || components?.has('msm:on_entity_inside') === true;
   const kind: EventOwnerKind =
@@ -220,7 +252,10 @@ function readBlock(input: DefinitionInput): BlockSpec {
   else if (rawItem === true) reader.fail('item must be an object or false');
   else {
     const settings = reader.object('item');
-    settings?.onlyKeys(['creative_tab', 'max_stack_size', 'rarity', 'components'], 'item key');
+    settings?.onlyKeys(
+      ['components', 'creative_tab', 'id', 'max_stack_size', 'rarity'],
+      'item key',
+    );
     const itemComponents = settings?.object('components');
     itemComponents?.onlyKeys(['msm:components'], 'item component');
     const vanilla = itemComponents?.object('msm:components');
@@ -257,10 +292,30 @@ function readBlock(input: DefinitionInput): BlockSpec {
   if (chance < 0 || chance > 1) randomTick?.fail('chance must be 0 to 1');
   const insideCooldown = inside?.integer('cooldown_ticks', 20) ?? 20;
   if (insideCooldown < 5) inside?.fail('cooldown_ticks must be at least 5');
+  const flammable = components?.object('msm:flammable');
+  flammable?.onlyKeys(['burn_odds', 'ignite_odds'], 'msm:flammable field');
+  const odds = (key: string): number => {
+    const value = flammable?.requiredInteger(key) ?? 0;
+    if (value < 0 || value > 300) flammable?.fail(`${key} must be 0 to 300`);
+    return value;
+  };
+  const strippable = components?.object('msm:strippable');
+  strippable?.onlyKeys(['into'], 'msm:strippable field');
+  const into = strippable?.requiredString('into');
+  if (into !== undefined && !/^([a-z0-9_.-]+:)?[a-z0-9_./-]+$/.test(into)) {
+    strippable?.fail(`into '${into}' is not a block id`);
+  }
 
   return {
     input,
     reader,
+    type,
+    itemId: blockItemId(input) ?? input.id,
+    flammable:
+      flammable === undefined
+        ? undefined
+        : { burnOdds: odds('burn_odds'), igniteOdds: odds('ignite_odds') },
+    strippable: into === undefined || into.includes(':') ? into : `minecraft:${into}`,
     soundType: reader.enumConstant('sound_type', SOUND_TYPES, 'stone'),
     lootTable: reader.optionalString('loot_table'),
     item,
@@ -313,9 +368,14 @@ function readBlock(input: DefinitionInput): BlockSpec {
   };
 }
 
-/** Whether the block needs its own class (events reachable from a component, redstone or a shape). */
+/**
+ * Whether the block needs its own class: events reachable from a component, redstone or a
+ * shape, a facing type, or a vanilla family class whose constructor is protected.
+ */
 function needsClass(spec: BlockSpec): boolean {
   return (
+    isFacing(spec.type) ||
+    familyClass(spec.type).protectedConstructor ||
     spec.onInteract !== undefined ||
     spec.onStep !== undefined ||
     spec.emit > 0 ||
@@ -333,6 +393,42 @@ function tracksPower(spec: BlockSpec): boolean {
 }
 
 /**
+ * The blocks in registration order (ADR 0067 D4, as `MsmRegistrar`): every block that is not
+ * stairs in definition order, then the stairs in rounds, each once its base is written (a
+ * project block) or at once (a block of vanilla or another mod, looked up at registration). A
+ * base in a project namespace that is no project block, or a cycle of stairs, fails.
+ */
+function registrationOrder(specs: readonly BlockSpec[]): BlockSpec[] {
+  const ids = new Set(specs.map((spec) => spec.input.id));
+  const namespaces = new Set(specs.map((spec) => splitId(spec.input.id).namespace));
+  const out = specs.filter((spec) => spec.type.type !== 'stairs');
+  const written = new Set(out.map((spec) => spec.input.id));
+  let left = specs.filter((spec) => spec.type.type === 'stairs');
+  for (const spec of left) {
+    const base = spec.type.baseBlock ?? 'minecraft:stone';
+    if (!ids.has(base) && namespaces.has(splitId(base).namespace)) {
+      spec.reader.fail(`base_block ${base} is not a block of the project`);
+    }
+  }
+  while (left.length > 0) {
+    const ready = left.filter((spec) => {
+      const base = spec.type.baseBlock ?? 'minecraft:stone';
+      return !ids.has(base) || written.has(base);
+    });
+    if (ready.length === 0) {
+      const first = left[0] as BlockSpec;
+      first.reader.fail(`base_block ${first.type.baseBlock} is part of a cycle of stairs`);
+    }
+    for (const spec of ready) {
+      out.push(spec);
+      written.add(spec.input.id);
+    }
+    left = left.filter((spec) => !ready.includes(spec));
+  }
+  return out;
+}
+
+/**
  * Generates `ModBlocks.java` and the block classes; returns nothing when there are no blocks.
  *
  * @returns The simple name of the registration class, or `undefined`.
@@ -343,8 +439,9 @@ export function generateBlocks(
 ): string | undefined {
   const { blocks } = context.input;
   if (blocks.length === 0) return undefined;
-  const specs = blocks.map(readBlock);
+  const specs = registrationOrder(blocks.map(readBlock));
   const fields = new NameTable();
+  const fieldOf = new Map<string, string>();
   const file = new JavaFile(
     context.input.javaPackage,
     'the msm/<namespace>/block/*.json definitions',
@@ -359,6 +456,13 @@ export function generateBlocks(
 
   const body: string[] = [];
   const tabs: string[] = [];
+  const extras: string[] = [];
+  let usesNearPlane = false;
+  let usesStairsBase = false;
+  const nearPlane = (): string => {
+    usesNearPlane = true;
+    return 'ModBlocks::nearPlaneIntersectsOutline';
+  };
   for (const spec of specs) {
     const { path } = splitId(spec.input.id);
     const field = fields.take(constantName(path), (name) => [
@@ -368,11 +472,26 @@ export function generateBlocks(
       `${name}_ITEM_KEY`,
       ...(spec.item?.vanilla === undefined ? [] : [`${name}_ITEM_COMPONENTS`]),
     ]);
-    let type = blockType;
+    fieldOf.set(spec.input.id, field);
+    // A generated subclass bakes in the set and wood types; only the stairs' base is passed.
+    let type: string;
+    let args: string[] = [];
     if (needsClass(spec)) {
       const name = classNames.take(className(path, 'Block'), (n) => [`block.${n}`], '');
       writeBlockClass(context, spec, name);
       type = file.use(`${packageOf(context, 'block')}.${name}`);
+    } else {
+      type = file.use(familyClass(spec.type).fqcn);
+      args = constructorArguments(file, spec.type);
+    }
+    if (spec.type.type === 'stairs') {
+      const base = spec.type.baseBlock ?? 'minecraft:stone';
+      const baseField = fieldOf.get(base);
+      if (baseField !== undefined) args = [`${baseField}.defaultBlockState()`];
+      else {
+        usesStairsBase = true;
+        args = [`stairsBase(${identifierExpression(file, base)})`];
+      }
     }
     const props = [
       `${properties}.of()`,
@@ -384,6 +503,12 @@ export function generateBlocks(
       props.push(`        .lightLevel(state -> ${javaInt(spec.light)})`);
     if (spec.requiresTool) props.push('        .requiresCorrectToolForDrops()');
     if (spec.shape !== undefined) props.push(...shapeProperties(spec.shape));
+    props.push(...typeProperties(file, spec.type, nearPlane));
+    if (spec.flammable !== undefined) {
+      props.push(
+        '        .ignitedByLava() // msm:flammable: lava sets it alight, as vanilla planks and logs',
+      );
+    }
     if (spec.onRandomTick !== undefined) {
       props.push(
         '        .randomTicks() // msm:on_random_tick: random ticks only with the component',
@@ -397,24 +522,54 @@ export function generateBlocks(
     }
     // Before a trailing comment (a shape or random tick line may end with one).
     props[props.length - 1] = closeLine(props[props.length - 1] as string, '));');
+    const open = [...args, props[0]].join(', ');
     body.push(
       '',
       `/** {@code ${spec.input.id}} (${spec.input.path}). */`,
       `public static final ${resourceKey}<${blockType}> ${field}_KEY = ${resourceKey}.create(${registries}.BLOCK, ${identifierExpression(file, spec.input.id)});`,
-      `public static final ${type} ${field} = ${registry}.register(${builtIn}.BLOCK, ${field}_KEY, new ${type}(${props[0]}`,
+      `public static final ${type} ${field} = ${registry}.register(${builtIn}.BLOCK, ${field}_KEY, new ${type}(${open}`,
       ...props.slice(1),
     );
+    if (spec.flammable !== undefined) {
+      const flammable = file.use('net.fabricmc.fabric.api.registry.FlammableBlockRegistry');
+      extras.push(
+        `${flammable}.getDefaultInstance().add(${field}, ${javaInt(spec.flammable.burnOdds)}, ${javaInt(spec.flammable.igniteOdds)}); // msm:flammable`,
+      );
+    }
+    if (spec.strippable !== undefined) {
+      extras.push(
+        `BlockStripping.add(${field}, ${identifierExpression(file, spec.strippable)}); // msm:strippable`,
+      );
+    }
     if (spec.item !== undefined) {
       const item = file.use('net.minecraft.world.item.Item');
-      const blockItem = file.use('net.minecraft.world.item.BlockItem');
+      const blockItem = file.use(
+        spec.type.type === 'door'
+          ? 'net.minecraft.world.item.DoubleHighBlockItem'
+          : 'net.minecraft.world.item.BlockItem',
+      );
       const rarity = file.use('net.minecraft.world.item.Rarity');
       const { vanilla } = spec.item;
+      // An item with its own id (ADR 0068 D2) is named item.<namespace>.<path> of that id.
+      const ownId = spec.itemId !== spec.input.id;
+      const itemKey = ownId
+        ? `${resourceKey}.create(${registries}.ITEM, ${identifierExpression(file, spec.itemId)})`
+        : `${resourceKey}.create(${registries}.ITEM, ${field}_KEY.identifier())`;
+      const prefix = ownId ? '.useItemDescriptionPrefix()' : '.useBlockDescriptionPrefix()';
+      const named = ownId
+        ? 'name from item.<namespace>.<path> of item.id, as vanilla seeds'
+        : 'name from block.<namespace>.<path>, as vanilla block items do';
+      const doorNote =
+        spec.type.type === 'door' ? ' A door item places both halves, as vanilla.' : '';
+      if (doorNote !== '') {
+        body.push(`/** The item of {@code ${spec.input.id}}.${doorNote} */`);
+      }
       if (vanilla === undefined) {
         body.push(
-          `public static final ${resourceKey}<${item}> ${field}_ITEM_KEY = ${resourceKey}.create(${registries}.ITEM, ${field}_KEY.identifier());`,
+          `public static final ${resourceKey}<${item}> ${field}_ITEM_KEY = ${itemKey};`,
           `public static final ${blockItem} ${field}_ITEM = ${registry}.register(${builtIn}.ITEM, ${field}_ITEM_KEY, new ${blockItem}(${field}, new ${item}.Properties()`,
           `        .setId(${field}_ITEM_KEY)`,
-          '        .useBlockDescriptionPrefix() // name from block.<namespace>.<path>, as vanilla block items do',
+          `        ${prefix} // ${named}`,
           `        .stacksTo(${javaInt(spec.item.maxStackSize)})`,
           `        .rarity(${rarity}.${spec.item.rarity})));`,
         );
@@ -423,12 +578,12 @@ export function generateBlocks(
         context.usesVanillaComponents = true;
         const helper = file.use(`${context.input.javaPackage}.VanillaComponents`);
         body.push(
-          `/** The msm:components of the block item {@code ${spec.input.id}}: vanilla data components as JSON. */`,
+          `/** The msm:components of the block item {@code ${spec.itemId}}: vanilla data components as JSON. */`,
           `private static final String ${field}_ITEM_COMPONENTS = ${javaString(vanilla)};`,
-          `public static final ${resourceKey}<${item}> ${field}_ITEM_KEY = ${resourceKey}.create(${registries}.ITEM, ${field}_KEY.identifier());`,
+          `public static final ${resourceKey}<${item}> ${field}_ITEM_KEY = ${itemKey};`,
           `public static final ${blockItem} ${field}_ITEM = ${registry}.register(${builtIn}.ITEM, ${field}_ITEM_KEY, new ${blockItem}(${field}, ${helper}.apply(new ${item}.Properties()`,
           `        .setId(${field}_ITEM_KEY)`,
-          `        .useBlockDescriptionPrefix(), ${javaString(spec.input.id)}, ${field}_ITEM_COMPONENTS) // name from block.<namespace>.<path>; msm:components first, the fields below win`,
+          `        ${prefix}, ${javaString(spec.itemId)}, ${field}_ITEM_COMPONENTS) // ${named.replace(/, as .*$/, '')}; msm:components first, the fields below win`,
           `        .stacksTo(${javaInt(spec.item.maxStackSize)})`,
           `        .rarity(${rarity}.${spec.item.rarity})));`,
         );
@@ -437,6 +592,50 @@ export function generateBlocks(
         tabs.push(tabLine(file, spec.item.creativeTab, `${field}_ITEM`));
     }
   }
+  const strips = specs.some((spec) => spec.strippable !== undefined);
+  if (strips) {
+    extras.push('BlockStripping.register();');
+    context.files.push({
+      path: classPath(context, '', 'BlockStripping'),
+      contents: blockStrippingJava(context.input.javaPackage),
+    });
+  }
+  const helpers: string[] = [];
+  if (usesStairsBase) {
+    const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
+    const identifier = file.use('net.minecraft.resources.Identifier');
+    helpers.push(
+      '',
+      '/**',
+      ' * The base block of stairs that is not one of these blocks, registered before them (ADR 0067 D4). A missing base',
+      ' * stops the start-up, where the runtime skips the stairs with a load error.',
+      ' */',
+      `private static ${blockState} stairsBase(${identifier} id) {`,
+      `    if (!${builtIn}.BLOCK.containsKey(id)) {`,
+      '        throw new IllegalStateException("base_block " + id + " is not a registered block");',
+      '    }',
+      `    return ${builtIn}.BLOCK.getValue(id).defaultBlockState();`,
+      '}',
+    );
+  }
+  if (usesNearPlane) {
+    const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
+    const blockGetter = file.use('net.minecraft.world.level.BlockGetter');
+    const blockPos = file.use('net.minecraft.core.BlockPos');
+    const aabb = file.use('net.minecraft.world.phys.AABB');
+    helpers.push(
+      '',
+      "/** Vanilla's Blocks.NEAR_PLANE_INTERSECTS_OUTLINE (private there): the occlusion shape meets the camera's near plane. */",
+      `private static boolean nearPlaneIntersectsOutline(${blockState} state, ${blockGetter} level, ${blockPos} pos, ${aabb} nearPlane) {`,
+      `    for (${aabb} box : state.getOcclusionShape().toAabbs()) {`,
+      '        if (box.move(pos).intersects(nearPlane)) {',
+      '            return true;',
+      '        }',
+      '    }',
+      '    return false;',
+      '}',
+    );
+  }
   const lines = [
     '/** The blocks and block items, registered when the class loads. */',
     'public final class ModBlocks {',
@@ -444,10 +643,13 @@ export function generateBlocks(
     '',
     '    private ModBlocks() {}',
     '',
-    '    /** Loads the class (registering every block) and adds the block items to their creative tabs. */',
+    extras.length > 0
+      ? '    /** Loads the class (registering every block), sets fire odds and stripping, and adds the block items to their creative tabs. */'
+      : '    /** Loads the class (registering every block) and adds the block items to their creative tabs. */',
     '    public static void register() {',
-    ...indent(tabs, 2),
+    ...indent([...extras, ...tabs], 2),
     '    }',
+    ...indent(helpers),
     '}',
   ];
   context.files.push({ path: classPath(context, '', 'ModBlocks'), contents: file.render(lines) });
@@ -488,6 +690,7 @@ function shapeMembers(
   shape: ShapeSpec,
   blockState: string,
   blockPos: string,
+  shapeReturn = 'SHAPE',
 ): string[] {
   const blockGetter = file.use('net.minecraft.world.level.BlockGetter');
   const collisionContext = file.use('net.minecraft.world.phys.shapes.CollisionContext');
@@ -497,7 +700,7 @@ function shapeMembers(
     '/** msm:shape: the outline; collision follows it unless the properties say noCollision(). */',
     '@Override',
     `protected ${voxelShape} getShape(${blockState} state, ${blockGetter} level, ${blockPos} pos, ${collisionContext} context) {`,
-    '    return SHAPE;',
+    ...indent(`return ${shapeReturn};`.split('\n')),
     '}',
   ];
   if (shape.seeThrough) {
@@ -536,10 +739,13 @@ function shapeMembers(
 function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: string): void {
   const javaPackage = packageOf(context, 'block');
   const file = new JavaFile(javaPackage, spec.input.path);
-  const blockType = file.use('net.minecraft.world.level.block.Block');
+  const blockType = (): string => file.use('net.minecraft.world.level.block.Block');
   const properties = file.use('net.minecraft.world.level.block.state.BlockBehaviour', 'Properties');
   const actions = noteActions(context, file, spec.events);
   const power = tracksPower(spec);
+  const ts = spec.type;
+  const superClass = file.use(familyClass(ts).fqcn);
+  const facing = isFacing(ts);
 
   const members: string[] = [];
   if (spec.events.byId.size > 0)
@@ -555,6 +761,20 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
     members.push(
       '/** The last seen neighbour power, for the msm:redstone events. */',
       `public static final ${booleanProperty} POWERED = ${blockStateProperties}.POWERED;`,
+    );
+  }
+  if (facing) {
+    const enumProperty = file.use('net.minecraft.world.level.block.state.properties.EnumProperty');
+    const blockStateProperties = file.use(
+      'net.minecraft.world.level.block.state.properties.BlockStateProperties',
+    );
+    const direction = file.use('net.minecraft.core.Direction');
+    if (members.length > 0) members.push('');
+    members.push(
+      ts.type === 'horizontal'
+        ? '/** horizontal: four ways, towards the placer, as a furnace. */'
+        : '/** directional: six ways, towards the placer, as a dropper. */',
+      `public static final ${enumProperty}<${direction}> FACING = ${blockStateProperties}.${ts.type === 'horizontal' ? 'HORIZONTAL_FACING' : 'FACING'};`,
     );
   }
   if (spec.onStep !== undefined) {
@@ -580,35 +800,80 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
       `private final ${cooldownMap} insideCooldowns = new ${cooldownMap}();`,
     );
   }
+  // msm:shape: one outline, or one per axis or facing (boxes turned as the blockstate turns the model).
+  let shapeReturn = 'SHAPE';
   if (spec.shape !== undefined) {
     const voxelShape = file.use('net.minecraft.world.phys.shapes.VoxelShape');
     const shapes = file.use('net.minecraft.world.phys.shapes.Shapes');
-    const boxes = spec.shape.boxes.map(
-      (box) => `${blockType}.box(${box.map((n) => javaFloat(n)).join(', ')})`,
-    );
+    const union = (field: string, turn: (box: readonly number[]) => readonly number[]) => {
+      const boxes = (spec.shape?.boxes ?? []).map((box) => boxExpression(blockType(), turn(box)));
+      return [
+        `private static final ${voxelShape} ${field} = ${shapes}.or(`,
+        ...boxes.map((box, i) => `        ${box}${i === boxes.length - 1 ? ').optimize();' : ','}`),
+      ];
+    };
     if (members.length > 0) members.push('');
-    members.push(
-      '/** msm:shape: the union of the boxes, the outline for every state. */',
-      `private static final ${voxelShape} SHAPE = ${shapes}.or(`,
-      ...boxes.map((box, i) => `        ${box}${i === boxes.length - 1 ? ').optimize();' : ','}`),
-    );
+    if (ts.type === 'pillar' || facing) {
+      const turns = ts.type === 'pillar' ? PILLAR_TURNS : facingTurns(ts);
+      members.push(
+        ts.type === 'pillar'
+          ? '/** msm:shape: the union of the boxes per axis, written for axis y and turned as the blockstate turns the model. */'
+          : '/** msm:shape: the union of the boxes per facing, written facing north and turned as the blockstate turns the model. */',
+      );
+      for (const [key, turn] of turns) members.push(...union(`SHAPE_${key}`, turn));
+      const property = ts.type === 'pillar' ? 'AXIS' : 'FACING';
+      const cases = turns.map(([key]) => `    case ${key} -> SHAPE_${key};`);
+      shapeReturn = [
+        `switch (state.getValue(${property})) {`,
+        ...cases,
+        ...(ts.type === 'horizontal' ? ['    default -> SHAPE_NORTH;'] : []),
+        '}',
+      ].join('\n');
+    } else {
+      members.push(
+        '/** msm:shape: the union of the boxes, the outline for every state. */',
+        ...union('SHAPE', (box) => box),
+      );
+    }
   }
-  members.push('', `public ${name}(${properties} properties) {`, '    super(properties);');
-  if (power)
-    members.push('    registerDefaultState(stateDefinition.any().setValue(POWERED, false));');
-  members.push('}');
-
-  if (power) {
-    const stateDefinition = file.use('net.minecraft.world.level.block.state.StateDefinition');
+  if (ts.type === 'stairs') {
     const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
     members.push(
       '',
+      `public ${name}(${blockState} base, ${properties} properties) {`,
+      '    super(base, properties);',
+    );
+  } else {
+    const args = [...constructorArguments(file, ts), 'properties'].join(', ');
+    members.push('', `public ${name}(${properties} properties) {`, `    super(${args});`);
+  }
+  if (facing) {
+    const direction = file.use('net.minecraft.core.Direction');
+    members.push(
+      `    registerDefaultState(stateDefinition.any().setValue(FACING, ${direction}.NORTH)${power ? '.setValue(POWERED, false)' : ''});`,
+    );
+  } else if (power && ts.type === 'pillar') {
+    // RotatedPillarBlock has set the axis to y.
+    members.push('    registerDefaultState(defaultBlockState().setValue(POWERED, false));');
+  } else if (power) {
+    members.push('    registerDefaultState(stateDefinition.any().setValue(POWERED, false));');
+  }
+  members.push('}');
+
+  if (power || facing) {
+    const stateDefinition = file.use('net.minecraft.world.level.block.state.StateDefinition');
+    const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
+    const added = [...(facing ? ['FACING'] : []), ...(power ? ['POWERED'] : [])].join(', ');
+    members.push(
+      '',
       '@Override',
-      `protected void createBlockStateDefinition(${stateDefinition}.Builder<${blockType}, ${blockState}> builder) {`,
-      '    builder.add(POWERED);',
+      `protected void createBlockStateDefinition(${stateDefinition}.Builder<${blockType()}, ${blockState}> builder) {`,
+      ...(ts.type === 'pillar' ? ['    super.createBlockStateDefinition(builder); // AXIS'] : []),
+      `    builder.add(${added});`,
       '}',
     );
   }
+  if (facing) members.push(...facingMembers(file, ts));
   const blockState = () => file.use('net.minecraft.world.level.block.state.BlockState');
   const level = () => file.use('net.minecraft.world.level.Level');
   const blockPos = () => file.use('net.minecraft.core.BlockPos');
@@ -617,10 +882,25 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
   const player = () => file.use('net.minecraft.world.entity.player.Player');
 
   if (spec.shape !== undefined) {
-    members.push(...shapeMembers(file, spec.shape, blockState(), blockPos()));
+    members.push(...shapeMembers(file, spec.shape, blockState(), blockPos(), shapeReturn));
   }
 
-  if (spec.onInteract !== undefined) {
+  if (spec.onInteract !== undefined && !isShaped(ts)) {
+    const interactionResult = file.use('net.minecraft.world.InteractionResult');
+    const hit = file.use('net.minecraft.world.phys.BlockHitResult');
+    members.push(
+      '',
+      `/** msm:on_interact: a player uses the block, after vanilla's own use (the ${ts.type.replace('_', ' ')} has acted). */`,
+      '@Override',
+      `protected ${interactionResult} useWithoutItem(${blockState()} state, ${level()} level, ${blockPos()} pos, ${player()} player, ${hit} hit) {`,
+      `    ${interactionResult} vanilla = super.useWithoutItem(state, level, pos, player, hit);`,
+      `    if (level instanceof ${serverLevel()} server) {`,
+      `        ${fireCall(spec.onInteract, `server, pos.immutable(), ${vec3()}.atCenterOf(pos), player, null`)}`,
+      '    }',
+      `    return vanilla.consumesAction() ? vanilla : ${interactionResult}.SUCCESS;`,
+      '}',
+    );
+  } else if (spec.onInteract !== undefined) {
     const interactionResult = file.use('net.minecraft.world.InteractionResult');
     const hit = file.use('net.minecraft.world.phys.BlockHitResult');
     members.push(
@@ -719,7 +999,7 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
       '',
       '/** msm:redstone on_powered and on_unpowered: neighbour-update power transitions. */',
       '@Override',
-      `protected void neighborChanged(${blockState()} state, ${level()} level, ${blockPos()} pos, ${blockType} neighbour, ${orientation} orientation,`,
+      `protected void neighborChanged(${blockState()} state, ${level()} level, ${blockPos()} pos, ${blockType()} neighbour, ${orientation} orientation,`,
       '        boolean movedByPiston) {',
       '    super.neighborChanged(state, level, pos, neighbour, orientation, movedByPiston);',
       `    if (!(level instanceof ${serverLevel()} server)) {`,
@@ -738,11 +1018,41 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
 
   const lines = [
     `/** The block {@code ${spec.input.id}}. */`,
-    `public class ${name} extends ${blockType} {`,
+    `public class ${name} extends ${superClass} {`,
     ...indent(trimBlank(members)),
     '}',
   ];
   context.files.push({ path: classPath(context, 'block', name), contents: file.render(lines) });
+}
+
+/** Placement towards the placer, `rotate` and `mirror` of the facing types (`MsmBlock`, ADR 0067 D4). */
+function facingMembers(file: JavaFile, ts: TypeSpec): string[] {
+  const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
+  const placeContext = file.use('net.minecraft.world.item.context.BlockPlaceContext');
+  const rotation = file.use('net.minecraft.world.level.block.Rotation');
+  const mirror = file.use('net.minecraft.world.level.block.Mirror');
+  const towards =
+    ts.type === 'horizontal'
+      ? 'context.getHorizontalDirection().getOpposite()'
+      : 'context.getNearestLookingDirection().getOpposite()';
+  return [
+    '',
+    '/** Faces the placer. */',
+    '@Override',
+    `public ${blockState} getStateForPlacement(${placeContext} context) {`,
+    `    return defaultBlockState().setValue(FACING, ${towards});`,
+    '}',
+    '',
+    '@Override',
+    `protected ${blockState} rotate(${blockState} state, ${rotation} rotation) {`,
+    '    return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));',
+    '}',
+    '',
+    '@Override',
+    `protected ${blockState} mirror(${blockState} state, ${mirror} mirror) {`,
+    '    return state.rotate(mirror.getRotation(state.getValue(FACING)));',
+    '}',
+  ];
 }
 
 /**

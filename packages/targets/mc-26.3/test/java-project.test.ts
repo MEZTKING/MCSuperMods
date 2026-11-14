@@ -5,7 +5,8 @@
  * `block-shape_*` are the `MsmShapeGameTest` blocks; `biome_addition-*`, `loot_addition-*`,
  * `block-fuel_block` and `item-fuel_gem` are the `MsmAdditionGameTest` definitions; the trigger
  * items, blocks and `entity-ticker` are the `MsmTriggerGameTest` definitions;
- * `potion-*` are the `MsmPotionGameTest` definitions;
+ * `potion-*` are the `MsmPotionGameTest` definitions; `block-type_*` are the
+ * `MsmBlockTypeGameTest` and `MsmRedstoneTypeGameTest` building and redstone type blocks;
  * `block-stepping_stone` and `entity-frost_golem` are the `apply_effect` corpus cases of
  * `packages/schemas/mcdoc/msm/conformance/definition/valid/`),
  * determinism, and the errors the exporter reports as `export.java-generation-failed`.
@@ -94,6 +95,33 @@ async function golden(name: string, files: GeneratedFile[]): Promise<void> {
     );
   }
 }
+
+/** The building and redstone type blocks of the runtime's GameTests (`block-type_*`). */
+const BUILDING_TYPE_FIXTURES = [
+  'type_stairs',
+  'type_stairs_vanilla',
+  'type_stairs_base',
+  'type_button',
+  'type_directional',
+  'type_door',
+  'type_fence',
+  'type_fence_gate',
+  'type_horizontal',
+  'type_iron_door',
+  'type_log',
+  'type_log_plant',
+  'type_pane',
+  'type_pillar',
+  'type_planks',
+  'type_plate',
+  'type_slab',
+  'type_stone_button',
+  'type_stone_plate',
+  'type_stripped_log',
+  'type_trapdoor',
+  'type_wall',
+  'type_weighted_plate',
+];
 
 describe('Java identifiers', () => {
   it('derives constants, classes and event methods from ids', () => {
@@ -564,6 +592,125 @@ describe('Java generator (mc-26.3)', () => {
     const slab = text('/ShapeSlabBlock.java');
     expect(slab).toContain('Block.box(0.0f, 0.0f, 0.0f, 16.0f, 8.0f, 16.0f)).optimize();');
     expect(slab).toContain('public void stepOn(');
+  });
+
+  it('generates the building and redstone types mirroring the runtime (ADR 0067 D10)', async () => {
+    // The MsmBlockTypeGameTest and MsmRedstoneTypeGameTest definitions; stairs listed before
+    // their base still register after it.
+    const { files } = generateJavaProject(
+      input({
+        blocks: await Promise.all(BUILDING_TYPE_FIXTURES.map((path) => definition('block', path))),
+      }),
+    );
+    await golden('block-types', files);
+    const text = (suffix: string): string =>
+      files.find((file) => file.path.endsWith(suffix))?.contents ?? '';
+    const blocks = text('/ModBlocks.java');
+    const entry = (field: string): string =>
+      blocks.slice(
+        blocks.indexOf(`${field} = `),
+        blocks.indexOf(';', blocks.indexOf(`${field} = `)),
+      );
+    // Stairs after their base, the base's state passed in; other bases looked up at registration.
+    expect(blocks.indexOf('TYPE_STAIRS = ')).toBeGreaterThan(blocks.indexOf('TYPE_STAIRS_BASE = '));
+    expect(entry('TYPE_STAIRS')).toContain(
+      'new TypeStairsBlock(TYPE_STAIRS_BASE.defaultBlockState(), ',
+    );
+    expect(entry('TYPE_STAIRS_VANILLA')).toContain(
+      'stairsBase(Identifier.fromNamespaceAndPath("minecraft", "stone"))',
+    );
+    expect(entry('TYPE_STAIRS')).toContain(
+      '.isViewBlocking(ModBlocks::nearPlaneIntersectsOutline)',
+    );
+    // Public vanilla constructors without behaviour are used directly.
+    expect(entry('TYPE_SLAB')).toContain('new SlabBlock(BlockBehaviour.Properties.of()');
+    expect(entry('TYPE_WALL')).toContain('.forceSolidOn()');
+    expect(entry('TYPE_LOG')).toContain('new RotatedPillarBlock(');
+    expect(entry('TYPE_PANE')).toContain('new TypePaneBlock(');
+    expect(entry('TYPE_PLATE')).toContain(
+      '.forceSolidOn().noCollision().pushReaction(PushReaction.POPPED)',
+    );
+    // msm:flammable: lava, then Fabric's registry with vanilla's argument order; msm:strippable.
+    expect(entry('TYPE_LOG')).toContain('.ignitedByLava()');
+    expect(blocks).toContain('FlammableBlockRegistry.getDefaultInstance().add(TYPE_LOG, 5, 5);');
+    expect(blocks).toContain(
+      'FlammableBlockRegistry.getDefaultInstance().add(TYPE_PLANKS, 5, 20);',
+    );
+    expect(blocks).toContain(
+      'BlockStripping.add(TYPE_LOG, Identifier.fromNamespaceAndPath("msm_test", "type_stripped_log"));',
+    );
+    expect(blocks).toContain('BlockStripping.register();');
+    expect(text('/BlockStripping.java')).toContain(
+      'UseBlockCallback.EVENT.register(BlockStripping::strip);',
+    );
+    // Doors place both halves.
+    expect(entry('TYPE_DOOR_ITEM')).toContain('new DoubleHighBlockItem(TYPE_DOOR, ');
+    expect(entry('TYPE_SLAB_ITEM')).toContain('new BlockItem(TYPE_SLAB, ');
+    // Set types (wood is OAK on 26.3), press ticks, weighted plates and wood types.
+    expect(text('/TypeButtonBlock.java')).toContain('super(BlockSetType.OAK, 30, properties);');
+    expect(text('/TypeStoneButtonBlock.java')).toContain(
+      'super(BlockSetType.STONE, 5, properties);',
+    );
+    expect(text('/TypeWeightedPlateBlock.java')).toContain(
+      'public class TypeWeightedPlateBlock extends WeightedPressurePlateBlock {',
+    );
+    expect(text('/TypeWeightedPlateBlock.java')).toContain(
+      'super(4, BlockSetType.IRON, properties);',
+    );
+    expect(text('/TypeIronDoorBlock.java')).toContain('super(BlockSetType.IRON, properties);');
+    const gate = text('/TypeFenceGateBlock.java');
+    expect(gate).toContain('super(WoodType.OAK, properties);');
+    // Interaction after vanilla's own use, keeping vanilla's answer when it acted.
+    expect(gate).toContain(
+      'InteractionResult vanilla = super.useWithoutItem(state, level, pos, player, hit);',
+    );
+    expect(gate).toContain(
+      'return vanilla.consumesAction() ? vanilla : InteractionResult.SUCCESS;',
+    );
+    // Rotating shapes turn with the state, as MsmBlock.
+    const pillar = text('/TypePillarBlock.java');
+    expect(pillar).toContain('public class TypePillarBlock extends RotatedPillarBlock {');
+    expect(pillar).toContain(
+      'SHAPE_X = Shapes.or(\n            Block.box(0.0f, 4.0f, 4.0f, 16.0f, 12.0f, 12.0f))',
+    );
+    expect(pillar).toContain(
+      'SHAPE_Z = Shapes.or(\n            Block.box(4.0f, 4.0f, 0.0f, 12.0f, 12.0f, 16.0f))',
+    );
+    const horizontal = text('/TypeHorizontalBlock.java');
+    expect(horizontal).toContain('FACING = BlockStateProperties.HORIZONTAL_FACING;');
+    expect(horizontal).toContain(
+      'SHAPE_EAST = Shapes.or(\n            Block.box(8.0f, 0.0f, 0.0f, 16.0f, 16.0f, 16.0f))',
+    );
+    expect(horizontal).toContain('builder.add(FACING, POWERED);');
+    expect(horizontal).toContain('.setValue(FACING, Direction.NORTH).setValue(POWERED, false)');
+    expect(horizontal).toContain('context.getHorizontalDirection().getOpposite()');
+    const directional = text('/TypeDirectionalBlock.java');
+    expect(directional).toContain('FACING = BlockStateProperties.FACING;');
+    expect(directional).toContain(
+      'SHAPE_DOWN = Shapes.or(\n            Block.box(0.0f, 0.0f, 0.0f, 16.0f, 4.0f, 16.0f))',
+    );
+    expect(directional).toContain('context.getNearestLookingDirection().getOpposite()');
+    expect(directional).not.toContain('default ->');
+  });
+
+  it('registers a block item under its own item.id (ADR 0068 D2)', () => {
+    const { files } = generateJavaProject(
+      input({
+        blocks: [
+          {
+            id: 'msm_test:ruby_bush',
+            path: 'msm/msm_test/block/ruby_bush.json',
+            definition: { format: 1, item: { id: 'msm_test:ruby_pip', max_stack_size: 16 } },
+          },
+        ],
+      }),
+    );
+    const blocks = files.find((file) => file.path.endsWith('/ModBlocks.java'))?.contents ?? '';
+    expect(blocks).toContain(
+      'RUBY_BUSH_ITEM_KEY = ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("msm_test", "ruby_pip"));',
+    );
+    expect(blocks).toContain('.useItemDescriptionPrefix()');
+    expect(blocks).not.toContain('.useBlockDescriptionPrefix()');
   });
 
   it('gives a shape without boxes the full cube, solid unless see_through', () => {
@@ -1242,6 +1389,46 @@ describe('Java generator (mc-26.3)', () => {
         /unknown top-level key 'colour'/,
       );
       expect(generate({ blocks: [block({ format: 2 })] })).toThrow(/format 2/);
+    });
+
+    it('rejects types and type fields the runtime refuses (ADR 0067 D3, D4)', async () => {
+      const typed = (fields: JsonObject) => generate({ blocks: [block({ format: 1, ...fields })] });
+      expect(typed({ type: 'crop' })).toThrow(/type 'crop' cannot be ejected yet/);
+      expect(typed({ type: 'roof' })).toThrow(/type 'roof' is not one of/);
+      expect(typed({ type: 'slab', set_type: 'wood' })).toThrow(/unknown top-level key 'set_type'/);
+      expect(typed({ type: 'door' })).toThrow(/set_type is missing/);
+      expect(typed({ type: 'door', set_type: 'oak' })).toThrow(/set_type 'oak' is not one of/);
+      expect(typed({ type: 'fence_gate', wood_type: 'ash' })).toThrow(
+        /wood_type 'ash' is not one of/,
+      );
+      expect(typed({ type: 'button', set_type: 'stone', press_ticks: 0 })).toThrow(
+        /press_ticks must be 1 to 200/,
+      );
+      expect(typed({ type: 'pressure_plate', set_type: 'gold', weighted_max: 0 })).toThrow(
+        /weighted_max must be at least 1/,
+      );
+      expect(
+        typed({ type: 'slab', components: { 'msm:shape': { boxes: [[0, 0, 0, 16, 8, 16]] } } }),
+      ).toThrow(/msm:shape is not allowed on type 'slab'/);
+      expect(generate({ blocks: [await definition('block', 'type_stairs_redstone')] })).toThrow(
+        /msm:redstone is not allowed on type 'stairs'/,
+      );
+      expect(
+        typed({ components: { 'msm:flammable': { burn_odds: 5, ignite_odds: 301 } } }),
+      ).toThrow(/ignite_odds must be 0 to 300/);
+      expect(typed({ components: { 'msm:strippable': {} } })).toThrow(/into is missing/);
+      // A base in the project's namespace must be a project block; stairs may not form a cycle.
+      expect(typed({ type: 'stairs', base_block: 'msm_test:no_such_block' })).toThrow(
+        /base_block msm_test:no_such_block is not a block of the project/,
+      );
+      const stairs = (path: string, base: string): DefinitionInput => ({
+        id: `msm_test:${path}`,
+        path: `msm/msm_test/block/${path}.json`,
+        definition: { format: 1, type: 'stairs', base_block: base },
+      });
+      expect(generate({ blocks: [stairs('a', 'msm_test:b'), stairs('b', 'msm_test:a')] })).toThrow(
+        /part of a cycle of stairs/,
+      );
     });
 
     it('rejects malformed shapes and the editor-only preset', () => {

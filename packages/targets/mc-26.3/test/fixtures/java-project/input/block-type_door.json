@@ -1,0 +1,16 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "msm_test:door_used"
+    }
+  },
+  "events": {
+    "msm_test:door_used": {
+      "actions": []
+    }
+  },
+  "format": 1,
+  "set_type": "wood",
+  "sound_type": "wood",
+  "type": "door"
+}
