@@ -240,24 +240,16 @@ test('library: Custom ore starter, exports, examples gallery, template filter, o
     expect(names.some((name) => name.startsWith('assets/'))).toBe(false);
     expect(names.some((name) => name.startsWith('msm/'))).toBe(false);
     expect(names).not.toContain('fabric.mod.json');
-    const loot = zipJson(firstExport.data, `data/${NAMESPACE}/loot_table/blocks/ruby_ore.json`) as {
-      type?: string;
-      pools?: { entries?: { name?: string }[] }[];
-    };
-    expect(loot.type).toBe('minecraft:block');
-    expect(loot.pools?.[0]?.entries?.[0]?.name).toBe(RUBY_ITEM_ID);
-    // "loot": "self" on the block of ruby generates its drops-itself table.
-    expect(names).toContain(`data/${NAMESPACE}/loot_table/blocks/ruby_block.json`);
-    const recipe = zipJson(
-      firstExport.data,
+    // The loot tables, recipe and advancements name the mod's ruby, so the vanilla data pack
+    // leaves them out (ADR 0066); the jar below carries them.
+    for (const file of [
+      `data/${NAMESPACE}/loot_table/blocks/ruby_ore.json`,
+      `data/${NAMESPACE}/loot_table/blocks/ruby_block.json`,
       `data/${NAMESPACE}/recipe/ruby_block_from_rubies.json`,
-    ) as {
-      type?: string;
-      result?: { id?: string };
-    };
-    expect(recipe.type).toBe('minecraft:crafting_shaped');
-    expect(recipe.result?.id).toBe(RUBY_BLOCK_ID);
-    expect(names).toContain(`data/${NAMESPACE}/advancement/root.json`);
+      `data/${NAMESPACE}/advancement/root.json`,
+    ]) {
+      expect(names, file).not.toContain(file);
+    }
   }
 
   // Export the Fabric mod jar with a separate runtime. --------------------------------------
@@ -280,6 +272,15 @@ test('library: Custom ore starter, exports, examples gallery, template filter, o
     expect(names).toContain(`msm/${NAMESPACE}/item/ruby.json`);
     expect(names).toContain(`assets/${NAMESPACE}/blockstates/ruby_ore.json`);
     expect(names).toContain(`data/${NAMESPACE}/recipe/ruby_block_from_rubies.json`);
+    expect(names).toContain(`data/${NAMESPACE}/advancement/root.json`);
+    const loot = zipJson(jar, `data/${NAMESPACE}/loot_table/blocks/ruby_ore.json`) as {
+      type?: string;
+      pools?: { entries?: { name?: string }[] }[];
+    };
+    expect(loot.type).toBe('minecraft:block');
+    expect(loot.pools?.[0]?.entries?.[0]?.name).toBe(RUBY_ITEM_ID);
+    // "loot": "self" on the block of ruby generates its drops-itself table.
+    expect(names).toContain(`data/${NAMESPACE}/loot_table/blocks/ruby_block.json`);
     // A separate runtime is not nested.
     expect(names.some((name) => name.startsWith('META-INF/jars/'))).toBe(false);
     const modJson = zipJson(jar, 'fabric.mod.json') as {
@@ -390,7 +391,8 @@ test('library: Custom ore starter, exports, examples gallery, template filter, o
       `data/${NAMESPACE}/recipe/raw_copper_blasting.json`,
     ) as { type?: string };
     expect(blast.type).toBe('minecraft:blasting');
-    expect(Object.keys(secondExport.data)).toContain(
+    // Still left out of the vanilla data pack: it names the mod's ruby block (ADR 0066).
+    expect(Object.keys(secondExport.data)).not.toContain(
       `data/${NAMESPACE}/recipe/ruby_block_from_rubies.json`,
     );
     expect(Object.keys(secondExport.resource)).toContain(

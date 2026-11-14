@@ -219,13 +219,17 @@ test('AI helper: build the ruby tools mod, apply, export, undo; Settings key sta
   await expect(dataItem).toBeVisible();
   await dataItem.click();
   const data = await newZip(folders.outDir, '.zip', [resource.name]);
-  expect(Object.keys(data.files)).toEqual(
-    expect.arrayContaining([
-      'data/ruby/recipe/ruby_pickaxe_from_rubies.json',
-      'data/ruby/recipe/ruby_sword_from_emerald.json',
-      'data/ruby/loot_table/blocks/ruby_block.json',
-    ]),
-  );
+  // Recipes and loot tables naming the mod's items stay out of the vanilla data pack
+  // (ADR 0066); the jar below carries them.
+  const dataNames = Object.keys(data.files);
+  expect(dataNames).toContain('pack.mcmeta');
+  for (const file of [
+    'data/ruby/recipe/ruby_pickaxe_from_rubies.json',
+    'data/ruby/recipe/ruby_sword_from_emerald.json',
+    'data/ruby/loot_table/blocks/ruby_block.json',
+  ]) {
+    expect(dataNames, file).not.toContain(file);
+  }
 
   // The Fabric mod jar through the palette, with the runtime and GeckoLib kept separate.
   const jarPalette = await openPalette(window, 'fabric mod jar');
@@ -246,6 +250,9 @@ test('AI helper: build the ruby tools mod, apply, export, undo; Settings key sta
       'msm/ruby/block/ruby_ore.json',
       'msm/ruby/item/ruby_pickaxe.json',
       'msm/ruby/entity/ruby_golem.json',
+      'data/ruby/recipe/ruby_pickaxe_from_rubies.json',
+      'data/ruby/recipe/ruby_sword_from_emerald.json',
+      'data/ruby/loot_table/blocks/ruby_block.json',
     ]),
   );
 
