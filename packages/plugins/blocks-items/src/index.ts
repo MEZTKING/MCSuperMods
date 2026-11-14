@@ -10,6 +10,7 @@ import { definePlugin } from '@msm/plugin-api';
 import { blocksItemsKinds } from './kinds';
 import { blocksItemsTemplates } from './templates';
 import { blocksItemsValidators } from './validators';
+import { containerValidators } from './validators-containers';
 import { blockTypeValidators } from './validators-types';
 
 export * from './kinds';
@@ -22,16 +23,24 @@ export {
   type BlockModels,
   type BlockTypeName,
   blockGeneratedModelIds,
+  blockStateFlag,
   blockTypeModels,
   blockTypeOf,
   blockTypeSelfLoot,
   blockTypeTagFiles,
+  CONTAINER_BLOCK_TYPES,
+  CONTAINER_COMPONENT,
+  containerOf,
   type GeneratedModel,
   ITEM_MODEL_SLOT,
   lowerBlockAppearance,
+  MACHINE_COMPONENT,
   type ModelSpec,
+  machineOf,
   type SlotModels,
+  STATE_MODEL_SLOTS,
   STONE_SET_TYPES,
+  type StateModelSlot,
   TYPE_BLOCK_TAGS,
   TYPE_ITEM_TAGS,
   type TypeContext,
@@ -40,6 +49,11 @@ export {
   WOOD_SOUND_TYPES,
   WOODEN_SET_TYPES,
 } from './lowering/types';
+export {
+  KEEP_CONTENTS_COMPONENTS,
+  keepContentsLootTable,
+  keepsContents,
+} from './lowering/types/loot-presets';
 export { blocksItemsTemplates, modIdFromNamespace } from './templates';
 export {
   BLOCKS_ITEMS_PROBLEM_CODES,
@@ -60,6 +74,11 @@ export {
   transparentTextureProblem,
 } from './validators';
 export {
+  CONTAINER_PROBLEM_CODES,
+  containerValidators,
+  MAX_MACHINE_TICKS,
+} from './validators-containers';
+export {
   BLOCK_TYPE_PROBLEM_CODES,
   blockTypeValidators,
   SHAPED_BLOCK_TYPES,
@@ -72,6 +91,6 @@ export default definePlugin({
   contributes: {
     elementKinds: [...blocksItemsKinds],
     elementTemplates: [...blocksItemsTemplates],
-    validators: [...blocksItemsValidators, ...blockTypeValidators],
+    validators: [...blocksItemsValidators, ...blockTypeValidators, ...containerValidators],
   },
 });

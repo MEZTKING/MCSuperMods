@@ -121,6 +121,8 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.sapling',
       'msm.blocks-items.leaves-particle',
       'msm.blocks-items.block-item-id',
+      'msm.blocks-items.containers',
+      'msm.blocks-items.machines',
     ]);
     expect(blocksItemsValidators).toHaveLength(21);
   });

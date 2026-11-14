@@ -15,6 +15,13 @@ export {
 } from './fuel';
 export { itemDefinition, lowerItem } from './item';
 export {
+  lowerMachineRecipes,
+  MACHINE_RECIPES_FIELD,
+  machineRecipeEntries,
+  machineRecipeNames,
+  machineRecipeResultId,
+} from './machine-recipes';
+export {
   FABRIC_MOD_JSON,
   fabricModJson,
   lowerMod,

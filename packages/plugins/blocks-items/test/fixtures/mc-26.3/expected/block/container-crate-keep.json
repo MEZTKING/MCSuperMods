@@ -1,0 +1,145 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:container": {
+          "close_sound": "minecraft:block.chest.close",
+          "keep_contents": true,
+          "on_open": "example:opened",
+          "open_sound": "minecraft:block.chest.open",
+          "rows": 3
+        }
+      },
+      "events": {
+        "example:opened": {
+          "actions": [
+            {
+              "sound": "minecraft:block.note_block.bell",
+              "type": "play_sound"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "type": "horizontal"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_crate.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/ruby_front",
+        "side": "example:block/ruby_bricks",
+        "top": "example:block/ruby_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_crate.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/ruby_front_open",
+        "side": "example:block/ruby_bricks",
+        "top": "example:block/ruby_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_crate_open.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,open=false": {
+          "model": "example:block/ruby_crate",
+          "y": 90
+        },
+        "facing=east,open=true": {
+          "model": "example:block/ruby_crate_open",
+          "y": 90
+        },
+        "facing=north,open=false": {
+          "model": "example:block/ruby_crate"
+        },
+        "facing=north,open=true": {
+          "model": "example:block/ruby_crate_open"
+        },
+        "facing=south,open=false": {
+          "model": "example:block/ruby_crate",
+          "y": 180
+        },
+        "facing=south,open=true": {
+          "model": "example:block/ruby_crate_open",
+          "y": 180
+        },
+        "facing=west,open=false": {
+          "model": "example:block/ruby_crate",
+          "y": 270
+        },
+        "facing=west,open=true": {
+          "model": "example:block/ruby_crate_open",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_crate.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ruby_crate",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_crate.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.ruby_crate": "Ruby Crate"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": {
+                "include": [
+                  "minecraft:custom_name",
+                  "minecraft:container",
+                  "minecraft:lock",
+                  "minecraft:container_loot"
+                ],
+                "source": "block_entity",
+                "type": "minecraft:copy_components"
+              },
+              "name": "example:ruby_crate",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ruby_crate",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ruby_crate.json",
+    "schema": "resource:loot_table"
+  }
+]

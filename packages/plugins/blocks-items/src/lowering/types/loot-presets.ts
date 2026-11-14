@@ -3,12 +3,15 @@
  * of vanilla's own block loot tables (F15; the same on both built-in targets): `crop` as
  * wheat (or potatoes for a crop planted from its produce), `leaves` as oak leaves. Both go to `loot_table/blocks/<path>.json` with the random sequence
  * `<ns>:blocks/<path>`.
+ *
+ * Also the keep-contents form of `self` (ADR 0074 D6): a container that keeps its contents
+ * drops its item with the block entity's components copied, as vanilla's shulker box does.
  */
 import type { Json, JsonObject } from '@msm/plugin-api';
 import { isRecord } from '../paths';
 import { nonEmptyString } from '../shared';
 import { cropMaxAge } from './crop';
-import type { BlockTypeName } from './index';
+import { type BlockTypeName, blockStateFlag, containerOf } from './index';
 import type { TypeContext } from './models';
 
 /** The loot presets other than `self`. */
@@ -209,4 +212,59 @@ export function plantLootTable(
 ): JsonObject | undefined {
   if (preset === 'crop') return type === 'crop' ? cropLootTable(context) : undefined;
   return leavesLootTable(context);
+}
+
+/**
+ * The components a keep-contents container copies from its block entity to the dropped item:
+ * vanilla's shulker box list on both built-in targets (read from their
+ * `loot_table/blocks/shulker_box.json`, 2026-11-14): the name, the contents, the lock and an
+ * unopened loot table.
+ */
+export const KEEP_CONTENTS_COMPONENTS: readonly string[] = Object.freeze([
+  'minecraft:custom_name',
+  'minecraft:container',
+  'minecraft:lock',
+  'minecraft:container_loot',
+]);
+
+/**
+ * Whether a block of `type` keeps its contents when broken (ADR 0074 D6): `msm:container` with
+ * `keep_contents: true` on a 3-row chest layout, on a type that takes containers, and no
+ * machine. Elsewhere the runtime turns the option off and drops the contents, so the loot must
+ * not copy them too.
+ */
+export function keepsContents(type: BlockTypeName, data: Json | undefined): boolean {
+  if (blockStateFlag(type, data) !== 'open') return false;
+  const container = containerOf(data);
+  if (container?.keep_contents !== true) return false;
+  const layout = container.layout ?? 'chest';
+  const rows = container.rows ?? 3;
+  return layout === 'chest' && rows === 3;
+}
+
+/**
+ * The keep-contents form of the `self` table (ADR 0074 D6), in vanilla's shulker box shape:
+ * one roll of the block item with `minecraft:copy_components` from the block entity
+ * ({@link KEEP_CONTENTS_COMPONENTS}); no explosion condition, as vanilla's.
+ */
+export function keepContentsLootTable(context: TypeContext & { itemId: string }): JsonObject {
+  const { itemId, namespace, path } = context;
+  return {
+    type: 'minecraft:block',
+    pools: [
+      {
+        entries: [
+          item(itemId, {
+            modifier: {
+              type: 'minecraft:copy_components',
+              include: [...KEEP_CONTENTS_COMPONENTS],
+              source: 'block_entity',
+            },
+          }),
+        ],
+        rolls: 1,
+      },
+    ],
+    random_sequence: `${namespace}:blocks/${path}`,
+  };
 }

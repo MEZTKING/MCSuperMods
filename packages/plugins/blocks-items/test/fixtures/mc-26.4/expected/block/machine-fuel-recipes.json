@@ -1,0 +1,208 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:machine": {
+          "default_time": 100,
+          "on_finish": "example:ground",
+          "recipe_types": [
+            "example:ruby_grinder",
+            "minecraft:smelting"
+          ],
+          "speed": 2
+        }
+      },
+      "events": {
+        "example:ground": {
+          "actions": [
+            {
+              "sound": "minecraft:block.grindstone.use",
+              "type": "play_sound"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "type": "horizontal"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_grinder.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/ruby_front",
+        "side": "example:block/ruby_bricks",
+        "top": "example:block/ruby_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_grinder.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/ruby_front_lit",
+        "side": "example:block/ruby_bricks",
+        "top": "example:block/ruby_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_grinder_lit.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,lit=false": {
+          "model": "example:block/ruby_grinder",
+          "y": 90
+        },
+        "facing=east,lit=true": {
+          "model": "example:block/ruby_grinder_lit",
+          "y": 90
+        },
+        "facing=north,lit=false": {
+          "model": "example:block/ruby_grinder"
+        },
+        "facing=north,lit=true": {
+          "model": "example:block/ruby_grinder_lit"
+        },
+        "facing=south,lit=false": {
+          "model": "example:block/ruby_grinder",
+          "y": 180
+        },
+        "facing=south,lit=true": {
+          "model": "example:block/ruby_grinder_lit",
+          "y": 180
+        },
+        "facing=west,lit=false": {
+          "model": "example:block/ruby_grinder",
+          "y": 270
+        },
+        "facing=west,lit=true": {
+          "model": "example:block/ruby_grinder_lit",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_grinder.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ruby_grinder",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_grinder.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.ruby_grinder": "Ruby Grinder"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ruby_grinder",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ruby_grinder",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ruby_grinder.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "ingredient": "minecraft:gravel",
+      "result": {
+        "id": "minecraft:flint"
+      },
+      "type": "example:ruby_grinder"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/ruby_grinder/flint.json",
+    "schema": "msm:machine_recipe"
+  },
+  {
+    "contents": {
+      "count": 2,
+      "experience": 0.5,
+      "ingredient": "#minecraft:logs",
+      "result": {
+        "count": 3,
+        "id": "minecraft:charcoal"
+      },
+      "time": 300,
+      "type": "example:ruby_grinder"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/ruby_grinder/charcoal.json",
+    "schema": "msm:machine_recipe"
+  },
+  {
+    "contents": {
+      "ingredient": [
+        "minecraft:cobblestone",
+        "minecraft:stone"
+      ],
+      "result": {
+        "id": "minecraft:gravel"
+      },
+      "type": "example:ruby_grinder"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/ruby_grinder/gravel.json",
+    "schema": "msm:machine_recipe"
+  },
+  {
+    "contents": {
+      "ingredient": "minecraft:flint",
+      "result": {
+        "id": "minecraft:flint"
+      },
+      "type": "example:ruby_grinder"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/ruby_grinder/flint_2.json",
+    "schema": "msm:machine_recipe"
+  },
+  {
+    "contents": {
+      "ingredient": "minecraft:gravel",
+      "result": {
+        "id": "minecraft:sand"
+      },
+      "type": "example:ruby_grinder"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/ruby_grinder/sand_from_gravel.json",
+    "schema": "msm:machine_recipe"
+  }
+]

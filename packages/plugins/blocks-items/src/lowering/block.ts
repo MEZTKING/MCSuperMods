@@ -6,6 +6,7 @@ import type { Element, Json, JsonObject, OutputFile, Target, TargetFacts } from 
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
 import { blockItemIdOf } from './block-item';
 import { lowerFuelAndCompostInPlace } from './fuel';
+import { lowerMachineRecipes } from './machine-recipes';
 import {
   BlocksItemsLoweringError,
   dataPath,
@@ -24,12 +25,18 @@ import {
   lowerBlockAppearance,
   type TypeContext,
 } from './types';
-import { isPlantLootPreset, plantLootTable } from './types/loot-presets';
+import {
+  isPlantLootPreset,
+  keepContentsLootTable,
+  keepsContents,
+  plantLootTable,
+} from './types/loot-presets';
 
 /**
  * The element data fields that exist only in the editor: the appearance (`model`, and per type
  * `textures` and `models`), the name, the loot preset and its drops (ADR 0067 D7, ADR 0068
- * D3, D6), `wooden` (ADR 0067 D6) and `villager_plantable` (ADR 0068 D3).
+ * D3, D6), `wooden` (ADR 0067 D6), `villager_plantable` (ADR 0068 D3) and the machine
+ * `recipes` (ADR 0075 D8).
  */
 const BLOCK_EDITOR_FIELDS = [
   'model',
@@ -41,6 +48,7 @@ const BLOCK_EDITOR_FIELDS = [
   'crop_drops',
   'leaves_drops',
   'villager_plantable',
+  'recipes',
 ] as const;
 /** Loot values that are editor presets rather than loot table ids. */
 const LOOT_PRESETS: readonly string[] = ['self', 'crop', 'leaves'];
@@ -159,7 +167,10 @@ export function dropsItselfLootTable(id: string, namespace: string, path: string
  *    `loot_table/blocks/<path>.json` (drops the item; two from a double slab, a door from its
  *    lower half). A block without an item has nothing to drop. With `"loot": "crop"` (crops)
  *    or `"leaves"`: the preset's table in vanilla wheat's or oak leaves' shape (ADR 0068 D3,
- *    D6).
+ *    D6). A container that keeps its contents (ADR 0074 D6) takes the keep-contents form of
+ *    `self` instead, in vanilla's shulker box shape;
+ * 7. a machine's `recipes` (ADR 0075 D8): `data/<ns>/recipe/<path>/<name>.json` each, with
+ *    `type` the block's id (layer `datapack`, schema `msm:machine_recipe`).
  *
  * @param element - The element.
  * @param target - The target supplying the vanilla folder names.
@@ -207,9 +218,10 @@ export function lowerBlock(element: Element, target: Target): OutputFile[] {
   if (fields.loot === 'self' && itemId !== undefined) {
     files.push({
       path: dataPath(target, 'loot_table', namespace, `blocks/${path}`),
-      contents:
-        blockTypeSelfLoot(type, { ...context, itemId }) ??
-        dropsItselfLootTable(itemId, namespace, path),
+      contents: keepsContents(type, data)
+        ? keepContentsLootTable({ ...context, itemId })
+        : (blockTypeSelfLoot(type, { ...context, itemId }) ??
+          dropsItselfLootTable(itemId, namespace, path)),
       layer: 'datapack',
       schema: LOOT_TABLE_SCHEMA,
     });
@@ -224,5 +236,6 @@ export function lowerBlock(element: Element, target: Target): OutputFile[] {
       });
     }
   }
+  files.push(...lowerMachineRecipes(type, element.id, data, target));
   return files;
 }

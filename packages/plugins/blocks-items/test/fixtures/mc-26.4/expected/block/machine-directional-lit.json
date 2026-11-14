@@ -1,0 +1,133 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:machine": {
+          "power": "always",
+          "recipe_types": [
+            "minecraft:blasting"
+          ]
+        }
+      },
+      "format": 1,
+      "type": "directional"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_kiln.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/ruby_front",
+        "side": "example:block/ruby_bricks",
+        "top": "example:block/ruby_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_kiln.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable_vertical",
+      "textures": {
+        "front": "example:block/ruby_front",
+        "side": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_kiln_vertical.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/ruby_front_lit",
+        "side": "example:block/ruby_bricks",
+        "top": "example:block/ruby_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_kiln_lit.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable_vertical",
+      "textures": {
+        "front": "example:block/ruby_front_lit",
+        "side": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_kiln_lit_vertical.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=down,lit=false": {
+          "model": "example:block/ruby_kiln_vertical",
+          "x": 180
+        },
+        "facing=down,lit=true": {
+          "model": "example:block/ruby_kiln_lit_vertical",
+          "x": 180
+        },
+        "facing=east,lit=false": {
+          "model": "example:block/ruby_kiln",
+          "y": 90
+        },
+        "facing=east,lit=true": {
+          "model": "example:block/ruby_kiln_lit",
+          "y": 90
+        },
+        "facing=north,lit=false": {
+          "model": "example:block/ruby_kiln"
+        },
+        "facing=north,lit=true": {
+          "model": "example:block/ruby_kiln_lit"
+        },
+        "facing=south,lit=false": {
+          "model": "example:block/ruby_kiln",
+          "y": 180
+        },
+        "facing=south,lit=true": {
+          "model": "example:block/ruby_kiln_lit",
+          "y": 180
+        },
+        "facing=up,lit=false": {
+          "model": "example:block/ruby_kiln_vertical"
+        },
+        "facing=up,lit=true": {
+          "model": "example:block/ruby_kiln_lit_vertical"
+        },
+        "facing=west,lit=false": {
+          "model": "example:block/ruby_kiln",
+          "y": 270
+        },
+        "facing=west,lit=true": {
+          "model": "example:block/ruby_kiln_lit",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_kiln.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ruby_kiln",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_kiln.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  }
+]

@@ -1,0 +1,130 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:container": {
+          "layout": "hopper"
+        }
+      },
+      "format": 1,
+      "type": "directional"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_box.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/ruby_front",
+        "side": "example:block/ruby_bricks",
+        "top": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_box.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable_vertical",
+      "textures": {
+        "front": "example:block/ruby_front",
+        "side": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_box_vertical.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/ruby_front_open",
+        "side": "example:block/ruby_bricks",
+        "top": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_box_open.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable_vertical",
+      "textures": {
+        "front": "example:block/ruby_front_open",
+        "side": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_box_open_vertical.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=down,open=false": {
+          "model": "example:block/ruby_box_vertical",
+          "x": 180
+        },
+        "facing=down,open=true": {
+          "model": "example:block/ruby_box_open_vertical",
+          "x": 180
+        },
+        "facing=east,open=false": {
+          "model": "example:block/ruby_box",
+          "y": 90
+        },
+        "facing=east,open=true": {
+          "model": "example:block/ruby_box_open",
+          "y": 90
+        },
+        "facing=north,open=false": {
+          "model": "example:block/ruby_box"
+        },
+        "facing=north,open=true": {
+          "model": "example:block/ruby_box_open"
+        },
+        "facing=south,open=false": {
+          "model": "example:block/ruby_box",
+          "y": 180
+        },
+        "facing=south,open=true": {
+          "model": "example:block/ruby_box_open",
+          "y": 180
+        },
+        "facing=up,open=false": {
+          "model": "example:block/ruby_box_vertical"
+        },
+        "facing=up,open=true": {
+          "model": "example:block/ruby_box_open_vertical"
+        },
+        "facing=west,open=false": {
+          "model": "example:block/ruby_box",
+          "y": 270
+        },
+        "facing=west,open=true": {
+          "model": "example:block/ruby_box_open",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_box.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ruby_box",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_box.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  }
+]

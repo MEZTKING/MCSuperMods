@@ -4,6 +4,7 @@
  * type looks and turns exactly as its vanilla family.
  */
 import type { JsonObject } from '@msm/plugin-api';
+import { isRecord } from '../paths';
 
 /** The four horizontal directions in the order vanilla's files list them. */
 export const HORIZONTAL_FACINGS = ['east', 'north', 'south', 'west'] as const;
@@ -56,6 +57,42 @@ export function variantKey(properties: Readonly<Record<string, string>>): string
     .sort()
     .map((name) => `${name}=${properties[name]}`)
     .join(',');
+}
+
+/** The properties of a variant key `a=1,b=2` (`''` has none). */
+export function parseVariantKey(key: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const pair of key.split(',')) {
+    const equals = pair.indexOf('=');
+    if (equals > 0) out[pair.slice(0, equals)] = pair.slice(equals + 1);
+  }
+  return out;
+}
+
+/**
+ * Adds a boolean state `property` (`open`, `lit`; ADR 0074 D3, ADR 0075 D1) to a `variants`
+ * block state definition: each variant of `idle` becomes `<property>=false`, and the variant
+ * with the same key in `active` (else the idle one) `<property>=true`. A multipart definition
+ * is returned as it is.
+ */
+export function withStateProperty(
+  idle: JsonObject,
+  active: JsonObject,
+  property: string,
+): JsonObject {
+  const idleVariants = idle.variants;
+  if (!isRecord(idleVariants)) return idle;
+  const activeVariants = isRecord(active.variants) ? active.variants : idleVariants;
+  const out: JsonObject = {};
+  for (const [key, value] of Object.entries(idleVariants)) {
+    const properties = parseVariantKey(key);
+    if (value === undefined) continue;
+    out[variantKey({ ...properties, [property]: 'false' })] = structuredClone(value);
+    out[variantKey({ ...properties, [property]: 'true' })] = structuredClone(
+      activeVariants[key] ?? value,
+    );
+  }
+  return { variants: out };
 }
 
 /** A `variants` block state definition from `[properties, variant]` pairs. */

@@ -29,12 +29,21 @@
  * `model` fills the `default` slot of `block`, `pillar`, `horizontal` and `directional`. A slot
  * in `models` wins over the model generated for it from `textures`; a required slot that is
  * still empty takes the first model the block has (the validators report it).
+ *
+ * Those four types (the {@link CONTAINER_BLOCK_TYPES}) also take the state slots `open` and
+ * `lit` (ADR 0074 D3, D8; ADR 0075 D8; `block` takes only these two in `models`). With
+ * `msm:container` the block state gains `open`, with `msm:machine` `lit` (a machine wins, as
+ * the runtime drops the container then); every variant is written twice, the `true` half with
+ * the state model, or the closed model when none is given. For `horizontal` and `directional`
+ * the texture `front_open` (`front_lit`) generates the state models `<id>_open` (and
+ * `<id>_open_vertical` for `directional`), as `front` generates the closed ones.
  */
 import type { Json, JsonObject, OutputFile, Target } from '@msm/plugin-api';
 import { blockItemIdOf } from '../block-item';
 import { assetPath, BlocksItemsLoweringError, isRecord, splitResourceLocation } from '../paths';
 import { BLOCK_STATE_SCHEMA, itemDefinitionFile, nonEmptyString, vanillaTagFile } from '../shared';
 import { blockType } from './block';
+import { withStateProperty } from './blockstates';
 import { buttonType } from './button';
 import { cropType } from './crop';
 import { directionalType } from './directional';
@@ -122,6 +131,58 @@ export const BLOCK_TYPE_LOWERINGS: Readonly<Record<BlockTypeName, TypeLowering>>
 export const ITEM_MODEL_SLOT = 'item';
 
 /**
+ * The types that take `msm:container` and `msm:machine` (ADR 0074 D1, ADR 0075 D1): the
+ * `MsmBlock` family, the same as for `msm:shape` and `msm:redstone`.
+ */
+export const CONTAINER_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
+  'block',
+  'pillar',
+  'horizontal',
+  'directional',
+]);
+
+/** The block state model slots of the {@link CONTAINER_BLOCK_TYPES}: `open` and `lit`. */
+export const STATE_MODEL_SLOTS = Object.freeze(['open', 'lit'] as const);
+/** A block state the runtime adds to a container (`open`) or a machine (`lit`). */
+export type StateModelSlot = (typeof STATE_MODEL_SLOTS)[number];
+
+/** The container component. */
+export const CONTAINER_COMPONENT = 'msm:container';
+/** The machine component. */
+export const MACHINE_COMPONENT = 'msm:machine';
+
+const takesStates = (type: BlockTypeName): boolean => CONTAINER_BLOCK_TYPES.includes(type);
+
+/** The `msm:container` component of block data, when it is an object. */
+export function containerOf(data: Json | undefined): JsonObject | undefined {
+  const components = isRecord(data) ? data.components : undefined;
+  const container = isRecord(components) ? components[CONTAINER_COMPONENT] : undefined;
+  return isRecord(container) ? container : undefined;
+}
+
+/** The `msm:machine` component of block data, when it is an object. */
+export function machineOf(data: Json | undefined): JsonObject | undefined {
+  const components = isRecord(data) ? data.components : undefined;
+  const machine = isRecord(components) ? components[MACHINE_COMPONENT] : undefined;
+  return isRecord(machine) ? machine : undefined;
+}
+
+/**
+ * The block state property a block of `type` gains: `lit` for a machine, `open` for a
+ * container, none otherwise or on a type that takes neither component (the runtime drops them
+ * there).
+ */
+export function blockStateFlag(
+  type: BlockTypeName,
+  data: Json | undefined,
+): StateModelSlot | undefined {
+  if (!takesStates(type)) return undefined;
+  if (machineOf(data) !== undefined) return 'lit';
+  if (containerOf(data) !== undefined) return 'open';
+  return undefined;
+}
+
+/**
  * The model slot names each type takes in `models`: its required slots, its optional slots and
  * `item` (for the validators and the Studio).
  */
@@ -132,7 +193,12 @@ export const BLOCK_TYPE_MODEL_SLOTS: Readonly<Record<BlockTypeName, readonly str
         const lowering = BLOCK_TYPE_LOWERINGS[type];
         return [
           type,
-          Object.freeze([...lowering.slots, ...(lowering.optionalSlots ?? []), ITEM_MODEL_SLOT]),
+          Object.freeze([
+            ...lowering.slots,
+            ...(lowering.optionalSlots ?? []),
+            ...(takesStates(type) ? STATE_MODEL_SLOTS : []),
+            ITEM_MODEL_SLOT,
+          ]),
         ];
       }),
     ) as Record<BlockTypeName, readonly string[]>,
@@ -168,16 +234,39 @@ export interface BlockModels {
   slots: SlotModels;
 }
 
-/** The element's `models`, as non-empty strings by slot (not read for `block`). */
+const isStateSlot = (type: BlockTypeName, slot: string): boolean =>
+  takesStates(type) && (STATE_MODEL_SLOTS as readonly string[]).includes(slot);
+
+/** The element's `models`, as non-empty strings by slot (only `open` and `lit` for `block`). */
 function givenModels(type: BlockTypeName, data: JsonObject): Record<string, string> {
   const out: Record<string, string> = {};
-  if (type !== 'block' && isRecord(data.models)) {
+  if (isRecord(data.models)) {
     for (const [slot, value] of Object.entries(data.models)) {
+      if (type === 'block' && !isStateSlot(type, slot)) continue;
       const model = nonEmptyString(value);
       if (model !== undefined) out[slot] = model;
     }
   }
   return out;
+}
+
+/**
+ * The state models generated from the texture `front_<state>` (ADR 0074 D8, ADR 0075 D8): the
+ * type's own generated models with `front` replaced, in the slot `<state>` for the primary slot
+ * and `<state>_<slot>` for the others, named `<id>_<state><suffix>`. None without that texture.
+ */
+function stateSpecs(lowering: TypeLowering, data: JsonObject, state: StateModelSlot): ModelSpec[] {
+  const textures = readTextures(data);
+  const front = textures[`front_${state}`];
+  if (front === undefined) return [];
+  const lookup = textureLookup({ ...textures, front });
+  if (lookup === undefined) return [];
+  const primary = lowering.slots[0] ?? 'default';
+  return lowering.generate(lookup).map((spec) => ({
+    ...spec,
+    slot: spec.slot === primary ? state : `${state}_${spec.slot}`,
+    suffix: `_${state}${spec.suffix}`,
+  }));
 }
 
 /**
@@ -194,6 +283,8 @@ export function blockTypeModels(type: BlockTypeName, context: TypeContext): Bloc
   const lookup = textureLookup(readTextures(data));
   const specs =
     lowering.generateFromData?.(data) ?? (lookup === undefined ? [] : lowering.generate(lookup));
+  const state = blockStateFlag(type, data);
+  if (state !== undefined) specs.push(...stateSpecs(lowering, data, state));
   const generated: GeneratedModel[] = specs
     .filter((spec) => given[spec.slot] === undefined)
     .map((spec) => ({ ...spec, id: blockModelId(namespace, path, spec.suffix) }));
@@ -203,7 +294,9 @@ export function blockTypeModels(type: BlockTypeName, context: TypeContext): Bloc
   const known = [...lowering.slots, ...(lowering.optionalSlots ?? [])];
   const fallback =
     known.map((slot) => slots[slot]).find((model) => model !== undefined) ??
-    Object.entries(given).find(([slot]) => slot !== ITEM_MODEL_SLOT)?.[1];
+    Object.entries(given).find(
+      ([slot]) => slot !== ITEM_MODEL_SLOT && !isStateSlot(type, slot),
+    )?.[1];
   if (fallback === undefined) return { generated, slots: {} };
   for (const slot of lowering.slots) slots[slot] ??= fallback;
   return { generated, slots };
@@ -229,7 +322,7 @@ export function lowerBlockAppearance(
   );
   files.push({
     path: assetPath(target, 'block_definition', context.namespace, context.path),
-    contents: lowering.blockstate(slots, context),
+    contents: blockstateWithStates(type, slots, context),
     layer: 'resourcepack',
     schema: BLOCK_STATE_SCHEMA,
   });
@@ -251,6 +344,35 @@ export function lowerBlockAppearance(
   }
   files.push(definition);
   return files;
+}
+
+/**
+ * The block state definition of a block of `type`: the type's own, and for a container or
+ * machine every variant twice, `open=false` and `open=true` (or `lit`), the `true` half drawn
+ * from the state models: the state slot in place of the primary slot and `<state>_<slot>` in
+ * place of an optional slot (without one the type turns the primary model, as it does without
+ * the optional slot).
+ */
+function blockstateWithStates(
+  type: BlockTypeName,
+  slots: SlotModels,
+  context: TypeContext,
+): JsonObject {
+  const lowering = BLOCK_TYPE_LOWERINGS[type];
+  const closed = lowering.blockstate(slots, context);
+  const state = blockStateFlag(type, context.data);
+  if (state === undefined) return closed;
+  const model = slots[state];
+  if (model === undefined) return withStateProperty(closed, closed, state);
+  const stateSlots: Record<string, string> = {};
+  for (const slot of lowering.slots) stateSlots[slot] = slots[`${state}_${slot}`] ?? model;
+  const primary = lowering.slots[0] ?? 'default';
+  stateSlots[primary] = model;
+  for (const slot of lowering.optionalSlots ?? []) {
+    const optional = slots[`${state}_${slot}`];
+    if (optional !== undefined) stateSlots[slot] = optional;
+  }
+  return withStateProperty(closed, lowering.blockstate(stateSlots, context), state);
 }
 
 /** The `layer0` texture of the flat item model a type generates (doors, panes, plants), if any. */

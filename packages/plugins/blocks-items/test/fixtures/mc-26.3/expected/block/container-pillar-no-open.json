@@ -1,0 +1,108 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:container": {
+          "layout": "dispenser"
+        }
+      },
+      "format": 1,
+      "type": "pillar"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_bin.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cube_column",
+      "textures": {
+        "end": "example:block/ruby_log_top",
+        "side": "example:block/ruby_log"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_bin.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cube_column_horizontal",
+      "textures": {
+        "end": "example:block/ruby_log_top",
+        "side": "example:block/ruby_log"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_bin_horizontal.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "axis=x,open=false": {
+          "model": "example:block/ruby_bin_horizontal",
+          "x": 90,
+          "y": 90
+        },
+        "axis=x,open=true": {
+          "model": "example:block/ruby_bin_horizontal",
+          "x": 90,
+          "y": 90
+        },
+        "axis=y,open=false": {
+          "model": "example:block/ruby_bin"
+        },
+        "axis=y,open=true": {
+          "model": "example:block/ruby_bin"
+        },
+        "axis=z,open=false": {
+          "model": "example:block/ruby_bin_horizontal",
+          "x": 90
+        },
+        "axis=z,open=true": {
+          "model": "example:block/ruby_bin_horizontal",
+          "x": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_bin.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ruby_bin",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_bin.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ruby_bin",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ruby_bin",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ruby_bin.json",
+    "schema": "resource:loot_table"
+  }
+]

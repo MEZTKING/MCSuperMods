@@ -3281,3 +3281,21 @@ Decisions
 
 Next
 - B315's lowering writes these shapes; the library vanilla server check (B320) covers them in real starters and examples.
+
+## 2026-11-14 — executor — B315 container and machine lowering and validators
+
+What
+- `@msm/plugin-blocks-items` lowers `msm:container` and `msm:machine` (ADR 0074 D8, ADR 0075 D8). Both components pass into the definition; the element-only `recipes` is stripped and lowered to `data/<ns>/recipe/<machine path>/<name>.json` (new `lowering/machine-recipes.ts`: `type` the machine's id, a bare-id `result` becomes `{ "id" }`, `name` defaults to the result's path with `_2`, `_3` on a clash, schema `msm:machine_recipe`), only for a machine on `block`, `pillar`, `horizontal` or `directional`.
+- Block states: a container's blockstate gains `open=false|true`, a machine's `lit=false|true` (a block with both is treated as a machine, as the runtime drops the container); every variant is written twice, the `true` half with the state model (`models.open`/`models.lit`, allowed on `block` too, or the model generated from `front_open`/`front_lit` as `<id>_open`/`<id>_lit`, plus `<id>_open_vertical`/`<id>_lit_vertical` for `directional`) or the closed model when none is given. `BLOCK_TYPE_MODEL_SLOTS` of the four types gains `open` and `lit`; `blockGeneratedModelIds` names the new models.
+- Keep-contents loot: `"loot": "self"` on a container that keeps its contents (3-row chest, not a machine) writes vanilla's shulker box shape (`copy_components` from `block_entity`).
+- Validators: new `validators-containers.ts` (`CONTAINER_PROBLEM_CODES`, 11 codes: `container-layout-fields`, `keep-contents-layout`, `container-sound-unknown`, `container-event-unknown`, `machine-and-container`, `machine-recipe-type-unknown`, `machine-recipe-item-unknown`, `machine-without-recipes`, `machine-fuel-unused`, `machine-time-range`, `machine-event-unknown`); `component-not-for-type` now covers `msm:container` and `msm:machine`. `@msm/schemas` gains the schema reference `msm:machine_recipe` (`::msm::recipe::MachineRecipe`).
+- Tests: seven goldens per target (`block/container-*`, `block/machine-*`), eight lowering cases, `test/validators-containers.test.ts` (16 cases, one positive and one negative per code). Full `turbo run test`, `pnpm lint` and `pnpm typecheck` green.
+
+Decisions
+- The keep-contents table copies vanilla's four components (`custom_name`, `container`, `lock` and `container_loot`), as both targets' `loot_table/blocks/shulker_box.json` do (checked 2026-11-14), not only the three the ADR names; it uses vanilla's 26.x `modifier` key and no explosion condition. It is written only when the runtime really keeps the contents, so the items are never both dropped and copied.
+- `open`/`lit` crossing is generic (`withStateProperty` in `blockstates.ts`, `blockstateWithStates` in `types/index.ts`), so no per-type lowering file changed; a directional block without an open vertical model turns the open model up and down, as it does the closed one.
+- `machine-fuel-unused` (info) fires for a `redstone` or `always` machine with `hoppers: true` written out, since the side hoppers feed only the fuel slot; `machine-time-range` and `container-sound-unknown` are warnings, the other new codes errors except `machine-without-recipes` (warning).
+
+Next
+- The app's registry view (`dataRegistryIds`) should count machine block ids as `recipe_type` and `recipe_serializer` ids, or the own-id `recipe_types` entry and the recipe files' `type` show `schema.unknown-id` warnings (B318 or a follow-up).
+- B318 writes `hoppers` only when false; B319 and B320 templates and flows lower with zero problems.

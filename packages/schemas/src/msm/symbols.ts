@@ -29,6 +29,8 @@ import { parseVanillaMcdocSymbols, type VanillaMcdocSymbols } from '../symbols/p
  *   structs (at least one of `features` and `spawns`), not a struct; a loot addition's `pools`
  *   are `any` in MSM mcdoc, and `resolveSchemaRef` substitutes the target's
  *   `::java::data::loot::LootPool` for their items (`SchemaIndex.resolveSchemaRef`).
+ * - `machineRecipe`: a machine recipe file `data/<ns>/recipe/<path>.json` whose `type` is a
+ *   machine block's id (ADR 0075 D2, D8); vanilla's recipe dispatch does not know such types.
  */
 export const MSM_SCHEMA_REFS = {
   block: 'msm:block',
@@ -48,6 +50,7 @@ export const MSM_SCHEMA_REFS = {
   biomeAdditionDefinition: 'msm:biome_addition_definition',
   lootAddition: 'msm:loot_addition',
   lootAdditionDefinition: 'msm:loot_addition_definition',
+  machineRecipe: 'msm:machine_recipe',
 } as const;
 
 /** The mcdoc type path behind each MSM schema reference. */
@@ -69,6 +72,7 @@ export const MSM_TYPE_PATHS = {
   biomeAdditionDefinition: '::msm::definition::BiomeAddition',
   lootAddition: '::msm::element::LootAddition',
   lootAdditionDefinition: '::msm::definition::LootAddition',
+  machineRecipe: '::msm::recipe::MachineRecipe',
   action: '::msm::action::Action',
 } as const;
 
@@ -91,6 +95,7 @@ export const MSM_SCHEMA_ALIASES: Readonly<Record<string, string>> = Object.freez
   [MSM_SCHEMA_REFS.biomeAdditionDefinition]: MSM_TYPE_PATHS.biomeAdditionDefinition,
   [MSM_SCHEMA_REFS.lootAddition]: MSM_TYPE_PATHS.lootAddition,
   [MSM_SCHEMA_REFS.lootAdditionDefinition]: MSM_TYPE_PATHS.lootAdditionDefinition,
+  [MSM_SCHEMA_REFS.machineRecipe]: MSM_TYPE_PATHS.machineRecipe,
 });
 
 let parsed: VanillaMcdocSymbols | undefined;

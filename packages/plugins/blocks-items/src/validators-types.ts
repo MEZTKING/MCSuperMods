@@ -3,8 +3,9 @@
  * (ADR 0068 D7). They read the element data (editor fields still present), the target's block
  * facts and the vanilla ids of the registry index:
  *
- * - `blocks-items.component-not-for-type` (error): `msm:shape` or `msm:redstone` on a type other
- *   than `block`, `pillar`, `horizontal` and `directional` (ADR 0067 D3).
+ * - `blocks-items.component-not-for-type` (error): `msm:shape`, `msm:redstone`, `msm:container`
+ *   or `msm:machine` on a type other than `block`, `pillar`, `horizontal` and `directional`
+ *   (ADR 0067 D3, ADR 0074 D1, ADR 0075 D1).
  * - `blocks-items.type-needs-appearance` (error): a type other than `block` with neither
  *   `textures` nor `models` (nor `model` on the types that take one).
  * - `blocks-items.generated-model-clash` (error): a project model with the id of a model that
@@ -81,7 +82,10 @@ export const BLOCK_TYPE_PROBLEM_CODES = Object.freeze([
   'blocks-items.particle-on-tinted-leaves',
 ] as const);
 
-/** The types that take `msm:shape` and `msm:redstone` (ADR 0067 D3). */
+/**
+ * The types that take `msm:shape`, `msm:redstone`, `msm:container` and `msm:machine` (ADR 0067
+ * D3, ADR 0074 D1, ADR 0075 D1).
+ */
 export const SHAPED_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
   'block',
   'pillar',
@@ -93,7 +97,17 @@ export const SHAPED_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
 export const SHAPED_ONLY_COMPONENTS: readonly string[] = Object.freeze([
   'msm:shape',
   'msm:redstone',
+  'msm:container',
+  'msm:machine',
 ]);
+
+/** What a type outside the shaped types keeps instead of each shaped-only component. */
+const KEPT_INSTEAD: Readonly<Record<string, string>> = {
+  'msm:shape': "vanilla's own shape",
+  'msm:redstone': "vanilla's own redstone behaviour",
+  'msm:container': 'no block entity, so it cannot hold items',
+  'msm:machine': 'no block entity, so it cannot process items',
+};
 
 /** Kind ids of other plugins' elements these checks read. */
 const MODEL_KIND = 'minecraft:model';
@@ -159,7 +173,7 @@ function componentsNotForType(blocks: readonly TypedBlock[]): Problem[] {
         code: 'blocks-items.component-not-for-type',
         elementId: element.id,
         path: pointer('components', key),
-        message: `A ${type} block cannot have "${key}": it keeps vanilla's own ${key === 'msm:shape' ? 'shape' : 'redstone behaviour'}. Remove the component, or change the type to block, pillar, horizontal or directional.`,
+        message: `A ${type} block cannot have "${key}": it keeps ${KEPT_INSTEAD[key] ?? "vanilla's own behaviour"}. Remove the component, or change the type to block, pillar, horizontal or directional.`,
       });
     }
   }

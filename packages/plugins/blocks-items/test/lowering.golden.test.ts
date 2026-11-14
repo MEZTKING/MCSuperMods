@@ -244,6 +244,125 @@ const TYPE_SAMPLES: Sample[] = [
   }),
 ];
 
+/** A container or machine sample (ADR 0074 D8, ADR 0075 D8): golden `block/<name>.json`. */
+const stateSample = (name: string, id: string, data: Json): Sample => ({
+  kind: blockKind,
+  name,
+  id: id as ResourceLocation,
+  data,
+});
+
+/** Containers and machines (B315): `open` and `lit` states, keep-contents loot, recipes. */
+const CONTAINER_SAMPLES: Sample[] = [
+  stateSample('container-crate-keep', 'example:ruby_crate', {
+    format: 1,
+    type: 'horizontal',
+    display_name: 'Ruby Crate',
+    loot: 'self',
+    textures: {
+      front: 'example:block/ruby_front',
+      front_open: 'example:block/ruby_front_open',
+      side: 'example:block/ruby_bricks',
+      top: 'example:block/ruby_top',
+    },
+    components: {
+      'msm:container': {
+        rows: 3,
+        keep_contents: true,
+        open_sound: 'minecraft:block.chest.open',
+        close_sound: 'minecraft:block.chest.close',
+        on_open: 'example:opened',
+      },
+    },
+    events: {
+      'example:opened': {
+        actions: [{ type: 'play_sound', sound: 'minecraft:block.note_block.bell' }],
+      },
+    },
+  }),
+  stateSample('container-holder-models', 'example:ruby_pedestal', {
+    format: 1,
+    loot: 'self',
+    model: 'minecraft:block/barrel',
+    models: { open: 'minecraft:block/barrel_open' },
+    components: {
+      'msm:container': { layout: 'none', size: 4, hoppers: false, comparator: false },
+    },
+  }),
+  stateSample('container-directional-hopper', 'example:ruby_box', {
+    format: 1,
+    type: 'directional',
+    textures: {
+      all: 'example:block/ruby_bricks',
+      front: 'example:block/ruby_front',
+      front_open: 'example:block/ruby_front_open',
+    },
+    components: { 'msm:container': { layout: 'hopper' } },
+  }),
+  stateSample('container-pillar-no-open', 'example:ruby_bin', {
+    format: 1,
+    type: 'pillar',
+    loot: 'self',
+    textures: { side: 'example:block/ruby_log', end: 'example:block/ruby_log_top' },
+    components: { 'msm:container': { layout: 'dispenser' } },
+  }),
+  stateSample('machine-fuel-recipes', 'example:ruby_grinder', {
+    format: 1,
+    type: 'horizontal',
+    display_name: 'Ruby Grinder',
+    loot: 'self',
+    textures: {
+      front: 'example:block/ruby_front',
+      front_lit: 'example:block/ruby_front_lit',
+      side: 'example:block/ruby_bricks',
+      top: 'example:block/ruby_top',
+    },
+    components: {
+      'msm:machine': {
+        recipe_types: ['example:ruby_grinder', 'minecraft:smelting'],
+        speed: 2,
+        default_time: 100,
+        on_finish: 'example:ground',
+      },
+    },
+    events: {
+      'example:ground': {
+        actions: [{ type: 'play_sound', sound: 'minecraft:block.grindstone.use' }],
+      },
+    },
+    recipes: [
+      { ingredient: 'minecraft:gravel', result: 'minecraft:flint' },
+      {
+        ingredient: '#minecraft:logs',
+        count: 2,
+        result: { id: 'minecraft:charcoal', count: 3 },
+        time: 300,
+        experience: 0.5,
+      },
+      { ingredient: ['minecraft:cobblestone', 'minecraft:stone'], result: 'minecraft:gravel' },
+      { ingredient: 'minecraft:flint', result: 'minecraft:flint' },
+      { name: 'sand_from_gravel', ingredient: 'minecraft:gravel', result: 'minecraft:sand' },
+    ],
+  }),
+  stateSample('machine-block-lit-model', 'example:ruby_press', {
+    format: 1,
+    model: 'minecraft:block/furnace',
+    models: { lit: 'minecraft:block/furnace_on' },
+    components: { 'msm:machine': { power: 'redstone' } },
+  }),
+  stateSample('machine-directional-lit', 'example:ruby_kiln', {
+    format: 1,
+    type: 'directional',
+    textures: {
+      front: 'example:block/ruby_front',
+      front_lit: 'example:block/ruby_front_lit',
+      side: 'example:block/ruby_bricks',
+      top: 'example:block/ruby_top',
+    },
+    components: { 'msm:machine': { recipe_types: ['minecraft:blasting'], power: 'always' } },
+  }),
+];
+
 /** Every kind's default data, plus samples covering every editor field and component. */
 const SAMPLES: Sample[] = [
   ...blocksItemsKinds.map((kind) => ({
@@ -800,6 +919,7 @@ const SAMPLES: Sample[] = [
     },
   },
   ...TYPE_SAMPLES,
+  ...CONTAINER_SAMPLES,
   {
     kind: modKind,
     name: 'full',
@@ -821,7 +941,8 @@ const SAMPLES: Sample[] = [
  * names or generates and the textures it uses. Other samples see the shared project ids only.
  */
 function withOutputIds(indexes: TargetIndexes, sample: Sample, files: OutputFile[]): TargetIndexes {
-  if (!sample.name.startsWith('type-')) return indexes;
+  const machine = /^(container|machine)-/.test(sample.name);
+  if (!sample.name.startsWith('type-') && !machine) return indexes;
   const data = sample.data as Record<string, unknown>;
   const ids = (value: unknown): string[] =>
     typeof value === 'object' && value !== null
@@ -844,6 +965,8 @@ function withOutputIds(indexes: TargetIndexes, sample: Sample, files: OutputFile
     item: [...(PROJECT_IDS.item ?? []), ...itemIds],
     model: [...(PROJECT_IDS.model ?? []), ...modelIds, ...ids(data.models)],
     texture: ids(data.textures),
+    // A machine's id is its own recipe type and serialiser (ADR 0075 D2).
+    ...(machine ? { recipe_type: [sample.id], recipe_serializer: [sample.id] } : {}),
   };
   return { ...indexes, registries: createRegistryIndex({ vanilla: indexes.vanilla, project }) };
 }
@@ -912,7 +1035,10 @@ describe('block types', () => {
 
   it('lowers `"type": "block"` exactly as a block without a type', async () => {
     for (const sample of SAMPLES.filter(
-      (entry) => entry.kind === blockKind && !entry.name.startsWith('type-'),
+      (entry) =>
+        entry.kind === blockKind &&
+        !entry.name.startsWith('type-') &&
+        (entry.data as Record<string, Json>).type === undefined,
     )) {
       const data = sample.data as Record<string, Json>;
       const typed = { ...data, type: 'block' };
@@ -1088,3 +1214,137 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     });
   },
 );
+
+describe('containers and machines (ADR 0074 D8, ADR 0075 D8)', () => {
+  const target = builtInTargets[0]?.target;
+  if (target === undefined) throw new Error('no built-in target');
+  const lower = (id: string, data: Record<string, unknown>) =>
+    blockKind.lower(
+      element(blockKind.id, id as ResourceLocation, { format: 1, ...data } as Json),
+      target,
+    );
+  const paths = (files: OutputFile[]) => files.map((file) => file.path);
+  const lootOf = (files: OutputFile[]) =>
+    files.find((file) => file.path.includes('/loot_table/'))?.contents as Record<string, unknown>;
+  const blockstateOf = (files: OutputFile[]) =>
+    files.find((file) => file.path.includes('/blockstates/'))?.contents as {
+      variants: Record<string, { model: string }>;
+    };
+  const recipe = { ingredient: 'minecraft:gravel', result: 'minecraft:flint' };
+
+  it('gives the shaped types the state slots `open` and `lit` before `item`', () => {
+    for (const type of ['block', 'pillar', 'horizontal', 'directional'] as const) {
+      expect(BLOCK_TYPE_MODEL_SLOTS[type].slice(-3), type).toEqual(['open', 'lit', 'item']);
+    }
+    expect(BLOCK_TYPE_MODEL_SLOTS.trapdoor).toEqual(['bottom', 'top', 'open', 'item']);
+  });
+
+  it('strips recipes, state models and state textures from the definition', async () => {
+    const [definition] = await lower('example:mill', {
+      type: 'horizontal',
+      textures: { all: 'example:block/a', front_lit: 'example:block/b' },
+      models: { lit: 'example:block/mill_on' },
+      components: { 'msm:machine': {} },
+      recipes: [recipe],
+    });
+    expect(definition?.contents).toEqual({
+      format: 1,
+      type: 'horizontal',
+      components: { 'msm:machine': {} },
+    });
+  });
+
+  it('writes recipes only for a machine on a type that takes one', async () => {
+    const recipePaths = (files: OutputFile[]) =>
+      paths(files).filter((path) => path.includes('/recipe/'));
+    expect(
+      recipePaths(await lower('example:a', { model: 'm:block/a', recipes: [recipe] })),
+    ).toEqual([]);
+    expect(
+      recipePaths(
+        await lower('example:b', {
+          type: 'slab',
+          textures: { all: 'm:block/a' },
+          components: { 'msm:machine': {} },
+          recipes: [recipe],
+        }),
+      ),
+    ).toEqual([]);
+    expect(
+      recipePaths(
+        await lower('example:mills/c', { components: { 'msm:machine': {} }, recipes: [recipe] }),
+      ),
+    ).toEqual([`data/example/${target.folders.data.recipe}/mills/c/flint.json`]);
+  });
+
+  it('refuses a recipe with no name and no result, and a name that is not a path', async () => {
+    const machine = { components: { 'msm:machine': {} } };
+    await expect(async () =>
+      lower('example:d', { ...machine, recipes: [{ ingredient: 'minecraft:gravel' }] }),
+    ).rejects.toThrow(/no name and no result/);
+    await expect(async () =>
+      lower('example:d', { ...machine, recipes: [{ ...recipe, name: 'Bad Name' }] }),
+    ).rejects.toThrow(/Invalid element id/);
+  });
+
+  it('keeps the contents only on a 3-row chest that is not a machine', async () => {
+    const copies = async (container: Record<string, unknown>, extra = {}) => {
+      const loot = lootOf(
+        await lower('example:crate', {
+          model: 'm:block/a',
+          loot: 'self',
+          components: { 'msm:container': container, ...extra },
+        }),
+      );
+      return JSON.stringify(loot).includes('copy_components');
+    };
+    expect(await copies({ keep_contents: true })).toBe(true);
+    expect(await copies({ keep_contents: true, layout: 'chest', rows: 3 })).toBe(true);
+    expect(await copies({ keep_contents: true, rows: 6 })).toBe(false);
+    expect(await copies({ keep_contents: true, layout: 'hopper' })).toBe(false);
+    expect(await copies({ keep_contents: false })).toBe(false);
+    expect(await copies({ keep_contents: true }, { 'msm:machine': {} })).toBe(false);
+  });
+
+  it('gives a machine that is also a container `lit`, not `open`', async () => {
+    const state = blockstateOf(
+      await lower('example:both', {
+        model: 'm:block/a',
+        models: { open: 'm:block/open', lit: 'm:block/lit' },
+        components: { 'msm:container': {}, 'msm:machine': {} },
+      }),
+    );
+    expect(state.variants).toEqual({
+      'lit=false': { model: 'm:block/a' },
+      'lit=true': { model: 'm:block/lit' },
+    });
+  });
+
+  it('writes no state without a component, and none on a type that takes neither', async () => {
+    const plain = blockstateOf(
+      await lower('example:plain', { model: 'm:block/a', models: { open: 'm:block/open' } }),
+    );
+    expect(plain.variants).toEqual({ '': { model: 'm:block/a' } });
+    const files = await lower('example:slab', {
+      type: 'slab',
+      textures: { all: 'm:block/a' },
+      components: { 'msm:container': {} },
+    });
+    expect(Object.keys(blockstateOf(files).variants).some((key) => key.includes('open'))).toBe(
+      false,
+    );
+  });
+
+  it('turns the open model up and down when a directional block has no open vertical model', async () => {
+    const state = blockstateOf(
+      await lower('example:dir', {
+        type: 'directional',
+        textures: { all: 'm:block/a' },
+        models: { open: 'm:block/open' },
+        components: { 'msm:container': {} },
+      }),
+    );
+    expect(state.variants['facing=up,open=true']).toEqual({ model: 'm:block/open', x: 270 });
+    expect(state.variants['facing=up,open=false']).toEqual({ model: 'example:block/dir_vertical' });
+  });
+});
