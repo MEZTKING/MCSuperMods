@@ -53,10 +53,14 @@ import {
   FABRIC_MOD_ID_PATTERN,
   FABRIC_MOD_JSON_FILE,
   JAVA_PROJECT_MOD_JSON,
+  MOD_ONLY_FUNCTION,
+  MOD_ONLY_REFERENCE,
+  modOnlyIdsOf,
   packFileName,
   resourcePackExporter,
   runExport,
   sanitiseModId,
+  vanillaSafeExporter,
 } from '@msm/exporters';
 import type {
   BundleContext,
@@ -168,12 +172,6 @@ import {
   runValidator,
   validatorsFor,
 } from './validator-problems';
-import {
-  MOD_ONLY_FUNCTION,
-  MOD_ONLY_REFERENCE,
-  modOnlyIdsOf,
-  vanillaSafeExporter,
-} from './vanilla-pack-safety';
 
 /** Everything the UI renders from the session. Replaced, never mutated. */
 export interface SessionSnapshot {

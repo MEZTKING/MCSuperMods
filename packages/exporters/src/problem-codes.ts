@@ -85,6 +85,16 @@ export const ExportProblemCodes = {
   gradleWrapperMissing: 'export.gradle-wrapper-missing',
   /** The exporter threw while packaging. Some files may already have been written. */
   failed: 'export.failed',
+  /**
+   * Vanilla data pack (ADR 0066 D3): files naming ids or `#tags` only the Fabric mod jar
+   * provides were left out. One warning per element.
+   */
+  modOnlyReference: 'export.mod-only-reference',
+  /**
+   * Vanilla data pack (ADR 0066 D5): functions naming ids or `#tags` only the Fabric mod jar
+   * provides are kept; the game skips them. One warning per element.
+   */
+  modOnlyFunction: 'export.mod-only-function',
 } as const;
 
 /** Any problem code reported by `@msm/exporters` itself (schema problems keep `schema.*`). */

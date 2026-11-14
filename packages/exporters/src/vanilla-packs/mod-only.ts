@@ -11,9 +11,13 @@
  * hold nothing else.
  * For the vanilla data pack, files that name one are left out (one warning per element), tag
  * entries that name one become `{ "id": ..., "required": false }`, and functions that name
- * one are kept with a warning (the game skips only that function).
+ * one are kept with a warning (the game skips only that function; function tag entries naming
+ * such a function become optional too, as a plain one would drop the whole tag).
  *
- * @packageDocumentation
+ * The rule is pure: the host computes the project's mod-only ids (it knows which kinds
+ * register what) and passes them in; the app wraps `dataPackExporter` with
+ * {@link vanillaSafeExporter} for its vanilla data pack exports, and the library test does the
+ * same for its vanilla server packs.
  */
 
 import type {
@@ -25,12 +29,13 @@ import type {
   ResourceLocation,
   Target,
 } from '@msm/plugin-api';
+import { ExportProblemCodes } from '../problem-codes';
 
 /** A data pack file left out because it names something only the mod jar provides. */
-export const MOD_ONLY_REFERENCE = 'export.mod-only-reference';
+export const MOD_ONLY_REFERENCE = ExportProblemCodes.modOnlyReference;
 
 /** A function that names something only the mod jar provides (kept; the game skips it). */
-export const MOD_ONLY_FUNCTION = 'export.mod-only-function';
+export const MOD_ONLY_FUNCTION = ExportProblemCodes.modOnlyFunction;
 
 /** The registries MSM runtime kinds register ids in (ADR 0066 D2). */
 export const RUNTIME_REGISTRIES: readonly string[] = Object.freeze([
@@ -82,8 +87,8 @@ export type ModOnlyIds = ReadonlyMap<string, ReadonlySet<string>>;
 
 /**
  * The mod-only ids of a project: the ids in {@link RUNTIME_REGISTRIES} of `registryIds` (for
- * example `dataRegistryIds(project)`, which already adds block items, spawn eggs and potion
- * versions). Registries without ids are left out.
+ * example the app's `dataRegistryIds(project)`, which already adds block items, spawn eggs and
+ * potion versions). Registries without ids are left out.
  *
  * @param registryIds - The project's registry ids, per registry.
  */
@@ -120,6 +125,7 @@ interface TagFile extends ParsedFile {
 const utf8Decoder = new TextDecoder();
 const DATA_PREFIX = 'data/';
 const JSON_SUFFIX = '.json';
+const FUNCTION_SUFFIX = '.mcfunction';
 const MINECRAFT = 'minecraft';
 
 function decode(contents: OutputFile['contents']): Json | undefined {
@@ -386,8 +392,10 @@ export function modOnlyFunctionMessage(file: string, id: string, more = 0): stri
  * {@link FATAL_DATA_FOLDERS} folder that name a mod-only id or `#tag` are left out (and so
  * are files that name a file left out, as a missing loot table reference is just as fatal),
  * tag entries that name one become `{ "id": ..., "required": false }`, and functions that
- * name one are kept with a warning. Returns `files` itself and no problems when `modOnly` is
- * empty, so a project without mod content exports byte-identically.
+ * name one are kept with a warning (function tag entries naming such a function become
+ * optional, as the game drops the function and a plain entry would drop the tag). Returns
+ * `files` itself and no problems when `modOnly` is empty, so a project without mod content
+ * exports byte-identically.
  *
  * @param files - The merged, validated output files.
  * @param modOnly - The project's mod-only ids ({@link modOnlyIdsOf}).
@@ -464,19 +472,6 @@ export function vanillaSafeDataFiles(
     }
   }
 
-  const rewritten = new Map<OutputFile, OutputFile>();
-  for (const tag of tags) {
-    let touched = false;
-    const values = tag.values.map((value) => {
-      const entry = entryId(value);
-      if (entry === undefined || entry.optional || !set.entry(tag.registry, entry.id)) return value;
-      touched = true;
-      return { id: entry.id, required: false };
-    });
-    if (!touched || !isObject(tag.json)) continue;
-    rewritten.set(tag.file, { ...tag.file, contents: { ...tag.json, values } });
-  }
-
   const flagged = new Map<string, string>();
   for (const file of functions) {
     const text =
@@ -485,6 +480,30 @@ export function vanillaSafeDataFiles(
         : String(file.contents);
     const hit = firstFunctionHit(text, set);
     if (hit !== undefined) flagged.set(file.path, hit);
+  }
+  // The game drops a flagged function, and a function tag with a plain entry naming it is
+  // then dropped too (with every pack's entries merged into it, such as `#minecraft:tick`),
+  // so those entries become optional like mod-only ids.
+  const skippedFunctions = new Set<string>();
+  for (const path of flagged.keys()) {
+    const parts = splitDataPath(path);
+    if (parts === undefined || !parts.rest.endsWith(FUNCTION_SUFFIX)) continue;
+    skippedFunctions.add(`${parts.ns}:${parts.rest.slice(0, -FUNCTION_SUFFIX.length)}`);
+  }
+  const optional = (registry: string, id: string): boolean =>
+    set.entry(registry, id) || (registry === folders.function && skippedFunctions.has(id));
+
+  const rewritten = new Map<OutputFile, OutputFile>();
+  for (const tag of tags) {
+    let touched = false;
+    const values = tag.values.map((value) => {
+      const entry = entryId(value);
+      if (entry === undefined || entry.optional || !optional(tag.registry, entry.id)) return value;
+      touched = true;
+      return { id: entry.id, required: false };
+    });
+    if (!touched || !isObject(tag.json)) continue;
+    rewritten.set(tag.file, { ...tag.file, contents: { ...tag.json, values } });
   }
 
   const problems: Problem[] = [];

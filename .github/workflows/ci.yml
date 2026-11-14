@@ -213,16 +213,18 @@ jobs:
           --work "$RUNNER_TEMP/vanilla-datapack"
           --cache ~/.cache/msm-fabric-server
       # Every library starter (defaults, wizard answers, minimums), example and examples/ mirror
-      # project meant to work as a plain vanilla data pack (no msm: kinds) is exported for this
-      # target as the app does it and loaded into one vanilla server world (more only where two
+      # project is exported for this target as the app's vanilla data pack export does it (with
+      # msm: kinds, potions are left out and the vanilla pack safety rule of ADR 0066 leaves out
+      # files naming mod-only ids) and loaded into one vanilla server world (more only where two
       # packs write the same file): the server must start (one bad registry file stops it), drop
-      # no tag or function and list every pack as enabled. A failure is bisected down to the
-      # pack, its source and its files (tools/run-fabric-server/vanilla-packs.ts).
+      # no tag or function (but the ones the rule warned about) and list every pack as enabled.
+      # A failure is bisected down to the pack, its source and its files
+      # (tools/run-fabric-server/vanilla-packs.ts).
       - name: Export the library's vanilla data packs
         run: |
           MSM_LIBRARY_PACKS_OUT="$RUNNER_TEMP/library-packs" \
             pnpm --filter @msm/exporters exec vitest run test/library.test.ts -t "vanilla server data packs"
-          node -e 'const f = JSON.parse(require("node:fs").readFileSync(process.argv[1], "utf8")); console.log(`${f.packs.length} packs for Minecraft ${f.minecraft}`); if (f.packs.length === 0) process.exit(1);' "$RUNNER_TEMP/library-packs/packs.json"
+          node -e 'const f = JSON.parse(require("node:fs").readFileSync(process.argv[1], "utf8")); console.log(`${f.packs.length} packs (${f.packs.filter((p) => p.mod).length} with mod content) for Minecraft ${f.minecraft}`); if (f.packs.length === 0) process.exit(1);' "$RUNNER_TEMP/library-packs/packs.json"
       - name: Headless vanilla server check (library data packs)
         run: >-
           node tools/run-fabric-server/vanilla-packs.ts

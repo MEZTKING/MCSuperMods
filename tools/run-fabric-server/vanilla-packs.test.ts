@@ -188,6 +188,17 @@ describe('analyseRun', () => {
     ]);
   });
 
+  it('accepts the functions the packs expect to fail to load (ADR 0066 D5)', () => {
+    const analysis = analyseRun(STARTED, new Set(['f_ns:bad']));
+    expect(analysis.signatures).toEqual([
+      "Couldn't load tag e_tags:gems as it is missing following references: demo:ruby (from file/e_tags)",
+    ]);
+    expect(analysis.details.some((line) => line.includes('Whilst parsing'))).toBe(false);
+    expect(runFailures(analysis, ['e_tags.zip', 'f_ns'])).toEqual([`log: ${STARTED[0]}`]);
+    // Another function failing still counts.
+    expect(analyseRun(STARTED, new Set(['f_ns:other'])).problems).toContain(STARTED[1]);
+  });
+
   it('passes a clean start with every pack enabled', () => {
     const clean = [STARTED[4] as string, STARTED[5] as string];
     expect(runFailures(analyseRun(clean), ['e_tags.zip', 'f_ns'])).toEqual([]);

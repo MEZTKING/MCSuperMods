@@ -8,6 +8,10 @@
  * with script transpilation through an injected `transpileScript`) and the Java project eject
  * (`java-project`, whose Java sources come from the target's `javaProject` generator).
  *
+ * Vanilla pack safety (ADR 0066, `vanillaSafeExporter` and `vanillaSafeDataFiles`): wraps the
+ * data pack exporter so that files naming ids only the Fabric mod jar provides are left out,
+ * tag entries naming them become optional and functions naming them are kept with a warning.
+ *
  * A combined export is two runs, not a third exporter: the host runs `resourcePackExporter`
  * and `dataPackExporter` into two zip sinks in one folder, named by `combinedFileNames`.
  *
@@ -80,4 +84,17 @@ export {
   type VanillaPackKind,
   vanillaPacksExporter,
 } from './vanilla-packs/index';
+export {
+  FATAL_DATA_FOLDERS,
+  MOD_ONLY_FUNCTION,
+  MOD_ONLY_REFERENCE,
+  type ModOnlyIds,
+  modOnlyFunctionMessage,
+  modOnlyIdsOf,
+  modOnlyReferenceMessage,
+  RUNTIME_REGISTRIES,
+  type VanillaSafeResult,
+  vanillaSafeDataFiles,
+  vanillaSafeExporter,
+} from './vanilla-packs/mod-only';
 export { createZipBytes } from './zip';

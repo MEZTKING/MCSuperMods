@@ -7,9 +7,11 @@
  *
  * The packs file is what `packages/exporters/test/library.test.ts` writes with
  * `MSM_LIBRARY_PACKS_OUT`: `minecraft` (the target's game version) and `packs`, each a `zip` in
- * the same folder and the `source` it was exported from (a starter, an example or an
- * `examples/` mirror project that is meant to work as a plain vanilla data pack). No version is
- * written here.
+ * the same folder, the `source` it was exported from (a starter, an example or an `examples/`
+ * mirror project), whether it has mod content (`mod`; exported through the vanilla pack safety
+ * rule, ADR 0066), how many files the rule left out (`leftOut`) and the functions it kept with
+ * a warning (`skippedFunctions`, which the server is expected to drop). No version is written
+ * here.
  *
  * 1. Reads every zip and puts the packs into as few worlds as it can: two packs share a world
  *    unless both write the same file outside `tags/` (tags merge; any other file of one pack
@@ -18,7 +20,8 @@
  *    world, runs `datapack list enabled` and stops it.
  * 3. A world passes when the server logged `Done (`, lists every pack as enabled and logged no
  *    load problem: `Failed to load datapacks`, `Errors in registry`, `Registry loading errors`,
- *    `Couldn't load tag`, `Failed to load function`, `Couldn't parse` or an ERROR line. On
+ *    `Couldn't load tag`, `Failed to load function` (but for a pack's `skippedFunctions`),
+ *    `Couldn't parse` or an ERROR line. On
  *    vanilla 26.3 and later one registry file naming an unknown id stops the server starting;
  *    a tag with a missing plain entry is dropped; a function that does not parse is dropped.
  * 4. When a world fails, it bisects: first over the packs (unless the log names them), then
@@ -53,6 +56,15 @@ export interface PacksOptions {
 export interface PackEntry {
   zip: string;
   source: string;
+  /** Whether the project has content only the Fabric mod jar provides (ADR 0066). */
+  mod?: boolean;
+  /** How many files the vanilla pack safety rule left out (ADR 0066 D3). */
+  leftOut?: number;
+  /**
+   * Functions (`<ns>:<path>`) the rule kept although they name mod-only content (ADR 0066
+   * D5): the game is expected to drop exactly these with `Failed to load function`.
+   */
+  skippedFunctions?: string[];
 }
 
 /** The packs file written next to the zips. */
@@ -237,8 +249,14 @@ export function normalise(line: string): string {
  * Reads a server run's output.
  *
  * @param lines - The server's output, one entry per line.
+ * @param skippedFunctions - Functions expected to fail to load (`<ns>:<path>`, the packs'
+ *   `skippedFunctions`): their `Failed to load function` line and its exception lines are not
+ *   problems.
  */
-export function analyseRun(lines: readonly string[]): RunAnalysis {
+export function analyseRun(
+  lines: readonly string[],
+  skippedFunctions: ReadonlySet<string> = new Set(),
+): RunAnalysis {
   const enabled: string[] = [];
   const problems: string[] = [];
   const details: string[] = [];
@@ -249,7 +267,9 @@ export function analyseRun(lines: readonly string[]): RunAnalysis {
         enabled.push(match[1] as string);
       }
     }
-    const isProblem = LOAD_PROBLEM.test(line);
+    const skipped = /Failed to load function ([a-z0-9_.-]+:[a-z0-9_./-]+)\s*$/.exec(line);
+    const isProblem =
+      LOAD_PROBLEM.test(line) && !(skipped !== null && skippedFunctions.has(skipped[1] as string));
     if (isProblem) problems.push(line.trim());
     if (/^\[[^\]]*\] \[/.test(line)) inError = isProblem;
     if (
@@ -364,10 +384,16 @@ class Runner {
   readonly #options: PacksOptions & { minecraft: string };
   readonly #jar: string;
   readonly #runDir: string;
+  readonly #skippedFunctions: ReadonlySet<string>;
 
-  constructor(options: PacksOptions & { minecraft: string }, jar: string) {
+  constructor(
+    options: PacksOptions & { minecraft: string },
+    jar: string,
+    skippedFunctions: ReadonlySet<string> = new Set(),
+  ) {
     this.#options = options;
     this.#jar = jar;
+    this.#skippedFunctions = skippedFunctions;
     this.#runDir = resolve(options.workDir, 'server');
   }
 
@@ -414,7 +440,7 @@ class Runner {
     const code = await server.exited;
     const logPath = join(resolve(this.#options.workDir), `${label}.log`);
     await writeFile(logPath, `${server.lines.join('\n')}\n`);
-    const analysis = analyseRun(server.lines);
+    const analysis = analyseRun(server.lines, this.#skippedFunctions);
     const failures = runFailures(
       analysis,
       placements.map((placement) => placement.name),
@@ -527,7 +553,15 @@ export async function runPacksCheck(options: PacksOptions): Promise<string[]> {
   log(`${packs.length} packs for Minecraft ${minecraft} in ${worlds.length} world(s)`);
   const full = { ...options, minecraft };
   await mkdir(resolve(options.workDir), { recursive: true });
-  const runner = new Runner(full, await serverJar(full));
+  const skipped = new Set(entries.flatMap((entry) => entry.skippedFunctions ?? []));
+  const mods = entries.filter((entry) => entry.mod === true);
+  if (mods.length > 0) {
+    const leftOut = mods.reduce((sum, entry) => sum + (entry.leftOut ?? 0), 0);
+    log(
+      `${mods.length} packs come from projects with mod content: ${leftOut} file(s) left out, ${skipped.size} function(s) expected to fail to load`,
+    );
+  }
+  const runner = new Runner(full, await serverJar(full), skipped);
   const report: string[] = [];
   for (const [index, names] of worlds.entries()) {
     const label = `world-${index + 1}`;

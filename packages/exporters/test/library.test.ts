@@ -95,9 +95,14 @@ import {
   createMemorySink,
   createZipSink,
   dataPackExporter,
+  MOD_ONLY_FUNCTION,
+  MOD_ONLY_REFERENCE,
+  type ModOnlyIds,
+  modOnlyIdsOf,
   nestedRuntimePath,
   resourcePackExporter,
   runExport,
+  vanillaSafeExporter,
 } from '../src/index';
 import { selectedTarget } from './selected-target';
 
@@ -1990,13 +1995,15 @@ describe('examples/ mirror', () => {
 
 /**
  * With `MSM_LIBRARY_PACKS_OUT`, the data pack of every library starter (defaults, wizard
- * alternatives and minimums), example and `examples/` mirror project that is meant to work as
- * a plain vanilla data pack (no `msm:` kinds, so no Fabric mod jar) is exported for the
- * selected target as the app does it and written to that folder as `<name>.zip`, next to
- * `packs.json` (`minecraft`, `packs`: `{ zip, source }`). `tools/run-fabric-server/vanilla-packs.ts`
- * loads them all into a vanilla dedicated server. Each pack gets its own namespace, so packs
- * clash only where they write into a shared namespace (`minecraft`). Without the variable this
- * test is skipped.
+ * alternatives and minimums), example and `examples/` mirror project is exported for the
+ * selected target as the app's vanilla data pack export does it and written to that folder as
+ * `<name>.zip`, next to `packs.json` (`minecraft`, `packs`: `{ zip, source, mod }`). Projects
+ * with `msm:` kinds export like the app's session: potions are left out (ADR 0063 D6) and the
+ * vanilla pack safety rule (ADR 0066) leaves out files naming mod-only ids, makes tag entries
+ * optional and only warns on functions, so their packs must load too.
+ * `tools/run-fabric-server/vanilla-packs.ts` loads them all into a vanilla dedicated server.
+ * Each pack gets its own namespace, so packs clash only where they write into a shared
+ * namespace (`minecraft`). Without the variable this test is skipped.
  */
 const packsOut = process.env.MSM_LIBRARY_PACKS_OUT;
 
@@ -2004,21 +2011,59 @@ const packsOut = process.env.MSM_LIBRARY_PACKS_OUT;
 const packName = (prefix: string, id: string): string =>
   `${prefix}_${id.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`;
 
-const needsJar = (entry: ProjectStarter | ExampleProject): boolean =>
-  entry.requiresKinds.some((kind) => kind.startsWith('msm:'));
+/** `project` without `msm:potion` elements, as the app's vanilla pack exports lower it. */
+function withoutPotions(project: Project): Project {
+  return {
+    ...project,
+    namespaces: project.namespaces.map((namespace) => ({
+      ...namespace,
+      elements: namespace.elements.filter((element) => element.kind !== 'msm:potion'),
+    })),
+  };
+}
+
+/**
+ * The mod-only ids of `project` as the app computes them (`modOnlyIdsOf(dataRegistryIds(...))`
+ * over the whole project, potions included): {@link projectRegistryIds}, plus the spawn egg of
+ * an entity that leaves `spawn_egg` out (the entity lowering gives it one).
+ */
+function modOnlyIdsFor(project: Project): ModOnlyIds {
+  const ids = projectRegistryIds(project);
+  const items = new Set(ids.item ?? []);
+  for (const namespace of project.namespaces) {
+    for (const element of namespace.elements) {
+      if (element.kind !== 'msm:entity') continue;
+      const data = element.data;
+      const egg =
+        typeof data === 'object' && data !== null && !Array.isArray(data)
+          ? (data as { spawn_egg?: unknown }).spawn_egg
+          : undefined;
+      if (egg === undefined) items.add(`${element.id}_spawn_egg`);
+    }
+  }
+  return modOnlyIdsOf({ ...ids, item: [...items].sort() });
+}
+
+/** Warnings the vanilla pack safety rule gives (ADR 0066 D3, D5); they do not fail a pack. */
+const SAFETY_CODES: ReadonlySet<string> = new Set([MOD_ONLY_REFERENCE, MOD_ONLY_FUNCTION]);
 
 describe('vanilla server data packs', () => {
   it.skipIf(packsOut === undefined || packsOut === '')(
-    'writes the data pack of every vanilla-only starter, example and mirror project',
+    'writes the data pack of every starter, example and mirror project, mod content made safe',
     async () => {
       const bundle = selectedTarget();
       const context = await contextFor(bundle);
       const outDir = packsOut as string;
       await rm(outDir, { recursive: true, force: true });
       await mkdir(outDir, { recursive: true });
-      const cases: { name: string; source: string; build(): Promise<BuiltProject> }[] = [];
+      const cases: {
+        name: string;
+        source: string;
+        build(): Promise<BuiltProject>;
+        mirror?: boolean;
+      }[] = [];
       for (const starter of libraryStarters) {
-        if (needsJar(starter) || !supported(starter, bundle.target)) continue;
+        if (!supported(starter, bundle.target)) continue;
         const variants: [string, Readonly<Record<string, Json>>][] = [['', {}]];
         if ((starter.parameters ?? []).length > 0) {
           (WIZARD_ALTERNATIVES[starter.id] ?? []).forEach((values, index) => {
@@ -2039,7 +2084,7 @@ describe('vanilla server data packs', () => {
         }
       }
       for (const example of libraryExamples) {
-        if (needsJar(example) || !supported(example, bundle.target)) continue;
+        if (!supported(example, bundle.target)) continue;
         const name = packName('e', example.id);
         cases.push({
           name,
@@ -2055,27 +2100,42 @@ describe('vanilla server data packs', () => {
           name: packName('m', entry.folder),
           source: `examples/${entry.folder}`,
           build: entry.build,
+          mirror: true,
         });
       }
-      const packs: { zip: string; source: string }[] = [];
+      const packs: {
+        zip: string;
+        source: string;
+        mod: boolean;
+        leftOut: number;
+        skippedFunctions: string[];
+      }[] = [];
       for (const entry of cases) {
         const built = await entry.build();
         const project = await reload(built.fs);
-        // The mirror's starters and the wizard answers decide kinds only once built.
-        if (hasMsmElements(project)) continue;
         const ids = projectRegistryIds(project);
         const registries = createRegistryIndex({ vanilla: context.vanilla, project: ids });
+        // As the app's session: a project with mod content exports without its potions and
+        // through the vanilla pack safety rule (ADR 0063 D6, ADR 0066).
+        const mod = hasMsmElements(project);
+        // The mirror projects are written for the default target; on another target only
+        // the vanilla-only ones are exported (a mod one, such as all-kinds, has noise settings
+        // fields of the default target).
+        if (entry.mirror === true && mod && bundle.target.id !== DEFAULT_TARGET) continue;
+        const modOnly = mod ? modOnlyIdsFor(project) : new Map();
         const report = await exportProblems(
           bundle,
           context,
           built.fs,
-          project,
+          mod ? withoutPotions(project) : project,
           registries,
           ids,
-          dataPackExporter,
+          vanillaSafeExporter(dataPackExporter, modOnly),
         );
         expect(
-          report.problems.filter((problem) => problem.severity !== 'info'),
+          report.problems.filter(
+            (problem) => problem.severity !== 'info' && !SAFETY_CODES.has(problem.code),
+          ),
           entry.source,
         ).toEqual([]);
         expect(report.ok, entry.source).toBe(true);
@@ -2084,7 +2144,20 @@ describe('vanilla server data packs', () => {
         for (const [path, bytes] of report.contents) await sink.writeFile(path, bytes);
         const zip = `${entry.name}.zip`;
         await writeFile(join(outDir, zip), sink.finish());
-        packs.push({ zip, source: entry.source });
+        // Without an element lookup every flagged file gets its own warning: the server check
+        // expects exactly these functions to fail to load (ADR 0066 D5).
+        const flagged = (code: string) =>
+          report.problems.filter((problem) => problem.code === code).map((p) => p.file ?? '');
+        packs.push({
+          zip,
+          source: entry.source,
+          mod,
+          leftOut: flagged(MOD_ONLY_REFERENCE).length,
+          skippedFunctions: flagged(MOD_ONLY_FUNCTION)
+            .map((file) => /^data\/([^/]+)\/[^/]+\/(.+)\.mcfunction$/.exec(file))
+            .map((match) => (match === null ? '' : `${match[1]}:${match[2]}`))
+            .sort(),
+        });
       }
       expect(packs.length).toBeGreaterThan(0);
       await writeFile(

@@ -14,6 +14,8 @@ Phase 2 code complete: `runExport` (collect, lower, merge assets, validate JSON 
 | `fabric-content-jar/` | 4 | Jar with `assets/`, `data/`, `msm/`, `fabric.mod.json`; nested `msm_runtime` jar; optional nested GeckoLib |
 | `java-project/` | 6 | Eject: Gradle project (`files.ts`: Gradle files, README, licence notes), `src/main/resources/` (`fabric.mod.json` with entrypoints, `assets/`, `data/`), Java from the target's generator; no dependency on `msm_runtime`; scripts and `run_script` left out (`export.scripts-not-ejected`) |
 
+`vanilla-packs/mod-only.ts`: vanilla pack safety (ADR 0066), pure; `vanillaSafeExporter` wraps the data pack exporter over host-computed mod-only ids (`modOnlyIdsOf`), leaving out files naming them (`export.mod-only-reference`), making tag entries optional and warning on functions (`export.mod-only-function`); the app session and the library test's vanilla server packs use it.
+
 Shared modules in `src/`: `run-export.ts`, `zip.ts`, `sinks.ts`, `assets.ts` (asset allow-list: `textures/`, `sounds/`, `font/`, `texts/`; `.png.mcmeta` sidecars get schema `resource:texture_meta`), `manifest.ts`, `problem-codes.ts` (`export.*`).
 
 ## Conventions
