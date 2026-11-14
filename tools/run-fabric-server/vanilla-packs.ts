@@ -37,7 +37,7 @@ import { homedir, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inflateRawSync } from 'node:zlib';
-import { freePort, serverProperties } from './index.ts';
+import { describeError, freePort, serverProperties } from './index.ts';
 import { DONE, serverJar, startServer } from './vanilla-datapack.ts';
 
 /** Everything a check needs. */
@@ -603,7 +603,7 @@ if (invokedPath !== undefined && resolve(invokedPath) === fileURLToPath(import.m
       process.exitCode = code;
     },
     (error: unknown) => {
-      process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+      process.stderr.write(`${describeError(error)}\n`);
       process.exitCode = 1;
     },
   );

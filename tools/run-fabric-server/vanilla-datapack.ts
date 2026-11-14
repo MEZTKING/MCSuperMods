@@ -45,7 +45,7 @@ import { homedir, tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
-import { cached, freePort, serverProperties } from './index.ts';
+import { cached, describeError, fetchRetrying, freePort, serverProperties } from './index.ts';
 
 /** Mojang's version manifest: every game version with the URL and SHA-1 of its JSON. */
 export const VERSION_MANIFEST_URL =
@@ -308,9 +308,7 @@ function log(message: string): void {
 }
 
 async function fetchJson(url: string): Promise<{ json: unknown; text: string }> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`GET ${url} returned HTTP ${response.status}`);
-  const text = await response.text();
+  const text = await fetchRetrying(url, (response) => response.text());
   return { json: JSON.parse(text) as unknown, text };
 }
 
@@ -511,7 +509,7 @@ if (invokedPath !== undefined && resolve(invokedPath) === fileURLToPath(import.m
       process.exitCode = code;
     },
     (error: unknown) => {
-      process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+      process.stderr.write(`${describeError(error)}\n`);
       process.exitCode = 1;
     },
   );

@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 import {
   analyseLog,
   checkGameTests,
+  describeError,
+  FETCH_ATTEMPTS,
   fabricApiModuleUrl,
   fabricApiPomUrl,
   fabricApiUrl,
+  fetchRetrying,
   GAMETEST_MODULE,
   geckolibCachePath,
   latestStableInstaller,
@@ -602,5 +605,88 @@ describe('allowed and forbidden lines', () => {
     expect(
       analyseLog([DONE, EJECTED], { ...expect3, noRuntime: true, forbidLines }).failures,
     ).toEqual([`forbidden line: ${EJECTED}`]);
+  });
+});
+
+describe('fetchRetrying', () => {
+  function networkError(): Error {
+    return new TypeError('fetch failed', {
+      cause: Object.assign(new Error('read ECONNRESET'), { code: 'ECONNRESET' }),
+    });
+  }
+
+  /** A fake `fetch` answering from `answers` in turn (an Error is thrown, a number is a status). */
+  function fakeFetch(answers: (Error | number | string)[]) {
+    const calls: string[] = [];
+    const fetchFake = (async (url: string | URL | Request) => {
+      calls.push(String(url));
+      const answer = answers.shift();
+      if (answer instanceof Error) throw answer;
+      if (typeof answer === 'number') return new Response('nope', { status: answer });
+      return new Response(answer ?? 'body', { status: 200 });
+    }) as typeof fetch;
+    const waits: number[] = [];
+    const lines: string[] = [];
+    const deps = {
+      fetch: fetchFake,
+      sleep: async (ms: number) => {
+        waits.push(ms);
+      },
+      log: (line: string) => lines.push(line),
+    };
+    return { calls, waits, lines, deps };
+  }
+
+  const text = (response: Response) => response.text();
+
+  it('asks again after a lost request or a server error, waiting longer each time', async () => {
+    const fake = fakeFetch([networkError(), 503, '{"ok":true}']);
+    expect(await fetchRetrying('https://example.test/a.json', text, fake.deps)).toBe('{"ok":true}');
+    expect(fake.calls).toHaveLength(3);
+    expect(fake.waits).toEqual([1000, 2000]);
+    expect(fake.lines[0]).toBe(
+      'GET https://example.test/a.json: fetch failed: read ECONNRESET (ECONNRESET); trying again in 1 s',
+    );
+    expect(fake.lines[1]).toBe('GET https://example.test/a.json: HTTP 503; trying again in 2 s');
+  });
+
+  it('asks again when the body is cut off while reading', async () => {
+    const fake = fakeFetch(['first', 'second']);
+    let reads = 0;
+    const result = await fetchRetrying(
+      'https://example.test/b',
+      async (response) => {
+        reads++;
+        if (reads === 1) throw new TypeError('terminated');
+        return response.text();
+      },
+      fake.deps,
+    );
+    expect(result).toBe('second');
+    expect(fake.waits).toEqual([1000]);
+  });
+
+  it('fails at once on a status that asking again will not change', async () => {
+    const fake = fakeFetch([404, 'never']);
+    await expect(fetchRetrying('https://example.test/c', text, fake.deps)).rejects.toThrow(
+      'GET https://example.test/c returned HTTP 404',
+    );
+    expect(fake.calls).toHaveLength(1);
+    expect(fake.waits).toEqual([]);
+  });
+
+  it('gives up after the last try with the URL and the cause', async () => {
+    const fake = fakeFetch(Array.from({ length: FETCH_ATTEMPTS }, () => networkError()));
+    const failure = fetchRetrying('https://example.test/d', text, fake.deps);
+    await expect(failure).rejects.toThrow(
+      `GET https://example.test/d failed after ${String(FETCH_ATTEMPTS)} tries: fetch failed: read ECONNRESET (ECONNRESET)`,
+    );
+    expect(fake.calls).toHaveLength(FETCH_ATTEMPTS);
+    expect(fake.waits).toEqual([1000, 2000, 4000]);
+  });
+
+  it('describes an error with its causes', () => {
+    expect(describeError(networkError())).toBe('fetch failed: read ECONNRESET (ECONNRESET)');
+    expect(describeError('plain')).toBe('plain');
   });
 });

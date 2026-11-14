@@ -11,7 +11,7 @@ import {
 } from '@msm/interop';
 import { createNodeInstallFileSystem } from '@msm/interop/node';
 import { strToU8, zipSync } from 'fflate';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CLOSE_MINECRAFT_MESSAGE,
   createPlayService,
@@ -103,6 +103,8 @@ let renames: [string, string][];
 let lockedJar: boolean;
 let onSleep: (() => Promise<void>) | null;
 let intervals: (() => void)[];
+/** When set, the next read of `status.json` reads the file, then waits for this before returning. */
+let holdNextStatusRead: Promise<void> | null;
 
 const download: Downloader = async (url) => {
   if (url.endsWith('.sha512')) {
@@ -116,6 +118,15 @@ function recordingFs(): InstallFileSystem {
   const inner = createNodeInstallFileSystem();
   return {
     ...inner,
+    async readFile(path) {
+      const data = await inner.readFile(path);
+      const hold = holdNextStatusRead;
+      if (hold !== null && normalize(path).endsWith(join('msm-dev', 'status.json'))) {
+        holdNextStatusRead = null;
+        await hold;
+      }
+      return data;
+    },
     async writeFile(path, data) {
       if (lockedJar && normalize(path).endsWith(join('mods', 'ruby.jar'))) {
         throw Object.assign(new Error('EBUSY: resource busy or locked'), { code: 'EBUSY' });
@@ -183,6 +194,7 @@ beforeEach(async () => {
   lockedJar = false;
   onSleep = null;
   intervals = [];
+  holdNextStatusRead = null;
   prism = await makeMmcRoot(join(temp, 'prism'), { instances: [] });
   await writeFile(join(prism.root, 'prismlauncher'), '#!/bin/sh\n');
   const env = { platform: 'linux', home: join(temp, 'home') };
@@ -678,15 +690,39 @@ describe('Play service', () => {
     service.setPolling(true);
     expect(intervals).toHaveLength(1);
     await service.play(input());
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    // Pushes read the status without being awaited: wait for them rather than for a fixed time,
+    // which a loaded CI machine can overrun.
+    await vi.waitFor(() => expect(seen).toContain('Starting…'));
     clock += 20_000;
     await writeStatus('world', WORLD);
     intervals[0]?.();
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    expect(seen).toContain('Starting…');
-    expect(seen.at(-1)).toBe('In the test world');
+    await vi.waitFor(() => expect(seen.at(-1)).toBe('In the test world'));
     service.setPolling(false);
     expect(intervals).toHaveLength(0);
+    off();
+  });
+
+  it('pushes the newest status when an earlier read finishes last', async () => {
+    const seen: string[] = [];
+    const off = service.onStatus((status) => seen.push(status.label));
+    await playIntoWorld();
+    await writeStatus('title', null);
+    let release = (): void => {};
+    holdNextStatusRead = new Promise((resolve) => {
+      release = resolve;
+    });
+    service.setPolling(true);
+    // The first poll has read "title" and waits; the second reads "world" and is pushed first.
+    await vi.waitFor(() => expect(holdNextStatusRead).toBeNull());
+    await writeStatus('world', WORLD, { seq: 1, ok: true });
+    intervals[0]?.();
+    await vi.waitFor(() => expect(seen.at(-1)).toBe('In the test world'));
+    const pushed = seen.length;
+    release();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(seen).toHaveLength(pushed);
+    expect(seen.at(-1)).toBe('In the test world');
+    service.setPolling(false);
     off();
   });
 });

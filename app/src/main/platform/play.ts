@@ -358,6 +358,10 @@ export function createPlayService(deps: PlayDeps): PlayService {
   let watchedTarget: string | null = null;
   const listeners = new Set<(status: PlayStatus) => void>();
   let lastPushed = '';
+  // Pushes read the status asynchronously and can finish out of order (a slow read from an
+  // earlier poll or operation finishing after a later one): only the newest read is pushed.
+  let pushesStarted = 0;
+  let newestPushed = 0;
   let pollHandle: unknown = null;
   let polling = false;
 
@@ -485,12 +489,15 @@ export function createPlayService(deps: PlayDeps): PlayService {
 
   const push = async (targetId: string): Promise<void> => {
     if (listeners.size === 0) return;
+    const order = ++pushesStarted;
     let status: PlayStatus;
     try {
       status = await computeStatus(targetId);
     } catch {
       return;
     }
+    if (order < newestPushed) return;
+    newestPushed = order;
     const key = JSON.stringify(status);
     if (key === lastPushed) return;
     lastPushed = key;

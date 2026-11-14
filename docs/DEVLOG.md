@@ -4741,3 +4741,18 @@ Next
 - Accept ADR 0086 and add it to DESIGN.md (Very easy section) and ROADMAP.
 - My things shows no card for sets without a block, item or mob (Dimension, Villager trade, Extra drop) or for starter tiles' content; a card kind for them is for the orchestrator.
 - `ProjectSession.applyChangeset` cannot change an element created earlier in the same changeset (see Decisions); worth a fix in the session.
+## 2026-11-14 — executor — CI failures on 2c0a7f2, bd5e2b4 and 6b7d6dc
+
+What
+- Three CI runs failed; the commits between them passed. All four failures were flaky, none was caused by its commit:
+  - `@msm/app` `test/main/play.test.ts` "pushes status changes while polling" (bd5e2b4 and 6b7d6dc: expected "In the test world", got "Starting…"). The Play service pushes status reads without awaiting them, and the test waited a fixed 20 ms for them; on a loaded runner the read was not done, or an earlier read finished after a later one and pushed the older status last. Reproduced 2 times in 10 under CPU load. Fix: `app/src/main/platform/play.ts` `push` numbers each read and drops one that finishes after a newer one was pushed (a real, small race: the bar could show a stale status until the next poll); the test waits for the statuses with `vi.waitFor` instead of 20 ms; new test "pushes the newest status when an earlier read finishes last" holds the first `status.json` read and fails without the fix.
+  - `@msm/sim` `test/entities/entity-world.test.ts` "keeps every mob inside it, even spawned in the corners" (2c0a7f2: timed out at 5 s, 6.3 s on the runner, about 330 ms here). It made 72,000 `expect` calls (600 ticks, 24 mobs, 5 bounds). Fix: the bounds are checked in a plain loop and asserted once (`outside` must be empty, the mob count stays at the cap): 37 ms here.
+  - `engine-mod (26.3)` on 2c0a7f2 and `engine-mod (26.4)` on 6b7d6dc, step "Headless vanilla server check (sample data pack ...)": `fetch failed` within half a second, before any server started. Node's generic network error, from the one uncached request in that step, Mojang's version manifest (`serverJar`); the same step passed on the other target of each commit and on c3954d7 and af9c6c3. A network blip. Fix: `tools/run-fabric-server/index.ts` `fetchRetrying` (4 tries, waits 1, 2 and 4 s, on network errors, a body cut off while reading, HTTP 408, 429 and 5xx; other statuses fail at once) for every download of the server checks (Mojang's manifest, Fabric's installer list, POMs, `.sha1` files, jars); `describeError` prints an error's causes, so a final failure names the URL and the reason, not just "fetch failed".
+- Tests: 5 for `fetchRetrying` and `describeError` in `run-fabric-server.test.ts` (tools 179), sim 322, Play tests 13. Under 12 busy-loop processes on 4 cores: `play.test.ts` 15 of 15 runs green, the sim suite 10 of 10 (the corner test 1 to 250 ms). `pnpm lint` and `pnpm typecheck` pass.
+
+Decisions
+- The Play fix is in the service, not only the test: out-of-order pushes can happen in the app too.
+- No test was skipped or given a longer timeout.
+
+Next
+- None.

@@ -724,12 +724,85 @@ function log(message: string): void {
   process.stdout.write(`[run-fabric-server] ${message}\n`);
 }
 
-async function download(url: string, path: string): Promise<void> {
-  const response = await fetch(url, { redirect: 'follow' });
-  if (!response.ok || response.body === null) {
-    throw new Error(`GET ${url} returned HTTP ${response.status}`);
+/** How many times `fetchRetrying` asks for a URL before giving up. */
+export const FETCH_ATTEMPTS = 4;
+
+/** What `fetchRetrying` uses: `fetch`, a wait and a log line (replaced in tests). */
+export interface FetchDeps {
+  fetch?: typeof fetch;
+  sleep?: (ms: number) => Promise<void>;
+  log?: (message: string) => void;
+}
+
+/** HTTP answers worth asking again: timeouts, rate limits and server errors. */
+export function retryableStatus(status: number): boolean {
+  return status === 408 || status === 429 || status >= 500;
+}
+
+/** An error's message with its causes (undici says only "fetch failed" and keeps the reason in `cause`). */
+export function describeError(error: unknown): string {
+  const parts: string[] = [];
+  let current: unknown = error;
+  for (let depth = 0; current !== undefined && current !== null && depth < 4; depth++) {
+    if (current instanceof Error) {
+      const code = (current as { code?: unknown }).code;
+      parts.push(typeof code === 'string' ? `${current.message} (${code})` : current.message);
+      current = current.cause;
+    } else {
+      parts.push(String(current));
+      current = undefined;
+    }
   }
-  const bytes = new Uint8Array(await response.arrayBuffer());
+  return parts.join(': ');
+}
+
+/**
+ * GETs `url` and reads the answer with `read`, asking again after a network failure, a body cut
+ * off while reading or a retryable HTTP status (408, 429, 5xx), waiting 1, 2 then 4 seconds.
+ * A CI runner loses a request now and then (Node's "fetch failed"), and one lost request must
+ * not fail a whole server check. Any other HTTP status fails at once. The last failure names the
+ * URL, the number of tries and the cause.
+ */
+export async function fetchRetrying<T>(
+  url: string,
+  read: (response: Response) => Promise<T>,
+  deps: FetchDeps = {},
+): Promise<T> {
+  const doFetch = deps.fetch ?? fetch;
+  const sleep =
+    deps.sleep ??
+    ((ms: number) => new Promise<void>((resolveSleep) => setTimeout(resolveSleep, ms)));
+  const say = deps.log ?? log;
+  let wait = 1000;
+  for (let attempt = 1; ; attempt++) {
+    let problem: string;
+    let cause: unknown;
+    let status: number | undefined;
+    try {
+      const response = await doFetch(url, { redirect: 'follow' });
+      if (response.ok) return await read(response);
+      status = response.status;
+      await response.body?.cancel().catch(() => {});
+    } catch (error) {
+      cause = error;
+    }
+    if (status !== undefined) {
+      if (!retryableStatus(status)) throw new Error(`GET ${url} returned HTTP ${String(status)}`);
+      problem = `HTTP ${String(status)}`;
+    } else {
+      problem = describeError(cause);
+    }
+    if (attempt >= FETCH_ATTEMPTS) {
+      throw new Error(`GET ${url} failed after ${String(attempt)} tries: ${problem}`, { cause });
+    }
+    say(`GET ${url}: ${problem}; trying again in ${String(wait / 1000)} s`);
+    await sleep(wait);
+    wait *= 2;
+  }
+}
+
+async function download(url: string, path: string): Promise<void> {
+  const bytes = new Uint8Array(await fetchRetrying(url, (response) => response.arrayBuffer()));
   const temporary = `${path}.part`;
   await writeFile(temporary, bytes);
   await rename(temporary, path);
@@ -792,9 +865,7 @@ export async function freePort(): Promise<number> {
 
 /** Downloads a text file (a POM or a `.sha1`). */
 async function fetchText(url: string): Promise<string> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`GET ${url} returned HTTP ${response.status}`);
-  return response.text();
+  return fetchRetrying(url, (response) => response.text());
 }
 
 /** The first token of a Maven `.sha1` file. */
@@ -831,7 +902,13 @@ export function serverArguments(
 async function prepare(options: Options): Promise<{ launcher: string; runDir: string }> {
   await mkdir(options.cacheDir, { recursive: true });
   const installer =
-    options.installer ?? latestStableInstaller(await (await fetch(INSTALLER_VERSIONS_URL)).json());
+    options.installer ??
+    latestStableInstaller(
+      await fetchRetrying(
+        INSTALLER_VERSIONS_URL,
+        (response) => response.json() as Promise<unknown>,
+      ),
+    );
   const launcherName = `fabric-server-mc.${options.minecraft}-loader.${options.loader}-launcher.${installer}.jar`;
   const launcher = join(options.cacheDir, launcherName);
   await cached(serverLauncherUrl(options.minecraft, options.loader, installer), launcher);
@@ -1029,7 +1106,7 @@ if (invokedPath !== undefined && resolve(invokedPath) === fileURLToPath(import.m
       process.exitCode = code;
     },
     (error: unknown) => {
-      process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+      process.stderr.write(`${describeError(error)}\n`);
       process.exitCode = 1;
     },
   );

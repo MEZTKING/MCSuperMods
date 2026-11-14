@@ -65,16 +65,20 @@ describe('the area', () => {
       entities.spawn(mob(types[i % types.length] as string), onFloor(x, z));
       i++;
     }
+    // Checked in a plain loop and asserted once: 600 ticks of 24 mobs are 72,000 checks, and an
+    // expect() for each took this test past its timeout on a loaded CI machine.
+    const outside: { tick: number; box: readonly number[] }[] = [];
     for (let t = 0; t < 600; t++) {
       entities.step();
       for (const box of entities.boxes()) {
-        expect(box[0]).toBeGreaterThanOrEqual(0);
-        expect(box[2]).toBeGreaterThanOrEqual(0);
-        expect(box[3]).toBeLessThanOrEqual(AREA_SIZE_X);
-        expect(box[5]).toBeLessThanOrEqual(AREA_SIZE_Z);
-        expect(box[1]).toBeGreaterThanOrEqual(0);
+        const [minX = 0, minY = 0, minZ = 0, maxX = 0, , maxZ = 0] = box;
+        if (minX < 0 || minY < 0 || minZ < 0 || maxX > AREA_SIZE_X || maxZ > AREA_SIZE_Z) {
+          outside.push({ tick: t, box: [...box] });
+        }
       }
     }
+    expect(outside).toEqual([]);
+    expect(entities.count).toBe(ENTITY_CAP);
   });
 
   it('refuses to spawn outside the area', () => {
