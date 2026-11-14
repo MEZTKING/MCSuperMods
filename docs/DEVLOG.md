@@ -4216,3 +4216,22 @@ Decisions
 
 Next
 - B389/B390: `world.onChange` or `takeDirtyChunks()` drive the rebuild; `local-source.ts` wires `placeBlock`, `breakBlock` and `useBlock` (and refuses a place where the player stands). B391: `releaseAfterTicks` from `useBlock`, `catalogue.withProperties` for growth and power. B397: the parity scenarios should check gold and stone doors, wall posts and the type shapes.
+
+## 2026-11-14 — executor — B360 Particles guide, changelog, status lines, AI helper
+
+What
+- New guide chapter `docs/guide/particles.md` (Creator flow, Particle Studio groups and labels, Spawn particle Kind/Count/Spread/Speed/Motion/Show from far away, Ambient particles, effects/portals/scripts, retexture, vanilla packs, the six problem codes, limits K1–K16 as users meet them, in-game check, troubleshooting). Linked from `blocks-and-items.md`, `effects-and-throwables.md`, `portals.md`, `scripting.md`, `creator.md` (new "Make a particle" and a flow-table row), `templates-and-examples.md` (counts 193 templates, 46 starters, 132 examples, 96 per-kind examples; a Particles template table, three example rows, the starter row), `docs/guide/README.md` and the sidebar (`docs/site/.vitepress/config.ts`).
+- `scripting.md`: "Particles from scripts" (Script API 1.3, runtime 1.7.0) and "Time, weather, explosions, drops and removing" (Script API 1.4, runtime 1.8.0; dayTime 0 sunrise, 6000 noon, 13000 nightfall, 18000 midnight; weather server-wide, false in the Nether and the End).
+- `CHANGELOG.md` `[Unreleased]`: particles, Particle Studio, Ambient particles, Spawn particle, retexture, Particle flow, templates/starter/examples/patterns, Script API 1.3 and 1.4, Java export, AI helper, plugin API 1.14.0, guide.
+- `examples/README.md`: 96 per-kind examples, Firefly jar, the four particle patterns.
+- Status lines of `engine-mod`, `packages/plugins`, `schemas`, `plugin-api`, `targets`, `exporters` and `app` `CLAUDE.md` (all at most 55 lines; engine-mod at exactly 55); `tools/run-fabric-server/README.md` CI paragraph (client GameTests, sample particles checks).
+- AI helper: `packages/ai/src/system-prompt.ts` gains a "Particles" paragraph and the Script API 1.3 and 1.4 bullets (prompt grew from 26183 to 29601 bytes, about 3.4 kB); tests in `packages/ai/test/system-prompt.test.ts`.
+
+Decisions
+- The mcdoc doc-comment wording of B352 is recorded in `packages/schemas/CLAUDE.md` and the guide; the `.mcdoc` files were not touched (not in the brief's owner list; it needs `build-msm-mcdoc` regeneration).
+- `packages/plugin-api/CLAUDE.md` now says 1.15.0 as the code does, with a pointer to `CHANGELOG.md` for the Rules/Try it additions, and documents only 1.14.0 itself.
+- Totals of GameTests and JUnit in the status lines were left to the close brief (the Rules and Try it batches change them).
+- The save/held-back-edit fix is noted in `app/CLAUDE.md` (it is a user-visible save fix), not in the CHANGELOG.
+
+Next
+- B361: root `CLAUDE.md` status and counts, HANDOFF, ADR 0080/0081 findings, DESIGN and ROADMAP; engine-mod totals; Script API 1.4 runtime label (1.8.0) to confirm; patterns 70.

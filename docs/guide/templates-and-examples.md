@@ -4,9 +4,9 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (188) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (45) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
-| **Examples** (129) | **Help → Examples…** | A commented project or element to open or copy |
+| **Element templates** (193) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (46) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
+| **Examples** (132) | **Help → Examples…** | A commented project or element to open or copy |
 
 Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, and scripting plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
 
@@ -340,6 +340,18 @@ Status effects (`msm:effect`) and potions (`msm:potion`) of your own need the Fa
 | Potion of a custom effect | `msm_potion_custom_effect` | `msm:potion` | A potion of the status effect "<this id>_effect", brewed from an awkward potion and glow berries, with splash and lingering versions and tipped arrows. Make that status effect (or pick your own), and export the project as a Fabric mod. |
 | Potion with longer and stronger versions | `msm_potion_long_strong` | `msm:potion` | A Haste potion brewed from an awkward potion and a honeycomb. Redstone makes it last 8 minutes, glowstone dust makes it Haste II for 1:30, like vanilla potions. Splash and lingering versions and tipped arrows included. Needs the Fabric mod export. |
 
+#### Particles
+
+Particles of your own (`msm:particle`) need the Fabric mod jar; see [Particles](particles.md). **Retexture a vanilla particle** is a resource pack template and works in a plain resource pack.
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Glowing spark | `msm_particle_glowing_spark` | `msm:particle` | A small warm spark that glows in the dark, drifts slowly upwards and fades out. Use it in a spawn_particle action or as a block's ambient particle. |
+| Falling petal | `msm_particle_falling_petal` | `msm:particle` | A pink petal that picks one of three cherry petal pictures, falls gently and spins as it goes. |
+| Smoke puff | `msm_particle_smoke_puff` | `msm:particle` | A grey puff that rises, grows and fades out, running through vanilla's smoke pictures from large to small. |
+| Block with ambient particles | `msm_block_ambient_particles` | `msm:block` | A glowing block that gives off end rod sparkles by itself, as a torch shows its flame. Swap the particle for one of your own. |
+| Retexture a vanilla particle | `particle_retexture` | `minecraft:particle` | Gives a vanilla particle (flame by default) a picture of your own: add it as `textures/particle/<name>.png`. Works in a plain resource pack. |
+
 #### Additions
 
 Additions to vanilla content need the Fabric mod jar too; see [Adding to vanilla](adding-to-vanilla.md).
@@ -437,6 +449,7 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Totem (Creator: Gear) | `totem` | resource, data, mod | An item that saves its holder from death like a totem of undying and gives the effects you choose, with a texture, model and optional recipe. |
 | Throwable (Creator: Gear) | `throwable` | resource, data, mod | An item you throw: a ball, a knife you pick up again, a boomerang that comes back or a bomb, with its damage, speed, weight and what happens when it hits, a texture and model, and an optional recipe. |
 | Status effect (Creator: Magic) | `status-effect` | resource, data, mod | A new status effect with its own name, colour and icon: what it does every few seconds, the stats it changes and how players get it (a drink or a throwable flask with an optional recipe, or a brewed potion). |
+| Particle (Creator: Magic) | `particle` | resource, data, mod | A particle of your own: a spark, orb, puff or leaf in four frames in your colour, or your own picture, with its size, lifetime, movement, glow and fade, shown around a new block, sent by a new item when used, or made alone for `/particle`. |
 | Potion (Creator: Magic) | `potion` | resource, data, mod | A new potion for the brewing stand: the effect it gives (a vanilla one or a new one with its icon), how long and how strong, the ingredient that brews it, longer and stronger versions, and splash and lingering bottles with tipped arrows. |
 | Enchantment (Creator: Gear) | `enchantment` | data | A new enchantment: what it goes on, its highest level, how rare it is and what it does, offered at the enchanting table. |
 | Painting (Creator: Blocks) | `painting` | resource, data | A new painting with its title, author, size and your own picture (or a placeholder landscape), in the `minecraft:placeable` tag. |
@@ -523,7 +536,7 @@ The script examples use `msm:script`, which runs only in the Fabric mod jar (see
 
 ### All examples
 
-There is one example for each of the 94 element kinds, thirty-one more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; containers and machines: a loot crate in a structure, an ore crusher and a shulker crate; portals: a two-way sky portal; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn, Pet, Farm animal, Mount, Flying mob, Water mob, Boss, Storage crate, Machine, Portal) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 96 element kinds, thirty-two more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; containers and machines: a loot crate in a structure, an ore crusher and a shulker crate; portals: a two-way sky portal; particles: a firefly jar; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn, Pet, Farm animal, Mount, Flying mob, Water mob, Boss, Storage crate, Machine, Portal, Particle) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -536,6 +549,8 @@ There is one example for each of the 94 element kinds, thirty-one more behaviour
 | Worn armour look | `example_equipment` | Models | `minecraft:equipment` | An equipment asset: how armour of one material looks on a player. |
 | Atlas source | `example_atlas` | Atlases | `minecraft:atlas` | Adds a texture from a folder of its own to the block atlas, so block models can use it. |
 | Icon font | `example_font` | Fonts | `minecraft:font` | A font with one icon glyph drawn from a texture, for use in chat and signs. |
+| Blue flame | `example_particle` | Particles | `minecraft:particle` | Gives vanilla's flame particle a blue picture of the project's own, in a plain resource pack. |
+| Drifting ember | `example_msm_particle` | Particles | `msm:particle` | A particle type of its own: a small amber spark that twinkles, glows in the dark, floats up and fades out. Try it with /particle. |
 | Shaped recipe with a named result | `example_recipe` | Recipes | `minecraft:recipe` | A crafting recipe whose result carries a custom name and lore. |
 | Chest loot table | `example_loot_table` | Loot tables | `minecraft:loot_table` | A treasure table with weighted entries and a rare bonus roll. |
 | Advancement tab | `example_advancement` | Advancements | `minecraft:advancement` | A root advancement with its own tab and a child that rewards experience. |
@@ -628,6 +643,7 @@ There is one example for each of the 94 element kinds, thirty-one more behaviour
 | Loot crate in a structure | `example_msm_loot_crate` | Blocks | `msm:block` | A stone crate with a chest screen, placed in a small room by a structure template that gives it a loot table, so it fills on the first open as a dungeon chest does. |
 | Ore crusher | `example_msm_ore_crusher` | Blocks | `msm:block` | A machine from the Machine flow that crushes raw iron, gold and copper into two ingots each, burning fuel, with a hopper chain that feeds it and empties it into a chest. |
 | Shulker crate | `example_msm_shulker_crate` | Blocks | `msm:block` | A crate that keeps its 27 slots of items when broken and carries them in its item, as a shulker box does, from the Storage crate flow. |
+| Firefly jar | `example_msm_firefly_jar` | Blocks | `msm:block` | A glowing firefly particle of its own, a glass jar that shows it by itself (ambient particles) and a spark wand that sends a burst of fireflies upwards (motion) with a cloud of coloured dust (an options object). |
 | Two-way sky portal | `example_msm_sky_portal` | Blocks | `msm:block` | A portal from the Portal flow to a flat sky dimension and back, in a frame of its own block, lit with flint and steel or by using a beacon block (the **Light a portal** action), with blue dust and an `On travel` function that says a line. |
 | Life-steal sword | `example_msm_life_steal_sword` | Items | `msm:item` | An iron sword that heals you by one heart each time it hits a mob. |
 | Night-vision helmet | `example_msm_night_vision_helmet` | Items | `msm:item` | An iron helmet that gives night vision while you wear it. |
@@ -662,7 +678,7 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 
 | Folder | Namespace | Contents |
 |---|---|---|
-| `examples/all-kinds/` | `msm_examples` | The 94 per-kind examples in one project |
+| `examples/all-kinds/` | `msm_examples` | The 96 per-kind examples in one project |
 | `examples/blocks-items/` | `msm_examples` | The blocks and items behaviour examples (Sturdy pickaxe, Beacon stone, Fuel log, Life-steal sword, Night-vision helmet, Brewed with your own item, Elm wood set, Shale stone set, Onion crop, Silver birch tree, Crusher, Vault door, Loot crate in a structure, Ore crusher, Shulker crate) |
 | `examples/entities/` | `msm_examples` | The entity behaviour examples (Hostile mob, Natural spawning, Tameable fox-like pet, Rideable flying mount, Archer with a throwable, Fish school with biome variants, Boss with a boss bar, Drawn without GeckoLib), each with its model, animations and textures |
 | `examples/scripts/` | `msm_examples` | The script behaviour examples (Script: scheduled effects, Script: action handler, Script: scripted effect, Script: kill counter, Script: full set bonus, Script: teleport staff, Script: boss fight bar) |
@@ -699,6 +715,7 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 | `examples/starters/flying-mob/` | `msm_starter` | The Flying mob starter |
 | `examples/starters/water-mob/` | `msm_starter` | The Water mob starter |
 | `examples/starters/boss/` | `msm_starter` | The Boss starter |
+| `examples/starters/particle/` | `msm_starter` | The Particle starter |
 
 Copy a folder somewhere else before opening it, so your edits do not change the repository. See [examples/README.md](https://github.com/MEZTKING/MCSuperMods/blob/main/examples/README.md).
 

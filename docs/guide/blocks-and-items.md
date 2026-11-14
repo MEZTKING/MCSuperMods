@@ -26,6 +26,7 @@ Selecting a block opens the Block Studio. Empty fields use the game's defaults. 
 - **Type**: makes the block a log, slab, stairs, wall, fence, gate, door, trapdoor, button, pressure plate, pane, crop, sapling or leaves, with **Textures** and **Models** sections (see [Block types, families and plants](block-types-and-plants.md)).
 - **Inventory**: **Holds items** makes the block a container (**Storage**: a chest, hopper, dispenser or a holder without a window) or a machine (**Machine**: an input, a fuel and an output slot with recipes of your own), for the types `block`, `pillar`, `horizontal` and `directional`. See [Containers and machines](containers-and-machines.md).
 - **Shape**: the block's outline and collision, and whether you can see and walk through it (see [Block shapes](#block-shapes)). Family types have vanilla's own shape and hide this section.
+- **Ambient particles**: **Show particles around the block** makes the block give off a particle by itself, with a chance, a count, a place and a velocity, optionally only in some block states (every type except portals; see [Particles](particles.md#ambient-particles)).
 - **Events**: the block's events and their actions (see [Events and actions](#events-and-actions)), with the **Triggers** that start them when the block is broken, placed, randomly ticked or has something inside it (see [Triggers](#triggers)).
 
 ## The Item Studio
@@ -57,7 +58,7 @@ The actions (the action list shows each by its name with its id in brackets, for
 | Action | What it does |
 |---|---|
 | `play_sound` | Plays a sound, for example `minecraft:block.amethyst_block.chime` or one of your own (see [Your own sounds](#your-own-sounds)), with an optional volume and pitch (default 1). |
-| `spawn_particle` | Shows particles, for example `minecraft:glow`, at the block or the player: how many (**Count**), how far they spread and how fast they move. |
+| `spawn_particle` | Shows particles, for example `minecraft:glow`, at the block or the player: how many (**Count**, up to 1000), how far they spread and how fast they move. A **Kind** picks a particle of your own or a vanilla one, coloured dust, or pieces of a block or an item; **Motion** gives each one an exact velocity and **Show from far away** draws it at a distance (see [Particles](particles.md#spawn-particle)). |
 | `run_function` | Runs a function of your data pack at that spot, as the player when there is one (in an **On step** event: as the mob or player that stepped). This is the way to do anything the other actions cannot. |
 | `set_block_state` | Places a block, for example `minecraft:glowstone` or `minecraft:oak_log[axis=x]`, at an **Offset** from the block (for items: from the block under the player). |
 | `give_item` | Gives the player an item, optionally several. Nothing happens when no player is involved, for example for redstone. |
@@ -287,7 +288,7 @@ Any other line with `[msm_runtime]` names the file and the problem.
 | A name such as `block.my_mod.sun_stone` | The block or item has no **Display name**. |
 | The block drops nothing | Check **Drops**, and mine it with the **Tool** and **Minimum tier** you set; by hand it drops nothing when a tool is required. |
 | The block mines slowly with the right tool | Set **Tool**; **Hardness** sets how slow it is. |
-| An event does nothing | Check that the trigger in **Behaviour** names the event, and the action's ids (sound, particle, function, item). |
+| An event does nothing | Check that the trigger in **Behaviour** names the event, and the action's ids (sound, particle, function, item). A particle of your own needs the mod jar ([Particles](particles.md#limits)). |
 | You can stand inside the block, or bump into thin air beside it | The block's shape does not match its model. Choose a preset in **Shape**, or **From model**. |
 | Holes in the block show the world below it | Tick **See-through** in **Shape**. |
 | Two mods with the same id | Give one of them another mod id in its **Mod metadata**. |

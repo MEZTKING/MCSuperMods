@@ -44,7 +44,7 @@ Selecting a block shows **Type** in the Block Studio; choose **Portal** there an
 
 ### Looks
 
-- **Particle type**, **Particles per tick** (0 to 16) and **Colour** (with a clear button): a colour makes the particles coloured dust.
+- **Particle type** (a vanilla particle without options or a particle of your own, see [Particles](particles.md)), **Particles per tick** (0 to 16) and **Colour** (with a clear button): a colour makes the particles coloured dust.
 - **Ambient sound** and **Travel sound**, each with a **None** choice.
 - **Textures** has a single slot, **Portal surface**. The portal's two models are made from it. Leave it empty for the Nether portal's own picture. A colour tint needs a PNG of its own.
 
@@ -100,6 +100,7 @@ Keep your own frame block out of the dimension's flat layers and features: a van
 
 - **Portals need the Fabric mod jar.** Vanilla data and resource packs cannot add a block, so they carry the dimension and the travel function, not the portal.
 - **The entry effect is the Nether's.** Standing in any portal with **Wobble and overlay** on draws the Nether portal's purple swirl and plays its sound. Switch it off for none; a swirl of your own colour is not possible yet.
+- **Particles of your own work.** The portal's **Particle type** lists the project's particles first; the Portal flow's **Particles** answer stays at the two choices.
 - **Coloured particles are dust.** A **Colour** makes coloured dust; the sparkling portal particle stays purple.
 - **Upright rectangles only**, 2 to 21 wide and 3 to 21 high. There are no floor portals like the End's.
 - **Only the igniter or the action lights a frame.** Lightning, fire spread, lava and a dispenser with flint and steel do not.

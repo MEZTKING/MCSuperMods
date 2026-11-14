@@ -58,7 +58,7 @@ Every script can start with `import { msm } from "msm:runtime";` (the templates 
 | `msm.getWorld(dimension)` | A loaded dimension by id, for example `msm.getWorld("minecraft:the_nether")`, or `undefined` (runtime 1.5.0 or later). |
 | `msm.bossBars.create(id, { title, color?, style?, progress? })`, `msm.bossBars.get(id)` | Creates or finds a boss bar (see [Inventory, player state and the screen](#inventory-player-state-and-the-screen); runtime 1.5.0 or later). |
 
-Every event object `e` has `e.world`, the dimension it happened in. Through it a script can read and place blocks (`getBlock`, `setBlock`), spawn particles and entities (`spawnParticle`, `spawnEntity`), play sounds (`playSound`), find entities nearby (`entitiesNear`) and run commands and functions (`runCommand`, `runFunction`). On the world they run at the world spawn point with no `@s`; pass a position as the second argument (`e.world.runCommand("particle flame ~ ~1 ~", pos)`) to make `~ ~ ~` that position. To run "as" something, call `entity.runCommand("effect give @s speed 5")` or `entity.runFunction("mymod:reward")`: they run as and at the entity, so `@s` and `~ ~ ~` mean it. A sound id in `playSound` can be a vanilla sound or one of the project's own sound keys. Entities have a type, a position, health, `damage`, `heal`, `kill`, `teleport`, `addEffect`, `hasEffect`, `effectLevel` (0 when the entity does not have the effect), `removeEffect`, `velocity` and `look` (where it faces) with `setVelocity(x, y, z)` and `addVelocity(x, y, z)` for a real push (for example `p.addVelocity(p.look.x * 1.5, 0.4, p.look.z * 1.5)` for a dash) and, for MSM mobs, `playAnimation`; players also have `isSneaking`, `heldItem`, `give`, `hasItem` and `sendMessage`. Positions (`pos`) have `x`, `y`, `z` and `offset(dx, dy, dz)`. The editor's completions list every member with a sentence on what it does.
+Every event object `e` has `e.world`, the dimension it happened in. Through it a script can read and place blocks (`getBlock`, `setBlock`), spawn particles and entities (`spawnParticle`, `spawnEntity`; see [Particles from scripts](#particles-from-scripts)), play sounds (`playSound`), find entities nearby (`entitiesNear`) and run commands and functions (`runCommand`, `runFunction`). On the world they run at the world spawn point with no `@s`; pass a position as the second argument (`e.world.runCommand("particle flame ~ ~1 ~", pos)`) to make `~ ~ ~` that position. To run "as" something, call `entity.runCommand("effect give @s speed 5")` or `entity.runFunction("mymod:reward")`: they run as and at the entity, so `@s` and `~ ~ ~` mean it. A sound id in `playSound` can be a vanilla sound or one of the project's own sound keys. Entities have a type, a position, health, `damage`, `heal`, `kill`, `teleport`, `addEffect`, `hasEffect`, `effectLevel` (0 when the entity does not have the effect), `removeEffect`, `velocity` and `look` (where it faces) with `setVelocity(x, y, z)` and `addVelocity(x, y, z)` for a real push (for example `p.addVelocity(p.look.x * 1.5, 0.4, p.look.z * 1.5)` for a dash) and, for MSM mobs, `playAnimation`; players also have `isSneaking`, `heldItem`, `give`, `hasItem` and `sendMessage`. Positions (`pos`) have `x`, `y`, `z` and `offset(dx, dy, dz)`. The editor's completions list every member with a sentence on what it does.
 
 ### Events
 
@@ -125,6 +125,45 @@ Changes update comparators and are saved with the block. A `Container` you keep 
 ```ts
 const box = world.getContainer(e.pos);
 if (box && box.count("minecraft:diamond") >= 3) box.set(0, { id: "minecraft:emerald", count: 1 });
+```
+
+### Particles from scripts
+
+Script API 1.3, runtime 1.7.0 or later. `world.spawnParticle(particle, pos, options?)` takes a particle type id (one of the project's [particles](particles.md) or a vanilla one) or, for the 22 vanilla types that take options, an options object. Without `options` it sends one particle.
+
+| Option | What it does |
+|---|---|
+| `count` | How many particles, 1 to 1000. |
+| `spread` | A random offset from `pos` in blocks, as a standard deviation on each axis (default 0). |
+| `speed` | A random velocity spread (default 0); not used with `motion`. |
+| `motion` | `[x, y, z]`: every particle starts with exactly this velocity in blocks per tick. It sends one packet per particle and player, so use `spread` for big bursts. |
+| `force` | Sends to players up to 512 blocks away and draws whatever their **Particles** option. |
+
+```ts
+world.spawnParticle("minecraft:end_rod", pos.offset(0.5, 1, 0.5), { count: 8, spread: 0.2 });
+world.spawnParticle({ type: "minecraft:dust", color: [1, 0.45, 0.1], scale: 1.2 }, pos, { count: 12 });
+world.spawnParticle("mymod:spark", pos, { count: 20, motion: [0, 0.2, 0] });
+```
+
+An options object is the vanilla form: dust `{ type, color, scale }` (the colour as `[r, g, b]` from 0 to 1 or as one integer), block `{ type: "minecraft:block", block_state: "minecraft:stone" }` with a plain block id, and item `{ type: "minecraft:item", item: { id: "minecraft:apple" } }`. A particle that does not decode (an unknown id, a type that needs options given as a plain id, an options object with a wrong field) is a `TypeError`. Positions are exact: a block position is its corner, so add `offset(0.5, 0.5, 0.5)` for its centre. The `ParticleOptions` type is in the typings.
+
+### Time, weather, explosions, drops and removing
+
+Script API 1.4, runtime 1.8.0 or later.
+
+| Member | What it does |
+|---|---|
+| `world.dayTime` | The time of day, 0 to 23999: 0 is sunrise, 6000 noon, 13000 nightfall and 18000 midnight. It reads the dimension's own clock, or the Overworld's when the dimension has none. |
+| `world.isRaining`, `world.isThundering` | Whether it rains or thunders. Weather is server-wide (every dimension shares it) but both are `false` in the Nether and the End and in any dimension without an open sky. |
+| `world.setWeather(kind, seconds?)` | Sets the weather to `"clear"`, `"rain"` or `"thunder"` for `seconds` (more than 0, at most 1000000). Without `seconds` the game picks a length, as `/weather` does. Another kind is a `TypeError`. |
+| `world.explode(pos, power, { fire?, breaksBlocks? })` | An explosion of power 0 to 10 (TNT is 4), with `fire` off and `breaksBlocks` on by default. Entities are always hurt and pushed. There is no causing entity. |
+| `world.dropItem(pos, item)` | Drops the stack at the exact position (add `offset(0.5, 0.5, 0.5)` for a block's centre), with a small random push. A stack over the item's stack size splits into stacks; more than 64 stacks is a `RangeError`. |
+| `world.breakBlock(pos, { drops? })` | Breaks the block as if mined, with its sound and particles, and drops what it drops when broken without a tool unless `drops` is `false`. Returns `false` for air. |
+| `entity.remove()` | Removes the entity at once with no loot, no experience and no death events. A player throws a `TypeError`; use `kill()` for loot and death events. |
+
+```ts
+if (world.dayTime >= 13000 && !world.isRaining) world.setWeather("rain", 120);
+world.explode(e.pos.offset(0.5, 0.5, 0.5), 2, { breaksBlocks: false });
 ```
 
 ## run_script from the Events editor

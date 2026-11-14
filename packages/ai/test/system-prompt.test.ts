@@ -255,3 +255,54 @@ describe('systemPrompt portals paragraph (ADR 0078 D5)', () => {
     },
   );
 });
+
+describe('systemPrompt particles paragraph (ADR 0081 D7)', () => {
+  it.each(['chat', 'build'] as const)(
+    'names the kind, the forms and the limits in %s mode',
+    (mode) => {
+      const text = systemPrompt(mode);
+      for (const term of [
+        'msm:particle',
+        'textures/particle/',
+        'frame_ticks',
+        'always_show',
+        'msm:ambient_particles',
+        'spawn_particle',
+        'motion',
+        'force',
+        'options object',
+        'minecraft:dust',
+        'add_starter "particle"',
+        'retextures a vanilla particle',
+        'on the client and the server',
+        'a restart is needed',
+        'note_missing_feature',
+      ]) {
+        expect(text, term).toContain(term);
+      }
+    },
+  );
+});
+
+describe('systemPrompt Script API 1.3 and 1.4 lines', () => {
+  it.each(['chat', 'build'] as const)('names the additions in %s mode', (mode) => {
+    const text = systemPrompt(mode);
+    for (const term of [
+      'Script API 1.3',
+      'Script API 1.4',
+      'world.spawnParticle(particle, pos, options)',
+      'world.dayTime',
+      '13000 nightfall',
+      'world.isRaining',
+      'world.isThundering',
+      'world.setWeather',
+      'world.explode',
+      'world.dropItem',
+      'world.breakBlock',
+      'Entity.remove()',
+      'weather is server-wide',
+    ]) {
+      expect(text, term).toContain(term);
+    }
+  });
+});
