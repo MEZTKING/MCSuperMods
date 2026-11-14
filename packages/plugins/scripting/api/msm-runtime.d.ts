@@ -55,13 +55,13 @@ interface BlockRef {
 /**
  * A boss bar shown at the top of the screen of the players added to it; it belongs to the script's namespace, is not saved, and is removed on `/reload` and when the server stops, for example `msm.bossBars.create("countdown", { title: "Time left" })`.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 interface BossBar {
   /**
    * Shows the bar to a player; adding a player twice does nothing.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param player - The player.
    */
@@ -69,19 +69,19 @@ interface BossBar {
   /**
    * Returns the players the bar is shown to.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   players(): Player[];
   /**
    * Hides the bar from everyone and removes it, so `msm.bossBars.get` no longer finds it.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   remove(): void;
   /**
    * Hides the bar from a player.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param player - The player.
    */
@@ -89,7 +89,7 @@ interface BossBar {
   /**
    * Changes the bar's colour, for example `bar.setColor("red")`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param color - The colour.
    */
@@ -97,7 +97,7 @@ interface BossBar {
   /**
    * Changes how full the bar is, for example `bar.setProgress(0.5)`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param progress - How full the bar is, 0 to 1; values outside are clamped.
    */
@@ -105,7 +105,7 @@ interface BossBar {
   /**
    * Changes the bar's style, for example `bar.setStyle("notched_10")`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param style - The style.
    */
@@ -113,7 +113,7 @@ interface BossBar {
   /**
    * Changes the bar's title.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param title - The title as plain text.
    */
@@ -123,27 +123,27 @@ interface BossBar {
 /**
  * The colour of a boss bar.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 type BossBarColor = "pink" | "blue" | "red" | "green" | "yellow" | "purple" | "white";
 
 /**
  * The style of a boss bar: one continuous bar or one divided into 6, 10, 12 or 20 notches.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 type BossBarStyle = "progress" | "notched_6" | "notched_10" | "notched_12" | "notched_20";
 
 /**
  * The slots of a block with a container, from `World.getContainer`; read and written straight away, and writes update comparators next to the block, for example `world.getContainer(pos)?.add("minecraft:coal")`. Using it after the block is removed or replaced is a script error.
  *
- * Since runtime 1.6.0.
+ * Since runtime 1.5.1.
  */
 interface Container {
   /**
    * Puts a stack in as a hopper would, filling matching stacks and then empty slots in slot order and skipping slots that do not take the item, whatever side hoppers may use; returns what did not fit, or `undefined` when everything fit. For example `const left = container.add({ id: "minecraft:coal", count: 64 })`.
    *
-   * Since runtime 1.6.0.
+   * Since runtime 1.5.1.
    *
    * @param item - The stack to put in; its count may be more than one stack.
    */
@@ -151,7 +151,7 @@ interface Container {
   /**
    * Returns how many of an item the container holds over all slots, for example `container.count("minecraft:coal")`.
    *
-   * Since runtime 1.6.0.
+   * Since runtime 1.5.1.
    *
    * @param item - The item id, for example `minecraft:coal`.
    */
@@ -159,7 +159,7 @@ interface Container {
   /**
    * Returns a copy of the stack in a slot, or `undefined` when the slot is empty; for example `container.get(0)`. A slot outside 0 to `size - 1` is a `RangeError`.
    *
-   * Since runtime 1.6.0.
+   * Since runtime 1.5.1.
    *
    * @param slot - The slot, 0 to `size - 1`.
    */
@@ -167,7 +167,7 @@ interface Container {
   /**
    * Replaces the stack in a slot and returns `true`, or returns `false` and changes nothing when the container does not take that item in that slot (a furnace's result slot, a container item in a crate that keeps its contents); for example `container.set(0, { id: "minecraft:torch", count: 16 })`.
    *
-   * Since runtime 1.6.0.
+   * Since runtime 1.5.1.
    *
    * @param slot - The slot, 0 to `size - 1`.
    * @param item - The new stack, at most the slot's stack size; `undefined` empties the slot.
@@ -176,7 +176,7 @@ interface Container {
   /**
    * The number of slots, numbered 0 to `size - 1`; for example 27 for a chest.
    *
-   * Since runtime 1.6.0.
+   * Since runtime 1.5.1.
    */
   readonly size: number;
 }
@@ -241,7 +241,7 @@ interface Entity {
   /**
    * Deals damage of a type, from an attacker, to the entity, for example `target.damage(4, { type: "minecraft:player_attack", attacker: player })`; an unknown damage type is a script error.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param amount - The damage in half hearts.
    * @param options - The damage type id (for example `minecraft:magic`; `minecraft:generic` by default), the entity responsible and the entity that hit (a projectile, for example).
@@ -258,7 +258,7 @@ interface Entity {
   /**
    * Returns a copy of the stack in an equipment slot, or `undefined` when it is empty; for example `entity.equipment("head")`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param slot - The equipment slot.
    */
@@ -301,7 +301,7 @@ interface Entity {
   /**
    * Casts a ray from the entity's eyes along its look and returns the first block or entity it hits, or `undefined`; for example `player.raycast(5)?.block?.id`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param maxDistance - How far the ray goes in blocks, at most 128 (more is a `RangeError`).
    * @param options - What the ray stops at; it always passes through this entity.
@@ -310,7 +310,7 @@ interface Entity {
   /**
    * Removes the entity from the world at once, without dropping loot or experience and without death events or a death animation (unlike `kill()`). A player cannot be removed: calling it on a player is a `TypeError`.
    *
-   * Since runtime 1.8.0.
+   * Since runtime 1.5.1.
    */
   remove(): void;
   /**
@@ -334,7 +334,7 @@ interface Entity {
   /**
    * Replaces the stack in an equipment slot, for example `zombie.setEquipment("mainhand", "minecraft:iron_sword")`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param slot - The equipment slot.
    * @param item - The new stack; `undefined` empties the slot.
@@ -353,7 +353,7 @@ interface Entity {
   /**
    * Moves the entity to a position, in another dimension or facing another way, for example `player.teleport(pos, { dimension: "minecraft:the_nether" })`; the wrapper stays valid after the move.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param pos - The position to move to.
    * @param options - The dimension id to move to (the current one by default) and the facing in degrees (unchanged by default).
@@ -372,37 +372,37 @@ interface Entity {
 /**
  * A living entity took damage.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 interface EntityDamagedEvent extends GameEvent {
   /**
    * The damage it took in half hearts, after armour and effects.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly amount: number;
   /**
    * The entity that caused the damage, when there is one.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly attacker?: Entity;
   /**
    * The entity that hit, when there is one: an arrow rather than its shooter, for example.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly direct?: Entity;
   /**
    * The entity that was damaged.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly entity: Entity;
   /**
    * The damage type id, for example `minecraft:fall`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly source: string;
 }
@@ -426,7 +426,7 @@ interface EntityHurtEvent extends GameEvent {
   /**
    * The entity that hit, when there is one: an arrow rather than its shooter, for example.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly direct?: Entity;
   /** The entity being hurt. */
@@ -434,7 +434,7 @@ interface EntityHurtEvent extends GameEvent {
   /**
    * The damage type id, for example `minecraft:fall` or `minecraft:player_attack`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly source: string;
 }
@@ -454,7 +454,7 @@ interface EntityInteractEvent extends GameEvent {
 /**
  * An equipment slot of a living entity.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 type EquipmentSlot = "mainhand" | "offhand" | "head" | "chest" | "legs" | "feet";
 
@@ -467,20 +467,20 @@ interface GameEvent {
 /**
  * A game mode.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 type GameMode = "survival" | "creative" | "adventure" | "spectator";
 
 /**
  * A player's inventory; slots are read and written straight away, for example `player.inventory.set(0, "minecraft:torch")`.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 interface Inventory {
   /**
    * Returns how many of an item the inventory holds over all slots, for example `player.inventory.count("minecraft:diamond")`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param item - The item id, for example `minecraft:diamond`.
    */
@@ -488,7 +488,7 @@ interface Inventory {
   /**
    * Returns the first numbered slot that holds an item, or -1 when none does; for example `player.inventory.find("minecraft:compass")`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param item - The item id.
    */
@@ -496,7 +496,7 @@ interface Inventory {
   /**
    * Returns a copy of the stack in a slot, or `undefined` when the slot is empty; for example `player.inventory.get("offhand")`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param slot - The slot, 0 to 35 or an equipment slot name.
    */
@@ -504,7 +504,7 @@ interface Inventory {
   /**
    * Removes up to a number of an item from the inventory and returns how many were removed, for example `player.inventory.remove("minecraft:emerald", 5)`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param item - The item id.
    * @param count - How many to remove; all of them when omitted.
@@ -513,13 +513,13 @@ interface Inventory {
   /**
    * The selected hotbar slot, 0 to 8.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly selectedSlot: number;
   /**
    * Replaces the stack in a slot, for example `player.inventory.set("head", "minecraft:carved_pumpkin")`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param slot - The slot, 0 to 35 or an equipment slot name.
    * @param item - The new stack; `undefined` empties the slot.
@@ -528,7 +528,7 @@ interface Inventory {
   /**
    * Sets or removes a data component of the stack in a slot, for example `player.inventory.setComponent(0, "minecraft:custom_name", "Lucky")`; does nothing on an empty slot, and a value that does not decode or validate is a script error (at most 64 KiB of JSON).
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param slot - The slot, 0 to 35 or an equipment slot name.
    * @param id - The data component id, for example `minecraft:custom_name`.
@@ -538,7 +538,7 @@ interface Inventory {
   /**
    * The number of numbered slots, 36: 0 to 8 are the hotbar and 9 to 35 the main inventory.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly size: number;
 }
@@ -546,7 +546,7 @@ interface Inventory {
 /**
  * A player inventory slot: 0 to 8 are the hotbar, 9 to 35 the main inventory, or an equipment slot name; any other value is a `RangeError`.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 type InventorySlot = number | EquipmentSlot;
 
@@ -557,13 +557,13 @@ interface ItemRef {
   /**
    * The damage the item has taken, 0 when it is new or cannot be damaged.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly damage: number;
   /**
    * Returns a copy of a data component's value as JSON (the form `/give` and data packs use), or `undefined` when the item does not have it; for example `item.getComponent("minecraft:damage")` is a number. At most 64 KiB of JSON is returned.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param id - The data component id, for example `minecraft:damage`.
    */
@@ -571,7 +571,7 @@ interface ItemRef {
   /**
    * Returns whether the item has a data component, for example `item.hasComponent("minecraft:custom_name")`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param id - The data component id, for example `minecraft:enchantments`.
    */
@@ -581,19 +581,19 @@ interface ItemRef {
   /**
    * The most items one stack of this item can hold, for example 64 or 1.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly maxCount: number;
   /**
    * The damage the item can take before it breaks, 0 when it cannot be damaged.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly maxDamage: number;
   /**
    * The item's display name as plain text, its custom name when it has one, for example `Diamond Sword`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly name: string;
 }
@@ -601,7 +601,7 @@ interface ItemRef {
 /**
  * An item to give or put in a slot: an item id such as `"minecraft:diamond"`, or `{ id, count?, components? }` where `components` maps component ids to their JSON values, for example `{ id: "minecraft:diamond_sword", components: { "minecraft:custom_name": "Edge" } }`; components that do not decode or validate are a script error, and at most 64 KiB of component JSON is accepted per call.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 type ItemSpec = string | { id: string; count?: number; components?: Record<string, unknown> };
 
@@ -624,7 +624,7 @@ interface Msm {
   /**
    * Boss bars of the script's namespace, at most 32; they are not saved and are removed on `/reload` and when the server stops.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly bossBars: MsmBossBars;
   /** Game events scripts can handle. */
@@ -632,7 +632,7 @@ interface Msm {
   /**
    * Returns a loaded dimension, or `undefined` when the server has none of that id; for example `msm.getWorld("minecraft:the_end")`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param dimension - The dimension id, for example `minecraft:the_nether`.
    */
@@ -642,7 +642,7 @@ interface Msm {
   /**
    * Returns the players online, for example `msm.players().length`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   players(): Player[];
   /**
@@ -670,13 +670,13 @@ interface MsmActions {
 /**
  * Boss bars of the script's namespace, at most 32; they are not saved and are removed on `/reload` and when the server stops.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 interface MsmBossBars {
   /**
    * Creates a boss bar shown to nobody yet, replacing a bar of the same name; for example `msm.bossBars.create("countdown", { title: "Time left", color: "red" })`. A 33rd bar is a script error.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param id - The bar's name within the script's namespace, for example `countdown`.
    * @param options - The title, the colour (`"white"` by default), the style (`"progress"` by default) and how full it is (1 by default).
@@ -685,7 +685,7 @@ interface MsmBossBars {
   /**
    * Returns the boss bar of a name, or `undefined` when there is none.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param id - The bar's name.
    */
@@ -715,7 +715,7 @@ interface MsmEvents {
   /**
    * Runs for each online player every `interval` ticks (20 by default; a value under 5 runs every 5 ticks), spread over the interval by player; for example `msm.events.on("player.tick", (e) => { ... }, { interval: 40 })`. Several handlers run in registration order.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param options - How often the handler runs for each player in ticks: 20 by default; a value under 5 counts as 5.
    */
@@ -723,31 +723,31 @@ interface MsmEvents {
   /**
    * Runs after a player respawns, for example to give a starting kit back. Several handlers run in registration order.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   on(name: "player.respawn", handler: (e: PlayerRespawnEvent) => void): void;
   /**
    * Runs when a player leaves the server. Several handlers run in registration order.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   on(name: "player.leave", handler: (e: PlayerLeaveEvent) => void): void;
   /**
    * Runs after a player moves to another dimension, for example through a Nether portal. Several handlers run in registration order.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   on(name: "player.changeDimension", handler: (e: PlayerChangeDimensionEvent) => void): void;
   /**
    * Runs before a player's chat message is sent to the other players. Several handlers run in registration order.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   on(name: "player.chat", handler: (e: PlayerChatEvent) => void): void;
   /**
    * Runs after a living entity took damage, with the final amount; also for the killing blow, before entity.death. Several handlers run in registration order.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   on(name: "entity.damaged", handler: (e: EntityDamagedEvent) => void): void;
 }
@@ -765,7 +765,7 @@ interface MsmLog {
 /**
  * A vanilla particle options object: `type` names a particle type and the other fields are that type's options, as in vanilla's particle JSON, for example `{ type: "minecraft:dust", color: [1, 0.5, 0], scale: 1.5 }`, `{ type: "minecraft:block", block_state: "minecraft:stone" }` or `{ type: "minecraft:item", item: { id: "minecraft:diamond" } }`; fields that do not decode are a script error.
  *
- * Since runtime 1.7.0.
+ * Since runtime 1.5.1.
  */
 type ParticleOptions = { type: string; [field: string]: unknown };
 
@@ -774,7 +774,7 @@ interface Player extends Entity {
   /**
    * Gives the player experience points, for example `player.addXp(10)`; levels go up as the points fill them.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param points - The points to add; a negative number takes points away.
    */
@@ -782,7 +782,7 @@ interface Player extends Entity {
   /**
    * Gives the player experience levels, for example `player.addXpLevels(1)`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param levels - The levels to add; a negative number takes levels away.
    */
@@ -790,25 +790,25 @@ interface Player extends Entity {
   /**
    * Removes the title and subtitle from the player's screen.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   clearTitle(): void;
   /**
    * The food level, 0 to 20.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly food: number;
   /**
    * The player's game mode, for example `"survival"`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly gameMode: GameMode;
   /**
    * Gives the player items; what does not fit in the inventory is dropped at their feet.
    *
-   * @param item - The item id, for example `minecraft:diamond`, or since runtime 1.5.0 an item with components, `{ id, count?, components? }`.
+   * @param item - The item id, for example `minecraft:diamond`, or since runtime 1.5.1 an item with components, `{ id, count?, components? }`.
    * @param count - How many; the item's own `count`, or 1, by default.
    */
   give(item: ItemSpec, count?: number): void;
@@ -823,7 +823,7 @@ interface Player extends Entity {
   /**
    * The player's inventory, for example `player.inventory.count("minecraft:diamond")`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly inventory: Inventory;
   /** Whether the player is in creative mode. */
@@ -833,7 +833,7 @@ interface Player extends Entity {
   /**
    * The saturation level, 0 up to the food level.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly saturation: number;
   /**
@@ -845,7 +845,7 @@ interface Player extends Entity {
   /**
    * Sets the player's food level and saturation, for example `player.setFood(20, 5)`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param level - The food level, 0 to 20.
    * @param saturation - The saturation, unchanged by default; it is never more than the food level.
@@ -854,7 +854,7 @@ interface Player extends Entity {
   /**
    * Changes the player's game mode, for example `player.setGameMode("adventure")`; returns `false` when the player was already in it.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param mode - The game mode.
    */
@@ -862,7 +862,7 @@ interface Player extends Entity {
   /**
    * Sets the player's experience level, for example `player.setXpLevels(30)`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param levels - The new level, 0 or more.
    */
@@ -870,7 +870,7 @@ interface Player extends Entity {
   /**
    * Shows text above the player's hotbar for a few seconds, for example `player.showActionBar("Mana: 7")`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param text - The text as plain text.
    */
@@ -878,7 +878,7 @@ interface Player extends Entity {
   /**
    * Shows a title in the middle of the player's screen, for example `player.showTitle("Wave 3", { subtitle: "Get ready" })`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param title - The title as plain text.
    * @param options - A subtitle and the fade in, stay and fade out times in ticks (10, 70 and 20 by default).
@@ -887,13 +887,13 @@ interface Player extends Entity {
   /**
    * The player's experience level.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly xpLevel: number;
   /**
    * The total experience points the player has collected.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly xpPoints: number;
 }
@@ -901,25 +901,25 @@ interface Player extends Entity {
 /**
  * A player moved to another dimension; `world` is the new one.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 interface PlayerChangeDimensionEvent extends GameEvent {
   /**
    * The dimension id the player left, for example `minecraft:overworld`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly from: string;
   /**
    * The player who moved.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly player: Player;
   /**
    * The dimension id the player arrived in, for example `minecraft:the_nether`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly to: string;
 }
@@ -927,25 +927,25 @@ interface PlayerChangeDimensionEvent extends GameEvent {
 /**
  * A player sent a chat message.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 interface PlayerChatEvent extends GameEvent {
   /**
    * Cancels the event: nobody sees the message.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   cancel(): void;
   /**
    * The message as plain text.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly message: string;
   /**
    * The player who sent it.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly player: Player;
 }
@@ -959,13 +959,13 @@ interface PlayerJoinEvent extends GameEvent {
 /**
  * A player is leaving the server.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 interface PlayerLeaveEvent extends GameEvent {
   /**
    * The player leaving.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly player: Player;
 }
@@ -973,13 +973,13 @@ interface PlayerLeaveEvent extends GameEvent {
 /**
  * A player respawned after dying or returned from the End; `world` is the world they respawned in.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 interface PlayerRespawnEvent extends GameEvent {
   /**
    * The player, already in the new world.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly player: Player;
 }
@@ -987,13 +987,13 @@ interface PlayerRespawnEvent extends GameEvent {
 /**
  * A player's turn of the `player.tick` interval came round.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 interface PlayerTickEvent extends GameEvent {
   /**
    * The player.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly player: Player;
 }
@@ -1021,43 +1021,43 @@ interface Pos {
 /**
  * What a ray hit, from `World.raycast` or `Entity.raycast`.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 interface RayHit {
   /**
    * The block hit, when `kind` is `"block"`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly block?: BlockRef;
   /**
    * The distance from the ray's start to the hit in blocks.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly distance: number;
   /**
    * The entity hit, when `kind` is `"entity"`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly entity?: Entity;
   /**
    * The face of the block the ray hit, when `kind` is `"block"`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly face?: "down" | "up" | "north" | "south" | "west" | "east";
   /**
    * Whether the ray hit a block or an entity.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly kind: "block" | "entity";
   /**
    * The exact point the ray hit.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    */
   readonly pos: Pos;
 }
@@ -1065,7 +1065,7 @@ interface RayHit {
 /**
  * What a ray stops at: `fluids` (false by default) makes fluid surfaces count as blocks, `entities` (true by default) lets the ray hit living entities, and `ignore` is an entity the ray passes through.
  *
- * Since runtime 1.5.0.
+ * Since runtime 1.5.1.
  */
 type RaycastOptions = { fluids?: boolean; entities?: boolean; ignore?: Entity };
 
@@ -1084,7 +1084,7 @@ interface World {
   /**
    * Breaks a block as if it were mined, with the breaking sound and particles, leaving air (or the fluid it held); for example `world.breakBlock(e.pos, { drops: false })`. Returns `false` when there was nothing to break (air).
    *
-   * Since runtime 1.8.0.
+   * Since runtime 1.5.1.
    *
    * @param pos - The block to break (the block that contains the position).
    * @param options - `drops` (`true` by default): whether the block drops what it would drop when broken without a tool, as an explosion or `/setblock ... destroy` does.
@@ -1093,7 +1093,7 @@ interface World {
   /**
    * The time of day in ticks, 0 to 23999: 0 is sunrise, 6000 noon, 13000 nightfall and 18000 midnight. It follows this dimension's own clock, or the Overworld's in a dimension without one (such as the Nether).
    *
-   * Since runtime 1.8.0.
+   * Since runtime 1.5.1.
    */
   readonly dayTime: number;
   /** The dimension id, for example `minecraft:overworld`. */
@@ -1101,7 +1101,7 @@ interface World {
   /**
    * Drops an item on the ground as a block drops its loot, with a small random push; for example `world.dropItem(e.pos.offset(0.5, 1, 0.5), { id: "minecraft:diamond", count: 3 })`.
    *
-   * Since runtime 1.8.0.
+   * Since runtime 1.5.1.
    *
    * @param pos - Where the item appears, exactly (use `pos.offset(0.5, 0.5, 0.5)` for the middle of a block).
    * @param item - The item; a count over the item's stack size is dropped as several stacks, at most 64 stacks (more is a `RangeError`).
@@ -1116,7 +1116,7 @@ interface World {
   /**
    * Makes an explosion that no entity caused; for example `world.explode(e.pos, 2, { breaksBlocks: false })`.
    *
-   * Since runtime 1.8.0.
+   * Since runtime 1.5.1.
    *
    * @param pos - The centre of the explosion, exactly.
    * @param power - The strength from 0 to 10 (anything else is a `RangeError`): 1 is about a fireball, 4 TNT, 6 a charged creeper.
@@ -1128,7 +1128,7 @@ interface World {
   /**
    * Returns the container of the block at a position, or `undefined` when the block has no slots: chests, barrels, hoppers, furnaces, dispensers and the mod's own containers and machines have one, stone does not; for example `e.world.getContainer(e.pos)`. A double chest gives the half at the position.
    *
-   * Since runtime 1.6.0.
+   * Since runtime 1.5.1.
    *
    * @param pos - The block position.
    */
@@ -1136,13 +1136,13 @@ interface World {
   /**
    * Whether it is raining (or thundering) in this dimension. Always `false` in a dimension without an open sky, such as the Nether and the End. It changes as soon as the weather changes, while the rain on screen fades in over a few seconds.
    *
-   * Since runtime 1.8.0.
+   * Since runtime 1.5.1.
    */
   readonly isRaining: boolean;
   /**
    * Whether there is a thunderstorm in this dimension. Always `false` in a dimension without an open sky.
    *
-   * Since runtime 1.8.0.
+   * Since runtime 1.5.1.
    */
   readonly isThundering: boolean;
   /**
@@ -1155,7 +1155,7 @@ interface World {
   /**
    * Casts a ray and returns the first block or entity it hits, or `undefined` when it hits nothing in range; for example `world.raycast(player.pos.offset(0, 1.6, 0), player.look, 20)`.
    *
-   * Since runtime 1.5.0.
+   * Since runtime 1.5.1.
    *
    * @param from - Where the ray starts.
    * @param direction - The direction as a vector, for example an entity's `look`; its length does not matter.
@@ -1186,7 +1186,7 @@ interface World {
   /**
    * Sets the weather of the whole server (every dimension shares it), as `/weather` does; for example `world.setWeather("thunder", 60)`. Another kind is a `TypeError`.
    *
-   * Since runtime 1.8.0.
+   * Since runtime 1.5.1.
    *
    * @param kind - The new weather.
    * @param seconds - How long it lasts, more than 0 and at most 1000000 (anything else is a `RangeError`); when left out, the game picks a length as `/weather` does.
@@ -1201,7 +1201,7 @@ interface World {
   /**
    * Spawns particles at a position for nearby players. A particle that does not decode (an unknown id, a type that needs options given as an id, an options object with a wrong field) is a `TypeError`.
    *
-   * Options objects, `motion` and `force`: since runtime 1.7.0.
+   * Options objects, `motion` and `force`: since runtime 1.5.1.
    *
    * @param particle - A particle type without options, for example `minecraft:flame` or a project particle such as `mymod:spark`, or a vanilla particle options object such as `{ type: "minecraft:dust", color: [1, 0.5, 0], scale: 1.5 }`.
    * @param options - `count` particles (1 by default; at most 1000 with `motion`), placed at a random offset of about `spread` blocks on each axis (a Gaussian with that standard deviation, 0 by default) and moving at a random speed of about `speed` (0 by default). `motion` (`[x, y, z]` in blocks per tick) gives each particle exactly that velocity instead of the random one, sending one packet per particle; `speed` is then not used. `force` sends to players up to 512 blocks away and draws whatever their Particles setting, as `/particle ... force`.

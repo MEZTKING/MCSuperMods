@@ -1,7 +1,7 @@
 /**
  * Script API 1.4 (ADR 0082 D5, plan B370): weather, time of day, explosions, dropped items,
  * breaking blocks with drops and removing entities. The description changes only by additions to
- * the one of runtime 1.7.0 (`test/fixtures/previous/script-api-v1-1.7.0.json`): exactly the members
+ * the one of the previous Script API version (`test/fixtures/previous/script-api-v1-1.7.0.json`): exactly the members
  * below, with the parameter counts the runtime's `ScriptApi` installs (B370), each documented with
  * the Since line; scripts that use them type-check.
  */
@@ -23,7 +23,7 @@ const PREVIOUS: ScriptApi = parseScriptApi(
   ),
 );
 
-const SINCE = 'Since runtime 1.8.0.';
+const SINCE = 'Since runtime 1.5.1.';
 
 const ADDED = [
   'World.dayTime',
@@ -51,7 +51,7 @@ function member(path: string): ScriptApiMember | undefined {
 }
 
 describe('script API 1.4 is additive', () => {
-  it('keeps every type, member, global, event, function and alias of runtime 1.7.0', () => {
+  it('keeps every type, member, global, event, function and alias of the previous Script API version', () => {
     expect(SCRIPT_API.version).toBe(1);
     expect(Object.keys(SCRIPT_API.types)).toEqual(Object.keys(PREVIOUS.types));
     for (const [name, type] of Object.entries(PREVIOUS.types)) {

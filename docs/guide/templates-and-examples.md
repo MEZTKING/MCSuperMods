@@ -409,8 +409,8 @@ Scripts (`msm:script`) are TypeScript that the `msm_runtime` mod runs in the gam
 | Entity hurt script | `msm_script_entity_hurt` | `msm:script` | An iron golem heals half of every hit back and shows heart particles. |
 | Scheduled effect script | `msm_script_scheduled_effect` | `msm:script` | Using a clock plays five rising chimes with particles, half a second apart, with `msm.schedule`. |
 | Action handler script | `msm_script_action_handler` | `msm:script` | A named handler for the "Run script" (`run_script`) action, using the script's own id as the handler id. |
-| Full set bonus | `msm_script_full_set_bonus` | `msm:script` | Gives a bonus to players wearing a whole armour set: every second, a player in full golden armour gets Speed and Haste. Uses the player.tick event and entity equipment (runtime 1.5.0 or later). Change the item ids to your own armour. |
-| Boss bar countdown | `msm_script_boss_bar_countdown` | `msm:script` | Shows a countdown to every player as a boss bar: using an echo shard starts 30 seconds, the bar empties and turns red near the end, and a title says when time is up. Uses msm.bossBars and titles (runtime 1.5.0 or later). |
+| Full set bonus | `msm_script_full_set_bonus` | `msm:script` | Gives a bonus to players wearing a whole armour set: every second, a player in full golden armour gets Speed and Haste. Uses the player.tick event and entity equipment (runtime 1.5.1 or later). Change the item ids to your own armour. |
+| Boss bar countdown | `msm_script_boss_bar_countdown` | `msm:script` | Shows a countdown to every player as a boss bar: using an echo shard starts 30 seconds, the bar empties and turns red near the end, and a title says when time is up. Uses msm.bossBars and titles (runtime 1.5.1 or later). |
 
 ## Project starters
 

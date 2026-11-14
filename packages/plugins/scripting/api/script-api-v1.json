@@ -65,17 +65,17 @@
         "dayTime": {
           "kind": "property",
           "type": "number",
-          "doc": "The time of day in ticks, 0 to 23999: 0 is sunrise, 6000 noon, 13000 nightfall and 18000 midnight. It follows this dimension's own clock, or the Overworld's in a dimension without one (such as the Nether).\n\nSince runtime 1.8.0."
+          "doc": "The time of day in ticks, 0 to 23999: 0 is sunrise, 6000 noon, 13000 nightfall and 18000 midnight. It follows this dimension's own clock, or the Overworld's in a dimension without one (such as the Nether).\n\nSince runtime 1.5.1."
         },
         "isRaining": {
           "kind": "property",
           "type": "boolean",
-          "doc": "Whether it is raining (or thundering) in this dimension. Always `false` in a dimension without an open sky, such as the Nether and the End. It changes as soon as the weather changes, while the rain on screen fades in over a few seconds.\n\nSince runtime 1.8.0."
+          "doc": "Whether it is raining (or thundering) in this dimension. Always `false` in a dimension without an open sky, such as the Nether and the End. It changes as soon as the weather changes, while the rain on screen fades in over a few seconds.\n\nSince runtime 1.5.1."
         },
         "isThundering": {
           "kind": "property",
           "type": "boolean",
-          "doc": "Whether there is a thunderstorm in this dimension. Always `false` in a dimension without an open sky.\n\nSince runtime 1.8.0."
+          "doc": "Whether there is a thunderstorm in this dimension. Always `false` in a dimension without an open sky.\n\nSince runtime 1.5.1."
         },
         "getBlock": {
           "kind": "method",
@@ -119,7 +119,7 @@
               "doc": "`drops` (`true` by default): whether the block drops what it would drop when broken without a tool, as an explosion or `/setblock ... destroy` does."
             }
           ],
-          "doc": "Breaks a block as if it were mined, with the breaking sound and particles, leaving air (or the fluid it held); for example `world.breakBlock(e.pos, { drops: false })`. Returns `false` when there was nothing to break (air).\n\nSince runtime 1.8.0.",
+          "doc": "Breaks a block as if it were mined, with the breaking sound and particles, leaving air (or the fluid it held); for example `world.breakBlock(e.pos, { drops: false })`. Returns `false` when there was nothing to break (air).\n\nSince runtime 1.5.1.",
           "returns": "boolean"
         },
         "spawnParticle": {
@@ -141,7 +141,7 @@
               "doc": "`count` particles (1 by default; at most 1000 with `motion`), placed at a random offset of about `spread` blocks on each axis (a Gaussian with that standard deviation, 0 by default) and moving at a random speed of about `speed` (0 by default). `motion` (`[x, y, z]` in blocks per tick) gives each particle exactly that velocity instead of the random one, sending one packet per particle; `speed` is then not used. `force` sends to players up to 512 blocks away and draws whatever their Particles setting, as `/particle ... force`."
             }
           ],
-          "doc": "Spawns particles at a position for nearby players. A particle that does not decode (an unknown id, a type that needs options given as an id, an options object with a wrong field) is a `TypeError`.\n\nOptions objects, `motion` and `force`: since runtime 1.7.0."
+          "doc": "Spawns particles at a position for nearby players. A particle that does not decode (an unknown id, a type that needs options given as an id, an options object with a wrong field) is a `TypeError`.\n\nOptions objects, `motion` and `force`: since runtime 1.5.1."
         },
         "playSound": {
           "kind": "method",
@@ -230,7 +230,7 @@
               "doc": "The item; a count over the item's stack size is dropped as several stacks, at most 64 stacks (more is a `RangeError`)."
             }
           ],
-          "doc": "Drops an item on the ground as a block drops its loot, with a small random push; for example `world.dropItem(e.pos.offset(0.5, 1, 0.5), { id: \"minecraft:diamond\", count: 3 })`.\n\nSince runtime 1.8.0."
+          "doc": "Drops an item on the ground as a block drops its loot, with a small random push; for example `world.dropItem(e.pos.offset(0.5, 1, 0.5), { id: \"minecraft:diamond\", count: 3 })`.\n\nSince runtime 1.5.1."
         },
         "entitiesNear": {
           "kind": "method",
@@ -273,7 +273,7 @@
               "doc": "What the ray stops at."
             }
           ],
-          "doc": "Casts a ray and returns the first block or entity it hits, or `undefined` when it hits nothing in range; for example `world.raycast(player.pos.offset(0, 1.6, 0), player.look, 20)`.\n\nSince runtime 1.5.0.",
+          "doc": "Casts a ray and returns the first block or entity it hits, or `undefined` when it hits nothing in range; for example `world.raycast(player.pos.offset(0, 1.6, 0), player.look, 20)`.\n\nSince runtime 1.5.1.",
           "returns": "RayHit | undefined"
         },
         "getContainer": {
@@ -285,7 +285,7 @@
               "doc": "The block position."
             }
           ],
-          "doc": "Returns the container of the block at a position, or `undefined` when the block has no slots: chests, barrels, hoppers, furnaces, dispensers and the mod's own containers and machines have one, stone does not; for example `e.world.getContainer(e.pos)`. A double chest gives the half at the position.\n\nSince runtime 1.6.0.",
+          "doc": "Returns the container of the block at a position, or `undefined` when the block has no slots: chests, barrels, hoppers, furnaces, dispensers and the mod's own containers and machines have one, stone does not; for example `e.world.getContainer(e.pos)`. A double chest gives the half at the position.\n\nSince runtime 1.5.1.",
           "returns": "Container | undefined"
         },
         "explode": {
@@ -308,7 +308,7 @@
               "doc": "`fire` (`false` by default) sets fires around it; `breaksBlocks` (`true` by default) breaks blocks, which then drop as from a bed exploding (the `block_explosion_drop_decay` game rule applies). Entities are always hurt and pushed."
             }
           ],
-          "doc": "Makes an explosion that no entity caused; for example `world.explode(e.pos, 2, { breaksBlocks: false })`.\n\nSince runtime 1.8.0."
+          "doc": "Makes an explosion that no entity caused; for example `world.explode(e.pos, 2, { breaksBlocks: false })`.\n\nSince runtime 1.5.1."
         },
         "setWeather": {
           "kind": "method",
@@ -325,7 +325,7 @@
               "doc": "How long it lasts, more than 0 and at most 1000000 (anything else is a `RangeError`); when left out, the game picks a length as `/weather` does."
             }
           ],
-          "doc": "Sets the weather of the whole server (every dimension shares it), as `/weather` does; for example `world.setWeather(\"thunder\", 60)`. Another kind is a `TypeError`.\n\nSince runtime 1.8.0."
+          "doc": "Sets the weather of the whole server (every dimension shares it), as `/weather` does; for example `world.setWeather(\"thunder\", 60)`. Another kind is a `TypeError`.\n\nSince runtime 1.5.1."
         }
       }
     },
@@ -460,7 +460,7 @@
                   "doc": "The damage type id (for example `minecraft:magic`; `minecraft:generic` by default), the entity responsible and the entity that hit (a projectile, for example)."
                 }
               ],
-              "doc": "Deals damage of a type, from an attacker, to the entity, for example `target.damage(4, { type: \"minecraft:player_attack\", attacker: player })`; an unknown damage type is a script error.\n\nSince runtime 1.5.0."
+              "doc": "Deals damage of a type, from an attacker, to the entity, for example `target.damage(4, { type: \"minecraft:player_attack\", attacker: player })`; an unknown damage type is a script error.\n\nSince runtime 1.5.1."
             }
           ],
           "doc": "Deals generic damage to the entity."
@@ -506,7 +506,7 @@
                   "doc": "The dimension id to move to (the current one by default) and the facing in degrees (unchanged by default)."
                 }
               ],
-              "doc": "Moves the entity to a position, in another dimension or facing another way, for example `player.teleport(pos, { dimension: \"minecraft:the_nether\" })`; the wrapper stays valid after the move.\n\nSince runtime 1.5.0."
+              "doc": "Moves the entity to a position, in another dimension or facing another way, for example `player.teleport(pos, { dimension: \"minecraft:the_nether\" })`; the wrapper stays valid after the move.\n\nSince runtime 1.5.1."
             }
           ],
           "doc": "Moves the entity to a position in its current world."
@@ -625,7 +625,7 @@
               "doc": "The equipment slot."
             }
           ],
-          "doc": "Returns a copy of the stack in an equipment slot, or `undefined` when it is empty; for example `entity.equipment(\"head\")`.\n\nSince runtime 1.5.0.",
+          "doc": "Returns a copy of the stack in an equipment slot, or `undefined` when it is empty; for example `entity.equipment(\"head\")`.\n\nSince runtime 1.5.1.",
           "returns": "ItemRef | undefined"
         },
         "setEquipment": {
@@ -643,7 +643,7 @@
               "doc": "The new stack; `undefined` empties the slot."
             }
           ],
-          "doc": "Replaces the stack in an equipment slot, for example `zombie.setEquipment(\"mainhand\", \"minecraft:iron_sword\")`.\n\nSince runtime 1.5.0."
+          "doc": "Replaces the stack in an equipment slot, for example `zombie.setEquipment(\"mainhand\", \"minecraft:iron_sword\")`.\n\nSince runtime 1.5.1."
         },
         "raycast": {
           "kind": "method",
@@ -660,13 +660,13 @@
               "doc": "What the ray stops at; it always passes through this entity."
             }
           ],
-          "doc": "Casts a ray from the entity's eyes along its look and returns the first block or entity it hits, or `undefined`; for example `player.raycast(5)?.block?.id`.\n\nSince runtime 1.5.0.",
+          "doc": "Casts a ray from the entity's eyes along its look and returns the first block or entity it hits, or `undefined`; for example `player.raycast(5)?.block?.id`.\n\nSince runtime 1.5.1.",
           "returns": "RayHit | undefined"
         },
         "remove": {
           "kind": "method",
           "params": [],
-          "doc": "Removes the entity from the world at once, without dropping loot or experience and without death events or a death animation (unlike `kill()`). A player cannot be removed: calling it on a player is a `TypeError`.\n\nSince runtime 1.8.0."
+          "doc": "Removes the entity from the world at once, without dropping loot or experience and without death events or a death animation (unlike `kill()`). A player cannot be removed: calling it on a player is a `TypeError`.\n\nSince runtime 1.5.1."
         }
       }
     },
@@ -694,7 +694,7 @@
             {
               "name": "item",
               "type": "ItemSpec",
-              "doc": "The item id, for example `minecraft:diamond`, or since runtime 1.5.0 an item with components, `{ id, count?, components? }`."
+              "doc": "The item id, for example `minecraft:diamond`, or since runtime 1.5.1 an item with components, `{ id, count?, components? }`."
             },
             {
               "name": "count",
@@ -731,32 +731,32 @@
         "inventory": {
           "kind": "property",
           "type": "Inventory",
-          "doc": "The player's inventory, for example `player.inventory.count(\"minecraft:diamond\")`.\n\nSince runtime 1.5.0."
+          "doc": "The player's inventory, for example `player.inventory.count(\"minecraft:diamond\")`.\n\nSince runtime 1.5.1."
         },
         "xpLevel": {
           "kind": "property",
           "type": "number",
-          "doc": "The player's experience level.\n\nSince runtime 1.5.0."
+          "doc": "The player's experience level.\n\nSince runtime 1.5.1."
         },
         "xpPoints": {
           "kind": "property",
           "type": "number",
-          "doc": "The total experience points the player has collected.\n\nSince runtime 1.5.0."
+          "doc": "The total experience points the player has collected.\n\nSince runtime 1.5.1."
         },
         "food": {
           "kind": "property",
           "type": "number",
-          "doc": "The food level, 0 to 20.\n\nSince runtime 1.5.0."
+          "doc": "The food level, 0 to 20.\n\nSince runtime 1.5.1."
         },
         "saturation": {
           "kind": "property",
           "type": "number",
-          "doc": "The saturation level, 0 up to the food level.\n\nSince runtime 1.5.0."
+          "doc": "The saturation level, 0 up to the food level.\n\nSince runtime 1.5.1."
         },
         "gameMode": {
           "kind": "property",
           "type": "GameMode",
-          "doc": "The player's game mode, for example `\"survival\"`.\n\nSince runtime 1.5.0."
+          "doc": "The player's game mode, for example `\"survival\"`.\n\nSince runtime 1.5.1."
         },
         "addXp": {
           "kind": "method",
@@ -767,7 +767,7 @@
               "doc": "The points to add; a negative number takes points away."
             }
           ],
-          "doc": "Gives the player experience points, for example `player.addXp(10)`; levels go up as the points fill them.\n\nSince runtime 1.5.0."
+          "doc": "Gives the player experience points, for example `player.addXp(10)`; levels go up as the points fill them.\n\nSince runtime 1.5.1."
         },
         "addXpLevels": {
           "kind": "method",
@@ -778,7 +778,7 @@
               "doc": "The levels to add; a negative number takes levels away."
             }
           ],
-          "doc": "Gives the player experience levels, for example `player.addXpLevels(1)`.\n\nSince runtime 1.5.0."
+          "doc": "Gives the player experience levels, for example `player.addXpLevels(1)`.\n\nSince runtime 1.5.1."
         },
         "setXpLevels": {
           "kind": "method",
@@ -789,7 +789,7 @@
               "doc": "The new level, 0 or more."
             }
           ],
-          "doc": "Sets the player's experience level, for example `player.setXpLevels(30)`.\n\nSince runtime 1.5.0."
+          "doc": "Sets the player's experience level, for example `player.setXpLevels(30)`.\n\nSince runtime 1.5.1."
         },
         "setFood": {
           "kind": "method",
@@ -806,7 +806,7 @@
               "doc": "The saturation, unchanged by default; it is never more than the food level."
             }
           ],
-          "doc": "Sets the player's food level and saturation, for example `player.setFood(20, 5)`.\n\nSince runtime 1.5.0."
+          "doc": "Sets the player's food level and saturation, for example `player.setFood(20, 5)`.\n\nSince runtime 1.5.1."
         },
         "setGameMode": {
           "kind": "method",
@@ -817,7 +817,7 @@
               "doc": "The game mode."
             }
           ],
-          "doc": "Changes the player's game mode, for example `player.setGameMode(\"adventure\")`; returns `false` when the player was already in it.\n\nSince runtime 1.5.0.",
+          "doc": "Changes the player's game mode, for example `player.setGameMode(\"adventure\")`; returns `false` when the player was already in it.\n\nSince runtime 1.5.1.",
           "returns": "boolean"
         },
         "showTitle": {
@@ -835,7 +835,7 @@
               "doc": "A subtitle and the fade in, stay and fade out times in ticks (10, 70 and 20 by default)."
             }
           ],
-          "doc": "Shows a title in the middle of the player's screen, for example `player.showTitle(\"Wave 3\", { subtitle: \"Get ready\" })`.\n\nSince runtime 1.5.0."
+          "doc": "Shows a title in the middle of the player's screen, for example `player.showTitle(\"Wave 3\", { subtitle: \"Get ready\" })`.\n\nSince runtime 1.5.1."
         },
         "showActionBar": {
           "kind": "method",
@@ -846,12 +846,12 @@
               "doc": "The text as plain text."
             }
           ],
-          "doc": "Shows text above the player's hotbar for a few seconds, for example `player.showActionBar(\"Mana: 7\")`.\n\nSince runtime 1.5.0."
+          "doc": "Shows text above the player's hotbar for a few seconds, for example `player.showActionBar(\"Mana: 7\")`.\n\nSince runtime 1.5.1."
         },
         "clearTitle": {
           "kind": "method",
           "params": [],
-          "doc": "Removes the title and subtitle from the player's screen.\n\nSince runtime 1.5.0."
+          "doc": "Removes the title and subtitle from the player's screen.\n\nSince runtime 1.5.1."
         }
       },
       "extends": "Entity"
@@ -892,22 +892,22 @@
         "name": {
           "kind": "property",
           "type": "string",
-          "doc": "The item's display name as plain text, its custom name when it has one, for example `Diamond Sword`.\n\nSince runtime 1.5.0."
+          "doc": "The item's display name as plain text, its custom name when it has one, for example `Diamond Sword`.\n\nSince runtime 1.5.1."
         },
         "maxCount": {
           "kind": "property",
           "type": "number",
-          "doc": "The most items one stack of this item can hold, for example 64 or 1.\n\nSince runtime 1.5.0."
+          "doc": "The most items one stack of this item can hold, for example 64 or 1.\n\nSince runtime 1.5.1."
         },
         "damage": {
           "kind": "property",
           "type": "number",
-          "doc": "The damage the item has taken, 0 when it is new or cannot be damaged.\n\nSince runtime 1.5.0."
+          "doc": "The damage the item has taken, 0 when it is new or cannot be damaged.\n\nSince runtime 1.5.1."
         },
         "maxDamage": {
           "kind": "property",
           "type": "number",
-          "doc": "The damage the item can take before it breaks, 0 when it cannot be damaged.\n\nSince runtime 1.5.0."
+          "doc": "The damage the item can take before it breaks, 0 when it cannot be damaged.\n\nSince runtime 1.5.1."
         },
         "hasComponent": {
           "kind": "method",
@@ -918,7 +918,7 @@
               "doc": "The data component id, for example `minecraft:enchantments`."
             }
           ],
-          "doc": "Returns whether the item has a data component, for example `item.hasComponent(\"minecraft:custom_name\")`.\n\nSince runtime 1.5.0.",
+          "doc": "Returns whether the item has a data component, for example `item.hasComponent(\"minecraft:custom_name\")`.\n\nSince runtime 1.5.1.",
           "returns": "boolean"
         },
         "getComponent": {
@@ -930,7 +930,7 @@
               "doc": "The data component id, for example `minecraft:damage`."
             }
           ],
-          "doc": "Returns a copy of a data component's value as JSON (the form `/give` and data packs use), or `undefined` when the item does not have it; for example `item.getComponent(\"minecraft:damage\")` is a number. At most 64 KiB of JSON is returned.\n\nSince runtime 1.5.0.",
+          "doc": "Returns a copy of a data component's value as JSON (the form `/give` and data packs use), or `undefined` when the item does not have it; for example `item.getComponent(\"minecraft:damage\")` is a number. At most 64 KiB of JSON is returned.\n\nSince runtime 1.5.1.",
           "returns": "unknown"
         }
       }
@@ -1134,12 +1134,12 @@
         "source": {
           "kind": "property",
           "type": "string",
-          "doc": "The damage type id, for example `minecraft:fall` or `minecraft:player_attack`.\n\nSince runtime 1.5.0."
+          "doc": "The damage type id, for example `minecraft:fall` or `minecraft:player_attack`.\n\nSince runtime 1.5.1."
         },
         "direct": {
           "kind": "property",
           "type": "Entity",
-          "doc": "The entity that hit, when there is one: an arrow rather than its shooter, for example.\n\nSince runtime 1.5.0.",
+          "doc": "The entity that hit, when there is one: an arrow rather than its shooter, for example.\n\nSince runtime 1.5.1.",
           "optional": true
         }
       },
@@ -1235,17 +1235,17 @@
       "extends": "GameEvent"
     },
     "Inventory": {
-      "doc": "A player's inventory; slots are read and written straight away, for example `player.inventory.set(0, \"minecraft:torch\")`.\n\nSince runtime 1.5.0.",
+      "doc": "A player's inventory; slots are read and written straight away, for example `player.inventory.set(0, \"minecraft:torch\")`.\n\nSince runtime 1.5.1.",
       "members": {
         "size": {
           "kind": "property",
           "type": "number",
-          "doc": "The number of numbered slots, 36: 0 to 8 are the hotbar and 9 to 35 the main inventory.\n\nSince runtime 1.5.0."
+          "doc": "The number of numbered slots, 36: 0 to 8 are the hotbar and 9 to 35 the main inventory.\n\nSince runtime 1.5.1."
         },
         "selectedSlot": {
           "kind": "property",
           "type": "number",
-          "doc": "The selected hotbar slot, 0 to 8.\n\nSince runtime 1.5.0."
+          "doc": "The selected hotbar slot, 0 to 8.\n\nSince runtime 1.5.1."
         },
         "get": {
           "kind": "method",
@@ -1256,7 +1256,7 @@
               "doc": "The slot, 0 to 35 or an equipment slot name."
             }
           ],
-          "doc": "Returns a copy of the stack in a slot, or `undefined` when the slot is empty; for example `player.inventory.get(\"offhand\")`.\n\nSince runtime 1.5.0.",
+          "doc": "Returns a copy of the stack in a slot, or `undefined` when the slot is empty; for example `player.inventory.get(\"offhand\")`.\n\nSince runtime 1.5.1.",
           "returns": "ItemRef | undefined"
         },
         "set": {
@@ -1274,7 +1274,7 @@
               "doc": "The new stack; `undefined` empties the slot."
             }
           ],
-          "doc": "Replaces the stack in a slot, for example `player.inventory.set(\"head\", \"minecraft:carved_pumpkin\")`.\n\nSince runtime 1.5.0."
+          "doc": "Replaces the stack in a slot, for example `player.inventory.set(\"head\", \"minecraft:carved_pumpkin\")`.\n\nSince runtime 1.5.1."
         },
         "count": {
           "kind": "method",
@@ -1285,7 +1285,7 @@
               "doc": "The item id, for example `minecraft:diamond`."
             }
           ],
-          "doc": "Returns how many of an item the inventory holds over all slots, for example `player.inventory.count(\"minecraft:diamond\")`.\n\nSince runtime 1.5.0.",
+          "doc": "Returns how many of an item the inventory holds over all slots, for example `player.inventory.count(\"minecraft:diamond\")`.\n\nSince runtime 1.5.1.",
           "returns": "number"
         },
         "remove": {
@@ -1303,7 +1303,7 @@
               "doc": "How many to remove; all of them when omitted."
             }
           ],
-          "doc": "Removes up to a number of an item from the inventory and returns how many were removed, for example `player.inventory.remove(\"minecraft:emerald\", 5)`.\n\nSince runtime 1.5.0.",
+          "doc": "Removes up to a number of an item from the inventory and returns how many were removed, for example `player.inventory.remove(\"minecraft:emerald\", 5)`.\n\nSince runtime 1.5.1.",
           "returns": "number"
         },
         "find": {
@@ -1315,7 +1315,7 @@
               "doc": "The item id."
             }
           ],
-          "doc": "Returns the first numbered slot that holds an item, or -1 when none does; for example `player.inventory.find(\"minecraft:compass\")`.\n\nSince runtime 1.5.0.",
+          "doc": "Returns the first numbered slot that holds an item, or -1 when none does; for example `player.inventory.find(\"minecraft:compass\")`.\n\nSince runtime 1.5.1.",
           "returns": "number"
         },
         "setComponent": {
@@ -1338,12 +1338,12 @@
               "doc": "The component's JSON value; `undefined` removes the component."
             }
           ],
-          "doc": "Sets or removes a data component of the stack in a slot, for example `player.inventory.setComponent(0, \"minecraft:custom_name\", \"Lucky\")`; does nothing on an empty slot, and a value that does not decode or validate is a script error (at most 64 KiB of JSON).\n\nSince runtime 1.5.0."
+          "doc": "Sets or removes a data component of the stack in a slot, for example `player.inventory.setComponent(0, \"minecraft:custom_name\", \"Lucky\")`; does nothing on an empty slot, and a value that does not decode or validate is a script error (at most 64 KiB of JSON).\n\nSince runtime 1.5.1."
         }
       }
     },
     "BossBar": {
-      "doc": "A boss bar shown at the top of the screen of the players added to it; it belongs to the script's namespace, is not saved, and is removed on `/reload` and when the server stops, for example `msm.bossBars.create(\"countdown\", { title: \"Time left\" })`.\n\nSince runtime 1.5.0.",
+      "doc": "A boss bar shown at the top of the screen of the players added to it; it belongs to the script's namespace, is not saved, and is removed on `/reload` and when the server stops, for example `msm.bossBars.create(\"countdown\", { title: \"Time left\" })`.\n\nSince runtime 1.5.1.",
       "members": {
         "setTitle": {
           "kind": "method",
@@ -1354,7 +1354,7 @@
               "doc": "The title as plain text."
             }
           ],
-          "doc": "Changes the bar's title.\n\nSince runtime 1.5.0."
+          "doc": "Changes the bar's title.\n\nSince runtime 1.5.1."
         },
         "setProgress": {
           "kind": "method",
@@ -1365,7 +1365,7 @@
               "doc": "How full the bar is, 0 to 1; values outside are clamped."
             }
           ],
-          "doc": "Changes how full the bar is, for example `bar.setProgress(0.5)`.\n\nSince runtime 1.5.0."
+          "doc": "Changes how full the bar is, for example `bar.setProgress(0.5)`.\n\nSince runtime 1.5.1."
         },
         "setColor": {
           "kind": "method",
@@ -1376,7 +1376,7 @@
               "doc": "The colour."
             }
           ],
-          "doc": "Changes the bar's colour, for example `bar.setColor(\"red\")`.\n\nSince runtime 1.5.0."
+          "doc": "Changes the bar's colour, for example `bar.setColor(\"red\")`.\n\nSince runtime 1.5.1."
         },
         "setStyle": {
           "kind": "method",
@@ -1387,7 +1387,7 @@
               "doc": "The style."
             }
           ],
-          "doc": "Changes the bar's style, for example `bar.setStyle(\"notched_10\")`.\n\nSince runtime 1.5.0."
+          "doc": "Changes the bar's style, for example `bar.setStyle(\"notched_10\")`.\n\nSince runtime 1.5.1."
         },
         "addPlayer": {
           "kind": "method",
@@ -1398,7 +1398,7 @@
               "doc": "The player."
             }
           ],
-          "doc": "Shows the bar to a player; adding a player twice does nothing.\n\nSince runtime 1.5.0."
+          "doc": "Shows the bar to a player; adding a player twice does nothing.\n\nSince runtime 1.5.1."
         },
         "removePlayer": {
           "kind": "method",
@@ -1409,174 +1409,174 @@
               "doc": "The player."
             }
           ],
-          "doc": "Hides the bar from a player.\n\nSince runtime 1.5.0."
+          "doc": "Hides the bar from a player.\n\nSince runtime 1.5.1."
         },
         "players": {
           "kind": "method",
           "params": [],
-          "doc": "Returns the players the bar is shown to.\n\nSince runtime 1.5.0.",
+          "doc": "Returns the players the bar is shown to.\n\nSince runtime 1.5.1.",
           "returns": "Player[]"
         },
         "remove": {
           "kind": "method",
           "params": [],
-          "doc": "Hides the bar from everyone and removes it, so `msm.bossBars.get` no longer finds it.\n\nSince runtime 1.5.0."
+          "doc": "Hides the bar from everyone and removes it, so `msm.bossBars.get` no longer finds it.\n\nSince runtime 1.5.1."
         }
       }
     },
     "RayHit": {
-      "doc": "What a ray hit, from `World.raycast` or `Entity.raycast`.\n\nSince runtime 1.5.0.",
+      "doc": "What a ray hit, from `World.raycast` or `Entity.raycast`.\n\nSince runtime 1.5.1.",
       "members": {
         "kind": {
           "kind": "property",
           "type": "\"block\" | \"entity\"",
-          "doc": "Whether the ray hit a block or an entity.\n\nSince runtime 1.5.0."
+          "doc": "Whether the ray hit a block or an entity.\n\nSince runtime 1.5.1."
         },
         "pos": {
           "kind": "property",
           "type": "Pos",
-          "doc": "The exact point the ray hit.\n\nSince runtime 1.5.0."
+          "doc": "The exact point the ray hit.\n\nSince runtime 1.5.1."
         },
         "distance": {
           "kind": "property",
           "type": "number",
-          "doc": "The distance from the ray's start to the hit in blocks.\n\nSince runtime 1.5.0."
+          "doc": "The distance from the ray's start to the hit in blocks.\n\nSince runtime 1.5.1."
         },
         "block": {
           "kind": "property",
           "type": "BlockRef",
-          "doc": "The block hit, when `kind` is `\"block\"`.\n\nSince runtime 1.5.0.",
+          "doc": "The block hit, when `kind` is `\"block\"`.\n\nSince runtime 1.5.1.",
           "optional": true
         },
         "face": {
           "kind": "property",
           "type": "\"down\" | \"up\" | \"north\" | \"south\" | \"west\" | \"east\"",
-          "doc": "The face of the block the ray hit, when `kind` is `\"block\"`.\n\nSince runtime 1.5.0.",
+          "doc": "The face of the block the ray hit, when `kind` is `\"block\"`.\n\nSince runtime 1.5.1.",
           "optional": true
         },
         "entity": {
           "kind": "property",
           "type": "Entity",
-          "doc": "The entity hit, when `kind` is `\"entity\"`.\n\nSince runtime 1.5.0.",
+          "doc": "The entity hit, when `kind` is `\"entity\"`.\n\nSince runtime 1.5.1.",
           "optional": true
         }
       }
     },
     "PlayerTickEvent": {
-      "doc": "A player's turn of the `player.tick` interval came round.\n\nSince runtime 1.5.0.",
+      "doc": "A player's turn of the `player.tick` interval came round.\n\nSince runtime 1.5.1.",
       "members": {
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player.\n\nSince runtime 1.5.0."
+          "doc": "The player.\n\nSince runtime 1.5.1."
         }
       },
       "extends": "GameEvent"
     },
     "PlayerRespawnEvent": {
-      "doc": "A player respawned after dying or returned from the End; `world` is the world they respawned in.\n\nSince runtime 1.5.0.",
+      "doc": "A player respawned after dying or returned from the End; `world` is the world they respawned in.\n\nSince runtime 1.5.1.",
       "members": {
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player, already in the new world.\n\nSince runtime 1.5.0."
+          "doc": "The player, already in the new world.\n\nSince runtime 1.5.1."
         }
       },
       "extends": "GameEvent"
     },
     "PlayerLeaveEvent": {
-      "doc": "A player is leaving the server.\n\nSince runtime 1.5.0.",
+      "doc": "A player is leaving the server.\n\nSince runtime 1.5.1.",
       "members": {
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player leaving.\n\nSince runtime 1.5.0."
+          "doc": "The player leaving.\n\nSince runtime 1.5.1."
         }
       },
       "extends": "GameEvent"
     },
     "PlayerChangeDimensionEvent": {
-      "doc": "A player moved to another dimension; `world` is the new one.\n\nSince runtime 1.5.0.",
+      "doc": "A player moved to another dimension; `world` is the new one.\n\nSince runtime 1.5.1.",
       "members": {
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player who moved.\n\nSince runtime 1.5.0."
+          "doc": "The player who moved.\n\nSince runtime 1.5.1."
         },
         "from": {
           "kind": "property",
           "type": "string",
-          "doc": "The dimension id the player left, for example `minecraft:overworld`.\n\nSince runtime 1.5.0."
+          "doc": "The dimension id the player left, for example `minecraft:overworld`.\n\nSince runtime 1.5.1."
         },
         "to": {
           "kind": "property",
           "type": "string",
-          "doc": "The dimension id the player arrived in, for example `minecraft:the_nether`.\n\nSince runtime 1.5.0."
+          "doc": "The dimension id the player arrived in, for example `minecraft:the_nether`.\n\nSince runtime 1.5.1."
         }
       },
       "extends": "GameEvent"
     },
     "PlayerChatEvent": {
-      "doc": "A player sent a chat message.\n\nSince runtime 1.5.0.",
+      "doc": "A player sent a chat message.\n\nSince runtime 1.5.1.",
       "members": {
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player who sent it.\n\nSince runtime 1.5.0."
+          "doc": "The player who sent it.\n\nSince runtime 1.5.1."
         },
         "message": {
           "kind": "property",
           "type": "string",
-          "doc": "The message as plain text.\n\nSince runtime 1.5.0."
+          "doc": "The message as plain text.\n\nSince runtime 1.5.1."
         },
         "cancel": {
           "kind": "method",
           "params": [],
-          "doc": "Cancels the event: nobody sees the message.\n\nSince runtime 1.5.0."
+          "doc": "Cancels the event: nobody sees the message.\n\nSince runtime 1.5.1."
         }
       },
       "extends": "GameEvent"
     },
     "EntityDamagedEvent": {
-      "doc": "A living entity took damage.\n\nSince runtime 1.5.0.",
+      "doc": "A living entity took damage.\n\nSince runtime 1.5.1.",
       "members": {
         "entity": {
           "kind": "property",
           "type": "Entity",
-          "doc": "The entity that was damaged.\n\nSince runtime 1.5.0."
+          "doc": "The entity that was damaged.\n\nSince runtime 1.5.1."
         },
         "amount": {
           "kind": "property",
           "type": "number",
-          "doc": "The damage it took in half hearts, after armour and effects.\n\nSince runtime 1.5.0."
+          "doc": "The damage it took in half hearts, after armour and effects.\n\nSince runtime 1.5.1."
         },
         "attacker": {
           "kind": "property",
           "type": "Entity",
-          "doc": "The entity that caused the damage, when there is one.\n\nSince runtime 1.5.0.",
+          "doc": "The entity that caused the damage, when there is one.\n\nSince runtime 1.5.1.",
           "optional": true
         },
         "direct": {
           "kind": "property",
           "type": "Entity",
-          "doc": "The entity that hit, when there is one: an arrow rather than its shooter, for example.\n\nSince runtime 1.5.0.",
+          "doc": "The entity that hit, when there is one: an arrow rather than its shooter, for example.\n\nSince runtime 1.5.1.",
           "optional": true
         },
         "source": {
           "kind": "property",
           "type": "string",
-          "doc": "The damage type id, for example `minecraft:fall`.\n\nSince runtime 1.5.0."
+          "doc": "The damage type id, for example `minecraft:fall`.\n\nSince runtime 1.5.1."
         }
       },
       "extends": "GameEvent"
     },
     "Container": {
-      "doc": "The slots of a block with a container, from `World.getContainer`; read and written straight away, and writes update comparators next to the block, for example `world.getContainer(pos)?.add(\"minecraft:coal\")`. Using it after the block is removed or replaced is a script error.\n\nSince runtime 1.6.0.",
+      "doc": "The slots of a block with a container, from `World.getContainer`; read and written straight away, and writes update comparators next to the block, for example `world.getContainer(pos)?.add(\"minecraft:coal\")`. Using it after the block is removed or replaced is a script error.\n\nSince runtime 1.5.1.",
       "members": {
         "size": {
           "kind": "property",
           "type": "number",
-          "doc": "The number of slots, numbered 0 to `size - 1`; for example 27 for a chest.\n\nSince runtime 1.6.0."
+          "doc": "The number of slots, numbered 0 to `size - 1`; for example 27 for a chest.\n\nSince runtime 1.5.1."
         },
         "get": {
           "kind": "method",
@@ -1587,7 +1587,7 @@
               "doc": "The slot, 0 to `size - 1`."
             }
           ],
-          "doc": "Returns a copy of the stack in a slot, or `undefined` when the slot is empty; for example `container.get(0)`. A slot outside 0 to `size - 1` is a `RangeError`.\n\nSince runtime 1.6.0.",
+          "doc": "Returns a copy of the stack in a slot, or `undefined` when the slot is empty; for example `container.get(0)`. A slot outside 0 to `size - 1` is a `RangeError`.\n\nSince runtime 1.5.1.",
           "returns": "ItemRef | undefined"
         },
         "set": {
@@ -1605,7 +1605,7 @@
               "doc": "The new stack, at most the slot's stack size; `undefined` empties the slot."
             }
           ],
-          "doc": "Replaces the stack in a slot and returns `true`, or returns `false` and changes nothing when the container does not take that item in that slot (a furnace's result slot, a container item in a crate that keeps its contents); for example `container.set(0, { id: \"minecraft:torch\", count: 16 })`.\n\nSince runtime 1.6.0.",
+          "doc": "Replaces the stack in a slot and returns `true`, or returns `false` and changes nothing when the container does not take that item in that slot (a furnace's result slot, a container item in a crate that keeps its contents); for example `container.set(0, { id: \"minecraft:torch\", count: 16 })`.\n\nSince runtime 1.5.1.",
           "returns": "boolean"
         },
         "count": {
@@ -1617,7 +1617,7 @@
               "doc": "The item id, for example `minecraft:coal`."
             }
           ],
-          "doc": "Returns how many of an item the container holds over all slots, for example `container.count(\"minecraft:coal\")`.\n\nSince runtime 1.6.0.",
+          "doc": "Returns how many of an item the container holds over all slots, for example `container.count(\"minecraft:coal\")`.\n\nSince runtime 1.5.1.",
           "returns": "number"
         },
         "add": {
@@ -1629,7 +1629,7 @@
               "doc": "The stack to put in; its count may be more than one stack."
             }
           ],
-          "doc": "Puts a stack in as a hopper would, filling matching stacks and then empty slots in slot order and skipping slots that do not take the item, whatever side hoppers may use; returns what did not fit, or `undefined` when everything fit. For example `const left = container.add({ id: \"minecraft:coal\", count: 64 })`.\n\nSince runtime 1.6.0.",
+          "doc": "Puts a stack in as a hopper would, filling matching stacks and then empty slots in slot order and skipping slots that do not take the item, whatever side hoppers may use; returns what did not fit, or `undefined` when everything fit. For example `const left = container.add({ id: \"minecraft:coal\", count: 64 })`.\n\nSince runtime 1.5.1.",
           "returns": "ItemRef | undefined"
         }
       }
@@ -1820,7 +1820,7 @@
                       "doc": "How often the handler runs for each player in ticks: 20 by default; a value under 5 counts as 5."
                     }
                   ],
-                  "doc": "Runs for each online player every `interval` ticks (20 by default; a value under 5 runs every 5 ticks), spread over the interval by player; for example `msm.events.on(\"player.tick\", (e) => { ... }, { interval: 40 })`. Several handlers run in registration order.\n\nSince runtime 1.5.0."
+                  "doc": "Runs for each online player every `interval` ticks (20 by default; a value under 5 runs every 5 ticks), spread over the interval by player; for example `msm.events.on(\"player.tick\", (e) => { ... }, { interval: 40 })`. Several handlers run in registration order.\n\nSince runtime 1.5.1."
                 },
                 {
                   "params": [
@@ -1833,7 +1833,7 @@
                       "type": "(e: PlayerRespawnEvent) => void"
                     }
                   ],
-                  "doc": "Runs after a player respawns, for example to give a starting kit back. Several handlers run in registration order.\n\nSince runtime 1.5.0."
+                  "doc": "Runs after a player respawns, for example to give a starting kit back. Several handlers run in registration order.\n\nSince runtime 1.5.1."
                 },
                 {
                   "params": [
@@ -1846,7 +1846,7 @@
                       "type": "(e: PlayerLeaveEvent) => void"
                     }
                   ],
-                  "doc": "Runs when a player leaves the server. Several handlers run in registration order.\n\nSince runtime 1.5.0."
+                  "doc": "Runs when a player leaves the server. Several handlers run in registration order.\n\nSince runtime 1.5.1."
                 },
                 {
                   "params": [
@@ -1859,7 +1859,7 @@
                       "type": "(e: PlayerChangeDimensionEvent) => void"
                     }
                   ],
-                  "doc": "Runs after a player moves to another dimension, for example through a Nether portal. Several handlers run in registration order.\n\nSince runtime 1.5.0."
+                  "doc": "Runs after a player moves to another dimension, for example through a Nether portal. Several handlers run in registration order.\n\nSince runtime 1.5.1."
                 },
                 {
                   "params": [
@@ -1872,7 +1872,7 @@
                       "type": "(e: PlayerChatEvent) => void"
                     }
                   ],
-                  "doc": "Runs before a player's chat message is sent to the other players. Several handlers run in registration order.\n\nSince runtime 1.5.0."
+                  "doc": "Runs before a player's chat message is sent to the other players. Several handlers run in registration order.\n\nSince runtime 1.5.1."
                 },
                 {
                   "params": [
@@ -1885,7 +1885,7 @@
                       "type": "(e: EntityDamagedEvent) => void"
                     }
                   ],
-                  "doc": "Runs after a living entity took damage, with the final amount; also for the killing blow, before entity.death. Several handlers run in registration order.\n\nSince runtime 1.5.0."
+                  "doc": "Runs after a living entity took damage, with the final amount; also for the killing blow, before entity.death. Several handlers run in registration order.\n\nSince runtime 1.5.1."
                 }
               ],
               "doc": "Registers a handler for a game event."
@@ -1936,7 +1936,7 @@
         },
         "bossBars": {
           "kind": "namespace",
-          "doc": "Boss bars of the script's namespace, at most 32; they are not saved and are removed on `/reload` and when the server stops.\n\nSince runtime 1.5.0.",
+          "doc": "Boss bars of the script's namespace, at most 32; they are not saved and are removed on `/reload` and when the server stops.\n\nSince runtime 1.5.1.",
           "members": {
             "create": {
               "kind": "method",
@@ -1952,7 +1952,7 @@
                   "doc": "The title, the colour (`\"white\"` by default), the style (`\"progress\"` by default) and how full it is (1 by default)."
                 }
               ],
-              "doc": "Creates a boss bar shown to nobody yet, replacing a bar of the same name; for example `msm.bossBars.create(\"countdown\", { title: \"Time left\", color: \"red\" })`. A 33rd bar is a script error.\n\nSince runtime 1.5.0.",
+              "doc": "Creates a boss bar shown to nobody yet, replacing a bar of the same name; for example `msm.bossBars.create(\"countdown\", { title: \"Time left\", color: \"red\" })`. A 33rd bar is a script error.\n\nSince runtime 1.5.1.",
               "returns": "BossBar"
             },
             "get": {
@@ -1964,7 +1964,7 @@
                   "doc": "The bar's name."
                 }
               ],
-              "doc": "Returns the boss bar of a name, or `undefined` when there is none.\n\nSince runtime 1.5.0.",
+              "doc": "Returns the boss bar of a name, or `undefined` when there is none.\n\nSince runtime 1.5.1.",
               "returns": "BossBar | undefined"
             }
           }
@@ -1978,13 +1978,13 @@
               "doc": "The dimension id, for example `minecraft:the_nether`."
             }
           ],
-          "doc": "Returns a loaded dimension, or `undefined` when the server has none of that id; for example `msm.getWorld(\"minecraft:the_end\")`.\n\nSince runtime 1.5.0.",
+          "doc": "Returns a loaded dimension, or `undefined` when the server has none of that id; for example `msm.getWorld(\"minecraft:the_end\")`.\n\nSince runtime 1.5.1.",
           "returns": "World | undefined"
         },
         "players": {
           "kind": "method",
           "params": [],
-          "doc": "Returns the players online, for example `msm.players().length`.\n\nSince runtime 1.5.0.",
+          "doc": "Returns the players online, for example `msm.players().length`.\n\nSince runtime 1.5.1.",
           "returns": "Player[]"
         }
       }
@@ -2049,37 +2049,37 @@
       "type": "PlayerTickEvent",
       "cancellable": false,
       "source": "ServerTickEvents.END_SERVER_TICK",
-      "doc": "Runs for each online player every `interval` ticks (20 by default; a value under 5 runs every 5 ticks), spread over the interval by player; for example `msm.events.on(\"player.tick\", (e) => { ... }, { interval: 40 })`.\n\nSince runtime 1.5.0."
+      "doc": "Runs for each online player every `interval` ticks (20 by default; a value under 5 runs every 5 ticks), spread over the interval by player; for example `msm.events.on(\"player.tick\", (e) => { ... }, { interval: 40 })`.\n\nSince runtime 1.5.1."
     },
     "player.respawn": {
       "type": "PlayerRespawnEvent",
       "cancellable": false,
       "source": "ServerPlayerEvents.AFTER_RESPAWN",
-      "doc": "Runs after a player respawns, for example to give a starting kit back.\n\nSince runtime 1.5.0."
+      "doc": "Runs after a player respawns, for example to give a starting kit back.\n\nSince runtime 1.5.1."
     },
     "player.leave": {
       "type": "PlayerLeaveEvent",
       "cancellable": false,
       "source": "ServerPlayerEvents.LEAVE",
-      "doc": "Runs when a player leaves the server.\n\nSince runtime 1.5.0."
+      "doc": "Runs when a player leaves the server.\n\nSince runtime 1.5.1."
     },
     "player.changeDimension": {
       "type": "PlayerChangeDimensionEvent",
       "cancellable": false,
       "source": "ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL",
-      "doc": "Runs after a player moves to another dimension, for example through a Nether portal.\n\nSince runtime 1.5.0."
+      "doc": "Runs after a player moves to another dimension, for example through a Nether portal.\n\nSince runtime 1.5.1."
     },
     "player.chat": {
       "type": "PlayerChatEvent",
       "cancellable": true,
       "source": "ServerMessageEvents.ALLOW_CHAT_MESSAGE",
-      "doc": "Runs before a player's chat message is sent to the other players.\n\nSince runtime 1.5.0."
+      "doc": "Runs before a player's chat message is sent to the other players.\n\nSince runtime 1.5.1."
     },
     "entity.damaged": {
       "type": "EntityDamagedEvent",
       "cancellable": false,
       "source": "ServerLivingEntityEvents.AFTER_DAMAGE",
-      "doc": "Runs after a living entity took damage, with the final amount; also for the killing blow, before entity.death.\n\nSince runtime 1.5.0."
+      "doc": "Runs after a living entity took damage, with the final amount; also for the killing blow, before entity.death.\n\nSince runtime 1.5.1."
     }
   },
   "functions": {
@@ -2099,35 +2099,35 @@
   "aliases": {
     "ItemSpec": {
       "type": "string | { id: string; count?: number; components?: Record<string, unknown> }",
-      "doc": "An item to give or put in a slot: an item id such as `\"minecraft:diamond\"`, or `{ id, count?, components? }` where `components` maps component ids to their JSON values, for example `{ id: \"minecraft:diamond_sword\", components: { \"minecraft:custom_name\": \"Edge\" } }`; components that do not decode or validate are a script error, and at most 64 KiB of component JSON is accepted per call.\n\nSince runtime 1.5.0."
+      "doc": "An item to give or put in a slot: an item id such as `\"minecraft:diamond\"`, or `{ id, count?, components? }` where `components` maps component ids to their JSON values, for example `{ id: \"minecraft:diamond_sword\", components: { \"minecraft:custom_name\": \"Edge\" } }`; components that do not decode or validate are a script error, and at most 64 KiB of component JSON is accepted per call.\n\nSince runtime 1.5.1."
     },
     "EquipmentSlot": {
       "type": "\"mainhand\" | \"offhand\" | \"head\" | \"chest\" | \"legs\" | \"feet\"",
-      "doc": "An equipment slot of a living entity.\n\nSince runtime 1.5.0."
+      "doc": "An equipment slot of a living entity.\n\nSince runtime 1.5.1."
     },
     "InventorySlot": {
       "type": "number | EquipmentSlot",
-      "doc": "A player inventory slot: 0 to 8 are the hotbar, 9 to 35 the main inventory, or an equipment slot name; any other value is a `RangeError`.\n\nSince runtime 1.5.0."
+      "doc": "A player inventory slot: 0 to 8 are the hotbar, 9 to 35 the main inventory, or an equipment slot name; any other value is a `RangeError`.\n\nSince runtime 1.5.1."
     },
     "GameMode": {
       "type": "\"survival\" | \"creative\" | \"adventure\" | \"spectator\"",
-      "doc": "A game mode.\n\nSince runtime 1.5.0."
+      "doc": "A game mode.\n\nSince runtime 1.5.1."
     },
     "BossBarColor": {
       "type": "\"pink\" | \"blue\" | \"red\" | \"green\" | \"yellow\" | \"purple\" | \"white\"",
-      "doc": "The colour of a boss bar.\n\nSince runtime 1.5.0."
+      "doc": "The colour of a boss bar.\n\nSince runtime 1.5.1."
     },
     "BossBarStyle": {
       "type": "\"progress\" | \"notched_6\" | \"notched_10\" | \"notched_12\" | \"notched_20\"",
-      "doc": "The style of a boss bar: one continuous bar or one divided into 6, 10, 12 or 20 notches.\n\nSince runtime 1.5.0."
+      "doc": "The style of a boss bar: one continuous bar or one divided into 6, 10, 12 or 20 notches.\n\nSince runtime 1.5.1."
     },
     "RaycastOptions": {
       "type": "{ fluids?: boolean; entities?: boolean; ignore?: Entity }",
-      "doc": "What a ray stops at: `fluids` (false by default) makes fluid surfaces count as blocks, `entities` (true by default) lets the ray hit living entities, and `ignore` is an entity the ray passes through.\n\nSince runtime 1.5.0."
+      "doc": "What a ray stops at: `fluids` (false by default) makes fluid surfaces count as blocks, `entities` (true by default) lets the ray hit living entities, and `ignore` is an entity the ray passes through.\n\nSince runtime 1.5.1."
     },
     "ParticleOptions": {
       "type": "{ type: string; [field: string]: unknown }",
-      "doc": "A vanilla particle options object: `type` names a particle type and the other fields are that type's options, as in vanilla's particle JSON, for example `{ type: \"minecraft:dust\", color: [1, 0.5, 0], scale: 1.5 }`, `{ type: \"minecraft:block\", block_state: \"minecraft:stone\" }` or `{ type: \"minecraft:item\", item: { id: \"minecraft:diamond\" } }`; fields that do not decode are a script error.\n\nSince runtime 1.7.0."
+      "doc": "A vanilla particle options object: `type` names a particle type and the other fields are that type's options, as in vanilla's particle JSON, for example `{ type: \"minecraft:dust\", color: [1, 0.5, 0], scale: 1.5 }`, `{ type: \"minecraft:block\", block_state: \"minecraft:stone\" }` or `{ type: \"minecraft:item\", item: { id: \"minecraft:diamond\" } }`; fields that do not decode are a script error.\n\nSince runtime 1.5.1."
     }
   }
 }

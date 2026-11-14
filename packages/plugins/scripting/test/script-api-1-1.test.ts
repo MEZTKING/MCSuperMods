@@ -2,7 +2,7 @@
  * Script API 1.1 (ADR 0065): the description changes only by additions to the one of runtime
  * 1.4.0 (`test/fixtures/previous/script-api-v1-1.4.0.json`), pins the new members and events the
  * runtime's `ScriptApi` must install (B248), and type-checks scripts that use them. The exact list
- * of 1.1 additions compares the 1.1 description as runtime 1.5.0 has it
+ * of 1.1 additions compares the 1.1 description as its Script API version had it
  * (`test/fixtures/previous/script-api-v1-1.5.0.json`), so later additions (1.2, ADR 0076 D5) are
  * pinned in their own test file.
  */
@@ -25,14 +25,14 @@ const PREVIOUS: ScriptApi = parseScriptApi(
   ),
 );
 
-/** The 1.1 description as runtime 1.5.0 has it, before the 1.2 additions. */
+/** The 1.1 description as its Script API version had it, before the 1.2 additions. */
 const API_1_1: ScriptApi = parseScriptApi(
   JSON.parse(
     readFileSync(new URL('./fixtures/previous/script-api-v1-1.5.0.json', import.meta.url), 'utf8'),
   ),
 );
 
-const SINCE = 'Since runtime 1.5.0.';
+const SINCE = 'Since runtime 1.5.1.';
 
 /** `required..total` of every signature of a method member. */
 function signatureCounts(member: ScriptApiMember): string[] {

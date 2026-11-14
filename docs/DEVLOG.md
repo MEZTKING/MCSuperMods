@@ -4576,3 +4576,14 @@ Decisions
 
 Next
 - B392: labels and keys in `TRYIT_KEYS`, `STRIP_TEXT`, `CARD_LINES`, the tools and clock words; the card links to `try-it#limits`. B396: the `TODO(B396)` notes in `local-source.ts` mark where triggers fire. Screenshot of the view: scratchpad `shots/tryit-b390.png` (not committed).
+
+## 2026-11-14 — executor — Script API runtime labels 1.5.1
+
+**What:** Every "Since runtime 1.5.0 / 1.6.0 / 1.7.0 / 1.8.0" label in `script-api-v1.json` (and so the generated `msm-runtime.d.ts`), `docs/guide` ("runtime X or later"), the scripting template descriptions and `engine-mod/CLAUDE.md` now says 1.5.1. No label of a released runtime (1.0.0 to 1.3.0) existed in the contract, so none was left unchanged; the 1.5.0 members were unreleased too (1.4.0 was never built, 1.5.0's build was cancelled).
+
+**Decisions:**
+- The four contract tests (`script-api-1-1` to `1-4`) pick out "what each Script API version added" by diffing against the frozen snapshots in `test/fixtures/previous/`, not by the label, and they check that the added members end with the version's label. So the history files stay (the diffs still define each version's additions), and only the label text in them and in the tests' `SINCE` constants was changed to 1.5.1, so snapshots and live file keep matching. The snapshot file names (`-1.5.0` to `-1.7.0`) are unchanged; they name the Script API step they pin, not a released runtime. Test comments now say "the previous Script API version" instead of a runtime number.
+- ADRs, DESIGN, ROADMAP, HANDOFF and root CLAUDE.md are untouched (another agent is closing a batch there); they still carry the old numbers.
+- `msm-runtime.d.ts` was updated by the same substitution; the typings test confirms it equals the generated output.
+
+**Next:** Fix the old runtime numbers in the ADRs, DESIGN, ROADMAP and HANDOFF once that batch is closed.

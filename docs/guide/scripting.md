@@ -24,8 +24,8 @@ A script cannot reach Java, files, the network or other mods. See [Limits](#limi
    - **Entity hurt script**: an iron golem heals half of every hit back and shows heart particles;
    - **Scheduled effect script**: using a clock plays five rising chimes, half a second apart, with `msm.schedule`;
    - **Action handler script**: a named handler for the `run_script` action, using the new script's id as the handler id;
-   - **Full set bonus**: every second, a player wearing full golden armour gets Speed and Haste, with `player.tick` and `entity.equipment` (runtime 1.5.0 or later);
-   - **Boss bar countdown**: using an echo shard shows every player a 30-second boss bar countdown that ends with a title (runtime 1.5.0 or later).
+   - **Full set bonus**: every second, a player wearing full golden armour gets Speed and Haste, with `player.tick` and `entity.equipment` (runtime 1.5.1 or later);
+   - **Boss bar countdown**: using an echo shard shows every player a 30-second boss bar countdown that ends with a title (runtime 1.5.1 or later).
 3. Type a name, for example `glow`, and choose **Create**.
 
 The script is listed under **Scripts** in the sidebar. Its id (`<namespace>:glow`) names it in the game log; the file goes into the jar as `msm/<namespace>/script/glow.js`.
@@ -58,9 +58,9 @@ Every script can start with `import { msm } from "msm:runtime";` (the templates 
 | `msm.log.info(text)`, `msm.log.warn(text)`, `msm.log.error(text)` | Writes a line to the game log, starting `[msm_runtime] <script id>:`. |
 | `msm.version` | The version of the running `msm_runtime`. |
 | `msm.storage.get(key)`, `msm.storage.set(key, value)` | Reads and saves data kept with the world (see [Saved data](#saved-data)). `entity.data` does the same for one entity or player. |
-| `msm.players()` | The players online (runtime 1.5.0 or later). |
-| `msm.getWorld(dimension)` | A loaded dimension by id, for example `msm.getWorld("minecraft:the_nether")`, or `undefined` (runtime 1.5.0 or later). |
-| `msm.bossBars.create(id, { title, color?, style?, progress? })`, `msm.bossBars.get(id)` | Creates or finds a boss bar (see [Inventory, player state and the screen](#inventory-player-state-and-the-screen); runtime 1.5.0 or later). |
+| `msm.players()` | The players online (runtime 1.5.1 or later). |
+| `msm.getWorld(dimension)` | A loaded dimension by id, for example `msm.getWorld("minecraft:the_nether")`, or `undefined` (runtime 1.5.1 or later). |
+| `msm.bossBars.create(id, { title, color?, style?, progress? })`, `msm.bossBars.get(id)` | Creates or finds a boss bar (see [Inventory, player state and the screen](#inventory-player-state-and-the-screen); runtime 1.5.1 or later). |
 
 Every event object `e` has `e.world`, the dimension it happened in. Through it a script can read and place blocks (`getBlock`, `setBlock`), spawn particles and entities (`spawnParticle`, `spawnEntity`; see [Particles from scripts](#particles-from-scripts)), play sounds (`playSound`), find entities nearby (`entitiesNear`) and run commands and functions (`runCommand`, `runFunction`). On the world they run at the world spawn point with no `@s`; pass a position as the second argument (`e.world.runCommand("particle flame ~ ~1 ~", pos)`) to make `~ ~ ~` that position. To run "as" something, call `entity.runCommand("effect give @s speed 5")` or `entity.runFunction("mymod:reward")`: they run as and at the entity, so `@s` and `~ ~ ~` mean it. A sound id in `playSound` can be a vanilla sound or one of the project's own sound keys. Entities have a type, a position, health, `damage`, `heal`, `kill`, `teleport`, `addEffect`, `hasEffect`, `effectLevel` (0 when the entity does not have the effect), `removeEffect`, `velocity` and `look` (where it faces) with `setVelocity(x, y, z)` and `addVelocity(x, y, z)` for a real push (for example `p.addVelocity(p.look.x * 1.5, 0.4, p.look.z * 1.5)` for a dash) and, for MSM mobs, `playAnimation`; players also have `isSneaking`, `heldItem`, `give`, `hasItem` and `sendMessage`. Positions (`pos`) have `x`, `y`, `z` and `offset(dx, dy, dz)`. The editor's completions list every member with a sentence on what it does.
 
@@ -84,7 +84,7 @@ Every event object `e` has `e.world`, the dimension it happened in. Through it a
 | `player.chat` | Before a player's chat message is sent | `player`, `message` | Yes |
 | `entity.damaged` | After a living entity took damage | `entity`, `amount` (after armour), `attacker`, `direct`, `source` | No |
 
-The last six events need runtime 1.5.0 or later, and `entity.hurt` gains `source` (the damage type id, for example `minecraft:fall`) and `direct` (what hit: an arrow rather than its shooter). `entity.hurt` runs before the damage and can cancel it; `entity.damaged` runs after it with the final amount. Neither can change the amount.
+The last six events need runtime 1.5.1 or later, and `entity.hurt` gains `source` (the damage type id, for example `minecraft:fall`) and `direct` (what hit: an arrow rather than its shooter). `entity.hurt` runs before the damage and can cancel it; `entity.damaged` runs after it with the final amount. Neither can change the amount.
 
 `e.cancel()` stops the game's own reaction: a cancelled `block.interact` does not open the chest, a cancelled `entity.hurt` does no damage. After a cancelled `block.interact`, `item.use`, `entity.interact` or `block.break` the game sends the player's inventory again, so the held stack's count and durability go back to what the server has; a cancelled `block.interact` also refreshes the blocks around the place that was clicked. A client-side guess about a cooldown or about what an entity interaction did (a bucket, shears, a name tag) may still show for a moment. Keep `server.tick` handlers short, since they run 20 times a second; use `msm.schedule` for things that happen later, and `player.tick` with an interval for checks on every player (the players are spread over the interval, so they are not all checked in the same tick). A cancelled `player.chat` message is seen by nobody.
 
@@ -114,7 +114,7 @@ The templates **Full set bonus** (a bonus while a whole armour set is worn, with
 
 ### Containers and machines from scripts
 
-Script API 1.2, runtime 1.6.0 or later. `world.getContainer(pos)` returns the container at a block position, or `undefined` when the block holds no items. It works on vanilla chests, barrels, hoppers and furnaces as well as on the containers and machines of [Containers and machines](containers-and-machines.md).
+Script API 1.2, runtime 1.5.1 or later. `world.getContainer(pos)` returns the container at a block position, or `undefined` when the block holds no items. It works on vanilla chests, barrels, hoppers and furnaces as well as on the containers and machines of [Containers and machines](containers-and-machines.md).
 
 | Member | What it does |
 |---|---|
@@ -133,7 +133,7 @@ if (box && box.count("minecraft:diamond") >= 3) box.set(0, { id: "minecraft:emer
 
 ### Particles from scripts
 
-Script API 1.3, runtime 1.7.0 or later. `world.spawnParticle(particle, pos, options?)` takes a particle type id (one of the project's [particles](particles.md) or a vanilla one) or, for the 22 vanilla types that take options, an options object. Without `options` it sends one particle.
+Script API 1.3, runtime 1.5.1 or later. `world.spawnParticle(particle, pos, options?)` takes a particle type id (one of the project's [particles](particles.md) or a vanilla one) or, for the 22 vanilla types that take options, an options object. Without `options` it sends one particle.
 
 | Option | What it does |
 |---|---|
@@ -153,7 +153,7 @@ An options object is the vanilla form: dust `{ type, color, scale }` (the colour
 
 ### Time, weather, explosions, drops and removing
 
-Script API 1.4, runtime 1.8.0 or later.
+Script API 1.4, runtime 1.5.1 or later.
 
 | Member | What it does |
 |---|---|

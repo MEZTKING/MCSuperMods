@@ -118,7 +118,7 @@ export const scriptingTemplates: readonly ElementTemplate[] = Object.freeze([
     category: CATEGORY,
     title: 'Full set bonus',
     description:
-      'Gives a bonus to players wearing a whole armour set: every second, a player in full golden armour gets Speed and Haste. Uses the player.tick event and entity equipment (runtime 1.5.0 or later). Change the item ids to your own armour.',
+      'Gives a bonus to players wearing a whole armour set: every second, a player in full golden armour gets Speed and Haste. Uses the player.tick event and entity equipment (runtime 1.5.1 or later). Change the item ids to your own armour.',
     data: () =>
       script([
         IMPORT,
@@ -153,7 +153,7 @@ export const scriptingTemplates: readonly ElementTemplate[] = Object.freeze([
     category: CATEGORY,
     title: 'Boss bar countdown',
     description:
-      'Shows a countdown to every player as a boss bar: using an echo shard starts 30 seconds, the bar empties and turns red near the end, and a title says when time is up. Uses msm.bossBars and titles (runtime 1.5.0 or later).',
+      'Shows a countdown to every player as a boss bar: using an echo shard starts 30 seconds, the bar empties and turns red near the end, and a title says when time is up. Uses msm.bossBars and titles (runtime 1.5.1 or later).',
     data: () =>
       script([
         IMPORT,

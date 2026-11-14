@@ -1,7 +1,7 @@
 /**
- * Script API 1.2 (ADR 0076 D5): containers. The 1.2 description as runtime 1.6.0 has it
+ * Script API 1.2 (ADR 0076 D5): containers. The 1.2 description as its Script API version had it
  * (`test/fixtures/previous/script-api-v1-1.6.0.json`) changes only by additions to the one of
- * runtime 1.5.0 (`test/fixtures/previous/script-api-v1-1.5.0.json`); the current description adds
+ * the previous Script API version (`test/fixtures/previous/script-api-v1-1.5.0.json`); the current description adds
  * exactly `World.getContainer` and the `Container` type the runtime's `ScriptApi` installs (B317),
  * and scripts that use them type-check. Later changes (1.3, ADR 0080 D5; 1.4, ADR 0082 D5) are
  * pinned in their own test files.
@@ -24,14 +24,14 @@ const PREVIOUS: ScriptApi = parseScriptApi(
   ),
 );
 
-/** The 1.2 description as runtime 1.6.0 has it, before the 1.3 changes. */
+/** The 1.2 description as its Script API version had it, before the 1.3 changes. */
 const API_1_2: ScriptApi = parseScriptApi(
   JSON.parse(
     readFileSync(new URL('./fixtures/previous/script-api-v1-1.6.0.json', import.meta.url), 'utf8'),
   ),
 );
 
-const SINCE = 'Since runtime 1.6.0.';
+const SINCE = 'Since runtime 1.5.1.';
 
 function signatureCounts(member: ScriptApiMember | undefined): string[] {
   if (member?.kind !== 'method') return [];
@@ -43,7 +43,7 @@ function signatureCounts(member: ScriptApiMember | undefined): string[] {
 }
 
 describe('script API 1.2 is additive', () => {
-  it('keeps the version at 1 and every type, member, global and event of runtime 1.5.0', () => {
+  it('keeps the version at 1 and every type, member, global and event of the previous Script API version', () => {
     expect(API_1_2.version).toBe(1);
     for (const [name, type] of Object.entries(PREVIOUS.types)) {
       const now = API_1_2.types[name];

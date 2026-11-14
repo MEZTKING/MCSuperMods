@@ -1,10 +1,10 @@
 /**
  * Script API 1.3 (ADR 0080 D5): `World.spawnParticle` takes a particle options object and the
- * options `motion` and `force`. The description changes from the one of runtime 1.6.0
+ * options `motion` and `force`. The description changes from the one of the previous Script API version
  * (`test/fixtures/previous/script-api-v1-1.6.0.json`) only by widening that method (same name,
  * same parameter counts, every previous argument still accepted) and adding the
  * `ParticleOptions` alias; the runtime's `ScriptApi` installs the same counts (B352), and scripts
- * that use the new forms type-check. The 1.3 description as runtime 1.7.0 has it is
+ * that use the new forms type-check. The 1.3 description as its Script API version had it is
  * `test/fixtures/previous/script-api-v1-1.7.0.json`; later additions (1.4, ADR 0082 D5) are pinned
  * in `script-api-1-4.test.ts`.
  */
@@ -25,14 +25,14 @@ const PREVIOUS: ScriptApi = parseScriptApi(
   ),
 );
 
-/** The 1.3 description as runtime 1.7.0 has it, before the 1.4 additions. */
+/** The 1.3 description as its Script API version had it, before the 1.4 additions. */
 const API_1_3: ScriptApi = parseScriptApi(
   JSON.parse(
     readFileSync(new URL('./fixtures/previous/script-api-v1-1.7.0.json', import.meta.url), 'utf8'),
   ),
 );
 
-const SINCE = 'since runtime 1.7.0.';
+const SINCE = 'since runtime 1.5.1.';
 const WIDENED = 'World.spawnParticle';
 
 function signatureCounts(member: ScriptApiMember | undefined): string[] {
@@ -45,7 +45,7 @@ function signatureCounts(member: ScriptApiMember | undefined): string[] {
 }
 
 describe('script API 1.3 changes only World.spawnParticle and adds ParticleOptions', () => {
-  it('keeps every other type, member, global, function and event of runtime 1.6.0', () => {
+  it('keeps every other type, member, global, function and event of the previous Script API version', () => {
     expect(API_1_3.version).toBe(1);
     expect(Object.keys(API_1_3.types)).toEqual(Object.keys(PREVIOUS.types));
     for (const [name, type] of Object.entries(PREVIOUS.types)) {
@@ -80,7 +80,7 @@ describe('script API 1.3 changes only World.spawnParticle and adds ParticleOptio
     expect(SCRIPT_API.aliases?.ParticleOptions?.type).toBe(
       '{ type: string; [field: string]: unknown }',
     );
-    expect(SCRIPT_API.aliases?.ParticleOptions?.doc.endsWith('\n\nSince runtime 1.7.0.')).toBe(
+    expect(SCRIPT_API.aliases?.ParticleOptions?.doc.endsWith('\n\nSince runtime 1.5.1.')).toBe(
       true,
     );
   });

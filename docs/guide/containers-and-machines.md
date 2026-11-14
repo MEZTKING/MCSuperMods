@@ -80,7 +80,7 @@ A machine can also take the vanilla recipe types you tick under **Recipes it use
 
 The eight templates are listed under **Blocks** in [Templates, starters and examples](templates-and-examples.md#blocks). Three examples show the finished work: **Loot crate in a structure**, **Ore crusher** (a machine with three recipes and a hopper chain) and **Shulker crate**. The sample project `fixtures/sample-machines` in the repository has nine blocks with an in-game checklist.
 
-Scripts can read and change any container, vanilla ones included, with `world.getContainer(pos)` (Script API 1.2, runtime 1.6.0 or later); see [Scripting](scripting.md#containers-and-machines-from-scripts). Container and machine events can also run a script with `run_script`.
+Scripts can read and change any container, vanilla ones included, with `world.getContainer(pos)` (Script API 1.2, runtime 1.5.1 or later); see [Scripting](scripting.md#containers-and-machines-from-scripts). Container and machine events can also run a script with `run_script`.
 
 ## Vanilla packs
 
