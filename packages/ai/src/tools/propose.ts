@@ -74,6 +74,8 @@ export const PLACEHOLDER_PATTERN_NAMES = [
   'seeds',
   'produce',
   'block_front',
+  'portal',
+  'portal_frame',
 ] as const;
 
 /** Most elements one `create_elements` call may propose. */

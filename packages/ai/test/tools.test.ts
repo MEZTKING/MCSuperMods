@@ -166,13 +166,13 @@ function order(group: string): number {
 }
 
 describe('tool catalogue is frozen (ADR 0055 D11)', () => {
-  // The hash last changed in B304: list_kinds describes the mob bases, movement modes and
-  // components (ADR 0073 D6) and list_starters names the six mob flows.
+  // The hash last changed with B338: create_texture gained the portal and portal_frame patterns
+  // and list_starters names the Storage crate, Machine and Portal flows (ADRs 0076, 0078).
   it('has 22 tools in the documented order with unchanged schemas', () => {
     expect(TOOL_CATALOGUE.map((tool) => tool.name)).toEqual([...AI_TOOL_NAMES]);
     expect(TOOL_CATALOGUE).toHaveLength(22);
     expect(createHash('sha256').update(JSON.stringify(TOOL_CATALOGUE)).digest('hex')).toBe(
-      '804d4b6a1fb2866bccfa60ec97fdb0be46d482847d1fe8ee7ab015058a8f685b',
+      '22fd4a369db3bbe4d08cc62122111ecd22d42158b999605b44cac7a1c63f85ee',
     );
   });
 });
