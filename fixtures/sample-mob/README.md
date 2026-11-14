@@ -92,6 +92,18 @@ and no other line containing `[msm_runtime]` at WARN or ERROR, no GeckoLib warni
 
 Things only the game client can confirm, and worth reporting if they look wrong: the model's shape and texture mapping (compare with the app's preview), the animations' direction and speed, the egg's texture and name, the entity's name (`Glow Golem`) on hover in the F3 crosshair info, and the particle positions.
 
+## On 26.4 and the two renderers
+
+Mobs work on 26.4 as well as 26.3 (ADR 0073). The difference is only how the golem is drawn:
+
+- On **26.3** the golem is drawn by GeckoLib (`renderer` `auto` means GeckoLib there). The jar nests `msm_runtime` and GeckoLib, and the check above is the one to follow.
+- On **26.4** there is no GeckoLib. Export the project with the target set to 26.4: the jar nests only `msm_runtime` and `fabric.mod.json` does not depend on `geckolib`. `auto` then means the built-in vanilla renderer, which reads the same geo model, animation and texture files. The export reports one information note that the golem uses the vanilla renderer; it is not a problem.
+- Fabric Loader and Fabric API for 26.4: use the versions the 26.4 target lists (verify at implementation).
+
+To check on 26.4, install the 26.4 jar as described above and run the same tables. What should look the same as on 26.3: the figure's shape and skin, the idle bob, the walk swing, the `attack` swing on each hit and the `wave` on a right-click. What the vanilla renderer does differently and is fine: the head does not turn to follow you (neither renderer turns the head), and the golem has no `sit`, `fly` or `swim` pose, so it keeps its idle or walk while in water. If the golem is invisible or the log says a model file could not be read, report it with the line from `logs/latest.log`; a broken file is logged once and the mob is simply not drawn.
+
+The vanilla renderer is only confirmed in the game. Compare the golem on 26.4 with the app's preview for orientation, texture mapping and mirrored limbs, and press F3 + T after editing a model file to reload it.
+
 ## Changing the sample
 
 Do not edit these files by hand. Change `SAMPLE_ELEMENTS` or `SAMPLE_ASSETS` in `packages/exporters/test/sample-mob.golden.test.ts`, then regenerate this folder and the pinned hash, and commit the changes on purpose:
