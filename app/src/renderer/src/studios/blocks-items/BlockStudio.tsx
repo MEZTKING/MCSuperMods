@@ -1,8 +1,12 @@
 /**
  * Block Studio (B97) for `msm:block` element data (ADR 0025 D2, D5):
  *
- * - Appearance: model (suggestions, "Go to model") and display name.
- * - Shape (ADR 0059): `msm:shape` preset, custom boxes, "From model" (one undo step),
+ * - Type (B268, ADR 0069 D5): the Type picker (one undoable change that drops the old type's
+ *   fields) and the building types' own fields (`BlockTypeSection`).
+ * - Appearance: model (suggestions, "Go to model"; for the types that take one) and display
+ *   name; for the other types the Textures section (`TexturesSection`): texture slots in words,
+ *   the models lowering makes for them, and the user's own models per slot.
+ * - Shape (ADR 0059; simple, pillar and facing types only): `msm:shape` preset, custom boxes, "From model" (one undo step),
  *   walk-through and see-through toggles, the layer the model's textures give, and a live
  *   outline of the boxes.
  * - Mining: `msm:breakable` hardness, resistance, tool, minimum tier, requires tool.
@@ -28,6 +32,8 @@ import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
 import { AdvancedToggle, Section } from '../worldgen/parts';
+import { BlockTypeSection } from './BlockTypeSection';
+import { acceptsSingleModel, blockTypeOfData, isShapedType } from './block-type-model';
 import {
   asObject,
   choicesAt,
@@ -54,6 +60,7 @@ import {
 import { EventsEditor } from './EventsEditor';
 import { useBlocksItemsStudioHost } from './host';
 import { CheckField, EventSelect, ModelField, ProblemsAt, ShapePreview, TextField } from './parts';
+import { TexturesSection } from './TexturesSection';
 import { FuelCompostFields, TriggersSection } from './triggers';
 
 type TextureLayer = 'solid' | 'cutout' | 'translucent';
@@ -106,6 +113,12 @@ function useTextureLayers(
 
 type Drops = 'self' | 'table' | 'none';
 
+/** The loot presets of the plant types (ADR 0068 D3, D6), shown in words. */
+const LOOT_PRESET_LABELS: Readonly<Record<string, string>> = {
+  crop: 'Crop drops (produce when grown, seeds before)',
+  leaves: 'Leaves drops (sapling, sticks, extra item; itself with shears)',
+};
+
 const DROPS_LABELS: Readonly<Record<Drops, string>> = {
   self: 'Drops itself',
   table: 'Loot table',
@@ -121,6 +134,10 @@ export function BlockStudio(props: StudioProps) {
   // Why "From model" found no shape, for the element it was asked for.
   const [fromModelError, setFromModelError] = useState<{ id: string; reason: string } | null>(null);
   const data = asObject(element.data);
+  const blockType = blockTypeOfData(element.data);
+  // An unknown `type` (the schema reports it) shows every section, as a simple block.
+  const shaped = blockType === undefined || isShapedType(blockType);
+  const takesModel = blockType === undefined || acceptsSingleModel(blockType);
   const layers = useTextureLayers(typeof data.model === 'string' ? data.model : '');
   const set = pathSetter(element.data, onChange);
   const events = eventNames(element.data);
@@ -144,15 +161,37 @@ export function BlockStudio(props: StudioProps) {
     );
   }
 
+  const typeSection = (
+    <BlockTypeSection
+      project={project}
+      data={element.data}
+      node={node}
+      target={props.target}
+      problems={problems}
+      suggest={suggest}
+      set={set}
+      replace={(next) => onChange('', next)}
+    />
+  );
+
   const appearance = (
     <Section title="Appearance" testId="block-appearance">
-      <ModelField
-        project={project}
-        value={data.model}
-        suggest={suggest}
-        invalid={hasErrorAt(['model'])}
-        onCommit={(value) => set(['model'], value)}
-      />
+      {takesModel && (
+        <>
+          <ModelField
+            project={project}
+            value={data.model}
+            suggest={suggest}
+            invalid={hasErrorAt(['model'])}
+            onCommit={(value) => set(['model'], value)}
+          />
+          {blockType !== undefined && blockType !== 'block' && (
+            <p className="text-muted text-xs">
+              One model for every direction, or leave it empty and set the textures below.
+            </p>
+          )}
+        </>
+      )}
       {at(['model'])}
       <TextField
         label="Display name"
@@ -226,7 +265,7 @@ export function BlockStudio(props: StudioProps) {
               : hasShape
                 ? SHAPE_PRESET_LABELS.custom
                 : 'Full solid cube (no shape set)'}
-            . A half block here is a fixed shape, not a stackable vanilla slab.
+            . A half block here is a fixed shape; for a stackable slab choose the Type "Slab".
           </p>
           {fromModelReason !== null && (
             <p
@@ -444,8 +483,13 @@ export function BlockStudio(props: StudioProps) {
     </Section>
   );
 
+  const lootPreset = typeof data.loot === 'string' ? LOOT_PRESET_LABELS[data.loot] : undefined;
   const drops: Drops =
-    data.loot === 'self' ? 'self' : typeof data.loot === 'string' ? 'table' : 'none';
+    data.loot === 'self' || lootPreset !== undefined
+      ? 'self'
+      : typeof data.loot === 'string'
+        ? 'table'
+        : 'none';
   const dropsSection = (
     <Section title="Drops" testId="block-drops">
       <div role="radiogroup" aria-label="Drops" className="flex flex-wrap gap-3 text-sm">
@@ -457,7 +501,7 @@ export function BlockStudio(props: StudioProps) {
               data-testid={`block-drops-${mode}`}
               checked={drops === mode}
               onChange={() => {
-                if (mode === drops) return;
+                if (mode === drops && lootPreset === undefined) return;
                 if (mode === 'self') set(['loot'], 'self');
                 else if (mode === 'table') set(['loot'], '');
                 else set(['loot'], undefined);
@@ -481,6 +525,11 @@ export function BlockStudio(props: StudioProps) {
           invalid={hasErrorAt(['loot'])}
           onCommit={(value) => set(['loot'], value)}
         />
+      )}
+      {lootPreset !== undefined && (
+        <p className="text-muted text-xs" data-testid="block-drops-preset">
+          {lootPreset}; edit them under "Advanced (all fields)".
+        </p>
       )}
       {drops === 'self' && data.item === false && (
         <p role="status" className="text-warning text-xs">
@@ -629,30 +678,36 @@ export function BlockStudio(props: StudioProps) {
       </div>
       {at(['components', 'msm:on_step', 'event'])}
       {at(['components', 'msm:on_step', 'cooldown_ticks'])}
-      <div className="flex flex-wrap items-end gap-2">
-        <NumberField
-          label="Redstone signal emitted"
-          value={redstone.emit}
-          integer
-          allowEmpty
-          testId="block-redstone-emit"
-          onCommit={(value) => setRedstone('emit', value)}
-        />
-        <EventSelect
-          label="On powered"
-          value={redstone.on_powered}
-          events={events}
-          testId="block-on-powered"
-          onChange={(value) => setRedstone('on_powered', value)}
-        />
-        <EventSelect
-          label="On unpowered"
-          value={redstone.on_unpowered}
-          events={events}
-          testId="block-on-unpowered"
-          onChange={(value) => setRedstone('on_unpowered', value)}
-        />
-      </div>
+      {shaped ? (
+        <div className="flex flex-wrap items-end gap-2">
+          <NumberField
+            label="Redstone signal emitted"
+            value={redstone.emit}
+            integer
+            allowEmpty
+            testId="block-redstone-emit"
+            onCommit={(value) => setRedstone('emit', value)}
+          />
+          <EventSelect
+            label="On powered"
+            value={redstone.on_powered}
+            events={events}
+            testId="block-on-powered"
+            onChange={(value) => setRedstone('on_powered', value)}
+          />
+          <EventSelect
+            label="On unpowered"
+            value={redstone.on_unpowered}
+            events={events}
+            testId="block-on-unpowered"
+            onChange={(value) => setRedstone('on_unpowered', value)}
+          />
+        </div>
+      ) : (
+        <p className="text-muted text-xs" data-testid="block-redstone-own">
+          This type has vanilla's own redstone behaviour, so it takes no redstone fields.
+        </p>
+      )}
       {['emit', 'on_powered', 'on_unpowered'].map((key) => (
         <ProblemsAt
           key={key}
@@ -667,8 +722,25 @@ export function BlockStudio(props: StudioProps) {
     <section aria-label="Block Studio" data-testid="block-studio" className="flex flex-col gap-4">
       <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="block-advanced-toggle" />
       <ProblemsAt problems={problems} pointer="" />
+      {typeSection}
       {appearance}
-      {shapeSection}
+      <TexturesSection
+        key={element.id}
+        element={element}
+        problems={problems}
+        suggest={suggest}
+        set={set}
+      />
+      {shaped ? (
+        shapeSection
+      ) : (
+        <Section title="Shape" testId="block-shape">
+          <p className="text-muted text-xs" data-testid="block-shape-from-type">
+            The type gives the block vanilla's own shape, which turns and connects with its state.
+          </p>
+          {at(SHAPE_PATH)}
+        </Section>
+      )}
       {mining}
       {looks}
       {dropsSection}

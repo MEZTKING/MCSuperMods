@@ -7,7 +7,7 @@
 
 import { defaultKindRegistry, type Project, parseJsonPointer } from '@msm/core';
 import type { Element, Json, OutputFile, Plugin, Target } from '@msm/plugin-api';
-import { potionVariantIds } from '@msm/plugin-blocks-items';
+import { blockItemIdOf, potionVariantIds } from '@msm/plugin-blocks-items';
 import {
   BUILT_IN_EXTENSIONS,
   createRegistryIndex,
@@ -165,10 +165,11 @@ function sortedRecord(map: Map<string, string[]>): Record<string, string[]> {
  * resource pack (for example `structure`, `worldgen/biome`, `dimension`). A registered kind of
  * another namespace counts when it declares a plain `ElementKind.registry` (no `:`), for
  * example `msm:block` in `block` and `msm:item` in `item`. An element in the `block` registry
- * also registers its block item under the same id, so it is in `item` too unless its data has
- * `"item": false` ({@link blockHasItem}). An `msm:entity` element (registry `entity_type`)
- * also registers its spawn egg `<id>_spawn_egg` in `item` unless `spawn_egg` is `false`
- * ({@link entityHasSpawnEgg}); `msm:geo_model` and `msm:animation` ids land in their own
+ * also registers its block item, so the item id is in `item` too: the block's own id, or its
+ * `item.id` when the block item has its own id (seeds planting a crop, ADR 0068 D2), and none
+ * when its data has `"item": false` (`blockItemIdOf`, the single source; {@link blockHasItem}).
+ * An `msm:entity` element (registry `entity_type`) also registers its spawn egg
+ * `<id>_spawn_egg` in `item` unless `spawn_egg` is `false` ({@link entityHasSpawnEgg}); `msm:geo_model` and `msm:animation` ids land in their own
  * plain registries, which no vanilla schema reads. An `msm:potion` element (registry `potion`)
  * also registers its `long_` and `strong_` versions ({@link potionRegistryIds}, ADR 0063 D9).
  * Only registries with at least one id appear. Sorted,
@@ -194,8 +195,9 @@ export function dataRegistryIds(
         // Another plugin's kind: only a declared, plain registry name counts.
         if (registered === undefined || registered.includes(':')) continue;
         add(registered, element.id);
-        if (registered === BLOCK_REGISTRY && blockHasItem(element.data)) {
-          add(ITEM_REGISTRY, element.id);
+        if (registered === BLOCK_REGISTRY) {
+          const itemId = blockItemIdOf(element.id, element.data);
+          if (itemId !== undefined) add(ITEM_REGISTRY, itemId);
         }
         if (element.kind === ENTITY_KIND && entityHasSpawnEgg(element.data)) {
           add(ITEM_REGISTRY, spawnEggId(element.id));
@@ -212,7 +214,10 @@ export function dataRegistryIds(
         (registered !== undefined && !NON_DATA_KINDS.has(element.kind));
       if (!isData) continue;
       add(registry, element.id);
-      if (registry === BLOCK_REGISTRY && blockHasItem(element.data)) add(ITEM_REGISTRY, element.id);
+      if (registry === BLOCK_REGISTRY) {
+        const itemId = blockItemIdOf(element.id, element.data);
+        if (itemId !== undefined) add(ITEM_REGISTRY, itemId);
+      }
     }
   }
   return sortedRecord(new Map([...map].map(([name, ids]) => [name, [...ids]])));
@@ -271,8 +276,9 @@ export function spawnEggModelId(entityId: string, data: unknown): string | undef
 }
 
 /**
- * Whether a block element registers a block item under its own id: every block does, as in
- * the game, unless its data is an object with `"item": false`.
+ * Whether a block element registers a block item: every block does, as in the game, unless its
+ * data is an object with `"item": false`. The item's id is `blockItemIdOf` (the block's id or
+ * its `item.id`).
  *
  * @param data - The block element's data.
  */
