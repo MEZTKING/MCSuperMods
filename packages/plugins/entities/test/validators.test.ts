@@ -117,6 +117,8 @@ describe('entities validators', () => {
             'msm:on_hurt': { event: 'example:x' },
             'msm:on_death': { event: 'example:ok' },
             'msm:on_interact': { event: 'example:y' },
+            'msm:on_tick': { event: 'example:t', interval_ticks: 20 },
+            'msm:on_spawn': { event: 'example:s' },
           },
         ),
       ),
@@ -125,7 +127,44 @@ describe('entities validators', () => {
       ['entities.unknown-event', 'error', 'example:a', '/components/msm:attack/on_attack'],
       ['entities.unknown-event', 'error', 'example:a', '/components/msm:on_hurt/event'],
       ['entities.unknown-event', 'error', 'example:a', '/components/msm:on_interact/event'],
+      ['entities.unknown-event', 'error', 'example:a', '/components/msm:on_tick/event'],
+      ['entities.unknown-event', 'error', 'example:a', '/components/msm:on_spawn/event'],
       ['entities.unknown-event', 'error', 'example:a', '/events/example:ok/actions/0/event'],
+    ]);
+  });
+
+  it('accepts msm:on_tick and msm:on_spawn naming declared events (ADR 0061 D3)', async () => {
+    const trigger = (event: string) => ({ actions: [{ type: 'trigger_event', event }] });
+    const problems = await validate(
+      withRefs(
+        entity(
+          'example:a',
+          { events: { 'example:t': trigger('example:s'), 'example:s': { actions: [] } } },
+          {},
+          {
+            'msm:on_tick': { event: 'example:t', interval_ticks: 40 },
+            'msm:on_spawn': { event: 'example:s' },
+          },
+        ),
+      ),
+    );
+    expect(problems).toEqual([]);
+  });
+
+  it('reports a cycle between events fired by msm:on_tick', async () => {
+    const trigger = (event: string) => ({ actions: [{ type: 'trigger_event', event }] });
+    const problems = await validate(
+      withRefs(
+        entity(
+          'example:a',
+          { events: { 'example:t': trigger('example:u'), 'example:u': trigger('example:t') } },
+          {},
+          { 'msm:on_tick': { event: 'example:t' } },
+        ),
+      ),
+    );
+    expect(summary(problems)).toEqual([
+      ['entities.event-cycle', 'error', 'example:a', '/events/example:t'],
     ]);
   });
 

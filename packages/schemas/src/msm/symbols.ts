@@ -25,7 +25,8 @@ import { parseVanillaMcdocSymbols, type VanillaMcdocSymbols } from '../symbols/p
  *   definitions written to `msm/<ns>/biome_addition/<path>.json` and
  *   `msm/<ns>/loot_addition/<path>.json` (ADR 0060 D2, D3). A biome addition is a union of two
  *   structs (at least one of `features` and `spawns`), not a struct; a loot addition's `pools`
- *   are `any`, checked against the target's loot table schema by the plugin's validators.
+ *   are `any` in MSM mcdoc, and `resolveSchemaRef` substitutes the target's
+ *   `::java::data::loot::LootPool` for their items (`SchemaIndex.resolveSchemaRef`).
  */
 export const MSM_SCHEMA_REFS = {
   block: 'msm:block',

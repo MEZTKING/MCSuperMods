@@ -5,7 +5,8 @@
  * plugin). Codes:
  *
  * - `entities.unknown-event` (error): an event field of a trigger component (`msm:on_hurt`,
- *   `msm:on_death`, `msm:on_interact`, `msm:attack.on_attack`) or a `trigger_event` action
+ *   `msm:on_death`, `msm:on_interact`, `msm:on_tick`, `msm:on_spawn` (ADR 0061 D3),
+ *   `msm:attack.on_attack`) or a `trigger_event` action
  *   naming an event the entity does not declare.
  *   A `run_script` action (ADR 0032 D4) names a script handler, not an event, so it is never
  *   an event reference; `scripting.unknown-handler` of `@msm/plugin-scripting` checks it.
@@ -85,6 +86,8 @@ const EVENT_FIELDS: readonly (readonly [string, string])[] = [
   ['msm:on_hurt', 'event'],
   ['msm:on_death', 'event'],
   ['msm:on_interact', 'event'],
+  ['msm:on_tick', 'event'],
+  ['msm:on_spawn', 'event'],
 ];
 
 /** One event reference inside an element. */

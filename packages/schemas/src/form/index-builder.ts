@@ -1,4 +1,4 @@
-import { MSM_SCHEMA_ALIASES, mergeMsmSymbols } from '../msm/symbols';
+import { MSM_SCHEMA_ALIASES, MSM_SCHEMA_REFS, mergeMsmSymbols } from '../msm/symbols';
 import type { VanillaMcdocSymbols } from '../symbols/parse';
 import type { RawMcdocType } from '../symbols/raw-types';
 import { BUILT_IN_EXTENSIONS } from './extensions';
@@ -61,7 +61,10 @@ export interface SchemaIndex {
    *   entries that are `<registry>` ids (`#` tag references included); memoised per registry;
    * - any other key of `BUILT_IN_EXTENSIONS` or `options.extensions`, e.g. `msm:function`;
    * - an MSM schema reference (`MSM_SCHEMA_REFS`, e.g. `msm:block`), resolved to its
-   *   `::msm::...` type path.
+   *   `::msm::...` type path. For `msm:loot_addition` and `msm:loot_addition_definition`
+   *   the `pools` item type (`any` in MSM mcdoc) is replaced by the target's
+   *   `::java::data::loot::LootPool` when the export has it (ADR 0060 D3), so validation and
+   *   forms check pools against the vanilla pool format; the plain type path keeps `any`.
    * Throws `SchemaNotFoundError` when the reference cannot be resolved.
    */
   resolveSchemaRef(ref: string): SchemaNode;
@@ -75,6 +78,13 @@ const TAG_REF_PREFIX = 'tag:';
 const TYPE_PATH_PREFIX = '::';
 /** The vanilla-mcdoc template every tag file instantiates with its entry id type. */
 const TAG_TEMPLATE_PATH = '::java::data::tag::Tag';
+/** The vanilla loot pool type substituted into a loot addition's `pools` (ADR 0060 D3). */
+const LOOT_POOL_PATH = '::java::data::loot::LootPool';
+/** MSM schema references whose `pools` field takes vanilla loot pools. */
+const LOOT_POOL_REFS: ReadonlySet<string> = new Set([
+  MSM_SCHEMA_REFS.lootAddition,
+  MSM_SCHEMA_REFS.lootAdditionDefinition,
+]);
 
 /** Every type path that appears as a template parameter anywhere in `types`. */
 function collectTypeParams(types: Iterable<unknown>): Set<string> {
@@ -396,6 +406,32 @@ export function createSchemaIndex(
     return node;
   };
 
+  const lootPoolSchemas = new Map<string, SchemaNode>();
+
+  /**
+   * `node` (a loot addition struct) with its `pools` list items typed as the export's vanilla
+   * loot pool. Unchanged when the export lacks the pool type or the struct has no `pools` list.
+   * Memoised per reference, so every call returns the same object.
+   */
+  const withLootPools = (ref: string, node: SchemaNode): SchemaNode => {
+    const cached = lootPoolSchemas.get(ref);
+    if (cached !== undefined) return cached;
+    let root = node;
+    while (root.kind === 'reference') root = root.resolve();
+    let result = node;
+    if (root.kind === 'struct' && hasOwn(symbols.mcdoc, LOOT_POOL_PATH)) {
+      const pool = resolvePath(LOOT_POOL_PATH);
+      const fields = root.fields.map((field) =>
+        field.key === 'pools' && field.type.kind === 'list'
+          ? { ...field, type: { ...field.type, item: pool } }
+          : field,
+      );
+      if (fields.some((field, i) => field !== root.fields[i])) result = { ...root, fields };
+    }
+    lootPoolSchemas.set(ref, result);
+    return result;
+  };
+
   const resolveSchemaRef = (ref: string): SchemaNode => {
     if (ref.startsWith(TYPE_PATH_PREFIX)) return resolvePath(ref);
     if (ref.startsWith(RESOURCE_REF_PREFIX)) {
@@ -408,7 +444,10 @@ export function createSchemaIndex(
     const extension = hasOwn(extensions, ref) ? extensions[ref] : undefined;
     if (extension !== undefined) return extension;
     const msmPath = hasOwn(MSM_SCHEMA_ALIASES, ref) ? MSM_SCHEMA_ALIASES[ref] : undefined;
-    if (msmPath !== undefined) return resolvePath(msmPath);
+    if (msmPath !== undefined) {
+      const node = resolvePath(msmPath);
+      return LOOT_POOL_REFS.has(ref) ? withLootPools(ref, node) : node;
+    }
     // Kept for exports whose paths do not start with `::`.
     return resolvePath(ref);
   };
