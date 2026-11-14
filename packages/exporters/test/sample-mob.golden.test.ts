@@ -20,12 +20,13 @@
  *   renderer, with one `export.entity-vanilla-renderer` info (ADR 0072 D5).
  * - The jar holds the `msm/` entity definition and the GeckoLib model and animations, each
  *   valid against its MSM schema, and `fabric.mod.json` depends on GeckoLib.
- * - With `MSM_RUNTIME_JAR` (a built `msm_runtime` jar), `MSM_GECKOLIB_JAR` (the GeckoLib jar
- *   path; downloaded there from the target's GeckoLib facts and SHA-512 checked when the file
- *   is missing or differs) and `MSM_SAMPLE_MOB_OUT` (a folder), the jar is also exported with
- *   both real jars nested and written to that folder as `msm_sample_mob.jar`, next to
- *   `fabric-facts.json` for `tools/run-fabric-server` (CI's `engine-mod` job). Without them
- *   that test is skipped.
+ * - With `MSM_RUNTIME_JAR` (a built `msm_runtime` jar) and `MSM_SAMPLE_MOB_OUT` (a folder),
+ *   plus `MSM_GECKOLIB_JAR` on a target with GeckoLib (the GeckoLib jar path; downloaded there
+ *   from the target's GeckoLib facts and SHA-512 checked when the file is missing or differs),
+ *   the jar is also exported with the real jars nested (on a target without GeckoLib the
+ *   runtime alone) and written to that folder as `msm_sample_mob.jar`, next to
+ *   `fabric-facts.json` for `tools/run-fabric-server` (CI's `engine-mod` job, B306). Without
+ *   them that test is skipped.
  */
 import { createHash } from 'node:crypto';
 import { mkdir, readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
@@ -1030,22 +1031,23 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     const isSelectedTarget = bundle === selectedTarget();
     it.runIf(
       runtimeJarPath !== undefined &&
-        geckolibJarPath !== undefined &&
         outDir !== undefined &&
         isSelectedTarget &&
-        geckolib !== undefined,
+        (geckolib === undefined || geckolibJarPath !== undefined),
     )(
-      'writes the jar with the real runtime and GeckoLib for the headless server check',
+      'writes the jar with the real runtime (and GeckoLib) for the headless server check',
       async () => {
         const fabric = target.fabric;
         if (fabric === undefined) throw new Error(`${target.id} has no Fabric facts`);
-        if (geckolib === undefined) throw new Error(`${target.id} has no GeckoLib facts`);
         const runtimeJar = new Uint8Array(await readFile(runtimeJarPath as string));
         const runtimeVersion = jarModVersion(runtimeJar);
-        const realGeckolib = await geckolibJar(geckolibJarPath as string, geckolib);
+        const realGeckolib =
+          geckolib === undefined
+            ? undefined
+            : await geckolibJar(geckolibJarPath as string, geckolib);
         const jar = await exportJar({
           loadRuntimeJar: async () => runtimeJar,
-          loadGeckolibJar: async () => realGeckolib,
+          loadGeckolibJar: async () => realGeckolib ?? stubGeckolibJar,
           runtimeVersion,
         });
         await mkdir(outDir as string, { recursive: true });
@@ -1055,7 +1057,15 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           expectEntities: EXPECTED_ENTITIES,
           expectItems: EXPECTED_ITEMS,
           fabricApi: fabric.api,
-          geckolib: { fileName: geckolib.fileName, sha512: geckolib.sha512, url: geckolib.url },
+          ...(geckolib === undefined
+            ? {}
+            : {
+                geckolib: {
+                  fileName: geckolib.fileName,
+                  sha512: geckolib.sha512,
+                  url: geckolib.url,
+                },
+              }),
           java: target.java,
           loader: fabric.loader,
           minecraft: target.mcVersion,
@@ -1067,7 +1077,13 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         );
         const files = unzipSync(jar);
         expect(files[nestedRuntimePath(runtimeVersion)]).toEqual(runtimeJar);
-        expect(files[nestedGeckolibPath(geckolib)]).toEqual(realGeckolib);
+        if (geckolib !== undefined) {
+          expect(files[nestedGeckolibPath(geckolib)]).toEqual(realGeckolib);
+        } else {
+          expect(Object.keys(files).filter((path) => path.startsWith('META-INF/jars/'))).toEqual([
+            nestedRuntimePath(runtimeVersion),
+          ]);
+        }
       },
       120_000,
     );

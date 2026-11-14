@@ -148,16 +148,22 @@ jobs:
             echo "::error::fabric-facts.json names Minecraft $actual, engine-mod/versions/${{ matrix.mc }}.properties ${{ steps.facts.outputs.minecraft }} (is MSM_TARGET_ID honoured?)"
             exit 1
           fi
-      - name: Export the sample mob with the real runtime and GeckoLib
-        if: steps.facts.outputs.geckolib == 'true'
+      # On a version with GeckoLib the jar nests it (MSM_GECKOLIB_JAR); on one without (26.4)
+      # the mobs are drawn by the runtime's vanilla renderer and the jar nests the runtime alone
+      # (ADR 0072, B288, B306), so the sample mob is exported, served and parity-run everywhere.
+      - name: Export the sample mob with the real runtime (and GeckoLib where the version has it)
         run: |
           MSM_GECKOLIB_JAR="$HOME/.cache/msm-fabric-server/geckolib.jar" MSM_SAMPLE_MOB_OUT="$RUNNER_TEMP/sample-mob" \
             pnpm --filter @msm/exporters exec vitest run test/sample-mob.golden.test.ts
           test -f "$RUNNER_TEMP/sample-mob/msm_sample_mob.jar"
           cat "$RUNNER_TEMP/sample-mob/fabric-facts.json"
-      - name: Sample mob skipped (no GeckoLib for this version)
-        if: steps.facts.outputs.geckolib != 'true'
-        run: echo "::notice::No GeckoLib build for Minecraft ${{ matrix.mc }} (blank geckolib_modrinth_version_id in engine-mod/versions/${{ matrix.mc }}.properties); the sample mob export, server check and parity runs are skipped."
+      # The mob expansion's sample (ADRs 0070-0073, B302): six creatures, one per feature.
+      - name: Export the sample creatures with the real runtime (and GeckoLib where the version has it)
+        run: |
+          MSM_GECKOLIB_JAR="$HOME/.cache/msm-fabric-server/geckolib.jar" MSM_SAMPLE_CREATURES_OUT="$RUNNER_TEMP/sample-creatures" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-creatures.golden.test.ts
+          test -f "$RUNNER_TEMP/sample-creatures/msm_sample_creatures.jar"
+          cat "$RUNNER_TEMP/sample-creatures/fabric-facts.json"
       # The sample mod's potion and its long and strong versions (ADR 0063, B255) must register.
       - name: Headless Fabric server check (sample mod)
         run: >-
@@ -167,12 +173,25 @@ jobs:
           --expect-line '[msm_runtime] registered 3 potion(s)'
           --work "$RUNNER_TEMP/fabric-server"
           --cache ~/.cache/msm-fabric-server
-      - name: Headless Fabric server check (sample mob, GeckoLib nested)
-        if: steps.facts.outputs.geckolib == 'true'
+      # The start-up lines are pinned as they end in the server log (the facts already require
+      # the block, item and entity counts).
+      - name: Headless Fabric server check (sample mob)
         run: >-
           node tools/run-fabric-server/index.ts
           --jar "$RUNNER_TEMP/sample-mob/msm_sample_mob.jar"
           --facts "$RUNNER_TEMP/sample-mob/fabric-facts.json"
+          --expect-line '[msm_runtime] registered 4 sound event(s)'
+          --expect-line '[msm_runtime] registered 0 block(s) and 1 item(s) from 1 definition file(s); 0 error(s), 0 warning(s)'
+          --expect-line '[msm_runtime] registered 1 entity type(s) and 0 mob effect(s)'
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
+      - name: Headless Fabric server check (sample creatures)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-creatures/msm_sample_creatures.jar"
+          --facts "$RUNNER_TEMP/sample-creatures/fabric-facts.json"
+          --expect-line '[msm_runtime] registered 0 block(s) and 7 item(s) from 7 definition file(s); 0 error(s), 0 warning(s)'
+          --expect-line '[msm_runtime] registered 6 entity type(s) and 0 mob effect(s)'
           --work "$RUNNER_TEMP/fabric-server-mob"
           --cache ~/.cache/msm-fabric-server
       # Phase 6 (B139): scripts on a real server, the Java project eject built with Gradle, and
@@ -243,15 +262,18 @@ jobs:
           echo "MSM_PARITY_JAR=${jars[0]}" >> "$GITHUB_ENV"
       # The Java project eject and the ejected parity runs: 26.3 only until the other versions'
       # Java generators are confirmed (ADR 0038 D5).
-      - name: Export the sample mod and the sample mob as Java projects
+      - name: Export the sample mod, the sample mob and the sample creatures as Java projects
         if: matrix.mc == '26.3'
         run: |
           MSM_SAMPLE_MOD_JAVA_OUT="$RUNNER_TEMP/java/sample-mod" \
             pnpm --filter @msm/exporters exec vitest run test/sample-mod.java.golden.test.ts
           MSM_SAMPLE_MOB_JAVA_OUT="$RUNNER_TEMP/java/sample-mob" \
             pnpm --filter @msm/exporters exec vitest run test/sample-mob.java.golden.test.ts
+          MSM_SAMPLE_CREATURES_JAVA_OUT="$RUNNER_TEMP/java/sample-creatures" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-creatures.java.golden.test.ts
           test -x "$RUNNER_TEMP/java/sample-mod/gradlew"
           test -x "$RUNNER_TEMP/java/sample-mob/gradlew"
+          test -x "$RUNNER_TEMP/java/sample-creatures/gradlew"
       # Each written project builds with its own wrapper; the Gradle cache above holds the 26.3
       # artefacts. Loom's "(kSxHvs99) is not valid semver" line for the nested GeckoLib is harmless.
       - name: Build the ejected sample mod
@@ -262,10 +284,14 @@ jobs:
         if: matrix.mc == '26.3'
         working-directory: ${{ runner.temp }}/java/sample-mob
         run: ./gradlew build --no-daemon
+      - name: Build the ejected sample creatures
+        if: matrix.mc == '26.3'
+        working-directory: ${{ runner.temp }}/java/sample-creatures
+        run: ./gradlew build --no-daemon
       - name: Find the ejected jars
         if: matrix.mc == '26.3'
         run: |
-          for sample in mod mob; do
+          for sample in mod mob creatures; do
             mapfile -t jars < <(ls "$RUNNER_TEMP/java/sample-$sample"/build/libs/msm_sample_$sample-*.jar | grep -v -e '-sources\.jar$')
             if [ "${#jars[@]}" -ne 1 ]; then
               echo "::error::Expected one ejected sample-$sample jar, found ${#jars[@]}: ${jars[*]}"
@@ -298,7 +324,6 @@ jobs:
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
       - name: Parity GameTests (sample mob, content jar)
-        if: steps.facts.outputs.geckolib == 'true'
         run: >-
           node tools/run-fabric-server/index.ts
           --jar "$RUNNER_TEMP/sample-mob/msm_sample_mob.jar"
@@ -315,6 +340,28 @@ jobs:
           --facts "$RUNNER_TEMP/sample-mob/fabric-facts.json" --no-runtime
           --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_mob_*'
           --report "$RUNNER_TEMP/parity-reports/sample-mob-ejected.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
+      # The mob expansion (B306, SampleCreaturesParityTest): bodies, taming, breeding, riding,
+      # movement, ranged attacks, variants and the boss bar, black-box, on the content jar of
+      # every version (26.4 without GeckoLib) and on the ejected jar.
+      - name: Parity GameTests (sample creatures, content jar)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-creatures/msm_sample_creatures.jar"
+          --facts "$RUNNER_TEMP/sample-creatures/fabric-facts.json"
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_creatures_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-creatures-content.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
+      - name: Parity GameTests (sample creatures, ejected jar)
+        if: matrix.mc == '26.3'
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_CREATURES_JAR"
+          --facts "$RUNNER_TEMP/sample-creatures/fabric-facts.json" --no-runtime
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_creatures_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-creatures-ejected.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
       # The fifth run (ADR 0058 D4): script behaviour on the content jar only, since scripts
@@ -345,6 +392,12 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v7
         with:
+          name: msm-sample-creatures-mc${{ matrix.mc }}
+          path: ${{ runner.temp }}/sample-creatures/msm_sample_creatures.jar
+          if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
           name: msm-sample-script-mc${{ matrix.mc }}
           path: ${{ runner.temp }}/sample-script/msm_sample_script.jar
           if-no-files-found: ignore
@@ -355,6 +408,7 @@ jobs:
           path: |
             ${{ runner.temp }}/java/sample-mod/build/libs/*.jar
             ${{ runner.temp }}/java/sample-mob/build/libs/*.jar
+            ${{ runner.temp }}/java/sample-creatures/build/libs/*.jar
           if-no-files-found: ignore
       - if: always()
         uses: actions/upload-artifact@v7

@@ -14,7 +14,7 @@ CI's `engine-mod` job then builds `msm_runtime` with Gradle, exports this projec
 ```
 [msm_runtime] registered 4 sound event(s)
 [msm_runtime] registered 0 block(s) and 1 item(s) from 1 definition file(s); 0 error(s), 0 warning(s)
-[msm_runtime] registered 1 entity type(s)
+[msm_runtime] registered 1 entity type(s) and 0 mob effect(s)
 ```
 
 (the spawn egg is the one item) and nothing from the runtime or GeckoLib at warning or error level. The jar is kept as the workflow artefact `msm-sample-mob`. The server has no renderer, so how the mob looks and animates is left to the in-game check below.
@@ -85,7 +85,7 @@ Finally open the game log (Prism: the instance's **Minecraft Log**; official lau
 ```
 [msm_runtime] registered 4 sound event(s)
 [msm_runtime] registered 0 block(s) and 1 item(s) from 1 definition file(s); 0 error(s), 0 warning(s)
-[msm_runtime] registered 1 entity type(s)
+[msm_runtime] registered 1 entity type(s) and 0 mob effect(s)
 ```
 
 and no other line containing `[msm_runtime]` at WARN or ERROR, no GeckoLib warning or error (such as "Unknown geo model format version" or "Unsupported geo model format version"), no `Failed to load` and no missing-texture warning mentioning `msm_sample_mob`. Report any such line.
