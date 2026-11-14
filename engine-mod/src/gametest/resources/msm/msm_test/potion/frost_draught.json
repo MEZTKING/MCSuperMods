@@ -1,0 +1,9 @@
+{
+  "effects": [
+    {
+      "duration_ticks": 3600,
+      "id": "msm_test:frostbite"
+    }
+  ],
+  "format": 1
+}

@@ -14,6 +14,7 @@ import dev.mcsupermods.runtime.loader.ItemDefinition;
 import dev.mcsupermods.runtime.loader.LoadReport;
 import dev.mcsupermods.runtime.loader.MsmRarity;
 import dev.mcsupermods.runtime.loader.ParseResult;
+import dev.mcsupermods.runtime.loader.PotionDefinition;
 import dev.mcsupermods.runtime.loader.RawDefinition;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -63,6 +64,7 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.equipment.ArmorMaterial;
 import net.minecraft.world.item.equipment.ArmorMaterials;
@@ -88,6 +90,7 @@ public final class MsmRegistrar {
         List<Identifier> blocks = new ArrayList<>();
         List<Identifier> items = new ArrayList<>();
         List<Identifier> effects = new ArrayList<>();
+        List<Identifier> potions = new ArrayList<>();
         List<String> errors = new ArrayList<>(scanned.errors());
         List<String> warnings = new ArrayList<>(scanned.warnings());
         if (!hooksInstalled) {
@@ -120,6 +123,29 @@ public final class MsmRegistrar {
                 fail(errors, raw, e);
             }
         }
+        // Potions after effects (they name project effects) and before blocks and items (ADR 0063 D4): an item's
+        // minecraft:potion_contents passthrough may then name a project potion without a delayed component.
+        for (RawDefinition raw : scanned.definitions()) {
+            if (!raw.kind().equals("potion")) {
+                continue;
+            }
+            ParseResult<PotionDefinition> parsed = DefinitionParser.parsePotion(raw.json());
+            report(raw, parsed, errors, warnings);
+            if (parsed.definition().isEmpty()) {
+                continue;
+            }
+            try {
+                if (BuiltInRegistries.POTION.containsKey(raw.id())) {
+                    throw new DefinitionException("potion id " + raw.id() + " is already registered");
+                }
+                if (registerPotion(raw, parsed.definition().get(), errors)) {
+                    potions.add(raw.id());
+                }
+            } catch (DefinitionException | RuntimeException e) {
+                fail(errors, raw, e);
+            }
+        }
+        MsmRuntime.LOGGER.info("[{}] registered {} potion(s)", MsmRuntime.MOD_ID, potions.size());
         // Blocks first, so a block's item exists before any item definition could collide with it.
         for (RawDefinition raw : scanned.definitions()) {
             if (!raw.kind().equals("block")) {
@@ -168,7 +194,7 @@ public final class MsmRegistrar {
         MsmRuntime.LOGGER.info("[{}] registered {} biome addition(s) and {} loot addition(s)", MsmRuntime.MOD_ID, biomeAdditions.size(),
                 lootAdditions.size());
         return new LoadReport(scanned.filesRead(), scanned.definitions(), List.copyOf(blocks), List.copyOf(items),
-                List.copyOf(entities), List.copyOf(effects), sounds, biomeAdditions, lootAdditions, List.copyOf(errors), List.copyOf(warnings));
+                List.copyOf(entities), List.copyOf(effects), List.copyOf(potions), sounds, biomeAdditions, lootAdditions, List.copyOf(errors), List.copyOf(warnings));
     }
 
     /**
@@ -236,6 +262,34 @@ public final class MsmRegistrar {
             effect.addAttributeModifier(attribute.get(), modifierId(raw.id(), index), m.amount(), operation);
         }
         Registry.register(BuiltInRegistries.MOB_EFFECT, ResourceKey.create(Registries.MOB_EFFECT, raw.id()), effect);
+    }
+
+    /**
+     * {@code msm/<ns>/potion/*.json} as a vanilla {@link Potion} (ADR 0063 D4) named {@link PotionDefinition#name}. Every
+     * effect id must be registered already (vanilla, or a project effect registered just before); otherwise the potion
+     * is skipped with one error naming all unknown ids. Returns whether the potion was registered.
+     */
+    private static boolean registerPotion(RawDefinition raw, PotionDefinition def, List<String> errors) {
+        List<MobEffectInstance> instances = new ArrayList<>();
+        List<String> unknown = new ArrayList<>();
+        for (PotionDefinition.Effect e : def.effects()) {
+            Optional<Holder.Reference<MobEffect>> holder = BuiltInRegistries.MOB_EFFECT.get(e.id());
+            if (holder.isEmpty()) {
+                unknown.add(e.id().toString());
+                continue;
+            }
+            instances.add(new MobEffectInstance(holder.get(), e.durationTicks(), e.amplifier(), e.ambient(), e.showParticles(),
+                    e.showIcon()));
+        }
+        if (!unknown.isEmpty()) {
+            String message = raw.describe() + ": effects: unknown mob effect " + String.join(", ", unknown) + "; the potion is skipped";
+            errors.add(message);
+            MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, message);
+            return false;
+        }
+        Potion potion = new Potion(def.name(raw.id()), instances.toArray(MobEffectInstance[]::new));
+        Registry.register(BuiltInRegistries.POTION, ResourceKey.create(Registries.POTION, raw.id()), potion);
+        return true;
     }
 
     /** The id of an effect's attribute modifier: {@code <ns>:effect.<path>.<index>} (ADR 0055 D3). */

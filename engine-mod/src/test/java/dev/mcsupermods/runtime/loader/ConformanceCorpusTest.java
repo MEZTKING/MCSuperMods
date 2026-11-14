@@ -59,6 +59,7 @@ class ConformanceCorpusTest {
             new Kind("item-", DefinitionParser::parseItem),
             new Kind("entity-", DefinitionParser::parseEntity),
             new Kind("effect-", DefinitionParser::parseEffect),
+            new Kind("potion-", DefinitionParser::parsePotion),
             new Kind("biome-addition-", DefinitionParser::parseBiomeAddition),
             new Kind("loot-addition-", DefinitionParser::parseLootAddition),
             new Kind("block-item-components-", DefinitionParser::parseBlock),

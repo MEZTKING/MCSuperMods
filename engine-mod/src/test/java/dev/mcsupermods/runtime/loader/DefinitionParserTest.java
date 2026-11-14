@@ -819,4 +819,48 @@ class DefinitionParserTest {
             assertTrue(String.join("\n", result.errors()).contains("x: unknown field"), c + ": " + result.errors());
         }
     }
+
+    private static ParseResult<PotionDefinition> potion(String json) {
+        return DefinitionParser.parsePotion(JsonParser.parseString(json));
+    }
+
+    @Test
+    void potionDefaultsAndTheDefaultName() {
+        ParseResult<PotionDefinition> result = potion("{\"format\": 1, \"effects\": [{\"id\": \"minecraft:speed\", \"duration_ticks\": 3600}]}");
+        assertEquals(List.of(), result.errors());
+        assertEquals(List.of(), result.warnings());
+        PotionDefinition def = result.definition().orElseThrow();
+        assertEquals(Optional.empty(), def.name());
+        assertEquals(List.of(new PotionDefinition.Effect(Identifier.parse("minecraft:speed"), 3600, 0, false, true, true)), def.effects());
+        assertEquals("mymod.swift", def.name(Identifier.parse("mymod:swift")));
+        assertEquals("mymod.long_swift", def.name(Identifier.parse("mymod:long_swift")));
+        assertEquals("mymod.drinks/swift", PotionDefinition.defaultName(Identifier.parse("mymod:drinks/swift")));
+    }
+
+    @Test
+    void potionDecodesEveryField() {
+        ParseResult<PotionDefinition> result = potion("{\"format\": 1, \"name\": \"mymod.swift\", \"effects\": [{\"id\": \"mymod:glow\", "
+                + "\"duration_ticks\": 200, \"amplifier\": 2, \"ambient\": true, \"show_particles\": false, \"show_icon\": false}, "
+                + "{\"id\": \"minecraft:speed\", \"duration_ticks\": 1}]}");
+        assertEquals(List.of(), result.errors());
+        PotionDefinition def = result.definition().orElseThrow();
+        // An explicit name wins over the id: the long_ and strong_ variants share their base potion's name.
+        assertEquals("mymod.swift", def.name(Identifier.parse("mymod:strong_swift")));
+        assertEquals(new PotionDefinition.Effect(Identifier.parse("mymod:glow"), 200, 2, true, false, false), def.effects().getFirst());
+        assertEquals(1, def.effects().get(1).durationTicks());
+    }
+
+    @Test
+    void potionIsClosedAndLimited() {
+        ParseResult<PotionDefinition> extra = potion("{\"format\": 1, \"effects\": [{\"id\": \"minecraft:speed\", \"duration_ticks\": 1, "
+                + "\"colour\": 1}]}");
+        assertTrue(extra.definition().isEmpty());
+        assertTrue(String.join("\n", extra.errors()).contains("colour: unknown field"), extra.errors().toString());
+        String one = "{\"id\": \"minecraft:speed\", \"duration_ticks\": 1}";
+        ParseResult<PotionDefinition> nine = potion("{\"format\": 1, \"effects\": [" + String.join(", ", java.util.Collections.nCopies(9, one)) + "]}");
+        assertTrue(nine.definition().isEmpty());
+        assertTrue(String.join("\n", nine.errors()).contains("effects: too many effects: 9"), nine.errors().toString());
+        ParseResult<PotionDefinition> future = potion("{\"format\": 2, \"effects\": [" + one + "]}");
+        assertTrue(String.join("\n", future.errors()).contains("newer than this runtime"), future.errors().toString());
+    }
 }

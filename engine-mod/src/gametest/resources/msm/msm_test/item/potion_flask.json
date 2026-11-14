@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:components": {
+      "minecraft:potion_contents": {
+        "potion": "msm_test:frost_draught"
+      }
+    }
+  },
+  "format": 1
+}

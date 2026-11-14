@@ -1,0 +1,13 @@
+{
+  "effects": [
+    {
+      "duration_ticks": 200,
+      "id": "minecraft:speed"
+    },
+    {
+      "duration_ticks": 200,
+      "id": "msm_test:no_such_effect"
+    }
+  ],
+  "format": 1
+}

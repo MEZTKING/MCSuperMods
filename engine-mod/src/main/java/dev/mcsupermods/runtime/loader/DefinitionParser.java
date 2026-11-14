@@ -41,6 +41,7 @@ import net.minecraft.resources.Identifier;
  *   <li>Effects: {@code play_animation} actions are dropped with a warning (ADR 0055 D3).</li>
  *   <li>Biome and loot additions (ADR 0060 D2, D3): closed throughout, so an unknown top-level key is an error, not a
  *       warning; they have no components and no events.</li>
+ *   <li>Potions (ADR 0063 D2): closed throughout as the additions; they have no components and no events.</li>
  * </ol>
  */
 public final class DefinitionParser {
@@ -138,6 +139,11 @@ public final class DefinitionParser {
     /** A loot addition (ADR 0060 D3); the pools stay JSON until a loot table load decodes them. */
     public static ParseResult<LootAdditionDefinition> parseLootAddition(JsonElement json) {
         return parseClosed(json, LootAdditionDefinition.CODEC);
+    }
+
+    /** A potion (ADR 0063 D2): closed, so an editor field such as {@code brewing} is an error. */
+    public static ParseResult<PotionDefinition> parsePotion(JsonElement json) {
+        return parseClosed(json, PotionDefinition.CODEC);
     }
 
     /** Format check, then a closed Codec: every problem is an error and nothing is applied. */
