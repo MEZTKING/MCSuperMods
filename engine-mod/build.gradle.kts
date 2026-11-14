@@ -98,7 +98,9 @@ fabricApi {
         createSourceSet = true
         modId = "msm_runtime_gametest"
         enableGameTests = true
-        enableClientGameTests = false
+        // `runClientGameTest` (B356, ADR 0081 D6 (c)): a separate task, never part of `build`. Headless it needs Mesa's
+        // EGL and SDL_VIDEO_FORCE_EGL=1 under a 24-bit Xvfb screen (see MsmParticleClientGameTest).
+        enableClientGameTests = true
         eula = true
     }
 }

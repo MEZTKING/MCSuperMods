@@ -1,0 +1,7 @@
+{
+  "format": 1,
+  "gravity": 0,
+  "lifetime": 60,
+  "size": 0.15,
+  "textures": ["msm_test:client_square_0", "msm_test:client_square_1"]
+}
