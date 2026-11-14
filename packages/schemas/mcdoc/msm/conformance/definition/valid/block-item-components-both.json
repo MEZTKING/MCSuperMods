@@ -7,7 +7,8 @@
           "layers": "minecraft:compostable/always_add_one"
         },
         "minecraft:cooking_fuel": {
-          "burn_time": 100
+          "burn_time": 100,
+          "speed_multiplier": 1
         }
       }
     },

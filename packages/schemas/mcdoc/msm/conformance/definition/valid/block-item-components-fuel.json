@@ -4,7 +4,8 @@
     "components": {
       "msm:components": {
         "minecraft:cooking_fuel": {
-          "burn_time": 300
+          "burn_time": 300,
+          "speed_multiplier": 1
         }
       }
     }
