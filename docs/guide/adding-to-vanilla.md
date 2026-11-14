@@ -19,8 +19,9 @@ World additions and extra drops are MCSuperMods kinds (`msm:biome_addition` and 
 
 The **Custom ore** flow (Creator group **Blocks**, and the Custom ore starter in **New from starter…**) has a **World** step. **Generate in the world** is on by default and adds three elements next to the ore:
 
-- a configured feature `ore_<gem>` (for Ruby: `ore_ruby`, in the sidebar group **Worldgen**): one vein of up to **Vein size** ore blocks that replaces stone and deepslate;
+- a configured feature `ore_<gem>` (for Ruby: `ore_ruby`, in the sidebar group **Worldgen**): one vein of up to **Vein size** ore blocks that replaces the blocks of the vanilla `#minecraft:stone_ore_replaceables` and `#minecraft:deepslate_ore_replaceables` tags (stone, granite, diorite, andesite and deepslate), as vanilla ores do;
 - a placed feature `ore_<gem>_placed` (also under **Worldgen**): **Veins per chunk** tries in each chunk, at a random height from **Lowest height** to **Highest height** (the overworld starts at y -64);
+  **Vein numbers** keeps these four answers (**My own numbers below**, the default) or takes a vanilla ore's instead: **Like iron** (size 9, 10 veins, y -24 to 56), **Like gold** (size 9, 4 veins, y -64 to 32), **Like diamond** (size 4, 7 veins, deepest at y -64) or **Like coal** (size 17, 20 veins, y 0 to 192). With a preset the veins gather in the middle of the range and thin out towards its ends (a `minecraft:trapezoid` height), as vanilla's do. Vanilla spreads most ores over several placed features (iron has three bands), so one preset makes fewer ores a chunk than the vanilla ore it is named after;
 - a world addition `<gem>_ore_generation` (sidebar group **World additions**) that adds the placed feature to every biome in `#minecraft:is_overworld` at the underground ores step, as vanilla does with its own ores.
 
 Untick **Generate in the world** for an ore that only exists through commands and recipes; the flow then makes exactly what it made before this option existed. A project made before keeps its ore as it is until you run **Edit in Creator** on it and leave the option on. The **Scripted ore** starter generates its ruby ore in the same way. The example **Ore that generates** (Help → Examples…) shows the four elements of a jade ore with comments.
@@ -28,7 +29,7 @@ Untick **Generate in the world** for an ore that only exists through commands an
 Two things to know about the ore:
 
 - **Only new chunks get it.** The game places ores when it first generates a chunk. Land you have already explored keeps what it had, so look in a new world or travel to land you have not visited yet.
-- **It replaces plain stone and deepslate.** The feature's targets name `minecraft:stone` and `minecraft:deepslate` (a `minecraft:block_match` test), not the vanilla `#minecraft:stone_ore_replaceables` and `#minecraft:deepslate_ore_replaceables` tags, so it does not replace granite, diorite, andesite or tuff yet. Edit the feature in the Worldgen Studio or **Raw JSON** to change the targets ([Worldgen](worldgen.md)).
+- **It replaces stone-like blocks, not dirt or gravel.** The feature's targets are `minecraft:tag_match` tests on the two replaceable tags, so veins also run through granite, diorite and andesite pockets, as vanilla ores do. Edit the feature in the Worldgen Studio or **Raw JSON** to change the targets ([Worldgen](worldgen.md)).
 
 ## World additions
 

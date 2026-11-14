@@ -362,11 +362,17 @@ describe('project starters', () => {
       size: 6,
       targets: [
         {
-          target: { predicate_type: 'minecraft:block_match', block: 'minecraft:stone' },
+          target: {
+            predicate_type: 'minecraft:tag_match',
+            tag: 'minecraft:stone_ore_replaceables',
+          },
           state: 'demo:ruby_ore',
         },
         {
-          target: { predicate_type: 'minecraft:block_match', block: 'minecraft:deepslate' },
+          target: {
+            predicate_type: 'minecraft:tag_match',
+            tag: 'minecraft:deepslate_ore_replaceables',
+          },
           state: 'demo:ruby_ore',
         },
       ],
@@ -387,6 +393,39 @@ describe('project starters', () => {
     expect(JSON.stringify(customData('demo:ore_ruby_placed'))).toContain(
       '"min_inclusive":{"absolute":-10},"max_inclusive":{"absolute":40}',
     );
+    // "Vein numbers" (W-D7): a vanilla ore's numbers replace the wizard's own, with vanilla's
+    // trapezoid heights; the default keeps the wizard's numbers and a uniform spread.
+    const placedHeight = (bundle: ReturnType<typeof build>) => {
+      const placed = bundle.elements.find((entry) => entry.id === 'demo:ore_ruby_placed');
+      return (placed?.data as { placement: { height?: unknown }[] } | undefined)?.placement[2]
+        ?.height;
+    };
+    expect(placedHeight(on)).toEqual({
+      type: 'minecraft:uniform',
+      min_inclusive: { absolute: -64 },
+      max_inclusive: { absolute: 32 },
+    });
+    const presets = {
+      iron: [9, 10, -24, 56],
+      gold: [9, 4, -64, 32],
+      diamond: [4, 7, -144, 16],
+      coal: [17, 20, 0, 192],
+    } as const;
+    for (const [preset, [size, veins, minY, maxY]] of Object.entries(presets)) {
+      // The wizard's own numbers are ignored under a preset.
+      const like = build(ore, 'demo', { vein_preset: preset, vein_size: 3, veins_per_chunk: 2 });
+      const likeData = (id: string) => like.elements.find((entry) => entry.id === id)?.data;
+      expect(likeData('demo:ore_ruby')).toMatchObject({ size });
+      expect(likeData('demo:ore_ruby_placed')).toMatchObject({
+        placement: [{ type: 'minecraft:count', count: veins }, {}, {}, {}],
+      });
+      expect(placedHeight(like)).toEqual({
+        type: 'minecraft:trapezoid',
+        min_inclusive: { absolute: minY },
+        max_inclusive: { absolute: maxY },
+      });
+    }
+    expect(build(ore, 'demo', { vein_preset: 'own' })).toEqual(on);
     expect(ore.requiresKinds).toEqual(
       expect.arrayContaining([
         'minecraft:worldgen/feature',

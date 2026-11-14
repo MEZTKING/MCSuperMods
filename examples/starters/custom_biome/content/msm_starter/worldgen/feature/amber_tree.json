@@ -1,9 +1,6 @@
 {
   "data": {
-    "below_trunk_provider": {
-      "state": "minecraft:dirt",
-      "type": "minecraft:simple"
-    },
+    "below_trunk_provider": "minecraft:soil_beneath_tree",
     "decorators": [],
     "foliage_placer": {
       "height": 3,
@@ -39,6 +36,6 @@
   "kind": "minecraft:worldgen/feature",
   "meta": {
     "createdAt": "2026-11-04T00:00:00.000Z",
-    "notes": "The configured feature says what a tree looks like: a birch trunk five to seven blocks high under a round crown of acacia leaves. The placed feature msm_starter:amber_tree_placed says where and how often it grows. Element ids are unique in a project, so the placed feature has its own name."
+    "notes": "The configured feature says what a tree looks like: a birch trunk five to seven blocks high under a round crown of acacia leaves. minecraft:soil_beneath_tree is vanilla's rule-based soil provider: the block under the trunk becomes dirt, as under vanilla trees, unless it is in #minecraft:cannot_replace_below_tree_trunk. The placed feature msm_starter:amber_tree_placed says where and how often it grows. Element ids are unique in a project, so the placed feature has its own name."
   }
 }

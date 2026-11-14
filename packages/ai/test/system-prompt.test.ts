@@ -77,11 +77,15 @@ describe('systemPrompt effects and throwables paragraph (ADR 0055 D11)', () => {
 describe('systemPrompt vanilla additions, triggers and saved data paragraphs (ADRs 0060-0062)', () => {
   it.each(['chat', 'build'] as const)('names the kinds, triggers and stores in %s mode', (mode) => {
     const text = systemPrompt(mode);
+    // W-D6: ore targets use vanilla's replaceable tags, not block_match on stone and deepslate.
+    expect(text).not.toContain('minecraft:block_match');
     for (const term of [
       'msm:biome_addition',
       'msm:loot_addition',
       'underground_ores',
-      'minecraft:block_match',
+      'minecraft:tag_match',
+      'minecraft:stone_ore_replaceables',
+      'minecraft:deepslate_ore_replaceables',
       'minecraft:all_of',
       '"condition"',
       '"burn_seconds"',

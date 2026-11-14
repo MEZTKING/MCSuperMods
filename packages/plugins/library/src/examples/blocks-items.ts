@@ -380,8 +380,8 @@ export const blocksItemsExamples: readonly ExampleProject[] = [
       const feature = rl(namespace, 'ore_jade');
       const placed = rl(namespace, 'ore_jade_placed');
       const generation = rl(namespace, 'jade_ore_generation');
-      const replace = (block: string) => ({
-        target: { predicate_type: 'minecraft:block_match', block },
+      const replace = (tag: string) => ({
+        target: { predicate_type: 'minecraft:tag_match', tag },
         state: ore,
       });
       return {
@@ -425,9 +425,12 @@ export const blocksItemsExamples: readonly ExampleProject[] = [
               type: 'minecraft:ore',
               size: 8,
               discard_chance_on_air_exposure: 0,
-              targets: [replace('minecraft:stone'), replace('minecraft:deepslate')],
+              targets: [
+                replace('minecraft:stone_ore_replaceables'),
+                replace('minecraft:deepslate_ore_replaceables'),
+              ],
             },
-            'One vein of up to eight jade ore blocks that replaces stone and deepslate.',
+            'One vein of up to eight jade ore blocks. It replaces the blocks of the tags vanilla ores use: #minecraft:stone_ore_replaceables (stone, granite, diorite, andesite) and #minecraft:deepslate_ore_replaceables (deepslate).',
           ),
           element(
             placed,

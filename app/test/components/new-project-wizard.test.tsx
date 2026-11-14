@@ -99,6 +99,7 @@ describe('NewProjectDialog with targets and wizards', () => {
         drop_min: 1,
         drop_max: 9,
         generate: true,
+        vein_preset: 'own',
         vein_size: 6,
         veins_per_chunk: 10,
         min_y: -64,

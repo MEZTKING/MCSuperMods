@@ -8,9 +8,11 @@
  * only the models, textures, language keys, loot tables, tags, recipes and advancements.
  *
  * Step "World" (ADR 0060 D6): with "generate" on (the default) the ore also generates in every
- * overworld biome: an ore feature that replaces stone and deepslate, a placed feature with the
- * veins per chunk and height range, and an `msm:biome_addition` that adds it at the
- * underground ores step. The two worldgen files go in the data pack too; the biome addition
+ * overworld biome: an ore feature that replaces stone and deepslate (vanilla's
+ * `#stone_ore_replaceables` and `#deepslate_ore_replaceables`, as iron ore), a placed feature
+ * with the veins per chunk and height range, and an `msm:biome_addition` that adds it at the
+ * underground ores step. "Vein numbers" offers vanilla iron's, gold's, diamond's and coal's
+ * numbers in place of the wizard's own (the default). The two worldgen files go in the data pack too; the biome addition
  * exists only in the Fabric mod jar. With "generate" off the bundle is the one of earlier
  * versions byte for byte: the three elements are left out and nothing else changes.
  */
@@ -118,6 +120,22 @@ export const CUSTOM_ORE_PARAMETERS: readonly StarterParameter[] = Object.freeze(
     default: true,
   },
   {
+    id: 'vein_preset',
+    label: 'Vein numbers',
+    description:
+      "Your own vein size, veins per chunk and heights below, or a vanilla ore's numbers, which then replace them and spread the veins most thickly in the middle of the height range, as vanilla does.",
+    group: 'World',
+    type: 'choice',
+    default: 'own',
+    choices: [
+      { value: 'own', label: 'My own numbers below' },
+      { value: 'iron', label: 'Like iron: size 9, 10 veins, y -24 to 56' },
+      { value: 'gold', label: 'Like gold: size 9, 4 veins, y -64 to 32' },
+      { value: 'diamond', label: 'Like diamond: size 4, 7 veins, deepest at y -64' },
+      { value: 'coal', label: 'Like coal: size 17, 20 veins, y 0 to 192' },
+    ],
+  },
+  {
     id: 'vein_size',
     label: 'Vein size',
     description: 'How many ore blocks one vein holds at most (iron ore uses 9, diamond ore 4).',
@@ -163,6 +181,23 @@ export const CUSTOM_ORE_PARAMETERS: readonly StarterParameter[] = Object.freeze(
     step: 1,
   },
 ]);
+
+/**
+ * Vanilla ores' numbers for "Vein numbers" (vanilla's ore features and placed features:
+ * `ore_iron` with `ore_iron_middle`, `ore_gold_buried` with `ore_gold`, `ore_diamond_small` with
+ * `ore_diamond`, `ore_coal_buried` with `ore_coal_lower`). Heights are trapezoids, as vanilla's;
+ * diamond's `above_bottom` -80 to 80 is written as absolute -144 to 16 for the overworld's
+ * bottom of -64. Measured on seed 9 (docs/reference/vanilla-worldgen MEASURED-TABLES), vanilla
+ * makes about 82 iron, 3.6 gold, 24.8 diamond and 98.4 coal ores a chunk with all its bands.
+ */
+const VEIN_PRESETS: Readonly<
+  Record<string, { label: string; size: number; veins: number; minY: number; maxY: number }>
+> = Object.freeze({
+  iron: { label: 'iron ore', size: 9, veins: 10, minY: -24, maxY: 56 },
+  gold: { label: 'gold ore', size: 9, veins: 4, minY: -64, maxY: 32 },
+  diamond: { label: 'diamond ore', size: 4, veins: 7, minY: -144, maxY: 16 },
+  coal: { label: 'coal ore', size: 17, veins: 20, minY: 0, maxY: 192 },
+});
 
 /** "one or two rubies", "three rubies", "one to nine rubies". */
 function countPhrase(min: number, max: number, singular: string, plural: string): string {
@@ -425,17 +460,18 @@ function generationElements(
   ore: string,
   values: ParameterValues,
 ): ContentBundleElement[] {
-  const veinSize = Math.round(numberValue(values, 'vein_size'));
-  const veins = Math.round(numberValue(values, 'veins_per_chunk'));
+  const preset = VEIN_PRESETS[stringValue(values, 'vein_preset')];
   const first = Math.round(numberValue(values, 'min_y'));
   const second = Math.round(numberValue(values, 'max_y'));
-  const minY = Math.min(first, second);
-  const maxY = Math.max(first, second);
+  const veinSize = preset?.size ?? Math.round(numberValue(values, 'vein_size'));
+  const veins = preset?.veins ?? Math.round(numberValue(values, 'veins_per_chunk'));
+  const minY = preset?.minY ?? Math.min(first, second);
+  const maxY = preset?.maxY ?? Math.max(first, second);
   const feature = rl(namespace, `ore_${gem.id}`);
   const placed = rl(namespace, `ore_${gem.id}_placed`);
   const addition = rl(namespace, `${gem.id}_ore_generation`);
-  const replace = (block: string) => ({
-    target: { predicate_type: 'minecraft:block_match', block },
+  const replace = (tag: string) => ({
+    target: { predicate_type: 'minecraft:tag_match', tag },
     state: ore,
   });
   return [
@@ -446,9 +482,12 @@ function generationElements(
         type: 'minecraft:ore',
         size: veinSize,
         discard_chance_on_air_exposure: 0,
-        targets: [replace('minecraft:stone'), replace('minecraft:deepslate')],
+        targets: [
+          replace('minecraft:stone_ore_replaceables'),
+          replace('minecraft:deepslate_ore_replaceables'),
+        ],
       },
-      `A configured ore feature: one vein of up to ${veinSize} ${gem.lower} ore blocks. Each target replaces one kind of block, here stone and deepslate, with the ore. On its own a feature places nothing: the placed feature ${placed} says where and how often.`,
+      `A configured ore feature: one vein of up to ${veinSize} ${gem.lower} ore blocks${preset === undefined ? '' : `, as ${preset.label}`}. Each target replaces the blocks of one tag with the ore: #minecraft:stone_ore_replaceables holds stone, granite, diorite and andesite, #minecraft:deepslate_ore_replaceables deepslate, the tags vanilla ores use. On its own a feature places nothing: the placed feature ${placed} says where and how often.`,
     ),
     element(
       placed,
@@ -461,7 +500,7 @@ function generationElements(
           {
             type: 'minecraft:height_range',
             height: {
-              type: 'minecraft:uniform',
+              type: preset === undefined ? 'minecraft:uniform' : 'minecraft:trapezoid',
               min_inclusive: { absolute: minY },
               max_inclusive: { absolute: maxY },
             },
@@ -469,7 +508,7 @@ function generationElements(
           { type: 'minecraft:biome' },
         ],
       },
-      `Where the ore goes: ${veins} tries per chunk (count), each moved to a random spot in the chunk (in_square) and to a random height from y ${minY} to y ${maxY} (height_range). The biome filter keeps it to the biomes that list it. The world addition ${addition} lists it in the overworld biomes.`,
+      `Where the ore goes: ${veins} tries per chunk (count), each moved to a random spot in the chunk (in_square) and to a random height from y ${minY} to y ${maxY} (height_range${preset === undefined ? '' : `, a trapezoid: most veins near y ${(minY + maxY) / 2}, fewer towards the ends, as ${preset.label}${minY < -64 ? '; heights below the bottom of the world, y -64, place nothing' : ''}`}). The biome filter keeps it to the biomes that list it. The world addition ${addition} lists it in the overworld biomes.`,
     ),
     element(
       addition,

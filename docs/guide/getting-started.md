@@ -42,7 +42,7 @@ Close Settings.
 2. The **New project** dialog lists the 36 starters under Blank, Packs and Themed content. Choose **Custom ore**. Its badges show that it fills a resource pack, a data pack and the Fabric mod jar, and the **Wizard** badge means it asks a few questions before it creates the project. The dialog shows "Step 1 of 5"; choose **Next**.
 3. **Custom ore: Ore** (step 2) asks for the **Gem name** (`Ruby`), its **Colour**, the **Pickaxe needed** to mine it (**Iron pickaxe**) and whether to **Add a storage block**. Keep the answers for this guide (the steps below assume Ruby) and choose **Next**.
 4. **Custom ore: Drops** (step 3) asks for the **Fewest gems per ore** and **Most gems per ore** (1 and 2). Choose **Next**.
-5. **Custom ore: World** (step 4) asks whether to **Generate in the world** (on), and the **Vein size**, **Veins per chunk**, **Lowest height** and **Highest height** of the ore veins. Keep the answers and choose **Next**.
+5. **Custom ore: World** (step 4) asks whether to **Generate in the world** (on), the **Vein numbers** (your own, or a vanilla ore's), and the **Vein size**, **Veins per chunk**, **Lowest height** and **Highest height** of the ore veins. Keep the answers and choose **Next**.
 6. The last step, **Custom ore: Choose folder and create**, sums up your answers and has the **Minecraft version** select. Keep **Minecraft 26.3**: it is the release target, and [Minecraft versions](targets.md) explains the snapshot. **Back** returns to any earlier step.
 7. Choose **Choose folder and create** and create a new, empty folder, for example `Documents\MCSuperMods\ruby_ore`. The folder name becomes your project's **namespace**, the prefix of every id in it: here `ruby_ore`.
 

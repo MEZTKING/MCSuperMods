@@ -722,11 +722,17 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
       discard_chance_on_air_exposure: 0,
       targets: [
         {
-          target: { predicate_type: 'minecraft:block_match', block: 'minecraft:stone' },
+          target: {
+            predicate_type: 'minecraft:tag_match',
+            tag: 'minecraft:stone_ore_replaceables',
+          },
           state: ns('ruby_ore'),
         },
         {
-          target: { predicate_type: 'minecraft:block_match', block: 'minecraft:deepslate' },
+          target: {
+            predicate_type: 'minecraft:tag_match',
+            tag: 'minecraft:deepslate_ore_replaceables',
+          },
           state: ns('ruby_ore'),
         },
       ],

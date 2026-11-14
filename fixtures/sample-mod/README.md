@@ -44,7 +44,7 @@ The entity counterpart, an animated GeckoLib mob checked the same way, is `fixtu
 | `msm_sample_mod:ruby_elixir` | item | `msm:consumable` drink (1 second) giving Ruby Rush II for 20 seconds, leaves a glass bottle, stack of 16, Food & Drinks tab |
 | `msm_sample_mod:ruby_dart` | item | `msm:throwable`: speed 2, damage 3, `after_throw` `drop` (picked up again), `on_hit_entity` gives the mob hit Ruby Sting for 10 seconds; stack of 16, Combat tab, arrow look |
 | `msm_sample_mod:ruby_boomerang` | item | `msm:throwable` held to throw (`charge_ticks` 10), `after_throw` `return`, trident throw sound, not dispensable; `msm:durability` 64, uncommon, Combat tab, breeze rod look |
-| `msm_sample_mod:ore_ruby` | worldgen feature | an ore vein of up to 6 ruby ore blocks replacing stone and deepslate |
+| `msm_sample_mod:ore_ruby` | worldgen feature | an ore vein of up to 6 ruby ore blocks replacing the blocks of `#minecraft:stone_ore_replaceables` and `#minecraft:deepslate_ore_replaceables` (`tag_match`, as vanilla ores) |
 | `msm_sample_mod:ore_ruby_placed` | placed feature | 6 tries per chunk, spread in the chunk, from y -64 to 32, kept to the biomes that list it |
 | `msm_sample_mod:ruby_ore_generation` | world addition | adds `ore_ruby_placed` at `underground_ores` to every biome in `#minecraft:is_overworld` (ADR 0060 D2): new chunks only |
 | `msm_sample_mod:zombie_drops_ruby` | extra drops | one pool for `minecraft:entities/zombie`: every zombie drops one ruby, besides its vanilla drops (ADR 0060 D3) |

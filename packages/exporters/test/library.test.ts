@@ -209,6 +209,8 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     // World step (ADR 0060 D6): generation off, and big veins high up with the heights swapped.
     { ore_name: 'Jade', colour: '#28a060', generate: false },
     { vein_size: 32, veins_per_chunk: 32, min_y: 320, max_y: 100 },
+    // W-D7: vanilla diamond's numbers, whose trapezoid starts below the world's bottom.
+    { ore_name: 'Opal', vein_preset: 'diamond' },
   ],
   'custom-sword': [
     {

@@ -165,7 +165,7 @@ export function customBiomeContent({ namespace }: BundleContext): ContentBundle 
             lower_size: 0,
             upper_size: 1,
           },
-          below_trunk_provider: { type: 'minecraft:simple', state: 'minecraft:dirt' },
+          below_trunk_provider: 'minecraft:soil_beneath_tree',
           trunk_provider: { type: 'minecraft:simple', state: 'minecraft:birch_log' },
           foliage_provider: { type: 'minecraft:simple', state: 'minecraft:acacia_leaves' },
           trunk_placer: {
@@ -182,7 +182,7 @@ export function customBiomeContent({ namespace }: BundleContext): ContentBundle 
           },
           decorators: [],
         },
-        `The configured feature says what a tree looks like: a birch trunk five to seven blocks high under a round crown of acacia leaves. The placed feature ${ids.treePlaced} says where and how often it grows. Element ids are unique in a project, so the placed feature has its own name.`,
+        `The configured feature says what a tree looks like: a birch trunk five to seven blocks high under a round crown of acacia leaves. minecraft:soil_beneath_tree is vanilla's rule-based soil provider: the block under the trunk becomes dirt, as under vanilla trees, unless it is in #minecraft:cannot_replace_below_tree_trunk. The placed feature ${ids.treePlaced} says where and how often it grows. Element ids are unique in a project, so the placed feature has its own name.`,
       ),
       element(
         ids.treePlaced,
@@ -212,16 +212,22 @@ export function customBiomeContent({ namespace }: BundleContext): ContentBundle 
           discard_chance_on_air_exposure: 0,
           targets: [
             {
-              target: { predicate_type: 'minecraft:block_match', block: 'minecraft:stone' },
+              target: {
+                predicate_type: 'minecraft:tag_match',
+                tag: 'minecraft:stone_ore_replaceables',
+              },
               state: 'minecraft:copper_ore',
             },
             {
-              target: { predicate_type: 'minecraft:block_match', block: 'minecraft:deepslate' },
+              target: {
+                predicate_type: 'minecraft:tag_match',
+                tag: 'minecraft:deepslate_ore_replaceables',
+              },
               state: 'minecraft:deepslate_copper_ore',
             },
           ],
         },
-        'A large copper ore blob: copper ore where it replaces stone, deepslate copper ore where it replaces deepslate. size is roughly how many blocks one blob holds.',
+        'A large copper ore blob: copper ore where it replaces a block of #minecraft:stone_ore_replaceables (stone, granite, diorite, andesite), deepslate copper ore where it replaces one of #minecraft:deepslate_ore_replaceables (deepslate), the tags vanilla ores use. size is roughly how many blocks one blob holds.',
       ),
       element(
         ids.orePlaced,

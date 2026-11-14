@@ -4867,3 +4867,18 @@ Decisions
 Next
 - Measured under SwiftShader (shared machine, load 6-8): 640x360 grid 38 fps, flat 25-33, island 22-23 (27 at 320x180), hills 26-30; full rebuild of a ground 0.1 s (flat) to 0.33 s (island); single-block rebuild median 4.3 ms, max 17.9 (dense chunks). Re-measure on a hardware GPU and with a real save.
 - Real saves: check the reader on a 26.x world (folder layout, palette form, `Data.spawn`); plants and snow layers of a real world are solid full-cube props.
+## 2026-11-14 — executor — Worldgen follow-ups W-D5 to W-D7
+
+What
+- W-D5: ore features of the library replace vanilla's `#minecraft:stone_ore_replaceables` and `#minecraft:deepslate_ore_replaceables` with `minecraft:tag_match`, as vanilla iron and the Ore vein template (W-A3): the Custom ore starter (`packages/plugins/library/src/starters/custom-ore.ts`; so the Creator's Custom ore flow, the Scripted ore starter and the Glowshard and Amber realm examples), the Custom biome starter's rich copper ore and the Ore that generates example (`examples/blocks-items.ts`). The Custom biome starter's amber tree uses `below_trunk_provider: "minecraft:soil_beneath_tree"` (W-A5). The Gear set flow's ore does not generate (no feature), and the Configured feature example's clay in dirt is not an ore replacement; both unchanged.
+- W-D6: the AI helper's system prompt (`packages/ai/src/system-prompt.ts`) describes ore targets as `tag_match` on the two tags; `system-prompt.test.ts` checks the tags and that `block_match` is gone.
+- W-D7: the Custom ore flow's World step has **Vein numbers** (`vein_preset`): "My own numbers below" (default, output unchanged) or like iron (size 9, 10 veins, trapezoid y -24 to 56), gold (9, 4, -64 to 32), diamond (4, 7, -144 to 16, vanilla's `above_bottom` -80 to 80) or coal (17, 20, 0 to 192). A preset replaces the four number answers and uses a `minecraft:trapezoid` height. The reference pack measures ores a chunk only, not features, so the numbers were read from the 26.3 server jar's `ore_iron_middle`, `ore_gold`, `ore_diamond` and `ore_coal_lower` (and their features) and are not copied as files.
+- Goldens (`UPDATE_GOLDENS=1 pnpm --filter @msm/exporters test`): `examples/starters/custom_ore`, `scripted_ore`, `custom_biome`, `worldgen_pack`, `examples/popular/glowshard`, `amber_realm` and `examples/all-kinds` (`ore_jade`); `fixtures/sample-mod` (`ore_ruby`, from the list in `sample-mod.golden.test.ts`) and `fixtures/sample-worldgen` (`amber_tree`, `rich_copper_ore`); pinned hashes `sample-mod-jar` (26.3, 26.4), `sample-mod-java` (26.3) and `sample-worldgen-data` (26.3, 26.4).
+- Guide: `adding-to-vanilla.md` (the tags, Vein numbers; the "replaces plain stone and deepslate" caveat removed), `creator.md`, `getting-started.md`; `fixtures/sample-mod/README.md` row; COVERAGE-AUDIT §4 W-D5 to W-D7 marked done.
+- Tests: library `content.test.ts` (tags; each preset's size, count and trapezoid; "own" equals the default), exporters `library.test.ts` (a "like diamond" wizard alternative validates and exports on both targets), app `new-project-wizard.test.tsx` (the new default value). library 560, exporters 1307, ai 90, worldgen 161 green; `pnpm lint` and `pnpm typecheck` pass.
+
+Decisions
+- A preset sets size, count and heights only; vanilla's air-exposure discard (diamond 0.5) is not copied, as the brief named those three numbers. One preset is one placed feature, so it makes fewer ores a chunk than the vanilla ore with all its bands; the guide says so and no rate is claimed.
+
+Next
+- In-game: `SampleModAdditionsParityTest` ("its feature turns stone into ruby ore") should still pass with the tags; measure an exported world with `tools/ore_counts.py` on seed 9 before quoting a rate for a preset.

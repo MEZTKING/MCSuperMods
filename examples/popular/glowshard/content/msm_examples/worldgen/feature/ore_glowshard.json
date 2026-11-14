@@ -6,15 +6,15 @@
       {
         "state": "msm_examples:glowshard_ore",
         "target": {
-          "block": "minecraft:stone",
-          "predicate_type": "minecraft:block_match"
+          "predicate_type": "minecraft:tag_match",
+          "tag": "minecraft:stone_ore_replaceables"
         }
       },
       {
         "state": "msm_examples:glowshard_ore",
         "target": {
-          "block": "minecraft:deepslate",
-          "predicate_type": "minecraft:block_match"
+          "predicate_type": "minecraft:tag_match",
+          "tag": "minecraft:deepslate_ore_replaceables"
         }
       }
     ],
@@ -25,7 +25,7 @@
   "kind": "minecraft:worldgen/feature",
   "meta": {
     "createdAt": "2026-11-04T00:00:00.000Z",
-    "notes": "A configured ore feature: one vein of up to 5 glowshard ore blocks. Each target replaces one kind of block, here stone and deepslate, with the ore. On its own a feature places nothing: the placed feature msm_examples:ore_glowshard_placed says where and how often.",
+    "notes": "A configured ore feature: one vein of up to 5 glowshard ore blocks. Each target replaces the blocks of one tag with the ore: #minecraft:stone_ore_replaceables holds stone, granite, diorite and andesite, #minecraft:deepslate_ore_replaceables deepslate, the tags vanilla ores use. On its own a feature places nothing: the placed feature msm_examples:ore_glowshard_placed says where and how often.",
     "tags": [
       "example",
       "popular-ideas"
