@@ -217,3 +217,11 @@ No new rule is needed: every type registers mod-only ids, so recipes, loot table
 9. **Villagers farm only crops on farmland** (`HarvestFarmland` checks `FarmlandBlock`), so a crop with a custom soil is never farmed by villagers.
 10. **Flammability needs code** (no fire-odds tags); done through Fabric `FlammableBlockRegistry` at start-up, so it follows the registry freeze (L1).
 11. **Not in this batch:** copper weathering and waxing, stems with attached fruit, berry bushes, double plants, cocoa, nether wart, flower pots, ladders, torches, lanterns, chains, waterlogging for plain and facing blocks.
+
+## Notes from implementation
+
+- B261: `MsmRegistrar.registerBlock` logs "type '<t>' not supported yet" and "item.id not supported yet"; B263, B267 and B271 remove the lines for the types they register, B271 the `item.id` one.
+- B261: the format and Codec allow `bonemeal_growth.min` > `max`; B265 reports it (error) and B271 swaps the bounds defensively.
+- B261: `stage_heights` keeps any length; B271 falls back to vanilla's ramp when the length is not `max_age + 1` (B265 already warns).
+- B261: `BlockType.allows` holds the ADR 0067 D3 table; defaults: stairs base `minecraft:stone`, crop `max_age` 7, soil `#minecraft:supports_crops`, bone meal 2..5, sapling soil `#minecraft:supports_vegetation`, leaves particle chance 0.01, button press 30 ticks (wooden) or 20.
+- B259: vanilla has no `pressure_plates` or `stone_pressure_plates` item tag (ADR 0067 D6).
