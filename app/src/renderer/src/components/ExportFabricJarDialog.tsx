@@ -8,7 +8,7 @@
  */
 
 import type { Json } from '@msm/core';
-import type { ExporterOption } from '@msm/plugin-api';
+import type { ExporterOption, Project } from '@msm/plugin-api';
 import { useId, useState } from 'react';
 import { Modal } from './NewElementDialog';
 
@@ -70,6 +70,12 @@ export interface ExportFabricJarDialogProps {
    * download, and the dialog says so.
    */
   hasEntities?: boolean;
+  /**
+   * Whether the jar nests GeckoLib (ADR 0072 D5, {@link projectNeedsGeckolib}). `false` with
+   * entities shows {@link FABRIC_JAR_VANILLA_RENDERER_NOTE} instead of the GeckoLib note;
+   * absent keeps the GeckoLib note for any entity.
+   */
+  needsGeckolib?: boolean;
   /** Runs the export with the chosen values (every declared option is present). */
   onExport(values: Record<string, Json>): void;
   onClose(): void;
@@ -82,6 +88,43 @@ export const FABRIC_JAR_DIALOG_NOTE =
 /** Shown when the project has entities (ADR 0029 D4). */
 export const FABRIC_JAR_GECKOLIB_NOTE =
   'This project has entities, so the jar also nests GeckoLib, which draws their models and animations. MCSuperMods downloads GeckoLib once from Modrinth and keeps it for later exports.';
+
+/** Shown when the project has entities but none needs GeckoLib on the target (ADR 0072 D5). */
+export const FABRIC_JAR_VANILLA_RENDERER_NOTE =
+  'This project’s entities are drawn by the runtime’s built-in renderer on this target, so the jar needs no GeckoLib.';
+
+/**
+ * Whether exporting `project` for a target nests GeckoLib, from the entity elements'
+ * `msm:animated_model.renderer` (ADR 0072 D5, as `needsGeckolib` of `@msm/exporters` reads the
+ * lowered files): `geckolib` always, `auto` (or absent) when the target has GeckoLib, `vanilla`
+ * never.
+ */
+export function projectNeedsGeckolib(
+  project: Project | null | undefined,
+  target: { readonly geckolib?: unknown } | null | undefined,
+): boolean {
+  if (project === null || project === undefined) return false;
+  const hasGeckolib = target?.geckolib !== undefined && target?.geckolib !== null;
+  return project.namespaces.some((namespace) =>
+    namespace.elements.some((element) => {
+      if (element.kind !== 'msm:entity') return false;
+      const data = element.data;
+      const components =
+        typeof data === 'object' && data !== null && !Array.isArray(data) ? data.components : null;
+      const model =
+        typeof components === 'object' && components !== null && !Array.isArray(components)
+          ? components['msm:animated_model']
+          : null;
+      const renderer =
+        typeof model === 'object' && model !== null && !Array.isArray(model)
+          ? model.renderer
+          : undefined;
+      if (renderer === 'geckolib') return true;
+      if (renderer === 'vanilla') return false;
+      return hasGeckolib;
+    }),
+  );
+}
 
 /** The problem code of a GeckoLib jar that is neither cached nor downloadable. */
 export const GECKOLIB_MISSING_CODE = 'export.geckolib-missing';
@@ -97,6 +140,7 @@ export const GECKOLIB_TEST_DOWNLOAD_MESSAGE =
 export function ExportFabricJarDialog({
   options,
   hasEntities,
+  needsGeckolib,
   onExport,
   onClose,
 }: ExportFabricJarDialogProps) {
@@ -112,9 +156,14 @@ export function ExportFabricJarDialog({
       onSubmit={() => onExport({ ...defaultOptionValues(options), ...values })}
     >
       <p className="text-muted text-sm">{FABRIC_JAR_DIALOG_NOTE}</p>
-      {hasEntities === true && (
+      {hasEntities === true && needsGeckolib !== false && (
         <p className="text-muted text-sm" data-testid="fabric-jar-geckolib-note">
           {FABRIC_JAR_GECKOLIB_NOTE}
+        </p>
+      )}
+      {hasEntities === true && needsGeckolib === false && (
+        <p className="text-muted text-sm" data-testid="fabric-jar-vanilla-renderer-note">
+          {FABRIC_JAR_VANILLA_RENDERER_NOTE}
         </p>
       )}
       {options.length > 0 && (

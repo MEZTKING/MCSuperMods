@@ -42,6 +42,7 @@ import {
   GECKOLIB_DOWNLOAD_MESSAGE,
   GECKOLIB_MISSING_CODE,
   GECKOLIB_TEST_DOWNLOAD_MESSAGE,
+  projectNeedsGeckolib,
 } from './components/ExportFabricJarDialog';
 import {
   ExportJavaProjectDialog,
@@ -2309,6 +2310,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                   namespace.elements.some((element) => element.kind === 'msm:entity'),
                 ) === true
               }
+              needsGeckolib={projectNeedsGeckolib(project, target)}
               onClose={() => setDialog(null)}
               onExport={(values) => {
                 setDialog(null);

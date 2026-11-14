@@ -176,7 +176,7 @@ describe('Entity Studio helpers', () => {
     ).toBe(false);
   });
 
-  it('lists the six goal types and starts list goals with players', () => {
+  it('lists the ten goal types and starts list goals with players', () => {
     expect(GOALS.map((goal) => goal.type)).toEqual([
       'wander',
       'look_at_player',
@@ -184,7 +184,16 @@ describe('Entity Studio helpers', () => {
       'melee_attack',
       'flee',
       'follow',
+      'ranged_attack',
+      'tempt',
+      'panic',
+      'leap_at_target',
     ]);
+    expect(newGoal('tempt')).toEqual({ type: 'tempt', items: ['minecraft:wheat'] });
+    expect(newGoal('ranged_attack')).toEqual({
+      type: 'ranged_attack',
+      targets: ['minecraft:player'],
+    });
     expect(newGoal('flee')).toEqual({ type: 'flee', from: ['minecraft:player'] });
     expect(newGoal('follow')).toEqual({ type: 'follow', entities: ['minecraft:player'] });
     expect(newGoal('look_around')).toEqual({ type: 'look_around' });
@@ -364,6 +373,10 @@ describe('Entity Studio', () => {
       ['melee_attack', 'Melee attack'],
       ['flee', 'Flee'],
       ['follow', 'Follow'],
+      ['ranged_attack', 'Ranged attack'],
+      ['tempt', 'Tempted by items'],
+      ['panic', 'Panic when hurt'],
+      ['leap_at_target', 'Leap at target'],
     ]);
     fireEvent.change(screen.getByTestId('entity-new-goal-type'), { target: { value: 'flee' } });
     fireEvent.click(screen.getByTestId('entity-add-goal'));

@@ -7,7 +7,9 @@
  *   moves, or the project's first geo model with a notice naming it; the selected animation
  *   plays.
  * - `entity`: `components["msm:animated_model"]`: the referenced model, texture and animation
- *   set, the `idle` animation playing and `scale` applied.
+ *   set, the `idle` animation playing and `scale` applied. {@link GeoSceneOptions} pick a
+ *   variant's texture (`msm:variants`) and the baby size (`msm:breedable.baby_scale`, B297,
+ *   ADR 0073 D5); {@link entityPreviewChoices} lists what the switcher offers.
  *
  * Missing references give a `message` that the panel shows instead of the canvas. Pure.
  */
@@ -64,10 +66,55 @@ export function animationNames(data: unknown): string[] {
   return isObject(data) && isObject(data.animations) ? Object.keys(data.animations) : [];
 }
 
+/** Entity preview options: which variant to draw and whether to draw a baby. */
+export interface GeoSceneOptions {
+  /** A variant id of `msm:variants`; unknown ids and `undefined` draw the base texture. */
+  variant?: string | undefined;
+  /** Draw a baby (scaled by `baby_scale`, 0.5 by default); only for `msm:breedable` mobs. */
+  baby?: boolean | undefined;
+}
+
+/** A baby's size when `msm:breedable` has no `baby_scale` (ADR 0071 D2). */
+export const DEFAULT_BABY_SCALE = 0.5;
+
+/** What the entity preview's switcher offers for an entity's data. */
+export interface EntityPreviewChoices {
+  /** The variants with an id, in list order, and their texture ids. */
+  variants: { id: string; texture: string }[];
+  /** The baby size when the mob breeds, else `null` (no baby toggle). */
+  babyScale: number | null;
+}
+
+/** The variants and baby size of an entity's data, for the preview's switcher. */
+export function entityPreviewChoices(data: unknown): EntityPreviewChoices {
+  const object = isObject(data) ? data : {};
+  const components = isObject(object.components) ? object.components : {};
+  const variantsComponent = components['msm:variants'];
+  const list =
+    isObject(variantsComponent) && Array.isArray(variantsComponent.variants)
+      ? variantsComponent.variants
+      : [];
+  const variants = list.flatMap((entry) =>
+    isObject(entry) && typeof entry.id === 'string' && entry.id !== ''
+      ? [{ id: entry.id, texture: typeof entry.texture === 'string' ? entry.texture.trim() : '' }]
+      : [],
+  );
+  const breedable = components['msm:breedable'];
+  const babyScale = !isObject(breedable)
+    ? null
+    : typeof breedable.baby_scale === 'number' &&
+        Number.isFinite(breedable.baby_scale) &&
+        breedable.baby_scale > 0
+      ? breedable.baby_scale
+      : DEFAULT_BABY_SCALE;
+  return { variants, babyScale };
+}
+
 /** Resolves the scene for a geo preview subject. */
 export function resolveGeoScene(
   project: Project,
   subject: { previewKind: GeoPreviewKind; id: string; data: unknown },
+  options: GeoSceneOptions = {},
 ): GeoScene {
   const models = projectElementsOfKind(project, GEO_MODEL_KIND);
   if (subject.previewKind === 'geo_model') {
@@ -134,8 +181,20 @@ export function resolveGeoScene(
     return { ok: false, message: `Geo model ${modelId} is not in the project.` };
   }
   const notices: string[] = [];
-  const textureRef = typeof animated.texture === 'string' ? animated.texture.trim() : '';
-  if (textureRef === '') notices.push('No texture chosen; drawn with the missing texture.');
+  const choices = entityPreviewChoices(data);
+  const variant =
+    options.variant === undefined
+      ? undefined
+      : choices.variants.find((entry) => entry.id === options.variant);
+  const ownTexture = typeof animated.texture === 'string' ? animated.texture.trim() : '';
+  const textureRef = variant === undefined ? ownTexture : variant.texture;
+  if (textureRef === '') {
+    notices.push(
+      variant === undefined
+        ? 'No texture chosen; drawn with the missing texture.'
+        : `Variant ${variant.id} has no texture; drawn with the missing texture.`,
+    );
+  }
   let animations: unknown = null;
   let initialAnimation: string | null = null;
   const animationsRef = typeof animated.animations === 'string' ? animated.animations.trim() : '';
@@ -156,10 +215,14 @@ export function resolveGeoScene(
       }
     }
   }
-  const scale =
+  const adultScale =
     typeof animated.scale === 'number' && Number.isFinite(animated.scale) && animated.scale > 0
       ? animated.scale
       : 1;
+  const scale =
+    options.baby === true && choices.babyScale !== null
+      ? adultScale * choices.babyScale
+      : adultScale;
   return {
     ok: true,
     modelId,

@@ -5,7 +5,12 @@
  * - Appearance (`msm:animated_model`): geo model and animation set pickers over the project's
  *   `msm:geo_model` and `msm:animation` elements, texture picker over the project's
  *   `textures/` PNGs, idle, walk and attack animations offered from the chosen set, scale.
- * - Stats: `msm:health` and `msm:movement`.
+ * - Kind of mob (B297, ADR 0070 D6): base, category, spawn placement and rule and movement
+ *   mode in one undoable edit; the renderer picker with a note on the target (ADR 0072 D4)
+ *   and the `sit`, `fly`, `swim` and `shoot` animations in Appearance.
+ * - Stats: `msm:health` and `msm:movement`; Movement: the mode and its fields (ADR 0070 D3).
+ * - Ranged attack, Taming, Breeding, Riding, Variants and Boss bar sections (ADR 0070 D4,
+ *   ADR 0071 D1–D5), each in its own file.
  * - Sounds (ADR 0057 D6): ambient, hurt, death and step sound pickers over the sound event
  *   ids, the project's own sounds first (ADR 0057 D3), and the ambient interval.
  * - Attack: `msm:attack` on or off, damage, knockback, the on-attack event.
@@ -45,6 +50,8 @@ import { useStructureStudioHost } from '../structures/host';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
 import { AdvancedToggle, IdList, Section } from '../worldgen/parts';
+import { BossBarSection } from './BossBarSection';
+import { BreedingSection } from './BreedingSection';
 import {
   ANIMATION_KIND,
   animationNames,
@@ -58,6 +65,19 @@ import {
   newSpawn,
   projectTextureIds,
 } from './entities-model';
+import { ChoiceField, MobKindSection } from './MobKindSection';
+import { MovementSection } from './MovementSection';
+import {
+  type MobSectionProps,
+  matchingKinds,
+  RENDERER_LABELS,
+  RENDERERS,
+  rendererNote,
+} from './mob-kinds';
+import { RangedSection } from './RangedSection';
+import { RidingSection } from './RidingSection';
+import { TamingSection } from './TamingSection';
+import { VariantsSection } from './VariantsSection';
 
 type JsonObject = { [key: string]: Json };
 
@@ -172,7 +192,7 @@ function GoalRow(props: {
             <IdList
               label={`${name} ${entry.label.toLowerCase()}`}
               ids={ids}
-              registry="entity_type"
+              registry={entry.registry ?? 'entity_type'}
               suggest={props.suggest}
               pointer={`${pointer}/${entry.key}`}
               problems={problems}
@@ -244,7 +264,7 @@ function GoalRow(props: {
 }
 
 export function EntityStudio(props: StudioProps) {
-  const { project, element, node, problems, suggest, onChange } = props;
+  const { project, element, node, problems, suggest, onChange, target } = props;
   const [advanced, setAdvanced] = useState(false);
   const [newGoalType, setNewGoalType] = useState<string>(GOALS[0]?.type ?? 'wander');
   // The objects last switched off in this session, per element, so switching them on again
@@ -343,7 +363,11 @@ export function EntityStudio(props: StudioProps) {
   const textures = projectTextureIds(project);
   const setModel = (key: string, value: Json | undefined, coalesce?: string) =>
     set([...MODEL_PATH, key], value, coalesce);
-  const animationSelect = (key: 'idle' | 'walk' | 'attack', label: string, testId: string) => (
+  const animationSelect = (
+    key: 'idle' | 'walk' | 'attack' | 'sit' | 'fly' | 'swim' | 'shoot',
+    label: string,
+    testId: string,
+  ) => (
     <SelectField
       label={label}
       value={typeof model[key] === 'string' && model[key] !== '' ? model[key] : undefined}
@@ -402,6 +426,10 @@ export function EntityStudio(props: StudioProps) {
         {animationSelect('idle', 'Idle animation', 'entity-idle')}
         {animationSelect('walk', 'Walk animation', 'entity-walk')}
         {animationSelect('attack', 'Attack animation', 'entity-attack-animation')}
+        {animationSelect('sit', 'Sit animation', 'entity-sit-animation')}
+        {animationSelect('fly', 'Fly animation', 'entity-fly-animation')}
+        {animationSelect('swim', 'Swim animation', 'entity-swim-animation')}
+        {animationSelect('shoot', 'Shoot animation', 'entity-shoot-animation')}
         <NumberField
           label="Scale"
           value={model.scale}
@@ -415,8 +443,23 @@ export function EntityStudio(props: StudioProps) {
       <p className="text-muted text-xs">
         Models and animation sets come from File, Import Blockbench Model, or New element. Textures
         are the project’s PNGs under textures/. Animation names come from the chosen animation set.
+        Sit plays while sitting, fly and swim while moving in the air or water, shoot on each ranged
+        shot.
       </p>
-      {['idle', 'walk', 'attack', 'scale'].map((key) => (
+      <div className="flex flex-wrap items-end gap-2">
+        <ChoiceField
+          label="Renderer"
+          value={typeof model.renderer === 'string' ? model.renderer : 'auto'}
+          choices={RENDERERS}
+          labels={RENDERER_LABELS}
+          testId="entity-renderer"
+          onChange={(value) => setModel('renderer', value === 'auto' ? undefined : value)}
+        />
+      </div>
+      <p className="text-muted text-xs" data-testid="entity-renderer-note">
+        {rendererNote(model.renderer, target.geckolib !== undefined, target.mcVersion)}
+      </p>
+      {['idle', 'walk', 'attack', 'sit', 'fly', 'swim', 'shoot', 'scale', 'renderer'].map((key) => (
         <ProblemsAt key={key} problems={problems} pointer={pointerOf([...MODEL_PATH, key])} />
       ))}
     </Section>
@@ -705,7 +748,7 @@ export function EntityStudio(props: StudioProps) {
         testId="entity-spawns"
         onChange={(checked) => {
           if (checked) {
-            set(['spawn'], remembered('spawn') ?? newSpawn());
+            set(['spawn'], remembered('spawn') ?? newSpawn(matchingKinds(element.data)[0]));
             return;
           }
           remember('spawn', data.spawn);
@@ -881,6 +924,19 @@ export function EntityStudio(props: StudioProps) {
     </>
   );
 
+  const mobProps: MobSectionProps = {
+    project,
+    elementId: element.id,
+    data: element.data,
+    set,
+    replace: (next) => onChange('', next),
+    events,
+    problems,
+    suggest,
+    remembered,
+    remember,
+  };
+
   return (
     <section aria-label="Entity Studio" data-testid="entity-studio" className="flex flex-col gap-4">
       <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="entity-advanced-toggle" />
@@ -888,11 +944,19 @@ export function EntityStudio(props: StudioProps) {
       {at(['components'])}
       {at([...MODEL_PATH])}
       {identity}
+      <MobKindSection {...mobProps} />
       {appearance}
       {stats}
+      <MovementSection {...mobProps} />
       {soundsSection}
       {attackSection}
+      <RangedSection {...mobProps} projectileItems={target.entities?.projectileItems} />
       {behaviour}
+      <TamingSection {...mobProps} />
+      <BreedingSection {...mobProps} />
+      <RidingSection {...mobProps} />
+      <VariantsSection {...mobProps} />
+      <BossBarSection {...mobProps} />
       {spawning}
       {eggSection}
       <EventsEditor

@@ -19,7 +19,13 @@ import { Button } from '../components/ui/Button';
 import { ArmourPreviewView } from './ArmourPreviewView';
 import { armourPreviewOf } from './armour-preview';
 import type { PreviewKind, PreviewSubject } from './asset-source';
-import { isGeoPreviewKind, resolveGeoScene } from './geo/subject';
+import { EntityPreviewOptions } from './geo/EntityPreviewOptions';
+import {
+  entityPreviewChoices,
+  type GeoSceneOptions,
+  isGeoPreviewKind,
+  resolveGeoScene,
+} from './geo/subject';
 import {
   createVanillaJsonCache,
   type ResourceFolders,
@@ -96,6 +102,11 @@ export function modelFieldSubject(element: Element, project: Project): PreviewSu
 export function PreviewPanel(props: PreviewPanelProps) {
   const { project, element, previewKind, folders, vanilla, onSetup } = props;
   const [webglLost, setWebglLost] = useState(false);
+  // The entity preview's variant and baby choice, kept per element (B297).
+  const [entityOptions, setEntityOptions] = useState<{ id: string; options: GeoSceneOptions }>({
+    id: '',
+    options: {},
+  });
   const webgl = (props.webgl ?? hasWebGL()) && !webglLost;
   const vanillaJson = useMemo(
     () => (vanilla === null ? null : createVanillaJsonCache(vanilla)),
@@ -139,13 +150,21 @@ export function PreviewPanel(props: PreviewPanelProps) {
     );
 
   if (subject !== null && isGeoPreviewKind(subject.previewKind)) {
-    const scene = resolveGeoScene(project, {
-      previewKind: subject.previewKind,
-      id: subject.id,
-      data: subject.data,
-    });
+    const options = entityOptions.id === subject.id ? entityOptions.options : {};
+    const scene = resolveGeoScene(
+      project,
+      { previewKind: subject.previewKind, id: subject.id, data: subject.data },
+      options,
+    );
     return (
       <section aria-label="Preview" className="flex flex-col gap-3">
+        {subject.previewKind === 'entity' && (
+          <EntityPreviewOptions
+            choices={entityPreviewChoices(subject.data)}
+            value={options}
+            onChange={(next) => setEntityOptions({ id: subject.id, options: next })}
+          />
+        )}
         {!scene.ok ? (
           <p role="status" data-testid="preview-geo-message" className="text-sm text-muted">
             {scene.message}
