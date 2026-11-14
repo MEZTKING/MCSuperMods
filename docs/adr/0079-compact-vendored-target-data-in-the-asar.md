@@ -135,3 +135,9 @@ node -e "const fs=require('fs'),p=require('path'),a=require('assert');for(const 
 ## Status
 
 Accepted (2026-11-14).
+
+## Findings from implementation
+
+- B329 (2026-11-14): `app.asar` went from 33,213,535 bytes (31.7 MB) to 27,997,478 bytes (26.7 MB), saving 5,216,057 bytes; vendored data is 5.5 MB compact. All ten vendored JSON files deep-equal their sources. Smoke, packaged smoke and e2e (41 of 41) pass.
+- The LICENSE finding above is resolved in the same brief: `bundleVendoredData` copies a `LICENSE` lying beside vendored files, so vanilla-mcdoc's MIT licence ships at `out/main/vendor/<target>/vanilla-mcdoc/LICENSE`, and `check-size` fails a `vanilla-mcdoc` folder without it. mcmeta has no vendored licence file, so no rule covers it; a general third-party notices file remains a follow-up.
+- `check-size` enforces: a vendor folder exists when `out/main` does; no vendored `*.json` contains a line feed; vanilla-mcdoc ships its licence.
