@@ -431,6 +431,22 @@ export const target: Target = {
       'mangrove',
       'bamboo',
     ],
+    // containerSounds and machineRecipeTypes (ADR 0074 D7, ADR 0075 D7; plugin API 1.12.0): a
+    // container block opens and closes with the barrel's sounds by default, and a machine may take
+    // the four cooking recipe types (the `AbstractCookingRecipe` types of `RecipeType`). Verified
+    // 2026-11-14: both sound ids are in the vendored `registries.json` `sound_event` list and the
+    // four types in its `recipe_type` list (asserted by `all/test/targets.test.ts`); `RecipeType`
+    // constants checked with javap over the Loom-cached 26.4-snapshot-7 merged jar.
+    containerSounds: {
+      open: 'minecraft:block.barrel.open',
+      close: 'minecraft:block.barrel.close',
+    },
+    machineRecipeTypes: [
+      'minecraft:smelting',
+      'minecraft:blasting',
+      'minecraft:smoking',
+      'minecraft:campfire_cooking',
+    ],
   },
   // entities (ADR 0070 D7, ADR 0071 D4): the vanilla items a ranged mob may fire and the tag the
   // vanilla saddle equips. Verified 2026-11-14 with javap over the Loom-cached 26.4-snapshot-7

@@ -379,6 +379,27 @@ describe('0.8.0 additions', () => {
     expect(testTarget.entities).toBeUndefined();
   });
 
+  it('carries optional container and machine block facts (1.12.0)', () => {
+    expectTypeOf<BlockFacts['containerSounds']>().toEqualTypeOf<
+      { open: string; close: string } | undefined
+    >();
+    expectTypeOf<BlockFacts['machineRecipeTypes']>().toEqualTypeOf<readonly string[] | undefined>();
+    const facts: BlockFacts = {
+      setTypes: ['wood'],
+      woodTypes: ['oak'],
+      containerSounds: {
+        open: 'minecraft:block.barrel.open',
+        close: 'minecraft:block.barrel.close',
+      },
+      machineRecipeTypes: ['minecraft:smelting'],
+    };
+    expect(facts.machineRecipeTypes).toContain('minecraft:smelting');
+    // A 1.11.0-shaped block facts object without them stays assignable.
+    const older: BlockFacts = { setTypes: ['wood'], woodTypes: ['oak'] };
+    expect(older.containerSounds).toBeUndefined();
+    expect(older.machineRecipeTypes).toBeUndefined();
+  });
+
   it('keeps a 1.8.0-shaped JavaProjectInput assignable (potions is optional, 1.9.0)', () => {
     const input: JavaProjectInput = {
       modId: 'm',

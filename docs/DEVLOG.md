@@ -3235,3 +3235,13 @@ What: Registered the containers-and-machines batch's test classes ahead of time 
 Decisions: The classes have no methods and no imports, so they cannot affect any variant. Javadoc names the ADR and the brief that fills each (B314, B316, B317, B325).
 
 Next: B310–B313 (wave 1) fill nothing here; B314, B316, B317 and B325 add test bodies without touching either `fabric.mod.json`.
+## 2026-11-14 — executor — B311 plugin API 1.12.0
+
+What
+- Plugin API 1.12.0 (ADR 0074 D7, ADR 0075 D7; additive): `BlockFacts.containerSounds?: { open: string; close: string }` and `BlockFacts.machineRecipeTypes?: readonly string[]`, with JSDoc, CHANGELOG entry, `API_VERSION` and package version 1.12.0 (pins in `plugin-api/test/define-plugin.test.ts` and `core/test/registry.test.ts`), and a type test. Both targets set container sounds `minecraft:block.barrel.open` / `minecraft:block.barrel.close` and machine recipe types `minecraft:smelting`, `minecraft:blasting`, `minecraft:smoking`, `minecraft:campfire_cooking`; each target's `test/target.test.ts` and `all/test/targets.test.ts` check them against the vendored `sound_event` and `recipe_type` registries; each `CHANGES.md` records them.
+
+Decisions
+- Re-checked with `javap` over both Loom-cached merged jars: the `RecipeType` constants, the four recipe classes extending `AbstractCookingRecipe`, and `BarrelBlockEntity` playing `SoundEvents.BARREL_OPEN`/`BARREL_CLOSE`; identical on both targets. The app's `external-plugins.ts` and `tool-executor.ts` copy `blocks` as a whole object, so they needed no change. Built-in plugins keep `^1.0.0`.
+
+Next
+- B315 reads `target.blocks.machineRecipeTypes` and `containerSounds` in its validators and lowering; `packages/plugin-api/CLAUDE.md`'s status line still says 1.11.0 (B327 or the close).

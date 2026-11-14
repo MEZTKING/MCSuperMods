@@ -2,6 +2,17 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.12.0 — 2026-11-14
+
+Containers and machines (ADR 0074 D7, ADR 0075 D7). `API_VERSION` is `1.12.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `BlockFacts.containerSounds?: { open: string; close: string }`: the namespaced sound event ids a container block plays by default when it opens and closes.
+- `BlockFacts.machineRecipeTypes?: readonly string[]`: the namespaced vanilla recipe type ids a machine block may take in its `recipe_types`.
+
+### Migration from 1.11.0
+
+None. A plugin that reads either field should declare `^1.12.0` and treat an absent value as "no facts to check against"; plugins written earlier ignore them.
+
 ## 1.11.0 — 2026-11-14
 
 Mob bodies, ranged attacks and mounts (ADR 0070 D7, ADR 0071 D4). `API_VERSION` is `1.11.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

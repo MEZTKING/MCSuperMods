@@ -323,6 +323,33 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       ]);
     });
 
+    it('lists container and machine block facts the vendored registries know (ADR 0074 D7, ADR 0075 D7)', async () => {
+      const registries = (await readVendoredJson(
+        bundle,
+        'mcmetaRegistries',
+        nodeReadFile,
+      )) as Record<string, string[]>;
+      const soundEvents = registries.sound_event ?? [];
+      const recipeTypes = registries.recipe_type ?? [];
+      const sounds = target.blocks?.containerSounds;
+      expect(sounds).toEqual({
+        open: 'minecraft:block.barrel.open',
+        close: 'minecraft:block.barrel.close',
+      });
+      for (const id of [sounds?.open ?? '', sounds?.close ?? '']) {
+        expect(id, id).toMatch(/^minecraft:[a-z0-9_.]+$/);
+        expect(soundEvents, id).toContain(id.slice('minecraft:'.length));
+      }
+      const types = target.blocks?.machineRecipeTypes ?? [];
+      expect(types).toEqual([
+        'minecraft:smelting',
+        'minecraft:blasting',
+        'minecraft:smoking',
+        'minecraft:campfire_cooking',
+      ]);
+      for (const id of types) expect(recipeTypes, id).toContain(id.slice('minecraft:'.length));
+    });
+
     it('lists entity facts the vendored registries know (ADR 0070 D7, ADR 0071 D4)', async () => {
       const registries = (await readVendoredJson(
         bundle,

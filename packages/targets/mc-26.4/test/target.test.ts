@@ -80,6 +80,30 @@ describe('target mc-26.4', () => {
     expect(target.entities?.saddleTag).toBe('minecraft:can_equip_saddle');
   });
 
+  it('lists the container sounds and machine recipe types (ADR 0074 D7, ADR 0075 D7)', async () => {
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    expect(target.blocks?.containerSounds).toEqual({
+      open: 'minecraft:block.barrel.open',
+      close: 'minecraft:block.barrel.close',
+    });
+    expect(target.blocks?.machineRecipeTypes).toEqual([
+      'minecraft:smelting',
+      'minecraft:blasting',
+      'minecraft:smoking',
+      'minecraft:campfire_cooking',
+    ]);
+    const sounds = target.blocks?.containerSounds;
+    for (const id of [sounds?.open, sounds?.close]) {
+      expect(registries.sound_event, id).toContain(id?.slice('minecraft:'.length));
+    }
+    for (const id of target.blocks?.machineRecipeTypes ?? []) {
+      expect(registries.recipe_type, id).toContain(id.slice('minecraft:'.length));
+    }
+  });
+
   it('derives its id from the Minecraft version line', () => {
     // The runtime version key: mcVersion up to the first '-' (the plan's fixed names).
     expect(target.id).toBe(`mc-${runtimeVersion}`);

@@ -228,6 +228,19 @@ export interface BlockFacts {
    * close sounds. Since 1.10.0.
    */
   woodTypes: readonly string[];
+  /**
+   * The namespaced sound event ids a container block (`msm:container`) plays by default when it
+   * opens and closes (for example `minecraft:block.barrel.open`). Optional: a target without
+   * them leaves the defaults to the runtime. Since 1.12.0 (ADR 0074 D7).
+   */
+  containerSounds?: { open: string; close: string };
+  /**
+   * The namespaced vanilla recipe type ids a machine block (`msm:machine`) may take in its
+   * `recipe_types` (for example `minecraft:smelting`), besides its own machine recipes.
+   * Optional: a target without them skips the checks that need them. Since 1.12.0 (ADR 0075
+   * D7).
+   */
+  machineRecipeTypes?: readonly string[];
 }
 
 /**
@@ -581,8 +594,9 @@ export interface TargetFacts {
    */
   items?: ItemFacts;
   /**
-   * Block facts: the set type and wood type names block families take. Optional: a target
-   * without them skips the checks that need them. Since 1.10.0 (ADR 0067 D9).
+   * Block facts: the set type and wood type names block families take, and (since 1.12.0) the
+   * container sounds and machine recipe types. Optional: a target without them skips the checks
+   * that need them. Since 1.10.0 (ADR 0067 D9).
    */
   blocks?: BlockFacts;
   /**
