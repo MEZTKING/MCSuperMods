@@ -1,0 +1,47 @@
+{
+  "data": {
+    "below_trunk_provider": "minecraft:soil_beneath_tree",
+    "decorators": [],
+    "foliage_placer": {
+      "height": 4,
+      "offset": 4,
+      "radius": 2,
+      "type": "minecraft:fancy_foliage_placer"
+    },
+    "foliage_provider": {
+      "id": "msm_examples:silver_birch_leaves",
+      "properties": {
+        "distance": "7",
+        "persistent": "false"
+      }
+    },
+    "ignore_vines": true,
+    "minimum_size": {
+      "limit": 0,
+      "min_clipped_height": 4,
+      "type": "minecraft:two_layers_feature_size",
+      "upper_size": 0
+    },
+    "trunk_placer": {
+      "base_height": 3,
+      "height_rand_a": 11,
+      "height_rand_b": 0,
+      "type": "minecraft:fancy_trunk_placer"
+    },
+    "trunk_provider": {
+      "id": "minecraft:birch_log"
+    },
+    "type": "minecraft:tree"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:silver_birch_tree",
+  "kind": "minecraft:worldgen/feature",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The silver birch tree: a configured tree feature of the birch log and the silver birch leaves (tall and branching, as a big oak). The leaves are placed with distance 7 and persistent false, so they decay once the log is cut. Open it in the Tree Studio to change the trunk and foliage shapes.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

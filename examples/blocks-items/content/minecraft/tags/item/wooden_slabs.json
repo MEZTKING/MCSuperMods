@@ -1,0 +1,18 @@
+{
+  "data": {
+    "values": [
+      "msm_examples:elm_slab"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:wooden_slabs",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds the slab to the vanilla wooden slabs item tag, so it burns in a furnace.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

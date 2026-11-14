@@ -1,0 +1,39 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "requires_tool": false,
+        "resistance": 3,
+        "tool": "axe"
+      },
+      "msm:flammable": {
+        "burn_odds": 0,
+        "ignite_odds": 0
+      }
+    },
+    "display_name": "Elm Trapdoor",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "set_type": "wood",
+    "sound_type": "wood",
+    "textures": {
+      "texture": "msm_examples:block/elm_trapdoor"
+    },
+    "type": "trapdoor"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:elm_trapdoor",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A elm trapdoor that opens by hand or with redstone.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

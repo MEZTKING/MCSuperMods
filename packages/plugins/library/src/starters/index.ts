@@ -15,6 +15,7 @@ import { kindsOf } from '../content/bundle';
 import { PROBE_CONTEXT } from '../content/probe';
 import { hasGeckolib } from '../content/supports';
 import { CONSUMABLE_PARAMETERS, consumableBundle } from './consumable';
+import { CROP_PARAMETERS, cropBundle } from './crop';
 import { customBiomeBundle } from './custom-biome';
 import { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
 import { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
@@ -41,12 +42,14 @@ import { STATUS_EFFECT_PARAMETERS, statusEffectBundle } from './status-effect';
 import { STONE_SET_PARAMETERS, stoneSetBundle } from './stone-set';
 import { THROWABLE_PARAMETERS, throwableBundle } from './throwable';
 import { TOTEM_PARAMETERS, totemBundle } from './totem';
+import { TREE_PARAMETERS, treeBundle } from './tree';
 import { VILLAGER_TRADE_PARAMETERS, villagerTradeBundle } from './villager-trade';
 import { WEAPON_PARAMETERS, weaponBundle } from './weapon';
 import { WOOD_SET_PARAMETERS, woodSetBundle } from './wood-set';
 import { worldgenPackBundle } from './worldgen-pack';
 
 export { CONSUMABLE_PARAMETERS, consumableBundle } from './consumable';
+export { CROP_PARAMETERS, cropBundle } from './crop';
 export { customBiomeBundle, customBiomeContent, customBiomeIds } from './custom-biome';
 export { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
 export { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
@@ -87,6 +90,7 @@ export { STATUS_EFFECT_PARAMETERS, statusEffectBundle } from './status-effect';
 export { STONE_SET_MEMBERS, STONE_SET_PARAMETERS, stoneSetBundle } from './stone-set';
 export { THROWABLE_PARAMETERS, throwableBundle } from './throwable';
 export { TOTEM_PARAMETERS, totemBundle } from './totem';
+export { TREE_PARAMETERS, treeBundle } from './tree';
 export { VILLAGER_TRADE_PARAMETERS, villagerTradeBundle } from './villager-trade';
 export { WEAPON_PARAMETERS, WEAPON_TYPES, weaponBundle } from './weapon';
 export { WOOD_SET_MEMBERS, WOOD_SET_PARAMETERS, woodSetBundle } from './wood-set';
@@ -251,6 +255,37 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       creator: {
         group: 'blocks',
         blurb: 'A stone with its stairs, slab, wall and more, crafted and stonecut.',
+      },
+    },
+  ),
+  starter(
+    'crop',
+    'Crop',
+    'A new crop that grows in stages on farmland: planted from its own seeds with a new food as its produce, or from the produce itself as carrots are, with its loot, composting, villager farming and, if you choose, wild patches in the world. New blocks need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    cropBundle,
+    {
+      parameters: CROP_PARAMETERS,
+      creator: {
+        group: 'blocks',
+        blurb: 'A crop to farm: its stages, seeds and produce, and wild patches if you like.',
+      },
+      probeValues: [{ wild: true }],
+    },
+  ),
+  starter(
+    'tree',
+    'Tree',
+    'A sapling that grows a tree of its own, from a new log and new leaves or vanilla ones, in the shape you pick, and if you choose growing in the world. New blocks need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    treeBundle,
+    {
+      parameters: TREE_PARAMETERS,
+      creator: {
+        group: 'blocks',
+        blurb: 'A sapling and the tree it grows, with new or vanilla log and leaves.',
       },
     },
   ),

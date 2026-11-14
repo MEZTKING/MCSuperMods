@@ -1,0 +1,40 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "requires_tool": false,
+        "resistance": 3,
+        "tool": "axe"
+      },
+      "msm:flammable": {
+        "burn_odds": 0,
+        "ignite_odds": 0
+      }
+    },
+    "display_name": "Elm Door",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "set_type": "wood",
+    "sound_type": "wood",
+    "textures": {
+      "bottom": "msm_examples:block/elm_door_bottom",
+      "top": "msm_examples:block/elm_door_top"
+    },
+    "type": "door"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:elm_door",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A two-block-high elm door that opens by hand or with redstone. Breaking either half drops one door. msm:flammable with odds of 0 lets lava set it alight as vanilla wooden doors, while fire does not spread to it.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

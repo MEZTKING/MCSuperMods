@@ -1,0 +1,35 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2,
+        "requires_tool": false,
+        "resistance": 3,
+        "tool": "axe"
+      },
+      "msm:flammable": {
+        "burn_odds": 5,
+        "ignite_odds": 20
+      }
+    },
+    "display_name": "Elm Planks",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "model": "msm_examples:block/elm_planks",
+    "sound_type": "wood"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:elm_planks",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Elm planks, a plain full block with the cube model below. They count as planks for vanilla recipes (crafting tables, sticks, chests) through the item tag minecraft:planks.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

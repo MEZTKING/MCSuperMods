@@ -1,0 +1,19 @@
+{
+  "data": {
+    "values": [
+      "minecraft:farmland",
+      "minecraft:grass_block"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:onion_soil",
+  "kind": "minecraft:tag/block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The blocks the onion crop grows on: farmland, as every crop, and grass blocks, where the wild plants grow.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

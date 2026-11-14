@@ -2,6 +2,7 @@
   "formatVersion": 1,
   "name": "MSM Blocks and Items Examples",
   "namespaces": [
+    "minecraft",
     "msm_examples"
   ],
   "plugins": [

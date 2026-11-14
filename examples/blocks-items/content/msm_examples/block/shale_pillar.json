@@ -1,0 +1,35 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1.5,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Shale Pillar",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "stone",
+    "textures": {
+      "end": "msm_examples:block/shale_pillar_top",
+      "side": "msm_examples:block/shale_pillar"
+    },
+    "type": "pillar"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:shale_pillar",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A shale pillar: it turns to the face you place it against, as a quartz pillar.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

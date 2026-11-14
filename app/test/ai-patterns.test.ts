@@ -23,6 +23,13 @@ describe('AI helper placeholder patterns', () => {
       'bricks',
       'pillar_side',
       'pillar_top',
+      'crop_stage0',
+      'crop_stage1',
+      'crop_stage2',
+      'crop_stage3',
+      'seeds',
+      'produce',
+      'block_front',
     ];
     const known = new Set<string>(PLACEHOLDER_PATTERN_NAMES);
     expect([

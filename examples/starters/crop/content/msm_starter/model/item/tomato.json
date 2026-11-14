@@ -1,0 +1,15 @@
+{
+  "data": {
+    "parent": "minecraft:item/generated",
+    "textures": {
+      "layer0": "msm_starter:item/tomato"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:item/tomato",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A flat item model drawn from textures/item/tomato.png."
+  }
+}

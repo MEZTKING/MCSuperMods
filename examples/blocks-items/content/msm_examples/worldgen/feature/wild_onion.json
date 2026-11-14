@@ -1,0 +1,22 @@
+{
+  "data": {
+    "to_place": {
+      "id": "msm_examples:onion_crop",
+      "properties": {
+        "age": "7"
+      }
+    },
+    "type": "minecraft:simple_block"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:wild_onion",
+  "kind": "minecraft:worldgen/feature",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "One fully grown onion plant (age 7), as vanilla's sweet berry bush feature places a ripe bush.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

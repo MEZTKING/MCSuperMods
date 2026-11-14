@@ -1,0 +1,23 @@
+{
+  "data": {
+    "components": {
+      "msm:food": {
+        "nutrition": 3,
+        "saturation": 0.6
+      }
+    },
+    "compost": "65%",
+    "creative_tab": "minecraft:food_and_drinks",
+    "display_name": "Tomato",
+    "format": 1,
+    "max_stack_size": 64,
+    "model": "msm_starter:item/tomato"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:tomato",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The tomato, what the fully grown crop drops. msm:food restores 3 hunger with a saturation of 0.6. It composts at 65%."
+  }
+}

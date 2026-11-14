@@ -1,0 +1,31 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1.5,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Polished Shale",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "model": "msm_examples:block/polished_shale",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:polished_shale",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Polished shale, a smooth full block with stairs, a slab and a wall of its own.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

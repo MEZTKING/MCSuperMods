@@ -118,7 +118,7 @@ const WOOD_TYPES: readonly { value: string; label: string }[] = [
 ];
 
 /** The tree shapes: vanilla trunk and foliage placer pairs. */
-const TREE_SHAPES: readonly { value: string; label: string }[] = [
+export const TREE_SHAPES: readonly { value: string; label: string }[] = [
   { value: 'straight', label: 'Straight, as an oak' },
   { value: 'fancy', label: 'Tall and branching, as a big oak' },
   { value: 'forking', label: 'Forking, as an acacia' },
@@ -127,7 +127,7 @@ const TREE_SHAPES: readonly { value: string; label: string }[] = [
 ];
 
 /** The biomes the tree can grow in. */
-const BIOMES: readonly { tag: string; label: string }[] = [
+export const BIOMES: readonly { tag: string; label: string }[] = [
   { tag: '#minecraft:is_forest', label: 'Forests' },
   { tag: '#minecraft:is_taiga', label: 'Taigas' },
   { tag: '#minecraft:is_jungle', label: 'Jungles' },
@@ -160,10 +160,10 @@ const PICTURES: readonly {
 ];
 
 /** The largest picture side the flow accepts, in pixels. */
-const PICTURE_MAX_SIZE = 256;
+export const PICTURE_MAX_SIZE = 256;
 
 /** The largest picture file the flow accepts, in bytes (1 MB). */
-const PICTURE_MAX_BYTES = 1_048_576;
+export const PICTURE_MAX_BYTES = 1_048_576;
 
 /** The Wood set's questions, groups "Wood", "Members", "Tree" and "Pictures". */
 export const WOOD_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
@@ -378,7 +378,12 @@ const PLANKS_BREAKABLE: JsonObject = {
   requires_tool: false,
 };
 /** Vanilla's logs: hardness and resistance 2. */
-const LOG_BREAKABLE: JsonObject = { hardness: 2, resistance: 2, tool: 'axe', requires_tool: false };
+export const LOG_BREAKABLE: JsonObject = {
+  hardness: 2,
+  resistance: 2,
+  tool: 'axe',
+  requires_tool: false,
+};
 /** Vanilla's wooden doors and trapdoors: hardness and resistance 3. */
 const DOOR_BREAKABLE: JsonObject = {
   hardness: 3,
@@ -396,13 +401,13 @@ const SMALL_BREAKABLE: JsonObject = {
 
 /** Fire odds as vanilla's `FireBlock.setFlammable(block, burn_odds, ignite_odds)`. */
 const PLANKS_FIRE: JsonObject = { burn_odds: 5, ignite_odds: 20 };
-const LOG_FIRE: JsonObject = { burn_odds: 5, ignite_odds: 5 };
-const LEAVES_FIRE: JsonObject = { burn_odds: 30, ignite_odds: 60 };
+export const LOG_FIRE: JsonObject = { burn_odds: 5, ignite_odds: 5 };
+export const LEAVES_FIRE: JsonObject = { burn_odds: 30, ignite_odds: 60 };
 /** Lava ignites it, fire does not spread to it (vanilla's wooden doors, trapdoors and plates). */
 const LAVA_ONLY_FIRE: JsonObject = { burn_odds: 0, ignite_odds: 0 };
 
 /** The grey a foliage-tinted leaf texture is drawn in, so the biome colour shows true. */
-const TINTABLE_GREY: Rgb = [176, 176, 176];
+export const TINTABLE_GREY: Rgb = [176, 176, 176];
 
 export function woodSetBundle(context: BundleContext): ContentBundle {
   const { namespace, projectName } = context;
@@ -805,7 +810,7 @@ export function woodSetBundle(context: BundleContext): ContentBundle {
 }
 
 /** The tree placers of each shape (vanilla's oak, fancy oak, acacia, cherry and dark oak). */
-function treeShape(shape: string): JsonObject {
+export function treeShape(shape: string): JsonObject {
   switch (shape) {
     case 'fancy':
       return {

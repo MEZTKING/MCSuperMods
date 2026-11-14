@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "redstone",
+    "group": "wooden_fence_gate",
+    "key": {
+      "#": "minecraft:stick",
+      "W": "msm_examples:elm_planks"
+    },
+    "pattern": [
+      "#W#",
+      "#W#"
+    ],
+    "result": {
+      "id": "msm_examples:elm_fence_gate"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:elm_fence_gate_from_planks",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Two planks and four sticks make a fence gate.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

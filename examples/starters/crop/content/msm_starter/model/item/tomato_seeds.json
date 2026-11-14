@@ -1,0 +1,15 @@
+{
+  "data": {
+    "parent": "minecraft:item/generated",
+    "textures": {
+      "layer0": "msm_starter:item/tomato_seeds"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:item/tomato_seeds",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The flat item model of the tomato seeds, drawn from textures/item/tomato_seeds.png. models.item on the crop points at it; without it the item would show the last crop stage."
+  }
+}

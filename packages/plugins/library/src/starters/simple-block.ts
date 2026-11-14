@@ -1,6 +1,7 @@
 /**
  * The Simple block starter and Creator flow (ADR 0043 D2): one `msm:block` with a placeholder
- * texture and a full-cube model, how hard it is to break, the tool and tier that mine it, its
+ * texture and a full-cube model (or, placed facing the player or like a log, the `horizontal`
+ * or `pillar` type with a second texture and generated models; ADR 0069 D4), how hard it is to break, the tool and tier that mine it, its
  * light level, whether it drops itself, an optional recipe from a vanilla ingredient, its
  * English name and the `msm:mod` metadata. Ids derive from `block_name`. New blocks need the
  * Fabric mod jar export (with `msm_runtime`).
@@ -36,6 +37,21 @@ const TOOLS: readonly { value: string; label: string; sound: string }[] = [
   { value: 'hoe', label: 'Hoe', sound: 'moss' },
   { value: 'none', label: 'Any tool (or a hand)', sound: 'stone' },
 ];
+
+/** How the block is placed (ADR 0069 D4): the same every way, facing the player or as a log. */
+const PLACEMENTS: readonly { value: string; label: string }[] = [
+  { value: 'same', label: 'The same every way' },
+  { value: 'horizontal', label: 'Turns to face the player' },
+  { value: 'pillar', label: 'Placed like a log' },
+];
+
+/** What the block's notes add for each way of placing it. */
+const PLACEMENT_NOTES: Readonly<Record<string, string>> = {
+  horizontal:
+    ' Its type, horizontal, turns its front towards the player who places it, as a furnace: the generated model shows textures.front on the front and textures.all elsewhere.',
+  pillar:
+    ' Its type, pillar, turns it to the face it is placed against, as a log: the generated models show textures.side around it and textures.end on both ends.',
+};
 
 /** The tiers vanilla has `needs_<tier>_tool` tags for, plus none. */
 const TIERS: readonly { value: string; label: string }[] = [
@@ -86,6 +102,16 @@ export const SIMPLE_BLOCK_PARAMETERS: readonly StarterParameter[] = Object.freez
       { value: 'plain', label: 'Smooth with a bevel' },
       { value: 'ore', label: 'Coloured specks on stone' },
     ],
+  },
+  {
+    id: 'placement',
+    label: 'When placed',
+    description:
+      'A block that turns gets a second placeholder texture: a front with an opening, or ring-capped ends.',
+    group: 'Block',
+    type: 'choice',
+    default: 'same',
+    choices: PLACEMENTS.map(({ value, label }) => ({ value, label })),
   },
   {
     id: 'light_level',
@@ -166,13 +192,23 @@ export function simpleBlockBundle(context: BundleContext): ContentBundle {
   if (needsTier) breakable.min_tier = tier;
   const components: JsonObject = { 'msm:breakable': breakable };
   if (light > 0) components['msm:light_emitter'] = { level: light };
-  const data: JsonObject = {
-    format: 1,
-    model,
+  const placement = stringValue(values, 'placement');
+  const turns = placement === 'horizontal' || placement === 'pillar';
+  const data: JsonObject = { format: 1 };
+  if (placement === 'horizontal') {
+    data.type = 'horizontal';
+    data.textures = { all: model, front: rl(namespace, `block/${name.id}_front`) };
+  } else if (placement === 'pillar') {
+    data.type = 'pillar';
+    data.textures = { side: model, end: rl(namespace, `block/${name.id}_top`) };
+  } else {
+    data.model = model;
+  }
+  Object.assign(data, {
     sound_type: tool?.sound ?? 'stone',
     item: { creative_tab: 'minecraft:building_blocks' },
     components,
-  };
+  });
   if (dropsItself) data.loot = 'self';
 
   const mining = hasTool
@@ -201,14 +237,18 @@ export function simpleBlockBundle(context: BundleContext): ContentBundle {
       block,
       KINDS.block,
       data,
-      `A new block with hardness ${hardness}. ${mining}${light > 0 ? ` It gives off light of level ${light}.` : ''} ${dropsItself ? '"loot": "self" generates a loot table that drops the block itself.' : 'It has no loot table, so it drops nothing; set loot to "self" to make it drop itself.'}`,
+      `A new block with hardness ${hardness}. ${mining}${light > 0 ? ` It gives off light of level ${light}.` : ''} ${dropsItself ? '"loot": "self" generates a loot table that drops the block itself.' : 'It has no loot table, so it drops nothing; set loot to "self" to make it drop itself.'}${PLACEMENT_NOTES[placement] ?? ''}`,
     ),
-    element(
-      model,
-      KINDS.model,
-      { parent: 'minecraft:block/cube_all', textures: { all: model } },
-      `A full cube with the same texture on every side, drawn from textures/block/${name.id}.png. Paint over the placeholder to restyle it.`,
-    ),
+    ...(turns
+      ? []
+      : [
+          element(
+            model,
+            KINDS.model,
+            { parent: 'minecraft:block/cube_all', textures: { all: model } },
+            `A full cube with the same texture on every side, drawn from textures/block/${name.id}.png. Paint over the placeholder to restyle it.`,
+          ),
+        ]),
     element(
       rl(namespace, 'en_us'),
       KINDS.lang,
@@ -233,5 +273,11 @@ export function simpleBlockBundle(context: BundleContext): ContentBundle {
       ),
     );
   }
-  return { elements, assets: [texture(namespace, `block/${name.id}`, pattern, colour)] };
+  const assets = [texture(namespace, `block/${name.id}`, pattern, colour)];
+  if (placement === 'horizontal') {
+    assets.push(texture(namespace, `block/${name.id}_front`, 'block_front', colour));
+  } else if (placement === 'pillar') {
+    assets.push(texture(namespace, `block/${name.id}_top`, 'pillar_top', colour));
+  }
+  return { elements, assets };
 }

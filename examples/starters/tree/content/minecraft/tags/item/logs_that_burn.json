@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "msm_starter:rowan_log"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:logs_that_burn",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds the log to the vanilla item tag of logs that burn, which minecraft:logs includes: it smelts into charcoal and fuels furnaces. Tags are merged with the vanilla ones."
+  }
+}

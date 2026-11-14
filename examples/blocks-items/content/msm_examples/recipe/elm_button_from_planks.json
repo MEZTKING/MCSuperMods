@@ -1,0 +1,24 @@
+{
+  "data": {
+    "category": "redstone",
+    "group": "wooden_button",
+    "ingredients": [
+      "msm_examples:elm_planks"
+    ],
+    "result": {
+      "id": "msm_examples:elm_button"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:elm_button_from_planks",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "One plank makes a button.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

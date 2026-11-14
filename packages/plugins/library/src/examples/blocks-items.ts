@@ -5,13 +5,15 @@
  * function). Additions to vanilla content (ADR 0060): the per-kind examples of
  * `msm:biome_addition` (Ore that generates) and `msm:loot_addition` (Zombie drops a ruby), and
  * the behaviour examples Fuel log (a block item that burns), Life-steal sword (`msm:on_hit`)
- * and Night-vision helmet (`msm:while_worn`, ADR 0061). New blocks and items need the Fabric
+ * and Night-vision helmet (`msm:while_worn`, ADR 0061), and the block family examples of
+ * `block-types.ts` (ADR 0069 D4). New blocks and items need the Fabric
  * mod jar export; the vanilla pack exports carry only their models, textures, language keys,
  * loot tables and tags.
  */
 import type { ExampleProject } from '@msm/plugin-api';
 import { COLOURS, element, KINDS, modIdFromNamespace, rl, texture } from '../content/bundle';
 import { colourInt, effectIconAsset } from '../content/effects';
+import { blockTypeExamples } from './block-types';
 import { defineExample } from './define';
 
 /** The gallery category of the additions to vanilla content. */
@@ -793,4 +795,7 @@ export const behaviourExamples: readonly ExampleProject[] = [
       };
     },
   }),
+  // Block family examples (ADR 0069 D4): a wood set, a stone set, a crop, a tree, a facing block
+  // and an iron-like door.
+  ...blockTypeExamples,
 ];

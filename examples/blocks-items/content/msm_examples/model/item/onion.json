@@ -1,0 +1,19 @@
+{
+  "data": {
+    "parent": "minecraft:item/generated",
+    "textures": {
+      "layer0": "msm_examples:item/onion"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:item/onion",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The flat item model of the onion, drawn from textures/item/onion.png. models.item on the crop points at it; without it the item would show the last crop stage.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

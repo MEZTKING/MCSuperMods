@@ -1,0 +1,28 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "#": "msm_examples:shale"
+    },
+    "pattern": [
+      "##",
+      "##"
+    ],
+    "result": {
+      "count": 4,
+      "id": "msm_examples:shale_bricks"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:shale_bricks_from_shale",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Four shale make four bricks.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

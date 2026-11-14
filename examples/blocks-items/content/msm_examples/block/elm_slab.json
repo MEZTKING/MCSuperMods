@@ -1,0 +1,38 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2,
+        "requires_tool": false,
+        "resistance": 3,
+        "tool": "axe"
+      },
+      "msm:flammable": {
+        "burn_odds": 5,
+        "ignite_odds": 20
+      }
+    },
+    "display_name": "Elm Slab",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "all": "msm_examples:block/elm_planks"
+    },
+    "type": "slab"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:elm_slab",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A elm slab: two stack into a double slab, which drops two.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

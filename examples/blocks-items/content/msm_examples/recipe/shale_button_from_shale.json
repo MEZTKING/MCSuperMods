@@ -1,0 +1,23 @@
+{
+  "data": {
+    "category": "redstone",
+    "ingredients": [
+      "msm_examples:shale"
+    ],
+    "result": {
+      "id": "msm_examples:shale_button"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:shale_button_from_shale",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "One shale makes a button.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

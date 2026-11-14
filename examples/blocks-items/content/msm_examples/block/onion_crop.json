@@ -1,0 +1,60 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "crop_drops": {
+      "produce": "msm_examples:onion",
+      "produce_count": {
+        "max": 3,
+        "min": 1
+      }
+    },
+    "display_name": "Onion",
+    "format": 1,
+    "item": {
+      "components": {
+        "msm:components": {
+          "minecraft:consumable": {},
+          "minecraft:food": {
+            "nutrition": 2,
+            "saturation": 2.4
+          }
+        }
+      },
+      "compost": "65%",
+      "creative_tab": "minecraft:food_and_drinks",
+      "id": "msm_examples:onion"
+    },
+    "loot": "crop",
+    "max_age": 7,
+    "models": {
+      "item": "msm_examples:item/onion"
+    },
+    "soil": "#msm_examples:onion_soil",
+    "sound_type": "grass",
+    "textures": {
+      "stages": [
+        "msm_examples:block/onion_crop_stage0",
+        "msm_examples:block/onion_crop_stage1",
+        "msm_examples:block/onion_crop_stage2",
+        "msm_examples:block/onion_crop_stage3"
+      ]
+    },
+    "type": "crop"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:onion_crop",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The onion crop: it grows through 8 stages on farmland in the light, faster with bone meal, and is planted from the onion itself (the block item has the id msm_examples:onion, and the vanilla food components make it edible). Fully grown it drops one to 3 onions, more with Fortune; younger it drops only what planted it (the crop loot preset). Farmer villagers sow and harvest it on farmland. Its soil is the project tag of farmland and grass blocks, so the wild plants stay where they grow.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

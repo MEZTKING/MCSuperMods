@@ -1,0 +1,35 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.5,
+        "requires_tool": false,
+        "resistance": 0.5,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Shale Button",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "set_type": "stone",
+    "sound_type": "stone",
+    "textures": {
+      "texture": "msm_examples:block/shale"
+    },
+    "type": "button"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:shale_button",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A shale button: a one-second redstone pulse, not pressed by arrows, dropped even when broken by hand, as vanilla's stone button.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

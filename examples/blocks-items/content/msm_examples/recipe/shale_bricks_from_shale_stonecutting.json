@@ -1,0 +1,20 @@
+{
+  "data": {
+    "ingredient": "msm_examples:shale",
+    "result": {
+      "id": "msm_examples:shale_bricks"
+    },
+    "type": "minecraft:stonecutting"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:shale_bricks_from_shale_stonecutting",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The stonecutter turns one shale into one shale bricks.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

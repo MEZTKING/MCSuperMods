@@ -1,0 +1,78 @@
+{
+  "data": {
+    "feature": "msm_examples:wild_onion",
+    "placement": [
+      {
+        "chance": 32,
+        "type": "minecraft:rarity_filter"
+      },
+      {
+        "type": "minecraft:in_square"
+      },
+      {
+        "heightmap": "WORLD_SURFACE_WG",
+        "type": "minecraft:heightmap"
+      },
+      {
+        "type": "minecraft:biome"
+      },
+      {
+        "count": 32,
+        "type": "minecraft:count"
+      },
+      {
+        "type": "minecraft:offset",
+        "x": {
+          "max": 7,
+          "min": -7,
+          "plateau": 0,
+          "type": "minecraft:trapezoid"
+        },
+        "y": {
+          "max": 3,
+          "min": -3,
+          "plateau": 0,
+          "type": "minecraft:trapezoid"
+        },
+        "z": {
+          "max": 7,
+          "min": -7,
+          "plateau": 0,
+          "type": "minecraft:trapezoid"
+        }
+      },
+      {
+        "predicate": {
+          "predicates": [
+            {
+              "tag": "minecraft:air",
+              "type": "minecraft:matching_block_tag"
+            },
+            {
+              "blocks": "minecraft:grass_block",
+              "offset": [
+                0,
+                -1,
+                0
+              ],
+              "type": "minecraft:matching_blocks"
+            }
+          ],
+          "type": "minecraft:all_of"
+        },
+        "type": "minecraft:block_predicate_filter"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:wild_onion_placed",
+  "kind": "minecraft:worldgen/placed_feature",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A patch of wild onions, in the shape of vanilla's berry patches: one chunk in 32 tries 32 spots around one surface point and plants where there is air above a grass block.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

@@ -83,6 +83,7 @@ const OPAQUE_PATTERNS: ReadonlySet<PlaceholderPattern> = new Set<PlaceholderPatt
   'bricks',
   'pillar_side',
   'pillar_top',
+  'block_front',
 ]);
 const fixtures = join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'patterns');
 
@@ -103,7 +104,7 @@ const PINNED: Partial<Record<PlaceholderPattern, string>> = {
 const PINNED_SKIN = '224f2f4715ddc13cad76f34fd7555f720a9149052645c23f4c28c102c2ff4fd5';
 
 describe('placeholder textures', () => {
-  it('has fifty-seven patterns', () => {
+  it('has sixty-four patterns', () => {
     expect(PLACEHOLDER_PATTERNS).toEqual([
       'plain',
       'ore',
@@ -162,6 +163,13 @@ describe('placeholder textures', () => {
       'bricks',
       'pillar_side',
       'pillar_top',
+      'crop_stage0',
+      'crop_stage1',
+      'crop_stage2',
+      'crop_stage3',
+      'seeds',
+      'produce',
+      'block_front',
     ]);
   });
 

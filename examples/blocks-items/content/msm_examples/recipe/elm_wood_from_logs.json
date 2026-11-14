@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "building",
+    "group": "bark",
+    "key": {
+      "#": "msm_examples:elm_log"
+    },
+    "pattern": [
+      "##",
+      "##"
+    ],
+    "result": {
+      "count": 3,
+      "id": "msm_examples:elm_wood"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:elm_wood_from_logs",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Four logs make three wood.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

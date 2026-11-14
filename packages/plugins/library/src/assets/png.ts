@@ -68,7 +68,14 @@ export type Rgb = readonly [number, number, number];
  * - `polished_stone`: smooth stone with a bevelled rim (block texture);
  * - `bricks`: four courses of staggered bricks with mortar (block texture);
  * - `pillar_side`, `pillar_top`: the fluted side and the capped end of a pillar (block
- *   textures).
+ *   textures);
+ * - `crop_stage0` to `crop_stage3`: a row of crop stalks on a transparent background, from
+ *   sprouts to the ripe plant whose produce is drawn in the accent colour (block textures of
+ *   the `minecraft:block/crop` model; ADR 0069 D2);
+ * - `seeds`: a handful of seed grains (item texture);
+ * - `produce`: a round vegetable or fruit with a green leafy top (item texture);
+ * - `block_front`: a bevelled face with vents and a dark opening, the front of a furnace-like
+ *   block (block texture).
  *
  * Paintings have their own placeholder of any size, {@link paintingPng}.
  */
@@ -129,7 +136,14 @@ export type PlaceholderPattern =
   | 'polished_stone'
   | 'bricks'
   | 'pillar_side'
-  | 'pillar_top';
+  | 'pillar_top'
+  | 'crop_stage0'
+  | 'crop_stage1'
+  | 'crop_stage2'
+  | 'crop_stage3'
+  | 'seeds'
+  | 'produce'
+  | 'block_front';
 
 /** Every pattern, in documentation order. */
 export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze([
@@ -190,6 +204,13 @@ export const PLACEHOLDER_PATTERNS: readonly PlaceholderPattern[] = Object.freeze
   'bricks',
   'pillar_side',
   'pillar_top',
+  'crop_stage0',
+  'crop_stage1',
+  'crop_stage2',
+  'crop_stage3',
+  'seeds',
+  'produce',
+  'block_front',
 ]);
 
 /** Width and height of the armour layer patterns, the vanilla humanoid armour texture size. */
@@ -229,8 +250,8 @@ export interface PlaceholderOptions {
   /** The main colour; defaults to {@link DEFAULT_COLOUR}. */
   colour?: Rgb;
   /**
-   * A second colour: the spots of the `egg` pattern. Defaults to a darker shade of the main
-   * colour (scaled to 71 per cent). Other patterns ignore it.
+   * A second colour: the spots of the `egg` pattern and the produce of `crop_stage3`. Defaults
+   * to a darker shade of the main colour (scaled to 71 per cent). Other patterns ignore it.
    */
   accent?: Rgb;
 }
@@ -1164,6 +1185,99 @@ function pillarTop(palette: Palette): Pixel {
   };
 }
 
+// Crop patterns (ADR 0069 D2) ----------------------------------------------------------------
+
+/** The columns the crop stalks stand in, and how far each one is offset in height. */
+const CROP_STALKS: readonly (readonly [number, number])[] = [
+  [1, 1],
+  [4, 0],
+  [7, 2],
+  [10, 0],
+  [13, 1],
+];
+
+/** The stalk height of each crop stage, in pixels from the bottom edge. */
+const CROP_HEIGHTS: readonly number[] = [3, 6, 10, 13];
+
+/** The green of a vegetable's leafy top and a seed's sheen. */
+const LEAF_GREEN: Rgba = [72, 148, 56, 255];
+const LEAF_GREEN_DARK: Rgba = [44, 100, 36, 255];
+
+/**
+ * Crop stage `stage` (0 to 3): five stalks in the colour, taller each stage, with a leaf every
+ * few pixels; the ripe stage 3 carries produce in the accent colour near the top of each stalk.
+ */
+function cropStage(stage: number): (palette: Palette) => Pixel {
+  const height = CROP_HEIGHTS[stage] ?? 3;
+  return (palette) => (x, y) => {
+    for (const [column, offset] of CROP_STALKS) {
+      const top = PLACEHOLDER_SIZE - Math.max(1, height - offset);
+      if (stage === 3 && y >= top + 1 && y <= top + 2 && (x === column || x === column + 1)) {
+        return y === top + 1 && x === column ? palette.light : palette.accent;
+      }
+      if (x === column && y >= top) return y === top ? palette.light : palette.mid;
+      if (x === column + 1 && y >= top + 2 && (y + column) % 3 === 0) return palette.deep;
+      if (x === column - 1 && y >= top + 3 && (y + column) % 3 === 1) return palette.dark;
+    }
+    return CLEAR;
+  };
+}
+
+/** Seeds: five small grains with a light top and a dark bottom on a transparent background. */
+function seeds(palette: Palette): Pixel {
+  const grains: readonly (readonly [number, number])[] = [
+    [4, 4],
+    [9, 3],
+    [6, 8],
+    [11, 8],
+    [7, 12],
+  ];
+  return (x, y) => {
+    for (const [gx, gy] of grains) {
+      if (x >= gx && x <= gx + 1 && y >= gy && y <= gy + 2) {
+        if (y === gy) return palette.light;
+        if (y === gy + 2) return palette.dark;
+        return x === gx ? palette.mid : palette.deep;
+      }
+    }
+    return CLEAR;
+  };
+}
+
+/** Produce: a round body in shades of the colour under a short green leafy top. */
+function produce(palette: Palette): Pixel {
+  const cx = 7.5;
+  const cy = 9.5;
+  const r = 5.5;
+  return (x, y) => {
+    const d2 = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+    if (d2 <= r * r) {
+      if (d2 > (r - 1) * (r - 1)) return palette.dark;
+      if (x + y <= 12 && d2 < 9) return palette.shine;
+      return x + y < cx + cy ? palette.light : palette.mid;
+    }
+    if (y === 3 && x >= 6 && x <= 9) return x === 6 || x === 9 ? LEAF_GREEN_DARK : LEAF_GREEN;
+    if (y === 2 && (x === 7 || x === 8)) return LEAF_GREEN;
+    if (y === 1 && x === 8) return LEAF_GREEN_DARK;
+    return CLEAR;
+  };
+}
+
+/**
+ * The front of a furnace-like block: the `plain` bevel, two dark vents near the top and a dark
+ * opening below with a light lip.
+ */
+function blockFront(palette: Palette): Pixel {
+  const base = plain(palette);
+  return (x, y) => {
+    const inner = x >= 4 && x <= LAST - 4;
+    if (inner && (y === 4 || y === 6)) return palette.dark;
+    if (inner && y === 9) return palette.light;
+    if (inner && y >= 10 && y <= 12) return y === 12 ? palette.deep : palette.dark;
+    return base(x, y);
+  };
+}
+
 /**
  * One cuboid of an entity model as it unwraps onto its texture (vanilla box UV): the texture
  * offset `u`, `v` and the box's width, height and depth in pixels.
@@ -1411,6 +1525,13 @@ const PATTERNS: Readonly<Record<PlaceholderPattern, (palette: Palette) => Pixel>
   bricks,
   pillar_side: pillarSide,
   pillar_top: pillarTop,
+  crop_stage0: cropStage(0),
+  crop_stage1: cropStage(1),
+  crop_stage2: cropStage(2),
+  crop_stage3: cropStage(3),
+  seeds,
+  produce,
+  block_front: blockFront,
 };
 
 /**

@@ -1,0 +1,35 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 5,
+        "resistance": 5,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Vault Door",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:redstone_blocks"
+    },
+    "loot": "self",
+    "set_type": "iron",
+    "sound_type": "metal",
+    "textures": {
+      "bottom": "msm_examples:block/vault_door_bottom",
+      "top": "msm_examples:block/vault_door_top"
+    },
+    "type": "door"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:vault_door",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A door of set type iron: hands do not open it, only a redstone signal such as the button beside it, and it makes the iron door sounds. The door places both halves at once and drops one door from either half. Its item is the flat door picture, as vanilla doors.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

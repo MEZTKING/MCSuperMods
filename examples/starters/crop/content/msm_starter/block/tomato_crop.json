@@ -1,0 +1,42 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "crop_drops": {
+      "produce": "msm_starter:tomato"
+    },
+    "display_name": "Tomato Seeds",
+    "format": 1,
+    "item": {
+      "compost": "30%",
+      "creative_tab": "minecraft:natural_blocks",
+      "id": "msm_starter:tomato_seeds"
+    },
+    "loot": "crop",
+    "max_age": 7,
+    "models": {
+      "item": "msm_starter:item/tomato_seeds"
+    },
+    "sound_type": "grass",
+    "textures": {
+      "stages": [
+        "msm_starter:block/tomato_crop_stage0",
+        "msm_starter:block/tomato_crop_stage1",
+        "msm_starter:block/tomato_crop_stage2",
+        "msm_starter:block/tomato_crop_stage3"
+      ]
+    },
+    "type": "crop"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:tomato_crop",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The tomato crop: it grows through 8 stages on farmland in the light, faster with bone meal, and is planted from tomato seeds (the block item, with its own id msm_starter:tomato_seeds). Fully grown it drops one tomato and tomato seeds, more with Fortune; younger it drops only what planted it (the crop loot preset). Farmer villagers sow and harvest it on farmland."
+  }
+}

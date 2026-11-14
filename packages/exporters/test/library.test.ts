@@ -406,6 +406,9 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
       drops_itself: false,
       ingredient: 'minecraft:oak_planks',
     },
+    // ADR 0069 D4: facing the player and placed like a log.
+    { block_name: 'Kiln', placement: 'horizontal', tool: 'pickaxe' },
+    { block_name: 'Marble Column', placement: 'pillar', pattern: 'ore', drops_itself: false },
   ],
   food: [
     {
@@ -531,6 +534,60 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     { stone_name: 'Basalt Rock', members: ['polished', 'stairs', 'wall'], tool_tier: 'any' },
     { members: ['stairs', 'pillar', 'button'] },
   ],
+  // ADR 0069 D1: seeds or the produce, every stage choice, wild patches, pictures.
+  crop: [
+    {
+      crop_name: 'Blue Berry',
+      colour: '#2454c4',
+      stages: 'eight',
+      seeds_name: 'Berry Pips',
+      harvest_max: 4,
+      seeds_compost: 'none',
+      villagers: false,
+      wild: true,
+      wild_biomes: '#minecraft:is_taiga',
+      wild_rarity: 8,
+      picture_stage0: pngDataUrl(16, 16),
+      picture_stage7: pngDataUrl(16, 32),
+      picture_seeds: pngDataUrl(16, 16),
+    },
+    {
+      crop_name: 'Radish',
+      produce: 'produce',
+      stages: 'short',
+      nutrition: 2,
+      saturation: 0.3,
+      produce_compost: '85%',
+      wild: true,
+      picture_produce: pngDataUrl(16, 16),
+    },
+    { crop_name: 'Corn', seeds_name: 'Corn' },
+  ],
+  // ADR 0069 D1: vanilla logs and leaves, every tree shape, a tinted leaf, pictures.
+  tree: [
+    {
+      tree_name: 'Ghost Oak',
+      log: 'minecraft:pale_oak_log',
+      leaves: 'new',
+      leaf_tint: 'foliage',
+      tree_shape: 'dark_oak',
+      biomes: '#minecraft:is_taiga',
+      picture_leaves: pngDataUrl(16, 16),
+    },
+    {
+      tree_name: 'Old Cherry',
+      log: 'new',
+      leaves: 'minecraft:cherry_leaves',
+      tree_shape: 'cherry',
+    },
+    { tree_name: 'Thorn', tree_shape: 'forking', grows: false, picture_bark: pngDataUrl(16, 16) },
+    {
+      tree_name: 'Spruce Twin',
+      log: 'minecraft:spruce_log',
+      leaves: 'minecraft:spruce_leaves',
+      tree_shape: 'fancy',
+    },
+  ],
   'goat-horn': [
     {
       horn_name: 'Thunder',
@@ -622,6 +679,8 @@ const MIRRORED_STARTERS = [
   'simple-block',
   'wood-set',
   'stone-set',
+  'crop',
+  'tree',
   'food',
   'scripted-item',
   'weapon',

@@ -1,0 +1,28 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "#": "minecraft:stone"
+    },
+    "pattern": [
+      "##",
+      "##"
+    ],
+    "result": {
+      "count": 4,
+      "id": "msm_examples:shale"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:shale_from_stone",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Four stone in a square make four shale, the start of every other recipe of the set.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

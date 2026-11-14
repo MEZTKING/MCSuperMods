@@ -1,0 +1,30 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Rowan Sapling",
+    "format": 1,
+    "item": {
+      "compost": "30%",
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "sound_type": "grass",
+    "textures": {
+      "sapling": "msm_starter:block/rowan_sapling"
+    },
+    "tree": "msm_starter:rowan_tree",
+    "type": "sapling"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:rowan_sapling",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A rowan sapling. It grows into the tree msm_starter:rowan_tree by itself or with bone meal. The new leaves drop it. It composts at 30%."
+  }
+}

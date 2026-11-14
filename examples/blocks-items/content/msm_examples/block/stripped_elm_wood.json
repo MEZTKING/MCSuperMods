@@ -1,0 +1,39 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2,
+        "requires_tool": false,
+        "resistance": 2,
+        "tool": "axe"
+      },
+      "msm:flammable": {
+        "burn_odds": 5,
+        "ignite_odds": 5
+      }
+    },
+    "display_name": "Stripped Elm Wood",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "end": "msm_examples:block/stripped_elm_log",
+      "side": "msm_examples:block/stripped_elm_log"
+    },
+    "type": "pillar"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:stripped_elm_wood",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Stripped elm wood: the stripped side on every face.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

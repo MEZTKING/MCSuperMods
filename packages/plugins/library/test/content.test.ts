@@ -24,6 +24,7 @@ import {
   scriptBehaviourExamples,
   starterExamples,
 } from '../src/index';
+import { TINTABLE_GREY } from '../src/starters/wood-set';
 
 const STARTER_IDS = [
   'blank',
@@ -36,6 +37,8 @@ const STARTER_IDS = [
   'simple-block',
   'wood-set',
   'stone-set',
+  'crop',
+  'tree',
   'food',
   'weapon',
   'consumable',
@@ -189,6 +192,14 @@ const PLACEHOLDERS = new Set([
       Buffer.from(placeholderPng(pattern, { colour })).toString('hex'),
     ),
   ),
+  // Leaves tinted by the biome colour are drawn grey (ADR 0068 D6).
+  Buffer.from(placeholderPng('leaves', { colour: TINTABLE_GREY })).toString('hex'),
+  // A ripe crop stage carries the produce in a second colour (ADR 0069 D2).
+  ...Object.values(COLOURS).flatMap((colour) =>
+    Object.values(COLOURS).map((accent) =>
+      Buffer.from(placeholderPng('crop_stage3', { colour, accent })).toString('hex'),
+    ),
+  ),
   ...Object.values(COLOURS).map((colour) =>
     Buffer.from(placeholderSkinPng({ colour })).toString('hex'),
   ),
@@ -220,7 +231,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the thirty-four starters in order', () => {
+  it('lists the thirty-six starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -230,7 +241,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(30).fill('content'),
+      ...Array<string>(32).fill('content'),
     ]);
   });
 
@@ -597,7 +608,7 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 93 per-kind examples, one per built-in kind, 15 behaviour examples and 4 starter projects', () => {
+  it('has 93 per-kind examples, one per built-in kind, 21 behaviour examples and 4 starter projects', () => {
     expect(kindExamples).toHaveLength(93);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
@@ -611,6 +622,12 @@ describe('examples', () => {
       'example_msm_life_steal_sword',
       'example_msm_night_vision_helmet',
       'example_msm_brewed_with_own_item',
+      'example_msm_wood_set',
+      'example_msm_stone_set',
+      'example_msm_crop',
+      'example_msm_tree',
+      'example_msm_machine_block',
+      'example_msm_iron_door',
     ]);
     expect(entityBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_hostile_mob',
@@ -625,7 +642,7 @@ describe('examples', () => {
       'example_msm_teleport_staff',
       'example_msm_boss_fight_bar',
     ]);
-    expect(libraryExamples).toHaveLength(112);
+    expect(libraryExamples).toHaveLength(118);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -692,6 +709,9 @@ describe('every starter and example', () => {
         for (const element of build(entry, 'demo', { effect: 'minecraft:speed' }).elements) {
           used.add(element.kind);
         }
+      }
+      if (entry.id === 'crop') {
+        for (const element of build(entry, 'demo', { wild: true }).elements) used.add(element.kind);
       }
       if (entry.id === 'mob-skin') {
         for (const animal of ['cat', 'pig', 'cow', 'chicken', 'frog']) {
@@ -848,10 +868,12 @@ describe('structure and worldgen content', () => {
     entry.requiresKinds.some((kind) => WORLDGEN_KINDS.has(kind)),
   );
 
-  it('covers the six worldgen starters, the 19 structure and worldgen examples and the generating ores', () => {
+  it('covers the eight worldgen starters, the 19 structure and worldgen examples, the generating ores and the trees and wild crops', () => {
     expect(worldgenEntries.map((entry) => entry.id)).toEqual([
       'custom_ore',
       'wood-set',
+      'crop',
+      'tree',
       'dimension',
       'custom_biome',
       'jigsaw_structure',
@@ -862,6 +884,9 @@ describe('structure and worldgen content', () => {
         return example?.id;
       }),
       'example_msm_biome_addition',
+      'example_msm_wood_set',
+      'example_msm_crop',
+      'example_msm_tree',
       'starter_custom_ore',
     ]);
   });
@@ -875,6 +900,11 @@ describe('structure and worldgen content', () => {
         ids.add(
           `${asset.namespace}:${asset.path.replace(/^textures\//, '').replace(/\.png$/, '')}`,
         );
+      }
+      // A block item with its own id (ADR 0068 D2), such as a crop's seeds, is an item too.
+      for (const element of bundle.elements) {
+        const item = element.kind === 'msm:block' ? asObj(asObj(element.data).item) : {};
+        if (typeof item.id === 'string') ids.add(item.id);
       }
       for (const element of bundle.elements) {
         if (element.kind === 'minecraft:lang' || element.kind === 'minecraft:pack_mcmeta') continue;

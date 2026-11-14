@@ -1,0 +1,21 @@
+{
+  "data": {
+    "values": [
+      "msm_examples:elm_log",
+      "msm_examples:elm_wood",
+      "msm_examples:stripped_elm_log",
+      "msm_examples:stripped_elm_wood"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:logs",
+  "kind": "minecraft:tag/block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds the log blocks to the vanilla block tag of logs: leaves near them do not decay. An element id is either a block tag or an item tag, so the item side goes through minecraft:logs_that_burn.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "data": {
+    "biomes": [
+      "#minecraft:is_forest"
+    ],
+    "features": [
+      {
+        "feature": "msm_examples:wild_onion_placed",
+        "step": "vegetal_decoration"
+      }
+    ],
+    "format": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:wild_onion_patches",
+  "kind": "msm:biome_addition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A world addition: it adds the wild onion patches to forests at the vegetal decoration step without replacing any vanilla file. Only newly generated chunks get them. It needs the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

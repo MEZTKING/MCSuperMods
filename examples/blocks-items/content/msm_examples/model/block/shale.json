@@ -1,0 +1,19 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_examples:block/shale"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:block/shale",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A full cube drawn from textures/block/shale.png; the shapes made of shale use the same texture.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "data": {
+    "ingredient": "msm_examples:shale",
+    "result": {
+      "id": "msm_examples:polished_shale_stairs"
+    },
+    "type": "minecraft:stonecutting"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:polished_shale_stairs_from_shale_stonecutting",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The stonecutter turns one shale into one polished shale stairs.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

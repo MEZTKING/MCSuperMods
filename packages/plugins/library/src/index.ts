@@ -16,7 +16,7 @@
  * - Creator flows (ADR 0043) are starters with `creator`: Gear set, Simple block, Food,
  *   Scripted behaviour, Custom ore and Custom mob, (ADR 0044) Weapon, Consumable, Totem,
  *   Enchantment, Painting and Music disc, (ADRs 0055, 0056) Status effect and Throwable, and
- *   (ADR 0069) Wood set and Stone set.
+ *   (ADR 0069) Wood set, Stone set, Crop and Tree.
  * - The Scripted ore starter adds three runtime scripts to the Custom ore starter's content
  *   (Phase 6, ADRs 0031 and 0032; scripts need the Fabric mod jar export and are not part of
  *   the Java project export).
@@ -71,6 +71,7 @@ export {
 export {
   BREWING_INGREDIENTS,
   CONSUMABLE_PARAMETERS,
+  CROP_PARAMETERS,
   CUSTOM_MOB_PARAMETERS,
   CUSTOM_ORE_PARAMETERS,
   CUSTOM_SWORD_PARAMETERS,
@@ -99,6 +100,7 @@ export {
   scriptedOreIds,
   THROWABLE_PARAMETERS,
   TOTEM_PARAMETERS,
+  TREE_PARAMETERS,
   WEAPON_PARAMETERS,
   WEAPON_TYPES,
   WOOD_SET_MEMBERS,

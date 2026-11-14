@@ -1,0 +1,18 @@
+{
+  "data": {
+    "values": [
+      "msm_examples:elm_stairs"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:wooden_stairs",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds the stairs to the vanilla wooden stairs item tag, so they burn in a furnace.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "#": "msm_examples:shale"
+    },
+    "pattern": [
+      "##",
+      "##"
+    ],
+    "result": {
+      "count": 4,
+      "id": "msm_examples:polished_shale"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:polished_shale_from_shale",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Four shale make four polished shale.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

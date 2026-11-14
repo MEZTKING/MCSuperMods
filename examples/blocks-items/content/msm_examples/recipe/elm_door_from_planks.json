@@ -1,0 +1,30 @@
+{
+  "data": {
+    "category": "redstone",
+    "group": "wooden_door",
+    "key": {
+      "#": "msm_examples:elm_planks"
+    },
+    "pattern": [
+      "##",
+      "##",
+      "##"
+    ],
+    "result": {
+      "count": 3,
+      "id": "msm_examples:elm_door"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:elm_door_from_planks",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Six planks make three doors.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

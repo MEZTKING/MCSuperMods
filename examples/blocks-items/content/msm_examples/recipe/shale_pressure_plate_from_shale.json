@@ -1,0 +1,26 @@
+{
+  "data": {
+    "category": "redstone",
+    "key": {
+      "#": "msm_examples:shale"
+    },
+    "pattern": [
+      "##"
+    ],
+    "result": {
+      "id": "msm_examples:shale_pressure_plate"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:shale_pressure_plate_from_shale",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Two shale make a pressure plate.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

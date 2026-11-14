@@ -1,0 +1,35 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3.5,
+        "resistance": 3.5,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Crusher",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "sound_type": "metal",
+    "textures": {
+      "front": "msm_examples:block/crusher_front",
+      "side": "msm_examples:block/crusher",
+      "top": "msm_examples:block/crusher_top"
+    },
+    "type": "horizontal"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:crusher",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A block of type horizontal: it faces one of four directions, towards the player who places it. Lowering writes the model from textures (vanilla orientable: front, side and top) and a block state with one turned variant per facing, so there is no model element. Give it behaviour with components such as msm:on_interact; the facing is only its look.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

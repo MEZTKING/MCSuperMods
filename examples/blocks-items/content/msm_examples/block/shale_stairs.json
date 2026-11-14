@@ -1,0 +1,35 @@
+{
+  "data": {
+    "base_block": "msm_examples:shale",
+    "components": {
+      "msm:breakable": {
+        "hardness": 1.5,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Shale Stairs",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "stone",
+    "textures": {
+      "all": "msm_examples:block/shale"
+    },
+    "type": "stairs"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:shale_stairs",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Shale stairs: they form corners next to other stairs and copy the behaviour of their base block.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

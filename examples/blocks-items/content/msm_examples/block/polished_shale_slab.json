@@ -1,0 +1,34 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1.5,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Polished Shale Slab",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "stone",
+    "textures": {
+      "all": "msm_examples:block/polished_shale"
+    },
+    "type": "slab"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:polished_shale_slab",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A polished shale slab: two stack into a double slab, which drops two.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

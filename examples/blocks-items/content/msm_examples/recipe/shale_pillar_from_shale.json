@@ -1,0 +1,28 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "#": "msm_examples:shale"
+    },
+    "pattern": [
+      "#",
+      "#"
+    ],
+    "result": {
+      "count": 2,
+      "id": "msm_examples:shale_pillar"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:shale_pillar_from_shale",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Two shale stacked make two pillars.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

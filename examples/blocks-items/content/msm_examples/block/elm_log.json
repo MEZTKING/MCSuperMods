@@ -1,0 +1,42 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2,
+        "requires_tool": false,
+        "resistance": 2,
+        "tool": "axe"
+      },
+      "msm:flammable": {
+        "burn_odds": 5,
+        "ignite_odds": 5
+      },
+      "msm:strippable": {
+        "into": "msm_examples:stripped_elm_log"
+      }
+    },
+    "display_name": "Elm Log",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "end": "msm_examples:block/elm_log_top",
+      "side": "msm_examples:block/elm_log"
+    },
+    "type": "pillar"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:elm_log",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The elm log: a pillar that turns to the face you place it against, bark on the sides and rings on the ends. An axe strips it into the stripped log (msm:strippable). It burns as vanilla logs do, and the block tag minecraft:logs keeps the elm leaves from decaying next to it.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

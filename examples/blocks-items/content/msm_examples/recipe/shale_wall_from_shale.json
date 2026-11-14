@@ -1,0 +1,27 @@
+{
+  "data": {
+    "key": {
+      "#": "msm_examples:shale"
+    },
+    "pattern": [
+      "###",
+      "###"
+    ],
+    "result": {
+      "count": 6,
+      "id": "msm_examples:shale_wall"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:shale_wall_from_shale",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Six blocks make six walls (no category, as vanilla).",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

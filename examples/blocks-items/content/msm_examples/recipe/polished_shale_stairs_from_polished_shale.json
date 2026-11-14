@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "#": "msm_examples:polished_shale"
+    },
+    "pattern": [
+      "#  ",
+      "## ",
+      "###"
+    ],
+    "result": {
+      "count": 4,
+      "id": "msm_examples:polished_shale_stairs"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:polished_shale_stairs_from_polished_shale",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Six blocks make four stairs.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

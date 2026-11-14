@@ -1,0 +1,35 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.5,
+        "requires_tool": false,
+        "resistance": 0.5,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Vault Button",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:redstone_blocks"
+    },
+    "loot": "self",
+    "set_type": "stone",
+    "sound_type": "stone",
+    "textures": {
+      "texture": "minecraft:block/polished_blackstone"
+    },
+    "type": "button"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:vault_button",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A stone button of vanilla polished blackstone: a one-second pulse that opens the vault door when placed next to it.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

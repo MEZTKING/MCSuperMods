@@ -1,0 +1,42 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2,
+        "requires_tool": false,
+        "resistance": 2,
+        "tool": "axe"
+      },
+      "msm:flammable": {
+        "burn_odds": 5,
+        "ignite_odds": 5
+      },
+      "msm:strippable": {
+        "into": "msm_examples:stripped_elm_wood"
+      }
+    },
+    "display_name": "Elm Wood",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "end": "msm_examples:block/elm_log",
+      "side": "msm_examples:block/elm_log"
+    },
+    "type": "pillar"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:elm_wood",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Elm wood: a log with bark on every side, as vanilla oak wood. An axe strips it into stripped wood.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

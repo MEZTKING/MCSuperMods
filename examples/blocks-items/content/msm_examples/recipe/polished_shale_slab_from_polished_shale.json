@@ -1,0 +1,27 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "#": "msm_examples:polished_shale"
+    },
+    "pattern": [
+      "###"
+    ],
+    "result": {
+      "count": 6,
+      "id": "msm_examples:polished_shale_slab"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:polished_shale_slab_from_polished_shale",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Three blocks make six slabs.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}
