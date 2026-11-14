@@ -20,6 +20,7 @@
  * - **Mobs:** `msm:on_spawn` after the spawn; `msm:on_interact` on a right click; a hit removes
  *   the mob and fires `msm:on_death` (never `msm:on_hurt`, as on a lethal hit in the runtime).
  * - **Power tool:** `msm:redstone`'s `on_powered` and `on_unpowered` when it changes `powered`.
+ * - **Screens** (B398): a container's `on_close` when the player closes its mock-up screen.
  *
  * Random ticks are approximate (limit L9): each block with `msm:on_random_tick` gets one with
  * the odds of the game's default (3 random ticks a tick per 16 by 16 by 16 blocks), then the
@@ -113,6 +114,7 @@ const T = {
   randomTick: 'block:msm:on_random_tick',
   inside: 'block:msm:on_entity_inside',
   open: 'block:msm:container.on_open',
+  close: 'block:msm:container.on_close',
   itemUse: 'item:msm:on_use',
   itemUseOn: 'item:msm:on_use_on_block',
   death: 'entity:msm:on_death',
@@ -229,17 +231,32 @@ export class TriggerEngine {
     const ctx = this.blockContext(pos, true, PLAYER);
     const interact = this.fire(owner, T.blockInteract, ctx, `You used ${owner.displayName}`);
     const open = this.fire(owner, T.open, ctx, `You opened ${owner.displayName}`);
-    if (owner.triggers.has(T.open)) {
-      const close = owner.triggers.get('block:msm:container.on_close');
-      this.sayOnce(
-        `screen:${owner.id}`,
-        `the screen of ${owner.displayName}${
-          close === undefined ? '' : `, and its event when ${close.spec.words} ("${close.event}")`
-        }`,
-        owner.origin,
-      );
-    }
     return interact || open ? FIRED : NOT_FIRED;
+  }
+
+  /**
+   * A container's or machine's screen opened (B398): the preview shows a mock-up, so the real
+   * screen is said once per block (ADR 0085 L11).
+   */
+  screenOpened(block: { id: string; displayName: string; origin: SimOrigin }): void {
+    this.sayOnce(
+      `screen:${block.id}`,
+      `the screen of ${block.displayName} with items you can move (the preview shows a mock-up of its slots)`,
+      block.origin,
+    );
+  }
+
+  /** The player closed the screen of the container at `pos` (B398): its `on_close`. */
+  blockClosed(pos: BlockPos): FireResult {
+    const owner = this.blockOwner(pos);
+    if (owner === undefined) return NOT_FIRED;
+    const ctx = this.blockContext(pos, true, PLAYER);
+    return this.fire(owner, T.close, ctx, `You closed ${owner.displayName}`) ? FIRED : NOT_FIRED;
+  }
+
+  /** A display name for an item or block id (the inventory row, B398). */
+  nameOfItem(id: string): string {
+    return this.itemName(id);
   }
 
   /** A player is about to break the block at `pos`: `msm:on_break`. */
@@ -653,8 +670,6 @@ export class TriggerEngine {
   private sayUnhandled(owner: EventOwner): void {
     for (const bound of owner.triggers.values()) {
       if (bound.spec.handled) continue;
-      // A container's close event is said with its screen when it opens here.
-      if (bound.spec.id === 'block:msm:container.on_close' && owner.triggers.has(T.open)) continue;
       this.sayOnce(
         `trigger:${owner.kind}:${owner.id}:${bound.spec.id}`,
         `${owner.displayName}'s event when ${bound.spec.words} ("${bound.event}")`,

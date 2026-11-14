@@ -15,11 +15,18 @@
  * Triggers and actions (B396, `events/`) fire where `use`, `interact`, `place`, `break`, `hit`,
  * the Power tool and the tick make their changes; their effects (particles, sounds, chips,
  * animations) go out as `effect` events, and every step is in {@link LocalWorldSource.trace}.
+ *
+ * Screens (B398): using a container or machine block opens its screen ({@link
+ * LocalWorldSource.screen}, which the view draws as a mock-up, ADR 0085 L11) and sets the block's
+ * `open` property as the game does; {@link LocalWorldSource.closeScreen} closes it and fires the
+ * container's `on_close`. Breaking the block, clearing the area or an edit that takes the screen
+ * away closes it too.
  */
 
 import { type BlockCatalogue, buildCatalogue, type CatalogueTarget } from './blocks/catalogue.js';
 import { useBlock } from './blocks/interact.js';
 import { breakBlock, placeBlock } from './blocks/placement.js';
+import { type ScreenSpec, screensFromFiles } from './blocks/screens.js';
 import { buildEntityCatalogue, type EntityCatalogue } from './entities/catalogue.js';
 import { EntityWorld } from './entities/entity-world.js';
 import type { EntityHit } from './entities/spawn.js';
@@ -82,6 +89,19 @@ export type PointedAt =
   | { readonly kind: 'entity'; readonly entity: EntityHit; readonly block: PickResult | null }
   | null;
 
+/** A screen the player has open (B398). */
+export interface OpenScreen {
+  /** The block that opened it. */
+  readonly pos: BlockPos;
+  /** Its id and name in plain words. */
+  readonly block: string;
+  readonly displayName: string;
+  /** The slots to draw. */
+  readonly spec: ScreenSpec;
+  /** Where log lines about the block point. */
+  readonly origin: SimOrigin;
+}
+
 /** The id the floor reports in a pick result's state readouts. */
 export const FLOOR_NAME = 'msm:try_it_floor';
 
@@ -120,6 +140,8 @@ export function pickFloor(
   };
 }
 
+const samePos = (a: BlockPos, b: BlockPos): boolean => a.x === b.x && a.y === b.y && a.z === b.z;
+
 /** The local simulation behind Try it; see the module comment. */
 export class LocalWorldSource implements WorldSource {
   /** The blocks of the area. */
@@ -142,6 +164,8 @@ export class LocalWorldSource implements WorldSource {
   private readonly logLimit: number;
   private readonly said = new Set<string>();
   private input: PlayerInput = IDLE_INPUT;
+  private screens: Map<string, ScreenSpec>;
+  private screenNow: OpenScreen | null = null;
   private ticks = 0;
   private readonly unsubscribeWorld: () => void;
 
@@ -170,6 +194,7 @@ export class LocalWorldSource implements WorldSource {
     this.world = new SimWorld();
     this.blockCatalogue = this.buildBlocks();
     this.entityCatalogue = buildEntityCatalogue(this.files, this.target, this.log);
+    this.screens = screensFromFiles(this.files);
     const lookup: BlockLookup = (x, y, z) => this.world.get({ x, y, z });
     const start = options.start ?? {
       x: this.world.sizeX / 2 + 0.5,
@@ -267,6 +292,35 @@ export class LocalWorldSource implements WorldSource {
     this.triggers.setRuleBooks(books);
   }
 
+  /** The screen the player has open, or `null` (B398). */
+  get screen(): OpenScreen | null {
+    return this.screenNow;
+  }
+
+  /** A display name for an item or block id, as the trace names it (the inventory row). */
+  itemName(id: string): string {
+    return this.triggers.nameOfItem(id);
+  }
+
+  /**
+   * Closes the open screen (B398): the block's `open` property goes back and the container's
+   * `on_close` fires. Nothing happens without an open screen.
+   */
+  closeScreen(): void {
+    const screen = this.screenNow;
+    if (screen === null) return;
+    this.screenNow = null;
+    const state = this.world.get(screen.pos);
+    if (state === null || state.name !== screen.block) return;
+    if (state.properties.open === 'true') {
+      this.world.set(screen.pos, {
+        name: state.name,
+        properties: { ...state.properties, open: 'false' },
+      });
+    }
+    this.triggers.blockClosed(screen.pos);
+  }
+
   subscribe(listener: WorldListener): () => void {
     this.listeners.add(listener);
     return () => {
@@ -292,6 +346,7 @@ export class LocalWorldSource implements WorldSource {
         return;
       case 'break':
         // `msm:on_break` fires before the block goes (`playerWillDestroy`).
+        if (this.screenNow !== null && samePos(this.screenNow.pos, action.pos)) this.closeScreen();
         if (this.world.get(action.pos) !== null) this.triggers.blockBreaking(action.pos);
         breakBlock(this.world, this.blockCatalogue, action.pos);
         return;
@@ -376,6 +431,7 @@ export class LocalWorldSource implements WorldSource {
     this.vanillaBlockstates = vanillaBlockstates;
     this.blockCatalogue = this.buildBlocks();
     this.entityCatalogue = buildEntityCatalogue(files, target, this.log);
+    this.screens = screensFromFiles(files);
     const removed = new Map<string, string>();
     for (const { pos, state } of [...this.world.blocks()]) {
       const block = this.blockCatalogue.blockFor(state.name);
@@ -395,10 +451,18 @@ export class LocalWorldSource implements WorldSource {
     this.entities.setCatalogue(this.entityCatalogue, this.shapes);
     this.timers.setCatalogue(this.blockCatalogue);
     this.triggers.setDefinitions(readEventDefinitions(files, target));
+    const open = this.screenNow;
+    if (open !== null) {
+      const spec = this.screens.get(open.block);
+      if (spec === undefined || this.world.get(open.pos)?.name !== open.block)
+        this.screenNow = null;
+      else this.screenNow = { ...open, spec };
+    }
   }
 
   /** Empties the area: blocks, mobs and timers ("Clear the area"). The player stays. */
   clear(): void {
+    this.screenNow = null;
     this.timers.clear();
     this.entities.clear();
     this.world.clear();
@@ -426,7 +490,7 @@ export class LocalWorldSource implements WorldSource {
     const block = target === null ? undefined : this.blockCatalogue.blockFor(target.name);
     const secondaryUse = this.player.sneaking && item !== undefined;
     if (target !== null && !secondaryUse) {
-      let taken = false;
+      let taken = this.openScreen(action.pos, target);
       if (
         block !== undefined &&
         ['door', 'trapdoor', 'fence_gate', 'button'].includes(block.type)
@@ -467,6 +531,25 @@ export class LocalWorldSource implements WorldSource {
       return;
     }
     this.log.info(`${item} is not a block or a spawn egg of the project`);
+  }
+
+  /**
+   * Opens the screen of a container or machine block (the game's menu opens before the block's
+   * events fire); `false` for a block without one.
+   */
+  private openScreen(pos: BlockPos, state: BlockState): boolean {
+    const spec = this.screens.get(state.name);
+    if (spec === undefined) return false;
+    if (this.screenNow !== null) this.closeScreen();
+    const block = this.blockCatalogue.blockFor(state.name);
+    const displayName = block?.displayName ?? state.name;
+    const origin: SimOrigin = block?.origin ?? { elementId: state.name };
+    this.screenNow = { pos, block: state.name, displayName, spec, origin };
+    if (state.properties.open === 'false') {
+      this.world.set(pos, { name: state.name, properties: { ...state.properties, open: 'true' } });
+    }
+    this.triggers.screenOpened({ id: state.name, displayName, origin });
+    return true;
   }
 
   /** A right click on a mob: its `msm:on_interact`. */

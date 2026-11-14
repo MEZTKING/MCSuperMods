@@ -14,6 +14,8 @@
  *   the facing turns smoothly to the snapshot's yaw. A mob plays its `walk` animation (`fly`
  *   for flyers) while `walking`, else `idle`, each from its own start, as the geo preview plays
  *   them (linear keyframes; Molang as 0).
+ * - A `play_animation` action (B398) plays its animation once over the walk or idle one
+ *   ({@link MobField.playOnce}); the controller is not modelled (one animation at a time).
  * - Above each mob near the player a name plate gives its name and the label
  *   {@link MOB_PLATE_LABEL} (ADR 0085 D7: mobs only wander here).
  * - A mob without a geo model (no `msm:animated_model`, or a model the lowered files do not
@@ -81,6 +83,25 @@ export interface MobFieldOptions {
   log?: SimLog;
 }
 
+/** An animation asked to play once on a mob (B398). */
+export interface OneShot {
+  readonly animation: string;
+  readonly controller: string;
+  /** Grows with every request, so the same animation asked twice plays twice. */
+  readonly serial: number;
+}
+
+/**
+ * The animation of a set a `play_animation` action names: the exact name, else the one whose
+ * name ends with `.<name>` (`animation.sentinel.wave` for `wave`).
+ */
+export function findAnimation<T>(animations: ReadonlyMap<string, T>, name: string): T | undefined {
+  const exact = animations.get(name);
+  if (exact !== undefined) return exact;
+  for (const [key, value] of animations) if (key.endsWith(`.${name}`)) return value;
+  return undefined;
+}
+
 /** The mobs the view draws; see the module comment. */
 export class MobField {
   private catalogue: MobCatalogue;
@@ -88,6 +109,8 @@ export class MobField {
   private live: readonly EntitySnapshot[] = [];
   private readonly said = new Set<string>();
   private revisionCount = 0;
+  private readonly oneShots = new Map<number, OneShot>();
+  private oneShotSerial = 0;
 
   constructor(options: MobFieldOptions) {
     this.catalogue = options.catalogue;
@@ -114,6 +137,26 @@ export class MobField {
   /** No mobs ("Clear the area"). */
   clear(): void {
     this.live = [];
+    this.oneShots.clear();
+  }
+
+  /**
+   * Plays an animation once on a mob (the `play_animation` action, B398): it runs over the mob's
+   * walk or idle animation from the next frame, then the mob goes back to them.
+   */
+  playOnce(entity: number, animation: string, controller = 'msm_triggered'): void {
+    this.oneShotSerial += 1;
+    this.oneShots.set(entity, { animation, controller, serial: this.oneShotSerial });
+  }
+
+  /** The last animation {@link playOnce} asked of a mob, if any. */
+  oneShotFor(entity: number): OneShot | undefined {
+    return this.oneShots.get(entity);
+  }
+
+  /** Forgets a mob's one-shot animation once it has played. */
+  finishOneShot(entity: number, serial: number): void {
+    if (this.oneShots.get(entity)?.serial === serial) this.oneShots.delete(entity);
   }
 
   /** The mobs of the last tick. */
@@ -393,6 +436,8 @@ interface MobState {
   startedMs: number;
   yaw: number;
   seen: number;
+  /** The one-shot animation playing (B398), its serial and start. */
+  oneShot?: { name: string; serial: number; startedMs: number } | undefined;
 }
 
 /** What a frame of the mob pass needs from the view. */
@@ -651,6 +696,10 @@ export class MobPass {
         state.animation = animationName;
         state.startedMs = frame.nowMs;
       }
+      const asked = field.oneShotFor(snapshot.id);
+      if (asked !== undefined && asked.serial !== state.oneShot?.serial) {
+        state.oneShot = { name: asked.animation, serial: asked.serial, startedMs: frame.nowMs };
+      }
       const scale = entity?.model?.scale ?? 1;
       // A margin of a block around the hitbox: models may reach past it.
       const margin = 1 + Math.max(0, scale - 1) * Math.max(width, height);
@@ -682,6 +731,25 @@ export class MobPass {
         if (animation !== undefined) {
           const at = playbackTime(animation, (frame.nowMs - state.startedMs) / 1000);
           if (!at.rest) pose = samplePose(animation, at.time);
+        }
+        const oneShot = state.oneShot;
+        if (oneShot !== undefined) {
+          const played = findAnimation(look.animations, oneShot.name);
+          const elapsed = (frame.nowMs - oneShot.startedMs) / 1000;
+          if (played === undefined) {
+            field.sayOnce(
+              `mob-animation:${entity?.id}:${oneShot.name}`,
+              `${entity?.displayName}'s animation "${oneShot.name}" is not in its animation set; it stands still`,
+              { ...(entity === undefined ? {} : { origin: entity.origin }), plain: true },
+            );
+            state.oneShot = undefined;
+            field.finishOneShot(snapshot.id, oneShot.serial);
+          } else if (elapsed < played.length) {
+            pose = samplePose(played, elapsed);
+          } else {
+            state.oneShot = undefined;
+            field.finishOneShot(snapshot.id, oneShot.serial);
+          }
         }
         mobRootMatrix(feet, state.yaw, scale, this.root);
         look.renderer.draw(frame.projection, frame.view, boneMatrices(look.model, pose, this.root));

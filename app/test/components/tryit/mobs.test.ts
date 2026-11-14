@@ -6,6 +6,7 @@ import { frustumPlanes, viewMatrixFor } from '../../../src/renderer/src/tryit/re
 import {
   animationFile,
   animationNameFor,
+  findAnimation,
   geoModelFile,
   interpolatedPosition,
   type MakeGeoRenderer,
@@ -438,5 +439,52 @@ describe('MobPass', () => {
       (Math.atan2(turned[0] - 8, turned[2] - 6) - Math.atan2(rest[0] - 8, rest[2] - 6)) *
       (180 / Math.PI);
     expect(Math.abs(angle)).toBeCloseTo(20, 0);
+  });
+});
+
+describe('animations played once (B398)', () => {
+  it('finds an animation by its name or its last part', () => {
+    const set = new Map([
+      ['animation.sentinel.wave', 1],
+      ['idle', 2],
+    ]);
+    expect(findAnimation(set, 'idle')).toBe(2);
+    expect(findAnimation(set, 'wave')).toBe(1);
+    expect(findAnimation(set, 'jump')).toBeUndefined();
+  });
+
+  it('plays a one-shot over the walk or idle animation, then forgets it', async () => {
+    const h = harness();
+    const field = new MobField({ catalogue: catalogueOf(entity()) });
+    field.update([snapshot(1, { x: 8, z: 6 })]);
+    h.pass.draw(field, frame());
+    await settle();
+    field.playOnce(1, 'walk');
+    expect(field.oneShotFor(1)).toMatchObject({ animation: 'walk', controller: 'msm_triggered' });
+    h.pass.draw(field, frame(100));
+    expect(field.oneShotFor(1)).toBeDefined();
+    // Its one second is over.
+    h.pass.draw(field, frame(1200));
+    expect(field.oneShotFor(1)).toBeUndefined();
+  });
+
+  it('says once that an animation is missing', async () => {
+    const h = harness();
+    const log = recordingLog();
+    const field = new MobField({ catalogue: catalogueOf(entity()), log });
+    field.update([snapshot(1, { x: 8, z: 6 })]);
+    h.pass.draw(field, frame());
+    await settle();
+    field.playOnce(1, 'wave');
+    h.pass.draw(field, frame(16));
+    field.playOnce(1, 'wave');
+    h.pass.draw(field, frame(32));
+    expect(log.lines.filter((line) => line.text.includes('"wave"'))).toEqual([
+      expect.objectContaining({ kind: 'info' }),
+    ]);
+    expect(field.oneShotFor(1)).toBeUndefined();
+    field.playOnce(1, 'walk');
+    field.clear();
+    expect(field.oneShotFor(1)).toBeUndefined();
   });
 });

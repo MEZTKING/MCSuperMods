@@ -4,6 +4,11 @@
  * the picker, the tools (Grow, Power, Clear the area), the clock, the log with its "Only in
  * Minecraft:" lines, the keys list and the hidden state readout.
  *
+ * B398 adds the "What happened" panel with its links and "Run every time" (`WhatHappened.tsx`),
+ * the items `give_item` gave ("Your items"), chips and sound captions over the picture
+ * (`Chips.tsx`, `effects.ts`), using a mob (its `on_interact`) and the mock-up screens of
+ * containers and machines (`MockScreen.tsx`).
+ *
  * The view lowers the open project through {@link SessionFiles} while it is shown and keeps one
  * {@link TryItArea} in the Try it store, so the area survives a trip to a Studio and back. Every
  * mouse action has a key (`input.ts`). The labels are the same words in every mode (ADR 0083 D7:
@@ -12,6 +17,7 @@
  * This module is a lazy chunk: the shell imports it with `lazy()`.
  */
 
+import type { Project, ResourceLocation } from '@msm/core';
 import { type BlockState, type PointedAt, SIM_TOOLS, type SimLogLine } from '@msm/sim';
 import { Box, Egg, Hand, Pause, Play, StepForward, X } from 'lucide-react';
 import {
@@ -28,7 +34,11 @@ import {
 } from 'react';
 import { Button } from '../components/ui/Button';
 import type { ResourceFolders, VanillaAssetReader } from '../preview/model-chain';
+import { useUiStore } from '../store/ui-store';
+import { Chips } from './Chips';
+import { webAudioOut } from './effects';
 import {
+  blockTexture,
   hotbarSlots,
   projectThings,
   propIds,
@@ -47,10 +57,12 @@ import {
   type TryItCommand,
   turnLook,
 } from './input';
+import { MockScreen } from './MockScreen';
 import { TryItScene } from './render/TryItScene';
-import { type LoweringSession, SessionFiles, TryItArea } from './session-source';
+import { type LoweringSession, ruleBooksOf, SessionFiles, TryItArea } from './session-source';
 import { StateReadout, type TryItReadout } from './state-readout';
 import { useTryItStore } from './tryit-store';
+import { WhatHappened } from './WhatHappened';
 
 /** The strip's words (ADR 0085 D7); it cannot be closed. */
 export const STRIP_TEXT = 'Preview, not the real game.';
@@ -92,9 +104,30 @@ export interface TryItViewProps {
   onTestInMinecraft(): void;
   /** Opens Settings to set up the Minecraft folder (vanilla looks). */
   onSetUpVanilla?(): void;
+  /**
+   * Opens an element at a field (a "What happened" link). Default: leaves Try it and selects
+   * the element on the Form tab with the field focused.
+   */
+  onOpenElement?(elementId: string, pointer: string | null): void;
   /** Test hook: overrides WebGL detection. */
   webgl?: boolean;
 }
+
+/** The default of {@link TryItViewProps.onOpenElement}. */
+function openElement(elementId: string, pointer: string | null): void {
+  useTryItStore.getState().close();
+  useUiStore.getState().navigateTo(elementId as ResourceLocation, pointer);
+}
+
+/** The heading of the items `give_item` gave. */
+export const YOUR_ITEMS_TITLE = 'Your items';
+
+/** The sound player of every area (one `AudioContext` for the app). */
+let sharedAudio: ReturnType<typeof webAudioOut> | undefined;
+const audioOut = () => {
+  sharedAudio ??= webAudioOut();
+  return sharedAudio;
+};
 
 /** Whether the WebGL renderer is software (SwiftShader): Smaller picture is then on by default. */
 export function softwareRenderer(): boolean {
@@ -236,11 +269,20 @@ export default function TryItView(props: TryItViewProps) {
     const files = new SessionFiles(session, {
       onFiles: ({ files: next, target }) => {
         const store = useTryItStore.getState();
+        const ruleBooks = ruleBooksOf(session.snapshot.project);
         if (store.area !== null && store.areaRoot === root) {
           store.area.setFiles(next, target, vanillaStatesRef.current);
+          store.area.setRuleBooks(ruleBooks);
         } else {
           store.setArea(
-            new TryItArea({ files: next, target, vanillaBlockstates: vanillaStatesRef.current }),
+            new TryItArea({
+              files: next,
+              target,
+              vanillaBlockstates: vanillaStatesRef.current,
+              readProjectAsset: props.readProjectAsset,
+              audio: audioOut(),
+              ruleBooks,
+            }),
             root,
           );
         }
@@ -254,7 +296,20 @@ export default function TryItView(props: TryItViewProps) {
       files.dispose();
       filesRef.current = null;
     };
+    // `readProjectAsset` is read once per area; the session's own reader does not change.
   }, [session, root]);
+
+  // The project as the links read it, followed while the view is shown.
+  const [project, setProject] = useState<Project | null>(session.snapshot.project);
+  useEffect(() => {
+    setProject(session.snapshot.project);
+    return session.subscribe((snapshot) => setProject(snapshot.project));
+  }, [session]);
+
+  // The rule books name plain rules by key (B396); a renamed rule may not change the files.
+  useEffect(() => {
+    area?.setRuleBooks(ruleBooksOf(project));
+  }, [area, project]);
 
   // A changed project picture: the area reads its pictures again.
   const revision = props.assetRevision ?? 0;
@@ -374,11 +429,11 @@ export default function TryItView(props: TryItViewProps) {
           return;
         }
         if (at.kind === 'entity') {
-          const type = area.source.entities.entity(at.entity.id)?.kind;
-          area.source.log.onlyInMinecraft(
-            `what happens when you use ${type?.displayName ?? 'a mob'} by hand`,
-            type?.origin,
-          );
+          area.act({
+            type: 'interact',
+            entity: at.entity.id,
+            ...(held1 === null ? {} : { item: held1.id }),
+          });
           return;
         }
         area.act({
@@ -542,7 +597,34 @@ export default function TryItView(props: TryItViewProps) {
     revision,
   };
 
-  const lines = area?.lines ?? [];
+  const screenOpen = area?.source.screen ?? null;
+  const closeScreen = (): void => {
+    area?.closeScreen();
+    wrapperRef.current?.focus({ preventScroll: true });
+  };
+  const inventory =
+    area === null
+      ? []
+      : area.source.inventory.slots.flatMap((stack, index) =>
+          stack === null
+            ? []
+            : [
+                {
+                  index,
+                  count: stack.count,
+                  thing: {
+                    id: stack.id,
+                    name: area.source.itemName(stack.id),
+                    kind: 'block' as const,
+                    ...(() => {
+                      const texture =
+                        folders === null ? undefined : blockTexture(area.files, folders, stack.id);
+                      return texture === undefined ? {} : { texture };
+                    })(),
+                  },
+                },
+              ],
+        );
   const filterText = filter.trim().toLowerCase();
   const matches = (thing: TryItThing) =>
     filterText === '' ||
@@ -675,6 +757,14 @@ export default function TryItView(props: TryItViewProps) {
             >
               +
             </span>
+            {area !== null && (
+              <Chips
+                chips={area.effects.chips}
+                captions={area.effects.captions}
+                mobName={(entity) => area.source.entities.entity(entity)?.kind.displayName}
+              />
+            )}
+            {screenOpen !== null && <MockScreen screen={screenOpen} onClose={closeScreen} />}
             {pickerOpen && (
               <div
                 role="dialog"
@@ -891,28 +981,43 @@ export default function TryItView(props: TryItViewProps) {
             />
             Smaller picture (faster)
           </label>
-          <section aria-label="What happened" className="flex min-h-0 flex-col gap-1">
-            <h3 className="font-medium">What happened</h3>
-            <ol
-              data-testid="tryit-log"
-              className="max-h-64 min-h-16 overflow-auto rounded border border-border bg-bg p-1 text-xs"
-            >
-              {lines.length === 0 && <li className="text-muted">Nothing yet.</li>}
-              {[...lines]
-                .reverse()
-                .slice(0, 100)
-                .map((line, index) => (
+          <section aria-label={YOUR_ITEMS_TITLE} className="flex flex-col gap-1">
+            <h3 className="font-medium">{YOUR_ITEMS_TITLE}</h3>
+            {inventory.length === 0 ? (
+              <p data-testid="tryit-inventory-empty" className="text-xs text-muted">
+                Nothing yet. Rules that give you items fill this row.
+              </p>
+            ) : (
+              <ol data-testid="tryit-inventory" className="flex flex-wrap gap-1">
+                {inventory.map((slot) => (
                   <li
-                    // Lines never change once written; newest first.
-                    key={`${lines.length - index}`}
-                    data-testid={line.onlyInMinecraft ? 'tryit-log-only' : 'tryit-log-line'}
-                    className={line.onlyInMinecraft ? 'text-warning' : ''}
+                    key={slot.index}
+                    data-testid="tryit-inventory-slot"
+                    data-item={slot.thing.id}
+                    data-count={slot.count}
+                    title={`${slot.count} ${slot.thing.name}`}
+                    className="relative grid size-9 place-items-center rounded border border-border bg-bg"
                   >
-                    {logLineText(line)}
+                    <ThingIcon thing={slot.thing} {...pictureProps} />
+                    <span className="sr-only">{`${slot.count} ${slot.thing.name}`}</span>
+                    <span
+                      aria-hidden
+                      className="absolute right-0.5 bottom-0 text-xs font-medium text-text"
+                    >
+                      {slot.count}
+                    </span>
                   </li>
                 ))}
-            </ol>
+              </ol>
+            )}
           </section>
+          <WhatHappened
+            entries={area?.whatHappened ?? []}
+            project={project}
+            onOpen={props.onOpenElement ?? openElement}
+            runEveryTime={area?.runEveryTime ?? false}
+            onRunEveryTime={(on) => area?.setRunEveryTime(on)}
+          />
           <details data-testid="tryit-keys" open>
             <summary className="cursor-pointer font-medium">Keys</summary>
             <dl className="grid grid-cols-[auto_1fr] gap-x-2 text-xs">

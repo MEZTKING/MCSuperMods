@@ -4662,3 +4662,26 @@ Decisions
 Next
 - Orchestrator: report slice 1 closed to the user. Slice 3 (B396–B399) updates the guide's "No scripts or rules yet", "Containers and machines do not open" and sounds rows and the `tryit-path` steps.
 - Follow-up: Try it's look starts level again after a Studio and back (the player's position is kept, the look is not); the e2e looks down again.
+
+## 2026-11-14 — executor — B398 App: What happened, sounds, chips, item use and mock-up screens
+
+What
+- `app/src/renderer/src/tryit/WhatHappened.tsx`: the "What happened" panel (ADR 0085 D8), newest first, one line per log line with the kind of the trace entry that wrote it (`data-kind` trigger, action, skipped, onlyInMinecraft or info; actions and skipped lines indented). "Only in Minecraft:" lines are always shown, never folded away. Each line links (`tryit-log-link`) to the rule card (`Rule`: the rule book at `/rules/<index>`), the `Rule book`, the saved `Event` (`/events/<id>`) or the thing's `Studio`; a link leaves Try it and selects the element with the field focused (`navigateTo`). "Run every time" (`tryit-always`) sets the chance mode to `always`.
+- `effects.ts`: `TryItEffects` (chips that stay as long as their words say, else 3 seconds; sound captions; project sounds from the project's `sounds.json` played through the Web Audio API with the game's 16-block fall-off; Minecraft sounds as captions only, L13), `PortalHums` (portal blocks within 32 blocks hum about once in 100 ticks with `sounds.ambient` or the target's portal sound), `webAudioOut`, `soundFileOf`, `portalHumsFromFiles`, `chipTicks`.
+- `Chips.tsx`: player chips above the hotbar (`tryit-chip`), mob chips with the mob's name at the top (`tryit-chip-mob`), captions at the top right (`tryit-caption`, `data-played`).
+- `MockScreen.tsx`: the mock-up screen (`tryit-screen`, label `Mock-up`): containers by layout (chest rows of 9, shulker box, hopper 1 by 5, dispenser 3 by 3), machines by input, fuel and output; MSM-drawn frames only. Close, Esc or E closes it.
+- `session-source.ts`: `TryItArea` wires the source's `effect` events (particles to `ParticleField.emit`, sounds and chips to `TryItEffects`, animations to `MobField.playOnce`), keeps `whatHappened` entries, `setRuleBooks`, `ruleBooksOf(project)`, `setRunEveryTime`, `closeScreen`; options `readProjectAsset`, `audio`, `ruleBooks`.
+- `TryItView.tsx`: the panel, "Your items" (`tryit-inventory`, `tryit-inventory-slot` with `data-item` and `data-count`), chips and captions, the mock-up screen, right-click on a mob sends `interact`, rule books from the session; prop `onOpenElement`.
+- `render/mobs.ts`: `MobField.playOnce`, `oneShotFor`, `finishOneShot`, `findAnimation`; `MobPass` plays a one-shot over walk or idle once.
+- `@msm/sim`: `blocks/screens.ts` (`screenOf`, `screensFromFiles`, `ScreenSpec`); `LocalWorldSource.screen`, `closeScreen()`, `itemName(id)` (using a container or machine opens its screen and sets `open`; break, clear or an edit closes it); `TriggerEngine.screenOpened`, `blockClosed` (fires `on_close`, now handled), `nameOfItem`.
+- Tests: sim `test/events/screens.test.ts` (4); app `WhatHappened.test.tsx`, `effects.test.ts`, `MockScreen.test.tsx`, `rules-area.test.ts` (sample-rules lowered: Ring the chime, Try your luck, Keep watch), additions to `TryItView.test.tsx`, `session-source.test.ts`, `mobs.test.ts`. Sim 322 tests, app 1912; `tryit-path` e2e green. `app.asar` 27.6 MB; `TryItView` chunk 159 kB. Screenshot `scratchpad/shots/21-tryit-rules.png`.
+
+Decisions
+- The app had no sound preview path to reuse; project sounds play through Web Audio from bytes (the CSP allows no `data:` media).
+- Mob chips sit at the top of the picture with the mob's name rather than above the mob: the projection lives in `TryItCanvas`, outside this brief.
+- The screen line now reads "the screen of X with items you can move (the preview shows a mock-up of its slots)" and is said for every container or machine, also one without `on_open`.
+- One-shot animations replace the pose while they play; controllers are not modelled.
+
+Next
+- B399: e2e of the panel, the items row and the screens (test ids above).
+- B392/B402 guide: "What happened", "Run every time", "Your items", chips, sound captions ("plays in the game only"), "Mock-up" screens.

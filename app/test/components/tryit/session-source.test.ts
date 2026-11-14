@@ -147,3 +147,50 @@ describe('TryItArea', () => {
     expect(made.source.ticksRun).toBe(1);
   });
 });
+
+describe('TryItArea effects (B398)', () => {
+  it('plays an animation once on the mob, shows its particles and keeps the trace kinds', () => {
+    const outputs = demoOutputs().map((file) =>
+      file.path === `msm/${NS}/entity/golem.json`
+        ? ({
+            ...file,
+            contents: {
+              ...(file.contents as object),
+              components: {
+                'msm:movement': { speed: 0.25 },
+                'msm:on_interact': { event: 'greet' },
+              },
+              events: {
+                greet: {
+                  actions: [
+                    { type: 'play_animation', animation: 'wave' },
+                    { type: 'spawn_particle', particle: 'minecraft:heart', count: 3 },
+                    { type: 'run_function', function: `${NS}:hello` },
+                  ],
+                },
+              },
+            },
+          } as OutputFile)
+        : file,
+    );
+    const made = area(outputs);
+    made.act({
+      type: 'use',
+      pos: floor(10, 10),
+      face: 'up',
+      hit: up,
+      item: `${NS}:golem_spawn_egg`,
+    });
+    const id = made.source.entities.snapshots()[0]?.id as number;
+    made.act({ type: 'interact', entity: id });
+    expect(made.mobField.oneShotFor(id)).toMatchObject({ animation: 'wave' });
+    expect(made.particles.size).toBe(3);
+    // The particle field's own line about the vanilla particle comes between the actions.
+    const kinds = made.whatHappened.slice(-5).map((line) => line.kind);
+    expect(kinds).toEqual(['trigger', 'action', 'onlyInMinecraft', 'action', 'onlyInMinecraft']);
+    expect(made.whatHappened.at(-1)?.text).toBe('run function demo:hello');
+    made.closeScreen();
+    made.setRunEveryTime(true);
+    expect(made.source.chance).toBe('always');
+  });
+});

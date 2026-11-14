@@ -78,7 +78,7 @@ export const TRIGGER_SPECS: readonly TriggerSpec[] = Object.freeze([
     cooldown: { field: 'cooldown_ticks', default: 20 },
   }),
   spec('block', c('msm:container', 'on_open'), true, 'a player opens the container'),
-  spec('block', c('msm:container', 'on_close'), false, 'a player closes the container'),
+  spec('block', c('msm:container', 'on_close'), true, 'a player closes the container'),
   spec('block', c('msm:machine', 'on_start'), false, 'the machine starts a recipe'),
   spec('block', c('msm:machine', 'on_finish'), false, 'the machine makes an output'),
   spec('block', ['on_travel'], false, 'something travels through the portal'),

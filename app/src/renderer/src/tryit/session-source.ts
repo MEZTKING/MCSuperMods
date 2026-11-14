@@ -9,21 +9,31 @@
  * - {@link TryItArea} is one test area: the `LocalWorldSource` of `@msm/sim` with the view's
  *   particle field, ambient particles, mob field and clock, wired in the order the plan's notes
  *   give. It outlives the view (switching to a Studio and back keeps it; ADR 0085 D13).
+ * - The source's `effect` events (B398) go to the particle field (`particle`), the chips and
+ *   captions of `effects.ts` (`chip`, `sound`) and the mob field (`animation`). Portal blocks
+ *   hum near the player. Every log line becomes a "What happened" entry with the kind of the
+ *   trace entry that wrote it ({@link WhatHappenedEntry}).
  *
  * Part of the lazy Try it chunk.
  */
 
-import { type Project, stableStringify } from '@msm/core';
-import type { OutputFile, Target } from '@msm/plugin-api';
+import { type Json, type Project, stableStringify } from '@msm/core';
+import type { JsonObject, OutputFile, Target } from '@msm/plugin-api';
 import {
   LocalWorldSource,
   type PlayerAction,
+  type RuleBookInfo,
+  ruleBooksFrom,
   SimClock,
+  type SimEffect,
   type SimFiles,
   type SimLogLine,
+  type SimOrigin,
+  type TraceKind,
   type WorldEvent,
 } from '@msm/sim';
 import { AmbientParticles } from './ambient';
+import { PortalHums, type ReadProjectAsset, type SoundOut, TryItEffects } from './effects';
 import { MobField } from './render/mobs';
 import { ParticleField } from './render/particles';
 
@@ -165,6 +175,36 @@ export class SessionFiles {
   }
 }
 
+/** The kind of rule book element (`msm:rules`, ADR 0082). */
+export const RULE_BOOK_KIND = 'msm:rules';
+
+/** The project's rule books as the simulation names rules by them (B396 `ruleBooksFrom`). */
+export function ruleBooksOf(project: Project | null): RuleBookInfo[] {
+  const books: { id: string; data: Json }[] = [];
+  for (const namespace of project?.namespaces ?? []) {
+    for (const element of namespace.elements) {
+      if (element.kind === RULE_BOOK_KIND) books.push({ id: element.id, data: element.data });
+    }
+  }
+  return ruleBooksFrom(books);
+}
+
+/** What one "What happened" line is (ADR 0085 D8): a trace entry's kind, or a plain line. */
+export type WhatHappenedKind = TraceKind | 'info';
+
+/** One line of the "What happened" panel. */
+export interface WhatHappenedEntry {
+  /** Grows by one per line; a stable key. */
+  readonly serial: number;
+  readonly tick: number;
+  readonly text: string;
+  readonly kind: WhatHappenedKind;
+  readonly origin?: SimOrigin;
+}
+
+/** The most lines the panel keeps. */
+export const WHAT_HAPPENED_LIMIT = 200;
+
 /** How often, in ticks, the view hears about a tick when nothing else changed. */
 export const READOUT_EVERY_TICKS = 5;
 
@@ -176,6 +216,12 @@ export interface TryItAreaOptions {
   readonly vanillaBlockstates?: ReadonlyMap<string, string>;
   /** The seed of the mobs and the ambient particles; fixed per area. Default 1. */
   readonly seed?: number;
+  /** Reads project assets the lowered files do not hold (sound files). */
+  readonly readProjectAsset?: ReadProjectAsset;
+  /** Plays project sounds; absent or `null` shows captions only (tests). */
+  readonly audio?: SoundOut | null;
+  /** The project's rule books (B396), so plain rules are named by key. */
+  readonly ruleBooks?: readonly RuleBookInfo[];
 }
 
 /**
@@ -189,6 +235,12 @@ export class TryItArea {
   readonly ambient: AmbientParticles;
   readonly mobField: MobField;
   readonly clock: SimClock;
+  /** Chips and sound captions (B398). */
+  readonly effects: TryItEffects;
+  /** Portal blocks' ambient sounds (B398). */
+  readonly hums: PortalHums;
+  private entries: WhatHappenedEntry[] = [];
+  private entrySerial = 0;
   private filesNow: SimFiles;
   private targetNow: Target;
   private readonly listeners = new Set<() => void>();
@@ -207,7 +259,9 @@ export class TryItArea {
       ...(options.vanillaBlockstates === undefined
         ? {}
         : { vanillaBlockstates: options.vanillaBlockstates }),
+      ...(options.ruleBooks === undefined ? {} : { ruleBooks: options.ruleBooks }),
     });
+    for (const line of this.source.lines) this.addEntry(line, undefined);
     const log = this.source.log;
     this.particles = new ParticleField({ files: options.files, target: options.target, log });
     const portal = options.target.blocks?.portal?.particle;
@@ -218,6 +272,21 @@ export class TryItArea {
     });
     this.mobField = new MobField({ catalogue: this.source.mobs, log });
     this.clock = new SimClock((tick) => this.tick(tick));
+    this.effects = new TryItEffects({
+      files: options.files,
+      now: () => this.source.ticksRun,
+      listener: () => this.source.player.eyePosition(1),
+      ...(options.readProjectAsset === undefined
+        ? {}
+        : { readProjectAsset: options.readProjectAsset }),
+      audio: options.audio ?? null,
+    });
+    const hum = options.target.blocks?.portal?.ambientSound;
+    this.hums = new PortalHums({
+      files: options.files,
+      seed,
+      ...(hum === undefined ? {} : { defaultSound: hum }),
+    });
     this.stop = this.source.subscribe((event) => this.onEvent(event));
   }
 
@@ -241,6 +310,33 @@ export class TryItArea {
     return this.source.lines;
   }
 
+  /** The "What happened" lines, oldest first (B398). */
+  get whatHappened(): readonly WhatHappenedEntry[] {
+    return this.entries;
+  }
+
+  /** Whether every chance comes up ("Run every time", B396 `always`). */
+  get runEveryTime(): boolean {
+    return this.source.chance === 'always';
+  }
+
+  /** "Run every time": `always`, else chances are drawn (`random`). */
+  setRunEveryTime(on: boolean): void {
+    this.source.setChanceMode(on ? 'always' : 'random');
+    this.changed();
+  }
+
+  /** The project's rule books changed (names, keys). */
+  setRuleBooks(books: readonly RuleBookInfo[]): void {
+    this.source.setRuleBooks(books);
+  }
+
+  /** Closes the open container or machine screen (fires its `on_close`). */
+  closeScreen(): void {
+    this.source.closeScreen();
+    this.changed();
+  }
+
   /** Listens for changes the view shows; returns a function that stops it. */
   subscribe(listener: () => void): () => void {
     this.listeners.add(listener);
@@ -257,7 +353,11 @@ export class TryItArea {
     }
     this.source.act(action);
     // A spawn or a hit shows at once, also while the clock is paused.
-    if (action.type !== 'move') this.mobField.update(this.source.entities.snapshots());
+    if (action.type !== 'move') {
+      this.mobField.update(this.source.entities.snapshots());
+      // A screen may have opened without a log line.
+      this.changed();
+    }
   }
 
   /** New files or target after an edit: the world, the mobs and the particles stay. */
@@ -271,6 +371,8 @@ export class TryItArea {
     this.source.setFiles(files, target, vanillaBlockstates);
     this.particles.setFiles(files);
     this.ambient.setFiles(files);
+    this.effects.setFiles(files);
+    this.hums.setFiles(files);
     this.mobField.setCatalogue(this.source.mobs);
     this.mobField.update(this.source.entities.snapshots());
     this.changed();
@@ -281,6 +383,7 @@ export class TryItArea {
     this.source.act({ type: 'clear' });
     this.particles.clear();
     this.mobField.clear();
+    this.effects.clear();
     this.changed();
   }
 
@@ -288,6 +391,7 @@ export class TryItArea {
   dispose(): void {
     this.stop();
     this.ambient.dispose();
+    this.hums.dispose();
     this.source.dispose();
     this.listeners.clear();
   }
@@ -300,15 +404,77 @@ export class TryItArea {
       sink: this.particles.sink,
     });
     this.particles.tick();
-    if (tick % READOUT_EVERY_TICKS === 0 || this.clock.paused) this.changed();
+    this.hums.tick(this.source.world, this.source.player.eyePosition(1), (effect) =>
+      this.effects.sound(effect),
+    );
+    const before = this.effects.revision;
+    this.effects.tick();
+    if (tick % READOUT_EVERY_TICKS === 0 || this.clock.paused || this.effects.revision !== before) {
+      this.changed();
+    }
   }
 
   private onEvent(event: WorldEvent): void {
-    if (event.type === 'entities') {
-      this.mobField.update(event.entities);
-      return;
+    switch (event.type) {
+      case 'entities':
+        this.mobField.update(event.entities);
+        return;
+      case 'effect':
+        this.onEffect(event.effect);
+        break;
+      case 'log': {
+        // A trace entry is kept before its line is written, so the last one is its own.
+        const last = this.source.trace.at(-1);
+        const own =
+          last !== undefined && last.text === event.line.text && last.origin === event.line.origin;
+        this.addEntry(event.line, own ? last.kind : undefined);
+        break;
+      }
+      case 'blockChanged':
+        break;
     }
     this.changed();
+  }
+
+  /** Shows an effect of the simulation (B396's `effect` events). */
+  private onEffect(effect: SimEffect): void {
+    switch (effect.kind) {
+      case 'particle': {
+        const at = effect.position ?? this.source.player.eyePosition(1);
+        const velocity = effect.velocity ?? { x: 0, y: 0, z: 0 };
+        this.particles.emit(
+          (effect.options as JsonObject | undefined) ?? effect.id,
+          { x: at.x, y: at.y, z: at.z, xd: velocity.x, yd: velocity.y, zd: velocity.z },
+          effect.origin,
+        );
+        return;
+      }
+      case 'sound':
+        this.effects.sound(effect);
+        return;
+      case 'chip':
+        this.effects.chip(effect);
+        return;
+      case 'animation':
+        if (typeof effect.target === 'number') {
+          this.mobField.playOnce(effect.target, effect.id, effect.controller);
+        }
+        return;
+    }
+  }
+
+  private addEntry(line: SimLogLine, kind: TraceKind | undefined): void {
+    this.entrySerial += 1;
+    this.entries.push({
+      serial: this.entrySerial,
+      tick: line.tick,
+      text: line.text,
+      kind: kind ?? (line.onlyInMinecraft ? 'onlyInMinecraft' : 'info'),
+      ...(line.origin === undefined ? {} : { origin: line.origin }),
+    });
+    if (this.entries.length > WHAT_HAPPENED_LIMIT) {
+      this.entries.splice(0, this.entries.length - WHAT_HAPPENED_LIMIT);
+    }
   }
 
   /** Tells the listeners once per task, however many changes came. */

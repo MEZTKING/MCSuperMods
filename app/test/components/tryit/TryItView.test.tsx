@@ -1,4 +1,6 @@
 // @vitest-environment happy-dom
+
+import type { OutputFile } from '@msm/plugin-api';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import TryItView, { CARD_LINES, STRIP_TEXT } from '../../../src/renderer/src/tryit/TryItView';
@@ -177,5 +179,106 @@ describe('Try it view', () => {
     expect(screen.queryByTestId('tryit-picker')).toBeNull();
     expect(readout().dataset.selected).toBe(`${NS}:golem_spawn_egg`);
     expect(screen.getAllByTestId('tryit-egg-icon').length).toBeGreaterThan(0);
+  });
+});
+
+/** The demo project with a Crate (a chest of 2 rows that gives 2 Ruby on use) and a Ruby item. */
+function crateOutputs(): OutputFile[] {
+  const json = (path: string, contents: unknown) =>
+    ({ path, contents, layer: 'resourcepack' }) as OutputFile;
+  return [
+    ...demoOutputs(),
+    json(`msm/${NS}/block/crate.json`, {
+      format: 1,
+      components: {
+        'msm:container': { rows: 2, on_open: 'opened' },
+      },
+      events: {
+        opened: {
+          actions: [
+            { type: 'give_item', item: `${NS}:ruby`, count: 2 },
+            { type: 'play_sound', sound: 'minecraft:block.barrel.open' },
+            { type: 'apply_effect', effect: 'minecraft:glowing', duration: 60, target: 'self' },
+          ],
+        },
+      },
+    }),
+    json(`msm/${NS}/item/ruby.json`, { format: 1 }),
+  ];
+}
+
+describe('Try it view: what happened, items, chips and screens (B398)', () => {
+  function crateView(onOpenElement = vi.fn()) {
+    const fake = fakeSession(crateOutputs());
+    render(
+      <TryItView
+        session={fake.session}
+        root="/projects/demo"
+        vanilla={null}
+        readProjectAsset={async () => null}
+        playAvailable
+        onPlay={() => {}}
+        onTestInMinecraft={() => {}}
+        onOpenElement={onOpenElement}
+        webgl={false}
+      />,
+    );
+    return { onOpenElement };
+  }
+
+  it('opens the mock-up screen of a container, fills the items row and closes it', async () => {
+    crateView();
+    await ready();
+    press('ArrowDown');
+    press('ArrowDown');
+    press('ArrowDown');
+    // Slots: berry, crate, door, ruby block, then the egg.
+    press('Digit2');
+    expect(readout().dataset.selected).toBe(`${NS}:crate`);
+    expect(screen.getByTestId('tryit-inventory-empty')).toBeTruthy();
+    press('KeyC');
+    await waitFor(() => expect(readout().dataset.blocks).toBe('1'));
+    // Using the crate with the crate in hand opens it; nothing is placed on it.
+    press('KeyC');
+    await waitFor(() => expect(screen.getByTestId('tryit-screen')).toBeTruthy());
+    expect(readout().dataset.blocks).toBe('1');
+    expect(screen.getByTestId('tryit-screen-label').textContent).toBe('Mock-up');
+    expect(screen.getAllByTestId('tryit-screen-slot')).toHaveLength(18);
+    const slot = await screen.findByTestId('tryit-inventory-slot');
+    expect(slot.dataset.item).toBe(`${NS}:ruby`);
+    expect(slot.dataset.count).toBe('2');
+    // The barrel sound is a caption; the chip says the effect.
+    expect(screen.getByTestId('tryit-caption').textContent).toContain('Open');
+    expect(screen.getByTestId('tryit-chip').textContent).toContain('Glowing');
+    const log = screen.getByTestId('tryit-log');
+    expect(log.textContent).toContain('You opened Crate, so its event "opened" ran.');
+    expect(log.textContent).toContain('Gave you 2 Ruby.');
+    expect(screen.getAllByTestId('tryit-log-only').map((line) => line.textContent)).toContain(
+      'Only in Minecraft: the screen of Crate with items you can move (the preview shows a mock-up of its slots)',
+    );
+    fireEvent.click(screen.getByTestId('tryit-screen-close'));
+    await waitFor(() => expect(screen.queryByTestId('tryit-screen')).toBeNull());
+  });
+
+  it('uses a mob by hand and turns "Run every time" on', async () => {
+    crateView();
+    await ready();
+    press('ArrowDown');
+    press('ArrowDown');
+    press('ArrowDown');
+    press('Digit5');
+    press('KeyC');
+    await waitFor(() => expect(readout().dataset.entities).toBe('1'));
+    press('KeyC');
+    await waitFor(() =>
+      expect(screen.getByTestId('tryit-log').textContent).toContain(
+        'You used Golem; nothing happens in the preview.',
+      ),
+    );
+    const always = screen.getByTestId('tryit-always') as HTMLInputElement;
+    expect(always.checked).toBe(false);
+    fireEvent.click(always);
+    await waitFor(() => expect(always.checked).toBe(true));
+    expect(useTryItStore.getState().area?.source.chance).toBe('always');
   });
 });
