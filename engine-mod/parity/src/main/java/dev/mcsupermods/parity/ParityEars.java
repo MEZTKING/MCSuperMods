@@ -20,6 +20,7 @@ import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ClientboundDisguisedChatPacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetExperiencePacket;
@@ -50,7 +51,8 @@ import net.minecraft.world.phys.Vec3;
  * <p>Such a player is not ticked by the server (its connection is not in the server's connection list), so a test calls
  * {@code player.doTick()} where vanilla sends something from the tick, such as experience and food. {@link #chat} says a
  * line as the network handler does, {@link #respawn} respawns the player as vanilla does (a new {@code ServerPlayer} on
- * the same connection), and {@link #read} describes the packets of the script API 1.1 (ADR 0065) as text.
+ * the same connection), {@link #read} describes the packets of the script API 1.1 (ADR 0065) as text, and
+ * {@link #particles} returns the particle packets (ADR 0080).
  */
 final class ParityEars implements AutoCloseable {
     /** The player; {@link #respawn} replaces it. */
@@ -124,6 +126,21 @@ final class ParityEars implements AutoCloseable {
                 case ClientboundContainerSetContentPacket p -> out.add("inventory " + p.containerId());
                 case ClientboundBlockUpdatePacket p -> out.add("block " + p.getPos().toShortString());
                 default -> {}
+            }
+        }
+        return out;
+    }
+
+    /**
+     * The particle packets sent since the last read, in order: vanilla's {@code ClientboundLevelParticlesPacket} records
+     * (type and options, the override flag, position, distances, speed and count), as {@code ServerLevel.sendParticles}
+     * and {@code /particle} send them.
+     */
+    List<ClientboundLevelParticlesPacket> particles() {
+        List<ClientboundLevelParticlesPacket> out = new ArrayList<>();
+        for (Packet<?> packet : packets()) {
+            if (packet instanceof ClientboundLevelParticlesPacket p) {
+                out.add(p);
             }
         }
         return out;

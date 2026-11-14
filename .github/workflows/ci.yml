@@ -62,7 +62,8 @@ jobs:
   # a vanilla server (tools/run-fabric-server/vanilla-datapack.ts), and the library's vanilla data
   # packs on one too (tools/run-fabric-server/vanilla-packs.ts). 26.3 also builds the ejected
   # Java projects and runs every parity run on both the content and the ejected jars; other
-  # versions run parity on the content jars only.
+  # versions run parity on the content jars only. Every version also runs the client GameTests
+  # on a headless client (Xvfb with Mesa's EGL, B356) and keeps their screenshots.
   # Action versions: setup-java and cache v6 (checked 2026-11-05).
   engine-mod:
     runs-on: ubuntu-latest
@@ -108,6 +109,24 @@ jobs:
       - name: Build msm_runtime (JUnit and GameTests)
         working-directory: engine-mod
         run: ./gradlew build -Pmc=${{ matrix.mc }} --no-daemon
+      # The headless client GameTests (B356, ADR 0081 D6 (c); MsmParticleClientGameTest): a real
+      # client in a singleplayer world draws the test particles. Xvfb's GLX has no sRGB config, so
+      # the client's SDL3 OpenGL backend goes through Mesa's EGL (software rendering) on a 24-bit
+      # screen. A separate task, never part of build; about two minutes. The screenshots are kept
+      # as an artefact (saved, never compared).
+      - name: Client GameTests (headless, Mesa EGL)
+        working-directory: engine-mod
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y --no-install-recommends xvfb libegl1 libegl-mesa0 libgl1-mesa-dri
+          SDL_VIDEO_FORCE_EGL=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a -s "-screen 0 1280x720x24" \
+            ./gradlew runClientGameTest -Pmc=${{ matrix.mc }} --no-daemon
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: client-gametest-screenshots-mc${{ matrix.mc }}
+          path: engine-mod/build/run/clientGameTest/screenshots
+          if-no-files-found: ignore
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
@@ -179,6 +198,14 @@ jobs:
             pnpm --filter @msm/exporters exec vitest run test/sample-portals.golden.test.ts
           test -f "$RUNNER_TEMP/sample-portals/msm_sample_portals.jar"
           cat "$RUNNER_TEMP/sample-portals/fabric-facts.json"
+      # Custom particles (ADRs 0080, 0081, B358): three particle types, two blocks with ambient
+      # particles, three items, an effect, a function and a script.
+      - name: Export the sample particles with the real runtime
+        run: |
+          MSM_SAMPLE_PARTICLES_OUT="$RUNNER_TEMP/sample-particles" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-particles.golden.test.ts
+          test -f "$RUNNER_TEMP/sample-particles/msm_sample_particles.jar"
+          cat "$RUNNER_TEMP/sample-particles/fabric-facts.json"
       # The sample mod's potion and its long and strong versions (ADR 0063, B255) must register.
       - name: Headless Fabric server check (sample mod)
         run: >-
@@ -230,6 +257,19 @@ jobs:
           --expect-line '[msm_runtime] registered 3 portal block(s)'
           --expect-line '[msm_runtime] registered 5 block(s) and 3 item(s) from 6 definition file(s); 0 error(s), 0 warning(s)'
           --forbid-line 'is not a level of this world'
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
+      # The three particle types register; a dedicated server loads no client class (the
+      # particle providers and ambient particles are client code, ADR 0080 D4, D6). The facts'
+      # expectScripts makes the script load required.
+      - name: Headless Fabric server check (sample particles)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-particles/msm_sample_particles.jar"
+          --facts "$RUNNER_TEMP/sample-particles/fabric-facts.json"
+          --expect-line '[msm_runtime] registered 3 particle type(s)'
+          --expect-line '[msm_runtime] registered 2 block(s) and 5 item(s) from 9 definition file(s); 0 error(s), 0 warning(s)'
+          --forbid-line NoClassDefFoundError
           --work "$RUNNER_TEMP/fabric-server-mob"
           --cache ~/.cache/msm-fabric-server
       # Phase 6 (B139): scripts on a real server, the Java project eject built with Gradle, and
@@ -300,7 +340,7 @@ jobs:
           echo "MSM_PARITY_JAR=${jars[0]}" >> "$GITHUB_ENV"
       # The Java project eject and the ejected parity runs: 26.3 only until the other versions'
       # Java generators are confirmed (ADR 0038 D5).
-      - name: Export the sample mod, the sample mob, the sample creatures, the sample machines and the sample portals as Java projects
+      - name: Export the sample mod, the sample mob, the sample creatures, the sample machines, the sample portals and the sample particles as Java projects
         if: matrix.mc == '26.3'
         run: |
           MSM_SAMPLE_MOD_JAVA_OUT="$RUNNER_TEMP/java/sample-mod" \
@@ -313,11 +353,14 @@ jobs:
             pnpm --filter @msm/exporters exec vitest run test/sample-machines.java.golden.test.ts
           MSM_SAMPLE_PORTALS_JAVA_OUT="$RUNNER_TEMP/java/sample-portals" \
             pnpm --filter @msm/exporters exec vitest run test/sample-portals.java.golden.test.ts
+          MSM_SAMPLE_PARTICLES_JAVA_OUT="$RUNNER_TEMP/java/sample-particles" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-particles.java.golden.test.ts
           test -x "$RUNNER_TEMP/java/sample-mod/gradlew"
           test -x "$RUNNER_TEMP/java/sample-mob/gradlew"
           test -x "$RUNNER_TEMP/java/sample-creatures/gradlew"
           test -x "$RUNNER_TEMP/java/sample-machines/gradlew"
           test -x "$RUNNER_TEMP/java/sample-portals/gradlew"
+          test -x "$RUNNER_TEMP/java/sample-particles/gradlew"
       # Each written project builds with its own wrapper; the Gradle cache above holds the 26.3
       # artefacts. Loom's "(kSxHvs99) is not valid semver" line for the nested GeckoLib is harmless.
       - name: Build the ejected sample mod
@@ -340,10 +383,14 @@ jobs:
         if: matrix.mc == '26.3'
         working-directory: ${{ runner.temp }}/java/sample-portals
         run: ./gradlew build --no-daemon
+      - name: Build the ejected sample particles
+        if: matrix.mc == '26.3'
+        working-directory: ${{ runner.temp }}/java/sample-particles
+        run: ./gradlew build --no-daemon
       - name: Find the ejected jars
         if: matrix.mc == '26.3'
         run: |
-          for sample in mod mob creatures machines portals; do
+          for sample in mod mob creatures machines portals particles; do
             mapfile -t jars < <(ls "$RUNNER_TEMP/java/sample-$sample"/build/libs/msm_sample_$sample-*.jar | grep -v -e '-sources\.jar$')
             if [ "${#jars[@]}" -ne 1 ]; then
               echo "::error::Expected one ejected sample-$sample jar, found ${#jars[@]}: ${jars[*]}"
@@ -361,6 +408,17 @@ jobs:
           --jar "$MSM_EJECTED_PORTALS_JAR"
           --facts "$RUNNER_TEMP/sample-portals/fabric-facts.json" --no-runtime
           --forbid-line 'is not a level of this world'
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
+      # The ejected particles' client classes (ModParticle, its provider, ambient particles) must
+      # never load on a dedicated server (B355).
+      - name: Headless Fabric server check (ejected sample particles)
+        if: matrix.mc == '26.3'
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_PARTICLES_JAR"
+          --facts "$RUNNER_TEMP/sample-particles/fabric-facts.json" --no-runtime
+          --forbid-line NoClassDefFoundError
           --work "$RUNNER_TEMP/fabric-server-mob"
           --cache ~/.cache/msm-fabric-server
       # The parity runs share one run folder (the game server is downloaded once); each writes
@@ -477,6 +535,32 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-portals-ejected.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
+      # Custom particles (B359, SampleParticlesParityTest): the three types registered without
+      # options (bubble overriding the limiter), /particle and /function packets, the stream codec,
+      # the wands' moving sparks and dust, the held charm's forced petals, glimmer's bubble and no
+      # packet for ambient particles (client only), black-box, on the content jar of every version
+      # and on the ejected jar. The script's test (SampleParticlesScriptParityTest) runs on the
+      # content jar only: sample_particles_* matches both classes, sample_particles_parity_test_*
+      # only the first.
+      - name: Parity GameTests (sample particles, content jar)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-particles/msm_sample_particles.jar"
+          --facts "$RUNNER_TEMP/sample-particles/fabric-facts.json"
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_particles_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-particles-content.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
+      - name: Parity GameTests (sample particles, ejected jar)
+        if: matrix.mc == '26.3'
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_PARTICLES_JAR"
+          --facts "$RUNNER_TEMP/sample-particles/fabric-facts.json" --no-runtime
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_particles_parity_test_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-particles-ejected.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
       # The fifth run (ADR 0058 D4): script behaviour on the content jar only, since scripts
       # are not part of the Java project eject (ADR 0033); since B255 also every Script API 1.1
       # behaviour (ADR 0065) on every version.
@@ -523,6 +607,12 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v7
         with:
+          name: msm-sample-particles-mc${{ matrix.mc }}
+          path: ${{ runner.temp }}/sample-particles/msm_sample_particles.jar
+          if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
           name: msm-sample-script-mc${{ matrix.mc }}
           path: ${{ runner.temp }}/sample-script/msm_sample_script.jar
           if-no-files-found: ignore
@@ -536,6 +626,7 @@ jobs:
             ${{ runner.temp }}/java/sample-creatures/build/libs/*.jar
             ${{ runner.temp }}/java/sample-machines/build/libs/*.jar
             ${{ runner.temp }}/java/sample-portals/build/libs/*.jar
+            ${{ runner.temp }}/java/sample-particles/build/libs/*.jar
           if-no-files-found: ignore
       - if: always()
         uses: actions/upload-artifact@v7
@@ -549,6 +640,7 @@ jobs:
           name: engine-mod-logs-mc${{ matrix.mc }}
           path: |
             engine-mod/build/run/gameTest/logs
+            engine-mod/build/run/clientGameTest/logs
             engine-mod/build/reports/tests
             ${{ runner.temp }}/fabric-server/run-fabric-server*.log
             ${{ runner.temp }}/fabric-server/crash-reports

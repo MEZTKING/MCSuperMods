@@ -4183,3 +4183,20 @@ Decisions
 Next
 - B389/B390: draw the camera from `eyePosition(alpha)` (or `view()`), pass the view's own look to `pick(alpha, yaw, pitch)`, refuse placement where `wouldOverlap` is true.
 - B391/B390: the world adapter `(x, y, z) => world.get(...)` and the catalogue as `BlockShapes`.
+## 2026-11-14 — executor — B359 particles parity tests and CI
+
+What
+- `SampleParticlesParityTest` (11 GameTests, content and ejected jars): the three types are option-less `SimpleParticleType`s and only `bubble` overrides the limiter; the blocks and items exist; `/particle msm_sample_particles:spark` reaches a real player as one packet of that type, count, spread and speed (and `bubble ... force` with the override flag); unknown ids fail `/particle` and send nothing; every type round-trips through vanilla's `ClientboundLevelParticlesPacket.STREAM_CODEC` with and without the flag; `spark_wand` sends 20 count-0 packets with distances [0, 0.2, 0] and speed 1, spread around the player; `dust_wand` one `DustParticleOptions` packet of 40 (colour [0.3, 0.7, 1] within one 8-bit step, scale 2, spread 0.6, at the player); `petal_charm` held sends two forced packets of 6 petals in 40 game ticks of the player's own tick; `function msm_sample_particles:burst` sends 30 sparks one block up and says its line; `glimmer`'s `createParticleOptions` is the `bubble` type itself and a pig under the effect syncs it as its effect particle; the spark lamp and ember vent send no particle packet in 30 ticks (random-ticked too), as ambient particles are client only (K5).
+- `SampleParticlesScriptParityTest` (1 GameTest, content jars only): using the spark lamp sends 8 petals at the lamp + (0.5, 1.5, 0.5) and 16 `minecraft:block` particles of the lamp at its centre; using stone sends none.
+- `ParityEars.particles()` (the particle packets since the last read); the parity `fabric.mod.json` registers the script class (one line, outside the brief's owner list).
+- CI (`engine-mod`, both versions): client GameTests headless (Xvfb, Mesa EGL) with the screenshots as artefact `client-gametest-screenshots-mc<mc>`; export, server check (`registered 3 particle type(s)`, the definitions line, `--forbid-line NoClassDefFoundError`) and parity run of the sample particles content jar (`sample_particles_*`); on 26.3 the Java eject, its build, its server check and its parity run (`sample_particles_parity_test_*`); artefact `msm-sample-particles-mc<mc>` and the ejected jar in `msm-ejected-jars-mc<mc>`.
+- Checked: parity jar builds on 26.3 and 26.4; content jar 12 of 12 on 26.3 (twice) and 26.4, ejected 26.3 jar 11 of 11; a run with the wrong sample filter (`sample_portals_*` on the particles jar) fails (13 failures, exit 1); `runClientGameTest` green on 26.3 (52 s) and 26.4 (56 s) with three screenshots each; `pnpm lint`.
+
+Decisions
+- The script's test is its own class, so the ejected run's filter `sample_particles_parity_test_*` leaves it out while the content run's `sample_particles_*` runs both in one server start (cheaper than a separate step).
+- Packets are read near each test's own positions: tests of a batch stand side by side and particle packets reach 32 blocks (512 forced).
+- The held charm counts game ticks, not test ticks, and accepts petals within two blocks of the player's final position (the player settles while it ticks).
+- B355's follow-ups: the ejected `glimmer` resolves `bubble` (passes on the ejected jar). Leaves' `falling_particle` is not covered: the fixture has no leaves block, and the falling particle is drawn by the client only.
+
+Next
+- B360: guide and `engine-mod/CLAUDE.md` (parity: sample particles 12 = 11 + 1 script; client GameTests in CI), `tools/run-fabric-server/README.md` CI paragraph. B361: ADR 0081 D6 findings, K4/L16 (drawing checked in CI by the client GameTests).
