@@ -28,6 +28,16 @@ export {
   RUNTIME_MOD_ID,
 } from './mod';
 export {
+  DEFAULT_PARTICLE_DESCRIPTION_FOLDER,
+  DEFAULT_PARTICLE_TEXTURE_FOLDER,
+  lowerParticle,
+  PARTICLE_DESCRIPTION_SCHEMA,
+  particleDefinition,
+  particleDescription,
+  particleDescriptionPath,
+  particleSpritePath,
+} from './particle';
+export {
   BlocksItemsLoweringError,
   type DefinitionFolder,
   definitionPath,

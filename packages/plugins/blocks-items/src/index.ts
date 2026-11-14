@@ -1,8 +1,9 @@
 /**
  * `@msm/plugin-blocks-items`: built-in MSM plugin contributing custom blocks, custom items and
  * the mod metadata (ADR 0025 D8), custom mob effects (ADR 0055) and additions to vanilla
- * content (ADR 0060), potions (ADR 0063) and portal blocks (ADR 0077): the `msm:block`, `msm:item`, `msm:effect`,
- * `msm:mod`, `msm:biome_addition`, `msm:loot_addition` and `msm:potion` kinds, their
+ * content (ADR 0060), potions (ADR 0063), portal blocks (ADR 0077) and particle types (ADR 0080):
+ * the `msm:block`, `msm:item`, `msm:effect`, `msm:mod`, `msm:biome_addition`,
+ * `msm:loot_addition`, `msm:potion` and `msm:particle` kinds, their
  * lowering to runtime definitions under `msm/` plus vanilla pack files, the `blocks-items.*`
  * project validators and the "New element" templates.
  */
@@ -11,6 +12,7 @@ import { blocksItemsKinds } from './kinds';
 import { blocksItemsTemplates } from './templates';
 import { blocksItemsValidators } from './validators';
 import { containerValidators } from './validators-containers';
+import { particleValidators } from './validators-particles';
 import { portalValidators } from './validators-portals';
 import { blockTypeValidators } from './validators-types';
 
@@ -86,6 +88,13 @@ export {
   MAX_MACHINE_TICKS,
 } from './validators-containers';
 export {
+  AMBIENT_PARTICLES_COMPONENT,
+  PARTICLE_DESCRIPTION_KIND,
+  PARTICLE_PROBLEM_CODES,
+  particleValidators,
+  SPAWN_PARTICLE_ACTION,
+} from './validators-particles';
+export {
   DEFAULT_PORTAL_IGNITER,
   DEFAULT_PORTAL_RETURN_TO,
   DUST_PARTICLE,
@@ -114,6 +123,7 @@ export default definePlugin({
       ...blockTypeValidators,
       ...containerValidators,
       ...portalValidators,
+      ...particleValidators,
     ],
   },
 });

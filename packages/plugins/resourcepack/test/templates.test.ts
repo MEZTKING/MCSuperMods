@@ -35,6 +35,7 @@ const TEMPLATE_IDS = [
   'lang',
   'sounds',
   'font_icons',
+  'particle_retexture',
   'pack',
 ];
 
@@ -91,7 +92,7 @@ function namespacesIn(value: Json, out = new Set<string>()): Set<string> {
 }
 
 describe('resource pack templates', () => {
-  it('contributes the sixteen templates in picker order', () => {
+  it('contributes the seventeen templates in picker order', () => {
     expect(resourcePackTemplates.map((template) => template.id)).toEqual(TEMPLATE_IDS);
     expect(plugin.contributes.elementTemplates?.map((template) => template.id)).toEqual(
       TEMPLATE_IDS,

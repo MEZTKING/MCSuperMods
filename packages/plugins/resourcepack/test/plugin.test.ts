@@ -4,7 +4,9 @@ import { describe, expect, it } from 'vitest';
 import plugin, {
   assetPath,
   langKind,
+  PARTICLE_DESCRIPTION_FOLDER,
   packMcmetaKind,
+  particleKind,
   ResourcePackLoweringError,
   resourcePackKinds,
   soundsKind,
@@ -20,6 +22,7 @@ const KIND_IDS = [
   'minecraft:lang',
   'minecraft:model',
   'minecraft:pack_mcmeta',
+  'minecraft:particle',
   'minecraft:sounds',
 ];
 
@@ -42,7 +45,7 @@ describe('@msm/plugin-resourcepack', () => {
     expect(Object.isFrozen(plugin)).toBe(true);
   });
 
-  it('contributes the nine vanilla resource pack kinds with unique ids and folders', () => {
+  it('contributes the ten vanilla resource pack kinds with unique ids and folders', () => {
     const ids = kinds().map((kind) => kind.id);
     expect([...ids].sort()).toEqual(KIND_IDS);
     expect(new Set(kinds().map((kind) => kind.folder)).size).toBe(KIND_IDS.length);
@@ -67,6 +70,7 @@ describe('@msm/plugin-resourcepack', () => {
       'minecraft:equipment': undefined,
       'minecraft:atlas': undefined,
       'minecraft:font': undefined,
+      'minecraft:particle': undefined,
     });
   });
 
@@ -232,5 +236,21 @@ describe('lowering', () => {
     expect(() =>
       packMcmetaKind.lower(element(packMcmetaKind.id, 'example:pack', { pack: 1 }), firstTarget),
     ).toThrow(ResourcePackLoweringError);
+  });
+
+  it('writes particle descriptions to the target folder, particles without facts (ADR 0080 D2)', async () => {
+    const flame = element(particleKind.id, 'minecraft:flame', { textures: ['demo:flame'] });
+    const [file] = await particleKind.lower(flame, firstTarget);
+    expect(file).toEqual({
+      path: `assets/minecraft/${firstTarget.particles?.descriptionFolder}/flame.json`,
+      contents: { textures: ['demo:flame'] },
+      layer: 'resourcepack',
+      schema: '::java::assets::particle::Particle',
+    });
+    const { particles: _particles, ...noFacts } = firstTarget;
+    expect((await particleKind.lower(flame, noFacts))[0]?.path).toBe(
+      `assets/minecraft/${PARTICLE_DESCRIPTION_FOLDER}/flame.json`,
+    );
+    expect(PARTICLE_DESCRIPTION_FOLDER).toBe('particles');
   });
 });

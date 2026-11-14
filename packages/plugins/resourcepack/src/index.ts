@@ -1,6 +1,7 @@
 /**
  * `@msm/plugin-resourcepack`: built-in MSM plugin contributing the vanilla resource pack
- * kinds (models, block and item definitions, lang, sounds, `pack.mcmeta` and equipment assets)
+ * kinds (models, block and item definitions, lang, sounds, `pack.mcmeta`, equipment assets,
+ * atlases, fonts and particle descriptions)
  * and their "New element" templates.
  */
 import { definePlugin } from '@msm/plugin-api';

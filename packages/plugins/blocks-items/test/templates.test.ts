@@ -97,8 +97,20 @@ const IDS = [
   'msm_mod',
   'msm_biome_addition_overworld_ore',
   'msm_loot_addition_mob_drop',
+  'msm_particle_glowing_spark',
+  'msm_particle_falling_petal',
+  'msm_particle_smoke_puff',
+  'msm_block_ambient_particles',
 ];
-const CATEGORIES = new Set(['Blocks', 'Portals', 'Items', 'Effects', 'Mod', 'Additions']);
+const CATEGORIES = new Set([
+  'Blocks',
+  'Portals',
+  'Items',
+  'Effects',
+  'Mod',
+  'Additions',
+  'Particles',
+]);
 
 const kindOf = (template: ElementTemplate) => {
   const kind = blocksItemsKinds.find((entry) => entry.id === template.kind);

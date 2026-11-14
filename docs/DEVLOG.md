@@ -3816,3 +3816,18 @@ Decisions
 
 Next
 - B350 registers the types, builds each spec with `ParticleLook.Spec.resolve` and registers `MsmParticleProvider.pending(id, spec)`; B353 writes `particle-sim.ts` against the golden; B355 copies the three classes as templates.
+## 2026-11-14 — executor — B351 particle kind, lowering, validators and vanilla pack safety
+
+What
+- `@msm/plugin-blocks-items`: kind `msm:particle` (folder `particle`, registry `particle_type`, default the `minecraft:generic_7` to `_0` puff over 20 ticks) lowered by `lowering/particle.ts` to `msm/<ns>/particle/<path>.json` (layer `msm`, `msm:particle_definition`) and the description `assets/<ns>/<target.particles.descriptionFolder>/<path>.json` (layer `resourcepack`, `::java::assets::particle::Particle`; `particles` without the fact); helpers `particleDescriptionPath` and `particleSpritePath` (for the app's missing-picture report). Validators `msm.blocks-items.particles` and `msm.blocks-items.particle-references` (`validators-particles.ts`) with six codes: `particle-lifetime-range`, `particle-frame-ticks-unused` (warning), `particle-description-clash`, `particle-needs-options`, `particle-options-unknown-type`, `particle-options-invalid`. Four templates in a new "Particles" category: Glowing spark, Falling petal, Smoke puff, Block with ambient particles. Goldens for both targets.
+- `@msm/plugin-resourcepack`: kind `minecraft:particle` (kind folder `particles`, output folder from the target) and the template "Retexture a vanilla particle" (`minecraft:flame` pointing at `<project>:flame`).
+- `@msm/exporters`: `particle_type` joins `RUNTIME_REGISTRIES`; `dimension_type` and `timeline` join `FATAL_DATA_FOLDERS` (B346's probe). New `particle-vanilla-pack.test.ts` on both targets: a biome, a dimension type, a timeline naming the particle and a dimension of that type are left out (`export.mod-only-reference`), a function running `particle` is kept (`export.mod-only-function`), the resource pack keeps the descriptions and the picture, and a project without particles exports the same bytes.
+- Verified: `pnpm lint`, `pnpm typecheck`, `turbo run test --force --concurrency=4` (all packages).
+
+Decisions
+- `particle-options-invalid` is structural: validators receive no schema index, so it reports fields on an object whose type takes no options (vanilla or project); the fields of types with options are left to the runtime's start-up decode. The test holds the rule against the vanilla `::java::util::particle::Particle` schema on both targets.
+- `particle-needs-options` covers spawn_particle in block, item and effect events, ambient particles, an effect's `particle`, `falling_particle` and a portal's `particles.type` (dust with a colour excepted); entity events are left to the schema and the runtime. `msm:ambient_particles` on a portal was already `component-not-for-type` (not in `PORTAL_COMPONENTS`), now tested.
+- `library.test.ts` skips `minecraft:particle` and `msm:particle` in the one-example-per-kind check (`KINDS_AWAITING_EXAMPLES`) until B354 adds their examples.
+
+Next
+- B353: app sidebar label for the two kinds, missing-picture report through `particleSpritePath`, optional full options check with the host's schema index. B354: the per-kind examples (empty `KINDS_AWAITING_EXAMPLES`). B361: ADR 0066's table rows for `dimension_type` and `timeline`.

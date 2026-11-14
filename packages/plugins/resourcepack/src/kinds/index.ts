@@ -10,6 +10,7 @@ import { itemDefinitionKind } from './item-definition';
 import { langKind } from './lang';
 import { modelKind } from './model';
 import { packMcmetaKind } from './pack-mcmeta';
+import { particleKind } from './particle';
 import { soundsKind } from './sounds';
 
 export { atlasKind } from './atlas';
@@ -20,6 +21,7 @@ export { itemDefinitionKind } from './item-definition';
 export { langKind } from './lang';
 export { modelKind } from './model';
 export { packMcmetaKind } from './pack-mcmeta';
+export { PARTICLE_DESCRIPTION_FOLDER, particleKind } from './particle';
 export { SOUNDS_ELEMENT_PATH, soundsKind } from './sounds';
 
 /** Every kind this plugin contributes, in a stable order. */
@@ -33,4 +35,5 @@ export const resourcePackKinds: readonly ElementKind[] = Object.freeze([
   equipmentKind,
   atlasKind,
   fontKind,
+  particleKind,
 ]);

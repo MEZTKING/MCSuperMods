@@ -10,6 +10,7 @@ import { fontTemplates } from './font';
 import { itemDefinitionTemplates } from './item-definitions';
 import { modelTemplates } from './models';
 import { packTemplates } from './pack';
+import { particleTemplates } from './particles';
 import { soundsTemplates } from './sounds';
 import { textTemplates } from './text';
 
@@ -19,6 +20,7 @@ export { fontTemplates } from './font';
 export { itemDefinitionTemplates } from './item-definitions';
 export { modelTemplates } from './models';
 export { packTemplates } from './pack';
+export { particleTemplates } from './particles';
 export { soundsTemplates } from './sounds';
 export { textTemplates } from './text';
 
@@ -31,5 +33,6 @@ export const resourcePackTemplates: readonly ElementTemplate[] = Object.freeze([
   ...textTemplates,
   ...soundsTemplates,
   ...fontTemplates,
+  ...particleTemplates,
   ...packTemplates,
 ]);

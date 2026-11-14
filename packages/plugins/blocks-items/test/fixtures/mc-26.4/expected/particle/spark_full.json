@@ -1,0 +1,43 @@
+[
+  {
+    "contents": {
+      "alpha": 0.9,
+      "always_show": true,
+      "animation": "loop",
+      "collision": false,
+      "color": 16765024,
+      "color_end": 16736256,
+      "emissive": true,
+      "fade": "in_out",
+      "format": 1,
+      "frame_ticks": 3,
+      "friction": 0.96,
+      "gravity": -0.05,
+      "lifetime": 40,
+      "size": 0.15,
+      "size_end": 0.05,
+      "spin": 6,
+      "textures": [
+        "example:spark_0",
+        "example:spark_1",
+        "minecraft:glow"
+      ],
+      "translucent": true
+    },
+    "layer": "msm",
+    "path": "msm/example/particle/spark.json",
+    "schema": "msm:particle_definition"
+  },
+  {
+    "contents": {
+      "textures": [
+        "example:spark_0",
+        "example:spark_1",
+        "minecraft:glow"
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/particles/spark.json",
+    "schema": "::java::assets::particle::Particle"
+  }
+]

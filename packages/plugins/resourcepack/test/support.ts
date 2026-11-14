@@ -36,6 +36,9 @@ export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
     'demo:font/sample.png',
     'example:font/icons.png',
     'example:block/ruby_ore',
+    'demo:particle/flame',
+    'example:particle/ember_0',
+    'example:particle/ember_1',
   ],
 };
 

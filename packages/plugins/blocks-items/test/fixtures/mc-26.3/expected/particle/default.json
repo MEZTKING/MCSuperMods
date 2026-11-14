@@ -1,0 +1,38 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "lifetime": 20,
+      "textures": [
+        "minecraft:generic_7",
+        "minecraft:generic_6",
+        "minecraft:generic_5",
+        "minecraft:generic_4",
+        "minecraft:generic_3",
+        "minecraft:generic_2",
+        "minecraft:generic_1",
+        "minecraft:generic_0"
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/demo/particle/sample.json",
+    "schema": "msm:particle_definition"
+  },
+  {
+    "contents": {
+      "textures": [
+        "minecraft:generic_7",
+        "minecraft:generic_6",
+        "minecraft:generic_5",
+        "minecraft:generic_4",
+        "minecraft:generic_3",
+        "minecraft:generic_2",
+        "minecraft:generic_1",
+        "minecraft:generic_0"
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/particles/sample.json",
+    "schema": "::java::assets::particle::Particle"
+  }
+]

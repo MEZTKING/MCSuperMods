@@ -1,0 +1,34 @@
+[
+  {
+    "contents": {
+      "animation": "random",
+      "format": 1,
+      "friction": 0.95,
+      "gravity": 0.08,
+      "lifetime": {
+        "max": 100,
+        "min": 60
+      },
+      "size": 0.15,
+      "spin": 4,
+      "textures": [
+        "minecraft:cherry_0",
+        "minecraft:cherry_1",
+        "minecraft:cherry_2"
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/demo/particle/sample.json"
+  },
+  {
+    "contents": {
+      "textures": [
+        "minecraft:cherry_0",
+        "minecraft:cherry_1",
+        "minecraft:cherry_2"
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/particles/sample.json"
+  }
+]

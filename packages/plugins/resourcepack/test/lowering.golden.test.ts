@@ -13,6 +13,7 @@ import {
   langKind,
   modelKind,
   packMcmetaKind,
+  particleKind,
   soundsKind,
 } from '../src/index';
 import { indexesFor, schemaErrors, sortedJson } from './support';
@@ -85,6 +86,12 @@ const SAMPLES: Sample[] = [
         humanoid_leggings: [{ texture: 'example:ruby' }],
       },
     },
+  },
+  {
+    kind: particleKind,
+    name: 'flame',
+    id: 'minecraft:flame',
+    data: { textures: ['example:ember_0', 'example:ember_1'] },
   },
   {
     kind: atlasKind,

@@ -4,11 +4,12 @@
  *
  * A vanilla server rejects a whole data pack when any file of a registry-loaded folder
  * (recipes, loot tables, advancements, predicates, item modifiers, villager trades, trade
- * sets, enchantments, jukebox songs, enchantment providers, dialogs, worldgen, dimensions)
+ * sets, enchantments, jukebox songs, enchantment providers, dialogs, worldgen, dimensions,
+ * dimension types, timelines)
  * names an id or `#tag` it does not know, or names a file of its own registries that is not
  * there. Mod-only ids are the ids MSM runtime kinds register (blocks and their items, items,
- * effects, potions and their versions, entities and their spawn eggs) plus project tags that
- * hold nothing else.
+ * effects, potions and their versions, entities and their spawn eggs, particle types) plus
+ * project tags that hold nothing else.
  * For the vanilla data pack, files that name one are left out (one warning per element), tag
  * entries that name one become `{ "id": ..., "required": false }`, and functions that name
  * one are kept with a warning (the game skips only that function; function tag entries naming
@@ -37,20 +38,29 @@ export const MOD_ONLY_REFERENCE = ExportProblemCodes.modOnlyReference;
 /** A function that names something only the mod jar provides (kept; the game skips it). */
 export const MOD_ONLY_FUNCTION = ExportProblemCodes.modOnlyFunction;
 
-/** The registries MSM runtime kinds register ids in (ADR 0066 D2). */
+/**
+ * The registries MSM runtime kinds register ids in (ADR 0066 D2); `particle_type` since
+ * ADR 0080 D10 (`msm:particle`).
+ */
 export const RUNTIME_REGISTRIES: readonly string[] = Object.freeze([
   'block',
   'item',
   'mob_effect',
   'potion',
   'entity_type',
+  'particle_type',
 ]);
 
 /**
  * Data folders where one unknown id or `#tag` makes the game reject the whole data pack
  * (ADR 0066, verified on vanilla servers of both targets; `trade_set` by inference). Every
  * `worldgen` registry folder is one (`worldgen/<registry>/...`), and a reference to a
- * missing worldgen or dimension file is just as fatal.
+ * missing worldgen or dimension file is just as fatal. `dimension_type` and `timeline` joined
+ * with particle types (ADR 0080 D10): their environment attributes can name a particle type,
+ * and the probe of brief B346 (2026-11-14, vanilla servers of both supported targets, one
+ * fresh world per case) found that a dimension type or a timeline track of
+ * `minecraft:visual/ambient_particles` naming an unknown particle type fails the whole pack
+ * ("Unknown registry key in ... particle_type", "Failed to load datapacks").
  */
 export const FATAL_DATA_FOLDERS: readonly DataFolderKey[] = Object.freeze([
   'recipe',
@@ -66,6 +76,8 @@ export const FATAL_DATA_FOLDERS: readonly DataFolderKey[] = Object.freeze([
   'dialog',
   'worldgen',
   'dimension',
+  'dimension_type',
+  'timeline',
 ] satisfies DataFolderKey[]);
 
 /**

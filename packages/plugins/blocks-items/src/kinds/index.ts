@@ -4,7 +4,8 @@
  * `msm:mod` (`mod`, conventional id `<ns>:mod`), and the additions to vanilla content
  * `msm:biome_addition` (`biome_addition`) and `msm:loot_addition` (`loot_addition`, ADR 0060
  * D2, D3), which belong to no registry, and `msm:potion` (`potion`, ADR 0063 D1, registry
- * `potion`). Element ids are the registry ids: `msm:block`
+ * `potion`), and `msm:particle` (`particle`, ADR 0080 D1, registry `particle_type`). Element ids
+ * are the registry ids: `msm:block`
  * elements belong to the `block` registry, `msm:item` elements to `item` and `msm:effect`
  * elements to `mob_effect`, so references such as a `give_item` action or an `apply_effect`
  * action resolve to project content.
@@ -16,6 +17,7 @@ import { lowerBlock } from '../lowering/block';
 import { lowerEffect } from '../lowering/effect';
 import { lowerItem } from '../lowering/item';
 import { lowerMod } from '../lowering/mod';
+import { lowerParticle } from '../lowering/particle';
 import { lowerPotion } from '../lowering/potion';
 
 /** Kind id of custom blocks. */
@@ -26,6 +28,8 @@ export const ITEM_KIND = 'msm:item';
 export const EFFECT_KIND = 'msm:effect';
 /** Kind id of potions (ADR 0063 D1). */
 export const POTION_KIND = 'msm:potion';
+/** Kind id of particle types (ADR 0080 D1). */
+export const PARTICLE_KIND = 'msm:particle';
 /** Kind id of the mod metadata singleton. */
 export const MOD_KIND = 'msm:mod';
 /** Kind id of features and spawns added to biomes (ADR 0060 D2). */
@@ -95,6 +99,34 @@ export const potionKind: ElementKind = {
   lower: lowerPotion,
 };
 
+/**
+ * Particle types (ADR 0080 D1): option-less types registered by the runtime under the element
+ * id, with their own pictures and behaviour. The default is vanilla's smoke-like puff, the
+ * `minecraft:generic_7` to `minecraft:generic_0` sprites over 20 ticks.
+ */
+export const particleKind: ElementKind = {
+  id: PARTICLE_KIND,
+  schema: MSM_SCHEMA_REFS.particle,
+  folder: 'particle',
+  registry: 'particle_type',
+  defaultData: {
+    format: 1,
+    textures: [
+      'minecraft:generic_7',
+      'minecraft:generic_6',
+      'minecraft:generic_5',
+      'minecraft:generic_4',
+      'minecraft:generic_3',
+      'minecraft:generic_2',
+      'minecraft:generic_1',
+      'minecraft:generic_0',
+    ],
+    lifetime: 20,
+  },
+  hiddenPaths: HIDDEN,
+  lower: lowerParticle,
+};
+
 export const modKind: ElementKind = {
   id: MOD_KIND,
   schema: MSM_SCHEMA_REFS.mod,
@@ -146,4 +178,5 @@ export const blocksItemsKinds: readonly ElementKind[] = Object.freeze([
   biomeAdditionKind,
   lootAdditionKind,
   potionKind,
+  particleKind,
 ]);

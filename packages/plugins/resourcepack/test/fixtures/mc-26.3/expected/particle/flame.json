@@ -1,0 +1,11 @@
+{
+  "contents": {
+    "textures": [
+      "example:ember_0",
+      "example:ember_1"
+    ]
+  },
+  "layer": "resourcepack",
+  "path": "assets/minecraft/particles/flame.json",
+  "schema": "::java::assets::particle::Particle"
+}

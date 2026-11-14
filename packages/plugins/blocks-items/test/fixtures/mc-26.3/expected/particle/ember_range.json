@@ -1,0 +1,28 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "gravity": 0.2,
+      "lifetime": {
+        "max": 30,
+        "min": 10
+      },
+      "textures": [
+        "minecraft:flame"
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/example/particle/fx/ember.json",
+    "schema": "msm:particle_definition"
+  },
+  {
+    "contents": {
+      "textures": [
+        "minecraft:flame"
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/particles/fx/ember.json",
+    "schema": "::java::assets::particle::Particle"
+  }
+]

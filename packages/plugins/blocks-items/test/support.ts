@@ -62,6 +62,10 @@ export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
   function: ['example:ruby/shimmer'],
   equipment: ['example:ruby'],
   'worldgen/placed_feature': ['demo:sample_placed', 'example:ruby_ore_placed'],
+  /** Project particle types (ADR 0080 D1). */
+  particle_type: ['demo:sample', 'example:spark', 'example:fx/ember'],
+  /** Project particle pictures: the sprite `example:spark_0` is `example:particle/spark_0`. */
+  texture: ['example:particle/spark_0', 'example:particle/spark_1'],
 };
 
 export interface TargetIndexes {

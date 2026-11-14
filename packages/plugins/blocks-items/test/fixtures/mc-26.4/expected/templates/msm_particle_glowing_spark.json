@@ -1,0 +1,32 @@
+[
+  {
+    "contents": {
+      "color": 16765024,
+      "emissive": true,
+      "fade": "out",
+      "format": 1,
+      "friction": 0.96,
+      "gravity": -0.05,
+      "lifetime": {
+        "max": 40,
+        "min": 20
+      },
+      "size": 0.12,
+      "size_end": 0.04,
+      "textures": [
+        "minecraft:glow"
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/demo/particle/sample.json"
+  },
+  {
+    "contents": {
+      "textures": [
+        "minecraft:glow"
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/particles/sample.json"
+  }
+]

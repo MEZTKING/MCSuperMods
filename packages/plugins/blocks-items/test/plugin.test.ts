@@ -24,9 +24,14 @@ import plugin, {
   lowerEffect,
   lowerItem,
   lowerMod,
+  lowerParticle,
   MSM_VANILLA_COMPONENTS,
   NEEDS_TIER_TAGS,
   needsTierTag,
+  PARTICLE_DESCRIPTION_SCHEMA,
+  particleDefinition,
+  particleKind,
+  particleSpritePath,
   SHAPE_PRESET_BOXES,
   SHAPE_PRESETS,
   SPEAR_VANILLA_COMPONENTS,
@@ -45,6 +50,7 @@ const KIND_IDS = [
   'msm:biome_addition',
   'msm:loot_addition',
   'msm:potion',
+  'msm:particle',
 ];
 const kinds = (): ElementKind[] => plugin.contributes.elementKinds ?? [];
 const firstTarget = (builtInTargets[0] as TargetBundle).target;
@@ -73,7 +79,7 @@ describe('@msm/plugin-blocks-items', () => {
     expect(registrationProblems()).toEqual([]);
   });
 
-  it('contributes the seven kinds with their schemas, folders and registries', () => {
+  it('contributes the eight kinds with their schemas, folders and registries', () => {
     expect(kinds().map((kind) => kind.id)).toEqual(KIND_IDS);
     expect(blocksItemsKinds.map((kind) => kind.id)).toEqual(KIND_IDS);
     expect(kinds().map((kind) => [kind.schema, kind.folder, kind.registry])).toEqual([
@@ -84,6 +90,7 @@ describe('@msm/plugin-blocks-items', () => {
       [MSM_SCHEMA_REFS.biomeAddition, 'biome_addition', undefined],
       [MSM_SCHEMA_REFS.lootAddition, 'loot_addition', undefined],
       [MSM_SCHEMA_REFS.potion, 'potion', 'potion'],
+      [MSM_SCHEMA_REFS.particle, 'particle', 'particle_type'],
     ]);
   });
 
@@ -125,6 +132,8 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.machines',
       'msm.blocks-items.portals',
       'msm.blocks-items.light-portal',
+      'msm.blocks-items.particles',
+      'msm.blocks-items.particle-references',
     ]);
     expect(blocksItemsValidators).toHaveLength(21);
   });
@@ -218,6 +227,53 @@ describe('@msm/plugin-blocks-items', () => {
     );
     expect(effectKind.defaultData).toMatchObject({ format: 1, category: 'beneficial' });
     expect(effectKind.hiddenPaths).toEqual(['/format']);
+  });
+
+  it('lowers a particle to its definition and its description (ADR 0080 D2, D10)', () => {
+    const data: Json = {
+      format: 1,
+      textures: ['demo:spark_0', 'minecraft:glow'],
+      animation: 'loop',
+      frame_ticks: 3,
+      emissive: true,
+    };
+    const particle = element('msm:particle', 'demo:fx/spark', data);
+    expect(particleDefinition(particle)).toEqual(data);
+    const files = lowerParticle(particle, firstTarget);
+    expect(files.map((file) => [file.path, file.layer, file.schema])).toEqual([
+      ['msm/demo/particle/fx/spark.json', 'msm', MSM_SCHEMA_REFS.particleDefinition],
+      ['assets/demo/particles/fx/spark.json', 'resourcepack', PARTICLE_DESCRIPTION_SCHEMA],
+    ]);
+    expect(files[1]?.contents).toEqual({ textures: ['demo:spark_0', 'minecraft:glow'] });
+    // Without the target's particle facts the folders fall back to the vanilla names.
+    const { particles: _particles, ...noFacts } = firstTarget;
+    expect(lowerParticle(particle, noFacts)[1]?.path).toBe('assets/demo/particles/fx/spark.json');
+    const custom = {
+      ...firstTarget,
+      particles: {
+        ...firstTarget.particles,
+        descriptionFolder: 'px',
+        textureFolder: 'pt',
+        withOptions: [],
+      },
+    };
+    expect(lowerParticle(particle, custom)[1]?.path).toBe('assets/demo/px/fx/spark.json');
+    expect(particleSpritePath(custom, 'demo:spark_0')).toBe(
+      `assets/demo/${firstTarget.folders.resource.textures}/pt/spark_0.png`,
+    );
+    expect(particleSpritePath(firstTarget, 'glow')).toBe(
+      `assets/minecraft/${firstTarget.folders.resource.textures}/particle/glow.png`,
+    );
+    expect(particleSpritePath(firstTarget, 'Bad:Name')).toBeUndefined();
+    expect(() => lowerParticle(element('msm:particle', 'demo:x', [1]), firstTarget)).toThrow(
+      BlocksItemsLoweringError,
+    );
+    expect(particleKind.defaultData).toEqual({
+      format: 1,
+      textures: [7, 6, 5, 4, 3, 2, 1, 0].map((n) => `minecraft:generic_${n}`),
+      lifetime: 20,
+    });
+    expect(particleKind.hiddenPaths).toEqual(['/format']);
   });
 
   it('maps every tier to a needs tag by mining level', () => {
