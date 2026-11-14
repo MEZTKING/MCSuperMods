@@ -691,8 +691,8 @@ export type StudioChange = (
 
 /**
  * A setter over element paths: sets `value` at `path` (the core command creates absent
- * parents), and removes the key only when it exists, so a clear never adds an empty undo
- * step. `coalesce` merges typing into one undo step.
+ * parents), and removes the key only when it exists (through objects and list items), so a
+ * clear never adds an empty undo step. `coalesce` merges typing into one undo step.
  */
 export function pathSetter(data: Json, onChange: StudioChange) {
   return (path: readonly (string | number)[], value: Json | undefined, coalesce?: string) => {
@@ -701,7 +701,8 @@ export function pathSetter(data: Json, onChange: StudioChange) {
     if (value === undefined) {
       let current: Json | undefined = data;
       for (const key of path) {
-        current = isJsonObject(current) ? current[String(key)] : undefined;
+        if (Array.isArray(current)) current = typeof key === 'number' ? current[key] : undefined;
+        else current = isJsonObject(current) ? current[String(key)] : undefined;
         if (current === undefined) return;
       }
       onChange(pointer, undefined, options);

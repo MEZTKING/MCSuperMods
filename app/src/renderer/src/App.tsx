@@ -1675,6 +1675,14 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     thumbnail,
     revision: assetRevision,
     textureLayers: (model) => session.textureLayers(model),
+    addElement: (input) => {
+      try {
+        session.addElement(input);
+        select(input.id);
+      } catch (error) {
+        setMessage({ kind: 'error', text: `Add ${input.id}: ${messageOf(error)}` });
+      }
+    },
     paintTexture: (namespace, path, size) => {
       const exists = project?.namespaces
         .find((entry) => entry.name === namespace)

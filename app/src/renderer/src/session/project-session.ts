@@ -78,6 +78,7 @@ import type {
   Target,
   TargetFacts,
 } from '@msm/plugin-api';
+import { potionNeedsJarProblem } from '@msm/plugin-blocks-items';
 import { MSM_RUNTIME_TYPINGS } from '@msm/plugin-scripting';
 import { type SchemaNode, type VanillaMcdocSymbols, validateJson } from '@msm/schemas';
 import { targetFacts } from '@msm/targets';
@@ -2448,13 +2449,18 @@ export class ProjectSession {
     pack: PackKind,
   ): Promise<{ report: ExportReport; fileName: string; data?: Uint8Array }> {
     const sink = createZipSink();
+    // ADR 0063 D6 and finding P8: a brewing recipe naming a potion the game does not know
+    // stops the whole data pack from loading, so vanilla packs leave potions out entirely.
     const { report, project, target } = await this.#runPipeline(
       pack === 'data' ? dataPackExporter : resourcePackExporter,
       sink,
+      undefined,
+      withoutPotions,
     );
     const fileName = packFileName(project.name, target, pack);
-    if (!report.ok) return { report, fileName };
-    return { report, fileName, data: sink.finish() };
+    const warned = pack === 'data' ? withPotionNeedsJar(report, project) : report;
+    if (!warned.ok) return { report: warned, fileName };
+    return { report: warned, fileName, data: sink.finish() };
   }
 
   /**
@@ -2465,16 +2471,18 @@ export class ProjectSession {
     exporter: Exporter,
     sink: OutputSink,
     options?: Record<string, Json>,
+    exported: (project: Project) => Project = (project) => project,
   ): Promise<{ report: ExportReport; project: Project; target: Target }> {
     const stack = this.#requireStack();
     await this.flushValidation();
     await this.flushAssetFiles();
     const project = stack.state;
+    const lowered = exported(project);
     const context = await this.schemas();
     const info = await this.#platform.app.info();
     const validateText = this.#textValidator(project, context.target);
     const report = await runExport({
-      project,
+      project: lowered,
       registry: this.registry,
       target: context.target,
       schemaIndex: context.schemaIndex,
@@ -2496,8 +2504,8 @@ export class ProjectSession {
     const blocking = [
       ...this.#unavailablePluginProblems(project),
       ...(await blockingValidatorErrors(
-        [...this.#validatorProblems.values()].flat(),
-        project,
+        droppedElementProblems([...this.#validatorProblems.values()].flat(), project, lowered),
+        lowered,
         async (element) => {
           const kind = this.registry.get(element.kind);
           if (kind === undefined) return [];
@@ -3206,4 +3214,64 @@ export class ProjectSession {
     }
     for (const listener of [...this.#listeners]) listener(this.#snapshot);
   }
+}
+
+/** Kind id of potions (ADR 0063 D1), matched by string. */
+const POTION_KIND = 'msm:potion';
+
+/**
+ * `problems` without those of elements `project` has and `lowered` (the project an export
+ * lowers) has not: an element left out of an export cannot block it.
+ */
+function droppedElementProblems(
+  problems: readonly Problem[],
+  project: Project,
+  lowered: Project,
+): Problem[] {
+  if (lowered === project) return [...problems];
+  const kept = new Set(projectElements(lowered).map((element) => element.id));
+  const all = new Set(projectElements(project).map((element) => element.id));
+  return problems.filter(
+    (problem) =>
+      problem.elementId === undefined || kept.has(problem.elementId) || !all.has(problem.elementId),
+  );
+}
+
+/**
+ * `project` without its `msm:potion` elements (the same object when it has none): what the
+ * vanilla pack exports lower (ADR 0063 D6). A data pack cannot register a potion, and a
+ * brewing recipe naming an unknown potion makes the game reject the whole data pack (finding
+ * P8 on both targets), so the potions' recipes and name keys go only into the mod jar.
+ *
+ * @param project - The project.
+ */
+export function withoutPotions(project: Project): Project {
+  if (!project.namespaces.some((ns) => ns.elements.some((e) => e.kind === POTION_KIND))) {
+    return project;
+  }
+  return {
+    ...project,
+    namespaces: project.namespaces.map((namespace) => ({
+      ...namespace,
+      elements: namespace.elements.filter((element) => element.kind !== POTION_KIND),
+    })),
+  };
+}
+
+/**
+ * `report` with the `blocks-items.potion-needs-jar` warning (ADR 0063 D6) added once when
+ * `project` has `msm:potion` elements: a vanilla data pack cannot register a potion, so its
+ * brewing recipes do nothing. The exporter package cannot import the plugin, so the session
+ * adds it to the vanilla data pack export (zip, world install and both packs); the Fabric mod
+ * jar does not get it.
+ *
+ * @param report - The data pack export report.
+ * @param project - The exported project.
+ */
+export function withPotionNeedsJar(report: ExportReport, project: Project): ExportReport {
+  const potion = project.namespaces
+    .flatMap((namespace) => namespace.elements)
+    .find((element) => element.kind === POTION_KIND);
+  if (potion === undefined) return report;
+  return { ...report, problems: [...report.problems, potionNeedsJarProblem(potion.id)] };
 }

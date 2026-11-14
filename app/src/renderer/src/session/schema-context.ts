@@ -6,7 +6,8 @@
  */
 
 import { defaultKindRegistry, type Project, parseJsonPointer } from '@msm/core';
-import type { Json, OutputFile, Plugin, Target } from '@msm/plugin-api';
+import type { Element, Json, OutputFile, Plugin, Target } from '@msm/plugin-api';
+import { potionVariantIds } from '@msm/plugin-blocks-items';
 import {
   BUILT_IN_EXTENSIONS,
   createRegistryIndex,
@@ -168,7 +169,9 @@ function sortedRecord(map: Map<string, string[]>): Record<string, string[]> {
  * `"item": false` ({@link blockHasItem}). An `msm:entity` element (registry `entity_type`)
  * also registers its spawn egg `<id>_spawn_egg` in `item` unless `spawn_egg` is `false`
  * ({@link entityHasSpawnEgg}); `msm:geo_model` and `msm:animation` ids land in their own
- * plain registries, which no vanilla schema reads. Only registries with at least one id appear. Sorted,
+ * plain registries, which no vanilla schema reads. An `msm:potion` element (registry `potion`)
+ * also registers its `long_` and `strong_` versions ({@link potionRegistryIds}, ADR 0063 D9).
+ * Only registries with at least one id appear. Sorted,
  * namespaced, without duplicates.
  *
  * @param project - The project.
@@ -197,6 +200,9 @@ export function dataRegistryIds(
         if (element.kind === ENTITY_KIND && entityHasSpawnEgg(element.data)) {
           add(ITEM_REGISTRY, spawnEggId(element.id));
         }
+        if (element.kind === POTION_KIND) {
+          for (const id of potionRegistryIds(element)) add(registered, id);
+        }
         continue;
       }
       const registry = registered ?? defaultKindRegistry(element.kind);
@@ -215,6 +221,22 @@ export function dataRegistryIds(
 const BLOCK_REGISTRY = 'block';
 const ITEM_REGISTRY = 'item';
 const ENTITY_KIND = 'msm:entity';
+const POTION_KIND = 'msm:potion';
+
+/**
+ * The `potion` registry ids an `msm:potion` element registers (ADR 0063 D3, D9): its own id
+ * plus `<ns>:long_<path>` and `<ns>:strong_<path>` when it has those versions, as the plugin's
+ * lowering writes them. Only the element id when its data or id cannot be lowered.
+ *
+ * @param element - The `msm:potion` element.
+ */
+export function potionRegistryIds(element: Element): string[] {
+  try {
+    return potionVariantIds(element);
+  } catch {
+    return [element.id];
+  }
+}
 
 /** The spawn egg item id of an entity: `<id>_spawn_egg`. */
 export function spawnEggId(entityId: string): string {

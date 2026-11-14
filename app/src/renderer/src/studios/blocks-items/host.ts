@@ -1,12 +1,14 @@
 /**
  * What the blocks and items Studios ask of the host beyond `StudioProps`: project texture
  * thumbnails, opening the texture editor on a project texture (painting an effect icon,
- * ADR 0055 D6) and the Block Studio's texture layer hint (ADR 0059 D4). `App` provides it around the Form tab; without a provider the Effect Studio
+ * ADR 0055 D6), the Block Studio's texture layer hint (ADR 0059 D4) and adding an element
+ * ("Make a potion", ADR 0063 D9). `App` provides it around the Form tab; without a provider the Effect Studio
  * shows no thumbnail and points to "New texture…" instead of painting.
  *
  * @packageDocumentation
  */
 
+import type { Json, ResourceLocation } from '@msm/core';
 import { createContext, useContext } from 'react';
 
 /** The host actions of the blocks and items Studios. */
@@ -27,6 +29,11 @@ export interface BlocksItemsStudioHost {
   textureLayers?(
     model: string,
   ): Promise<readonly { texture: string; layer: 'solid' | 'cutout' | 'translucent' }[]>;
+  /**
+   * Adds a new element in one undo step and opens it ("Make a potion" in the Effect Studio,
+   * ADR 0063 D9). Absent where the host cannot add elements.
+   */
+  addElement?(input: { id: ResourceLocation; kind: string; data: Json }): void;
 }
 
 /** Provided by `App`; `null` outside it (tests, previews). */

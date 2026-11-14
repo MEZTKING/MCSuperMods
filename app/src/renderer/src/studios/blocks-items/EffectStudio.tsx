@@ -9,6 +9,8 @@
  *   interval and "Stronger levels act faster") and "When it ends" (`msm:on_end`), each picking
  *   or creating an event of the shared events editor.
  * - A live preview: the icon with the name in its category's colour and a per-level summary.
+ * - "Make a potion" (ADR 0063 D9): adds an `msm:potion` of this effect in one undo step and
+ *   opens it; the potions that already use the effect are listed.
  *
  * Choices come from the schema; everything else stays behind "Advanced (all fields)".
  *
@@ -16,7 +18,7 @@
  */
 
 import type { Json } from '@msm/core';
-import { Paintbrush, Plus, X } from 'lucide-react';
+import { FlaskConical, Paintbrush, Plus, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { pngDataUrl } from '../../components/AssetList';
 import { Button, iconButtonClass } from '../../components/ui/Button';
@@ -52,6 +54,7 @@ import {
 } from './effect-model';
 import { useBlocksItemsStudioHost } from './host';
 import { CheckField, EventSelect, ProblemsAt, TextField } from './parts';
+import { newPotionFor, POTION_KIND } from './potion-model';
 
 type JsonObject = { [key: string]: Json };
 
@@ -444,6 +447,43 @@ export function EffectStudio(props: StudioProps) {
     </Section>
   );
 
+  const potions = project.namespaces
+    .flatMap((namespace) => namespace.elements)
+    .filter(
+      (entry) =>
+        entry.kind === POTION_KIND &&
+        Array.isArray(asObject(entry.data).effects) &&
+        (asObject(entry.data).effects as Json[]).some(
+          (effect) => asObject(effect).id === element.id,
+        ),
+    )
+    .map((entry) => entry.id)
+    .sort();
+  const addElement = host?.addElement;
+  const potionSection = (
+    <Section title="Potion" testId="effect-potion">
+      <p className="text-muted text-xs">
+        A potion gives this effect when drunk, thrown or shot on an arrow, and can be brewed in a
+        brewing stand. Potions need the Fabric mod export.
+      </p>
+      {potions.length > 0 && (
+        <p className="text-xs" data-testid="effect-potions">
+          Potions with this effect: {potions.join(', ')}
+        </p>
+      )}
+      <Button
+        className="self-start text-xs"
+        data-testid="effect-make-potion"
+        disabled={addElement === undefined}
+        title={addElement === undefined ? 'Not available here' : undefined}
+        onClick={() => addElement?.(newPotionFor(project, element))}
+      >
+        <FlaskConical size={12} aria-hidden />
+        Make a potion
+      </Button>
+    </Section>
+  );
+
   return (
     <section aria-label="Effect Studio" data-testid="effect-studio" className="flex flex-col gap-4">
       <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="effect-advanced-toggle" />
@@ -453,6 +493,7 @@ export function EffectStudio(props: StudioProps) {
       {iconSection}
       {statSection}
       {behaviour}
+      {potionSection}
       <EventsEditor
         element={element}
         problems={problems}
