@@ -34,6 +34,21 @@ Facts read on 2026-11-14 with `javap` (JDK 25) over the Loom-cached merged jars 
 - Vanilla pack safety ([ADR 0066](0066-vanilla-pack-safety.md)): a tree feature naming project logs and leaves is left out of vanilla data packs, and so is the placed feature that names it (biome additions live in the `msm` layer and never reach a vanilla pack); the seeds item is mod-only through `blockItemId`. No new rule.
 - The runtime's client entrypoint grows from renderers to renderers plus block tints.
 
+## Findings
+
+Recorded at close (2026-11-14) from B258–B281:
+
+- **Leaf decay tag.** Vanilla leaves look for `#minecraft:prevents_nearby_leaf_decay`, not `#minecraft:logs` directly; on both targets that tag contains `#minecraft:logs`, so a trunk in `minecraft:logs` still keeps leaves alive and `blocks-items.leaves-will-decay` (D6, D7) stays right.
+- **Pistons.** Crops, saplings and leaves use vanilla's push reaction for plants: a piston pops them (they break and drop) instead of moving them.
+- **Villagers on 26.4.** `HarvestFarmland` behaves the same on 26.4-snapshot-7 (fact F16 of the plan, verified in B271): farmers harvest any `CropBlock` at its maximum age on farmland and replant seeds from `#minecraft:villager_plantable_seeds`.
+- **No `random_patch` in 26.x.** The feature type is gone, so wild crop patches (ADR 0069 D1) are a `minecraft:simple_block` feature of the crop at its maximum age with a vanilla-shaped placed feature (count, rarity, height map, `block_predicate_filter`) and a project soil tag holding farmland and grass.
+- **Seeds names.** The seeds item takes the block's display name (`item.id` has no name of its own; the crop block is named after its seeds). Separate block and item names are a follow-up of the format.
+- **Leaves classes.** Three runtime classes: tinted (`TintedParticleLeavesBlock`), untinted with a `falling_particle` (`UntintedParticleLeavesBlock`) and plain; seam `registry/Leaves` for 26.4's `Optional` ambient sound player. Constant tints are registered with full alpha (`0xFF` added to the RGB value). The leaves item always has a constant tint for a tinted block; there is no field to turn it off yet.
+- **Saplings.** Seam `registry/TreeGrowers` (26.3: the grower is named after the sapling id); `SaplingCheck` warns once per missing tree feature at server start (D4).
+- **Defensive runtime rules.** A `bonemeal_growth` with `min` above `max` is a validator error and the runtime swaps the bounds; `stage_heights` of the wrong length is a validator warning and the runtime falls back to vanilla's ramp. Crop stage models spread over the ages by `floor(age * k / ages)`; the crop's item falls back to the last stage texture.
+- **Eject differences** (26.3 generator, B276): a `falling_particle` with options stops start-up instead of being dropped with an error; a wrong-length `stage_heights` and a particle on tinted leaves are silent. The client entrypoint registers leaf tints. The generated project was started on a real 26.3 Fabric server without the runtime.
+- GameTests grew to 239 per variant (B271); the leaf tint itself is an in-game check (audit L16).
+
 ## Status
 
-Proposed (2026-11-14).
+Accepted (2026-11-14). Defaults the user may veto: "Villagers plant it" on by default (`villager_plantable`, D3); the leaves item tint (vanilla's default foliage colour for `foliage`, D6); crop `max_age` 7 and vanilla's stage heights and bone meal range.

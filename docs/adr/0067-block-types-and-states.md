@@ -46,6 +46,22 @@ Facts read on 2026-11-14 with `javap` (JDK 25) over the Loom-cached merged jars 
 - Vanilla pack safety ([ADR 0066](0066-vanilla-pack-safety.md)) needs no new rule: family blocks are mod-only ids, so their recipes and loot are left out of vanilla data packs and their tag entries (including the behaviour tags of D6) become `required: false`.
 - A project with types needs the runtime release that ships this.
 
+## Findings
+
+Recorded at close (2026-11-14) from B258–B281 (commits 2f1475c to 95e88fe):
+
+- **No Fabric flammability registry on 26.4.** The 26.4-snapshot-7 build of Fabric API has no `fabric-content-registries-v0`, so no `FlammableBlockRegistry` (fact F12 of the plan, now settled). `msm:flammable` goes through a seam, `registry/Flammability`: 26.3 calls Fabric's `FlammableBlockRegistry.add(block, burn_odds, ignite_odds)`, 26.4 calls vanilla `FireBlock.setFlammable` by reflection; a reflection failure is a load error naming the block, and the block still registers. Accepted as it is; if a later 26.4 build breaks the reflection, replace it with an access widener. D3 and D4 read with this seam.
+- **Flammability names.** The format's `burn_odds` is vanilla's `igniteOdds` and `ignite_odds` is vanilla's `burnOdds`: the meanings documented in D3 are right (planks 5 and 20), but the names are swapped against Mojang's parameter names. The guide page says so; the format is not renamed.
+- **Lava.** `ignitedByLava` comes only from `msm:flammable`, so wooden doors, trapdoors and pressure plates in the templates and flows carry `msm:flammable` like vanilla (the Wood set gives door, trapdoor and plate 0 and 0, so lava ignites them while fire does not spread through them).
+- **Set types.** Seam `registry/BlockSetTypes`: `wood` is `OAK` on 26.3 and `DEFAULT_WOOD` on 26.4. `gold` doors and trapdoors open only by redstone, as vanilla's `GOLD` set type (D2). Doors register a `DoubleHighBlockItem`, in the runtime and the eject.
+- **Item tags of pressure plates.** Vanilla has no `pressure_plates` or `stone_pressure_plates` item tag on either target, only `wooden_pressure_plates` (d63671d, D6).
+- **Placement.** `directional` blocks are placed like a dropper (facing back towards the player: `getNearestLookingDirection().getOpposite()`), not like an observer. Stripping copies every state property the two blocks share. Stairs take the definition's own properties; explosion resistance comes from the base block through vanilla's `StairBlock`.
+- **Fill rule** (95e88fe, found by the families e2e): an empty texture slot takes `all` ("Every face") first; without it a slab's or stairs' empty top or bottom takes `side`, and anything else the first texture given (D7).
+- **Model slots** are `BLOCK_TYPE_MODEL_SLOTS` in `blocks-items/src/lowering/types/index.ts`; a required slot left empty takes the first model. The door's item model uses the `bottom` texture (no `textures.item` yet); a wall's `top` and `bottom` have no effect, since vanilla's wall templates take one `wall` texture. `blockGeneratedModelIds(blockId, data)` names every model lowering generates, so registry views (app, library test) know them (B273a).
+- **Validators.** The block type and plant codes of D8 and ADR 0068 D7 are 18 `blocks-items.*` codes in `validators-types.ts` (`BLOCK_TYPE_PROBLEM_CODES`); typed blocks are exempt from `missing-model`, and the family types from `model-not-cube`.
+- **Runtime.** `BlockBehaviourDriver` was extracted from `MsmBlock` first with no behaviour change (B260); a component a type does not allow is dropped with a load error and the block still registers (B261). GameTests grew from 193 to 221 per variant with the building and redstone types (B263, B267).
+- **Eject differences** (26.3 generator, B274): a stairs base that is neither a project block nor registered throws at start-up instead of skipping the stairs with a load error; an unknown `msm:strippable` target is silent; `msm:shape` or `msm:redstone` on a family type fails generation instead of being dropped. Vanilla classes are used directly where they are public and need no behaviour; stripping is a generated `BlockStripping` class. The ejected sample mod builds in CI and passes the 15 block type parity tests (83 sample mod parity tests on the content jar and the ejected jar).
+
 ## Status
 
-Proposed (2026-11-14).
+Accepted (2026-11-14). Defaults the user may veto: the `type` field on `msm:block` instead of a kind per family (D1); the stairs base `minecraft:stone` (D2); fences join `#minecraft:wooden_fences` when their sound type is a wood sound (D6); button press times 30 and 20 ticks as vanilla.

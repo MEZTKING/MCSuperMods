@@ -3164,3 +3164,23 @@ Decisions
 
 Next
 - Wave 1: B258 format, B259 plugin API and target facts, B260 runtime driver refactor. The user may veto the defaults listed in ADR 0069 and the `type` field design before wave 2.
+
+## 2026-11-14 — orchestrator — block types, crops, saplings and trees closed
+
+What
+- Closed the batch B258–B281 (commits 2f1475c to 95e88fe): ADRs 0067, 0068 and 0069 are Accepted (2026-11-14), each with a "Findings" section from the plan's implementation notes. 0067: 26.4's Fabric API has no `fabric-content-registries-v0`, so `msm:flammable` goes through the seam `registry/Flammability` (26.3 Fabric registry, 26.4 `FireBlock.setFlammable` by reflection); the format's `burn_odds` and `ignite_odds` names are swapped against Mojang's; lava ignition only with `msm:flammable`; gold doors redstone-only; no `pressure_plates` or `stone_pressure_plates` item tag; directional placement is dropper-like; the texture fill rule; model slots; eject differences (missing stairs base, unknown strippable target, shape or redstone on a family type). 0068: leaves look for `#minecraft:prevents_nearby_leaf_decay` (contains `#minecraft:logs`); pistons pop plants; villager farming is the same on 26.4; no `random_patch` in 26.x (wild crops are `simple_block`); seeds take the block's name; three leaves classes and full-alpha constant tints; defensive bone meal and stage height rules; eject differences. 0069: one id cannot be both a block tag and an item tag (the Wood set's log tags); vanilla fire odds per member; the Crop flow's optional seeds name failed validation (fixed in 95e88fe); Creator names from `display_name` (66214a6); generated model ids in registry views (B273a).
+- ADR 0066 (vanilla pack safety) Accepted: the rule moved into `@msm/exporters` in 381cddf, and CI's library vanilla server check, mod projects included, passed on both targets in every run since (runs 418 to 431; the red runs in that window failed in e2e or a parity test, checked job by job).
+- DESIGN: §8 (Block Studio types, plant sections, Tree Studio, four flows, templates), §9 (vanilla pack safety as accepted; `BlockFacts`), §10 (`BlockBehaviourDriver`, family driver classes, stripping, the four seams, sapling warning, leaf tint), §11 (`type`, per-type fields, `item.id`, the two components), §12 (block types in the eject); 19 H2 headings kept. ROADMAP: new add-on section with B258–B281 ticked, the in-game check, deferred items and follow-ups; the Post-1.0 block families idea marked done; Milestone Log row. Coverage audit: B2 and B12 closed with commits and what stays deferred, L5, S10 and S14 closed, the Blocks, block states and vanilla modification rows updated. HANDOFF rewritten (state, in-game checks, vetoable defaults, follow-ups, next backlog, lessons). Status lines in root, docs and app `CLAUDE.md`. `docs/PLAN-blocks-families-crops.md` deleted (no links pointed at it).
+- Counts: 93 kinds, 169 templates (resourcepack 16, datapack 65, structures 9, worldgen 22, blocks-items 45, models-anim 3, entities 3, scripting 6), 36 starters, 118 examples, 64 placeholder patterns; runtime 239 GameTests per variant (238 `@GameTest` methods) and 414 JUnit; parity sample mod 83 (block types 15), sample mob 10, sample script 15.
+
+Decisions
+- ADR 0066 is accepted now: its stated condition (rule in `@msm/exporters`, CI covering mod projects on both targets) is met and verified on CI.
+- The 26.4 flammability reflection is accepted as it is; an access widener replaces it only if a 26.4 build breaks it.
+- The format keeps `burn_odds` and `ignite_odds` as named; the guide explains the mapping.
+- The full clean-worktree test run of this close is the main session's (running in parallel); its total goes into the Milestone Log row before the push to `main`.
+
+Next
+- Main session: record the clean run, push, wait for green CI, fast-forward `main`.
+- User: the "Block types and plants" in-game checks, the leaf tint, Creator sets, villagers; the vetoable defaults of ADRs 0067–0069.
+- Follow-ups: dock preview for typed blocks, a general item id field, separate crop block and item names, the leaves item tint switch and `textures.item`, `create_texture` accent, `makeMockServerPlayerInLevel`, the stale vendored mcdoc.
+- Backlog: B7 mob expansion, then B8, B13, B14, B15.

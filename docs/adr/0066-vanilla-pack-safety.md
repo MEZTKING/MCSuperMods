@@ -58,6 +58,14 @@ So today any project with a block (its loot table names the block item) exports 
 - Worldgen and dimensions are in the list (verified 2026-11-14): a modded ore feature is left out of the vanilla data pack, and so is everything that names it down to the biome and dimension. A structure template (`.nbt`) naming a modded block is not scanned: the game loads it and places air. `instrument` fails on an unknown sound event, which project sounds already cover ([ADR 0057](0057-project-sound-events-and-mob-sounds.md) D3); `trial_spawner` loads with unknown entities and loot tables, so neither is in the list.
 - A worldgen file is scanned generically too, so a project worldgen id equal to a mod-only id (a biome `demo:frost` next to an effect `demo:frost`) leaves out the files that name it.
 
+## Findings
+
+Recorded at acceptance (2026-11-14):
+
+- **The rule lives in `@msm/exporters`** (381cddf): `vanilla-packs/mod-only.ts` as in D1; the app session and the library test only supply the mod-only ids from their registry views. Function tag entries naming a function D5 warns about became optional in the same change (D4).
+- **CI covers mod projects.** Since 381cddf the `engine-mod` job's "Headless vanilla server check (library data packs)" loads the vanilla data pack of every starter, example and mirror project, those with mod content included, on a vanilla server of each target. It passed on both targets in every CI run since then (runs 418 to 431, including the main runs of B268 and B267); the red runs in that window failed in e2e or a parity GameTest, never in this check.
+- **Block types and plants** (ADRs 0067–0069) needed no new rule: every typed block, seeds item and tree is mod-only; the one change was that a block item can have its own id, so `blockItemId` feeds the mod-only ids (a82139a, `packages/exporters/test/block-item-id.test.ts`). The families e2e exports a Wood set's vanilla data pack (f698629).
+
 ## Status
 
-Proposed (2026-11-14).
+Accepted (2026-11-14).

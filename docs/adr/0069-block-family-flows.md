@@ -25,6 +25,19 @@ With block types ([ADR 0067](0067-block-types-and-states.md)) and plants ([ADR 0
 - The asar budget (audit L15) grows by the flows, templates and examples; the briefs measure it with `tools/check-size`.
 - The guide gains one page for block types, families and plants.
 
+## Findings
+
+Recorded at close (2026-11-14) from B273, B275, B277–B279 and the fixes after them:
+
+- **One id cannot be both a block tag and an item tag.** Element ids are unique across kinds, so the Wood set writes the item tag `<ns>:<wood>_logs`, the item tag `minecraft:logs_that_burn` including it, the block tag `minecraft:logs` listing the logs directly, and the item tags `minecraft:planks`, `minecraft:wooden_stairs` and `minecraft:wooden_slabs` (D1 amended: there is no block tag `<ns>:<wood>_logs`).
+- **Fire odds per member** follow vanilla: logs and wood 5 and 5, planks, stairs, slabs, fences and gates 5 and 20, leaves 30 and 60; door, trapdoor and plate 0 and 0, so lava still ignites them (ADR 0067 findings).
+- **Wild crops** use `minecraft:simple_block`, since 26.x has no `random_patch` (ADR 0068 findings; D1 amended).
+- **Default answers.** The Crop flow did not create with its default answers: its optional seeds name (empty by default, meaning "<crop> seeds") failed the "Enter a value." check. A string parameter whose pattern accepts the empty string is now optional (`wizard-model.ts`, 95e88fe).
+- **Names in the Creator.** Previews and Stats named members only from lang elements, so set flows showed id words; they now read the block's or item's own `display_name` (lang elements still first), and seeds take the crop's name (66214a6).
+- **Generated models in registry views.** Typed blocks showed `schema.unknown-id` for their generated models until the app and the library test counted `blockGeneratedModelIds` (B273a).
+- **Tree ids.** The worldgen template "Tree for a sapling" derives `<ns>:<base>_log` and `<base>_leaves` from the tree id `<base>_tree`; the flows use the same names.
+- **Counts at close:** 36 starters (24 Creator flows), 118 examples, 64 placeholder patterns, 17 block type templates plus "Tree for a sapling"; the "Simple block" flow gained a placement option (Turns to face the player, Placed like a log). The families e2e (B277) covers Wood set create, a Block Studio edit kept on reopen in the Creator, jar and vanilla pack export, undo, the Crop flow and New tree. The sample mod gained a maple wood set, ruby bricks and ruby berries (B278).
+
 ## Status
 
-Proposed (2026-11-14). Defaults the user may veto: the flow names, the wood set's default members and leaf tint, the default tree shape, "Villagers plant it" on by default.
+Accepted (2026-11-14). Defaults the user may veto: the flow names "Wood set", "Stone set", "Crop" and "Tree"; the Wood set's default members (all fifteen) and untinted, pre-coloured leaves by default; the default tree shape (straight, as an oak); "Villagers plant it" on by default.
