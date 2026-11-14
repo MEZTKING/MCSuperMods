@@ -54,8 +54,8 @@ public final class MsmEntityRegistrar {
     private record LateCheck(String file, String what, String id) {}
 
     private static final Map<EntityType<?>, EntityDefinition> DEFINITIONS = new IdentityHashMap<>();
-    private static final Map<Identifier, EntityType<MsmEntity>> TYPES = new LinkedHashMap<>();
-    private static final List<EntityType<MsmEntity>> GEO_TYPES = new ArrayList<>();
+    private static final Map<Identifier, EntityType<? extends Mob>> TYPES = new LinkedHashMap<>();
+    private static final List<EntityType<? extends Mob>> GEO_TYPES = new ArrayList<>();
     private static final List<LateCheck> LATE = new ArrayList<>();
 
     private MsmEntityRegistrar() {}
@@ -65,12 +65,15 @@ public final class MsmEntityRegistrar {
     }
 
     /** Every entity type registered from definitions, by id. */
-    public static Map<Identifier, EntityType<MsmEntity>> types() {
+    public static Map<Identifier, EntityType<? extends Mob>> types() {
         return Collections.unmodifiableMap(TYPES);
     }
 
-    /** Types whose instances are {@code MsmGeoEntity}; the client entrypoint gives them a GeckoLib renderer. */
-    public static List<EntityType<MsmEntity>> geoTypes() {
+    /**
+     * Types whose instances are geo bodies ({@code MsmGeoEntity}, and from B286 on {@code MsmGeoAnimal} and
+     * {@code MsmGeoMonster}); the client entrypoint gives them a GeckoLib renderer.
+     */
+    public static List<EntityType<? extends Mob>> geoTypes() {
         return Collections.unmodifiableList(GEO_TYPES);
     }
 
@@ -108,7 +111,8 @@ public final class MsmEntityRegistrar {
                     throw new DefinitionException("spawn egg id " + eggId + " is already registered");
                 }
                 MsmRegistrar.checkEvents(raw, def.events(), errors);
-                EntityType<MsmEntity> type = register(raw.id(), def, GeckolibEntities.factory());
+                // Every mob is the GeckoLib creature body until the bases arrive (B286).
+                EntityType<? extends Mob> type = register(raw.id(), def, GeckolibEntities.factory());
                 GEO_TYPES.add(type);
                 registered.add(raw.id());
                 if (def.spawnEgg().isPresent()) {
@@ -128,13 +132,13 @@ public final class MsmEntityRegistrar {
         return registered;
     }
 
-    private static EntityType<MsmEntity> register(Identifier id, EntityDefinition def, EntityType.EntityFactory<MsmEntity> factory) {
+    private static <T extends Mob> EntityType<T> register(Identifier id, EntityDefinition def, EntityType.EntityFactory<T> factory) {
         ResourceKey<EntityType<?>> key = ResourceKey.create(Registries.ENTITY_TYPE, id);
         EntityDefinition.Spawn spawn = def.spawn().orElse(null);
         SpawnPlacementType placement = spawn == null ? SpawnPlacementTypes.ON_GROUND : placement(spawn.placement());
         Heightmap.Types heightmap = spawn == null ? Heightmap.Types.MOTION_BLOCKING_NO_LEAVES : heightmap(spawn.heightmap());
-        SpawnPlacements.SpawnPredicate<MsmEntity> rule = rule(spawn == null ? EntityDefinition.Rule.MOB : spawn.rule());
-        EntityType.Builder<MsmEntity> builder = FabricEntityType.Builder.createMob(factory, category(def.category()), mob -> mob
+        SpawnPlacements.SpawnPredicate<T> rule = rule(spawn == null ? EntityDefinition.Rule.MOB : spawn.rule());
+        EntityType.Builder<T> builder = FabricEntityType.Builder.createMob(factory, category(def.category()), mob -> mob
                         .defaultAttributes(() -> attributes(def.components()))
                         .spawnPlacement(placement, heightmap, rule))
                 .sized(def.size().width(), def.size().height());
@@ -144,7 +148,7 @@ public final class MsmEntityRegistrar {
         if (def.components().movementOrDefault().fireImmune()) {
             builder = builder.fireImmune();
         }
-        EntityType<MsmEntity> type = builder.build(key);
+        EntityType<T> type = builder.build(key);
         // The definition must be known before the first instance exists: registerGoals runs in the constructor.
         DEFINITIONS.put(type, def);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, key, type);
@@ -190,7 +194,7 @@ public final class MsmEntityRegistrar {
      * Vanilla spawn checks. {@code Monster.checkAnyLightMonsterSpawnRules} needs a {@code Monster}
      * type, so {@code any_light_monster} repeats its body: not peaceful, plus the mob rule.
      */
-    private static SpawnPlacements.SpawnPredicate<MsmEntity> rule(EntityDefinition.Rule rule) {
+    private static <T extends Mob> SpawnPlacements.SpawnPredicate<T> rule(EntityDefinition.Rule rule) {
         return switch (rule) {
             case MOB -> Mob::checkMobSpawnRules;
             case MONSTER -> Monster::checkMonsterSpawnRules;
@@ -201,7 +205,7 @@ public final class MsmEntityRegistrar {
         };
     }
 
-    private static void registerEgg(RawDefinition raw, Identifier eggId, EntityDefinition.SpawnEgg settings, EntityType<MsmEntity> type) {
+    private static void registerEgg(RawDefinition raw, Identifier eggId, EntityDefinition.SpawnEgg settings, EntityType<? extends Mob> type) {
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, eggId);
         SpawnEggItem egg = Registry.register(BuiltInRegistries.ITEM, key, new SpawnEggItem(new Item.Properties().setId(key).spawnEgg(type)));
         // CreativeModeTabs.SPAWN_EGGS is private in vanilla 26.3 and widened by Fabric API's creative tab module.
@@ -209,7 +213,7 @@ public final class MsmEntityRegistrar {
     }
 
     /** {@code #ns:tag} entries are biome tags, other entries biome ids; the selector is their union. */
-    private static void addSpawn(RawDefinition raw, EntityDefinition.Spawn spawn, EntityDefinition def, EntityType<MsmEntity> type,
+    private static void addSpawn(RawDefinition raw, EntityDefinition.Spawn spawn, EntityDefinition def, EntityType<? extends Mob> type,
             List<String> errors) {
         if (spawn.minGroup() > spawn.maxGroup()) {
             String message = raw.describe() + ": spawn: min_group " + spawn.minGroup() + " is above max_group " + spawn.maxGroup()

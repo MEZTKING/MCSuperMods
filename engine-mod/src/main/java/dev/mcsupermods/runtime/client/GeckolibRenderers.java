@@ -3,11 +3,11 @@ package dev.mcsupermods.runtime.client;
 import com.geckolib.renderer.GeoEntityRenderer;
 import dev.mcsupermods.runtime.MsmRuntime;
 import dev.mcsupermods.runtime.components.EntityComponents;
-import dev.mcsupermods.runtime.registry.MsmEntity;
 import dev.mcsupermods.runtime.registry.MsmEntityRegistrar;
 import dev.mcsupermods.runtime.registry.MsmGeoEntity;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 
 /** Registers a {@link GeoEntityRenderer} per geo entity type. Called only when GeckoLib is loaded. */
 final class GeckolibRenderers {
@@ -16,8 +16,9 @@ final class GeckolibRenderers {
     // Registration goes through the version seam EntityRendererRegistration (src/mc/<mc>/java, ADR 0038 D2).
     @SuppressWarnings("unchecked")
     static void registerAll() {
-        for (EntityType<MsmEntity> type : MsmEntityRegistrar.geoTypes()) {
-            // Geo types are built with MsmGeoEntity::new (GeckolibEntities), so the cast holds.
+        for (EntityType<? extends Mob> type : MsmEntityRegistrar.geoTypes()) {
+            // Geo types are built with MsmGeoEntity::new (GeckolibEntities), so the cast holds until B286 registers
+            // MsmGeoAnimal and MsmGeoMonster types (MsmGeoModel is typed to MsmGeoEntity).
             EntityType<MsmGeoEntity> geoType = (EntityType<MsmGeoEntity>) (EntityType<?>) type;
             EntityComponents.AnimatedModel def = MsmEntityRegistrar.definition(type).orElseThrow().components().animatedModel();
             MsmGeoModel model = new MsmGeoModel(def);
