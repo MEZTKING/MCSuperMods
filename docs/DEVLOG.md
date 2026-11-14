@@ -3467,3 +3467,25 @@ Decisions
 
 Next
 - B327/B328: status lines name sample machines parity (19 tests) and the CI job's new steps in `engine-mod/CLAUDE.md` and the root `CLAUDE.md`.
+
+## 2026-11-14 — orchestrator — containers and machines closed
+
+What
+- Closed the containers and machines batch B309–B328 (commits 3ed4873 to f66f59a): ADRs 0074, 0075 and 0076 stay Accepted (2026-11-14) and each gains a "Findings" section from the plan's implementation notes. 0074: no seam and no Mixin; the `MsmBlock.Setup` and `BlockEntityHooks` signatures; `open` on every layout and on the `block` type; the layout dispatcher in the format; F19 verified (Fabric transfer wraps MSM containers through the hopper faces, C17); the holder's put-in and take-out rules; the keep-contents loot preset copies four components (`minecraft:container_loot` too, as vanilla's shulker box; D6 corrected); `/data merge block ... {LootTable}` fills on first open; vanilla pack safety needed no rule change and F22 is confirmed (an unknown recipe `type` stops a vanilla server's whole data pack on both targets); the eject's shared classes and stricter cases; the plan's fact table (F1–F22, F19 and F22 resolved) and limits (C1–C18, C17 verified, C18 confirmed) as tables. 0075: the four cooking types as target facts, `result` count 1..99, `recipes` element-only, `checkMachine` before `checkContainer`, the `registry/machine/` classes and saved data names, `canPlaceItem` per slot, the manual-only `/reload` GameTest, recipe file names, the 12 codes with `machine-recipes-without-machine` (B319), the eject's documented differences, parity facts, counts. 0076: the Inventory section (8,991-byte lazy chunk) and its helpers, the two flows' ids, defaults and crafting recipes, the eight template ids, the three examples and the `mcfunctionIds` gap, Script API 1.2 with `set` returning a boolean and `add` ignoring faces, D6's per-element AI summary dropped (the system prompt carries the facts), the sample machines fixture, its log lines and 19 parity tests, `app.asar` 32,990,705 bytes.
+- DESIGN: §8 (Inventory section, flows, templates, examples, guide), §9 (plugin API 1.12.0 block facts; machine recipes and vanilla pack safety), §10 (block entities, `MsmContainerBlock`, storage and machine block entities, per-machine recipe types, vanilla menus only and no client code; frozen versus reloadable table rows), §11 (components row and rules), §12 (Script API 1.2, containers and machines in the eject, ejected sample machines), §16 (GameTests, CI server check and parity); 19 H2 headings kept, every `DESIGN.md#` link resolves.
+- ROADMAP: new add-on section "Containers and machines" with B309–B328 ticked, the in-game check, deferred items and follow-ups; Milestone Log row.
+- COVERAGE-AUDIT: B8 closed with its commits and what stays out; rows Recipes (custom types), Block entities and Menus and screens now "Partly"; section 2.3's block entity note and L15 (31.5 MB) updated.
+- HANDOFF rewritten (state, sample machines in-game checklist, vetoable defaults of ADRs 0074–0076, follow-ups, next backlog B13, B14, B15, lessons). Status lines in root `CLAUDE.md` (also the fixtures list), `docs/CLAUDE.md` and `engine-mod/CLAUDE.md` (sample machines parity 19 and the CI steps). `docs/PLAN-containers-machines.md` deleted; the three ADRs now point to ADR 0074's Findings instead.
+- Counts from the plugins' contributions and the sources: 94 kinds, 185 templates (resourcepack 16, datapack 66, structures 9, worldgen 22, blocks-items 53, models-anim 3, entities 10, scripting 6), 44 starters (32 Creator flows), 128 examples, 64 placeholder patterns; plugin API 1.12.0; runtime 361 GameTests per variant (plus one manual-only) and 553 JUnit; parity: sample mod 83, sample mob 10, sample script 15, sample creatures 12, sample machines 19.
+
+Decisions
+- The plan's fact table and limits live on in ADR 0074's Findings; ADRs 0075 and 0076 cite it instead of the deleted plan.
+- The keep-contents preset's fourth component is recorded as a correction of ADR 0074 D6 (the text of D6 now names it), not as a new decision: it copies vanilla's shulker box loot exactly.
+- The reserve brief B329 did not run (`app.asar` stayed under the 31.8 MB stop line); it stays the first thing to plan before the next batch that adds library content or vendored data.
+- The full clean-worktree test run of this close is the main session's.
+
+Next
+- Main session: the clean-worktree run, push, green CI, fast-forward `main`; record the totals in the Milestone Log row.
+- User: the sample machines checklist on 26.3 and 26.4 and a Creator Storage crate and Machine; the vetoable defaults of ADRs 0074–0076; the earlier mob and block checklists.
+- Follow-ups: the `machine-recipe` corpus as a Gradle test input; `mcfunctionIds` in `library.test.ts` knowing project structures; one runtime version in the Script API 1.1 and 1.2 docs if they ship together; the 70000-byte NBT string message at GameTest shutdown; a reload check that runs on its own; B329 before more asar growth.
+- Backlog: B13 custom portal block and dimension type editing, then B14 particles, then B15 client side.
