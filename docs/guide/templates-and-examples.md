@@ -4,11 +4,11 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (193) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Element templates** (199) | **Add element** (Ctrl+N) | One new element with useful starting content |
 | **Project starters** (46) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
-| **Examples** (132) | **Help → Examples…** | A commented project or element to open or copy |
+| **Examples** (134) | **Help → Examples…** | A commented project or element to open or copy |
 
-Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, and scripting plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
+Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, scripting and rules plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
 
 No starter or example contains Mojang files. Textures are small placeholder images that MCSuperMods draws itself; the music disc plays a track from your own copy of the game.
 
@@ -411,6 +411,18 @@ Scripts (`msm:script`) are TypeScript that the `msm_runtime` mod runs in the gam
 | Action handler script | `msm_script_action_handler` | `msm:script` | A named handler for the "Run script" (`run_script`) action, using the script's own id as the handler id. |
 | Full set bonus | `msm_script_full_set_bonus` | `msm:script` | Gives a bonus to players wearing a whole armour set: every second, a player in full golden armour gets Speed and Haste. Uses the player.tick event and entity equipment (runtime 1.5.1 or later). Change the item ids to your own armour. |
 | Boss bar countdown | `msm_script_boss_bar_countdown` | `msm:script` | Shows a countdown to every player as a boss bar: using an echo shard starts 30 seconds, the bar empties and turns red near the end, and a title says when time is up. Uses msm.bossBars and titles (runtime 1.5.1 or later). |
+#### Rules
+
+Rule books (`msm:rules`) give things behaviour with no code (see [Rules](rules.md)). They become events and scripts that the `msm_runtime` mod runs, so they work only in the **Fabric mod jar** export; rules with logic are not in the Java project export. The templates use only vanilla things: change the block, item or mob to your own.
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Welcome message | `msm_rules_welcome_message` | `msm:rules` | When a player joins, shows a big welcome title, a chat message and a chime. Change the words to your own. |
+| Jump pad | `msm_rules_jump_pad` | `msm:rules` | Players standing on a Slime Block are launched high into the air with a bounce sound. Change the block to your own jump pad. |
+| Lucky block | `msm_rules_lucky_block` | `msm:rules` | Breaking a Sponge is a gamble: half the time it drops one to three diamonds, otherwise a zombie appears. Change the block to your own lucky block. |
+| Healing spring | `msm_rules_healing_spring` | `msm:rules` | Players standing in water heal a little every second, with hearts around them. Change the block to make your own healing spot. |
+| Click counter | `msm_rules_click_counter` | `msm:rules` | Counts how many times each player has used a Lever and shows the count above the hotbar. Change the block to your own. |
+| Mob drops a reward | `msm_rules_mob_reward` | `msm:rules` | Zombies drop an emerald one time in ten when they die. Change the mob to your own and the item to your own reward. |
 
 ## Project starters
 
@@ -536,7 +548,7 @@ The script examples use `msm:script`, which runs only in the Fabric mod jar (see
 
 ### All examples
 
-There is one example for each of the 96 element kinds, thirty-two more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; containers and machines: a loot crate in a structure, an ore crusher and a shulker crate; portals: a two-way sky portal; particles: a firefly jar; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn, Pet, Farm animal, Mount, Flying mob, Water mob, Boss, Storage crate, Machine, Portal, Particle) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 97 element kinds, thirty-three more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; containers and machines: a loot crate in a structure, an ore crusher and a shulker crate; portals: a two-way sky portal; particles: a firefly jar; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar; rules: a guard mob), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn, Pet, Farm animal, Mount, Flying mob, Water mob, Boss, Storage crate, Machine, Portal, Particle) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -667,6 +679,8 @@ There is one example for each of the 96 element kinds, thirty-two more behaviour
 | Script: full set bonus | `example_msm_full_set_bonus` | Scripts | `msm:script` | A script that checks the armour of every player once a second and gives Haste and Luck to those wearing a full set of golden armour. |
 | Script: teleport staff | `example_msm_teleport_staff` | Scripts | `msm:script` | A script that turns a breeze rod into a teleport staff: use it to blink to the block you look at, sneak-use it to mark home or, from another dimension, to go home. |
 | Script: boss fight bar | `example_msm_boss_fight_bar` | Scripts | `msm:script` | A script that summons a ravager boss with a nether star and shows its health on a boss bar to every player, with a title and a reward when it falls. |
+| Rules: a lucky block | `example_msm_rules` | Rules | `msm:rules` | A lucky block and a lucky coin made with rules, no code: breaking the block is a gamble between a few coins and a silverfish, a counter keeps score, and spending a coin gives Luck. |
+| Rules: a guard mob | `example_msm_rules_guard_mob` | Rules | `msm:rules` | A guard made with rules, no code: every five seconds it lights up each player within 12 blocks and warns them, and it calls out when hurt. |
 | Custom ore project | `starter_custom_ore` | Starters | `msm:block` | The Custom ore starter: a real ruby ore block, the ruby item and a block of ruby, with loot, recipes, a tag, advancements and the mod metadata. |
 | Recipe pack project | `starter_recipe_pack` | Starters | `minecraft:recipe` | The Recipe pack starter: one recipe of each common type and an advancement. |
 | Custom music disc project | `starter_music_disc` | Starters | `minecraft:jukebox_song` | The Custom music disc starter: a jukebox song, its disc model and texture. |

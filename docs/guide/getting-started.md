@@ -171,6 +171,9 @@ Press **Ctrl+Shift+P** to open the command palette and type part of a command's 
 | Ctrl+N | Add element (template picker) |
 | F2 | Rename the selected element (also updates every reference to it) |
 | Ctrl+Shift+P | Command palette |
+| F5 | Play: open your mod in Minecraft's test world (see [Playing and testing](playing-and-testing.md)) |
+| Ctrl+R | Reload in Game: send your changes to the running test world |
+| Ctrl+Shift+R | Reload Window (the app itself) |
 
 ## Where next
 

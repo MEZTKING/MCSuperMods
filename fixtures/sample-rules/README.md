@@ -32,7 +32,7 @@ Do the whole list twice, once per version. Part 1 checks the rules with the expo
 - **26.3:** the 26.3 content jar, Fabric Loader 0.20.1 or newer and Fabric API 0.165.2+26.3 (or newer for 26.3). The jar contains `msm_runtime`; do not install it separately.
 - **26.4:** the 26.4 jar (the app exports it when the project target is 26.4), with Fabric Loader 0.20.1 and Fabric API 0.165.4+26.4 (the 26.4 target's facts). The jar contains `msm_runtime` only.
 
-Things you meet here that are limits of the feature, not faults, are marked "known limit" with their number from the limits table of the plan (R1 to R22, `docs/PLAN-blocks-and-play.md`; they move into ADRs 0082 and 0084 when the batch closes). Report them only if they look different from what is written.
+Things you meet here that are limits of the feature, not faults, are marked "known limit" with their number from the limits table (R1 to R22) in the findings of [ADR 0082](../../docs/adr/0082-rules-no-code-behaviour.md#limits). Report them only if they look different from what is written.
 
 ### Part 1: the rules
 

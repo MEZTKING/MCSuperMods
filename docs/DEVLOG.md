@@ -4587,3 +4587,24 @@ Next
 - `msm-runtime.d.ts` was updated by the same substitution; the typings test confirms it equals the generated output.
 
 **Next:** Fix the old runtime numbers in the ADRs, DESIGN, ROADMAP and HANDOFF once that batch is closed.
+
+## 2026-11-14 — orchestrator — Rules, Very easy mode and one-click Play closed (B384)
+
+What
+- ADRs 0082, 0083 and 0084 keep Accepted (set at planning; "findings recorded at close", shipped in the 1.5.1 draft) and gain "Findings from implementation" from B362–B383: ADR 0082 takes the plan's fact table (F1–F24; F2 and F17 not used, F14 and F15 as built, F18 with the asar steps 26.9, 27.2, 27.4, 27.6 MB, F23 settled by `MsmDevClientGameTest`, F24 confirmed, F8 pin and F19–F21 left as "(verify)" for the user's Windows check) and limits (R1–R22; R5 moved: the client hooks are checked in CI, the launcher and Windows are not; R14 with the GameTest server's dedicated flag) plus the format, catalogue, compiler, deviations (`any_mob_hurt` on `entity.hurt`, `Entity.remove()` and `breakBlock` added to Script API 1.4), expander, session, editors, library, AI and fixture findings; ADR 0083 the mode row beside the old switch, Rename of the shown name, 125 plain-problem codes, "Paint the picture"; ADR 0084 the dev file formats, `TargetFacts.dev`, server and client dev mode, timings, the main service, chip words, `onboardAccessibility:false` and the `pack.mcmeta` bug B379 found. Vetoable defaults in the Status lines updated.
+- Script API labels (coordinator request, after merging 2c0a7f2): ADR 0076's and ADR 0080's "Since runtime 1.6.0/1.7.0/1.8.0" text, DESIGN §12 and the ROADMAP particles row and containers follow-up now say "Since runtime 1.5.1".
+- DESIGN: §7 (`projectExpanders` contribution row, plugin API 1.15.0 and `expandProject`), §8 (Very easy mode, the Play and Reload bullet under "Test in Minecraft", Rules), §9 (`TargetFacts.dev`, the expand step in the pipeline, rules in the validation gate), §10 (dev mode), §11 (rules compile to events and scripts), §12 (Script API 1.4, rules in the eject, `sample-rules` in "Checked"), §13 (Play's managed instance and `msm-dev/` files, the write exception), §14 (asar 27.4 and 27.6 MB, renderer 15.0 of 16 MB), §15 (`rules/`), §16 (a "Rules, Very easy and Play" row); still 19 H2 headings.
+- ROADMAP: add-on section "Rules, Very easy mode and one-click Play (1.5.1)" (B362–B384 ticked, the Windows check open, deferred work and follow-ups), Milestone Log row; the effects add-on heading now says it ships in 1.5.1. Coverage audit: L1 and L16 notes.
+- HANDOFF rewritten: 1.5.1 is the draft under test (supersedes the 1.1.0–1.3.0 drafts and the prepared 1.4.0; the v1.5.0 tag on 47ad42c has no release); "Do first" asks about the Windows test, then `publish-release.yml`; the label change; Try it slice 1 shipped and slice 2 onward plus B392 in progress; batch lessons.
+- Status lines: root `CLAUDE.md` rewritten around 1.5.1 (directory map gains `rules`, `packages/sim/` and `sample-rules/`; 69 lines), `docs/CLAUDE.md` (status and the three guide pages), `app/CLAUDE.md` (27 e2e spec files, `MSM_E2E_RUNTIME_DIR`, `MSM_E2E_NEW_INSTALL`). Guide: Rules templates and examples in `templates-and-examples.md` (199 templates, 134 examples), F5, Ctrl+R and Ctrl+Shift+R in `getting-started.md`. Plan references in `PLAN-test-world.md` and `fixtures/sample-rules/README.md` repointed at ADR 0082; `docs/PLAN-blocks-and-play.md` deleted.
+
+Decisions
+- The fact table and limits go into ADR 0082 only (all three ADRs referred to them); ADR 0084's Context now points there.
+- Counts from the plugins' contributions at 2c0a7f2 (a throwaway Vitest file in `packages/exporters/test`, deleted): 97 kinds, 199 templates (rules 6), 46 starters (34 Creator flows), 134 examples, 70 placeholder patterns. 440 `@GameTest` methods in `engine-mod/src` (the batch's 11 included); parity sample rules 8 counted in the sources; e2e 27 spec files on disk (26 plus `tryit-path`). JUnit 704 is B374's reported total (corpus cases are dynamic; not countable from the sources). `app.asar` 27.6 MB is B390's measurement after `dist:dir` (not re-measured here).
+- B381's "check the first CI run": CI run 569 on 0e14663 is green, with every sample rules step on both engine-mod matrix entries.
+- Try it is not documented in the guide here: its page and the lines in `playing-and-testing.md` and `very-easy.md` belong to B392.
+
+Next
+- Main session: merge `b384`, clean-worktree run and CI on the merged commit; record the totals.
+- The user: Windows test of the 1.5.1 draft (Play with Prism, Reload, Restart, the sample rules, a Very easy first run), then publish with `publish-release.yml`.
+- Try it: slice 2 onward and its close B392. Follow-ups in ROADMAP and HANDOFF ("Copy as my own script", `kind_schema` truncation, `elementId` on lowered files).
