@@ -34,6 +34,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -60,7 +61,8 @@ import net.minecraft.world.phys.Vec3;
  * {@code msm_test:portal/arrived} as the traveller), {@code portal_travel_linked} and {@code portal_travel_radius} (to the
  * Nether, lit by the tests), {@code portal_travel_scaled} (to the End, {@code scale} 4), {@code portal_travel_surface}
  * (to the End, {@code arrival: surface}, no travel sound), {@code portal_travel_players} (to the End, players only,
- * {@code delay_ticks} 0, {@code cooldown_ticks} 77, the project travel sound {@code msm_test:chime}) and {@code portal_travel_missing} (to a level
+ * {@code delay_ticks} 0, {@code cooldown_ticks} 77, the project travel sound {@code msm_test:chime}),
+ * {@code portal_travel_surface_nether} (to the Nether, {@code arrival: surface}, no travel sound; B336b) and {@code portal_travel_missing} (to a level
  * this world does not have).
  *
  * <p>F20 does not hold (B330): a dimension shipped in the GameTest resources creates no level, so travel uses the Nether
@@ -596,6 +598,89 @@ public class MsmPortalTravelGameTest {
         helper.assertTrue(PortalTravel.frameState(tagged.portal()).isEmpty(), "a tag frame without frame_block has no exit block");
         helper.assertValueEqual(PortalTravel.arrival(tagged, end, BlockPos.containing(at), traveller(level, at)), PortalTravel.Arrival.SURFACE,
                 "a tag frame without frame_block arrives at the surface");
+        helper.succeed();
+    }
+
+    /** A sheet of {@code state} on the Nether's flat ground within {@code radius} of the column; returns the sheet's y. */
+    private static int sheet(ServerLevel nether, BlockPos column, int radius, BlockState state) {
+        int y = groundAir(nether, column.getX(), column.getZ());
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                nether.setBlock(new BlockPos(column.getX() + dx, y, column.getZ() + dz), state, FLAGS);
+            }
+        }
+        return y;
+    }
+
+    /**
+     * B336b: lava is never ground. With a lava sheet under the target column in the Nether, {@code arrival: surface} finds no
+     * spot and falls back to a built exit; the traveller ends up neither on nor in lava.
+     */
+    @GameTest
+    public void surfaceArrivalNeverLandsOnLava(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        ServerLevel nether = nether(helper);
+        MsmPortalBlock portal = portal("portal_travel_surface_nether");
+        int x = farX(6);
+        int z = FAR_Z;
+        forget(level, portal, x, z, 8);
+        clearAbove(level, x, z, 6);
+        int nx = Math.floorDiv(x, 8);
+        int nz = Math.floorDiv(z, 8);
+        forget(nether, portal, nx, nz, 48);
+        clearAbove(nether, nx, nz, 24);
+        PortalFrame.Rectangle entry = litPortal(level, portal, x, z, Direction.Axis.X);
+        Vec3 at = middle(entry);
+        BlockPos target = PortalTravel.targetPosition(nether, at, 0.125);
+        int y = sheet(nether, target, 3, Blocks.LAVA.defaultBlockState());
+        try {
+            helper.assertTrue(nether.getFluidState(target.atY(y)).is(FluidTags.LAVA), "no lava under the target");
+            helper.assertTrue(PortalTravel.surface(nether, target, traveller(nether, at)).isEmpty(), "lava counted as ground");
+            helper.assertValueEqual(PortalTravel.arrival(portal, nether, target, traveller(level, at)), PortalTravel.Arrival.PORTAL, "arrival");
+            TeleportTransition there = portal.getPortalDestination(level, traveller(level, at), entry.min());
+            helper.assertTrue(there != null && there.newLevel() == nether, "to the Nether: " + there);
+            BlockPos feet = BlockPos.containing(there.position());
+            helper.assertFalse(nether.getFluidState(feet).is(FluidTags.LAVA), "in lava at " + there.position());
+            helper.assertFalse(nether.getFluidState(feet.below()).is(FluidTags.LAVA), "standing on lava at " + there.position());
+            helper.assertTrue(exitAt(nether, portal, there.position()).isPresent(), "no exit was built: " + there.position());
+        } finally {
+            sheet(nether, target, 3, AIR);
+            forget(nether, portal, nx, nz, 48);
+            forget(level, portal, x, z, 8);
+        }
+        helper.succeed();
+    }
+
+    /** B336b: water stays ground; with a water sheet under the target column the traveller stands on its surface. */
+    @GameTest
+    public void surfaceArrivalStandsOnWater(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        ServerLevel nether = nether(helper);
+        MsmPortalBlock portal = portal("portal_travel_surface_nether");
+        int x = farX(7);
+        int z = FAR_Z;
+        forget(level, portal, x, z, 8);
+        clearAbove(level, x, z, 6);
+        int nx = Math.floorDiv(x, 8);
+        int nz = Math.floorDiv(z, 8);
+        forget(nether, portal, nx, nz, 48);
+        clearAbove(nether, nx, nz, 24);
+        PortalFrame.Rectangle entry = litPortal(level, portal, x, z, Direction.Axis.X);
+        Vec3 at = middle(entry);
+        BlockPos target = PortalTravel.targetPosition(nether, at, 0.125);
+        int y = sheet(nether, target, 3, Blocks.WATER.defaultBlockState());
+        try {
+            helper.assertValueEqual(PortalTravel.arrival(portal, nether, target, traveller(level, at)), PortalTravel.Arrival.SURFACE, "arrival");
+            TeleportTransition there = portal.getPortalDestination(level, traveller(level, at), entry.min());
+            helper.assertTrue(there != null && there.newLevel() == nether, "to the Nether: " + there);
+            helper.assertValueEqual(there.position(), new Vec3(target.getX() + 0.5, y + 1, target.getZ() + 0.5), "on the water surface");
+            helper.assertTrue(nether.getFluidState(BlockPos.containing(there.position()).below()).is(FluidTags.WATER), "standing on water");
+            helper.assertTrue(entries(nether, portal, nx, nz, 48).isEmpty(), "surface arrival on water built an exit");
+        } finally {
+            sheet(nether, target, 3, AIR);
+            forget(nether, portal, nx, nz, 48);
+            forget(level, portal, x, z, 8);
+        }
         helper.succeed();
     }
 

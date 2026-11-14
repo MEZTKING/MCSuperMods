@@ -247,8 +247,10 @@ public final class PortalTravel {
 
     /**
      * The first standing spot in the column of {@code at}, from the top of the level's logical height down: a block with a
-     * collision shape or a fluid, with room for {@code entity} above it (no collision, no lava) and below the top. Empty in
-     * a void.
+     * collision shape or a non-lava fluid (water counts: the traveller stands on its surface, as vanilla's surface spawn
+     * tolerates), with room for {@code entity} above it (no collision, no lava) and below the top. Lava is never ground: a
+     * column whose first spot with room is lava (a lava lake or sea) is skipped, so the result is empty and the caller falls
+     * back to an exit or the target (B336b). Empty in a void.
      */
     public static Optional<Vec3> surface(ServerLevel level, BlockPos at, Entity entity) {
         int top = ExitPortals.topY(level);
@@ -261,6 +263,9 @@ public final class PortalTravel {
                 continue;
             }
             if (hasRoom(level, p.above(), room)) {
+                if (ground.getFluidState().is(FluidTags.LAVA)) {
+                    return Optional.empty();
+                }
                 VoxelShape shape = ground.getCollisionShape(level, p);
                 double floor = shape.isEmpty() ? y + 1 : y + shape.max(Direction.Axis.Y);
                 return Optional.of(new Vec3(at.getX() + 0.5, floor, at.getZ() + 0.5));

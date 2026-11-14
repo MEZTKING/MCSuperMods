@@ -3668,3 +3668,11 @@ Decisions
 
 Next
 - B339 copies `PortalTravel` and the cooldown refresh into the eject; B341 and B343 check the behaviour on real servers with a project dimension.
+
+## 2026-11-14 — executor — B336b surface arrival never lands on lava
+
+**What:** `PortalTravel.surface(...)` no longer treats lava as ground: when the first spot in the column with room above it is a block whose fluid is `#minecraft:lava` (a lava lake or sea), the column is skipped and the result is empty, so travel falls back as before (an exit of `frame_block` is found or built; with no exit block, the traveller lands at the target). Lava enclosed in rock (no room above) is passed over as before. Water stays ground: the traveller stands on its surface. New GameTest definition `portal_travel_surface_nether` (to the Nether, `arrival: surface`, frame `minecraft:red_nether_bricks`, no travel sound); new GameTests `surfaceArrivalNeverLandsOnLava` (a 7 by 7 lava sheet under the target: `surface` is empty, arrival is `PORTAL`, the traveller is neither in nor on lava and an exit is built) and `surfaceArrivalStandsOnWater` (a water sheet: arrival `SURFACE` on the water at y + 1, nothing built); both clear their sheets and exits afterwards. 400 GameTests per variant (26.3, `-Pmc=26.4`, `-PwithoutGeckolib`; 11 in `MsmPortalTravelGameTest`), 610 JUnit.
+
+**Decisions:** "a column whose top is lava" read as the first spot with room for the traveller; lava below solid rock without room above it does not end the scan (a lava pocket in the Nether's roof does not skip the column).
+
+**Next:** B339 copies the lava rule into the ejected `PortalTravel`.
