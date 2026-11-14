@@ -3901,3 +3901,15 @@ Decisions
 
 Next
 - B355 eject mirrors `ParticleSpecs.send` and `AmbientParticles.plan`; mcdoc wording for `spread`/`motion` (orchestrator); the block `block_state` object form `{Name, Properties}` does not decode on 26.3 (only a plain id string was checked).
+## 2026-11-14 — executor — B357 particles e2e
+
+What
+- New `app/e2e/particles-path.spec.ts` (two tests, blank project `sparks`). Test 1: the Creator flow "Particle" (group Magic) with untouched defaults creates `golden_spark`, its four frame pictures and `golden_spark_block` with no problem at all; one or more edits in each Particle Studio group (frame order and Animation "random"; Lifetime "Between" 10 to 30, Size, Size at the end; Gravity "Falls", Drag, Spin, Stops on blocks off; Tint, Tint at the end, Opacity, Fade "in_out", Glows off, Show from far away), the preview canvas mounts and switches to Stream and a light background; a second launch reopens the project with every edit in the saved file and the Studio. Test 2: "Split a strip into frames" (a 32 by 8 strip made in the test with `png.ts`, no binary asset) writes `ember_0..3` in one step and one Undo removes all four files; the Ambient particles section adds `msm:ambient_particles` to a plain block and one Undo removes it; a "Spawn particle" action with "Coloured dust", Count, Motion Y and "Show from far away"; a function `particle sparks:golden_spark ...`; the vanilla data pack keeps the function with one `export.mod-only-function` and leaves both block loot tables out (two `export.mod-only-reference`); the Fabric jar on mc-26.3 and, after Upgrade project target, mc-26.4 holds the definition, the description, the four pictures and the block with the dust action.
+- Verified: `pnpm build`, the spec three times (`--repeat-each=3`, about 7 s and 20 s per run), the full `xvfb-run -a pnpm --filter @msm/app e2e`, `pnpm lint`, `pnpm typecheck`.
+
+Decisions
+- The spec's `save` waits for the footer's "Unsaved changes" before clicking Save, so a save never runs before the last edit is committed; a state back at the saved version after Undo is asserted as "Saved" instead of saved again.
+- The split picture is generated in the test (`rgbaPng`), so no file was added under `app/e2e/assets/`.
+
+Next
+- B360: the e2e count in `app/CLAUDE.md` (23 specs with `particles-path`).
