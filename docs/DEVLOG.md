@@ -4359,3 +4359,18 @@ Decisions
 Next
 - B390: render `TryItScene` with `grid` (the `SimWorld`), `camera={() => ({ eye: controller.eyePosition(clock.alpha), yaw, pitch })}`, `picked`, `files`, `folders`, `vanilla`, `blockIds` (hotbar and picker), `smaller`, `active`, `onFrame` (advance the `SimClock`); the Play button as children.
 - B395: draw mobs after `drawFrame` and call `resetGlForDeepslate` (done each frame already).
+
+## 2026-11-14 — executor — B374 runtime client dev hooks
+
+What
+- New `engine-mod/.../runtime/client/dev/`: `DevClient` (Fabric `ScreenEvents.AFTER_INIT` on the title screen and `ClientTickEvents.END_CLIENT_TICK`, no Mixin), `DevWorldSettings` (pure values of the test world and the timings) and `DevClientFiles` (pure: `play.json` and `request.json` parsing, `status.json` text, chat lines). Registered by one line in `MsmRuntimeClient`.
+- Inert without a valid `<gameDir>/msm-dev/dev.json` (looked at every 10 ticks). A play request at the title screen (once the start-up loading overlay is gone) is consumed (file deleted) and opens `saves/<world>` with `WorldOpenFlows.openWorld`, or creates it with `createFreshLevel`: `minecraft:flat` preset with its default layers, creative, commands on, easy, not hardcore, no structures, no bonus chest, seed 20261114, shown as "MCSuperMods test (<namespace>)". `request.json` polled by modification time every 10 ticks: `reload` runs `/reload` on the integrated server, waits for `END_DATA_PACK_RELOAD`, then `reloadResourcePacks()` when `assets`; `reopen` saves, leaves and opens the same world (the server side refills the chests on that join); `quit` saves, leaves, writes the status and calls `Minecraft.stop()`. Chat: "MCSuperMods: reloaded (N changes)", "MCSuperMods: reopened the test world (N changes)", failures as "MCSuperMods: <message>". `status.json` written atomically every 40 ticks, at once on a state change or a handled request; the last handled `seq` carries over from the previous run's `status.json`.
+- Tests: JUnit `DevWorldSettingsTest` (5) and `DevClientFilesTest` (8); client GameTest `MsmDevClientGameTest` (play creates and joins the flat world, server dev mode on, setup once; reload with assets; reopen refills; quit; second play opens the existing world; reload outside a world fails). `runClientGameTest` green on 26.3 and 26.4; `./gradlew build`, `-Pmc=26.4` and `-PwithoutGeckolib` green (440 GameTests each, 704 JUnit).
+
+Decisions
+- The play request is handled from the tick after `AFTER_INIT` flags the title screen, not inside the event, so it waits for the start-up loading overlay; the same check repeats every 10 ticks while the title screen shows.
+- `DevClient.replaceStopAction` lets the client GameTest count the quit instead of stopping its own game.
+- A status in a multiplayer world says `world` with `world: null`.
+
+Next
+- B373/B379: the files and states in the B374 notes; B381: CI client GameTest step on both versions; user's in-game check on Windows with Prism: first launch, real stop and jar unlock, restart round trip, resource reload on screen.

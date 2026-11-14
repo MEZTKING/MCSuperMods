@@ -1,6 +1,7 @@
 package dev.mcsupermods.runtime.client;
 
 import dev.mcsupermods.runtime.MsmRuntime;
+import dev.mcsupermods.runtime.client.dev.DevClient;
 import dev.mcsupermods.runtime.client.particle.MsmParticleProvider;
 import dev.mcsupermods.runtime.client.vanilla.MsmVanillaRenderer;
 import dev.mcsupermods.runtime.loader.BlockType;
@@ -44,6 +45,7 @@ public final class MsmRuntimeClient implements ClientModInitializer {
         registerVanillaRenderers();
         BlockTypes.tintedLeaves().forEach((block, tint) -> BlockColorRegistry.register(List.of(tintSource(tint)), block));
         registerParticleProviders();
+        DevClient.register();
     }
 
     /**
