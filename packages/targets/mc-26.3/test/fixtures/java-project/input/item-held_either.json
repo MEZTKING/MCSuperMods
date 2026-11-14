@@ -1,0 +1,21 @@
+{
+  "components": {
+    "msm:while_held": {
+      "event": "msm_test:held",
+      "hand": "either",
+      "interval_ticks": 5
+    }
+  },
+  "events": {
+    "msm_test:held": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    }
+  },
+  "format": 1
+}

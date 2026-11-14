@@ -12,7 +12,12 @@
  * `noOcclusion()` and never a valid spawn, suffocating, view-blocking or redstone-conducting)
  * and `MsmBlock`'s overrides in the block class (`getShape` from the union of the boxes, each
  * axis ordered; for see-through blocks sky light, shade brightness 1, no visual shape and the
- * glass rule in `skipRendering`). Minecraft 26.3, Mojang names.
+ * glass rule in `skipRendering`). The triggers of ADR 0061 D2 mirror `MsmBlock`: `msm:on_break`
+ * (`playerWillDestroy`), `msm:on_place` (`setPlacedBy`, the placer as the actor),
+ * `msm:on_random_tick` (`randomTicks()` in the properties; `randomTick` with its chance) and
+ * `msm:on_entity_inside` (`entityInside`, a generated `CooldownMap` before the shared
+ * `TickLimiter`). A block item's `components."msm:components"` (ADR 0060 D4) goes through the
+ * generated `VanillaComponents` helper before the item's own fields. Minecraft 26.3, Mojang names.
  *
  * @packageDocumentation
  */
@@ -28,6 +33,7 @@ import {
   readEvents,
 } from './actions';
 import { classPath, type GenerationContext, packageOf } from './context';
+import { closeLine } from './items';
 import {
   identifierExpression,
   indent,
@@ -95,6 +101,10 @@ const BLOCK_COMPONENTS = [
   'msm:on_step',
   'msm:redstone',
   'msm:shape',
+  'msm:on_break',
+  'msm:on_place',
+  'msm:on_random_tick',
+  'msm:on_entity_inside',
 ];
 
 /** `msm:shape` fields (`::msm::definition::Shape`); the editor-only `preset` is not one. */
@@ -116,13 +126,22 @@ interface BlockSpec {
   readonly soundType: string;
   readonly lootTable: string | undefined;
   readonly item:
-    | { creativeTab: string | undefined; maxStackSize: number; rarity: string }
+    | {
+        creativeTab: string | undefined;
+        maxStackSize: number;
+        rarity: string;
+        /** `components."msm:components"` as compact JSON (ADR 0060 D4), or `undefined`. */
+        vanilla: string | undefined;
+      }
     | undefined;
   readonly hardness: number;
   readonly resistance: number;
   readonly requiresTool: boolean;
   readonly light: number | undefined;
-  /** `step_block` with `msm:on_step` (events may run with a stepping entity), else `block`. */
+  /**
+   * `step_block` with `msm:on_step`, `msm:on_place` or `msm:on_entity_inside` (events may run
+   * with an actor that is not a player), else `block`.
+   */
   readonly kind: EventOwnerKind;
   readonly events: Events;
   /** Method of the `msm:on_interact` event. */
@@ -132,6 +151,12 @@ interface BlockSpec {
   readonly onPowered: string | undefined;
   readonly onUnpowered: string | undefined;
   readonly shape: ShapeSpec | undefined;
+  /** Method of the `msm:on_break` event (ADR 0061 D2). */
+  readonly onBreak: string | undefined;
+  /** Method of the `msm:on_place` event (ADR 0061 D2). */
+  readonly onPlace: string | undefined;
+  readonly onRandomTick: { method: string; chance: number } | undefined;
+  readonly onEntityInside: { method: string; cooldown: number } | undefined;
 }
 
 /**
@@ -183,8 +208,11 @@ function readBlock(input: DefinitionInput): BlockSpec {
   checkFormat(reader);
   const components = reader.object('components');
   components?.onlyKeys(BLOCK_COMPONENTS, 'component');
-  const kind: EventOwnerKind = components?.has('msm:on_step') ? 'step_block' : 'block';
-  const events = readEvents(reader, kind);
+  const actorTrigger =
+    components?.has('msm:on_place') === true || components?.has('msm:on_entity_inside') === true;
+  const kind: EventOwnerKind =
+    components?.has('msm:on_step') === true || actorTrigger ? 'step_block' : 'block';
+  const events = readEvents(reader, kind, actorTrigger);
 
   let item: BlockSpec['item'];
   const rawItem = input.definition.item;
@@ -192,11 +220,15 @@ function readBlock(input: DefinitionInput): BlockSpec {
   else if (rawItem === true) reader.fail('item must be an object or false');
   else {
     const settings = reader.object('item');
-    settings?.onlyKeys(['creative_tab', 'max_stack_size', 'rarity'], 'item key');
+    settings?.onlyKeys(['creative_tab', 'max_stack_size', 'rarity', 'components'], 'item key');
+    const itemComponents = settings?.object('components');
+    itemComponents?.onlyKeys(['msm:components'], 'item component');
+    const vanilla = itemComponents?.object('msm:components');
     item = {
       creativeTab: settings?.optionalString('creative_tab'),
       maxStackSize: settings?.integer('max_stack_size', 64) ?? 64,
       rarity: settings?.enumConstant('rarity', RARITIES, 'common') ?? 'COMMON',
+      vanilla: vanilla === undefined ? undefined : JSON.stringify(vanilla.value),
     };
   }
 
@@ -213,6 +245,18 @@ function readBlock(input: DefinitionInput): BlockSpec {
   const powered = redstone?.optionalString('on_powered');
   const unpowered = redstone?.optionalString('on_unpowered');
   const shape = components?.object('msm:shape');
+  const onBreak = components?.object('msm:on_break');
+  onBreak?.onlyKeys(['event'], 'msm:on_break field');
+  const onPlace = components?.object('msm:on_place');
+  onPlace?.onlyKeys(['event'], 'msm:on_place field');
+  const randomTick = components?.object('msm:on_random_tick');
+  randomTick?.onlyKeys(['event', 'chance'], 'msm:on_random_tick field');
+  const inside = components?.object('msm:on_entity_inside');
+  inside?.onlyKeys(['event', 'cooldown_ticks'], 'msm:on_entity_inside field');
+  const chance = randomTick?.number('chance', 1) ?? 1;
+  if (chance < 0 || chance > 1) randomTick?.fail('chance must be 0 to 1');
+  const insideCooldown = inside?.integer('cooldown_ticks', 20) ?? 20;
+  if (insideCooldown < 5) inside?.fail('cooldown_ticks must be at least 5');
 
   return {
     input,
@@ -247,6 +291,25 @@ function readBlock(input: DefinitionInput): BlockSpec {
         ? undefined
         : eventMethod(redstone, events, unpowered),
     shape: shape === undefined ? undefined : readShape(shape),
+    onBreak:
+      onBreak === undefined
+        ? undefined
+        : eventMethod(onBreak, events, onBreak.requiredString('event')),
+    onPlace:
+      onPlace === undefined
+        ? undefined
+        : eventMethod(onPlace, events, onPlace.requiredString('event')),
+    onRandomTick:
+      randomTick === undefined
+        ? undefined
+        : { method: eventMethod(randomTick, events, randomTick.requiredString('event')), chance },
+    onEntityInside:
+      inside === undefined
+        ? undefined
+        : {
+            method: eventMethod(inside, events, inside.requiredString('event')),
+            cooldown: insideCooldown,
+          },
   };
 }
 
@@ -257,7 +320,11 @@ function needsClass(spec: BlockSpec): boolean {
     spec.onStep !== undefined ||
     spec.emit > 0 ||
     tracksPower(spec) ||
-    spec.shape !== undefined
+    spec.shape !== undefined ||
+    spec.onBreak !== undefined ||
+    spec.onPlace !== undefined ||
+    spec.onRandomTick !== undefined ||
+    spec.onEntityInside !== undefined
   );
 }
 
@@ -299,6 +366,7 @@ export function generateBlocks(
       `${name}_KEY`,
       `${name}_ITEM`,
       `${name}_ITEM_KEY`,
+      ...(spec.item?.vanilla === undefined ? [] : [`${name}_ITEM_COMPONENTS`]),
     ]);
     let type = blockType;
     if (needsClass(spec)) {
@@ -316,13 +384,19 @@ export function generateBlocks(
       props.push(`        .lightLevel(state -> ${javaInt(spec.light)})`);
     if (spec.requiresTool) props.push('        .requiresCorrectToolForDrops()');
     if (spec.shape !== undefined) props.push(...shapeProperties(spec.shape));
+    if (spec.onRandomTick !== undefined) {
+      props.push(
+        '        .randomTicks() // msm:on_random_tick: random ticks only with the component',
+      );
+    }
     if (spec.lootTable !== undefined) {
       const optional = file.use('java.util.Optional');
       props.push(
         `        .overrideLootTable(${optional}.of(${resourceKey}.create(${registries}.LOOT_TABLE, ${identifierExpression(file, spec.lootTable)})))`,
       );
     }
-    props[props.length - 1] += `));`;
+    // Before a trailing comment (a shape or random tick line may end with one).
+    props[props.length - 1] = closeLine(props[props.length - 1] as string, '));');
     body.push(
       '',
       `/** {@code ${spec.input.id}} (${spec.input.path}). */`,
@@ -334,14 +408,31 @@ export function generateBlocks(
       const item = file.use('net.minecraft.world.item.Item');
       const blockItem = file.use('net.minecraft.world.item.BlockItem');
       const rarity = file.use('net.minecraft.world.item.Rarity');
-      body.push(
-        `public static final ${resourceKey}<${item}> ${field}_ITEM_KEY = ${resourceKey}.create(${registries}.ITEM, ${field}_KEY.identifier());`,
-        `public static final ${blockItem} ${field}_ITEM = ${registry}.register(${builtIn}.ITEM, ${field}_ITEM_KEY, new ${blockItem}(${field}, new ${item}.Properties()`,
-        `        .setId(${field}_ITEM_KEY)`,
-        '        .useBlockDescriptionPrefix() // name from block.<namespace>.<path>, as vanilla block items do',
-        `        .stacksTo(${javaInt(spec.item.maxStackSize)})`,
-        `        .rarity(${rarity}.${spec.item.rarity})));`,
-      );
+      const { vanilla } = spec.item;
+      if (vanilla === undefined) {
+        body.push(
+          `public static final ${resourceKey}<${item}> ${field}_ITEM_KEY = ${resourceKey}.create(${registries}.ITEM, ${field}_KEY.identifier());`,
+          `public static final ${blockItem} ${field}_ITEM = ${registry}.register(${builtIn}.ITEM, ${field}_ITEM_KEY, new ${blockItem}(${field}, new ${item}.Properties()`,
+          `        .setId(${field}_ITEM_KEY)`,
+          '        .useBlockDescriptionPrefix() // name from block.<namespace>.<path>, as vanilla block items do',
+          `        .stacksTo(${javaInt(spec.item.maxStackSize)})`,
+          `        .rarity(${rarity}.${spec.item.rarity})));`,
+        );
+      } else {
+        // item.components."msm:components" first, so the block item's own fields win (ADR 0060 D4).
+        context.usesVanillaComponents = true;
+        const helper = file.use(`${context.input.javaPackage}.VanillaComponents`);
+        body.push(
+          `/** The msm:components of the block item {@code ${spec.input.id}}: vanilla data components as JSON. */`,
+          `private static final String ${field}_ITEM_COMPONENTS = ${javaString(vanilla)};`,
+          `public static final ${resourceKey}<${item}> ${field}_ITEM_KEY = ${resourceKey}.create(${registries}.ITEM, ${field}_KEY.identifier());`,
+          `public static final ${blockItem} ${field}_ITEM = ${registry}.register(${builtIn}.ITEM, ${field}_ITEM_KEY, new ${blockItem}(${field}, ${helper}.apply(new ${item}.Properties()`,
+          `        .setId(${field}_ITEM_KEY)`,
+          `        .useBlockDescriptionPrefix(), ${javaString(spec.input.id)}, ${field}_ITEM_COMPONENTS) // name from block.<namespace>.<path>; msm:components first, the fields below win`,
+          `        .stacksTo(${javaInt(spec.item.maxStackSize)})`,
+          `        .rarity(${rarity}.${spec.item.rarity})));`,
+        );
+      }
       if (spec.item.creativeTab !== undefined)
         tabs.push(tabLine(file, spec.item.creativeTab, `${field}_ITEM`));
     }
@@ -480,6 +571,15 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
       `private record StepKey(${resourceKey}<${levelType}> dimension, long pos, ${uuid} entity) {}`,
     );
   }
+  if (spec.onEntityInside !== undefined) {
+    context.usesCooldownMap = true;
+    const cooldownMap = file.use(`${context.input.javaPackage}.CooldownMap`);
+    if (members.length > 0) members.push('');
+    members.push(
+      '/** msm:on_entity_inside cooldowns per dimension, position and entity. Server thread only. */',
+      `private final ${cooldownMap} insideCooldowns = new ${cooldownMap}();`,
+    );
+  }
   if (spec.shape !== undefined) {
     const voxelShape = file.use('net.minecraft.world.phys.shapes.VoxelShape');
     const shapes = file.use('net.minecraft.world.phys.shapes.Shapes');
@@ -561,6 +661,7 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
       '}',
     );
   }
+  members.push(...triggerMembers(context, file, spec));
   if (spec.emit > 0) {
     const blockGetter = file.use('net.minecraft.world.level.BlockGetter');
     const direction = file.use('net.minecraft.core.Direction');
@@ -642,4 +743,101 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
     '}',
   ];
   context.files.push({ path: classPath(context, 'block', name), contents: file.render(lines) });
+}
+
+/**
+ * The `MsmBlock` overrides of the ADR 0061 D2 triggers: `msm:on_break` (`playerWillDestroy`, any
+ * game mode), `msm:on_place` (`setPlacedBy`, the placer as the actor), `msm:on_random_tick`
+ * (`randomTick` with its chance) and `msm:on_entity_inside` (`entityInside`, the per-entity
+ * cooldown before the shared tick limiter). The two tick triggers count against `TickLimiter`.
+ */
+function triggerMembers(context: GenerationContext, file: JavaFile, spec: BlockSpec): string[] {
+  const out: string[] = [];
+  const blockState = () => file.use('net.minecraft.world.level.block.state.BlockState');
+  const level = () => file.use('net.minecraft.world.level.Level');
+  const blockPos = () => file.use('net.minecraft.core.BlockPos');
+  const serverLevel = () => file.use('net.minecraft.server.level.ServerLevel');
+  const vec3 = () => file.use('net.minecraft.world.phys.Vec3');
+  const player = () => file.use('net.minecraft.world.entity.player.Player');
+  const tickLimiter = () => {
+    context.usesTickLimiter = true;
+    return file.use(`${context.input.javaPackage}.TickLimiter`);
+  };
+  if (spec.onBreak !== undefined) {
+    out.push(
+      '',
+      '/** msm:on_break: a player is about to break the block, in any game mode. */',
+      '@Override',
+      `public ${blockState()} playerWillDestroy(${level()} level, ${blockPos()} pos, ${blockState()} state, ${player()} player) {`,
+      `    if (level instanceof ${serverLevel()} server) {`,
+      `        ${fireCall(spec.onBreak, `server, pos.immutable(), ${vec3()}.atCenterOf(pos), player, null`)}`,
+      '    }',
+      '    return super.playerWillDestroy(level, pos, state, player);',
+      '}',
+    );
+  }
+  if (spec.onPlace !== undefined) {
+    const living = file.use('net.minecraft.world.entity.LivingEntity');
+    const itemStack = file.use('net.minecraft.world.item.ItemStack');
+    out.push(
+      '',
+      '/** msm:on_place: the block is placed; the placer, a player or another entity, is the actor and may be absent. */',
+      '@Override',
+      `public void setPlacedBy(${level()} level, ${blockPos()} pos, ${blockState()} state, ${living} placer, ${itemStack} stack) {`,
+      '    super.setPlacedBy(level, pos, state, placer, stack);',
+      `    if (level instanceof ${serverLevel()} server) {`,
+      `        ${player()} player = placer instanceof ${player()} p ? p : null;`,
+      `        ${fireCall(spec.onPlace, `server, pos.immutable(), ${vec3()}.atCenterOf(pos), player, player == null ? placer : null`)}`,
+      '    }',
+      '}',
+    );
+  }
+  if (spec.onRandomTick !== undefined) {
+    const { method, chance } = spec.onRandomTick;
+    const random = file.use('net.minecraft.util.RandomSource');
+    const fire = fireCall(method, `level, pos.immutable(), ${vec3()}.atCenterOf(pos), null, null`);
+    const body =
+      chance <= 0
+        ? [
+            '// chance 0: the event never fires (the block still gets random ticks, as in the runtime).',
+          ]
+        : [
+            chance >= 1
+              ? `if (${tickLimiter()}.tryFire(level)) {`
+              : `if (random.nextFloat() < ${javaFloat(chance)} && ${tickLimiter()}.tryFire(level)) {`,
+            `    ${fire}`,
+            '}',
+          ];
+    out.push(
+      '',
+      `/** msm:on_random_tick: on a random tick${chance > 0 && chance < 1 ? ` with chance ${chance}` : ''}, within the shared tick cap. */`,
+      '@Override',
+      `protected void randomTick(${blockState()} state, ${serverLevel()} level, ${blockPos()} pos, ${random} random) {`,
+      '    super.randomTick(state, level, pos, random);',
+      ...indent(body),
+      '}',
+    );
+  }
+  if (spec.onEntityInside !== undefined) {
+    const { method, cooldown } = spec.onEntityInside;
+    const entity = file.use('net.minecraft.world.entity.Entity');
+    const applier = file.use('net.minecraft.world.entity.InsideBlockEffectApplier');
+    out.push(
+      '',
+      `/** msm:on_entity_inside: an entity is inside the block, at most once per ${cooldown} ticks per entity, within the shared tick cap. */`,
+      '@Override',
+      `protected void entityInside(${blockState()} state, ${level()} level, ${blockPos()} pos, ${entity} entity, ${applier} effects,`,
+      '        boolean intersects) {',
+      '    super.entityInside(state, level, pos, entity, effects, intersects);',
+      `    if (level instanceof ${serverLevel()} server`,
+      `            && insideCooldowns.tryFire(server.dimension(), pos, entity.getUUID(), server.getGameTime(), ${javaInt(cooldown)})`,
+      `            && ${tickLimiter()}.tryFire(server)) {`,
+      '        // The entity inside is the player when it is one, else the entity (ADR 0058 D1).',
+      `        ${player()} player = entity instanceof ${player()} p ? p : null;`,
+      `        ${fireCall(method, `server, pos.immutable(), ${vec3()}.atCenterOf(pos), player, player == null ? entity : null`)}`,
+      '    }',
+      '}',
+    );
+  }
+  return out;
 }

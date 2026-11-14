@@ -1,0 +1,32 @@
+{
+  "components": {
+    "msm:on_use": {
+      "event": "msm_test:used"
+    },
+    "msm:on_use_on_block": {
+      "cooldown_ticks": 10,
+      "event": "msm_test:tapped"
+    }
+  },
+  "events": {
+    "msm_test:tapped": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    },
+    "msm_test:used": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    }
+  },
+  "format": 1
+}

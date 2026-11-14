@@ -13,8 +13,12 @@
  * `block/`, `item/` (with `ThrowableItem.java` when an item has `msm:throwable`), `entity/`
  * (with `FollowTypesGoal.java` when a follow goal exists and `ThrownItemEntity.java` with
  * throwables, ADR 0056 D7), and `client/` with `<ModClass>Client.java` when the project has
- * entities or throwables, plus `client/entity/` GeckoLib models with entities. Paths are
- * sorted; text uses LF and four-space indentation.
+ * entities or throwables, plus `client/entity/` GeckoLib models with entities. Additions to
+ * vanilla content (ADR 0060 D9) add `ModWorldgen.java` (biome additions through Fabric's
+ * `BiomeModifications`) and `ModLoot.java` (loot additions in a `LootTableEvents.MODIFY`
+ * listener); the triggers of ADR 0061 add `TickLimiter.java` (tick triggers) and
+ * `CooldownMap.java` (`msm:on_entity_inside`). Paths are sorted; text uses LF and four-space
+ * indentation.
  *
  * @packageDocumentation
  */
@@ -26,14 +30,18 @@ import type { GenerationContext } from './context';
 import { generateEffects } from './effects';
 import { generateEntities } from './entities';
 import { generateItems } from './items';
+import { generateLoot } from './loot';
 import { generateMod } from './mod';
 import { NameTable, splitId } from './names';
 import { generateSounds } from './sounds';
 import { actionsJava } from './templates/actions-java';
+import { cooldownMapJava } from './templates/cooldown-map-java';
 import { followTypesGoalJava } from './templates/follow-types-goal-java';
 import { throwableItemJava } from './templates/throwable-item-java';
 import { thrownItemEntityJava } from './templates/thrown-item-entity-java';
+import { tickLimiterJava } from './templates/tick-limiter-java';
 import { vanillaComponentsJava } from './templates/vanilla-components-java';
+import { generateWorldgen } from './worldgen';
 
 export { className, constantName, eventMethodName, JAVA_KEYWORDS } from './names';
 
@@ -62,6 +70,9 @@ export function generateJavaProject(input: JavaProjectInput): {
     usesDamage: false,
     usesHeal: false,
     usesRunFunctionAsEntity: false,
+    usesRunFunctionAsTriggerActor: false,
+    usesTickLimiter: false,
+    usesCooldownMap: false,
     usesVanillaComponents: false,
     usesFollowGoal: false,
   };
@@ -106,6 +117,11 @@ export function generateJavaProject(input: JavaProjectInput): {
   if (items !== undefined) registrations.push(items);
   const entities = generateEntities(context, classNames);
   if (entities !== undefined) registrations.push(entities.className);
+  // Additions to vanilla content last, as the runtime registers them (ADR 0060 D9).
+  const worldgen = generateWorldgen(context);
+  if (worldgen !== undefined) registrations.push(worldgen);
+  const loot = generateLoot(context);
+  if (loot !== undefined) registrations.push(loot);
   const main = generateMod(context, registrations);
   const client =
     entities === undefined && !throwables
@@ -122,6 +138,7 @@ export function generateJavaProject(input: JavaProjectInput): {
         context.usesDamage,
         context.usesHeal,
         context.usesRunFunctionAsEntity,
+        context.usesRunFunctionAsTriggerActor,
       ),
     });
   }
@@ -129,6 +146,18 @@ export function generateJavaProject(input: JavaProjectInput): {
     context.files.push({
       path: `${context.javaRoot}/VanillaComponents.java`,
       contents: vanillaComponentsJava(input.javaPackage, input.modId),
+    });
+  }
+  if (context.usesTickLimiter) {
+    context.files.push({
+      path: `${context.javaRoot}/TickLimiter.java`,
+      contents: tickLimiterJava(input.javaPackage, input.modId),
+    });
+  }
+  if (context.usesCooldownMap) {
+    context.files.push({
+      path: `${context.javaRoot}/CooldownMap.java`,
+      contents: cooldownMapJava(input.javaPackage),
     });
   }
   if (context.usesFollowGoal) {

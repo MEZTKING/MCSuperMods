@@ -1,0 +1,10 @@
+{
+  "biomes": ["#minecraft:is_badlands"],
+  "features": [
+    {
+      "feature": "msm_test:addition_tag_ore",
+      "step": "underground_decoration"
+    }
+  ],
+  "format": 1
+}

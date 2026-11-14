@@ -1,0 +1,18 @@
+{
+  "format": 1,
+  "item": {
+    "components": {
+      "msm:components": {
+        "minecraft:compostable": {
+          "layers": "minecraft:compostable/low"
+        },
+        "minecraft:cooking_fuel": {
+          "burn_time": 1600,
+          "speed_multiplier": 1
+        }
+      }
+    },
+    "max_stack_size": 16
+  },
+  "sound_type": "stone"
+}

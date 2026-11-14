@@ -1,0 +1,15 @@
+{
+  "format": 1,
+  "pools": [
+    {
+      "entries": [
+        {
+          "name": "minecraft:stick",
+          "type": "minecraft:no_such_entry_type"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "tables": ["minecraft:entities/husk", "minecraft:entities/drowned"]
+}

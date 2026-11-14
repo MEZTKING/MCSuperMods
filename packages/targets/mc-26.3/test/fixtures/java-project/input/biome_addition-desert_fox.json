@@ -1,0 +1,13 @@
+{
+  "biomes": ["minecraft:desert"],
+  "format": 1,
+  "spawns": [
+    {
+      "category": "creature",
+      "entity": "minecraft:fox",
+      "max_group": 3,
+      "min_group": 1,
+      "weight": 7
+    }
+  ]
+}

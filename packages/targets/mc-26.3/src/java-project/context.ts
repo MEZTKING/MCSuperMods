@@ -28,6 +28,15 @@ export interface GenerationContext {
    * entity to run as, ADR 0058 D1).
    */
   usesRunFunctionAsEntity: boolean;
+  /**
+   * Set when an ADR 0061 trigger's event uses `run_function` with a non-player actor (the
+   * `Actions.runFunction` comment then names every actor).
+   */
+  usesRunFunctionAsTriggerActor: boolean;
+  /** Set when a tick trigger is generated (`TickLimiter.java` is then written, ADR 0061 D4). */
+  usesTickLimiter: boolean;
+  /** Set when a block has `msm:on_entity_inside` (`CooldownMap.java` is then written). */
+  usesCooldownMap: boolean;
   /** Set when an item uses `msm:components` (`VanillaComponents.java` is then written). */
   usesVanillaComponents: boolean;
   /** Set when an entity uses the `follow` goal. */

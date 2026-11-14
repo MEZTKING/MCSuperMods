@@ -2,7 +2,9 @@
  * The 26.3 Java generator (ADR 0033 D3): identifier derivation, one golden per kind built from
  * the runtime's GameTest kitchen-sink definitions (copied from
  * `engine-mod/src/gametest/resources/msm/msm_test/` into `test/fixtures/java-project/input/`;
- * `block-shape_*` are the `MsmShapeGameTest` blocks;
+ * `block-shape_*` are the `MsmShapeGameTest` blocks; `biome_addition-*`, `loot_addition-*`,
+ * `block-fuel_block` and `item-fuel_gem` are the `MsmAdditionGameTest` definitions; the trigger
+ * items, blocks and `entity-ticker` are the `MsmTriggerGameTest` definitions;
  * `block-stepping_stone` and `entity-frost_golem` are the `apply_effect` corpus cases of
  * `packages/schemas/mcdoc/msm/conformance/definition/valid/`),
  * determinism, and the errors the exporter reports as `export.java-generation-failed`.
@@ -595,6 +597,267 @@ describe('Java generator (mc-26.3)', () => {
     expect(() => withSounds({ ambient_interval_ticks: 19 })).toThrow(/at least 20/);
     expect(() => withSounds({ loud: 'minecraft:entity.pig.ambient' })).toThrow(/loud/);
     expect(() => withSounds({ hurt: 'Not An Id' })).toThrow(/not a sound event id/);
+  });
+
+  it('generates biome and loot additions and block item components (ADR 0060 D4, D9)', async () => {
+    const biomeAdditions = await Promise.all(
+      ['badlands_tag', 'desert_fox', 'missing_feature', 'plains_ore'].map((path) =>
+        definition('biome_addition', path),
+      ),
+    );
+    const lootAdditions = await Promise.all(
+      ['broken', 'zombie_gem'].map((path) => definition('loot_addition', path)),
+    );
+    const { files, entrypoints } = generateJavaProject(
+      input({
+        blocks: [await definition('block', 'fuel_block')],
+        items: [await definition('item', 'fuel_gem')],
+        biomeAdditions,
+        lootAdditions,
+      }),
+    );
+    expect(entrypoints.client).toBeUndefined();
+    await golden('additions', files);
+    const text = (suffix: string): string =>
+      files.find((file) => file.path.endsWith(suffix))?.contents ?? '';
+    // Registered last, as the runtime does.
+    expect(text('/MsmTestMod.java')).toContain(
+      '        ModItems.register();\n        ModWorldgen.register();\n        ModLoot.register();',
+    );
+    const worldgen = text('/ModWorldgen.java');
+    expect(worldgen).toContain(
+      'Predicate<BiomeSelectionContext> selector = biomes("#minecraft:is_badlands");',
+    );
+    expect(worldgen).toContain(
+      'feature(Identifier.fromNamespaceAndPath("msm_test", "biome_addition/plains_ore/feature/0"), selector, GenerationStep.Decoration.UNDERGROUND_ORES,',
+    );
+    expect(worldgen).toContain(
+      'Identifier.fromNamespaceAndPath("minecraft", "fox"), 7, 1, 3); // weight, min_group, max_group',
+    );
+    // The guarded lookup: a missing placed feature never reaches Fabric's addFeature.
+    expect(worldgen).toContain(
+      'if (selection.getRegistryAccess().lookupOrThrow(Registries.PLACED_FEATURE).get(key).isPresent()) {',
+    );
+    expect(worldgen).toContain(
+      'warnUnknownFeature(server, "msm/msm_test/biome_addition/missing_feature.json", "msm_test:missing_feature");',
+    );
+    expect(worldgen).toContain(
+      'warnUnknownEntity("msm/msm_test/biome_addition/missing_feature.json", "msm_test:missing_mob");',
+    );
+    const loot = text('/ModLoot.java');
+    expect(loot).toContain('if (!source.isBuiltin()) {');
+    expect(loot).toContain('LootPool.CODEC.parse(ops, pool.json());');
+    expect(loot).toContain(
+      'add("msm/msm_test/loot_addition/broken.json", BROKEN_POOLS, "minecraft:entities/husk", "minecraft:entities/drowned");',
+    );
+    // Block item components: the passthrough first, the block item's fields after it.
+    const blocks = text('/ModBlocks.java');
+    expect(blocks).toContain(
+      'new BlockItem(FUEL_BLOCK, VanillaComponents.apply(new Item.Properties()',
+    );
+    expect(blocks).toContain('\\"minecraft:cooking_fuel\\":{\\"burn_time\\":1600');
+    expect(blocks).toContain('        .stacksTo(16)');
+    expect(files.some((file) => file.path.endsWith('/VanillaComponents.java'))).toBe(true);
+    // Fuel and compost need no code: the item carries the components.
+    expect(text('/ModItems.java')).toContain('minecraft:compostable/always_add_one');
+  });
+
+  it('writes nothing new for a project without additions or triggers', async () => {
+    const { files } = generateJavaProject(
+      input({
+        blocks: [await definition('block', 'kitchen_sink')],
+        items: [await definition('item', 'gadget')],
+        biomeAdditions: [],
+        lootAdditions: [],
+      }),
+    );
+    for (const name of ['ModWorldgen', 'ModLoot', 'TickLimiter', 'CooldownMap']) {
+      expect(files.some((file) => file.path.endsWith(`/${name}.java`))).toBe(false);
+    }
+  });
+
+  it('generates the triggers mirroring MsmItem, MsmBlock and MsmEntity (ADR 0061 D6)', async () => {
+    const items = await Promise.all(
+      ['held_either', 'held_main', 'held_off', 'trigger_sword', 'trigger_wand', 'worn_cap'].map(
+        (path) => definition('item', path),
+      ),
+    );
+    const blocks = await Promise.all(
+      ['inside_block', 'tick_block', 'tick_never', 'trigger_block'].map((path) =>
+        definition('block', path),
+      ),
+    );
+    const { files } = generateJavaProject(
+      input({ items, blocks, entities: [await definition('entity', 'ticker')], geckolib: true }),
+    );
+    await golden('triggers', files);
+    const text = (suffix: string): string =>
+      files.find((file) => file.path.endsWith(suffix))?.contents ?? '';
+    const sword = text('/TriggerSwordItem.java');
+    expect(sword).toContain(
+      'public void hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {',
+    );
+    expect(sword).toContain(
+      'event_hit(server, attacker.blockPosition().below(), attacker.position(), attacker instanceof Player p ? p : null, attacker instanceof Player ? null : attacker, 1);',
+    );
+    const wand = text('/TriggerWandItem.java');
+    expect(wand).toContain('public InteractionResult useOn(UseOnContext context) {');
+    expect(wand).toContain('player.getCooldowns().addCooldown(stack, 10);');
+    expect(wand).toContain(
+      'return vanilla == InteractionResult.PASS ? InteractionResult.SUCCESS : vanilla;',
+    );
+    expect(text('/HeldEitherItem.java')).toContain(
+      'if ((slot == EquipmentSlot.MAINHAND || slot == EquipmentSlot.OFFHAND) && TickLimiter.due(level, owner, 5) && TickLimiter.tryFire(level)) {',
+    );
+    expect(text('/HeldOffItem.java')).toContain('if (slot == EquipmentSlot.OFFHAND && ');
+    expect(text('/WornCapItem.java')).toContain('if (slot == EquipmentSlot.HEAD && ');
+    const inside = text('/InsideBlock.java');
+    expect(inside).toContain('private final CooldownMap insideCooldowns = new CooldownMap();');
+    expect(inside).toContain(
+      '&& insideCooldowns.tryFire(server.dimension(), pos, entity.getUUID(), server.getGameTime(), 5)',
+    );
+    // The cooldown is checked before the shared limiter.
+    expect(inside.indexOf('insideCooldowns.tryFire')).toBeLessThan(
+      inside.indexOf('TickLimiter.tryFire'),
+    );
+    expect(text('/TickNeverBlock.java')).not.toContain('TickLimiter');
+    const modBlocks = text('/ModBlocks.java');
+    expect(modBlocks.match(/\.randomTicks\(\)/g)).toHaveLength(2);
+    const trigger = text('/TriggerBlock.java');
+    expect(trigger).toContain('public BlockState playerWillDestroy(');
+    expect(trigger).toContain(
+      'event_placed(server, pos.immutable(), Vec3.atCenterOf(pos), player, player == null ? placer : null, 1);',
+    );
+    const ticker = text('/TickerEntity.java');
+    expect(ticker).toContain('protected void customServerAiStep(ServerLevel level) {');
+    expect(ticker).toContain(
+      'if (TickLimiter.due(level, this, 5) && TickLimiter.tryFire(level)) {',
+    );
+    expect(ticker).toContain('public SpawnGroupData finalizeSpawn(');
+    const limiter = text('/TickLimiter.java');
+    expect(limiter).toContain('public static final int CAP = 2000;');
+    expect(limiter).toContain(
+      'return Math.floorMod(level.getGameTime() + entity.getId(), (long) interval) == 0;',
+    );
+  });
+
+  it('gives item triggers a mob actor and other (ADR 0061 D1)', () => {
+    const item: DefinitionInput = {
+      id: 'msm_test:leech',
+      path: 'msm/msm_test/item/leech.json',
+      definition: {
+        format: 1,
+        components: {
+          'msm:on_hit': { event: 'msm_test:bite' },
+          'msm:on_use': { event: 'msm_test:bite' },
+          'msm:tool': { tier: 'iron', type: 'mace' },
+          'msm:while_held': { event: 'msm_test:bite', hand: 'main' },
+        },
+        events: {
+          'msm_test:bite': {
+            actions: [
+              { type: 'damage', amount: 1, target: 'other' },
+              { type: 'heal', amount: 1 },
+              { type: 'run_function', function: 'msm_test:mark' },
+            ],
+          },
+        },
+      },
+    };
+    const files = generateJavaProject(input({ items: [item] })).files;
+    const leech = files.find((file) => file.path.endsWith('/LeechItem.java'))?.contents ?? '';
+    expect(leech).toContain('public class LeechItem extends MaceItem {');
+    expect(leech).toContain('LivingEntity other, int depth)');
+    expect(leech).toContain('Actions.damage(level, other, 1.0f);');
+    expect(leech).toContain(
+      'Actions.heal(player != null ? player : entity instanceof LivingEntity living ? living : null, 1.0f);',
+    );
+    expect(leech).toContain(
+      'Actions.runFunction(OWNER, level, origin, player != null ? player : entity, "msm_test:mark");',
+    );
+    // other: the entity hit, the holder, the player of on_use.
+    expect(leech).toContain('attacker instanceof Player ? null : attacker, target, 1);');
+    expect(leech).toContain('owner instanceof LivingEntity living ? living : null, 1);');
+    expect(leech).toContain('player.position(), player, null, player, 1);');
+    const actions = files.find((file) => file.path.endsWith('/Actions.java'))?.contents ?? '';
+    expect(actions).toContain('Vec3 origin, Entity as, String id) {');
+    expect(actions).toContain('the mob\n     * attacking with or holding an item');
+  });
+
+  it('rejects trigger settings the runtime refuses', () => {
+    const item = (components: JsonObject): DefinitionInput => ({
+      id: 'msm_test:thing',
+      path: 'msm/msm_test/item/thing.json',
+      definition: { format: 1, components, events: { 'msm_test:e': { actions: [] } } },
+    });
+    expect(() =>
+      generateJavaProject(input({ items: [item({ 'msm:while_worn': { event: 'msm_test:e' } })] })),
+    ).toThrow(/msm:while_worn without msm:armor cannot be ejected/);
+    expect(() =>
+      generateJavaProject(
+        input({ items: [item({ 'msm:while_held': { event: 'msm_test:e', interval_ticks: 4 } })] }),
+      ),
+    ).toThrow(/interval_ticks must be at least 5/);
+    expect(() =>
+      generateJavaProject(
+        input({ items: [item({ 'msm:while_held': { event: 'msm_test:e', hand: 'both' } })] }),
+      ),
+    ).toThrow(/hand 'both'/);
+    const addition = (definition: JsonObject): DefinitionInput => ({
+      id: 'msm_test:add',
+      path: 'msm/msm_test/biome_addition/add.json',
+      definition: { format: 1, ...definition },
+    });
+    const spawn = {
+      entity: 'minecraft:fox',
+      category: 'creature',
+      weight: 1,
+      min_group: 1,
+      max_group: 1,
+    };
+    expect(() =>
+      generateJavaProject(input({ biomeAdditions: [addition({ biomes: [], spawns: [spawn] })] })),
+    ).toThrow(/biomes must list at least one/);
+    expect(() =>
+      generateJavaProject(input({ biomeAdditions: [addition({ biomes: ['minecraft:plains'] })] })),
+    ).toThrow(/at least one of features and spawns/);
+    expect(() =>
+      generateJavaProject(
+        input({
+          biomeAdditions: [
+            addition({
+              biomes: ['minecraft:plains'],
+              spawns: [{ ...spawn, min_group: 3, max_group: 2 }],
+            }),
+          ],
+        }),
+      ),
+    ).toThrow(/min_group 3 is above max_group 2/);
+    expect(() =>
+      generateJavaProject(
+        input({
+          biomeAdditions: [
+            addition({
+              biomes: ['minecraft:plains'],
+              features: [{ feature: 'a:b', step: 'ores' }],
+            }),
+          ],
+        }),
+      ),
+    ).toThrow(/step 'ores'/);
+    expect(() =>
+      generateJavaProject(
+        input({
+          lootAdditions: [
+            {
+              id: 'msm_test:x',
+              path: 'msm/msm_test/loot_addition/x.json',
+              definition: { format: 1, tables: ['minecraft:entities/zombie'], pools: [] },
+            },
+          ],
+        }),
+      ),
+    ).toThrow(/pools must list at least one pool/);
   });
 
   it('generates the kitchen-sink entity with GeckoLib and the client entrypoint', async () => {

@@ -16,7 +16,10 @@
  * `death_protection`, horse and wolf armour. Throwables (ADR 0056 D7): an `item/<Name>Item`
  * subclass of the generated `item/ThrowableItem` (mirroring `MsmThrowableItem`) with the
  * settings of `msm:throwable`, `msm:on_use` and the hit events, registered with the dispenser
- * when `dispensable`. Minecraft 26.3, Mojang names.
+ * when `dispensable`. The item triggers of ADR 0061 D1 (`msm:on_hit` from `hurtEnemy`,
+ * `msm:on_use_on_block` from `useOn`, `msm:while_held` and `msm:while_worn` from `inventoryTick`
+ * with the shared `TickLimiter`) give the item its own class, as `MsmItem`'s shared handlers.
+ * Minecraft 26.3, Mojang names.
  *
  * @packageDocumentation
  */
@@ -57,8 +60,29 @@ const ITEM_COMPONENTS = [
   'msm:shield',
   'msm:death_protection',
   'msm:throwable',
+  'msm:on_hit',
+  'msm:on_use_on_block',
+  'msm:while_held',
+  'msm:while_worn',
   'msm:components',
 ];
+
+/** `msm:while_held` hands (`HeldHand`) and the slot test of each, as `MsmItem.inventoryTickWithEvent`. */
+const HELD_HANDS: Readonly<Record<string, string>> = {
+  main: 'slot == EquipmentSlot.MAINHAND',
+  off: 'slot == EquipmentSlot.OFFHAND',
+  either: '(slot == EquipmentSlot.MAINHAND || slot == EquipmentSlot.OFFHAND)',
+};
+
+/** The equipment slot an `msm:armor` piece is worn in (`MsmItem.wornSlot`). */
+const WORN_SLOTS: Readonly<Record<string, string>> = {
+  HELMET: 'HEAD',
+  CHESTPLATE: 'CHEST',
+  LEGGINGS: 'LEGS',
+  BOOTS: 'FEET',
+  HORSE: 'BODY',
+  WOLF: 'BODY',
+};
 
 /** Components of which at most one may be on an item (the runtime then applies none). */
 const EXCLUSIVE_COMPONENTS = ['msm:armor', 'msm:ranged_weapon', 'msm:shield', 'msm:tool'] as const;
@@ -240,6 +264,76 @@ interface ItemSpec {
   readonly throwable: ThrowableSpec | undefined;
   /** The `msm:components` object as compact JSON, or `undefined`. */
   readonly vanilla: string | undefined;
+  /** The item triggers of ADR 0061 D1. */
+  readonly triggers: ItemTriggers;
+}
+
+/** The item triggers of ADR 0061 D1, each with its event method. */
+interface ItemTriggers {
+  readonly onHit: string | undefined;
+  readonly onUseOnBlock: { method: string; cooldown: number } | undefined;
+  readonly whileHeld: { method: string; interval: number; hand: string } | undefined;
+  readonly whileWorn: { method: string; interval: number } | undefined;
+}
+
+function hasTriggers(triggers: ItemTriggers): boolean {
+  return (
+    triggers.onHit !== undefined ||
+    triggers.onUseOnBlock !== undefined ||
+    triggers.whileHeld !== undefined ||
+    triggers.whileWorn !== undefined
+  );
+}
+
+/** An `interval_ticks` of a tick trigger: 20 by default, at least 5 (ADR 0061 D4). */
+function intervalOf(reader: Reader): number {
+  const interval = reader.integer('interval_ticks', 20);
+  if (interval < 5) reader.fail('interval_ticks must be at least 5');
+  return interval;
+}
+
+function readTriggers(components: Reader | undefined, events: Events): ItemTriggers {
+  const onHit = components?.object('msm:on_hit');
+  onHit?.onlyKeys(['event'], 'msm:on_hit field');
+  const useOn = components?.object('msm:on_use_on_block');
+  useOn?.onlyKeys(['event', 'cooldown_ticks'], 'msm:on_use_on_block field');
+  const held = components?.object('msm:while_held');
+  held?.onlyKeys(['event', 'interval_ticks', 'hand'], 'msm:while_held field');
+  const worn = components?.object('msm:while_worn');
+  worn?.onlyKeys(['event', 'interval_ticks'], 'msm:while_worn field');
+  if (worn !== undefined && components?.has('msm:armor') !== true) {
+    worn.fail(
+      'msm:while_worn without msm:armor cannot be ejected (the runtime does not apply it: it fires in the armour slot)',
+    );
+  }
+  const cooldown = useOn?.integer('cooldown_ticks', 0) ?? 0;
+  if (cooldown < 0) useOn?.fail('cooldown_ticks must be at least 0');
+  const hand = held?.string('hand', 'main') ?? 'main';
+  if (!Object.hasOwn(HELD_HANDS, hand))
+    held?.fail(`hand '${hand}' is not one of main, off, either`);
+  return {
+    onHit:
+      onHit === undefined ? undefined : eventMethod(onHit, events, onHit.requiredString('event')),
+    onUseOnBlock:
+      useOn === undefined
+        ? undefined
+        : { method: eventMethod(useOn, events, useOn.requiredString('event')), cooldown },
+    whileHeld:
+      held === undefined
+        ? undefined
+        : {
+            method: eventMethod(held, events, held.requiredString('event')),
+            interval: intervalOf(held),
+            hand,
+          },
+    whileWorn:
+      worn === undefined
+        ? undefined
+        : {
+            method: eventMethod(worn, events, worn.requiredString('event')),
+            interval: intervalOf(worn),
+          },
+  };
 }
 
 function readItem(input: DefinitionInput): ItemSpec {
@@ -249,7 +343,15 @@ function readItem(input: DefinitionInput): ItemSpec {
   const components = reader.object('components');
   components?.onlyKeys(ITEM_COMPONENTS, 'component');
   const throwable = components?.object('msm:throwable');
-  const events = readEvents(reader, throwable === undefined ? 'item' : 'throwable');
+  // ADR 0061 D1: on_hit, while_held and while_worn may run with a mob as the actor.
+  const actor = ['msm:on_hit', 'msm:while_held', 'msm:while_worn'].some(
+    (name) => components?.has(name) === true,
+  );
+  const events = readEvents(
+    reader,
+    throwable !== undefined ? 'throwable' : actor ? 'actor_item' : 'item',
+    actor,
+  );
   const food = components?.object('msm:food');
   food?.onlyKeys(['nutrition', 'saturation', 'can_always_eat'], 'msm:food field');
   const tool = components?.object('msm:tool');
@@ -323,6 +425,7 @@ function readItem(input: DefinitionInput): ItemSpec {
           })(),
     throwable: throwable === undefined ? undefined : readThrowable(throwable, events),
     vanilla: vanilla === undefined ? undefined : JSON.stringify(vanilla.value),
+    triggers: readTriggers(components, events),
   };
 }
 
@@ -965,7 +1068,11 @@ export function generateItems(
           `${dispenser}.registerProjectileBehavior(${field}); // dispensable: thrown through ProjectileItem`,
         );
       }
-    } else if (spec.onUse !== undefined || rangedChanges(spec.ranged)) {
+    } else if (
+      spec.onUse !== undefined ||
+      rangedChanges(spec.ranged) ||
+      hasTriggers(spec.triggers)
+    ) {
       const name = classNames.take(className(path, 'Item'), (n) => [`item.${n}`], '');
       writeItemClass(context, spec, name, base ?? 'net.minecraft.world.item.Item');
       type = file.use(`${packageOf(context, 'item')}.${name}`);
@@ -1192,7 +1299,8 @@ function writeItemClass(
   const superType = file.use(base);
   const itemType = file.use('net.minecraft.world.item.Item');
   const members: string[] = [];
-  if (spec.onUse !== undefined) {
+  const hasEvents = spec.onUse !== undefined || hasTriggers(spec.triggers);
+  if (hasEvents) {
     members.push(`private static final String OWNER = ${javaString(spec.input.id)};`, '');
   }
   const { ranged } = spec;
@@ -1226,7 +1334,7 @@ function writeItemClass(
       `        return ${interactionResult}.FAIL;`,
       '    }',
       `    if (level instanceof ${serverLevel} server) {`,
-      `        ${fireCall(onUse.method, 'server, player.blockPosition().below(), player.position(), player, null')}`,
+      `        ${fireCall(onUse.method, withOther(spec, 'server, player.blockPosition().below(), player.position(), player, null', 'player'))}`,
       '    }',
     );
     if (onUse.cooldown > 0)
@@ -1238,9 +1346,17 @@ function writeItemClass(
     );
   }
   if (ranged !== undefined) members.push(...rangedMembers(file, ranged));
-  if (spec.onUse !== undefined) {
+  members.push(...triggerMembers(context, file, spec));
+  if (hasEvents) {
     const actions = noteActions(context, file, spec.events);
-    members.push(...eventMethods(file, spec.events, 'item', actions));
+    members.push(
+      ...eventMethods(
+        file,
+        spec.events,
+        hasTriggers(spec.triggers) ? 'actor_item' : 'item',
+        actions,
+      ),
+    );
   }
   const lines = [
     `/** The item {@code ${spec.input.id}}. */`,
@@ -1333,7 +1449,8 @@ function writeThrowableItemClass(
   const hasEvents =
     spec.onUse !== undefined ||
     throwable.onHitEntity !== undefined ||
-    throwable.onHitBlock !== undefined;
+    throwable.onHitBlock !== undefined ||
+    hasTriggers(spec.triggers);
   const members: string[] = [
     `private static final String OWNER = ${javaString(spec.input.id)};`,
     '',
@@ -1400,6 +1517,7 @@ function writeThrowableItemClass(
       '}',
     );
   }
+  members.push(...triggerMembers(context, file, spec));
   if (hasEvents) {
     const actions = noteActions(context, file, spec.events);
     members.push(...eventMethods(file, spec.events, 'throwable', actions));
@@ -1411,4 +1529,119 @@ function writeThrowableItemClass(
     '}',
   ];
   context.files.push({ path: classPath(context, 'item', name), contents: file.render(lines) });
+}
+
+/** `args` with `other` appended when the item's events take an `other` parameter. */
+function withOther(spec: ItemSpec, args: string, other: string): string {
+  return spec.events.otherParameter ? `${args}, ${other}` : args;
+}
+
+/**
+ * The overrides of the ADR 0061 D1 item triggers, as `MsmItem`'s shared handlers (every MSM item
+ * class, throwables included, calls them): `msm:on_hit` from `hurtEnemy` (not `postHurtEnemy`,
+ * which vanilla calls only for a player's hit), `msm:on_use_on_block` from `useOn` (the result
+ * and cooldown on both sides, the event on the server, `PASS` turned into `SUCCESS` so `use`
+ * does not run for the click), `msm:while_held` and `msm:while_worn` from `inventoryTick` (a
+ * `null` slot, a backpack slot, never fires; due when `(game time + entity id) % interval == 0`,
+ * within the shared `TickLimiter`).
+ */
+function triggerMembers(context: GenerationContext, file: JavaFile, spec: ItemSpec): string[] {
+  const { onHit, onUseOnBlock, whileHeld, whileWorn } = spec.triggers;
+  const out: string[] = [];
+  const serverLevel = () => file.use('net.minecraft.server.level.ServerLevel');
+  const player = () => file.use('net.minecraft.world.entity.player.Player');
+  const living = () => file.use('net.minecraft.world.entity.LivingEntity');
+  const itemStack = () => file.use('net.minecraft.world.item.ItemStack');
+  if (onHit !== undefined) {
+    out.push(
+      '',
+      "/** msm:on_hit: after the item hits a living entity (a player's or a mob's hit, a spear stab); self is the attacker, other the entity hit. */",
+      '@Override',
+      `public void hurtEnemy(${itemStack()} stack, ${living()} target, ${living()} attacker) {`,
+      '    super.hurtEnemy(stack, target, attacker);',
+      `    if (attacker.level() instanceof ${serverLevel()} server) {`,
+      `        ${fireCall(onHit, withOther(spec, `server, attacker.blockPosition().below(), attacker.position(), attacker instanceof ${player()} p ? p : null, attacker instanceof ${player()} ? null : attacker`, 'target'))}`,
+      '    }',
+      '}',
+    );
+  }
+  if (onUseOnBlock !== undefined) {
+    const interactionResult = file.use('net.minecraft.world.InteractionResult');
+    const useOnContext = file.use('net.minecraft.world.item.context.UseOnContext');
+    out.push(
+      '',
+      '/** msm:on_use_on_block: fires the event on the clicked block, then starts the cooldown; the vanilla use follows. Without a player (a dispenser) vanilla runs alone. */',
+      '@Override',
+      `public ${interactionResult} useOn(${useOnContext} context) {`,
+      `    ${player()} player = context.getPlayer();`,
+      '    if (player == null) {',
+      '        return super.useOn(context);',
+      '    }',
+      `    ${itemStack()} stack = context.getItemInHand();`,
+      '    if (player.getCooldowns().isOnCooldown(stack)) {',
+      `        return ${interactionResult}.FAIL;`,
+      '    }',
+      `    if (context.getLevel() instanceof ${serverLevel()} server) {`,
+      `        ${fireCall(onUseOnBlock.method, withOther(spec, 'server, context.getClickedPos().immutable(), context.getClickLocation(), player, null', 'player'))}`,
+      '    }',
+    );
+    if (onUseOnBlock.cooldown > 0) {
+      out.push(`    player.getCooldowns().addCooldown(stack, ${javaInt(onUseOnBlock.cooldown)});`);
+    }
+    out.push(
+      `    ${interactionResult} vanilla = super.useOn(context);`,
+      `    return vanilla == ${interactionResult}.PASS ? ${interactionResult}.SUCCESS : vanilla;`,
+      '}',
+    );
+  }
+  if (whileHeld !== undefined || whileWorn !== undefined) {
+    context.usesTickLimiter = true;
+    const tickLimiter = file.use(`${context.input.javaPackage}.TickLimiter`);
+    const entity = file.use('net.minecraft.world.entity.Entity');
+    const slotType = file.use('net.minecraft.world.entity.EquipmentSlot');
+    const fire = (method: string): string =>
+      fireCall(
+        method,
+        withOther(
+          spec,
+          `level, owner.blockPosition().below(), owner.position(), owner instanceof ${player()} p ? p : null, owner instanceof ${player()} ? null : owner`,
+          `owner instanceof ${living()} living ? living : null`,
+        ),
+      );
+    const body: string[] = [];
+    if (whileHeld !== undefined) {
+      body.push(
+        `// msm:while_held (hand ${whileHeld.hand}): every ${whileHeld.interval} ticks.`,
+        `if (${HELD_HANDS[whileHeld.hand]} && ${tickLimiter}.due(level, owner, ${javaInt(whileHeld.interval)}) && ${tickLimiter}.tryFire(level)) {`,
+        `    ${fire(whileHeld.method)}`,
+        '}',
+      );
+    }
+    if (whileWorn !== undefined) {
+      const slot = WORN_SLOTS[spec.armor?.slot ?? ''] as string;
+      body.push(
+        `// msm:while_worn: every ${whileWorn.interval} ticks in the armour slot.`,
+        `if (slot == ${slotType}.${slot} && ${tickLimiter}.due(level, owner, ${javaInt(whileWorn.interval)}) && ${tickLimiter}.tryFire(level)) {`,
+        `    ${fire(whileWorn.method)}`,
+        '}',
+      );
+    }
+    out.push(
+      '',
+      '/**',
+      ' * msm:while_held and msm:while_worn: vanilla reports each stack once per tick, the selected slot as MAINHAND and the',
+      ' * rest of the inventory as null (never fires); due when (game time + entity id) is a multiple of the interval,',
+      ' * within the shared tick cap.',
+      ' */',
+      '@Override',
+      `public void inventoryTick(${itemStack()} stack, ${serverLevel()} level, ${entity} owner, ${slotType} slot) {`,
+      '    super.inventoryTick(stack, level, owner, slot);',
+      '    if (slot == null) {',
+      '        return;',
+      '    }',
+      ...indent(body),
+      '}',
+    );
+  }
+  return out;
 }

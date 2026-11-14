@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:on_random_tick": {
+      "event": "msm_test:ticked"
+    }
+  },
+  "events": {
+    "msm_test:ticked": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    }
+  },
+  "format": 1
+}

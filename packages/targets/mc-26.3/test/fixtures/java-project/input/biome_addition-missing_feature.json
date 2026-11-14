@@ -1,0 +1,19 @@
+{
+  "biomes": ["minecraft:savanna"],
+  "features": [
+    {
+      "feature": "msm_test:missing_feature",
+      "step": "vegetal_decoration"
+    }
+  ],
+  "format": 1,
+  "spawns": [
+    {
+      "category": "monster",
+      "entity": "msm_test:missing_mob",
+      "max_group": 1,
+      "min_group": 1,
+      "weight": 1
+    }
+  ]
+}

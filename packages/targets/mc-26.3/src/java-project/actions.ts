@@ -17,7 +17,13 @@
  * (ADR 0058 D1, the runtime's `EventContext.forBlockStep`) passes a stepper that is not a
  * player as `entity`: `self` and `other` are then the player, else the stepper (living for
  * `apply_effect`, `damage`, `heal` and an `other` launch), `run_function` runs as the player,
- * else the stepper, and `play_sound` stays in the block sound source.
+ * else the stepper, and `play_sound` stays in the block sound source. The triggers of ADR 0061
+ * follow the same actor rule: a block with `msm:on_place` or `msm:on_entity_inside` is a
+ * `step_block` (the placer or the entity inside is the actor), and an item with `msm:on_hit`,
+ * `msm:while_held` or `msm:while_worn` is an `actor_item`: `self` is the player, else the mob
+ * attacking with or holding the item, `other` is a parameter (the entity hit, the holder, or the
+ * player of `msm:on_use` and `msm:on_use_on_block`), and `run_function` runs as the player, else
+ * that mob (the runtime's `EventContext.forItemHit` and `forHolder`, ADR 0061 D1).
  *
  * @packageDocumentation
  */
@@ -28,10 +34,20 @@ import { eventMethodNames } from './names';
 import type { Reader } from './read';
 
 /**
- * Where an event's definition lives. `step_block` is a block with `msm:on_step`, whose events
- * may run with a stepping entity that is not a player (ADR 0058 D1).
+ * Where an event's definition lives. `step_block` is a block with `msm:on_step`,
+ * `msm:on_place` or `msm:on_entity_inside`, whose events may run with an actor that is not a
+ * player (ADR 0058 D1, ADR 0061 D2); `actor_item` is an item with `msm:on_hit`,
+ * `msm:while_held` or `msm:while_worn`, whose events may run with a mob as the actor (ADR 0061
+ * D1).
  */
-export type EventOwnerKind = 'block' | 'step_block' | 'item' | 'entity' | 'effect' | 'throwable';
+export type EventOwnerKind =
+  | 'block'
+  | 'step_block'
+  | 'item'
+  | 'actor_item'
+  | 'entity'
+  | 'effect'
+  | 'throwable';
 
 /**
  * Whether `self` falls back to the event's entity when there is no player (entities, effect
@@ -39,7 +55,13 @@ export type EventOwnerKind = 'block' | 'step_block' | 'item' | 'entity' | 'effec
  * is the player.
  */
 function selfFallsBackToEntity(kind: EventOwnerKind): boolean {
-  return kind === 'entity' || kind === 'effect' || kind === 'throwable' || kind === 'step_block';
+  return (
+    kind === 'entity' ||
+    kind === 'effect' ||
+    kind === 'throwable' ||
+    kind === 'step_block' ||
+    kind === 'actor_item'
+  );
 }
 
 /**
@@ -48,7 +70,7 @@ function selfFallsBackToEntity(kind: EventOwnerKind): boolean {
  * from the player or the stepper, as the runtime's `forBlockStep`.
  */
 function takesOther(kind: EventOwnerKind): boolean {
-  return kind === 'entity' || kind === 'effect' || kind === 'throwable';
+  return kind === 'entity' || kind === 'effect' || kind === 'throwable' || kind === 'actor_item';
 }
 
 /** Action types the generator writes. `run_script` is removed by the exporter beforehand. */
@@ -90,8 +112,18 @@ export interface Events {
   /** Whether any action is `heal` (the `Actions` helper then has `heal`, ADR 0055 D4). */
   readonly heals: boolean;
   /**
-   * Whether a step block's event uses `run_function` (`Actions.runFunction` then takes any
-   * entity to run as, the stepper when there is no player; ADR 0058 D1).
+   * Whether `run_function` runs as the player, else the event's entity (a step block's stepper,
+   * ADR 0058 D1; an ADR 0061 trigger's actor), rather than as the player only.
+   */
+  readonly functionsAsActor: boolean;
+  /**
+   * Whether the owner has an ADR 0061 trigger whose actor may be an entity that is not a player
+   * (`msm:on_place`, `msm:on_entity_inside`, `msm:on_hit`, `msm:while_held`, `msm:while_worn`).
+   */
+  readonly triggerActor: boolean;
+  /**
+   * Whether an event uses `run_function` with {@link Events.functionsAsActor}
+   * (`Actions.runFunction` then takes any entity to run as).
    */
   readonly runsFunctionsAsStepper: boolean;
 }
@@ -102,8 +134,11 @@ const TARGETED_ACTIONS = ['apply_effect', 'launch', 'damage', 'heal'];
 /**
  * Reads and checks a definition's `events`: every event has an `actions` list, every action
  * a known `type`, every `trigger_event` names a declared event.
+ *
+ * @param triggerActor - Whether the owner has an ADR 0061 trigger with a non-player actor
+ *   (`run_function` then runs as that actor when there is no player, also for a throwable).
  */
-export function readEvents(definition: Reader, kind: EventOwnerKind): Events {
+export function readEvents(definition: Reader, kind: EventOwnerKind, triggerActor = false): Events {
   const events = definition.object('events');
   const byId = new Map<string, Reader[]>();
   if (events !== undefined) {
@@ -147,8 +182,15 @@ export function readEvents(definition: Reader, kind: EventOwnerKind): Events {
     launches: used.has('launch'),
     damages: used.has('damage'),
     heals: used.has('heal'),
-    runsFunctionsAsStepper: kind === 'step_block' && used.has('run_function'),
+    functionsAsActor: actorFunctions(kind, triggerActor),
+    triggerActor,
+    runsFunctionsAsStepper: actorFunctions(kind, triggerActor) && used.has('run_function'),
   };
+}
+
+/** Whether `run_function` runs as the actor when there is no player (ADR 0058 D1, ADR 0061 D1). */
+function actorFunctions(kind: EventOwnerKind, triggerActor: boolean): boolean {
+  return kind === 'step_block' || kind === 'actor_item' || triggerActor;
 }
 
 /** The `target` of an `apply_effect`, `launch`, `damage` or `heal`: `self` (the default) or `other`. */
@@ -202,6 +244,8 @@ export function noteActions(context: GenerationContext, file: JavaFile, events: 
   if (events.damages) context.usesDamage = true;
   if (events.heals) context.usesHeal = true;
   if (events.runsFunctionsAsStepper) context.usesRunFunctionAsEntity = true;
+  if (events.runsFunctionsAsStepper && events.triggerActor)
+    context.usesRunFunctionAsTriggerActor = true;
   return file.use(`${context.input.javaPackage}.Actions`);
 }
 
@@ -287,8 +331,9 @@ function actionLines(
   switch (type) {
     case 'run_function': {
       action.onlyKeys(['type', 'function'], 'run_function field');
-      // ADR 0058 D1: in a block step event without a player, the function runs as the stepper.
-      const as = kind === 'step_block' ? 'player != null ? player : entity' : 'player';
+      // ADR 0058 D1: in a block step event without a player, the function runs as the stepper;
+      // ADR 0061 D1, D2: the same for a placer, an entity inside and an item's mob actor.
+      const as = events.functionsAsActor ? 'player != null ? player : entity' : 'player';
       return [
         `${actions}.runFunction(OWNER, level, origin, ${as}, ${javaString(action.requiredString('function'))});`,
       ];

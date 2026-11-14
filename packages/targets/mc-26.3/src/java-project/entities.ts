@@ -5,7 +5,9 @@
  * the spawn egg `SpawnEggItem(Item.Properties.setId(key).spawnEgg(type))` and the natural
  * spawn through `BiomeModifications.addSpawn`), and one `entity/<Name>Entity.java` per entity:
  * a `PathfinderMob implements GeoEntity` mirroring `MsmEntity` (attributes, goals, the four
- * trigger overrides, the loot table, the mob sounds of ADR 0057 D6) and `MsmGeoEntity` (the
+ * trigger overrides, `msm:on_tick` from `customServerAiStep` with the shared `TickLimiter` and
+ * `msm:on_spawn` from `finalizeSpawn` (ADR 0061 D3), the loot table, the mob sounds of ADR 0057
+ * D6) and `MsmGeoEntity` (the
  * `msm_main` and `msm_triggered` controllers). A `sounds` id that is not registered keeps the
  * vanilla sound and is warned about once the server has started, as the runtime's
  * `MsmEntityRegistrar.checkAfterStart`. Minecraft 26.3 and GeckoLib 5, Mojang names.
@@ -65,8 +67,10 @@ const ENTITY_COMPONENTS = [
   'msm:on_hurt',
   'msm:on_death',
   'msm:on_interact',
+  'msm:on_tick',
+  'msm:on_spawn',
 ];
-const CATEGORIES = [
+export const CATEGORIES = [
   'monster',
   'creature',
   'ambient',
@@ -138,6 +142,10 @@ interface EntitySpec {
   readonly onHurt: string | undefined;
   readonly onDeath: string | undefined;
   readonly onInteract: string | undefined;
+  /** `msm:on_tick` (ADR 0061 D3): the event method and the interval. */
+  readonly onTick: { method: string; interval: number } | undefined;
+  /** Method of the `msm:on_spawn` event (ADR 0061 D3). */
+  readonly onSpawn: string | undefined;
   readonly events: Events;
   readonly sounds: Sounds | undefined;
 }
@@ -247,6 +255,10 @@ function readEntity(input: DefinitionInput): EntitySpec {
     if (!GOAL_TYPES.includes(type)) goal.fail(`goal type '${type}' cannot be ejected`);
   }
   const onAttack = attack?.optionalString('on_attack');
+  const onTick = components.object('msm:on_tick');
+  onTick?.onlyKeys(['event', 'interval_ticks'], 'msm:on_tick field');
+  const tickInterval = onTick?.integer('interval_ticks', 20) ?? 20;
+  if (tickInterval < 5) onTick?.fail('interval_ticks must be at least 5');
 
   return {
     input,
@@ -288,6 +300,14 @@ function readEntity(input: DefinitionInput): EntitySpec {
     onHurt: eventOf(components.object('msm:on_hurt'), events),
     onDeath: eventOf(components.object('msm:on_death'), events),
     onInteract: eventOf(components.object('msm:on_interact'), events),
+    onTick:
+      onTick === undefined
+        ? undefined
+        : {
+            method: eventMethod(onTick, events, onTick.requiredString('event')),
+            interval: tickInterval,
+          },
+    onSpawn: eventOf(components.object('msm:on_spawn'), events),
     events,
     sounds: readSounds(reader),
   };
@@ -768,6 +788,38 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
       `        ${fireCall(spec.onInteract, fireArgs('player'))}`,
       '    }',
       `    return ${interactionResult}.SUCCESS;`,
+      '}',
+    );
+  }
+  if (spec.onTick !== undefined) {
+    context.usesTickLimiter = true;
+    const tickLimiter = file.use(`${context.input.javaPackage}.TickLimiter`);
+    members.push(
+      '',
+      `/** msm:on_tick: every ${spec.onTick.interval} ticks while the AI runs (never with NoAI), staggered by entity id, within the shared tick cap. */`,
+      '@Override',
+      `protected void customServerAiStep(${serverLevel()} level) {`,
+      '    super.customServerAiStep(level);',
+      `    if (${tickLimiter}.due(level, this, ${javaInt(spec.onTick.interval)}) && ${tickLimiter}.tryFire(level)) {`,
+      `        ${fireCall(spec.onTick.method, fireArgs('null'))}`,
+      '    }',
+      '}',
+    );
+  }
+  if (spec.onSpawn !== undefined) {
+    const spawnGroupData = file.use('net.minecraft.world.entity.SpawnGroupData');
+    const accessor = file.use('net.minecraft.world.level.ServerLevelAccessor');
+    const difficulty = file.use('net.minecraft.world.DifficultyInstance');
+    const reason = file.use('net.minecraft.world.entity.EntitySpawnReason');
+    members.push(
+      '',
+      '/** msm:on_spawn: once when the mob spawns (natural, egg, spawner, command), before it joins the level; not when it loads with its chunk. */',
+      '@Override',
+      `public ${spawnGroupData} finalizeSpawn(${accessor} accessor, ${difficulty} difficulty, ${reason} reason, ${spawnGroupData} data) {`,
+      `    ${spawnGroupData} out = super.finalizeSpawn(accessor, difficulty, reason, data);`,
+      `    ${serverLevel()} level = accessor.getLevel();`,
+      `    ${fireCall(spec.onSpawn, fireArgs('null'))}`,
+      '    return out;',
       '}',
     );
   }
