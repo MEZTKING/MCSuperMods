@@ -3,6 +3,8 @@ package dev.mcsupermods.runtime.registry;
 import dev.mcsupermods.runtime.components.BlockComponents;
 import dev.mcsupermods.runtime.loader.BlockDefinition;
 import dev.mcsupermods.runtime.loader.BlockType;
+import dev.mcsupermods.runtime.registry.container.BlockEntityHooks;
+import dev.mcsupermods.runtime.registry.container.MsmContainerBlock;
 import dev.mcsupermods.runtime.registry.types.DrivenBlock;
 import java.util.EnumMap;
 import java.util.List;
@@ -42,7 +44,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * {@code horizontal} and {@code directional} (ADR 0067 D4): shapes, the POWERED property and, for the rotating types, the
  * AXIS or FACING property with placement, {@code rotate}, {@code mirror} and per-state shapes live here; events, triggers
  * and redstone are delegated to {@link BlockBehaviourDriver}. Vanilla {@code Block} overrides cover every component, so
- * no Mixin is needed.
+ * no Mixin is needed. Subclasses (ADR 0074 D2: {@link MsmContainerBlock}) call the protected constructor with a
+ * {@link Setup}; {@link #create} chooses the class through {@link BlockEntityHooks}.
  */
 public class MsmBlock extends Block implements DrivenBlock {
     /** Present only on blocks with {@code msm:redstone} events: the last seen neighbour power. */
@@ -53,11 +56,34 @@ public class MsmBlock extends Block implements DrivenBlock {
     public static final EnumProperty<Direction> HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
     /** {@code directional}: six ways, towards the placer, as a dropper. */
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
+    /** Present only on blocks whose set-up asks for it (ADR 0074 D3): true while a player has the container open. */
+    public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
+    /** Present only on blocks whose set-up asks for it (ADR 0075 D1): true while a machine works. */
+    public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
-    /** The state definition is built inside {@code super(...)}, before fields exist; this carries the choice in. */
-    private record Setup(boolean tracksPower, BlockType type) {}
+    /**
+     * The block state properties a block is built with. The state definition is built inside {@code super(...)}, before
+     * fields exist, so the constructor hands this in through a thread-local.
+     *
+     * @param tracksPower adds {@link #POWERED} (blocks with {@code msm:redstone} events)
+     * @param type {@code block}, {@code pillar} (adds {@link #AXIS}), {@code horizontal} ({@link #HORIZONTAL_FACING}) or
+     *     {@code directional} ({@link #FACING})
+     * @param open adds {@link #OPEN}, default false
+     * @param lit adds {@link #LIT}, default false
+     */
+    public record Setup(boolean tracksPower, BlockType type, boolean open, boolean lit) {
+        /**
+         * The set-up of {@code definition}: any type without a block class of its own ({@link BlockType#shaped()} false)
+         * is a plain {@link BlockType#BLOCK}; {@code open} and {@code lit} are decided by {@link BlockEntityHooks}.
+         */
+        public static Setup of(BlockDefinition definition) {
+            BlockType type = definition.type().shaped() ? definition.type() : BlockType.BLOCK;
+            return new Setup(definition.components().reactsToRedstone(), type, BlockEntityHooks.hasOpenProperty(definition),
+                    BlockEntityHooks.hasLitProperty(definition));
+        }
+    }
 
-    private static final ThreadLocal<Setup> SETUP = ThreadLocal.withInitial(() -> new Setup(false, BlockType.BLOCK));
+    private static final ThreadLocal<Setup> SETUP = new ThreadLocal<>();
 
     private final BlockBehaviourDriver driver;
     /** {@link BlockType#PILLAR}, {@link BlockType#HORIZONTAL}, {@link BlockType#DIRECTIONAL} or {@link BlockType#BLOCK}. */
@@ -72,22 +98,26 @@ public class MsmBlock extends Block implements DrivenBlock {
 
     /**
      * A block of {@code type}; any type without a block class of its own ({@link BlockType#shaped()} or one not
-     * registered yet) is created as a plain {@link BlockType#BLOCK}.
+     * registered yet) is created as a plain {@link BlockType#BLOCK}. A definition that will have a block entity
+     * ({@link BlockEntityHooks#wantsBlockEntity}) is created as a {@link MsmContainerBlock}.
      */
     public static MsmBlock create(Identifier id, BlockDefinition definition, Properties properties) {
-        BlockType type = definition.type().shaped() ? definition.type() : BlockType.BLOCK;
-        SETUP.set(new Setup(definition.components().reactsToRedstone(), type));
+        Setup setup = Setup.of(definition);
         try {
-            return new MsmBlock(id, definition, type, properties);
+            return BlockEntityHooks.wantsBlockEntity(definition)
+                    ? new MsmContainerBlock(id, definition, setup, properties)
+                    : new MsmBlock(id, definition, setup, properties);
         } finally {
-            SETUP.remove();
+            SETUP.remove(); // also when the constructor throws
         }
     }
 
-    private MsmBlock(Identifier id, BlockDefinition definition, BlockType type, Properties properties) {
-        super(properties);
+    /** Subclasses pass the {@link Setup} of {@link Setup#of} (or their own) and keep every behaviour of this class. */
+    protected MsmBlock(Identifier id, BlockDefinition definition, Setup setup, Properties properties) {
+        super(stage(setup, properties));
+        SETUP.remove();
         this.driver = new BlockBehaviourDriver(id, definition);
-        this.type = type;
+        this.type = setup.type();
         BlockComponents c = definition.components();
         this.seeThrough = c.shape().map(BlockComponents.Shape::seeThrough).orElse(false);
         VoxelShape base = c.shape().map(MsmBlock::voxelShape).orElse(null);
@@ -117,7 +147,19 @@ public class MsmBlock extends Block implements DrivenBlock {
             case DIRECTIONAL -> state = state.setValue(FACING, Direction.NORTH);
             default -> {}
         }
+        if (setup.open()) {
+            state = state.setValue(OPEN, false);
+        }
+        if (setup.lit()) {
+            state = state.setValue(LIT, false);
+        }
         registerDefaultState(state);
+    }
+
+    /** Sets the thread-local read by {@link #createBlockStateDefinition} before {@code super(...)} runs. */
+    private static Properties stage(Setup setup, Properties properties) {
+        SETUP.set(setup);
+        return properties;
     }
 
     /** The type this block was built as: {@code block}, {@code pillar}, {@code horizontal} or {@code directional}. */
@@ -150,6 +192,12 @@ public class MsmBlock extends Block implements DrivenBlock {
             case HORIZONTAL -> builder.add(HORIZONTAL_FACING);
             case DIRECTIONAL -> builder.add(FACING);
             default -> {}
+        }
+        if (setup.open()) {
+            builder.add(OPEN);
+        }
+        if (setup.lit()) {
+            builder.add(LIT);
         }
     }
 

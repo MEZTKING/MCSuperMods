@@ -3261,3 +3261,11 @@ Decisions
 Next
 - B314 and B316: the runtime `ConformanceCorpusTest` throws on the new `container-` and `machine-` definition files (unknown prefix) until they add the prefixes and Codecs; the engine-mod build is red from this commit until then.
 - B315: a schema reference for `::msm::recipe::MachineRecipe` if lowering wants one; the `packages/schemas/CLAUDE.md` contents line (B327).
+
+## 2026-11-14 — executor — B312 MsmBlock prepared for block entities
+
+What: Prepared the runtime for containers and machines (PLAN-containers-machines B312; ADR 0074 D2, D3, ADR 0075 D1, D3) with no behaviour change. `MsmBlock`'s constructor is protected and takes a public `MsmBlock.Setup(boolean tracksPower, BlockType type, boolean open, boolean lit)` record (`Setup.of(BlockDefinition)` builds it); `open` and `lit` add vanilla's `OPEN` and `LIT` properties (default false) next to `POWERED` and the facing properties, `rotate` and `mirror` untouched. `MsmBlock.create` builds a new `registry/container/MsmContainerBlock` (`extends MsmBlock implements EntityBlock`, `newBlockEntity` returns null) when `BlockEntityHooks.wantsBlockEntity` says so. New `registry/container/BlockEntityHooks`: `wantsBlockEntity`, `hasOpenProperty`, `hasLitProperty` (all false), `afterBlockRegistered(RawDefinition, BlockDefinition, Block, List<String>)` (no-op), called by `MsmRegistrar.registerBlock` right after `Registry.register`, and the counters behind the new log line `[msm_runtime] registered N block entity type(s) and M machine recipe type(s)` (0 and 0). `BlockTypes` needed no change. Builds: 26.3, 26.4 and without GeckoLib green with 309 GameTests per variant and all JUnit; parity on 26.3 green.
+
+Decisions: the thread-local set-up is now staged inside the protected constructor (`super(stage(setup, properties))`) so subclasses need no factory of their own; `create` still clears it in `finally`. The `open`/`lit` decisions live in `BlockEntityHooks` too, so B314 and B316 change only files under `registry/container/` (and their own) and never `MsmBlock`.
+
+Next: B314 fills `wantsBlockEntity`, `hasOpenProperty`, `afterBlockRegistered` and `newBlockEntity`; B316 the machine branches and `hasLitProperty`, counting through `countBlockEntityType` and `countMachineRecipeType`.

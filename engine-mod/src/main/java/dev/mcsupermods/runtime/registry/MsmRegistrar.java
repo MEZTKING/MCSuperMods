@@ -17,6 +17,7 @@ import dev.mcsupermods.runtime.loader.MsmRarity;
 import dev.mcsupermods.runtime.loader.ParseResult;
 import dev.mcsupermods.runtime.loader.PotionDefinition;
 import dev.mcsupermods.runtime.loader.RawDefinition;
+import dev.mcsupermods.runtime.registry.container.BlockEntityHooks;
 import dev.mcsupermods.runtime.registry.types.BlockTypes;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -176,6 +177,8 @@ public final class MsmRegistrar {
         registerStairs(stairs, blocks, items, errors, warnings, typeCounts);
         MsmRuntime.LOGGER.info("[{}] registered blocks by type: {}", MsmRuntime.MOD_ID, typeCounts.isEmpty() ? "none"
                 : String.join(", ", typeCounts.entrySet().stream().map(e -> e.getKey().id() + " " + e.getValue()).toList()));
+        MsmRuntime.LOGGER.info("[{}] registered {} block entity type(s) and {} machine recipe type(s)", MsmRuntime.MOD_ID,
+                BlockEntityHooks.blockEntityTypes(), BlockEntityHooks.machineRecipeTypes());
         for (RawDefinition raw : scanned.definitions()) {
             if (!raw.kind().equals("item")) {
                 continue;
@@ -440,6 +443,7 @@ public final class MsmRegistrar {
         }
         Block block = Registry.register(BuiltInRegistries.BLOCK, blockKey,
                 BlockTypes.create(id, def, props, stairsBase, w -> warn(warnings, raw.describe() + ": " + w)));
+        BlockEntityHooks.afterBlockRegistered(raw, def, block, errors); // ADR 0074 D2, ADR 0075 D3
         BlockExtras.apply(block, c); // msm:flammable, msm:strippable (ADR 0067 D3, D4)
         c.strippable().ifPresent(strip -> LATE.add(new LateCheck(raw.describe(), "msm:strippable into", strip.into())));
 
