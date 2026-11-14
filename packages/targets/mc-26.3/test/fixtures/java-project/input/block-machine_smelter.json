@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:machine": {
+      "recipe_types": [
+        "minecraft:smelting"
+      ]
+    }
+  },
+  "format": 1
+}

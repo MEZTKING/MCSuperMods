@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:machine": {
+      "comparator": "none",
+      "default_time": 40,
+      "hoppers": false,
+      "power": "always",
+      "recipe_types": [
+        "msm_test:machine_grinder"
+      ]
+    }
+  },
+  "format": 1
+}

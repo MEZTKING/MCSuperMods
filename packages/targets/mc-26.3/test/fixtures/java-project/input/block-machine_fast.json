@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:machine": {
+      "default_time": 40,
+      "power": "always",
+      "recipe_types": [
+        "msm_test:machine_grinder"
+      ],
+      "speed": 2
+    }
+  },
+  "format": 1
+}

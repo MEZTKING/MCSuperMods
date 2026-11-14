@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:machine": {
+      "default_time": 20,
+      "menu": "smoker",
+      "power": "redstone"
+    }
+  },
+  "format": 1,
+  "type": "pillar"
+}

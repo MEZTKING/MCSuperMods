@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:container": {
+      "keep_contents": true,
+      "rows": 3
+    }
+  },
+  "format": 1,
+  "type": "pillar"
+}

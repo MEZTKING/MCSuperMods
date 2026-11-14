@@ -9,9 +9,15 @@
  * Output: `src/main/java/<package>/` with `<ModClass>.java`, `ModSounds.java` (when the
  * resource pack defines sound events, ADR 0057 D5), `ModEffects.java`, `ModPotions.java` (when
  * the project has potions, ADR 0063 D8),
- * `ModBlocks.java`, `ModItems.java`, `ModEntities.java`, `Actions.java`, `VanillaComponents.java`
- * (when an item uses `msm:components`), `effect/` (with `MobEffectBase.java`, ADR 0055 D10),
- * `block/`, `item/` (with `ThrowableItem.java` when an item has `msm:throwable`), `entity/`
+ * `ModBlocks.java`, `ModBlockEntities.java` and `ModRecipes.java` (with containers and machines,
+ * ADR 0074 D9, ADR 0075 D11), `ModItems.java`, `ModEntities.java`, `Actions.java`,
+ * `VanillaComponents.java` (when an item uses `msm:components`), `effect/` (with
+ * `MobEffectBase.java`, ADR 0055 D10), `block/` (with the shared container and machine classes
+ * copied from the runtime: `StorageBlockEntity`, `ContainerSpec`, `ContainerMenus`,
+ * `ContainerOpeners`, `HolderInteraction`, `ContainerBlockItem`, `MachineBlockEntity`,
+ * `MachineSpec`, `MachineData`, `MachineFurnaceMenu`, `MachineResultSlot`, `BlockEvents`, and one
+ * `<Name>BlockEntity.java` per container or machine block), `recipe/` (`MachineRecipe`,
+ * `MachineInput`, `MachineRecipes`, with machines), `item/` (with `ThrowableItem.java` when an item has `msm:throwable`), `entity/`
  * (with `FollowTypesGoal.java` when a follow goal exists, `MobRangedAttackGoal.java` when a
  * ranged attack goal exists (ADR 0070 D8) and `ThrownItemEntity.java` with
  * throwables, ADR 0056 D7), and `client/` with `<ModClass>Client.java` when the project has
@@ -29,11 +35,13 @@
 import type { GeneratedFile, JavaProjectGenerator, JavaProjectInput } from '@msm/plugin-api';
 import { generateBlocks } from './blocks';
 import { generateClient } from './client';
+import { BLOCK_ENTITY_CLASS_NAMES, generateBlockEntities } from './containers';
 import type { GenerationContext } from './context';
 import { generateEffects } from './effects';
 import { generateEntities } from './entities';
 import { generateItems } from './items';
 import { generateLoot } from './loot';
+import { generateRecipes } from './machines';
 import { generateMod } from './mod';
 import { NameTable, splitId } from './names';
 import { generatePotions } from './potions';
@@ -97,6 +105,7 @@ export function generateJavaProject(input: JavaProjectInput): {
     'entity.MobRangedAttackGoal',
     'client.entity.GeoModelBase',
     'effect.MobEffectBase',
+    ...BLOCK_ENTITY_CLASS_NAMES,
   );
   if (throwables) classNames.reserve('item.ThrowableItem', 'entity.ThrownItemEntity');
   const registrations: string[] = [];
@@ -123,6 +132,11 @@ export function generateJavaProject(input: JavaProjectInput): {
   }
   const blocks = generateBlocks(context, classNames);
   if (blocks !== undefined) registrations.push(blocks.className);
+  // Block entity types after the blocks, then the machines' recipe types (ADR 0074 D9, ADR 0075 D11).
+  const blockEntities = generateBlockEntities(context, blocks?.blockEntities ?? []);
+  if (blockEntities !== undefined) registrations.push(blockEntities);
+  const recipes = generateRecipes(context, blocks?.machines ?? []);
+  if (recipes !== undefined) registrations.push(recipes);
   const items = generateItems(context, classNames);
   if (items !== undefined) registrations.push(items);
   const entities = generateEntities(context, classNames);

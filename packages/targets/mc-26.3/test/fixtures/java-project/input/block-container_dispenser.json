@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:container": {
+      "close_sound": "minecraft:block.chest.close",
+      "layout": "dispenser",
+      "open_sound": "minecraft:block.chest.open"
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

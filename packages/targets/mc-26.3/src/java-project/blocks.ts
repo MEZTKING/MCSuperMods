@@ -57,6 +57,17 @@ import {
   typeKeys,
   typeProperties,
 } from './block-types';
+import {
+  BLOCK_ENTITY_TYPES,
+  type BlockEntityEntry,
+  type BlockEntityMembers,
+  type ContainerInfo,
+  containerBlockMembers,
+  readContainer,
+  writeBlockEventsFile,
+  writeContainerFiles,
+  writeStorageEntityClass,
+} from './containers';
 import { classPath, type GenerationContext, packageOf } from './context';
 import { closeLine } from './items';
 import {
@@ -68,6 +79,16 @@ import {
   javaString,
   trimBlank,
 } from './java';
+import {
+  checkRecipeTypes,
+  type MachineInfo,
+  machineBlockMembers,
+  machineLightLine,
+  type RecipeEntry,
+  readMachine,
+  writeMachineEntityClass,
+  writeMachineFiles,
+} from './machines';
 import { className, constantName, NameTable, splitId } from './names';
 import { blockItemId, checkFormat, type Reader, readDefinition } from './read';
 import { blockStrippingJava } from './templates/block-stripping-java';
@@ -133,6 +154,8 @@ const BLOCK_COMPONENTS = [
   'msm:on_entity_inside',
   'msm:flammable',
   'msm:strippable',
+  'msm:container',
+  'msm:machine',
 ];
 
 /** `msm:shape` fields (`::msm::definition::Shape`); the editor-only `preset` is not one. */
@@ -193,6 +216,10 @@ interface BlockSpec {
   readonly onPlace: string | undefined;
   readonly onRandomTick: { method: string; chance: number } | undefined;
   readonly onEntityInside: { method: string; cooldown: number } | undefined;
+  /** `msm:container` (ADR 0074 D9). */
+  readonly container: ContainerInfo | undefined;
+  /** `msm:machine` (ADR 0075 D11). */
+  readonly machine: MachineInfo | undefined;
 }
 
 /**
@@ -304,6 +331,22 @@ function readBlock(input: DefinitionInput): BlockSpec {
     if (value < 0 || value > 300) flammable?.fail(`${key} must be 0 to 300`);
     return value;
   };
+  const containerComponent = components?.object('msm:container');
+  const machineComponent = components?.object('msm:machine');
+  if (
+    (containerComponent !== undefined || machineComponent !== undefined) &&
+    !BLOCK_ENTITY_TYPES.includes(type.type)
+  ) {
+    components?.fail(
+      `${containerComponent === undefined ? 'msm:machine' : 'msm:container'} is not allowed on type '${type.type}' (only ${BLOCK_ENTITY_TYPES.join(', ')})`,
+    );
+  }
+  if (containerComponent !== undefined && machineComponent !== undefined) {
+    components?.fail(
+      'msm:machine and msm:container are not allowed together (a machine has its own three slots; the runtime drops msm:container with a load error)',
+    );
+  }
+  const firedEvent = (component: Reader, id: string): string => eventMethod(component, events, id);
   const strippable = components?.object('msm:strippable');
   strippable?.onlyKeys(['into'], 'msm:strippable field');
   const into = strippable?.requiredString('into');
@@ -370,6 +413,12 @@ function readBlock(input: DefinitionInput): BlockSpec {
             method: eventMethod(inside, events, inside.requiredString('event')),
             cooldown: insideCooldown,
           },
+    container:
+      containerComponent === undefined ? undefined : readContainer(containerComponent, firedEvent),
+    machine:
+      machineComponent === undefined
+        ? undefined
+        : readMachine(input.id, machineComponent, firedEvent),
   };
 }
 
@@ -389,7 +438,9 @@ function needsClass(spec: BlockSpec): boolean {
     spec.onBreak !== undefined ||
     spec.onPlace !== undefined ||
     spec.onRandomTick !== undefined ||
-    spec.onEntityInside !== undefined
+    spec.onEntityInside !== undefined ||
+    spec.container !== undefined ||
+    spec.machine !== undefined
   );
 }
 
@@ -446,6 +497,10 @@ export interface GeneratedBlocks {
   readonly className: string;
   /** Tinted leaves in registration order, for `BlockColorRegistry` on the client. */
   readonly leafTints: readonly LeafTintEntry[];
+  /** Container and machine blocks in registration order, for `ModBlockEntities` (ADR 0074 D9). */
+  readonly blockEntities: readonly BlockEntityEntry[];
+  /** Machines in registration order, for `ModRecipes` (ADR 0075 D11). */
+  readonly machines: readonly RecipeEntry[];
 }
 
 /**
@@ -460,6 +515,9 @@ export function generateBlocks(
   const { blocks } = context.input;
   if (blocks.length === 0) return undefined;
   const specs = registrationOrder(blocks.map(readBlock));
+  checkRecipeTypes(specs.flatMap((spec) => (spec.machine === undefined ? [] : [spec.machine])));
+  const blockEntities: BlockEntityEntry[] = [];
+  const machines: RecipeEntry[] = [];
   const fields = new NameTable();
   const fieldOf = new Map<string, string>();
   const file = new JavaFile(
@@ -500,9 +558,24 @@ export function generateBlocks(
     let type: string;
     let args: string[] = [];
     if (needsClass(spec)) {
-      const name = classNames.take(className(path, 'Block'), (n) => [`block.${n}`], '');
-      writeBlockClass(context, spec, name);
+      // A container or machine block's block entity class is its class name plus Entity (ADR 0074 D9).
+      const hasEntity = spec.container !== undefined || spec.machine !== undefined;
+      const name = classNames.take(
+        className(path, 'Block'),
+        (n) => (hasEntity ? [`block.${n}`, `block.${n}Entity`] : [`block.${n}`]),
+        '',
+      );
+      writeBlockClass(context, spec, name, field);
       type = file.use(`${packageOf(context, 'block')}.${name}`);
+      if (spec.container !== undefined) {
+        writeStorageEntityClass(context, spec.input.id, `${name}Entity`, field, spec.container);
+      }
+      if (spec.machine !== undefined) {
+        writeMachineEntityClass(context, `${name}Entity`, field, spec.machine);
+        machines.push({ id: spec.input.id, field });
+      }
+      if (hasEntity)
+        blockEntities.push({ blockId: spec.input.id, field, entityClass: `${name}Entity` });
     } else {
       type = file.use(familyClass(spec.type).fqcn);
       args = constructorArguments(file, spec.type, context.input.javaPackage);
@@ -522,8 +595,11 @@ export function generateBlocks(
       `        .strength(${javaFloat(spec.hardness)}, ${javaFloat(spec.resistance)})`,
       `        .sound(${soundType}.${spec.soundType})`,
     ];
-    if (spec.light !== undefined)
+    if (spec.machine !== undefined) {
+      props.push(machineLightLine(type, spec.machine, spec.light ?? 0));
+    } else if (spec.light !== undefined) {
       props.push(`        .lightLevel(state -> ${javaInt(spec.light)})`);
+    }
     if (spec.requiresTool) props.push('        .requiresCorrectToolForDrops()');
     if (spec.shape !== undefined) props.push(...shapeProperties(spec.shape));
     props.push(...typeProperties(file, spec.type, nearPlane));
@@ -579,10 +655,13 @@ export function generateBlocks(
     }
     if (spec.item !== undefined) {
       const item = file.use('net.minecraft.world.item.Item');
+      // A keep-contents container's item cannot go inside container items, as a shulker box (ADR 0074 D6).
       const blockItem = file.use(
         spec.type.type === 'door'
           ? 'net.minecraft.world.item.DoubleHighBlockItem'
-          : 'net.minecraft.world.item.BlockItem',
+          : spec.container?.keepContents === true
+            ? `${packageOf(context, 'block')}.ContainerBlockItem`
+            : 'net.minecraft.world.item.BlockItem',
       );
       const rarity = file.use('net.minecraft.world.item.Rarity');
       const { vanilla } = spec.item;
@@ -628,6 +707,9 @@ export function generateBlocks(
         tabs.push(tabLine(file, spec.item.creativeTab, `${field}_ITEM`));
     }
   }
+  if (specs.some((spec) => spec.container !== undefined)) writeContainerFiles(context);
+  if (machines.length > 0) writeMachineFiles(context);
+  if (blockEntities.length > 0) writeBlockEventsFile(context);
   const strips = specs.some((spec) => spec.strippable !== undefined);
   if (strips) {
     extras.push('BlockStripping.register();');
@@ -746,7 +828,7 @@ export function generateBlocks(
     '}',
   ];
   context.files.push({ path: classPath(context, '', 'ModBlocks'), contents: file.render(lines) });
-  return { className: 'ModBlocks', leafTints };
+  return { className: 'ModBlocks', leafTints, blockEntities, machines };
 }
 
 /** The `Properties` calls of `MsmBlock.shapeProperties` (ADR 0059 D3). */
@@ -829,7 +911,12 @@ function shapeMembers(
   return out;
 }
 
-function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: string): void {
+function writeBlockClass(
+  context: GenerationContext,
+  spec: BlockSpec,
+  name: string,
+  field: string,
+): void {
   const javaPackage = packageOf(context, 'block');
   const file = new JavaFile(javaPackage, spec.input.path);
   const blockType = (): string => file.use('net.minecraft.world.level.block.Block');
@@ -839,6 +926,8 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
   const ts = spec.type;
   const superClass = file.use(familyClass(ts).fqcn);
   const facing = isFacing(ts);
+  const open = spec.container !== undefined;
+  const lit = spec.machine !== undefined;
 
   const members: string[] = [];
   if (spec.events.byId.size > 0)
@@ -854,6 +943,23 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
     members.push(
       '/** The last seen neighbour power, for the msm:redstone events. */',
       `public static final ${booleanProperty} POWERED = ${blockStateProperties}.POWERED;`,
+    );
+  }
+  if (open || lit) {
+    const booleanProperty = file.use(
+      'net.minecraft.world.level.block.state.properties.BooleanProperty',
+    );
+    const blockStateProperties = file.use(
+      'net.minecraft.world.level.block.state.properties.BlockStateProperties',
+    );
+    if (members.length > 0) members.push('');
+    members.push(
+      open
+        ? "/** msm:container: true while a player has the container open, as a barrel's. */"
+        : '/** msm:machine: true while the machine works (burns fuel, or runs a recipe). */',
+      open
+        ? `public static final ${booleanProperty} OPEN = ${blockStateProperties}.OPEN;`
+        : `public static final ${booleanProperty} LIT = ${blockStateProperties}.LIT;`,
     );
   }
   if (facing) {
@@ -947,24 +1053,34 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
     );
     members.push('', `public ${name}(${properties} properties) {`, `    super(${args});`);
   }
+  const falseDefaults = [
+    ...(power ? ['.setValue(POWERED, false)'] : []),
+    ...(open ? ['.setValue(OPEN, false)'] : []),
+    ...(lit ? ['.setValue(LIT, false)'] : []),
+  ].join('');
   if (facing) {
     const direction = file.use('net.minecraft.core.Direction');
     members.push(
-      `    registerDefaultState(stateDefinition.any().setValue(FACING, ${direction}.NORTH)${power ? '.setValue(POWERED, false)' : ''});`,
+      `    registerDefaultState(stateDefinition.any().setValue(FACING, ${direction}.NORTH)${falseDefaults});`,
     );
-  } else if (power && ts.type === 'pillar') {
+  } else if (falseDefaults !== '' && ts.type === 'pillar') {
     // RotatedPillarBlock has set the axis to y.
-    members.push('    registerDefaultState(defaultBlockState().setValue(POWERED, false));');
-  } else if (power) {
-    members.push('    registerDefaultState(stateDefinition.any().setValue(POWERED, false));');
+    members.push(`    registerDefaultState(defaultBlockState()${falseDefaults});`);
+  } else if (falseDefaults !== '') {
+    members.push(`    registerDefaultState(stateDefinition.any()${falseDefaults});`);
   }
   members.push('}');
   members.push(...plant.methods);
 
-  if (power || facing) {
+  if (power || facing || open || lit) {
     const stateDefinition = file.use('net.minecraft.world.level.block.state.StateDefinition');
     const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
-    const added = [...(facing ? ['FACING'] : []), ...(power ? ['POWERED'] : [])].join(', ');
+    const added = [
+      ...(facing ? ['FACING'] : []),
+      ...(power ? ['POWERED'] : []),
+      ...(open ? ['OPEN'] : []),
+      ...(lit ? ['LIT'] : []),
+    ].join(', ');
     members.push(
       '',
       '@Override',
@@ -986,7 +1102,9 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
     members.push(...shapeMembers(file, spec.shape, blockState(), blockPos(), shapeReturn));
   }
 
-  if (spec.onInteract !== undefined && !isShaped(ts)) {
+  // A container or machine fires msm:on_interact after its menu or holder (blockEntityMembers below).
+  const hasEntity = spec.container !== undefined || spec.machine !== undefined;
+  if (!hasEntity && spec.onInteract !== undefined && !isShaped(ts)) {
     const interactionResult = file.use('net.minecraft.world.InteractionResult');
     const hit = file.use('net.minecraft.world.phys.BlockHitResult');
     members.push(
@@ -1001,7 +1119,7 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
       `    return vanilla.consumesAction() ? vanilla : ${interactionResult}.SUCCESS;`,
       '}',
     );
-  } else if (spec.onInteract !== undefined) {
+  } else if (!hasEntity && spec.onInteract !== undefined) {
     const interactionResult = file.use('net.minecraft.world.InteractionResult');
     const hit = file.use('net.minecraft.world.phys.BlockHitResult');
     members.push(
@@ -1042,7 +1160,34 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
       '}',
     );
   }
-  members.push(...triggerMembers(context, file, spec));
+  const keepContents = spec.container?.keepContents === true;
+  members.push(...triggerMembers(context, file, spec, keepContents));
+  let entity: BlockEntityMembers | undefined;
+  if (hasEntity) {
+    const parts = {
+      entityClass: `${name}Entity`,
+      typeField: field,
+      onInteract: spec.onInteract,
+      onBreak:
+        keepContents && spec.onBreak !== undefined
+          ? [
+              `if (level instanceof ${serverLevel()} server) {`,
+              `    ${fireCall(spec.onBreak, `server, pos.immutable(), ${vec3()}.atCenterOf(pos), player, null`)}`,
+              '}',
+            ]
+          : [],
+    };
+    entity =
+      spec.container !== undefined
+        ? containerBlockMembers(file, spec.container, parts)
+        : machineBlockMembers(
+            file,
+            spec.machine as MachineInfo,
+            parts,
+            file.use(`${context.input.javaPackage}.ModBlockEntities`),
+          );
+    members.push(...entity.members);
+  }
   if (spec.emit > 0) {
     const blockGetter = file.use('net.minecraft.world.level.BlockGetter');
     const direction = file.use('net.minecraft.core.Direction');
@@ -1119,7 +1264,7 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
 
   const lines = [
     `/** The block {@code ${spec.input.id}}. */`,
-    `public class ${name} extends ${superClass} {`,
+    `public class ${name} extends ${superClass}${entity === undefined ? '' : ` implements ${entity.interfaces.join(', ')}`} {`,
     ...indent(trimBlank(members)),
     '}',
   ];
@@ -1162,7 +1307,12 @@ function facingMembers(file: JavaFile, ts: TypeSpec): string[] {
  * (`randomTick` with its chance) and `msm:on_entity_inside` (`entityInside`, the per-entity
  * cooldown before the shared tick limiter). The two tick triggers count against `TickLimiter`.
  */
-function triggerMembers(context: GenerationContext, file: JavaFile, spec: BlockSpec): string[] {
+function triggerMembers(
+  context: GenerationContext,
+  file: JavaFile,
+  spec: BlockSpec,
+  breakHandled = false,
+): string[] {
   const out: string[] = [];
   const blockState = () => file.use('net.minecraft.world.level.block.state.BlockState');
   const level = () => file.use('net.minecraft.world.level.Level');
@@ -1174,7 +1324,7 @@ function triggerMembers(context: GenerationContext, file: JavaFile, spec: BlockS
     context.usesTickLimiter = true;
     return file.use(`${context.input.javaPackage}.TickLimiter`);
   };
-  if (spec.onBreak !== undefined) {
+  if (spec.onBreak !== undefined && !breakHandled) {
     out.push(
       '',
       '/** msm:on_break: a player is about to break the block, in any game mode. */',
