@@ -221,6 +221,7 @@ describe('systemPrompt containers and machines paragraph (ADR 0076 D6)', () => {
       'msm:container',
       'msm:machine',
       'keep_contents',
+      'world.getContainer(pos)',
       'recipe_types',
       'vanilla screen',
       'three slots',
