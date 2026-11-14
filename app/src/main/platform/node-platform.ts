@@ -278,6 +278,12 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
       ? {}
       : { spawnLauncher: testOptions.spawnLauncher }),
   });
+  // The managed instance's game folder from the last Play status, so "Open the test
+  // instance's folder" may reveal it.
+  let playGameDir: string | null = null;
+  play.onStatus((status) => {
+    if (status.gameDir !== null) playGameDir = status.gameDir;
+  });
   const modpacks = createModpackService({
     settings,
     pickDirectory: (opts) => deps.dialogs.pickDirectory(opts),
@@ -359,6 +365,7 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     }
     if (lastSavePath !== null) roots.push(dirname(lastSavePath));
     if (lastExportFolder !== null) roots.push(lastExportFolder);
+    if (playGameDir !== null) roots.push(normalize(playGameDir));
     return Promise.all(roots.map(realpathOrSelf));
   };
 
