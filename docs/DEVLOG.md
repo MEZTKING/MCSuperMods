@@ -3149,3 +3149,18 @@ Decisions
 Next
 - Accept ADR 0066 after CI is green on both targets; guide note on the new export warnings.
 - Backlog: B2 block families and states with B12 crops, saplings and trees.
+
+## 2026-11-14 — orchestrator — plan: block types, families, crops, saplings and trees
+
+What
+- Planned coverage audit backlog B2 with B12: ADRs 0067 (block types and states), 0068 (crops, saplings, trees and leaves) and 0069 (block family flows), all Proposed; working plan `docs/PLAN-blocks-families-crops.md` with briefs B258–B281 in nine waves and a fact table.
+- Facts verified with `javap` over the Loom-cached merged jars of 26.3 and 26.4-snapshot-7, their data and asset files, the cached Fabric API module jars and the vendored registries (nothing from the jars is kept).
+
+Decisions
+- A `type` field on `msm:block` (17 types) instead of new kinds; one element per family member; `item.id` lets seeds have their own id (`blockItemId` is the single source, so ADR 0066's mod-only ids include it).
+- Runtime: one driver class per vanilla family delegating to a `BlockBehaviourDriver` extracted from `MsmBlock`; rotation types stay `MsmBlock`; stripping through `UseBlockCallback` (vanilla stripping is the non-mergeable `block_transformer` registry); flammability through Fabric `FlammableBlockRegistry`; leaf tint through Fabric `BlockColorRegistry` (first client block hook).
+- Seams for 26.4: `BlockSetTypes` (no per-wood constants, `DEFAULT_WOOD`), `TreeGrowers` (no name), `Leaves` (`Optional` ambient sound player). Plugin API 1.10.0 adds `Target.blocks`.
+- Limits recorded: signs, hanging signs and boats (client code), own set-type sounds (`block_sound_set` on 26.4), stripping by data, tint sources, late tree resolution, vanilla placer shapes only, stairs base order, villagers and custom soil, flammability by code.
+
+Next
+- Wave 1: B258 format, B259 plugin API and target facts, B260 runtime driver refactor. The user may veto the defaults listed in ADR 0069 and the `type` field design before wave 2.
