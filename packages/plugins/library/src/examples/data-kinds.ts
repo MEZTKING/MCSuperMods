@@ -353,7 +353,8 @@ const otherExamples: readonly ExampleProject[] = [
                 { weight: 3, data: 'minecraft:spawners/trial_chamber/consumables' },
                 { weight: 1, data: 'minecraft:spawners/trial_chamber/key' },
               ],
-              items_to_drop_when_ominous: 'minecraft:spawners/trial_chamber/items_to_drop_when_ominous',
+              items_to_drop_when_ominous:
+                'minecraft:spawners/trial_chamber/items_to_drop_when_ominous',
             },
             `A trial spawner configuration: the wave a trial spawner sends. spawn_potentials picks each mob by weight, here mostly husks and now and then a baby zombie (IsBaby: 1, written as vanilla's own files do). total_mobs and simultaneous_mobs grow with each extra player. When the wave is beaten the spawner ejects one of loot_tables_to_eject. A trial spawner block uses it when its normal_config names ${id}, for example /setblock ~ ~ ~ minecraft:trial_spawner{normal_config:"${id}"}.`,
           ),
