@@ -1,10 +1,6 @@
 package dev.mcsupermods.runtime.registry;
 
 import dev.mcsupermods.runtime.components.BlockComponents;
-import dev.mcsupermods.runtime.events.CooldownMap;
-import dev.mcsupermods.runtime.events.EventContext;
-import dev.mcsupermods.runtime.events.EventRunner;
-import dev.mcsupermods.runtime.events.TickLimiter;
 import dev.mcsupermods.runtime.loader.BlockDefinition;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,7 +18,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
@@ -31,29 +26,22 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * Driver class for every {@code msm/<ns>/block/*.json} definition: dispatches game callbacks to
- * the definition's components. Vanilla {@code Block} overrides cover every v1 component, so no
- * Mixin is needed.
+ * Block class for every {@code msm/<ns>/block/*.json} definition without a family type: shapes and the POWERED
+ * property live here; events, triggers and redstone are delegated to {@link BlockBehaviourDriver}. Vanilla {@code Block}
+ * overrides cover every v1 component, so no Mixin is needed.
  */
 public class MsmBlock extends Block {
     /** Present only on blocks with {@code msm:redstone} events: the last seen neighbour power. */
-    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+    public static final BooleanProperty POWERED = BlockBehaviourDriver.POWERED;
 
     /** The state definition is built inside {@code super(...)}, before fields exist; this carries the choice in. */
     private static final ThreadLocal<Boolean> TRACKS_POWER = ThreadLocal.withInitial(() -> false);
 
-    private final Identifier id;
-    private final BlockDefinition definition;
-    private final boolean tracksPower;
-    private final int emit;
+    private final BlockBehaviourDriver driver;
     /** {@code msm:shape} (ADR 0059 D3): the outline for every state; null without the component (vanilla's full cube). */
     private final VoxelShape shape;
     /** {@code msm:shape} {@code see_through}: light passes, faces between two of these blocks are skipped. */
     private final boolean seeThrough;
-    /** {@code msm:on_step} cooldowns per dimension, position and entity. Server thread only. */
-    private final CooldownMap stepCooldowns = new CooldownMap();
-    /** {@code msm:on_entity_inside} cooldowns per dimension, position and entity (ADR 0061 D2). Server thread only. */
-    private final CooldownMap insideCooldowns = new CooldownMap();
 
     public static MsmBlock create(Identifier id, BlockDefinition definition, Properties properties) {
         TRACKS_POWER.set(definition.components().reactsToRedstone());
@@ -66,24 +54,26 @@ public class MsmBlock extends Block {
 
     private MsmBlock(Identifier id, BlockDefinition definition, Properties properties) {
         super(properties);
-        this.id = id;
-        this.definition = definition;
+        this.driver = new BlockBehaviourDriver(id, definition);
         BlockComponents c = definition.components();
-        this.tracksPower = c.reactsToRedstone();
-        this.emit = c.emit();
         this.shape = c.shape().map(MsmBlock::voxelShape).orElse(null);
         this.seeThrough = c.shape().map(BlockComponents.Shape::seeThrough).orElse(false);
-        if (tracksPower) {
+        if (driver.tracksPower()) {
             registerDefaultState(stateDefinition.any().setValue(POWERED, false));
         }
     }
 
     public Identifier id() {
-        return id;
+        return driver.id();
     }
 
     public BlockDefinition definition() {
-        return definition;
+        return driver.definition();
+    }
+
+    /** The shared events, triggers and redstone behaviour (ADR 0067 D4). */
+    public BlockBehaviourDriver driver() {
+        return driver;
     }
 
     @Override
@@ -158,125 +148,64 @@ public class MsmBlock extends Block {
         return (seeThrough && adjacent.is(this)) || super.skipRendering(state, adjacent, direction);
     }
 
-    // msm:on_interact
+    // Events, triggers and redstone: delegated to the driver (ADR 0067 D4).
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        var interact = definition.components().onInteract();
-        if (interact.isEmpty()) {
-            return InteractionResult.PASS;
-        }
-        if (level instanceof ServerLevel server) {
-            EventRunner.fire(id, definition.events(), interact.get().event(), EventContext.forBlock(server, pos, player));
-        }
-        return InteractionResult.SUCCESS;
+        return driver.useWithoutItem(level, pos, player);
     }
-
-    // msm:on_step
 
     @Override
     public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
-        var step = definition.components().onStep();
-        if (step.isPresent() && level instanceof ServerLevel server
-                && stepCooldowns.tryFire(server.dimension(), pos, entity.getUUID(), server.getGameTime(), step.get().cooldownTicks())) {
-            // ADR 0058 D1: the stepper is the event's player or entity, and its other entity when living.
-            EventRunner.fire(id, definition.events(), step.get().event(), EventContext.forBlockStep(server, pos, entity));
-        }
+        driver.stepOn(level, pos, entity);
         super.stepOn(level, pos, state, entity);
     }
 
-    // msm:on_break (ADR 0061 D2): playerWillDestroy runs in every game mode, before the block is removed.
-
     @Override
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        var onBreak = definition.components().onBreak();
-        if (onBreak.isPresent() && level instanceof ServerLevel server) {
-            EventRunner.fire(id, definition.events(), onBreak.get().event(), EventContext.forBlock(server, pos, player));
-        }
+        driver.playerWillDestroy(level, pos, player);
         return super.playerWillDestroy(level, pos, state, player);
     }
-
-    // msm:on_place (ADR 0061 D2): the placer, a player or another entity, is the actor; it may be null.
 
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-        var onPlace = definition.components().onPlace();
-        if (onPlace.isPresent() && level instanceof ServerLevel server) {
-            EventRunner.fire(id, definition.events(), onPlace.get().event(), EventContext.forBlockActor(server, pos, placer));
-        }
+        driver.setPlacedBy(level, pos, placer);
     }
-
-    // msm:on_random_tick (ADR 0061 D2): the registrar sets Properties.randomTicks() only with the component.
 
     @Override
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         super.randomTick(state, level, pos, random);
-        var onTick = definition.components().onRandomTick();
-        if (onTick.isEmpty()) {
-            return;
-        }
-        float chance = onTick.get().chance();
-        if (chance <= 0 || (chance < 1 && random.nextFloat() >= chance)) {
-            return;
-        }
-        if (TickLimiter.tryFire(level)) {
-            EventRunner.fire(id, definition.events(), onTick.get().event(), EventContext.forBlock(level, pos, null));
-        }
+        driver.randomTick(level, pos, random);
     }
-
-    // msm:on_entity_inside (ADR 0061 D2): per entity cooldown, the step actor rule (ADR 0058 D1), the shared tick cap.
 
     @Override
     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effects,
             boolean intersects) {
         super.entityInside(state, level, pos, entity, effects, intersects);
-        var inside = definition.components().onEntityInside();
-        if (inside.isPresent() && level instanceof ServerLevel server
-                && insideCooldowns.tryFire(server.dimension(), pos, entity.getUUID(), server.getGameTime(), inside.get().cooldownTicks())
-                && TickLimiter.tryFire(server)) {
-            EventRunner.fire(id, definition.events(), inside.get().event(), EventContext.forBlockActor(server, pos, entity));
-        }
+        driver.entityInside(level, pos, entity);
     }
-
-    // msm:redstone
 
     @Override
     protected boolean isSignalSource(BlockState state) {
-        return emit > 0;
+        return driver.isSignalSource();
     }
 
     @Override
     protected int getSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
-        return emit;
+        return driver.getSignal();
     }
 
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
-        // Placement is not a neighbour update: record the current power without firing an event.
-        if (tracksPower && !oldState.is(this) && level instanceof ServerLevel) {
-            boolean powered = level.hasNeighborSignal(pos);
-            if (powered != state.getValue(POWERED)) {
-                level.setBlock(pos, state.setValue(POWERED, powered), UPDATE_CLIENTS);
-            }
-        }
+        driver.onPlace(this, state, level, pos, oldState);
     }
 
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbour, Orientation orientation,
             boolean movedByPiston) {
         super.neighborChanged(state, level, pos, neighbour, orientation, movedByPiston);
-        if (!tracksPower || !(level instanceof ServerLevel server)) {
-            return;
-        }
-        boolean powered = level.hasNeighborSignal(pos);
-        if (powered == state.getValue(POWERED)) {
-            return;
-        }
-        level.setBlock(pos, state.setValue(POWERED, powered), UPDATE_CLIENTS);
-        BlockComponents.Redstone redstone = definition.components().redstone().orElseThrow();
-        (powered ? redstone.onPowered() : redstone.onUnpowered()).ifPresent(event ->
-                EventRunner.fire(id, definition.events(), event, EventContext.forBlock(server, pos, null)));
+        driver.neighborChanged(state, level, pos);
     }
 }
