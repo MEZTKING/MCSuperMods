@@ -206,6 +206,7 @@ public record EntityDefinition(
         model.idle().ifPresent(triggered::add);
         model.walk().ifPresent(triggered::add);
         model.attack().ifPresent(triggered::add);
+        model.shoot().ifPresent(triggered::add);
         for (EventDefinition event : events.byId().values()) {
             for (Action action : event.actions()) {
                 if (action instanceof Action.PlayAnimation p) {

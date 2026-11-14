@@ -1,17 +1,22 @@
 package dev.mcsupermods.runtime.gametest;
 
+import com.geckolib.animatable.GeoEntity;
 import com.geckolib.cache.GeckoLibResources;
 import dev.mcsupermods.runtime.MsmRuntime;
+import dev.mcsupermods.runtime.components.EntityComponents;
 import dev.mcsupermods.runtime.events.Action;
 import dev.mcsupermods.runtime.events.EventContext;
 import dev.mcsupermods.runtime.events.EventListener;
 import dev.mcsupermods.runtime.events.EventRunner;
 import dev.mcsupermods.runtime.loader.EntityDefinition;
 import dev.mcsupermods.runtime.registry.MsmEntity;
+import dev.mcsupermods.runtime.registry.GeoControllers;
 import dev.mcsupermods.runtime.registry.MsmEntityRegistrar;
 import dev.mcsupermods.runtime.registry.MsmGeoEntity;
+import dev.mcsupermods.runtime.registry.MsmMob;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.fabricmc.loader.api.FabricLoader;
@@ -28,12 +33,16 @@ import net.minecraft.util.random.Weighted;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.animal.pig.Pig;
@@ -162,6 +171,56 @@ public class MsmEntityGameTest {
         static String lookupKey(String path) {
             return GeckoLibResources.stripPrefixAndSuffix(Identifier.fromNamespaceAndPath("msm_test", path)).toString();
         }
+
+        // GeckoLib bridge for states and variants (B296; ADR 0071 D3, D4, D6). GeoControllers is loaded only here.
+
+        static Optional<String> loop(EntityComponents.AnimatedModel model, boolean sitting, boolean flying, boolean swimming, boolean moving) {
+            return GeoControllers.loop(model, sitting, flying, swimming, moving);
+        }
+
+        static boolean sitting(Entity mob) {
+            return GeoControllers.sitting((MsmMob) mob);
+        }
+
+        static boolean flying(Entity mob) {
+            return GeoControllers.flying((MsmMob) mob);
+        }
+
+        static boolean swimming(Entity mob) {
+            return GeoControllers.swimming((MsmMob) mob);
+        }
+
+        static Set<String> triggered(Entity mob) {
+            return GeoControllers.triggerable(((MsmMob) mob).definition()).getOrDefault(EntityDefinition.TRIGGERED_CONTROLLER, Set.of());
+        }
+
+        /** The controllers GeckoLib made for {@code mob} (its manager, built on first use from the bridge's registration). */
+        static Set<String> controllers(Entity mob) {
+            GeoEntity geo = (GeoEntity) mob;
+            return Set.copyOf(geo.getAnimatableInstanceCache().getManagerForId(mob.getId()).getAnimationControllers().keySet());
+        }
+
+        static void triggerAnim(Entity mob, String controller, String animation) {
+            ((GeoEntity) mob).triggerAnim(controller, animation);
+        }
+
+        static Identifier texture(Entity mob) {
+            return GeoControllers.texture((MsmMob) mob);
+        }
+
+        static Optional<String> hiddenBone(Entity mob) {
+            return GeoControllers.hiddenBone((MsmMob) mob);
+        }
+
+        static float ageScale(Entity mob) {
+            return GeoControllers.ageScale((MsmMob) mob);
+        }
+    }
+
+    /** Spawns any runtime mob of {@code path} without AI. */
+    @SuppressWarnings("unchecked")
+    private static Mob spawnAny(GameTestHelper helper, String path, BlockPos pos) {
+        return helper.spawnWithNoFreeWill((EntityType<Mob>) BuiltInRegistries.ENTITY_TYPE.getValue(id(path)), pos);
     }
 
     // Registration
@@ -565,6 +624,116 @@ public class MsmEntityGameTest {
                 && w.contains("unknown entity type in msm:ai_goals msm_test:no_such_mob")), "no warning for the unknown entity type: " + warnings);
         helper.assertFalse(warnings.stream().anyMatch(w -> w.contains("minecraft:plains") || w.contains("#minecraft:is_forest")
                 || w.contains("minecraft:creeper") || w.contains("minecraft:desert")), "known ids reported unknown: " + warnings);
+        helper.succeed();
+    }
+
+    // GeckoLib bridge for states and variants (B296). Without GeckoLib the vanilla renderer (B295) does this instead.
+
+    private static EntityComponents.AnimatedModel model(String sit, String fly, String swim, String walk, String idle) {
+        return new EntityComponents.AnimatedModel(id("entity/golem"), Optional.empty(), id("entity/golem"), 1.0f, Optional.ofNullable(idle),
+                Optional.ofNullable(walk), Optional.empty(), 0, EntityComponents.Renderer.AUTO, Optional.ofNullable(sit),
+                Optional.ofNullable(fly), Optional.ofNullable(swim), Optional.empty());
+    }
+
+    @GameTest
+    public void geoMainLoopPicksSitThenSwimOrFlyThenWalkOrIdle(GameTestHelper helper) {
+        if (!geckolib()) {
+            helper.succeed();
+            return;
+        }
+        EntityComponents.AnimatedModel all = model("sit", "fly", "swim", "walk", "idle");
+        helper.assertValueEqual(Geo.loop(all, true, true, true, true), Optional.of("sit"), "sitting wins");
+        helper.assertValueEqual(Geo.loop(all, false, true, true, true), Optional.of("swim"), "moving in water");
+        helper.assertValueEqual(Geo.loop(all, false, true, false, true), Optional.of("fly"), "moving in the air");
+        helper.assertValueEqual(Geo.loop(all, false, false, false, true), Optional.of("walk"), "moving on the ground");
+        helper.assertValueEqual(Geo.loop(all, false, true, true, false), Optional.of("idle"), "still in water or air");
+        EntityComponents.AnimatedModel plain = model(null, null, null, "walk", "idle");
+        helper.assertValueEqual(Geo.loop(plain, true, false, false, false), Optional.of("idle"), "sitting without sit");
+        helper.assertValueEqual(Geo.loop(plain, false, true, false, true), Optional.of("walk"), "flying without fly");
+        helper.assertValueEqual(Geo.loop(plain, false, false, true, true), Optional.of("walk"), "swimming without swim");
+        helper.assertValueEqual(Geo.loop(model(null, null, null, null, null), false, false, false, true), Optional.empty(), "nothing named");
+        helper.succeed();
+    }
+
+    @GameTest(structure = ARENA)
+    public void geoStatesReadSittingFlyingAndSwimming(GameTestHelper helper) {
+        if (!geckolib()) {
+            helper.succeed();
+            return;
+        }
+        Mob pet = spawnAny(helper, "tb_pet", MID);
+        helper.assertFalse(Geo.sitting(pet), "tb_pet sits when spawned");
+        ((TamableAnimal) pet).setOrderedToSit(true);
+        ((TamableAnimal) pet).setInSittingPose(true);
+        helper.assertTrue(Geo.sitting(pet), "tb_pet in its sitting pose is not sitting");
+        Mob flyer = spawnAny(helper, "mv_flyer", MID.above(2));
+        Mob walker = spawnAny(helper, "minimal", MID.above(2).east());
+        helper.assertTrue(Geo.flying(flyer), "a fly mode mob in the air is not flying");
+        helper.assertFalse(Geo.flying(walker), "a walk mode mob in the air is flying");
+        BlockPos water = MID.west(2);
+        helper.setBlock(water, Blocks.WATER);
+        Mob swimmer = spawnAny(helper, "minimal", water);
+        helper.assertFalse(Geo.swimming(pet), "tb_pet on the floor is swimming");
+        helper.succeedWhen(() -> helper.assertTrue(Geo.swimming(swimmer), "a mob in water is not swimming"));
+    }
+
+    @GameTest
+    public void geoShootIsTriggerableOnTheTriggeredController(GameTestHelper helper) {
+        if (!geckolib()) {
+            helper.succeed();
+            return;
+        }
+        Mob archer = spawnAny(helper, "rg_archer", MID);
+        helper.assertTrue(Geo.triggered(archer).contains("shoot"), "shoot is not triggerable: " + Geo.triggered(archer));
+        helper.assertFalse(Geo.triggered(spawnAny(helper, "minimal", MID.east())).contains("shoot"), "shoot triggerable without msm:animated_model.shoot");
+        Set<String> controllers = Geo.controllers(archer);
+        helper.assertTrue(controllers.contains(EntityDefinition.MAIN_CONTROLLER) && controllers.contains(EntityDefinition.TRIGGERED_CONTROLLER),
+                "controllers: " + controllers);
+        Geo.triggerAnim(archer, EntityDefinition.TRIGGERED_CONTROLLER, "shoot"); // no tracking player: nothing is sent, nothing throws
+        helper.succeed();
+    }
+
+    @GameTest
+    public void geoTextureFollowsTheVariant(GameTestHelper helper) {
+        if (!geckolib()) {
+            helper.succeed();
+            return;
+        }
+        Mob coloured = spawnAny(helper, "vb_coloured", MID);
+        ((MsmMob) coloured).driver().variants().setById("red");
+        helper.assertValueEqual(Geo.texture(coloured), id("entity/vb_red"), "red variant texture");
+        ((MsmMob) coloured).driver().variants().setById("blue");
+        helper.assertValueEqual(Geo.texture(coloured), id("entity/vb_blue"), "blue variant texture");
+        helper.assertValueEqual(Geo.texture(spawnAny(helper, "minimal", MID.east())), id("entity/golem"), "texture without variants");
+        helper.succeed();
+    }
+
+    @GameTest
+    public void geoSaddleBoneIsHiddenUntilSaddled(GameTestHelper helper) {
+        if (!geckolib()) {
+            helper.succeed();
+            return;
+        }
+        Mob horse = spawnAny(helper, "rd_horse", MID);
+        helper.assertValueEqual(Geo.hiddenBone(horse), Optional.of("saddle"), "unsaddled rd_horse");
+        horse.setItemSlot(EquipmentSlot.SADDLE, new ItemStack(Items.SADDLE));
+        helper.assertValueEqual(Geo.hiddenBone(horse), Optional.empty(), "saddled rd_horse");
+        helper.assertValueEqual(Geo.hiddenBone(spawnAny(helper, "rd_flyer", MID.east())), Optional.empty(), "no saddle_bone");
+        helper.assertValueEqual(Geo.hiddenBone(spawnAny(helper, "minimal", MID.west())), Optional.empty(), "no msm:rideable");
+        helper.succeed();
+    }
+
+    @GameTest
+    public void geoBabiesDrawAtTheirAgeScale(GameTestHelper helper) {
+        if (!geckolib()) {
+            helper.succeed();
+            return;
+        }
+        Mob farm = spawnAny(helper, "tb_farm", MID);
+        assertNear(helper, Geo.ageScale(farm), 1.0, "adult age scale");
+        farm.setBaby(true);
+        assertNear(helper, Geo.ageScale(farm), 0.4, "baby age scale (baby_scale)");
+        assertNear(helper, Geo.ageScale(spawnAny(helper, "minimal", MID.east())), 1.0, "a mob base");
         helper.succeed();
     }
 }
