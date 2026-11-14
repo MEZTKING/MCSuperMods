@@ -6,7 +6,8 @@
  * `block-fuel_block` and `item-fuel_gem` are the `MsmAdditionGameTest` definitions; the trigger
  * items, blocks and `entity-ticker` are the `MsmTriggerGameTest` definitions;
  * `potion-*` are the `MsmPotionGameTest` definitions; `block-type_*` are the
- * `MsmBlockTypeGameTest` and `MsmRedstoneTypeGameTest` building and redstone type blocks;
+ * `MsmBlockTypeGameTest` and `MsmRedstoneTypeGameTest` building and redstone type blocks and
+ * the `MsmPlantGameTest` crops, saplings and leaves;
  * `block-stepping_stone` and `entity-frost_golem` are the `apply_effect` corpus cases of
  * `packages/schemas/mcdoc/msm/conformance/definition/valid/`),
  * determinism, and the errors the exporter reports as `export.java-generation-failed`.
@@ -121,6 +122,19 @@ const BUILDING_TYPE_FIXTURES = [
   'type_trapdoor',
   'type_wall',
   'type_weighted_plate',
+];
+
+/** The crops, saplings and leaves of the runtime's `MsmPlantGameTest` (`block-type_*`). */
+const PLANT_FIXTURES = [
+  'type_crop',
+  'type_crop_seven',
+  'type_sapling',
+  'type_sapling_missing',
+  'type_leaves',
+  'type_leaves_coloured',
+  'type_leaves_plain',
+  'type_leaves_untinted',
+  'type_log',
 ];
 
 describe('Java identifiers', () => {
@@ -691,6 +705,146 @@ describe('Java generator (mc-26.3)', () => {
     );
     expect(directional).toContain('context.getNearestLookingDirection().getOpposite()');
     expect(directional).not.toContain('default ->');
+  });
+
+  it('generates crops, saplings and leaves mirroring the runtime (ADR 0068 D8)', async () => {
+    // The MsmPlantGameTest definitions, the log the test tree uses, and leaves of the other two
+    // tint sources; a crop, a sapling and leaves with a random tick event.
+    const ticking = { 'msm:on_random_tick': { event: 'msm_test:tick', chance: 0.5 } };
+    const events = {
+      'msm_test:tick': { actions: [{ type: 'run_function', function: 'msm_test:tick' }] },
+    };
+    const own = (path: string, fields: JsonObject): DefinitionInput => ({
+      id: `msm_test:${path}`,
+      path: `msm/msm_test/block/${path}.json`,
+      definition: { format: 1, sound_type: 'grass', ...fields },
+    });
+    const { files, entrypoints } = generateJavaProject(
+      input({
+        blocks: [
+          ...(await Promise.all(PLANT_FIXTURES.map((path) => definition('block', path)))),
+          own('grass_leaves', { type: 'leaves', tint: 'grass' }),
+          own('dry_leaves', { type: 'leaves', tint: 'dry_foliage' }),
+          own('ticking_crop', { type: 'crop', components: ticking, events }),
+          own('ticking_sapling', {
+            type: 'sapling',
+            tree: 'msm_test:test_tree',
+            flower_tree: 'minecraft:fancy_oak_bees',
+            soil: '#minecraft:dirt',
+            components: ticking,
+            events,
+          }),
+          own('ticking_leaves', {
+            type: 'leaves',
+            tint: 'foliage',
+            falling_particle: 'minecraft:cherry_leaves',
+            components: { ...ticking, 'msm:flammable': { burn_odds: 30, ignite_odds: 60 } },
+            events,
+          }),
+        ],
+      }),
+    );
+    await golden('plant-types', files);
+    expect(entrypoints.client).toBe('msm_test.client.MsmTestModClient');
+    const text = (suffix: string): string =>
+      files.find((file) => file.path.endsWith(suffix))?.contents ?? '';
+    const blocks = text('/ModBlocks.java');
+    const entry = (field: string): string =>
+      blocks.slice(
+        blocks.indexOf(`${field} = `),
+        blocks.indexOf(';', blocks.indexOf(`${field} = `)),
+      );
+    // Crops: own age range, stage outlines (vanilla's ramp for a list of the wrong length),
+    // soil, swapped bone meal bounds, the seeds under item.id.
+    const crop = text('/TypeCropBlock.java');
+    expect(crop).toContain('public class TypeCropBlock extends CropBlock {');
+    expect(crop).toContain('AGE = IntegerProperty.create("age", 0, 3);');
+    expect(crop).toContain('Block.box(0.0f, 0.0f, 0.0f, 16.0f, 12.0f, 16.0f)};');
+    expect(crop).toContain('Mth.nextInt(level.getRandom(), 1, 1)');
+    expect(crop).toContain('return this;');
+    expect(crop).not.toContain('isRandomlyTicking');
+    expect(entry('TYPE_CROP')).toContain(
+      '.noCollision().randomTicks().pushReaction(PushReaction.POPPED)',
+    );
+    expect(entry('TYPE_CROP_ITEM_KEY')).toContain('"type_crop_seeds"');
+    const seven = text('/TypeCropSevenBlock.java');
+    expect(seven).toContain('Block.box(0.0f, 0.0f, 0.0f, 16.0f, 2.0f, 16.0f),');
+    expect(seven).toContain('Block.box(0.0f, 0.0f, 0.0f, 16.0f, 16.0f, 16.0f)};');
+    expect(seven).toContain('Identifier.fromNamespaceAndPath("minecraft", "dirt")');
+    expect(seven).toContain('Mth.nextInt(level.getRandom(), 2, 3)');
+    expect(blocks).not.toContain('TYPE_CROP_SEVEN_ITEM');
+    expect(text('/TickingCropBlock.java')).toContain('protected boolean isRandomlyTicking(');
+    // Saplings: a grower named after the sapling, the 2x2 tree, the check after start-up.
+    const sapling = text('/TypeSaplingBlock.java');
+    expect(sapling).toContain(
+      'private static final TreeGrower GROWER = new TreeGrower("msm_test:type_sapling",',
+    );
+    expect(sapling).toContain(
+      'WeightedList.of(ResourceKey.create(Registries.FEATURE, Identifier.fromNamespaceAndPath("msm_test", "test_mega_tree"))),',
+    );
+    expect(sapling).toContain('super(GROWER, properties);');
+    expect(sapling).toContain('"minecraft", "supports_vegetation"');
+    expect(text('/TypeSaplingMissingBlock.java')).toContain('        WeightedList.of(),');
+    expect(blocks).toContain(
+      'ServerLifecycleEvents.SERVER_STARTED.register(ModBlocks::checkTrees);',
+    );
+    expect(blocks).toContain(
+      'checkTree(features, "msm_test:type_sapling", Identifier.fromNamespaceAndPath("msm_test", "test_mega_tree"));',
+    );
+    expect(blocks).toContain(
+      'checkTree(features, "msm_test:ticking_sapling", Identifier.fromNamespaceAndPath("minecraft", "fancy_oak_bees"));',
+    );
+    expect(text('/TickingSaplingBlock.java')).toContain(
+      'if (level.getBlockState(pos).is(this)) { // the sapling may have grown into a tree',
+    );
+    // Leaves: the vanilla class per kind, used directly without events.
+    expect(entry('TYPE_LEAVES')).toContain('new TintedParticleLeavesBlock(0.01f, ');
+    expect(entry('TYPE_LEAVES_PLAIN')).toContain(
+      'new LeavesBlock(AmbientLeavesBlockSoundPlayer.noAmbientSound(), ',
+    );
+    expect(entry('TYPE_LEAVES_UNTINTED')).toContain(
+      'new UntintedParticleLeavesBlock(0.1f, ModBlocks.fallingParticle(Identifier.fromNamespaceAndPath("minecraft", "cherry_leaves")), AmbientLeavesBlockSoundPlayer.noAmbientSound(), ',
+    );
+    expect(entry('TYPE_LEAVES')).toContain(
+      '.isSuffocating((state, level, pos) -> false).ignitedByLava()',
+    );
+    const tickingLeaves = text('/TickingLeavesBlock.java');
+    expect(tickingLeaves).toContain(
+      'public class TickingLeavesBlock extends TintedParticleLeavesBlock {',
+    );
+    expect(tickingLeaves).toContain('super(0.01f, properties);');
+    expect(tickingLeaves).toContain('protected boolean isRandomlyTicking(');
+    expect(tickingLeaves).toContain('// decaying leaves are gone after super');
+    expect(entry('TICKING_LEAVES').match(/ignitedByLava/g)?.length).toBe(1);
+    expect(entry('TICKING_LEAVES').match(/randomTicks/g)?.length).toBe(1);
+    // Client tints: the four kinds, a constant with full alpha.
+    const client = text('/client/MsmTestModClient.java');
+    expect(client).toContain(
+      'BlockColorRegistry.register(List.of(BlockTintSources.foliage()), ModBlocks.TYPE_LEAVES);',
+    );
+    expect(client).toContain(
+      'BlockColorRegistry.register(List.of(BlockTintSources.constant(0xFF5F9EA0)), ModBlocks.TYPE_LEAVES_COLOURED);',
+    );
+    expect(client).toContain('BlockTintSources.grass()), ModBlocks.GRASS_LEAVES);');
+    expect(client).toContain('BlockTintSources.dryFoliage()), ModBlocks.DRY_LEAVES);');
+    expect(client).not.toContain('TYPE_LEAVES_PLAIN');
+    expect(client).not.toContain('EntityRenderers');
+  });
+
+  it('writes no client entrypoint for untinted leaves alone', () => {
+    const { files, entrypoints } = generateJavaProject(
+      input({
+        blocks: [
+          {
+            id: 'msm_test:plain_leaves',
+            path: 'msm/msm_test/block/plain_leaves.json',
+            definition: { format: 1, type: 'leaves' },
+          },
+        ],
+      }),
+    );
+    expect(entrypoints.client).toBeUndefined();
+    expect(files.some((file) => file.path.includes('/client/'))).toBe(false);
   });
 
   it('registers a block item under its own item.id (ADR 0068 D2)', () => {
@@ -1393,7 +1547,33 @@ describe('Java generator (mc-26.3)', () => {
 
     it('rejects types and type fields the runtime refuses (ADR 0067 D3, D4)', async () => {
       const typed = (fields: JsonObject) => generate({ blocks: [block({ format: 1, ...fields })] });
-      expect(typed({ type: 'crop' })).toThrow(/type 'crop' cannot be ejected yet/);
+      expect(typed({ type: 'crop', max_age: 16 })).toThrow(/max_age must be 1 to 15/);
+      expect(typed({ type: 'crop', stage_heights: [0, 4] })).toThrow(
+        /stage_heights must be a list of integers from 1 to 16/,
+      );
+      expect(typed({ type: 'crop', soil: 'minecraft:dirt' })).toThrow(
+        /soil 'minecraft:dirt' is not a tag reference/,
+      );
+      expect(typed({ type: 'crop', bonemeal_growth: { min: 1 } })).toThrow(/max is missing/);
+      expect(typed({ type: 'crop', bonemeal_growth: { min: 1, max: 16 } })).toThrow(
+        /max must be 0 to 15/,
+      );
+      expect(typed({ type: 'crop', tree: 'msm_test:t' })).toThrow(/unknown top-level key 'tree'/);
+      expect(typed({ type: 'sapling' })).toThrow(/tree is missing/);
+      expect(typed({ type: 'sapling', tree: 'Not An Id' })).toThrow(
+        /tree 'Not An Id' is not an id/,
+      );
+      expect(typed({ type: 'leaves', tint: 'water' })).toThrow(/tint 'water' is not one of/);
+      expect(typed({ type: 'leaves', tint: 16777216 })).toThrow(/tint must be 0 to 16777215/);
+      expect(typed({ type: 'leaves', particle_chance: 2 })).toThrow(
+        /particle_chance must be 0 to 1/,
+      );
+      expect(
+        typed({
+          type: 'leaves',
+          components: { 'msm:shape': { boxes: [[0, 0, 0, 16, 8, 16]] } },
+        }),
+      ).toThrow(/msm:shape is not allowed on type 'leaves'/);
       expect(typed({ type: 'roof' })).toThrow(/type 'roof' is not one of/);
       expect(typed({ type: 'slab', set_type: 'wood' })).toThrow(/unknown top-level key 'set_type'/);
       expect(typed({ type: 'door' })).toThrow(/set_type is missing/);

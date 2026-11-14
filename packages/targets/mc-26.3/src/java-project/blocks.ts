@@ -23,8 +23,10 @@
  * `msm:on_interact` after vanilla's own use), the family's `Properties`, stairs registered after
  * their base, `DoubleHighBlockItem` for doors, `msm:flammable` through Fabric's
  * `FlammableBlockRegistry` (with `ignitedByLava`), `msm:strippable` through the generated
- * `BlockStripping` callback, and the block item under `item.id` (ADR 0068 D2). Minecraft 26.3,
- * Mojang names.
+ * `BlockStripping` callback, and the block item under `item.id` (ADR 0068 D2). The plant
+ * types (ADR 0068 D8) add the crop and sapling classes, the leaves' vanilla classes, the sapling
+ * check after start-up and the leaf tints for the client entrypoint. Minecraft 26.3, Mojang
+ * names.
  *
  * @packageDocumentation
  */
@@ -45,8 +47,11 @@ import {
   facingTurns,
   familyClass,
   isFacing,
+  isPlant,
   isShaped,
+  type LeafTint,
   PILLAR_TURNS,
+  plantMembers,
   readType,
   type TypeSpec,
   typeKeys,
@@ -428,15 +433,30 @@ function registrationOrder(specs: readonly BlockSpec[]): BlockSpec[] {
   return out;
 }
 
+/** A tinted leaves block for the client entrypoint (ADR 0068 D6). */
+export interface LeafTintEntry {
+  /** The `ModBlocks` field. */
+  readonly field: string;
+  readonly tint: LeafTint;
+}
+
+/** What `generateBlocks` gives the mod and client entrypoints. */
+export interface GeneratedBlocks {
+  /** The simple name of the registration class. */
+  readonly className: string;
+  /** Tinted leaves in registration order, for `BlockColorRegistry` on the client. */
+  readonly leafTints: readonly LeafTintEntry[];
+}
+
 /**
  * Generates `ModBlocks.java` and the block classes; returns nothing when there are no blocks.
  *
- * @returns The simple name of the registration class, or `undefined`.
+ * @returns The registration class and the leaf tints, or `undefined`.
  */
 export function generateBlocks(
   context: GenerationContext,
   classNames: NameTable,
-): string | undefined {
+): GeneratedBlocks | undefined {
   const { blocks } = context.input;
   if (blocks.length === 0) return undefined;
   const specs = registrationOrder(blocks.map(readBlock));
@@ -459,6 +479,9 @@ export function generateBlocks(
   const extras: string[] = [];
   let usesNearPlane = false;
   let usesStairsBase = false;
+  let usesFallingParticle = false;
+  const leafTints: LeafTintEntry[] = [];
+  const treeChecks: string[] = [];
   const nearPlane = (): string => {
     usesNearPlane = true;
     return 'ModBlocks::nearPlaneIntersectsOutline';
@@ -482,7 +505,7 @@ export function generateBlocks(
       type = file.use(`${packageOf(context, 'block')}.${name}`);
     } else {
       type = file.use(familyClass(spec.type).fqcn);
-      args = constructorArguments(file, spec.type);
+      args = constructorArguments(file, spec.type, context.input.javaPackage);
     }
     if (spec.type.type === 'stairs') {
       const base = spec.type.baseBlock ?? 'minecraft:stone';
@@ -504,12 +527,12 @@ export function generateBlocks(
     if (spec.requiresTool) props.push('        .requiresCorrectToolForDrops()');
     if (spec.shape !== undefined) props.push(...shapeProperties(spec.shape));
     props.push(...typeProperties(file, spec.type, nearPlane));
-    if (spec.flammable !== undefined) {
+    if (spec.flammable !== undefined && spec.type.type !== 'leaves') {
       props.push(
         '        .ignitedByLava() // msm:flammable: lava sets it alight, as vanilla planks and logs',
       );
     }
-    if (spec.onRandomTick !== undefined) {
+    if (spec.onRandomTick !== undefined && !isPlant(spec.type)) {
       props.push(
         '        .randomTicks() // msm:on_random_tick: random ticks only with the component',
       );
@@ -530,6 +553,19 @@ export function generateBlocks(
       `public static final ${type} ${field} = ${registry}.register(${builtIn}.BLOCK, ${field}_KEY, new ${type}(${open}`,
       ...props.slice(1),
     );
+    const leaves = spec.type.leaves;
+    if (leaves?.tint !== undefined) leafTints.push({ field, tint: leaves.tint });
+    else if (leaves?.fallingParticle !== undefined) usesFallingParticle = true;
+    const sapling = spec.type.sapling;
+    if (sapling !== undefined) {
+      const trees = [...new Set([sapling.tree, sapling.megaTree, sapling.flowerTree])];
+      for (const tree of trees) {
+        if (tree === undefined) continue;
+        treeChecks.push(
+          `checkTree(features, ${javaString(spec.input.id)}, ${identifierExpression(file, tree)});`,
+        );
+      }
+    }
     if (spec.flammable !== undefined) {
       const flammable = file.use('net.fabricmc.fabric.api.registry.FlammableBlockRegistry');
       extras.push(
@@ -601,6 +637,56 @@ export function generateBlocks(
     });
   }
   const helpers: string[] = [];
+  const headFields: string[] = [];
+  if (treeChecks.length > 0) {
+    const lifecycle = file.use('net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents');
+    const server = file.use('net.minecraft.server.MinecraftServer');
+    const feature = file.use('net.minecraft.world.level.levelgen.feature.Feature');
+    const identifier = file.use('net.minecraft.resources.Identifier');
+    const logger = file.use('org.slf4j.Logger');
+    const loggerFactory = file.use('org.slf4j.LoggerFactory');
+    headFields.push(
+      `private static final ${logger} LOGGER = ${loggerFactory}.getLogger(${javaString(context.input.modId)});`,
+      '',
+    );
+    extras.push(
+      `${lifecycle}.SERVER_STARTED.register(ModBlocks::checkTrees); // saplings: their trees resolve only when they grow`,
+    );
+    helpers.push(
+      '',
+      '/**',
+      " * After start-up (every data pack loaded): one warning per sapling and tree that is not in the server's",
+      ' * worldgen/feature registry; such a sapling does not grow, as vanilla (ADR 0068 D4).',
+      ' */',
+      `private static void checkTrees(${server} server) {`,
+      `    ${registry}<${feature}> features = server.registryAccess().lookupOrThrow(${registries}.FEATURE);`,
+      ...indent(treeChecks),
+      '}',
+      '',
+      `private static void checkTree(${registry}<${feature}> features, String sapling, ${identifier} tree) {`,
+      '    if (!features.containsKey(tree)) {',
+      '        LOGGER.warn("sapling {}: tree feature {} is not in any loaded data pack", sapling, tree);',
+      '    }',
+      '}',
+    );
+  }
+  if (usesFallingParticle) {
+    const identifier = file.use('net.minecraft.resources.Identifier');
+    const simpleParticle = file.use('net.minecraft.core.particles.SimpleParticleType');
+    helpers.push(
+      '',
+      '/**',
+      ' * The falling leaf particle of untinted leaves: a particle type without options. Anything else stops the start-up',
+      ' * (the runtime gives such leaves no particle and warns).',
+      ' */',
+      `public static ${simpleParticle} fallingParticle(${identifier} id) {`,
+      `    if (${builtIn}.PARTICLE_TYPE.getValue(id) instanceof ${simpleParticle} particle) {`,
+      '        return particle;',
+      '    }',
+      '    throw new IllegalStateException("falling_particle " + id + " is not a particle type without options");',
+      '}',
+    );
+  }
   if (usesStairsBase) {
     const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
     const identifier = file.use('net.minecraft.resources.Identifier');
@@ -636,15 +722,22 @@ export function generateBlocks(
       '}',
     );
   }
+  const does = [
+    specs.some((spec) => spec.flammable !== undefined || spec.strippable !== undefined)
+      ? 'sets fire odds and stripping'
+      : undefined,
+    treeChecks.length > 0 ? "checks the saplings' trees after start-up" : undefined,
+  ].filter((part) => part !== undefined);
   const lines = [
     '/** The blocks and block items, registered when the class loads. */',
     'public final class ModBlocks {',
+    ...indent(headFields),
     ...indent(body.slice(1)),
     '',
     '    private ModBlocks() {}',
     '',
-    extras.length > 0
-      ? '    /** Loads the class (registering every block), sets fire odds and stripping, and adds the block items to their creative tabs. */'
+    does.length > 0
+      ? `    /** Loads the class (registering every block), ${does.join(', ')}, and adds the block items to their creative tabs. */`
       : '    /** Loads the class (registering every block) and adds the block items to their creative tabs. */',
     '    public static void register() {',
     ...indent([...extras, ...tabs], 2),
@@ -653,7 +746,7 @@ export function generateBlocks(
     '}',
   ];
   context.files.push({ path: classPath(context, '', 'ModBlocks'), contents: file.render(lines) });
-  return 'ModBlocks';
+  return { className: 'ModBlocks', leafTints };
 }
 
 /** The `Properties` calls of `MsmBlock.shapeProperties` (ADR 0059 D3). */
@@ -836,6 +929,11 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
       );
     }
   }
+  const plant = plantMembers(file, ts, spec.input.id, spec.onRandomTick !== undefined);
+  if (plant.fields.length > 0) {
+    if (members.length > 0) members.push('');
+    members.push(...plant.fields);
+  }
   if (ts.type === 'stairs') {
     const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
     members.push(
@@ -844,7 +942,9 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
       '    super(base, properties);',
     );
   } else {
-    const args = [...constructorArguments(file, ts), 'properties'].join(', ');
+    const args = [...constructorArguments(file, ts, context.input.javaPackage), 'properties'].join(
+      ', ',
+    );
     members.push('', `public ${name}(${properties} properties) {`, `    super(${args});`);
   }
   if (facing) {
@@ -859,6 +959,7 @@ function writeBlockClass(context: GenerationContext, spec: BlockSpec, name: stri
     members.push('    registerDefaultState(stateDefinition.any().setValue(POWERED, false));');
   }
   members.push('}');
+  members.push(...plant.methods);
 
   if (power || facing) {
     const stateDefinition = file.use('net.minecraft.world.level.block.state.StateDefinition');
@@ -1118,13 +1219,22 @@ function triggerMembers(context: GenerationContext, file: JavaFile, spec: BlockS
             `    ${fire}`,
             '}',
           ];
+    // A sapling may have grown into a tree and decaying leaves are gone after vanilla's tick.
+    const gone =
+      spec.type.type === 'sapling'
+        ? 'the sapling may have grown into a tree'
+        : spec.type.type === 'leaves'
+          ? 'decaying leaves are gone after super'
+          : undefined;
     out.push(
       '',
       `/** msm:on_random_tick: on a random tick${chance > 0 && chance < 1 ? ` with chance ${chance}` : ''}, within the shared tick cap. */`,
       '@Override',
       `protected void randomTick(${blockState()} state, ${serverLevel()} level, ${blockPos()} pos, ${random} random) {`,
       '    super.randomTick(state, level, pos, random);',
-      ...indent(body),
+      ...(gone === undefined
+        ? indent(body)
+        : [`    if (level.getBlockState(pos).is(this)) { // ${gone}`, ...indent(body, 2), '    }']),
       '}',
     );
   }

@@ -1,0 +1,7 @@
+{
+  "falling_particle": "minecraft:cherry_leaves",
+  "format": 1,
+  "particle_chance": 0.1,
+  "sound_type": "cherry_wood",
+  "type": "leaves"
+}

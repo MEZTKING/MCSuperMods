@@ -14,7 +14,8 @@
  * `block/`, `item/` (with `ThrowableItem.java` when an item has `msm:throwable`), `entity/`
  * (with `FollowTypesGoal.java` when a follow goal exists and `ThrownItemEntity.java` with
  * throwables, ADR 0056 D7), and `client/` with `<ModClass>Client.java` when the project has
- * entities or throwables, plus `client/entity/` GeckoLib models with entities. Additions to
+ * entities, throwables or tinted leaves (ADR 0068 D8), plus `client/entity/` GeckoLib models
+ * with entities. Additions to
  * vanilla content (ADR 0060 D9) add `ModWorldgen.java` (biome additions through Fabric's
  * `BiomeModifications`) and `ModLoot.java` (loot additions in a `LootTableEvents.MODIFY`
  * listener); the triggers of ADR 0061 add `TickLimiter.java` (tick triggers) and
@@ -118,7 +119,7 @@ export function generateJavaProject(input: JavaProjectInput): {
     );
   }
   const blocks = generateBlocks(context, classNames);
-  if (blocks !== undefined) registrations.push(blocks);
+  if (blocks !== undefined) registrations.push(blocks.className);
   const items = generateItems(context, classNames);
   if (items !== undefined) registrations.push(items);
   const entities = generateEntities(context, classNames);
@@ -129,10 +130,11 @@ export function generateJavaProject(input: JavaProjectInput): {
   const loot = generateLoot(context);
   if (loot !== undefined) registrations.push(loot);
   const main = generateMod(context, registrations);
+  const leafTints = blocks?.leafTints ?? [];
   const client =
-    entities === undefined && !throwables
+    entities === undefined && !throwables && leafTints.length === 0
       ? undefined
-      : generateClient(context, entities?.entities ?? [], throwables);
+      : generateClient(context, entities?.entities ?? [], throwables, leafTints);
   if (context.usesActions) {
     context.files.push({
       path: `${context.javaRoot}/Actions.java`,
@@ -196,7 +198,7 @@ function thrownItemPath(input: JavaProjectInput): string {
 /**
  * The 26.3 `JavaProjectGenerator`. The entrypoints follow ADR 0033 D2:
  * `<package>.<ModClass>` always and `<package>.client.<ModClass>Client` when the project has
- * entities or throwables (the exporter adds the client entrypoint when that file is generated).
+ * entities, throwables or tinted leaves (the exporter adds the client entrypoint when that file is generated).
  */
 export const javaProjectGenerator: JavaProjectGenerator = {
   generate(input) {
