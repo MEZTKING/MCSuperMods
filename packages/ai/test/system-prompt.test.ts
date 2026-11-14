@@ -98,3 +98,31 @@ describe('systemPrompt vanilla additions, triggers and saved data paragraphs (AD
     }
   });
 });
+
+describe('systemPrompt potions, data kinds and Script API 1.1 paragraphs (ADRs 0063-0065)', () => {
+  it.each(['chat', 'build'] as const)('names the kinds and limits in %s mode', (mode) => {
+    const text = systemPrompt(mode);
+    for (const term of [
+      'msm:potion',
+      'minecraft:awkward',
+      'Potion creator flow',
+      'Fabric mod jar',
+      'Mob skin',
+      'Goat horn',
+      'minecraft:goat_horn',
+      'enchantment providers',
+      'sound_id',
+      'player.inventory',
+      'player.tick',
+      'at least 5 ticks',
+      'at most 32 per namespace',
+      'at most 128 blocks',
+      'Entity.damage',
+      'block.place',
+      'custom commands',
+      'note_missing_feature',
+    ]) {
+      expect(text, term).toContain(term);
+    }
+  });
+});
