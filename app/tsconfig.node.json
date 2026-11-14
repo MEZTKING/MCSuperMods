@@ -33,6 +33,7 @@
     "src/renderer/src/studios/completions.ts",
     "src/renderer/src/studios/templates.ts",
     "src/renderer/src/studios/rules/rules-model.ts",
+    "src/renderer/src/studios/rules/turn-into-rules.ts",
     "src/renderer/src/preview/model-chain.ts",
     "src/renderer/src/preview/fallback-models.ts",
     "src/renderer/src/preview/geo/geometry.ts",

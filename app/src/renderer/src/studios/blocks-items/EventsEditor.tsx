@@ -16,12 +16,20 @@
  * edit (one undo step); removing an event leaves its references, which the
  * `blocks-items.unknown-event` validator then reports.
  *
+ * Rules (ADR 0082 D7 (c)): given the project and target, the editor lists the events the
+ * project's rules make on this thing under "From rules", read-only, with a link to their rule
+ * book, and offers "Turn into rules" on a hand-made event whose actions all map to rule steps
+ * (one undo step through the host's `applyChanges`: the rules are added, the event removed and
+ * its trigger left to the rules).
+ *
  * @packageDocumentation
  */
 
-import type { Element, Json } from '@msm/core';
-import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
-import { type ReactNode, useId, useState } from 'react';
+import type { Element, Json, Project } from '@msm/core';
+import type { TargetFacts } from '@msm/plugin-api';
+import { triggerById } from '@msm/plugin-rules';
+import { ArrowDown, ArrowUp, ExternalLink, ListChecks, Plus, X } from 'lucide-react';
+import { type ReactNode, useId, useMemo, useState } from 'react';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import {
   type ChangeOptions,
@@ -33,6 +41,9 @@ import {
 } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { isJsonObject } from '../../forms/pointer';
+import type { RuleEventEntry } from '../../session/rules-view';
+import { planTurnIntoRules, subjectRules } from '../rules/turn-into-rules';
+import { useStructureStudioHost } from '../structures/host';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import { ColourField } from '../worldgen/ColourField';
 import { Section } from '../worldgen/parts';
@@ -51,6 +62,7 @@ import {
   suggestEventId,
   withProjectIds,
 } from './blocks-items-model';
+import { useBlocksItemsStudioHost } from './host';
 import {
   blockPiecesId,
   DEFAULT_DUST_SCALE,
@@ -267,6 +279,81 @@ export interface EventsEditorProps {
    * (`projectPortals`); without them the portal is a block id field.
    */
   portals?: readonly string[] | undefined;
+  /**
+   * The project and the target, for the "From rules" list and "Turn into rules" (ADR 0082 D7
+   * (c)); without them neither is shown.
+   */
+  project?: Project | undefined;
+  target?: TargetFacts | undefined;
+}
+
+/** The heading of the read-only list of the events Rules make. */
+export const FROM_RULES_TITLE = 'From rules';
+
+/** What the "From rules" list says about its events. */
+export const FROM_RULES_NOTE =
+  'Your rules make these events when the mod is exported. Change them in the rules, not here.';
+
+/** Plain words for one action of an event Rules make. */
+export function ruleActionWords(action: Json, actions: readonly ActionSpec[]): string {
+  const object = asObject(action);
+  if (object.type === 'run_script') return "Runs the rules' script";
+  if (object.type === 'trigger_event') {
+    return `Runs the event ${typeof object.event === 'string' ? object.event : ''} first`;
+  }
+  const spec = actionSpec(object.type, actions);
+  return spec === undefined ? String(object.type) : spec.label;
+}
+
+/** The read-only list of the events Rules make on the thing. */
+function FromRules(props: {
+  entries: readonly RuleEventEntry[];
+  actions: readonly ActionSpec[];
+  onOpen: ((bookId: string) => void) | undefined;
+}) {
+  return (
+    <section
+      aria-label={FROM_RULES_TITLE}
+      className="flex flex-col gap-1"
+      data-testid="events-from-rules"
+    >
+      <h4 className="font-medium text-xs">{FROM_RULES_TITLE}</h4>
+      <p className="text-muted text-xs">{FROM_RULES_NOTE}</p>
+      <ul className="flex flex-col gap-1">
+        {props.entries.map((entry) => {
+          const actions = asObject(entry.event).actions;
+          const label = triggerById(entry.trigger)?.label ?? entry.trigger;
+          return (
+            <li
+              key={entry.eventId}
+              className="flex flex-col gap-0.5 rounded border border-dashed border-border p-2 text-xs"
+              data-testid={`rules-event-${entry.eventId}`}
+            >
+              <span className="flex flex-wrap items-center gap-2">
+                <span className="font-medium">{label}</span>
+                <code className="font-mono text-muted">{entry.eventId}</code>
+                {props.onOpen !== undefined && (
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1 underline"
+                    data-testid="rules-event-open"
+                    onClick={() => props.onOpen?.(entry.origin.elementId)}
+                  >
+                    <ExternalLink size={12} aria-hidden /> Open the rule book
+                  </button>
+                )}
+              </span>
+              <ol className="list-decimal pl-5 text-muted">
+                {(Array.isArray(actions) ? actions : []).map((action, index) => (
+                  <li key={index}>{ruleActionWords(action, props.actions)}</li>
+                ))}
+              </ol>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
 }
 
 /** The text of an action type's option: its label and its format id, as "Hurt (damage)". */
@@ -527,6 +614,8 @@ function EventEditor(props: {
   problems: readonly FormProblem[];
   suggest(registry: string, prefix: string): string[];
   onChange: EventsEditorProps['onChange'];
+  /** "Turn into rules", when the event can become rules. */
+  onTurnIntoRules?: (() => void) | undefined;
 }) {
   const { name, data, events, problems, onChange } = props;
   const create = (type: string) =>
@@ -567,6 +656,17 @@ function EventEditor(props: {
             onCommit={rename}
           />
         </div>
+        {props.onTurnIntoRules !== undefined && (
+          <Button
+            className="text-xs"
+            data-testid={`turn-into-rules-${name}`}
+            aria-label={`Turn ${name} into rules`}
+            onClick={props.onTurnIntoRules}
+          >
+            <ListChecks size={12} aria-hidden />
+            Turn into rules
+          </Button>
+        )}
         <button
           type="button"
           aria-label={`Remove event ${name}`}
@@ -711,10 +811,35 @@ export function EventsEditor({
   triggers,
   effects = [],
   portals,
+  project,
+  target,
 }: EventsEditorProps) {
   const suggestIds = particlesFirst(withProjectIds(suggest, 'mob_effect', effects));
   const events = eventNames(element.data);
   const actions = editorActionsFor(element.kind);
+  const rules = useMemo(
+    () => (project === undefined || target === undefined ? null : subjectRules(project, target)),
+    [project, target],
+  );
+  const ruleEvents = useMemo(
+    () => rules?.view.ruleEventsFor(element.id) ?? [],
+    [rules, element.id],
+  );
+  const host = useBlocksItemsStudioHost();
+  const structureHost = useStructureStudioHost();
+  const applyChanges = host?.applyChanges;
+  const [turnError, setTurnError] = useState<string | null>(null);
+  const turnInto = (name: string): (() => void) | undefined => {
+    if (project === undefined || applyChanges === undefined) return undefined;
+    const plan = planTurnIntoRules(project, element, name);
+    if (!plan.ok) return undefined;
+    return () => {
+      setTurnError(null);
+      applyChanges(plan.items, plan.label, []).catch((cause: unknown) =>
+        setTurnError(cause instanceof Error ? cause.message : String(cause)),
+      );
+    };
+  };
   const [draft, setDraft] = useState('');
   const inputId = useId();
   const proposed = draft.trim();
@@ -752,9 +877,26 @@ export function EventsEditor({
             problems={problems}
             suggest={suggestIds}
             onChange={onChange}
+            onTurnIntoRules={turnInto(name)}
           />
         ))}
       </ul>
+      {turnError !== null && (
+        <p role="alert" className="text-error text-xs" data-testid="turn-into-rules-error">
+          {turnError}
+        </p>
+      )}
+      {ruleEvents.length > 0 && (
+        <FromRules
+          entries={ruleEvents}
+          actions={actions}
+          onOpen={
+            structureHost === null
+              ? undefined
+              : (bookId) => structureHost.openElement(bookId as Element['id'])
+          }
+        />
+      )}
       <div className="flex items-end gap-1">
         <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-xs">
           <label className="text-muted" htmlFor={inputId}>

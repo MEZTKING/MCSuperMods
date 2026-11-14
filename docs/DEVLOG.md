@@ -4389,3 +4389,20 @@ Decisions
 
 Next
 - B380: the fixture can reuse these two books. B382 and B383: the example ids and titles above.
+
+## 2026-11-14 — executor — B375 Rules in the Studios and the events editor
+
+What
+- New `app/src/renderer/src/studios/rules/RulesSection.tsx` (ADR 0082 D7 (b)): a "Rules" section in the Block, Item, Mob and Effect Studios, just above the events, loaded lazily (its own 6 kB chunk; the shared rule card code is a 49 kB chunk). It shows the thing's rules from every book as rule cards with the thing fixed (`RuleCard` with `fixedSubject`, inside a `RulesEnvContext` from `makeRulesEnv`; problems are the compiler's, from the expansion), "Open the rule book", and "Add a rule" (the When chip pre-filled with the thing's first trigger: a portal's travel, a block's "used", an item's "used", a mob's "hurt", an effect's "starts"). Book edits go through the host's `applyChanges` as one undo step each; typing (a name, a message) shows at once and is sent after 600 ms as one step (`registerPendingEdit` sends it before Save). Without a host that can write, the cards are shown read-only.
+- New `studios/rules/turn-into-rules.ts` (pure): `bookForSubject`, `firstTriggerFor`, `triggersFor`, `subjectRules` (the project's `RulesView` with the rules plugin's expansion, cached per project state and target, shared by the section and the events editor), `stepOfAction`, `sameActions` and `planTurnIntoRules`.
+- `EventsEditor.tsx` (ADR 0082 D7 (c)), given `project` and `target`: "From rules", a read-only list of the events Rules make on the thing (trigger label, event id, each action in words, "Open the rule book"); "Turn into rules" on a hand-made event whose actions all map to steps. It makes one rule per trigger naming the event (options such as `cooldown_ticks` move onto the rule as seconds), removes the event and the trigger's reference (a component left empty is removed unless the trigger needs it), and applies everything as one changeset ("Turn <event> into rules"). It is offered only when `plainActions` turns the new rules back into the same actions (absent optional fields read as their defaults), no other event runs it, a trigger names it and Rules' event id is free.
+- `ExportJavaProjectDialog.tsx`: `rulesNotInEject(view)` and a list of the enabled rules that need a script ("These rules need a script, so they do nothing in the Java project. ..."); `App.tsx` passes `rules={rulesNotInEject(session.rulesView)}` (one line).
+- Tests: `app/test/turn-into-rules.test.ts` (9, with the session round trip: Turn into rules, save, Undo, save is byte-identical) and `app/test/components/RulesSection.test.tsx` (7). App suite 182 files, 1691 tests; lint, typecheck and build pass.
+
+Decisions
+- Which book "Add a rule" and "Turn into rules" write into: the book (in id order) that already holds a rule on the thing; else the project's default book `<namespace of the thing>:rules` (ADR 0082 D2), created on demand in the same undo step. "Turn into rules" puts the new rule before the first rule already on the same thing and trigger, so it still runs first, as the hand-made event did.
+- The Studios have no route to the session, so the section and the events editor build the Rules view themselves (`expandProjectSync` with the rules plugin, the same compile the session runs) instead of `session.rulesView`; the Java project dialog uses `session.rulesView` through `App`.
+- "Turn into rules" moves trigger options onto the rule only when the compiler would give back the same ticks and the value is within the option's range; otherwise the option stays on the component (the subject's own value wins, R16).
+
+Next
+- B378: the Rules section reads the mode through `rulesModeOf`, so Very easy hides advanced steps there too; place nothing new. B379: test ids below. B383: labels below. Follow-up: "Copy as my own script" (ADR 0082 D7 (d)) is named by the `rules.not-in-eject` wording but not built yet.

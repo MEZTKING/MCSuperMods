@@ -10,7 +10,7 @@
  * else stays behind "Advanced (all fields)".
  */
 
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { typingKey } from '../../forms/context';
 import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
@@ -28,6 +28,9 @@ import { EventsEditor } from './EventsEditor';
 import { CheckField, EventSelect, ModelField, ProblemsAt, TextField } from './parts';
 import { projectPortals } from './portal-model';
 import { FuelCompostFields, TriggersSection } from './triggers';
+
+/** The Rules section (ADR 0082 D7 (b)), a chunk of its own. */
+const RulesSection = lazy(() => import('../rules/RulesSection'));
 
 /** New component values when a component is switched on (ADR 0025 D3 examples). */
 const NEW_FOOD = { nutrition: 4, saturation: 0.3 };
@@ -431,8 +434,24 @@ export function ItemStudio(props: StudioProps) {
         set={set}
         testId="item"
       />
+      <Suspense
+        fallback={
+          <p className="text-muted text-xs" data-testid="rules-section-loading">
+            Loading the Rules section…
+          </p>
+        }
+      >
+        <RulesSection
+          project={project}
+          element={element}
+          target={props.target}
+          context={props.context}
+        />
+      </Suspense>
       <EventsEditor
         element={element}
+        project={project}
+        target={props.target}
         problems={problems}
         suggest={suggest}
         onChange={onChange}

@@ -29,7 +29,7 @@
 
 import type { Json } from '@msm/core';
 import { ArrowDown, ArrowUp, ExternalLink, Plus, X } from 'lucide-react';
-import { useId, useState } from 'react';
+import { lazy, Suspense, useId, useState } from 'react';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import { type FormProblem, inputClass, isWithin, ProblemList } from '../../forms';
 import { typingKey } from '../../forms/context';
@@ -79,6 +79,9 @@ import { RangedSection } from './RangedSection';
 import { RidingSection } from './RidingSection';
 import { TamingSection } from './TamingSection';
 import { VariantsSection } from './VariantsSection';
+
+/** The Rules section (ADR 0082 D7 (b)), a chunk of its own. */
+const RulesSection = lazy(() => import('../rules/RulesSection'));
 
 type JsonObject = { [key: string]: Json };
 
@@ -960,8 +963,24 @@ export function EntityStudio(props: StudioProps) {
       <BossBarSection {...mobProps} />
       {spawning}
       {eggSection}
+      <Suspense
+        fallback={
+          <p className="text-muted text-xs" data-testid="rules-section-loading">
+            Loading the Rules section…
+          </p>
+        }
+      >
+        <RulesSection
+          project={project}
+          element={element}
+          target={props.target}
+          context={props.context}
+        />
+      </Suspense>
       <EventsEditor
         element={element}
+        project={project}
+        target={props.target}
         problems={problems}
         suggest={suggest}
         onChange={onChange}

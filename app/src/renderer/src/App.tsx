@@ -49,6 +49,7 @@ import {
   FOLDER_NOT_EMPTY_CODE,
   JAVA_PROJECT_REVEAL_LABEL,
   javaProjectWrittenMessage,
+  rulesNotInEject,
 } from './components/ExportJavaProjectDialog';
 import {
   type FunctionCaret,
@@ -2328,6 +2329,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
           {dialog?.type === 'java-project' && (
             <ExportJavaProjectDialog
               scripts={projectScripts(project).map((script) => script.id)}
+              rules={rulesNotInEject(session.rulesView)}
               onClose={() => setDialog(null)}
               onExport={() => {
                 setDialog(null);

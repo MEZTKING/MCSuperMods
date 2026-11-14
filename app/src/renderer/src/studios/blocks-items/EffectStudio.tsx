@@ -19,7 +19,7 @@
 
 import type { Json } from '@msm/core';
 import { FlaskConical, Paintbrush, Plus, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { pngDataUrl } from '../../components/AssetList';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import { inputClass } from '../../forms';
@@ -57,6 +57,9 @@ import { particlesFirst } from './particle-model';
 import { CheckField, EventSelect, ProblemsAt, TextField } from './parts';
 import { projectPortals } from './portal-model';
 import { newPotionFor, POTION_KIND } from './potion-model';
+
+/** The Rules section (ADR 0082 D7 (b)), a chunk of its own. */
+const RulesSection = lazy(() => import('../rules/RulesSection'));
 
 type JsonObject = { [key: string]: Json };
 
@@ -496,8 +499,24 @@ export function EffectStudio(props: StudioProps) {
       {statSection}
       {behaviour}
       {potionSection}
+      <Suspense
+        fallback={
+          <p className="text-muted text-xs" data-testid="rules-section-loading">
+            Loading the Rules section…
+          </p>
+        }
+      >
+        <RulesSection
+          project={project}
+          element={element}
+          target={props.target}
+          context={props.context}
+        />
+      </Suspense>
       <EventsEditor
         element={element}
+        project={project}
+        target={props.target}
         problems={problems}
         suggest={suggest}
         onChange={onChange}

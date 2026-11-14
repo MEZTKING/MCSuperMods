@@ -78,6 +78,9 @@ import { projectPortals } from './portal-model';
 import { TexturesSection } from './TexturesSection';
 import { FuelCompostFields, TriggersSection } from './triggers';
 
+/** The Rules section (ADR 0082 D7 (b)), a chunk of its own. */
+const RulesSection = lazy(() => import('../rules/RulesSection'));
+
 /** The Inventory section (ADR 0076 D1), a chunk of its own. */
 const InventorySection = lazy(() => import('./InventorySection'));
 /** The Portal section (ADR 0078 D1), a chunk of its own. */
@@ -848,8 +851,24 @@ export function BlockStudio(props: StudioProps) {
       {dropsSection}
       {itemSection}
       {behaviour}
+      <Suspense
+        fallback={
+          <p className="text-muted text-xs" data-testid="rules-section-loading">
+            Loading the Rules section…
+          </p>
+        }
+      >
+        <RulesSection
+          project={project}
+          element={element}
+          target={props.target}
+          context={props.context}
+        />
+      </Suspense>
       <EventsEditor
         element={element}
+        project={project}
+        target={props.target}
         problems={problems}
         suggest={suggest}
         onChange={onChange}
