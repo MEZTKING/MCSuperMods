@@ -1,0 +1,7 @@
+{
+  "destination": "minecraft:the_nether",
+  "format": 1,
+  "frame": "minecraft:quartz_bricks",
+  "igniter": false,
+  "type": "portal"
+}

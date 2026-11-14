@@ -11,6 +11,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -55,7 +57,9 @@ public final class PortalLighting {
      * D3 (a): the held item is a portal's igniter and the block beside the clicked face is inside an empty, unlit frame of
      * that portal (axis x first, then z). Both sides answer {@code SUCCESS}, so the client never predicts the item's own
      * use (a fire); only the server fills the frame, records it and uses the igniter: a damageable igniter loses one
-     * durability, any other is used up one at a time, nothing in creative.
+     * durability, any other is used up one at a time, nothing in creative; the server plays
+     * {@code minecraft:item.flintandsteel.use} at the clicked block (orchestrator's decision after B334; the
+     * {@code light_portal} action plays nothing).
      */
     private static InteractionResult useIgniter(Player player, Level level, InteractionHand hand, BlockHitResult hit) {
         if (player.isSpectator() || PORTALS.isEmpty()) {
@@ -76,6 +80,10 @@ public final class PortalLighting {
             }
             if (level instanceof ServerLevel server) {
                 light(server, portal, frame.get());
+                // As vanilla's flint and steel: the lighting sound at the clicked frame, for every igniter item.
+                BlockPos at = hit.getBlockPos();
+                server.playSound(null, at, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0f,
+                        server.getRandom().nextFloat() * 0.4f + 0.8f);
                 if (!player.hasInfiniteMaterials()) {
                     if (stack.isDamageableItem()) {
                         stack.hurtAndBreak(1, player, hand.asEquipmentSlot());

@@ -1,0 +1,15 @@
+{
+  "destination": "minecraft:the_end",
+  "format": 1,
+  "frame": "minecraft:mud_bricks",
+  "igniter": false,
+  "sounds": {
+    "travel": "msm_test:chime"
+  },
+  "travel": {
+    "cooldown_ticks": 77,
+    "delay_ticks": 0,
+    "players_only": true
+  },
+  "type": "portal"
+}

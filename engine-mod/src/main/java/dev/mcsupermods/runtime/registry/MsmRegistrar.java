@@ -19,6 +19,7 @@ import dev.mcsupermods.runtime.loader.PotionDefinition;
 import dev.mcsupermods.runtime.loader.RawDefinition;
 import dev.mcsupermods.runtime.registry.container.BlockEntityHooks;
 import dev.mcsupermods.runtime.registry.portal.PortalLighting;
+import dev.mcsupermods.runtime.registry.portal.PortalTravel;
 import dev.mcsupermods.runtime.registry.types.BlockTypes;
 import dev.mcsupermods.runtime.registry.types.MsmPortalBlock;
 import java.util.ArrayList;
@@ -988,6 +989,7 @@ public final class MsmRegistrar {
         warnings.addAll(MsmEntityRegistrar.checkAfterStart(server));
         warnings.addAll(MsmAdditions.checkAfterStart(server));
         warnings.addAll(SaplingCheck.check(server)); // ADR 0068 D4: tree features resolve only when a sapling grows
+        warnings.addAll(PortalTravel.checkLevels(server)); // ADR 0077 D6: a portal's levels exist only once the server runs
         for (String w : warnings) {
             MsmRuntime.LOGGER.warn("[{}] {}", MsmRuntime.MOD_ID, w);
         }

@@ -4,6 +4,7 @@ import dev.mcsupermods.runtime.loader.BlockDefinition;
 import dev.mcsupermods.runtime.loader.BlockType;
 import dev.mcsupermods.runtime.registry.BlockBehaviourDriver;
 import dev.mcsupermods.runtime.registry.portal.PortalFrame;
+import dev.mcsupermods.runtime.registry.portal.PortalTravel;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -49,7 +50,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * A portal block ({@code type: "portal"}, ADR 0077 D4), written from the ADR's rules: state {@link #AXIS}, a thin shape
  * along the axis and no collision (the registrar's properties), turned to air when the frame around it (D2) is no longer
  * whole; entities inside are handed to vanilla's portal processing through {@link Portal}. Lighting is
- * {@code registry/portal/PortalLighting} (D3); travel is B336.
+ * {@code registry/portal/PortalLighting} (D3); travel is {@code registry/portal/PortalTravel} (D6).
  */
 public class MsmPortalBlock extends Block implements Portal, DrivenBlock {
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.HORIZONTAL_AXIS;
@@ -179,14 +180,21 @@ public class MsmPortalBlock extends Block implements Portal, DrivenBlock {
 
     /**
      * On both sides, as vanilla's portal (the client's own player also keeps a portal process for its overlay): an entity
-     * that may use a portal is marked inside this one, unless {@code players_only} keeps a non-player out; then
+     * that may use a portal is marked inside this one, unless {@code players_only} keeps a non-player out (a cooling entity
+     * keeps {@code cooldown_ticks} rather than vanilla's default); then
      * {@code msm:on_entity_inside}.
      */
     @Override
     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effects,
             boolean intersects) {
         if (entity.canUsePortal(false) && (!portal.travel().playersOnly() || entity instanceof Player)) {
+            boolean cooling = entity.isOnPortalCooldown();
             entity.setAsInsidePortal(this, pos);
+            if (cooling) {
+                // Vanilla refreshes a cooling entity's cooldown to its default while it stands in a portal (an arrival
+                // standing in its exit); with cooldown_ticks the refresh uses that number instead (ADR 0077 D6).
+                portal.travel().cooldownTicks().ifPresent(entity::setPortalCooldown);
+            }
         }
         driver.entityInside(level, pos, entity);
     }
@@ -207,10 +215,13 @@ public class MsmPortalBlock extends Block implements Portal, DrivenBlock {
         return 0;
     }
 
+    /**
+     * Where {@code entity} goes (D6, {@link PortalTravel}): {@code destination}, or {@code return_to} from it; a linked
+     * exit portal or the surface; null (vanilla then sets the cooldown and moves nobody) for a missing level.
+     */
     @Override
     public TeleportTransition getPortalDestination(ServerLevel level, Entity entity, BlockPos pos) {
-        // TODO(B336): travel and linking (ADR 0077 D6). Null: vanilla sets the portal cooldown and moves nobody.
-        return null;
+        return PortalTravel.destination(this, level, entity, pos);
     }
 
     /** {@code overlay} (default true): vanilla's wobble, overlay and entry sound on the client; else none (limit P2). */

@@ -3650,3 +3650,21 @@ What: CI run 43602928640 (f6b671a) failed `creator-path.spec.ts:678` again: the 
 Decisions: gate on input modality rather than more pointer bookkeeping; keyboard users still get tooltips on focus.
 
 Next: none.
+## 2026-11-14 — executor — B336 portal travel and linking
+
+What
+- New `registry/portal/PortalTravel` (ADR 0077 D6, clean room): `MsmPortalBlock.getPortalDestination` now hands travellers to vanilla's portal pipeline. Target level: `return_to` from `destination`, else `destination` (also from a third dimension). Factor: with `travel.scale`, `1 / scale` going to `destination` and `scale` coming back; otherwise (and from a third dimension) `DimensionType.getTeleportationScale`. Target block: the traveller's x and z times the factor (y kept), clamped to the target's world border. Linking radius `clamp(round(128 * min(1, factor)), 16, 128)`; exits through B333's `ExitPortals.findOrBuild` with the entry's axis; the traveller keeps its share of the portal's width and height (vanilla's generic `PortalShape.getRelativePosition` and `findCollisionFreePosition`) and its rotation (a quarter turn when the exit has the other axis). `arrival: surface` lands on the first standing spot of the target column from the top of the logical height down and builds nothing; over a void it falls back to an exit. A tag frame without `frame_block` arrives at the surface (at the target itself over a void).
+- The entry portal joins the index on first use when it stands in a whole lit frame (portals placed by `/fill`, structures or other mods); a lone portal block takes travellers but is not indexed.
+- After arrival: `PLACE_PORTAL_TICKET`; `PLAY_PORTAL_SOUND` for the default travel sound, a project or other sound sent to a travelling player (volume 0.25, pitch 0.8 to 1.2), nothing for `false`; `cooldown_ticks` set on the arrived entity, and kept by the portal block while a cooling entity stands in it (vanilla would refresh it to its own default); then `on_travel` with the traveller as self and other at its arrival block (`run_function` runs as the traveller).
+- Missing levels: `MsmRegistrar.checkAfterStart` (the one owner of the start check) adds one warning per portal and missing level, `portal <id>: dimension <dim> is not a level of this world; nobody travels there`; at use the same line once per portal and level per server; no teleport.
+- `PortalLighting`: lighting with an item plays `minecraft:item.flintandsteel.use` at the clicked frame block (orchestrator's decision after B334); the `light_portal` action plays nothing.
+- `MsmPortalTravelGameTest`: 9 GameTests with seven new `portal_travel_*` definitions (each its own vanilla frame block, so no two tests link) and `data/msm_test/function/portal/arrived.mcfunction`. `MsmPortalBlockGameTest`'s sorted-id check leaves the `portal_travel_*` ids out.
+- Checks: `./gradlew build` on 26.3 (twice), `-Pmc=26.4` and `-PwithoutGeckolib`: 398 GameTests each (389 + 9), 610 JUnit; `./gradlew -p parity build -Pmc=26.3` green.
+
+Decisions
+- With `travel.scale`, the scale applies only between `return_to` and `destination`; from a third dimension the dimension types decide.
+- `cooldown_ticks` also replaces vanilla's refresh while a cooling entity stands in the portal (otherwise an arrival standing in its exit would leave with vanilla's 300 or 10 ticks and the setting would never be seen).
+- Surface arrival counts a fluid as ground (an ocean or lava surface); the feet may not be in lava.
+
+Next
+- B339 copies `PortalTravel` and the cooldown refresh into the eject; B341 and B343 check the behaviour on real servers with a project dimension.

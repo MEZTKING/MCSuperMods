@@ -1,0 +1,10 @@
+{
+  "destination": "minecraft:the_end",
+  "format": 1,
+  "frame": "minecraft:polished_deepslate",
+  "igniter": false,
+  "travel": {
+    "scale": 4
+  },
+  "type": "portal"
+}

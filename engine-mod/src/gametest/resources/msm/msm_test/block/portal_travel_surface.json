@@ -1,0 +1,13 @@
+{
+  "destination": "minecraft:the_end",
+  "format": 1,
+  "frame": "minecraft:smooth_basalt",
+  "igniter": false,
+  "sounds": {
+    "travel": false
+  },
+  "travel": {
+    "arrival": "surface"
+  },
+  "type": "portal"
+}

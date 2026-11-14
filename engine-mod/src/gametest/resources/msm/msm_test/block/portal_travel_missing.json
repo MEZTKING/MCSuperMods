@@ -1,0 +1,7 @@
+{
+  "destination": "msm_test:nowhere",
+  "format": 1,
+  "frame": "minecraft:tuff_bricks",
+  "igniter": false,
+  "type": "portal"
+}

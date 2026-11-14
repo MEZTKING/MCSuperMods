@@ -137,7 +137,7 @@ public class MsmPortalBlockGameTest {
         }
         helper.assertFalse(block("portal_frame") instanceof MsmPortalBlock, "portal_frame is a portal");
         List<String> ids = PortalLighting.portals().stream().map(p -> BuiltInRegistries.BLOCK.getKey(p).toString())
-                .filter(s -> s.startsWith("msm_test:portal_")).toList();
+                .filter(s -> s.startsWith("msm_test:portal_") && !s.startsWith("msm_test:portal_travel_")).toList(); // B336's are in MsmPortalTravelGameTest
         helper.assertValueEqual(ids, List.of("msm_test:portal_bad_component", "msm_test:portal_bad_particle", "msm_test:portal_bad_tag_frame",
                 "msm_test:portal_basic", "msm_test:portal_clash_a", "msm_test:portal_clash_b", "msm_test:portal_quiet", "msm_test:portal_tag",
                 "msm_test:portal_with_item"), "portals in sorted id order");
