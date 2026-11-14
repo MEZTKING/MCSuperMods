@@ -3427,3 +3427,14 @@ Decisions
 
 Next
 - B325: CI steps (export, server check with the two lines above, parity on 26.3 content and ejected jars and 26.4 content jar) and `SampleMachinesParityTest`; B326: `fixtures/sample-machines/README.md`.
+
+## 2026-11-14 — executor — B326 sample machines README
+
+What
+- New hand-written `fixtures/sample-machines/README.md` (PLAN-containers-machines B326): contents table for the nine blocks, loot table and functions; the Windows in-game checklist for 26.3 and 26.4 with Prism Launcher: loading and creative tabs, storage blocks (screens and titles, open pictures, sounds, comparator, hoppers, keep-contents in survival and creative), the holder (C9), the three machines (fuel, speed, vanilla smelting recipes, redstone power, progress comparator, light, experience, shift-click flicker C10, recipe book C11), the loot crate function, saving and commands, client and server jars (C14), and a 26.4 table; plus how to regenerate and run the server check.
+
+Decisions
+- Known limits (C2, C9, C10, C11, C14) are marked "known limit" in the checklist so the player does not report them as faults; uncertain behaviours (shulker box refusal, power-off mid-recipe) are phrased as "report what you see".
+
+Next
+- B325 CI wording and B327 guide may link this README.
