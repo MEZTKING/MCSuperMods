@@ -37,6 +37,7 @@ import net.minecraft.resources.Identifier;
  *   <li>Items: {@code msm:throwable} with {@code msm:armor}, {@code msm:ranged_weapon}, {@code msm:shield},
  *       {@code msm:consumable}, {@code msm:food} or a {@code mace} tool is an error; none of them is applied
  *       (ADR 0056 D2).</li>
+ *   <li>Items: {@code msm:while_worn} without {@code msm:armor} is an error; it is not applied (ADR 0061 D1).</li>
  *   <li>Effects: {@code play_animation} actions are dropped with a warning (ADR 0055 D3).</li>
  *   <li>Biome and loot additions (ADR 0060 D2, D3): closed throughout, so an unknown top-level key is an error, not a
  *       warning; they have no components and no events.</li>
@@ -57,7 +58,26 @@ public final class DefinitionParser {
     public static ParseResult<ItemDefinition> parseItem(JsonElement json) {
         ParseResult<ItemDefinition> result = parse(json, ItemDefinition.KEYS, ItemComponents.KEYS, ItemDefinition.CODEC,
                 def -> new Refs(def.events(), def.components().eventReferences(), List.of()));
-        return dropThrowableConflicts(dropExclusiveTogether(dropPlayAnimation(result, ItemDefinition::events, ItemDefinition::withEvents)));
+        return dropWhileWornWithoutArmor(
+                dropThrowableConflicts(dropExclusiveTogether(dropPlayAnimation(result, ItemDefinition::events, ItemDefinition::withEvents))));
+    }
+
+    /**
+     * {@code msm:while_worn} fires in the armour slot of {@code msm:armor} (ADR 0061 D1): without {@code msm:armor}
+     * (also when an exclusive or throwable conflict dropped it) it is an error and is not applied.
+     */
+    private static ParseResult<ItemDefinition> dropWhileWornWithoutArmor(ParseResult<ItemDefinition> result) {
+        if (result.definition().isEmpty()) {
+            return result;
+        }
+        ItemDefinition def = result.definition().get();
+        if (def.components().whileWorn().isEmpty() || def.components().armor().isPresent()) {
+            return result;
+        }
+        List<String> errors = new ArrayList<>(result.errors());
+        errors.add("components: msm:while_worn needs msm:armor (the slot it is worn in); it is not applied");
+        return new ParseResult<>(Optional.of(def.withComponents(def.components().withoutWhileWorn())), List.copyOf(errors),
+                result.warnings());
     }
 
     /** A mob effect definition (ADR 0055 D2); {@code play_animation} is dropped with a warning, as for blocks and items. */

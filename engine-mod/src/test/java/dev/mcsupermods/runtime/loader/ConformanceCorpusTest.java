@@ -68,11 +68,6 @@ class ConformanceCorpusTest {
             .sorted(Comparator.comparingInt((Kind k) -> k.prefix().length()).reversed())
             .toList();
 
-    /** The trigger components of ADR 0061 D1 to D3, which this runtime does not decode yet. */
-    private static final List<String> TRIGGER_COMPONENTS = List.of("msm:on_hit", "msm:on_use_on_block", "msm:while_held",
-            "msm:while_worn", "msm:on_break", "msm:on_place", "msm:on_random_tick", "msm:on_entity_inside", "msm:on_tick",
-            "msm:on_spawn");
-
     private static Kind kind(Path file) {
         String name = file.getFileName().toString();
         return KINDS.stream().filter(k -> name.startsWith(k.prefix())).findFirst()
@@ -81,18 +76,6 @@ class ConformanceCorpusTest {
 
     private static ParseResult<?> parse(Path file) throws IOException {
         return kind(file).parser().apply(read(file));
-    }
-
-    /** {@code trigger-} files: B235 decodes trigger components; until then only the rest of the file is checked here. */
-    private static boolean isTrigger(Path file) {
-        return kind(file).prefix().startsWith("trigger-");
-    }
-
-    /** The warnings of a trigger file that only name trigger components (unknown to this runtime, so ignored). */
-    private static List<String> otherThanTriggerWarnings(List<String> warnings) {
-        return warnings.stream()
-                .filter(w -> TRIGGER_COMPONENTS.stream().noneMatch(c -> w.equals("unknown component '" + c + "' ignored")))
-                .toList();
     }
 
     @Test
@@ -113,8 +96,7 @@ class ConformanceCorpusTest {
         return files("valid").stream().map(file -> DynamicTest.dynamicTest("valid/" + file.getFileName(), () -> {
             ParseResult<?> result = parse(file);
             assertEquals(List.of(), result.errors(), "errors");
-            // B235 decodes trigger components: here a valid trigger file may only warn about those components.
-            assertEquals(List.of(), isTrigger(file) ? otherThanTriggerWarnings(result.warnings()) : result.warnings(), "warnings");
+            assertEquals(List.of(), result.warnings(), "warnings");
             assertTrue(result.definition().isPresent(), "definition missing");
         }));
     }
@@ -124,15 +106,6 @@ class ConformanceCorpusTest {
         JsonObject expected = read(CORPUS.resolve("expected-errors.json")).getAsJsonObject();
         return files("invalid").stream().map(file -> DynamicTest.dynamicTest("invalid/" + file.getFileName(), () -> {
             ParseResult<?> result = parse(file);
-            if (isTrigger(file)) {
-                // B235 decodes trigger components: the expected error is in a trigger component, which this runtime
-                // ignores with a warning; the rest of the file must still parse.
-                assertTrue(result.definition().isPresent(), "the non-trigger part does not parse: " + result.errors());
-                assertEquals(List.of(), result.errors(), "errors outside the trigger components");
-                assertTrue(otherThanTriggerWarnings(result.warnings()).size() < result.warnings().size(),
-                        "no trigger component warning: " + result.warnings());
-                return;
-            }
             assertFalse(result.errors().isEmpty(), "no error reported");
             String field = lastField(expected.getAsJsonObject(file.getFileName().toString()).get("path").getAsString());
             String all = String.join("\n", result.errors());

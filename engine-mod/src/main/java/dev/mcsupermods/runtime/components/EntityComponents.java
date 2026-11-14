@@ -13,6 +13,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.mcsupermods.runtime.loader.MsmCodecs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,10 +29,12 @@ public record EntityComponents(
         Optional<AiGoals> aiGoals,
         Optional<OnHurt> onHurt,
         Optional<OnDeath> onDeath,
-        Optional<BlockComponents.OnInteract> onInteract) {
+        Optional<BlockComponents.OnInteract> onInteract,
+        Optional<OnTick> onTick,
+        Optional<OnSpawn> onSpawn) {
 
     public static final List<String> KEYS = List.of("msm:animated_model", "msm:health", "msm:movement", "msm:attack", "msm:ai_goals",
-            "msm:on_hurt", "msm:on_death", "msm:on_interact");
+            "msm:on_hurt", "msm:on_death", "msm:on_interact", "msm:on_tick", "msm:on_spawn");
 
     public static final Codec<EntityComponents> CODEC = RecordCodecBuilder.create(i -> i.group(
             required("msm:animated_model", AnimatedModel.CODEC).forGetter(EntityComponents::animatedModel),
@@ -41,7 +44,9 @@ public record EntityComponents(
             optional("msm:ai_goals", AiGoals.CODEC).forGetter(EntityComponents::aiGoals),
             optional("msm:on_hurt", OnHurt.CODEC).forGetter(EntityComponents::onHurt),
             optional("msm:on_death", OnDeath.CODEC).forGetter(EntityComponents::onDeath),
-            optional("msm:on_interact", BlockComponents.OnInteract.CODEC).forGetter(EntityComponents::onInteract))
+            optional("msm:on_interact", BlockComponents.OnInteract.CODEC).forGetter(EntityComponents::onInteract),
+            optional("msm:on_tick", OnTick.CODEC).forGetter(EntityComponents::onTick),
+            optional("msm:on_spawn", OnSpawn.CODEC).forGetter(EntityComponents::onSpawn))
             .apply(i, EntityComponents::new));
 
     /** Every event id a component names, with the component for messages. */
@@ -51,6 +56,8 @@ public record EntityComponents(
         onHurt.ifPresent(c -> out.add(new String[] {"msm:on_hurt", c.event().toString()}));
         onDeath.ifPresent(c -> out.add(new String[] {"msm:on_death", c.event().toString()}));
         onInteract.ifPresent(c -> out.add(new String[] {"msm:on_interact", c.event().toString()}));
+        onTick.ifPresent(c -> out.add(new String[] {"msm:on_tick", c.event().toString()}));
+        onSpawn.ifPresent(c -> out.add(new String[] {"msm:on_spawn", c.event().toString()}));
         return out.build();
     }
 
@@ -156,5 +163,22 @@ public record EntityComponents(
     public record OnDeath(Identifier event) {
         public static final Codec<OnDeath> CODEC = RecordCodecBuilder.create(i -> i.group(
                 required("event", ID).forGetter(OnDeath::event)).apply(i, OnDeath::new));
+    }
+
+    /**
+     * Fires an event every {@code interval_ticks} while the mob's AI runs ({@code customServerAiStep}, ADR 0061 D3;
+     * {@code OnEntityTick}, not the effect's {@code msm:on_tick}). Closed, as every trigger struct.
+     */
+    public record OnTick(Identifier event, int intervalTicks) {
+        public static final Codec<OnTick> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                required("event", ID).forGetter(OnTick::event),
+                optional("interval_ticks", intAtLeast(ItemComponents.MIN_INTERVAL_TICKS), ItemComponents.DEFAULT_INTERVAL_TICKS)
+                        .forGetter(OnTick::intervalTicks)).apply(i, OnTick::new)), List.of("event", "interval_ticks"));
+    }
+
+    /** Fires an event once when the mob spawns ({@code finalizeSpawn}: natural, egg, spawner; not on chunk load; ADR 0061 D3). */
+    public record OnSpawn(Identifier event) {
+        public static final Codec<OnSpawn> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                required("event", ID).forGetter(OnSpawn::event)).apply(i, OnSpawn::new)), List.of("event"));
     }
 }

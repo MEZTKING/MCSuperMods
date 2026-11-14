@@ -15,7 +15,8 @@ import net.minecraft.world.phys.Vec3;
  * @param origin where sounds, particles and functions run
  * @param player the player involved, or null
  * @param entity the entity whose definition fired the event (for {@code play_animation}), the holder of an effect, the
- *               thrower of a thrown item, a stepping entity that is not a player (ADR 0058 D1), or null
+ *               thrower of a thrown item, a stepping or placing entity that is not a player (ADR 0058 D1), an attacker or
+ *               holder of an item that is not a player (ADR 0061 D1), or null
  * @param block  the block whose definition fired the event (for {@code run_script}), or null
  * @param other  the other living entity of the event (the {@code apply_effect} target {@code other}, ADR 0044 D2):
  *               the player for block and item events, the player who hurts or interacts with an entity, the
@@ -42,6 +43,14 @@ public record EventContext(ServerLevel level, BlockPos base, Vec3 origin, Player
      * stepped, and {@code launch} also moves a stepping item or minecart.
      */
     public static EventContext forBlockStep(ServerLevel level, BlockPos pos, Entity stepper) {
+        return forBlockActor(level, pos, stepper);
+    }
+
+    /**
+     * A block event with an actor that may be any entity, or none (ADR 0058 D1 actor rule): steps, entities inside
+     * ({@code msm:on_entity_inside}) and the placer of {@code msm:on_place} (ADR 0061 D2).
+     */
+    public static EventContext forBlockActor(ServerLevel level, BlockPos pos, Entity stepper) {
         Player player = stepper instanceof Player p ? p : null;
         return new EventContext(level, pos.immutable(), Vec3.atCenterOf(pos), player, player == null ? stepper : null, pos.immutable(),
                 stepper instanceof LivingEntity living ? living : null, Source.BLOCK);
@@ -50,6 +59,35 @@ public record EventContext(ServerLevel level, BlockPos base, Vec3 origin, Player
     /** An item event: offsets from the block below the player, effects at the player. */
     public static EventContext forItem(ServerLevel level, Player player) {
         return new EventContext(level, player.blockPosition().below(), player.position(), player, null, null, player, Source.ITEM);
+    }
+
+    /**
+     * An item hit event ({@code msm:on_hit}, ADR 0061 D1): offsets from the block below the attacker, effects at the
+     * attacker; the attacker is the player when it is one and the entity otherwise, so {@code self} means the attacker;
+     * {@code other} is the entity hit.
+     */
+    public static EventContext forItemHit(ServerLevel level, LivingEntity attacker, LivingEntity target) {
+        Player player = attacker instanceof Player p ? p : null;
+        return new EventContext(level, attacker.blockPosition().below(), attacker.position(), player, player == null ? attacker : null,
+                null, target, Source.ITEM);
+    }
+
+    /**
+     * An item used on a block ({@code msm:on_use_on_block}, ADR 0061 D1): {@code base} and {@code block} are the
+     * clicked block, effects at the clicked point; the player is self and other.
+     */
+    public static EventContext forItemUseOn(ServerLevel level, Player player, BlockPos clicked, Vec3 at) {
+        return new EventContext(level, clicked.immutable(), at, player, null, clicked.immutable(), player, Source.ITEM);
+    }
+
+    /**
+     * A held or worn item's tick ({@code msm:while_held}, {@code msm:while_worn}, ADR 0061 D1): as {@link #forItem}
+     * with the holder, the player when it is one and the entity otherwise; the holder is also {@code other} when living.
+     */
+    public static EventContext forHolder(ServerLevel level, Entity holder) {
+        Player player = holder instanceof Player p ? p : null;
+        return new EventContext(level, holder.blockPosition().below(), holder.position(), player, player == null ? holder : null, null,
+                holder instanceof LivingEntity living ? living : null, Source.ITEM);
     }
 
     /** An entity event: offsets from the entity's block position, effects at the entity (ADR 0028 D2). */

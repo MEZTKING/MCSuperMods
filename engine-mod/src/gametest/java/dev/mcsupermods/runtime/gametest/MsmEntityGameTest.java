@@ -260,7 +260,7 @@ public class MsmEntityGameTest {
     @GameTest
     public void geckolibDecidesWhetherEntitiesRegister(GameTestHelper helper) {
         List<String> all = List.of("kitchen_sink", "minimal", "no_egg", "monster_spawn", "wanderer", "watcher", "brawler", "coward", "follower",
-                "singer", "off_key");
+                "singer", "off_key", "ticker");
         if (withoutGeckolib(helper, all.toArray(String[]::new))) {
             helper.assertTrue(MsmRuntime.report().entities().isEmpty(), "entities registered without GeckoLib");
             return;

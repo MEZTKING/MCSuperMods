@@ -3,13 +3,17 @@ package dev.mcsupermods.runtime.registry;
 import dev.mcsupermods.runtime.components.ItemComponents;
 import dev.mcsupermods.runtime.loader.ItemDefinition;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 /**
@@ -62,5 +66,22 @@ public class MsmCrossbowItem extends CrossbowItem {
             LivingEntity target) {
         MsmBowItem.scaleDamage(projectile, weapon);
         super.shootProjectile(shooter, projectile, index, velocity * weapon.velocity(), inaccuracy * weapon.inaccuracy(), angle, target);
+    }
+
+    @Override
+    public void hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+        super.hurtEnemy(stack, target, attacker);
+        MsmItem.hurtEnemyWithEvent(id, definition, target, attacker);
+    }
+
+    @Override
+    public InteractionResult useOn(UseOnContext context) {
+        return MsmItem.useOnWithEvent(id, definition, context, () -> super.useOn(context));
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, ServerLevel level, Entity owner, EquipmentSlot slot) {
+        super.inventoryTick(stack, level, owner, slot);
+        MsmItem.inventoryTickWithEvent(id, definition, level, owner, slot);
     }
 }

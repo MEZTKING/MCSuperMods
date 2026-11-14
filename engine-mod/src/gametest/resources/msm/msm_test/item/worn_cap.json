@@ -1,0 +1,25 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": "iron",
+      "slot": "helmet"
+    },
+    "msm:while_worn": {
+      "event": "msm_test:worn",
+      "interval_ticks": 5
+    }
+  },
+  "events": {
+    "msm_test:worn": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

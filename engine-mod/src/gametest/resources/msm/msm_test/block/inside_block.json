@@ -1,0 +1,33 @@
+{
+  "components": {
+    "msm:on_entity_inside": {
+      "cooldown_ticks": 5,
+      "event": "msm_test:inside"
+    },
+    "msm:shape": {
+      "boxes": [
+        [
+          0,
+          0,
+          0,
+          16,
+          2,
+          16
+        ]
+      ],
+      "collision": false
+    }
+  },
+  "events": {
+    "msm_test:inside": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    }
+  },
+  "format": 1
+}

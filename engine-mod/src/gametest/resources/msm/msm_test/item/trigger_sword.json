@@ -1,0 +1,23 @@
+{
+  "components": {
+    "msm:on_hit": {
+      "event": "msm_test:hit"
+    },
+    "msm:tool": {
+      "tier": "iron",
+      "type": "sword"
+    }
+  },
+  "events": {
+    "msm_test:hit": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    }
+  },
+  "format": 1
+}

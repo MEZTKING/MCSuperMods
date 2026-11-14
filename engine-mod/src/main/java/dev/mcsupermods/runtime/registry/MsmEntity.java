@@ -5,6 +5,7 @@ import dev.mcsupermods.runtime.components.Goal;
 import dev.mcsupermods.runtime.events.AnimationTarget;
 import dev.mcsupermods.runtime.events.EventContext;
 import dev.mcsupermods.runtime.events.EventRunner;
+import dev.mcsupermods.runtime.events.TickLimiter;
 import dev.mcsupermods.runtime.goals.FollowTypesGoal;
 import dev.mcsupermods.runtime.loader.EntityDefinition;
 import java.util.List;
@@ -19,13 +20,16 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -37,6 +41,7 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -210,6 +215,38 @@ public class MsmEntity extends PathfinderMob implements AnimationTarget {
             fire(level, onInteract.get().event(), player);
         }
         return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * {@code msm:on_tick} (ADR 0061 D3, D4): every {@code interval_ticks} while the AI runs, so never with
+     * {@code NoAI}; staggered by entity id and within the shared {@link TickLimiter}.
+     */
+    @Override
+    protected void customServerAiStep(ServerLevel level) {
+        super.customServerAiStep(level);
+        EntityDefinition def = MsmEntityRegistrar.definition(getType()).orElse(null);
+        if (def == null || def.components().onTick().isEmpty()) {
+            return;
+        }
+        EntityComponents.OnTick onTick = def.components().onTick().get();
+        if (MsmItem.due(level, this, onTick.intervalTicks()) && TickLimiter.tryFire(level)) {
+            fire(level, onTick.event(), null);
+        }
+    }
+
+    /**
+     * {@code msm:on_spawn} (ADR 0061 D3): vanilla calls {@code finalizeSpawn} once for a natural, egg, spawner or
+     * command spawn, before the mob joins the level, and never when a saved mob loads with its chunk.
+     */
+    @Override
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor accessor, DifficultyInstance difficulty, EntitySpawnReason reason,
+            SpawnGroupData data) {
+        SpawnGroupData out = super.finalizeSpawn(accessor, difficulty, reason, data);
+        var onSpawn = MsmEntityRegistrar.definition(getType()).flatMap(d -> d.components().onSpawn());
+        if (onSpawn.isPresent()) {
+            fire(accessor.getLevel(), onSpawn.get().event(), null);
+        }
+        return out;
     }
 
     /** The definition's {@code loot_table}, or vanilla's default {@code <ns>:entities/<path>}. */

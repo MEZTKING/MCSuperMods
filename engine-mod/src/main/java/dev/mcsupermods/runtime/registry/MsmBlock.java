@@ -1,20 +1,22 @@
 package dev.mcsupermods.runtime.registry;
 
 import dev.mcsupermods.runtime.components.BlockComponents;
+import dev.mcsupermods.runtime.events.CooldownMap;
 import dev.mcsupermods.runtime.events.EventContext;
 import dev.mcsupermods.runtime.events.EventRunner;
+import dev.mcsupermods.runtime.events.TickLimiter;
 import dev.mcsupermods.runtime.loader.BlockDefinition;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -48,10 +50,10 @@ public class MsmBlock extends Block {
     private final VoxelShape shape;
     /** {@code msm:shape} {@code see_through}: light passes, faces between two of these blocks are skipped. */
     private final boolean seeThrough;
-    /** Last step tick per dimension, position and entity, for {@code msm:on_step} cooldowns. Server thread only. */
-    private final Map<StepKey, Long> lastStep = new HashMap<>();
-
-    private record StepKey(ResourceKey<Level> dimension, long pos, UUID entity) {}
+    /** {@code msm:on_step} cooldowns per dimension, position and entity. Server thread only. */
+    private final CooldownMap stepCooldowns = new CooldownMap();
+    /** {@code msm:on_entity_inside} cooldowns per dimension, position and entity (ADR 0061 D2). Server thread only. */
+    private final CooldownMap insideCooldowns = new CooldownMap();
 
     public static MsmBlock create(Identifier id, BlockDefinition definition, Properties properties) {
         TRACKS_POWER.set(definition.components().reactsToRedstone());
@@ -175,21 +177,66 @@ public class MsmBlock extends Block {
     @Override
     public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
         var step = definition.components().onStep();
-        if (step.isPresent() && level instanceof ServerLevel server) {
-            long now = server.getGameTime();
-            int cooldown = step.get().cooldownTicks();
-            StepKey key = new StepKey(server.dimension(), pos.asLong(), entity.getUUID());
-            Long last = lastStep.get(key);
-            if (last == null || now - last >= cooldown || now < last) {
-                if (lastStep.size() > 1024) {
-                    lastStep.values().removeIf(t -> now - t >= cooldown);
-                }
-                lastStep.put(key, now);
-                // ADR 0058 D1: the stepper is the event's player or entity, and its other entity when living.
-                EventRunner.fire(id, definition.events(), step.get().event(), EventContext.forBlockStep(server, pos, entity));
-            }
+        if (step.isPresent() && level instanceof ServerLevel server
+                && stepCooldowns.tryFire(server.dimension(), pos, entity.getUUID(), server.getGameTime(), step.get().cooldownTicks())) {
+            // ADR 0058 D1: the stepper is the event's player or entity, and its other entity when living.
+            EventRunner.fire(id, definition.events(), step.get().event(), EventContext.forBlockStep(server, pos, entity));
         }
         super.stepOn(level, pos, state, entity);
+    }
+
+    // msm:on_break (ADR 0061 D2): playerWillDestroy runs in every game mode, before the block is removed.
+
+    @Override
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        var onBreak = definition.components().onBreak();
+        if (onBreak.isPresent() && level instanceof ServerLevel server) {
+            EventRunner.fire(id, definition.events(), onBreak.get().event(), EventContext.forBlock(server, pos, player));
+        }
+        return super.playerWillDestroy(level, pos, state, player);
+    }
+
+    // msm:on_place (ADR 0061 D2): the placer, a player or another entity, is the actor; it may be null.
+
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        var onPlace = definition.components().onPlace();
+        if (onPlace.isPresent() && level instanceof ServerLevel server) {
+            EventRunner.fire(id, definition.events(), onPlace.get().event(), EventContext.forBlockActor(server, pos, placer));
+        }
+    }
+
+    // msm:on_random_tick (ADR 0061 D2): the registrar sets Properties.randomTicks() only with the component.
+
+    @Override
+    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        super.randomTick(state, level, pos, random);
+        var onTick = definition.components().onRandomTick();
+        if (onTick.isEmpty()) {
+            return;
+        }
+        float chance = onTick.get().chance();
+        if (chance <= 0 || (chance < 1 && random.nextFloat() >= chance)) {
+            return;
+        }
+        if (TickLimiter.tryFire(level)) {
+            EventRunner.fire(id, definition.events(), onTick.get().event(), EventContext.forBlock(level, pos, null));
+        }
+    }
+
+    // msm:on_entity_inside (ADR 0061 D2): per entity cooldown, the step actor rule (ADR 0058 D1), the shared tick cap.
+
+    @Override
+    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effects,
+            boolean intersects) {
+        super.entityInside(state, level, pos, entity, effects, intersects);
+        var inside = definition.components().onEntityInside();
+        if (inside.isPresent() && level instanceof ServerLevel server
+                && insideCooldowns.tryFire(server.dimension(), pos, entity.getUUID(), server.getGameTime(), inside.get().cooldownTicks())
+                && TickLimiter.tryFire(server)) {
+            EventRunner.fire(id, definition.events(), inside.get().event(), EventContext.forBlockActor(server, pos, entity));
+        }
     }
 
     // msm:redstone

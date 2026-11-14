@@ -37,12 +37,18 @@ public record ItemComponents(
         Optional<Shield> shield,
         Optional<DeathProtection> deathProtection,
         Optional<Throwable> throwable,
+        Optional<OnHit> onHit,
+        Optional<OnUseOnBlock> onUseOnBlock,
+        Optional<WhileHeld> whileHeld,
+        Optional<WhileWorn> whileWorn,
         Map<Identifier, JsonElement> vanilla) {
 
     public static final List<String> KEYS = List.of("msm:food", "msm:tool", "msm:durability", "msm:on_use", "msm:armor",
-            "msm:consumable", "msm:ranged_weapon", "msm:shield", "msm:death_protection", "msm:throwable", "msm:components");
+            "msm:consumable", "msm:ranged_weapon", "msm:shield", "msm:death_protection", "msm:throwable", "msm:on_hit", "msm:on_use_on_block",
+            "msm:while_held", "msm:while_worn", "msm:components");
     public static final ItemComponents NONE = new ItemComponents(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Map.of());
+            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+            Optional.empty(), Optional.empty(), Optional.empty(), Map.of());
 
     /**
      * {@code msm:components} (ADR 0044 D1): vanilla data component ids to their vanilla JSON, kept as JSON here
@@ -71,6 +77,10 @@ public record ItemComponents(
             optional("msm:shield", Shield.CODEC).forGetter(ItemComponents::shield),
             optional("msm:death_protection", DeathProtection.CODEC).forGetter(ItemComponents::deathProtection),
             optional("msm:throwable", Throwable.CODEC).forGetter(ItemComponents::throwable),
+            optional("msm:on_hit", OnHit.CODEC).forGetter(ItemComponents::onHit),
+            optional("msm:on_use_on_block", OnUseOnBlock.CODEC).forGetter(ItemComponents::onUseOnBlock),
+            optional("msm:while_held", WhileHeld.CODEC).forGetter(ItemComponents::whileHeld),
+            optional("msm:while_worn", WhileWorn.CODEC).forGetter(ItemComponents::whileWorn),
             optional("msm:components", VANILLA_CODEC, Map.of()).forGetter(ItemComponents::vanilla)).apply(i, ItemComponents::new));
 
     /**
@@ -97,7 +107,7 @@ public record ItemComponents(
     /** These components without the mutually exclusive ones (used when more than one is present). */
     public ItemComponents withoutExclusive() {
         return new ItemComponents(food, Optional.empty(), durability, onUse, Optional.empty(), consumable, Optional.empty(),
-                Optional.empty(), deathProtection, throwable, vanilla);
+                Optional.empty(), deathProtection, throwable, onHit, onUseOnBlock, whileHeld, whileWorn, vanilla);
     }
 
     /**
@@ -135,7 +145,14 @@ public record ItemComponents(
     public ItemComponents withoutThrowableConflicts() {
         boolean dropTool = tool.isPresent() && tool.get().type() == ToolType.MACE;
         return new ItemComponents(Optional.empty(), dropTool ? Optional.empty() : tool, durability, onUse, Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), deathProtection, Optional.empty(), vanilla);
+                Optional.empty(), Optional.empty(), Optional.empty(), deathProtection, Optional.empty(), onHit, onUseOnBlock, whileHeld,
+                whileWorn, vanilla);
+    }
+
+    /** These components without {@code msm:while_worn} (used when there is no {@code msm:armor} to wear; ADR 0061 D1). */
+    public ItemComponents withoutWhileWorn() {
+        return new ItemComponents(food, tool, durability, onUse, armor, consumable, rangedWeapon, shield, deathProtection, throwable,
+                onHit, onUseOnBlock, whileHeld, Optional.empty(), vanilla);
     }
 
     /** Every event id a component names, with the component for messages. */
@@ -144,7 +161,66 @@ public record ItemComponents(
         Stream<String[]> thrown = throwable.stream().flatMap(t -> Stream.of(
                 t.onHitEntity().map(h -> new String[] {"msm:throwable on_hit_entity", h.event().toString()}),
                 t.onHitBlock().map(h -> new String[] {"msm:throwable on_hit_block", h.event().toString()})).flatMap(Optional::stream));
-        return Stream.concat(use, thrown);
+        Stream<String[]> triggers = Stream.of(
+                onHit.map(c -> new String[] {"msm:on_hit", c.event().toString()}),
+                onUseOnBlock.map(c -> new String[] {"msm:on_use_on_block", c.event().toString()}),
+                whileHeld.map(c -> new String[] {"msm:while_held", c.event().toString()}),
+                whileWorn.map(c -> new String[] {"msm:while_worn", c.event().toString()})).flatMap(Optional::stream);
+        return Stream.concat(Stream.concat(use, thrown), triggers);
+    }
+
+    /** Whether {@code inventoryTick} has work: {@code msm:while_held} or {@code msm:while_worn}. */
+    public boolean ticksInInventory() {
+        return whileHeld.isPresent() || whileWorn.isPresent();
+    }
+
+    /**
+     * Fires an event after the item hits a living entity (ADR 0061 D1); self is the attacker, player or mob, and
+     * {@code other} the entity hit. Closed, as every trigger struct.
+     */
+    public record OnHit(Identifier event) {
+        public static final Codec<OnHit> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                required("event", ID).forGetter(OnHit::event)).apply(i, OnHit::new)), List.of("event"));
+    }
+
+    /** Fires an event when a player uses the item on a block, then starts the cooldown (ADR 0061 D1). */
+    public record OnUseOnBlock(Identifier event, int cooldownTicks) {
+        public static final Codec<OnUseOnBlock> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                required("event", ID).forGetter(OnUseOnBlock::event),
+                optional("cooldown_ticks", intAtLeast(0), 0).forGetter(OnUseOnBlock::cooldownTicks)).apply(i, OnUseOnBlock::new)),
+                List.of("event", "cooldown_ticks"));
+    }
+
+    /** The hand a held item fires in ({@code HeldHand}). */
+    public enum HeldHand {
+        MAIN, OFF, EITHER;
+
+        public String serialName() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+
+        public static final Codec<HeldHand> CODEC = MsmCodecs.named("hand", values(), HeldHand::serialName);
+    }
+
+    /** The shortest interval of a tick trigger (ADR 0061 D4), and the default. */
+    public static final int MIN_INTERVAL_TICKS = 5;
+    public static final int DEFAULT_INTERVAL_TICKS = 20;
+
+    /** Fires an event every {@code interval_ticks} while an entity holds the item in {@code hand} (ADR 0061 D1). */
+    public record WhileHeld(Identifier event, int intervalTicks, HeldHand hand) {
+        public static final Codec<WhileHeld> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                required("event", ID).forGetter(WhileHeld::event),
+                optional("interval_ticks", intAtLeast(MIN_INTERVAL_TICKS), DEFAULT_INTERVAL_TICKS).forGetter(WhileHeld::intervalTicks),
+                optional("hand", HeldHand.CODEC, HeldHand.MAIN).forGetter(WhileHeld::hand)).apply(i, WhileHeld::new)),
+                List.of("event", "interval_ticks", "hand"));
+    }
+
+    /** Fires an event every {@code interval_ticks} while an entity wears the item in its {@code msm:armor} slot (ADR 0061 D1). */
+    public record WhileWorn(Identifier event, int intervalTicks) {
+        public static final Codec<WhileWorn> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                required("event", ID).forGetter(WhileWorn::event),
+                optional("interval_ticks", intAtLeast(MIN_INTERVAL_TICKS), DEFAULT_INTERVAL_TICKS).forGetter(WhileWorn::intervalTicks))
+                .apply(i, WhileWorn::new)), List.of("event", "interval_ticks"));
     }
 
     /** What happens to a thrown item when it lands ({@code AfterThrow}, ADR 0056 D1). */

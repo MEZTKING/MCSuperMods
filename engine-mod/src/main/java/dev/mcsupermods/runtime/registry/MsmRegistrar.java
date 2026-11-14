@@ -306,6 +306,9 @@ public final class MsmRegistrar {
             props = props.requiresCorrectToolForDrops();
         }
         props = MsmBlock.shapeProperties(props, c); // msm:shape (ADR 0059 D3)
+        if (c.onRandomTick().isPresent()) {
+            props = props.randomTicks(); // msm:on_random_tick (ADR 0061 D2): random ticks only with the component
+        }
         if (def.lootTable().isPresent()) {
             props = props.overrideLootTable(Optional.of(ResourceKey.create(Registries.LOOT_TABLE, def.lootTable().get())));
         }

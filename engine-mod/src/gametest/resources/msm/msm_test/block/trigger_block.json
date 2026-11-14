@@ -1,0 +1,31 @@
+{
+  "components": {
+    "msm:on_break": {
+      "event": "msm_test:broken"
+    },
+    "msm:on_place": {
+      "event": "msm_test:placed"
+    }
+  },
+  "events": {
+    "msm_test:broken": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    },
+    "msm_test:placed": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    }
+  },
+  "format": 1
+}

@@ -733,4 +733,90 @@ class DefinitionParserTest {
             assertTrue(String.join("\n", result.errors()).contains(c[1]), c[1] + " not in " + result.errors());
         }
     }
+
+    // Triggers (ADR 0061, B235)
+
+    private static final String EVENT = "\"events\": {\"t:e\": {\"actions\": [{\"type\": \"play_sound\", "
+            + "\"sound\": \"minecraft:entity.experience_orb.pickup\"}]}}";
+
+    @Test
+    void itemTriggerDefaults() {
+        ParseResult<ItemDefinition> result = item("{\"format\": 1, " + EVENT + ", \"components\": {\"msm:on_hit\": {\"event\": \"t:e\"}, "
+                + "\"msm:on_use_on_block\": {\"event\": \"t:e\"}, \"msm:while_held\": {\"event\": \"t:e\"}}}");
+        assertEquals(List.of(), result.errors());
+        assertEquals(List.of(), result.warnings());
+        ItemComponents c = result.definition().orElseThrow().components();
+        assertEquals(Identifier.parse("t:e"), c.onHit().orElseThrow().event());
+        assertEquals(0, c.onUseOnBlock().orElseThrow().cooldownTicks());
+        assertEquals(20, c.whileHeld().orElseThrow().intervalTicks());
+        assertEquals(ItemComponents.HeldHand.MAIN, c.whileHeld().orElseThrow().hand());
+        assertTrue(c.ticksInInventory());
+    }
+
+    @Test
+    void whileWornDefaultsWithArmor() {
+        ParseResult<ItemDefinition> result = item("{\"format\": 1, " + EVENT + ", \"max_stack_size\": 1, \"components\": "
+                + "{\"msm:armor\": {\"slot\": \"boots\", \"material\": \"iron\"}, \"msm:while_worn\": {\"event\": \"t:e\"}}}");
+        assertEquals(List.of(), result.errors());
+        assertEquals(20, result.definition().orElseThrow().components().whileWorn().orElseThrow().intervalTicks());
+    }
+
+    @Test
+    void whileWornWithoutArmorIsAnErrorAndDropped() {
+        ParseResult<ItemDefinition> result = item("{\"format\": 1, " + EVENT + ", \"components\": "
+                + "{\"msm:while_worn\": {\"event\": \"t:e\", \"interval_ticks\": 40}}}");
+        assertEquals(1, result.errors().size(), "errors: " + result.errors());
+        assertTrue(result.errors().getFirst().contains("msm:while_worn needs msm:armor"), result.errors().getFirst());
+        assertEquals(Optional.empty(), result.definition().orElseThrow().components().whileWorn());
+        // An armour piece dropped by a conflict takes msm:while_worn with it.
+        ParseResult<ItemDefinition> conflict = item("{\"format\": 1, " + EVENT + ", \"components\": "
+                + "{\"msm:armor\": {\"slot\": \"boots\", \"material\": \"iron\"}, \"msm:tool\": {\"type\": \"sword\", \"tier\": \"iron\"}, "
+                + "\"msm:while_worn\": {\"event\": \"t:e\"}}}");
+        assertEquals(2, conflict.errors().size(), "errors: " + conflict.errors());
+        assertEquals(Optional.empty(), conflict.definition().orElseThrow().components().whileWorn());
+    }
+
+    @Test
+    void triggerEventReferencesMustBeDeclared() {
+        ParseResult<ItemDefinition> result = item("{\"format\": 1, \"components\": {\"msm:on_hit\": {\"event\": \"t:missing\"}}}");
+        assertTrue(String.join("\n", result.errors()).contains("msm:on_hit names event t:missing"), "errors: " + result.errors());
+        ParseResult<BlockDefinition> b = block("{\"format\": 1, \"components\": {\"msm:on_break\": {\"event\": \"t:a\"}, "
+                + "\"msm:on_place\": {\"event\": \"t:b\"}, \"msm:on_random_tick\": {\"event\": \"t:c\"}, "
+                + "\"msm:on_entity_inside\": {\"event\": \"t:d\"}}}");
+        assertEquals(4, b.errors().size(), "errors: " + b.errors());
+        ParseResult<EntityDefinition> e = entity("\"msm:on_tick\": {\"event\": \"t:x\"}, \"msm:on_spawn\": {\"event\": \"t:y\"}, ", "");
+        assertEquals(2, e.errors().size(), "errors: " + e.errors());
+    }
+
+    @Test
+    void blockTriggerDefaults() {
+        ParseResult<BlockDefinition> result = block("{\"format\": 1, " + EVENT + ", \"components\": {\"msm:on_random_tick\": "
+                + "{\"event\": \"t:e\"}, \"msm:on_entity_inside\": {\"event\": \"t:e\"}, \"msm:on_break\": {\"event\": \"t:e\"}, "
+                + "\"msm:on_place\": {\"event\": \"t:e\"}}}");
+        assertEquals(List.of(), result.errors());
+        assertEquals(List.of(), result.warnings());
+        BlockComponents c = result.definition().orElseThrow().components();
+        assertEquals(1.0f, c.onRandomTick().orElseThrow().chance());
+        assertEquals(20, c.onEntityInside().orElseThrow().cooldownTicks());
+    }
+
+    @Test
+    void entityTickDefaultsAndTheEffectTickIsSeparate() {
+        ParseResult<EntityDefinition> result = entity("\"msm:on_tick\": {\"event\": \"t:e\"}, ", EVENT + ", ");
+        assertEquals(List.of(), result.errors());
+        assertEquals(20, result.definition().orElseThrow().components().onTick().orElseThrow().intervalTicks());
+        // The effect's on_tick has interval_ticks @ 1..; the entity's is @ 5.. and closed (no faster_per_level).
+        assertFalse(entity("\"msm:on_tick\": {\"event\": \"t:e\", \"interval_ticks\": 1}, ", EVENT + ", ").clean());
+        assertFalse(entity("\"msm:on_tick\": {\"event\": \"t:e\", \"faster_per_level\": true}, ", EVENT + ", ").clean());
+    }
+
+    @Test
+    void triggerStructsAreClosed() {
+        for (String c : List.of("\"msm:on_hit\": {\"event\": \"t:e\", \"x\": 1}", "\"msm:on_use_on_block\": {\"event\": \"t:e\", \"x\": 1}",
+                "\"msm:while_held\": {\"event\": \"t:e\", \"x\": 1}")) {
+            ParseResult<ItemDefinition> result = item("{\"format\": 1, " + EVENT + ", \"components\": {" + c + "}}");
+            assertTrue(result.definition().isEmpty(), c);
+            assertTrue(String.join("\n", result.errors()).contains("x: unknown field"), c + ": " + result.errors());
+        }
+    }
 }

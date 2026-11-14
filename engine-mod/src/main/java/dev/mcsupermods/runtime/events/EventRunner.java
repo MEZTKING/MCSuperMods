@@ -121,10 +121,11 @@ public final class EventRunner {
                 .withPosition(ctx.origin())
                 .withPermission(LevelBasedPermissionSet.GAMEMASTER) // permission level 2, as for function tags
                 .withSuppressedOutput();
-        // As the player; in a block step event without a player, as the stepper (ADR 0058 D1). Entity, effect and
-        // thrown-item events keep the player-only rule.
+        // As the player; in a block event without a player, as the actor (ADR 0058 D1); in an item event without a
+        // player, as the mob attacking with or holding the item (ADR 0061 D1). Entity, effect and thrown-item events keep
+        // the player-only rule.
         net.minecraft.world.entity.Entity as = ctx.player() != null ? ctx.player()
-                : ctx.source() == EventContext.Source.BLOCK ? ctx.entity() : null;
+                : ctx.source() == EventContext.Source.BLOCK || ctx.source() == EventContext.Source.ITEM ? ctx.entity() : null;
         if (as != null) {
             source = source.withEntity(as).withRotation(as.getRotationVector());
         }
