@@ -1,0 +1,205 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "set_type": "iron",
+      "type": "door"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_vault_door.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,half=lower,hinge=left,open=false": {
+          "model": "example:block/vault_bottom"
+        },
+        "facing=east,half=lower,hinge=left,open=true": {
+          "model": "example:block/vault_bottom",
+          "y": 90
+        },
+        "facing=east,half=lower,hinge=right,open=false": {
+          "model": "example:block/vault_bottom"
+        },
+        "facing=east,half=lower,hinge=right,open=true": {
+          "model": "example:block/vault_bottom",
+          "y": 270
+        },
+        "facing=east,half=upper,hinge=left,open=false": {
+          "model": "example:block/vault_top"
+        },
+        "facing=east,half=upper,hinge=left,open=true": {
+          "model": "example:block/vault_bottom",
+          "y": 90
+        },
+        "facing=east,half=upper,hinge=right,open=false": {
+          "model": "example:block/vault_bottom"
+        },
+        "facing=east,half=upper,hinge=right,open=true": {
+          "model": "example:block/vault_bottom",
+          "y": 270
+        },
+        "facing=north,half=lower,hinge=left,open=false": {
+          "model": "example:block/vault_bottom",
+          "y": 270
+        },
+        "facing=north,half=lower,hinge=left,open=true": {
+          "model": "example:block/vault_bottom"
+        },
+        "facing=north,half=lower,hinge=right,open=false": {
+          "model": "example:block/vault_bottom",
+          "y": 270
+        },
+        "facing=north,half=lower,hinge=right,open=true": {
+          "model": "example:block/vault_bottom",
+          "y": 180
+        },
+        "facing=north,half=upper,hinge=left,open=false": {
+          "model": "example:block/vault_top",
+          "y": 270
+        },
+        "facing=north,half=upper,hinge=left,open=true": {
+          "model": "example:block/vault_bottom"
+        },
+        "facing=north,half=upper,hinge=right,open=false": {
+          "model": "example:block/vault_bottom",
+          "y": 270
+        },
+        "facing=north,half=upper,hinge=right,open=true": {
+          "model": "example:block/vault_bottom",
+          "y": 180
+        },
+        "facing=south,half=lower,hinge=left,open=false": {
+          "model": "example:block/vault_bottom",
+          "y": 90
+        },
+        "facing=south,half=lower,hinge=left,open=true": {
+          "model": "example:block/vault_bottom",
+          "y": 180
+        },
+        "facing=south,half=lower,hinge=right,open=false": {
+          "model": "example:block/vault_bottom",
+          "y": 90
+        },
+        "facing=south,half=lower,hinge=right,open=true": {
+          "model": "example:block/vault_bottom"
+        },
+        "facing=south,half=upper,hinge=left,open=false": {
+          "model": "example:block/vault_top",
+          "y": 90
+        },
+        "facing=south,half=upper,hinge=left,open=true": {
+          "model": "example:block/vault_bottom",
+          "y": 180
+        },
+        "facing=south,half=upper,hinge=right,open=false": {
+          "model": "example:block/vault_bottom",
+          "y": 90
+        },
+        "facing=south,half=upper,hinge=right,open=true": {
+          "model": "example:block/vault_bottom"
+        },
+        "facing=west,half=lower,hinge=left,open=false": {
+          "model": "example:block/vault_bottom",
+          "y": 180
+        },
+        "facing=west,half=lower,hinge=left,open=true": {
+          "model": "example:block/vault_bottom",
+          "y": 270
+        },
+        "facing=west,half=lower,hinge=right,open=false": {
+          "model": "example:block/vault_bottom",
+          "y": 180
+        },
+        "facing=west,half=lower,hinge=right,open=true": {
+          "model": "example:block/vault_bottom",
+          "y": 90
+        },
+        "facing=west,half=upper,hinge=left,open=false": {
+          "model": "example:block/vault_top",
+          "y": 180
+        },
+        "facing=west,half=upper,hinge=left,open=true": {
+          "model": "example:block/vault_bottom",
+          "y": 270
+        },
+        "facing=west,half=upper,hinge=right,open=false": {
+          "model": "example:block/vault_bottom",
+          "y": 180
+        },
+        "facing=west,half=upper,hinge=right,open=true": {
+          "model": "example:block/vault_bottom",
+          "y": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_vault_door.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/vault_door",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_vault_door.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_vault_door"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/doors.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_vault_door"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/doors.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "condition": {
+                "blocks": "example:ruby_vault_door",
+                "state": {
+                  "half": "lower"
+                },
+                "type": "minecraft:match_block"
+              },
+              "name": "example:ruby_vault_door",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ruby_vault_door",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ruby_vault_door.json",
+    "schema": "resource:loot_table"
+  }
+]

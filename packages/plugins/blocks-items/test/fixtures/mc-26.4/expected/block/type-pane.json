@@ -1,0 +1,185 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "sound_type": "glass",
+      "type": "pane"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_pane.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_glass_pane_post",
+      "textures": {
+        "edge": "example:block/ruby_glass_edge",
+        "pane": "example:block/ruby_glass"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_pane_post.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_glass_pane_side",
+      "textures": {
+        "edge": "example:block/ruby_glass_edge",
+        "pane": "example:block/ruby_glass"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_pane_side.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_glass_pane_side_alt",
+      "textures": {
+        "edge": "example:block/ruby_glass_edge",
+        "pane": "example:block/ruby_glass"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_pane_side_alt.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_glass_pane_noside",
+      "textures": {
+        "edge": "example:block/ruby_glass_edge",
+        "pane": "example:block/ruby_glass"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_pane_noside.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_glass_pane_noside_alt",
+      "textures": {
+        "edge": "example:block/ruby_glass_edge",
+        "pane": "example:block/ruby_glass"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_pane_noside_alt.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "multipart": [
+        {
+          "apply": {
+            "model": "example:block/ruby_pane_post"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_pane_side"
+          },
+          "when": {
+            "north": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_pane_side",
+            "y": 90
+          },
+          "when": {
+            "east": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_pane_side_alt"
+          },
+          "when": {
+            "south": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_pane_side_alt",
+            "y": 90
+          },
+          "when": {
+            "west": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_pane_noside"
+          },
+          "when": {
+            "north": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_pane_noside_alt"
+          },
+          "when": {
+            "east": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_pane_noside_alt",
+            "y": 90
+          },
+          "when": {
+            "south": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_pane_noside",
+            "y": 270
+          },
+          "when": {
+            "west": "false"
+          }
+        }
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_pane.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/ruby_glass"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/ruby_pane.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/ruby_pane",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_pane.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.ruby_pane": "Ruby Pane"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

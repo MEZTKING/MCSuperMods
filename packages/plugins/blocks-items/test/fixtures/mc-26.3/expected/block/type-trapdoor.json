@@ -1,0 +1,184 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "set_type": "copper",
+      "type": "trapdoor"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_trapdoor.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_orientable_trapdoor_bottom",
+      "textures": {
+        "texture": "example:block/ruby_trapdoor"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_trapdoor_bottom.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_orientable_trapdoor_top",
+      "textures": {
+        "texture": "example:block/ruby_trapdoor"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_trapdoor_top.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_orientable_trapdoor_open",
+      "textures": {
+        "texture": "example:block/ruby_trapdoor"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_trapdoor_open.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,half=bottom,open=false": {
+          "model": "example:block/ruby_trapdoor_bottom",
+          "y": 90
+        },
+        "facing=east,half=bottom,open=true": {
+          "model": "example:block/ruby_trapdoor_open",
+          "y": 90
+        },
+        "facing=east,half=top,open=false": {
+          "model": "example:block/ruby_trapdoor_top",
+          "y": 90
+        },
+        "facing=east,half=top,open=true": {
+          "model": "example:block/ruby_trapdoor_open",
+          "x": 180,
+          "y": 270
+        },
+        "facing=north,half=bottom,open=false": {
+          "model": "example:block/ruby_trapdoor_bottom"
+        },
+        "facing=north,half=bottom,open=true": {
+          "model": "example:block/ruby_trapdoor_open"
+        },
+        "facing=north,half=top,open=false": {
+          "model": "example:block/ruby_trapdoor_top"
+        },
+        "facing=north,half=top,open=true": {
+          "model": "example:block/ruby_trapdoor_open",
+          "x": 180,
+          "y": 180
+        },
+        "facing=south,half=bottom,open=false": {
+          "model": "example:block/ruby_trapdoor_bottom",
+          "y": 180
+        },
+        "facing=south,half=bottom,open=true": {
+          "model": "example:block/ruby_trapdoor_open",
+          "y": 180
+        },
+        "facing=south,half=top,open=false": {
+          "model": "example:block/ruby_trapdoor_top",
+          "y": 180
+        },
+        "facing=south,half=top,open=true": {
+          "model": "example:block/ruby_trapdoor_open",
+          "x": 180
+        },
+        "facing=west,half=bottom,open=false": {
+          "model": "example:block/ruby_trapdoor_bottom",
+          "y": 270
+        },
+        "facing=west,half=bottom,open=true": {
+          "model": "example:block/ruby_trapdoor_open",
+          "y": 270
+        },
+        "facing=west,half=top,open=false": {
+          "model": "example:block/ruby_trapdoor_top",
+          "y": 270
+        },
+        "facing=west,half=top,open=true": {
+          "model": "example:block/ruby_trapdoor_open",
+          "x": 180,
+          "y": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_trapdoor.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ruby_trapdoor_bottom",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_trapdoor.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.ruby_trapdoor": "Ruby Trapdoor"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_trapdoor"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/trapdoors.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_trapdoor"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/trapdoors.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ruby_trapdoor",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ruby_trapdoor",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ruby_trapdoor.json",
+    "schema": "resource:loot_table"
+  }
+]

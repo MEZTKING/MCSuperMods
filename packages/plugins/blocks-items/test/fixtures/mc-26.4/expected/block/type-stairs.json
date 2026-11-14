@@ -1,0 +1,331 @@
+[
+  {
+    "contents": {
+      "base_block": "example:ruby_bricks",
+      "format": 1,
+      "type": "stairs"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_brick_stairs.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stairs",
+      "textures": {
+        "bottom": "example:block/ruby_bricks",
+        "side": "example:block/ruby_bricks",
+        "top": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_brick_stairs.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/inner_stairs",
+      "textures": {
+        "bottom": "example:block/ruby_bricks",
+        "side": "example:block/ruby_bricks",
+        "top": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_brick_stairs_inner.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/outer_stairs",
+      "textures": {
+        "bottom": "example:block/ruby_bricks",
+        "side": "example:block/ruby_bricks",
+        "top": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_brick_stairs_outer.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,half=bottom,shape=inner_left": {
+          "model": "example:block/ruby_brick_stairs_inner",
+          "uvlock": true,
+          "y": 270
+        },
+        "facing=east,half=bottom,shape=inner_right": {
+          "model": "example:block/ruby_brick_stairs_inner"
+        },
+        "facing=east,half=bottom,shape=outer_left": {
+          "model": "example:block/ruby_brick_stairs_outer",
+          "uvlock": true,
+          "y": 270
+        },
+        "facing=east,half=bottom,shape=outer_right": {
+          "model": "example:block/ruby_brick_stairs_outer"
+        },
+        "facing=east,half=bottom,shape=straight": {
+          "model": "example:block/ruby_brick_stairs"
+        },
+        "facing=east,half=top,shape=inner_left": {
+          "model": "example:block/ruby_brick_stairs_inner",
+          "uvlock": true,
+          "x": 180
+        },
+        "facing=east,half=top,shape=inner_right": {
+          "model": "example:block/ruby_brick_stairs_inner",
+          "uvlock": true,
+          "x": 180,
+          "y": 90
+        },
+        "facing=east,half=top,shape=outer_left": {
+          "model": "example:block/ruby_brick_stairs_outer",
+          "uvlock": true,
+          "x": 180
+        },
+        "facing=east,half=top,shape=outer_right": {
+          "model": "example:block/ruby_brick_stairs_outer",
+          "uvlock": true,
+          "x": 180,
+          "y": 90
+        },
+        "facing=east,half=top,shape=straight": {
+          "model": "example:block/ruby_brick_stairs",
+          "uvlock": true,
+          "x": 180
+        },
+        "facing=north,half=bottom,shape=inner_left": {
+          "model": "example:block/ruby_brick_stairs_inner",
+          "uvlock": true,
+          "y": 180
+        },
+        "facing=north,half=bottom,shape=inner_right": {
+          "model": "example:block/ruby_brick_stairs_inner",
+          "uvlock": true,
+          "y": 270
+        },
+        "facing=north,half=bottom,shape=outer_left": {
+          "model": "example:block/ruby_brick_stairs_outer",
+          "uvlock": true,
+          "y": 180
+        },
+        "facing=north,half=bottom,shape=outer_right": {
+          "model": "example:block/ruby_brick_stairs_outer",
+          "uvlock": true,
+          "y": 270
+        },
+        "facing=north,half=bottom,shape=straight": {
+          "model": "example:block/ruby_brick_stairs",
+          "uvlock": true,
+          "y": 270
+        },
+        "facing=north,half=top,shape=inner_left": {
+          "model": "example:block/ruby_brick_stairs_inner",
+          "uvlock": true,
+          "x": 180,
+          "y": 270
+        },
+        "facing=north,half=top,shape=inner_right": {
+          "model": "example:block/ruby_brick_stairs_inner",
+          "uvlock": true,
+          "x": 180
+        },
+        "facing=north,half=top,shape=outer_left": {
+          "model": "example:block/ruby_brick_stairs_outer",
+          "uvlock": true,
+          "x": 180,
+          "y": 270
+        },
+        "facing=north,half=top,shape=outer_right": {
+          "model": "example:block/ruby_brick_stairs_outer",
+          "uvlock": true,
+          "x": 180
+        },
+        "facing=north,half=top,shape=straight": {
+          "model": "example:block/ruby_brick_stairs",
+          "uvlock": true,
+          "x": 180,
+          "y": 270
+        },
+        "facing=south,half=bottom,shape=inner_left": {
+          "model": "example:block/ruby_brick_stairs_inner"
+        },
+        "facing=south,half=bottom,shape=inner_right": {
+          "model": "example:block/ruby_brick_stairs_inner",
+          "uvlock": true,
+          "y": 90
+        },
+        "facing=south,half=bottom,shape=outer_left": {
+          "model": "example:block/ruby_brick_stairs_outer"
+        },
+        "facing=south,half=bottom,shape=outer_right": {
+          "model": "example:block/ruby_brick_stairs_outer",
+          "uvlock": true,
+          "y": 90
+        },
+        "facing=south,half=bottom,shape=straight": {
+          "model": "example:block/ruby_brick_stairs",
+          "uvlock": true,
+          "y": 90
+        },
+        "facing=south,half=top,shape=inner_left": {
+          "model": "example:block/ruby_brick_stairs_inner",
+          "uvlock": true,
+          "x": 180,
+          "y": 90
+        },
+        "facing=south,half=top,shape=inner_right": {
+          "model": "example:block/ruby_brick_stairs_inner",
+          "uvlock": true,
+          "x": 180,
+          "y": 180
+        },
+        "facing=south,half=top,shape=outer_left": {
+          "model": "example:block/ruby_brick_stairs_outer",
+          "uvlock": true,
+          "x": 180,
+          "y": 90
+        },
+        "facing=south,half=top,shape=outer_right": {
+          "model": "example:block/ruby_brick_stairs_outer",
+          "uvlock": true,
+          "x": 180,
+          "y": 180
+        },
+        "facing=south,half=top,shape=straight": {
+          "model": "example:block/ruby_brick_stairs",
+          "uvlock": true,
+          "x": 180,
+          "y": 90
+        },
+        "facing=west,half=bottom,shape=inner_left": {
+          "model": "example:block/ruby_brick_stairs_inner",
+          "uvlock": true,
+          "y": 90
+        },
+        "facing=west,half=bottom,shape=inner_right": {
+          "model": "example:block/ruby_brick_stairs_inner",
+          "uvlock": true,
+          "y": 180
+        },
+        "facing=west,half=bottom,shape=outer_left": {
+          "model": "example:block/ruby_brick_stairs_outer",
+          "uvlock": true,
+          "y": 90
+        },
+        "facing=west,half=bottom,shape=outer_right": {
+          "model": "example:block/ruby_brick_stairs_outer",
+          "uvlock": true,
+          "y": 180
+        },
+        "facing=west,half=bottom,shape=straight": {
+          "model": "example:block/ruby_brick_stairs",
+          "uvlock": true,
+          "y": 180
+        },
+        "facing=west,half=top,shape=inner_left": {
+          "model": "example:block/ruby_brick_stairs_inner",
+          "uvlock": true,
+          "x": 180,
+          "y": 180
+        },
+        "facing=west,half=top,shape=inner_right": {
+          "model": "example:block/ruby_brick_stairs_inner",
+          "uvlock": true,
+          "x": 180,
+          "y": 270
+        },
+        "facing=west,half=top,shape=outer_left": {
+          "model": "example:block/ruby_brick_stairs_outer",
+          "uvlock": true,
+          "x": 180,
+          "y": 180
+        },
+        "facing=west,half=top,shape=outer_right": {
+          "model": "example:block/ruby_brick_stairs_outer",
+          "uvlock": true,
+          "x": 180,
+          "y": 270
+        },
+        "facing=west,half=top,shape=straight": {
+          "model": "example:block/ruby_brick_stairs",
+          "uvlock": true,
+          "x": 180,
+          "y": 180
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_brick_stairs.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ruby_brick_stairs",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_brick_stairs.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.ruby_brick_stairs": "Ruby Brick Stairs"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_brick_stairs"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/stairs.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_brick_stairs"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/stairs.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ruby_brick_stairs",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ruby_brick_stairs",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ruby_brick_stairs.json",
+    "schema": "resource:loot_table"
+  }
+]

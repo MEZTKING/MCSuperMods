@@ -1,0 +1,216 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "wall"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_brick_wall.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_wall_post",
+      "textures": {
+        "wall": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_brick_wall_post.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_wall_side",
+      "textures": {
+        "wall": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_brick_wall_side.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_wall_side_tall",
+      "textures": {
+        "wall": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_brick_wall_side_tall.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/wall_inventory",
+      "textures": {
+        "wall": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_brick_wall_inventory.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "multipart": [
+        {
+          "apply": {
+            "model": "example:block/ruby_brick_wall_post"
+          },
+          "when": {
+            "up": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_brick_wall_side",
+            "uvlock": true
+          },
+          "when": {
+            "north": "low"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_brick_wall_side",
+            "uvlock": true,
+            "y": 90
+          },
+          "when": {
+            "east": "low"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_brick_wall_side",
+            "uvlock": true,
+            "y": 180
+          },
+          "when": {
+            "south": "low"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_brick_wall_side",
+            "uvlock": true,
+            "y": 270
+          },
+          "when": {
+            "west": "low"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_brick_wall_side_tall",
+            "uvlock": true
+          },
+          "when": {
+            "north": "tall"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_brick_wall_side_tall",
+            "uvlock": true,
+            "y": 90
+          },
+          "when": {
+            "east": "tall"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_brick_wall_side_tall",
+            "uvlock": true,
+            "y": 180
+          },
+          "when": {
+            "south": "tall"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ruby_brick_wall_side_tall",
+            "uvlock": true,
+            "y": 270
+          },
+          "when": {
+            "west": "tall"
+          }
+        }
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_brick_wall.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ruby_brick_wall_inventory",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_brick_wall.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.ruby_brick_wall": "Ruby Brick Wall"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_brick_wall"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/walls.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_brick_wall"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/walls.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ruby_brick_wall",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ruby_brick_wall",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ruby_brick_wall.json",
+    "schema": "resource:loot_table"
+  }
+]

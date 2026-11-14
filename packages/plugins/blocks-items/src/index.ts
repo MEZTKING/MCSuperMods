@@ -13,6 +13,31 @@ import { blocksItemsValidators } from './validators';
 
 export * from './kinds';
 export * from './lowering';
+export { blockItemId, blockItemIdOf } from './lowering/block-item';
+export {
+  BLOCK_TYPE_LOWERINGS,
+  BLOCK_TYPE_MODEL_SLOTS,
+  BLOCK_TYPES,
+  type BlockModels,
+  type BlockTypeName,
+  blockTypeModels,
+  blockTypeOf,
+  blockTypeSelfLoot,
+  blockTypeTagFiles,
+  type GeneratedModel,
+  ITEM_MODEL_SLOT,
+  lowerBlockAppearance,
+  type ModelSpec,
+  type SlotModels,
+  STONE_SET_TYPES,
+  TYPE_BLOCK_TAGS,
+  TYPE_ITEM_TAGS,
+  type TypeContext,
+  type TypeLowering,
+  type TypeTags,
+  WOOD_SOUND_TYPES,
+  WOODEN_SET_TYPES,
+} from './lowering/types';
 export { blocksItemsTemplates, modIdFromNamespace } from './templates';
 export {
   BLOCKS_ITEMS_PROBLEM_CODES,

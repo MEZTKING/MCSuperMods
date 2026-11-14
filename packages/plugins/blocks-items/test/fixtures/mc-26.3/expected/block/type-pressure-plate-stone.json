@@ -1,0 +1,82 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "set_type": "polished_blackstone",
+      "type": "pressure_plate"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_stone_plate.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/pressure_plate_up",
+      "textures": {
+        "texture": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_stone_plate.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/pressure_plate_down",
+      "textures": {
+        "texture": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_stone_plate_down.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "powered=false": {
+          "model": "example:block/ruby_stone_plate"
+        },
+        "powered=true": {
+          "model": "example:block/ruby_stone_plate_down"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_stone_plate.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ruby_stone_plate",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_stone_plate.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_stone_plate"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/pressure_plates.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_stone_plate"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/stone_pressure_plates.json",
+    "schema": "tag:block"
+  }
+]

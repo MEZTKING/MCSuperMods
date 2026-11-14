@@ -1,0 +1,78 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "directional"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_observer.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/ruby_front",
+        "side": "example:block/ruby_bricks",
+        "top": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_observer.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable_vertical",
+      "textures": {
+        "front": "example:block/ruby_front",
+        "side": "example:block/ruby_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_observer_vertical.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=down": {
+          "model": "example:block/ruby_observer_vertical",
+          "x": 180
+        },
+        "facing=east": {
+          "model": "example:block/ruby_observer",
+          "y": 90
+        },
+        "facing=north": {
+          "model": "example:block/ruby_observer"
+        },
+        "facing=south": {
+          "model": "example:block/ruby_observer",
+          "y": 180
+        },
+        "facing=up": {
+          "model": "example:block/ruby_observer_vertical"
+        },
+        "facing=west": {
+          "model": "example:block/ruby_observer",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_observer.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ruby_observer",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_observer.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  }
+]

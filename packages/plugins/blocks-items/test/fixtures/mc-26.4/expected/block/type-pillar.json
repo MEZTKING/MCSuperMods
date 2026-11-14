@@ -1,0 +1,125 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 2,
+          "requires_tool": true
+        },
+        "msm:flammable": {
+          "burn_odds": 5,
+          "ignite_odds": 5
+        },
+        "msm:strippable": {
+          "into": "example:stripped_ruby_log"
+        }
+      },
+      "format": 1,
+      "sound_type": "wood",
+      "type": "pillar"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_log.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cube_column",
+      "textures": {
+        "end": "example:block/ruby_log_top",
+        "side": "example:block/ruby_log"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_log.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cube_column_horizontal",
+      "textures": {
+        "end": "example:block/ruby_log_top",
+        "side": "example:block/ruby_log"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_log_horizontal.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "axis=x": {
+          "model": "example:block/ruby_log_horizontal",
+          "x": 90,
+          "y": 90
+        },
+        "axis=y": {
+          "model": "example:block/ruby_log"
+        },
+        "axis=z": {
+          "model": "example:block/ruby_log_horizontal",
+          "x": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_log.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ruby_log",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_log.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.ruby_log": "Ruby Log"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_log"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/axe.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ruby_log",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ruby_log",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ruby_log.json",
+    "schema": "resource:loot_table"
+  }
+]

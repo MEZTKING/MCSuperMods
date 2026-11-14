@@ -1,0 +1,43 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "pillar"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_pillar.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "axis=x": {
+          "model": "minecraft:block/basalt",
+          "x": 90,
+          "y": 90
+        },
+        "axis=y": {
+          "model": "minecraft:block/basalt"
+        },
+        "axis=z": {
+          "model": "minecraft:block/basalt",
+          "x": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_pillar.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:block/basalt",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_pillar.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  }
+]

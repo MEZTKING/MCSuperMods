@@ -8,10 +8,14 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ElementKind, Json, OutputFile, ResourceLocation } from '@msm/plugin-api';
+import { createRegistryIndex } from '@msm/schemas';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import {
+  BLOCK_TYPE_MODEL_SLOTS,
+  BLOCK_TYPES,
   biomeAdditionKind,
+  blockItemId,
   blockKind,
   blocksItemsKinds,
   effectKind,
@@ -19,8 +23,17 @@ import {
   lootAdditionKind,
   modKind,
   potionKind,
+  TYPE_BLOCK_TAGS,
+  TYPE_ITEM_TAGS,
 } from '../src/index';
-import { blockingProblems, element, indexesFor, sortedJson } from './support';
+import {
+  blockingProblems,
+  element,
+  indexesFor,
+  PROJECT_IDS,
+  sortedJson,
+  type TargetIndexes,
+} from './support';
 
 const UPDATE = process.env.UPDATE_GOLDENS === '1';
 
@@ -30,6 +43,205 @@ interface Sample {
   id: ResourceLocation;
   data: Json;
 }
+
+/** A block type sample (ADR 0067 D5, D7): golden `block/type-<name>.json`. */
+const typeSample = (name: string, id: string, data: Json): Sample => ({
+  kind: blockKind,
+  name: `type-${name}`,
+  id: id as ResourceLocation,
+  data,
+});
+
+/** Samples of every building block type (B262): textures, `models`, `model`, tags and loot. */
+const TYPE_SAMPLES: Sample[] = [
+  typeSample('pillar', 'example:ruby_log', {
+    format: 1,
+    type: 'pillar',
+    display_name: 'Ruby Log',
+    loot: 'self',
+    sound_type: 'wood',
+    textures: { side: 'example:block/ruby_log', end: 'example:block/ruby_log_top' },
+    components: {
+      'msm:breakable': { hardness: 2, tool: 'axe' },
+      'msm:flammable': { burn_odds: 5, ignite_odds: 5 },
+      'msm:strippable': { into: 'example:stripped_ruby_log' },
+    },
+  }),
+  typeSample('pillar-model', 'example:ruby_pillar', {
+    format: 1,
+    type: 'pillar',
+    model: 'minecraft:block/basalt',
+  }),
+  typeSample('horizontal', 'example:ruby_furnace', {
+    format: 1,
+    type: 'horizontal',
+    textures: {
+      front: 'example:block/ruby_front',
+      side: 'example:block/ruby_bricks',
+      top: 'example:block/ruby_top',
+    },
+    components: { 'msm:redstone': { emit: 0, on_powered: 'example:glow' } },
+    events: {
+      'example:glow': {
+        actions: [{ type: 'play_sound', sound: 'minecraft:block.note_block.bell' }],
+      },
+    },
+  }),
+  typeSample('directional', 'example:ruby_observer', {
+    format: 1,
+    type: 'directional',
+    textures: { all: 'example:block/ruby_bricks', front: 'example:block/ruby_front' },
+  }),
+  typeSample('directional-model', 'example:ruby_lamp', {
+    format: 1,
+    type: 'directional',
+    model: 'minecraft:block/observer',
+    item: false,
+  }),
+  typeSample('slab', 'example:ruby_brick_slab', {
+    format: 1,
+    type: 'slab',
+    display_name: 'Ruby Brick Slab',
+    loot: 'self',
+    textures: { all: 'example:block/ruby_bricks' },
+    components: { 'msm:breakable': { hardness: 2, tool: 'pickaxe', min_tier: 'stone' } },
+  }),
+  typeSample('slab-item-id', 'example:ruby_brick_slab', {
+    format: 1,
+    type: 'slab',
+    display_name: 'Ruby Brick Slab',
+    loot: 'self',
+    item: { id: 'example:ruby_half', creative_tab: 'minecraft:building_blocks' },
+    textures: {
+      top: 'example:block/ruby_top',
+      bottom: 'example:block/ruby_top',
+      side: 'example:block/ruby_bricks',
+    },
+  }),
+  typeSample('stairs', 'example:ruby_brick_stairs', {
+    format: 1,
+    type: 'stairs',
+    base_block: 'example:ruby_bricks',
+    display_name: 'Ruby Brick Stairs',
+    loot: 'self',
+    textures: { all: 'example:block/ruby_bricks' },
+  }),
+  typeSample('stairs-models', 'example:ruby_brick_stairs', {
+    format: 1,
+    type: 'stairs',
+    textures: { all: 'example:block/ruby_bricks' },
+    models: { inner: 'example:block/ruby_ornate_inner', item: 'example:block/ruby_ornate_item' },
+  }),
+  typeSample('wall', 'example:ruby_brick_wall', {
+    format: 1,
+    type: 'wall',
+    display_name: 'Ruby Brick Wall',
+    loot: 'self',
+    textures: { texture: 'example:block/ruby_bricks' },
+  }),
+  typeSample('fence', 'example:ruby_fence', {
+    format: 1,
+    type: 'fence',
+    display_name: 'Ruby Fence',
+    loot: 'self',
+    sound_type: 'wood',
+    textures: { texture: 'example:block/ruby_planks' },
+  }),
+  typeSample('fence-not-wooden', 'example:ruby_fence', {
+    format: 1,
+    type: 'fence',
+    sound_type: 'wood',
+    wooden: false,
+    textures: { all: 'example:block/ruby_planks' },
+  }),
+  typeSample('fence-gate', 'example:ruby_fence_gate', {
+    format: 1,
+    type: 'fence_gate',
+    wood_type: 'cherry',
+    display_name: 'Ruby Fence Gate',
+    loot: 'self',
+    textures: { texture: 'example:block/ruby_planks' },
+  }),
+  typeSample('door', 'example:ruby_door', {
+    format: 1,
+    type: 'door',
+    set_type: 'wood',
+    display_name: 'Ruby Door',
+    loot: 'self',
+    sound_type: 'wood',
+    textures: { top: 'example:block/ruby_door_top', bottom: 'example:block/ruby_door_bottom' },
+  }),
+  typeSample('door-iron-models', 'example:ruby_vault_door', {
+    format: 1,
+    type: 'door',
+    set_type: 'iron',
+    loot: 'self',
+    models: {
+      bottom_left: 'example:block/vault_bottom',
+      top_left: 'example:block/vault_top',
+      item: 'example:item/vault_door',
+    },
+  }),
+  typeSample('trapdoor', 'example:ruby_trapdoor', {
+    format: 1,
+    type: 'trapdoor',
+    set_type: 'copper',
+    display_name: 'Ruby Trapdoor',
+    loot: 'self',
+    textures: { texture: 'example:block/ruby_trapdoor' },
+  }),
+  typeSample('button', 'example:ruby_button', {
+    format: 1,
+    type: 'button',
+    set_type: 'stone',
+    press_ticks: 20,
+    display_name: 'Ruby Button',
+    loot: 'self',
+    textures: { all: 'example:block/ruby_bricks' },
+  }),
+  typeSample('button-wood', 'example:ruby_plank_button', {
+    format: 1,
+    type: 'button',
+    set_type: 'bamboo',
+    textures: { texture: 'example:block/ruby_planks' },
+  }),
+  typeSample('pressure-plate', 'example:ruby_pressure_plate', {
+    format: 1,
+    type: 'pressure_plate',
+    set_type: 'wood',
+    display_name: 'Ruby Pressure Plate',
+    loot: 'self',
+    textures: { texture: 'example:block/ruby_planks' },
+  }),
+  typeSample('pressure-plate-stone', 'example:ruby_stone_plate', {
+    format: 1,
+    type: 'pressure_plate',
+    set_type: 'polished_blackstone',
+    textures: { texture: 'example:block/ruby_bricks' },
+  }),
+  typeSample('pressure-plate-weighted', 'example:ruby_weighted_plate', {
+    format: 1,
+    type: 'pressure_plate',
+    set_type: 'gold',
+    weighted_max: 15,
+    textures: { texture: 'example:block/ruby_block' },
+  }),
+  typeSample('pane', 'example:ruby_pane', {
+    format: 1,
+    type: 'pane',
+    display_name: 'Ruby Pane',
+    sound_type: 'glass',
+    textures: { pane: 'example:block/ruby_glass', edge: 'example:block/ruby_glass_edge' },
+  }),
+  typeSample('block-item-id', 'example:ruby_lantern', {
+    format: 1,
+    type: 'block',
+    model: 'example:block/ruby_ore',
+    display_name: 'Ruby Lantern',
+    loot: 'self',
+    item: { id: 'example:lantern_item' },
+  }),
+];
 
 /** Every kind's default data, plus samples covering every editor field and component. */
 const SAMPLES: Sample[] = [
@@ -586,6 +798,7 @@ const SAMPLES: Sample[] = [
       lingering: false,
     },
   },
+  ...TYPE_SAMPLES,
   {
     kind: modKind,
     name: 'full',
@@ -600,6 +813,39 @@ const SAMPLES: Sample[] = [
     },
   },
 ];
+
+/**
+ * The test indexes with the ids a block type sample brings into the project: its block and
+ * block item, the block and item named in its data (base blocks, strip targets), the models it
+ * names or generates and the textures it uses. Other samples see the shared project ids only.
+ */
+function withOutputIds(indexes: TargetIndexes, sample: Sample, files: OutputFile[]): TargetIndexes {
+  if (!sample.name.startsWith('type-')) return indexes;
+  const data = sample.data as Record<string, unknown>;
+  const ids = (value: unknown): string[] =>
+    typeof value === 'object' && value !== null
+      ? Object.values(value).filter((entry): entry is string => typeof entry === 'string')
+      : [];
+  const item = data.item as Record<string, unknown> | false | undefined;
+  const itemIds = item === false ? [] : [String(item?.id ?? sample.id)];
+  const components = (data.components ?? {}) as Record<string, Record<string, unknown>>;
+  const modelFiles = files.filter((file) => file.path.includes('/models/'));
+  const modelIds = modelFiles.map((file) =>
+    file.path.replace(/^assets\/([^/]+)\/models\/(.+)\.json$/, '$1:$2'),
+  );
+  const project: Record<string, readonly string[]> = {
+    ...PROJECT_IDS,
+    block: [
+      ...(PROJECT_IDS.block ?? []),
+      sample.id,
+      ...ids({ base: data.base_block, into: components['msm:strippable']?.into }),
+    ],
+    item: [...(PROJECT_IDS.item ?? []), ...itemIds],
+    model: [...(PROJECT_IDS.model ?? []), ...modelIds, ...ids(data.models)],
+    texture: ids(data.textures),
+  };
+  return { ...indexes, registries: createRegistryIndex({ vanilla: indexes.vanilla, project }) };
+}
 
 const fixturesRoot = new URL('./fixtures/', import.meta.url);
 
@@ -630,7 +876,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           element(sample.kind.id, sample.id, sample.data),
           bundle.target,
         );
-        const indexes = await indexesFor(bundle);
+        const indexes = withOutputIds(await indexesFor(bundle), sample, files);
         const problems = (schema: string, value: Json) => blockingProblems(indexes, schema, value);
         expect(problems(sample.kind.schema, sample.data)).toEqual([]);
         // Loot addition pools are `any` in the format: check them against vanilla's pool.
@@ -656,5 +902,105 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         expect(actual).toBe(await readFile(url, 'utf8'));
       },
     );
+  },
+);
+
+describe('block types', () => {
+  const target = builtInTargets[0]?.target;
+  if (target === undefined) throw new Error('no built-in target');
+
+  it('lowers `"type": "block"` exactly as a block without a type', async () => {
+    for (const sample of SAMPLES.filter(
+      (entry) => entry.kind === blockKind && !entry.name.startsWith('type-'),
+    )) {
+      const data = sample.data as Record<string, Json>;
+      const typed = { ...data, type: 'block' };
+      const plain = await blockKind.lower(element(blockKind.id, sample.id, data), target);
+      const files = await blockKind.lower(element(blockKind.id, sample.id, typed), target);
+      expect(files.slice(1), sample.name).toEqual(plain.slice(1));
+    }
+  });
+
+  it('names a model slot table for every type, `item` last', () => {
+    expect(Object.keys(BLOCK_TYPE_MODEL_SLOTS)).toEqual([...BLOCK_TYPES]);
+    for (const type of BLOCK_TYPES) expect(BLOCK_TYPE_MODEL_SLOTS[type].at(-1)).toBe('item');
+  });
+
+  it('writes only the definition and a single-variant block state for the plant stubs', async () => {
+    for (const type of ['crop', 'sapling', 'leaves']) {
+      const files = await blockKind.lower(
+        element(blockKind.id, 'example:ruby_plant', { format: 1, type, display_name: 'Plant' }),
+        target,
+      );
+      expect(files.map((file) => file.path)).toEqual([
+        'msm/example/block/ruby_plant.json',
+        `assets/example/${target.folders.resource.block_definition}/ruby_plant.json`,
+        `assets/example/${target.folders.resource.item_definition}/ruby_plant.json`,
+        `assets/example/${target.folders.resource.lang}/en_us.json`,
+      ]);
+      expect(files[1]?.contents).toEqual({
+        variants: { '': { model: 'example:block/ruby_plant' } },
+      });
+    }
+  });
+
+  it('leaves a block with no model, models or textures without appearance files', async () => {
+    const files = await blockKind.lower(
+      element(blockKind.id, 'example:bare', { format: 1, type: 'stairs' }),
+      target,
+    );
+    expect(files.map((file) => file.path)).toEqual([
+      'msm/example/block/bare.json',
+      `data/minecraft/${target.folders.data.tags}/block/stairs.json`,
+      `data/minecraft/${target.folders.data.tags}/item/stairs.json`,
+    ]);
+  });
+
+  it('strips every editor field from the definition', async () => {
+    const [definition] = await blockKind.lower(
+      element(blockKind.id, 'example:tomatoes', {
+        format: 1,
+        type: 'crop',
+        loot: 'crop',
+        crop_drops: { produce: 'example:tomato' },
+        villager_plantable: false,
+        textures: { stages: ['example:block/tomatoes_stage0'] },
+        models: { default: 'example:block/tomatoes_stage0' },
+        item: { id: 'example:tomato_seeds' },
+      }),
+      target,
+    );
+    expect(definition?.contents).toEqual({
+      format: 1,
+      type: 'crop',
+      item: { id: 'example:tomato_seeds' },
+    });
+  });
+
+  it('rejects an unknown type', () => {
+    expect(() =>
+      blockKind.lower(element(blockKind.id, 'example:x', { format: 1, type: 'ladder' }), target),
+    ).toThrow(/unknown block type "ladder"/);
+  });
+
+  it('gives the block item id', () => {
+    expect(blockItemId({ id: 'example:a', data: { format: 1 } })).toBe('example:a');
+    expect(blockItemId({ id: 'example:a', data: { format: 1, item: { id: 'example:b' } } })).toBe(
+      'example:b',
+    );
+    expect(blockItemId({ id: 'example:a', data: { format: 1, item: false } })).toBeUndefined();
+  });
+});
+
+describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const))(
+  'block type tags on %s',
+  (_targetId, bundle) => {
+    it('names only tags the target has', async () => {
+      const { registries } = await indexesFor(bundle);
+      for (const tag of TYPE_BLOCK_TAGS)
+        expect(registries.has('tag/block', `minecraft:${tag}`), tag).toBe(true);
+      for (const tag of TYPE_ITEM_TAGS)
+        expect(registries.has('tag/item', `minecraft:${tag}`), tag).toBe(true);
+    });
   },
 );

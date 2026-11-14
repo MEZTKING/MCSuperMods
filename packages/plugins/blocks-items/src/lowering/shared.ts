@@ -19,6 +19,8 @@ export const BLOCK_TAG_SCHEMA = 'tag:block';
 export const ITEM_TAG_SCHEMA = 'tag:item';
 /** Schema reference of loot tables. */
 export const LOOT_TABLE_SCHEMA = 'resource:loot_table';
+/** Schema of vanilla block and item models. */
+export const MODEL_SCHEMA = '::java::assets::model::Model';
 
 /**
  * One key of `assets/<namespace>/lang/en_us.json`, declared `merge: 'object'` so every
@@ -32,6 +34,28 @@ export function langFile(target: Target, namespace: string, key: string, name: s
     layer: 'resourcepack',
     schema: LANG_SCHEMA,
     merge: 'object',
+  };
+}
+
+/**
+ * A tag file `data/minecraft/tags/<registry>/<tag>.json` holding `id`, declared `merge: 'tag'`
+ * so every element's entry lands in the same file.
+ *
+ * @param registry - `block` or `item`.
+ * @param tag - The tag path under `minecraft:`, such as `mineable/pickaxe` or `slabs`.
+ */
+export function vanillaTagFile(
+  target: Target,
+  registry: 'block' | 'item',
+  tag: string,
+  id: string,
+): OutputFile {
+  return {
+    path: `data/minecraft/${target.folders.data.tags}/${registry}/${tag}.json`,
+    contents: { values: [id] },
+    layer: 'datapack',
+    schema: registry === 'block' ? BLOCK_TAG_SCHEMA : ITEM_TAG_SCHEMA,
+    merge: 'tag',
   };
 }
 

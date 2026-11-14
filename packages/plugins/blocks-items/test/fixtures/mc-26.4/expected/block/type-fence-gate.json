@@ -1,0 +1,207 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "fence_gate",
+      "wood_type": "cherry"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_fence_gate.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_fence_gate",
+      "textures": {
+        "texture": "example:block/ruby_planks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_fence_gate.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_fence_gate_open",
+      "textures": {
+        "texture": "example:block/ruby_planks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_fence_gate_open.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_fence_gate_wall",
+      "textures": {
+        "texture": "example:block/ruby_planks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_fence_gate_wall.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_fence_gate_wall_open",
+      "textures": {
+        "texture": "example:block/ruby_planks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_fence_gate_wall_open.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,in_wall=false,open=false": {
+          "model": "example:block/ruby_fence_gate",
+          "uvlock": true,
+          "y": 270
+        },
+        "facing=east,in_wall=false,open=true": {
+          "model": "example:block/ruby_fence_gate_open",
+          "uvlock": true,
+          "y": 270
+        },
+        "facing=east,in_wall=true,open=false": {
+          "model": "example:block/ruby_fence_gate_wall",
+          "uvlock": true,
+          "y": 270
+        },
+        "facing=east,in_wall=true,open=true": {
+          "model": "example:block/ruby_fence_gate_wall_open",
+          "uvlock": true,
+          "y": 270
+        },
+        "facing=north,in_wall=false,open=false": {
+          "model": "example:block/ruby_fence_gate",
+          "uvlock": true,
+          "y": 180
+        },
+        "facing=north,in_wall=false,open=true": {
+          "model": "example:block/ruby_fence_gate_open",
+          "uvlock": true,
+          "y": 180
+        },
+        "facing=north,in_wall=true,open=false": {
+          "model": "example:block/ruby_fence_gate_wall",
+          "uvlock": true,
+          "y": 180
+        },
+        "facing=north,in_wall=true,open=true": {
+          "model": "example:block/ruby_fence_gate_wall_open",
+          "uvlock": true,
+          "y": 180
+        },
+        "facing=south,in_wall=false,open=false": {
+          "model": "example:block/ruby_fence_gate",
+          "uvlock": true
+        },
+        "facing=south,in_wall=false,open=true": {
+          "model": "example:block/ruby_fence_gate_open",
+          "uvlock": true
+        },
+        "facing=south,in_wall=true,open=false": {
+          "model": "example:block/ruby_fence_gate_wall",
+          "uvlock": true
+        },
+        "facing=south,in_wall=true,open=true": {
+          "model": "example:block/ruby_fence_gate_wall_open",
+          "uvlock": true
+        },
+        "facing=west,in_wall=false,open=false": {
+          "model": "example:block/ruby_fence_gate",
+          "uvlock": true,
+          "y": 90
+        },
+        "facing=west,in_wall=false,open=true": {
+          "model": "example:block/ruby_fence_gate_open",
+          "uvlock": true,
+          "y": 90
+        },
+        "facing=west,in_wall=true,open=false": {
+          "model": "example:block/ruby_fence_gate_wall",
+          "uvlock": true,
+          "y": 90
+        },
+        "facing=west,in_wall=true,open=true": {
+          "model": "example:block/ruby_fence_gate_wall_open",
+          "uvlock": true,
+          "y": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_fence_gate.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ruby_fence_gate",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_fence_gate.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.ruby_fence_gate": "Ruby Fence Gate"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_fence_gate"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/fence_gates.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_fence_gate"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/fence_gates.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ruby_fence_gate",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ruby_fence_gate",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ruby_fence_gate.json",
+    "schema": "resource:loot_table"
+  }
+]

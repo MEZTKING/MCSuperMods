@@ -1,0 +1,160 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:building_blocks",
+        "id": "example:ruby_half"
+      },
+      "type": "slab"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_brick_slab.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/slab",
+      "textures": {
+        "bottom": "example:block/ruby_top",
+        "side": "example:block/ruby_bricks",
+        "top": "example:block/ruby_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_brick_slab.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/slab_top",
+      "textures": {
+        "bottom": "example:block/ruby_top",
+        "side": "example:block/ruby_bricks",
+        "top": "example:block/ruby_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_brick_slab_top.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cube_bottom_top",
+      "textures": {
+        "bottom": "example:block/ruby_top",
+        "side": "example:block/ruby_bricks",
+        "top": "example:block/ruby_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_brick_slab_double.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "type=bottom": {
+          "model": "example:block/ruby_brick_slab"
+        },
+        "type=double": {
+          "model": "example:block/ruby_brick_slab_double"
+        },
+        "type=top": {
+          "model": "example:block/ruby_brick_slab_top"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_brick_slab.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ruby_brick_slab",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_half.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.ruby_brick_slab": "Ruby Brick Slab"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "item.example.ruby_half": "Ruby Brick Slab"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_brick_slab"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/slabs.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_half"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/slabs.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "condition": {
+                    "blocks": "example:ruby_brick_slab",
+                    "state": {
+                      "type": "double"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 2,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "type": "minecraft:explosion_decay"
+                }
+              ],
+              "name": "example:ruby_half",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ruby_brick_slab",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ruby_brick_slab.json",
+    "schema": "resource:loot_table"
+  }
+]

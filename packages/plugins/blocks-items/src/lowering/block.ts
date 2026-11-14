@@ -4,9 +4,9 @@
  */
 import type { Element, Json, JsonObject, OutputFile, Target, TargetFacts } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
+import { blockItemIdOf } from './block-item';
 import { lowerFuelAndCompostInPlace } from './fuel';
 import {
-  assetPath,
   BlocksItemsLoweringError,
   dataPath,
   definitionPath,
@@ -15,18 +15,34 @@ import {
   splitResourceLocation,
 } from './paths';
 import { lowerShapeInPlace, SHAPE_COMPONENT } from './shape';
-import {
-  BLOCK_STATE_SCHEMA,
-  BLOCK_TAG_SCHEMA,
-  itemDefinitionFile,
-  LOOT_TABLE_SCHEMA,
-  langFile,
-  nonEmptyString,
-} from './shared';
+import { LOOT_TABLE_SCHEMA, langFile, nonEmptyString, vanillaTagFile } from './shared';
 import { needsTierTag } from './tools';
+import {
+  blockTypeOf,
+  blockTypeSelfLoot,
+  blockTypeTagFiles,
+  lowerBlockAppearance,
+  type TypeContext,
+} from './types';
 
-/** The element data fields that exist only in the editor. */
-const BLOCK_EDITOR_FIELDS = ['model', 'display_name', 'loot'] as const;
+/**
+ * The element data fields that exist only in the editor: the appearance (`model`, and per type
+ * `textures` and `models`), the name, the loot preset and its drops (ADR 0067 D7, ADR 0068
+ * D3, D6), `wooden` (ADR 0067 D6) and `villager_plantable` (ADR 0068 D3).
+ */
+const BLOCK_EDITOR_FIELDS = [
+  'model',
+  'display_name',
+  'loot',
+  'textures',
+  'models',
+  'wooden',
+  'crop_drops',
+  'leaves_drops',
+  'villager_plantable',
+] as const;
+/** Loot values that are editor presets rather than loot table ids. */
+const LOOT_PRESETS: readonly string[] = ['self', 'crop', 'leaves'];
 /** The `msm:breakable` fields that exist only in the editor. */
 const BREAKABLE_EDITOR_FIELDS = ['tool', 'min_tier'] as const;
 /** The definition format this plugin writes. */
@@ -36,12 +52,10 @@ const BREAKABLE = 'msm:breakable';
 
 /** What the editor fields of one block say, read before they are stripped. */
 interface BlockEditorFields {
-  model: string | undefined;
   displayName: string | undefined;
   loot: string | undefined;
   tool: string | undefined;
   minTier: string | undefined;
-  hasItem: boolean;
 }
 
 function blockData(element: Element): JsonObject {
@@ -55,12 +69,10 @@ function readEditorFields(data: JsonObject): BlockEditorFields {
   const components = isRecord(data.components) ? data.components : undefined;
   const breakable = isRecord(components?.[BREAKABLE]) ? components[BREAKABLE] : undefined;
   return {
-    model: nonEmptyString(data.model),
     displayName: nonEmptyString(data.display_name),
     loot: nonEmptyString(data.loot),
     tool: nonEmptyString(breakable?.tool),
     minTier: nonEmptyString(breakable?.min_tier),
-    hasItem: data.item !== false,
   };
 }
 
@@ -99,21 +111,14 @@ export function blockDefinition(
     if (isRecord(shape)) lowerShapeInPlace(shape);
   }
   if (isRecord(definition.item)) lowerFuelAndCompostInPlace(definition.item, target, element.id);
-  if (fields.loot !== undefined && fields.loot !== 'self' && definition.loot_table === undefined) {
+  if (
+    fields.loot !== undefined &&
+    !LOOT_PRESETS.includes(fields.loot) &&
+    definition.loot_table === undefined
+  ) {
     definition.loot_table = fields.loot;
   }
   return definition;
-}
-
-/** A block tag file under `data/minecraft/tags/block/`, declared `merge: 'tag'`. */
-function blockTagFile(target: Target, tag: string, id: string): OutputFile {
-  return {
-    path: `data/minecraft/${target.folders.data.tags}/block/${tag}.json`,
-    contents: { values: [id] },
-    layer: 'datapack',
-    schema: BLOCK_TAG_SCHEMA,
-    merge: 'tag',
-  };
 }
 
 /**
@@ -140,22 +145,32 @@ export function dropsItselfLootTable(id: string, namespace: string, path: string
  * Lowers an `msm:block` element, in this order:
  *
  * 1. the runtime definition `msm/<ns>/block/<path>.json` (layer `msm`);
- * 2. with `model`: a single-variant block state definition and, unless `"item": false`, the
- *    block item's model definition (layer `resourcepack`);
- * 3. with `display_name`: the `block.<ns>.<path>` key of `en_us` (`merge: 'object'`);
+ * 2. the appearance of the block's type (ADR 0067 D5, D7): the models generated from
+ *    `textures`, the block state definition (a single variant of `model` for a plain block)
+ *    and, with a block item, its item model definition at the block item id (ADR 0068 D2;
+ *    layer `resourcepack`);
+ * 3. with `display_name`: the `block.<ns>.<path>` key of `en_us` (`merge: 'object'`), and the
+ *    `item.<ns>.<path>` key of a block item with its own id;
  * 4. with `tool`: `minecraft:mineable/<tool>`, and with `min_tier`: the needs-tier tag
  *    (layer `datapack`, `merge: 'tag'`);
- * 5. with `"loot": "self"` and a block item: the drops-itself loot table at
- *    `loot_table/blocks/<path>.json` (a block without an item has nothing to drop).
+ * 5. the vanilla tags the type always joins (ADR 0067 D6), block tags then item tags;
+ * 6. with `"loot": "self"` and a block item: the type's own loot table at
+ *    `loot_table/blocks/<path>.json` (drops the item; two from a double slab, a door from its
+ *    lower half). A block without an item has nothing to drop.
  *
  * @param element - The element.
  * @param target - The target supplying the vanilla folder names.
  * @returns The output files.
- * @throws {@link BlocksItemsLoweringError} If the id is unsafe or the data is not an object.
+ * @throws {@link BlocksItemsLoweringError} If the id is unsafe, the data is not an object or
+ *   the type is unknown.
  */
 export function lowerBlock(element: Element, target: Target): OutputFile[] {
   const { namespace, path } = splitResourceLocation(element.id);
-  const fields = readEditorFields(blockData(element));
+  const data = blockData(element);
+  const fields = readEditorFields(data);
+  const type = blockTypeOf(data, element.id);
+  const itemId = blockItemIdOf(element.id, data);
+  const context: TypeContext = { blockId: element.id, itemId, namespace, path, data };
   const files: OutputFile[] = [
     {
       path: definitionPath('block', namespace, path),
@@ -163,29 +178,35 @@ export function lowerBlock(element: Element, target: Target): OutputFile[] {
       layer: 'msm',
       schema: MSM_SCHEMA_REFS.blockDefinition,
     },
+    ...lowerBlockAppearance(type, target, context),
   ];
-  if (fields.model !== undefined) {
-    files.push({
-      path: assetPath(target, 'block_definition', namespace, path),
-      contents: { variants: { '': { model: fields.model } } },
-      layer: 'resourcepack',
-      schema: BLOCK_STATE_SCHEMA,
-    });
-    if (fields.hasItem) files.push(itemDefinitionFile(target, namespace, path, fields.model));
-  }
   if (fields.displayName !== undefined) {
     files.push(
       langFile(target, namespace, descriptionKey('block', namespace, path), fields.displayName),
     );
+    if (itemId !== undefined && itemId !== element.id) {
+      const item = splitResourceLocation(itemId);
+      files.push(
+        langFile(
+          target,
+          item.namespace,
+          descriptionKey('item', item.namespace, item.path),
+          fields.displayName,
+        ),
+      );
+    }
   }
   if (fields.tool !== undefined)
-    files.push(blockTagFile(target, `mineable/${fields.tool}`, element.id));
+    files.push(vanillaTagFile(target, 'block', `mineable/${fields.tool}`, element.id));
   const needs = fields.minTier === undefined ? undefined : needsTierTag(fields.minTier);
-  if (needs !== undefined) files.push(blockTagFile(target, needs, element.id));
-  if (fields.loot === 'self' && fields.hasItem) {
+  if (needs !== undefined) files.push(vanillaTagFile(target, 'block', needs, element.id));
+  files.push(...blockTypeTagFiles(type, target, context));
+  if (fields.loot === 'self' && itemId !== undefined) {
     files.push({
       path: dataPath(target, 'loot_table', namespace, `blocks/${path}`),
-      contents: dropsItselfLootTable(element.id, namespace, path),
+      contents:
+        blockTypeSelfLoot(type, { ...context, itemId }) ??
+        dropsItselfLootTable(itemId, namespace, path),
       layer: 'datapack',
       schema: LOOT_TABLE_SCHEMA,
     });

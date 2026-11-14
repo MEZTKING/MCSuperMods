@@ -1,0 +1,126 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "set_type": "wood",
+      "type": "pressure_plate"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_pressure_plate.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/pressure_plate_up",
+      "textures": {
+        "texture": "example:block/ruby_planks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_pressure_plate.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/pressure_plate_down",
+      "textures": {
+        "texture": "example:block/ruby_planks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_pressure_plate_down.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "powered=false": {
+          "model": "example:block/ruby_pressure_plate"
+        },
+        "powered=true": {
+          "model": "example:block/ruby_pressure_plate_down"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_pressure_plate.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ruby_pressure_plate",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_pressure_plate.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.ruby_pressure_plate": "Ruby Pressure Plate"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_pressure_plate"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/pressure_plates.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_pressure_plate"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/wooden_pressure_plates.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_pressure_plate"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/wooden_pressure_plates.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ruby_pressure_plate",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ruby_pressure_plate",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ruby_pressure_plate.json",
+    "schema": "resource:loot_table"
+  }
+]
