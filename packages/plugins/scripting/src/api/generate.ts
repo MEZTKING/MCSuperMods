@@ -1,12 +1,15 @@
 /**
  * Generates `msm-runtime.d.ts` from the script API description (ADR 0032 D1).
  *
- * The output is deterministic: interfaces and members sorted by name (overloads keep their
- * JSON order), two-space indentation, LF line endings and a trailing newline. Every
- * property is `readonly`: scripts change the game through methods, never by assignment.
+ * The output is deterministic: interfaces, type aliases and members sorted by name (overloads
+ * keep their JSON order), two-space indentation, LF line endings and a trailing newline. Every
+ * property is `readonly`: scripts change the game through methods, never by assignment. A doc
+ * string may hold several lines (`\n`), emitted as a multi-line comment; ADR 0065 uses this for
+ * the "Since runtime <version>." line.
  */
 import type {
   ScriptApi,
+  ScriptApiAlias,
   ScriptApiMember,
   ScriptApiMethod,
   ScriptApiParam,
@@ -37,12 +40,13 @@ function jsdoc(indent: string, doc: string, signature?: ScriptApiSignature): str
   for (const param of signature?.params ?? []) {
     if (param.doc !== undefined) tags.push(`@param ${param.name} - ${checkDoc(param.doc)}`);
   }
-  if (tags.length === 0) return [`${indent}/** ${checkDoc(doc)} */`];
+  const lines = checkDoc(doc).split('\n');
+  if (tags.length === 0 && lines.length === 1) return [`${indent}/** ${lines[0]} */`];
+  const line = (text: string): string => (text === '' ? `${indent} *` : `${indent} * ${text}`);
   return [
     `${indent}/**`,
-    `${indent} * ${checkDoc(doc)}`,
-    `${indent} *`,
-    ...tags.map((tag) => `${indent} * ${tag}`),
+    ...lines.map(line),
+    ...(tags.length === 0 ? [] : [`${indent} *`, ...tags.map(line)]),
     `${indent} */`,
   ];
 }
@@ -120,14 +124,23 @@ function memberLines(owner: string, name: string, member: ScriptApiMember): stri
  */
 export function generateTypings(api: ScriptApi): string {
   const decls = collectInterfaces(api);
+  const aliases = sortedEntries(api.aliases ?? {});
+  for (const [name] of aliases) {
+    if (decls.has(name)) throw new Error(`Type alias ${name} has the name of an interface`);
+  }
   const out: string[] = [
     // The checked-in golden lives in the repository, where Biome would otherwise reformat it.
     '// biome-ignore-all format: generated file',
     `// msm-runtime.d.ts: typings of the MSM runtime script API, version ${api.version}.`,
     '// Generated from script-api-v1.json by @msm/plugin-scripting (generateTypings); do not edit.',
   ];
-  for (const [name, decl] of [...decls.entries()].sort(([a], [b]) => byName(a, b))) {
+  const declared: [string, InterfaceDecl | ScriptApiAlias][] = [...decls.entries(), ...aliases];
+  for (const [name, decl] of declared.sort(([a], [b]) => byName(a, b))) {
     out.push('', ...jsdoc('', decl.doc));
+    if ('type' in decl) {
+      out.push(`type ${name} = ${decl.type};`);
+      continue;
+    }
     const heritage = decl.extends !== undefined ? ` extends ${decl.extends}` : '';
     out.push(`interface ${name}${heritage} {`);
     for (const [memberName, member] of sortedEntries(decl.members)) {
@@ -156,9 +169,9 @@ export function generateTypings(api: ScriptApi): string {
   for (const [name, global] of globals) {
     out.push(...jsdoc(INDENT, global.doc), `${INDENT}export const ${name}: ${capitalise(name)};`);
   }
-  // An ambient module may export only its own declarations, so each global interface is
-  // re-exported through an alias of the same name.
-  for (const name of [...decls.keys()].sort(byName)) {
+  // An ambient module may export only its own declarations, so each global interface and type
+  // alias is re-exported through an alias of the same name.
+  for (const name of [...decls.keys(), ...aliases.map(([name]) => name)].sort(byName)) {
     out.push(`${INDENT}export type ${name} = globalThis.${name};`);
   }
   out.push('}', '');
@@ -168,11 +181,15 @@ export function generateTypings(api: ScriptApi): string {
 /**
  * Cross-checks a script API description and returns every inconsistency as a sentence:
  * unknown `extends` and event types, events without exactly one `msm.events.on` overload of
- * the form `(name: "<event>", handler: (e: <Type>) => void)`, overloads naming no event, and
+ * the form `(name: "<event>", handler: (e: <Type>) => void)` (optionally followed by optional
+ * parameters, as `player.tick`'s `options`), type aliases named like a type, overloads naming no event, and
  * `cancellable` disagreeing with whether the event type has `cancel()`. Empty when consistent.
  */
 export function checkScriptApi(api: ScriptApi): string[] {
   const issues: string[] = [];
+  for (const name of Object.keys(api.aliases ?? {})) {
+    if (api.types[name] !== undefined) issues.push(`Type alias ${name} is also a type.`);
+  }
   for (const [name, type] of Object.entries(api.types)) {
     if (type.extends !== undefined && api.types[type.extends] === undefined) {
       issues.push(`Type ${name} extends unknown type ${type.extends}.`);
@@ -205,6 +222,9 @@ export function checkScriptApi(api: ScriptApi): string[] {
     const eventName = literal[1];
     if (overloadEvents.has(eventName)) issues.push(`Event ${eventName} has two on overloads.`);
     overloadEvents.set(eventName, overload.params[1]?.type ?? '');
+    if (overload.params.slice(2).some((param) => param.optional !== true)) {
+      issues.push(`The on overload of ${eventName} has a required parameter after the handler.`);
+    }
     if (api.events[eventName] === undefined) {
       issues.push(`An on overload names unknown event ${eventName}.`);
     }

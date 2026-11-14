@@ -34,6 +34,12 @@ describe('script API v1', () => {
       'player.join',
       'server.started',
       'server.tick',
+      'player.tick',
+      'player.respawn',
+      'player.leave',
+      'player.changeDimension',
+      'player.chat',
+      'entity.damaged',
     ]);
   });
 
@@ -102,8 +108,9 @@ describe('msm-runtime.d.ts', () => {
       .parseDiagnostics;
     expect(diagnostics).toEqual([]);
     for (const [name, event] of Object.entries(SCRIPT_API.events)) {
+      const options = name === 'player.tick' ? ', options?: { interval?: number }' : '';
       expect(MSM_RUNTIME_TYPINGS).toContain(
-        `on(name: "${name}", handler: (e: ${event.type}) => void): void;`,
+        `on(name: "${name}", handler: (e: ${event.type}) => void${options}): void;`,
       );
     }
     expect(MSM_RUNTIME_TYPINGS).toContain('declare const msm: Msm;');

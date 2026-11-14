@@ -15,11 +15,13 @@ A script cannot reach Java, files, the network or other mods. See [Limits](#limi
 ## Create a script
 
 1. Choose **Add element** on the toolbar (Ctrl+N).
-2. Under **Scripts**, pick one of the four templates:
+2. Under **Scripts**, pick one of the six templates:
    - **Block interaction script**: right-clicking a composter gives bone meal instead of composting;
    - **Entity hurt script**: an iron golem heals half of every hit back and shows heart particles;
    - **Scheduled effect script**: using a clock plays five rising chimes, half a second apart, with `msm.schedule`;
-   - **Action handler script**: a named handler for the `run_script` action, using the new script's id as the handler id.
+   - **Action handler script**: a named handler for the `run_script` action, using the new script's id as the handler id;
+   - **Full set bonus**: every second, a player wearing full golden armour gets Speed and Haste, with `player.tick` and `entity.equipment` (runtime 1.5.0 or later);
+   - **Boss bar countdown**: using an echo shard shows every player a 30-second boss bar countdown that ends with a title (runtime 1.5.0 or later).
 3. Type a name, for example `glow`, and choose **Create**.
 
 The script is listed under **Scripts** in the sidebar. Its id (`<namespace>:glow`) names it in the game log; the file goes into the jar as `msm/<namespace>/script/glow.js`.
@@ -52,6 +54,9 @@ Every script can start with `import { msm } from "msm:runtime";` (the templates 
 | `msm.log.info(text)`, `msm.log.warn(text)`, `msm.log.error(text)` | Writes a line to the game log, starting `[msm_runtime] <script id>:`. |
 | `msm.version` | The version of the running `msm_runtime`. |
 | `msm.storage.get(key)`, `msm.storage.set(key, value)` | Reads and saves data kept with the world (see [Saved data](#saved-data)). `entity.data` does the same for one entity or player. |
+| `msm.players()` | The players online (runtime 1.5.0 or later). |
+| `msm.getWorld(dimension)` | A loaded dimension by id, for example `msm.getWorld("minecraft:the_nether")`, or `undefined` (runtime 1.5.0 or later). |
+| `msm.bossBars.create(id, { title, color?, style?, progress? })`, `msm.bossBars.get(id)` | Creates or finds a boss bar (see [Inventory, player state and the screen](#inventory-player-state-and-the-screen); runtime 1.5.0 or later). |
 
 Every event object `e` has `e.world`, the dimension it happened in. Through it a script can read and place blocks (`getBlock`, `setBlock`), spawn particles and entities (`spawnParticle`, `spawnEntity`), play sounds (`playSound`), find entities nearby (`entitiesNear`) and run commands and functions (`runCommand`, `runFunction`). On the world they run at the world spawn point with no `@s`; pass a position as the second argument (`e.world.runCommand("particle flame ~ ~1 ~", pos)`) to make `~ ~ ~` that position. To run "as" something, call `entity.runCommand("effect give @s speed 5")` or `entity.runFunction("mymod:reward")`: they run as and at the entity, so `@s` and `~ ~ ~` mean it. A sound id in `playSound` can be a vanilla sound or one of the project's own sound keys. Entities have a type, a position, health, `damage`, `heal`, `kill`, `teleport`, `addEffect`, `hasEffect`, `effectLevel` (0 when the entity does not have the effect), `removeEffect`, `velocity` and `look` (where it faces) with `setVelocity(x, y, z)` and `addVelocity(x, y, z)` for a real push (for example `p.addVelocity(p.look.x * 1.5, 0.4, p.look.z * 1.5)` for a dash) and, for MSM mobs, `playAnimation`; players also have `isSneaking`, `heldItem`, `give`, `hasItem` and `sendMessage`. Positions (`pos`) have `x`, `y`, `z` and `offset(dx, dy, dz)`. The editor's completions list every member with a sentence on what it does.
 
@@ -68,10 +73,40 @@ Every event object `e` has `e.world`, the dimension it happened in. Through it a
 | `player.join` | A player joins the server | `player` | No |
 | `server.started` | Once, when the server (or the single-player world) has started | (`world` is the overworld) | No |
 | `server.tick` | At the end of every server tick, 20 times a second | `tick` (`world` is the overworld) | No |
+| `player.tick` | For each online player every `interval` ticks: `msm.events.on("player.tick", (e) => { ... }, { interval: 40 })` (20 by default; under 5 counts as 5) | `player` | No |
+| `player.respawn` | After a player respawns (or comes back from the End) | `player` (`world` is the new world) | No |
+| `player.leave` | A player leaves the server | `player` | No |
+| `player.changeDimension` | After a player moves to another dimension | `player`, `from`, `to` (dimension ids; `world` is the new one) | No |
+| `player.chat` | Before a player's chat message is sent | `player`, `message` | Yes |
+| `entity.damaged` | After a living entity took damage | `entity`, `amount` (after armour), `attacker`, `direct`, `source` | No |
 
-`e.cancel()` stops the game's own reaction: a cancelled `block.interact` does not open the chest, a cancelled `entity.hurt` does no damage. After a cancelled `block.interact`, `item.use`, `entity.interact` or `block.break` the game sends the player's inventory again, so the held stack's count and durability go back to what the server has; a cancelled `block.interact` also refreshes the blocks around the place that was clicked. A client-side guess about a cooldown or about what an entity interaction did (a bucket, shears, a name tag) may still show for a moment. Keep `server.tick` handlers short, since they run 20 times a second; use `msm.schedule` for things that happen later.
+The last six events need runtime 1.5.0 or later, and `entity.hurt` gains `source` (the damage type id, for example `minecraft:fall`) and `direct` (what hit: an arrow rather than its shooter). `entity.hurt` runs before the damage and can cancel it; `entity.damaged` runs after it with the final amount. Neither can change the amount.
+
+`e.cancel()` stops the game's own reaction: a cancelled `block.interact` does not open the chest, a cancelled `entity.hurt` does no damage. After a cancelled `block.interact`, `item.use`, `entity.interact` or `block.break` the game sends the player's inventory again, so the held stack's count and durability go back to what the server has; a cancelled `block.interact` also refreshes the blocks around the place that was clicked. A client-side guess about a cooldown or about what an entity interaction did (a bucket, shears, a name tag) may still show for a moment. Keep `server.tick` handlers short, since they run 20 times a second; use `msm.schedule` for things that happen later, and `player.tick` with an interval for checks on every player (the players are spread over the interval, so they are not all checked in the same tick). A cancelled `player.chat` message is seen by nobody.
 
 An event name that is not in the table is reported in the game log when the script loads; the rest of the script still runs.
+
+### Inventory, player state and the screen
+
+Runtime 1.5.0 or later. Item stacks you read (`e.item`, `player.inventory.get(0)`, `entity.equipment("head")`) are copies: they have `id`, `count`, `name`, `maxCount`, `damage` and `maxDamage`, and `hasComponent(id)` and `getComponent(id)` read a data component as JSON, in the form `/give` and data packs use. To give or place items, use an id or an object with components:
+
+```ts
+player.give({ id: "minecraft:diamond_sword", components: { "minecraft:custom_name": "Edge" } });
+```
+
+| Member | What it does |
+|---|---|
+| `player.inventory` | `size` (36), `selectedSlot`, `get(slot)`, `set(slot, item?)` (no item empties the slot), `count(id)`, `remove(id, count?)` (returns how many it removed), `find(id)` (the first slot or -1) and `setComponent(slot, id, value?)` (no value removes the component). A slot is 0 to 8 (hotbar), 9 to 35, or `"mainhand"`, `"offhand"`, `"head"`, `"chest"`, `"legs"`, `"feet"`. |
+| `entity.equipment(slot)`, `entity.setEquipment(slot, item?)` | Read or change what any living entity holds or wears, for example `zombie.setEquipment("head", "minecraft:carved_pumpkin")`. |
+| `player.xpLevel`, `xpPoints`, `food`, `saturation`, `gameMode` | Read the player's experience, hunger and game mode. |
+| `player.addXp(points)`, `addXpLevels(n)`, `setXpLevels(n)`, `setFood(level, saturation?)`, `setGameMode(mode)` | Change them; the player's screen updates straight away. |
+| `player.showTitle(title, { subtitle?, fadeIn?, stay?, fadeOut? })`, `showActionBar(text)`, `clearTitle()` | Show text in the middle of the screen or above the hotbar (times in ticks). |
+| `msm.bossBars.create(id, { title, color?, style?, progress? })` | A bar at the top of the screen with `setTitle`, `setProgress` (0 to 1), `setColor`, `setStyle`, `addPlayer`, `removePlayer`, `players()` and `remove()`. At most 32 per namespace; bars are not saved and go away on `/reload`. |
+| `entity.damage(amount, { type?, attacker?, direct? })` | Damage of a type (`minecraft:magic`, for example) from an attacker, so kill credit and armour work as in vanilla. Without options the damage stays generic. |
+| `entity.raycast(distance, options?)`, `world.raycast(from, direction, distance, options?)` | The first block or entity along a line, or `undefined`: `kind`, `pos`, `distance` and `block` with `face`, or `entity`. At most 128 blocks; `{ fluids: true }` stops at water, `{ entities: false }` sees only blocks. |
+| `entity.teleport(pos, { dimension?, yaw?, pitch? })` | Moves an entity, also to another dimension; the script's handle on it keeps working. |
+
+The templates **Full set bonus** (a bonus while a whole armour set is worn, with `player.tick`) and **Boss bar countdown** show these in use.
 
 ## run_script from the Events editor
 

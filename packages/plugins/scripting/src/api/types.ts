@@ -83,6 +83,18 @@ export interface ScriptApiGlobal {
   members: Record<string, ScriptApiMember>;
 }
 
+/**
+ * A named type alias such as `ItemSpec` (a union or an object literal), emitted as a global
+ * `type` declaration and exported from `msm:runtime`. Aliases have no runtime presence, so the
+ * runtime's contract test does not compare them (ADR 0065).
+ */
+export interface ScriptApiAlias {
+  /** The aliased TypeScript type string. */
+  type: string;
+  /** British English sentences; a blank line separates paragraphs. */
+  doc: string;
+}
+
 /** A game event a script can handle with `msm.events.on`. */
 export interface ScriptApiEvent {
   /** The declared type of the event object handed to handlers. */
@@ -110,6 +122,8 @@ export interface ScriptApi {
   events: Record<string, ScriptApiEvent>;
   /** Global free functions, keyed by name (`require`); omitted when there are none. */
   functions?: Record<string, ScriptApiMethod>;
+  /** Named type aliases, keyed by name (`ItemSpec`); omitted when there are none. */
+  aliases?: Record<string, ScriptApiAlias>;
 }
 
 /** Thrown by {@link parseScriptApi} when the JSON does not have the expected shape. */
@@ -234,7 +248,7 @@ function parseMembers(value: unknown, where: string): Record<string, ScriptApiMe
  */
 export function parseScriptApi(json: unknown): ScriptApi {
   const root = obj(json, 'api');
-  onlyKeys(root, ['version', 'types', 'globals', 'events', 'functions'], 'api');
+  onlyKeys(root, ['version', 'types', 'globals', 'events', 'functions', 'aliases'], 'api');
   if (typeof root.version !== 'number' || !Number.isInteger(root.version) || root.version < 1) {
     fail('api.version', 'expected a positive integer');
   }
@@ -283,6 +297,16 @@ export function parseScriptApi(json: unknown): ScriptApi {
       functions[name] = member;
     }
     api.functions = functions;
+  }
+  if (root.aliases !== undefined) {
+    const aliases: Record<string, ScriptApiAlias> = {};
+    for (const [name, value] of Object.entries(obj(root.aliases, 'api.aliases'))) {
+      const at = `api.aliases.${name}`;
+      const raw = obj(value, at);
+      onlyKeys(raw, ['type', 'doc'], at);
+      aliases[name] = { type: str(raw.type, `${at}.type`), doc: str(raw.doc, `${at}.doc`) };
+    }
+    api.aliases = aliases;
   }
   return api;
 }

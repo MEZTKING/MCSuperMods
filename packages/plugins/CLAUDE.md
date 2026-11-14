@@ -10,15 +10,15 @@ Built-in plugins contribute element kinds, lowering, commands and library conten
 
 | Subfolder | Package | Phase |
 |---|---|---|
-| `resourcepack/` | `@msm/plugin-resourcepack` | 1 |
-| `datapack/` | `@msm/plugin-datapack` (31 kinds incl. `minecraft:villager_trade`, `minecraft:trade_set`, `minecraft:tag/villager_trade`; 60 templates; ADR 0060 D5) | 2 |
+| `resourcepack/` | `@msm/plugin-resourcepack` (9 kinds incl. `minecraft:atlas` and `minecraft:font`; 16 templates incl. Icon font; ADR 0064 D2) | 1 |
+| `datapack/` | `@msm/plugin-datapack` (54 kinds: 27 generic incl. the mob variants, cat, pig, cow and chicken sound variants, `instrument`, `enchantment_provider`, `timeline`, `world_clock`, and 21 tag kinds; 65 templates incl. wolf and cat variant, goat horn instrument, two brewing recipes; `wolf_sound_variant` and `trial_spawner` dropped after the vanilla-file check; ADRs 0060 D5, 0064) | 2 |
 | `library/` | `@msm/plugin-library` | 2 add-on |
 | `structures/` | `@msm/plugin-structures` | 3 |
 | `worldgen/` | `@msm/plugin-worldgen` | 3 |
 | `blocks-items/` | `@msm/plugin-blocks-items` (blocks, items, effects, mod, biome and loot additions; 6 kinds, 26 templates, 18 validators; ADRs 0060, 0061) | 4 |
 | `entities/` | `@msm/plugin-entities` (mob `sounds` pass through; Monster template shows them) | 5 |
 | `models-anim/` | `@msm/plugin-models-anim` | 5 |
-| `scripting/` | `@msm/plugin-scripting` (scripts, script API, typings) | 6 |
+| `scripting/` | `@msm/plugin-scripting` (scripts, script API with 1.1 additions and type aliases, typings; 6 templates; ADRs 0032, 0065) | 6 |
 
 Layout per plugin (from `tools/new-plugin`): `src/index.ts` (`definePlugin`, `apiVersion: '^1.0.0'`), `src/kinds/`, `src/lowering/`, `src/templates/` (one module per category), `test/plugin.test.ts`, goldens under `test/fixtures/<target id>/expected/<kind folder>/`.
 

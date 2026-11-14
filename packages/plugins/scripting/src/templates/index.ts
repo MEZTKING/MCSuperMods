@@ -1,7 +1,8 @@
 /**
  * "New element" templates of `@msm/plugin-scripting` (ADR 0032): Block interaction script,
- * Entity hurt script, Scheduled effect script and Action handler script. Their sources use the
- * script API v1 and only vanilla ids; the action handler's id is the new script's own id.
+ * Entity hurt script, Scheduled effect script and Action handler script, and with script API 1.1
+ * (ADR 0065) Full set bonus and Boss bar countdown. Their sources use the script API v1 and only
+ * vanilla ids; the action handler's id is the new script's own id.
  */
 import type { ElementTemplate, TemplateContext } from '@msm/plugin-api';
 import { SCRIPT_KIND } from '../kinds';
@@ -109,6 +110,77 @@ export const scriptingTemplates: readonly ElementTemplate[] = Object.freeze([
         '    e.player.sendMessage(e.owner + " ran " + e.event);',
         '  }',
         '});',
+      ]),
+  },
+  {
+    id: 'msm_script_full_set_bonus',
+    kind: SCRIPT_KIND,
+    category: CATEGORY,
+    title: 'Full set bonus',
+    description:
+      'Gives a bonus to players wearing a whole armour set: every second, a player in full golden armour gets Speed and Haste. Uses the player.tick event and entity equipment (runtime 1.5.0 or later). Change the item ids to your own armour.',
+    data: () =>
+      script([
+        IMPORT,
+        '',
+        '// Players wearing all four pieces get Speed and Haste, checked once a second.',
+        'const SET: { [slot: string]: string } = {',
+        '  head: "minecraft:golden_helmet",',
+        '  chest: "minecraft:golden_chestplate",',
+        '  legs: "minecraft:golden_leggings",',
+        '  feet: "minecraft:golden_boots",',
+        '};',
+        'const SLOTS: EquipmentSlot[] = ["head", "chest", "legs", "feet"];',
+        '',
+        'msm.events.on(',
+        '  "player.tick",',
+        '  (e) => {',
+        '    for (const slot of SLOTS) {',
+        '      const worn = e.player.equipment(slot);',
+        '      if (worn === undefined || worn.id !== SET[slot]) return;',
+        '    }',
+        '    // 40 ticks outlast the 20-tick check, so the effects never flicker.',
+        '    e.player.addEffect("minecraft:speed", 40, 0);',
+        '    e.player.addEffect("minecraft:haste", 40, 0);',
+        '  },',
+        '  { interval: 20 },',
+        ');',
+      ]),
+  },
+  {
+    id: 'msm_script_boss_bar_countdown',
+    kind: SCRIPT_KIND,
+    category: CATEGORY,
+    title: 'Boss bar countdown',
+    description:
+      'Shows a countdown to every player as a boss bar: using an echo shard starts 30 seconds, the bar empties and turns red near the end, and a title says when time is up. Uses msm.bossBars and titles (runtime 1.5.0 or later).',
+    data: () =>
+      script([
+        IMPORT,
+        '',
+        '// Using an echo shard starts a 30-second countdown that every player sees.',
+        'const SECONDS = 30;',
+        '',
+        'msm.events.on("item.use", (e) => {',
+        '  if (e.item.id !== "minecraft:echo_shard" || msm.bossBars.get("countdown")) return;',
+        '  const bar = msm.bossBars.create("countdown", { title: "Time left", color: "green" });',
+        '  for (const player of msm.players()) bar.addPlayer(player);',
+        '  const step = (left: number): void => {',
+        '    if (left <= 0) {',
+        '      for (const player of bar.players()) player.showTitle("Time is up!");',
+        '      bar.remove();',
+        '      return;',
+        '    }',
+        '    bar.setTitle("Time left: " + left + " s");',
+        '    bar.setProgress(left / SECONDS);',
+        '    if (left <= 5) bar.setColor("red");',
+        '    msm.schedule(20, () => step(left - 1));',
+        '  };',
+        '  step(SECONDS);',
+        '});',
+        '',
+        '// Players who join during a countdown see it too.',
+        'msm.events.on("player.join", (e) => msm.bossBars.get("countdown")?.addPlayer(e.player));',
       ]),
   },
 ] satisfies ElementTemplate[]);

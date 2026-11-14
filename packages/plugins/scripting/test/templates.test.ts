@@ -27,6 +27,8 @@ const IDS = [
   'msm_script_entity_hurt',
   'msm_script_scheduled_effect',
   'msm_script_action_handler',
+  'msm_script_full_set_bonus',
+  'msm_script_boss_bar_countdown',
 ];
 
 function elementId(template: ElementTemplate): ResourceLocation {
@@ -73,6 +75,8 @@ describe('scripting templates', () => {
       'Entity hurt script',
       'Scheduled effect script',
       'Action handler script',
+      'Full set bonus',
+      'Boss bar countdown',
     ]);
     expect(scriptingTemplates[3]?.description).toContain('run_script');
   });

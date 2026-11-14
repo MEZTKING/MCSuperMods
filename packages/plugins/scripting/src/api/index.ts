@@ -13,6 +13,7 @@ import { parseScriptApi, type ScriptApi } from './types';
 export { checkScriptApi, generateTypings } from './generate';
 export type {
   ScriptApi,
+  ScriptApiAlias,
   ScriptApiEvent,
   ScriptApiGlobal,
   ScriptApiMember,
