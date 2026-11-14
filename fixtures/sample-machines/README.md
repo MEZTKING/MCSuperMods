@@ -66,7 +66,7 @@ Place each block and right-click it.
 | Sample Keeping Crate: fill it, break it in **Survival** with a pickaxe | The contents do not spill; they stay inside the dropped block, like a shulker box, and its tooltip shows the contents |
 | Sample Keeping Crate: break it in **Creative** | A full block drops (the contents kept), without your mining it twice |
 | Sample Keeping Crate: place the kept block again | The contents are back |
-| Sample Keeping Crate: put a shulker box in it | Report whether it is refused (vanilla's shulker box refuses containers; this crate should do the same) |
+| Sample Keeping Crate: put a shulker box or another Sample Keeping Crate in it | Refused, in the screen and through a hopper, as vanilla's shulker box refuses containers |
 | Sample Keeping Crate: sound | The chest's own open and close sounds |
 | Sample Hopper Box | The hopper screen with 5 slots; it is a pillar, so it lies along the face you click |
 | Sample Hopper Box: a comparator beside it | No signal, however full the box is (comparators are switched off on purpose) |
@@ -139,7 +139,7 @@ The grinder, the fast furnace and the redstone grinder use the furnace screen. W
 
 | Check | Expected |
 |---|---|
-| Stand in a clear spot and run `/function msm_sample_machines:place_loot_crate` | A Sample Crate appears at your feet (it faces north as the function writes no facing) |
+| Stand in a clear spot and run `/function msm_sample_machines:place_loot_crate` | A Sample Crate appears at your feet, facing its default direction (the function writes no facing) |
 | Open it | 3 diamonds and 5 bread, in random slots; the loot is made when you first open it |
 | Close it and open it again | The same contents; nothing is added a second time |
 | Break it | The contents drop |
