@@ -24,6 +24,7 @@ import type {
 import { outputFileBytes } from '../contents';
 import {
   defaultFabricModJson,
+  entityRenderers,
   FABRIC_MOD_JSON_FILE,
   MSM_RUNTIME_MOD_ID,
 } from '../fabric-content-jar/index';
@@ -297,7 +298,9 @@ async function loadWrapper(
  * generator throws (all write nothing); `export.scripts-not-ejected` (warning) per script
  * and per definition event with `run_script` actions; `export.java-generation-failed` is also a
  * warning for a malformed `assets/<ns>/sounds.json` or an invalid key (skipped; ADR 0057 D5); `export.gradle-wrapper-missing` (info);
- * `export.outside-jar-folders` (info) for pack files outside `assets/` and `data/`.
+ * `export.outside-jar-folders` (info) for pack files outside `assets/` and `data/`;
+ * `export.eject-uses-geckolib` (info) per entity with renderer `vanilla`, which the eject draws
+ * with GeckoLib (ADR 0072 D8).
  *
  * @param options - Where the Gradle wrapper comes from.
  */
@@ -431,6 +434,16 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
           message: `Target ${target.id} has no GeckoLib version, so a Java project with animated entities cannot be generated for it.`,
         });
         return;
+      }
+      // ADR 0072 D8: the eject has no vanilla renderer, so `vanilla` entities use GeckoLib.
+      for (const entry of entityRenderers(input.files)) {
+        if (entry.renderer !== 'vanilla') continue;
+        problems.report({
+          severity: 'info',
+          code: ExportProblemCodes.ejectUsesGeckolib,
+          file: entry.path,
+          message: `Entity ${entry.id} asks for the vanilla renderer, but the Java project draws every entity with GeckoLib (same model, more animation features).`,
+        });
       }
 
       let modJson: JsonObject;

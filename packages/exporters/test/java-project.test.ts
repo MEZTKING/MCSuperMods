@@ -510,6 +510,68 @@ describe.each(
     expect(text(files, 'build.gradle.kts')).toContain('include(geckolib)');
     expect(text(files, 'LICENSE-NOTES.md')).toContain('GeckoLib');
   });
+
+  it('reports export.eject-uses-geckolib for vanilla entities (ADR 0072 D8)', async () => {
+    const withRenderer = (name: string, renderer: string) =>
+      raw(`ruby:${name}`, {
+        path: `msm/ruby/entity/${name}.json`,
+        layer: 'msm',
+        json: {
+          format: 1,
+          category: 'creature',
+          size: { width: 1, height: 2 },
+          components: {
+            'msm:animated_model': {
+              model: 'ruby:entity/golem',
+              renderer,
+              texture: 'ruby:entity/golem',
+            },
+          },
+        },
+      });
+    // A spy generator: the target's own generator learns the renderer field in B301.
+    let captured: JavaProjectInput | undefined;
+    const spy: Target = {
+      ...target,
+      javaProject: {
+        generate(input) {
+          captured = input;
+          return [];
+        },
+      },
+    };
+    const { report } = await eject(
+      [
+        entity,
+        withRenderer('auto_golem', 'auto'),
+        withRenderer('gecko_golem', 'geckolib'),
+        withRenderer('plain_golem', 'vanilla'),
+      ],
+      { wrapper, target: spy },
+    );
+    expect(report.ok).toBe(true);
+    expect(captured?.geckolib).toBe(true);
+    expect(captured?.entities.map((entry) => entry.id)).toEqual([
+      'ruby:auto_golem',
+      'ruby:gecko_golem',
+      'ruby:golem',
+      'ruby:plain_golem',
+    ]);
+    const infos = report.problems.filter(
+      (problem) => problem.code === ExportProblemCodes.ejectUsesGeckolib,
+    );
+    expect(infos).toEqual([
+      {
+        severity: 'info',
+        code: 'export.eject-uses-geckolib',
+        file: 'msm/ruby/entity/plain_golem.json',
+        message:
+          'Entity ruby:plain_golem asks for the vanilla renderer, but the Java project draws every entity with GeckoLib (same model, more animation features).',
+      },
+    ]);
+    const plain = await eject([entity]);
+    expect(codes(plain.report.problems)).not.toContain(ExportProblemCodes.ejectUsesGeckolib);
+  });
 });
 
 // A target without a Java generator (its Java would not compile there, ADR 0037 D2) refuses

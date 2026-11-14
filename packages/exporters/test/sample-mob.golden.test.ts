@@ -15,7 +15,9 @@
  *   nothing, and the function passes the offline mcfunction checker.
  * - The content jar exports with zero problems with stub runtime and GeckoLib jars nested;
  *   its SHA-256 is pinned per target in two time zones
- *   (`test/fixtures/<target id>/sample-mob-jar.sha256`).
+ *   (`test/fixtures/<target id>/sample-mob-jar.sha256`). On a target without GeckoLib
+ *   the golem (renderer `auto`) exports without GeckoLib, drawn by the runtime's vanilla
+ *   renderer, with one `export.entity-vanilla-renderer` info (ADR 0072 D5).
  * - The jar holds the `msm/` entity definition and the GeckoLib model and animations, each
  *   valid against its MSM schema, and `fabric.mod.json` depends on GeckoLib.
  * - With `MSM_RUNTIME_JAR` (a built `msm_runtime` jar), `MSM_GECKOLIB_JAR` (the GeckoLib jar
@@ -816,8 +818,10 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     const withGeckolib = it.runIf(geckolib !== undefined);
 
     it.runIf(geckolib === undefined)(
-      'refuses the content jar with export.no-geckolib-target (no GeckoLib build)',
+      'exports the content jar without GeckoLib, drawn by the vanilla renderer (ADR 0072 D5)',
       async () => {
+        let loads = 0;
+        const sink = createZipSink();
         const report = await runExport({
           project: await loadSample(),
           registry,
@@ -826,16 +830,44 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           registries: context.registries,
           exporter: createFabricContentJarExporter({
             loadRuntimeJar: async () => stubRuntimeJar,
-            loadGeckolibJar: async () => stubGeckolibJar,
+            loadGeckolibJar: async () => {
+              loads++;
+              return stubGeckolibJar;
+            },
           }),
-          sink: createZipSink(),
+          sink,
           readAsset: (namespace, path) => sampleFs.readFile(`assets/${namespace}/${path}`),
           meta,
         });
-        expect(report.ok).toBe(false);
-        expect(report.problems.map((problem) => problem.code)).toContain(
+        expect(report.ok).toBe(true);
+        expect(loads).toBe(0);
+        const definition = `msm/${NAMESPACE}/entity/glow_golem.json`;
+        expect(
+          report.problems
+            .filter((problem) => problem.code === 'export.entity-vanilla-renderer')
+            .map((problem) => [problem.severity, problem.file]),
+        ).toEqual([['info', definition]]);
+        expect(report.problems.map((problem) => problem.code)).not.toContain(
           'export.no-geckolib-target',
         );
+        const files = unzipSync(sink.finish());
+        const paths = Object.keys(files).sort();
+        expect(paths).toContain(definition);
+        expect(paths).toContain(`assets/${NAMESPACE}/geckolib/models/entity/glow_golem.geo.json`);
+        expect(paths.filter((path) => path.startsWith('META-INF/jars/'))).toEqual([
+          nestedRuntimePath(meta.msmVersion),
+        ]);
+        const modJson = JSON.parse(utf8.decode(files['fabric.mod.json'] as Uint8Array)) as {
+          depends: Record<string, string>;
+          jars: { file: string }[];
+        };
+        expect(Object.keys(modJson.depends).sort()).toEqual([
+          'fabric-api',
+          'fabricloader',
+          'minecraft',
+          'msm_runtime',
+        ]);
+        expect(modJson.jars).toEqual([{ file: nestedRuntimePath(meta.msmVersion) }]);
       },
     );
 
@@ -963,7 +995,8 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       },
     );
 
-    describe.runIf(geckolib !== undefined)('content jar', () => {
+    // Every target: on one without GeckoLib the jar holds no GeckoLib (ADR 0072 D5).
+    describe('content jar', () => {
       const hashFile = join(fixturesRoot, target.id, 'sample-mob-jar.sha256');
       const savedZone = process.env.TZ;
       afterAll(() => {

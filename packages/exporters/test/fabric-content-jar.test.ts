@@ -5,12 +5,16 @@
  */
 import { createHash } from 'node:crypto';
 import { utf8 } from '@msm/core';
-import type { Element, Json, Problem } from '@msm/plugin-api';
+import type { Element, GeckolibFacts, Json, OutputFile, Problem } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { unzipSync } from 'fflate';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
-import { needsGeckolib, nestedGeckolibPath } from '../src/fabric-content-jar/index';
+import {
+  entityRenderers,
+  needsGeckolib,
+  nestedGeckolibPath,
+} from '../src/fabric-content-jar/index';
 import {
   contentJarFileName,
   createFabricContentJarExporter,
@@ -82,6 +86,18 @@ const entityDefinition = raw('ruby:entity', {
   layer: 'msm',
   json: { format: 1, type: 'entity' },
 });
+/** An entity definition with `msm:animated_model.renderer` set (ADR 0072 D4). */
+const rendererEntity = (name: string, renderer: 'auto' | 'geckolib' | 'vanilla') =>
+  raw(`ruby:entity_${name}`, {
+    path: `msm/ruby/entity/${name}.json`,
+    layer: 'msm',
+    json: {
+      format: 1,
+      components: {
+        'msm:animated_model': { model: 'ruby:entity/x', renderer, texture: 'ruby:entity/x' },
+      },
+    },
+  });
 const effectDefinition = raw('ruby:effect', {
   path: 'msm/ruby/effect/ruby_rush.json',
   layer: 'msm',
@@ -425,14 +441,112 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         },
       );
 
-      it('reports export.no-geckolib-target for a target without GeckoLib facts', async () => {
+      withGeckolib(
+        'nests no GeckoLib for a project of vanilla entities (ADR 0072 D5)',
+        async () => {
+          const geckolib = facts();
+          let loads = 0;
+          const { report, entries } = await exportJar(
+            [rendererEntity('a', 'vanilla'), rendererEntity('b', 'vanilla')],
+            {
+              loadRuntimeJar: async () => runtimeJar,
+              loadGeckolibJar: async () => {
+                loads++;
+                return geckolibJar;
+              },
+            },
+          );
+          expect(report.ok).toBe(true);
+          expect(loads).toBe(0);
+          expect(entries[nestedGeckolibPath(geckolib)]).toBeUndefined();
+          const written = json(entries, 'fabric.mod.json');
+          expect(Object.keys(written.depends as Record<string, Json>)).not.toContain(
+            geckolib.modId,
+          );
+          expect(written.jars).toEqual([{ file: nestedRuntimePath(meta.msmVersion) }]);
+          expect(codes(report.problems)).not.toContain(ExportProblemCodes.entityVanillaRenderer);
+          // One auto (or geckolib) entity among them brings GeckoLib back on this target.
+          for (const renderer of ['auto', 'geckolib'] as const) {
+            const mixed = await exportJar(
+              [rendererEntity('a', 'vanilla'), rendererEntity('b', renderer)],
+              both,
+            );
+            expect(mixed.report.ok).toBe(true);
+            expect(mixed.entries[nestedGeckolibPath(geckolib)]).toEqual(geckolibJar);
+          }
+        },
+      );
+
+      it('stops geckolib entities on a target without GeckoLib facts', async () => {
         const { geckolib: _geckolib, ...bare } = target;
-        const { report, entries } = await exportJar([entityDefinition], both, {}, 'Ruby', bare);
+        const { report, entries } = await exportJar(
+          [rendererEntity('a', 'auto'), rendererEntity('b', 'geckolib')],
+          both,
+          {},
+          'Ruby',
+          bare,
+        );
         expect(report.ok).toBe(false);
-        expect(codes(report.problems)).toContain('export.no-geckolib-target');
+        const problem = report.problems.find(
+          (entry) => entry.code === ExportProblemCodes.noGeckolibTarget,
+        );
+        expect(problem).toMatchObject({
+          severity: 'error',
+          code: 'export.no-geckolib-target',
+          file: 'msm/ruby/entity/b.json',
+        });
+        expect(problem?.message).toBe(
+          `Target ${target.id} has no GeckoLib version, so a mod jar with entity ruby:b (renderer "geckolib") cannot be built for it. Choose the renderer "auto" or "vanilla", or target a version with GeckoLib.`,
+        );
+        expect(
+          report.problems.filter((entry) => entry.code === ExportProblemCodes.noGeckolibTarget),
+        ).toHaveLength(1);
         expect(Object.keys(entries)).toEqual([]);
         const plain = await exportJar([definition], both, {}, 'Ruby', bare);
         expect(plain.report.ok).toBe(true);
+      });
+
+      it('exports auto and vanilla entities without GeckoLib on a target without it', async () => {
+        const { geckolib: _geckolib, ...bare } = target;
+        let loads = 0;
+        const { report, entries } = await exportJar(
+          [entityDefinition, rendererEntity('a', 'auto'), rendererEntity('v', 'vanilla')],
+          {
+            loadRuntimeJar: async () => runtimeJar,
+            loadGeckolibJar: async () => {
+              loads++;
+              return geckolibJar;
+            },
+          },
+          {},
+          'Ruby',
+          bare,
+        );
+        expect(report.ok).toBe(true);
+        expect(loads).toBe(0);
+        const infos = report.problems.filter(
+          (entry) => entry.code === ExportProblemCodes.entityVanillaRenderer,
+        );
+        // One info per auto entity (an absent renderer is auto); none for vanilla.
+        expect(infos.map((entry) => [entry.severity, entry.file])).toEqual([
+          ['info', 'msm/ruby/entity/a.json'],
+          ['info', 'msm/ruby/entity/glow_golem.json'],
+        ]);
+        expect(infos[0]?.message).toBe(
+          `Target ${target.id} has no GeckoLib version, so entity ruby:a is exported without GeckoLib and drawn by the runtime's vanilla renderer (Molang, easings and sound or particle keyframes do not play).`,
+        );
+        expect(Object.keys(entries).filter((path) => path.startsWith('META-INF/'))).toEqual([
+          nestedRuntimePath(meta.msmVersion),
+        ]);
+        expect(entries['msm/ruby/entity/a.json']).toBeDefined();
+        const written = json(entries, 'fabric.mod.json');
+        expect(written.jars).toEqual([{ file: nestedRuntimePath(meta.msmVersion) }]);
+        expect(Object.keys(written.depends as Record<string, Json>).sort()).toEqual([
+          'fabric-api',
+          'fabricloader',
+          'minecraft',
+          'msm_runtime',
+        ]);
       });
     });
 
@@ -597,17 +711,65 @@ describe('mod ids', () => {
 });
 
 describe('needsGeckolib', () => {
+  const geckolibTarget = builtInTargets.find((bundle) => bundle.target.geckolib !== undefined)
+    ?.target as { geckolib?: GeckolibFacts };
+  const withFacts = { geckolib: geckolibTarget.geckolib };
+  const without = {};
+  const entity = (path: string, renderer?: string): OutputFile => ({
+    path,
+    contents:
+      renderer === undefined
+        ? {}
+        : { components: { 'msm:animated_model': { model: 'a:b', renderer, texture: 'a:b' } } },
+    layer: 'msm',
+  });
+
   it('is true only for msm-layer entity definitions', () => {
-    expect(needsGeckolib([])).toBe(false);
-    expect(needsGeckolib([{ path: 'msm/ruby/block/a.json', contents: {}, layer: 'msm' }])).toBe(
-      false,
-    );
+    expect(needsGeckolib([], withFacts)).toBe(false);
+    expect(needsGeckolib([entity('msm/ruby/block/a.json')], withFacts)).toBe(false);
     expect(
-      needsGeckolib([{ path: 'data/ruby/entity/a.json', contents: {}, layer: 'datapack' }]),
+      needsGeckolib(
+        [{ path: 'data/ruby/entity/a.json', contents: {}, layer: 'datapack' }],
+        withFacts,
+      ),
     ).toBe(false);
+    expect(needsGeckolib([entity('msm/ruby/entity/mobs/a.json')], withFacts)).toBe(true);
+  });
+
+  it('follows each entity renderer and the target (ADR 0072 D5)', () => {
+    const auto = entity('msm/ruby/entity/a.json', 'auto');
+    const absent = entity('msm/ruby/entity/b.json');
+    const geckolib = entity('msm/ruby/entity/c.json', 'geckolib');
+    const vanilla = entity('msm/ruby/entity/d.json', 'vanilla');
+    expect(needsGeckolib([auto], withFacts)).toBe(true);
+    expect(needsGeckolib([absent], withFacts)).toBe(true);
+    expect(needsGeckolib([auto, absent], without)).toBe(false);
+    expect(needsGeckolib([geckolib], withFacts)).toBe(true);
+    expect(needsGeckolib([geckolib], without)).toBe(true);
+    expect(needsGeckolib([vanilla], withFacts)).toBe(false);
+    expect(needsGeckolib([vanilla, auto], without)).toBe(false);
+  });
+
+  it('reads the renderer from JSON objects and bytes, unknown values as auto', () => {
+    const bytes: OutputFile = {
+      path: 'msm/ruby/entity/deep/z.json',
+      contents: new TextEncoder().encode(
+        JSON.stringify({ components: { 'msm:animated_model': { renderer: 'vanilla' } } }),
+      ),
+      layer: 'msm',
+    };
     expect(
-      needsGeckolib([{ path: 'msm/ruby/entity/mobs/a.json', contents: {}, layer: 'msm' }]),
-    ).toBe(true);
+      entityRenderers([
+        bytes,
+        entity('msm/ruby/entity/a.json', 'sideways'),
+        { path: 'msm/ruby/entity/broken.json', contents: new Uint8Array([123]), layer: 'msm' },
+        entity('msm/ruby/item/x.json', 'vanilla'),
+      ]),
+    ).toEqual([
+      { path: 'msm/ruby/entity/a.json', id: 'ruby:a', renderer: 'auto' },
+      { path: 'msm/ruby/entity/broken.json', id: 'ruby:broken', renderer: 'auto' },
+      { path: 'msm/ruby/entity/deep/z.json', id: 'ruby:deep/z', renderer: 'vanilla' },
+    ]);
   });
 });
 
@@ -625,5 +787,7 @@ describe('problem codes', () => {
     expect(ExportProblemCodes.outsideJarFolders).toBe('export.outside-jar-folders');
     expect(ExportProblemCodes.geckolibMissing).toBe('export.geckolib-missing');
     expect(ExportProblemCodes.noGeckolibTarget).toBe('export.no-geckolib-target');
+    expect(ExportProblemCodes.entityVanillaRenderer).toBe('export.entity-vanilla-renderer');
+    expect(ExportProblemCodes.ejectUsesGeckolib).toBe('export.eject-uses-geckolib');
   });
 });

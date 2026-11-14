@@ -39,15 +39,28 @@ export const ExportProblemCodes = {
    */
   runtimeMissing: 'export.runtime-missing',
   /**
-   * Fabric content jar: the project has entities, so GeckoLib must be nested, but the host
-   * supplied no GeckoLib jar. Nothing is written.
+   * Fabric content jar: the project's entities need GeckoLib, so it must be nested, but the
+   * host supplied no GeckoLib jar. Nothing is written.
    */
   geckolibMissing: 'export.geckolib-missing',
   /**
-   * Fabric content jar: the project has entities but the target has no GeckoLib facts
-   * (`Target.geckolib`). Nothing is written.
+   * Fabric content jar and Java project: an entity needs GeckoLib (in the jar: its
+   * `msm:animated_model.renderer` is `geckolib`, ADR 0072 D5; in the eject: any entity) but
+   * the target has no GeckoLib facts (`Target.geckolib`). Nothing is written.
    */
   noGeckolibTarget: 'export.no-geckolib-target',
+  /**
+   * Fabric content jar (ADR 0072 D5): an entity with renderer `auto` (or none) is exported
+   * for a target without GeckoLib, so the runtime draws it with its vanilla renderer. Info,
+   * one per entity; the export goes ahead without GeckoLib.
+   */
+  entityVanillaRenderer: 'export.entity-vanilla-renderer',
+  /**
+   * Java project (ADR 0072 D8): an entity with renderer `vanilla` is drawn with GeckoLib in
+   * the ejected project, which has no vanilla renderer. Info, one per entity; the export goes
+   * ahead.
+   */
+  ejectUsesGeckolib: 'export.eject-uses-geckolib',
   /** Fabric content jar: the layer-`msm` `fabric.mod.json` is not a JSON object. Nothing is written. */
   invalidModJson: 'export.invalid-mod-json',
   /**

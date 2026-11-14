@@ -1,8 +1,8 @@
 /**
  * The `fabric-content-jar` exporter (ADR 0026): one Fabric mod jar holding the project's
  * `assets/`, `data/` and `msm/` files, `fabric.mod.json` and, by default, the `msm_runtime`
- * jar nested under `META-INF/jars/`. A project with entities also depends on GeckoLib and, by
- * default, nests its jar (ADR 0029 D4).
+ * jar nested under `META-INF/jars/`. A project whose entities are drawn with GeckoLib also
+ * depends on GeckoLib and, by default, nests its jar (ADR 0029 D4, ADR 0072 D5).
  *
  * The exporter writes jar entries to its sink; the host passes a zip sink
  * (`createZipSink`), whose archive is deterministic (sorted entries, fixed timestamps,
@@ -43,8 +43,11 @@ export const MSM_RUNTIME_MOD_ID = 'msm_runtime';
 /** The folder nested jars live in. */
 const NESTED_JARS_FOLDER = 'META-INF/jars/';
 
-/** Entity definitions: `msm/<ns>/entity/...`. Their presence makes the jar need GeckoLib. */
-const ENTITY_DEFINITION_PATTERN = /^msm\/[^/]+\/entity\//;
+/**
+ * Entity definitions: `msm/<ns>/entity/...`. Their renderers decide whether the jar needs
+ * GeckoLib ({@link needsGeckolib}).
+ */
+const ENTITY_DEFINITION_PATTERN = /^msm\/([^/]+)\/entity\//;
 
 /**
  * The first `msm_runtime` that runs scripts and the `run_script` action (ADR 0032 D4): a jar
@@ -116,8 +119,8 @@ export interface FabricContentJarOptions {
   runtimeVersion?: string;
   /**
    * Returns the GeckoLib jar's bytes (`Target.geckolib.fileName`), or `undefined` when the
-   * host has none (not downloaded yet and offline). Called only when the project has entities
-   * and the runtime is nested. A throw counts as missing.
+   * host has none (not downloaded yet and offline). Called only when the project's entities
+   * need GeckoLib ({@link needsGeckolib}) and the runtime is nested. A throw counts as missing.
    */
   loadGeckolibJar?: () => Promise<Uint8Array | undefined>;
   /**
@@ -235,14 +238,77 @@ export function nestedRuntimePath(version: string): string {
   return `${NESTED_JARS_FOLDER}${MSM_RUNTIME_MOD_ID}-${version}.jar`;
 }
 
+/** The renderer an entity asks for (`msm:animated_model.renderer`, ADR 0072 D4). */
+export type EntityRendererChoice = 'auto' | 'geckolib' | 'vanilla';
+
+/** One entity definition of the lowered files and the renderer it asks for. */
+export interface EntityRendererEntry {
+  /** The definition's path, `msm/<ns>/entity/<path>.json`. */
+  path: string;
+  /** The entity id, `<ns>:<path>`. */
+  id: string;
+  /** The renderer; `auto` when the field is absent or not one of the three values. */
+  renderer: EntityRendererChoice;
+}
+
+/** The parsed JSON of a lowered file; `undefined` when its bytes are not JSON. */
+function fileJson(file: OutputFile): Json | undefined {
+  if (!(file.contents instanceof Uint8Array)) return file.contents;
+  try {
+    return JSON.parse(utf8.decode(file.contents)) as Json;
+  } catch {
+    return undefined;
+  }
+}
+
+/** The renderer field of an entity definition, `auto` when absent or unknown. */
+function rendererOf(definition: Json | undefined): EntityRendererChoice {
+  if (!isObject(definition) || !isObject(definition.components)) return 'auto';
+  const model = definition.components['msm:animated_model'];
+  if (!isObject(model)) return 'auto';
+  const renderer = model.renderer;
+  return renderer === 'geckolib' || renderer === 'vanilla' ? renderer : 'auto';
+}
+
 /**
- * Whether the files need GeckoLib: true when any `msm`-layer file is an entity definition
- * (`msm/<ns>/entity/...`).
+ * Every entity definition among the lowered files (`msm`-layer files under
+ * `msm/<ns>/entity/`) with the renderer it asks for, in path order.
  *
  * @param files - The lowered files.
  */
-export function needsGeckolib(files: readonly OutputFile[]): boolean {
-  return files.some((file) => file.layer === 'msm' && ENTITY_DEFINITION_PATTERN.test(file.path));
+export function entityRenderers(files: readonly OutputFile[]): EntityRendererEntry[] {
+  const entries: EntityRendererEntry[] = [];
+  for (const file of files) {
+    if (file.layer !== 'msm') continue;
+    const match = ENTITY_DEFINITION_PATTERN.exec(file.path);
+    if (match === null) continue;
+    const rest = file.path.slice(match[0].length).replace(/\.json$/, '');
+    entries.push({
+      path: file.path,
+      id: `${match[1]}:${rest}`,
+      renderer: rendererOf(fileJson(file)),
+    });
+  }
+  return entries.sort((a, b) => comparePaths(a.path, b.path));
+}
+
+/**
+ * Whether the files need GeckoLib on `target` (ADR 0072 D5): true when an entity definition
+ * asks for the `geckolib` renderer, or for `auto` (the default) and the target has GeckoLib
+ * facts. A project whose entities are all `vanilla`, or one exported for a target without
+ * GeckoLib whose entities are `auto`, does not.
+ *
+ * @param files - The lowered files.
+ * @param target - The export target; only its GeckoLib facts are read.
+ */
+export function needsGeckolib(
+  files: readonly OutputFile[],
+  target: { readonly geckolib?: GeckolibFacts | undefined },
+): boolean {
+  return entityRenderers(files).some(
+    (entry) =>
+      entry.renderer === 'geckolib' || (entry.renderer === 'auto' && target.geckolib !== undefined),
+  );
 }
 
 /** The nested GeckoLib jar's path: `META-INF/jars/<fileName>`. */
@@ -406,11 +472,14 @@ async function loadRuntime(
  * and `msm.export.json` last. Without `Target.fabric` it reports `export.no-fabric-target`;
  * when nesting without runtime bytes, `export.runtime-missing`; both write nothing.
  *
- * When the project has entities ({@link needsGeckolib}), `fabric.mod.json` also depends on
+ * When the project's entities need GeckoLib ({@link needsGeckolib}: a `geckolib` renderer, or
+ * `auto` on a target with GeckoLib facts; ADR 0072 D5), `fabric.mod.json` also depends on
  * GeckoLib (`Target.geckolib`) and, unless `separateRuntime` is set, the GeckoLib jar is
- * nested as `META-INF/jars/<fileName>`. Without `Target.geckolib` it reports
- * `export.no-geckolib-target`; when nesting without GeckoLib bytes,
- * `export.geckolib-missing`; both write nothing. Projects without entities are unaffected.
+ * nested as `META-INF/jars/<fileName>`; when nesting without GeckoLib bytes it reports
+ * `export.geckolib-missing` and writes nothing. On a target without `Target.geckolib`, each
+ * `auto` entity gives an `export.entity-vanilla-renderer` info and the jar is built without
+ * GeckoLib, while each `geckolib` entity gives `export.no-geckolib-target` and nothing is
+ * written. Projects without entities, or whose entities are all `vanilla`, are unaffected.
  *
  * Scripts (`msm`-layer files with `language: 'typescript'`) are transpiled with the factory's
  * `transpileScript` and written as `.js` at the same path; the `.ts` is not written. Without
@@ -460,16 +529,30 @@ export function createFabricContentJarExporter(options: FabricContentJarOptions 
           ? laterVersion(runtimeVersion, SCRIPT_RUNTIME_MINIMUM)
           : runtimeVersion;
       const nest = input.options[SEPARATE_RUNTIME_OPTION] !== true;
-      const entities = needsGeckolib(input.files);
-      const geckolib = entities ? input.target.geckolib : undefined;
-      if (entities && geckolib === undefined) {
-        input.problems.report({
-          severity: 'error',
-          code: ExportProblemCodes.noGeckolibTarget,
-          message: `Target ${input.target.id} has no GeckoLib version, so a mod jar with animated entities cannot be built for it.`,
-        });
-        return;
+      if (input.target.geckolib === undefined) {
+        // ADR 0072 D5: `auto` entities fall back to the vanilla renderer; `geckolib` ones stop.
+        let blocked = false;
+        for (const entry of entityRenderers(input.files)) {
+          if (entry.renderer === 'auto') {
+            input.problems.report({
+              severity: 'info',
+              code: ExportProblemCodes.entityVanillaRenderer,
+              file: entry.path,
+              message: `Target ${input.target.id} has no GeckoLib version, so entity ${entry.id} is exported without GeckoLib and drawn by the runtime's vanilla renderer (Molang, easings and sound or particle keyframes do not play).`,
+            });
+          } else if (entry.renderer === 'geckolib') {
+            blocked = true;
+            input.problems.report({
+              severity: 'error',
+              code: ExportProblemCodes.noGeckolibTarget,
+              file: entry.path,
+              message: `Target ${input.target.id} has no GeckoLib version, so a mod jar with entity ${entry.id} (renderer "geckolib") cannot be built for it. Choose the renderer "auto" or "vanilla", or target a version with GeckoLib.`,
+            });
+          }
+        }
+        if (blocked) return;
       }
+      const geckolib = needsGeckolib(input.files, input.target) ? input.target.geckolib : undefined;
 
       let runtimeBytes: Uint8Array | undefined;
       if (nest) {
