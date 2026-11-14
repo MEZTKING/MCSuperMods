@@ -19,7 +19,8 @@
       "dev.mcsupermods.runtime.gametest.MsmShapeGameTest",
       "dev.mcsupermods.runtime.gametest.MsmAdditionGameTest",
       "dev.mcsupermods.runtime.gametest.MsmTriggerGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmPotionGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmPotionGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmBlockTypeGameTest"
     ]
   },
   "depends": {

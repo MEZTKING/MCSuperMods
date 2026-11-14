@@ -2,6 +2,7 @@ package dev.mcsupermods.runtime;
 
 import dev.mcsupermods.runtime.loader.DefinitionScanner;
 import dev.mcsupermods.runtime.loader.LoadReport;
+import dev.mcsupermods.runtime.registry.BlockExtras;
 import dev.mcsupermods.runtime.registry.MsmRegistrar;
 import dev.mcsupermods.runtime.scripting.ScriptBridges;
 import dev.mcsupermods.runtime.scripting.ScriptDataAttachment;
@@ -32,6 +33,8 @@ public final class MsmRuntime implements ModInitializer {
         // Creative tabs, items, block states, functions, biomes and entity types of other mods and data packs
         // exist only once the server runs.
         ServerLifecycleEvents.SERVER_STARTED.register(server -> report = report.withWarnings(MsmRegistrar.checkAfterStart(server)));
+        // msm:strippable (ADR 0067 D4): one UseBlockCallback for every strippable block.
+        BlockExtras.register();
         // Scripts (ADR 0031): loaded per server on SERVER_STARTING, after the registries are frozen.
         ScriptBridges.register();
         // Saved script data (ADR 0062 D3): the persistent attachment msm_runtime:script_data.

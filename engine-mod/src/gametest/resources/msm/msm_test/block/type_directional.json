@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:shape": {
+      "boxes": [
+        [
+          0,
+          0,
+          0,
+          16,
+          16,
+          4
+        ]
+      ],
+      "see_through": false
+    }
+  },
+  "format": 1,
+  "type": "directional"
+}

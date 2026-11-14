@@ -17,6 +17,7 @@ import dev.mcsupermods.runtime.loader.MsmRarity;
 import dev.mcsupermods.runtime.loader.ParseResult;
 import dev.mcsupermods.runtime.loader.PotionDefinition;
 import dev.mcsupermods.runtime.loader.RawDefinition;
+import dev.mcsupermods.runtime.registry.types.BlockTypes;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
@@ -74,6 +75,7 @@ import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 
 /** Turns parsed definitions into registry entries. Runs once, from {@code onInitialize}. */
 public final class MsmRegistrar {
@@ -147,7 +149,10 @@ public final class MsmRegistrar {
             }
         }
         MsmRuntime.LOGGER.info("[{}] registered {} potion(s)", MsmRuntime.MOD_ID, potions.size());
-        // Blocks first, so a block's item exists before any item definition could collide with it.
+        // Blocks first, so a block's item exists before any item definition could collide with it. Stairs come after
+        // every other block, in dependency order, because a stair copies its registered base block (ADR 0067 D4).
+        List<Map.Entry<RawDefinition, BlockDefinition>> stairs = new ArrayList<>();
+        Map<BlockType, Integer> typeCounts = new EnumMap<>(BlockType.class);
         for (RawDefinition raw : scanned.definitions()) {
             if (!raw.kind().equals("block")) {
                 continue;
@@ -157,15 +162,19 @@ public final class MsmRegistrar {
             if (parsed.definition().isEmpty()) {
                 continue;
             }
-            try {
-                BlockDefinition def = parsed.definition().get();
-                checkEvents(raw, def.events(), errors);
-                registerBlock(raw, def, items, errors);
+            BlockDefinition def = parsed.definition().get();
+            if (def.type() == BlockType.STAIRS) {
+                stairs.add(Map.entry(raw, def));
+                continue;
+            }
+            if (tryRegisterBlock(raw, def, null, items, errors)) {
                 blocks.add(raw.id());
-            } catch (RuntimeException e) {
-                fail(errors, raw, e);
+                typeCounts.merge(def.type(), 1, Integer::sum);
             }
         }
+        registerStairs(stairs, blocks, items, errors, typeCounts);
+        MsmRuntime.LOGGER.info("[{}] registered blocks by type: {}", MsmRuntime.MOD_ID, typeCounts.isEmpty() ? "none"
+                : String.join(", ", typeCounts.entrySet().stream().map(e -> e.getKey().id() + " " + e.getValue()).toList()));
         for (RawDefinition raw : scanned.definitions()) {
             if (!raw.kind().equals("item")) {
                 continue;
@@ -346,10 +355,61 @@ public final class MsmRegistrar {
         });
     }
 
-    private static void registerBlock(RawDefinition raw, BlockDefinition def, List<Identifier> items, List<String> errors) {
+    /** {@link #registerBlock} with its events checked; a failure is a load error. Returns whether the block registered. */
+    private static boolean tryRegisterBlock(RawDefinition raw, BlockDefinition def, BlockState stairsBase, List<Identifier> items,
+            List<String> errors) {
+        try {
+            checkEvents(raw, def.events(), errors);
+            registerBlock(raw, def, stairsBase, items, errors);
+            return true;
+        } catch (RuntimeException e) {
+            fail(errors, raw, e);
+            return false;
+        }
+    }
+
+    /**
+     * Stairs after every other block (ADR 0067 D4): rounds over the pending stairs, registering each whose base is in the
+     * block registry, until a round registers none. A base that never appears (unknown, a block of a mod that registers
+     * after {@code msm_runtime}, a failed definition or a cycle of stairs) is a load error that skips the stairs.
+     */
+    private static void registerStairs(List<Map.Entry<RawDefinition, BlockDefinition>> pending, List<Identifier> blocks,
+            List<Identifier> items, List<String> errors, Map<BlockType, Integer> typeCounts) {
+        List<Map.Entry<RawDefinition, BlockDefinition>> left = new ArrayList<>(pending);
+        boolean progress = true;
+        while (progress && !left.isEmpty()) {
+            progress = false;
+            for (var it = left.iterator(); it.hasNext(); ) {
+                var entry = it.next();
+                Identifier base = ((BlockType.Stairs) entry.getValue().typeFields()).baseBlock();
+                if (!BuiltInRegistries.BLOCK.containsKey(base)) {
+                    continue;
+                }
+                it.remove();
+                progress = true;
+                if (tryRegisterBlock(entry.getKey(), entry.getValue(), BuiltInRegistries.BLOCK.getValue(base).defaultBlockState(), items,
+                        errors)) {
+                    blocks.add(entry.getKey().id());
+                    typeCounts.merge(BlockType.STAIRS, 1, Integer::sum);
+                }
+            }
+        }
+        for (var entry : left) {
+            Identifier base = ((BlockType.Stairs) entry.getValue().typeFields()).baseBlock();
+            String message = entry.getKey().describe() + ": base_block " + base
+                    + " is not a registered block (unknown, failed, part of a cycle of stairs, or from a mod that registers after "
+                    + MsmRuntime.MOD_ID + "); the stairs are skipped";
+            errors.add(message);
+            MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, message);
+        }
+    }
+
+    private static void registerBlock(RawDefinition raw, BlockDefinition def, BlockState stairsBase, List<Identifier> items,
+            List<String> errors) {
         Identifier id = raw.id();
-        // B261: types and item.id are decoded but not registered yet (B263, B267, B271 replace these two lines).
-        if (def.type() != BlockType.BLOCK) {
+        // B261: types without their own block class yet register as a plain block (B267 and B271 remove this line), and
+        // item.id is not registered yet (B271).
+        if (!BlockTypes.supported(def.type())) {
             MsmRuntime.LOGGER.warn("[{}] {}: type '{}' not supported yet; registered as a plain block", MsmRuntime.MOD_ID, raw.describe(),
                     def.type().id());
         }
@@ -370,13 +430,16 @@ public final class MsmRegistrar {
             props = props.requiresCorrectToolForDrops();
         }
         props = MsmBlock.shapeProperties(props, c); // msm:shape (ADR 0059 D3)
+        props = BlockTypes.properties(def.type(), props); // the family's own vanilla properties (ADR 0067 D4)
         if (c.onRandomTick().isPresent()) {
             props = props.randomTicks(); // msm:on_random_tick (ADR 0061 D2): random ticks only with the component
         }
         if (def.lootTable().isPresent()) {
             props = props.overrideLootTable(Optional.of(ResourceKey.create(Registries.LOOT_TABLE, def.lootTable().get())));
         }
-        MsmBlock block = Registry.register(BuiltInRegistries.BLOCK, blockKey, MsmBlock.create(id, def, props));
+        Block block = Registry.register(BuiltInRegistries.BLOCK, blockKey, BlockTypes.create(id, def, props, stairsBase));
+        BlockExtras.apply(block, c); // msm:flammable, msm:strippable (ADR 0067 D3, D4)
+        c.strippable().ifPresent(strip -> LATE.add(new LateCheck(raw.describe(), "msm:strippable into", strip.into())));
 
         if (def.item().isEmpty()) {
             return; // "item": false
@@ -828,6 +891,7 @@ public final class MsmRegistrar {
             boolean known = switch (check.what()) {
                 case "give_item item" -> BuiltInRegistries.ITEM.containsKey(check.id());
                 case "apply_effect effect" -> BuiltInRegistries.MOB_EFFECT.containsKey(check.id());
+                case "msm:strippable into" -> BuiltInRegistries.BLOCK.containsKey(check.id());
                 case "run_function function" -> server.getFunctions().get(check.id()).isPresent();
                 default -> true;
             };
