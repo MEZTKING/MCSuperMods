@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- The AI helper knows the block types, their textures and loot presets, seeds with their own item id, and the Wood set, Stone set, Crop and Tree flows.
 - **Your own sounds work in the game**: every key of a project's `sounds.json` is now a registered sound event, so in MCSuperMods' own fields (the **Play sound** action, an effect's or throwable's sound, mob sounds, `world.playSound` in scripts) you write the plain key, and the pickers list the project's sounds before the vanilla ones. In vanilla fields keep writing `{ "sound_id": "..." }`. A new sound key needs a game restart.
 - **Mob sounds**: the Mob Studio's new **Sounds** section sets the **Ambient sound**, **Hurt sound**, **Death sound** and **Step sound** of a mob, and the **Ambient interval (ticks)**.
 - **Blocks that react to mobs**: the actions of an **On step** event now apply to whatever stepped on the block, mob or player (`self` is the stepper, `run_function` runs as it), so a jump pad launches pigs too. The step cooldown is counted per dimension.
@@ -34,6 +35,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Templates **Potion of a custom effect**, **Potion with longer and stronger versions**, **Brewing recipe**, **Brewing recipe: splash potion**, **Wolf variant**, **Cat variant**, **Goat horn instrument**, **Icon font**, **Full set bonus** and **Boss bar countdown**, and 30 new examples, among them **Potion of the custom effect**, **Brewed with your own item**, **Snowy wolf skin**, **Custom goat horn**, **Script: full set bonus**, **Script: teleport staff** and **Script: boss fight bar**.
 - The Java project export writes potions (`ModPotions.java`).
 - Plugin API 1.9.0: `JavaProjectInput.potions` and the data folders of the new data kinds.
+- **Block types**: the Block Studio's new **Type** section turns a block into a log or pillar, a block that faces the player (four or six ways), a slab, stairs, wall, fence, fence gate, door, trapdoor, button, pressure plate or pane, each a real vanilla block class that connects, turns, opens and stacks like vanilla's. **Textures** name each face in words and the Studio draws the generated models; **Own models (instead of the made ones)** replaces them. Doors, trapdoors, buttons and plates take a **Set type** (wood, cherry, bamboo, crimson, warped, iron, copper, gold, stone, polished blackstone) and fence gates a **Wood type**; a block can burn (`msm:flammable`) and an axe can strip it (`msm:strippable`).
+- **Crops, saplings and leaves**: crops with 1 to 15 growth stages, seeds of their own, produce and villager farming; saplings that grow a tree of your project through bone meal, a two-by-two tree and a tree near flowers; leaves that decay, drop saplings, sticks and an extra item, and take a biome foliage, grass, dry foliage or one-colour tint (shown in the game only). A block's item can have its own id (a crop's seeds).
+- **Tree Studio**: the worldgen feature of type `minecraft:tree` opens in a Studio with **Trunk**, **Leaves**, **Below the trunk** and **Decorators** sections, and a new template **Tree for a sapling**.
+- **Creator flows** **Wood set**, **Stone set**, **Crop** and **Tree** (group **Blocks**) make whole families with recipes, tags, stripping, burning, composting and, if you choose, trees and wild crops that generate in newly generated chunks; the Simple block flow has **When placed**. The Creator previews a set as a row of blocks.
+- 18 templates (a block of each type, plus **Tree for a sapling**), 4 starters, 6 examples (a wood set, a stone set, a crop, a tree, a machine-like block and a vault door) and 15 new placeholder patterns; **Problems** checks the new types (18 `blocks-items` codes).
+- The Java project export writes the block types, crops, saplings and leaves, stripping, a client entrypoint for tinted leaves and block item ids of their own.
+- Plugin API 1.10.0: `TargetFacts.blocks` (`BlockFacts`: the set type and wood type names).
 
 ### Changed
 
@@ -42,6 +50,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - The guide chapters on blocks and items, entities, scripting and the Java project export describe the above, including the new **Block shapes** and **Triggers** sections, and a new chapter, **Adding to vanilla**, covers world additions, extra drops, fuel and compost and villager trades with their limits.
 - The AI helper knows world additions, extra drops, fuel and compost, the new triggers and saved script data.
 - The guide chapters on status effects, the Creator, adding to vanilla, scripting, the Java project export and templates and examples describe potions, the new flows, the new data kinds and Script API 1.1.
+- A new guide chapter, **Block types, families and plants**, and updated chapters on blocks and items, the Creator and templates and examples describe the types, the four flows, burning and stripping, what the vanilla packs leave out and the limits (no signs or boats, sounds of door sets are vanilla's, stripping only by players, leaf tint only in the game, villagers farm only on farmland, tree shapes are vanilla's).
 
 ### Fixed
 

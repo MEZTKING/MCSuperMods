@@ -39,11 +39,12 @@ Close Settings.
 ## 3. Create a project from the Custom ore starter
 
 1. Click the small arrow next to **New** on the toolbar and choose **New from starter…** (or **File → New Project from Starter…**).
-2. The **New project** dialog lists the 25 starters under Blank, Packs and Themed content. Choose **Custom ore**. Its badges show that it fills a resource pack, a data pack and the Fabric mod jar, and the **Wizard** badge means it asks a few questions before it creates the project. The dialog shows "Step 1 of 4"; choose **Next**.
+2. The **New project** dialog lists the 36 starters under Blank, Packs and Themed content. Choose **Custom ore**. Its badges show that it fills a resource pack, a data pack and the Fabric mod jar, and the **Wizard** badge means it asks a few questions before it creates the project. The dialog shows "Step 1 of 5"; choose **Next**.
 3. **Custom ore: Ore** (step 2) asks for the **Gem name** (`Ruby`), its **Colour**, the **Pickaxe needed** to mine it (**Iron pickaxe**) and whether to **Add a storage block**. Keep the answers for this guide (the steps below assume Ruby) and choose **Next**.
 4. **Custom ore: Drops** (step 3) asks for the **Fewest gems per ore** and **Most gems per ore** (1 and 2). Choose **Next**.
-5. The last step, **Custom ore: Choose folder and create**, sums up your answers and has the **Minecraft version** select. Keep **Minecraft 26.3**: it is the release target, and [Minecraft versions](targets.md) explains the snapshot. **Back** returns to any earlier step.
-6. Choose **Choose folder and create** and create a new, empty folder, for example `Documents\MCSuperMods\ruby_ore`. The folder name becomes your project's **namespace**, the prefix of every id in it: here `ruby_ore`.
+5. **Custom ore: World** (step 4) asks whether to **Generate in the world** (on), and the **Vein size**, **Veins per chunk**, **Lowest height** and **Highest height** of the ore veins. Keep the answers and choose **Next**.
+6. The last step, **Custom ore: Choose folder and create**, sums up your answers and has the **Minecraft version** select. Keep **Minecraft 26.3**: it is the release target, and [Minecraft versions](targets.md) explains the snapshot. **Back** returns to any earlier step.
+7. Choose **Choose folder and create** and create a new, empty folder, for example `Documents\MCSuperMods\ruby_ore`. The folder name becomes your project's **namespace**, the prefix of every id in it: here `ruby_ore`.
 
 The project opens and is already saved. The Custom ore starter adds real new content: a **Ruby Ore** block, a **Ruby** item and a **Block of Ruby**. A resource or data pack cannot add blocks or items, so these exist only in the **Fabric mod jar** export (step 8). Nothing in Minecraft itself is changed: emerald ore stays emerald ore.
 
@@ -141,7 +142,7 @@ Functions are lists of commands the game runs. This starter sets up the usual wi
    - stand on a gold block: you run faster;
    - `/function my_functions:greet` says hello; `/function #my_functions:all` runs every function in your tag.
 
-The [templates list](templates-and-examples.md#all-templates) has 129 element templates to start from: recipes, loot tables, advancements, predicates, enchantments, dialogs and more. The other starters, and the 73 commented examples under **Help → Examples…**, are described in [Templates, starters and examples](templates-and-examples.md).
+The [templates list](templates-and-examples.md#all-templates) has 169 element templates to start from: recipes, loot tables, advancements, predicates, enchantments, dialogs and more. The other starters, and the 118 commented examples under **Help → Examples…**, are described in [Templates, starters and examples](templates-and-examples.md).
 
 ## Easy and Advanced mode
 

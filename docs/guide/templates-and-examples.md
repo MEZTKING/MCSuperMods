@@ -4,9 +4,9 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (151) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (32) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
-| **Examples** (112) | **Help → Examples…** | A commented project or element to open or copy |
+| **Element templates** (169) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (36) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
+| **Examples** (118) | **Help → Examples…** | A commented project or element to open or copy |
 
 Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, and scripting plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
 
@@ -238,6 +238,7 @@ A trade reaches a villager through the vanilla trade tag of its profession and l
 | Ore vein | `feature_ore_vein` | `minecraft:worldgen/feature` | A blob of ore that replaces stone and deepslate; place it with Ore placement. |
 | Tree (oak-like) | `feature_tree` | `minecraft:worldgen/feature` | A small straight tree with a round crown of leaves; place it with Tree placement. |
 | Flower patch | `feature_flower_patch` | `minecraft:worldgen/feature` | One flower picked by weight; Patch placement scatters it into a patch. |
+| Tree for a sapling | `feature_sapling_tree` | `minecraft:worldgen/feature` | Oak's shape grown from your own log and leaves (named after this tree, such as `maple_log` and `maple_leaves` for `maple_tree`), with the soil under the trunk turned to dirt. Name it as a sapling's tree; the Block Studio's **New tree** button makes it. |
 | Single block | `feature_single_block` | `minecraft:worldgen/feature` | Places one block, such as a boulder or a marker, wherever it is placed. |
 | Ore placement | `placed_feature_ore` | `minecraft:worldgen/placed_feature` | Places a configured feature ten times per chunk, spread evenly from the bottom of the world to y 64. Its feature starts as this element's own id: set it to your configured feature, such as `ruby_ore` for `ruby_ore_placed`. |
 | Tree placement | `placed_feature_tree` | `minecraft:worldgen/placed_feature` | Places a configured feature a few times per chunk on the surface, where an oak sapling would survive. Its feature starts as this element's own id: set it to your configured feature, such as `amber_tree` for `amber_tree_placed`. |
@@ -278,6 +279,23 @@ New blocks, items and the mod metadata exist only in the **Fabric mod jar** expo
 | Plant (cross) | `msm_block_plant` | `msm:block` | A plant drawn as two crossed planes (shape preset `cross`): it breaks instantly, lets light through and you walk through it. |
 | Glass-like block | `msm_block_glass_like` | `msm:block` | A full block you can see through, as glass: light passes and faces between two of them are hidden. It drops nothing unless you add loot. |
 | Bounce pad (block triggers) | `msm_block_bounce_pad` | `msm:block` | A thin pad (shape preset `carpet`) that launches anything standing in it upwards, at most once a second per entity, and plays a sound when broken. Shows the block triggers **On entity inside** and **On break**. |
+| Log or pillar | `msm_block_log` | `msm:block` | A log that turns to the face you place it against, with bark on the sides and rings on the ends. It burns, and an axe strips it into a vanilla stripped oak log. |
+| Facing block | `msm_block_facing` | `msm:block` | A block that turns its front towards you when placed, as a furnace does (four directions). |
+| Observer-like block | `msm_block_observer_like` | `msm:block` | A block that faces any of six directions, up and down included, as an observer does. It has no redstone behaviour of its own. |
+| Slab | `msm_block_slab` | `msm:block` | A half block that sits in the bottom or top half and stacks into a double slab, which drops two. |
+| Stairs | `msm_block_stairs` | `msm:block` | Stairs that form corners next to other stairs. They copy the look and behaviour of their base block, vanilla stone bricks here. |
+| Wall | `msm_block_wall` | `msm:block` | A wall that connects to other walls and solid blocks and is too high to jump over. |
+| Fence | `msm_block_fence` | `msm:block` | A wooden fence that connects to other wooden fences and solid blocks. It burns as planks do. |
+| Fence gate | `msm_block_fence_gate` | `msm:block` | A gate that opens when used and fits between fences and walls, with oak sounds. |
+| Door | `msm_block_door` | `msm:block` | A two-block-high wooden door that opens by hand or with a redstone signal. Breaking either half drops one door. |
+| Trapdoor | `msm_block_trapdoor` | `msm:block` | A wooden trapdoor that opens by hand or with a redstone signal and sits in the top or bottom half of a block. |
+| Button | `msm_block_button` | `msm:block` | A stone button that gives a short redstone pulse when pressed (one second, as vanilla stone buttons). Arrows do not press it. |
+| Pressure plate | `msm_block_pressure_plate` | `msm:block` | A stone pressure plate that gives a redstone signal while a player or mob stands on it. Dropped items do not press it. |
+| Weighted pressure plate | `msm_block_weighted_pressure_plate` | `msm:block` | A gold pressure plate whose signal grows with the number of entities on it, up to 15, as the vanilla light weighted plate. |
+| Pane | `msm_block_pane` | `msm:block` | A thin pane that connects to other panes and walls, as glass panes do. Like glass, it drops nothing unless you add loot. |
+| Crop | `msm_block_crop` | `msm:block` | A crop that grows through eight stages on farmland, planted from its own seeds (an item with this id plus "_seeds"). Fully grown it drops vanilla wheat and extra seeds; farmer villagers plant and harvest it. |
+| Sapling | `msm_block_sapling` | `msm:block` | A sapling that grows into a vanilla oak tree, by itself or with bone meal. Point "tree" at your own tree feature to grow that instead. |
+| Leaves | `msm_block_leaves` | `msm:block` | Leaves tinted with the biome foliage colour that decay away from logs. Shears or Silk Touch drop the leaves; otherwise they drop now and then a vanilla oak sapling, sticks and apples. They burn as leaves do. |
 
 #### Items
 
@@ -388,6 +406,10 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Custom sword | `custom-sword` | resource, data, mod | A new sword with its own name, colour, tier and durability: a handheld texture and model, a crafting recipe, its English name and the mod metadata. |
 | Gear set (Creator: Gear) | `gear-set` | resource, data, mod | Tools and armour of one new material: a sword, pickaxe, axe, shovel and hoe, a helmet, chestplate, leggings and boots (optionally a spear, mace, bow, crossbow, shield, horse armour and wolf armour), the material from a new ore or as an ingot (optionally an armour trim material), recipes or smithing upgrades, the worn armour look and the vanilla tags. |
 | Simple block (Creator: Blocks) | `simple-block` | resource, data, mod | One new block with its own name, colour, hardness, tool, light level and drops, a texture and model, and an optional recipe. |
+| Wood set (Creator: Blocks) | `wood-set` | resource, data, mod | A whole kind of wood: log, wood, stripped log and wood, planks, stairs, slab, fence, fence gate, door, trapdoor, button, pressure plate, leaves and a sapling that grows its own tree, with recipes, tags, stripping, burning and, if you choose, growth in the world. |
+| Stone set (Creator: Blocks) | `stone-set` | resource, data, mod | A new stone with its stairs, slab and wall and, if you choose, a button, pressure plate, polished stone, bricks and a pillar, with crafting and stonecutting recipes. |
+| Crop (Creator: Blocks) | `crop` | resource, data, mod | A crop that grows in stages on farmland, planted from its own seeds or from its produce, with loot, composting, villager farming and, if you choose, wild patches. |
+| Tree (Creator: Blocks) | `tree` | resource, data, mod | A sapling that grows a tree of its own, from a new log and leaves or vanilla ones, in the shape you pick, and if you choose growing in the world. |
 | Food (Creator: Food) | `food` | resource, data, mod | A new food with its own name, colour, hunger and saturation, a texture and model, and an optional recipe. |
 | Weapon (Creator: Gear) | `weapon` | resource, data, mod | One sword, spear, mace, bow, crossbow or shield with its own name, colour and stats, a texture and model, and an optional recipe. |
 | Consumable (Creator: Food) | `consumable` | resource, data, mod | A food with effects, a potion-like drink or a charm that gives effects when used, with a texture, model and optional recipe. |
@@ -468,7 +490,7 @@ The script examples use `msm:script`, which runs only in the Fabric mod jar (see
 
 ### All examples
 
-There is one example for each of the 93 element kinds, fifteen more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; a potion brewed with your own item; entities: a hostile mob and natural spawning; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 93 element kinds, twenty-one more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; a potion brewed with your own item; entities: a hostile mob and natural spawning; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -564,6 +586,12 @@ There is one example for each of the 93 element kinds, fifteen more behaviour ex
 | Sturdy pickaxe | `example_msm_tool` | Items | `msm:item` | A custom iron-tier pickaxe with extra durability and a crafting recipe. |
 | Beacon stone | `example_msm_event_chain` | Blocks | `msm:block` | A block whose use event triggers a second event that spawns particles and runs a function. |
 | Fuel log | `example_msm_fuel_log` | Blocks | `msm:block` | A dense log block whose item burns in a furnace three times as long as an oak log. |
+| Elm wood set | `example_msm_wood_set` | Blocks | `msm:block` | A whole wood set from the Wood set flow: logs, planks, stairs, slab, fence, gate, door, trapdoor, button, plate, foliage-tinted leaves and a sapling that grows an elm tree. |
+| Shale stone set | `example_msm_stone_set` | Blocks | `msm:block` | Every member of the Stone set flow: the stone, its stairs, slab and wall, a button and pressure plate, polished shale with its own shapes, bricks and a pillar, crafted and stonecut. |
+| Onion crop | `example_msm_crop` | Blocks | `msm:block` | A crop planted from its produce, as carrots: onions grow through eight stages, are eaten raw and grow wild on grass in forests. |
+| Silver birch tree | `example_msm_tree` | Blocks | `msm:block` | A sapling that grows a tall branching tree of vanilla birch logs and new silver leaves, and grows in forests. |
+| Crusher | `example_msm_machine_block` | Blocks | `msm:block` | A machine-like block that turns its front towards you when placed, as a furnace does. |
+| Vault door | `example_msm_iron_door` | Blocks | `msm:block` | A two-block-high metal door that opens only with a redstone signal, as an iron door, with a stone button to open it. |
 | Life-steal sword | `example_msm_life_steal_sword` | Items | `msm:item` | An iron sword that heals you by one heart each time it hits a mob. |
 | Night-vision helmet | `example_msm_night_vision_helmet` | Items | `msm:item` | An iron helmet that gives night vision while you wear it. |
 | Brewed with your own item | `example_msm_brewed_with_own_item` | Potions | `msm:potion` | A Moon Shard item of your own as a brewing ingredient: an awkward potion and a moon shard brew a Potion of Levitation, which vanilla does not have, with a stronger version. |
@@ -592,7 +620,7 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 | Folder | Namespace | Contents |
 |---|---|---|
 | `examples/all-kinds/` | `msm_examples` | The 93 per-kind examples in one project |
-| `examples/blocks-items/` | `msm_examples` | The blocks and items behaviour examples (Sturdy pickaxe, Beacon stone, Fuel log, Life-steal sword, Night-vision helmet, Brewed with your own item) |
+| `examples/blocks-items/` | `msm_examples` | The blocks and items behaviour examples (Sturdy pickaxe, Beacon stone, Fuel log, Life-steal sword, Night-vision helmet, Brewed with your own item, Elm wood set, Shale stone set, Onion crop, Silver birch tree, Crusher, Vault door) |
 | `examples/entities/` | `msm_examples` | The two entity behaviour examples (Hostile mob, Natural spawning), each with its model, animations and textures |
 | `examples/scripts/` | `msm_examples` | The script behaviour examples (Script: scheduled effects, Script: action handler, Script: scripted effect, Script: kill counter, Script: full set bonus, Script: teleport staff, Script: boss fight bar) |
 | `examples/starters/custom_ore/` | `msm_starter` | The Custom ore starter |

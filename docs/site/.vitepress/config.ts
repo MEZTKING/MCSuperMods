@@ -49,6 +49,7 @@ export default defineConfig({
           { text: 'Structures', link: '/structures' },
           { text: 'Worldgen', link: '/worldgen' },
           { text: 'Blocks and items', link: '/blocks-and-items' },
+          { text: 'Block types and plants', link: '/block-types-and-plants' },
           { text: 'The Creator', link: '/creator' },
           { text: 'Status effects and throwables', link: '/effects-and-throwables' },
           { text: 'Potions and brewing', link: '/potions' },
