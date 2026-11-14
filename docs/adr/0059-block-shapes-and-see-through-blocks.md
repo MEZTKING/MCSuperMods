@@ -2,7 +2,7 @@
 
 ## Context
 
-`msm:block` blocks are plain full cubes (coverage audit L5), yet the kind accepts any model id (audit S5): a slab, plant or glass-like model collides as a full cube and hides neighbouring faces. Facts read on 2026-11-13 with `javap` over the Loom-cached merged jars (26.3 and 26.4-snapshot-7) and from this repository (full table in `docs/PLAN-runtime-fixes.md` section 1):
+`msm:block` blocks are plain full cubes (coverage audit L5), yet the kind accepts any model id (audit S5): a slab, plant or glass-like model collides as a full cube and hides neighbouring faces. Facts read on 2026-11-13 with `javap` over the Loom-cached merged jars (26.3 and 26.4-snapshot-7) and from this repository (the full fact table lived in the working plan, deleted at close; see the DEVLOG entry of 2026-11-14):
 
 - `BlockBehaviour.getShape` and `getCollisionShape`, `propagatesSkylightDown`, `getShadeBrightness` and `skipRendering` are overridable. `Properties` has `noOcclusion()`, `noCollision()`, `isSuffocating`, `isViewBlocking` and `isRedstoneConductor`. `Block.box` takes pixels; `Shapes.or` and `Shapes.block()` exist. Vanilla glass is `TransparentBlock extends HalfTransparentBlock`, which overrides exactly those three methods plus `getVisualShape`. Same on 26.4. Which predicates glass sets in `Blocks`: (verify at implementation).
 - **No render-layer registration exists in 26.x.** The baked quad's material info picks a chunk layer (`SOLID`, `CUTOUT`, `TRANSLUCENT`) from the sprite's computed transparency. The jars hold no `ItemBlockRenderTypes`, and Fabric API 0.165.2+26.3 has no block render layer module. A texture with fully transparent pixels draws as cutout, one with partial alpha as translucent, per quad, with no client code. What is missing for see-through blocks is therefore only server-shared block behaviour (`noOcclusion`, light, face culling), and audit L3 does not block S5.
@@ -27,4 +27,12 @@
 
 ## Status
 
-Proposed (2026-11-13). Findings from the runtime brief (the glass predicates, outline and collision observations, any seam) are added here before the mirror is written. Accepted on close.
+Accepted (2026-11-14). The decisions above stand as written.
+
+### Implementation findings
+
+- **See-through blocks follow vanilla glass:** `noOcclusion`, never suffocating, view-blocking, a redstone conductor or a valid spawn, an empty visual shape, skylight passes, shade brightness 1, and `skipRendering` against itself.
+- **Walk-through.** `noCollision` also disables occlusion.
+- **Boxes** are ordered per axis, so equal shapes lower and eject identically.
+- **Render layer.** It comes from the texture's pixels; no client code was needed.
+- **Seam.** None: no 26.4 difference.

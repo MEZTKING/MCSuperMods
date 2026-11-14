@@ -510,7 +510,7 @@ Proposed additions ([ADR 0060](adr/0060-adding-to-vanilla-content.md), [ADR 0062
 
 Additions ([ADR 0055](adr/0055-custom-status-effects.md), [ADR 0056](adr/0056-throwables.md)): the definition kind `msm:effect` (category, colour, attribute modifiers and the trigger components `msm:on_start`, `msm:on_tick` and `msm:on_end`), the item component `msm:throwable` (speed, gravity, damage, `after_throw`, `on_hit_entity`, `on_hit_block`), and the actions `damage` and `heal`.
 
-Proposed additions ([ADR 0057](adr/0057-project-sound-events-and-mob-sounds.md), [ADR 0059](adr/0059-block-shapes-and-see-through-blocks.md)): the runtime registers one sound event per key of each `assets/<ns>/sounds.json` before effects, so project sounds resolve everywhere vanilla takes a sound id; entities gain `sounds` (ambient, hurt, death, step); blocks gain the component `msm:shape` (pixel boxes, collision, see-through). Render layers need no code in 26.x: the texture's pixels choose cut-out or translucent.
+Project sounds and block shapes ([ADR 0057](adr/0057-project-sound-events-and-mob-sounds.md), [ADR 0059](adr/0059-block-shapes-and-see-through-blocks.md)): the runtime registers one sound event per key of each `assets/<ns>/sounds.json` before effects, so project sounds resolve everywhere vanilla takes a sound id; entities gain `sounds` (ambient, hurt, death, step); blocks gain the component `msm:shape` (pixel boxes, collision, see-through). Render layers need no code in 26.x: the texture's pixels choose cut-out or translucent.
 
 ## 11. Behaviour Model (Components and Events)
 
@@ -562,7 +562,7 @@ A new component's MSM mcdoc and runtime implementation land in the same change. 
 
 Proposed addition ([ADR 0061](adr/0061-more-triggers.md)): ten more triggers, items `msm:on_hit`, `msm:on_use_on_block`, `msm:while_held` and `msm:while_worn`, blocks `msm:on_break`, `msm:on_place`, `msm:on_random_tick` and `msm:on_entity_inside`, entities `msm:on_tick` and `msm:on_spawn`; tick triggers have a 5-tick minimum interval and a shared cap of 2,000 firings per server tick.
 
-Proposed addition ([ADR 0058](adr/0058-event-actors-entity-commands-and-cancel-resync.md)): `msm:on_step` events carry the stepping entity (`self` and `other` are the stepper, so jump pads work on mobs and items), and the step cooldown is keyed per dimension.
+Step events ([ADR 0058](adr/0058-event-actors-entity-commands-and-cancel-resync.md)): `msm:on_step` events carry the stepping entity (`self` and `other` are the stepper, so jump pads work on mobs and items), and the step cooldown is keyed per dimension.
 
 ## 12. Scripting and Escape Hatches
 
@@ -622,7 +622,7 @@ The API is described once, in `packages/plugins/scripting/api/script-api-v1.json
 - **Checked.** CI builds the ejected `fixtures/sample-mod` and `fixtures/sample-mob` with Gradle and runs the same behaviour-parity GameTests against the content jar and the ejected jar.
 - **Without scripts in v0.6.** Scripts and `run_script` actions are left out with an `export.scripts-not-ejected` warning per script and a README section (reserve brief B142 would copy the runtime's `scripting/` sources and nest Rhino).
 
-Proposed additions ([ADR 0058](adr/0058-event-actors-entity-commands-and-cancel-resync.md)): `World.runCommand` and `World.runFunction` take an optional position, `Entity.runCommand` and `Entity.runFunction` run as and at the entity (the one-argument `World` forms run at the world spawn point with no `@s`), and a cancelled `block.interact`, `item.use`, `entity.interact` or `block.break` resends the player's inventory (and the neighbouring blocks of a placement). Script API v1 grows additively.
+Entity commands and cancel resync ([ADR 0058](adr/0058-event-actors-entity-commands-and-cancel-resync.md)): `World.runCommand` and `World.runFunction` take an optional position, `Entity.runCommand` and `Entity.runFunction` run as and at the entity (the one-argument `World` forms run at the world spawn point with no `@s`), and a cancelled `block.interact`, `item.use`, `entity.interact` or `block.break` resends the player's inventory (and the neighbouring blocks of a placement). Script API v1 grows additively.
 
 Proposed addition ([ADR 0062](adr/0062-persistent-script-data.md)): `Entity.data` (so `Player.data`) and `msm.storage` are JSON key-value stores saved with the world, per script namespace; they survive `/reload`, restart, death and dimension change, while `msm.schedule` stays unsaved. This amends ADR 0032 and closes limitation L4.
 

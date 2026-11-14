@@ -3085,3 +3085,20 @@ Next: CI for the velocity Java (ADR 0052), then the user's Windows test; these c
 **Next**
 - The runtime fixes batch (`docs/PLAN-runtime-fixes.md`, B212–B228; ADRs 0057–0059): project sound events and mob sounds, event actors and entity commands, block shapes; plugin API 1.7.0. Re-run the scripting package's tests once that work lands.
 - The user's Windows test, the in-game checks (effects and throwables checklist, feature-order confirmation, Music disc starters), then the 1.4.0 build.
+
+## 2026-11-14 — main session — runtime fixes and sounds closed; block shapes; villager trades
+
+**What**
+- Closed the "Runtime fixes and sounds" batch (B212–B228): ADRs 0057, 0058 and 0059 are Accepted (2026-11-14) with an "Implementation findings" section each, DESIGN §10–§12 notes are plain statements (19 H2 headings kept), ROADMAP ticks B212–B228 and gains the Milestone Log row, CHANGELOG `[Unreleased]` gains block shapes, villager trades and plugin API 1.8.0 beside the sound, step and command entries.
+- Landed with it: block shapes (`msm:shape`, Block Studio Shape section, Half block, Plant (cross) and Glass-like block templates, the warnings `blocks-items.model-not-cube` and `blocks-items.transparent-texture-on-solid-block`, Java eject, sample mod `ruby_slab`, `ruby_sprout` and `ruby_glass`, seven shape parity tests), and villager trades (`villager_trade`, `trade_set`, Creator flow, plugin API 1.8.0, a fletcher trade in the sample data pack), which came from the next batch's first wave.
+- Counts from the plugins' contributions: 65 kinds, 136 templates (resourcepack 15, datapack 60, structures 9, worldgen 21, blocks-items 21, models-anim 3, entities 3, scripting 4), 28 starters, 76 examples. `turbo run test --force --concurrency=4`: 21 of 21 tasks, 4,417 tests passed (47 skipped), including the scripting package that was red on 2026-11-13. Runtime 130 GameTests per variant and 231 JUnit; parity sample mod 44, sample mob 8, sample script 3 (reported by the briefs; CI is the check).
+- Status lines refreshed (root, docs, app, engine-mod, plugins CLAUDE.md), `HANDOFF.md` rewritten for the new state, `docs/PLAN-runtime-fixes.md` deleted; references in the ADRs, the coverage audit (S1, S4 to S7 marked closed) and `PLAN-vanilla-additions.md` now point at the ADRs or this entry.
+
+**Decisions**
+- Findings recorded in the ADRs: `SoundScanner` takes a mod with an `msm/` folder or a dependency on `msm_runtime` (not `msm_runtime` itself) and registers a sorted set first; mob sounds resolve when played, step volume 0.15; the export gate uses the msm-aware registry view for `msm/` outputs and blocks vanilla files with a bare project key; step and script resync rules of ADR 0058 (`ClientboundCooldownPacket(group, 0)` clears a predicted cooldown, so no known limit remains); see-through blocks follow vanilla glass and render layers need no client code.
+- Version stays 1.4.0 in `app/package.json` and `mod_version`; the batch is unreleased (CHANGELOG `[Unreleased]`), and the version bump waits for a release decision.
+- The sample data pack's headless server check is local-only; it is not in CI yet.
+
+**Next**
+- The user's Windows test of the 1.1.0–1.3.0 drafts, then the 1.4.0 build; in-game checks added by this batch (own and mob sounds, ruby spring on mobs, script commands and cancel resync, block shapes in `fixtures/sample-mod/README.md`, the villager trade in `fixtures/sample-datapack/README.md`).
+- Continue `PLAN-vanilla-additions.md` (B232 onward); put the sample data pack server check into CI.

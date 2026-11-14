@@ -2,7 +2,7 @@
 
 ## Context
 
-Three suspects of the coverage audit (S4, S6, S7) share one theme: the runtime acts on the wrong thing or leaves the client out of step. Facts read on 2026-11-13 with `javap` (JDK 25.0.5) over the Loom-cached merged jars (26.3 and 26.4-snapshot-7) and from this repository (full table in `docs/PLAN-runtime-fixes.md` section 1):
+Three suspects of the coverage audit (S4, S6, S7) share one theme: the runtime acts on the wrong thing or leaves the client out of step. Facts read on 2026-11-13 with `javap` (JDK 25.0.5) over the Loom-cached merged jars (26.3 and 26.4-snapshot-7) and from this repository (the full fact table lived in the working plan, deleted at close; see the DEVLOG entry of 2026-11-14):
 
 - `MsmBlock.stepOn` receives the stepping `Entity` but builds `EventContext.forBlock(server, pos, player)` with `player` null for a non-player, so `entity` and `other` are null. `launch`, `apply_effect`, `damage`, `heal` and `run_function`'s `@s` do nothing for mobs. The step cooldown key is position and UUID without the dimension (audit S10). `Block.stepOn` is the same on 26.4.
 - `EventContext.entity` also selects the sound source (`NEUTRAL` when set, else `BLOCKS`) and `ActionEvent.entity`; the script API documents `ActionEvent.entity` as "The entity involved, when there is one", so a stepping mob needs no contract change.
@@ -27,4 +27,11 @@ Three suspects of the coverage audit (S4, S6, S7) share one theme: the runtime a
 
 ## Status
 
-Proposed (2026-11-13). Findings from the runtime briefs (how packets were observed, the cooldown finding, any block entity gap) are added here before the mirrors are written. Accepted on close.
+Accepted (2026-11-14). The decisions above stand as written.
+
+### Implementation findings
+
+- **Step events.** `EventContext` has a `source` field and the factory `forBlockStep`. Block events play their sounds as `BLOCKS`. `run_function` in a block event runs as the stepper, without a player. The step cooldown is keyed on dimension, position and entity.
+- **Script commands.** `Entity.runCommand` and `Entity.runFunction` run as and at the entity; `World.*` take an optional `at`.
+- **Resync after a cancel.** The inventory is always resent. `block.interact` also resends the six neighbours of the placement; `block.break` resends the block and its block entity. `item.use` sends `ClientboundCooldownPacket(group, 0)`, which clears a client-predicted cooldown (the packet exists, so this is not a known limit). A refused follow-up also resyncs.
+- **Parity.** Script behaviour is observed through recording connections (`ParityEars`). `SampleScriptParityTest` runs on content jars only, because scripts are not ejected.

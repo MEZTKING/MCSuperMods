@@ -2,7 +2,7 @@
 
 ## Context
 
-A project's own sounds (`assets/<ns>/sounds.json` plus audio files) are accepted by the app but rejected by the runtime (coverage audit S1, backlog B1). Facts read on 2026-11-13 with `javap` over the Loom-cached merged jars (26.3, and 26.4-snapshot-7 where stated), and from this repository (full table in `docs/PLAN-runtime-fixes.md` section 1):
+A project's own sounds (`assets/<ns>/sounds.json` plus audio files) are accepted by the app but rejected by the runtime (coverage audit S1, backlog B1). Facts read on 2026-11-13 with `javap` over the Loom-cached merged jars (26.3, and 26.4-snapshot-7 where stated), and from this repository (the full fact table lived in the working plan, deleted at close; see the DEVLOG entry of 2026-11-14):
 
 - `SoundEvent` is a record `(Identifier location, Optional<Float> fixedRange)` with `createVariableRangeEvent(Identifier)`. Its `CODEC` is `RegistryCodecs.holder(Registries.SOUND_EVENT, DIRECT_CODEC)`: a string decodes as a reference into the `sound_event` registry, an object as an inline event. Once an id is registered, the bare string is valid wherever vanilla uses `SoundEvent.CODEC`. Same on 26.4.
 - The runtime registers no sound events. Every lookup goes to `BuiltInRegistries.SOUND_EVENT`: `play_sound`, script `World.playSound`, and the effect, throwable, consumable and armour `equip_sound` fields. `ComponentPassthrough` decodes vanilla components with static `RegistryOps`, so a bare project key there is a load error today.
@@ -30,4 +30,12 @@ A project's own sounds (`assets/<ns>/sounds.json` plus audio files) are accepted
 
 ## Status
 
-Proposed (2026-11-13). Findings from the runtime brief (the mod-selection rule and Fabric Loader call used, the technique for observing sounds in GameTests, any seam) are added here before the mirrors are written. Accepted on close.
+Accepted (2026-11-14). The decisions above stand as written.
+
+### Implementation findings
+
+- **Mod selection (SoundScanner).** `loader/SoundScanner` visits the mod containers sorted by id and takes a mod when it has an `msm/` folder or declares a dependency on `msm_runtime`; `msm_runtime` itself is excluded. Hand-written mods opt in by either route.
+- **Registration order.** Keys are collected into a sorted `TreeSet` and registered first, before effects, blocks, items and entities, so client and server register alike. Keys already registered and the `minecraft` namespace are skipped silently; an invalid id or unreadable file is a warning. `LoadReport.sounds` counts them and the start-up log line names the count.
+- **Mob sounds are resolved when played.** An unknown id keeps the vanilla sound and logs a warning at start-up. The step sound plays at volume 0.15, as vanilla steps do.
+- **Export gate.** The exporter validates `msm/` outputs with the msm-aware registry view (project keys count as `sound_event` ids) and blocks vanilla files that use a bare project key, with the error `schema.unregistered-sound-event` asking for `{ "sound_id" }`.
+- **Seam.** None: shared code on 26.3 and 26.4.

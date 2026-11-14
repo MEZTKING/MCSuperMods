@@ -514,27 +514,27 @@ User request of 2026-11-13 ("add custom status effects and throwables"), taking 
 - [ ] The user checks in game: effect icon and tinted particles, the thrown item in flight, the hold-to-throw animation, a dispenser, picking a dropped knife up, the Creator results.
 - Follow-ups kept in Post-1.0 Ideas: 3D thrown models, return flight, custom arrows, instant effects, brewing.
 
-### Add-on after 1.0 — Runtime fixes and sounds (planned)
+### Add-on after 1.0 — Runtime fixes and sounds
 
-Takes up suspects S1, S4, S5, S6, S7 (and S10 in passing) and backlog item B1 of [`COVERAGE-AUDIT.md`](COVERAGE-AUDIT.md). Design: [ADR 0057](adr/0057-project-sound-events-and-mob-sounds.md) (project sound events and mob sounds), [ADR 0058](adr/0058-event-actors-entity-commands-and-cancel-resync.md) (event actors, entity-scoped commands, cancel resync) and [ADR 0059](adr/0059-block-shapes-and-see-through-blocks.md) (block shapes), all proposed; working plan `PLAN-runtime-fixes.md`, deleted at close. Part A (B212–B223) ships on its own; Part B (B224–B228, block shapes) may ship one release later. Defaults that need the user's veto: bare sound strings in vanilla data stay an error in the app; entity and thrown-item events keep their function source; fixed shapes and see-through only (no rotation, stairs, real slabs, doors, fences or crops); no Creator questions for sounds or shapes yet.
+Takes up suspects S1, S4, S5, S6, S7 (and S10 in passing) and backlog item B1 of [`COVERAGE-AUDIT.md`](COVERAGE-AUDIT.md). Design: [ADR 0057](adr/0057-project-sound-events-and-mob-sounds.md) (project sound events and mob sounds), [ADR 0058](adr/0058-event-actors-entity-commands-and-cancel-resync.md) (event actors, entity-scoped commands, cancel resync) and [ADR 0059](adr/0059-block-shapes-and-see-through-blocks.md) (block shapes), all accepted (2026-11-14); the working plan is deleted (history in the DEVLOG). Part A (B212–B223) and Part B (B224–B228, block shapes) landed together. Defaults that need the user's veto: bare sound strings in vanilla data stay an error in the app; entity and thrown-item events keep their function source; fixed shapes and see-through only (no rotation, stairs, real slabs, doors, fences or crops); no Creator questions for sounds or shapes yet.
 
-- [ ] B212 Format A: entity `sounds`, doc comments on the five sound fields, corpus.
-- [ ] B213 Script API contract: `at` on the `World` calls, `Entity.runCommand` and `Entity.runFunction`, corrected doc strings.
-- [ ] B214 Plugin API 1.7.0 (`JavaProjectInput.soundEvents`) and target notes.
-- [ ] B215 Runtime: sound registration, mob sounds, step entity.
-- [ ] B216 Runtime: script commands and cancel resync.
-- [ ] B217 App: kind-aware sound ids and sound pickers.
-- [ ] B218 Exporters: collect sound event keys for `java-project`.
-- [ ] B219 Plugin `entities`: `sounds` through lowering, template.
-- [ ] B220 Java eject (26.3 generator): `ModSounds`, mob sounds, step and source rules.
-- [ ] B221 AI helper and library texts.
-- [ ] B222 Samples and parity, including `SampleScriptParityTest`.
-- [ ] B223 e2e, guide and changelog.
-- [ ] B224 Format B and plugin `blocks-items`: `msm:shape`, presets, validators, templates.
-- [ ] B225 Runtime shapes.
-- [ ] B226 App Block Studio: Shape section.
-- [ ] B227 Java eject shapes.
-- [ ] B228 Shapes: sample, parity, e2e, guide.
+- [x] B212 Format A: entity `sounds`, doc comments on the five sound fields, corpus.
+- [x] B213 Script API contract: `at` on the `World` calls, `Entity.runCommand` and `Entity.runFunction`, corrected doc strings.
+- [x] B214 Plugin API 1.7.0 (`JavaProjectInput.soundEvents`) and target notes.
+- [x] B215 Runtime: sound registration, mob sounds, step entity.
+- [x] B216 Runtime: script commands and cancel resync.
+- [x] B217 App: kind-aware sound ids and sound pickers.
+- [x] B218 Exporters: collect sound event keys for `java-project`.
+- [x] B219 Plugin `entities`: `sounds` through lowering, template.
+- [x] B220 Java eject (26.3 generator): `ModSounds`, mob sounds, step and source rules.
+- [x] B221 AI helper and library texts.
+- [x] B222 Samples and parity, including `SampleScriptParityTest`.
+- [x] B223 e2e, guide and changelog.
+- [x] B224 Format B and plugin `blocks-items`: `msm:shape`, presets, validators, templates.
+- [x] B225 Runtime shapes.
+- [x] B226 App Block Studio: Shape section.
+- [x] B227 Java eject shapes.
+- [x] B228 Shapes: sample, parity, e2e, guide.
 - [ ] The user checks in game: project sounds (Play sound action, drink, armour equip, thrown item, script), mob sounds, a mob bounced by a jump pad, cancelled placements showing no ghost block, cut-out and translucent textures on a see-through block on 26.3 and 26.4, outline and collision of a half block and a plant.
 
 ### Add-on after 1.0 — Adding to vanilla content, triggers and saved data (planned)
@@ -602,3 +602,4 @@ Not committed; each needs an ADR before work starts.
 | 2026-11-07 | Pictures, screenshots and skins | ADR 0048: Picture to texture (paste, drop or choose; crop, scale, background, colours), player skins on the Custom mob (overlay layer, legacy layout, slim arms), screenshots for the AI helper; also New texture…, better placeholder art and an Easy-mode e2e. Prepared as v1.2.0 (app and `mod_version` 1.2.0); release pending the user's Windows test, after 1.1.0. |
 | 2026-11-07 | v1.3.0 prepared | ADR 0049 (Music disc song files; plugin API 1.4.0 `audio` parameters), ADR 0050 (passthrough data pack warning, `ItemFacts.vanillaTools` in the Creator's Stats, optional `defense.body` for horse and wolf armour); app and `mod_version` 1.3.0. Release pending the user's Windows test, after 1.1.0 and 1.2.0. |
 | 2026-11-13 | 1.4.0 prepared: custom status effects and throwables | ADRs 0055 (`msm:effect`, Effect Studio, `damage`/`heal` actions, script `hasEffect`/`effectLevel`/`removeEffect`/`ActionEvent.other`) and 0056 (`msm:throwable` item component, `msm_runtime:thrown_item`, dispensers), plugin API 1.6.0, the Creator groups Magic (Status effect) and Gear (Throwable), Java eject for both (`ModEffects`, `ThrownItemEntity`), AI helper knowledge, sample mod and script additions. Also in 1.4.0: Dimension flow, launch and real pushes, Wishlist, picture options, texture drag and drop, the feature-order fix (different steps are a warning), the Music disc `sound_id` fix and the eject `Actions.java` fix. 62 kinds, 129 templates (resourcepack 15, datapack 56, structures 9, worldgen 21, blocks-items 18, models-anim 3, entities 3, scripting 4), 27 starters, 73 examples. Tests (`turbo run test --force --continue`, 21 tasks): 20 tasks pass with 4,234 tests (45 skipped); `@msm/plugin-scripting` passed 44 of 48, the four failures coming from the plugin API 1.7.0 work in progress in the same worktree, not from 1.4.0; GameTests 97 runtime (78 plus 9 effect plus 10 throwable) and 28 sample-mod parity as reported by the runtime and parity briefs (CI is the check). Prepared, not built: the release build waits for the user's Windows test of the 1.1.0–1.3.0 drafts; in-game checks in `fixtures/sample-mod/README.md` (Effects and throwables). |
+| 2026-11-14 | Runtime fixes and sounds | ADRs 0057 (project sound events registered from `sounds.json`, mob sounds, kind-aware sound ids), 0058 (step events carry the stepper, script commands as an entity or at a position, cancel resync) and 0059 (block shapes and see-through blocks: `msm:shape`, Block Studio Shape section, presets, Half block, Plant (cross) and Glass-like block templates, two warnings) accepted; plugin API 1.7.0 (`JavaProjectInput.soundEvents`) and 1.8.0 (villager trade folders, biome and loot additions, compost providers); also the Villager trade Creator flow and the `villager_trade` and `trade_set` kinds. 65 kinds, 136 templates (resourcepack 15, datapack 60, structures 9, worldgen 21, blocks-items 21, models-anim 3, entities 3, scripting 4), 28 starters, 76 examples. Tests (`turbo run test --force --concurrency=4`, 21 tasks, all successful): 4,417 passed (47 skipped); runtime 130 GameTests per variant (26.3, 26.3 without GeckoLib, 26.4) and 231 JUnit; parity: sample mod 44, sample mob 8, sample script 3 (five CI parity runs), as reported by the runtime and parity briefs (CI is the check). In-game checks in `fixtures/sample-mod/README.md`, `fixtures/sample-script/README.md` and `fixtures/sample-datapack/README.md`. |

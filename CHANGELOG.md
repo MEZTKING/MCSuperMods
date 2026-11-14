@@ -14,11 +14,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Script commands**: `world.runCommand` and `world.runFunction` accept a position and run there (without one, at the world spawn point), and `entity.runCommand` and `entity.runFunction` run as and at the entity.
 - The Java project export writes `ModSounds.java` for the project's sounds and the mob sound overrides.
 - Plugin API 1.7.0: `JavaProjectInput.soundEvents`, the project's sound event keys for Java project generators.
+- **Block shapes**: the Block Studio's new **Shape** section gives a block an outline and collision other than a full cube. Pick a preset (**Bottom half**, **Top half**, carpet, pillar, **Plant (cross)**) or **Custom boxes** (up to 16 boxes in pixels), or use **From model** to read the boxes from the block's model in one undoable step; the picture beside the section draws them. **Walk-through** lets players and mobs pass through (like plants) and **See-through** lets light and the view through like glass: no suffocation, no hidden neighbour faces, no mob spawns on top. How a texture draws (solid, cut-out or see-through) still comes from its pixels. Templates **Half block**, **Plant (cross)** and **Glass-like block**, and the sample mod's `ruby_slab`, `ruby_sprout` and `ruby_glass`. Two new warnings in **Problems**: `blocks-items.model-not-cube` (a block with a non-cube model of your own but no shape) and `blocks-items.transparent-texture-on-solid-block` (a see-through texture on a block that is not see-through). The Java project export writes the shapes too. Rotation, stairs, real slabs, doors, fences and crops are not part of this yet; the guide's **Block shapes** section lists them.
+- **Villager trades**: new data kinds `villager_trade`, `trade_set` and the villager trade tag, and the Creator's **Villager trade** flow (group **Worlds**) add a trade to a profession of the vanilla villagers, with four trade templates, an example for each of the three kinds and a fletcher trade in the sample data pack. A new trade is a candidate that villagers can offer, not a guarantee.
+- Plugin API 1.8.0: the data folders `villager_trade` and `trade_set`, biome and loot additions and compost providers for plugins.
 
 ### Changed
 
 - The AI helper writes plain sound keys inside MCSuperMods' own data, `{ "sound_id" }` in vanilla data, and uses `entity.runCommand` to run something "as" a creature.
-- The guide chapters on blocks and items, entities, scripting and the Java project export describe the above.
+- The guide chapters on blocks and items, entities, scripting and the Java project export describe the above, including the new **Block shapes** section.
 
 ### Fixed
 
