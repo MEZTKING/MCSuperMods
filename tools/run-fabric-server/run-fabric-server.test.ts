@@ -563,3 +563,44 @@ describe('two runs on one world', () => {
     ]);
   });
 });
+
+describe('allowed and forbidden lines', () => {
+  const facts = { minecraft: '1.0', loader: '0.1.0', fabricApi: '0.2.0+1.0' };
+  const MISSING =
+    '[10:04:07] [Server thread/WARN]: [msm_runtime] portal a:sky_portal: dimension a:sky_realm is not a level of this world; nobody travels there';
+  const EJECTED =
+    '[10:04:07] [Server thread/WARN]: [a] portal a:sky_portal: dimension a:sky_realm is not a level of this world; nobody travels there';
+
+  it('reads repeated --allow-line and --forbid-line', () => {
+    expect(parseArgs(['--jar', 'a.jar'], facts)).toMatchObject({
+      allowLines: [],
+      forbidLines: [],
+    });
+    expect(
+      parseArgs(
+        ['--jar', 'a.jar', '--allow-line', 'x', '--allow-line', 'y', '--forbid-line', 'z'],
+        facts,
+      ),
+    ).toMatchObject({ allowLines: ['x', 'y'], forbidLines: ['z'] });
+  });
+
+  it('lets an allowed runtime warning pass, but not an error or another warning', () => {
+    const allowLines = ['dimension a:sky_realm is not a level of this world'];
+    expect(analyseLog([REGISTERED, DONE, MISSING], expect3).ok).toBe(false);
+    const allowed = analyseLog([REGISTERED, DONE, MISSING], { ...expect3, allowLines });
+    expect(allowed.failures).toEqual([]);
+    expect(allowed.keyLines).toContain(MISSING);
+    const error = MISSING.replace('/WARN]', '/ERROR]');
+    expect(analyseLog([REGISTERED, DONE, error], { ...expect3, allowLines }).ok).toBe(false);
+    const other = MISSING.replace('a:sky_realm', 'a:other');
+    expect(analyseLog([REGISTERED, DONE, other], { ...expect3, allowLines }).ok).toBe(false);
+  });
+
+  it('fails on a forbidden line from any logger, also with --no-runtime', () => {
+    const forbidLines = ['is not a level of this world'];
+    expect(analyseLog([DONE, EJECTED], { ...expect3, noRuntime: true }).ok).toBe(true);
+    expect(
+      analyseLog([DONE, EJECTED], { ...expect3, noRuntime: true, forbidLines }).failures,
+    ).toEqual([`forbidden line: ${EJECTED}`]);
+  });
+});

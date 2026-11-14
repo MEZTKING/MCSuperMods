@@ -20,7 +20,9 @@
  *    when `expectEntities` is given, the `loaded S script(s); 0 error(s)` line with S as expected
  *    when `expectScripts` is given, no other `[msm_runtime]` warning or error, no GeckoLib
  *    error (nor warning unless `--allow-warnings`), no `Failed to load`, no mod resolution
- *    failure and no stack frame from `dev.mcsupermods` or `com.geckolib`.
+ *    failure and no stack frame from `dev.mcsupermods` or `com.geckolib`. `--allow-line <text>`
+ *    lets a runtime warning containing the text pass (an expected one, such as a portal's
+ *    missing level on a GameTest server); `--forbid-line <text>` fails on any line containing it.
  *
  * GameTests (`--gametest <jar>`, ADR 0033 D5): the test jar and Fabric API's
  * `fabric-gametest-api-v1` module (not nested in the `fabric-api` jar; its version is read from
@@ -94,6 +96,10 @@ export interface Options {
   runs: number;
   /** Text a log line must end with in every run; `{run}` is replaced by the run's number. */
   expectLines: string[];
+  /** A runtime warning containing one of these texts is expected and does not fail the run. */
+  allowLines: string[];
+  /** A log line containing one of these texts fails the run. */
+  forbidLines: string[];
   /** GeckoLib download facts; used only with {@link Options.separateGeckolib}. */
   geckolib: GeckolibFacts | undefined;
   /** Download GeckoLib and put it in `mods/` beside the content jar. */
@@ -149,6 +155,9 @@ export const USAGE = `Usage: node tools/run-fabric-server/index.ts --jar <conten
                         must pass (not with --gametest)
   --expect-line <text>  a log line must end with this text in every run (repeatable);
                         {run} is replaced by the run's number (1, 2, ...)
+  --allow-line <text>   a [msm_runtime] warning containing this text is expected and does
+                        not fail the run (repeatable; errors still fail)
+  --forbid-line <text>  any log line containing this text fails the run (repeatable)
   --no-runtime          the jar has no msm_runtime (an ejected project): skip the
                         registration checks and fail on any [msm_runtime] line
   --separate-geckolib   download GeckoLib (facts file's geckolib) into mods/, for a jar
@@ -183,6 +192,8 @@ export function parseArgs(
   const flags = new Map<string, string>();
   const extra: string[] = [];
   const expectLines: string[] = [];
+  const allowLines: string[] = [];
+  const forbidLines: string[] = [];
   let allowWarnings = false;
   let separateGeckolib = false;
   let noRuntime = false;
@@ -206,6 +217,8 @@ export function parseArgs(
     i++;
     if (arg === '--extra') extra.push(value);
     else if (arg === '--expect-line') expectLines.push(value);
+    else if (arg === '--allow-line') allowLines.push(value);
+    else if (arg === '--forbid-line') forbidLines.push(value);
     else flags.set(arg.slice(2), value);
   }
   const known = new Set([
@@ -279,6 +292,8 @@ export function parseArgs(
     noRuntime,
     runs,
     expectLines,
+    allowLines,
+    forbidLines,
     geckolib: facts.geckolib,
     separateGeckolib,
     allowWarnings,
@@ -411,7 +426,9 @@ const MOD_LIST =
 export function analyseLog(
   lines: readonly string[],
   expect: Pick<Options, 'expectBlocks' | 'expectItems' | 'allowWarnings'> &
-    Partial<Pick<Options, 'expectEntities' | 'expectScripts' | 'noRuntime'>> & {
+    Partial<
+      Pick<Options, 'expectEntities' | 'expectScripts' | 'noRuntime' | 'allowLines' | 'forbidLines'>
+    > & {
       /** A GameTest run: the server exits after the tests and never logs `Done (`. */
       gametest?: boolean;
     },
@@ -423,10 +440,16 @@ export function analyseLog(
   let registered: RegExpExecArray | undefined;
   let entities: number | undefined;
   let scripts: RegExpExecArray | undefined;
+  const allowLines = expect.allowLines ?? [];
+  const forbidLines = expect.forbidLines ?? [];
   for (const line of lines) {
     if (DONE.test(line)) {
       done = true;
       keyLines.push(line);
+    }
+    if (forbidLines.some((text) => line.includes(text))) {
+      keyLines.push(line);
+      failures.push(`forbidden line: ${line.trim()}`);
     }
     if (noRuntime && line.includes('[msm_runtime]')) {
       keyLines.push(line);
@@ -468,7 +491,8 @@ export function analyseLog(
     const level = LEVEL.exec(line)?.[1];
     if (line.includes('[msm_runtime]') && level !== undefined) {
       keyLines.push(line);
-      if (level !== 'WARN' || !expect.allowWarnings) {
+      const allowed = level === 'WARN' && allowLines.some((text) => line.includes(text));
+      if (!allowed && (level !== 'WARN' || !expect.allowWarnings)) {
         failures.push(`runtime ${level.toLowerCase()}: ${line.trim()}`);
       }
     } else if (GECKOLIB.test(line) && level !== undefined) {
