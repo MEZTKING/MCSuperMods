@@ -4342,3 +4342,20 @@ Decisions
 
 Next
 - B378: place `<PlayControls />` in the toolbar, call `connectPlay(session, bridge)` once in `App.tsx`, and wire F5 to `usePlayStore.getState().play()` and Ctrl+R to `reload()` (File > Play and the palette too). Main: add the managed instance's game folder to `revealRoots` in `node-platform.ts`. Core or session: carry `elementId` on lowered files.
+## 2026-11-14 — executor — B389 App: the view's renderer (Try it)
+
+What
+- New `app/src/renderer/src/tryit/render/`: `world-structure.ts` (`WorldStructure`, a deepslate `StructureProvider` over a `TryItGrid`, which `SimWorld` satisfies: dirty 8-block chunks from the grid's `onChange` or `markDirty`, the chunk across a chunk face as well, a full rebuild above 48 dirty chunks, `withScope` so a partial rebuild walks only the dirty chunks, one mutable deepslate state per distinct state, `takeNewBlockIds`), `resources.ts` (`prepareTryItResources`: definitions and models from the lowered files, then the vanilla cache, then MSM's fallback parents through `preview/model-chain` and `prepareBlockResources`; textures from the files, the project's assets, then the vanilla cache; real `BlockFlags` from model geometry and atlas pixels: opaque full cubes, `semi_transparent` for partly transparent textures, `self_culling` for see-through full cubes; a block without a definition is the preview's missing cube), `camera.ts` (`viewMatrixFor` in the sim's yaw and pitch convention, `frustumPlanes`, `boxInFrustum`), `TryItCanvas.tsx` (the lazy chunk: `StructureRenderer` with `chunkSize: 8`, per-chunk frustum culling through deepslate's renderer internals, opaque meshes first and see-through ones far to near, `resetGlForDeepslate` before each frame, MSM's grid floor as a tinted quad and lines with an amber edge, the picked block's outline from its boxes, resources swapped in place when files or wanted blocks change, the loop stopped while inactive, hidden or unfocused and capped at 60 frames a second, "Smaller picture" at half resolution) and `TryItScene.tsx` (the `lazy()` boundary with the no-WebGL message and a slot for the Play button).
+- `app/tsconfig.web.json` references `packages/sim`.
+- Tests in `app/test/components/tryit/` (5 files, 28 tests): dirty chunk bookkeeping and bounds against a `SimWorld` and a hand-made grid, camera direction against `lookDirection` and culling, resources and flags with a fake atlas, floor and outline meshes, the lazy boundary under happy-dom. App suite 181 files, 1637 tests green; `pnpm lint`, `pnpm typecheck`, `pnpm build` green.
+- Sizes: `TryItCanvas` chunk 16.3 kB and `TryItScene` 1.1 kB (measured with a temporary import, since nothing imports the view until B390); `asset-source` becomes a shared 7.9 kB chunk (`PreviewCanvas` 17.9 to 10.2 kB). `app.asar` 27.2 MB.
+- Frame check (Electron, SwiftShader, the real component over 4,304 blocks, one block changed per frame, B385's camera path; machine load 11 to 15 on 4 cores): 640 by 360 33 to 38 frames a second (B385 got about 24), "Smaller picture" 51.5, 960 by 540 15.8; 20 to 31 of 144 chunks drawn; rebuild median 1.4 ms, p95 about 6 ms; first frame about 0.7 s.
+
+Decisions
+- The camera and the picked block may be values or functions read every frame; `onFrame(elapsedMs)` runs in the same loop, so the simulation's clock stops when the view stops.
+- Blocks the grid gets that were not prepared draw as nothing until the resources are prepared again (about 60 ms later), not as the checker.
+- Extra files beyond the brief's three, in the owned folder: `camera.ts` (pure maths, tested) and `TryItScene.tsx` (the lazy boundary must live outside the chunk).
+
+Next
+- B390: render `TryItScene` with `grid` (the `SimWorld`), `camera={() => ({ eye: controller.eyePosition(clock.alpha), yaw, pitch })}`, `picked`, `files`, `folders`, `vanilla`, `blockIds` (hotbar and picker), `smaller`, `active`, `onFrame` (advance the `SimClock`); the Play button as children.
+- B395: draw mobs after `drawFrame` and call `resetGlForDeepslate` (done each frame already).

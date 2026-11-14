@@ -9,5 +9,9 @@
     "types": ["vite/client"]
   },
   "include": ["src/renderer", "src/shared", "test/components"],
-  "references": [{ "path": "../packages/plugin-api" }, { "path": "../packages/core" }]
+  "references": [
+    { "path": "../packages/plugin-api" },
+    { "path": "../packages/core" },
+    { "path": "../packages/sim" }
+  ]
 }
