@@ -104,6 +104,7 @@ const WIZARDS = [
   'painting',
   'music-disc-item',
   'dimension',
+  'villager-trade',
   'custom_mob',
   'scripted-item',
 ];
@@ -123,6 +124,7 @@ const FLOWS: Record<string, string> = {
   painting: 'blocks',
   'music-disc-item': 'blocks',
   dimension: 'worlds',
+  'villager-trade': 'worlds',
   custom_mob: 'mobs',
   'scripted-item': 'scripts',
 };
@@ -156,6 +158,7 @@ describe('wizard starters', () => {
     expect(groups('painting')).toEqual(['Painting', 'Picture']);
     expect(groups('music-disc-item')).toEqual(['Song', 'Disc']);
     expect(groups('dimension')).toEqual(['World', 'Travel']);
+    expect(groups('villager-trade')).toEqual(['Villager', 'Trade']);
   });
 
   it('lists the Creator flows with their groups and blurbs (ADR 0043 D1)', () => {
@@ -1234,6 +1237,56 @@ describe('Creator flows', () => {
 
     const flat = data(build(starter('dimension'), { terrain: 'flat' }), 'demo:ruby_realm');
     expect((flat.generator as JsonObject).type).toBe('minecraft:flat');
+  });
+
+  it('Villager trade: one trade merged into the profession and level tag', () => {
+    const plain = build(starter('villager-trade'), {});
+    expect(plain.elements.map((entry) => `${entry.kind} ${entry.id}`)).toEqual([
+      'minecraft:pack_mcmeta demo:pack',
+      'minecraft:villager_trade demo:fletcher/1/emerald_spectral_arrow',
+      'minecraft:tag/villager_trade minecraft:fletcher/level_1',
+    ]);
+    expect(data(plain, 'demo:fletcher/1/emerald_spectral_arrow')).toEqual({
+      wants: { id: 'minecraft:emerald', count: 2 },
+      gives: { id: 'minecraft:spectral_arrow', count: 4 },
+      max_uses: 12,
+      xp: 2,
+      reputation_discount: 0.05,
+    });
+    // No replace: the export merges the tag into vanilla's, so the vanilla trades stay.
+    expect(data(plain, 'minecraft:fletcher/level_1')).toEqual({
+      values: ['demo:fletcher/1/emerald_spectral_arrow'],
+    });
+    expect(
+      plain.elements.find((entry) => entry.id === 'minecraft:fletcher/level_1')?.notes,
+    ).toMatch(/candidate, not a certainty/);
+
+    const buys = build(starter('villager-trade'), {
+      profession: 'farmer',
+      level: '3',
+      direction: 'buys',
+      item: 'pumpkin',
+      item_count: 6,
+      emeralds: 1,
+    });
+    expect(data(buys, 'demo:farmer/3/pumpkin_emerald')).toMatchObject({
+      wants: { id: 'minecraft:pumpkin', count: 6 },
+      gives: { id: 'minecraft:emerald', count: 1 },
+    });
+    expect(data(buys, 'minecraft:farmer/level_3')).toEqual({
+      values: ['demo:farmer/3/pumpkin_emerald'],
+    });
+
+    const wandering = build(starter('villager-trade'), {
+      profession: 'wandering_trader',
+      level: '5',
+      item: 'demo:ruby',
+    });
+    expect(wandering.elements.map((entry) => entry.id)).toEqual([
+      'demo:pack',
+      'demo:wandering_trader/emerald_ruby',
+      'minecraft:wandering_trader/common',
+    ]);
   });
 
   it('Music disc: a song file is stored, played and timed', () => {

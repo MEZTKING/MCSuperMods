@@ -1,0 +1,18 @@
+{
+  "data": {
+    "values": [
+      "msm_examples:fletcher/2/emerald_spectral_arrow"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:fletcher/level_2",
+  "kind": "minecraft:tag/villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds the trade to the vanilla tag apprentice fletchers draw from. The export merges it into vanilla's tag, so the vanilla trades stay. Each fletcher draws only a few trades, so this one is a candidate, not a certainty.",
+    "tags": [
+      "example",
+      "villager-trades"
+    ]
+  }
+}

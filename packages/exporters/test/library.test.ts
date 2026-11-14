@@ -362,6 +362,10 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     },
     { dimension_name: 'Flatland', terrain: 'flat', biome: 'minecraft:plains' },
   ],
+  'villager-trade': [
+    { profession: 'farmer', level: '3', direction: 'buys', item: 'pumpkin', item_count: 6 },
+    { profession: 'wandering_trader', item: 'minecraft:nautilus_shell', emeralds: 5 },
+  ],
   'music-disc-item': [
     { song_name: 'Night Walk', artist: 'Steve', length_seconds: 240, comparator_output: 12 },
     { song_name: 'Old Tune', disc_type: 'vanilla', colour: '#28a060' },

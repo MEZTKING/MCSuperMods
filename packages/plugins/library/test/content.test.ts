@@ -42,6 +42,7 @@ const STARTER_IDS = [
   'painting',
   'music-disc-item',
   'dimension',
+  'villager-trade',
   'recipe_pack',
   'music_disc',
   'function_starter',
@@ -54,7 +55,7 @@ const STARTER_IDS = [
 ];
 
 /**
- * The 62 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
+ * The 65 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
  * items, entities, models and animations and scripting plugins, in per-kind example order.
  */
 const KIND_IDS = [
@@ -83,6 +84,7 @@ const KIND_IDS = [
   'minecraft:tag/worldgen/biome',
   'minecraft:tag/worldgen/structure',
   'minecraft:tag/worldgen/world_preset',
+  'minecraft:tag/villager_trade',
   'minecraft:enchantment',
   'minecraft:damage_type',
   'minecraft:dimension_type',
@@ -93,6 +95,8 @@ const KIND_IDS = [
   'minecraft:trim_material',
   'minecraft:trim_pattern',
   'minecraft:dialog',
+  'minecraft:villager_trade',
+  'minecraft:trade_set',
   'minecraft:structure_template',
   'minecraft:worldgen/template_pool',
   'minecraft:worldgen/structure',
@@ -162,7 +166,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the twenty-seven starters in order', () => {
+  it('lists the twenty-eight starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -172,7 +176,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(23).fill('content'),
+      ...Array<string>(24).fill('content'),
     ]);
   });
 
@@ -416,8 +420,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 62 per-kind examples, one per built-in kind, 7 behaviour examples and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(62);
+  it('has 65 per-kind examples, one per built-in kind, 7 behaviour examples and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(65);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -436,7 +440,7 @@ describe('examples', () => {
       'example_msm_script_action',
       'example_msm_scripted_effect',
     ]);
-    expect(libraryExamples).toHaveLength(73);
+    expect(libraryExamples).toHaveLength(76);
   });
 
   it('reuses the starter builders for the starter projects', () => {

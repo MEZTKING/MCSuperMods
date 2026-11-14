@@ -1,7 +1,7 @@
 /**
  * One commented example per tier-B data kind (ADR 0015): enchantment, damage type, dimension
  * type, chat type, jukebox song, banner pattern, painting variant, trim material, trim
- * pattern and dialog.
+ * pattern and dialog; and the villager trade and trade set of ADR 0060 D5.
  */
 import type { ExampleProject } from '@msm/plugin-api';
 import { COLOURS, element, KINDS, rl, texture } from '../content/bundle';
@@ -296,5 +296,59 @@ export const registryExamples: readonly ExampleProject[] = [
         assets: [],
       };
     },
+  }),
+  defineExample({
+    id: 'example_villager_trade',
+    title: 'Villager trade',
+    description:
+      'A fletcher trade selling spectral arrows for emeralds, offered to apprentice fletchers through their trade tag.',
+    kind: KINDS.villagerTrade,
+    category: 'Villager trades',
+    tags: ['trade', 'villager', 'fletcher'],
+    build: ({ namespace }) => {
+      const id = rl(namespace, 'fletcher/2/emerald_spectral_arrow');
+      return {
+        elements: [
+          element(
+            id,
+            KINDS.villagerTrade,
+            {
+              wants: { id: 'minecraft:emerald', count: 3 },
+              gives: { id: 'minecraft:spectral_arrow', count: 8 },
+              max_uses: 12,
+              xp: 10,
+              reputation_discount: 0.05,
+            },
+            "wants is the price and gives what the player gets; an optional additional_wants asks for a second item. Demand and the player's reputation change the price, by reputation_discount per point. max_uses is how often the trade works before the villager restocks, and xp the villager experience each use earns. A trade does nothing on its own: a villager trade tag offers it.",
+          ),
+          element(
+            'minecraft:fletcher/level_2',
+            KINDS.tagVillagerTrade,
+            { values: [id] },
+            "Adds the trade to the vanilla tag apprentice fletchers draw from. The export merges it into vanilla's tag, so the vanilla trades stay. Each fletcher draws only a few trades, so this one is a candidate, not a certainty.",
+          ),
+        ],
+        assets: [],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_trade_set',
+    title: 'Trade set',
+    description: 'Draws three different trades from a villager trade tag.',
+    kind: KINDS.tradeSet,
+    category: 'Villager trades',
+    tags: ['trade', 'villager'],
+    build: ({ namespace }) => ({
+      elements: [
+        element(
+          rl(namespace, 'archery_stock'),
+          KINDS.tradeSet,
+          { trades: '#minecraft:fletcher/level_1', amount: 3, allow_duplicates: false },
+          "A trade set picks amount trades from trades, a villager trade tag (#namespace:path) or a list of trade ids; allow_duplicates false never picks one twice. Vanilla villagers use the sets named after their profession and level, such as minecraft:fletcher/level_1, and the wandering trader uses minecraft:wandering_trader/common. A project set with one of those names replaces vanilla's, which is the way to guarantee a trade. This one has a name of its own, so no villager uses it yet: named minecraft:fletcher/level_1, it would make every novice fletcher offer three of the tag's trades.",
+        ),
+      ],
+      assets: [],
+    }),
   }),
 ];

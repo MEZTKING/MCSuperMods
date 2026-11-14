@@ -1,0 +1,19 @@
+{
+  "data": {
+    "values": [
+      "minecraft:fletcher/1/emerald_arrow",
+      "minecraft:fletcher/2/emerald_bow"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:arrow_trades",
+  "kind": "minecraft:tag/villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A villager_trade tag gives one name to several villager_trade ids. values lists ids or other tags (written #namespace:path); set replace to true only to wipe what other packs put in a tag of the same id. A trade set draws its trades from a tag (\"trades\": \"#msm_examples:arrow_trades\"). To offer a trade to a vanilla villager, add it to the vanilla tag of its profession and level, such as minecraft:fletcher/level_1, without replace.",
+    "tags": [
+      "example",
+      "tags"
+    ]
+  }
+}

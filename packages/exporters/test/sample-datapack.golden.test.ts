@@ -6,6 +6,11 @@
  * Zip timestamps use the local-time `Date` constructor (ADR 0013), so each zip is built under
  * two time zones far apart (UTC+14 and UTC-8/-7) and must hash the same in both.
  *
+ * With `MSM_SAMPLE_DATAPACK_OUT`, the data pack zip of the selected target is also written to
+ * that folder as `<pack file name>`, next to `server-facts.json` (`minecraft`, `zip`) for a
+ * headless dedicated server check of the villager trade (see the fixture's README). Without it
+ * that test is skipped.
+ *
  * The expected hashes live in `test/fixtures/<target id>/sample-datapack-<pack>.sha256`
  * (target ids may not be written in `.ts` files). Change them intentionally only: set
  * `UPDATE_GOLDENS=1` to rewrite them from the current output.
@@ -50,7 +55,7 @@ import {
   resourcePackExporter,
   runExport,
 } from '../src/index';
-import { defaultTarget } from './selected-target';
+import { defaultTarget, selectedTarget } from './selected-target';
 
 const update = process.env.UPDATE_GOLDENS === '1';
 
@@ -194,7 +199,10 @@ describe('sample data pack project', () => {
     expect(summary).toEqual([
       {
         name: 'minecraft',
-        elements: ['minecraft:tag/function minecraft:load'],
+        elements: [
+          'minecraft:tag/function minecraft:load',
+          'minecraft:tag/villager_trade minecraft:fletcher/level_1',
+        ],
         assets: [],
       },
       {
@@ -211,6 +219,7 @@ describe('sample data pack project', () => {
           `minecraft:recipe ${NAMESPACE}:leather_from_rotten_flesh`,
           `minecraft:recipe ${NAMESPACE}:ruby_block`,
           `minecraft:tag/item ${NAMESPACE}:gems`,
+          `minecraft:villager_trade ${NAMESPACE}:fletcher/1/emerald_spectral_arrow`,
         ],
         assets: [],
       },
@@ -317,7 +326,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           `${ns}/${data.recipe}/leather_from_rotten_flesh.json`,
           `${ns}/${data.recipe}/ruby_block.json`,
           `${ns}/${data.tags}/item/gems.json`,
+          `${ns}/${data.villager_trade}/fletcher/1/emerald_spectral_arrow.json`,
           `data/minecraft/${data.tags}/function/load.json`,
+          `data/minecraft/${data.tags}/${data.villager_trade}/fletcher/level_1.json`,
           'msm.export.json',
           'pack.mcmeta',
         ].sort(),
@@ -328,6 +339,13 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(JSON.parse(decode(files[`data/minecraft/${data.tags}/function/load.json`]))).toEqual({
         values: [`${NAMESPACE}:load`],
       });
+      // The trade joins vanilla's novice fletcher tag: no replace, so the vanilla trades stay
+      // (ADR 0060 D5).
+      expect(
+        JSON.parse(
+          decode(files[`data/minecraft/${data.tags}/${data.villager_trade}/fletcher/level_1.json`]),
+        ),
+      ).toEqual({ values: [`${NAMESPACE}:fletcher/1/emerald_spectral_arrow`] });
       const mcmeta = JSON.parse(decode(files['pack.mcmeta'])) as { pack: Record<string, unknown> };
       expect(mcmeta.pack.description).toBe('MCSuperMods sample: /function msm_sample_data:greet');
       expect(packFileName(PROJECT_NAME, target)).toBe(`msm-sample-data-pack-${target.id}.zip`);
@@ -341,6 +359,21 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       const files = unzipSync(await exportZip(resourcePackExporter));
       expect(Object.keys(files).sort()).toEqual(['msm.export.json', 'pack.mcmeta']);
     });
+
+    const outDir = process.env.MSM_SAMPLE_DATAPACK_OUT;
+    it.runIf(outDir !== undefined && bundle === selectedTarget())(
+      'writes the data pack zip for the headless server check',
+      async () => {
+        const zip = await exportZip(dataPackExporter);
+        const name = packFileName(PROJECT_NAME, target);
+        await mkdir(outDir as string, { recursive: true });
+        await writeFile(join(outDir as string, name), zip);
+        await writeFile(
+          join(outDir as string, 'server-facts.json'),
+          `${JSON.stringify({ minecraft: target.mcVersion, zip: name }, null, 2)}\n`,
+        );
+      },
+    );
 
     describe.each([
       ['data', dataPackExporter],

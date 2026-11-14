@@ -134,6 +134,17 @@ const TAGS: readonly TagExample[] = [
     usage: (id) =>
       `Only presets in the vanilla tag #minecraft:normal appear on the World Type button; a tag of your own such as #${id} is for grouping and reuse.`,
   },
+  {
+    registry: 'villager_trade',
+    kind: KINDS.tagVillagerTrade,
+    title: 'Villager trade tag',
+    description:
+      'A group of villager trades; vanilla villagers draw theirs from tags such as minecraft:fletcher/level_1.',
+    path: 'arrow_trades',
+    values: ['minecraft:fletcher/1/emerald_arrow', 'minecraft:fletcher/2/emerald_bow'],
+    usage: (id) =>
+      `A trade set draws its trades from a tag ("trades": "#${id}"). To offer a trade to a vanilla villager, add it to the vanilla tag of its profession and level, such as minecraft:fletcher/level_1, without replace.`,
+  },
 ];
 
 function notes(id: string, tag: TagExample): string {

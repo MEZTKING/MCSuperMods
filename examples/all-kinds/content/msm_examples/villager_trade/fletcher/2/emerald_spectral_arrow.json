@@ -1,0 +1,26 @@
+{
+  "data": {
+    "gives": {
+      "count": 8,
+      "id": "minecraft:spectral_arrow"
+    },
+    "max_uses": 12,
+    "reputation_discount": 0.05,
+    "wants": {
+      "count": 3,
+      "id": "minecraft:emerald"
+    },
+    "xp": 10
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:fletcher/2/emerald_spectral_arrow",
+  "kind": "minecraft:villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "wants is the price and gives what the player gets; an optional additional_wants asks for a second item. Demand and the player's reputation change the price, by reputation_discount per point. max_uses is how often the trade works before the villager restocks, and xp the villager experience each use earns. A trade does nothing on its own: a villager trade tag offers it.",
+    "tags": [
+      "example",
+      "villager-trades"
+    ]
+  }
+}

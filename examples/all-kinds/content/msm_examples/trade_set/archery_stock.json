@@ -1,0 +1,18 @@
+{
+  "data": {
+    "allow_duplicates": false,
+    "amount": 3,
+    "trades": "#minecraft:fletcher/level_1"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:archery_stock",
+  "kind": "minecraft:trade_set",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A trade set picks amount trades from trades, a villager trade tag (#namespace:path) or a list of trade ids; allow_duplicates false never picks one twice. Vanilla villagers use the sets named after their profession and level, such as minecraft:fletcher/level_1, and the wandering trader uses minecraft:wandering_trader/common. A project set with one of those names replaces vanilla's, which is the way to guarantee a trade. This one has a name of its own, so no villager uses it yet: named minecraft:fletcher/level_1, it would make every novice fletcher offer three of the tag's trades.",
+    "tags": [
+      "example",
+      "villager-trades"
+    ]
+  }
+}

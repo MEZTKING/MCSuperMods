@@ -1,0 +1,13 @@
+{
+  "data": {
+    "values": [
+      "msm_sample_data:fletcher/1/emerald_spectral_arrow"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:fletcher/level_1",
+  "kind": "minecraft:tag/villager_trade",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

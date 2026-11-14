@@ -36,6 +36,7 @@ import { SIMPLE_BLOCK_PARAMETERS, simpleBlockBundle } from './simple-block';
 import { STATUS_EFFECT_PARAMETERS, statusEffectBundle } from './status-effect';
 import { THROWABLE_PARAMETERS, throwableBundle } from './throwable';
 import { TOTEM_PARAMETERS, totemBundle } from './totem';
+import { VILLAGER_TRADE_PARAMETERS, villagerTradeBundle } from './villager-trade';
 import { WEAPON_PARAMETERS, weaponBundle } from './weapon';
 import { worldgenPackBundle } from './worldgen-pack';
 
@@ -70,6 +71,7 @@ export { SIMPLE_BLOCK_PARAMETERS, simpleBlockBundle } from './simple-block';
 export { STATUS_EFFECT_PARAMETERS, statusEffectBundle } from './status-effect';
 export { THROWABLE_PARAMETERS, throwableBundle } from './throwable';
 export { TOTEM_PARAMETERS, totemBundle } from './totem';
+export { VILLAGER_TRADE_PARAMETERS, villagerTradeBundle } from './villager-trade';
 export { WEAPON_PARAMETERS, WEAPON_TYPES, weaponBundle } from './weapon';
 export { worldgenPackBundle } from './worldgen-pack';
 
@@ -356,6 +358,21 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
           'A world of its own, with the terrain, biome and sky you pick, and a key to get there.',
       },
       probeValues: [{ travel: 'command' }, { terrain: 'flat' }],
+    },
+  ),
+  starter(
+    'villager-trade',
+    'Villager trade',
+    'A new trade for a vanilla villager or the wandering trader: what it costs, what it gives and which profession and level offer it. Each villager draws only a few trades from its list, so the new trade is a candidate, not a certainty. Works in a data pack.',
+    'content',
+    ['datapack'],
+    villagerTradeBundle,
+    {
+      parameters: VILLAGER_TRADE_PARAMETERS,
+      creator: {
+        group: 'worlds',
+        blurb: 'A trade a villager may offer: the profession, level, price and item.',
+      },
     },
   ),
   starter(
