@@ -1,0 +1,26 @@
+{
+  "format": 1,
+  "pools": [
+    {
+      "entries": [
+        {
+          "modifier": [
+            {
+              "count": {
+                "max": 1,
+                "min": 0,
+                "type": "minecraft:uniform"
+              },
+              "enchantment": "minecraft:looting",
+              "type": "minecraft:enchanted_count_increase"
+            }
+          ],
+          "name": "msm_test:fuel_gem",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "tables": ["minecraft:entities/zombie"]
+}

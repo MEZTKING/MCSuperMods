@@ -22,7 +22,7 @@ import net.minecraft.resources.Identifier;
  * keys of {@code assets/<namespace>/sounds.json} through {@link SoundScanner}.
  */
 public final class DefinitionScanner {
-    private static final List<String> KINDS = List.of("block", "item", "entity", "effect");
+    private static final List<String> KINDS = List.of("block", "item", "entity", "effect", "biome_addition", "loot_addition");
 
     private DefinitionScanner() {}
 
@@ -86,7 +86,7 @@ public final class DefinitionScanner {
         }
         // ADR 0057 D1: the sound event keys of the same mods' resource packs (and of mods depending on msm_runtime).
         SoundScanner.Keys sounds = SoundScanner.scanAllMods();
-        return new LoadReport(files, List.copyOf(found), List.of(), List.of(), List.of(), List.of(), sounds.ids(), List.copyOf(errors),
-                sounds.warnings());
+        return new LoadReport(files, List.copyOf(found), List.of(), List.of(), List.of(), List.of(), sounds.ids(), List.of(), List.of(),
+                List.copyOf(errors), sounds.warnings());
     }
 }

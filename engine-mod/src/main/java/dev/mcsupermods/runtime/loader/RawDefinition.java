@@ -7,7 +7,7 @@ import net.minecraft.resources.Identifier;
  * One {@code msm/<namespace>/<kind>/<path>.json} file as read from a mod container.
  *
  * @param modId the mod that shipped the file
- * @param kind  {@code block}, {@code item}, {@code entity} or {@code effect}
+ * @param kind  {@code block}, {@code item}, {@code entity}, {@code effect}, {@code biome_addition} or {@code loot_addition}
  * @param id    registry id: namespace and path from the file location
  * @param json  parsed file contents
  */

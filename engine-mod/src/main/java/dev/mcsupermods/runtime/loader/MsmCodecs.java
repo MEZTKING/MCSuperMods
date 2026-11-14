@@ -89,6 +89,16 @@ public final class MsmCodecs {
                 : DataResult.error(() -> "out of range: " + i + " (expected " + min + ".." + max + ")"));
     }
 
+    /**
+     * mcdoc {@code [T] @ 1..}. Unlike {@code Codec.list(codec, 1, max)}, which drops the element errors of a partial
+     * result and reports only the length, an element error names the element's field.
+     */
+    public static <A> Codec<List<A>> nonEmptyList(Codec<A> codec) {
+        return codec.listOf().validate(list -> list.isEmpty()
+                ? DataResult.error(() -> "must not be empty (expected at least 1 element)")
+                : DataResult.success(list));
+    }
+
     /** mcdoc {@code int @ min..}. */
     public static Codec<Integer> intAtLeast(int min) {
         return intRange(min, Integer.MAX_VALUE);

@@ -603,4 +603,134 @@ class DefinitionParserTest {
         ParseResult<BlockDefinition> preset = block("{\"format\": 1, \"components\": {\"msm:shape\": {\"preset\": \"cross\"}}}");
         assertTrue(preset.errors().getFirst().contains("preset: unknown field"), preset.errors().toString());
     }
+
+    // Additions to vanilla content (ADR 0060 D2 to D4)
+
+    private static ParseResult<BiomeAdditionDefinition> biome(String json) {
+        return DefinitionParser.parseBiomeAddition(JsonParser.parseString(json));
+    }
+
+    private static ParseResult<LootAdditionDefinition> loot(String json) {
+        return DefinitionParser.parseLootAddition(JsonParser.parseString(json));
+    }
+
+    @Test
+    void biomeAdditionDefaults() {
+        ParseResult<BiomeAdditionDefinition> features = biome("{\"format\": 1, \"biomes\": [\"#minecraft:is_overworld\", \"minecraft:plains\"], "
+                + "\"features\": [{\"feature\": \"t:ore\", \"step\": \"underground_ores\"}]}");
+        assertEquals(List.of(), features.errors());
+        assertEquals(List.of(), features.warnings());
+        BiomeAdditionDefinition def = features.definition().orElseThrow();
+        assertEquals(List.of("#minecraft:is_overworld", "minecraft:plains"), def.biomes());
+        assertEquals(List.of(new BiomeAdditionDefinition.Feature(Identifier.parse("t:ore"), BiomeAdditionDefinition.Step.UNDERGROUND_ORES)),
+                def.features());
+        assertEquals(List.of(), def.spawns(), "absent spawns are empty");
+
+        BiomeAdditionDefinition spawns = biome("{\"format\": 1, \"biomes\": [\"minecraft:desert\"], \"spawns\": [{\"entity\": "
+                + "\"minecraft:fox\", \"category\": \"creature\", \"weight\": 3, \"min_group\": 1, \"max_group\": 2}]}")
+                .definition().orElseThrow();
+        assertEquals(List.of(), spawns.features(), "absent features are empty");
+        assertEquals(new BiomeAdditionDefinition.Spawn(Identifier.parse("minecraft:fox"), EntityDefinition.Category.CREATURE, 3, 1, 2),
+                spawns.spawns().getFirst());
+    }
+
+    @Test
+    void everyGenerationStepMapsOntoItsName() {
+        for (BiomeAdditionDefinition.Step step : BiomeAdditionDefinition.Step.values()) {
+            BiomeAdditionDefinition def = biome("{\"format\": 1, \"biomes\": [\"minecraft:plains\"], \"features\": [{\"feature\": "
+                    + "\"t:f\", \"step\": \"" + step.serialName() + "\"}]}").definition().orElseThrow();
+            assertEquals(step, def.features().getFirst().step());
+        }
+    }
+
+    @Test
+    void biomeAdditionErrors() {
+        String feature = "\"features\": [{\"feature\": \"t:ore\", \"step\": \"underground_ores\"}]";
+        List<String[]> cases = List.of(
+                new String[] {"{\"format\": 1, \"biomes\": [\"minecraft:plains\"]}", "features: missing"},
+                new String[] {"{\"format\": 1, " + feature + "}", "biomes"},
+                new String[] {"{\"format\": 1, \"biomes\": [], " + feature + "}", "biomes: must not be empty"},
+                new String[] {"{\"format\": 1, \"biomes\": [\"Bad Biome\"], " + feature + "}", "invalid biome or biome tag"},
+                new String[] {"{\"format\": 1, \"biomes\": [\"minecraft:plains\"], \"features\": []}", "features: must not be empty"},
+                new String[] {"{\"format\": 1, \"biomes\": [\"minecraft:plains\"], \"features\": [{\"feature\": \"t:ore\", "
+                        + "\"step\": \"ores\"}]}", "unknown generation step 'ores'"},
+                new String[] {"{\"format\": 1, \"biomes\": [\"minecraft:plains\"], \"features\": [{\"feature\": \"t:ore\", "
+                        + "\"step\": \"underground_ores\", \"weight\": 1}]}", "weight: unknown field"},
+                new String[] {"{\"format\": 1, \"biomes\": [\"minecraft:plains\"], \"spawns\": [{\"entity\": \"minecraft:fox\", "
+                        + "\"category\": \"creature\", \"weight\": 0, \"min_group\": 1, \"max_group\": 1}]}", "weight: out of range"},
+                new String[] {"{\"format\": 1, \"biomes\": [\"minecraft:plains\"], \"spawns\": [{\"entity\": \"minecraft:fox\", "
+                        + "\"category\": \"friend\", \"weight\": 1, \"min_group\": 1, \"max_group\": 1}]}", "unknown mob category"},
+                new String[] {"{\"format\": 1, \"biomes\": [\"minecraft:plains\"], \"carvers\": [], " + feature + "}", "carvers: unknown field"},
+                new String[] {"{\"format\": 2, \"biomes\": [\"minecraft:plains\"], " + feature + "}", "format 2 is newer"});
+        for (String[] c : cases) {
+            ParseResult<BiomeAdditionDefinition> result = biome(c[0]);
+            assertTrue(result.definition().isEmpty(), c[0]);
+            assertTrue(String.join("\n", result.errors()).contains(c[1]), c[1] + " not in " + result.errors());
+        }
+    }
+
+    @Test
+    void lootAdditionKeepsPoolsAsJson() {
+        ParseResult<LootAdditionDefinition> result = loot("{\"format\": 1, \"tables\": [\"minecraft:entities/zombie\"], "
+                + "\"pools\": [{\"rolls\": 1, \"entries\": [{\"type\": \"minecraft:item\", \"name\": \"t:gem\"}]}, {\"anything\": true}]}");
+        assertEquals(List.of(), result.errors());
+        LootAdditionDefinition def = result.definition().orElseThrow();
+        assertEquals(List.of(Identifier.parse("minecraft:entities/zombie")), def.tables());
+        assertEquals(2, def.pools().size(), "pools are not checked here: vanilla's Codec decodes them on each load");
+        assertEquals("t:gem", def.pools().getFirst().getAsJsonObject().getAsJsonArray("entries").get(0).getAsJsonObject().get("name")
+                .getAsString());
+    }
+
+    @Test
+    void lootAdditionErrors() {
+        String pools = "\"pools\": [{\"rolls\": 1, \"entries\": []}]";
+        List<String[]> cases = List.of(
+                new String[] {"{\"format\": 1, " + pools + "}", "tables"},
+                new String[] {"{\"format\": 1, \"tables\": [], " + pools + "}", "tables: must not be empty"},
+                new String[] {"{\"format\": 1, \"tables\": \"minecraft:entities/zombie\", " + pools + "}", "tables"},
+                new String[] {"{\"format\": 1, \"tables\": [\"Not An Id\"], " + pools + "}", "invalid id"},
+                new String[] {"{\"format\": 1, \"tables\": [\"minecraft:entities/zombie\"]}", "pools"},
+                new String[] {"{\"format\": 1, \"tables\": [\"minecraft:entities/zombie\"], \"pools\": []}", "pools: must not be empty"},
+                new String[] {"{\"format\": 1, \"tables\": [\"minecraft:entities/zombie\"], \"replace\": true, " + pools + "}",
+                        "replace: unknown field"});
+        for (String[] c : cases) {
+            ParseResult<LootAdditionDefinition> result = loot(c[0]);
+            assertTrue(result.definition().isEmpty(), c[0]);
+            assertTrue(String.join("\n", result.errors()).contains(c[1]), c[1] + " not in " + result.errors());
+        }
+    }
+
+    @Test
+    void blockItemComponentsDefaultToNone() {
+        BlockDefinition def = block("{\"format\": 1, \"item\": {\"max_stack_size\": 16}}").definition().orElseThrow();
+        assertEquals(java.util.Map.of(), def.item().orElseThrow().components());
+        assertEquals(java.util.Map.of(), block("{\"format\": 1}").definition().orElseThrow().item().orElseThrow().components());
+        BlockDefinition withEmpty = block("{\"format\": 1, \"item\": {\"components\": {}}}").definition().orElseThrow();
+        assertEquals(java.util.Map.of(), withEmpty.item().orElseThrow().components());
+    }
+
+    @Test
+    void blockItemComponentsPassThroughAsJson() {
+        ParseResult<BlockDefinition> result = block("{\"format\": 1, \"item\": {\"components\": {\"msm:components\": "
+                + "{\"minecraft:cooking_fuel\": {\"burn_time\": 100}, \"minecraft:compostable\": {\"layers\": \"minecraft:compostable/low\"}}}}}");
+        assertEquals(List.of(), result.errors());
+        assertEquals(List.of(), result.warnings());
+        var components = result.definition().orElseThrow().item().orElseThrow().components();
+        assertEquals(List.of(Identifier.parse("minecraft:cooking_fuel"), Identifier.parse("minecraft:compostable")), List.copyOf(components.keySet()));
+        assertEquals(100, components.get(Identifier.parse("minecraft:cooking_fuel")).getAsJsonObject().get("burn_time").getAsInt());
+    }
+
+    @Test
+    void blockItemRejectsUnknownKeys() {
+        for (String[] c : List.of(
+                new String[] {"{\"fuel\": {\"burn_seconds\": 5}}", "fuel: unknown field"},
+                new String[] {"{\"compost\": \"30%\"}", "compost: unknown field"},
+                new String[] {"{\"components\": {\"msm:food\": {}}}", "msm:food: unknown field"},
+                new String[] {"{\"components\": []}", "components"},
+                new String[] {"{\"components\": {\"msm:components\": \"minecraft:cooking_fuel\"}}", "msm:components"})) {
+            ParseResult<BlockDefinition> result = block("{\"format\": 1, \"item\": " + c[0] + "}");
+            assertTrue(result.definition().isEmpty(), c[0]);
+            assertTrue(String.join("\n", result.errors()).contains(c[1]), c[1] + " not in " + result.errors());
+        }
+    }
 }

@@ -133,7 +133,7 @@ public final class MsmRegistrar {
             try {
                 BlockDefinition def = parsed.definition().get();
                 checkEvents(raw, def.events(), errors);
-                registerBlock(raw, def, items);
+                registerBlock(raw, def, items, errors);
                 blocks.add(raw.id());
             } catch (RuntimeException e) {
                 fail(errors, raw, e);
@@ -162,8 +162,13 @@ public final class MsmRegistrar {
         }
         // Entities last: their spawn eggs count as items and must not collide with item definitions.
         List<Identifier> entities = MsmEntityRegistrar.registerAll(scanned.definitions(), items, errors, warnings);
+        // Additions to vanilla content last (ADR 0060 D2, D3): they name ids that are resolved when a server runs.
+        List<Identifier> biomeAdditions = MsmAdditions.registerBiomeAdditions(scanned.definitions(), errors, warnings);
+        List<Identifier> lootAdditions = MsmAdditions.registerLootAdditions(scanned.definitions(), errors, warnings);
+        MsmRuntime.LOGGER.info("[{}] registered {} biome addition(s) and {} loot addition(s)", MsmRuntime.MOD_ID, biomeAdditions.size(),
+                lootAdditions.size());
         return new LoadReport(scanned.filesRead(), scanned.definitions(), List.copyOf(blocks), List.copyOf(items),
-                List.copyOf(entities), List.copyOf(effects), sounds, List.copyOf(errors), List.copyOf(warnings));
+                List.copyOf(entities), List.copyOf(effects), sounds, biomeAdditions, lootAdditions, List.copyOf(errors), List.copyOf(warnings));
     }
 
     /**
@@ -286,7 +291,7 @@ public final class MsmRegistrar {
         });
     }
 
-    private static void registerBlock(RawDefinition raw, BlockDefinition def, List<Identifier> items) {
+    private static void registerBlock(RawDefinition raw, BlockDefinition def, List<Identifier> items, List<String> errors) {
         Identifier id = raw.id();
         BlockComponents c = def.components();
         BlockComponents.Breakable breakable = c.breakable().orElse(BlockComponents.Breakable.DEFAULT);
@@ -313,7 +318,9 @@ public final class MsmRegistrar {
         ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, id);
         Item.Properties itemProps = new Item.Properties()
                 .setId(itemKey)
-                .useBlockDescriptionPrefix() // name from block.<ns>.<path>, as vanilla block items do
+                .useBlockDescriptionPrefix(); // name from block.<ns>.<path>, as vanilla block items do
+        // item.components."msm:components" (ADR 0060 D4) first: the block item's own fields below win on a clash.
+        itemProps = ComponentPassthrough.apply(itemProps, raw, settings.components(), errors)
                 .stacksTo(settings.maxStackSize())
                 .rarity(rarity(settings.rarity()));
         BlockItem item = Registry.register(BuiltInRegistries.ITEM, itemKey, new BlockItem(block, itemProps));
@@ -740,7 +747,8 @@ public final class MsmRegistrar {
 
     /**
      * Warns about ids that could not be checked at initialisation: creative tabs (other mods may
-     * add tabs after us), items, block states and functions. Runs once the server has started.
+     * add tabs after us), items, block states, functions and the ids named by additions to vanilla content. Runs once the
+     * server has started.
      */
     public static List<String> checkAfterStart(MinecraftServer server) {
         List<String> warnings = new ArrayList<>();
@@ -768,6 +776,7 @@ public final class MsmRegistrar {
             }
         });
         warnings.addAll(MsmEntityRegistrar.checkAfterStart(server));
+        warnings.addAll(MsmAdditions.checkAfterStart(server));
         for (String w : warnings) {
             MsmRuntime.LOGGER.warn("[{}] {}", MsmRuntime.MOD_ID, w);
         }

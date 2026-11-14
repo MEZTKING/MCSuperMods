@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:components": {
+      "minecraft:compostable": {
+        "layers": "minecraft:compostable/always_add_one"
+      },
+      "minecraft:cooking_fuel": {
+        "burn_time": 400,
+        "speed_multiplier": 1
+      }
+    }
+  },
+  "format": 1
+}

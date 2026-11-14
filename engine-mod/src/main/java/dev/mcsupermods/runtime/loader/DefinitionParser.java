@@ -38,6 +38,8 @@ import net.minecraft.resources.Identifier;
  *       {@code msm:consumable}, {@code msm:food} or a {@code mace} tool is an error; none of them is applied
  *       (ADR 0056 D2).</li>
  *   <li>Effects: {@code play_animation} actions are dropped with a warning (ADR 0055 D3).</li>
+ *   <li>Biome and loot additions (ADR 0060 D2, D3): closed throughout, so an unknown top-level key is an error, not a
+ *       warning; they have no components and no events.</li>
  * </ol>
  */
 public final class DefinitionParser {
@@ -106,6 +108,32 @@ public final class DefinitionParser {
         errors.add("components: " + names + " on one item; " + (present.size() == 2 ? "neither" : "none") + " is applied");
         return new ParseResult<>(Optional.of(def.withComponents(def.components().withoutExclusive())), List.copyOf(errors),
                 result.warnings());
+    }
+
+    /** A biome addition (ADR 0060 D2). */
+    public static ParseResult<BiomeAdditionDefinition> parseBiomeAddition(JsonElement json) {
+        return parseClosed(json, BiomeAdditionDefinition.CODEC);
+    }
+
+    /** A loot addition (ADR 0060 D3); the pools stay JSON until a loot table load decodes them. */
+    public static ParseResult<LootAdditionDefinition> parseLootAddition(JsonElement json) {
+        return parseClosed(json, LootAdditionDefinition.CODEC);
+    }
+
+    /** Format check, then a closed Codec: every problem is an error and nothing is applied. */
+    private static <T> ParseResult<T> parseClosed(JsonElement json, Codec<T> codec) {
+        if (!(json instanceof JsonObject object)) {
+            return new ParseResult<>(Optional.empty(), List.of("top level must be an object"), List.of());
+        }
+        String formatError = checkFormat(object);
+        if (formatError != null) {
+            return new ParseResult<>(Optional.empty(), List.of(formatError), List.of());
+        }
+        DataResult<T> result = codec.parse(StrictJsonOps.INSTANCE, object);
+        if (result.error().isPresent()) {
+            return new ParseResult<>(Optional.empty(), List.of(result.error().get().message()), List.of());
+        }
+        return new ParseResult<>(Optional.of(result.getOrThrow()), List.of(), List.of());
     }
 
     public static ParseResult<EntityDefinition> parseEntity(JsonElement json) {

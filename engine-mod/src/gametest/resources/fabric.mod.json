@@ -16,7 +16,8 @@
       "dev.mcsupermods.runtime.gametest.MsmEffectGameTest",
       "dev.mcsupermods.runtime.gametest.MsmThrowableGameTest",
       "dev.mcsupermods.runtime.gametest.MsmSoundGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmShapeGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmShapeGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmAdditionGameTest"
     ]
   },
   "depends": {

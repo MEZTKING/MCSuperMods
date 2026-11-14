@@ -18,17 +18,14 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext;
-import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityType;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -42,7 +39,6 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
@@ -222,19 +218,10 @@ public final class MsmEntityRegistrar {
             MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, message);
             return;
         }
-        Predicate<BiomeSelectionContext> selector = ctx -> false;
-        List<ResourceKey<Biome>> keys = new ArrayList<>();
         for (String entry : spawn.biomes()) {
             LATE.add(new LateCheck(raw.describe(), "biome in spawn.biomes", entry));
-            if (entry.startsWith("#")) {
-                selector = selector.or(BiomeSelectors.tag(TagKey.create(Registries.BIOME, Identifier.parse(entry.substring(1)))));
-            } else {
-                keys.add(ResourceKey.create(Registries.BIOME, Identifier.parse(entry)));
-            }
         }
-        if (!keys.isEmpty()) {
-            selector = selector.or(BiomeSelectors.includeByKey(keys));
-        }
+        Predicate<BiomeSelectionContext> selector = BiomeSelection.of(spawn.biomes());
         BiomeModifications.addSpawn(selector, category(def.category()), type, spawn.weight(), spawn.minGroup(), spawn.maxGroup());
     }
 
@@ -246,12 +233,9 @@ public final class MsmEntityRegistrar {
      */
     static List<String> checkAfterStart(MinecraftServer server) {
         List<String> warnings = new ArrayList<>();
-        HolderLookup.RegistryLookup<Biome> biomes = server.registryAccess().lookupOrThrow(Registries.BIOME);
         for (LateCheck check : LATE) {
             boolean known = switch (check.what()) {
-                case "biome in spawn.biomes" -> check.id().startsWith("#")
-                        ? biomes.get(TagKey.create(Registries.BIOME, Identifier.parse(check.id().substring(1)))).isPresent()
-                        : biomes.get(ResourceKey.create(Registries.BIOME, Identifier.parse(check.id()))).isPresent();
+                case "biome in spawn.biomes" -> BiomeSelection.known(server, check.id());
                 case "entity type in msm:ai_goals" -> BuiltInRegistries.ENTITY_TYPE.containsKey(Identifier.parse(check.id()));
                 case "sound event in sounds" -> BuiltInRegistries.SOUND_EVENT.containsKey(Identifier.parse(check.id()));
                 default -> true;

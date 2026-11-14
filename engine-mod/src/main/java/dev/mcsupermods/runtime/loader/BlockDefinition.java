@@ -1,17 +1,21 @@
 package dev.mcsupermods.runtime.loader;
 
 import static dev.mcsupermods.runtime.loader.MsmCodecs.ID;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.closed;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.intRange;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.optional;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.required;
 
+import com.google.gson.JsonElement;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.mcsupermods.runtime.components.BlockComponents;
+import dev.mcsupermods.runtime.components.ItemComponents;
 import dev.mcsupermods.runtime.events.Events;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import net.minecraft.resources.Identifier;
 
@@ -30,13 +34,25 @@ public record BlockDefinition(
 
     public static final List<String> KEYS = List.of("format", "sound_type", "loot_table", "item", "components", "events");
 
-    /** The block item ({@code ::msm::definition::BlockItem}). */
-    public record ItemSettings(Optional<Identifier> creativeTab, int maxStackSize, MsmRarity rarity) {
-        public static final ItemSettings DEFAULT = new ItemSettings(Optional.empty(), 64, MsmRarity.COMMON);
-        public static final Codec<ItemSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
+    /**
+     * The block item ({@code ::msm::definition::BlockItem}); closed, so an unknown key (such as the element-only
+     * {@code fuel} or {@code compost}) is an error.
+     *
+     * @param components the vanilla data components of {@code components."msm:components"} (ADR 0060 D4), as JSON
+     */
+    public record ItemSettings(Optional<Identifier> creativeTab, int maxStackSize, MsmRarity rarity, Map<Identifier, JsonElement> components) {
+        public static final ItemSettings DEFAULT = new ItemSettings(Optional.empty(), 64, MsmRarity.COMMON, Map.of());
+        public static final List<String> KEYS = List.of("creative_tab", "max_stack_size", "rarity", "components");
+
+        /** {@code ::msm::definition::BlockItemComponents}: the passthrough only, closed. */
+        private static final Codec<Map<Identifier, JsonElement>> COMPONENTS = closed(
+                optional("msm:components", ItemComponents.VANILLA_CODEC, Map.<Identifier, JsonElement>of()).codec(), List.of("msm:components"));
+
+        public static final Codec<ItemSettings> CODEC = closed(RecordCodecBuilder.create(i -> i.group(
                 optional("creative_tab", ID).forGetter(ItemSettings::creativeTab),
                 optional("max_stack_size", intRange(1, 99), 64).forGetter(ItemSettings::maxStackSize),
-                optional("rarity", MsmRarity.CODEC, MsmRarity.COMMON).forGetter(ItemSettings::rarity)).apply(i, ItemSettings::new));
+                optional("rarity", MsmRarity.CODEC, MsmRarity.COMMON).forGetter(ItemSettings::rarity),
+                optional("components", COMPONENTS, Map.of()).forGetter(ItemSettings::components)).apply(i, ItemSettings::new)), KEYS);
     }
 
     /** {@code BlockItem | false}: {@code false} is no block item; {@code true} is an error. */
