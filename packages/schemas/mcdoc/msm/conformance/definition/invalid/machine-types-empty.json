@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:machine": {
+      "recipe_types": []
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

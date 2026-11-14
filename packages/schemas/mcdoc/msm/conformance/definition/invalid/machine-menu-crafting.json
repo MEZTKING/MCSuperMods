@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:machine": {
+      "menu": "crafting_table"
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

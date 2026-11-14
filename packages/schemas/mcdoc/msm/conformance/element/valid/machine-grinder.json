@@ -1,0 +1,58 @@
+{
+  "components": {
+    "msm:machine": {
+      "default_time": 100,
+      "on_finish": "mymod:ground",
+      "power": "fuel"
+    }
+  },
+  "display_name": "Ruby Grinder",
+  "events": {
+    "mymod:ground": {
+      "actions": [
+        {
+          "sound": "minecraft:block.barrel.open",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "loot": "self",
+  "recipes": [
+    {
+      "ingredient": "mymod:ruby_ore",
+      "result": "mymod:ruby"
+    },
+    {
+      "count": 4,
+      "experience": 0.7,
+      "ingredient": "#minecraft:logs",
+      "name": "ruby_dust_from_logs",
+      "result": {
+        "count": 2,
+        "id": "mymod:ruby_dust"
+      },
+      "time": 32767
+    },
+    {
+      "count": 64,
+      "experience": 0,
+      "ingredient": ["minecraft:cobblestone", "minecraft:gravel"],
+      "result": {
+        "components": {
+          "minecraft:custom_name": "Fine sand"
+        },
+        "id": "minecraft:sand"
+      },
+      "time": 1
+    }
+  ],
+  "textures": {
+    "front": "mymod:block/ruby_grinder_front",
+    "front_lit": "mymod:block/ruby_grinder_front_lit",
+    "side": "mymod:block/ruby_grinder_side",
+    "top": "mymod:block/ruby_grinder_top"
+  },
+  "type": "horizontal"
+}

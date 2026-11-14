@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:container": {
+      "hoppers": "false"
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

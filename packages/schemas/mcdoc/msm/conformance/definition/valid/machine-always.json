@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:machine": {
+      "comparator": "contents",
+      "menu": "furnace",
+      "power": "always",
+      "recipe_types": ["minecraft:campfire_cooking"]
+    }
+  },
+  "format": 1,
+  "type": "pillar"
+}

@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:container": {
+      "layout": "hopper"
+    }
+  },
+  "format": 1,
+  "type": "block"
+}

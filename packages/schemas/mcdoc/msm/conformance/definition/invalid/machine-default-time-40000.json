@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:machine": {
+      "default_time": 40000
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

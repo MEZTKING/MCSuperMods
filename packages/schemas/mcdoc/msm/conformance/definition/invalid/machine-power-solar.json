@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:machine": {
+      "power": "solar"
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

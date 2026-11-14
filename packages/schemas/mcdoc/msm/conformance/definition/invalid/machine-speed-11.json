@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:machine": {
+      "speed": 11
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

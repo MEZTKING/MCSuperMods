@@ -1,0 +1,42 @@
+{
+  "components": {
+    "msm:machine": {
+      "comparator": "progress",
+      "default_time": 32767,
+      "hoppers": false,
+      "lit_light": 0,
+      "menu": "blast_furnace",
+      "on_finish": "mymod:finished",
+      "on_start": "mymod:started",
+      "power": "redstone",
+      "recipe_types": [
+        "mymod:grinder",
+        "mymod:press",
+        "minecraft:smelting",
+        "minecraft:blasting",
+        "minecraft:smoking"
+      ],
+      "speed": 10
+    }
+  },
+  "events": {
+    "mymod:finished": {
+      "actions": [
+        {
+          "sound": "minecraft:block.barrel.open",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:started": {
+      "actions": [
+        {
+          "sound": "minecraft:block.barrel.open",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:container": {
+      "comparator": true,
+      "hoppers": true,
+      "rows": 1
+    }
+  },
+  "format": 1,
+  "type": "block"
+}

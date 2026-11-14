@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:machine": {}
+  },
+  "display_name": "Ruby Press",
+  "format": 1,
+  "textures": {
+    "front": "mymod:block/ruby_press_front",
+    "front_lit": "mymod:block/ruby_press_front_lit",
+    "side": "mymod:block/ruby_press_side",
+    "top": "mymod:block/ruby_press_top"
+  },
+  "type": "directional"
+}

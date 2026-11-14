@@ -1,0 +1,16 @@
+{
+  "components": {
+    "msm:machine": {
+      "comparator": "none",
+      "default_time": 1,
+      "hoppers": true,
+      "lit_light": 15,
+      "menu": "smoker",
+      "power": "fuel",
+      "recipe_types": ["mymod:grinder"],
+      "speed": 0.1
+    }
+  },
+  "format": 1,
+  "type": "directional"
+}

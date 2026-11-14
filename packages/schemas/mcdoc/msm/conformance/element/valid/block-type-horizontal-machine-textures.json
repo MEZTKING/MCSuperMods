@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:machine": {}
+  },
+  "display_name": "Ruby Grinder",
+  "format": 1,
+  "textures": {
+    "front": "mymod:block/ruby_grinder_front",
+    "front_lit": "mymod:block/ruby_grinder_front_lit",
+    "side": "mymod:block/ruby_grinder_side",
+    "top": "mymod:block/ruby_grinder_top"
+  },
+  "type": "horizontal"
+}

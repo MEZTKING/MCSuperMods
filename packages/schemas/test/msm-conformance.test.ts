@@ -18,13 +18,23 @@ import {
  * `msm:effect`; `biome-addition-` and `loot-addition-` files ADR 0060's additions,
  * `block-item-components-` files are blocks whose item carries components (ADR 0060 D4), and
  * `trigger-block-`, `trigger-item-` and `trigger-entity-` files are blocks, items and entities
- * using ADR 0061's trigger components. The longest matching file name prefix selects the schema;
+ * using ADR 0061's trigger components. `container-` and `machine-` files are blocks with ADR
+ * 0074's `msm:container` and ADR 0075's `msm:machine`; `conformance/machine-recipe/` holds ADR
+ * 0075's machine recipe files. The longest matching file name prefix selects the schema;
  * `expected-errors.json` maps each invalid file to one error (pointer and code) that
  * `validateJson` must report.
  */
 const CORPUS = new URL('../mcdoc/msm/conformance/', import.meta.url);
 
-type Group = 'definition' | 'element' | 'geometry' | 'animation';
+type Group = 'definition' | 'element' | 'geometry' | 'animation' | 'machine-recipe';
+
+/** The machine recipe file of ADR 0075 D2, checked by its type path (no schema reference yet). */
+const MACHINE_RECIPE = '::msm::recipe::MachineRecipe';
+
+/** File name prefixes of block files besides `block-` (ADRs 0061, 0074, 0075). */
+const BLOCK_PREFIXES: Readonly<Record<string, readonly string[]>> = {
+  block: ['trigger-block', 'container', 'machine'],
+};
 
 /** Schema references of ADR 0060's additions. */
 const ADDITIONS = {
@@ -72,6 +82,8 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     'trigger-block': MSM_SCHEMA_REFS.blockDefinition,
     'trigger-item': MSM_SCHEMA_REFS.itemDefinition,
     'trigger-entity': MSM_SCHEMA_REFS.entityDefinition,
+    container: MSM_SCHEMA_REFS.blockDefinition,
+    machine: MSM_SCHEMA_REFS.blockDefinition,
   },
   element: {
     block: MSM_SCHEMA_REFS.block,
@@ -85,9 +97,12 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     'trigger-block': MSM_SCHEMA_REFS.block,
     'trigger-item': MSM_SCHEMA_REFS.item,
     'trigger-entity': MSM_SCHEMA_REFS.entity,
+    container: MSM_SCHEMA_REFS.block,
+    machine: MSM_SCHEMA_REFS.block,
   },
   geometry: { geometry: MSM_SCHEMA_REFS.geoModel },
   animation: { animation: MSM_SCHEMA_REFS.animation },
+  'machine-recipe': { 'machine-recipe': MACHINE_RECIPE },
 };
 
 interface Expected {
@@ -124,7 +139,7 @@ const schemaFor = (group: Group, name: string): SchemaNode => {
   return index.resolveSchemaRef(ref);
 };
 
-const GROUPS: Group[] = ['definition', 'element', 'geometry', 'animation'];
+const GROUPS: Group[] = ['definition', 'element', 'geometry', 'animation', 'machine-recipe'];
 
 describe('MSM mcdoc symbols', () => {
   it('load and resolve through every schema reference and type path', () => {
@@ -254,7 +269,8 @@ describe('MSM conformance corpus coverage', () => {
 
   /**
    * Keys and action types of the valid files of a schema: those whose longest prefix is
-   * `prefix`, plus the `trigger-<prefix>-` files of the same schema.
+   * `prefix`, plus the `trigger-<prefix>-` files of the same schema (and, for blocks, the
+   * `container-` and `machine-` files).
    */
   const covered = (group: Group, prefix: string) => {
     const keys = new Set<string>();
@@ -262,7 +278,12 @@ describe('MSM conformance corpus coverage', () => {
     const maps = mapPaths(SCHEMAS[group][prefix]);
     const owned = (name: string): boolean => {
       const own = prefixOf(group, name);
-      return own === prefix || own === `trigger-${prefix}`;
+      if (own === undefined) return false;
+      return (
+        own === prefix ||
+        own === `trigger-${prefix}` ||
+        (BLOCK_PREFIXES[prefix] ?? []).includes(own)
+      );
     };
     for (const name of files(group, 'valid').filter(owned)) {
       collect(read(group, 'valid', name), '', maps, keys, actions);
@@ -297,8 +318,13 @@ describe('MSM conformance corpus coverage', () => {
     ['definition', 'trigger-entity-', 2, 2],
     ['definition', 'entity-mx-', 6, 40],
     ['element', 'entity-mx-', 6, 10],
+    ['definition', 'container-', 6, 12],
+    ['definition', 'machine-', 4, 12],
+    ['element', 'container-', 2, 1],
+    ['element', 'machine-', 1, 8],
+    ['machine-recipe', 'machine-recipe-', 3, 10],
   ] as const)(
-    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070, 0071, 0072)',
+    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075)',
     (group, prefix, minValid, minInvalid) => {
       const count = (kind: 'valid' | 'invalid') =>
         files(group, kind).filter((name) => name.startsWith(prefix)).length;
@@ -351,6 +377,7 @@ describe('MSM conformance corpus coverage', () => {
     ['element', 'loot-addition', ADDITIONS.lootAddition],
     ['geometry', 'geometry', MSM_SCHEMA_REFS.geoModel],
     ['animation', 'animation', MSM_SCHEMA_REFS.animation],
+    ['machine-recipe', 'machine-recipe', MACHINE_RECIPE],
   ] as const)('sets every %s %s field in some valid file', (group, prefix, ref) => {
     const declared = new Set<string>();
     fieldPaths(index.resolveSchemaRef(ref), '', declared);

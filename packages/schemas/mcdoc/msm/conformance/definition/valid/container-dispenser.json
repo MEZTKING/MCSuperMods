@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:container": {
+      "layout": "dispenser"
+    }
+  },
+  "format": 1,
+  "type": "directional"
+}

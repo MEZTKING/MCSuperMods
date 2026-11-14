@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:container": {
+      "slots": 27
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

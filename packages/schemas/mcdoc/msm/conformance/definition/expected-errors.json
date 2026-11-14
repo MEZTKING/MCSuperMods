@@ -335,6 +335,70 @@
     "code": "schema.invalid-enum",
     "path": "/events/mymod:x/actions/0/type"
   },
+  "container-close-sound-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:container/close_sound"
+  },
+  "container-comparator-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:container/comparator"
+  },
+  "container-hoppers-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:container/hoppers"
+  },
+  "container-keep-contents-hopper.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:container/keep_contents"
+  },
+  "container-keep-contents-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:container/keep_contents"
+  },
+  "container-layout-unknown.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:container/layout"
+  },
+  "container-on-close-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:container/on_close"
+  },
+  "container-on-open-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:container/on_open"
+  },
+  "container-open-sound-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:container/open_sound"
+  },
+  "container-rows-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:container/rows"
+  },
+  "container-rows-7.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:container/rows"
+  },
+  "container-rows-on-dispenser.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:container/rows"
+  },
+  "container-size-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:container/size"
+  },
+  "container-size-10.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:container/size"
+  },
+  "container-size-on-chest.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:container/size"
+  },
+  "container-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:container/slots"
+  },
   "effect-bad-category.json": {
     "code": "schema.invalid-enum",
     "path": "/category"
@@ -866,6 +930,74 @@
   "loot-addition-unknown-field.json": {
     "code": "schema.unknown-field",
     "path": "/replace"
+  },
+  "machine-comparator-signal.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:machine/comparator"
+  },
+  "machine-default-time-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:machine/default_time"
+  },
+  "machine-default-time-40000.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:machine/default_time"
+  },
+  "machine-default-time-float.json": {
+    "code": "schema.not-integer",
+    "path": "/components/msm:machine/default_time"
+  },
+  "machine-hoppers-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:machine/hoppers"
+  },
+  "machine-lit-light-16.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:machine/lit_light"
+  },
+  "machine-menu-crafting.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:machine/menu"
+  },
+  "machine-on-finish-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:machine/on_finish"
+  },
+  "machine-on-start-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:machine/on_start"
+  },
+  "machine-power-solar.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:machine/power"
+  },
+  "machine-recipes.json": {
+    "code": "schema.unknown-field",
+    "path": "/recipes"
+  },
+  "machine-speed-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:machine/speed"
+  },
+  "machine-speed-11.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:machine/speed"
+  },
+  "machine-types-6.json": {
+    "code": "schema.invalid-length",
+    "path": "/components/msm:machine/recipe_types"
+  },
+  "machine-types-empty.json": {
+    "code": "schema.invalid-length",
+    "path": "/components/msm:machine/recipe_types"
+  },
+  "machine-types-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:machine/recipe_types"
+  },
+  "machine-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:machine/slots"
   },
   "potion-amplifier-256.json": {
     "code": "schema.out-of-range",

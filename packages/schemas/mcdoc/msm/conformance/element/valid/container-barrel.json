@@ -1,0 +1,29 @@
+{
+  "components": {
+    "msm:container": {
+      "layout": "chest",
+      "on_open": "mymod:opened",
+      "rows": 3
+    }
+  },
+  "display_name": "Ruby Barrel",
+  "events": {
+    "mymod:opened": {
+      "actions": [
+        {
+          "sound": "minecraft:block.barrel.open",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "loot": "self",
+  "textures": {
+    "front": "mymod:block/ruby_barrel_front",
+    "front_open": "mymod:block/ruby_barrel_front_open",
+    "side": "mymod:block/ruby_barrel_side",
+    "top": "mymod:block/ruby_barrel_top"
+  },
+  "type": "horizontal"
+}

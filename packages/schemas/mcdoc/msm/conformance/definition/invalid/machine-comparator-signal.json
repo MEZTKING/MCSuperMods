@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:machine": {
+      "comparator": "signal"
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

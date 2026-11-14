@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:container": {}
+  },
+  "format": 1,
+  "models": {
+    "all": "mymod:block/ruby"
+  },
+  "type": "block"
+}

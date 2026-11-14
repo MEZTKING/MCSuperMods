@@ -1,0 +1,8 @@
+{
+  "ingredient": "mymod:ruby_ore",
+  "result": {
+    "id": "mymod:ruby"
+  },
+  "time": 40000,
+  "type": "mymod:grinder"
+}

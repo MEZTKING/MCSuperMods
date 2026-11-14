@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:machine": {}
+  },
+  "display_name": "Ruby Kiln",
+  "format": 1,
+  "model": "mymod:block/ruby_kiln",
+  "models": {
+    "lit": "mymod:block/ruby_kiln_lit"
+  },
+  "type": "block"
+}

@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:container": {}
+  },
+  "display_name": "Ruby Chest",
+  "format": 1,
+  "model": "mymod:block/ruby_chest",
+  "models": {
+    "open": "mymod:block/ruby_chest_open"
+  },
+  "type": "block"
+}

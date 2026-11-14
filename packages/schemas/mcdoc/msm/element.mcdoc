@@ -1,4 +1,4 @@
-// MSM element data for `msm:block` and `msm:item` (ADR 0025 D5), `msm:entity` (ADR 0028 D3),
+// MSM element data for `msm:block` and `msm:item` (ADR 0025 D5; machine recipes ADR 0075 D8), `msm:entity` (ADR 0028 D3),
 // `msm:effect` (ADR 0055 D2), `msm:biome_addition` and `msm:loot_addition` (ADR 0060 D2, D3):
 // the runtime definition plus editor-only fields that lower to ordinary pack files.
 
@@ -17,6 +17,8 @@ use super::definition::ItemCommon
 use super::definition::LootAddition as DefinitionLootAddition
 use super::definition::Potion as DefinitionPotion
 use super::definition::ToolTier
+use super::recipe::Ingredient
+use super::recipe::ItemStackTemplate
 
 /// A tool whose mineable tag a block joins.
 enum(string) BlockTool {
@@ -91,6 +93,9 @@ struct BlockItem {
 
 /// Models of a block type by model slot (ADR 0067 D7), used instead of generated models from
 /// `textures`. The slots are the type's own (lowering names them); the validators check them.
+/// With `msm:container` the slot `open` is the model while open, and with `msm:machine` the slot
+/// `lit` is the model while working (ADR 0074 D8, ADR 0075 D8); the closed or idle model is
+/// used when the slot is absent.
 struct BlockModels {
 	[string]: #[id="model"] string,
 }
@@ -111,6 +116,41 @@ struct FacingTextures {
 	front?: #[id="texture"] string,
 	side?: #[id="texture"] string,
 	top?: #[id="texture"] string,
+	/// The front while a player has the `msm:container` open (ADR 0074 D8), lowered to the
+	/// model `<id>_open`; absent means the closed front.
+	front_open?: #[id="texture"] string,
+	/// The front while the `msm:machine` works (ADR 0075 D8), lowered to the model `<id>_lit`;
+	/// absent means the idle front.
+	front_lit?: #[id="texture"] string,
+}
+
+/// Models of a `block` by state (ADR 0074 D8, ADR 0075 D8), used with its `model`.
+struct BlockStateModels {
+	/// The model while a player has the `msm:container` open; absent means `model`.
+	open?: #[id="model"] string,
+	/// The model while the `msm:machine` works; absent means `model`.
+	lit?: #[id="model"] string,
+}
+
+/// The output of a machine recipe in element data: an item id (one item) or a stack.
+type MachineRecipeResult = (#[id="item"] string | ItemStackTemplate)
+
+/// A machine recipe of an `msm:machine` block in element data (ADR 0075 D8), lowered to
+/// `data/<ns>/recipe/<machine path>/<name>.json` with `type` set to the machine's id.
+struct MachineRecipeEntry {
+	/// The recipe file name; defaults to the result's path, with `_2`, `_3` added on a clash.
+	name?: string,
+	/// What the input slot must hold: an item id, an item tag (`#`-prefixed) or a list of item
+	/// ids.
+	ingredient: Ingredient,
+	/// Inputs used per output, 1 to 64; defaults to 1.
+	count?: int @ 1..64,
+	/// The output.
+	result: MachineRecipeResult,
+	/// Ticks at speed 1, 1 to 32767; defaults to the machine's `default_time`.
+	time?: int @ 1..32767,
+	/// Experience stored per output; defaults to 0.
+	experience?: float @ 0..,
 }
 
 /// Textures of a `slab` or `stairs` (ADR 0067 D7): `all`, or `top`, `bottom` and `side`.
@@ -216,8 +256,12 @@ struct LeavesDrops {
 	extra?: LeavesExtraDrop,
 }
 
-/// Element fields of a type: none for `block` (its `model` field is the appearance).
-dispatch msm:block_type_element[%none, block] to struct BlockElementFields {}
+/// Element fields of a `block` (its `model` field is the appearance).
+dispatch msm:block_type_element[%none, block] to struct BlockElementFields {
+	/// Models for the `open` and `lit` states of a container or machine (ADR 0074 D8, ADR 0075
+	/// D8).
+	models?: BlockStateModels,
+}
 
 /// Element fields of a `pillar`.
 dispatch msm:block_type_element[pillar] to struct PillarElementFields {
@@ -338,6 +382,9 @@ struct Block {
 	loot?: ("self" | "crop" | "leaves" | #[id="loot_table"] string),
 	/// Behaviour components.
 	components?: BlockComponents,
+	/// Recipes of the block's `msm:machine` (ADR 0075 D8), stripped from the definition and
+	/// lowered to machine recipe files; only with `msm:machine`.
+	recipes?: [MachineRecipeEntry],
 }
 
 /// `msm:item` element data.

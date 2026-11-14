@@ -3245,3 +3245,19 @@ Decisions
 
 Next
 - B315 reads `target.blocks.machineRecipeTypes` and `containerSounds` in its validators and lowering; `packages/plugin-api/CLAUDE.md`'s status line still says 1.11.0 (B327 or the close).
+## 2026-11-14 — executor — B310 container and machine format
+
+What
+- MSM mcdoc: `msm:container` (`::msm::definition::Container`, layouts through the new dispatcher `msm:container_layout`: `chest` and absent take `rows` 1..6 and `keep_contents`, `none` takes `size` 1..9, `hopper` and `dispenser` nothing) and `msm:machine` (`::msm::definition::Machine`: `recipe_types` 1..5, `power`, `speed` 0.1..10, `default_time` 1..32767, `menu`, `hoppers`, `comparator` `contents`/`progress`/`none`, `lit_light` 0..15, `on_start`, `on_finish`) in `BlockBehaviourComponents`, so in both the definition and the element (ADR 0074 D1, ADR 0075 D1).
+- Element: `front_open` and `front_lit` on `FacingTextures`; `models` on type `block` as the closed `BlockStateModels` (`open`, `lit`); element-only `recipes` on `msm:block` (`MachineRecipeEntry`: `name?`, `ingredient`, `count?`, `result` an item id or a stack, `time?`, `experience?`).
+- New `recipe.mcdoc`: `::msm::recipe::MachineRecipe` (`type`, `ingredient`, `count?`, `result`, `time?`, `experience?`), `Ingredient` (item id, `#tag` or a list of item ids) and `ItemStackTemplate` (`id`, `count?` 1..99, `components?`). `symbols.json` rebuilt: 238 exported types.
+- Corpus: definition `container-` (8 valid, 16 invalid) and `machine-` (5 valid, 17 invalid); element `container-`, `machine-` and four `block-type-` files with the new texture and model slots; new group `conformance/machine-recipe/` (3 valid, 13 invalid). `@msm/schemas` 935 tests green.
+
+Decisions
+- The layout-only fields are a dispatcher on `layout` rather than a flat struct, so `rows` outside `chest`, `size` outside `none` and `keep_contents` on `hopper` are schema errors (`schema.unknown-field`); the JSON is the ADR's, and B315's `container-layout-fields` validator stays as a second check.
+- `models` on type `block` is a closed struct of `open` and `lit`, so the existing invalid case `block-type-absent-models.json` still fails, now at `/models/all`.
+- The machine recipe schema has no `msm:` schema reference yet (`src/msm/symbols.ts` is outside this brief); the test resolves the type path.
+
+Next
+- B314 and B316: the runtime `ConformanceCorpusTest` throws on the new `container-` and `machine-` definition files (unknown prefix) until they add the prefixes and Codecs; the engine-mod build is red from this commit until then.
+- B315: a schema reference for `::msm::recipe::MachineRecipe` if lowering wants one; the `packages/schemas/CLAUDE.md` contents line (B327).

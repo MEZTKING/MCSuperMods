@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:machine": {
+      "on_start": 1
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

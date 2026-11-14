@@ -1,0 +1,14 @@
+{
+  "count": 64,
+  "experience": 0,
+  "ingredient": ["minecraft:cobblestone", "minecraft:gravel"],
+  "result": {
+    "components": {
+      "minecraft:custom_name": "Fine sand"
+    },
+    "count": 99,
+    "id": "minecraft:sand"
+  },
+  "time": 1,
+  "type": "mymod:grinder"
+}

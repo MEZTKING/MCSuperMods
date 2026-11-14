@@ -1,0 +1,58 @@
+{
+  "machine-recipe-count-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/count"
+  },
+  "machine-recipe-count-65.json": {
+    "code": "schema.out-of-range",
+    "path": "/count"
+  },
+  "machine-recipe-empty-list.json": {
+    "code": "schema.invalid-length",
+    "path": "/ingredient"
+  },
+  "machine-recipe-experience-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/experience"
+  },
+  "machine-recipe-missing-ingredient.json": {
+    "code": "schema.missing-field",
+    "path": "/ingredient"
+  },
+  "machine-recipe-missing-result.json": {
+    "code": "schema.missing-field",
+    "path": "/result"
+  },
+  "machine-recipe-missing-type.json": {
+    "code": "schema.missing-field",
+    "path": "/type"
+  },
+  "machine-recipe-result-count-100.json": {
+    "code": "schema.out-of-range",
+    "path": "/result/count"
+  },
+  "machine-recipe-result-no-id.json": {
+    "code": "schema.missing-field",
+    "path": "/result/id"
+  },
+  "machine-recipe-result-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/result"
+  },
+  "machine-recipe-time-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/time"
+  },
+  "machine-recipe-time-40000.json": {
+    "code": "schema.out-of-range",
+    "path": "/time"
+  },
+  "machine-recipe-type-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/type"
+  },
+  "machine-recipe-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/byproduct"
+  }
+}

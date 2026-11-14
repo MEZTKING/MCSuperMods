@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:machine": {}
+  },
+  "format": 1,
+  "recipes": [
+    {
+      "result": "mymod:ruby"
+    }
+  ],
+  "type": "horizontal"
+}

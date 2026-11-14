@@ -1,0 +1,5 @@
+{
+  "ingredient": "mymod:ruby_ore",
+  "result": "mymod:ruby",
+  "type": "mymod:grinder"
+}

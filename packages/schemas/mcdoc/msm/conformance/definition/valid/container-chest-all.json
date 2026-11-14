@@ -1,0 +1,34 @@
+{
+  "components": {
+    "msm:container": {
+      "close_sound": "minecraft:block.chest.close",
+      "comparator": false,
+      "hoppers": false,
+      "layout": "chest",
+      "on_close": "mymod:closed",
+      "on_open": "mymod:opened",
+      "open_sound": "minecraft:block.chest.open",
+      "rows": 6
+    }
+  },
+  "events": {
+    "mymod:closed": {
+      "actions": [
+        {
+          "sound": "minecraft:block.barrel.open",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:opened": {
+      "actions": [
+        {
+          "sound": "minecraft:block.barrel.open",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

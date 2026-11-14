@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:container": {
+      "layout": "none",
+      "size": 10
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

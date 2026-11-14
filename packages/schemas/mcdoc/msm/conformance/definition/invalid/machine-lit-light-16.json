@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:machine": {
+      "lit_light": 16
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

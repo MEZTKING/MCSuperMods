@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:container": {
+      "layout": "barrel"
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:machine": {}
+  },
+  "format": 1,
+  "recipes": [
+    {
+      "ingredient": "mymod:ruby_ore",
+      "name": 1,
+      "result": "mymod:ruby"
+    }
+  ],
+  "type": "horizontal"
+}

@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:machine": {}
+  },
+  "format": 1,
+  "recipes": [
+    {
+      "experience": -1,
+      "ingredient": "mymod:ruby_ore",
+      "result": "mymod:ruby"
+    }
+  ],
+  "type": "horizontal"
+}

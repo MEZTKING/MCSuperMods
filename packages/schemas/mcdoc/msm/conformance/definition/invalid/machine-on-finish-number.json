@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:machine": {
+      "on_finish": 1
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

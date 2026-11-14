@@ -1,0 +1,37 @@
+{
+  "components": {
+    "msm:container": {
+      "close_sound": "minecraft:block.chest.close",
+      "comparator": false,
+      "hoppers": false,
+      "keep_contents": true,
+      "layout": "chest",
+      "on_close": "mymod:closed",
+      "on_open": "mymod:opened",
+      "open_sound": "minecraft:block.chest.open",
+      "rows": 3
+    }
+  },
+  "display_name": "Ruby Crate",
+  "events": {
+    "mymod:closed": {
+      "actions": [
+        {
+          "sound": "minecraft:block.barrel.open",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:opened": {
+      "actions": [
+        {
+          "sound": "minecraft:block.barrel.open",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "loot": "self",
+  "type": "horizontal"
+}

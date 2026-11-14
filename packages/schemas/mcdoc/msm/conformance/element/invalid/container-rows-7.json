@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:container": {
+      "rows": 7
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

@@ -1,0 +1,10 @@
+{
+  "byproduct": {
+    "id": "minecraft:stone"
+  },
+  "ingredient": "mymod:ruby_ore",
+  "result": {
+    "id": "mymod:ruby"
+  },
+  "type": "mymod:grinder"
+}

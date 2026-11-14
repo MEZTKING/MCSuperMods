@@ -1,0 +1,41 @@
+// MSM machine recipes (ADR 0075 D2, D8): data pack files `data/<ns>/recipe/<path>.json` whose
+// `type` is a machine block's id. Vanilla's recipe dispatch does not know these types, so
+// lowering checks the files against `MachineRecipe` instead. Runtimes older than the release
+// that ships ADR 0075 have no such recipe types, and the game refuses the files.
+
+use super::definition::VanillaComponents
+
+/// An ingredient in vanilla's recipe form: an item id, an item tag (`#`-prefixed) or a list of
+/// item ids, any of which matches.
+type Ingredient = (
+	#[id(registry="item", tags="allowed")] string |
+	[#[id="item"] string] @ 1..
+)
+
+/// An item stack in vanilla's recipe result form (`ItemStackTemplate`).
+struct ItemStackTemplate {
+	/// The item.
+	id: #[id="item"] string,
+	/// Stack size, 1 to 99; defaults to 1.
+	count?: int @ 1..99,
+	/// Vanilla data components by id, as on an item's `msm:components`.
+	components?: VanillaComponents,
+}
+
+/// A machine recipe (ADR 0075 D2): takes `count` of the ingredient from the input slot and,
+/// after `time` ticks at speed 1, puts `result` into the output slot.
+struct MachineRecipe {
+	/// The machine's id, which is also its recipe type and serialiser, such as `mymod:grinder`.
+	type: #[id="recipe_serializer"] string,
+	/// What the input slot must hold.
+	ingredient: Ingredient,
+	/// Inputs used per output, 1 to 64; defaults to 1.
+	count?: int @ 1..64,
+	/// The output.
+	result: ItemStackTemplate,
+	/// Ticks at speed 1, 1 to 32767; defaults to the machine's `default_time`.
+	time?: int @ 1..32767,
+	/// Experience stored per output and paid when a player takes it from the screen; defaults to
+	/// 0.
+	experience?: float @ 0..,
+}

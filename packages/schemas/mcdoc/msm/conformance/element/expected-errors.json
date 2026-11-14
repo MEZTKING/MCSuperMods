@@ -33,7 +33,11 @@
   },
   "block-type-absent-models.json": {
     "code": "schema.unknown-field",
-    "path": "/models"
+    "path": "/models/all"
+  },
+  "block-type-block-models-all.json": {
+    "code": "schema.unknown-field",
+    "path": "/models/all"
   },
   "block-type-block-textures.json": {
     "code": "schema.unknown-field",
@@ -115,6 +119,10 @@
     "code": "schema.unknown-field",
     "path": "/textures/texture"
   },
+  "block-type-pillar-front-open.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/front_open"
+  },
   "block-type-pillar-front.json": {
     "code": "schema.unknown-field",
     "path": "/textures/front"
@@ -146,6 +154,10 @@
   "block-type-wall-wooden.json": {
     "code": "schema.unknown-field",
     "path": "/wooden"
+  },
+  "container-rows-7.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:container/rows"
   },
   "effect-bad-category.json": {
     "code": "schema.invalid-enum",
@@ -250,6 +262,42 @@
   "loot-addition-empty-pools.json": {
     "code": "schema.invalid-length",
     "path": "/pools"
+  },
+  "machine-recipe-count-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/recipes/0/count"
+  },
+  "machine-recipe-experience-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/recipes/0/experience"
+  },
+  "machine-recipe-missing-ingredient.json": {
+    "code": "schema.missing-field",
+    "path": "/recipes/0/ingredient"
+  },
+  "machine-recipe-missing-result.json": {
+    "code": "schema.missing-field",
+    "path": "/recipes/0/result"
+  },
+  "machine-recipe-name-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/recipes/0/name"
+  },
+  "machine-recipe-result-number.json": {
+    "code": "schema.no-union-match",
+    "path": "/recipes/0/result"
+  },
+  "machine-recipe-time-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/recipes/0/time"
+  },
+  "machine-recipe-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/recipes/0/byproduct"
+  },
+  "machine-speed-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:machine/speed"
   },
   "mod-authors-not-list.json": {
     "code": "schema.type-mismatch",

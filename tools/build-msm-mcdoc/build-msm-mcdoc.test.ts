@@ -41,6 +41,7 @@ describe('build-msm-mcdoc', () => {
       'element.mcdoc',
       'geometry.mcdoc',
       'mod.mcdoc',
+      'recipe.mcdoc',
     ]);
     const fresh = await exportMsmMcdoc();
     const current = await readCheckedIn();

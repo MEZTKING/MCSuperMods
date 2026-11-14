@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:container": {
+      "layout": "dispenser",
+      "rows": 3
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

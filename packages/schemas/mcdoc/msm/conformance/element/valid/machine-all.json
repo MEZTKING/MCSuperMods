@@ -1,0 +1,44 @@
+{
+  "components": {
+    "msm:machine": {
+      "comparator": "progress",
+      "default_time": 400,
+      "hoppers": false,
+      "lit_light": 10,
+      "menu": "blast_furnace",
+      "on_finish": "mymod:finished",
+      "on_start": "mymod:started",
+      "power": "redstone",
+      "recipe_types": ["mymod:ruby_kiln", "minecraft:blasting"],
+      "speed": 2.5
+    }
+  },
+  "display_name": "Ruby Kiln",
+  "events": {
+    "mymod:finished": {
+      "actions": [
+        {
+          "sound": "minecraft:block.barrel.open",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:started": {
+      "actions": [
+        {
+          "sound": "minecraft:block.barrel.open",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "loot": "self",
+  "recipes": [
+    {
+      "ingredient": "mymod:raw_ruby",
+      "result": "mymod:ruby"
+    }
+  ],
+  "type": "directional"
+}

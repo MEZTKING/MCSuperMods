@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:container": {
+      "layout": "none",
+      "size": 1
+    }
+  },
+  "display_name": "Ruby Pedestal",
+  "format": 1,
+  "loot": "self",
+  "model": "mymod:block/ruby_pedestal",
+  "type": "block"
+}

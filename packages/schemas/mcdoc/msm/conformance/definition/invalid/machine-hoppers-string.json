@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:machine": {
+      "hoppers": "true"
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

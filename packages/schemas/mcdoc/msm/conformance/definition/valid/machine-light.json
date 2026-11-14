@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:light_emitter": {
+      "level": 3
+    },
+    "msm:machine": {
+      "lit_light": 13
+    }
+  },
+  "format": 1
+}

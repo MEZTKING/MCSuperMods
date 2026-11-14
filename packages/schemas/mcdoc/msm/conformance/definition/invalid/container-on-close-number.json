@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:container": {
+      "on_close": 1
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

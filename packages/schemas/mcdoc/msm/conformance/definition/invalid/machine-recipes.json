@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:machine": {}
+  },
+  "format": 1,
+  "recipes": [
+    {
+      "ingredient": "minecraft:iron_ore",
+      "result": "minecraft:iron_ingot"
+    }
+  ],
+  "type": "horizontal"
+}

@@ -1,0 +1,16 @@
+{
+  "components": {
+    "msm:container": {
+      "layout": "dispenser"
+    }
+  },
+  "display_name": "Ruby Dropper",
+  "format": 1,
+  "textures": {
+    "front": "mymod:block/ruby_dropper_front",
+    "front_open": "mymod:block/ruby_dropper_front_open",
+    "side": "mymod:block/ruby_dropper_side",
+    "top": "mymod:block/ruby_dropper_top"
+  },
+  "type": "directional"
+}

@@ -2160,6 +2160,24 @@
             "kind": "reference",
             "path": "::msm::definition::Strippable"
           }
+        },
+        {
+          "key": "msm:container",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Container"
+          }
+        },
+        {
+          "key": "msm:machine",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Machine"
+          }
         }
       ],
       "kind": "struct"
@@ -2874,6 +2892,34 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::ChestLayoutFields": {
+      "fields": [
+        {
+          "desc": "Rows of nine slots, 1 to 6; defaults to 3 (27 slots, a chest's).",
+          "key": "rows",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 6,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whether the block keeps its contents when broken and carries them in its item, as a\nshulker box does; defaults to false. Needs `rows` 3 (the validators check it, and the\nruntime turns the option off with a load error otherwise); the screen is then the shulker\nbox screen, which refuses items that cannot go inside container items.",
+          "key": "keep_contents",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::Consumable": {
       "fields": [
         {
@@ -3058,6 +3104,138 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::definition::Container": {
+      "fields": [
+        {
+          "desc": "The screen; defaults to `chest`. Each layout allows its own fields.",
+          "key": "layout",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ContainerLayout"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["layout"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:container_layout"
+          }
+        },
+        {
+          "desc": "Whether hoppers, droppers and other mods' pipes may insert into and extract from every\nslot through every face; defaults to true. Commands and scripts reach the slots either\nway.",
+          "key": "hoppers",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether comparators read the contents with the barrel's formula; defaults to true.",
+          "key": "comparator",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Sound played when the first player opens the screen; defaults to the target's container\nsound (a barrel's).",
+          "key": "open_sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Sound played when the last player closes the screen; defaults to the target's container\nsound (a barrel's).",
+          "key": "close_sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Event fired when a player opens the screen or uses the holder; self and `other` are the\nplayer.",
+          "key": "on_open",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Event fired when a player closes the screen; self and `other` are the player.",
+          "key": "on_close",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::ContainerLayout": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "A chest screen of `rows` rows of nine (`ChestMenu`); with `keep_contents` the shulker box\nscreen. The default.",
+          "identifier": "Chest",
+          "value": "chest"
+        },
+        {
+          "desc": "A hopper screen of five slots (`HopperMenu`).",
+          "identifier": "Hopper",
+          "value": "hopper"
+        },
+        {
+          "desc": "A dispenser screen of three by three slots (`DispenserMenu`).",
+          "identifier": "Dispenser",
+          "value": "dispenser"
+        },
+        {
+          "desc": "No screen: a holder of `size` slots that hoppers, comparators, commands and scripts reach.\nUsing the block with an item puts as much of the held stack as fits into the first slot\nthat takes it; using it with an empty hand takes the last filled slot out.",
+          "identifier": "None",
+          "value": "none"
+        }
+      ]
     },
     "::msm::definition::CropFields": {
       "fields": [
@@ -4039,6 +4217,10 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::FixedLayoutFields": {
+      "fields": [],
+      "kind": "struct"
+    },
     "::msm::definition::Flammable": {
       "fields": [
         {
@@ -4444,6 +4626,25 @@
           "value": "either"
         }
       ]
+    },
+    "::msm::definition::HolderLayoutFields": {
+      "fields": [
+        {
+          "desc": "The number of slots, 1 to 9; defaults to 1.",
+          "key": "size",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 9,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
     },
     "::msm::definition::Item": {
       "fields": [
@@ -4913,6 +5114,199 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::definition::Machine": {
+      "fields": [
+        {
+          "desc": "The recipe types the machine processes, 1 to 5: the machine's own id, another machine's id\nor a vanilla cooking type the target allows (`minecraft:smelting`, `minecraft:blasting`,\n`minecraft:smoking`, `minecraft:campfire_cooking`); defaults to the machine's own id only.",
+          "key": "recipe_types",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "recipe_type"
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 5,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "How the machine is powered; defaults to `fuel`.",
+          "key": "power",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::MachinePower"
+          }
+        },
+        {
+          "desc": "Multiplies progress per tick, 0.1 to 10; defaults to 1.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 10,
+              "min": 0.1
+            }
+          }
+        },
+        {
+          "desc": "Ticks a recipe without its own `time` takes at speed 1, 1 to 32767; defaults to 200 (a\nfurnace's).",
+          "key": "default_time",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 32767,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The screen; defaults to the screen of the first vanilla cooking type in `recipe_types`\n(`blast_furnace` for blasting, `smoker` for smoking), otherwise `furnace`.",
+          "key": "menu",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::MachineMenu"
+          }
+        },
+        {
+          "desc": "Whether hoppers reach the slots through a furnace's faces (the top the input, the sides\nthe fuel with `power` `fuel`, the bottom the output); defaults to true.",
+          "key": "hoppers",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "What comparators read; defaults to `contents`.",
+          "key": "comparator",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::MachineComparator"
+          }
+        },
+        {
+          "desc": "Light level while working, 0 to 15; defaults to 13 (a lit furnace's). While idle the block\ngives the light of `msm:light_emitter`, or none.",
+          "key": "lit_light",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 15,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Event fired at the block when a recipe starts, with no actor.",
+          "key": "on_start",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Event fired at the block when an output is made, with no actor.",
+          "key": "on_finish",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::MachineComparator": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "The container formula over all three slots; the default.",
+          "identifier": "Contents",
+          "value": "contents"
+        },
+        {
+          "desc": "`ceil(15 * progress / total)` while working, 0 otherwise.",
+          "identifier": "Progress",
+          "value": "progress"
+        },
+        {
+          "desc": "No signal.",
+          "identifier": "None",
+          "value": "none"
+        }
+      ]
+    },
+    "::msm::definition::MachineMenu": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Furnace",
+          "value": "furnace"
+        },
+        {
+          "identifier": "BlastFurnace",
+          "value": "blast_furnace"
+        },
+        {
+          "identifier": "Smoker",
+          "value": "smoker"
+        }
+      ]
+    },
+    "::msm::definition::MachinePower": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Burns items with the vanilla `minecraft:cooking_fuel` component in the fuel slot, as a\nfurnace does; the default.",
+          "identifier": "Fuel",
+          "value": "fuel"
+        },
+        {
+          "desc": "Works only while the block receives a redstone signal; takes no fuel.",
+          "identifier": "Redstone",
+          "value": "redstone"
+        },
+        {
+          "desc": "Works whenever it has a matching input; takes no fuel.",
+          "identifier": "Always",
+          "value": "always"
+        }
+      ]
     },
     "::msm::definition::MeleeAttackGoal": {
       "fields": [
@@ -7869,6 +8263,19 @@
             "kind": "reference",
             "path": "::msm::element::BlockComponents"
           }
+        },
+        {
+          "desc": "Recipes of the block's `msm:machine` (ADR 0075 D8), stripped from the definition and\nlowered to machine recipe files; only with `msm:machine`.",
+          "key": "recipes",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::element::MachineRecipeEntry"
+            },
+            "kind": "list"
+          }
         }
       ],
       "kind": "struct"
@@ -7904,7 +8311,18 @@
       "kind": "struct"
     },
     "::msm::element::BlockElementFields": {
-      "fields": [],
+      "fields": [
+        {
+          "desc": "Models for the `open` and `lit` states of a container or machine (ADR 0074 D8, ADR 0075\nD8).",
+          "key": "models",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BlockStateModels"
+          }
+        }
+      ],
       "kind": "struct"
     },
     "::msm::element::BlockItem": {
@@ -7946,6 +8364,53 @@
             "kind": "string"
           },
           "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "model"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::BlockStateModels": {
+      "fields": [
+        {
+          "desc": "The model while a player has the `msm:container` open; absent means `model`.",
+          "key": "open",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "model"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The model while the `msm:machine` works; absent means `model`.",
+          "key": "lit",
+          "kind": "pair",
+          "optional": true,
           "type": {
             "attributes": [
               {
@@ -8500,6 +8965,48 @@
             ],
             "kind": "string"
           }
+        },
+        {
+          "desc": "The front while a player has the `msm:container` open (ADR 0074 D8), lowered to the\nmodel `<id>_open`; absent means the closed front.",
+          "key": "front_open",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The front while the `msm:machine` works (ADR 0075 D8), lowered to the model `<id>_lit`;\nabsent means the idle front.",
+          "key": "front_lit",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
         }
       ],
       "kind": "struct"
@@ -8779,6 +9286,103 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::element::MachineRecipeEntry": {
+      "fields": [
+        {
+          "desc": "The recipe file name; defaults to the result's path, with `_2`, `_3` added on a clash.",
+          "key": "name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "What the input slot must hold: an item id, an item tag (`#`-prefixed) or a list of item\nids.",
+          "key": "ingredient",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::recipe::Ingredient"
+          }
+        },
+        {
+          "desc": "Inputs used per output, 1 to 64; defaults to 1.",
+          "key": "count",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The output.",
+          "key": "result",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::MachineRecipeResult"
+          }
+        },
+        {
+          "desc": "Ticks at speed 1, 1 to 32767; defaults to the machine's `default_time`.",
+          "key": "time",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 32767,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Experience stored per output; defaults to 0.",
+          "key": "experience",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::MachineRecipeResult": {
+      "kind": "union",
+      "members": [
+        {
+          "attributes": [
+            {
+              "name": "id",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "item"
+                }
+              }
+            }
+          ],
+          "kind": "string"
+        },
+        {
+          "kind": "reference",
+          "path": "::msm::recipe::ItemStackTemplate"
+        }
+      ]
     },
     "::msm::element::PaneElementFields": {
       "fields": [
@@ -10224,6 +10828,193 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::recipe::Ingredient": {
+      "kind": "union",
+      "members": [
+        {
+          "attributes": [
+            {
+              "name": "id",
+              "value": {
+                "kind": "tree",
+                "values": {
+                  "registry": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "item"
+                    }
+                  },
+                  "tags": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "allowed"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "kind": "string"
+        },
+        {
+          "item": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          },
+          "kind": "list",
+          "lengthRange": {
+            "kind": 0,
+            "min": 1
+          }
+        }
+      ]
+    },
+    "::msm::recipe::ItemStackTemplate": {
+      "fields": [
+        {
+          "desc": "The item.",
+          "key": "id",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Stack size, 1 to 99; defaults to 1.",
+          "key": "count",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 99,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Vanilla data components by id, as on an item's `msm:components`.",
+          "key": "components",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::VanillaComponents"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::recipe::MachineRecipe": {
+      "fields": [
+        {
+          "desc": "The machine's id, which is also its recipe type and serialiser, such as `mymod:grinder`.",
+          "key": "type",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "recipe_serializer"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "What the input slot must hold.",
+          "key": "ingredient",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::recipe::Ingredient"
+          }
+        },
+        {
+          "desc": "Inputs used per output, 1 to 64; defaults to 1.",
+          "key": "count",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The output.",
+          "key": "result",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::recipe::ItemStackTemplate"
+          }
+        },
+        {
+          "desc": "Ticks at speed 1, 1 to 32767; defaults to the machine's `default_time`.",
+          "key": "time",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 32767,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Experience stored per output and paid when a player takes it from the screen; defaults to\n0.",
+          "key": "experience",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
     }
   },
   "mcdoc/dispatcher": {
@@ -10466,7 +11257,29 @@
         "kind": "reference",
         "path": "::msm::element::WallElementFields"
       }
+    },
+    "msm:container_layout": {
+      "%none": {
+        "kind": "reference",
+        "path": "::msm::definition::ChestLayoutFields"
+      },
+      "chest": {
+        "kind": "reference",
+        "path": "::msm::definition::ChestLayoutFields"
+      },
+      "dispenser": {
+        "kind": "reference",
+        "path": "::msm::definition::FixedLayoutFields"
+      },
+      "hopper": {
+        "kind": "reference",
+        "path": "::msm::definition::FixedLayoutFields"
+      },
+      "none": {
+        "kind": "reference",
+        "path": "::msm::definition::HolderLayoutFields"
+      }
     }
   },
-  "ref": "msm-mcdoc:sha256:4f664729092cdff3228bb13d8d407d6891aa5959f5248b7c392f8a50858b2c75"
+  "ref": "msm-mcdoc:sha256:f20c5e3cb98f360cbc7d45199e9c3780d9a8a4d51c65c2fc2637c6dce2c10d90"
 }

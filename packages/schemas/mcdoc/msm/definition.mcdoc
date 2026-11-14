@@ -219,6 +219,8 @@ struct BlockBehaviourComponents {
 	"msm:on_entity_inside"?: OnEntityInside,
 	"msm:flammable"?: Flammable,
 	"msm:strippable"?: Strippable,
+	"msm:container"?: Container,
+	"msm:machine"?: Machine,
 }
 
 /// Makes the block catch fire and burn away (ADR 0067 D3), through Fabric's flammable block
@@ -236,6 +238,134 @@ struct Flammable {
 struct Strippable {
 	/// The block the stripped block becomes.
 	into: #[id="block"] string,
+}
+
+/// The vanilla screen a container opens (ADR 0074 D1).
+enum(string) ContainerLayout {
+	/// A chest screen of `rows` rows of nine (`ChestMenu`); with `keep_contents` the shulker box
+	/// screen. The default.
+	Chest = "chest",
+	/// A hopper screen of five slots (`HopperMenu`).
+	Hopper = "hopper",
+	/// A dispenser screen of three by three slots (`DispenserMenu`).
+	Dispenser = "dispenser",
+	/// No screen: a holder of `size` slots that hoppers, comparators, commands and scripts reach.
+	/// Using the block with an item puts as much of the held stack as fits into the first slot
+	/// that takes it; using it with an empty hand takes the last filled slot out.
+	None = "none",
+}
+
+/// Makes the block hold items in a vanilla screen (ADR 0074 D1), as a barrel does. Only on the
+/// types `block`, `pillar`, `horizontal` and `directional`, and never together with
+/// `msm:machine`. The block gains vanilla's `open` property while a player has it open; the
+/// contents drop when it is broken unless `keep_contents` is set; `msm:on_interact` still fires
+/// after the screen opens or the holder is used. Runtimes older than the release that ships ADR
+/// 0074 reject the component.
+struct Container {
+	/// The screen; defaults to `chest`. Each layout allows its own fields.
+	layout?: ContainerLayout,
+	...msm:container_layout[[layout]],
+	/// Whether hoppers, droppers and other mods' pipes may insert into and extract from every
+	/// slot through every face; defaults to true. Commands and scripts reach the slots either
+	/// way.
+	hoppers?: boolean,
+	/// Whether comparators read the contents with the barrel's formula; defaults to true.
+	comparator?: boolean,
+	/// Sound played when the first player opens the screen; defaults to the target's container
+	/// sound (a barrel's).
+	open_sound?: #[id="sound_event"] string,
+	/// Sound played when the last player closes the screen; defaults to the target's container
+	/// sound (a barrel's).
+	close_sound?: #[id="sound_event"] string,
+	/// Event fired when a player opens the screen or uses the holder; self and `other` are the
+	/// player.
+	on_open?: string,
+	/// Event fired when a player closes the screen; self and `other` are the player.
+	on_close?: string,
+}
+
+/// Fields of the `chest` layout, also when `layout` is absent (ADR 0074 D1, D6).
+dispatch msm:container_layout[%none, chest] to struct ChestLayoutFields {
+	/// Rows of nine slots, 1 to 6; defaults to 3 (27 slots, a chest's).
+	rows?: int @ 1..6,
+	/// Whether the block keeps its contents when broken and carries them in its item, as a
+	/// shulker box does; defaults to false. Needs `rows` 3 (the validators check it, and the
+	/// runtime turns the option off with a load error otherwise); the screen is then the shulker
+	/// box screen, which refuses items that cannot go inside container items.
+	keep_contents?: boolean,
+}
+
+/// The `hopper` and `dispenser` layouts have a fixed size and no fields of their own.
+dispatch msm:container_layout[hopper, dispenser] to struct FixedLayoutFields {}
+
+/// Fields of the `none` layout, a holder with no screen (ADR 0074 D1).
+dispatch msm:container_layout[none] to struct HolderLayoutFields {
+	/// The number of slots, 1 to 9; defaults to 1.
+	size?: int @ 1..9,
+}
+
+/// How a machine is powered (ADR 0075 D1).
+enum(string) MachinePower {
+	/// Burns items with the vanilla `minecraft:cooking_fuel` component in the fuel slot, as a
+	/// furnace does; the default.
+	Fuel = "fuel",
+	/// Works only while the block receives a redstone signal; takes no fuel.
+	Redstone = "redstone",
+	/// Works whenever it has a matching input; takes no fuel.
+	Always = "always",
+}
+
+/// The vanilla screen a machine opens (ADR 0075 D4).
+enum(string) MachineMenu {
+	Furnace = "furnace",
+	BlastFurnace = "blast_furnace",
+	Smoker = "smoker",
+}
+
+/// What a comparator reads from a machine (ADR 0075 D5).
+enum(string) MachineComparator {
+	/// The container formula over all three slots; the default.
+	Contents = "contents",
+	/// `ceil(15 * progress / total)` while working, 0 otherwise.
+	Progress = "progress",
+	/// No signal.
+	None = "none",
+}
+
+/// Makes the block a machine that processes items over time in a vanilla furnace screen (ADR
+/// 0075 D1), with the furnace's three slots: input (0), fuel (1) and output (2). Only on the
+/// types `block`, `pillar`, `horizontal` and `directional`, and never together with
+/// `msm:container`. The runtime registers a recipe type and serialiser with the block's own id;
+/// machine recipes are data pack files `data/<ns>/recipe/<path>.json` whose `type` is that id
+/// (`::msm::recipe::MachineRecipe`). The block gains vanilla's `lit` property while working.
+/// Runtimes older than the release that ships ADR 0075 reject the component.
+struct Machine {
+	/// The recipe types the machine processes, 1 to 5: the machine's own id, another machine's id
+	/// or a vanilla cooking type the target allows (`minecraft:smelting`, `minecraft:blasting`,
+	/// `minecraft:smoking`, `minecraft:campfire_cooking`); defaults to the machine's own id only.
+	recipe_types?: [#[id="recipe_type"] string] @ 1..5,
+	/// How the machine is powered; defaults to `fuel`.
+	power?: MachinePower,
+	/// Multiplies progress per tick, 0.1 to 10; defaults to 1.
+	speed?: float @ 0.1..10,
+	/// Ticks a recipe without its own `time` takes at speed 1, 1 to 32767; defaults to 200 (a
+	/// furnace's).
+	default_time?: int @ 1..32767,
+	/// The screen; defaults to the screen of the first vanilla cooking type in `recipe_types`
+	/// (`blast_furnace` for blasting, `smoker` for smoking), otherwise `furnace`.
+	menu?: MachineMenu,
+	/// Whether hoppers reach the slots through a furnace's faces (the top the input, the sides
+	/// the fuel with `power` `fuel`, the bottom the output); defaults to true.
+	hoppers?: boolean,
+	/// What comparators read; defaults to `contents`.
+	comparator?: MachineComparator,
+	/// Light level while working, 0 to 15; defaults to 13 (a lit furnace's). While idle the block
+	/// gives the light of `msm:light_emitter`, or none.
+	lit_light?: int @ 0..15,
+	/// Event fired at the block when a recipe starts, with no actor.
+	on_start?: string,
+	/// Event fired at the block when an output is made, with no actor.
+	on_finish?: string,
 }
 
 /// The block's outline and collision shape (ADR 0059 D1). Absent means the full solid cube.

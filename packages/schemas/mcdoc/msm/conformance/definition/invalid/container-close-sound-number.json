@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:container": {
+      "close_sound": 1
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

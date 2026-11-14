@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:container": {}
+  },
+  "format": 1,
+  "textures": {
+    "front_open": "mymod:block/b",
+    "side": "mymod:block/a"
+  },
+  "type": "pillar"
+}
