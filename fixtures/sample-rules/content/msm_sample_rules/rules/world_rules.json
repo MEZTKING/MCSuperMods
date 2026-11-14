@@ -1,0 +1,99 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "count": 1,
+            "item": "msm_sample_rules:ruby",
+            "step": "drop_item"
+          }
+        ],
+        "key": "stone_ruby",
+        "name": "Stone sometimes hides a ruby",
+        "only_if": {
+          "conditions": [
+            {
+              "condition": "chance",
+              "percent": 20
+            }
+          ],
+          "match": "all"
+        },
+        "when": {
+          "subject": "minecraft:stone",
+          "trigger": "any_block_broken"
+        }
+      },
+      {
+        "do": [
+          {
+            "step": "show_title",
+            "subtitle": [
+              "to the MSM sample rules"
+            ],
+            "title": [
+              "Welcome"
+            ]
+          },
+          {
+            "sound": "minecraft:block.note_block.chime",
+            "step": "play_sound",
+            "where": "player"
+          }
+        ],
+        "key": "welcome",
+        "name": "Welcome",
+        "when": {
+          "trigger": "player_joined"
+        }
+      },
+      {
+        "do": [
+          {
+            "seconds": 300,
+            "step": "set_weather",
+            "weather": "clear"
+          },
+          {
+            "step": "show_message",
+            "text": [
+              "The rain stops. Time of day: ",
+              {
+                "value": "time_of_day"
+              }
+            ],
+            "who": "every_player"
+          }
+        ],
+        "key": "clear_rain",
+        "name": "No rain in the day",
+        "only_if": {
+          "conditions": [
+            {
+              "condition": "is_raining"
+            },
+            {
+              "condition": "is_day"
+            }
+          ],
+          "match": "all"
+        },
+        "when": {
+          "options": {
+            "interval_seconds": 10
+          },
+          "trigger": "world_every"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_rules:world_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

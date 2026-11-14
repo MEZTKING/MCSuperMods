@@ -1,0 +1,34 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "sound": "minecraft:block.note_block.chime",
+            "step": "play_sound",
+            "where": "here"
+          },
+          {
+            "count": 1,
+            "item": "msm_sample_rules:ruby",
+            "step": "give_item"
+          }
+        ],
+        "key": "ring_chime",
+        "name": "Ring the chime",
+        "when": {
+          "subject": "msm_sample_rules:chime_block",
+          "trigger": "block_used"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_rules:chime_block_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

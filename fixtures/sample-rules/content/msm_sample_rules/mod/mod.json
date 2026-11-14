@@ -1,0 +1,18 @@
+{
+  "data": {
+    "authors": [
+      "MCSuperMods"
+    ],
+    "description": "Sample rules: two blocks, two items and a mob whose behaviour is made with rules, no code, plus rules for vanilla stone, joining players and the weather.",
+    "licence": "MIT",
+    "mod_id": "msm_sample_rules",
+    "name": "MSM Sample Rules",
+    "version": "1.0.0"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_rules:mod",
+  "kind": "msm:mod",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

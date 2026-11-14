@@ -1,0 +1,14 @@
+{
+  "data": {
+    "creative_tab": "minecraft:ingredients",
+    "display_name": "Ruby",
+    "format": 1,
+    "model": "msm_sample_rules:item/ruby"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_rules:ruby",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

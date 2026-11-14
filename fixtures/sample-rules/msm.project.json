@@ -1,0 +1,20 @@
+{
+  "formatVersion": 1,
+  "name": "MSM Sample Rules",
+  "namespaces": [
+    "msm_sample_rules"
+  ],
+  "plugins": [
+    "msm.resourcepack",
+    "msm.datapack",
+    "msm.blocks-items",
+    "msm.entities",
+    "msm.models-anim",
+    "msm.scripting",
+    "msm.rules"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

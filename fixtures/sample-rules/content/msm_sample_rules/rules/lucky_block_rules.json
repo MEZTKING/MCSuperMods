@@ -1,0 +1,86 @@
+{
+  "data": {
+    "counters": [
+      {
+        "name": "lucky_uses",
+        "scope": "player",
+        "start": 0
+      }
+    ],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "amount": 1,
+            "counter": "lucky_uses",
+            "scope": "player",
+            "step": "add_to_counter"
+          },
+          {
+            "conditions": [
+              {
+                "condition": "chance",
+                "percent": 50
+              }
+            ],
+            "do": [
+              {
+                "count": 1,
+                "item": "msm_sample_rules:ruby",
+                "step": "give_item"
+              },
+              {
+                "sound": "minecraft:entity.player.levelup",
+                "step": "play_sound",
+                "where": "player"
+              }
+            ],
+            "else": [
+              {
+                "step": "show_action_bar",
+                "text": [
+                  "No luck this time."
+                ]
+              }
+            ],
+            "match": "all",
+            "step": "if"
+          },
+          {
+            "step": "show_message",
+            "text": [
+              "You have used the lucky block ",
+              {
+                "counter": "lucky_uses",
+                "scope": "player",
+                "value": "counter"
+              },
+              " times."
+            ]
+          }
+        ],
+        "key": "try_luck",
+        "name": "Try your luck",
+        "only_if": {
+          "conditions": [
+            {
+              "condition": "player_sneaking"
+            }
+          ],
+          "match": "all"
+        },
+        "when": {
+          "subject": "msm_sample_rules:lucky_block",
+          "trigger": "block_used"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_rules:lucky_block_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

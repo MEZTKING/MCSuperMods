@@ -1,0 +1,55 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 0.6,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_rules:entity/sentinel_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_sample_rules:entity/sentinel",
+        "renderer": "vanilla",
+        "shoot": "shoot",
+        "sit": "sit",
+        "texture": "msm_sample_rules:entity/sentinel",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 20
+      },
+      "msm:movement": {
+        "speed": 0.2
+      }
+    },
+    "display_name": "Sentinel",
+    "format": 1,
+    "size": {
+      "height": 1.95,
+      "width": 0.6
+    },
+    "spawn_egg": {
+      "display_name": "Sentinel Spawn Egg",
+      "texture": "msm_sample_rules:item/sentinel_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_rules:sentinel",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

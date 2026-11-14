@@ -1,0 +1,54 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "do": [
+              {
+                "effect": "minecraft:speed",
+                "seconds": 10,
+                "step": "give_effect"
+              },
+              {
+                "step": "show_action_bar",
+                "text": [
+                  "Rally!"
+                ]
+              }
+            ],
+            "radius": 16,
+            "step": "for_each_player"
+          },
+          {
+            "seconds": 2,
+            "step": "wait"
+          },
+          {
+            "step": "show_message",
+            "text": [
+              "The rally is over."
+            ]
+          }
+        ],
+        "key": "rally",
+        "name": "Rally the players nearby",
+        "when": {
+          "options": {
+            "cooldown_seconds": 2
+          },
+          "subject": "msm_sample_rules:rally_horn",
+          "trigger": "item_used"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_rules:rally_horn_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

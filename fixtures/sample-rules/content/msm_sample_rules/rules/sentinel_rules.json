@@ -1,0 +1,45 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "sound": "minecraft:block.note_block.bell",
+            "step": "play_sound",
+            "where": "here"
+          },
+          {
+            "count": 5,
+            "particle": "minecraft:end_rod",
+            "spread": 0.3,
+            "step": "spawn_particles",
+            "where": "here"
+          },
+          {
+            "effect": "minecraft:glowing",
+            "seconds": 3,
+            "step": "give_effect",
+            "who": "mob"
+          }
+        ],
+        "key": "keep_watch",
+        "name": "Keep watch",
+        "when": {
+          "options": {
+            "interval_seconds": 5
+          },
+          "subject": "msm_sample_rules:sentinel",
+          "trigger": "mob_every"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_rules:sentinel_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}
