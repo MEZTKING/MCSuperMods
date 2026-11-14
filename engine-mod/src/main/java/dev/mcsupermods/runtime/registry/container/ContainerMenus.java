@@ -1,0 +1,47 @@
+package dev.mcsupermods.runtime.registry.container;
+
+import dev.mcsupermods.runtime.components.BlockComponents;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.DispenserMenu;
+import net.minecraft.world.inventory.HopperMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.ShulkerBoxMenu;
+
+/**
+ * The vanilla menu of each container layout (ADR 0074 D1): {@code chest} is a {@link ChestMenu} of {@code rows} rows
+ * ({@code GENERIC_9x1} to {@code GENERIC_9x6}), or a {@link ShulkerBoxMenu} with {@code keep_contents}; {@code hopper} a
+ * {@link HopperMenu}; {@code dispenser} a {@link DispenserMenu}; {@code none} has no menu. Vanilla menu types need no
+ * client code: the client opens the vanilla screen for them. Never a {@code Slot} of our own (its constructor differs on
+ * 26.4, F7 of the plan).
+ */
+public final class ContainerMenus {
+    private ContainerMenus() {}
+
+    /** The menu for {@code container}, or null for the {@code none} layout. */
+    public static AbstractContainerMenu create(BlockComponents.Container spec, int containerId, Inventory inventory, Container container) {
+        return switch (spec.layout()) {
+            case CHEST -> spec.keepContents()
+                    ? new ShulkerBoxMenu(containerId, inventory, container)
+                    : new ChestMenu(chestType(spec.rows()), containerId, inventory, container, spec.rows());
+            case HOPPER -> new HopperMenu(containerId, inventory, container);
+            case DISPENSER -> new DispenserMenu(containerId, inventory, container);
+            case NONE -> null;
+        };
+    }
+
+    /** The generic chest menu type of {@code rows} rows of nine. */
+    static MenuType<ChestMenu> chestType(int rows) {
+        return switch (rows) {
+            case 1 -> MenuType.GENERIC_9x1;
+            case 2 -> MenuType.GENERIC_9x2;
+            case 3 -> MenuType.GENERIC_9x3;
+            case 4 -> MenuType.GENERIC_9x4;
+            case 5 -> MenuType.GENERIC_9x5;
+            case 6 -> MenuType.GENERIC_9x6;
+            default -> throw new IllegalArgumentException("rows " + rows + " (expected 1..6)");
+        };
+    }
+}

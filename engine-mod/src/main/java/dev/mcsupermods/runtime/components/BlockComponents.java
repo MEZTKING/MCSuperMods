@@ -32,14 +32,15 @@ public record BlockComponents(
         Optional<OnRandomTick> onRandomTick,
         Optional<OnEntityInside> onEntityInside,
         Optional<Flammable> flammable,
-        Optional<Strippable> strippable) {
+        Optional<Strippable> strippable,
+        Optional<Container> container) {
 
     public static final List<String> KEYS = List.of("msm:breakable", "msm:light_emitter", "msm:on_interact", "msm:on_step", "msm:redstone",
             "msm:shape", "msm:on_break", "msm:on_place", "msm:on_random_tick", "msm:on_entity_inside",
-            "msm:flammable", "msm:strippable");
+            "msm:flammable", "msm:strippable", "msm:container");
     public static final BlockComponents NONE = new BlockComponents(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
             Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-            Optional.empty());
+            Optional.empty(), Optional.empty());
 
     public static final Codec<BlockComponents> CODEC = RecordCodecBuilder.create(i -> i.group(
             optional("msm:breakable", Breakable.CODEC).forGetter(BlockComponents::breakable),
@@ -53,13 +54,14 @@ public record BlockComponents(
             optional("msm:on_random_tick", OnRandomTick.CODEC).forGetter(BlockComponents::onRandomTick),
             optional("msm:on_entity_inside", OnEntityInside.CODEC).forGetter(BlockComponents::onEntityInside),
             optional("msm:flammable", Flammable.CODEC).forGetter(BlockComponents::flammable),
-            optional("msm:strippable", Strippable.CODEC).forGetter(BlockComponents::strippable))
+            optional("msm:strippable", Strippable.CODEC).forGetter(BlockComponents::strippable),
+            optional("msm:container", Container.CODEC).forGetter(BlockComponents::container))
             .apply(i, BlockComponents::new));
 
     /** The keys of the components present, in {@link #KEYS} order. */
     public List<String> present() {
         List<Optional<?>> values = List.of(breakable, lightEmitter, onInteract, onStep, redstone, shape, onBreak, onPlace, onRandomTick,
-                onEntityInside, flammable, strippable);
+                onEntityInside, flammable, strippable, container);
         List<String> out = new ArrayList<>();
         for (int n = 0; n < KEYS.size(); n++) {
             if (values.get(n).isPresent()) {
@@ -83,7 +85,45 @@ public record BlockComponents(
                 keys.contains("msm:on_random_tick") ? Optional.empty() : onRandomTick,
                 keys.contains("msm:on_entity_inside") ? Optional.empty() : onEntityInside,
                 keys.contains("msm:flammable") ? Optional.empty() : flammable,
-                keys.contains("msm:strippable") ? Optional.empty() : strippable);
+                keys.contains("msm:strippable") ? Optional.empty() : strippable,
+                keys.contains("msm:container") ? Optional.empty() : container);
+    }
+
+    /** These components with {@code msm:container} replaced (empty removes it). */
+    public BlockComponents withContainer(Optional<Container> other) {
+        return new BlockComponents(breakable, lightEmitter, onInteract, onStep, redstone, shape, onBreak, onPlace, onRandomTick,
+                onEntityInside, flammable, strippable, other);
+    }
+
+    /**
+     * The load-time rules of {@code msm:container} that the Codec cannot express (ADR 0074 D1, D6; the layout dispatch of
+     * {@code ::msm::definition::Container}): {@code rows} outside layout {@code chest} or {@code size} outside layout
+     * {@code none} is an error and the component is not applied; {@code keep_contents} outside a 3-row chest is an error
+     * and the option is turned off. Problems are added to {@code errors}.
+     */
+    public BlockComponents checkContainer(List<String> errors) {
+        if (container.isEmpty()) {
+            return this;
+        }
+        Container c = container.get();
+        if (c.layout() != ContainerLayout.CHEST && c.rowsSetting().isPresent()) {
+            errors.add("components: msm:container: rows is only for layout 'chest', not '" + c.layout().id()
+                    + "'; the component is not applied");
+            return withContainer(Optional.empty());
+        }
+        if (c.layout() != ContainerLayout.NONE && c.sizeSetting().isPresent()) {
+            errors.add("components: msm:container: size is only for layout 'none', not '" + c.layout().id()
+                    + "'; the component is not applied");
+            return withContainer(Optional.empty());
+        }
+        boolean keepMisplaced = c.keepContentsSetting().isPresent() && c.layout() != ContainerLayout.CHEST;
+        boolean keepWrongRows = c.keepContents() && c.rows() != 3;
+        if (keepMisplaced || keepWrongRows) {
+            errors.add("components: msm:container: keep_contents needs layout 'chest' with 3 rows (layout '" + c.layout().id()
+                    + "'" + (c.layout() == ContainerLayout.CHEST ? ", " + c.rows() + " rows" : "") + "); it is turned off");
+            return withContainer(Optional.of(c.withoutKeepContents()));
+        }
+        return this;
     }
 
     /** Every event id a component names, with the component for messages. */
@@ -99,6 +139,10 @@ public record BlockComponents(
         onPlace.ifPresent(c -> out.add(new String[] {"msm:on_place", c.event().toString()}));
         onRandomTick.ifPresent(c -> out.add(new String[] {"msm:on_random_tick", c.event().toString()}));
         onEntityInside.ifPresent(c -> out.add(new String[] {"msm:on_entity_inside", c.event().toString()}));
+        container.ifPresent(c -> {
+            c.onOpen().ifPresent(e -> out.add(new String[] {"msm:container.on_open", e.toString()}));
+            c.onClose().ifPresent(e -> out.add(new String[] {"msm:container.on_close", e.toString()}));
+        });
         return out.build();
     }
 
@@ -242,6 +286,85 @@ public record BlockComponents(
                 }
             }
             return true;
+        }
+    }
+
+    /** The vanilla screen a container opens ({@code ::msm::definition::ContainerLayout}, ADR 0074 D1). */
+    public enum ContainerLayout {
+        CHEST("chest"),
+        HOPPER("hopper"),
+        DISPENSER("dispenser"),
+        NONE("none");
+
+        public static final Codec<ContainerLayout> CODEC = MsmCodecs.named("container layout", values(), ContainerLayout::id);
+        private final String id;
+
+        ContainerLayout(String id) {
+            this.id = id;
+        }
+
+        public String id() {
+            return id;
+        }
+    }
+
+    /**
+     * Holds items in a vanilla screen ({@code ::msm::definition::Container}, ADR 0074 D1); closed. The layout-dependent
+     * fields are decoded for every layout and checked by {@link BlockComponents#checkContainer}.
+     *
+     * @param rowsSetting {@code rows} as written (1 to 6); {@link #rows()} applies the default 3
+     * @param sizeSetting {@code size} as written (1 to 9); {@link #size()} applies the default 1
+     * @param keepContentsSetting {@code keep_contents} as written; {@link #keepContents()} applies the default false
+     * @param openSound absent: the barrel's open sound
+     * @param closeSound absent: the barrel's close sound
+     */
+    public record Container(ContainerLayout layout, Optional<Integer> rowsSetting, Optional<Integer> sizeSetting,
+            Optional<Boolean> keepContentsSetting, boolean hoppers, boolean comparator, Optional<Identifier> openSound,
+            Optional<Identifier> closeSound, Optional<Identifier> onOpen, Optional<Identifier> onClose) {
+        public static final List<String> KEYS = List.of("layout", "rows", "size", "keep_contents", "hoppers", "comparator",
+                "open_sound", "close_sound", "on_open", "on_close");
+
+        public static final Codec<Container> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                optional("layout", ContainerLayout.CODEC, ContainerLayout.CHEST).forGetter(Container::layout),
+                optional("rows", intRange(1, 6)).forGetter(Container::rowsSetting),
+                optional("size", intRange(1, 9)).forGetter(Container::sizeSetting),
+                optional("keep_contents", Codec.BOOL).forGetter(Container::keepContentsSetting),
+                optional("hoppers", Codec.BOOL, true).forGetter(Container::hoppers),
+                optional("comparator", Codec.BOOL, true).forGetter(Container::comparator),
+                optional("open_sound", ID).forGetter(Container::openSound),
+                optional("close_sound", ID).forGetter(Container::closeSound),
+                optional("on_open", ID).forGetter(Container::onOpen),
+                optional("on_close", ID).forGetter(Container::onClose)).apply(i, Container::new)), KEYS);
+
+        /** Rows of nine of a {@code chest} layout: as written, else 3. */
+        public int rows() {
+            return rowsSetting.orElse(3);
+        }
+
+        /** Slots of a {@code none} layout (a holder): as written, else 1. */
+        public int size() {
+            return sizeSetting.orElse(1);
+        }
+
+        /** Whether the block keeps its contents when broken (ADR 0074 D6), as a shulker box. */
+        public boolean keepContents() {
+            return keepContentsSetting.orElse(false);
+        }
+
+        /** The number of slots: {@code 9 * rows} (chest), 5 (hopper), 9 (dispenser) or {@code size} (none). */
+        public int slotCount() {
+            return switch (layout) {
+                case CHEST -> 9 * rows();
+                case HOPPER -> 5;
+                case DISPENSER -> 9;
+                case NONE -> size();
+            };
+        }
+
+        /** This container with {@code keep_contents} turned off. */
+        public Container withoutKeepContents() {
+            return new Container(layout, rowsSetting, sizeSetting, Optional.empty(), hoppers, comparator, openSound, closeSound,
+                    onOpen, onClose);
         }
     }
 }

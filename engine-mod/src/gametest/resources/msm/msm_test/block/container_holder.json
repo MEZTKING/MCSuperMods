@@ -1,0 +1,21 @@
+{
+  "components": {
+    "msm:container": {
+      "layout": "none",
+      "on_open": "msm_test:holder_opened",
+      "size": 2
+    },
+    "msm:on_interact": {
+      "event": "msm_test:holder_used"
+    }
+  },
+  "events": {
+    "msm_test:holder_opened": {
+      "actions": []
+    },
+    "msm_test:holder_used": {
+      "actions": []
+    }
+  },
+  "format": 1
+}

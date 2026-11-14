@@ -48,8 +48,11 @@ public enum BlockType {
     SAPLING("sapling", List.of("tree", "mega_tree", "flower_tree", "soil")),
     LEAVES("leaves", List.of("tint", "particle_chance", "falling_particle"));
 
-    /** Components allowed only on {@link #BLOCK}, {@link #PILLAR}, {@link #HORIZONTAL} and {@link #DIRECTIONAL} (ADR 0067 D3). */
-    public static final List<String> SHAPED_ONLY_COMPONENTS = List.of("msm:shape", "msm:redstone");
+    /**
+     * Components allowed only on {@link #BLOCK}, {@link #PILLAR}, {@link #HORIZONTAL} and {@link #DIRECTIONAL} (ADR 0067 D3;
+     * {@code msm:container}, ADR 0074 D1: only the {@code MsmBlock} family can carry a block entity).
+     */
+    public static final List<String> SHAPED_ONLY_COMPONENTS = List.of("msm:shape", "msm:redstone", "msm:container");
 
     /** Every type's own top-level field names, in a stable order; the definition's known top-level keys include these. */
     public static final List<String> ALL_FIELDS;
@@ -88,8 +91,8 @@ public enum BlockType {
     }
 
     /**
-     * Whether a block of this type may carry the component {@code key} (ADR 0067 D3): {@code msm:shape} and
-     * {@code msm:redstone} only on the {@link #shaped()} types; every other component (breaking, light, triggers,
+     * Whether a block of this type may carry the component {@code key} (ADR 0067 D3): {@code msm:shape},
+     * {@code msm:redstone} and {@code msm:container} (ADR 0074 D1) only on the {@link #shaped()} types; every other component (breaking, light, triggers,
      * {@code msm:flammable}, {@code msm:strippable}) on every type.
      */
     public boolean allows(String key) {

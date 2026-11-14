@@ -1,0 +1,18 @@
+{
+  "components": {
+    "msm:container": {
+      "on_close": "msm_test:container_closed",
+      "on_open": "msm_test:container_opened",
+      "rows": 2
+    }
+  },
+  "events": {
+    "msm_test:container_closed": {
+      "actions": []
+    },
+    "msm_test:container_opened": {
+      "actions": []
+    }
+  },
+  "format": 1
+}

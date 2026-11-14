@@ -57,7 +57,18 @@ public final class DefinitionParser {
     public static ParseResult<BlockDefinition> parseBlock(JsonElement json) {
         ParseResult<BlockDefinition> result = parse(json, BlockDefinition.KEYS, BlockComponents.KEYS, BlockDefinition.CODEC,
                 def -> new Refs(def.events(), def.components().eventReferences(), List.of()));
-        return dropComponentsNotForType(dropPlayAnimation(result, BlockDefinition::events, BlockDefinition::withEvents));
+        return checkContainer(dropComponentsNotForType(dropPlayAnimation(result, BlockDefinition::events, BlockDefinition::withEvents)));
+    }
+
+    /** The layout rules of {@code msm:container} ({@link BlockComponents#checkContainer}, ADR 0074 D1, D6). */
+    private static ParseResult<BlockDefinition> checkContainer(ParseResult<BlockDefinition> result) {
+        if (result.definition().isEmpty() || result.definition().get().components().container().isEmpty()) {
+            return result;
+        }
+        BlockDefinition def = result.definition().get();
+        List<String> errors = new ArrayList<>(result.errors());
+        BlockComponents checked = def.components().checkContainer(errors);
+        return new ParseResult<>(Optional.of(def.withComponents(checked)), List.copyOf(errors), result.warnings());
     }
 
     /**

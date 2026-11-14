@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:container": {
+      "comparator": false,
+      "hoppers": false
+    }
+  },
+  "format": 1
+}

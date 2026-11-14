@@ -460,9 +460,10 @@ public final class MsmRegistrar {
         itemProps = ComponentPassthrough.apply(itemProps, raw, settings.components(), errors)
                 .stacksTo(settings.maxStackSize())
                 .rarity(rarity(settings.rarity()));
-        // A door's item places both halves (ADR 0067 D4), as vanilla's door items.
+        // A door's item places both halves (ADR 0067 D4), as vanilla's door items; a keep-contents container's item
+        // cannot go inside container items (ADR 0074 D6).
         BlockItem item = Registry.register(BuiltInRegistries.ITEM, itemKey,
-                def.type() == BlockType.DOOR ? new DoubleHighBlockItem(block, itemProps) : new BlockItem(block, itemProps));
+                def.type() == BlockType.DOOR ? new DoubleHighBlockItem(block, itemProps) : BlockEntityHooks.blockItem(block, itemProps));
         items.add(itemId.get());
         settings.creativeTab().ifPresent(tab -> addToTab(raw, tab, item));
     }

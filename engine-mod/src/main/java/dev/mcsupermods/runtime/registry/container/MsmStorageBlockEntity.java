@@ -1,0 +1,187 @@
+package dev.mcsupermods.runtime.registry.container;
+
+import dev.mcsupermods.runtime.components.BlockComponents;
+import dev.mcsupermods.runtime.events.EventContext;
+import dev.mcsupermods.runtime.events.EventRunner;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.IntStream;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.ContainerUser;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+
+/**
+ * The block entity of an {@code msm:container} block (ADR 0074 D2): a {@link RandomizableContainerBlockEntity}, so loot
+ * tables, custom names, {@code lock}, the {@code container} item component and {@code /data}, {@code /item} and
+ * {@code /loot ... insert} work as on a chest. Items are saved under {@code Items} in vanilla's {@link ContainerHelper}
+ * shape.
+ *
+ * <ul>
+ *   <li>Menus per layout through {@link ContainerMenus}; the title is the custom name or the block's name.
+ *   <li>Hoppers (D4): every face reaches every slot with {@code hoppers: true}; with {@code false}
+ *       {@link #getSlotsForFace} is empty, so vanilla hoppers and Fabric item transfer (whose fallback wraps any
+ *       {@code Container} block entity through the same {@link WorldlyContainer} faces) leave the block alone.
+ *   <li>Keep-contents (D6): {@link #canPlaceItem} refuses items that cannot go inside container items (hoppers and
+ *       commands; the shulker box menu's own slot refuses them in the screen), and {@link #preRemoveSideEffects} drops
+ *       nothing: the loot table copies the contents into the item.
+ *   <li>Openers (D3) through {@link ContainerOpeners}: the {@code open} property, the sounds, the barrel's scheduled
+ *       recheck ({@link #recheckOpen}, from the block's {@code tick}); {@code on_open} and {@code on_close} with the
+ *       player as self and other.
+ * </ul>
+ */
+public class MsmStorageBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer {
+    private final BlockComponents.Container spec;
+    private final int[] allSlots;
+    private final ContainerOpeners openers;
+    private NonNullList<ItemStack> items;
+
+    public MsmStorageBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, BlockComponents.Container spec) {
+        super(type, pos, state);
+        this.spec = spec;
+        this.items = NonNullList.withSize(spec.slotCount(), ItemStack.EMPTY);
+        this.allSlots = IntStream.range(0, spec.slotCount()).toArray();
+        this.openers = new ContainerOpeners(this);
+    }
+
+    /** The container settings of the block. */
+    public BlockComponents.Container spec() {
+        return spec;
+    }
+
+    // Saving: the barrel's shape (a loot table not yet unpacked is saved instead of the items).
+
+    @Override
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        items = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
+        if (!tryLoadLootTable(input)) {
+            ContainerHelper.loadAllItems(input, items);
+        }
+    }
+
+    @Override
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        if (!trySaveLootTable(output)) {
+            ContainerHelper.saveAllItems(output, items);
+        }
+    }
+
+    @Override
+    public int getContainerSize() {
+        return spec.slotCount();
+    }
+
+    @Override
+    protected NonNullList<ItemStack> getItems() {
+        return items;
+    }
+
+    @Override
+    protected void setItems(NonNullList<ItemStack> items) {
+        this.items = items;
+    }
+
+    @Override
+    protected Component getDefaultName() {
+        return Component.translatable(getBlockState().getBlock().getDescriptionId());
+    }
+
+    @Override
+    protected AbstractContainerMenu createMenu(int containerId, Inventory inventory) {
+        return ContainerMenus.create(spec, containerId, inventory, this);
+    }
+
+    // Hoppers, comparators-through-contents and keep-contents (D4, D6)
+
+    @Override
+    public boolean canPlaceItem(int slot, ItemStack stack) {
+        return !spec.keepContents() || stack.getItem().canFitInsideContainerItems();
+    }
+
+    @Override
+    public int[] getSlotsForFace(Direction side) {
+        return spec.hoppers() ? allSlots : new int[0];
+    }
+
+    @Override
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
+        return spec.hoppers() && canPlaceItem(slot, stack);
+    }
+
+    @Override
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
+        return spec.hoppers();
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (!spec.keepContents()) {
+            super.preRemoveSideEffects(pos, state); // drops the contents, as every vanilla Container (D5)
+        }
+    }
+
+    // Openers (D3)
+
+    @Override
+    public void startOpen(ContainerUser user) {
+        LivingEntity entity = user.getLivingEntity();
+        if (!remove && !entity.isSpectator()) {
+            openers.incrementOpeners(entity, getLevel(), getBlockPos(), getBlockState(), user.getContainerInteractionRange());
+            if (entity instanceof Player player) {
+                fire(spec.onOpen(), player);
+            }
+        }
+    }
+
+    @Override
+    public void stopOpen(ContainerUser user) {
+        LivingEntity entity = user.getLivingEntity();
+        if (!remove && !entity.isSpectator()) {
+            openers.decrementOpeners(entity, getLevel(), getBlockPos(), getBlockState());
+            if (entity instanceof Player player) {
+                fire(spec.onClose(), player);
+            }
+        }
+    }
+
+    @Override
+    public List<ContainerUser> getEntitiesWithContainerOpen() {
+        return openers.getEntitiesWithContainerOpen(getLevel(), getBlockPos());
+    }
+
+    /** The barrel's scheduled recheck: closes the container when no player in range still has it open. */
+    public void recheckOpen() {
+        if (!remove) {
+            openers.recheckOpeners(getLevel(), getBlockPos(), getBlockState());
+        }
+    }
+
+    /** Players with this container open now. */
+    public int openerCount() {
+        return openers.getOpenerCount();
+    }
+
+    /** Fires {@code event} (on_open or on_close) at the block with {@code player} as self and other. */
+    void fire(Optional<Identifier> event, Player player) {
+        if (event.isPresent() && getLevel() instanceof ServerLevel server && getBlockState().getBlock() instanceof MsmContainerBlock block) {
+            EventRunner.fire(block.id(), block.definition().events(), event.get(), EventContext.forBlock(server, getBlockPos(), player));
+        }
+    }
+}

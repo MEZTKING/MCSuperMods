@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:container": {
+      "keep_contents": true,
+      "rows": 2
+    }
+  },
+  "format": 1
+}

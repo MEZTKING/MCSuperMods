@@ -1,14 +1,26 @@
 package dev.mcsupermods.runtime.registry.container;
 
+import dev.mcsupermods.runtime.MsmRuntime;
+import dev.mcsupermods.runtime.components.BlockComponents;
 import dev.mcsupermods.runtime.loader.BlockDefinition;
 import dev.mcsupermods.runtime.loader.RawDefinition;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 /**
  * The block entity seams of {@code MsmBlock} and {@code MsmRegistrar} (ADR 0074 D2, ADR 0075 D3), so containers (B314) and
- * machines (B316) add their classes here without editing the block class or the registrar body. Every decision is false
- * and every hook a no-op until the {@code msm:container} and {@code msm:machine} Codecs exist.
+ * machines (B316) add their classes here without editing the block class or the registrar body. Containers (B314): a
+ * definition with {@code msm:container} is an {@link MsmContainerBlock} with vanilla's {@code open} property and one
+ * {@link BlockEntityType} registered with the block's own id; a keep-contents block's item is an
+ * {@link MsmContainerBlockItem}. Machines (B316) add their branches.
  */
 public final class BlockEntityHooks {
     private static int blockEntityTypes;
@@ -18,12 +30,12 @@ public final class BlockEntityHooks {
 
     /** Whether {@code definition} is built as a {@link MsmContainerBlock}: {@code msm:container} or {@code msm:machine}. */
     public static boolean wantsBlockEntity(BlockDefinition definition) {
-        return false;
+        return definition.components().container().isPresent();
     }
 
-    /** Whether the block gets vanilla's {@code open} property (ADR 0074 D3: a container). */
+    /** Whether the block gets vanilla's {@code open} property (ADR 0074 D3: every container, whatever its layout). */
     public static boolean hasOpenProperty(BlockDefinition definition) {
-        return false;
+        return definition.components().container().isPresent();
     }
 
     /** Whether the block gets vanilla's {@code lit} property (ADR 0075 D1: a machine). */
@@ -37,7 +49,53 @@ public final class BlockEntityHooks {
      * (already prefixed with {@code raw.describe()}) and logged; the block stays registered.
      */
     public static void afterBlockRegistered(RawDefinition raw, BlockDefinition definition, Block block, List<String> errors) {
-        // B314 (containers), B316 (machines)
+        if (block instanceof MsmContainerBlock containerBlock && definition.components().container().isPresent()) {
+            registerContainer(raw, containerBlock, definition.components().container().get(), errors);
+        }
+        // B316: machines
+    }
+
+    /**
+     * One {@link BlockEntityType} for the container block, with the block's id (ADR 0074 D2, limit C8). An id already in
+     * the block entity type registry is a load error: the block stays registered without its container. An unknown
+     * {@code open_sound} or {@code close_sound} is a load error and the barrel's sound plays instead.
+     */
+    private static void registerContainer(RawDefinition raw, MsmContainerBlock block, BlockComponents.Container spec, List<String> errors) {
+        checkSound(raw, "open_sound", spec.openSound(), errors);
+        checkSound(raw, "close_sound", spec.closeSound(), errors);
+        Identifier id = raw.id();
+        if (BuiltInRegistries.BLOCK_ENTITY_TYPE.containsKey(id)) {
+            error(errors, raw.describe() + ": components: msm:container: block entity type " + id
+                    + " is already registered; the block registers without its container");
+            return;
+        }
+        BlockEntityType<MsmStorageBlockEntity> type = new BlockEntityType<>(
+                (pos, state) -> new MsmStorageBlockEntity(block.storageType(), pos, state, spec), Set.of(block));
+        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id, type);
+        block.attachStorage(type);
+        countBlockEntityType();
+    }
+
+    private static void checkSound(RawDefinition raw, String field, Optional<Identifier> sound, List<String> errors) {
+        if (sound.isPresent() && !BuiltInRegistries.SOUND_EVENT.containsKey(sound.get())) {
+            error(errors, raw.describe() + ": components: msm:container: " + field + ": unknown sound " + sound.get()
+                    + "; the barrel's sound plays instead");
+        }
+    }
+
+    private static void error(List<String> errors, String message) {
+        errors.add(message);
+        MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, message);
+    }
+
+    /**
+     * The block item of {@code block} (ADR 0074 D6): an {@link MsmContainerBlockItem} for a keep-contents container with
+     * its block entity, else a plain {@link BlockItem}. The registrar calls this for every type but doors.
+     */
+    public static BlockItem blockItem(Block block, Item.Properties properties) {
+        return block instanceof MsmContainerBlock c && c.keepsContents()
+                ? new MsmContainerBlockItem(block, properties)
+                : new BlockItem(block, properties);
     }
 
     /** Counts one registered block entity type for the registrar's log line. */
