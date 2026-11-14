@@ -4,7 +4,9 @@
  * (`test/fixtures/previous/script-api-v1-1.6.0.json`) only by widening that method (same name,
  * same parameter counts, every previous argument still accepted) and adding the
  * `ParticleOptions` alias; the runtime's `ScriptApi` installs the same counts (B352), and scripts
- * that use the new forms type-check.
+ * that use the new forms type-check. The 1.3 description as runtime 1.7.0 has it is
+ * `test/fixtures/previous/script-api-v1-1.7.0.json`; later additions (1.4, ADR 0082 D5) are pinned
+ * in `script-api-1-4.test.ts`.
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
@@ -23,6 +25,13 @@ const PREVIOUS: ScriptApi = parseScriptApi(
   ),
 );
 
+/** The 1.3 description as runtime 1.7.0 has it, before the 1.4 additions. */
+const API_1_3: ScriptApi = parseScriptApi(
+  JSON.parse(
+    readFileSync(new URL('./fixtures/previous/script-api-v1-1.7.0.json', import.meta.url), 'utf8'),
+  ),
+);
+
 const SINCE = 'since runtime 1.7.0.';
 const WIDENED = 'World.spawnParticle';
 
@@ -37,10 +46,10 @@ function signatureCounts(member: ScriptApiMember | undefined): string[] {
 
 describe('script API 1.3 changes only World.spawnParticle and adds ParticleOptions', () => {
   it('keeps every other type, member, global, function and event of runtime 1.6.0', () => {
-    expect(SCRIPT_API.version).toBe(1);
-    expect(Object.keys(SCRIPT_API.types)).toEqual(Object.keys(PREVIOUS.types));
+    expect(API_1_3.version).toBe(1);
+    expect(Object.keys(API_1_3.types)).toEqual(Object.keys(PREVIOUS.types));
     for (const [name, type] of Object.entries(PREVIOUS.types)) {
-      const now = SCRIPT_API.types[name];
+      const now = API_1_3.types[name];
       expect(now?.extends, name).toBe(type.extends);
       expect(Object.keys(now?.members ?? {}), name).toEqual(Object.keys(type.members));
       for (const [member, old] of Object.entries(type.members)) {
@@ -48,10 +57,10 @@ describe('script API 1.3 changes only World.spawnParticle and adds ParticleOptio
         expect(now?.members[member], `${name}.${member}`).toEqual(old);
       }
     }
-    expect(SCRIPT_API.globals).toEqual(PREVIOUS.globals);
-    expect(SCRIPT_API.events).toEqual(PREVIOUS.events);
-    expect(SCRIPT_API.functions).toEqual(PREVIOUS.functions);
-    const aliases = { ...SCRIPT_API.aliases };
+    expect(API_1_3.globals).toEqual(PREVIOUS.globals);
+    expect(API_1_3.events).toEqual(PREVIOUS.events);
+    expect(API_1_3.functions).toEqual(PREVIOUS.functions);
+    const aliases = { ...API_1_3.aliases };
     delete aliases.ParticleOptions;
     expect(aliases).toEqual(PREVIOUS.aliases);
   });

@@ -12985,7 +12985,7 @@
     "::msm::rules::ExplodeStep": {
       "fields": [
         {
-          "desc": "Power, 0 to 16 (TNT is 4).",
+          "desc": "Power, 0 to 10 (TNT is 4).",
           "key": "power",
           "kind": "pair",
           "type": {
@@ -12995,7 +12995,7 @@
                 "kind": "double",
                 "valueRange": {
                   "kind": 0,
-                  "max": 16,
+                  "max": 10,
                   "min": 0
                 }
               },
@@ -16618,5 +16618,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:c9c08552402d1533edfdf347f3ff01d3b9e203a89ca4c5db35df2ee6b155542d"
+  "ref": "msm-mcdoc:sha256:714689d671da60b9031eec9e13eb626119cf752a7e65b0ad4582456eb603799b"
 }

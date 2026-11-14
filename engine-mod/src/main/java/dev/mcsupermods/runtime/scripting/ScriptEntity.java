@@ -31,6 +31,7 @@ import org.mozilla.javascript.Scriptable;
  * nothing on others. {@code runCommand} and {@code runFunction} run as and at the entity (ADR 0058 D2) and do nothing
  * (0 or false) when it is not in a server level. Script API 1.1 (ADR 0065 D2, D5 to D7): equipment of living
  * entities (nothing on others), typed damage with an attacker, raycasts from the eyes, teleport to another dimension.
+ * Script API 1.4 (ADR 0082 D5): {@code remove()} discards a non-player entity without drops or death events.
  */
 final class ScriptEntity {
     private ScriptEntity() {}
@@ -79,6 +80,13 @@ final class ScriptEntity {
                 if (e.level() instanceof ServerLevel l) {
                     e.kill(l);
                 }
+                return null;
+            })
+            .method("remove", 0, 0, Entity.class, (api, e, args) -> {
+                if (e instanceof Player) {
+                    throw ScriptRuntime.typeError("a player cannot be removed; use kill() or teleport() instead");
+                }
+                e.discard();
                 return null;
             })
             .method("teleport", 1, 2, Entity.class, (api, e, args) -> {

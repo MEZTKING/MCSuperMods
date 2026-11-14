@@ -1035,8 +1035,8 @@ dispatch msm:rule_step[drop_item] to struct DropItemStep {
 
 /// Makes an explosion.
 dispatch msm:rule_step[explode] to struct ExplodeStep {
-	/// Power, 0 to 16 (TNT is 4).
-	power: (double @ 0..16 | Value),
+	/// Power, 0 to 10 (TNT is 4).
+	power: (double @ 0..10 | Value),
 	/// Defaults to `here`.
 	where?: Place,
 	/// Whether it sets fires; defaults to false.

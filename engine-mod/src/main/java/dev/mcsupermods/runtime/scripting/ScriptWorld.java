@@ -19,10 +19,14 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -33,7 +37,9 @@ import org.mozilla.javascript.Scriptable;
 /**
  * {@code World} (ADR 0032 D2) over a {@link ServerLevel}; {@code getContainer} (script API 1.2, ADR 0076 D5) gives a
  * {@link ScriptContainer}; {@code spawnParticle} takes particle options objects, {@code motion} and {@code force} (script
- * API 1.3, ADR 0080 D5). Commands and functions run as the server with permission
+ * API 1.3, ADR 0080 D5); script API 1.4 (ADR 0082 D5) adds {@code dayTime}, {@code isRaining}, {@code isThundering},
+ * {@code breakBlock}, {@code dropItem}, {@code explode} and {@code setWeather}. Weather is the server's
+ * ({@code MinecraftServer.getWeatherData()}), shown only in dimensions with an open sky. Commands and functions run as the server with permission
  * level 2 (as {@code run_function} actions do) and suppressed output, at the world spawn point with no {@code @s}, or
  * at the optional {@code at} position (ADR 0058 D2). {@code Entity.runCommand} and {@code Entity.runFunction} share
  * {@link #runCommand} and {@link #runFunction}.
@@ -41,15 +47,31 @@ import org.mozilla.javascript.Scriptable;
 final class ScriptWorld {
     private ScriptWorld() {}
 
+    /** {@code explode}'s highest power (script API 1.4, ADR 0082 D5; the Rules cap). */
+    static final int MAX_EXPLOSION_POWER = 10;
+    /** {@code setWeather}'s longest duration in seconds. */
+    static final int MAX_WEATHER_SECONDS = 1_000_000;
+    /** {@code dropItem}'s most stacks per call. */
+    static final int MAX_DROP_STACKS = 64;
+
     static final ScriptType TYPE = ScriptType.of("World")
             .constant("dimension", ServerLevel.class, (api, l) -> l.dimension().identifier().toString())
             .live("time", ServerLevel.class, (api, l) -> (double) l.getGameTime())
+            .live("dayTime", ServerLevel.class, (api, l) -> (double) dayTime(l))
+            .live("isRaining", ServerLevel.class, (api, l) -> openSky(l) && l.getServer().getWeatherData().isRaining())
+            .live("isThundering", ServerLevel.class, (api, l) -> openSky(l) && l.getServer().getWeatherData().isRaining()
+                    && l.getServer().getWeatherData().isThundering())
             .method("getBlock", 1, 1, ServerLevel.class, (api, l, args) ->
                     BlockStateParser.serialize(l.getBlockState(ScriptPos.arg(args, 0, "pos").block())))
             .method("setBlock", 2, 2, ServerLevel.class, (api, l, args) -> {
                 ScriptPos pos = ScriptPos.arg(args, 0, "pos");
                 Optional<BlockState> state = EventRunner.parseState(ScriptValues.string(args, 1, "state"));
                 return state.isPresent() && l.setBlockAndUpdate(pos.block(), state.get());
+            })
+            .method("breakBlock", 1, 2, ServerLevel.class, (api, l, args) -> {
+                ScriptPos pos = ScriptPos.arg(args, 0, "pos");
+                Scriptable options = ScriptValues.options(args, 1, "options");
+                return l.destroyBlock(pos.block(), ScriptValues.booleanMember(options, "drops", true));
             })
             .method("spawnParticle", 2, 3, ServerLevel.class, (api, l, args) -> {
                 ParticleOptions particle = particle(l, args);
@@ -90,6 +112,22 @@ final class ScriptWorld {
                 Entity entity = type.get().spawn(l, pos.block(), EntitySpawnReason.COMMAND);
                 return entity == null ? null : api.entity(entity);
             })
+            .method("dropItem", 2, 2, ServerLevel.class, (api, l, args) -> {
+                Vec3 at = ScriptPos.arg(args, 0, "pos").vec();
+                ItemStack stack = ScriptItems.spec(api, args, 1);
+                int max = stack.getMaxStackSize();
+                long stacks = (stack.getCount() + (long) max - 1) / max;
+                if (stacks > MAX_DROP_STACKS) {
+                    throw ScriptValues.rangeError("item.count is " + stack.getCount() + "; at most " + MAX_DROP_STACKS
+                            + " stacks (" + (MAX_DROP_STACKS * max) + " of this item) are dropped per call");
+                }
+                for (int left = stack.getCount(); left > 0; left -= max) {
+                    ItemEntity entity = new ItemEntity(l, at.x, at.y, at.z, stack.copyWithCount(Math.min(left, max)));
+                    entity.setDefaultPickUpDelay();
+                    l.addFreshEntity(entity);
+                }
+                return null;
+            })
             .method("entitiesNear", 2, 2, ServerLevel.class, (api, l, args) -> {
                 Vec3 at = ScriptPos.arg(args, 0, "pos").vec();
                 double radius = Math.max(0, ScriptValues.number(args, 1, "radius"));
@@ -102,7 +140,60 @@ final class ScriptWorld {
             .method("getContainer", 1, 1, ServerLevel.class, (api, l, args) -> {
                 ScriptContainer container = ScriptContainer.at(l, ScriptPos.arg(args, 0, "pos").block());
                 return container == null ? null : api.container(container);
+            })
+            .method("explode", 2, 3, ServerLevel.class, (api, l, args) -> {
+                Vec3 at = ScriptPos.arg(args, 0, "pos").vec();
+                double power = ScriptValues.number(args, 1, "power");
+                if (!(power >= 0 && power <= MAX_EXPLOSION_POWER)) {
+                    throw ScriptValues.rangeError("power is " + ScriptRuntime.numberToString(power, 10) + "; it must be 0 to "
+                            + MAX_EXPLOSION_POWER);
+                }
+                Scriptable options = ScriptValues.options(args, 2, "options");
+                boolean fire = ScriptValues.booleanMember(options, "fire", false);
+                boolean breaks = ScriptValues.booleanMember(options, "breaksBlocks", true);
+                l.explode(null, at.x, at.y, at.z, (float) power, fire,
+                        breaks ? Level.ExplosionInteraction.BLOCK : Level.ExplosionInteraction.NONE);
+                return null;
+            })
+            .method("setWeather", 1, 2, ServerLevel.class, (api, l, args) -> {
+                String kind = ScriptValues.string(args, 0, "kind");
+                if (!kind.equals("clear") && !kind.equals("rain") && !kind.equals("thunder")) {
+                    throw ScriptRuntime.typeError("kind '" + kind + "' is not \"clear\", \"rain\" or \"thunder\"");
+                }
+                int ticks;
+                if (ScriptValues.present(args, 1)) {
+                    double seconds = ScriptValues.number(args, 1, "seconds");
+                    if (!(seconds > 0 && seconds <= MAX_WEATHER_SECONDS)) {
+                        throw ScriptValues.rangeError("seconds is " + ScriptRuntime.numberToString(seconds, 10)
+                                + "; it must be more than 0 and at most " + MAX_WEATHER_SECONDS);
+                    }
+                    ticks = (int) Math.max(1, Math.round(seconds * 20));
+                } else {
+                    IntProvider length = switch (kind) {
+                        case "clear" -> ServerLevel.RAIN_DELAY;
+                        case "rain" -> ServerLevel.RAIN_DURATION;
+                        default -> ServerLevel.THUNDER_DURATION;
+                    };
+                    ticks = length.sample(l.getRandom());
+                }
+                boolean clear = kind.equals("clear");
+                l.getServer().setWeatherParameters(clear ? ticks : 0, clear ? 0 : ticks, !clear, kind.equals("thunder"));
+                return null;
             });
+
+    /**
+     * {@code dayTime} (script API 1.4): the dimension's own clock, or the Overworld's when its type names no clock,
+     * as ticks 0 to 23999.
+     */
+    static long dayTime(ServerLevel level) {
+        long ticks = level.dimensionType().defaultClock().isPresent() ? level.getDefaultClockTime() : level.getOverworldClockTime();
+        return Math.floorMod(ticks, 24000L);
+    }
+
+    /** Whether weather shows in {@code level}: sky light and no ceiling (the Overworld, not the Nether or the End). */
+    static boolean openSky(ServerLevel level) {
+        return level.dimensionType().hasSkyLight() && !level.dimensionType().hasCeiling();
+    }
 
     /**
      * The {@code particle} argument of {@code spawnParticle} (script API 1.3, ADR 0080 D5): a particle type id without

@@ -62,6 +62,21 @@
           "type": "number",
           "doc": "The dimension's game time in ticks."
         },
+        "dayTime": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The time of day in ticks, 0 to 23999: 0 is sunrise, 6000 noon, 13000 nightfall and 18000 midnight. It follows this dimension's own clock, or the Overworld's in a dimension without one (such as the Nether).\n\nSince runtime 1.8.0."
+        },
+        "isRaining": {
+          "kind": "property",
+          "type": "boolean",
+          "doc": "Whether it is raining (or thundering) in this dimension. Always `false` in a dimension without an open sky, such as the Nether and the End. It changes as soon as the weather changes, while the rain on screen fades in over a few seconds.\n\nSince runtime 1.8.0."
+        },
+        "isThundering": {
+          "kind": "property",
+          "type": "boolean",
+          "doc": "Whether there is a thunderstorm in this dimension. Always `false` in a dimension without an open sky.\n\nSince runtime 1.8.0."
+        },
         "getBlock": {
           "kind": "method",
           "params": [
@@ -87,6 +102,24 @@
             }
           ],
           "doc": "Places a block state written as `namespace:id[property=value,...]`; returns `false` when the state does not parse or the block was not placed.",
+          "returns": "boolean"
+        },
+        "breakBlock": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "pos",
+              "type": "Pos",
+              "doc": "The block to break (the block that contains the position)."
+            },
+            {
+              "name": "options",
+              "type": "{ drops?: boolean }",
+              "optional": true,
+              "doc": "`drops` (`true` by default): whether the block drops what it would drop when broken without a tool, as an explosion or `/setblock ... destroy` does."
+            }
+          ],
+          "doc": "Breaks a block as if it were mined, with the breaking sound and particles, leaving air (or the fluid it held); for example `world.breakBlock(e.pos, { drops: false })`. Returns `false` when there was nothing to break (air).\n\nSince runtime 1.8.0.",
           "returns": "boolean"
         },
         "spawnParticle": {
@@ -183,6 +216,22 @@
           "doc": "Spawns an entity of a type at a position; returns `undefined` when it could not be spawned.",
           "returns": "Entity | undefined"
         },
+        "dropItem": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "pos",
+              "type": "Pos",
+              "doc": "Where the item appears, exactly (use `pos.offset(0.5, 0.5, 0.5)` for the middle of a block)."
+            },
+            {
+              "name": "item",
+              "type": "ItemSpec",
+              "doc": "The item; a count over the item's stack size is dropped as several stacks, at most 64 stacks (more is a `RangeError`)."
+            }
+          ],
+          "doc": "Drops an item on the ground as a block drops its loot, with a small random push; for example `world.dropItem(e.pos.offset(0.5, 1, 0.5), { id: \"minecraft:diamond\", count: 3 })`.\n\nSince runtime 1.8.0."
+        },
         "entitiesNear": {
           "kind": "method",
           "params": [
@@ -238,6 +287,45 @@
           ],
           "doc": "Returns the container of the block at a position, or `undefined` when the block has no slots: chests, barrels, hoppers, furnaces, dispensers and the mod's own containers and machines have one, stone does not; for example `e.world.getContainer(e.pos)`. A double chest gives the half at the position.\n\nSince runtime 1.6.0.",
           "returns": "Container | undefined"
+        },
+        "explode": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "pos",
+              "type": "Pos",
+              "doc": "The centre of the explosion, exactly."
+            },
+            {
+              "name": "power",
+              "type": "number",
+              "doc": "The strength from 0 to 10 (anything else is a `RangeError`): 1 is about a fireball, 4 TNT, 6 a charged creeper."
+            },
+            {
+              "name": "options",
+              "type": "{ fire?: boolean; breaksBlocks?: boolean }",
+              "optional": true,
+              "doc": "`fire` (`false` by default) sets fires around it; `breaksBlocks` (`true` by default) breaks blocks, which then drop as from a bed exploding (the `block_explosion_drop_decay` game rule applies). Entities are always hurt and pushed."
+            }
+          ],
+          "doc": "Makes an explosion that no entity caused; for example `world.explode(e.pos, 2, { breaksBlocks: false })`.\n\nSince runtime 1.8.0."
+        },
+        "setWeather": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "kind",
+              "type": "\"clear\" | \"rain\" | \"thunder\"",
+              "doc": "The new weather."
+            },
+            {
+              "name": "seconds",
+              "type": "number",
+              "optional": true,
+              "doc": "How long it lasts, more than 0 and at most 1000000 (anything else is a `RangeError`); when left out, the game picks a length as `/weather` does."
+            }
+          ],
+          "doc": "Sets the weather of the whole server (every dimension shares it), as `/weather` does; for example `world.setWeather(\"thunder\", 60)`. Another kind is a `TypeError`.\n\nSince runtime 1.8.0."
         }
       }
     },
@@ -574,6 +662,11 @@
           ],
           "doc": "Casts a ray from the entity's eyes along its look and returns the first block or entity it hits, or `undefined`; for example `player.raycast(5)?.block?.id`.\n\nSince runtime 1.5.0.",
           "returns": "RayHit | undefined"
+        },
+        "remove": {
+          "kind": "method",
+          "params": [],
+          "doc": "Removes the entity from the world at once, without dropping loot or experience and without death events or a death animation (unlike `kill()`). A player cannot be removed: calling it on a player is a `TypeError`.\n\nSince runtime 1.8.0."
         }
       }
     },

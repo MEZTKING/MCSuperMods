@@ -308,6 +308,12 @@ interface Entity {
    */
   raycast(maxDistance: number, options?: RaycastOptions): RayHit | undefined;
   /**
+   * Removes the entity from the world at once, without dropping loot or experience and without death events or a death animation (unlike `kill()`). A player cannot be removed: calling it on a player is a `TypeError`.
+   *
+   * Since runtime 1.8.0.
+   */
+  remove(): void;
+  /**
    * Removes the mob effect; returns `true` when the entity had it.
    *
    * @param id - The effect id, for example `minecraft:speed` or one of your own.
@@ -1075,14 +1081,48 @@ interface ServerTickEvent extends GameEvent {
 
 /** One loaded dimension of the server. */
 interface World {
+  /**
+   * Breaks a block as if it were mined, with the breaking sound and particles, leaving air (or the fluid it held); for example `world.breakBlock(e.pos, { drops: false })`. Returns `false` when there was nothing to break (air).
+   *
+   * Since runtime 1.8.0.
+   *
+   * @param pos - The block to break (the block that contains the position).
+   * @param options - `drops` (`true` by default): whether the block drops what it would drop when broken without a tool, as an explosion or `/setblock ... destroy` does.
+   */
+  breakBlock(pos: Pos, options?: { drops?: boolean }): boolean;
+  /**
+   * The time of day in ticks, 0 to 23999: 0 is sunrise, 6000 noon, 13000 nightfall and 18000 midnight. It follows this dimension's own clock, or the Overworld's in a dimension without one (such as the Nether).
+   *
+   * Since runtime 1.8.0.
+   */
+  readonly dayTime: number;
   /** The dimension id, for example `minecraft:overworld`. */
   readonly dimension: string;
+  /**
+   * Drops an item on the ground as a block drops its loot, with a small random push; for example `world.dropItem(e.pos.offset(0.5, 1, 0.5), { id: "minecraft:diamond", count: 3 })`.
+   *
+   * Since runtime 1.8.0.
+   *
+   * @param pos - Where the item appears, exactly (use `pos.offset(0.5, 0.5, 0.5)` for the middle of a block).
+   * @param item - The item; a count over the item's stack size is dropped as several stacks, at most 64 stacks (more is a `RangeError`).
+   */
+  dropItem(pos: Pos, item: ItemSpec): void;
   /**
    * Returns the living entities within a radius of a position.
    *
    * @param radius - The radius in blocks.
    */
   entitiesNear(pos: Pos, radius: number): Entity[];
+  /**
+   * Makes an explosion that no entity caused; for example `world.explode(e.pos, 2, { breaksBlocks: false })`.
+   *
+   * Since runtime 1.8.0.
+   *
+   * @param pos - The centre of the explosion, exactly.
+   * @param power - The strength from 0 to 10 (anything else is a `RangeError`): 1 is about a fireball, 4 TNT, 6 a charged creeper.
+   * @param options - `fire` (`false` by default) sets fires around it; `breaksBlocks` (`true` by default) breaks blocks, which then drop as from a bed exploding (the `block_explosion_drop_decay` game rule applies). Entities are always hurt and pushed.
+   */
+  explode(pos: Pos, power: number, options?: { fire?: boolean; breaksBlocks?: boolean }): void;
   /** Returns the block state at a position as `namespace:id[property=value,...]`. */
   getBlock(pos: Pos): string;
   /**
@@ -1093,6 +1133,18 @@ interface World {
    * @param pos - The block position.
    */
   getContainer(pos: Pos): Container | undefined;
+  /**
+   * Whether it is raining (or thundering) in this dimension. Always `false` in a dimension without an open sky, such as the Nether and the End. It changes as soon as the weather changes, while the rain on screen fades in over a few seconds.
+   *
+   * Since runtime 1.8.0.
+   */
+  readonly isRaining: boolean;
+  /**
+   * Whether there is a thunderstorm in this dimension. Always `false` in a dimension without an open sky.
+   *
+   * Since runtime 1.8.0.
+   */
+  readonly isThundering: boolean;
   /**
    * Plays a sound event at a position for nearby players. The id can be a vanilla sound event or a project sound key (for example `mymod:block.chime`) once the project declares it in `sounds.json`.
    *
@@ -1131,6 +1183,15 @@ interface World {
    * @param state - The block state, for example `minecraft:glowstone`.
    */
   setBlock(pos: Pos, state: string): boolean;
+  /**
+   * Sets the weather of the whole server (every dimension shares it), as `/weather` does; for example `world.setWeather("thunder", 60)`. Another kind is a `TypeError`.
+   *
+   * Since runtime 1.8.0.
+   *
+   * @param kind - The new weather.
+   * @param seconds - How long it lasts, more than 0 and at most 1000000 (anything else is a `RangeError`); when left out, the game picks a length as `/weather` does.
+   */
+  setWeather(kind: "clear" | "rain" | "thunder", seconds?: number): void;
   /**
    * Spawns an entity of a type at a position; returns `undefined` when it could not be spawned.
    *

@@ -4079,3 +4079,20 @@ Decisions
 Next
 - B371: call `expandProject(project, plugins, target)` once per validation, export, content jar, vanilla pack, eject and modpack path, validate and lower `result.project`, and run validator and schema problems through `mapProblemsToOrigins(problems, result.origins)`; `runExport` receives the expanded project (it does not expand).
 - B383: `packages/core/CLAUDE.md` Contents line for `src/lowering/expand-project.ts` and the three `core.expansion-*` codes.
+## 2026-11-14 — executor — B370 Script API 1.4
+
+What
+- Script API 1.4 (ADR 0082 D5), "Since runtime 1.8.0": `World.dayTime` (0 to 23999, the dimension's own clock or the Overworld's when its type names none), `World.isRaining` and `World.isThundering` (the server's `WeatherData`, `false` in a dimension without an open sky: no sky light or a ceiling), `World.setWeather(kind: "clear" | "rain" | "thunder", seconds?)` (`MinecraftServer.setWeatherParameters`; without `seconds` the length is sampled from `ServerLevel.RAIN_DELAY`, `RAIN_DURATION` or `THUNDER_DURATION`; `seconds` more than 0 and at most 1000000), `World.explode(pos, power 0..10, { fire?, breaksBlocks? })` (no causing entity; `breaksBlocks` true uses the `BLOCK` interaction, false `NONE`), `World.dropItem(pos, item: ItemSpec)` (exact position, normal pick-up delay, split into stacks, at most 64 stacks).
+- Orchestrator additions: `Entity.remove()` (`Entity.discard()`: no loot, experience, death events or animation; a player is a `TypeError`) and `World.breakBlock(pos, { drops? })` (`destroyBlock`, drops default true, breaking sound and particles; returns `false` on air).
+- `packages/schemas/mcdoc/msm/rules.mcdoc`: `explode.power` is `0..10` (and its doc line), `symbols.json` regenerated.
+- Snapshot `test/fixtures/previous/script-api-v1-1.7.0.json` (the 1.3 description); new `script-api-1-4.test.ts`; the 1.2 and 1.3 tests now compare their own snapshots (`API_1_2`, `API_1_3`) for their exact-additions checks; `msm-runtime.d.ts` regenerated.
+- GameTests: `MsmScriptApi14GameTest` (6) over the new `msm/msm_test/script/world_api14.js`: weather and time (WeatherData fields, the 30 s length, a sampled length, the Nether reading false), soft and block-breaking explosions, 70 diamonds as two stacks, breaking with and without drops, `remove()` (reason `DISCARDED`, no loot, player refused), and the range and type errors. `MsmScriptGameTest`'s script count 23 to 24.
+- Checked: `./gradlew build` 26.3 (435 GameTests, 685 JUnit), `-Pmc=26.4` and `-PwithoutGeckolib` (see the report); scripting (91), schemas (1186) and rules (238) tests, `pnpm lint`, `pnpm typecheck`.
+
+Decisions
+- "Since runtime 1.8.0": each unreleased batch took the next runtime number (1.5.0 Script API 1.1, 1.6.0 1.2, 1.7.0 1.3 particles), while `mod_version` is still 1.4.0; the orchestrator confirms at the close.
+- Positions of `explode` and `dropItem` are exact, as for `spawnParticle`: a block position is its corner, so callers add `offset(0.5, 0.5, 0.5)`.
+- `isRaining` reads the weather state, not the fading rain level, so it changes at once after `setWeather`.
+
+Next
+- B365's compiler (B368 updates the goldens): "Remove the mob" to `remove()`, "Remove a block with drops" to `breakBlock(pos)` (drop `rules.drops-not-supported`), block-centred positions for `explode` and `dropItem`; B368 deletes `packages/plugins/rules/test/fixtures/script-api-1-4.d.ts`. B382/B360: the AI system prompt's Script API lines.

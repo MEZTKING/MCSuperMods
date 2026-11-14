@@ -3,8 +3,8 @@
  * (`test/fixtures/previous/script-api-v1-1.6.0.json`) changes only by additions to the one of
  * runtime 1.5.0 (`test/fixtures/previous/script-api-v1-1.5.0.json`); the current description adds
  * exactly `World.getContainer` and the `Container` type the runtime's `ScriptApi` installs (B317),
- * and scripts that use them type-check. Later changes (1.3, ADR 0080 D5) are pinned in their own
- * test file.
+ * and scripts that use them type-check. Later changes (1.3, ADR 0080 D5; 1.4, ADR 0082 D5) are
+ * pinned in their own test files.
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
@@ -67,10 +67,10 @@ describe('script API 1.2 is additive', () => {
 
 describe('script API 1.2 members (the list B317 installs)', () => {
   it('adds exactly World.getContainer and the Container type', () => {
-    expect(Object.keys(SCRIPT_API.types).filter((name) => !PREVIOUS.types[name])).toEqual([
+    expect(Object.keys(API_1_2.types).filter((name) => !PREVIOUS.types[name])).toEqual([
       'Container',
     ]);
-    const added = Object.entries(SCRIPT_API.types).flatMap(([name, type]) =>
+    const added = Object.entries(API_1_2.types).flatMap(([name, type]) =>
       PREVIOUS.types[name]
         ? Object.keys(type.members)
             .filter((member) => PREVIOUS.types[name]?.members[member] === undefined)
