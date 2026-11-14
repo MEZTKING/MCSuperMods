@@ -34,7 +34,10 @@
       "dev.mcsupermods.runtime.gametest.MsmContainerGameTest",
       "dev.mcsupermods.runtime.gametest.MsmMachineGameTest",
       "dev.mcsupermods.runtime.gametest.MsmMachineRecipeGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmContainerScriptGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmContainerScriptGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmPortalFrameGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmPortalBlockGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmPortalTravelGameTest"
     ]
   },
   "depends": {

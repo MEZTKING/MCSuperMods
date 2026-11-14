@@ -3526,3 +3526,10 @@ Decisions
 Next
 - Orchestrator: add `"portal-"` to `ConformanceCorpusTest.PENDING`.
 - B334: remove it and add `portal-` (block), `portal-item-`, `portal-entity-`, `portal-effect-` to the test's `KINDS`.
+## 2026-11-14 — executor — B330 portal stubs and dimension probe
+
+**What:** Registered the empty GameTest classes `MsmPortalFrameGameTest`, `MsmPortalBlockGameTest` and `MsmPortalTravelGameTest` and the parity class `SamplePortalsParityTest` (both `fabric.mod.json` entry points; the parity description gains `sample_portals_*`), so later portal briefs never edit those files. Ran the F20 probe (temporary GameTest, removed before the commit): a `data/msm_test/dimension/portal_realm.json` in the GameTest resources does NOT create a level on 26.3 or 26.4. `server.getLevel(msm_test:portal_realm)` is null, `levelKeys()` is only overworld, the_end and the_nether, and the `LEVEL_STEM` registry holds only those three, so the file is not read into the world's dimensions at all.
+
+**Decisions:** Per the brief the dimension file is left out. B336 tests travel with `minecraft:the_nether` and `minecraft:the_end` only (limit P8); parity uses the fixture's own dimension on real servers.
+
+**Next:** B331 (format), B332 (plugin API) and B333 (runtime frame detector) in wave 1. Verified: `./gradlew build` on 26.3, 26.4 and `-PwithoutGeckolib` green with 361 GameTests each; `-p parity build` green on both versions.
