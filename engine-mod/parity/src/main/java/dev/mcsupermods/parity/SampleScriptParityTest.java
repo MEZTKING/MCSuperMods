@@ -2,13 +2,19 @@ package dev.mcsupermods.parity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -35,7 +41,15 @@ import net.minecraft.world.phys.Vec3;
  *       minecraft:sea_lantern", e.block.pos)}, so the sea lantern stands on the ore, not at the world spawn point;
  *       a use of {@code warded_stone} is cancelled: nothing is placed, the held stack keeps its count, and the player
  *       is sent its inventory and the six neighbours of the placement position (ADR 0058 D3).
+ *   <li>{@code kill_counter} (ADR 0062): each kill by a player adds one to {@code kills} in that player's
+ *       {@code player.data} and to {@code total_kills} in {@code msm.storage}, and tells the player both
+ *       ({@code Your kills: K. Everyone's: T.}); the values are read back on the next kill, also after a real
+ *       {@code /reload} (in the {@code msm_parity_tests:reload} environment, a batch of its own), which reloads the
+ *       scripts and clears their variables and schedules but not the saved data.
  * </ul>
+ *
+ * <p>The start counter ({@code start_counter}, {@code msm.storage} across a restart) is checked by
+ * {@code tools/run-fabric-server --runs 2}, since a GameTest server cannot restart.
  *
  * <p>Interactions go through {@code ServerPlayerGameMode.useItemOn} (as the network handler calls it; Fabric API's
  * {@code UseBlockCallback} fires there) and Fabric API's {@code UseEntityCallback}. Packets are read from a
@@ -122,5 +136,60 @@ public class SampleScriptParityTest {
         List<String> out = new ArrayList<>(list);
         out.sort(null);
         return out;
+    }
+    private static final Pattern KILLS = Pattern.compile("Your kills: (\\d+)\\. Everyone's: (\\d+)\\.");
+
+    /** The kill counter's messages to {@code ears.player} since the last read, as {kills, total} pairs. */
+    private static List<int[]> killMessages(ParityEars ears) {
+        List<int[]> out = new ArrayList<>();
+        for (Packet<?> packet : ears.packets()) {
+            if (packet instanceof ClientboundSystemChatPacket chat) {
+                Matcher m = KILLS.matcher(chat.content().getString());
+                if (m.matches()) {
+                    out.add(new int[] {Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2))});
+                }
+            }
+        }
+        return out;
+    }
+
+    private static int[] killAndRead(GameTestHelper helper, ParityEars ears, BlockPos at) {
+        Mob pig = helper.spawnWithNoFreeWill(EntityTypes.PIG, at);
+        ears.packets();
+        pig.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(ears.player), 1000.0f);
+        helper.assertFalse(pig.isAlive(), "the pig survived");
+        List<int[]> messages = killMessages(ears);
+        helper.assertValueEqual(messages.size(), 1, "kill counter messages after one kill");
+        return messages.getFirst();
+    }
+
+    @GameTest(environment = SampleModAdditionsParityTest.RELOAD, maxTicks = 600)
+    public void killCounterKeepsPlayerAndWorldDataAcrossReload(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ParityEars ears = new ParityEars(helper, AT.west(), GameType.SURVIVAL);
+        try {
+            int[] first = killAndRead(helper, ears, AT);
+            helper.assertValueEqual(first[0], 1, "kills after the first kill (a new player)");
+            int[] second = killAndRead(helper, ears, AT.east());
+            helper.assertValueEqual(second[0], 2, "kills read back on the second kill");
+            helper.assertValueEqual(second[1], first[1] + 1, "world total read back on the second kill");
+            CompletableFuture<Void> reload = server.reloadResources(server.getPackRepository().getSelectedIds());
+            helper.startSequence()
+                    .thenWaitUntil(() -> helper.assertTrue(reload.isDone(), "the reload has not finished"))
+                    .thenExecute(() -> {
+                        try {
+                            helper.assertFalse(reload.isCompletedExceptionally(), "the reload failed");
+                            int[] third = killAndRead(helper, ears, AT.east(2));
+                            helper.assertValueEqual(third[0], 3, "kills after /reload");
+                            helper.assertValueEqual(third[1], second[1] + 1, "world total after /reload");
+                        } finally {
+                            ears.close();
+                        }
+                    })
+                    .thenSucceed();
+        } catch (RuntimeException e) {
+            ears.close();
+            throw e;
+        }
     }
 }

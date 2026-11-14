@@ -58,8 +58,10 @@ jobs:
   # The msm_runtime Fabric mod (ADR 0024, ADR 0026 D6), once per Minecraft version (ADR 0038 D5):
   # JUnit and GameTests through `./gradlew build -Pmc=<mc>`, then the samples exported for target
   # mc-<mc> with that runtime nested and started on a headless Fabric dedicated server
-  # (tools/run-fabric-server). 26.3 also builds the ejected Java projects and runs the four parity
-  # runs; other versions run parity on the content jars only (the sample mob only with GeckoLib).
+  # (tools/run-fabric-server; the sample script twice on one world), and the sample data pack on
+  # a vanilla server (tools/run-fabric-server/vanilla-datapack.ts). 26.3 also builds the ejected
+  # Java projects and runs the five parity runs; other versions run parity on the content jars
+  # only (the sample mob only with GeckoLib).
   # Action versions: setup-java and cache v6 (checked 2026-11-05).
   engine-mod:
     runs-on: ubuntu-latest
@@ -114,11 +116,13 @@ jobs:
       # Restored before the exports: the sample-mob export downloads GeckoLib into this cache
       # (from the target's GeckoLib facts, SHA-512 checked) when it is missing.
       # The key names GeckoLib so caches saved before it was added are not reused.
-      - name: Cache Fabric server and GeckoLib downloads
+      # The key names the vanilla server too (B241), so a cache saved before the data pack check
+      # is not reused without it.
+      - name: Cache Fabric server, vanilla server and GeckoLib downloads
         uses: actions/cache@v6
         with:
           path: ~/.cache/msm-fabric-server
-          key: fabric-server-geckolib-mc${{ matrix.mc }}-${{ hashFiles('packages/targets/*/src/target.ts') }}
+          key: fabric-server-geckolib-vanilla-mc${{ matrix.mc }}-${{ hashFiles('packages/targets/*/src/target.ts') }}
       - name: Find the msm_runtime jar
         run: |
           mapfile -t jars < <(ls "$GITHUB_WORKSPACE"/engine-mod/build/libs/msm_runtime-*+mc${{ matrix.mc }}.jar | grep -v -e '-sources\.jar$' -e '-dev\.jar$')
@@ -177,13 +181,30 @@ jobs:
           test -f "$RUNNER_TEMP/sample-script/msm_sample_script.jar"
           cat "$RUNNER_TEMP/sample-script/fabric-facts.json"
       # Reuses the sample mod's run folder (the game server is already there); the facts'
-      # expectScripts makes "[msm_runtime] loaded S script(s); 0 error(s)" required.
-      - name: Headless Fabric server check (sample script, scripts loaded)
+      # expectScripts makes "[msm_runtime] loaded S script(s); 0 error(s)" required. Two starts
+      # on one world (ADR 0062): the start_counter script counts the starts in msm.storage,
+      # saved with the world, so the second start must log "start counter: 2".
+      - name: Headless Fabric server check (sample script, scripts loaded, two starts)
         run: >-
           node tools/run-fabric-server/index.ts
           --jar "$RUNNER_TEMP/sample-script/msm_sample_script.jar"
           --facts "$RUNNER_TEMP/sample-script/fabric-facts.json"
+          --runs 2 --expect-line 'msm_sample_script:start_counter: start counter: {run}'
           --work "$RUNNER_TEMP/fabric-server"
+          --cache ~/.cache/msm-fabric-server
+      # The sample data pack's villager trade (B231) on a vanilla dedicated server: no Fabric and
+      # no runtime, since the trade is plain data. Zombie-converted fletchers must offer the new
+      # trade and still the vanilla arrow trade (both counts above zero).
+      - name: Export the sample data pack
+        run: |
+          MSM_SAMPLE_DATAPACK_OUT="$RUNNER_TEMP/sample-datapack" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-datapack.golden.test.ts
+          cat "$RUNNER_TEMP/sample-datapack/server-facts.json"
+      - name: Headless vanilla server check (sample data pack, villager trade)
+        run: >-
+          node tools/run-fabric-server/vanilla-datapack.ts
+          --facts "$RUNNER_TEMP/sample-datapack/server-facts.json"
+          --work "$RUNNER_TEMP/vanilla-datapack"
           --cache ~/.cache/msm-fabric-server
       - name: Build the parity GameTests
         working-directory: engine-mod
@@ -320,8 +341,10 @@ jobs:
           path: |
             engine-mod/build/run/gameTest/logs
             engine-mod/build/reports/tests
-            ${{ runner.temp }}/fabric-server/run-fabric-server.log
+            ${{ runner.temp }}/fabric-server/run-fabric-server*.log
             ${{ runner.temp }}/fabric-server/crash-reports
+            ${{ runner.temp }}/vanilla-datapack/vanilla-datapack.log
+            ${{ runner.temp }}/vanilla-datapack/crash-reports
             ${{ runner.temp }}/fabric-server-mob/run-fabric-server.log
             ${{ runner.temp }}/fabric-server-mob/crash-reports
             ${{ runner.temp }}/fabric-server-parity/run-fabric-server.log

@@ -1,0 +1,42 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.5
+      },
+      "msm:on_random_tick": {
+        "chance": 1,
+        "event": "msm_sample_mod:bloom"
+      }
+    },
+    "display_name": "Ruby Bloom",
+    "events": {
+      "msm_sample_mod:bloom": {
+        "actions": [
+          {
+            "offset": [
+              0,
+              1,
+              0
+            ],
+            "state": "minecraft:red_wool",
+            "type": "set_block_state"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "model": "minecraft:block/red_mushroom_block",
+    "sound_type": "grass"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_bloom",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

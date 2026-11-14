@@ -1,0 +1,36 @@
+{
+  "data": {
+    "components": {
+      "msm:on_use_on_block": {
+        "cooldown_ticks": 20,
+        "event": "msm_sample_mod:trowel"
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "display_name": "Ruby Trowel",
+    "events": {
+      "msm_sample_mod:trowel": {
+        "actions": [
+          {
+            "offset": [
+              0,
+              1,
+              0
+            ],
+            "state": "minecraft:gold_block",
+            "type": "set_block_state"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "minecraft:item/iron_shovel"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_trowel",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

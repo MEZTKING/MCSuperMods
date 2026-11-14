@@ -8,10 +8,12 @@ import {
   GAMETEST_MODULE,
   geckolibCachePath,
   latestStableInstaller,
+  missingLines,
   moduleVersionFromPom,
   parseArgs,
   parseGameTestReport,
   reportPath,
+  runLogName,
   serverArguments,
   serverLauncherUrl,
   serverProperties,
@@ -384,6 +386,19 @@ describe('analyseLog with scripts', () => {
     ]);
   });
 
+  it('accepts the same load again in a GameTest run (a /reload), but no change or error', () => {
+    const gametest = { ...expectScripts, gametest: true };
+    expect(analyseLog([REGISTERED, LOADED, LOADED], gametest).failures).toEqual([]);
+    const errors = LOADED.replace('0 error', '1 error');
+    expect(analyseLog([REGISTERED, LOADED, errors], gametest).failures).toEqual([
+      `the scripts loaded again differently: ${errors}`,
+    ]);
+    const fewer = LOADED.replace('11 script', '10 script');
+    expect(analyseLog([REGISTERED, LOADED, fewer], gametest).failures).toEqual([
+      `the scripts loaded again differently: ${fewer}`,
+    ]);
+  });
+
   it('leaves the line optional without expectScripts, and skips it with --no-runtime', () => {
     expect(analyseLog([REGISTERED, DONE], expect3).failures).toEqual([]);
     expect(analyseLog([DONE], { ...expectScripts, noRuntime: true }).failures).toEqual([]);
@@ -505,5 +520,46 @@ describe('the GameTest module', () => {
     expect(fabricApiModuleUrl(GAMETEST_MODULE, '4.0.36+3434d6d95d')).toBe(
       'https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-gametest-api-v1/4.0.36+3434d6d95d/fabric-gametest-api-v1-4.0.36+3434d6d95d.jar',
     );
+  });
+});
+
+describe('two runs on one world', () => {
+  const facts = { minecraft: '1.0', loader: '0.1.0', fabricApi: '0.2.0+1.0' };
+  const COUNTER =
+    '[10:04:06] [Server thread/INFO]: [msm_runtime] msm_sample_script:start_counter: start counter: 2';
+
+  it('reads --runs and repeated --expect-line, and refuses --runs with --gametest', () => {
+    expect(parseArgs(['--jar', 'a.jar'], facts)).toMatchObject({ runs: 1, expectLines: [] });
+    expect(
+      parseArgs(
+        ['--jar', 'a.jar', '--runs', '2', '--expect-line', 'a {run}', '--expect-line', 'b'],
+        facts,
+      ),
+    ).toMatchObject({ runs: 2, expectLines: ['a {run}', 'b'] });
+    expect(() => parseArgs(['--jar', 'a.jar', '--runs', '0'], facts)).toThrow(/1 or more/);
+    expect(() => parseArgs(['--jar', 'a.jar', '--runs', 'x'], facts)).toThrow(/whole/);
+    expect(() =>
+      parseArgs(['--jar', 'a.jar', '--runs', '2', '--gametest', 't.jar'], facts),
+    ).toThrow(/--runs needs a plain start/);
+  });
+
+  it('finds expected line endings with the run number filled in', () => {
+    const template = 'msm_sample_script:start_counter: start counter: {run}';
+    expect(missingLines([COUNTER, DONE], [template], 2)).toEqual([]);
+    expect(missingLines([COUNTER, DONE], [template], 1)).toEqual([
+      'msm_sample_script:start_counter: start counter: 1',
+    ]);
+    // An ending, not a part: 12 is not 2's line.
+    expect(missingLines([`${COUNTER.slice(0, -1)}12`], [template], 2)).toEqual([
+      'msm_sample_script:start_counter: start counter: 2',
+    ]);
+    expect(missingLines([`${COUNTER}  `], [template], 2)).toEqual([]);
+  });
+
+  it('keeps the first run log name and numbers the later ones', () => {
+    expect([runLogName(1), runLogName(2)]).toEqual([
+      'run-fabric-server.log',
+      'run-fabric-server-run2.log',
+    ]);
   });
 });

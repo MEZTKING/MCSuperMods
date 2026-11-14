@@ -16,6 +16,7 @@ import dataPackPlugin from '@msm/plugin-datapack';
 import entitiesPlugin from '@msm/plugin-entities';
 import modelsAnimPlugin from '@msm/plugin-models-anim';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
+import worldgenPlugin from '@msm/plugin-worldgen';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import { exportJavaProject, repoRoot, STUB_WRAPPER } from './sample-java';
@@ -25,6 +26,7 @@ const fixturesRoot = join(repoRoot, 'packages', 'exporters', 'test', 'fixtures')
 const PLUGINS: readonly Plugin[] = [
   resourcePackPlugin,
   dataPackPlugin,
+  worldgenPlugin,
   blocksItemsPlugin,
   entitiesPlugin,
   modelsAnimPlugin,

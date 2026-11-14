@@ -1,0 +1,42 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.2
+      },
+      "msm:on_entity_inside": {
+        "cooldown_ticks": 20,
+        "event": "msm_sample_mod:mist"
+      },
+      "msm:shape": {
+        "preset": "cross"
+      }
+    },
+    "display_name": "Ruby Mist",
+    "events": {
+      "msm_sample_mod:mist": {
+        "actions": [
+          {
+            "effect": "minecraft:weakness",
+            "seconds": 5,
+            "target": "self",
+            "type": "apply_effect"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "model": "minecraft:block/cobweb",
+    "sound_type": "wool"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_mist",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

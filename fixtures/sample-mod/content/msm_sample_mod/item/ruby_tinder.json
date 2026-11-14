@@ -1,0 +1,18 @@
+{
+  "data": {
+    "compost": "100%",
+    "creative_tab": "minecraft:ingredients",
+    "display_name": "Ruby Tinder",
+    "format": 1,
+    "fuel": {
+      "burn_seconds": 20
+    },
+    "model": "minecraft:item/blaze_powder"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_tinder",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

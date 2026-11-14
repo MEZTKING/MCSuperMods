@@ -1,0 +1,22 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// server.started: counts the starts of this world in msm.storage, which is saved with the",
+      "// world, so the count goes up by one on each start (the headless server check starts twice).",
+      "msm.events.on(\"server.started\", () => {",
+      "  const before = msm.storage.get(\"starts\");",
+      "  const starts = (typeof before === \"number\" ? before : 0) + 1;",
+      "  msm.storage.set(\"starts\", starts);",
+      "  msm.log.info(\"start counter: \" + starts);",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:start_counter",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

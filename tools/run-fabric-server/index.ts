@@ -49,6 +49,12 @@
  * with the separate runtime and GeckoLib option) downloads the jar named by the facts into
  * the cache, checks its SHA-512 and puts it in `mods/`.
  *
+ * Two runs (`--runs <n>`): the server is started n times on the same run folder, so the world
+ * kept from one run is loaded by the next (ADR 0062: `msm.storage` across a restart). Every run
+ * must pass on its own; `--expect-line <text>` (repeatable) requires a log line ending with the
+ * text in every run, with `{run}` replaced by the run's number (1, 2, ...), such as the sample
+ * script's start counter `msm_sample_script:start_counter: start counter: {run}`.
+ *
  * Downloads are untrusted data: written to disk and run only as the Fabric server they claim
  * to be, in a folder of their own.
  */
@@ -84,6 +90,10 @@ export interface Options {
   report: string | undefined;
   /** No `msm_runtime` in the run (an ejected jar): skip the registration checks. */
   noRuntime: boolean;
+  /** Starts of the server on the same world (2 or more keep the world between runs). */
+  runs: number;
+  /** Text a log line must end with in every run; `{run}` is replaced by the run's number. */
+  expectLines: string[];
   /** GeckoLib download facts; used only with {@link Options.separateGeckolib}. */
   geckolib: GeckolibFacts | undefined;
   /** Download GeckoLib and put it in `mods/` beside the content jar. */
@@ -135,6 +145,10 @@ export const USAGE = `Usage: node tools/run-fabric-server/index.ts --jar <conten
                         run only the GameTests matching this selector (* and ? wildcards,
                         such as msm_parity_tests:sample_mod_*)
   --report <file>       GameTest report file (default: <work>/gametest-report.xml)
+  --runs <n>            start the server n times on the same world (default: 1); every run
+                        must pass (not with --gametest)
+  --expect-line <text>  a log line must end with this text in every run (repeatable);
+                        {run} is replaced by the run's number (1, 2, ...)
   --no-runtime          the jar has no msm_runtime (an ejected project): skip the
                         registration checks and fail on any [msm_runtime] line
   --separate-geckolib   download GeckoLib (facts file's geckolib) into mods/, for a jar
@@ -168,6 +182,7 @@ export function parseArgs(
 ): Options {
   const flags = new Map<string, string>();
   const extra: string[] = [];
+  const expectLines: string[] = [];
   let allowWarnings = false;
   let separateGeckolib = false;
   let noRuntime = false;
@@ -190,6 +205,7 @@ export function parseArgs(
     if (value === undefined || value.startsWith('--')) throw new Error(`${arg} needs a value`);
     i++;
     if (arg === '--extra') extra.push(value);
+    else if (arg === '--expect-line') expectLines.push(value);
     else flags.set(arg.slice(2), value);
   }
   const known = new Set([
@@ -211,6 +227,7 @@ export function parseArgs(
     'java',
     'timeout',
     'memory',
+    'runs',
   ]);
   for (const name of flags.keys()) {
     if (!known.has(name)) throw new Error(`Unknown option --${name}\n\n${USAGE}`);
@@ -234,6 +251,11 @@ export function parseArgs(
   if (flags.has('gametest-filter') && !flags.has('gametest')) {
     throw new Error('--gametest-filter needs --gametest');
   }
+  const runs = flags.has('runs') ? integer('--runs', flags.get('runs')) : 1;
+  if (runs < 1) throw new Error('--runs needs 1 or more');
+  if (runs > 1 && flags.has('gametest')) {
+    throw new Error('--runs needs a plain start: a GameTest server makes its own world');
+  }
   if (separateGeckolib && facts.geckolib === undefined) {
     throw new Error('--separate-geckolib needs the geckolib entry of the --facts file');
   }
@@ -255,6 +277,8 @@ export function parseArgs(
     gametestFilter: flags.get('gametest-filter'),
     report: flags.get('report'),
     noRuntime,
+    runs,
+    expectLines,
     geckolib: facts.geckolib,
     separateGeckolib,
     allowWarnings,
@@ -429,9 +453,15 @@ export function analyseLog(
     }
     const scriptMatch = SCRIPTS.exec(line);
     if (scriptMatch !== null) {
-      if (scripts !== undefined) failures.push('the runtime reported loading its scripts twice');
-      scripts = scriptMatch;
       keyLines.push(line);
+      if (scripts === undefined) {
+        scripts = scriptMatch;
+      } else if (expect.gametest !== true) {
+        failures.push('the runtime reported loading its scripts twice');
+      } else if (scriptMatch[1] !== scripts[1] || scriptMatch[2] !== '0') {
+        // A GameTest may /reload, which loads the scripts again: the same files, no errors.
+        failures.push(`the scripts loaded again differently: ${line.trim()}`);
+      }
       continue;
     }
     if (MOD_LIST.test(line) || SCRIPT_LOG.test(line)) keyLines.push(line);
@@ -515,6 +545,32 @@ export function analyseLog(
     warnings,
     keyLines,
   };
+}
+
+/**
+ * The `--expect-line` texts no line of a run ends with (trailing white space ignored), with
+ * `{run}` replaced by the run's number.
+ *
+ * @param lines - The run's output, one entry per line.
+ * @param expectLines - The texts, as given.
+ * @param run - The run's number, from 1.
+ */
+export function missingLines(
+  lines: readonly string[],
+  expectLines: readonly string[],
+  run: number,
+): string[] {
+  const missing: string[] = [];
+  for (const template of expectLines) {
+    const text = template.replaceAll('{run}', String(run));
+    if (!lines.some((line) => line.trimEnd().endsWith(text))) missing.push(text);
+  }
+  return missing;
+}
+
+/** The output file of a run: the first keeps the usual name, later ones get their number. */
+export function runLogName(run: number): string {
+  return run === 1 ? 'run-fabric-server.log' : `run-fabric-server-run${run}.log`;
 }
 
 /** The `server.properties` of a check run. */
@@ -662,13 +718,13 @@ async function digest(algorithm: 'sha1' | 'sha512', path: string): Promise<strin
 }
 
 /** An expected checksum: SHA-1 (Fabric's Maven) or SHA-512 (GeckoLib's facts). */
-interface Checksum {
+export interface Checksum {
   algorithm: 'sha1' | 'sha512';
   hex: string;
 }
 
 /** Downloads `url` to `path` unless it is cached; checks `expected` when given. */
-async function cached(url: string, path: string, expected?: Checksum): Promise<void> {
+export async function cached(url: string, path: string, expected?: Checksum): Promise<void> {
   if (
     existsSync(path) &&
     (expected === undefined || (await digest(expected.algorithm, path)) === expected.hex)
@@ -697,7 +753,8 @@ export function geckolibCachePath(cacheDir: string, geckolib: GeckolibFacts): st
   return join(cacheDir, name);
 }
 
-async function freePort(): Promise<number> {
+/** A free local TCP port for the server. */
+export async function freePort(): Promise<number> {
   return new Promise((resolvePort, reject) => {
     const server = createServer();
     server.once('error', reject);
@@ -803,9 +860,10 @@ async function runServer(
   options: Options,
   launcher: string,
   runDir: string,
+  run = 1,
 ): Promise<{ lines: string[]; code: number | null; timedOut: boolean }> {
   const lines: string[] = [];
-  const output = createWriteStream(join(runDir, 'run-fabric-server.log'));
+  const output = createWriteStream(join(runDir, runLogName(run)));
   const gametest = options.gametest !== undefined;
   const args = serverArguments(
     options.memory,
@@ -860,22 +918,43 @@ export async function runCheck(options: Options): Promise<Analysis> {
     throw new Error(`No GameTest jar at ${options.gametest}`);
   }
   const { launcher, runDir } = await prepare(options);
-  const { lines, code, timedOut } = await runServer(options, launcher, runDir);
   const gametest = options.gametest !== undefined;
-  const analysis = analyseLog(lines, { ...options, gametest });
-  if (timedOut) {
-    analysis.failures.push(`the server did not stop within ${options.timeoutSeconds} s`);
-  } else if (gametest) {
-    const path = reportPath(options);
-    const report = existsSync(path) ? await readFile(path, 'utf8') : undefined;
-    const outcome = checkGameTests(report, code);
-    analysis.gametests = outcome.tests;
-    analysis.failures.push(...outcome.failures);
-  } else if (code !== 0) {
-    analysis.failures.push(`the server exited with status ${String(code)}`);
+  const runs = options.runs;
+  let combined: Analysis | undefined;
+  for (let run = 1; run <= runs; run++) {
+    if (runs > 1) log(`run ${run} of ${runs} (the world is kept between runs)`);
+    const { lines, code, timedOut } = await runServer(options, launcher, runDir, run);
+    const analysis = analyseLog(lines, { ...options, gametest });
+    if (timedOut) {
+      analysis.failures.push(`the server did not stop within ${options.timeoutSeconds} s`);
+    } else if (gametest) {
+      const path = reportPath(options);
+      const report = existsSync(path) ? await readFile(path, 'utf8') : undefined;
+      const outcome = checkGameTests(report, code);
+      analysis.gametests = outcome.tests;
+      analysis.failures.push(...outcome.failures);
+    } else if (code !== 0) {
+      analysis.failures.push(`the server exited with status ${String(code)}`);
+    }
+    for (const text of missingLines(lines, options.expectLines, run)) {
+      analysis.failures.push(`no log line ends with "${text}"`);
+    }
+    if (runs > 1) {
+      analysis.failures = analysis.failures.map((failure) => `run ${run}: ${failure}`);
+      analysis.keyLines = [`(run ${run})`, ...analysis.keyLines];
+    }
+    combined =
+      combined === undefined
+        ? analysis
+        : {
+            ...analysis,
+            failures: [...combined.failures, ...analysis.failures],
+            keyLines: [...combined.keyLines, ...analysis.keyLines],
+          };
   }
-  analysis.ok = analysis.failures.length === 0;
-  return analysis;
+  const result = combined as Analysis;
+  result.ok = result.failures.length === 0;
+  return result;
 }
 
 async function main(): Promise<number> {
@@ -911,7 +990,8 @@ async function main(): Promise<number> {
       : `${analysis.blocks} block(s), ${analysis.items} item(s)${entities}${scripts} from ${analysis.files} definition file(s); 0 errors`;
     const tests =
       analysis.gametests === undefined ? '' : `; ${analysis.gametests.length} GameTest(s) passed`;
-    log(`PASS: ${runtime}${tests}`);
+    const runs = options.runs > 1 ? `; ${options.runs} runs on one world` : '';
+    log(`PASS: ${runtime}${tests}${runs}`);
     return 0;
   }
   for (const failure of analysis.failures) log(`FAIL: ${failure}`);

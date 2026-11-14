@@ -6,7 +6,8 @@
  * `require("./util")`; since ADR 0055 an `msm:effect` whose `msm:on_tick` runs a second
  * action handler script (the script tick hook); since ADR 0058 the `warded_stone` block, whose
  * use `on_block_interact` cancels, `World.runCommand` with `at` on the spark ore and
- * `Entity.runCommand` on a used entity; namespace `msm_sample_script`.
+ * `Entity.runCommand` on a used entity; since ADR 0062 a kill counter in `player.data` and
+ * `msm.storage` and a start counter in `msm.storage`; namespace `msm_sample_script`.
  *
  * - The fixture equals the project built from {@link SAMPLE_ELEMENTS} now; `UPDATE_GOLDENS=1`
  *   rewrites it (the README is hand-written).
@@ -262,6 +263,39 @@ const SCRIPTS: readonly SampleElement[] = [
     '  if (logged) return;',
     '  logged = true;',
     '  msm.log.info("server.tick: first tick " + e.tick);',
+    '});',
+  ]),
+  // Saved data (ADR 0062): a kill counter on each player and a start counter with the world.
+  script('kill_counter', [
+    IMPORT,
+    '',
+    '// Reads a saved number, or 0 when nothing is stored yet.',
+    'function count(value: unknown): number {',
+    '  return typeof value === "number" ? value : 0;',
+    '}',
+    '',
+    "// entity.death: each kill by a player adds one to that player's count (player.data) and to",
+    '// the world total (msm.storage), and tells the player both.',
+    'msm.events.on("entity.death", (e) => {',
+    '  const killer = e.attacker?.asPlayer();',
+    '  if (killer === undefined) return;',
+    '  const kills = count(killer.data.get("kills")) + 1;',
+    '  killer.data.set("kills", kills);',
+    '  const total = count(msm.storage.get("total_kills")) + 1;',
+    '  msm.storage.set("total_kills", total);',
+    '  killer.sendMessage("Your kills: " + kills + ". Everyone\'s: " + total + ".");',
+    '});',
+  ]),
+  script('start_counter', [
+    IMPORT,
+    '',
+    '// server.started: counts the starts of this world in msm.storage, which is saved with the',
+    '// world, so the count goes up by one on each start (the headless server check starts twice).',
+    'msm.events.on("server.started", () => {',
+    '  const before = msm.storage.get("starts");',
+    '  const starts = (typeof before === "number" ? before : 0) + 1;',
+    '  msm.storage.set("starts", starts);',
+    '  msm.log.info("start counter: " + starts);',
     '});',
   ]),
   script('spark_handler', [
@@ -655,7 +689,11 @@ describe('sample script project', () => {
     expect(project.name).toBe(PROJECT_NAME);
     const scripts = elementsOf(project).filter((element) => element.kind === 'msm:script');
     expect(scripts.length).toBe(SCRIPTS.length);
-    const text = scripts.map((element) => (element.data as { lines: string[] }).lines.join('\n'));
+    const sourceOf = (element: Element): string =>
+      (element.data as { lines: string[] }).lines.join('\n');
+    const text = scripts.map(sourceOf);
+    // One `on_<event>` script per event; the saved data scripts handle two events again.
+    const perEvent = scripts.filter((element) => element.id.startsWith(ns('on_'))).map(sourceOf);
     for (const event of [
       'block.interact',
       'block.break',
@@ -667,10 +705,15 @@ describe('sample script project', () => {
       'server.started',
       'server.tick',
     ]) {
-      const handlers = text.filter((source) => source.includes(`msm.events.on("${event}"`));
+      const handlers = perEvent.filter((source) => source.includes(`msm.events.on("${event}"`));
       expect(handlers.length, event).toBe(1);
       expect(handlers[0]?.includes('msm.log.info('), event).toBe(true);
     }
+    const saved = (path: string): string =>
+      sourceOf(scripts.find((element) => element.id === ns(path)) as Element);
+    expect(saved('kill_counter')).toContain('killer.data.set("kills"');
+    expect(saved('kill_counter')).toContain('msm.storage.set("total_kills"');
+    expect(saved('start_counter')).toContain('msm.storage.set("starts"');
     expect(text.filter((source) => source.includes('msm.actions.define(')).length).toBe(2);
     expect(text.filter((source) => source.includes('from "./util"')).length).toBe(2);
     const blockData = JSON.stringify(

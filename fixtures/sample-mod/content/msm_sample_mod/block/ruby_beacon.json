@@ -1,0 +1,42 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1.5,
+        "tool": "pickaxe"
+      },
+      "msm:on_place": {
+        "event": "msm_sample_mod:beacon"
+      }
+    },
+    "display_name": "Ruby Beacon",
+    "events": {
+      "msm_sample_mod:beacon": {
+        "actions": [
+          {
+            "offset": [
+              0,
+              1,
+              0
+            ],
+            "state": "minecraft:lapis_block",
+            "type": "set_block_state"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "model": "minecraft:block/lodestone",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_beacon",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

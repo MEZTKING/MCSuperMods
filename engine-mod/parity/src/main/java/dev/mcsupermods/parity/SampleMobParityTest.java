@@ -5,11 +5,16 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.random.Weighted;
 import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
@@ -28,6 +33,8 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -40,7 +47,9 @@ import net.minecraft.world.phys.Vec3;
  * copy of the runtime's GameTest arena). Since ADR 0057 the golem's ambient (every 200 ticks), hurt,
  * death and step sounds are the project sound events {@code golem.ambient}, {@code golem.hurt},
  * {@code golem.death} and {@code golem.step}, heard as the sound packets a listening
- * {@link ParityEars} spectator receives. Run with
+ * {@link ParityEars} spectator receives. Since ADR 0061 the golem's {@code msm:on_tick} heals it by 2 every 20
+ * ticks while its AI runs (never with {@code NoAI}), and its {@code msm:on_spawn} runs {@code golem/arrive}
+ * (Glowing and {@code say The glow golem arrives.}) once for an egg spawn and not for a copy loaded from the saved golem. Run with
  * {@code --gametest-filter msm_parity_tests:sample_mob_*}.
  */
 public class SampleMobParityTest {
@@ -52,6 +61,7 @@ public class SampleMobParityTest {
     private static final String ARENA = "msm_parity_tests:arena";
     private static final BlockPos MID = new BlockPos(5, 1, 5);
     private static final String FADES = "The glow golem fades.";
+    private static final String ARRIVES = "The glow golem arrives.";
 
     private static Identifier id(String path) {
         return Identifier.fromNamespaceAndPath(NAMESPACE, path);
@@ -225,5 +235,52 @@ public class SampleMobParityTest {
             ears.close();
             throw e;
         }
+    }
+    // Triggers (ADR 0061 D3)
+
+    /** {@code msm:on_tick}: a hurt golem with its AI heals by 2 every 20 ticks; one with {@code NoAI} does not. */
+    @GameTest(structure = ARENA, maxTicks = 100)
+    public void golemHealsOnTickOnlyWithItsAi(GameTestHelper helper) {
+        EntityType<Mob> type = golem(helper);
+        Mob live = helper.spawn(type, MID.west(2));
+        Mob still = helper.spawn(type, MID.east(2));
+        still.setNoAi(true);
+        live.setHealth(20.0f);
+        still.setHealth(20.0f);
+        helper.runAfterDelay(45, () -> {
+            float healed = live.getHealth() - 20.0f;
+            helper.assertTrue(healed >= 4.0f && healed <= 6.0f, "health gained in 45 ticks (2 every 20): " + healed);
+            helper.assertValueEqual(still.getHealth(), 20.0f, "health of the NoAI golem");
+            live.discard();
+            still.discard();
+            helper.succeed();
+        });
+    }
+
+    /** {@code msm:on_spawn}: an egg spawn runs the function once; a copy loaded from the saved golem does not. */
+    @GameTest(maxTicks = 40)
+    public void golemArrivesOnceFromAnEggNotAfterLoad(GameTestHelper helper) {
+        EntityType<Mob> type = golem(helper);
+        ServerLevel level = helper.getLevel();
+        int mark = ParityChat.mark();
+        Mob spawned = type.spawn(level, helper.absolutePos(MID), EntitySpawnReason.SPAWN_ITEM_USE);
+        helper.assertTrue(spawned != null, "no glow golem spawned");
+        helper.assertTrue(spawned.hasEffect(MobEffects.GLOWING), "the spawned golem is not glowing");
+        helper.assertTrue(ParityChat.since(mark).contains(ARRIVES), "no chat line after the egg spawn: " + ParityChat.since(mark));
+        // The effect would be saved with the golem: take it off, so a second on_spawn would show.
+        spawned.removeEffect(MobEffects.GLOWING);
+        TagValueOutput out = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
+        spawned.saveWithoutId(out);
+        CompoundTag tag = out.buildResult();
+        spawned.discard();
+        Mob copy = type.create(level, EntitySpawnReason.LOAD);
+        helper.assertTrue(copy != null, "no copy");
+        copy.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), tag));
+        level.addFreshEntity(copy);
+        helper.runAfterDelay(5, () -> {
+            helper.assertFalse(copy.hasEffect(MobEffects.GLOWING), "on_spawn ran again for the loaded copy");
+            copy.discard();
+            helper.succeed();
+        });
     }
 }

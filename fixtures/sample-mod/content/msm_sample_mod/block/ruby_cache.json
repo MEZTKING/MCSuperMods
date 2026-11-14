@@ -1,0 +1,38 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1,
+        "tool": "axe"
+      },
+      "msm:on_break": {
+        "event": "msm_sample_mod:cache"
+      }
+    },
+    "display_name": "Ruby Cache",
+    "events": {
+      "msm_sample_mod:cache": {
+        "actions": [
+          {
+            "count": 3,
+            "item": "msm_sample_mod:ruby",
+            "type": "give_item"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "model": "minecraft:block/barrel",
+    "sound_type": "wood"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_cache",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

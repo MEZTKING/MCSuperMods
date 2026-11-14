@@ -1,0 +1,37 @@
+{
+  "data": {
+    "components": {
+      "msm:armor": {
+        "material": "gold",
+        "slot": "helmet"
+      },
+      "msm:while_worn": {
+        "event": "msm_sample_mod:crown",
+        "interval_ticks": 10
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Ruby Crown",
+    "events": {
+      "msm_sample_mod:crown": {
+        "actions": [
+          {
+            "effect": "minecraft:night_vision",
+            "seconds": 15,
+            "target": "self",
+            "type": "apply_effect"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "model": "minecraft:item/golden_helmet",
+    "rarity": "rare"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_crown",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

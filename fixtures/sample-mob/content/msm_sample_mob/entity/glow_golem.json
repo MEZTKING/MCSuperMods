@@ -79,10 +79,31 @@
       },
       "msm:on_interact": {
         "event": "msm_sample_mob:greet"
+      },
+      "msm:on_spawn": {
+        "event": "msm_sample_mob:arrive"
+      },
+      "msm:on_tick": {
+        "event": "msm_sample_mob:mend",
+        "interval_ticks": 20
       }
     },
     "display_name": "Glow Golem",
     "events": {
+      "msm_sample_mob:arrive": {
+        "actions": [
+          {
+            "effect": "minecraft:glowing",
+            "seconds": 10,
+            "target": "self",
+            "type": "apply_effect"
+          },
+          {
+            "function": "msm_sample_mob:golem/arrive",
+            "type": "run_function"
+          }
+        ]
+      },
       "msm_sample_mob:fade": {
         "actions": [
           {
@@ -118,6 +139,14 @@
             "particle": "minecraft:glow",
             "spread": 0.4,
             "type": "spawn_particle"
+          }
+        ]
+      },
+      "msm_sample_mob:mend": {
+        "actions": [
+          {
+            "amount": 2,
+            "type": "heal"
           }
         ]
       },

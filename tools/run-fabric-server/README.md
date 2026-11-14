@@ -8,6 +8,27 @@ node tools/run-fabric-server/index.ts --jar <content jar> --facts <fabric-facts.
 
 `--help` lists every option. With `--gametest <jar>` it runs a GameTest mod's tests on a production GameTest server instead (see "GameTests" below); `--no-runtime` checks a jar without `msm_runtime`, such as an ejected Java project's. The facts file is the one `packages/exporters/test/sample-mod.golden.test.ts` (or `sample-mob.golden.test.ts`, `sample-script.golden.test.ts`) writes next to the sample jar when `MSM_RUNTIME_JAR` and `MSM_SAMPLE_MOD_OUT` (or `MSM_RUNTIME_JAR`, `MSM_GECKOLIB_JAR` and `MSM_SAMPLE_MOB_OUT`; or `MSM_RUNTIME_JAR` and `MSM_SAMPLE_SCRIPT_OUT`) are set (see the samples' READMEs under `fixtures/`): `minecraft`, `loader` and `fabricApi` come from the target's Fabric facts (`Target.fabric`), so no version is written in the script or the workflow; `expectBlocks`, `expectItems` and `expectEntities` are the counts the runtime must report; `expectScripts` is the number of script files the runtime must report loading; `geckolib` (`fileName`, `url`, `sha512`) comes from the target's GeckoLib facts (`Target.geckolib`). `--minecraft`, `--loader`, `--fabric-api`, `--expect-blocks`, `--expect-items`, `--expect-entities` and `--expect-scripts` override the file.
 
+## Two runs on one world
+
+`--runs <n>` starts the server n times in the same run folder: the folder is prepared once (so the world is new for the first run) and each later run loads the world the previous one saved. Every run must pass the checks below on its own; a failure names its run (`run 2: ...`). The first run's output is kept in `<work>/run-fabric-server.log`, later ones in `run-fabric-server-run<k>.log`. `--expect-line <text>` (repeatable) requires, in every run, a log line that ends with the text, where `{run}` stands for the run's number. Not with `--gametest` (a GameTest server makes its own world).
+
+```sh
+node tools/run-fabric-server/index.ts --jar msm_sample_script.jar --facts fabric-facts.json --runs 2 --expect-line 'msm_sample_script:start_counter: start counter: {run}'
+```
+
+This is how CI checks saved script data across a restart (ADR 0062): the sample script's `start_counter` adds one to `starts` in `msm.storage` at each `server.started` and logs the count, so the second start must log `start counter: 2`.
+
+## Sample data pack on a vanilla server
+
+`vanilla-datapack.ts` checks the sample data pack's villager trade (`fixtures/sample-datapack/README.md`, "Headless server check") on a vanilla dedicated server, with no Fabric and no runtime:
+
+```sh
+MSM_SAMPLE_DATAPACK_OUT=<folder> pnpm --filter @msm/exporters exec vitest run test/sample-datapack.golden.test.ts
+node tools/run-fabric-server/vanilla-datapack.ts --facts <folder>/server-facts.json [--work <dir>] [--cache <dir>]
+```
+
+It reads `minecraft` and `zip` from the facts file, downloads the server jar named by Mojang's version manifest (`piston-meta.mojang.com`; the version's JSON and the jar each checked against their SHA-1) into the cache as `minecraft-server-<version>.jar`, puts the zip into a fresh `world/datapacks/`, starts the server and runs the README's console commands: hard difficulty, a `NoAI` zombie that kills 40 `NoAI` level 1 fletchers (`--villagers`), which turns each into a zombie villager that keeps the offers it drew from `minecraft:fletcher/level_1`. It passes when the zip is listed by `datapack list enabled`, the counts of zombie villagers, of those offering the new trade (4 spectral arrows) and of those still offering the vanilla arrow trade are all above zero, and the log has no `Failed to load`, `Couldn't load tag`, `Couldn't parse` or ERROR line. The console output is kept in `<work>/vanilla-datapack.log`. A warm run takes about 15 s.
+
 ## GeckoLib
 
 A content jar with entities nests GeckoLib (ADR 0029 D4), so by default the tool relies on the nested copy and downloads nothing for it; the facts' `geckolib` entry is then unused. For a jar exported with "Separate runtime and GeckoLib (for modpacks)", pass `--separate-geckolib`: the tool downloads the jar from the facts' `url` into the cache as `<fileName>`, checks its SHA-512 and puts it in `mods/` (add the separate runtime with `--extra`). This keeps one GeckoLib in the normal case and needs no GeckoLib flag in CI. CI gets the real GeckoLib jar for the sample-mob export from `sample-mob.golden.test.ts` itself, which downloads it into this tool's cache (`MSM_GECKOLIB_JAR`) when it is missing.
@@ -43,7 +64,7 @@ A GameTest run takes about as long as a plain start (20 to 40 s warm). Each `--w
    - the server logged `Done (` and exited with status 0;
    - `[msm_runtime] registered N block(s) and M item(s) from F definition file(s); E error(s), W warning(s)` appears once, with E = 0, W = 0 (unless `--allow-warnings`) and N, M as expected;
    - with `expectEntities` given, `[msm_runtime] registered K entity type(s)` appears once with K as expected (without it the line is optional);
-   - with `expectScripts` given, `[msm_runtime] loaded S script(s); E error(s)` appears once with S as expected and E = 0 (without it the line is optional). S counts every script file the runtime found, `require`d modules included (B133); E counts the load-time errors (a script that fails to load, an unknown event name), each also logged at ERROR, which fails the run anyway;
+   - with `expectScripts` given, `[msm_runtime] loaded S script(s); E error(s)` appears once with S as expected and E = 0 (without it the line is optional). In a GameTest run the line may appear again (a test that runs `/reload` loads the scripts again), with the same S and E = 0. S counts every script file the runtime found, `require`d modules included (B133); E counts the load-time errors (a script that fails to load, an unknown event name), each also logged at ERROR, which fails the run anyway;
    - no other `[msm_runtime]` line is at WARN or ERROR (this includes the checks the runtime makes after the server starts, such as unknown functions);
    - no line naming GeckoLib (case-insensitive `geckolib`) at ERROR, nor at WARN unless `--allow-warnings`; GeckoLib's info lines pass. The dedicated server's console shows no logger names, so GeckoLib's lines are recognised by naming it;
    - no `Failed to load`, no mod resolution failure, no `Game test server crashed` and no stack frame from `dev.mcsupermods` or `com.geckolib` (server frames read `at knot//<class>`; frames of the parity tests, `dev.mcsupermods.parity`, are test failures and are left to the report).
@@ -52,6 +73,6 @@ It prints the key lines (the mod list with nested jars, the registration and scr
 
 ## Where it runs
 
-CI's `engine-mod` job (`.github/workflows/ci.yml`) runs it on `fixtures/sample-mod`, on `fixtures/sample-mob` (GeckoLib nested) and on `fixtures/sample-script` (scripts) after `./gradlew build`, then runs the parity GameTests four times in one run folder: the sample mod's tests on its content jar and on its ejected jar (`--no-runtime`), and the sample mob's tests likewise. The reports are kept as the artefact `parity-gametest-reports`. Locally it needs JDK 25 and network access to meta.fabricmc.net, maven.fabricmc.net and Mojang's download servers; a warm run takes about 30 s.
+CI's `engine-mod` job (`.github/workflows/ci.yml`) runs it on `fixtures/sample-mod`, on `fixtures/sample-mob` (GeckoLib nested) and on `fixtures/sample-script` (scripts, two runs on one world) after `./gradlew build`, runs `vanilla-datapack.ts` on `fixtures/sample-datapack`, then runs the parity GameTests five times in one run folder: the sample mod's tests on its content jar and on its ejected jar (`--no-runtime`), the sample mob's tests likewise, and the sample script's on its content jar. The reports are kept as the artefact `parity-gametest-reports-mc<version>`. Locally it needs JDK 25 and network access to meta.fabricmc.net, maven.fabricmc.net and Mojang's download servers (piston-meta.mojang.com and piston-data.mojang.com for `vanilla-datapack.ts`); a warm run takes about 30 s.
 
 Downloads are untrusted data: they are only stored and run as the Fabric server they claim to be, inside the run folder.

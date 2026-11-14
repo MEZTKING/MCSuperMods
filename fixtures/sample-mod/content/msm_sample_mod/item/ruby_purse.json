@@ -1,0 +1,33 @@
+{
+  "data": {
+    "components": {
+      "msm:while_held": {
+        "event": "msm_sample_mod:purse",
+        "hand": "either",
+        "interval_ticks": 10
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "display_name": "Ruby Purse",
+    "events": {
+      "msm_sample_mod:purse": {
+        "actions": [
+          {
+            "count": 1,
+            "item": "msm_sample_mod:ruby",
+            "type": "give_item"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "minecraft:item/bundle"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_purse",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

@@ -5,7 +5,8 @@
  * `msm:geo_model`, one `msm:animation` set (`idle`, `walk`, `attack`, `wave`), two
  * placeholder textures, a function and a loot table, namespace `msm_sample_mob`; since ADR
  * 0057 the golem's ambient, hurt, death and step sounds are four project sound events of a
- * `minecraft:sounds` element.
+ * `minecraft:sounds` element; since ADR 0061 the triggers `msm:on_tick` (a heal every 20 ticks)
+ * and `msm:on_spawn` (Glowing for 10 seconds and a second function, `golem/arrive`).
  *
  * - The fixture equals the project built from {@link SAMPLE_ELEMENTS} and
  *   {@link SAMPLE_ASSETS} now; `UPDATE_GOLDENS=1` rewrites it (the README is hand-written).
@@ -135,6 +136,7 @@ const SKIN = ns('entity/glow_golem');
 const EGG_TEXTURE = ns('item/glow_golem_spawn_egg');
 const LOOT = ns('entities/glow_golem');
 const BURST = ns('golem/glow_burst');
+const ARRIVE = ns('golem/arrive');
 
 /** A one-second swing between `+angle` and `-angle` about x. */
 const swing = (angle: number): Json => ({
@@ -144,10 +146,10 @@ const swing = (angle: number): Json => ({
 /**
  * The kitchen sink. The entity uses every component (`msm:health`, `msm:movement`,
  * `msm:attack`, `msm:ai_goals`, `msm:animated_model`, `msm:on_hurt`, `msm:on_death`,
- * `msm:on_interact`), every goal type (`wander`, `look_at_player`, `look_around`,
+ * `msm:on_interact`, `msm:on_tick`, `msm:on_spawn`), every goal type (`wander`, `look_at_player`, `look_around`,
  * `melee_attack`, `flee`, `follow`), a natural spawn from a biome tag and a biome id with
  * every spawn field, a spawn egg with its own texture, and the actions `play_animation`,
- * `play_sound`, `spawn_particle` and `run_function`.
+ * `play_sound`, `spawn_particle`, `run_function`, `apply_effect` and `heal`.
  */
 const SAMPLE_ELEMENTS: readonly SampleElement[] = [
   {
@@ -238,6 +240,10 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
         'msm:on_hurt': { event: ns('hurt') },
         'msm:on_death': { event: ns('fade') },
         'msm:on_interact': { event: ns('greet') },
+        // Triggers (ADR 0061 D3): a heal every second while its AI runs, and a greeting when
+        // it spawns from an egg, a spawner or naturally (not when its chunk loads).
+        'msm:on_tick': { event: ns('mend'), interval_ticks: 20 },
+        'msm:on_spawn': { event: ns('arrive') },
       },
       // Project sound events (ADR 0057 D6), defined by the `sounds` element below.
       sounds: {
@@ -264,6 +270,13 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
           actions: [
             { type: 'spawn_particle', particle: 'minecraft:end_rod', count: 12, spread: 0.5 },
             { type: 'run_function', function: BURST },
+          ],
+        },
+        [ns('mend')]: { actions: [{ type: 'heal', amount: 2 }] },
+        [ns('arrive')]: {
+          actions: [
+            { type: 'apply_effect', effect: 'minecraft:glowing', seconds: 10, target: 'self' },
+            { type: 'run_function', function: ARRIVE },
           ],
         },
       },
@@ -381,6 +394,16 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
         '# Run by the glow golem when it dies (run_function action).',
         'particle minecraft:glow ~ ~1 ~ 0.5 0.6 0.5 0.05 20',
         'say The glow golem fades.',
+      ],
+    },
+  },
+  {
+    id: ARRIVE,
+    kind: 'minecraft:function',
+    data: {
+      lines: [
+        '# Run when a glow golem spawns (msm:on_spawn, run_function action).',
+        'say The glow golem arrives.',
       ],
     },
   },
@@ -696,6 +719,8 @@ describe('sample mob project', () => {
       'msm:on_hurt',
       'msm:on_death',
       'msm:on_interact',
+      'msm:on_tick',
+      'msm:on_spawn',
     ]) {
       expect(text.includes(`"${component}"`), component).toBe(true);
     }
@@ -866,6 +891,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           `assets/${NAMESPACE}/${resource.model}/item/glow_golem_spawn_egg.json`,
           `assets/${NAMESPACE}/${resource.lang}/en_us.json`,
           `data/${NAMESPACE}/${data.function}/golem/glow_burst.mcfunction`,
+          `data/${NAMESPACE}/${data.function}/golem/arrive.mcfunction`,
           `data/${NAMESPACE}/${data.loot_table}/entities/glow_golem.json`,
           `assets/${NAMESPACE}/sounds.json`,
         ]) {

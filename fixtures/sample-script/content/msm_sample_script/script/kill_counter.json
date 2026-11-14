@@ -1,0 +1,30 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// Reads a saved number, or 0 when nothing is stored yet.",
+      "function count(value: unknown): number {",
+      "  return typeof value === \"number\" ? value : 0;",
+      "}",
+      "",
+      "// entity.death: each kill by a player adds one to that player's count (player.data) and to",
+      "// the world total (msm.storage), and tells the player both.",
+      "msm.events.on(\"entity.death\", (e) => {",
+      "  const killer = e.attacker?.asPlayer();",
+      "  if (killer === undefined) return;",
+      "  const kills = count(killer.data.get(\"kills\")) + 1;",
+      "  killer.data.set(\"kills\", kills);",
+      "  const total = count(msm.storage.get(\"total_kills\")) + 1;",
+      "  msm.storage.set(\"total_kills\", total);",
+      "  killer.sendMessage(\"Your kills: \" + kills + \". Everyone's: \" + total + \".\");",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:kill_counter",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

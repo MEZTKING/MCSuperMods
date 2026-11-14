@@ -5,9 +5,12 @@
  * horse armour; since ADRs 0055 and 0056 a drink giving a custom effect, a dart and a
  * boomerang; since ADRs 0057 and 0058 the `ruby_spring` step block and two project sound
  * events in a `minecraft:sounds` element; since ADR 0059 the shaped blocks `ruby_slab`,
- * `ruby_sprout` and `ruby_glass`), two `msm:effect` elements with their icons, a
- * `minecraft:equipment` element with its three armour layer textures (ADR 0042), three
- * functions and a loot table, namespace `msm_sample_mod`.
+ * `ruby_sprout` and `ruby_glass`; since ADRs 0060 and 0061 ruby ore generation through an
+ * `msm:biome_addition` with its feature and placed feature, a zombie drop through an
+ * `msm:loot_addition`, the fuel and compost item `ruby_tinder` and one item or block per item
+ * and block trigger), two `msm:effect` elements with their icons, a `minecraft:equipment`
+ * element with its three armour layer textures (ADR 0042), three functions and a loot table,
+ * namespace `msm_sample_mod`.
  *
  * - The fixture equals the project built from {@link SAMPLE_ELEMENTS} and
  *   {@link SAMPLE_ASSETS} now; `UPDATE_GOLDENS=1` rewrites it (the README is hand-written).
@@ -44,6 +47,7 @@ import blocksItemsPlugin from '@msm/plugin-blocks-items';
 import dataPackPlugin from '@msm/plugin-datapack';
 import { encodePng, placeholderPng, type Rgb } from '@msm/plugin-library';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
+import worldgenPlugin from '@msm/plugin-worldgen';
 import {
   createRegistryIndex,
   createSchemaIndex,
@@ -80,13 +84,21 @@ const HAND_WRITTEN = new Set(['README.md']);
 const TIME_ZONES = ['Pacific/Kiritimati', 'America/Los_Angeles'] as const;
 
 /** The plugins the sample needs, in the app's registration order. */
-const PLUGINS: readonly Plugin[] = [resourcePackPlugin, dataPackPlugin, blocksItemsPlugin];
+const PLUGINS: readonly Plugin[] = [
+  resourcePackPlugin,
+  dataPackPlugin,
+  worldgenPlugin,
+  blocksItemsPlugin,
+];
 const VALIDATORS = PLUGINS.flatMap((plugin) => plugin.contributes.validators ?? []);
 
 const registry = new ElementKindRegistry();
 for (const plugin of PLUGINS) registerPlugin(registry, plugin);
 
-const meta = { msmVersion: '0.4.0', plugins: ['msm.blocks-items', 'msm.datapack'] };
+const meta = {
+  msmVersion: '0.4.0',
+  plugins: ['msm.blocks-items', 'msm.datapack', 'msm.worldgen'],
+};
 const stubRuntimeJar = utf8.encode('PK stub msm_runtime jar for the sample-mod golden');
 
 // The project -----------------------------------------------------------------------------
@@ -606,6 +618,253 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
       },
     },
   },
+  // Additions to vanilla content (ADR 0060): the ruby ore generates in overworld biomes, a
+  // zombie always drops a ruby besides its vanilla drops, and an item burns and composts.
+  {
+    id: ns('ore_ruby'),
+    kind: 'minecraft:worldgen/feature',
+    data: {
+      type: 'minecraft:ore',
+      size: 6,
+      discard_chance_on_air_exposure: 0,
+      targets: [
+        {
+          target: { predicate_type: 'minecraft:block_match', block: 'minecraft:stone' },
+          state: ns('ruby_ore'),
+        },
+        {
+          target: { predicate_type: 'minecraft:block_match', block: 'minecraft:deepslate' },
+          state: ns('ruby_ore'),
+        },
+      ],
+    },
+  },
+  {
+    id: ns('ore_ruby_placed'),
+    kind: 'minecraft:worldgen/placed_feature',
+    data: {
+      feature: ns('ore_ruby'),
+      placement: [
+        { type: 'minecraft:count', count: 6 },
+        { type: 'minecraft:in_square' },
+        {
+          type: 'minecraft:height_range',
+          height: {
+            type: 'minecraft:uniform',
+            min_inclusive: { absolute: -64 },
+            max_inclusive: { absolute: 32 },
+          },
+        },
+        { type: 'minecraft:biome' },
+      ],
+    },
+  },
+  {
+    id: ns('ruby_ore_generation'),
+    kind: 'msm:biome_addition',
+    data: {
+      format: 1,
+      biomes: ['#minecraft:is_overworld'],
+      features: [{ feature: ns('ore_ruby_placed'), step: 'underground_ores' }],
+    },
+  },
+  {
+    id: ns('zombie_drops_ruby'),
+    kind: 'msm:loot_addition',
+    data: {
+      format: 1,
+      tables: ['minecraft:entities/zombie'],
+      // One roll of one entry with no condition: every zombie drops one ruby.
+      pools: [{ rolls: 1, entries: [{ type: 'minecraft:item', name: ns('ruby') }] }],
+    },
+  },
+  {
+    id: ns('ruby_tinder'),
+    kind: 'msm:item',
+    data: {
+      format: 1,
+      model: 'minecraft:item/blaze_powder',
+      display_name: 'Ruby Tinder',
+      creative_tab: 'minecraft:ingredients',
+      // 20 seconds is 400 ticks, two smelts; "100%" raises a composter on every insert.
+      fuel: { burn_seconds: 20 },
+      compost: '100%',
+    },
+  },
+  // Triggers (ADR 0061): one item or block per item and block trigger.
+  {
+    id: ns('ruby_sword'),
+    kind: 'msm:item',
+    data: {
+      format: 1,
+      model: 'minecraft:item/iron_sword',
+      display_name: 'Ruby Sword',
+      rarity: 'uncommon',
+      creative_tab: 'minecraft:combat',
+      components: {
+        'msm:tool': { type: 'sword', tier: 'iron' },
+        // Whoever holds it, player or mob, slows the entity hit (other).
+        'msm:on_hit': { event: ns('sword_hit') },
+      },
+      events: {
+        [ns('sword_hit')]: {
+          actions: [
+            { type: 'apply_effect', effect: 'minecraft:slowness', seconds: 5, target: 'other' },
+          ],
+        },
+      },
+    },
+  },
+  {
+    id: ns('ruby_trowel'),
+    kind: 'msm:item',
+    data: {
+      format: 1,
+      model: 'minecraft:item/iron_shovel',
+      display_name: 'Ruby Trowel',
+      max_stack_size: 1,
+      creative_tab: 'minecraft:tools_and_utilities',
+      components: {
+        'msm:on_use_on_block': { event: ns('trowel'), cooldown_ticks: 20 },
+      },
+      events: {
+        // The base is the clicked block: a gold block goes on top of it.
+        [ns('trowel')]: {
+          actions: [{ type: 'set_block_state', state: 'minecraft:gold_block', offset: [0, 1, 0] }],
+        },
+      },
+    },
+  },
+  {
+    id: ns('ruby_purse'),
+    kind: 'msm:item',
+    data: {
+      format: 1,
+      model: 'minecraft:item/bundle',
+      display_name: 'Ruby Purse',
+      max_stack_size: 1,
+      creative_tab: 'minecraft:tools_and_utilities',
+      components: {
+        'msm:while_held': { event: ns('purse'), interval_ticks: 10, hand: 'either' },
+      },
+      events: {
+        [ns('purse')]: {
+          actions: [{ type: 'give_item', item: ns('ruby'), count: 1 }],
+        },
+      },
+    },
+  },
+  {
+    id: ns('ruby_crown'),
+    kind: 'msm:item',
+    data: {
+      format: 1,
+      model: 'minecraft:item/golden_helmet',
+      display_name: 'Ruby Crown',
+      rarity: 'rare',
+      creative_tab: 'minecraft:combat',
+      components: {
+        'msm:armor': { slot: 'helmet', material: 'gold' },
+        'msm:while_worn': { event: ns('crown'), interval_ticks: 10 },
+      },
+      events: {
+        [ns('crown')]: {
+          actions: [
+            { type: 'apply_effect', effect: 'minecraft:night_vision', seconds: 15, target: 'self' },
+          ],
+        },
+      },
+    },
+  },
+  {
+    id: ns('ruby_cache'),
+    kind: 'msm:block',
+    data: {
+      format: 1,
+      model: 'minecraft:block/barrel',
+      display_name: 'Ruby Cache',
+      loot: 'self',
+      sound_type: 'wood',
+      item: { creative_tab: 'minecraft:functional_blocks' },
+      components: {
+        'msm:breakable': { hardness: 1, tool: 'axe' },
+        // The player breaking it, in any game mode, gets three rubies.
+        'msm:on_break': { event: ns('cache') },
+      },
+      events: {
+        [ns('cache')]: {
+          actions: [{ type: 'give_item', item: ns('ruby'), count: 3 }],
+        },
+      },
+    },
+  },
+  {
+    id: ns('ruby_beacon'),
+    kind: 'msm:block',
+    data: {
+      format: 1,
+      model: 'minecraft:block/lodestone',
+      display_name: 'Ruby Beacon',
+      loot: 'self',
+      sound_type: 'stone',
+      item: { creative_tab: 'minecraft:functional_blocks' },
+      components: {
+        'msm:breakable': { hardness: 1.5, tool: 'pickaxe' },
+        'msm:on_place': { event: ns('beacon') },
+      },
+      events: {
+        [ns('beacon')]: {
+          actions: [{ type: 'set_block_state', state: 'minecraft:lapis_block', offset: [0, 1, 0] }],
+        },
+      },
+    },
+  },
+  {
+    id: ns('ruby_bloom'),
+    kind: 'msm:block',
+    data: {
+      format: 1,
+      model: 'minecraft:block/red_mushroom_block',
+      display_name: 'Ruby Bloom',
+      loot: 'self',
+      sound_type: 'grass',
+      item: { creative_tab: 'minecraft:natural_blocks' },
+      components: {
+        'msm:breakable': { hardness: 0.5 },
+        'msm:on_random_tick': { event: ns('bloom'), chance: 1 },
+      },
+      events: {
+        [ns('bloom')]: {
+          actions: [{ type: 'set_block_state', state: 'minecraft:red_wool', offset: [0, 1, 0] }],
+        },
+      },
+    },
+  },
+  {
+    id: ns('ruby_mist'),
+    kind: 'msm:block',
+    data: {
+      format: 1,
+      model: 'minecraft:block/cobweb',
+      display_name: 'Ruby Mist',
+      loot: 'self',
+      sound_type: 'wool',
+      item: { creative_tab: 'minecraft:natural_blocks' },
+      components: {
+        'msm:breakable': { hardness: 0.2 },
+        // Walk-through, so entities can be inside it.
+        'msm:shape': { preset: 'cross' },
+        'msm:on_entity_inside': { event: ns('mist'), cooldown_ticks: 20 },
+      },
+      events: {
+        [ns('mist')]: {
+          actions: [
+            { type: 'apply_effect', effect: 'minecraft:weakness', seconds: 5, target: 'self' },
+          ],
+        },
+      },
+    },
+  },
   {
     id: ns('ruby/shimmer'),
     kind: 'minecraft:function',
@@ -982,6 +1241,14 @@ describe('sample mod project', () => {
       'msm:on_tick',
       'msm:on_end',
       'msm:shape',
+      'msm:on_hit',
+      'msm:on_use_on_block',
+      'msm:while_held',
+      'msm:while_worn',
+      'msm:on_break',
+      'msm:on_place',
+      'msm:on_random_tick',
+      'msm:on_entity_inside',
     ]) {
       expect(text.includes(`"${component}"`), component).toBe(true);
     }
@@ -1005,9 +1272,13 @@ describe('sample mod project', () => {
       'minecraft:function',
       'minecraft:loot_table',
       'minecraft:sounds',
+      'minecraft:worldgen/feature',
+      'minecraft:worldgen/placed_feature',
+      'msm:biome_addition',
       'msm:block',
       'msm:effect',
       'msm:item',
+      'msm:loot_addition',
       'msm:mod',
     ]);
   });
@@ -1106,6 +1377,8 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           ...SAMPLE_ELEMENTS.filter((entry) => entry.kind === 'msm:effect').map(
             (entry) => `msm/${NAMESPACE}/effect/${entry.id.split(':')[1]}.json`,
           ),
+          `msm/${NAMESPACE}/biome_addition/ruby_ore_generation.json`,
+          `msm/${NAMESPACE}/loot_addition/zombie_drops_ruby.json`,
         ].sort(),
       );
       for (const path of [
@@ -1124,6 +1397,8 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         `data/${NAMESPACE}/${target.folders.data.function}/ruby/rush.mcfunction`,
         `data/${NAMESPACE}/${target.folders.data.function}/ruby/spring.mcfunction`,
         `assets/${NAMESPACE}/sounds.json`,
+        `data/${NAMESPACE}/worldgen/feature/ore_ruby.json`,
+        `data/${NAMESPACE}/worldgen/placed_feature/ore_ruby_placed.json`,
       ]) {
         expect(paths, path).toContain(path);
       }
@@ -1138,7 +1413,11 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           ? MSM_SCHEMA_REFS.blockDefinition
           : path.includes('/effect/')
             ? MSM_SCHEMA_REFS.effectDefinition
-            : MSM_SCHEMA_REFS.itemDefinition;
+            : path.includes('/biome_addition/')
+              ? MSM_SCHEMA_REFS.biomeAdditionDefinition
+              : path.includes('/loot_addition/')
+                ? MSM_SCHEMA_REFS.lootAdditionDefinition
+                : MSM_SCHEMA_REFS.itemDefinition;
         const value = JSON.parse(utf8.decode(files[path] as Uint8Array)) as Json;
         for (const problem of validateJson(value, context.schemaIndex.resolveSchemaRef(ref), {
           registries: context.registries,

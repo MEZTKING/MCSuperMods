@@ -1,0 +1,20 @@
+{
+  "data": {
+    "biomes": [
+      "#minecraft:is_overworld"
+    ],
+    "features": [
+      {
+        "feature": "msm_sample_mod:ore_ruby_placed",
+        "step": "underground_ores"
+      }
+    ],
+    "format": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_ore_generation",
+  "kind": "msm:biome_addition",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

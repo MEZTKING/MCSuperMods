@@ -1,0 +1,35 @@
+{
+  "data": {
+    "feature": "msm_sample_mod:ore_ruby",
+    "placement": [
+      {
+        "count": 6,
+        "type": "minecraft:count"
+      },
+      {
+        "type": "minecraft:in_square"
+      },
+      {
+        "height": {
+          "max_inclusive": {
+            "absolute": 32
+          },
+          "min_inclusive": {
+            "absolute": -64
+          },
+          "type": "minecraft:uniform"
+        },
+        "type": "minecraft:height_range"
+      },
+      {
+        "type": "minecraft:biome"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ore_ruby_placed",
+  "kind": "minecraft:worldgen/placed_feature",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

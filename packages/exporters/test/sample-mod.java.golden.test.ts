@@ -3,7 +3,9 @@
  * component and every block and item action of the fixture (gear since ADR 0044: a bow
  * subclass, a drink, a charm with `apply_effect`, horse armour; since ADRs 0055 and 0056 the
  * effects as `ModEffects` and `effect/*Effect`, the throwables over `ThrowableItem`, one
- * `ThrownItemEntity` and a client entrypoint for its renderer, without GeckoLib).
+ * `ThrownItemEntity` and a client entrypoint for its renderer, without GeckoLib; since ADRs
+ * 0060 and 0061 `ModWorldgen`, `ModLoot`, the fuel item's vanilla components and the trigger
+ * items and blocks).
  *
  * - The export succeeds without errors (warnings only for project ids the vanilla registries
  *   do not know); the project's files and contents hash to the value
@@ -21,6 +23,7 @@ import type { Plugin, Problem } from '@msm/plugin-api';
 import blocksItemsPlugin from '@msm/plugin-blocks-items';
 import dataPackPlugin from '@msm/plugin-datapack';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
+import worldgenPlugin from '@msm/plugin-worldgen';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import {
@@ -37,10 +40,18 @@ const update = process.env.UPDATE_GOLDENS === '1';
 const sampleRoot = join(repoRoot, 'fixtures', 'sample-mod');
 const fixturesRoot = join(repoRoot, 'packages', 'exporters', 'test', 'fixtures');
 const TIME_ZONES = ['Pacific/Kiritimati', 'America/Los_Angeles'] as const;
-const PLUGINS: readonly Plugin[] = [resourcePackPlugin, dataPackPlugin, blocksItemsPlugin];
+const PLUGINS: readonly Plugin[] = [
+  resourcePackPlugin,
+  dataPackPlugin,
+  worldgenPlugin,
+  blocksItemsPlugin,
+];
 const registry = new ElementKindRegistry();
 for (const plugin of PLUGINS) registerPlugin(registry, plugin);
-const meta = { msmVersion: '0.6.0', plugins: ['msm.blocks-items', 'msm.datapack'] };
+const meta = {
+  msmVersion: '0.6.0',
+  plugins: ['msm.blocks-items', 'msm.datapack', 'msm.worldgen'],
+};
 const PKG = 'src/main/java/msm_sample_mod';
 const notIdWarningOrInfo = (problem: Problem): boolean =>
   problem.severity === 'error' ||
@@ -107,6 +118,23 @@ describe.each(
       `${PKG}/item/RubyBoomerangItem.java`,
       `${PKG}/entity/ThrownItemEntity.java`,
       `${PKG}/client/MsmSampleModClient.java`,
+      // Additions and triggers (ADRs 0060, 0061): the biome and loot additions, the trigger
+      // items and blocks, the shared tick limiter and cooldowns; the placed feature it adds
+      // and its feature are plain data.
+      `${PKG}/ModWorldgen.java`,
+      `${PKG}/ModLoot.java`,
+      `${PKG}/TickLimiter.java`,
+      `${PKG}/CooldownMap.java`,
+      `${PKG}/item/RubySwordItem.java`,
+      `${PKG}/item/RubyTrowelItem.java`,
+      `${PKG}/item/RubyPurseItem.java`,
+      `${PKG}/item/RubyCrownItem.java`,
+      `${PKG}/block/RubyCacheBlock.java`,
+      `${PKG}/block/RubyBeaconBlock.java`,
+      `${PKG}/block/RubyBloomBlock.java`,
+      `${PKG}/block/RubyMistBlock.java`,
+      'src/main/resources/data/msm_sample_mod/worldgen/feature/ore_ruby.json',
+      'src/main/resources/data/msm_sample_mod/worldgen/placed_feature/ore_ruby_placed.json',
     ]) {
       expect(paths, path).toContain(path);
     }

@@ -1,0 +1,25 @@
+{
+  "data": {
+    "format": 1,
+    "pools": [
+      {
+        "entries": [
+          {
+            "name": "msm_sample_mod:ruby",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "tables": [
+      "minecraft:entities/zombie"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:zombie_drops_ruby",
+  "kind": "msm:loot_addition",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

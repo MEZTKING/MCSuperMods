@@ -1,0 +1,36 @@
+{
+  "data": {
+    "components": {
+      "msm:on_hit": {
+        "event": "msm_sample_mod:sword_hit"
+      },
+      "msm:tool": {
+        "tier": "iron",
+        "type": "sword"
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Ruby Sword",
+    "events": {
+      "msm_sample_mod:sword_hit": {
+        "actions": [
+          {
+            "effect": "minecraft:slowness",
+            "seconds": 5,
+            "target": "other",
+            "type": "apply_effect"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "model": "minecraft:item/iron_sword",
+    "rarity": "uncommon"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_sword",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}
