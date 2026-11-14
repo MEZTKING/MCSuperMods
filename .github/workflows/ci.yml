@@ -206,6 +206,15 @@ jobs:
             pnpm --filter @msm/exporters exec vitest run test/sample-particles.golden.test.ts
           test -f "$RUNNER_TEMP/sample-particles/msm_sample_particles.jar"
           cat "$RUNNER_TEMP/sample-particles/fabric-facts.json"
+      # Rules (ADR 0082, B380): five rule books on two blocks, an item, a mob and the world; two
+      # plain rules compile to actions, the others to three generated scripts. The Sentinel uses
+      # the runtime's vanilla renderer, so the content jar needs no GeckoLib on any version.
+      - name: Export the sample rules with the real runtime
+        run: |
+          MSM_SAMPLE_RULES_OUT="$RUNNER_TEMP/sample-rules" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-rules.golden.test.ts
+          test -f "$RUNNER_TEMP/sample-rules/msm_sample_rules.jar"
+          cat "$RUNNER_TEMP/sample-rules/fabric-facts.json"
       # The sample mod's potion and its long and strong versions (ADR 0063, B255) must register.
       - name: Headless Fabric server check (sample mod)
         run: >-
@@ -272,6 +281,34 @@ jobs:
           --forbid-line NoClassDefFoundError
           --work "$RUNNER_TEMP/fabric-server-mob"
           --cache ~/.cache/msm-fabric-server
+      # The sample rules (B381); the facts' expectScripts makes "loaded 3 script(s); 0 error(s)"
+      # required. Dev mode (ADR 0084 D4, B369) is for the managed singleplayer test world only: a
+      # dedicated server started with a valid msm-dev/ folder (dev.json naming this world, an event
+      # overlay, a script overlay and a setup function) must not turn it on, so none of the dev
+      # lines may appear and the server writes nothing into msm-dev/. "msm-dev" itself is not
+      # forbidden (Java echoes JAVA_TOOL_OPTIONS); the folder is removed again afterwards.
+      - name: Headless Fabric server check (sample rules, dev mode stays off on a dedicated server)
+        run: |
+          dev="$RUNNER_TEMP/fabric-server-mob/msm-dev"
+          trap 'rm -rf "$dev"' EXIT
+          rm -rf "$dev"
+          mkdir -p "$dev/overlay/msm/msm_sample_rules/block" "$dev/overlay/msm/msm_sample_rules/script"
+          printf '%s\n' '{"appVersion":"1.4.0","format":1,"namespaces":["msm_sample_rules"],"target":"mc-${{ matrix.mc }}","world":"world"}' > "$dev/dev.json"
+          unzip -p "$RUNNER_TEMP/sample-rules/msm_sample_rules.jar" msm/msm_sample_rules/block/chime_block.json \
+            > "$dev/overlay/msm/msm_sample_rules/block/chime_block.json"
+          printf '%s\n' 'msm.log.info("overlay script ran");' > "$dev/overlay/msm/msm_sample_rules/script/overlay_probe.js"
+          printf '%s\n' '# msm:setup' 'say the dev setup ran' '# msm:refill' 'say the dev refill ran' > "$dev/setup.mcfunction"
+          (cd "$dev" && find . -type f | sort) > "$RUNNER_TEMP/msm-dev-before.txt"
+          node tools/run-fabric-server/index.ts \
+            --jar "$RUNNER_TEMP/sample-rules/msm_sample_rules.jar" \
+            --facts "$RUNNER_TEMP/sample-rules/fabric-facts.json" \
+            --expect-line '[msm_runtime] registered 2 block(s) and 5 item(s) from 5 definition file(s); 0 error(s), 0 warning(s)' \
+            --expect-line '[msm_runtime] registered 1 entity type(s) and 0 mob effect(s)' \
+            --forbid-line 'dev mode for' --forbid-line 'dev overlay' --forbid-line 'dev setup' \
+            --forbid-line 'not a valid dev file' --forbid-line 'overlay script ran' --forbid-line 'the dev refill ran' \
+            --work "$RUNNER_TEMP/fabric-server-mob" \
+            --cache ~/.cache/msm-fabric-server
+          (cd "$dev" && find . -type f | sort) | diff "$RUNNER_TEMP/msm-dev-before.txt" -
       # Phase 6 (B139): scripts on a real server, the Java project eject built with Gradle, and
       # the behaviour-parity GameTests run against both the content jar and the ejected jar.
       - name: Export the sample script with the real runtime
@@ -340,7 +377,7 @@ jobs:
           echo "MSM_PARITY_JAR=${jars[0]}" >> "$GITHUB_ENV"
       # The Java project eject and the ejected parity runs: 26.3 only until the other versions'
       # Java generators are confirmed (ADR 0038 D5).
-      - name: Export the sample mod, the sample mob, the sample creatures, the sample machines, the sample portals and the sample particles as Java projects
+      - name: Export the sample mod, the sample mob, the sample creatures, the sample machines, the sample portals, the sample particles and the sample rules as Java projects
         if: matrix.mc == '26.3'
         run: |
           MSM_SAMPLE_MOD_JAVA_OUT="$RUNNER_TEMP/java/sample-mod" \
@@ -355,12 +392,15 @@ jobs:
             pnpm --filter @msm/exporters exec vitest run test/sample-portals.java.golden.test.ts
           MSM_SAMPLE_PARTICLES_JAVA_OUT="$RUNNER_TEMP/java/sample-particles" \
             pnpm --filter @msm/exporters exec vitest run test/sample-particles.java.golden.test.ts
+          MSM_SAMPLE_RULES_JAVA_OUT="$RUNNER_TEMP/java/sample-rules" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-rules.java.golden.test.ts
           test -x "$RUNNER_TEMP/java/sample-mod/gradlew"
           test -x "$RUNNER_TEMP/java/sample-mob/gradlew"
           test -x "$RUNNER_TEMP/java/sample-creatures/gradlew"
           test -x "$RUNNER_TEMP/java/sample-machines/gradlew"
           test -x "$RUNNER_TEMP/java/sample-portals/gradlew"
           test -x "$RUNNER_TEMP/java/sample-particles/gradlew"
+          test -x "$RUNNER_TEMP/java/sample-rules/gradlew"
       # Each written project builds with its own wrapper; the Gradle cache above holds the 26.3
       # artefacts. Loom's "(kSxHvs99) is not valid semver" line for the nested GeckoLib is harmless.
       - name: Build the ejected sample mod
@@ -387,10 +427,16 @@ jobs:
         if: matrix.mc == '26.3'
         working-directory: ${{ runner.temp }}/java/sample-particles
         run: ./gradlew build --no-daemon
+      # The plain rules only (Chime Block, Sentinel): the generated scripts and their run_script
+      # events are left out of the eject (export.scripts-not-ejected).
+      - name: Build the ejected sample rules
+        if: matrix.mc == '26.3'
+        working-directory: ${{ runner.temp }}/java/sample-rules
+        run: ./gradlew build --no-daemon
       - name: Find the ejected jars
         if: matrix.mc == '26.3'
         run: |
-          for sample in mod mob creatures machines portals particles; do
+          for sample in mod mob creatures machines portals particles rules; do
             mapfile -t jars < <(ls "$RUNNER_TEMP/java/sample-$sample"/build/libs/msm_sample_$sample-*.jar | grep -v -e '-sources\.jar$')
             if [ "${#jars[@]}" -ne 1 ]; then
               echo "::error::Expected one ejected sample-$sample jar, found ${#jars[@]}: ${jars[*]}"
@@ -419,6 +465,18 @@ jobs:
           --jar "$MSM_EJECTED_PARTICLES_JAR"
           --facts "$RUNNER_TEMP/sample-particles/fabric-facts.json" --no-runtime
           --forbid-line NoClassDefFoundError
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
+      # The ejected rules start without msm_runtime; the Java project draws the Sentinel with
+      # GeckoLib (the eject has no vanilla renderer), so GeckoLib (cached by the mob export) goes
+      # into mods/ beside it.
+      - name: Headless Fabric server check (ejected sample rules)
+        if: matrix.mc == '26.3'
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_RULES_JAR"
+          --facts "$RUNNER_TEMP/sample-rules/fabric-facts.json" --no-runtime
+          --extra ~/.cache/msm-fabric-server/geckolib.jar
           --work "$RUNNER_TEMP/fabric-server-mob"
           --cache ~/.cache/msm-fabric-server
       # The parity runs share one run folder (the game server is downloaded once); each writes
@@ -561,6 +619,33 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-particles-ejected.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
+      # Rules (B381, SampleRulesParityTest and SampleRulesScriptParityTest): the Chime Block's
+      # chime and one Ruby a use, and the Sentinel glowing within one 100-tick interval, on the
+      # content jar of every version and on the ejected jar; the rules that need a script (the
+      # Lucky Block's sneaking counter and coin toss over 200 uses, the Rally Horn's Speed within
+      # 16 blocks and its line 40 ticks later, Stone's Ruby over 200 breaks, rain stopping in the
+      # day but not at night) on the content jar only: sample_rules_* matches both classes,
+      # sample_rules_parity_test_* only the first. The welcome title has no server readback.
+      - name: Parity GameTests (sample rules, content jar)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-rules/msm_sample_rules.jar"
+          --facts "$RUNNER_TEMP/sample-rules/fabric-facts.json"
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_rules_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-rules-content.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
+      - name: Parity GameTests (sample rules, ejected jar)
+        if: matrix.mc == '26.3'
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_RULES_JAR"
+          --facts "$RUNNER_TEMP/sample-rules/fabric-facts.json" --no-runtime
+          --extra ~/.cache/msm-fabric-server/geckolib.jar
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_rules_parity_test_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-rules-ejected.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
       # The fifth run (ADR 0058 D4): script behaviour on the content jar only, since scripts
       # are not part of the Java project eject (ADR 0033); since B255 also every Script API 1.1
       # behaviour (ADR 0065) on every version.
@@ -613,6 +698,12 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v7
         with:
+          name: msm-sample-rules-mc${{ matrix.mc }}
+          path: ${{ runner.temp }}/sample-rules/msm_sample_rules.jar
+          if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
           name: msm-sample-script-mc${{ matrix.mc }}
           path: ${{ runner.temp }}/sample-script/msm_sample_script.jar
           if-no-files-found: ignore
@@ -627,6 +718,7 @@ jobs:
             ${{ runner.temp }}/java/sample-machines/build/libs/*.jar
             ${{ runner.temp }}/java/sample-portals/build/libs/*.jar
             ${{ runner.temp }}/java/sample-particles/build/libs/*.jar
+            ${{ runner.temp }}/java/sample-rules/build/libs/*.jar
           if-no-files-found: ignore
       - if: always()
         uses: actions/upload-artifact@v7
