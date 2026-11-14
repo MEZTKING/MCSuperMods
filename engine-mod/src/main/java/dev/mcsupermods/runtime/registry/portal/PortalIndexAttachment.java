@@ -1,0 +1,109 @@
+package dev.mcsupermods.runtime.registry.portal;
+
+import dev.mcsupermods.runtime.MsmRuntime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Block;
+
+/**
+ * The persistent Fabric attachment {@code msm_runtime:portals} (ADR 0077 D5) holding each {@code ServerLevel}'s {@link
+ * PortalIndex}. Fabric saves level attachments in that level's saved data {@code fabric:attachments} (the file
+ * {@code data/fabric/attachments.dat} in the level's own data folder); not synced to clients. Registered once, from
+ * {@code MsmRuntime}. Entries whose block at {@code min} is no longer the portal's block are dropped when a lookup meets
+ * them.
+ */
+public final class PortalIndexAttachment {
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(MsmRuntime.MOD_ID, "portals");
+
+    public static final AttachmentType<PortalIndex> TYPE = AttachmentRegistry.create(ID, builder -> builder.persistent(PortalIndex.CODEC));
+
+    private PortalIndexAttachment() {}
+
+    /** Registers the attachment type (class initialisation); called from the mod initialiser. */
+    public static void register() {
+        MsmRuntime.LOGGER.debug("[{}] registered attachment {}", MsmRuntime.MOD_ID, TYPE.identifier());
+    }
+
+    /** The level's index, or {@link PortalIndex#EMPTY}. */
+    public static PortalIndex get(ServerLevel level) {
+        return level.getAttachedOrElse(TYPE, PortalIndex.EMPTY);
+    }
+
+    /** Stores the index; an empty index removes the attachment, so nothing is saved for it. */
+    public static void set(ServerLevel level, PortalIndex index) {
+        if (index.isEmpty()) {
+            level.removeAttached(TYPE);
+        } else {
+            level.setAttached(TYPE, index);
+        }
+    }
+
+    /** The registry id of a portal block. */
+    public static Identifier id(Block portal) {
+        return BuiltInRegistries.BLOCK.getKey(portal);
+    }
+
+    /** Records a lit or built portal of {@code portal} filling {@code rectangle}; returns its entry. */
+    public static PortalIndex.Entry add(ServerLevel level, Block portal, PortalFrame.Rectangle rectangle) {
+        PortalIndex.Entry entry = PortalIndex.Entry.of(id(portal), rectangle);
+        add(level, entry);
+        return entry;
+    }
+
+    /** Records {@code entry}, replacing an overlapping entry of the same block. */
+    public static void add(ServerLevel level, PortalIndex.Entry entry) {
+        set(level, get(level).with(entry));
+    }
+
+    /** Forgets {@code entry}. */
+    public static void remove(ServerLevel level, PortalIndex.Entry entry) {
+        set(level, get(level).without(entry));
+    }
+
+    /** Whether the block at the entry's {@code min} is still the entry's portal block (loads that chunk). */
+    public static boolean isPresent(ServerLevel level, PortalIndex.Entry entry) {
+        return id(level.getBlockState(entry.min()).getBlock()).equals(entry.block());
+    }
+
+    /** The entry of {@code portal} whose inside holds {@code pos}, if it is indexed and still present (else dropped). */
+    public static Optional<PortalIndex.Entry> at(ServerLevel level, Block portal, BlockPos pos) {
+        Optional<PortalIndex.Entry> entry = get(level).at(id(portal), pos);
+        if (entry.isPresent() && !isPresent(level, entry.get())) {
+            remove(level, entry.get());
+            return Optional.empty();
+        }
+        return entry;
+    }
+
+    /**
+     * The nearest present portal of {@code block} within the square {@code radius} of {@code target} and inside the
+     * level's world border (closest by distance, then lowest y); stale entries met on the way are dropped from the index.
+     */
+    public static Optional<PortalIndex.Entry> nearest(ServerLevel level, Identifier block, BlockPos target, int radius) {
+        PortalIndex index = get(level);
+        List<PortalIndex.Entry> stale = new ArrayList<>();
+        Optional<PortalIndex.Entry> found = Optional.empty();
+        for (PortalIndex.Entry entry : index.candidates(block, target, radius, level.getWorldBorder()::isWithinBounds)) {
+            if (isPresent(level, entry)) {
+                found = Optional.of(entry);
+                break;
+            }
+            stale.add(entry);
+        }
+        if (!stale.isEmpty()) {
+            PortalIndex pruned = index;
+            for (PortalIndex.Entry entry : stale) {
+                pruned = pruned.without(entry);
+            }
+            set(level, pruned);
+        }
+        return found;
+    }
+}

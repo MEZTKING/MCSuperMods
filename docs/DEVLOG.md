@@ -3555,3 +3555,17 @@ Next
 What: added a "Portals" paragraph to the AI helper's system prompt (`packages/ai/src/system-prompt.ts`, after "Containers and machines"): the `portal` block type, its fields and defaults, the frame rule, `light_portal`, `on_travel`, the allowed components and the limits users meet (mod jar only, the Nether's overlay, dust-only colour, vertical frames, lit by igniter or action only, restart, Nether game rule, two dimensions per block, client and server together). Test added to `packages/ai/test/system-prompt.test.ts`.
 Decisions: element summaries (`project_summary`) are generic per-kind counts, so no change under `tools/`. Flow details are phrased as in ADR 0078 (flow "Portal", card "Portal to a dimension", the Dimension flow's portal answer) without inventing names.
 Next: B338 lands the flow; B344 documents it in the guide.
+## 2026-11-14 — executor — B333 portal frame, index and exits
+
+What
+- New `engine-mod/src/main/java/dev/mcsupermods/runtime/registry/portal/` (ADR 0077 D2, D5, D6), written from the ADR, never from vanilla's `PortalShape` or `PortalForcer`: `PortalFrame` (the frame rule: inside 2 to 21 wide, 3 to 21 high, frame on four sides, corners never read, only air, `#minecraft:fire` or the portal inside; `find`, `isComplete`, `isUnlit`, `fill` with flags 18), `PortalIndex` (immutable, closed Codec of `{ block, min, axis, width, height }`, sorted entries, `with` replaces an overlapping entry of the same block, `candidates` by square radius then distance then lowest y), `PortalIndexAttachment` (persistent level attachment `msm_runtime:portals`, stale entries dropped on lookup), `ExitPortals` (indexed exit within the caller's radius, else the closest build site within 16 blocks between the level's lowest y and the top of its logical height, entry axis first, else a forced build on a platform of the frame block; built exits indexed). `MsmRuntime` registers the attachment.
+- `MsmPortalFrameGameTest`: 12 GameTests (sizes on both axes, wrong sizes, missing sides, no corners, fire and portal inside, tag frame, fill and axis, index nearest/radius/stale/saved form, exits on flat ground and reused, at a cliff edge, forced over air, in the Nether below its logical height). `PortalIndexTest`: 7 JUnit tests of the saved form and index rules.
+- Checks: `./gradlew build` on 26.3 (twice, on a kept world), 26.4 (fresh world) and `-PwithoutGeckolib`: 373 GameTests each (361 + 12), 560 JUnit tests; `./gradlew -p parity build -Pmc=26.3` green.
+
+Decisions
+- Fill flags are `UPDATE_CLIENTS | UPDATE_KNOWN_SHAPE` (18), the flags vanilla fills its portal with (read with `javap -c`); frame, platform and cleared blocks use `UPDATE_ALL`.
+- The level-facing index calls (`nearest`, `at`, `add`, `remove`) live in `PortalIndexAttachment`; `PortalIndex` itself is pure, so JUnit tests the rules.
+- The GameTest world is flat in every dimension and is kept between runs: the tests work in far corners of it and clear what an earlier run left; a heightmap read in a chunk loaded the same tick reads as the level's bottom, so ground is found block by block.
+
+Next
+- B334 wires `PortalFrame` and `PortalIndexAttachment` to `MsmPortalBlock` and lighting; B336 calls `ExitPortals.findOrBuild` for travel.
