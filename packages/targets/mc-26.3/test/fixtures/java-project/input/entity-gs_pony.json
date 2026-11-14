@@ -1,0 +1,106 @@
+{
+  "base": "animal",
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "type": "panic"
+        },
+        {
+          "type": "wander"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "animations": "msm_test:entity/pony",
+      "idle": "idle",
+      "model": "msm_test:entity/pony",
+      "renderer": "vanilla",
+      "sit": "sit",
+      "swim": "swim",
+      "texture": "msm_test:entity/pony",
+      "walk": "walk"
+    },
+    "msm:breedable": {
+      "baby_scale": 0.6,
+      "items": [
+        "minecraft:apple",
+        "#minecraft:flowers"
+      ],
+      "on_breed": "msm_test:gs_born"
+    },
+    "msm:movement": {
+      "mode": "amphibious"
+    },
+    "msm:rideable": {
+      "controlled_by": "owner",
+      "jump": 0.8,
+      "on_mount": "msm_test:gs_mounted",
+      "passengers": 2,
+      "rider_offset": [
+        0,
+        1.2,
+        0.1
+      ],
+      "saddle_bone": "saddle",
+      "speed": 1.4
+    },
+    "msm:tameable": {
+      "chance": 0.5,
+      "follow": {
+        "speed": 1.3
+      },
+      "items": [
+        "minecraft:golden_carrot"
+      ],
+      "on_tame": "msm_test:gs_tamed"
+    },
+    "msm:variants": {
+      "variants": [
+        {
+          "id": "bay",
+          "texture": "msm_test:entity/pony_bay"
+        },
+        {
+          "id": "grey",
+          "texture": "msm_test:entity/pony_grey"
+        }
+      ]
+    }
+  },
+  "events": {
+    "msm_test:gs_born": {
+      "actions": [
+        {
+          "animation": "sit",
+          "type": "play_animation"
+        }
+      ]
+    },
+    "msm_test:gs_mounted": {
+      "actions": [
+        {
+          "count": 1,
+          "particle": "minecraft:heart",
+          "type": "spawn_particle"
+        }
+      ]
+    },
+    "msm_test:gs_tamed": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.4,
+    "width": 1.2
+  },
+  "spawn_egg": {}
+}

@@ -9,7 +9,12 @@
  * `msm:on_spawn` from `finalizeSpawn` (ADR 0061 D3), the loot table, the mob sounds of ADR 0057
  * D6; `run_function` in the entity's events runs as the player when there is one, else as the
  * mob itself) and `MsmGeoEntity` (the
- * `msm_main` and `msm_triggered` controllers). A `sounds` id that is not registered keeps the
+ * `msm_main` and `msm_triggered` controllers; `msm_main` plays the `sit`, `swim` and `fly`
+ * states of ADR 0071 D6 as `GeoControllers.loop`). Taming, breeding and riding (ADR 0071 D9)
+ * mirror `MobTaming`, `MobBreeding` and `MobRiding`: the right click's steps (breeding food,
+ * taming food and the sit toggle, mounting, then `msm:on_interact`) as private methods, the
+ * component goals after the definition's own, a wild tameable animal that never breeds, and
+ * `PlayerRideableJumping` on rideable mobs. A `sounds` id that is not registered keeps the
  * vanilla sound and is warned about once the server has started, as the runtime's
  * `MsmEntityRegistrar.checkAfterStart`. Minecraft 26.3 and GeckoLib 5, Mojang names.
  *
@@ -74,6 +79,9 @@ const ENTITY_COMPONENTS = [
   'msm:ranged_attack',
   'msm:variants',
   'msm:boss_bar',
+  'msm:tameable',
+  'msm:breedable',
+  'msm:rideable',
 ];
 export const CATEGORIES = [
   'monster',
@@ -162,6 +170,14 @@ const DEFAULT_FLYING_SPEED = 0.4;
 const TEMPT_RANGE = 10;
 /** The wither's client tracking range in chunks, for boss bars (`MsmEntityRegistrar.BOSS_TRACKING_RANGE`). */
 const BOSS_TRACKING_RANGE = 10;
+/** A cow's breeding, tempting and parent-following speeds (`MobBreeding`). */
+const BREED_SPEED = 1.0;
+const BREED_TEMPT_SPEED = 1.25;
+const FOLLOW_PARENT_SPEED = 1.25;
+/** A vanilla baby's time to grow up (`-AgeableMob.BABY_START_AGE`). */
+const VANILLA_GROW_UP_TICKS = 24000;
+/** Distance between seats, front to back, in blocks at scale 1 (`MobRiding.SEAT_SPACING`). */
+const SEAT_SPACING = 0.7;
 
 interface Spawn {
   biomes: string[];
@@ -201,6 +217,9 @@ interface EntitySpec {
     walk: string | undefined;
     attack: string | undefined;
     shoot: string | undefined;
+    sit: string | undefined;
+    fly: string | undefined;
+    swim: string | undefined;
     transitionTicks: number;
   };
   readonly base: Base;
@@ -221,6 +240,9 @@ interface EntitySpec {
   readonly ranged: RangedAttack | undefined;
   readonly variants: Variants | undefined;
   readonly bossBar: BossBar | undefined;
+  readonly tameable: Tameable | undefined;
+  readonly breedable: Breedable | undefined;
+  readonly rideable: Rideable | undefined;
   readonly attack: { damage: number; knockback: number; onAttack: string | undefined } | undefined;
   readonly goals: Reader[];
   readonly onHurt: string | undefined;
@@ -269,6 +291,41 @@ interface BossBar {
   readonly fog: boolean;
   readonly music: boolean;
   readonly range: number | undefined;
+}
+
+/** `msm:tameable` (ADR 0071 D1) with the runtime's defaults (a wolf's). */
+interface Tameable {
+  readonly items: readonly string[];
+  readonly chance: number;
+  readonly sit: boolean;
+  readonly followsOwner: boolean;
+  readonly follow: { speed: number; startDistance: number; stopDistance: number };
+  readonly defendsOwner: boolean;
+  readonly tamedHealth: number | undefined;
+  readonly onTame: string | undefined;
+}
+
+/** `msm:breedable` (ADR 0071 D2) with the runtime's defaults. */
+interface Breedable {
+  readonly items: readonly string[];
+  readonly babyScale: number;
+  readonly growUpTicks: number;
+  readonly tempted: boolean;
+  readonly followParents: boolean;
+  readonly onBreed: string | undefined;
+}
+
+/** `msm:rideable` (ADR 0071 D3) with the runtime's defaults. */
+interface Rideable {
+  readonly saddle: boolean;
+  /** `controlled_by: owner`. */
+  readonly ownerOnly: boolean;
+  readonly speed: number;
+  readonly jump: number;
+  readonly passengers: number;
+  readonly riderOffset: readonly [number, number, number] | undefined;
+  readonly saddleBone: string | undefined;
+  readonly onMount: string | undefined;
 }
 
 /** Fails unless `value` is within `min..max` (either may be absent), as the runtime's Codec ranges. */
@@ -411,6 +468,122 @@ function readBossBar(component: Reader | undefined): BossBar | undefined {
   };
 }
 
+/**
+ * `msm:tameable` (ADR 0071 D1). Stricter than msm_runtime, which logs an error and drops the
+ * component on a base other than `animal`: that fails generation here.
+ */
+function readTameable(
+  component: Reader | undefined,
+  base: string,
+  events: Events,
+): Tameable | undefined {
+  if (component === undefined) return undefined;
+  if (base !== 'animal') component.fail("msm:tameable needs base 'animal'");
+  component.onlyKeys(
+    [
+      'items',
+      'chance',
+      'sit',
+      'follows_owner',
+      'follow',
+      'defends_owner',
+      'tamed_health',
+      'on_tame',
+    ],
+    'msm:tameable field',
+  );
+  const follow = component.object('follow');
+  follow?.onlyKeys(['speed', 'start_distance', 'stop_distance'], 'msm:tameable follow field');
+  const followNumber = (key: string, fallback: number): number =>
+    follow === undefined ? fallback : inRange(follow, key, follow.number(key, fallback), 0);
+  const tamedHealth = component.optionalNumber('tamed_health');
+  const onTame = component.optionalString('on_tame');
+  return {
+    items: idsOrTags(component, 'items', true),
+    chance: inRange(component, 'chance', component.number('chance', 0.33), 0, 1),
+    sit: component.boolean('sit', true),
+    followsOwner: component.boolean('follows_owner', true),
+    follow: {
+      speed: followNumber('speed', 1),
+      startDistance: followNumber('start_distance', 10),
+      stopDistance: followNumber('stop_distance', 2),
+    },
+    defendsOwner: component.boolean('defends_owner', true),
+    tamedHealth:
+      tamedHealth === undefined ? undefined : inRange(component, 'tamed_health', tamedHealth, 1),
+    onTame: onTame === undefined ? undefined : eventMethod(component, events, onTame),
+  };
+}
+
+/** `msm:breedable` (ADR 0071 D2); on a base other than `animal`, stricter than msm_runtime as taming. */
+function readBreedable(
+  component: Reader | undefined,
+  base: string,
+  events: Events,
+): Breedable | undefined {
+  if (component === undefined) return undefined;
+  if (base !== 'animal') component.fail("msm:breedable needs base 'animal'");
+  component.onlyKeys(
+    ['items', 'baby_scale', 'grow_up_ticks', 'tempted', 'follow_parents', 'on_breed'],
+    'msm:breedable field',
+  );
+  const onBreed = component.optionalString('on_breed');
+  return {
+    items: idsOrTags(component, 'items', true),
+    babyScale: inRange(component, 'baby_scale', component.number('baby_scale', 0.5), 0.1, 1),
+    growUpTicks: inRange(
+      component,
+      'grow_up_ticks',
+      component.integer('grow_up_ticks', VANILLA_GROW_UP_TICKS),
+      1,
+    ),
+    tempted: component.boolean('tempted', true),
+    followParents: component.boolean('follow_parents', true),
+    onBreed: onBreed === undefined ? undefined : eventMethod(component, events, onBreed),
+  };
+}
+
+/** `msm:rideable` (ADR 0071 D3), any base. */
+function readRideable(component: Reader | undefined, events: Events): Rideable | undefined {
+  if (component === undefined) return undefined;
+  component.onlyKeys(
+    [
+      'saddle',
+      'controlled_by',
+      'speed',
+      'jump',
+      'passengers',
+      'rider_offset',
+      'saddle_bone',
+      'on_mount',
+    ],
+    'msm:rideable field',
+  );
+  let riderOffset: Rideable['riderOffset'];
+  if (component.has('rider_offset')) {
+    const raw = component.value.rider_offset;
+    if (
+      !Array.isArray(raw) ||
+      raw.length !== 3 ||
+      raw.some((entry) => typeof entry !== 'number' || !Number.isFinite(entry))
+    ) {
+      component.fail('rider_offset must be a list of exactly 3 numbers');
+    }
+    riderOffset = raw as [number, number, number];
+  }
+  const onMount = component.optionalString('on_mount');
+  return {
+    saddle: component.boolean('saddle', true),
+    ownerOnly: component.enumConstant('controlled_by', ['anyone', 'owner'], 'anyone') === 'OWNER',
+    speed: inRange(component, 'speed', component.number('speed', 1), 0),
+    jump: inRange(component, 'jump', component.number('jump', 0), 0),
+    passengers: inRange(component, 'passengers', component.integer('passengers', 1), 1, 4),
+    riderOffset,
+    saddleBone: component.optionalString('saddle_bone'),
+    onMount: onMount === undefined ? undefined : eventMethod(component, events, onMount),
+  };
+}
+
 function readSounds(reader: Reader): Sounds | undefined {
   const sounds = reader.object('sounds');
   if (sounds === undefined) return undefined;
@@ -501,6 +674,9 @@ function readEntity(input: DefinitionInput, throwables: ReadonlySet<string>): En
       'walk',
       'attack',
       'shoot',
+      'sit',
+      'fly',
+      'swim',
       'transition_ticks',
       'renderer',
     ],
@@ -579,6 +755,9 @@ function readEntity(input: DefinitionInput, throwables: ReadonlySet<string>): En
       walk: model.optionalString('walk'),
       attack: model.optionalString('attack'),
       shoot: model.optionalString('shoot'),
+      sit: model.optionalString('sit'),
+      fly: model.optionalString('fly'),
+      swim: model.optionalString('swim'),
       transitionTicks: model.integer('transition_ticks', 0),
     },
     base: base as Base,
@@ -599,6 +778,9 @@ function readEntity(input: DefinitionInput, throwables: ReadonlySet<string>): En
     ranged: readRanged(components.object('msm:ranged_attack'), events, throwables),
     variants: readVariants(components.object('msm:variants')),
     bossBar: readBossBar(components.object('msm:boss_bar')),
+    tameable: readTameable(components.object('msm:tameable'), base, events),
+    breedable: readBreedable(components.object('msm:breedable'), base, events),
+    rideable: readRideable(components.object('msm:rideable'), events),
     attack:
       attack === undefined
         ? undefined
@@ -861,6 +1043,43 @@ function spawnLines(file: JavaFile, spec: EntitySpec, field: string): string[] {
   ];
 }
 
+/** The steps of a right click before `msm:on_interact` (ADR 0071 D1), as `MobDriver.mobInteract`. */
+type InteractStep = 'breedingInteract' | 'tamingInteract' | 'ridingInteract';
+
+const INTERACT_STEP_NAMES: Record<InteractStep, string> = {
+  breedingInteract: 'the breeding food',
+  tamingInteract: "the taming food and the owner's sit toggle",
+  ridingInteract: 'mounting',
+};
+
+function interactSteps(spec: EntitySpec): InteractStep[] {
+  const steps: InteractStep[] = [];
+  if (spec.breedable !== undefined) steps.push('breedingInteract');
+  if (spec.tameable !== undefined) steps.push('tamingInteract');
+  if (spec.rideable !== undefined) steps.push('ridingInteract');
+  return steps;
+}
+
+/**
+ * The priority after the definition's last fighting or fleeing goal (`melee_attack` with
+ * `msm:attack`, `ranged_attack` with `msm:ranged_attack`, `flee`, `panic`, `leap_at_target`);
+ * 1 when there is none (`MobTaming.afterFighting`).
+ */
+function afterFighting(spec: EntitySpec): number {
+  let last = 0;
+  spec.goals.forEach((goal, n) => {
+    const type = goal.requiredString('type');
+    const fighting =
+      type === 'melee_attack'
+        ? spec.attack !== undefined
+        : type === 'ranged_attack'
+          ? spec.ranged !== undefined
+          : type === 'flee' || type === 'panic' || type === 'leap_at_target';
+    if (fighting) last = Math.max(last, goal.has('priority') ? goal.integer('priority', 0) : n + 1);
+  });
+  return last + 1;
+}
+
 /** Animation names to register as triggerable per controller, as `EntityDefinition.triggerableAnimations`. */
 function triggerable(spec: EntitySpec): Map<string, string[]> {
   const out = new Map<string, string[]>([[TRIGGERED_CONTROLLER, []]]);
@@ -1083,6 +1302,54 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
         goal.fail(`goal type '${type}' cannot be ejected`);
     }
   });
+  // The component goals after the definition's own, as MobGoals.registerGoals: taming, then breeding.
+  const after = afterFighting(spec);
+  let tamingFood: string | undefined;
+  let breedingFood: string | undefined;
+  if (spec.tameable !== undefined) {
+    const t = spec.tameable;
+    tamingFood = ofItems('TAMING_FOOD', [...t.items]);
+    if (t.sit) {
+      goalLines.push(
+        `goalSelector.addGoal(0, new ${file.use('net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal')}(this));`,
+      );
+    }
+    if (t.followsOwner) {
+      if (mode === 'walk' || mode === 'fly') {
+        goalLines.push(
+          `goalSelector.addGoal(${after}, new ${file.use('net.minecraft.world.entity.ai.goal.FollowOwnerGoal')}(this, ${javaFloat(t.follow.speed)}, ${javaFloat(t.follow.startDistance)}, ${javaFloat(t.follow.stopDistance)}));`,
+        );
+      } else {
+        goalLines.push(
+          `// follows_owner left out: FollowOwnerGoal takes only ground and flying navigation, not ${mode}'s (as msm_runtime).`,
+        );
+      }
+    }
+    if (t.defendsOwner) {
+      goalLines.push(
+        `targetSelector.addGoal(0, new ${file.use('net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal')}(this));`,
+        `targetSelector.addGoal(1, new ${file.use('net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal')}(this));`,
+      );
+    }
+  }
+  if (spec.breedable !== undefined) {
+    const b = spec.breedable;
+    breedingFood = ofItems('BREEDING_FOOD', [...b.items]);
+    goalLines.push(
+      `goalSelector.addGoal(${after + 1}, new ${file.use('net.minecraft.world.entity.ai.goal.BreedGoal')}(this, ${javaFloat(BREED_SPEED)}));`,
+    );
+    if (b.tempted) {
+      usesTempt = true;
+      goalLines.push(
+        `goalSelector.addGoal(${after + 2}, new ${file.use('net.minecraft.world.entity.ai.goal.TemptGoal')}(this, ${javaFloat(BREED_TEMPT_SPEED)}, ${breedingFood}, false));`,
+      );
+    }
+    if (b.followParents) {
+      goalLines.push(
+        `goalSelector.addGoal(${after + 3}, new ${file.use('net.minecraft.world.entity.ai.goal.FollowParentGoal')}(this, ${javaFloat(FOLLOW_PARENT_SPEED)}));`,
+      );
+    }
+  }
   if (predicates.length > 0) members.push('', ...predicates);
   if (spec.variants !== undefined) members.push(...variantFields(file, spec.variants, name));
   if (spec.bossBar !== undefined) {
@@ -1109,9 +1376,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
     `            .add(${attributes}.FOLLOW_RANGE, ${javaFloat(spec.movement.followRange)})`,
     `            .add(${attributes}.KNOCKBACK_RESISTANCE, ${javaFloat(spec.movement.knockbackResistance)})`,
     `            .add(${attributes}.ATTACK_DAMAGE, ${spec.attack === undefined ? '0.0' : javaFloat(spec.attack.damage)})`,
-    `            .add(${attributes}.ATTACK_KNOCKBACK, ${spec.attack === undefined ? '0.0' : javaFloat(spec.attack.knockback)})${
-      usesTempt || mode === 'fly' || spec.movement.stepHeight !== undefined ? '' : ';'
-    }`,
+    `            .add(${attributes}.ATTACK_KNOCKBACK, ${spec.attack === undefined ? '0.0' : javaFloat(spec.attack.knockback)})`,
   );
   const extraAttributes: string[] = [];
   if (usesTempt) extraAttributes.push(`.add(${attributes}.TEMPT_RANGE, ${javaFloat(TEMPT_RANGE)})`);
@@ -1123,9 +1388,12 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   if (spec.movement.stepHeight !== undefined) {
     extraAttributes.push(`.add(${attributes}.STEP_HEIGHT, ${javaFloat(spec.movement.stepHeight)})`);
   }
-  extraAttributes.forEach((line, index) => {
-    members.push(`            ${line}${index === extraAttributes.length - 1 ? ';' : ''}`);
-  });
+  if (spec.rideable !== undefined && spec.rideable.jump > 0) {
+    // jump 0 adds no attribute: a jump strength of 0 would stop the mob jumping at all.
+    extraAttributes.push(`.add(${attributes}.JUMP_STRENGTH, ${javaFloat(spec.rideable.jump)})`);
+  }
+  for (const line of extraAttributes) members.push(`            ${line}`);
+  members[members.length - 1] += ';';
   members.push('}');
   if (usesOfTypes) {
     const predicate = file.use('java.util.function.Predicate');
@@ -1266,18 +1534,38 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
       '}',
     );
   }
-  if (spec.onInteract !== undefined) {
+  const steps = interactSteps(spec);
+  if (spec.onInteract !== undefined || steps.length > 0) {
     const interactionResult = file.use('net.minecraft.world.InteractionResult');
     const interactionHand = file.use('net.minecraft.world.InteractionHand');
+    const body: string[] = [];
+    if (steps.length > 0) {
+      body.push(`${interactionResult} result = ${steps[0]}(player, hand);`);
+      for (const step of steps.slice(1)) {
+        body.push('if (result == null) {', `    result = ${step}(player, hand);`, '}');
+      }
+      body.push('if (result != null) {', '    return result;', '}');
+    }
+    if (spec.onInteract !== undefined) {
+      body.push(
+        `if (level() instanceof ${serverLevel()} level) {`,
+        `    ${fireCall(spec.onInteract, fireArgs('player'))}`,
+        '}',
+        `return ${interactionResult}.SUCCESS;`,
+      );
+    } else {
+      body.push('return super.mobInteract(player, hand);');
+    }
+    const doc =
+      steps.length === 0
+        ? 'msm:on_interact: a player right-clicks the entity.'
+        : `A right click, in the order of ADR 0071 D1: ${steps.map((step) => INTERACT_STEP_NAMES[step]).join(', ')}, then ${spec.onInteract === undefined ? "vanilla's" : 'msm:on_interact (which answers every other right click)'}.`;
     members.push(
       '',
-      '/** msm:on_interact: a player right-clicks the entity. */',
+      `/** ${doc} */`,
       '@Override',
       `${spec.base === 'animal' ? 'public' : 'protected'} ${interactionResult} mobInteract(${player()} player, ${interactionHand} hand) {`,
-      `    if (level() instanceof ${serverLevel()} level) {`,
-      `        ${fireCall(spec.onInteract, fireArgs('player'))}`,
-      '    }',
-      `    return ${interactionResult}.SUCCESS;`,
+      ...indent(body),
       '}',
     );
   }
@@ -1355,7 +1643,14 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   }
   if (spec.variants !== undefined) members.push(...variantMembers(file, spec.variants));
   if (spec.bossBar !== undefined) members.push(...bossBarMembers(file, spec.bossBar));
-  if (spec.base === 'animal') members.push(...animalMembers(file, spec, name));
+  if (spec.base === 'animal')
+    members.push(...animalMembers(file, spec, name, breedingFood, tamingFood));
+  if (spec.tameable !== undefined) {
+    members.push(...tamingMembers(file, spec, spec.tameable, tamingFood as string, fireArgs));
+  }
+  if (spec.rideable !== undefined) {
+    members.push(...ridingMembers(file, spec, spec.rideable, fireArgs));
+  }
   if (spec.sounds !== undefined) members.push(...soundMembers(file, spec.sounds));
   if (spec.lootTable !== undefined) {
     const resourceKey = file.use('net.minecraft.resources.ResourceKey');
@@ -1381,11 +1676,45 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   const triggers = triggerable(spec);
   const loop = (value: string | undefined) =>
     value === undefined ? 'null' : `${rawAnimation}.begin().thenLoop(${javaString(value)})`;
+  // ADR 0071 D6 (GeoControllers.loop): sit while sitting (animal bodies), swim while moving in
+  // water, fly while moving in the air (mode fly); a state without its animation falls through.
+  const states: { name: string; animation: string; condition: string }[] = [];
+  if (spec.base === 'animal' && spec.model.sit !== undefined) {
+    states.push({ name: 'sit', animation: spec.model.sit, condition: 'isInSittingPose()' });
+  }
+  if (spec.model.swim !== undefined) {
+    states.push({
+      name: 'swim',
+      animation: spec.model.swim,
+      condition: 'test.isMoving() && isInWater()',
+    });
+  }
+  if (mode === 'fly' && spec.model.fly !== undefined) {
+    states.push({
+      name: 'fly',
+      animation: spec.model.fly,
+      condition: 'test.isMoving() && !onGround() && !isInWater()',
+    });
+  }
+  const mainLoop =
+    states.length === 0
+      ? [`    ${rawAnimation} loop = test.isMoving() && walk != null ? walk : idle;`]
+      : [
+          `    ${rawAnimation} loop;`,
+          ...states.map(
+            (state, i) =>
+              `    ${i === 0 ? '' : '} else '}if (${state.condition}) {\n        loop = ${state.name};`,
+          ),
+          '    } else {',
+          '        loop = test.isMoving() && walk != null ? walk : idle;',
+          '    }',
+        ];
   const controllers: string[] = [
     `${rawAnimation} idle = ${loop(spec.model.idle)};`,
     `${rawAnimation} walk = ${loop(spec.model.walk)};`,
+    ...states.map((state) => `${rawAnimation} ${state.name} = ${loop(state.animation)};`),
     `${animationController}<${name}> main = new ${animationController}<>(${javaString(MAIN_CONTROLLER)}, ${javaInt(spec.model.transitionTicks)}, test -> {`,
-    `    ${rawAnimation} loop = test.isMoving() && walk != null ? walk : idle;`,
+    ...mainLoop.flatMap((line) => line.split('\n')),
     `    return loop == null ? ${playState}.STOP : test.setAndContinue(loop);`,
     '});',
   ];
@@ -1396,7 +1725,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   }
   controllers.push('controllers.add(main);');
   const controllerNames = new NameTable();
-  controllerNames.reserve('main', 'idle', 'walk', 'controllers');
+  controllerNames.reserve('main', 'idle', 'walk', 'sit', 'swim', 'fly', 'controllers');
   for (const [controller, anims] of triggers) {
     if (controller === MAIN_CONTROLLER) continue;
     const variable = controllerNames.take(
@@ -1416,7 +1745,9 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   }
   members.push(
     '',
-    '/** msm_main loops walk while moving and idle otherwise; the other controllers play animations on request. */',
+    states.length === 0
+      ? '/** msm_main loops walk while moving and idle otherwise; the other controllers play animations on request. */'
+      : `/** msm_main loops ${states.map((state) => state.name).join(', ')} in that order of precedence, then walk while moving and idle otherwise; the other controllers play animations on request. */`,
     '@Override',
     `public void registerControllers(${controllerRegistrar} controllers) {`,
     ...indent(controllers),
@@ -1432,6 +1763,9 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   const interfaces = [geoEntity];
   if (spec.ranged !== undefined) {
     interfaces.push(file.use('net.minecraft.world.entity.monster.RangedAttackMob'));
+  }
+  if (spec.rideable !== undefined) {
+    interfaces.push(file.use('net.minecraft.world.entity.PlayerRideableJumping'));
   }
   const kind = { mob: '', animal: ' (base animal)', monster: ' (base monster)' }[spec.base];
   const lines = [
@@ -1997,15 +2331,23 @@ function bossBarMembers(file: JavaFile, bar: BossBar): string[] {
 }
 
 /**
- * The animal callbacks of `MsmAnimal` without `msm:breedable` (ADR 0071 D2): no breeding food;
- * a spawn egg used on an adult still makes a baby of the same type, which takes a parent's
- * variant.
+ * The animal callbacks of `MsmAnimal` and `MobBreeding` (ADR 0071 D2): without `msm:breedable`
+ * no breeding food; with it the food, the breeding step of a right click, the baby's scale and
+ * grow-up time and `on_breed`. A spawn egg used on an adult makes a baby of the same type either
+ * way, which takes a parent's variant.
  */
-function animalMembers(file: JavaFile, spec: EntitySpec, name: string): string[] {
+function animalMembers(
+  file: JavaFile,
+  spec: EntitySpec,
+  name: string,
+  food: string | undefined,
+  tamingFood: string | undefined,
+): string[] {
   const itemStack = file.use('net.minecraft.world.item.ItemStack');
   const ageableMob = file.use('net.minecraft.world.entity.AgeableMob');
   const serverLevel = file.use('net.minecraft.server.level.ServerLevel');
   const reason = file.use('net.minecraft.world.entity.EntitySpawnReason');
+  const { breedable, tameable } = spec;
   const offspring = [
     `${ageableMob} child = getType().create(level, ${reason}.BREEDING) instanceof ${ageableMob} made ? made : null;`,
   ];
@@ -2018,21 +2360,574 @@ function animalMembers(file: JavaFile, spec: EntitySpec, name: string): string[]
       '}',
     );
   }
+  if (tameable !== undefined) {
+    offspring.push(
+      "// A tamed parent's baby belongs to the same owner, tamed (Wolf.getBreedOffspring); no sitting, hearts or on_tame.",
+      `if (child instanceof ${name} baby && isTame()) {`,
+      '    baby.setOwnerReference(getOwnerReference());',
+      '    baby.setTame(true, true);',
+      ...(tameable.tamedHealth !== undefined ? ['    baby.applyTamedHealth();'] : []),
+      '}',
+    );
+  }
+  if (breedable !== undefined) offspring.push('lastOffspring = child;');
   offspring.push('return child;');
-  return [
+  if (breedable === undefined || food === undefined) {
+    return [
+      ...tamedHealthMember(file, spec),
+      '',
+      '/** No breeding food without msm:breedable. */',
+      '@Override',
+      `public boolean isFood(${itemStack} stack) {`,
+      '    return false;',
+      '}',
+      '',
+      '/** A new mob of the same type (a spawn egg used on an adult makes a baby). */',
+      '@Override',
+      `public ${ageableMob} getBreedOffspring(${serverLevel} level, ${ageableMob} partner) {`,
+      ...indent(offspring),
+      '}',
+    ];
+  }
+  const interactionResult = file.use('net.minecraft.world.InteractionResult');
+  const interactionHand = file.use('net.minecraft.world.InteractionHand');
+  const player = file.use('net.minecraft.world.entity.player.Player');
+  const serverPlayer = file.use('net.minecraft.server.level.ServerPlayer');
+  const animal = file.use('net.minecraft.world.entity.animal.Animal');
+  const members = [
+    ...tamedHealthMember(file, spec),
     '',
-    '/** No breeding food without msm:breedable. */',
+    '/** The child getBreedOffspring made last, read back by spawnChildFromBreeding. */',
+    `private ${ageableMob} lastOffspring;`,
+    '',
+    tameable === undefined
+      ? '/** msm:breedable items. */'
+      : "/** msm:breedable items, none while the mob is wild: an untamed pet does not breed (as wolves and cats), and vanilla's Animal.mobInteract cannot put it in love either. */",
     '@Override',
     `public boolean isFood(${itemStack} stack) {`,
-    '    return false;',
+    `    return ${food}.test(stack)${tameable === undefined ? '' : ' && isTame()'};`,
     '}',
     '',
-    '/** A new mob of the same type (a spawn egg used on an adult makes a baby). */',
+    tameable === undefined
+      ? "/** The breeding step of a right click: vanilla's feeding (love mode for a grown mob, growth for a baby), before msm:on_interact. Null passes on. */"
+      : "/** The breeding step of a right click: vanilla's feeding (love mode for a grown mob, growth for a baby), before msm:on_interact. A wild mob gets no love mode: its taming food passes on to taming (a shared food tames), and its breeding food only grows a baby. Null passes on. */",
+    `private ${interactionResult} breedingInteract(${player} player, ${interactionHand} hand) {`,
+    `    ${itemStack} stack = player.getItemInHand(hand);`,
+    `    if (!${food}.test(stack)) {`,
+    '        return null;',
+    '    }',
+  ];
+  if (tameable !== undefined) {
+    members.push(
+      '    boolean wild = !isTame();',
+      `    if (wild && ${tamingFood}.test(stack)) {`,
+      '        return null;',
+      '    }',
+    );
+  }
+  const wildAnd = tameable === undefined ? '' : '!wild && ';
+  members.push(
+    '    int age = getAge();',
+    `    if (${wildAnd}player instanceof ${serverPlayer} && age == 0 && canFallInLove()) {`,
+    '        stack.consume(1, player);',
+    '        setInLove(player);',
+    `        return ${interactionResult}.SUCCESS_SERVER;`,
+    '    }',
+    '    if (canAgeUp()) {',
+    '        stack.consume(1, player);',
+    `        ageUp(${ageableMob}.getSpeedUpSecondsWhenFeeding(-age), true);`,
+    `        return ${interactionResult}.SUCCESS;`,
+    '    }',
+    `    return level().isClientSide()${tameable === undefined ? '' : ' && !wild'} ? ${interactionResult}.CONSUME : null;`,
+    '}',
+    '',
+    '/** A new mob of the same type (also for a spawn egg used on an adult, where the partner is this mob). */',
     '@Override',
     `public ${ageableMob} getBreedOffspring(${serverLevel} level, ${ageableMob} partner) {`,
     ...indent(offspring),
     '}',
+  );
+  const after: string[] = [
+    `${ageableMob} child = lastOffspring;`,
+    'lastOffspring = null;',
+    'if (child == null || child.isRemoved() || !child.isBaby()) {',
+    '    return;',
+    '}',
   ];
+  if (breedable.growUpTicks !== VANILLA_GROW_UP_TICKS) {
+    after.push(`child.setAge(${javaInt(-breedable.growUpTicks)});`);
+  }
+  if (breedable.onBreed !== undefined) {
+    after.push(
+      `if (child instanceof ${name} baby) {`,
+      `    baby.${fireCall(breedable.onBreed, `level, baby.blockPosition(), baby.position(), cause, baby${spec.events.otherParameter ? ', cause' : ''}`)}`,
+      '}',
+    );
+  }
+  const what = [
+    breedable.growUpTicks !== VANILLA_GROW_UP_TICKS ? 'the grow-up time' : undefined,
+    breedable.onBreed !== undefined
+      ? 'on_breed (self the baby, player the one who fed a parent)'
+      : undefined,
+  ].filter((part) => part !== undefined);
+  members.push(
+    '',
+    `/** Vanilla's breeding (the baby, the cooldowns, hearts, experience), refused between two types${tameable === undefined ? '' : " and while either parent is wild (a wolf's and a cat's canMate)"}${what.length > 0 ? `; then ${what.join(' and ')}` : ''}. */`,
+    '@Override',
+    `public void spawnChildFromBreeding(${serverLevel} level, ${animal} partner) {`,
+    tameable === undefined
+      ? '    if (partner.getType() != getType()) {'
+      : `    if (partner.getType() != getType() || !isTame() || !(partner instanceof ${name} other && other.isTame())) {`,
+    '        resetLove();',
+    '        partner.resetLove();',
+    '        return;',
+    '    }',
+    ...(breedable.onBreed !== undefined
+      ? [
+          `    ${serverPlayer} cause = getLoveCause() != null ? getLoveCause() : partner.getLoveCause();`,
+        ]
+      : []),
+    '    lastOffspring = null;',
+    '    super.spawnChildFromBreeding(level, partner);',
+    ...indent(after),
+    '}',
+    '',
+    `/** baby_scale for a baby (also its hitbox). */`,
+    '@Override',
+    'public float getAgeScale() {',
+    `    return isBaby() ? ${javaFloat(breedable.babyScale)} : super.getAgeScale();`,
+    '}',
+    '',
+    '/** -grow_up_ticks, so spawn-egg and summoned babies grow up as bred ones do. */',
+    '@Override',
+    'protected int getBabyStartAge() {',
+    `    return ${javaInt(-breedable.growUpTicks)};`,
+    '}',
+  );
+  return members;
+}
+
+/** `tamed_health`, healed to full (`MobTaming.applyTamedHealth`): on taming and on a tamed parent's baby. */
+function tamedHealthMember(file: JavaFile, spec: EntitySpec): string[] {
+  const health = spec.tameable?.tamedHealth;
+  if (health === undefined) return [];
+  const attributeInstance = file.use('net.minecraft.world.entity.ai.attributes.AttributeInstance');
+  const attributes = file.use('net.minecraft.world.entity.ai.attributes.Attributes');
+  return [
+    '',
+    '/** tamed_health, healed to full. */',
+    'private void applyTamedHealth() {',
+    `    ${attributeInstance} max = getAttribute(${attributes}.MAX_HEALTH);`,
+    '    if (max != null) {',
+    `        max.setBaseValue(${javaFloat(health)});`,
+    '    }',
+    '    setHealth(getMaxHealth());',
+    '}',
+  ];
+}
+
+/** The taming members of `MobTaming` (ADR 0071 D1), a wolf's taming. */
+function tamingMembers(
+  file: JavaFile,
+  spec: EntitySpec,
+  tameable: Tameable,
+  food: string,
+  fireArgs: (player: string, other?: string) => string,
+): string[] {
+  const interactionResult = file.use('net.minecraft.world.InteractionResult');
+  const interactionHand = file.use('net.minecraft.world.InteractionHand');
+  const player = file.use('net.minecraft.world.entity.player.Player');
+  const itemStack = file.use('net.minecraft.world.item.ItemStack');
+  const serverLevel = file.use('net.minecraft.server.level.ServerLevel');
+  const livingEntity = file.use('net.minecraft.world.entity.LivingEntity');
+  const tamableAnimal = file.use('net.minecraft.world.entity.TamableAnimal');
+  const rideable = spec.rideable !== undefined;
+  const members = [
+    '',
+    tameable.sit
+      ? `/** The taming step of a right click: the taming food on a wild mob, then the owner's empty main hand toggling sitting${rideable ? ' while sneaking (an empty hand mounts)' : ''}. Null passes on. */`
+      : '/** The taming step of a right click: the taming food on a wild mob. Null passes on. */',
+    `private ${interactionResult} tamingInteract(${player} player, ${interactionHand} hand) {`,
+    `    ${itemStack} stack = player.getItemInHand(hand);`,
+    '    if (!isTame()) {',
+    `        if (!${food}.test(stack)) {`,
+    '            return null;',
+    '        }',
+    `        if (!(level() instanceof ${serverLevel} level)) {`,
+    `            return ${interactionResult}.SUCCESS;`,
+    '        }',
+    '        stack.consume(1, player);',
+    `        if (getRandom().nextFloat() < ${javaFloat(tameable.chance)}) {`,
+    '            tameWithFood(level, player);',
+    '        } else {',
+    '            level.broadcastEntityEvent(this, (byte) 6); // smoke',
+    '        }',
+    `        return ${interactionResult}.SUCCESS_SERVER;`,
+    '    }',
+  ];
+  if (tameable.sit) {
+    members.push(
+      `    if (isOwnedBy(player) && hand == ${interactionHand}.MAIN_HAND && stack.isEmpty()${rideable ? ' && player.isSecondaryUseActive()' : ''}) {`,
+      `        if (!(level() instanceof ${serverLevel})) {`,
+      `            return ${interactionResult}.SUCCESS;`,
+      '        }',
+      '        setOrderedToSit(!isOrderedToSit());',
+      '        setJumping(false);',
+      '        getNavigation().stop();',
+      '        setTarget(null);',
+      `        return ${interactionResult}.SUCCESS_SERVER;`,
+      '    }',
+    );
+  }
+  members.push('    return null;', '}');
+  const tame = ['tame(player);'];
+  if (tameable.tamedHealth !== undefined) tame.push('applyTamedHealth();');
+  tame.push('getNavigation().stop();', 'setTarget(null);');
+  if (tameable.sit) tame.push('setOrderedToSit(true);');
+  tame.push('level.broadcastEntityEvent(this, (byte) 7); // hearts');
+  if (tameable.onTame !== undefined) tame.push(fireCall(tameable.onTame, fireArgs('player')));
+  const tameDoc = [
+    'the owner',
+    tameable.tamedHealth !== undefined ? 'tamed_health (healed to full)' : undefined,
+    tameable.sit ? 'sitting' : undefined,
+    'hearts',
+    tameable.onTame !== undefined ? 'on_tame' : undefined,
+  ].filter((part) => part !== undefined);
+  members.push(
+    '',
+    `/** A wolf's taming: ${tameDoc.join(', ')}. */`,
+    `private void tameWithFood(${serverLevel} level, ${player} player) {`,
+    ...indent(tame),
+    '}',
+    '',
+    "/** Asked by the owner target goals: never the owner, another pet of the same owner, or a player the owner may not hurt (a wolf's rule). */",
+    '@Override',
+    `public boolean wantsToAttack(${livingEntity} target, ${livingEntity} owner) {`,
+    '    if (!super.wantsToAttack(target, owner) || target == owner) {',
+    '        return false;',
+    '    }',
+    `    if (target instanceof ${tamableAnimal} pet && pet.isTame() && pet.getOwner() == owner) {`,
+    '        return false;',
+    '    }',
+    `    return !(target instanceof ${player} targetPlayer && owner instanceof ${player} ownerPlayer && !ownerPlayer.canHarmPlayer(targetPlayer));`,
+    '}',
+  );
+  if (spec.movement.mode === 'fly') {
+    members.push(
+      '',
+      '/** Mode fly: teleports to an owner in the air. */',
+      '@Override',
+      'protected boolean canFlyToOwner() {',
+      '    return true;',
+      '}',
+    );
+  }
+  if (spec.bossBar === undefined) {
+    members.push(
+      '',
+      '/** A tamed mob is kept. */',
+      '@Override',
+      'public boolean requiresCustomPersistence() {',
+      '    return super.requiresCustomPersistence() || isTame();',
+      '}',
+    );
+  }
+  return members;
+}
+
+/** The riding members of `MobRiding` (ADR 0071 D3) and `PlayerRideableJumping`. */
+function ridingMembers(
+  file: JavaFile,
+  spec: EntitySpec,
+  rideable: Rideable,
+  fireArgs: (player: string, other?: string) => string,
+): string[] {
+  const interactionResult = file.use('net.minecraft.world.InteractionResult');
+  const interactionHand = file.use('net.minecraft.world.InteractionHand');
+  const player = file.use('net.minecraft.world.entity.player.Player');
+  const itemStack = file.use('net.minecraft.world.item.ItemStack');
+  const serverLevel = file.use('net.minecraft.server.level.ServerLevel');
+  const livingEntity = file.use('net.minecraft.world.entity.LivingEntity');
+  const entity = file.use('net.minecraft.world.entity.Entity');
+  const equipmentSlot = file.use('net.minecraft.world.entity.EquipmentSlot');
+  const entityDimensions = file.use('net.minecraft.world.entity.EntityDimensions');
+  const vec3 = file.use('net.minecraft.world.phys.Vec3');
+  const mth = file.use('net.minecraft.util.Mth');
+  const attributes = file.use('net.minecraft.world.entity.ai.attributes.Attributes');
+  const { mode } = spec.movement;
+  const animal = spec.base === 'animal';
+  const canJump = rideable.jump > 0 && (mode === 'walk' || mode === 'amphibious');
+  const steerable = rideable.saddle ? 'isSaddled()' : undefined;
+  const members: string[] = [];
+  if (canJump) {
+    members.push(
+      '',
+      "/** The jump bar's scale, from onPlayerJump on the rider's client, used by tickRidden on the ground. */",
+      'private float pendingJump;',
+    );
+  }
+  if (rideable.ownerOnly) {
+    members.push(
+      '',
+      animal
+        ? '/** controlled_by owner: only the owner of the tamed mob (no owner, nobody). */'
+        : '/** controlled_by owner without base animal: there is never an owner, so nobody steers (as msm_runtime). */',
+      `private boolean allowedToSteer(${player} player) {`,
+      `    return ${animal ? 'isTame() && isOwnedBy(player)' : 'false'};`,
+      '}',
+    );
+  }
+  // Mounting.
+  const interact = [
+    '    if (player.isSecondaryUseActive()) {',
+    '        return null;',
+    '    }',
+    `    ${itemStack} stack = player.getItemInHand(hand);`,
+    '    if (!stack.isEmpty()) {',
+  ];
+  if (rideable.saddle) {
+    interact.push(
+      `        boolean saddle = !isSaddled() && isEquippableInSlot(stack, ${equipmentSlot}.SADDLE);`,
+      `        return saddle ? ${interactionResult}.PASS : null;`,
+    );
+  } else {
+    interact.push('        return null;');
+  }
+  interact.push(
+    '    }',
+    `    if (isBaby() || hasPassenger(player) || getPassengers().size() >= ${javaInt(rideable.passengers)}) {`,
+    '        return null;',
+    '    }',
+  );
+  if (rideable.ownerOnly) {
+    interact.push(
+      '    if (getPassengers().isEmpty() && !allowedToSteer(player)) {',
+      '        return null;',
+      '    }',
+    );
+  }
+  if (rideable.onMount === undefined) {
+    interact.push(
+      `    if (level() instanceof ${serverLevel} && !player.startRiding(this)) {`,
+      '        return null;',
+      '    }',
+    );
+  } else {
+    interact.push(
+      `    if (level() instanceof ${serverLevel} level) {`,
+      '        if (!player.startRiding(this)) {',
+      '            return null;',
+      '        }',
+      `        ${fireCall(rideable.onMount, fireArgs('player'))}`,
+      '    }',
+    );
+  }
+  interact.push(`    return ${interactionResult}.SUCCESS;`, '}');
+  members.push(
+    '',
+    `/** The mounting step of a right click: an empty hand mounts (sneaking passes, as vanilla dismounts)${rideable.saddle ? "; a saddle the mob can take passes to vanilla's item use, which equips it" : ''}${rideable.ownerOnly ? "; the first seat is the owner's" : ''}; a full mob or a baby passes on${rideable.onMount === undefined ? '' : '; on_mount fires once per mount by right click (not for /ride)'}. Null passes on. */`,
+    `private ${interactionResult} ridingInteract(${player} player, ${interactionHand} hand) {`,
+    ...interact,
+  );
+  // Who steers.
+  const conditions = [steerable, rideable.ownerOnly ? 'allowedToSteer(player)' : undefined].filter(
+    (part) => part !== undefined,
+  );
+  members.push(
+    '',
+    `/** The first passenger steers when it is a player${rideable.saddle ? ' and the mob is saddled' : ''}${rideable.ownerOnly ? ' and it is the owner' : ''}; another player passenger only sits. */`,
+    '@Override',
+    `public ${livingEntity} getControllingPassenger() {`,
+    `    if (getFirstPassenger() instanceof ${player} player) {`,
+    conditions.length === 0
+      ? '        return player;'
+      : `        return ${conditions.join(' && ')} ? player : null;`,
+    '    }',
+    '    return super.getControllingPassenger();',
+    '}',
+    '',
+    `/** passengers: ${rideable.passengers} seat${rideable.passengers === 1 ? '' : 's'}. */`,
+    '@Override',
+    `protected boolean canAddPassenger(${entity} passenger) {`,
+    `    return getPassengers().size() < ${javaInt(rideable.passengers)};`,
+    '}',
+    '',
+    rideable.saddle
+      ? "/** The saddle slot exists on a grown, living mount (the pig's rule): vanilla's saddle equips it, shears take it off, it drops on death. */"
+      : '/** saddle false: no saddle slot. */',
+    '@Override',
+    `public boolean canUseSlot(${equipmentSlot} slot) {`,
+    `    if (slot != ${equipmentSlot}.SADDLE) {`,
+    '        return super.canUseSlot(slot);',
+    '    }',
+    `    return ${rideable.saddle ? 'isAlive() && !isBaby()' : 'false'};`,
+    '}',
+  );
+  // Seats.
+  const offset = rideable.riderOffset;
+  members.push(
+    '',
+    `/** Seat i at ${offset === undefined ? 'the top of the hitbox' : 'rider_offset (blocks from the feet, times the scale)'}, each further seat ${SEAT_SPACING} blocks behind the one before; turned with the mob. */`,
+    '@Override',
+    `protected ${vec3} getPassengerAttachmentPoint(${entity} passenger, ${entityDimensions} dimensions, float scale) {`,
+    '    int index = Math.max(0, getPassengers().indexOf(passenger));',
+    offset === undefined
+      ? `    ${vec3} seat = new ${vec3}(0, dimensions.height(), 0);`
+      : `    ${vec3} seat = new ${vec3}(${javaFloat(offset[0])} * scale, ${javaFloat(offset[1])} * scale, ${javaFloat(offset[2])} * scale);`,
+    '    if (index > 0) {',
+    `        seat = seat.add(0, 0, -${SEAT_SPACING} * index * scale);`,
+    '    }',
+    `    return seat.yRot(-getYRot() * ${mth}.DEG_TO_RAD);`,
+    '}',
+  );
+  // Steering.
+  const ridden = [
+    'super.tickRidden(rider, input);',
+    'setYRot(rider.getYRot() % 360.0f);',
+    'setXRot((rider.getXRot() * 0.5f) % 360.0f);',
+    'yRotO = getYRot();',
+    'yBodyRot = getYRot();',
+    'yHeadRot = getYRot();',
+  ];
+  if (canJump) {
+    ridden.push(
+      'if (isLocalInstanceAuthoritative() && onGround()) {',
+      '    if (pendingJump > 0) {',
+      '        rideJump(pendingJump, input);',
+      '    }',
+      '    pendingJump = 0;',
+      '}',
+    );
+  }
+  members.push(
+    '',
+    `/** The mob faces the rider's view (half the pitch, as horses)${canJump ? ', then a pending jump on the ground' : ''}. */`,
+    '@Override',
+    `protected void tickRidden(${player} rider, ${vec3} input) {`,
+    ...indent(ridden),
+    '}',
+  );
+  if (canJump) {
+    members.push(
+      '',
+      "/** The horse's jump: jump_strength times the bar's scale and the block's jump factor, plus jump boost. */",
+      `private void rideJump(float scale, ${vec3} input) {`,
+      `    double power = getAttributeValue(${attributes}.JUMP_STRENGTH) * scale * getBlockJumpFactor() + getJumpBoostPower();`,
+      `    ${vec3} motion = getDeltaMovement();`,
+      '    setDeltaMovement(motion.x, power, motion.z);',
+      '    needsSync = true;',
+      '    if (input.z > 0) {',
+      `        float sin = ${mth}.sin(getYRot() * ${mth}.DEG_TO_RAD);`,
+      `        float cos = ${mth}.cos(getYRot() * ${mth}.DEG_TO_RAD);`,
+      '        setDeltaMovement(getDeltaMovement().add(-0.4f * sin * scale, 0, 0.4f * cos * scale));',
+      '    }',
+      '}',
+    );
+  }
+  const horse = [
+    'float strafe = rider.xxa * 0.5f;',
+    'float forward = rider.zza <= 0 ? rider.zza * 0.25f : rider.zza;',
+    `return new ${vec3}(strafe, 0, forward);`,
+  ];
+  const view = (rise: boolean): string[] => [
+    'float forward = 0;',
+    'float up = 0;',
+    'if (rider.zza != 0) {',
+    `    float factor = rider.zza < 0 ? -0.5f : 1.0f;`,
+    `    forward = ${mth}.cos(rider.getXRot() * ${mth}.DEG_TO_RAD) * factor;`,
+    `    up = -${mth}.sin(rider.getXRot() * ${mth}.DEG_TO_RAD) * factor;`,
+    '}',
+    ...(rise ? ['if (rider.isJumping()) {', '    up += 0.5f;', '}'] : []),
+    `return new ${vec3}(rider.xxa, up, forward);`,
+  ];
+  let input: string[];
+  let inputDoc: string;
+  switch (mode) {
+    case 'fly':
+      input = view(true);
+      inputDoc =
+        "Mode fly: the happy ghast's input, along the rider's view (backwards at half), rising while jump is held";
+      break;
+    case 'swim':
+      input = view(false);
+      inputDoc = "Mode swim: along the rider's view (backwards at half)";
+      break;
+    case 'amphibious':
+      input = ['if (isInWater()) {', ...indent(view(false)), '}', ...horse];
+      inputDoc =
+        "Mode amphibious: along the rider's view in water (backwards at half), else the horse's input (strafe at half, backwards at a quarter)";
+      break;
+    default:
+      input = horse;
+      inputDoc = "The horse's input: strafe at half, backwards at a quarter";
+  }
+  members.push(
+    '',
+    `/** ${inputDoc}. */`,
+    '@Override',
+    `protected ${vec3} getRiddenInput(${player} rider, ${vec3} input) {`,
+    ...indent(input),
+    '}',
+    '',
+    '/** The movement_speed attribute times speed. */',
+    '@Override',
+    `protected float getRiddenSpeed(${player} rider) {`,
+    `    return (float) (getAttributeValue(${attributes}.MOVEMENT_SPEED) * ${javaFloat(rideable.speed)});`,
+    '}',
+  );
+  // Jump bar.
+  if (canJump) {
+    members.push(
+      '',
+      "/** On the rider's client: the bar's charge to a scale through vanilla's default curve. */",
+      '@Override',
+      'public void onPlayerJump(int strength) {',
+      '    if (!canJump()) {',
+      '        return;',
+      '    }',
+      '    pendingJump = getPlayerJumpPendingScale(Math.max(0, strength));',
+      '}',
+      '',
+      `/** A jump bar while ${steerable === undefined ? 'ridden (no saddle needed)' : 'saddled'}. */`,
+      '@Override',
+      'public boolean canJump() {',
+      `    return ${steerable ?? 'true'};`,
+      '}',
+    );
+  } else {
+    members.push(
+      '',
+      mode === 'fly' || mode === 'swim'
+        ? `/** Mode ${mode} rises with the jump key instead: no jump bar. */`
+        : '/** jump 0: no jump bar. */',
+      '@Override',
+      'public void onPlayerJump(int strength) {}',
+      '',
+      '@Override',
+      'public boolean canJump() {',
+      '    return false;',
+      '}',
+    );
+  }
+  members.push(
+    '',
+    "/** On the server when the rider releases the bar; the jump itself comes with the rider's movement. */",
+    '@Override',
+    'public void handleStartJump(int strength) {}',
+    '',
+    '@Override',
+    'public void handleStopJump() {}',
+  );
+  if (rideable.saddleBone !== undefined) {
+    members.push(
+      '',
+      `/** saddle_bone: the model bone hidden while the saddle slot is empty${rideable.saddle ? '' : ' (saddle false: always)'}; read by the GeckoLib model. */`,
+      'public String hiddenBone() {',
+      `    return isSaddled() ? null : ${javaString(rideable.saddleBone)};`,
+      '}',
+    );
+  }
+  return members;
 }
 
 /**

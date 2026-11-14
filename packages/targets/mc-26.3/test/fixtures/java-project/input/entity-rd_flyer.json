@@ -1,0 +1,22 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:movement": {
+      "mode": "fly"
+    },
+    "msm:rideable": {
+      "jump": 0.5,
+      "saddle": false
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.4,
+    "width": 1.2
+  },
+  "spawn_egg": false
+}

@@ -1,0 +1,40 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:movement": {
+      "speed": 0.2
+    },
+    "msm:rideable": {
+      "jump": 0.7,
+      "on_mount": "msm_test:rd_mounted",
+      "rider_offset": [
+        0,
+        1.1,
+        -0.2
+      ],
+      "saddle_bone": "saddle",
+      "speed": 1.5
+    }
+  },
+  "events": {
+    "msm_test:rd_mounted": {
+      "actions": [
+        {
+          "count": 1,
+          "particle": "minecraft:heart",
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.4,
+    "width": 1.2
+  },
+  "spawn_egg": false
+}

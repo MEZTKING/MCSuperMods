@@ -3,7 +3,9 @@
  * D10, ADR 0068 D8): vanilla's
  * `ThrownItemRenderer` for the thrown item entity as the runtime's `MsmRuntimeClient` registers
  * it, with or without GeckoLib (ADR 0056 D4); and the GeckoLib models, mirroring the runtime's `GeckolibRenderers` and
- * `MsmGeoModel`: one `GeoEntityRenderer(ctx, model).withScale(f)` per entity type through
+ * `MsmGeoModel`: one `GeoModelBase.renderer(ctx, model, scale)` (a `GeoEntityRenderer` that
+ * draws babies at their age scale and hides the unsaddled saddle bone; ADR 0071 D3, D4, D6) per
+ * entity type, the model class drawing variant textures, through
  * vanilla `EntityRenderers.register` (private in 26.3, widened by Fabric API's transitive
  * access wideners); and the leaf tints, mirroring `MsmRuntimeClient`: Fabric's
  * `BlockColorRegistry.register(List.of(source), block)` with vanilla's `BlockTintSources`
@@ -64,16 +66,13 @@ export function generateClient(
     );
   }
   for (const entity of entities) {
-    const renderState = file.use('net.minecraft.client.renderer.entity.state.EntityRenderState');
-    const geoRenderer = file.use('com.geckolib.renderer.GeoEntityRenderer');
     const modEntities = file.use(`${context.input.javaPackage}.ModEntities`);
-    const entityClass = file.use(`${packageOf(context, 'entity')}.${entity.entityClass}`);
+    const modelBase = file.use(`${modelPackage}.GeoModelBase`);
     const modelClass = file.use(`${modelPackage}.${entity.modelClass}`);
     const variable = `${entity.modelClass.charAt(0).toLowerCase()}${entity.modelClass.slice(1)}`;
     body.push(
       `${modelClass} ${variable} = new ${modelClass}();`,
-      `${renderers()}.register(${modEntities}.${entity.field}, ctx -> new ${geoRenderer}<${entityClass}, ${renderState}>(ctx, ${variable})`,
-      `        .withScale(${javaFloat(entity.spec.model.scale)}));`,
+      `${renderers()}.register(${modEntities}.${entity.field}, ctx -> ${modelBase}.renderer(ctx, ${variable}, ${javaFloat(entity.spec.model.scale)}));`,
     );
     writeModel(context, entity);
   }
@@ -139,14 +138,43 @@ function writeModel(context: GenerationContext, entity: EntityNames): void {
   const { model } = entity.spec;
   const file = new JavaFile(packageOf(context, 'client.entity'), entity.spec.input.path);
   const entityClass = file.use(`${packageOf(context, 'entity')}.${entity.entityClass}`);
+  const overrides: string[] = [];
+  if (entity.spec.variants !== undefined) {
+    const identifier = file.use('net.minecraft.resources.Identifier');
+    overrides.push(
+      '',
+      "    /** The current variant's texture (synched, so the client agrees; ADR 0071 D4). */",
+      '    @Override',
+      `    protected ${identifier} texture(${entityClass} entity) {`,
+      '        return entity.variantTexture();',
+      '    }',
+    );
+  }
+  if (entity.spec.rideable?.saddleBone !== undefined) {
+    overrides.push(
+      '',
+      '    /** msm:rideable saddle_bone while unsaddled (ADR 0071 D3). */',
+      '    @Override',
+      `    protected String hiddenBone(${entityClass} entity) {`,
+      '        return entity.hiddenBone();',
+      '    }',
+    );
+  }
+  const what = [
+    'model, animations and texture',
+    entity.spec.variants !== undefined ? 'variant textures' : undefined,
+    entity.spec.rideable?.saddleBone !== undefined ? 'saddle bone' : undefined,
+  ].filter((part) => part !== undefined);
+  const last = what.pop();
   const lines = [
-    `/** The GeckoLib model, animations and texture of {@code ${entity.spec.input.id}}. */`,
+    `/** The GeckoLib ${what.length === 0 ? last : `${what.join(', ')} and ${last}`} of {@code ${entity.spec.input.id}}. */`,
     `public class ${entity.modelClass} extends GeoModelBase<${entityClass}> {`,
     `    public ${entity.modelClass}() {`,
     `        super(${identifierExpression(file, model.model)},`,
     `                ${identifierExpression(file, model.animations)},`,
     `                ${identifierExpression(file, model.texture)});`,
     '    }',
+    ...overrides,
     '}',
   ];
   context.files.push({

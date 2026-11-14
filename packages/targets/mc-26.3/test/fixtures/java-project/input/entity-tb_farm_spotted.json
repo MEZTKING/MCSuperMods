@@ -1,0 +1,33 @@
+{
+  "base": "animal",
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:breedable": {
+      "items": [
+        "minecraft:wheat"
+      ]
+    },
+    "msm:variants": {
+      "variants": [
+        {
+          "id": "plain",
+          "texture": "msm_test:entity/golem"
+        },
+        {
+          "id": "spotted",
+          "texture": "msm_test:entity/golem"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.6
+  },
+  "spawn_egg": false
+}

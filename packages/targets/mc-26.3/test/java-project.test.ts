@@ -1174,7 +1174,7 @@ describe('Java generator (mc-26.3)', () => {
     await golden('entity', files);
   });
 
-  /** `mx_animal` without `msm:rideable` (ejected by B301), optionally with `vb_coloured`'s variants. */
+  /** `mx_animal` without `msm:rideable` (kept apart from the riding goldens), optionally with `vb_coloured`'s variants. */
   async function plainAnimal(variants: boolean): Promise<DefinitionInput> {
     const animal = await definition('entity', 'mx_animal');
     const components = animal.definition.components as JsonObject;
@@ -1332,6 +1332,131 @@ describe('Java generator (mc-26.3)', () => {
     const modEntities = files.find((file) => file.path.endsWith('/ModEntities.java'))?.contents;
     expect(modEntities?.match(/\.clientTrackingRange\(10\)/g)).toHaveLength(2);
     await golden('mob-variants', files);
+  });
+
+  it('generates taming, breeding, riding and the GeckoLib state animations (ADR 0071 D9)', async () => {
+    const entities = await Promise.all(
+      [
+        'tb_farm',
+        'tb_farm_other',
+        'tb_farm_spotted',
+        'tb_mount',
+        'tb_pet',
+        'tb_pet_stubborn',
+        'tb_tame_first',
+        'tb_tame_same',
+        'rd_flyer',
+        'rd_horse',
+        'rd_pair',
+        'rd_pet',
+        'gs_glider',
+        'gs_pony',
+        'mx_animal',
+      ].map((path) => definition('entity', path)),
+    );
+    const { files } = generateJavaProject(input({ entities, geckolib: true }));
+    const text = (suffix: string): string =>
+      files.find((file) => file.path.endsWith(suffix))?.contents ?? '';
+    // Taming (D1).
+    const pet = text('/entity/TbPetEntity.java');
+    expect(pet).toContain(
+      'private static final Predicate<ItemStack> TAMING_FOOD = ofItems("minecraft:bone");',
+    );
+    expect(pet).toContain('goalSelector.addGoal(0, new SitWhenOrderedToGoal(this));');
+    // After the melee goal (priority 1): follow at 2.
+    expect(pet).toContain('goalSelector.addGoal(2, new FollowOwnerGoal(this, 1.0f, 10.0f, 2.0f));');
+    expect(pet).toContain('targetSelector.addGoal(0, new OwnerHurtByTargetGoal(this));');
+    expect(pet).toContain('max.setBaseValue(30.0f);');
+    expect(pet).toContain('if (getRandom().nextFloat() < 1.0f) {');
+    expect(pet).toContain('return super.requiresCustomPersistence() || isTame();');
+    expect(pet).toContain('InteractionResult result = tamingInteract(player, hand);');
+    expect(pet).toContain('return super.mobInteract(player, hand);');
+    expect(text('/entity/TbPetStubbornEntity.java')).toContain(
+      'TAMING_FOOD = ofItems("#minecraft:fishes");',
+    );
+    // Breeding (D2).
+    const farm = text('/entity/TbFarmEntity.java');
+    expect(farm).toContain('goalSelector.addGoal(2, new BreedGoal(this, 1.0f));');
+    expect(farm).toContain(
+      'goalSelector.addGoal(3, new TemptGoal(this, 1.25f, BREEDING_FOOD, false));',
+    );
+    expect(farm).toContain('goalSelector.addGoal(4, new FollowParentGoal(this, 1.25f));');
+    expect(farm).toContain('.add(Attributes.TEMPT_RANGE, 10.0f);');
+    expect(farm).toContain('return isBaby() ? 0.4f : super.getAgeScale();');
+    expect(farm).toContain('child.setAge(-1200);');
+    expect(farm).toContain('return -1200;');
+    expect(farm).toContain(
+      'baby.event_tb_born(level, baby.blockPosition(), baby.position(), cause, baby, 1);',
+    );
+    // msm:on_interact comes after the breeding step.
+    expect(farm).toContain('InteractionResult result = breedingInteract(player, hand);');
+    expect(text('/entity/TbFarmOtherEntity.java')).not.toContain('setAge(');
+    expect(text('/entity/TbFarmSpottedEntity.java')).toContain('lastOffspring = child;');
+    // Riding (D3).
+    const horse = text('/entity/RdHorseEntity.java');
+    expect(horse).toContain('extends PathfinderMob implements GeoEntity, PlayerRideableJumping');
+    expect(horse).toContain('.add(Attributes.JUMP_STRENGTH, 0.7f);');
+    expect(horse).toContain('return isSaddled() ? player : null;');
+    expect(horse).toContain('new Vec3(0.0f * scale, 1.1f * scale, -0.2f * scale)');
+    expect(horse).toContain('(getAttributeValue(Attributes.MOVEMENT_SPEED) * 1.5f)');
+    expect(horse).toContain('rideJump(pendingJump, input);');
+    expect(horse).toContain('return isSaddled() ? null : "saddle";');
+    expect(horse).toContain(
+      'protected InteractionResult mobInteract(Player player, InteractionHand hand) {',
+    );
+    const flyer = text('/entity/RdFlyerEntity.java');
+    expect(flyer).toContain('up += 0.5f;');
+    // jump above 0 adds the attribute on any mode (as the registrar), but a flier rises instead of a jump bar.
+    expect(flyer).toContain('.add(Attributes.JUMP_STRENGTH, 0.5f)');
+    expect(flyer).not.toContain('rideJump');
+    expect(flyer).toContain('return player;');
+    expect(text('/entity/RdPairEntity.java')).toContain('return getPassengers().size() < 2;');
+    const rdPet = text('/entity/RdPetEntity.java');
+    expect(rdPet).toContain('return isTame() && isOwnedBy(player);');
+    expect(rdPet).not.toContain('SitWhenOrderedToGoal');
+    // A tameable animal breeds only once tamed (main session decision, the runtime fix): no
+    // love mode while wild, a shared food tames, a wild baby still grows, both parents tamed,
+    // and a tamed parent's baby takes the owner with tamed_health.
+    const first = text('/entity/TbTameFirstEntity.java');
+    expect(first).toContain('return BREEDING_FOOD.test(stack) && isTame();');
+    expect(first).toContain('if (wild && TAMING_FOOD.test(stack)) {');
+    expect(first).toContain(
+      'if (!wild && player instanceof ServerPlayer && age == 0 && canFallInLove()) {',
+    );
+    expect(first).toContain(
+      'return level().isClientSide() && !wild ? InteractionResult.CONSUME : null;',
+    );
+    expect(first).toContain(
+      'if (partner.getType() != getType() || !isTame() || !(partner instanceof TbTameFirstEntity other && other.isTame())) {',
+    );
+    expect(first).toContain('baby.setOwnerReference(getOwnerReference());');
+    expect(first).toContain('baby.applyTamedHealth();');
+    expect(text('/entity/TbTameSameEntity.java')).not.toContain('applyTamedHealth');
+    // The pony also mounts.
+    const pony = text('/entity/GsPonyEntity.java');
+    expect(pony).toContain('return BREEDING_FOOD.test(stack) && isTame();');
+    expect(pony).toContain('stack.isEmpty() && player.isSecondaryUseActive()) {');
+    expect(pony).toContain(
+      '// follows_owner left out: FollowOwnerGoal takes only ground and flying navigation',
+    );
+    // GeckoLib states (D6): sit, then swim; the glider (no animal) never sits.
+    expect(pony).toContain('if (isInSittingPose()) {');
+    expect(pony).toContain('} else if (test.isMoving() && isInWater()) {');
+    const glider = text('/entity/GsGliderEntity.java');
+    expect(glider).not.toContain('isInSittingPose');
+    expect(glider).toContain('} else if (test.isMoving() && !onGround() && !isInWater()) {');
+    expect(glider).toContain('return isSaddled() ? null : "harness";');
+    // Models: variant textures and the saddle bone; renderer with the age scale and bone hiding.
+    const ponyModel = text('/client/entity/GsPonyModel.java');
+    expect(ponyModel).toContain('return entity.variantTexture();');
+    expect(ponyModel).toContain('return entity.hiddenBone();');
+    expect(text('/client/entity/GeoModelBase.java')).toContain(
+      'snapshots.ifPresent(hidden, bone -> bone.skipRender(true).skipChildrenRender(true));',
+    );
+    expect(text('/client/MsmTestModClient.java')).toContain(
+      'EntityRenderers.register(ModEntities.GS_PONY, ctx -> GeoModelBase.renderer(ctx, gsPonyModel, 1.0f));',
+    );
+    await golden('mob-taming-riding', files);
   });
 
   it('lists the target fact projectile items', () => {
@@ -1566,7 +1691,7 @@ describe('Java generator (mc-26.3)', () => {
     const client =
       files.find((file) => file.path.endsWith('/client/MsmTestModClient.java'))?.contents ?? '';
     expect(client).toContain('ThrownItemRenderer<ThrownItemEntity>::new');
-    expect(client).toContain('import com.geckolib.renderer.GeoEntityRenderer;');
+    expect(client).toContain('ctx -> GeoModelBase.renderer(ctx, kitchenSinkModel, 1.5f)');
     expect(client).toContain(
       "/** Client entrypoint: vanilla's thrown item renderer and a GeckoLib renderer per entity type. */",
     );
@@ -2039,12 +2164,49 @@ describe('Java generator (mc-26.3)', () => {
       expect(
         run((d) => ((components(d)['msm:animated_model'] as JsonObject).renderer = 'blocky')),
       ).toThrow(/renderer 'blocky' is not one of auto, geckolib, vanilla/);
-      // Taming, breeding, riding and the GeckoLib state animations come with B301.
-      expect(run((d) => (components(d)['msm:rideable'] = {}))).toThrow(
-        /unknown component 'msm:rideable'/,
+      // Taming, breeding and riding (ADR 0071 D9): stricter than the runtime, which drops
+      // msm:tameable and msm:breedable on another base with an error.
+      expect(run((d) => (components(d)['msm:tameable'] = { items: ['minecraft:bone'] }))).toThrow(
+        /msm:tameable needs base 'animal'/,
       );
-      expect(run((d) => ((components(d)['msm:animated_model'] as JsonObject).fly = 'fly'))).toThrow(
-        /unknown msm:animated_model field 'fly'/,
+      expect(run((d) => (components(d)['msm:breedable'] = { items: ['minecraft:wheat'] }))).toThrow(
+        /msm:breedable needs base 'animal'/,
+      );
+      const animal = (change: (definition: JsonObject) => void) =>
+        run((d) => {
+          d.base = 'animal';
+          change(d);
+        });
+      expect(animal((d) => (components(d)['msm:tameable'] = {}))).toThrow(/items is missing/);
+      expect(
+        animal((d) => (components(d)['msm:tameable'] = { items: ['bone'], chance: 2 })),
+      ).toThrow(/chance 2 is out of range \(0\.\.1\)/);
+      expect(
+        animal((d) => (components(d)['msm:tameable'] = { items: ['bone'], follow: { pace: 1 } })),
+      ).toThrow(/unknown msm:tameable follow field 'pace'/);
+      expect(
+        animal((d) => (components(d)['msm:tameable'] = { items: ['bone'], on_tame: 'msm_test:x' })),
+      ).toThrow(/names event msm_test:x, which is not declared/);
+      expect(
+        animal((d) => (components(d)['msm:breedable'] = { items: ['wheat'], baby_scale: 0.05 })),
+      ).toThrow(/baby_scale 0\.05 is out of range \(0\.1\.\.1\)/);
+      expect(animal((d) => (components(d)['msm:breedable'] = { items: ['not an id'] }))).toThrow(
+        /items entry 'not an id' is not an id or #tag/,
+      );
+      expect(run((d) => (components(d)['msm:rideable'] = { passengers: 5 }))).toThrow(
+        /passengers 5 is out of range \(1\.\.4\)/,
+      );
+      expect(run((d) => (components(d)['msm:rideable'] = { rider_offset: [0, 1] }))).toThrow(
+        /rider_offset must be a list of exactly 3 numbers/,
+      );
+      expect(run((d) => (components(d)['msm:rideable'] = { controlled_by: 'rider' }))).toThrow(
+        /controlled_by 'rider' is not one of anyone, owner/,
+      );
+      expect(run((d) => (components(d)['msm:rideable'] = { steer: true }))).toThrow(
+        /unknown msm:rideable field 'steer'/,
+      );
+      expect(run((d) => (components(d)['msm:rideable'] = { jump: -1 }))).toThrow(
+        /jump -1 is out of range \(at least 0\)/,
       );
     });
 

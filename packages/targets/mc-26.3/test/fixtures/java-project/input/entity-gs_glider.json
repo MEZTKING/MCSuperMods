@@ -1,0 +1,28 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "fly": "fly",
+      "idle": "idle",
+      "model": "msm_test:entity/glider",
+      "sit": "sit",
+      "swim": "swim",
+      "texture": "msm_test:entity/glider",
+      "walk": "walk"
+    },
+    "msm:movement": {
+      "mode": "fly"
+    },
+    "msm:rideable": {
+      "saddle": false,
+      "saddle_bone": "harness",
+      "speed": 2
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.4,
+    "width": 1.2
+  },
+  "spawn_egg": false
+}

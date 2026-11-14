@@ -4,11 +4,17 @@ package msm_test.client.entity;
 import msm_test.entity.MxPlainAnimalEntity;
 import net.minecraft.resources.Identifier;
 
-/** The GeckoLib model, animations and texture of {@code msm_test:mx_plain_animal}. */
+/** The GeckoLib model, animations and texture and variant textures of {@code msm_test:mx_plain_animal}. */
 public class MxPlainAnimalModel extends GeoModelBase<MxPlainAnimalEntity> {
     public MxPlainAnimalModel() {
         super(Identifier.fromNamespaceAndPath("msm_test", "entity/golem"),
                 Identifier.fromNamespaceAndPath("msm_test", "entity/golem"),
                 Identifier.fromNamespaceAndPath("msm_test", "textures/entity/golem.png"));
+    }
+
+    /** The current variant's texture (synched, so the client agrees; ADR 0071 D4). */
+    @Override
+    protected Identifier texture(MxPlainAnimalEntity entity) {
+        return entity.variantTexture();
     }
 }

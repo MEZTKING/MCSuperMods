@@ -1,0 +1,47 @@
+{
+  "base": "animal",
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:breedable": {
+      "baby_scale": 0.4,
+      "grow_up_ticks": 1200,
+      "items": [
+        "minecraft:wheat"
+      ],
+      "on_breed": "msm_test:tb_born"
+    },
+    "msm:on_interact": {
+      "event": "msm_test:tb_poked"
+    }
+  },
+  "events": {
+    "msm_test:tb_born": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    },
+    "msm_test:tb_poked": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.6
+  },
+  "spawn_egg": false
+}

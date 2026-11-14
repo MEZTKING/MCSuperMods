@@ -42,7 +42,7 @@ import {
 import { selectedTarget } from './selected-target';
 
 /** True until B301 (Java eject part 2: taming, breeding, riding, GeckoLib states) lands. */
-const PENDING_B301 = true;
+const PENDING_B301 = false;
 
 const update = process.env.UPDATE_GOLDENS === '1';
 const sampleRoot = join(repoRoot, 'fixtures', 'sample-creatures');
