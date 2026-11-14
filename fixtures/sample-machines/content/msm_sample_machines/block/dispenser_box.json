@@ -1,0 +1,33 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3.5,
+        "resistance": 3.5,
+        "tool": "pickaxe"
+      },
+      "msm:container": {
+        "layout": "dispenser"
+      }
+    },
+    "display_name": "Sample Dispenser Box",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "sound_type": "stone",
+    "textures": {
+      "all": "msm_sample_machines:block/dispenser_box",
+      "front": "msm_sample_machines:block/dispenser_box_front",
+      "front_open": "msm_sample_machines:block/dispenser_box_front_open"
+    },
+    "type": "directional"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_machines:dispenser_box",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2.5,
+        "requires_tool": false,
+        "resistance": 2.5,
+        "tool": "axe"
+      },
+      "msm:container": {
+        "layout": "chest",
+        "on_close": "msm_sample_machines:crate_closed",
+        "on_open": "msm_sample_machines:crate_opened",
+        "rows": 3
+      }
+    },
+    "display_name": "Sample Crate",
+    "events": {
+      "msm_sample_machines:crate_closed": {
+        "actions": [
+          {
+            "function": "msm_sample_machines:say/crate_closed",
+            "type": "run_function"
+          }
+        ]
+      },
+      "msm_sample_machines:crate_opened": {
+        "actions": [
+          {
+            "function": "msm_sample_machines:say/crate_opened",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "all": "msm_sample_machines:block/crate",
+      "front": "msm_sample_machines:block/crate_front",
+      "front_open": "msm_sample_machines:block/crate_front_open"
+    },
+    "type": "directional"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_machines:crate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

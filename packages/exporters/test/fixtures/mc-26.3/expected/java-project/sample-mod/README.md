@@ -19,8 +19,9 @@ You need JDK 25. Then run:
 | Path | Contents |
 |---|---|
 | `src/main/java/msm_sample_mod/MsmSampleMod.java` | The mod initialiser: registers the blocks, items and entities |
-| `src/main/java/msm_sample_mod/ModBlocks.java`, `ModItems.java`, `ModEntities.java` | Registration, one constant per block, item and entity type |
-| `src/main/java/msm_sample_mod/block/`, `item/`, `entity/` | Classes for content with behaviour (events, redstone, AI goals, animations) |
+| `src/main/java/msm_sample_mod/ModBlocks.java`, `ModBlockEntities.java`, `ModItems.java`, `ModEntities.java` | Registration, one constant per block, block entity, item and entity type |
+| `src/main/java/msm_sample_mod/ModRecipes.java` | The recipe type and recipe serialiser of each machine |
+| `src/main/java/msm_sample_mod/block/`, `item/`, `entity/`, `recipe/` | Classes for content with behaviour (events, redstone, containers, machines, AI goals, animations) and the machine recipes |
 | `src/main/java/msm_sample_mod/Actions.java` | The event actions (functions, particles, block states, items, sounds) |
 | `src/main/java/msm_sample_mod/client/` | The client entrypoint and GeckoLib models (projects with entities) |
 | `src/main/resources/fabric.mod.json` | Mod metadata |

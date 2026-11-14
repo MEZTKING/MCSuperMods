@@ -1,0 +1,13 @@
+{
+  "data": {
+    "lines": [
+      "setblock ~ ~ ~ msm_sample_machines:crate{LootTable:\"msm_sample_machines:chests/crate_loot\"} replace"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_machines:place_loot_crate",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

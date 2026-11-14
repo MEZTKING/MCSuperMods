@@ -1,0 +1,83 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3.5,
+        "resistance": 3.5,
+        "tool": "pickaxe"
+      },
+      "msm:machine": {
+        "default_time": 40,
+        "on_finish": "msm_sample_machines:grinder_finished",
+        "on_start": "msm_sample_machines:grinder_started",
+        "power": "fuel"
+      }
+    },
+    "display_name": "Sample Grinder",
+    "events": {
+      "msm_sample_machines:grinder_finished": {
+        "actions": [
+          {
+            "function": "msm_sample_machines:say/grinder_finished",
+            "type": "run_function"
+          }
+        ]
+      },
+      "msm_sample_machines:grinder_started": {
+        "actions": [
+          {
+            "function": "msm_sample_machines:say/grinder_started",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "recipes": [
+      {
+        "ingredient": "minecraft:cobblestone",
+        "result": "minecraft:gravel"
+      },
+      {
+        "experience": 1,
+        "ingredient": "minecraft:gravel",
+        "result": "minecraft:flint",
+        "time": 20
+      },
+      {
+        "ingredient": "minecraft:bone",
+        "result": {
+          "count": 4,
+          "id": "minecraft:bone_meal"
+        }
+      },
+      {
+        "count": 2,
+        "ingredient": "#minecraft:wool",
+        "name": "string_from_wool",
+        "result": {
+          "count": 4,
+          "id": "minecraft:string"
+        }
+      }
+    ],
+    "sound_type": "stone",
+    "textures": {
+      "front": "msm_sample_machines:block/grinder_front",
+      "front_lit": "msm_sample_machines:block/grinder_front_lit",
+      "side": "msm_sample_machines:block/grinder",
+      "top": "msm_sample_machines:block/grinder_top"
+    },
+    "type": "horizontal"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_machines:grinder",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

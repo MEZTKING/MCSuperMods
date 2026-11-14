@@ -1,0 +1,51 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3.5,
+        "resistance": 3.5,
+        "tool": "pickaxe"
+      },
+      "msm:machine": {
+        "comparator": "progress",
+        "lit_light": 15,
+        "menu": "blast_furnace",
+        "on_finish": "msm_sample_machines:redstone_grinder_finished",
+        "power": "redstone",
+        "recipe_types": [
+          "msm_sample_machines:grinder"
+        ]
+      }
+    },
+    "display_name": "Sample Redstone Grinder",
+    "events": {
+      "msm_sample_machines:redstone_grinder_finished": {
+        "actions": [
+          {
+            "function": "msm_sample_machines:say/redstone_grinder_finished",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:redstone_blocks"
+    },
+    "loot": "self",
+    "sound_type": "stone",
+    "textures": {
+      "front": "msm_sample_machines:block/redstone_grinder_front",
+      "front_lit": "msm_sample_machines:block/redstone_grinder_front_lit",
+      "side": "msm_sample_machines:block/redstone_grinder",
+      "top": "msm_sample_machines:block/redstone_grinder_top"
+    },
+    "type": "horizontal"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_machines:redstone_grinder",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

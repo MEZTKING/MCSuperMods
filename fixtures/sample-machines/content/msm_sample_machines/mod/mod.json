@@ -1,0 +1,18 @@
+{
+  "data": {
+    "authors": [
+      "MCSuperMods"
+    ],
+    "description": "Sample containers and machines: crates, a hopper box, a dispenser box, a holder, a grinder, a fast furnace and a redstone grinder.",
+    "licence": "MIT",
+    "mod_id": "msm_sample_machines",
+    "name": "MSM Sample Machines",
+    "version": "1.0.0"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_machines:mod",
+  "kind": "msm:mod",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

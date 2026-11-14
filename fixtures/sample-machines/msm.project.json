@@ -1,0 +1,16 @@
+{
+  "formatVersion": 1,
+  "name": "MSM Sample Machines",
+  "namespaces": [
+    "msm_sample_machines"
+  ],
+  "plugins": [
+    "msm.resourcepack",
+    "msm.datapack",
+    "msm.blocks-items"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

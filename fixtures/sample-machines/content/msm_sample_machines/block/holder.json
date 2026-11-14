@@ -1,0 +1,40 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3.5,
+        "resistance": 3.5,
+        "tool": "pickaxe"
+      },
+      "msm:container": {
+        "layout": "none",
+        "on_open": "msm_sample_machines:holder_used",
+        "size": 1
+      }
+    },
+    "display_name": "Sample Holder",
+    "events": {
+      "msm_sample_machines:holder_used": {
+        "actions": [
+          {
+            "function": "msm_sample_machines:say/holder_used",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "model": "msm_sample_machines:block/holder",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_machines:holder",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

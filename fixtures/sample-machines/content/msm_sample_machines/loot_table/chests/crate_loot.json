@@ -1,0 +1,40 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": {
+              "count": 3,
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:diamond",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      },
+      {
+        "entries": [
+          {
+            "modifier": {
+              "count": 5,
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:bread",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "random_sequence": "msm_sample_machines:chests/crate_loot",
+    "type": "minecraft:chest"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_machines:chests/crate_loot",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

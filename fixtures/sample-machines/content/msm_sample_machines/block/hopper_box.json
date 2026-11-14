@@ -1,0 +1,33 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "resistance": 4.8,
+        "tool": "pickaxe"
+      },
+      "msm:container": {
+        "comparator": false,
+        "layout": "hopper"
+      }
+    },
+    "display_name": "Sample Hopper Box",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "sound_type": "metal",
+    "textures": {
+      "end": "msm_sample_machines:block/hopper_box_end",
+      "side": "msm_sample_machines:block/hopper_box"
+    },
+    "type": "pillar"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_machines:hopper_box",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

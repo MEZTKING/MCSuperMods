@@ -1,0 +1,13 @@
+{
+  "data": {
+    "lines": [
+      "say The crate is opened."
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_machines:say/crate_opened",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

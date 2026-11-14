@@ -1,0 +1,36 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2.5,
+        "requires_tool": false,
+        "resistance": 2.5,
+        "tool": "axe"
+      },
+      "msm:container": {
+        "layout": "chest",
+        "rows": 1
+      }
+    },
+    "display_name": "Sample Small Crate",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "front": "msm_sample_machines:block/small_crate_front",
+      "front_open": "msm_sample_machines:block/small_crate_front_open",
+      "side": "msm_sample_machines:block/small_crate",
+      "top": "msm_sample_machines:block/small_crate"
+    },
+    "type": "horizontal"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_machines:small_crate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

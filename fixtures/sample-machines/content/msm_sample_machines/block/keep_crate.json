@@ -1,0 +1,38 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2.5,
+        "requires_tool": false,
+        "resistance": 2.5,
+        "tool": "axe"
+      },
+      "msm:container": {
+        "close_sound": "minecraft:block.chest.close",
+        "keep_contents": true,
+        "layout": "chest",
+        "open_sound": "minecraft:block.chest.open",
+        "rows": 3
+      }
+    },
+    "display_name": "Sample Keeping Crate",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "all": "msm_sample_machines:block/keep_crate",
+      "front": "msm_sample_machines:block/keep_crate_front",
+      "front_open": "msm_sample_machines:block/keep_crate_front_open"
+    },
+    "type": "directional"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_machines:keep_crate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}
