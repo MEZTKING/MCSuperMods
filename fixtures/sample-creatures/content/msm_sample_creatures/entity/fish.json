@@ -1,0 +1,82 @@
+{
+  "data": {
+    "category": "water_ambient",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "distance": 8,
+            "from": [
+              "minecraft:player"
+            ],
+            "speed": 1.6,
+            "sprint_speed": 1.4,
+            "type": "flee"
+          },
+          {
+            "speed": 1,
+            "type": "wander"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_creatures:entity/fish_animations",
+        "idle": "idle",
+        "model": "msm_sample_creatures:entity/fish",
+        "renderer": "auto",
+        "swim": "swim",
+        "texture": "msm_sample_creatures:entity/fish",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 3
+      },
+      "msm:movement": {
+        "dry_out_ticks": 300,
+        "mode": "swim",
+        "speed": 1
+      },
+      "msm:variants": {
+        "choose": "random",
+        "variants": [
+          {
+            "id": "blue",
+            "texture": "msm_sample_creatures:entity/fish",
+            "weight": 2
+          },
+          {
+            "id": "orange",
+            "texture": "msm_sample_creatures:entity/fish_orange"
+          }
+        ]
+      }
+    },
+    "display_name": "Sample Fish",
+    "format": 1,
+    "loot_table": "msm_sample_creatures:entities/fish",
+    "size": {
+      "height": 0.4,
+      "width": 0.5
+    },
+    "spawn": {
+      "biomes": [
+        "#minecraft:is_ocean"
+      ],
+      "max_group": 4,
+      "min_group": 2,
+      "placement": "in_water",
+      "rule": "water_animal",
+      "weight": 8
+    },
+    "spawn_egg": {
+      "display_name": "Sample Fish Spawn Egg",
+      "texture": "msm_sample_creatures:item/fish_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_creatures:fish",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

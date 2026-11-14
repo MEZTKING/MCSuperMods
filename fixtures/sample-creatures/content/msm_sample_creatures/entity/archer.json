@@ -1,0 +1,93 @@
+{
+  "data": {
+    "base": "monster",
+    "category": "monster",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "retaliate": true,
+            "strafe": true,
+            "targets": [
+              "minecraft:player"
+            ],
+            "type": "ranged_attack"
+          },
+          {
+            "speed": 1,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_creatures:entity/archer_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_sample_creatures:entity/archer",
+        "renderer": "auto",
+        "shoot": "shoot",
+        "sit": "sit",
+        "texture": "msm_sample_creatures:entity/archer",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 20
+      },
+      "msm:movement": {
+        "follow_range": 16,
+        "speed": 0.25
+      },
+      "msm:ranged_attack": {
+        "charge_ticks": 20,
+        "damage": 2,
+        "interval_ticks": 30,
+        "on_shoot": "msm_sample_creatures:shot",
+        "projectile": "minecraft:arrow",
+        "range": 15
+      }
+    },
+    "display_name": "Sample Archer",
+    "events": {
+      "msm_sample_creatures:shot": {
+        "actions": [
+          {
+            "function": "msm_sample_creatures:say/archer_shot",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "loot_table": "msm_sample_creatures:entities/archer",
+    "size": {
+      "height": 1.95,
+      "width": 0.6
+    },
+    "spawn": {
+      "biomes": [
+        "minecraft:plains"
+      ],
+      "max_group": 2,
+      "min_group": 1,
+      "rule": "monster",
+      "weight": 5
+    },
+    "spawn_egg": {
+      "display_name": "Sample Archer Spawn Egg",
+      "texture": "msm_sample_creatures:item/archer_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_creatures:archer",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

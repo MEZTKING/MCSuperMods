@@ -1,0 +1,112 @@
+{
+  "data": {
+    "base": "monster",
+    "category": "monster",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "retaliate": true,
+            "speed": 1,
+            "targets": [
+              "minecraft:player"
+            ],
+            "type": "melee_attack"
+          },
+          {
+            "retaliate": true,
+            "targets": [
+              "minecraft:player"
+            ],
+            "type": "ranged_attack"
+          },
+          {
+            "speed": 0.8,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_creatures:entity/boss_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_sample_creatures:entity/boss",
+        "renderer": "vanilla",
+        "scale": 1.5,
+        "shoot": "shoot",
+        "sit": "sit",
+        "texture": "msm_sample_creatures:entity/boss",
+        "walk": "walk"
+      },
+      "msm:attack": {
+        "damage": 10,
+        "knockback": 1
+      },
+      "msm:boss_bar": {
+        "colour": "red",
+        "darken_sky": true,
+        "overlay": "notched_10"
+      },
+      "msm:health": {
+        "max": 200
+      },
+      "msm:movement": {
+        "follow_range": 40,
+        "knockback_resistance": 1,
+        "speed": 0.3
+      },
+      "msm:on_death": {
+        "event": "msm_sample_creatures:defeated"
+      },
+      "msm:ranged_attack": {
+        "charge_ticks": 10,
+        "interval_ticks": 60,
+        "on_shoot": "msm_sample_creatures:shot",
+        "projectile": "minecraft:snowball",
+        "range": 20
+      }
+    },
+    "display_name": "Sample Boss",
+    "events": {
+      "msm_sample_creatures:defeated": {
+        "actions": [
+          {
+            "function": "msm_sample_creatures:say/boss_defeated",
+            "type": "run_function"
+          }
+        ]
+      },
+      "msm_sample_creatures:shot": {
+        "actions": [
+          {
+            "function": "msm_sample_creatures:say/boss_shot",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "loot_table": "msm_sample_creatures:entities/boss",
+    "size": {
+      "height": 2.95,
+      "width": 0.9
+    },
+    "spawn_egg": {
+      "display_name": "Sample Boss Spawn Egg",
+      "texture": "msm_sample_creatures:item/boss_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_creatures:boss",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

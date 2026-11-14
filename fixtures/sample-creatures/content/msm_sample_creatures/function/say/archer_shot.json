@@ -1,0 +1,13 @@
+{
+  "data": {
+    "lines": [
+      "say The archer shoots."
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_creatures:say/archer_shot",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

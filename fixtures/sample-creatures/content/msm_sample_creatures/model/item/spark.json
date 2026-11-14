@@ -1,0 +1,14 @@
+{
+  "data": {
+    "parent": "minecraft:item/generated",
+    "textures": {
+      "layer0": "msm_sample_creatures:item/spark"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_creatures:item/spark",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

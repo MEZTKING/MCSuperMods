@@ -1,0 +1,24 @@
+{
+  "data": {
+    "pools": [
+      {
+        "bonus_rolls": 0,
+        "entries": [
+          {
+            "name": "minecraft:arrow",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "random_sequence": "msm_sample_creatures:entities/archer",
+    "type": "minecraft:entity"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_creatures:entities/archer",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

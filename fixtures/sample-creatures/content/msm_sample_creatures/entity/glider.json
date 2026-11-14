@@ -1,0 +1,83 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "retaliate": true,
+            "targets": [
+              "minecraft:zombie"
+            ],
+            "type": "ranged_attack"
+          },
+          {
+            "speed": 1,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_creatures:entity/glider_animations",
+        "attack": "attack",
+        "fly": "fly",
+        "idle": "idle",
+        "model": "msm_sample_creatures:entity/glider",
+        "renderer": "auto",
+        "shoot": "shoot",
+        "texture": "msm_sample_creatures:entity/glider",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 12
+      },
+      "msm:movement": {
+        "flying_speed": 0.6,
+        "hovers": true,
+        "mode": "fly",
+        "speed": 0.3
+      },
+      "msm:ranged_attack": {
+        "charge_ticks": 10,
+        "interval_ticks": 40,
+        "on_shoot": "msm_sample_creatures:shot",
+        "projectile": "msm_sample_creatures:spark",
+        "range": 12
+      }
+    },
+    "display_name": "Sample Glider",
+    "events": {
+      "msm_sample_creatures:shot": {
+        "actions": [
+          {
+            "function": "msm_sample_creatures:say/glider_shot",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "loot_table": "msm_sample_creatures:entities/glider",
+    "size": {
+      "height": 0.8,
+      "width": 0.8
+    },
+    "spawn_egg": {
+      "display_name": "Sample Glider Spawn Egg",
+      "texture": "msm_sample_creatures:item/glider_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_creatures:glider",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

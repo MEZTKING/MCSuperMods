@@ -1,0 +1,18 @@
+{
+  "data": {
+    "authors": [
+      "MCSuperMods"
+    ],
+    "description": "Sample creatures: a pet, a mount, a glider, a fish, an archer and a boss, one per mob feature.",
+    "licence": "MIT",
+    "mod_id": "msm_sample_creatures",
+    "name": "MSM Sample Creatures",
+    "version": "1.0.0"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_creatures:mod",
+  "kind": "msm:mod",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

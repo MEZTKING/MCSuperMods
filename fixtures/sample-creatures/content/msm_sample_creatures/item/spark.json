@@ -1,0 +1,35 @@
+{
+  "data": {
+    "components": {
+      "msm:throwable": {
+        "damage": 2,
+        "gravity": 0.03,
+        "on_hit_entity": {
+          "event": "msm_sample_creatures:spark_hit"
+        },
+        "speed": 1.2
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Spark",
+    "events": {
+      "msm_sample_creatures:spark_hit": {
+        "actions": [
+          {
+            "function": "msm_sample_creatures:say/spark_hit",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "msm_sample_creatures:item/spark"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_creatures:spark",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "data": {
+    "base": "animal",
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "height": 0.4,
+            "type": "leap_at_target"
+          },
+          {
+            "retaliate": true,
+            "speed": 1.2,
+            "type": "melee_attack"
+          },
+          {
+            "speed": 1,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_creatures:entity/pet_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_sample_creatures:entity/pet",
+        "renderer": "auto",
+        "scale": 0.8,
+        "shoot": "shoot",
+        "sit": "sit",
+        "swim": "swim",
+        "texture": "msm_sample_creatures:entity/pet",
+        "walk": "walk"
+      },
+      "msm:attack": {
+        "damage": 3
+      },
+      "msm:breedable": {
+        "baby_scale": 0.5,
+        "items": [
+          "minecraft:cooked_beef"
+        ],
+        "on_breed": "msm_sample_creatures:bred"
+      },
+      "msm:health": {
+        "max": 10
+      },
+      "msm:movement": {
+        "speed": 0.3
+      },
+      "msm:tameable": {
+        "chance": 1,
+        "items": [
+          "minecraft:bone"
+        ],
+        "on_tame": "msm_sample_creatures:tamed",
+        "tamed_health": 20
+      },
+      "msm:variants": {
+        "choose": "biome",
+        "variants": [
+          {
+            "id": "default",
+            "texture": "msm_sample_creatures:entity/pet"
+          },
+          {
+            "biomes": [
+              "minecraft:snowy_taiga",
+              "minecraft:snowy_plains"
+            ],
+            "id": "snow",
+            "texture": "msm_sample_creatures:entity/pet_snow"
+          }
+        ]
+      }
+    },
+    "display_name": "Sample Pet",
+    "events": {
+      "msm_sample_creatures:bred": {
+        "actions": [
+          {
+            "function": "msm_sample_creatures:say/bred",
+            "type": "run_function"
+          }
+        ]
+      },
+      "msm_sample_creatures:tamed": {
+        "actions": [
+          {
+            "function": "msm_sample_creatures:say/tamed",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "loot_table": "msm_sample_creatures:entities/pet",
+    "size": {
+      "height": 0.85,
+      "width": 0.6
+    },
+    "spawn": {
+      "biomes": [
+        "#minecraft:is_forest",
+        "minecraft:snowy_taiga"
+      ],
+      "max_group": 3,
+      "min_group": 1,
+      "rule": "animal",
+      "weight": 5
+    },
+    "spawn_egg": {
+      "display_name": "Sample Pet Spawn Egg",
+      "texture": "msm_sample_creatures:item/pet_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_creatures:pet",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}
