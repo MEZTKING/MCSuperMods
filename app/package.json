@@ -37,6 +37,7 @@
     "@msm/plugin-structures": "workspace:*",
     "@msm/plugin-worldgen": "workspace:*",
     "@msm/schemas": "workspace:*",
+    "@msm/sim": "workspace:*",
     "@msm/targets": "workspace:*",
     "@tailwindcss/vite": "catalog:",
     "@testing-library/dom": "catalog:",

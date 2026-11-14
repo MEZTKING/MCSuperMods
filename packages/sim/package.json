@@ -1,0 +1,25 @@
+{
+  "name": "@msm/sim",
+  "version": "0.0.0",
+  "description": "Try it: MCSuperMods' own approximate simulation of a project's blocks, player and rules (ADR 0085).",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@msm/core": "workspace:*",
+    "@msm/plugin-api": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "vitest": "catalog:"
+  }
+}

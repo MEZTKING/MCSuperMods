@@ -4109,3 +4109,20 @@ Decisions
 
 Next
 - B359: parity tests and CI on this fixture; the script cannot be parity-checked on the ejected jar (scripts are not ejected).
+
+## 2026-11-14 — executor — B386 Scaffold and stubs (Try it)
+
+What
+- New package `@msm/sim` (`packages/sim/`): `package.json` (dependencies `@msm/plugin-api` and `@msm/core` only), `tsconfig.json` (references both), `vitest.config.ts`, `CLAUDE.md` (29 lines), `src/index.ts`, `src/types.ts` and one placeholder test (the area is 48 by 48 by 32).
+- `src/types.ts` fixes the shared interfaces: `BlockState`, `Box`, `BlockShapes`, `SimFiles`, `WorldSource` with `WorldEvent`, `PlayerAction` and `WorldListener` (ADR 0085 D14), `SimLog` (D5), `BlockPos`, `Face`, `Vec3`, `EntitySnapshot`, `SimEffect`, `SimOrigin`, `SimLogLine`, `AREA_SIZE_X/Y/Z`.
+- Wiring: root `tsconfig.json` reference, `tools/check-deps/layers.json` (`@msm/sim`), `app/package.json` workspace dependency, `pnpm-lock.yaml`.
+- Stubs: `MsmSimParityGameTest` (empty class, listed in the GameTest `fabric.mod.json`), `fixtures/sim-parity/README.md`, skipped `app/e2e/tryit-path.spec.ts` (B392).
+- Checked: `pnpm i --frozen-lockfile`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (23 tasks), `engine-mod ./gradlew build` on 26.3 (435 GameTests, unchanged). `-Pmc=26.4` and `-PwithoutGeckolib` not run (stub only).
+
+Decisions
+- `SimFiles` is `ReadonlyMap<string, string | Uint8Array>`; `Box` is a six-number tuple `[minX, minY, minZ, maxX, maxY, maxZ]` relative to the block corner.
+- Imports inside `@msm/sim` use `.js` specifiers because the package's tsconfig does not allow `.ts` extensions.
+- `SimLog` also has `info(text, origin?)` for ordinary lines, beside `onlyInMinecraft`.
+
+Next
+- B387 (world, blocks), B388 (player) and B389 (view) build against `src/types.ts`; any change to it is the orchestrator's call.
