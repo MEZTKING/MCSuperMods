@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   bitsForPalette,
   blockStateString,
-  isFullChunk,
   ChunkFormatError,
   decompressChunk,
+  isFullChunk,
   locateChunk,
   parseChunk,
   RegionFormatError,
