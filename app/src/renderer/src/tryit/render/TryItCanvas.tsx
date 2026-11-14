@@ -15,6 +15,11 @@
  * - The render loop runs only while `active`, the page is visible and the window has focus, at
  *   most 60 frames a second; "Smaller picture" halves the resolution (D11).
  * - New definitions or textures re-prepare the resources and rebuild the meshes; the grid stays.
+ * - Two passes of Try it's own follow the blocks (B394): portal blocks as their translucent,
+ *   animated picture (`portal.ts`; deepslate does not mesh them), then the particles of the
+ *   `particles` prop as camera-facing quads (`particles.ts`). Both use one small shader of their
+ *   own; the frame ends with `resetGlForDeepslate`, so the next pass starts from deepslate's
+ *   state.
  *
  * This module is the lazy chunk: `TryItScene` imports it with `lazy()` after checking WebGL.
  */
@@ -34,6 +39,14 @@ import {
   type PickedOutline,
   viewMatrixFor,
 } from './camera';
+import { type ParticleField, ParticlePass, QuadBatch } from './particles';
+import {
+  PortalIndex,
+  type PortalLook,
+  PortalPass,
+  portalLooksFromFiles,
+  withoutPortals,
+} from './portal';
 import { prepareTryItResources, type TryItResources } from './resources';
 import { TRYIT_CHUNK_SIZE, type TryItGrid, WorldStructure } from './world-structure';
 
@@ -49,6 +62,10 @@ export interface TryItFrameStats {
   meshes: number;
   /** Time spent rebuilding changed chunks this frame, in milliseconds. */
   rebuildMs: number;
+  /** Particles drawn (after leaving out fully faded ones). */
+  particles: number;
+  /** Portal blocks drawn. */
+  portals: number;
 }
 
 /** What the resources found, for notes beside the view. */
@@ -81,6 +98,16 @@ export interface TryItCanvasProps {
   /** Reads a project asset the lowered files do not hold (relative to `assets/<namespace>/`). */
   readProjectAsset?: (namespace: string, path: string) => Promise<Uint8Array | null>;
   fallbackModels?: Readonly<Record<string, JsonObject>>;
+  /**
+   * The live particles to draw (B394): a `ParticleField` from `particles.ts`, ticked by the
+   * owner on each simulation tick. `null` or absent draws none.
+   */
+  particles?: ParticleField | null;
+  /**
+   * How far the simulation is between its last tick and the next, 0..1 (`SimClock.alpha`), for
+   * drawing particles between ticks. Default 0.
+   */
+  partialTick?: PerFrame<number>;
   /** "Smaller picture": draws at half the resolution and scales it up. */
   smaller?: boolean;
   /** False stops the render loop (the view is hidden). Default true. */
@@ -251,6 +278,13 @@ interface Scene {
   view: mat4;
   clip: mat4;
   planes: Float32Array;
+  /** Try it's own passes, made with the renderer. */
+  batch: QuadBatch | null;
+  portalPass: PortalPass | null;
+  particlePass: ParticlePass | null;
+  portalIndex: PortalIndex;
+  /** Milliseconds drawn so far, for the portal pictures' frames. */
+  animationMs: number;
 }
 
 function createScene(): Scene | null {
@@ -271,11 +305,20 @@ function createScene(): Scene | null {
     view: mat4.create(),
     clip: mat4.create(),
     planes: new Float32Array(24),
+    batch: null,
+    portalPass: null,
+    particlePass: null,
+    portalIndex: new PortalIndex(),
+    animationMs: 0,
   };
 }
 
 function disposeScene(scene: Scene | null): void {
   if (scene === null) return;
+  scene.portalPass?.dispose();
+  scene.particlePass?.dispose();
+  scene.batch?.dispose();
+  scene.portalIndex.dispose();
   scene.gl.getExtension('WEBGL_lose_context')?.loseContext();
   scene.canvas.remove();
 }
@@ -303,15 +346,83 @@ function rebuildDirty(scene: Scene, structure: WorldStructure): number {
   return performance.now() - started;
 }
 
-/** Draws one frame; returns how many chunk meshes were drawn. */
+/** What Try it's own passes draw in a frame, besides the blocks. */
+interface FrameExtras {
+  /** The whole grid, portals included. */
+  grid: TryItGrid;
+  portalLooks: ReadonlyMap<string, PortalLook>;
+  isPortal: (id: string) => boolean;
+  particles: ParticleField | null;
+  partialTick: number;
+  props: TryItCanvasProps;
+}
+
+/** Draws the portal and particle passes after the blocks; returns what they drew. */
+function drawExtras(
+  scene: Scene,
+  view: mat4,
+  pose: CameraPose,
+  extras: FrameExtras,
+): { particles: number; portals: number } {
+  const { props } = extras;
+  scene.portalIndex.follow(extras.grid, extras.isPortal);
+  const portals = extras.portalLooks.size === 0 ? [] : scene.portalIndex.portals();
+  const particles = extras.particles;
+  if (portals.length === 0 && (particles === null || particles.size === 0)) {
+    return { particles: 0, portals: 0 };
+  }
+  if (scene.batch === null) scene.batch = new QuadBatch(scene.gl);
+  const batch = scene.batch;
+  const readProjectAsset = props.readProjectAsset;
+  let drawnPortals = 0;
+  if (portals.length > 0) {
+    const source = {
+      files: props.files,
+      folders: props.folders,
+      vanilla: props.vanilla,
+      ...(readProjectAsset === undefined ? {} : { readProjectAsset }),
+    };
+    if (scene.portalPass === null) scene.portalPass = new PortalPass(batch, source);
+    else scene.portalPass.setSource(source);
+    drawnPortals = scene.portalPass.draw(
+      portals,
+      extras.portalLooks,
+      scene.animationMs / 50,
+      scene.clip,
+      pose.eye,
+    );
+  }
+  let drawnParticles = 0;
+  if (particles !== null && particles.size > 0) {
+    const source = {
+      files: props.files,
+      ...(readProjectAsset === undefined ? {} : { readProjectAsset }),
+    };
+    if (scene.particlePass === null) scene.particlePass = new ParticlePass(batch, source);
+    scene.particlePass.setSource(source, particles.revision);
+    drawnParticles = scene.particlePass.draw(
+      particles,
+      extras.partialTick,
+      view,
+      scene.clip,
+      pose.eye,
+    );
+  }
+  resetGlForDeepslate(scene.gl);
+  return { particles: drawnParticles, portals: drawnPortals };
+}
+
+/** Draws one frame; returns what was drawn. */
 function drawFrame(
   scene: Scene,
   structure: WorldStructure,
   pose: CameraPose,
   picked: PickedOutline | null,
-): number {
+  extras: FrameExtras,
+): Omit<TryItFrameStats, 'rebuildMs'> {
   const { gl, renderer, internals } = scene;
-  if (renderer === null) return 0;
+  const none = { meshes: 0, particles: 0, portals: 0 };
+  if (renderer === null) return none;
   resetGlForDeepslate(gl);
   gl.clearColor(SKY[0], SKY[1], SKY[2], 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -321,7 +432,7 @@ function drawFrame(
     renderer.drawGrid(view);
     renderer.drawStructure(view);
     if (picked !== null) renderer.drawOutline(view, [picked.pos.x, picked.pos.y, picked.pos.z]);
-    return -1;
+    return { ...none, meshes: -1 };
   }
   const [sizeX, sizeY, sizeZ] = structure.getSize();
   const floorSize = `${sizeX},${sizeZ}`;
@@ -379,7 +490,8 @@ function drawFrame(
     internals.prepareDraw(view);
     internals.drawMesh(scene.outline, LINE_DRAW);
   }
-  return opaque.length + seeThrough.length;
+  const drawn = drawExtras(scene, view, pose, extras);
+  return { meshes: opaque.length + seeThrough.length, ...drawn };
 }
 
 type Status = { state: 'loading' } | { state: 'ready' } | { state: 'error'; message: string };
@@ -403,6 +515,19 @@ export default function TryItCanvas(props: TryItCanvasProps) {
     () => [...new Set(props.blockIds ?? [])].sort().join('\n'),
     [props.blockIds],
   );
+  // Portal blocks are drawn by the portal pass, so deepslate meshes the grid without them.
+  const portalLooks = useMemo(() => portalLooksFromFiles(files, folders), [files, folders]);
+  const portalKey = useMemo(() => [...portalLooks.keys()].sort().join('\n'), [portalLooks]);
+  const isPortal = useMemo(() => {
+    const ids = new Set(portalKey === '' ? [] : portalKey.split('\n'));
+    return (id: string): boolean => ids.has(id);
+  }, [portalKey]);
+  const meshGrid = useMemo(
+    () => (portalKey === '' ? grid : withoutPortals(grid, isPortal)),
+    [grid, portalKey, isPortal],
+  );
+  const extrasRef = useRef({ portalLooks, isPortal });
+  extrasRef.current = { portalLooks, isPortal };
 
   // The canvas and its context, once.
   useEffect(() => {
@@ -430,7 +555,7 @@ export default function TryItCanvas(props: TryItCanvasProps) {
 
   // The grid: a new one replaces the structure and rebuilds every chunk.
   useEffect(() => {
-    const structure = new WorldStructure(grid);
+    const structure = new WorldStructure(meshGrid);
     structureRef.current = structure;
     const renderer = sceneRef.current?.renderer;
     if (renderer !== null && renderer !== undefined) {
@@ -441,7 +566,7 @@ export default function TryItCanvas(props: TryItCanvasProps) {
       structure.dispose();
       if (structureRef.current === structure) structureRef.current = null;
     };
-  }, [grid]);
+  }, [meshGrid]);
 
   // The resources: prepared again when the files or wanted blocks change; the grid stays.
   useEffect(() => {
@@ -560,13 +685,22 @@ export default function TryItCanvas(props: TryItCanvasProps) {
         }
         scene.renderer.setViewport(0, 0, pixelWidth, pixelHeight);
         const rebuildMs = rebuildDirty(scene, structure);
-        const meshes = drawFrame(
+        scene.animationMs += elapsed;
+        const drawn = drawFrame(
           scene,
           structure,
           read(current.camera),
           read(current.picked ?? null),
+          {
+            grid: current.grid,
+            portalLooks: extrasRef.current.portalLooks,
+            isPortal: extrasRef.current.isPortal,
+            particles: current.particles ?? null,
+            partialTick: read(current.partialTick ?? 0),
+            props: current,
+          },
         );
-        current.onFrameDrawn?.({ meshes, rebuildMs });
+        current.onFrameDrawn?.({ ...drawn, rebuildMs });
       } catch (error) {
         if (frame !== null) cancelAnimationFrame(frame);
         frame = null;
