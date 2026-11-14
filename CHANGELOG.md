@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- Work in progress: **Try it**, a small test area inside MCSuperMods where you walk around, place your blocks and see your mobs and particles without starting Minecraft.
+
+## [1.5.0] - 2026-11-14
+
+### Added
+
 - The AI helper knows the block types, their textures and loot presets, seeds with their own item id, and the Wood set, Stone set, Crop and Tree flows.
 - **Your own sounds work in the game**: every key of a project's `sounds.json` is now a registered sound event, so in MCSuperMods' own fields (the **Play sound** action, an effect's or throwable's sound, mob sounds, `world.playSound` in scripts) you write the plain key, and the pickers list the project's sounds before the vanilla ones. In vanilla fields keep writing `{ "sound_id": "..." }`. A new sound key needs a game restart.
 - **Mob sounds**: the Mob Studio's new **Sounds** section sets the **Ambient sound**, **Hurt sound**, **Death sound** and **Step sound** of a mob, and the **Ambient interval (ticks)**.
