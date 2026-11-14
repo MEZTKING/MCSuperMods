@@ -1,0 +1,17 @@
+{
+  "components": {
+    "msm:on_step": {
+      "event": "msm_test:slab_stepped"
+    },
+    "msm:shape": {
+      "boxes": [[0, 0, 0, 16, 8, 16]]
+    }
+  },
+  "events": {
+    "msm_test:slab_stepped": {
+      "actions": []
+    }
+  },
+  "format": 1,
+  "item": false
+}

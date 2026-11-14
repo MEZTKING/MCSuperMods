@@ -551,4 +551,56 @@ class DefinitionParserTest {
         assertTrue(badId.definition().isEmpty());
         assertTrue(badId.errors().getFirst().contains("step"), badId.errors().toString());
     }
+
+    private static BlockComponents.Shape shape(String json) {
+        ParseResult<BlockDefinition> result = block("{\"format\": 1, \"components\": {\"msm:shape\": " + json + "}}");
+        assertEquals(List.of(), result.errors());
+        assertEquals(List.of(), result.warnings());
+        return result.definition().orElseThrow().components().shape().orElseThrow();
+    }
+
+    @Test
+    void shapeDecodesWithDefaults() {
+        BlockComponents.Shape empty = shape("{}");
+        assertEquals(Optional.empty(), empty.boxes());
+        assertTrue(empty.collision());
+        assertFalse(empty.seeThrough(), "no boxes: the full cube, not see-through");
+        assertEquals(List.of(BlockComponents.Shape.FULL_CUBE), empty.boxesOrFullCube());
+
+        BlockComponents.Shape slab = shape("{\"boxes\": [[0, 0, 0, 16, 8, 16]]}");
+        assertEquals(List.of(List.of(0f, 0f, 0f, 16f, 8f, 16f)), slab.boxes().orElseThrow());
+        assertTrue(slab.collision());
+        assertTrue(slab.seeThrough(), "boxes other than the full cube default to see-through");
+
+        BlockComponents.Shape cross = shape("{\"boxes\": [[2, 0, 2, 14, 16, 14]], \"collision\": false}");
+        assertFalse(cross.collision());
+        assertTrue(cross.seeThrough());
+
+        assertFalse(shape("{\"boxes\": [[0, 0, 0, 16, 16, 16]]}").seeThrough(), "the single full cube is solid");
+        assertFalse(shape("{\"boxes\": [[-0.0, 0, 0, 16, 16, 16]]}").seeThrough(), "-0 counts as 0, as in TypeScript");
+        assertTrue(shape("{\"boxes\": [[0, 0, 0, 16, 16, 16]], \"see_through\": true}").seeThrough());
+        assertFalse(shape("{\"boxes\": [[0, 0, 0, 16, 8, 16], [4, 8, 4, 12, 16, 12]], \"see_through\": false}").seeThrough());
+        assertTrue(shape("{\"boxes\": [[0, 0, 0, 16, 16, 16], [0, 0, 0, 16, 16, 16]]}").seeThrough(),
+                "two boxes are not the single full cube (the plugin's rule)");
+        assertEquals(List.of(List.of(0.5f, 0f, 0f, 15.5f, 1f, 16f)), shape("{\"boxes\": [[0.5, 0, 0, 15.5, 1, 16]]}").boxes().orElseThrow());
+    }
+
+    @Test
+    void shapeRejectsPresetAndBadBoxes() {
+        for (String bad : List.of(
+                "{\"preset\": \"slab_bottom\"}",
+                "{\"boxes\": []}",
+                "{\"boxes\": [[0, 0, 0, 16, 8]]}",
+                "{\"boxes\": [[0, 0, 0, 16, 8, 16, 1]]}",
+                "{\"boxes\": [[0, 0, 0, 16.5, 8, 16]]}",
+                "{\"boxes\": [[0, -1, 0, 16, 8, 16]]}",
+                "{\"collision\": 0}",
+                "{\"see_through\": \"true\"}")) {
+            ParseResult<BlockDefinition> result = block("{\"format\": 1, \"components\": {\"msm:shape\": " + bad + "}}");
+            assertTrue(result.definition().isEmpty(), bad);
+            assertTrue(result.errors().getFirst().contains("msm:shape"), result.errors().toString());
+        }
+        ParseResult<BlockDefinition> preset = block("{\"format\": 1, \"components\": {\"msm:shape\": {\"preset\": \"cross\"}}}");
+        assertTrue(preset.errors().getFirst().contains("preset: unknown field"), preset.errors().toString());
+    }
 }

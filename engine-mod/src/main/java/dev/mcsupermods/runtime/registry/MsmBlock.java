@@ -24,6 +24,9 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * Driver class for every {@code msm/<ns>/block/*.json} definition: dispatches game callbacks to
@@ -41,6 +44,10 @@ public class MsmBlock extends Block {
     private final BlockDefinition definition;
     private final boolean tracksPower;
     private final int emit;
+    /** {@code msm:shape} (ADR 0059 D3): the outline for every state; null without the component (vanilla's full cube). */
+    private final VoxelShape shape;
+    /** {@code msm:shape} {@code see_through}: light passes, faces between two of these blocks are skipped. */
+    private final boolean seeThrough;
     /** Last step tick per dimension, position and entity, for {@code msm:on_step} cooldowns. Server thread only. */
     private final Map<StepKey, Long> lastStep = new HashMap<>();
 
@@ -62,6 +69,8 @@ public class MsmBlock extends Block {
         BlockComponents c = definition.components();
         this.tracksPower = c.reactsToRedstone();
         this.emit = c.emit();
+        this.shape = c.shape().map(MsmBlock::voxelShape).orElse(null);
+        this.seeThrough = c.shape().map(BlockComponents.Shape::seeThrough).orElse(false);
         if (tracksPower) {
             registerDefaultState(stateDefinition.any().setValue(POWERED, false));
         }
@@ -80,6 +89,69 @@ public class MsmBlock extends Block {
         if (TRACKS_POWER.get()) {
             builder.add(POWERED);
         }
+    }
+
+    /**
+     * The union of the pixel boxes; the full cube when {@code boxes} is absent. Each axis is ordered first (the format
+     * does not require {@code x1 <= x2}), so a box written corner to corner either way is the same box.
+     */
+    static VoxelShape voxelShape(BlockComponents.Shape spec) {
+        VoxelShape out = Shapes.empty();
+        for (var b : spec.boxesOrFullCube()) {
+            out = Shapes.or(out, Block.box(
+                    Math.min(b.get(0), b.get(3)), Math.min(b.get(1), b.get(4)), Math.min(b.get(2), b.get(5)),
+                    Math.max(b.get(0), b.get(3)), Math.max(b.get(1), b.get(4)), Math.max(b.get(2), b.get(5))));
+        }
+        return out.optimize();
+    }
+
+    /** The {@code BlockBehaviour.Properties} that {@code msm:shape} needs (ADR 0059 D3); unchanged without it. */
+    static Properties shapeProperties(Properties props, BlockComponents components) {
+        if (components.shape().isEmpty()) {
+            return props;
+        }
+        BlockComponents.Shape spec = components.shape().get();
+        if (!spec.collision()) {
+            props = props.noCollision(); // also clears canOcclude, as for vanilla plants
+        }
+        if (spec.seeThrough()) {
+            // The predicates vanilla glass sets (Blocks.GLASS), plus isViewBlocking (vanilla derives it from isSuffocating).
+            props = props.noOcclusion()
+                    .isSuffocating((state, level, pos) -> false)
+                    .isViewBlocking((state, level, pos, box) -> false)
+                    .isRedstoneConductor((state, level, pos) -> false);
+        }
+        return props;
+    }
+
+    // msm:shape
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return shape != null ? shape : super.getShape(state, level, pos, context);
+    }
+
+    // Collision: vanilla's getCollisionShape returns getShape, or nothing after Properties.noCollision().
+
+    @Override
+    protected VoxelShape getVisualShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return seeThrough ? Shapes.empty() : super.getVisualShape(state, level, pos, context);
+    }
+
+    @Override
+    protected boolean propagatesSkylightDown(BlockState state) {
+        return seeThrough || super.propagatesSkylightDown(state);
+    }
+
+    @Override
+    protected float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
+        return seeThrough ? 1.0f : super.getShadeBrightness(state, level, pos);
+    }
+
+    @Override
+    protected boolean skipRendering(BlockState state, BlockState adjacent, Direction direction) {
+        // The glass rule (HalfTransparentBlock): no face between two blocks of the same definition.
+        return (seeThrough && adjacent.is(this)) || super.skipRendering(state, adjacent, direction);
     }
 
     // msm:on_interact

@@ -300,6 +300,7 @@ public final class MsmRegistrar {
         if (breakable.requiresTool()) {
             props = props.requiresCorrectToolForDrops();
         }
+        props = MsmBlock.shapeProperties(props, c); // msm:shape (ADR 0059 D3)
         if (def.lootTable().isPresent()) {
             props = props.overrideLootTable(Optional.of(ResourceKey.create(Registries.LOOT_TABLE, def.lootTable().get())));
         }

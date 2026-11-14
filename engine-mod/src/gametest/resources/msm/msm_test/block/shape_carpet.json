@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:shape": {
+      "boxes": [[0, 0, 0, 16, 1, 16]]
+    }
+  },
+  "format": 1,
+  "item": false
+}
