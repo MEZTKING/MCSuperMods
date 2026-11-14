@@ -41,8 +41,10 @@ const DATA_FOLDER_KEYS = [
   'recipe',
   'structure',
   'tags',
+  'trade_set',
   'trim_material',
   'trim_pattern',
+  'villager_trade',
   'worldgen',
 ];
 
