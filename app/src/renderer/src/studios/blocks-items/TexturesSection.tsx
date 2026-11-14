@@ -113,7 +113,7 @@ export function TexturesSection(props: TexturesSectionProps) {
     <Section title="Textures" testId="block-textures">
       {slots.length === 0 ? (
         <p className="text-muted text-xs" data-testid="block-textures-stages-note">
-          A crop's stage textures are edited under "Advanced (all fields)" for now.
+          A crop's stage textures are set in the Crop section above.
         </p>
       ) : (
         <>

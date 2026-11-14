@@ -1,7 +1,9 @@
 /**
  * The Creator's live preview (ADR 0043 D3): six tabs over the bundle the flow builds now, read
  * from memory (nothing is applied). Items and Blocks list every piece with its generated
- * texture as a `data:` image and draw the chosen one with the deepslate preview; Recipes draws
+ * texture as a `data:` image and draw the chosen one with the deepslate preview (typed blocks
+ * with the models their textures make), and Blocks also shows the whole set as a row of blocks
+ * (`SetPreview`, B272); Recipes draws
  * crafting grids; Armour shows the two layer textures and the humanoid armour geometry in the
  * geo renderer, and horse and wolf armour layers as flat textures; Stats puts the numbers in
  * words (weapons, armour, food, consumables with their effects); Card shows paintings on a wall
@@ -24,7 +26,6 @@ import {
   bundlePreviewProject,
   displayName,
   elementModel,
-  elementTextureBytes,
   pngDataUrl,
 } from '../../preview/bundle-source';
 import {
@@ -52,6 +53,13 @@ import {
   equipmentTexturePath,
   type VanillaTools,
 } from './creator-model';
+import { SetPreview } from './SetPreview';
+import {
+  bundlePieceForItem,
+  pieceModels,
+  pieceTextureBytes,
+  withTypedBlockModels,
+} from './set-preview';
 
 /** The effects of a Stats card as a table. */
 function EffectTable(props: { name: string; effects: readonly EffectRow[] }) {
@@ -144,7 +152,12 @@ function PieceGallery(props: {
   vanilla: VanillaAssetReader | null;
   webgl: boolean;
 }) {
-  const { bundle, folders, type } = props;
+  const { folders, type } = props;
+  // Typed blocks (stairs, slabs, crops, ...) draw the models their textures make (B272).
+  const bundle = useMemo(
+    () => (type === 'block' ? withTypedBlockModels(props.bundle) : props.bundle),
+    [type, props.bundle],
+  );
   const pieces = type === 'item' ? bundleItems(bundle) : bundleBlocks(bundle);
   const [chosen, setChosen] = useState<string | null>(null);
   const current = pieces.find((piece) => piece.id === chosen) ?? pieces[0];
@@ -156,7 +169,12 @@ function PieceGallery(props: {
     () => bundleAssetReader(bundle, props.readProjectAsset),
     [bundle, props.readProjectAsset],
   );
-  const modelId = current === undefined ? undefined : elementModel(current.data);
+  const modelId =
+    current === undefined
+      ? undefined
+      : type === 'block'
+        ? pieceModels(current)?.model
+        : elementModel(current.data);
   const model = bundle.elements.find(
     (entry) => entry.kind === 'minecraft:model' && entry.id === modelId,
   );
@@ -172,7 +190,7 @@ function PieceGallery(props: {
         aria-label={type === 'item' ? 'Items' : 'Blocks'}
       >
         {pieces.map((piece) => {
-          const bytes = elementTextureBytes(bundle, piece.data, folders);
+          const bytes = pieceTextureBytes(bundle, piece, folders);
           const name = displayName(bundle, piece.id, type) ?? piece.id;
           const selected = piece.id === current?.id;
           return (
@@ -332,16 +350,22 @@ function ArmourTab(props: {
 export function CreatorPreview(props: CreatorPreviewProps) {
   const { bundle } = props;
   const webgl = props.webgl ?? hasWebGL();
+  // A recipe names items: a block's item may have its own id (seeds planting a crop, ADR 0068
+  // D2), so an id is resolved to the bundle piece whose item it is.
   const icon = (id: string): string | undefined => {
-    const piece = bundle.elements.find(
-      (entry) => entry.id === id && (entry.kind === 'msm:item' || entry.kind === 'msm:block'),
-    );
+    const piece = bundlePieceForItem(bundle, id);
     if (piece === undefined) return undefined;
-    const bytes = elementTextureBytes(bundle, piece.data, props.folders);
+    const bytes = pieceTextureBytes(bundle, piece, props.folders);
     return bytes === undefined ? undefined : pngDataUrl(bytes);
   };
-  const name = (id: string): string | undefined =>
-    displayName(bundle, id, 'item') ?? displayName(bundle, id, 'block');
+  const name = (id: string): string | undefined => {
+    const own = displayName(bundle, id, 'item') ?? displayName(bundle, id, 'block');
+    if (own !== undefined) return own;
+    const piece = bundlePieceForItem(bundle, id);
+    return piece === undefined || piece.kind !== 'msm:block' || piece.id === id
+      ? undefined
+      : displayName(bundle, piece.id, 'block');
+  };
   const recipes = bundleRecipes(bundle);
   const stats = bundleStats(bundle, props.vanillaTools);
   return (
@@ -367,7 +391,18 @@ export function CreatorPreview(props: CreatorPreviewProps) {
           <PieceGallery type="item" {...props} webgl={webgl} />
         </Tabs.Content>
         <Tabs.Content value="blocks">
-          <PieceGallery type="block" {...props} webgl={webgl} />
+          <div className="flex flex-col gap-3">
+            <SetPreview
+              bundle={bundle}
+              revision={props.revision}
+              project={props.project}
+              folders={props.folders}
+              readProjectAsset={props.readProjectAsset}
+              vanilla={props.vanilla}
+              webgl={webgl}
+            />
+            <PieceGallery type="block" {...props} webgl={webgl} />
+          </div>
         </Tabs.Content>
         <Tabs.Content value="recipes">
           {recipes.length === 0 ? (

@@ -18,7 +18,7 @@ import entitiesPlugin from '@msm/plugin-entities';
 import { createRegistryIndex, type SchemaIndex } from '@msm/schemas';
 import type { TargetBundle } from '@msm/targets';
 import { render } from '@testing-library/react';
-import { useEffect, useReducer } from 'react';
+import { type ComponentType, type ReactNode, useEffect, useReducer } from 'react';
 import { vi } from 'vitest';
 import { ElementForm } from '../../../../src/renderer/src/studios/ElementForm';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
@@ -88,10 +88,20 @@ function StackHarness(props: {
   );
 }
 
-/** Renders `subject` on a command stack; returns the stack and a reader of the live data. */
-export function renderOnStack(subject: Element, schema: SchemaContextState) {
-  const stack = new CommandStack(projectOf(subject));
-  render(<StackHarness stack={stack} id={subject.id} schema={schema} />);
+/**
+ * Renders `subject` on a command stack (with `others` in the project and an optional host
+ * `wrapper`); returns the stack and a reader of the live data.
+ */
+export function renderOnStack(
+  subject: Element,
+  schema: SchemaContextState,
+  options: { wrapper?: ComponentType<{ children: ReactNode }>; others?: Element[] } = {},
+) {
+  const stack = new CommandStack(projectOf(subject, ...(options.others ?? [])));
+  render(
+    <StackHarness stack={stack} id={subject.id} schema={schema} />,
+    options.wrapper === undefined ? {} : { wrapper: options.wrapper },
+  );
   const data = (): Json =>
     stack.state.namespaces[0]?.elements.find((entry) => entry.id === subject.id)?.data ?? null;
   return { stack, data };

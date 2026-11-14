@@ -15,6 +15,7 @@ import type {
   TargetFacts,
   VanillaToolStats,
 } from '@msm/plugin-api';
+import { blockItemIdOf } from '@msm/plugin-blocks-items';
 import type { CreatorEntryStatus } from '../../changeset/creator-sets';
 import type { ArmourPiece } from '../../preview/geo/armour';
 import { defaultRawValue, type RawValue, type RawValues } from '../wizard/wizard-model';
@@ -479,7 +480,7 @@ function foodLines(food: JsonObject): string[] {
   return lines;
 }
 
-function blockLines(data: JsonObject): string[] {
+function blockLines(id: string, data: JsonObject): string[] {
   const components = isObject(data.components) ? data.components : {};
   const lines: string[] = [];
   const breakable = components['msm:breakable'];
@@ -504,6 +505,15 @@ function blockLines(data: JsonObject): string[] {
     lines.push(`Gives off light of level ${num(light.level)}.`);
   }
   if (data.loot === 'self') lines.push('Drops itself.');
+  if (data.loot === 'crop') lines.push('Drops its produce when grown, its seeds before.');
+  if (data.loot === 'leaves') {
+    lines.push('Now and then drops a sapling and sticks; drops itself with shears.');
+  }
+  // A block item with its own id (seeds planting a crop, ADR 0068 D2).
+  const itemId = blockItemIdOf(id, data);
+  if (itemId !== undefined && itemId !== id) {
+    lines.push(data.type === 'crop' ? `Planted from ${itemId}.` : `Its item is ${itemId}.`);
+  }
   return lines;
 }
 
@@ -558,7 +568,7 @@ export function bundleStats(bundle: ContentBundle, vanillaTools?: VanillaTools):
   }
   for (const block of bundleBlocks(bundle)) {
     if (!isObject(block.data)) continue;
-    const lines = blockLines(block.data);
+    const lines = blockLines(block.id, block.data);
     if (lines.length > 0) cards.push({ id: block.id, lines });
   }
   return cards;

@@ -4,7 +4,8 @@
  * and the building types' own fields: base block (stairs), set type (doors, trapdoors,
  * buttons, pressure plates), press time (buttons), weighted maximum (pressure plates), wood
  * type (fence gates) and whether a fence is wooden. Set and wood types come from the target's
- * block facts (`Target.blocks`), else from the schema.
+ * block facts (`Target.blocks`), else from the schema. The plant types (crop, sapling, leaves)
+ * are offered too (B272); their own fields are in `PlantSection`.
  *
  * @packageDocumentation
  */
@@ -25,6 +26,7 @@ import {
   BUILDING_BLOCK_TYPES,
   blockTypeOfData,
   isBlockType,
+  PLANT_BLOCK_TYPES,
   SET_TYPE_LABELS,
   WOOD_TYPE_LABELS,
   withBlockType,
@@ -108,7 +110,7 @@ export function BlockTypeSection(props: BlockTypeSectionProps) {
   const at = (path: readonly string[]) => (
     <ProblemsAt problems={problems} pointer={pointerOf(path)} />
   );
-  const choices: BlockTypeName[] = [...BUILDING_BLOCK_TYPES];
+  const choices: BlockTypeName[] = [...BUILDING_BLOCK_TYPES, ...PLANT_BLOCK_TYPES];
   if (type !== undefined && !choices.includes(type)) choices.push(type);
   const setType = typeof object.set_type === 'string' ? object.set_type : undefined;
   const wooden = setType !== undefined && WOODEN_SET_TYPES.includes(setType);
@@ -242,11 +244,6 @@ export function BlockTypeSection(props: BlockTypeSectionProps) {
           />
           {at(['wooden'])}
         </>
-      )}
-      {type !== undefined && ['crop', 'sapling', 'leaves'].includes(type) && (
-        <p className="text-muted text-xs" data-testid="block-type-plant-note">
-          Edit this plant's own fields under "Advanced (all fields)".
-        </p>
       )}
     </Section>
   );

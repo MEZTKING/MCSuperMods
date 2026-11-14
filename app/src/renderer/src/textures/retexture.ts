@@ -6,6 +6,9 @@
  * - A `minecraft:model` element is changed itself.
  * - An `msm:item` or `msm:block` follows its `model` to the project's model element; a vanilla
  *   model (not in the project) cannot be changed.
+ * - A typed `msm:block` without a `model` (stairs, slabs, saplings, leaves, ...; ADR 0067 D7)
+ *   is changed itself: its `textures.all`, else the slot it already uses, else its type's first
+ *   slot. A crop's stage textures are a list and are not changed by a drop.
  * - The texture slot is `layer0` when the model has one, else `all`, else its first texture,
  *   else a new `layer0` (a flat item model).
  *
@@ -13,6 +16,7 @@
  */
 
 import type { Element, Json, Project } from '@msm/core';
+import { blockTypeOfData, TEXTURE_SLOTS } from '../studios/blocks-items/block-type-model';
 
 /** The drag data type of a texture asset: `<namespace>:<asset path>`. */
 export const TEXTURE_DRAG_TYPE = 'application/x-msm-texture';
@@ -44,6 +48,13 @@ export function retexture(project: Project, element: Element, textureId: string)
   let model: Element | undefined;
   if (element.kind === 'minecraft:model') {
     model = element;
+  } else if (
+    element.kind === 'msm:block' &&
+    typeof record(element.data)?.model !== 'string' &&
+    blockTypeOfData(element.data) !== undefined &&
+    blockTypeOfData(element.data) !== 'block'
+  ) {
+    return typedBlockTexture(element, textureId);
   } else if (element.kind === 'msm:item' || element.kind === 'msm:block') {
     const modelId = record(element.data)?.model;
     if (typeof modelId !== 'string' || modelId === '') {
@@ -67,6 +78,33 @@ export function retexture(project: Project, element: Element, textureId: string)
   return {
     ok: true,
     modelId: model.id,
+    slot,
+    data: { ...data, textures: { ...textures, [slot]: textureId } },
+    previous: typeof previous === 'string' ? previous : null,
+  };
+}
+
+/** A typed block's own `textures` with `textureId` in its main slot. */
+function typedBlockTexture(element: Element, textureId: string): RetextureResult {
+  const type = blockTypeOfData(element.data);
+  if (type === undefined || type === 'block') {
+    return { ok: false, reason: `${element.id} has no model to put the texture on.` };
+  }
+  const slots = TEXTURE_SLOTS[type];
+  if (slots.length === 0) {
+    return {
+      ok: false,
+      reason: `${element.id} is a crop: set its stage textures in the Block Studio's Crop section.`,
+    };
+  }
+  const data = record(element.data) ?? {};
+  const textures = record(data.textures) ?? {};
+  const used = slots.find((slot) => typeof textures[slot.key] === 'string');
+  const slot = 'all' in textures ? 'all' : (used?.key ?? slots[0]?.key ?? 'all');
+  const previous = textures[slot];
+  return {
+    ok: true,
+    modelId: element.id,
     slot,
     data: { ...data, textures: { ...textures, [slot]: textureId } },
     previous: typeof previous === 'string' ? previous : null,

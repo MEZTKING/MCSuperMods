@@ -130,7 +130,7 @@ import type { CompleteFunction } from './studios/FunctionEditor';
 import { ScriptStudioHostContext } from './studios/scripting/host';
 import { projectScripts } from './studios/scripting/script-model';
 import { type StructureStudioHost, StructureStudioHostContext } from './studios/structures/host';
-import { templatesFor } from './studios/templates';
+import { templateContext, templatesFor } from './studios/templates';
 import { useSchemaContext } from './studios/use-schema-context';
 import { retexture, textureIdOf } from './textures/retexture';
 import { TextureDropContext } from './textures/texture-drop';
@@ -1683,6 +1683,35 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         setMessage({ kind: 'error', text: `Add ${input.id}: ${messageOf(error)}` });
       }
     },
+    newFromTemplate: (templateId, id) => {
+      const template = templates.find((entry) => entry.id === templateId);
+      if (template === undefined || target === null) {
+        setMessage({ kind: 'error', text: `Add ${id}: the template ${templateId} is missing.` });
+        return;
+      }
+      const fail = (error: unknown) =>
+        setMessage({ kind: 'error', text: `Add ${id}: ${messageOf(error)}` });
+      const add = (data: Json) => {
+        try {
+          session.addElement({ id, kind: template.kind, data });
+          select(id);
+        } catch (error) {
+          fail(error);
+        }
+      };
+      try {
+        Promise.resolve(
+          template.data(
+            templateContext(id, namespaces, session.kindDefault(template.kind), target),
+          ),
+        ).then(add, fail);
+      } catch (error) {
+        fail(error);
+      }
+    },
+    ...(target === null
+      ? {}
+      : { modelPreview: { folders: target.folders.resource, readProjectAsset, vanilla } }),
     paintTexture: (namespace, path, size) => {
       const exists = project?.namespaces
         .find((entry) => entry.name === namespace)

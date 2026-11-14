@@ -2,10 +2,12 @@
  * Block Studio (B97) for `msm:block` element data (ADR 0025 D2, D5):
  *
  * - Type (B268, ADR 0069 D5): the Type picker (one undoable change that drops the old type's
- *   fields) and the building types' own fields (`BlockTypeSection`).
+ *   fields) and the building types' own fields (`BlockTypeSection`); the plant types' Crop,
+ *   Sapling and Leaves sections (`PlantSection`, B272).
  * - Appearance: model (suggestions, "Go to model"; for the types that take one) and display
  *   name; for the other types the Textures section (`TexturesSection`): texture slots in words,
- *   the models lowering makes for them, and the user's own models per slot.
+ *   the models lowering makes for them, and the user's own models per slot; a 3D Preview of
+ *   those models with a stage slider for crops (`BlockTypePreview`, B272).
  * - Shape (ADR 0059; simple, pillar and facing types only): `msm:shape` preset, custom boxes, "From model" (one undo step),
  *   walk-through and see-through toggles, the layer the model's textures give, and a live
  *   outline of the boxes.
@@ -32,6 +34,7 @@ import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
 import { AdvancedToggle, Section } from '../worldgen/parts';
+import { BlockTypePreview } from './BlockTypePreview';
 import { BlockTypeSection } from './BlockTypeSection';
 import { acceptsSingleModel, blockTypeOfData, isShapedType } from './block-type-model';
 import {
@@ -59,6 +62,7 @@ import {
 } from './blocks-items-model';
 import { EventsEditor } from './EventsEditor';
 import { useBlocksItemsStudioHost } from './host';
+import { PlantSection } from './PlantSection';
 import { CheckField, EventSelect, ModelField, ProblemsAt, ShapePreview, TextField } from './parts';
 import { TexturesSection } from './TexturesSection';
 import { FuelCompostFields, TriggersSection } from './triggers';
@@ -528,7 +532,7 @@ export function BlockStudio(props: StudioProps) {
       )}
       {lootPreset !== undefined && (
         <p className="text-muted text-xs" data-testid="block-drops-preset">
-          {lootPreset}; edit them under "Advanced (all fields)".
+          {lootPreset}; edit them in the {data.loot === 'crop' ? 'Crop' : 'Leaves'} section above.
         </p>
       )}
       {drops === 'self' && data.item === false && (
@@ -723,6 +727,13 @@ export function BlockStudio(props: StudioProps) {
       <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="block-advanced-toggle" />
       <ProblemsAt problems={problems} pointer="" />
       {typeSection}
+      <PlantSection
+        project={project}
+        element={element}
+        problems={problems}
+        suggest={suggest}
+        set={set}
+      />
       {appearance}
       <TexturesSection
         key={element.id}
@@ -731,6 +742,7 @@ export function BlockStudio(props: StudioProps) {
         suggest={suggest}
         set={set}
       />
+      <BlockTypePreview key={`preview-${element.id}`} project={project} element={element} />
       {shaped ? (
         shapeSection
       ) : (

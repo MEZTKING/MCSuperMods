@@ -2,7 +2,8 @@
  * What the blocks and items Studios ask of the host beyond `StudioProps`: project texture
  * thumbnails, opening the texture editor on a project texture (painting an effect icon,
  * ADR 0055 D6), the Block Studio's texture layer hint (ADR 0059 D4) and adding an element
- * ("Make a potion", ADR 0063 D9). `App` provides it around the Form tab; without a provider the Effect Studio
+ * ("Make a potion", ADR 0063 D9), a new element from a template (a sapling's "New tree") and
+ * the 3D preview of a typed block's models (B272). `App` provides it around the Form tab; without a provider the Effect Studio
  * shows no thumbnail and points to "New texture…" instead of painting.
  *
  * @packageDocumentation
@@ -10,6 +11,7 @@
 
 import type { Json, ResourceLocation } from '@msm/core';
 import { createContext, useContext } from 'react';
+import type { ResourceFolders, VanillaAssetReader } from '../../preview/model-chain';
 
 /** The host actions of the blocks and items Studios. */
 export interface BlocksItemsStudioHost {
@@ -34,6 +36,20 @@ export interface BlocksItemsStudioHost {
    * ADR 0063 D9). Absent where the host cannot add elements.
    */
   addElement?(input: { id: ResourceLocation; kind: string; data: Json }): void;
+  /**
+   * Adds a new element `id` from the library template `templateId` in one undo step and opens
+   * it (the sapling's "New tree", B272). Absent where the host cannot add elements.
+   */
+  newFromTemplate?(templateId: string, id: ResourceLocation): void;
+  /**
+   * What the Block Studio's 3D preview of a typed block's models reads (B272): the target's
+   * resource folders, the project's assets and the vanilla cache. Absent: no preview.
+   */
+  modelPreview?: {
+    folders: ResourceFolders;
+    readProjectAsset(namespace: string, path: string): Promise<Uint8Array | null>;
+    vanilla: VanillaAssetReader | null;
+  };
 }
 
 /** Provided by `App`; `null` outside it (tests, previews). */
