@@ -1,0 +1,37 @@
+Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=46133 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=
+Calculating task graph as configuration cache cannot be reused because Gradle property 'mc' has changed.
+
+> Configure project :
+Fabric Loom: 1.19.3
+
+> Task :processIncludeJars UP-TO-DATE
+> Task :validateAccessWidener NO-SOURCE
+> Task :processTestResources NO-SOURCE
+> Task :processResources
+
+> Task :compileJava
+/tmp/claude-0/-home-user/4a56a205-8696-50bd-85e1-c9cc01051fe4/scratchpad/wt-B346/engine-mod/parity/src/main/java/dev/mcsupermods/parity/SampleModParityTest.java:750: warning: [removal] makeMockServerPlayerInLevel() in GameTestHelper has been deprecated and marked for removal
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+                                    ^
+/tmp/claude-0/-home-user/4a56a205-8696-50bd-85e1-c9cc01051fe4/scratchpad/wt-B346/engine-mod/parity/src/main/java/dev/mcsupermods/parity/SampleModAdditionsParityTest.java:115: warning: [removal] makeMockServerPlayerInLevel() in GameTestHelper has been deprecated and marked for removal
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+                                    ^
+/tmp/claude-0/-home-user/4a56a205-8696-50bd-85e1-c9cc01051fe4/scratchpad/wt-B346/engine-mod/parity/src/main/java/dev/mcsupermods/parity/SampleModBlockTypesParityTest.java:132: warning: [removal] makeMockServerPlayerInLevel() in GameTestHelper has been deprecated and marked for removal
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+                                    ^
+3 warnings
+
+> Task :classes
+> Task :compileTestJava NO-SOURCE
+> Task :testClasses UP-TO-DATE
+> Task :test NO-SOURCE
+> Task :check UP-TO-DATE
+> Task :jar
+> Task :assemble
+> Task :build
+
+[Incubating] Problems report is available at: file:///tmp/claude-0/-home-user/4a56a205-8696-50bd-85e1-c9cc01051fe4/scratchpad/wt-B346/engine-mod/parity/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 3s
+4 actionable tasks: 3 executed, 1 up-to-date
+Configuration cache entry stored.

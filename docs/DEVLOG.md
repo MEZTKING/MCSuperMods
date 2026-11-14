@@ -3781,3 +3781,24 @@ Decisions
 
 Next
 - B350 removes `particle-` from `PENDING` and decodes it; B352 removes the other two. Runtime error messages must name the last field of each expected pointer (for example `max`, `type`, `lit`, `velocity`, `speed`).
+## 2026-11-14 — executor — B346 particle stubs and vanilla probe
+
+What
+- Registered the batch's test classes as bare `public class X {}` stubs with Javadoc (ADR 0080 or 0081 and the filling brief): runtime `MsmParticleGameTest` (B350, B352), `MsmParticleSpawnGameTest` (B352) and `MsmParticleClientGameTest` (B356, becomes a `FabricClientGameTest`), parity `SampleParticlesParityTest` (B359). `engine-mod/src/gametest/resources/fabric.mod.json` lists the first two under `fabric-gametest` and the third under a new `fabric-client-gametest` entry point; `engine-mod/parity/src/main/resources/fabric.mod.json` lists the parity class and the description's filter list gains `sample_particles_*`.
+- Checked: `./gradlew build` on 26.3, `-Pmc=26.4` and `-PwithoutGeckolib` each green with "All 400 required tests passed" (unchanged); `./gradlew -p parity build -Pmc=26.3` and `-Pmc=26.4` green. The only new log lines are two harmless warnings "No methods with the GameTest annotation were found" for the two empty server stubs (so B350 and B352 add methods, or the warning stays until they do). The `fabric-client-gametest` entry point is harmless while `enableClientGameTests` is false: nothing loads it.
+- Vanilla server probe (fact F19), throwaway packs only in the scratchpad, none committed. Vanilla dedicated server jars 26.3 and 26.4-snapshot-7 (the CI cache), each case a fresh world with one data pack (data format 121 and 126) naming the unknown particle type `msm_probe:spark`; each case run once per version; controls: the same dimension_type and timeline with `minecraft:ash` load (Done, pack enabled), and an empty-effect function pack loads.
+
+| Case | 26.3 | 26.4-snapshot-7 |
+|---|---|---|
+| function `particle msm_probe:spark ~ ~ ~` | server starts; that function dropped: `Failed to load function msm_probe:t ... Unknown particle: msm_probe:spark at position 24` | same (`Unknown particle 'msm_probe:spark'`, quotes added) |
+| function `execute as @a run particle msm_probe:spark ~ ~ ~` | as above, position 42 | same |
+| `dimension_type` with `attributes` `minecraft:visual/ambient_particles` (list of `{particle, probability}`) | whole pack fails: `Registry loading errors ... Errors in registry minecraft:dimension_type ... Unknown registry key in ResourceKey[minecraft:root / minecraft:particle_type]: msm_probe:spark`; `Failed to load datapacks, can't proceed with server load` | same |
+| `timeline` with a track `minecraft:visual/ambient_particles` (keyframes with the list) | the schema allows it; whole pack fails, same lines for `minecraft:timeline` | same |
+| biome with attribute `minecraft:visual/ambient_particles` (`argument`, `modifier: append`) | whole pack fails, registry `minecraft:worldgen/biome` | same |
+| enchantment `post_attack` effect `minecraft:spawn_particles` | whole pack fails, registry `minecraft:enchantment` | same |
+
+Decisions
+- None beyond the brief. Outcome for B351: `dimension_type` and `timeline` are fatal folders on both targets (add them to `FATAL_DATA_FOLDERS` with `worldgen` and `enchantment`; ADR 0066's table gets the outcome at close). Functions behave as ADR 0066 D5 says: only the function is dropped.
+
+Next
+- B351 (vanilla pack safety: `particle_type` in `RUNTIME_REGISTRIES`, `dimension_type` and `timeline` fatal), B350/B352 (fill the runtime stubs), B356, B359.
