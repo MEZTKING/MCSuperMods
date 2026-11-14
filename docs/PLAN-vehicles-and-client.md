@@ -278,3 +278,4 @@ The order follows the research's ranking (R2): keys and the vehicle core start t
 ## Notes from implementation
 
 (Empty. The main session appends each executor's "Notes for the plan" here.)
+- B407 (no commit; measurement at 53b79ee): renderer 15,825,327 bytes (15.1 MiB) of 16 MiB; Monaco about 11 MiB of it (all lazy); eager total about 3.45 MB; Studios already lazy and small (Particle Studio 16.9 kB, Portal section 9.2 kB). Estimate for the three new Studios about 0.1-0.12 MB, plus about 0.3-0.5 MB of parallel work (Try it grounds, AI pictures). Route (a) is not available (`check-size` sums every renderer file). **Chosen: route (b)**, the renderer budget raised to 18 MiB in `tools/check-size` (orchestrator, with its README and test). B419 and B420 may start when their wave comes.

@@ -9,7 +9,7 @@
  *
  * 1. `app.asar` in the unpacked build is at most 32 MB (ADR 0037: room for two targets'
  *    vendored data; ADR 0079: that data is compacted at build, so the budget is kept).
- * 2. The renderer output (`app/out/renderer`) is at most 16 MB in total (ADR 0031 D6: the
+ * 2. The renderer output (`app/out/renderer`) is at most 18 MB in total (ADR 0031 D6: the
  *    lazy Monaco TypeScript worker is about 7 MB on its own).
  * 3. No `*.json` file in the renderer output is larger than 100 kB (vendored data belongs in
  *    main, not in the renderer bundle).
@@ -37,7 +37,7 @@ const KB = 1024;
 /** Size thresholds in bytes. */
 export const BUDGETS = {
   asarBytes: 32 * MB,
-  rendererBytes: 16 * MB,
+  rendererBytes: 18 * MB,
   rendererJsonBytes: 100 * KB,
 } as const;
 
