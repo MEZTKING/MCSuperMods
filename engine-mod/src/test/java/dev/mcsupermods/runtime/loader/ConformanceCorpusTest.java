@@ -32,11 +32,21 @@ class ConformanceCorpusTest {
     private static final Path CORPUS = Path.of(System.getProperty("msm.conformance.definition",
             "../packages/schemas/mcdoc/msm/conformance/definition"));
 
+    /**
+     * Prefixes whose schema reached the corpus before the runtime's Codec (ADRs 0074, 0075): B314 decodes
+     * {@code container-} and B316 {@code machine-}, each removing its prefix here and adding its {@link Kind}.
+     */
+    private static final List<String> PENDING = List.of("container-", "machine-");
+
+    private static boolean pending(String name) {
+        return PENDING.stream().anyMatch(name::startsWith);
+    }
+
     private static List<Path> files(String group) throws IOException {
         try (Stream<Path> s = Files.list(CORPUS.resolve(group))) {
             return s.filter(p -> {
                 String name = p.getFileName().toString();
-                return name.endsWith(".json");
+                return name.endsWith(".json") && !pending(name);
             }).sorted().toList();
         }
     }
@@ -89,6 +99,7 @@ class ConformanceCorpusTest {
         TreeSet<String> names = new TreeSet<>();
         invalid.forEach(p -> names.add(p.getFileName().toString()));
         TreeSet<String> keys = new TreeSet<>(expected.keySet());
+        keys.removeIf(ConformanceCorpusTest::pending);
         assertEquals(keys, names, "expected-errors.json and invalid/ disagree");
     }
 
