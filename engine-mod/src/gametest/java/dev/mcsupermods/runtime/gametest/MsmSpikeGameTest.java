@@ -33,7 +33,7 @@ public class MsmSpikeGameTest {
         helper.assertTrue(MsmRuntime.report().errors().stream()
                 .allMatch(e -> e.contains("partly_broken.json") || e.contains("future_format.json") || e.contains("armed_helmet.json")
                         || e.contains("enchanted_blade.json") || e.contains("type_stairs_unknown_base.json")
-                        || e.contains("type_stairs_redstone.json")
+                        || e.contains("type_stairs_redstone.json") || e.contains("seeds_clash.json")
                         || e.contains("needs the mod 'geckolib'")),
                 "load errors: " + MsmRuntime.report().errors());
         helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(ORE), "block " + ORE + " not registered");

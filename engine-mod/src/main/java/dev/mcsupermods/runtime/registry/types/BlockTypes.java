@@ -4,8 +4,16 @@ import dev.mcsupermods.runtime.loader.BlockDefinition;
 import dev.mcsupermods.runtime.loader.BlockType;
 import dev.mcsupermods.runtime.registry.BlockSetTypes;
 import dev.mcsupermods.runtime.registry.MsmBlock;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,22 +40,20 @@ import net.minecraft.world.phys.AABB;
  *       weighted plates)</li>
  *   <li>{@code pillar}, {@code horizontal}, {@code directional}: nothing of their own (logs, furnaces and droppers set only
  *       map colour, instrument and strength)</li>
+ *   <li>{@code crop}, {@code sapling}: {@code noCollision}, {@code randomTicks}, {@code pushReaction(POPPED)} (wheat, oak
+ *       sapling; their {@code instabreak} is the definition's strength here)</li>
+ *   <li>{@code leaves}: {@code Blocks.leavesProperties}: {@code randomTicks}, {@code noOcclusion},
+ *       {@code isValidSpawn} for ocelots and parrots only, never suffocating or a redstone conductor,
+ *       {@code ignitedByLava}, {@code pushReaction(POPPED)} (its {@code strength(0.2)} is the definition's here)</li>
  * </ul>
  * Vanilla's wooden doors, trapdoors and plates also set {@code ignitedByLava}; here {@code msm:flammable} sets it for every
- * type (the registrar). Types without a block class yet ({@code crop}, {@code sapling}, {@code leaves}) are not
- * {@link #supported}; the registrar makes them plain blocks for now.
+ * type (the registrar), and leaves always.
  */
 public final class BlockTypes {
     private BlockTypes() {}
 
-    /** Whether this runtime has the type's own block class. */
-    public static boolean supported(BlockType type) {
-        return switch (type) {
-            case BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL, SLAB, STAIRS, WALL, FENCE, FENCE_GATE, PANE, DOOR, TRAPDOOR, BUTTON,
-                    PRESSURE_PLATE -> true;
-            case CROP, SAPLING, LEAVES -> false;
-        };
-    }
+    /** Tinted leaves and their tint, in registration order, for the client's tint registration (ADR 0068 D6). */
+    private static final Map<Block, BlockType.Tint> TINTED_LEAVES = new LinkedHashMap<>();
 
     /** The definition's properties plus the family's own vanilla ones. */
     public static BlockBehaviour.Properties properties(BlockType type, BlockBehaviour.Properties props) {
@@ -59,8 +65,18 @@ public final class BlockTypes {
             case TRAPDOOR -> props.noOcclusion().isValidSpawn((state, level, pos, entityType) -> false);
             case BUTTON -> props.noCollision().pushReaction(PushReaction.POPPED);
             case PRESSURE_PLATE -> props.forceSolidOn().noCollision().pushReaction(PushReaction.POPPED);
+            case CROP, SAPLING -> props.noCollision().randomTicks().pushReaction(PushReaction.POPPED);
+            case LEAVES -> props.randomTicks().noOcclusion().isValidSpawn(BlockTypes::ocelotOrParrot)
+                    .isSuffocating((state, level, pos) -> false).ignitedByLava().pushReaction(PushReaction.POPPED)
+                    .isRedstoneConductor((state, level, pos) -> false);
             default -> props;
         };
+    }
+
+    /** Vanilla's {@code Blocks.ocelotOrParrot} (private there): leaves are a valid spawn for ocelots and parrots only. */
+    private static Boolean ocelotOrParrot(BlockState state, net.minecraft.world.level.BlockGetter level, net.minecraft.core.BlockPos pos,
+            EntityType<?> entityType) {
+        return entityType == EntityTypes.OCELOT || entityType == EntityTypes.PARROT;
     }
 
     /** Vanilla's {@code Blocks.NEAR_PLANE_INTERSECTS_OUTLINE} (private there): the occlusion shape meets the box. */
@@ -75,11 +91,13 @@ public final class BlockTypes {
     }
 
     /**
-     * The block for a definition of a {@link #supported} type.
+     * The block for a definition of any type.
      *
      * @param stairsBase the registered base block's default state; only for {@code stairs}
+     * @param warn takes a load warning (without the file name)
      */
-    public static Block create(Identifier id, BlockDefinition definition, BlockBehaviour.Properties props, BlockState stairsBase) {
+    public static Block create(Identifier id, BlockDefinition definition, BlockBehaviour.Properties props, BlockState stairsBase,
+            Consumer<String> warn) {
         return switch (definition.type()) {
             case STAIRS -> new MsmStairBlock(id, definition, stairsBase, props);
             case SLAB -> new MsmSlabBlock(id, definition, props);
@@ -98,8 +116,53 @@ public final class BlockTypes {
                         ? new MsmWeightedPressurePlateBlock(id, definition, weightedMax.get(), setType(definition), props)
                         : new MsmPressurePlateBlock(id, definition, setType(definition), props);
             }
-            default -> MsmBlock.create(id, definition, props);
+            case CROP -> crop(id, definition, props, warn);
+            case SAPLING -> new MsmSaplingBlock(id, definition, props);
+            case LEAVES -> leaves(id, definition, props, warn);
+            case BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL -> MsmBlock.create(id, definition, props);
         };
+    }
+
+    /**
+     * A crop. A {@code stage_heights} list whose length is not {@code max_age + 1} is a warning, and vanilla's ramp is used
+     * (B261: the format keeps any length; the validators warn too).
+     */
+    private static Block crop(Identifier id, BlockDefinition definition, BlockBehaviour.Properties props, Consumer<String> warn) {
+        BlockType.Crop crop = (BlockType.Crop) definition.typeFields();
+        crop.stageHeightsSetting().filter(h -> h.size() != crop.maxAge() + 1).ifPresent(h -> warn.accept("stage_heights has "
+                + h.size() + " entries, not max_age + 1 = " + (crop.maxAge() + 1) + "; vanilla's heights are used"));
+        return MsmCropBlock.create(id, definition, MsmCropBlock.stageHeights(crop), props);
+    }
+
+    /**
+     * Leaves: tinted ({@link MsmTintedLeavesBlock}, recorded for the client), untinted with a falling particle
+     * ({@link MsmUntintedLeavesBlock}) or plain ({@link MsmLeavesBlock}). A {@code falling_particle} that is not a particle
+     * type without options is a warning (no particle); with a tint it is ignored with a warning (tinted leaves fall in
+     * their tint, as vanilla's).
+     */
+    private static Block leaves(Identifier id, BlockDefinition definition, BlockBehaviour.Properties props, Consumer<String> warn) {
+        BlockType.Leaves leaves = (BlockType.Leaves) definition.typeFields();
+        if (leaves.tint().isPresent()) {
+            leaves.fallingParticle().ifPresent(p -> warn.accept("falling_particle " + p
+                    + " is ignored on tinted leaves; their falling leaves take the tint"));
+            Block block = new MsmTintedLeavesBlock(id, definition, leaves.particleChance(), props);
+            TINTED_LEAVES.put(block, leaves.tint().get());
+            return block;
+        }
+        if (leaves.fallingParticle().isPresent()) {
+            Identifier p = leaves.fallingParticle().get();
+            if (BuiltInRegistries.PARTICLE_TYPE.containsKey(p)
+                    && BuiltInRegistries.PARTICLE_TYPE.getValue(p) instanceof SimpleParticleType particle) {
+                return new MsmUntintedLeavesBlock(id, definition, leaves.particleChance(), particle, props);
+            }
+            warn.accept("falling_particle " + p + " is not a particle type without options; the leaves have no falling particle");
+        }
+        return new MsmLeavesBlock(id, definition, props);
+    }
+
+    /** Every tinted leaves block registered so far, with its tint (ADR 0068 D6); read by the client entrypoint. */
+    public static Map<Block, BlockType.Tint> tintedLeaves() {
+        return Collections.unmodifiableMap(TINTED_LEAVES);
     }
 
     /** The vanilla {@link BlockSetType} of a door, trapdoor, button or pressure plate (version seam {@link BlockSetTypes}). */

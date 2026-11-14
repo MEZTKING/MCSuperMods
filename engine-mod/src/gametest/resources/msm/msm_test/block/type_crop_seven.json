@@ -1,0 +1,12 @@
+{
+  "bonemeal_growth": {
+    "max": 2,
+    "min": 3
+  },
+  "format": 1,
+  "item": false,
+  "soil": "#minecraft:dirt",
+  "sound_type": "grass",
+  "stage_heights": [1, 2],
+  "type": "crop"
+}

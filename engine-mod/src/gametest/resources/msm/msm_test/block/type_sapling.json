@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    }
+  },
+  "format": 1,
+  "mega_tree": "msm_test:test_mega_tree",
+  "sound_type": "grass",
+  "tree": "msm_test:test_tree",
+  "type": "sapling"
+}

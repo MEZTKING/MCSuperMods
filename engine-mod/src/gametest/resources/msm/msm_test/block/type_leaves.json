@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.2,
+      "resistance": 0.2
+    }
+  },
+  "format": 1,
+  "sound_type": "grass",
+  "tint": "foliage",
+  "type": "leaves"
+}

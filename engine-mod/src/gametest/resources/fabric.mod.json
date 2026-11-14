@@ -21,7 +21,8 @@
       "dev.mcsupermods.runtime.gametest.MsmTriggerGameTest",
       "dev.mcsupermods.runtime.gametest.MsmPotionGameTest",
       "dev.mcsupermods.runtime.gametest.MsmBlockTypeGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmRedstoneTypeGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmRedstoneTypeGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmPlantGameTest"
     ]
   },
   "depends": {

@@ -168,12 +168,12 @@ public final class MsmRegistrar {
                 stairs.add(Map.entry(raw, def));
                 continue;
             }
-            if (tryRegisterBlock(raw, def, null, items, errors)) {
+            if (tryRegisterBlock(raw, def, null, items, errors, warnings)) {
                 blocks.add(raw.id());
                 typeCounts.merge(def.type(), 1, Integer::sum);
             }
         }
-        registerStairs(stairs, blocks, items, errors, typeCounts);
+        registerStairs(stairs, blocks, items, errors, warnings, typeCounts);
         MsmRuntime.LOGGER.info("[{}] registered blocks by type: {}", MsmRuntime.MOD_ID, typeCounts.isEmpty() ? "none"
                 : String.join(", ", typeCounts.entrySet().stream().map(e -> e.getKey().id() + " " + e.getValue()).toList()));
         for (RawDefinition raw : scanned.definitions()) {
@@ -358,12 +358,12 @@ public final class MsmRegistrar {
 
     /** {@link #registerBlock} with its events checked; a failure is a load error. Returns whether the block registered. */
     private static boolean tryRegisterBlock(RawDefinition raw, BlockDefinition def, BlockState stairsBase, List<Identifier> items,
-            List<String> errors) {
+            List<String> errors, List<String> warnings) {
         try {
             checkEvents(raw, def.events(), errors);
-            registerBlock(raw, def, stairsBase, items, errors);
+            registerBlock(raw, def, stairsBase, items, errors, warnings);
             return true;
-        } catch (RuntimeException e) {
+        } catch (DefinitionException | RuntimeException e) {
             fail(errors, raw, e);
             return false;
         }
@@ -375,7 +375,7 @@ public final class MsmRegistrar {
      * after {@code msm_runtime}, a failed definition or a cycle of stairs) is a load error that skips the stairs.
      */
     private static void registerStairs(List<Map.Entry<RawDefinition, BlockDefinition>> pending, List<Identifier> blocks,
-            List<Identifier> items, List<String> errors, Map<BlockType, Integer> typeCounts) {
+            List<Identifier> items, List<String> errors, List<String> warnings, Map<BlockType, Integer> typeCounts) {
         List<Map.Entry<RawDefinition, BlockDefinition>> left = new ArrayList<>(pending);
         boolean progress = true;
         while (progress && !left.isEmpty()) {
@@ -389,7 +389,7 @@ public final class MsmRegistrar {
                 it.remove();
                 progress = true;
                 if (tryRegisterBlock(entry.getKey(), entry.getValue(), BuiltInRegistries.BLOCK.getValue(base).defaultBlockState(), items,
-                        errors)) {
+                        errors, warnings)) {
                     blocks.add(entry.getKey().id());
                     typeCounts.merge(BlockType.STAIRS, 1, Integer::sum);
                 }
@@ -406,17 +406,14 @@ public final class MsmRegistrar {
     }
 
     private static void registerBlock(RawDefinition raw, BlockDefinition def, BlockState stairsBase, List<Identifier> items,
-            List<String> errors) {
+            List<String> errors, List<String> warnings) throws DefinitionException {
         Identifier id = raw.id();
-        // B261: types without their own block class yet (crop, sapling, leaves) register as a plain block (B271 removes
-        // this line), and item.id is not registered yet (B271).
-        if (!BlockTypes.supported(def.type())) {
-            MsmRuntime.LOGGER.warn("[{}] {}: type '{}' not supported yet; registered as a plain block", MsmRuntime.MOD_ID, raw.describe(),
-                    def.type().id());
-        }
-        if (def.item().flatMap(BlockDefinition.ItemSettings::id).isPresent()) {
-            MsmRuntime.LOGGER.warn("[{}] {}: item.id not supported yet; the block item keeps the block's id", MsmRuntime.MOD_ID,
-                    raw.describe());
+        // The block item's own id (ADR 0068 D2), such as seeds planting a crop; default the block's id. A clash with a
+        // registered item is a load error that skips the whole definition (nothing is registered).
+        Optional<Identifier> itemId = def.item().map(settings -> settings.id().orElse(id));
+        if (itemId.isPresent() && BuiltInRegistries.ITEM.containsKey(itemId.get())) {
+            throw new DefinitionException("item id " + itemId.get() + " is already registered"
+                    + (itemId.get().equals(id) ? "" : " (item.id)") + "; the block is skipped");
         }
         BlockComponents c = def.components();
         BlockComponents.Breakable breakable = c.breakable().orElse(BlockComponents.Breakable.DEFAULT);
@@ -441,7 +438,8 @@ public final class MsmRegistrar {
         if (def.lootTable().isPresent()) {
             props = props.overrideLootTable(Optional.of(ResourceKey.create(Registries.LOOT_TABLE, def.lootTable().get())));
         }
-        Block block = Registry.register(BuiltInRegistries.BLOCK, blockKey, BlockTypes.create(id, def, props, stairsBase));
+        Block block = Registry.register(BuiltInRegistries.BLOCK, blockKey,
+                BlockTypes.create(id, def, props, stairsBase, w -> warn(warnings, raw.describe() + ": " + w)));
         BlockExtras.apply(block, c); // msm:flammable, msm:strippable (ADR 0067 D3, D4)
         c.strippable().ifPresent(strip -> LATE.add(new LateCheck(raw.describe(), "msm:strippable into", strip.into())));
 
@@ -449,10 +447,11 @@ public final class MsmRegistrar {
             return; // "item": false
         }
         BlockDefinition.ItemSettings settings = def.item().get();
-        ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, id);
-        Item.Properties itemProps = new Item.Properties()
-                .setId(itemKey)
-                .useBlockDescriptionPrefix(); // name from block.<ns>.<path>, as vanilla block items do
+        ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, itemId.get());
+        Item.Properties itemProps = new Item.Properties().setId(itemKey);
+        // Name from block.<ns>.<path>, as vanilla block items do; an item with its own id (seeds) is named
+        // item.<ns>.<path> of that id, as vanilla's wheat seeds (ADR 0068 D2).
+        itemProps = itemId.get().equals(id) ? itemProps.useBlockDescriptionPrefix() : itemProps.useItemDescriptionPrefix();
         // item.components."msm:components" (ADR 0060 D4) first: the block item's own fields below win on a clash.
         itemProps = ComponentPassthrough.apply(itemProps, raw, settings.components(), errors)
                 .stacksTo(settings.maxStackSize())
@@ -460,7 +459,7 @@ public final class MsmRegistrar {
         // A door's item places both halves (ADR 0067 D4), as vanilla's door items.
         BlockItem item = Registry.register(BuiltInRegistries.ITEM, itemKey,
                 def.type() == BlockType.DOOR ? new DoubleHighBlockItem(block, itemProps) : new BlockItem(block, itemProps));
-        items.add(id);
+        items.add(itemId.get());
         settings.creativeTab().ifPresent(tab -> addToTab(raw, tab, item));
     }
 
@@ -883,8 +882,8 @@ public final class MsmRegistrar {
 
     /**
      * Warns about ids that could not be checked at initialisation: creative tabs (other mods may
-     * add tabs after us), items, block states, functions and the ids named by additions to vanilla content. Runs once the
-     * server has started.
+     * add tabs after us), items, block states, functions, the ids named by additions to vanilla content and the trees of
+     * project saplings. Runs once the server has started.
      */
     public static List<String> checkAfterStart(MinecraftServer server) {
         List<String> warnings = new ArrayList<>();
@@ -914,6 +913,7 @@ public final class MsmRegistrar {
         });
         warnings.addAll(MsmEntityRegistrar.checkAfterStart(server));
         warnings.addAll(MsmAdditions.checkAfterStart(server));
+        warnings.addAll(SaplingCheck.check(server)); // ADR 0068 D4: tree features resolve only when a sapling grows
         for (String w : warnings) {
             MsmRuntime.LOGGER.warn("[{}] {}", MsmRuntime.MOD_ID, w);
         }
