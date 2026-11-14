@@ -1,0 +1,23 @@
+{
+  "data": {
+    "display_name": "Quick Parity Button",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "press_ticks": 5,
+    "set_type": "stone",
+    "sound_type": "stone",
+    "textures": {
+      "texture": "minecraft:block/stone"
+    },
+    "type": "button"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:quick_button",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

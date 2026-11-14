@@ -1,0 +1,23 @@
+{
+  "data": {
+    "display_name": "Gold Parity Door",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "set_type": "gold",
+    "sound_type": "metal",
+    "textures": {
+      "bottom": "minecraft:block/oak_door_bottom",
+      "top": "minecraft:block/oak_door_top"
+    },
+    "type": "door"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:gold_door",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

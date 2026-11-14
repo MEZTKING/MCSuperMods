@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:building_blocks"
+  },
+  "set_type": "wood",
+  "sound_type": "wood",
+  "type": "trapdoor"
+}

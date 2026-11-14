@@ -1,0 +1,101 @@
+{
+  "components": {
+    "msm:on_break": {
+      "event": "sim_parity:broken"
+    },
+    "msm:on_interact": {
+      "event": "sim_parity:used"
+    },
+    "msm:on_place": {
+      "event": "sim_parity:placed"
+    },
+    "msm:on_step": {
+      "event": "sim_parity:stepped"
+    }
+  },
+  "events": {
+    "sim_parity:broken": {
+      "actions": [
+        {
+          "sound": "minecraft:block.note_block.bass",
+          "type": "play_sound",
+          "volume": 0.1
+        },
+        {
+          "offset": [
+            0,
+            1,
+            0
+          ],
+          "state": "minecraft:air",
+          "type": "set_block_state"
+        }
+      ]
+    },
+    "sim_parity:chime": {
+      "actions": [
+        {
+          "sound": "minecraft:block.note_block.bell",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    },
+    "sim_parity:placed": {
+      "actions": [
+        {
+          "offset": [
+            0,
+            1,
+            0
+          ],
+          "state": "sim_parity:lamp",
+          "type": "set_block_state"
+        },
+        {
+          "event": "sim_parity:chime",
+          "type": "trigger_event"
+        }
+      ]
+    },
+    "sim_parity:stepped": {
+      "actions": [
+        {
+          "offset": [
+            1,
+            0,
+            0
+          ],
+          "state": "sim_parity:lamp",
+          "type": "set_block_state"
+        }
+      ]
+    },
+    "sim_parity:used": {
+      "actions": [
+        {
+          "offset": [
+            0,
+            1,
+            0
+          ],
+          "state": "minecraft:air",
+          "type": "set_block_state"
+        },
+        {
+          "event": "sim_parity:chime",
+          "type": "trigger_event"
+        },
+        {
+          "function": "sim_parity:noted",
+          "type": "run_function"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:building_blocks"
+  },
+  "sound_type": "wood"
+}

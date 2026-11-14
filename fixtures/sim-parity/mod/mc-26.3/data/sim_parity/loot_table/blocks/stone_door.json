@@ -1,0 +1,26 @@
+{
+  "pools": [
+    {
+      "bonus_rolls": 0,
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "condition": {
+            "blocks": "sim_parity:stone_door",
+            "state": {
+              "half": "lower"
+            },
+            "type": "minecraft:match_block"
+          },
+          "name": "sim_parity:stone_door",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "sim_parity:blocks/stone_door",
+  "type": "minecraft:block"
+}

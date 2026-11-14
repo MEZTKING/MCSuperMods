@@ -1,0 +1,23 @@
+{
+  "data": {
+    "display_name": "Parity Door",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "set_type": "wood",
+    "sound_type": "wood",
+    "textures": {
+      "bottom": "minecraft:block/oak_door_bottom",
+      "top": "minecraft:block/oak_door_top"
+    },
+    "type": "door"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:door",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

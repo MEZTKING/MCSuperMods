@@ -1,0 +1,22 @@
+{
+  "data": {
+    "display_name": "Parity Trapdoor",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "set_type": "wood",
+    "sound_type": "wood",
+    "textures": {
+      "texture": "minecraft:block/oak_trapdoor"
+    },
+    "type": "trapdoor"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:trapdoor",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

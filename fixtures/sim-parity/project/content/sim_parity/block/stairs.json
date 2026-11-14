@@ -1,0 +1,22 @@
+{
+  "data": {
+    "base_block": "sim_parity:base",
+    "display_name": "Parity Stairs",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "stone",
+    "textures": {
+      "all": "minecraft:block/stone"
+    },
+    "type": "stairs"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:stairs",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

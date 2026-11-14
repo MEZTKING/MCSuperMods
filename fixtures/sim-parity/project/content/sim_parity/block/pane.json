@@ -1,0 +1,22 @@
+{
+  "data": {
+    "display_name": "Parity Pane",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "glass",
+    "textures": {
+      "edge": "minecraft:block/glass_pane_top",
+      "pane": "minecraft:block/glass"
+    },
+    "type": "pane"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:pane",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

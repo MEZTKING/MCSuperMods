@@ -1,0 +1,19 @@
+{
+  "data": {
+    "display_name": "Beacon Block",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "model": "minecraft:block/observer",
+    "sound_type": "stone",
+    "type": "directional"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:beacon",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

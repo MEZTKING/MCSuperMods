@@ -1,0 +1,22 @@
+{
+  "data": {
+    "display_name": "Parity Gate",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "texture": "minecraft:block/oak_planks"
+    },
+    "type": "fence_gate",
+    "wood_type": "oak"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:gate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

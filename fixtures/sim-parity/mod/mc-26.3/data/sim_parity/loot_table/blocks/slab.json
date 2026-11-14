@@ -1,0 +1,32 @@
+{
+  "pools": [
+    {
+      "bonus_rolls": 0,
+      "entries": [
+        {
+          "modifier": [
+            {
+              "condition": {
+                "blocks": "sim_parity:slab",
+                "state": {
+                  "type": "double"
+                },
+                "type": "minecraft:match_block"
+              },
+              "count": 2,
+              "type": "minecraft:set_count"
+            },
+            {
+              "type": "minecraft:explosion_decay"
+            }
+          ],
+          "name": "sim_parity:slab",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "sim_parity:blocks/slab",
+  "type": "minecraft:block"
+}

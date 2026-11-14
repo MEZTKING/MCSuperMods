@@ -1,0 +1,1573 @@
+{
+  "format": 1,
+  "namespace": "sim_parity",
+  "scenarios": [
+    {
+      "name": "pillar_axis_from_face",
+      "description": "A pillar takes the axis of the face clicked.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:base", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:log", "pos": [3, 0, 3], "face": "east", "hit": [1, 0.5, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:log", "pos": [3, 0, 3], "face": "north", "hit": [0.5, 0.5, 0], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:log",
+          "pos": [3, 0, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [4, 0, 3], "state": "sim_parity:log[axis=x]"},
+              {"pos": [3, 0, 2], "state": "sim_parity:log[axis=z]"},
+              {"pos": [3, 1, 3], "state": "sim_parity:log[axis=y]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "horizontal_faces_the_player",
+      "description": "A horizontal block faces the player who places it; its msm:shape box turns with it.",
+      "steps": [
+        {
+          "step": "place",
+          "block": "sim_parity:cabinet",
+          "pos": [3, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [{"pos": [3, 0, 3], "state": "sim_parity:cabinet[facing=south]"}],
+            "shapes": [{"pos": [3, 0, 3], "outline": [0, 0, 8, 16, 16, 16], "collision": [0, 0, 8, 16, 16, 16]}]
+          }
+        },
+        {
+          "step": "place",
+          "block": "sim_parity:cabinet",
+          "pos": [5, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 270,
+          "pitch": 0,
+          "expect": {
+            "blocks": [{"pos": [5, 0, 3], "state": "sim_parity:cabinet[facing=west]"}],
+            "shapes": [{"pos": [5, 0, 3], "outline": [0, 0, 0, 8, 16, 16], "collision": [0, 0, 0, 8, 16, 16]}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "directional_looking_down_faces_up",
+      "description": "A directional block faces back at the player, up when the player looks down.",
+      "steps": [
+        {
+          "step": "place",
+          "block": "sim_parity:beacon",
+          "pos": [3, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 90,
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:beacon[facing=up]"}]}
+        },
+        {
+          "step": "place",
+          "block": "sim_parity:beacon",
+          "pos": [5, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 270,
+          "pitch": 0,
+          "expect": {"blocks": [{"pos": [5, 0, 3], "state": "sim_parity:beacon[facing=west]"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "directional_looking_up_faces_down",
+      "description": "Looking up at a ceiling, a directional block faces down.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:base", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [3, 0, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [3, 1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "break", "pos": [3, 1, 3]},
+        {"step": "break", "pos": [3, 0, 3]},
+        {
+          "step": "place",
+          "block": "sim_parity:beacon",
+          "pos": [3, 2, 3],
+          "face": "down",
+          "hit": [0.5, 0, 0.5],
+          "yaw": 180,
+          "pitch": -90,
+          "expect": {"blocks": [{"pos": [3, 1, 3], "state": "sim_parity:beacon[facing=down]"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "slab_bottom_on_the_floor",
+      "description": "A slab placed on the floor is a bottom slab.",
+      "steps": [
+        {
+          "step": "place",
+          "block": "sim_parity:slab",
+          "pos": [3, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [{"pos": [3, 0, 3], "state": "sim_parity:slab[type=bottom]"}],
+            "shapes": [{"pos": [3, 0, 3], "outline": [0, 0, 0, 16, 8, 16], "collision": [0, 0, 0, 16, 8, 16]}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "slab_top_from_a_high_side_click",
+      "description": "Clicking the upper half of a side makes a top slab; the lower half a bottom slab.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:base", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [3, -1, 5], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:slab", "pos": [3, 0, 3], "face": "east", "hit": [1, 0.75, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:slab",
+          "pos": [3, 0, 5],
+          "face": "east",
+          "hit": [1, 0.25, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [{"pos": [4, 0, 3], "state": "sim_parity:slab[type=top]"}, {"pos": [4, 0, 5], "state": "sim_parity:slab[type=bottom]"}],
+            "shapes": [{"pos": [4, 0, 3], "outline": [0, 8, 0, 16, 16, 16], "collision": [0, 8, 0, 16, 16, 16]}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "slab_top_from_below",
+      "description": "A slab placed against the underside of a block is a top slab.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:base", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [3, 0, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [3, 1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "break", "pos": [3, 1, 3]},
+        {"step": "break", "pos": [3, 0, 3]},
+        {
+          "step": "place",
+          "block": "sim_parity:slab",
+          "pos": [3, 2, 3],
+          "face": "down",
+          "hit": [0.5, 0, 0.5],
+          "yaw": 180,
+          "pitch": -90,
+          "expect": {"blocks": [{"pos": [3, 1, 3], "state": "sim_parity:slab[type=top]"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "slab_doubles_when_clicked_on_top",
+      "description": "Clicking the top of a bottom slab with the same slab makes a double slab.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:slab", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:slab",
+          "pos": [3, 0, 3],
+          "face": "up",
+          "hit": [0.5, 0.5, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [{"pos": [3, 0, 3], "state": "sim_parity:slab[type=double]"}],
+            "shapes": [{"pos": [3, 0, 3], "outline": [0, 0, 0, 16, 16, 16], "collision": [0, 0, 0, 16, 16, 16]}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "slab_doubles_from_beside",
+      "description": "Placing a slab into a bottom slab from the side doubles it.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:slab", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [4, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:slab",
+          "pos": [4, 0, 3],
+          "face": "west",
+          "hit": [0, 0.25, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:slab[type=double]"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "slab_top_doubles_from_below",
+      "description": "Clicking the underside of a top slab with the same slab makes a double slab.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:base", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:slab", "pos": [3, 0, 3], "face": "east", "hit": [1, 0.75, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:slab",
+          "pos": [4, 0, 3],
+          "face": "down",
+          "hit": [0.5, 0.5, 0.5],
+          "yaw": 180,
+          "pitch": -90,
+          "expect": {"blocks": [{"pos": [4, 0, 3], "state": "sim_parity:slab[type=double]"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "stairs_face_the_look",
+      "description": "Stairs face the way the player looks; on the floor they are bottom stairs.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:stairs", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:stairs",
+          "pos": [5, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 270,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:stairs[facing=north,half=bottom,shape=straight]"},
+              {"pos": [5, 0, 3], "state": "sim_parity:stairs[facing=east,half=bottom,shape=straight]"}
+            ],
+            "shapes": [{"pos": [3, 0, 3], "outline": [0, 0, 0, 16, 16, 16], "collision": [0, 0, 0, 16, 16, 16]}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "stairs_upside_down_from_a_high_click",
+      "description": "Clicking the upper half of a side or the underside of a block gives top stairs.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:base", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:stairs", "pos": [3, 0, 3], "face": "east", "hit": [1, 0.75, 0.5], "yaw": 270, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [3, 0, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [3, 1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [3, 2, 3], "face": "east", "hit": [1, 0.5, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:stairs",
+          "pos": [4, 2, 3],
+          "face": "down",
+          "hit": [0.5, 0, 0.5],
+          "yaw": 180,
+          "pitch": -60,
+          "expect": {
+            "blocks": [
+              {"pos": [4, 0, 3], "state": "sim_parity:stairs[facing=east,half=top,shape=straight]"},
+              {"pos": [4, 1, 3], "state": "sim_parity:stairs[facing=north,half=top,shape=straight]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "stairs_outer_corner",
+      "description": "Stairs behind stairs that turn across make an outer corner.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:stairs", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:stairs",
+          "pos": [3, -1, 2],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 270,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:stairs[facing=north,half=bottom,shape=outer_right]"},
+              {"pos": [3, 0, 2], "state": "sim_parity:stairs[facing=east,half=bottom,shape=straight]"}
+            ],
+            "shapes": [
+              {"pos": [3, 0, 3], "outline": [0, 0, 0, 16, 16, 16], "collision": [0, 0, 0, 16, 16, 16]},
+              {"pos": [3, 0, 2], "outline": [0, 0, 0, 16, 16, 16], "collision": [0, 0, 0, 16, 16, 16]}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "stairs_outer_corner_other_side",
+      "description": "The outer corner turns the other way for stairs facing west behind.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:stairs", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:stairs",
+          "pos": [3, -1, 2],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 90,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:stairs[facing=north,half=bottom,shape=outer_left]"},
+              {"pos": [3, 0, 2], "state": "sim_parity:stairs[facing=west,half=bottom,shape=straight]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "stairs_inner_corner",
+      "description": "Stairs in front of stairs that turn across make an inner corner.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:stairs", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:stairs",
+          "pos": [3, -1, 4],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 270,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:stairs[facing=north,half=bottom,shape=inner_right]"},
+              {"pos": [3, 0, 4], "state": "sim_parity:stairs[facing=east,half=bottom,shape=straight]"}
+            ],
+            "shapes": [{"pos": [3, 0, 3], "outline": [0, 0, 0, 16, 16, 16], "collision": [0, 0, 0, 16, 16, 16]}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "stairs_inner_corner_other_side",
+      "description": "The inner corner turns the other way for stairs facing west in front.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:stairs", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:stairs",
+          "pos": [3, -1, 4],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 90,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:stairs[facing=north,half=bottom,shape=inner_left]"},
+              {"pos": [3, 0, 4], "state": "sim_parity:stairs[facing=west,half=bottom,shape=straight]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "stairs_corner_placed_first",
+      "description": "The corner forms whichever of the two stairs is placed first.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:stairs", "pos": [3, -1, 2], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 270, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:stairs",
+          "pos": [3, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:stairs[facing=north,half=bottom,shape=outer_right]"},
+              {"pos": [3, 0, 2], "state": "sim_parity:stairs[facing=east,half=bottom,shape=straight]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "stairs_corner_blocked_by_a_row",
+      "description": "Stairs in a row with stairs beside them facing the same way stay straight.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:stairs", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:stairs", "pos": [4, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:stairs",
+          "pos": [3, -1, 2],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 270,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:stairs[facing=north,half=bottom,shape=outer_right]"},
+              {"pos": [4, 0, 3], "state": "sim_parity:stairs[facing=north,half=bottom,shape=straight]"},
+              {"pos": [3, 0, 2], "state": "sim_parity:stairs[facing=east,half=bottom,shape=straight]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "stairs_halves_do_not_corner",
+      "description": "Bottom stairs and top stairs do not make a corner together.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:base", "pos": [2, -1, 2], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:stairs", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:stairs",
+          "pos": [2, 0, 2],
+          "face": "east",
+          "hit": [1, 0.75, 0.5],
+          "yaw": 270,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:stairs[facing=north,half=bottom,shape=straight]"},
+              {"pos": [3, 0, 2], "state": "sim_parity:stairs[facing=east,half=top,shape=straight]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "wall_alone_has_a_post",
+      "description": "A wall on its own is a post with no sides.",
+      "steps": [
+        {
+          "step": "place",
+          "block": "sim_parity:wall",
+          "pos": [3, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [{"pos": [3, 0, 3], "state": "sim_parity:wall[east=none,north=none,south=none,up=true,west=none]"}],
+            "shapes": [{"pos": [3, 0, 3], "outline": [4, 0, 4, 12, 16, 12], "collision": [4, 0, 4, 12, 24, 12]}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "wall_line_drops_the_middle_post",
+      "description": "A straight run of walls has low sides and no post in the middle.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:wall", "pos": [2, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:wall", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:wall",
+          "pos": [4, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [2, 0, 3], "state": "sim_parity:wall[east=low,north=none,south=none,up=true,west=none]"},
+              {"pos": [3, 0, 3], "state": "sim_parity:wall[east=low,north=none,south=none,up=false,west=low]"},
+              {"pos": [4, 0, 3], "state": "sim_parity:wall[east=none,north=none,south=none,up=true,west=low]"}
+            ],
+            "shapes": [{"pos": [3, 0, 3], "outline": [0, 0, 5, 16, 14, 11], "collision": [0, 0, 5, 16, 24, 11]}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "wall_under_a_block_is_tall",
+      "description": "A block on top of a straight wall makes its sides tall.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:wall", "pos": [2, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:wall", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:wall", "pos": [4, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:base",
+          "pos": [3, 0, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:wall[east=tall,north=none,south=none,up=false,west=tall]"},
+              {"pos": [2, 0, 3], "state": "sim_parity:wall[east=low,north=none,south=none,up=true,west=none]"}
+            ],
+            "shapes": [{"pos": [3, 0, 3], "outline": [0, 0, 5, 16, 16, 11], "collision": [0, 0, 5, 16, 24, 11]}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "wall_under_a_wall",
+      "description": "A wall on top of a straight wall: the lower sides grow tall where the upper wall has sides.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:wall", "pos": [2, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:wall", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:wall", "pos": [4, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:wall",
+          "pos": [3, 0, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:wall[east=low,north=none,south=none,up=true,west=low]"},
+              {"pos": [3, 1, 3], "state": "sim_parity:wall[east=none,north=none,south=none,up=true,west=none]"}
+            ]
+          }
+        },
+        {"step": "place", "block": "sim_parity:wall", "pos": [2, 0, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:wall",
+          "pos": [4, 0, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:wall[east=tall,north=none,south=none,up=false,west=tall]"},
+              {"pos": [3, 1, 3], "state": "sim_parity:wall[east=low,north=none,south=none,up=false,west=low]"},
+              {"pos": [2, 0, 3], "state": "sim_parity:wall[east=tall,north=none,south=none,up=true,west=none]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "wall_corner_keeps_its_post",
+      "description": "A wall where two runs meet keeps its post.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:wall", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:wall", "pos": [4, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:wall",
+          "pos": [3, -1, 4],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:wall[east=low,north=none,south=low,up=true,west=none]"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "wall_joins_blocks_and_panes",
+      "description": "A wall joins a solid block and a pane beside it; the pane joins the wall.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:wall", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [4, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:pane",
+          "pos": [2, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:wall[east=low,north=none,south=none,up=false,west=low]"},
+              {"pos": [2, 0, 3], "state": "sim_parity:pane[east=true,north=false,south=false,west=false]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "fence_alone_is_a_post",
+      "description": "A fence on its own is a post one and a half blocks high to walk into.",
+      "steps": [
+        {
+          "step": "place",
+          "block": "sim_parity:fence",
+          "pos": [3, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [{"pos": [3, 0, 3], "state": "sim_parity:fence[east=false,north=false,south=false,west=false]"}],
+            "shapes": [{"pos": [3, 0, 3], "outline": [6, 0, 6, 10, 16, 10], "collision": [6, 0, 6, 10, 24, 10]}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "fences_join_each_other_and_blocks",
+      "description": "Fences join fences and solid blocks beside them.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:fence", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:fence", "pos": [4, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:base",
+          "pos": [3, -1, 2],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:fence[east=true,north=true,south=false,west=false]"},
+              {"pos": [4, 0, 3], "state": "sim_parity:fence[east=false,north=false,south=false,west=true]"}
+            ],
+            "shapes": [{"pos": [3, 0, 3], "outline": [6, 0, 0, 16, 16, 10], "collision": [6, 0, 0, 16, 24, 10]}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "wooden_and_stone_fences_do_not_join",
+      "description": "A wooden fence and a fence that is not wooden do not join.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:fence", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:stone_fence", "pos": [4, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:stone_fence",
+          "pos": [5, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:fence[east=false,north=false,south=false,west=false]"},
+              {"pos": [4, 0, 3], "state": "sim_parity:stone_fence[east=true,north=false,south=false,west=false]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "fence_joins_a_gate_by_its_sides",
+      "description": "A fence joins a fence gate at the gate's sides, not at its front.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:gate", "pos": [4, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:fence", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:fence",
+          "pos": [4, -1, 4],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:fence[east=true,north=false,south=false,west=false]"},
+              {"pos": [4, 0, 4], "state": "sim_parity:fence[east=false,north=false,south=false,west=false]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "pane_and_fence_do_not_join",
+      "description": "A pane does not join a fence; it joins a solid block.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:pane", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:fence", "pos": [4, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:base",
+          "pos": [3, -1, 4],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:pane[east=false,north=false,south=true,west=false]"},
+              {"pos": [4, 0, 3], "state": "sim_parity:fence[east=false,north=false,south=false,west=false]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "panes_join_each_other",
+      "description": "Panes join each other; a pane on its own is a thin post.",
+      "steps": [
+        {
+          "step": "place",
+          "block": "sim_parity:pane",
+          "pos": [5, -1, 5],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [{"pos": [5, 0, 5], "state": "sim_parity:pane[east=false,north=false,south=false,west=false]"}],
+            "shapes": [{"pos": [5, 0, 5], "outline": [7, 0, 7, 9, 16, 9], "collision": [7, 0, 7, 9, 16, 9]}]
+          }
+        },
+        {"step": "place", "block": "sim_parity:pane", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:pane",
+          "pos": [3, -1, 4],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:pane[east=false,north=false,south=true,west=false]"},
+              {"pos": [3, 0, 4], "state": "sim_parity:pane[east=false,north=true,south=false,west=false]"}
+            ],
+            "shapes": [{"pos": [3, 0, 3], "outline": [7, 0, 7, 9, 16, 16], "collision": [7, 0, 7, 9, 16, 16]}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "gate_faces_the_look",
+      "description": "A fence gate faces the way the player looks and is closed.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:gate", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:gate",
+          "pos": [5, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 270,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:gate[facing=north,in_wall=false,open=false]"},
+              {"pos": [5, 0, 3], "state": "sim_parity:gate[facing=east,in_wall=false,open=false]"}
+            ],
+            "shapes": [
+              {"pos": [3, 0, 3], "outline": [0, 0, 6, 16, 16, 10], "collision": [0, 0, 6, 16, 24, 10]},
+              {"pos": [5, 0, 3], "outline": [6, 0, 0, 10, 16, 16], "collision": [6, 0, 0, 10, 24, 16]}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "gate_opens_away_from_the_player",
+      "description": "A gate opened from its far side turns to open away; closing keeps that facing.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:gate", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 0,
+          "expect": {
+            "blocks": [{"pos": [3, 0, 3], "state": "sim_parity:gate[facing=south,in_wall=false,open=true]"}],
+            "shapes": [{"pos": [3, 0, 3], "outline": [0, 0, 6, 16, 16, 10], "collision": null}]
+          }
+        },
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:gate[facing=south,in_wall=false,open=false]"}]}
+        },
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:gate[facing=north,in_wall=false,open=true]"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "gate_in_a_wall_is_lowered",
+      "description": "A fence gate between walls is in_wall and the walls join it.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:wall", "pos": [2, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:wall", "pos": [4, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:gate",
+          "pos": [3, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:gate[facing=north,in_wall=true,open=false]"},
+              {"pos": [2, 0, 3], "state": "sim_parity:wall[east=low,north=none,south=none,up=true,west=none]"}
+            ],
+            "shapes": [{"pos": [3, 0, 3], "outline": [0, 0, 6, 16, 13, 10], "collision": [0, 0, 6, 16, 24, 10]}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "door_faces_the_look_and_hinges_by_the_click",
+      "description": "A door faces the look; with nothing beside it, the hinge is on the side of the door clicked.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:door", "pos": [2, -1, 3], "face": "up", "hit": [0.25, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:door",
+          "pos": [5, -1, 3],
+          "face": "up",
+          "hit": [0.75, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [2, 0, 3], "state": "sim_parity:door[facing=north,half=lower,hinge=left,open=false]"},
+              {"pos": [2, 1, 3], "state": "sim_parity:door[facing=north,half=upper,hinge=left,open=false]"},
+              {"pos": [5, 0, 3], "state": "sim_parity:door[facing=north,half=lower,hinge=right,open=false]"},
+              {"pos": [5, 1, 3], "state": "sim_parity:door[facing=north,half=upper,hinge=right,open=false]"}
+            ],
+            "shapes": [{"pos": [2, 0, 3], "outline": [0, 0, 13, 16, 16, 16], "collision": [0, 0, 13, 16, 16, 16]}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "door_hinge_facing_east",
+      "description": "The hinge rule for a door placed looking east.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:door", "pos": [3, -1, 2], "face": "up", "hit": [0.5, 1, 0.25], "yaw": 270, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:door",
+          "pos": [3, -1, 5],
+          "face": "up",
+          "hit": [0.5, 1, 0.75],
+          "yaw": 270,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 2], "state": "sim_parity:door[facing=east,half=lower,hinge=left,open=false]"},
+              {"pos": [3, 0, 5], "state": "sim_parity:door[facing=east,half=lower,hinge=right,open=false]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "doors_pair_their_hinges",
+      "description": "A door placed next to another door pairs with it.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:door", "pos": [3, -1, 3], "face": "up", "hit": [0.25, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:door", "pos": [4, -1, 3], "face": "up", "hit": [0.25, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:door", "pos": [2, -1, 5], "face": "up", "hit": [0.75, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:door",
+          "pos": [1, -1, 5],
+          "face": "up",
+          "hit": [0.75, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:door[facing=north,half=lower,hinge=left,open=false]"},
+              {"pos": [4, 0, 3], "state": "sim_parity:door[facing=north,half=lower,hinge=right,open=false]"},
+              {"pos": [2, 0, 5], "state": "sim_parity:door[facing=north,half=lower,hinge=right,open=false]"},
+              {"pos": [1, 0, 5], "state": "sim_parity:door[facing=north,half=lower,hinge=left,open=false]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "door_hinge_follows_solid_blocks",
+      "description": "Solid blocks beside a door decide its hinge before the click does.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:base", "pos": [2, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [2, 0, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:door", "pos": [3, -1, 3], "face": "up", "hit": [0.25, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [6, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [6, 0, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:door",
+          "pos": [5, -1, 3],
+          "face": "up",
+          "hit": [0.75, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:door[facing=north,half=lower,hinge=left,open=false]"},
+              {"pos": [5, 0, 3], "state": "sim_parity:door[facing=north,half=lower,hinge=right,open=false]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "door_opens_by_hand",
+      "description": "A wooden door opens and closes by hand, both halves together, from either half.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:door", "pos": [3, -1, 3], "face": "up", "hit": [0.25, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:door[facing=north,half=lower,hinge=left,open=true]"},
+              {"pos": [3, 1, 3], "state": "sim_parity:door[facing=north,half=upper,hinge=left,open=true]"}
+            ],
+            "shapes": [{"pos": [3, 0, 3], "outline": [0, 0, 0, 3, 16, 16], "collision": [0, 0, 0, 3, 16, 16]}]
+          }
+        },
+        {
+          "step": "use",
+          "pos": [3, 1, 3],
+          "yaw": 180,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:door[facing=north,half=lower,hinge=left,open=false]"},
+              {"pos": [3, 1, 3], "state": "sim_parity:door[facing=north,half=upper,hinge=left,open=false]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "iron_door_by_hand",
+      "description": "An iron door used by hand (set type iron).",
+      "steps": [
+        {"step": "place", "block": "sim_parity:iron_door", "pos": [3, -1, 3], "face": "up", "hit": [0.25, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:iron_door[facing=north,half=lower,hinge=left,open=false]"},
+              {"pos": [3, 1, 3], "state": "sim_parity:iron_door[facing=north,half=upper,hinge=left,open=false]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "gold_door_by_hand",
+      "description": "A gold door used by hand (set type gold).",
+      "steps": [
+        {"step": "place", "block": "sim_parity:gold_door", "pos": [3, -1, 3], "face": "up", "hit": [0.25, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:gold_door[facing=north,half=lower,hinge=left,open=false]"},
+              {"pos": [3, 1, 3], "state": "sim_parity:gold_door[facing=north,half=upper,hinge=left,open=false]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "stone_door_by_hand",
+      "description": "A stone door used by hand (set type stone).",
+      "steps": [
+        {"step": "place", "block": "sim_parity:stone_door", "pos": [3, -1, 3], "face": "up", "hit": [0.25, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:stone_door[facing=north,half=lower,hinge=left,open=true]"},
+              {"pos": [3, 1, 3], "state": "sim_parity:stone_door[facing=north,half=upper,hinge=left,open=true]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "copper_door_by_hand",
+      "description": "A copper door used by hand (set type copper).",
+      "steps": [
+        {"step": "place", "block": "sim_parity:copper_door", "pos": [3, -1, 3], "face": "up", "hit": [0.25, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:copper_door[facing=north,half=lower,hinge=left,open=true]"},
+              {"pos": [3, 1, 3], "state": "sim_parity:copper_door[facing=north,half=upper,hinge=left,open=true]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "door_breaks_with_both_halves",
+      "description": "Breaking either half of a door removes both.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:door", "pos": [2, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:door", "pos": [5, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "break", "pos": [2, 1, 3]},
+        {
+          "step": "break",
+          "pos": [5, 0, 3],
+          "expect": {
+            "blocks": [
+              {"pos": [2, 0, 3], "state": "minecraft:air"},
+              {"pos": [2, 1, 3], "state": "minecraft:air"},
+              {"pos": [5, 0, 3], "state": "minecraft:air"},
+              {"pos": [5, 1, 3], "state": "minecraft:air"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "door_needs_ground",
+      "description": "A door is not placed on a bottom slab but is on a top slab; it goes when its ground goes.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:slab", "pos": [2, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:door", "pos": [2, 0, 3], "face": "up", "hit": [0.5, 0.5, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [4, -1, 2], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:slab", "pos": [4, 0, 2], "face": "south", "hit": [0.5, 0.75, 1], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:door", "pos": [4, 0, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [6, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:door", "pos": [6, 0, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "break",
+          "pos": [6, 0, 3],
+          "expect": {
+            "blocks": [
+              {"pos": [2, 1, 3], "state": "minecraft:air"},
+              {"pos": [4, 1, 3], "state": "sim_parity:door[facing=north,half=lower,hinge=left,open=false]"},
+              {"pos": [6, 1, 3], "state": "minecraft:air"},
+              {"pos": [6, 2, 3], "state": "minecraft:air"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "trapdoor_on_a_side",
+      "description": "A trapdoor placed on a side faces out from it, in the half clicked.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:base", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [3, -1, 5], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:trapdoor", "pos": [3, 0, 3], "face": "east", "hit": [1, 0.75, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:trapdoor",
+          "pos": [3, 0, 5],
+          "face": "east",
+          "hit": [1, 0.25, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [4, 0, 3], "state": "sim_parity:trapdoor[facing=east,half=top,open=false]"},
+              {"pos": [4, 0, 5], "state": "sim_parity:trapdoor[facing=east,half=bottom,open=false]"}
+            ],
+            "shapes": [
+              {"pos": [4, 0, 3], "outline": [0, 13, 0, 16, 16, 16], "collision": [0, 13, 0, 16, 16, 16]},
+              {"pos": [4, 0, 5], "outline": [0, 0, 0, 16, 3, 16], "collision": [0, 0, 0, 16, 3, 16]}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "trapdoor_on_floor_and_ceiling",
+      "description": "On a floor a trapdoor is in the bottom half; under a ceiling in the top half.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:trapdoor", "pos": [2, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [5, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [5, 0, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [5, 1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "break", "pos": [5, 1, 3]},
+        {"step": "break", "pos": [5, 0, 3]},
+        {
+          "step": "place",
+          "block": "sim_parity:trapdoor",
+          "pos": [5, 2, 3],
+          "face": "down",
+          "hit": [0.5, 0, 0.5],
+          "yaw": 270,
+          "pitch": -60,
+          "expect": {
+            "blocks": [
+              {"pos": [2, 0, 3], "state": "sim_parity:trapdoor[facing=south,half=bottom,open=false]"},
+              {"pos": [5, 1, 3], "state": "sim_parity:trapdoor[facing=west,half=top,open=false]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "trapdoor_opens_by_hand_iron_does_not",
+      "description": "A wooden trapdoor opens by hand; an iron one does not.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:trapdoor", "pos": [2, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:iron_trapdoor", "pos": [4, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "use", "pos": [2, 0, 3], "yaw": 180},
+        {
+          "step": "use",
+          "pos": [4, 0, 3],
+          "yaw": 180,
+          "expect": {
+            "blocks": [
+              {"pos": [2, 0, 3], "state": "sim_parity:trapdoor[facing=south,half=bottom,open=true]"},
+              {"pos": [4, 0, 3], "state": "sim_parity:iron_trapdoor[facing=south,half=bottom,open=false]"}
+            ],
+            "shapes": [{"pos": [2, 0, 3], "outline": [0, 0, 0, 16, 16, 3], "collision": [0, 0, 0, 16, 16, 3]}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "button_on_floor_wall_and_ceiling",
+      "description": "A button takes the face it is placed on; on a floor or ceiling it faces the look.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:button", "pos": [1, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 270, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:button", "pos": [3, 0, 3], "face": "north", "hit": [0.5, 0.5, 0], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [5, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [5, 0, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [5, 1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "break", "pos": [5, 1, 3]},
+        {"step": "break", "pos": [5, 0, 3]},
+        {
+          "step": "place",
+          "block": "sim_parity:button",
+          "pos": [5, 2, 3],
+          "face": "down",
+          "hit": [0.5, 0, 0.5],
+          "yaw": 180,
+          "pitch": -60,
+          "expect": {
+            "blocks": [
+              {"pos": [1, 0, 3], "state": "sim_parity:button[face=floor,facing=east,powered=false]"},
+              {"pos": [3, 0, 2], "state": "sim_parity:button[face=wall,facing=north,powered=false]"},
+              {"pos": [5, 1, 3], "state": "sim_parity:button[face=ceiling,facing=north,powered=false]"}
+            ],
+            "shapes": [
+              {"pos": [1, 0, 3], "outline": [6, 0, 5, 10, 2, 11], "collision": null},
+              {"pos": [3, 0, 2], "outline": [5, 6, 14, 11, 10, 16], "collision": null}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "wooden_button_stays_pressed_30_ticks",
+      "description": "A wooden button stays pressed 30 ticks.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:button", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "expect": {
+            "blocks": [{"pos": [3, 0, 3], "state": "sim_parity:button[face=floor,facing=north,powered=true]"}],
+            "shapes": [{"pos": [3, 0, 3], "outline": [5, 0, 6, 11, 1, 10], "collision": null}]
+          }
+        },
+        {"step": "wait", "ticks": 25, "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:button[face=floor,facing=north,powered=true]"}]}},
+        {"step": "wait", "ticks": 10, "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:button[face=floor,facing=north,powered=false]"}]}}
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "stone_button_stays_pressed_20_ticks",
+      "description": "A stone button stays pressed 20 ticks.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:stone_button", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "use", "pos": [3, 0, 3], "yaw": 180},
+        {
+          "step": "wait",
+          "ticks": 15,
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:stone_button[face=floor,facing=north,powered=true]"}]}
+        },
+        {
+          "step": "wait",
+          "ticks": 10,
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:stone_button[face=floor,facing=north,powered=false]"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "button_press_ticks",
+      "description": "A button with press_ticks 5 lets go after 5 ticks; pressing a pressed button does nothing.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:quick_button", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "use", "pos": [3, 0, 3], "yaw": 180},
+        {
+          "step": "wait",
+          "ticks": 3,
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:quick_button[face=floor,facing=north,powered=true]"}]}
+        },
+        {"step": "use", "pos": [3, 0, 3], "yaw": 180},
+        {
+          "step": "wait",
+          "ticks": 5,
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:quick_button[face=floor,facing=north,powered=false]"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "button_goes_with_its_block",
+      "description": "A button goes when the block it is on is broken.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:base", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:button", "pos": [3, 0, 3], "face": "north", "hit": [0.5, 0.5, 0], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:button", "pos": [3, 0, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "break",
+          "pos": [3, 0, 3],
+          "expect": {"blocks": [{"pos": [3, 0, 2], "state": "minecraft:air"}, {"pos": [3, 1, 3], "state": "minecraft:air"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "wooden_plate_releases_after_20_ticks",
+      "description": "A wooden plate is pressed while stood on and lets go about 20 ticks after.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:plate", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "step_on",
+          "pos": [3, 0, 3],
+          "expect": {
+            "blocks": [{"pos": [3, 0, 3], "state": "sim_parity:plate[powered=true]"}],
+            "shapes": [{"pos": [3, 0, 3], "outline": [1, 0, 1, 15, 0.5, 15], "collision": null}]
+          }
+        },
+        {"step": "wait", "ticks": 10, "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:plate[powered=true]"}]}},
+        {
+          "step": "wait",
+          "ticks": 15,
+          "expect": {
+            "blocks": [{"pos": [3, 0, 3], "state": "sim_parity:plate[powered=false]"}],
+            "shapes": [{"pos": [3, 0, 3], "outline": [1, 0, 1, 15, 1, 15], "collision": null}]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "stone_plate_releases_after_20_ticks",
+      "description": "A stone plate is pressed by a player and lets go about 20 ticks after.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:stone_plate", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "step_on", "pos": [3, 0, 3], "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:stone_plate[powered=true]"}]}},
+        {"step": "wait", "ticks": 10, "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:stone_plate[powered=true]"}]}},
+        {"step": "wait", "ticks": 15, "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:stone_plate[powered=false]"}]}}
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "weighted_plate_power",
+      "description": "A weighted plate with weighted_max 4 gives power 4 for one player and lets go about 10 ticks after.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:weighted_plate", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "step_on", "pos": [3, 0, 3], "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:weighted_plate[power=4]"}]}},
+        {"step": "wait", "ticks": 5, "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:weighted_plate[power=4]"}]}},
+        {"step": "wait", "ticks": 10, "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:weighted_plate[power=0]"}]}}
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "plate_rests_on_a_fence_not_a_slab",
+      "description": "A plate can be placed on a fence post but not on a bottom slab.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:fence", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:plate", "pos": [3, 0, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:slab", "pos": [5, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:plate",
+          "pos": [5, 0, 3],
+          "face": "up",
+          "hit": [0.5, 0.5, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {"blocks": [{"pos": [3, 1, 3], "state": "sim_parity:plate[powered=false]"}, {"pos": [5, 1, 3], "state": "minecraft:air"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "signal_placed_runs_on_place",
+      "description": "Placing the signal block fires msm:on_place: a lamp above, then the chime.",
+      "steps": [
+        {
+          "step": "place",
+          "block": "sim_parity:signal",
+          "pos": [3, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:signal"}, {"pos": [3, 1, 3], "state": "sim_parity:lamp"}]}
+        }
+      ],
+      "events": [
+        {"owner": "sim_parity:signal", "event": "sim_parity:placed", "depth": 1, "pos": [3, 0, 3]},
+        {"owner": "sim_parity:signal", "event": "sim_parity:chime", "depth": 2, "pos": [3, 0, 3]}
+      ],
+      "actions": [
+        {"event": "sim_parity:placed", "type": "set_block_state"},
+        {"event": "sim_parity:placed", "type": "trigger_event"},
+        {"event": "sim_parity:chime", "type": "play_sound"}
+      ]
+    },
+    {
+      "name": "signal_used_runs_on_interact",
+      "description": "Using the signal block fires msm:on_interact: the lamp goes, the chime, then the function.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:signal", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:signal"}, {"pos": [3, 1, 3], "state": "minecraft:air"}]}
+        }
+      ],
+      "events": [
+        {"owner": "sim_parity:signal", "event": "sim_parity:placed", "depth": 1, "pos": [3, 0, 3]},
+        {"owner": "sim_parity:signal", "event": "sim_parity:chime", "depth": 2, "pos": [3, 0, 3]},
+        {"owner": "sim_parity:signal", "event": "sim_parity:used", "depth": 1, "pos": [3, 0, 3]},
+        {"owner": "sim_parity:signal", "event": "sim_parity:chime", "depth": 2, "pos": [3, 0, 3]}
+      ],
+      "actions": [
+        {"event": "sim_parity:placed", "type": "set_block_state"},
+        {"event": "sim_parity:placed", "type": "trigger_event"},
+        {"event": "sim_parity:chime", "type": "play_sound"},
+        {"event": "sim_parity:used", "type": "set_block_state"},
+        {"event": "sim_parity:used", "type": "trigger_event"},
+        {"event": "sim_parity:chime", "type": "play_sound"},
+        {"event": "sim_parity:used", "type": "run_function"}
+      ]
+    },
+    {
+      "name": "signal_broken_runs_on_break",
+      "description": "Breaking the signal block fires msm:on_break before it goes.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:signal", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "break",
+          "pos": [3, 0, 3],
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "minecraft:air"}, {"pos": [3, 1, 3], "state": "minecraft:air"}]}
+        }
+      ],
+      "events": [
+        {"owner": "sim_parity:signal", "event": "sim_parity:placed", "depth": 1, "pos": [3, 0, 3]},
+        {"owner": "sim_parity:signal", "event": "sim_parity:chime", "depth": 2, "pos": [3, 0, 3]},
+        {"owner": "sim_parity:signal", "event": "sim_parity:broken", "depth": 1, "pos": [3, 0, 3]}
+      ],
+      "actions": [
+        {"event": "sim_parity:placed", "type": "set_block_state"},
+        {"event": "sim_parity:placed", "type": "trigger_event"},
+        {"event": "sim_parity:chime", "type": "play_sound"},
+        {"event": "sim_parity:broken", "type": "play_sound"},
+        {"event": "sim_parity:broken", "type": "set_block_state"}
+      ]
+    },
+    {
+      "name": "signal_stepped_on_runs_on_step",
+      "description": "Stepping on the signal block fires msm:on_step: a lamp beside it.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:signal", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "step_on", "pos": [3, 0, 3], "expect": {"blocks": [{"pos": [4, 0, 3], "state": "sim_parity:lamp"}]}}
+      ],
+      "events": [
+        {"owner": "sim_parity:signal", "event": "sim_parity:placed", "depth": 1, "pos": [3, 0, 3]},
+        {"owner": "sim_parity:signal", "event": "sim_parity:chime", "depth": 2, "pos": [3, 0, 3]},
+        {"owner": "sim_parity:signal", "event": "sim_parity:stepped", "depth": 1, "pos": [3, 0, 3]}
+      ],
+      "actions": [
+        {"event": "sim_parity:placed", "type": "set_block_state"},
+        {"event": "sim_parity:placed", "type": "trigger_event"},
+        {"event": "sim_parity:chime", "type": "play_sound"},
+        {"event": "sim_parity:stepped", "type": "set_block_state"}
+      ]
+    },
+    {
+      "name": "signal_in_order",
+      "description": "Place, step, use and break in turn fire the four triggers in that order.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:signal", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "step_on", "pos": [3, 0, 3]},
+        {"step": "use", "pos": [3, 0, 3], "yaw": 180},
+        {
+          "step": "break",
+          "pos": [3, 0, 3],
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "minecraft:air"},
+              {"pos": [3, 1, 3], "state": "minecraft:air"},
+              {"pos": [4, 0, 3], "state": "sim_parity:lamp"}
+            ]
+          }
+        }
+      ],
+      "events": [
+        {"owner": "sim_parity:signal", "event": "sim_parity:placed", "depth": 1, "pos": [3, 0, 3]},
+        {"owner": "sim_parity:signal", "event": "sim_parity:chime", "depth": 2, "pos": [3, 0, 3]},
+        {"owner": "sim_parity:signal", "event": "sim_parity:stepped", "depth": 1, "pos": [3, 0, 3]},
+        {"owner": "sim_parity:signal", "event": "sim_parity:used", "depth": 1, "pos": [3, 0, 3]},
+        {"owner": "sim_parity:signal", "event": "sim_parity:chime", "depth": 2, "pos": [3, 0, 3]},
+        {"owner": "sim_parity:signal", "event": "sim_parity:broken", "depth": 1, "pos": [3, 0, 3]}
+      ],
+      "actions": [
+        {"event": "sim_parity:placed", "type": "set_block_state"},
+        {"event": "sim_parity:placed", "type": "trigger_event"},
+        {"event": "sim_parity:chime", "type": "play_sound"},
+        {"event": "sim_parity:stepped", "type": "set_block_state"},
+        {"event": "sim_parity:used", "type": "set_block_state"},
+        {"event": "sim_parity:used", "type": "trigger_event"},
+        {"event": "sim_parity:chime", "type": "play_sound"},
+        {"event": "sim_parity:used", "type": "run_function"},
+        {"event": "sim_parity:broken", "type": "play_sound"},
+        {"event": "sim_parity:broken", "type": "set_block_state"}
+      ]
+    },
+    {
+      "name": "leaves_place_as_a_block",
+      "description": "Leaves place as a plain block.",
+      "steps": [
+        {
+          "step": "place",
+          "block": "sim_parity:leaves",
+          "pos": [3, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:leaves"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    }
+  ]
+}

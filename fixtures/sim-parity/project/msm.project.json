@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "name": "MSM Sim Parity",
+  "namespaces": [
+    "minecraft",
+    "sim_parity"
+  ],
+  "plugins": [
+    "msm.resourcepack",
+    "msm.datapack",
+    "msm.blocks-items"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

@@ -105,6 +105,18 @@ fabricApi {
     }
 }
 
+// Try it parity (ADR 0085 D10, B397): the GameTest server loads the fixture project's lowered content for this
+// version (fixtures/sim-parity/mod/mc-<mc>, a mod folder) as an extra mod, and MsmSimParityGameTest plays
+// fixtures/sim-parity/scenarios.json; `-PupdateSimParity` writes the values the runtime produced back into the file.
+val simParity = layout.projectDirectory.dir("../fixtures/sim-parity")
+loom.runs.named("gameTest") {
+    vmArg("-Dfabric.addMods=${simParity.dir("mod/mc-$mc").asFile.absolutePath}")
+    property("msm.sim.parity.scenarios", simParity.file("scenarios.json").asFile.absolutePath)
+    if (providers.gradleProperty("updateSimParity").isPresent) {
+        property("msm.sim.parity.update", "true")
+    }
+}
+
 dependencies {
     // GeckoLib (ADR 0029 D6): compiled against, never bundled, never a hard dependency (fabric.mod.json "suggests").
     // Non-remapping Loom has no mod* configurations: a plain jar with a fabric.mod.json on the run classpath is

@@ -1,0 +1,10 @@
+{
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:building_blocks"
+  },
+  "press_ticks": 5,
+  "set_type": "stone",
+  "sound_type": "stone",
+  "type": "button"
+}

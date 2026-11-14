@@ -1,0 +1,23 @@
+{
+  "components": {
+    "msm:shape": {
+      "boxes": [
+        [
+          0,
+          0,
+          0,
+          16,
+          16,
+          8
+        ]
+      ],
+      "see_through": false
+    }
+  },
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:building_blocks"
+  },
+  "sound_type": "wood",
+  "type": "horizontal"
+}

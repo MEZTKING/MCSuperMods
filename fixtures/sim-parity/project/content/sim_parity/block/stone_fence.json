@@ -1,0 +1,21 @@
+{
+  "data": {
+    "display_name": "Stone Fence",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "stone",
+    "textures": {
+      "texture": "minecraft:block/stone"
+    },
+    "type": "fence"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:stone_fence",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

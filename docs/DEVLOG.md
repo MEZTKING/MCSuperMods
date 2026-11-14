@@ -4628,3 +4628,21 @@ Decisions
 Next
 - B398: wire `effect` events in `session-source.ts` (particles to `ParticleField.emit(options ?? id, {x,y,z,xd,yd,zd}, origin)`, sounds, chips, animations to the mob field), show `source.trace` and `inventory`, pass `ruleBooks` from the session, send `interact` on a right-click at a mob, the "Run every time" option to `setChanceMode('always')`.
 - B397: check the trigger order in the runtime (see the B396 report's notes).
+## 2026-11-14 — executor — B397 parity fixture and runtime scenarios
+
+What
+- `fixtures/sim-parity/project/` (namespace `sim_parity`): one block of each placement type the game decides (pillar, horizontal with an `msm:shape` box, directional, slab, stairs, wall, wooden and stone fences, fence gate, pane, doors of set types wood, iron, gold, stone and copper, wooden and iron trapdoors, wooden, stone and `press_ticks` 5 buttons, wooden, stone and weighted plates, leaves), two plain blocks and `signal`, a block with `msm:on_place`, `msm:on_interact`, `msm:on_break` and `msm:on_step` (`set_block_state`, `trigger_event`, `play_sound`, a no-op `run_function`). Lowers with no problems on both targets.
+- `fixtures/sim-parity/mod/<target id>/`: the lowered `fabric.mod.json`, `msm/` and `data/` per target (only `fabric.mod.json` differs), checked or rewritten by `fixtures/sim-parity/lower.test.ts` (`UPDATE_SIM_PARITY_MOD=1`).
+- `fixtures/sim-parity/scenarios.json` (`format: 1`): 63 scenarios with steps `place`, `use`, `step_on`, `wait`, `break`, per-step `expect` (block states with listed properties, outline and collision bounds in pixels) and per-scenario `events` and `actions` in order. README with the format and the commands.
+- `MsmSimParityGameTest`: one GameTest per scenario plus `everyScenarioHasAGameTest` and `fixtureModIsLoaded` (65 new; 505 GameTests per variant). A creative mock player places and uses through `ServerPlayerGameMode.useItemOn`, breaks through `destroyBlock`, steps on through `entityInside` (plates) or `stepOn`; events and actions come from an `EventRunner` listener filtered to the test's area. `-PupdateSimParity` writes the observed values back.
+- `engine-mod/build.gradle.kts`: the `gameTest` run gets `-Dfabric.addMods=fixtures/sim-parity/mod/mc-<mc>`, `msm.sim.parity.scenarios` and, with `-PupdateSimParity`, `msm.sim.parity.update`.
+- Verified: `./gradlew build`, `-Pmc=26.4` and `-PwithoutGeckolib` green (505 tests each); the expectations are identical on 26.3 and 26.4; a deliberately wrong expectation fails the GameTest; two update runs give the same file; `pnpm lint` and `pnpm typecheck` pass.
+
+Decisions
+- The fixture content goes in as an extra mod folder rather than as GameTest resources, because its `data/minecraft/tags/` files would clash with the GameTest mod's own tag files.
+- Trigger order is read from `EventRunner`'s listener (owner, event, depth, position; action types), not from function or scoreboard side effects: it gives the exact order, including nested `trigger_event`s, without commands the simulation cannot run.
+- Crops, saplings and portals have no scenario: Try it deliberately approximates them (logged as "Only in Minecraft").
+- A scratch run of the scenarios through `@msm/sim` (not committed) agreed with the runtime on every block state and shape; only the trigger scenarios differ, because the sim's triggers (B396) do not exist yet.
+
+Next
+- B399: `packages/sim/test/sim-parity.test.ts` plays the file, and should also check that `mod/<target>` equals the lowering (or run `lower.test.ts`).

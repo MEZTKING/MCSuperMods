@@ -1,0 +1,9 @@
+{
+  "values": [
+    "sim_parity:copper_door",
+    "sim_parity:door",
+    "sim_parity:gold_door",
+    "sim_parity:iron_door",
+    "sim_parity:stone_door"
+  ]
+}

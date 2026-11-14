@@ -1,0 +1,23 @@
+{
+  "data": {
+    "display_name": "Weighted Parity Plate",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "set_type": "iron",
+    "sound_type": "metal",
+    "textures": {
+      "texture": "minecraft:block/iron_block"
+    },
+    "type": "pressure_plate",
+    "weighted_max": 4
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:weighted_plate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "base_block": "sim_parity:base",
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:building_blocks"
+  },
+  "sound_type": "stone",
+  "type": "stairs"
+}

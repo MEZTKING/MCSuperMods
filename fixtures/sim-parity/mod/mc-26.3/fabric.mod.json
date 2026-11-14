@@ -1,0 +1,17 @@
+{
+  "authors": [
+    "MCSuperMods"
+  ],
+  "depends": {
+    "fabric-api": "*",
+    "fabricloader": ">=0.20.1",
+    "minecraft": "~26.3"
+  },
+  "description": "Try it parity fixture: one block of each placement type and a block with four triggers (ADR 0085 D10).",
+  "environment": "*",
+  "id": "sim_parity",
+  "license": "MIT",
+  "name": "MSM Sim Parity",
+  "schemaVersion": 1,
+  "version": "1.0.0"
+}

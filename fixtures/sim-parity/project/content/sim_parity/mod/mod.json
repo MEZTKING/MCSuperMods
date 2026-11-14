@@ -1,0 +1,18 @@
+{
+  "data": {
+    "authors": [
+      "MCSuperMods"
+    ],
+    "description": "Try it parity fixture: one block of each placement type and a block with four triggers (ADR 0085 D10).",
+    "licence": "MIT",
+    "mod_id": "sim_parity",
+    "name": "MSM Sim Parity",
+    "version": "1.0.0"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:mod",
+  "kind": "msm:mod",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

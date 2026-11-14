@@ -1,0 +1,7 @@
+{
+  "values": [
+    "sim_parity:plate",
+    "sim_parity:stone_plate",
+    "sim_parity:weighted_plate"
+  ]
+}

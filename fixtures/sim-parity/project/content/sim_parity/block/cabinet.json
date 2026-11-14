@@ -1,0 +1,34 @@
+{
+  "data": {
+    "components": {
+      "msm:shape": {
+        "boxes": [
+          [
+            0,
+            0,
+            0,
+            16,
+            16,
+            8
+          ]
+        ],
+        "see_through": false
+      }
+    },
+    "display_name": "Cabinet",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "model": "minecraft:block/barrel",
+    "sound_type": "wood",
+    "type": "horizontal"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:cabinet",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}
