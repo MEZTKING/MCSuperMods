@@ -15,6 +15,7 @@ import {
   BLOCK_TYPE_MODEL_SLOTS,
   BLOCK_TYPES,
   biomeAdditionKind,
+  blockGeneratedModelIds,
   blockItemId,
   blockKind,
   blocksItemsKinds,
@@ -957,6 +958,22 @@ describe('block types', () => {
       type: 'crop',
       item: { id: 'example:tomato_seeds' },
     });
+  });
+
+  it('names exactly the models lowering writes (blockGeneratedModelIds)', async () => {
+    const modelId = (path: string): string | undefined => {
+      const match = /^assets\/([^/]+)\/models\/(.+)\.json$/.exec(path);
+      return match === null ? undefined : `${match[1]}:${match[2]}`;
+    };
+    const blocks = SAMPLES.filter((entry) => entry.kind === blockKind);
+    expect(blocks.some((entry) => entry.name.startsWith('type-'))).toBe(true);
+    for (const sample of blocks) {
+      const files = await blockKind.lower(element(blockKind.id, sample.id, sample.data), target);
+      const written = files.map((file) => modelId(file.path)).filter((id) => id !== undefined);
+      expect(blockGeneratedModelIds(sample.id, sample.data), sample.name).toEqual(written);
+    }
+    expect(blockGeneratedModelIds('demo:x', { format: 1, type: 'ladder' })).toEqual([]);
+    expect(blockGeneratedModelIds('demo:x', null)).toEqual([]);
   });
 
   it('rejects an unknown type', () => {

@@ -7,7 +7,7 @@
 
 import { defaultKindRegistry, type Project, parseJsonPointer } from '@msm/core';
 import type { Element, Json, OutputFile, Plugin, Target } from '@msm/plugin-api';
-import { blockItemIdOf, potionVariantIds } from '@msm/plugin-blocks-items';
+import { blockGeneratedModelIds, blockItemIdOf, potionVariantIds } from '@msm/plugin-blocks-items';
 import {
   BUILT_IN_EXTENSIONS,
   createRegistryIndex,
@@ -225,6 +225,7 @@ export function dataRegistryIds(
 
 const BLOCK_REGISTRY = 'block';
 const ITEM_REGISTRY = 'item';
+const BLOCK_KIND = 'msm:block';
 const ENTITY_KIND = 'msm:entity';
 const POTION_KIND = 'msm:potion';
 
@@ -294,8 +295,10 @@ function soundEventKeys(data: unknown): string[] {
 }
 
 /**
- * The ids a project defines, per registry: `model` (model elements and the item models of
- * entity spawn eggs with a texture), `texture` (PNG assets
+ * The ids a project defines, per registry: `model` (model elements, the item models of
+ * entity spawn eggs with a texture and the models lowering generates for `msm:block` elements,
+ * `blockGeneratedModelIds`: a typed block's `<ns>:block/<path>` models and the flat item model
+ * of doors, panes, crops and saplings), `texture` (PNG assets
  * under `textures/`), `sound` (Ogg assets under `sounds/`), `weighed_sound_event` (every event
  * key of a `minecraft:sounds` element: key `foo.bar` in namespace `ns` is `ns:foo.bar`) and
  * the data pack registries of {@link dataRegistryIds}. Sorted, namespaced, without duplicates.
@@ -319,6 +322,8 @@ export function projectRegistryIds(
   for (const namespace of project.namespaces) {
     for (const element of namespace.elements) {
       if (element.kind === 'minecraft:model') model.push(element.id);
+      if (element.kind === BLOCK_KIND)
+        model.push(...blockGeneratedModelIds(element.id, element.data));
       if (element.kind === ENTITY_KIND) {
         const eggModel = spawnEggModelId(element.id, element.data);
         if (eggModel !== undefined) model.push(eggModel);
@@ -336,7 +341,7 @@ export function projectRegistryIds(
   }
   return {
     ...dataRegistryIds(project, kinds),
-    model: model.sort(),
+    model: [...new Set(model)].sort(),
     sound: sound.sort(),
     texture: texture.sort(),
     [WEIGHED_SOUND_EVENT]: [...soundEvent].sort(),

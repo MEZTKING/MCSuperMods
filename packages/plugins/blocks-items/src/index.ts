@@ -21,6 +21,7 @@ export {
   BLOCK_TYPES,
   type BlockModels,
   type BlockTypeName,
+  blockGeneratedModelIds,
   blockTypeModels,
   blockTypeOf,
   blockTypeSelfLoot,

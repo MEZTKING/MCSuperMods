@@ -31,6 +31,7 @@
  * still empty takes the first model the block has (the validators report it).
  */
 import type { Json, JsonObject, OutputFile, Target } from '@msm/plugin-api';
+import { blockItemIdOf } from '../block-item';
 import { assetPath, BlocksItemsLoweringError, isRecord, splitResourceLocation } from '../paths';
 import { BLOCK_STATE_SCHEMA, itemDefinitionFile, nonEmptyString, vanillaTagFile } from '../shared';
 import { blockType } from './block';
@@ -236,10 +237,7 @@ export function lowerBlockAppearance(
   const item = splitResourceLocation(context.itemId);
   let itemModel = slots[ITEM_MODEL_SLOT];
   if (itemModel === undefined) {
-    const lookup = textureLookup(readTextures(context.data));
-    const layer0 =
-      lowering.itemTextureFromData?.(context.data) ??
-      (lookup === undefined ? undefined : lowering.itemTexture?.(lookup));
+    const layer0 = flatItemTexture(lowering, context.data);
     if (layer0 !== undefined) {
       itemModel = `${item.namespace}:item/${item.path}`;
       files.push(modelFile(target, itemModel, GENERATED_ITEM_PARENT, { layer0 }));
@@ -253,6 +251,50 @@ export function lowerBlockAppearance(
   }
   files.push(definition);
   return files;
+}
+
+/** The `layer0` texture of the flat item model a type generates (doors, panes, plants), if any. */
+function flatItemTexture(lowering: TypeLowering, data: JsonObject): string | undefined {
+  const lookup = textureLookup(readTextures(data));
+  return (
+    lowering.itemTextureFromData?.(data) ??
+    (lookup === undefined ? undefined : lowering.itemTexture?.(lookup))
+  );
+}
+
+/**
+ * The ids of the models {@link lowerBlockAppearance} generates for an `msm:block` element, in
+ * the same order: the generated block models (`<ns>:block/<path>` plus each type's suffixes)
+ * and, with a block item, the flat item model `<item ns>:item/<item path>` (doors, panes,
+ * crops, saplings). Pure; for registry views (the app's `model` ids). Empty when the data is not
+ * an object, the id or type is invalid, or the block has no appearance.
+ *
+ * @param blockId - The element id.
+ * @param data - The element data.
+ */
+export function blockGeneratedModelIds(blockId: string, data: Json | undefined): string[] {
+  if (!isRecord(data)) return [];
+  try {
+    const { namespace, path } = splitResourceLocation(blockId);
+    const type = blockTypeOf(data, blockId);
+    const itemId = blockItemIdOf(blockId, data);
+    const context: TypeContext = { blockId, itemId, namespace, path, data };
+    const { generated, slots } = blockTypeModels(type, context);
+    const lowering = BLOCK_TYPE_LOWERINGS[type];
+    if (slots[lowering.slots[0] ?? 'default'] === undefined) return [];
+    const ids = generated.map((model) => model.id);
+    if (
+      itemId !== undefined &&
+      slots[ITEM_MODEL_SLOT] === undefined &&
+      flatItemTexture(lowering, data) !== undefined
+    ) {
+      const item = splitResourceLocation(itemId);
+      ids.push(`${item.namespace}:item/${item.path}`);
+    }
+    return ids;
+  } catch {
+    return [];
+  }
 }
 
 /** The vanilla tag files a block of `type` always joins (ADR 0067 D6), block then item tags. */
