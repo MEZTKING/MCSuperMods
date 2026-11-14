@@ -11,7 +11,8 @@
  * Test ids: `creator-dialog`, `creator-group-<group>`, `creator-flow-<id>`, `param-<id>`,
  * `creator-namespace`, `creator-tab-<tab>`, `creator-element-<key>`, `creator-conflict-<key>`,
  * `creator-kept-<key>`, `creator-overwrite-<key>`, `creator-create`, `creator-cancel`,
- * `creator-back`, `creator-status`, `creator-error`. An `image` parameter uses
+ * `creator-back`, `creator-status`, `creator-error`, `creator-pick-for-me` ("Pick for me", ADR
+ * 0086 D6: random answers that work for the flow). An `image` parameter uses
  * {@link CreatorImageField} (the host's file picker) when `pickImage` is given, otherwise the
  * wizard's file input.
  *
@@ -20,7 +21,7 @@
 
 import type { Json, Project, ResourceLocation } from '@msm/core';
 import type { ContentBundle, ProjectStarter, TargetFacts } from '@msm/plugin-api';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Dices } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { ChangeItem } from '../../changeset/changeset';
@@ -35,6 +36,7 @@ import {
   reopenPlan,
 } from '../../changeset/creator-sets';
 import type { ResourceFolders, VanillaAssetReader } from '../../preview/model-chain';
+import { newSeed, pickForMe } from '../../surprise/surprise';
 import { fieldClass } from '../NewElementDialog';
 import { Button } from '../ui/Button';
 import { ParameterField } from '../wizard/ParameterField';
@@ -126,6 +128,8 @@ export interface CreatorDialogProps {
   webgl?: boolean;
   /** Test hook: the rebuild delay (default 150 ms). */
   debounceMs?: number;
+  /** Test hook: the seed of "Pick for me" (default: a random one). */
+  pickSeed?(): number;
 }
 
 interface Built {
@@ -421,6 +425,20 @@ export function CreatorDialog(props: CreatorDialogProps) {
                 }}
               >
                 {flow?.blurb !== undefined && <p className="text-xs text-muted">{flow.blurb}</p>}
+                {!editing && starter !== null && (parameters ?? []).length > 0 && (
+                  <Button
+                    data-testid="creator-pick-for-me"
+                    className="self-start"
+                    title="Fill in every field with random answers that work (ADR 0086)"
+                    onClick={() => {
+                      const seed = (props.pickSeed ?? newSeed)();
+                      setRaw(rawValuesFromStored(parameters, pickForMe(starter, seed)));
+                    }}
+                  >
+                    <Dices size={14} aria-hidden />
+                    Pick for me
+                  </Button>
+                )}
                 {namespaceOptions.length > 1 && (
                   <div className="flex flex-col gap-0.5">
                     <label htmlFor={namespaceId} className="text-sm font-medium">

@@ -20,29 +20,57 @@ The toolbar has only what you need: **Home**, Undo, Redo, **Try it**, **Play** a
 
 ## Start a new mod
 
-On Home, **Start a new mod** asks one question: **What is your mod called?** Press **Start** and the mod is saved in a folder of that name in `Documents/MCSuperMods`. Under the question it says where: "It is saved in …". **Change folder** picks another place. You never see a namespace or an id; MCSuperMods makes them from the name. **Open a mod** opens one you made before, and **Your mods** lists the recent ones.
+On Home, **Start a new mod** asks one question: **What is your mod called?** Press **Start** and the mod is saved in a folder of that name in `Documents/MCSuperMods`. Under the question it says where: "It is saved in …". **Change folder** picks another place. You never see a namespace or an id; MCSuperMods makes them from the name. **Open a mod** opens one you made before, **Surprise me** makes a random mod for you ([Surprise me](#surprise-me)), and **Your mods** lists the recent ones.
 
 ## Make something
 
-With a mod open, Home shows **Make something** with these tiles:
+With a mod open, Home shows **Make something** with these tiles, under headings:
 
-| Tile | What it opens |
-|---|---|
-| **Make a block** | A block, an ore, stone bricks, a crate or a machine |
-| **Make an item** | Something to throw, a totem, a music disc or a horn |
-| **Make a tool or weapon** | A sword, a whole set of tools, or a new enchantment |
-| **Make armour** | Helmet, chestplate, leggings and boots of a new material |
-| **Make food** | Something to eat or drink |
-| **Make a mob** | A new creature, a flying or swimming one, or a boss |
-| **Make a pet or animal** | A pet to tame, a farm animal or something to ride |
-| **Make a plant or tree** | A crop to grow, a tree, or a whole set of wood |
-| **Make a potion or effect** | A potion to brew, a new effect, or sparkles |
-| **Make a portal** | A portal frame, or a whole new world to travel to |
-| **Make things happen** | Rules: when something happens, do something. No code needed. |
-| **Paint a picture** | Draw a new picture, pixel by pixel |
-| **Build with the AI helper** | Say what you want and let the AI helper build it |
+| Heading | Tile | What it opens |
+|---|---|---|
+| | **Surprise me** | A random mod to start from (see [Surprise me](#surprise-me)) |
+| Blocks and items | **Make a block** | A new block, an ore or a stone with stairs and slabs |
+| | **Make a chest or machine** | A crate that stores things, or a machine that cooks or grinds them |
+| | **Make an item** | Something to throw, or a totem that saves you |
+| | **Make a tool or weapon** | A sword, a whole set of tools, or a new enchantment |
+| | **Make armour** | Helmet, chestplate, leggings and boots of a new material |
+| | **Make food** | Something to eat or drink |
+| | **Make a plant or tree** | A crop to grow, a tree, or a whole set of wood |
+| | **Make a recipe** | Ready-made crafting, smelting and stonecutting recipes to change |
+| Creatures | **Make a mob** | A new creature, a flying or swimming one, or a boss |
+| | **Make a pet or animal** | A pet to tame, a farm animal or something to ride |
+| Magic | **Make a potion or effect** | A potion to brew or a new effect |
+| | **Make sparkles** | Particles of your own around a block or from an item |
+| | **Make a magic wand** | A wand that heals, throws you up, calls lightning or gives an effect |
+| Worlds | **Make a portal** | A portal frame, or a whole new world to travel to |
+| | **Make a world or biome** | A new world to explore, or a new biome with its own trees |
+| | **Make a building** | A small village of huts and lamp posts that appears in forests |
+| | **Change drops and trades** | An extra drop from a mob, block or chest, or a new villager trade |
+| Looks and sounds | **Change how Minecraft looks** | A new skin for a wolf, cat or pig, or a new look for a vanilla item |
+| | **Make a painting** | A painting of your own picture to hang on a wall |
+| | **Make a sound or music** | A music disc with your own song, or a goat horn call |
+| | **Paint a picture** | Draw a new picture, pixel by pixel |
+| Rules and help | **Make things happen** | Rules: when something happens, do something. No code needed. |
+| | **Build with the AI helper** | Say what you want and let the AI helper build it |
 
-Most tiles open the [Creator](creator.md) on the right question page, or on its list of pages when a tile offers several. **Make things happen** opens your [rule book](rules.md); the first time it makes one. A tile whose pages do not exist for your Minecraft version is not shown.
+Most tiles open the [Creator](creator.md) on the right question page, or on its list of pages when a tile offers several. **Make a recipe**, **Make a building**, **Make a world or biome** and **Change how Minecraft looks** also offer ready-made content: they open a short list, where a question page opens the Creator and a ready-made choice is added to your mod at once (one step, so **Undo** takes it back). **Make things happen** opens your [rule book](rules.md); the first time it makes one. A tile whose pages do not exist for your Minecraft version is not shown.
+
+In the Creator, **Pick for me** fills in every question with random answers that work; change any of them before you press **Create**.
+
+## Surprise me
+
+Not sure what to make? **Surprise me** makes a small random mod to start from. It is the first tile on Home, a button on Home when no mod is open, **File > Surprise Me…**, and "Surprise me: make a random mod" in the command palette, in every mode.
+
+A surprise has a theme, such as Ruby, Frost, Ember, Moss, Sky or Void, and three to five things named after it: always an ore with its gem (or a set of tools and armour with its ore), then a few of a block, a weapon, a food, a mob or pet, a potion or effect, a plant or tree, sparkles and a portal. Sometimes it also has a rule, for example "When a player breaks Ruby Ore, 25 times in 100 an extra Ruby drops." The pictures are placeholders in the theme's colours: paint over them later.
+
+The **Surprise me** window shows everything before anything is made: each thing with its pictures and what it makes, and the rule. Then:
+
+- **Make it** makes it. With a mod open, the things are added to it, with new names if yours already has things of the same name. With no mod open, it starts a new mod named after the theme ("Ruby Mod") in `Documents/MCSuperMods`.
+- **Roll again** shows another random mod.
+- **Change theme** keeps the same things in another theme.
+- **Seed** is the surprise's number: the same seed always gives the same mod, so you can type a friend's seed to get theirs.
+
+Everything a surprise makes is one step, so **Undo** takes all of it back. Each thing is a normal Creator set: open its card in My things, or use **Edit in Creator** to change its answers.
 
 ## My things
 

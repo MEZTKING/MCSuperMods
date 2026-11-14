@@ -4720,3 +4720,24 @@ Next
 - B405: the Try it picker (grounds, world list with icons, spawn or X/Z), the flat preset and loading a `WorldArea` into the sim world.
 - The spawn compound's field names (`Data.spawn.pos`, `dimension`) to be checked against a real 26.x save (verify at implementation).
 - Later: the Nether, the End and custom dimensions; LZ4 chunks.
+## 2026-11-14 — executor — Surprise me and more Home tiles (ADR 0086)
+
+What
+- ADR 0086 (Proposed): "Surprise me", a seeded random themed mod, and more Home tiles.
+- `app/src/renderer/src/surprise/` (`themes.ts`: 10 themes and 17 flow recipes; `surprise.ts`: mulberry32 seeds, `randomAnswers` from each flow's own parameters, `rollSurprise` planning each thing with the Creator's `planCreate` against the project as it will be, clash avoidance by other nouns then numbered names, the optional lucky-ore rule book, `foldItems`, `pickForMe`).
+- `components/surprise/SurpriseDialog.tsx` (seed field, things with pictures and "Makes …", the rule, Make it, Roll again, Change theme, Cancel); Home's **Surprise me** tile and no-mod button, File > **Surprise Me…** (`surpriseMe`), palette "Surprise me: make a random mod"; with no mod open, Make it starts "<Theme> Mod" (then "… 2") in the default folder and rolls the same seed for it. One undo step "Surprise me: <Theme> Mod".
+- The Creator's **Pick for me** (`creator-pick-for-me`).
+- Home: 24 tiles under seven headings (`TILE_GROUPS`); new tiles Surprise me, Make a chest or machine, Make a recipe, Make sparkles, Make a magic wand, Make a world or biome, Make a building, Change drops and trades, Change how Minecraft looks, Make a painting, Make a sound or music; tiles with library starters open `MakeChooser` (a starter is added with `addBundle` in one undo step). Every Creator flow is now reached from a tile.
+- Tests: `app/test/surprise.test.ts` (200 seeds on each of mc-26.3 and mc-26.4: applies, no session errors, content jar with no errors, Undo restores; determinism; answers pass `validateParameter` for every flow; second surprise into the same mod avoids clashes; tile starters validate on both targets), `test/components/surprise-dialog.test.tsx` (8), `Home.test.tsx` (28, tile list and headings rewritten), e2e `surprise-path` (new); `very-easy-path` still green.
+- Docs: guide `very-easy.md` (tile table, Surprise me section), CHANGELOG `[Unreleased]`.
+
+Decisions
+- Set ids default to `surprise-<seed>-<project size>-<n>`; the app passes `crypto.randomUUID`, since two surprises of one seed in one mod otherwise shared set ids and My things merged their cards.
+- A changeset never holds a create and a later update of the same element: the session replays the planned commands, and an element created by the command is frozen by the first replay (`Cannot assign to read only property 'data'`). `foldItems` merges such updates into the create.
+- Ids the same flow made for another set (the Custom ore flow's `root` advancement, the Custom mob flow's `mob/death`) are shared, not clashes.
+- The ADR is left Proposed; DESIGN.md is not changed until the orchestrator accepts it.
+
+Next
+- Accept ADR 0086 and add it to DESIGN.md (Very easy section) and ROADMAP.
+- My things shows no card for sets without a block, item or mob (Dimension, Villager trade, Extra drop) or for starter tiles' content; a card kind for them is for the orchestrator.
+- `ProjectSession.applyChangeset` cannot change an element created earlier in the same changeset (see Decisions); worth a fix in the session.

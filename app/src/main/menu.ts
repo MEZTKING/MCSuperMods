@@ -132,6 +132,8 @@ export function installMenu(recent: readonly RecentProject[] = currentRecent): v
         { label: 'New Project from Starter…', click: () => send('newProjectFromStarter') },
         // ADR 0043: opens the Creator.
         { label: 'Create…', click: () => send('creator') },
+        // ADR 0086: a random themed mod, new or added to the open one.
+        { label: 'Surprise Me…', click: () => send('surpriseMe') },
         { label: 'New Project with the AI Helper…', click: () => send('newWithAi') },
         { label: 'Modpacks…', click: () => send('modpacks') },
         // ADR 0048: a screenshot, image or skin as a texture.

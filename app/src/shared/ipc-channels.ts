@@ -170,6 +170,8 @@ export const MENU_COMMANDS = [
   'toggleAiHelper',
   // ADR 0043: File > "Create…" opens the Creator.
   'creator',
+  // ADR 0086: File > "Surprise Me…" rolls a random mod.
+  'surpriseMe',
   // ADR 0084 D1, D6: File > "Play" (F5) and "Reload in Game" (Ctrl/Cmd+R).
   'play',
   'reloadGame',

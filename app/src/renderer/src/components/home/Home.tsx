@@ -2,13 +2,13 @@
  * Home (ADR 0083 D2): Very easy mode's editor area when no thing is open. With a project it
  * shows "Make something" (big tiles opening Creator flows, the Rule book, the painter or the AI
  * helper) and "My things" (one card per set or thing); without one it offers a new mod (a name
- * only, ADR 0083 D6), opening one and the recent mods. Presentational: the host does the work.
+ * only, ADR 0083 D6), opening one, "Surprise me" (ADR 0086) and the recent mods. Presentational: the host does the work.
  *
  * @packageDocumentation
  */
 
 import type { Project } from '@msm/core';
-import { FilePlus, FolderOpen } from 'lucide-react';
+import { Dices, FilePlus, FolderOpen } from 'lucide-react';
 import type { RecentProjectView } from '../../../../shared/platform';
 import type { ThingPictures } from '../thing-picker/ThingPicker';
 import { Button } from '../ui/Button';
@@ -33,6 +33,8 @@ export interface HomeProps {
   onDeleteThing(card: ThingCard): void;
   /** Starts a new mod (asks only for a name). */
   onNewProject(): void;
+  /** "Surprise me": a random mod (ADR 0086); without a mod open it starts a new one. */
+  onSurprise?(): void;
   onOpenProject(): void;
   recentProjects?: readonly RecentProjectView[];
   onOpenRecent?(root: string): void;
@@ -62,7 +64,18 @@ export function Home(props: HomeProps) {
             <FolderOpen size={16} aria-hidden />
             Open a mod
           </Button>
+          {props.onSurprise !== undefined && (
+            <Button data-testid="home-surprise" onClick={props.onSurprise}>
+              <Dices size={16} aria-hidden />
+              Surprise me
+            </Button>
+          )}
         </div>
+        {props.onSurprise !== undefined && (
+          <p className="max-w-prose text-center text-muted text-xs">
+            Not sure what to make? Surprise me makes a random mod to start from.
+          </p>
+        )}
         {recent.length > 0 && props.onOpenRecent !== undefined && (
           <section aria-labelledby="home-recent-heading" className="flex flex-col gap-1">
             <h2 id="home-recent-heading" className="text-center font-medium text-sm">

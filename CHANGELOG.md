@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **Surprise me**: not sure what to make? The new first tile on Home (also a button on Home with no mod open, **File > Surprise Me…** and the command palette) makes a small random mod in a theme such as Ruby, Frost or Void: an ore or a set of tools and armour, then a few of a block, a weapon, a food, a mob or pet, a potion or effect, a plant, sparkles and a portal, and sometimes a rule. You see it all first, with pictures, then **Make it**, **Roll again** or **Change theme**. The seed is shown, so the same seed always gives the same mod. It is one step, so **Undo** takes it all back; with no mod open it starts a new one named after the theme.
+- **Pick for me** in the Creator fills in every question with random answers that work.
+- **More Home tiles**, now under headings: **Make a chest or machine**, **Make a recipe**, **Make sparkles**, **Make a magic wand**, **Make a world or biome**, **Make a building**, **Change drops and trades**, **Change how Minecraft looks**, **Make a painting** and **Make a sound or music**. Every Creator page can now be reached from Home, and the recipe, building, biome and resource pack starters are added to your mod in one click.
+
 - Work in progress: Try it will show what your rules and events do when you use, break and step on your blocks.
 - A **Try it** page in the user guide: how to open it, the keys, the tools and the clock, mobs, particles and portals, **What happened**, and the full list of what Try it cannot show. The link on Try it's first-run card opens it.
 

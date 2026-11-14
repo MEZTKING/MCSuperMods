@@ -9,8 +9,9 @@ import userEvent from '@testing-library/user-event';
 import { Tooltip } from 'radix-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Home, type HomeProps } from '../../src/renderer/src/components/home/Home';
+import { MakeChooser } from '../../src/renderer/src/components/home/MakeChooser';
 import { copyData, copyId, thingCards } from '../../src/renderer/src/components/home/things';
-import { MAKE_TILES, shownTiles } from '../../src/renderer/src/components/home/tiles';
+import { MAKE_TILES, shownTiles, TILE_GROUPS } from '../../src/renderer/src/components/home/tiles';
 import {
   modFolder,
   modNameError,
@@ -78,22 +79,84 @@ function homeProps(overrides: Partial<HomeProps> = {}): HomeProps {
 }
 
 describe('Home tiles', () => {
-  it('lists the thirteen tiles in the ADR order', () => {
-    expect(MAKE_TILES.map((tile) => tile.label)).toEqual([
-      'Make a block',
-      'Make an item',
-      'Make a tool or weapon',
-      'Make armour',
-      'Make food',
-      'Make a mob',
-      'Make a pet or animal',
-      'Make a plant or tree',
-      'Make a potion or effect',
-      'Make a portal',
-      'Make things happen',
-      'Paint a picture',
-      'Build with the AI helper',
+  it('lists the tiles in order under their headings (ADR 0083 D2, ADR 0086 D8)', () => {
+    expect(MAKE_TILES.map((tile) => `${tile.group}: ${tile.label}`)).toEqual([
+      'start: Surprise me',
+      'blocks: Make a block',
+      'blocks: Make a chest or machine',
+      'blocks: Make an item',
+      'blocks: Make a tool or weapon',
+      'blocks: Make armour',
+      'blocks: Make food',
+      'blocks: Make a plant or tree',
+      'blocks: Make a recipe',
+      'creatures: Make a mob',
+      'creatures: Make a pet or animal',
+      'magic: Make a potion or effect',
+      'magic: Make sparkles',
+      'magic: Make a magic wand',
+      'worlds: Make a portal',
+      'worlds: Make a world or biome',
+      'worlds: Make a building',
+      'worlds: Change drops and trades',
+      'looks: Change how Minecraft looks',
+      'looks: Make a painting',
+      'looks: Make a sound or music',
+      'looks: Paint a picture',
+      'more: Make things happen',
+      'more: Build with the AI helper',
     ]);
+    // Tiles keep to the headings' order.
+    const order = TILE_GROUPS.map((group) => group.id as string);
+    const groups = MAKE_TILES.map((tile) => order.indexOf(tile.group));
+    expect(groups).toEqual([...groups].sort((a, b) => a - b));
+    expect(new Set(MAKE_TILES.map((tile) => tile.id)).size).toBe(MAKE_TILES.length);
+  });
+
+  it('reaches every Creator flow of the library from some tile', async () => {
+    const { default: library } = await import('@msm/plugin-library');
+    const reached = new Set(
+      MAKE_TILES.flatMap((tile) => (tile.action.type === 'flows' ? tile.action.flowIds : [])),
+    );
+    const flows = (library.contributes.projectStarters ?? []).filter(
+      (starter) => starter.creator !== undefined,
+    );
+    for (const flow of flows) expect(reached.has(flow.id), flow.id).toBe(true);
+  });
+
+  it('names only library starters that are not flows as starters', async () => {
+    const { default: library } = await import('@msm/plugin-library');
+    const starters = library.contributes.projectStarters ?? [];
+    for (const tile of MAKE_TILES) {
+      if (tile.action.type !== 'flows') continue;
+      for (const id of tile.action.starterIds ?? []) {
+        const starter = starters.find((entry) => entry.id === id);
+        expect(starter, id).toBeDefined();
+        expect(starter?.creator, id).toBeUndefined();
+        expect(starter?.category, id).not.toBe('blank');
+      }
+    }
+  });
+
+  it('shows a starter tile only when its starter is available', () => {
+    const without = shownTiles({ flowAvailable: () => true, rules: true, ai: true });
+    expect(without.map((entry) => entry.tile.id)).not.toContain('building');
+    expect(without.find((entry) => entry.tile.id === 'world')?.starterIds).toEqual([]);
+    const shown = shownTiles({
+      flowAvailable: () => true,
+      starterAvailable: (id) => id !== 'recipe_pack',
+      rules: true,
+      ai: true,
+      surprise: false,
+    });
+    const ids = shown.map((entry) => entry.tile.id);
+    expect(ids).toContain('building');
+    expect(ids).not.toContain('recipe');
+    expect(ids).not.toContain('surprise');
+    expect(shown.find((entry) => entry.tile.id === 'world')).toMatchObject({
+      flowIds: ['dimension'],
+      starterIds: ['custom_biome'],
+    });
   });
 
   it('hides tiles whose flows are all unavailable, and Rules and the AI helper when off', () => {
@@ -111,6 +174,7 @@ describe('Home tiles', () => {
       'gear-set',
       'enchantment',
     ]);
+    expect(ids).toContain('surprise');
   });
 
   it('every flow id a tile names is a Creator flow of the library', async () => {
@@ -124,6 +188,52 @@ describe('Home tiles', () => {
       if (tile.action.type !== 'flows') continue;
       for (const id of tile.action.flowIds) expect(flows.has(id), id).toBe(true);
     }
+  });
+
+  it('shows the tiles under their headings with Surprise me first', () => {
+    render(<Home {...homeProps()} />);
+    const groups = screen.getAllByTestId(/^home-group-/).map((node) => node.dataset.testid);
+    expect(groups).toEqual([
+      'home-group-start',
+      'home-group-blocks',
+      'home-group-creatures',
+      'home-group-magic',
+      'home-group-worlds',
+      'home-group-looks',
+      'home-group-more',
+    ]);
+    expect(screen.getAllByTestId(/^home-tile-/)[0]?.dataset.testid).toBe('home-tile-surprise');
+  });
+
+  it('offers Surprise me without a mod open', async () => {
+    const onSurprise = vi.fn();
+    render(<Home {...homeProps({ project: null, onSurprise })} />);
+    await userEvent.setup().click(screen.getByTestId('home-surprise'));
+    expect(onSurprise).toHaveBeenCalledOnce();
+  });
+
+  it('the chooser of a tile with starters picks a flow or a starter', async () => {
+    const onPick = vi.fn();
+    const onClose = vi.fn();
+    render(
+      <MakeChooser
+        title="Make a world or biome"
+        choices={[
+          { type: 'flow', id: 'dimension', title: 'Dimension', sentence: 'A world.' },
+          { type: 'starter', id: 'custom_biome', title: 'Custom biome', sentence: 'A biome.' },
+        ]}
+        onPick={onPick}
+        onClose={onClose}
+      />,
+    );
+    const user = userEvent.setup();
+    expect(screen.getByTestId('make-chooser').textContent).toContain('Adds it to your mod');
+    await user.click(screen.getByTestId('make-choice-custom_biome'));
+    expect(onPick).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'starter', id: 'custom_biome' }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(onClose).toHaveBeenCalled();
   });
 
   it('runs the tile the user clicks', async () => {

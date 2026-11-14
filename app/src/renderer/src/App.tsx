@@ -1,9 +1,10 @@
-import type {
-  Json,
-  Problem,
-  Element as ProjectElement,
-  Reference,
-  ResourceLocation,
+import {
+  createEmptyProject,
+  type Json,
+  type Problem,
+  type Element as ProjectElement,
+  type Reference,
+  type ResourceLocation,
 } from '@msm/core';
 import type { Target } from '@msm/plugin-api';
 import { RULES_KIND } from '@msm/plugin-rules';
@@ -70,6 +71,7 @@ import {
 } from './components/function-editor/caret';
 import { lineOffset } from './components/function-editor/source-text';
 import { Home } from './components/home/Home';
+import { type MakeChoice, MakeChooser } from './components/home/MakeChooser';
 import { RenameThingDialog } from './components/home/MyThings';
 import { copyData, copyId, type ThingCard, thingCards } from './components/home/things';
 import { type ShownTile, shownTiles } from './components/home/tiles';
@@ -84,13 +86,14 @@ import {
 } from './components/install-target';
 import { ModpacksDialog } from './components/ModpacksDialog';
 import { NewElementDialog, NewNamespaceDialog } from './components/NewElementDialog';
-import { NewModDialog, NewProjectDialog } from './components/NewProjectDialog';
+import { modFolder, NewModDialog, NewProjectDialog } from './components/NewProjectDialog';
 import { PluginExportDialog } from './components/PluginExportDialog';
 import { RenameElementDialog } from './components/RenameElementDialog';
 import { RightDock } from './components/RightDock';
 import { SettingsDialog } from './components/SettingsDialog';
 import { StatusBar } from './components/StatusBar';
 import { StatusToast } from './components/StatusToast';
+import { SurpriseDialog } from './components/surprise/SurpriseDialog';
 import { TestInMinecraftDialog, testInMinecraftMessage } from './components/TestInMinecraftDialog';
 import { ThingsToFix } from './components/ThingsToFix';
 import { modKey, Toolbar, type ToolbarPluginExport } from './components/Toolbar';
@@ -106,6 +109,7 @@ import { WishlistDialog } from './components/WishlistDialog';
 import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
+import { namespaceFromFolderName } from './session/element-defaults';
 import { importerFileFilters, isBlockbenchImporter } from './session/importers';
 import {
   FUNCTION_KIND,
@@ -161,6 +165,7 @@ import { projectScripts } from './studios/scripting/script-model';
 import { type StructureStudioHost, StructureStudioHostContext } from './studios/structures/host';
 import { templateContext, templatesFor } from './studios/templates';
 import { useSchemaContext } from './studios/use-schema-context';
+import { rollSurprise, type SurpriseMod, themeById, themeOfSeed } from './surprise/surprise';
 import { retexture, textureIdOf } from './textures/retexture';
 import { TextureDropContext, type TextureDropHandler } from './textures/texture-drop';
 import { useTryItStore } from './tryit/tryit-store';
@@ -219,6 +224,8 @@ type DialogState =
   | { type: 'examples' }
   | { type: 'creator'; edit?: CreatorEditRequest; flowIds?: readonly string[] }
   | { type: 'new-mod'; parent: string }
+  | { type: 'surprise' }
+  | { type: 'make-choice'; title: string; choices: readonly MakeChoice[] }
   | { type: 'rename-thing'; id: ResourceLocation; name: string }
   | { type: 'import'; namespace?: string }
   | { type: 'import-files'; mode: ImportMode }
@@ -640,8 +647,18 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         .filter((flow) => flow.unavailable === null)
         .map((flow) => flow.starter.id),
     );
+    const starters = new Set(
+      session.library.starters
+        .filter(
+          (starter) =>
+            starter.creator === undefined &&
+            (starter.supports === undefined || starter.supports(target)),
+        )
+        .map((starter) => starter.id),
+    );
     return shownTiles({
       flowAvailable: (id) => available.has(id),
+      starterAvailable: (id) => starters.has(id),
       rules: session.registry.get(RULES_KIND) !== undefined,
       ai: aiController !== null,
     });
@@ -1544,6 +1561,109 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       setMessage({ kind: 'error', text: `Make things happen: ${messageOf(error)}` });
     }
   };
+  /** The choices of a tile with starters (ADR 0086 D8): its flows, then its starters. */
+  const tileChoices = (shown: ShownTile): MakeChoice[] => {
+    const starters = session.library.starters;
+    const flows = shown.flowIds.flatMap((id): MakeChoice[] => {
+      const starter = starters.find((entry) => entry.id === id);
+      return starter === undefined
+        ? []
+        : [{ type: 'flow', id, title: starter.title, sentence: starter.creator?.blurb ?? '' }];
+    });
+    const others = shown.starterIds.flatMap((id): MakeChoice[] => {
+      const starter = starters.find((entry) => entry.id === id);
+      return starter === undefined
+        ? []
+        : [{ type: 'starter', id, title: starter.title, sentence: starter.description }];
+    });
+    return [...flows, ...others];
+  };
+  /** Adds a library starter's things to the mod as one undo step (ADR 0086 D8). */
+  const addStarter = (starterId: string): void => {
+    const starter = session.library.starters.find((entry) => entry.id === starterId);
+    if (starter === undefined || ownNamespace === undefined) return;
+    session.addBundle(starter, { namespace: ownNamespace, label: `Add ${starter.title}` }).then(
+      (result) => {
+        setAssetRevision((revision) => revision + 1);
+        setMessage({
+          kind: 'info',
+          text: `Added ${starter.title}: ${result.added.length} thing(s) and ${result.assets.length} picture(s) or file(s). Undo takes it back.`,
+        });
+      },
+      (error: unknown) =>
+        setMessage({ kind: 'error', text: `Add ${starter.title}: ${messageOf(error)}` }),
+    );
+  };
+  /** Rolls "Surprise me" for the open mod, or for a new mod named after the theme (ADR 0086). */
+  const rollSurpriseFor = useCallback(
+    (seed: number, themeId: string | null): Promise<SurpriseMod> => {
+      const isKnownKind = (kind: string) => session.registry.get(kind) !== undefined;
+      const common = {
+        seed,
+        themeId,
+        starters: session.library.starters,
+        target: session.target,
+        isKnownKind,
+        rules: session.registry.get(RULES_KIND) !== undefined,
+        newSetId: () => crypto.randomUUID(),
+      };
+      const current = session.snapshot.project;
+      if (current !== null) {
+        const namespace = current.namespaces.find((entry) => entry.name !== 'minecraft')?.name;
+        if (namespace === undefined) {
+          return Promise.reject(new Error('The mod has no namespace of its own; add one first.'));
+        }
+        return rollSurprise({ ...common, namespace, project: current });
+      }
+      const theme = themeById(themeId) ?? themeOfSeed(seed);
+      const name = `${theme.word} Mod`;
+      const namespace = namespaceFromFolderName(name);
+      const empty = createEmptyProject(name, {
+        targets: session.defaultTargetId === undefined ? [] : [session.defaultTargetId],
+      });
+      empty.namespaces.push({ name: namespace, elements: [], assets: [] });
+      return rollSurprise({ ...common, namespace, project: empty });
+    },
+    [session],
+  );
+  /**
+   * "Make it": adds the things to the open mod, or first starts a new mod named after the theme
+   * in the default folder (`Ruby Mod`, then `Ruby Mod 2`…) and rolls the same seed for it.
+   */
+  const makeSurprise = async (mod: SurpriseMod): Promise<void> => {
+    let made = mod;
+    if (session.snapshot.project === null) {
+      const parent = (await bridge.project.defaultParent?.().catch(() => '')) ?? '';
+      let outcome: OpenOutcome = { ok: false, cancelled: true };
+      if (parent === '') {
+        outcome = await session.newProject();
+      } else {
+        for (let number = 1; number <= 20; number += 1) {
+          const name = number === 1 ? mod.modName : `${mod.modName} ${number}`;
+          outcome = await session.newProject({ folder: modFolder(parent, name) });
+          if (outcome.ok || 'cancelled' in outcome) break;
+        }
+      }
+      if (!outcome.ok) {
+        if ('reason' in outcome) throw new Error(outcome.reason);
+        return;
+      }
+      const opened = outcome;
+      await openWith('New mod', async () => opened);
+      made = await rollSurpriseFor(mod.seed, mod.theme.id);
+    }
+    const result = await session.applyChangeset(made.items, made.label);
+    setDialog(null);
+    select(null);
+    setAssetRevision((revision) => revision + 1);
+    const rule = made.rule === null ? '' : ' and a rule';
+    const skipped =
+      result.skipped.length > 0 ? ` ${result.skipped.length} part(s) no longer fitted.` : '';
+    setMessage({
+      kind: 'info',
+      text: `Made ${made.modName}: ${made.things.length} things${rule}. Undo takes it all back in one step.${skipped}`,
+    });
+  };
   const openTile = (shown: ShownTile): void => {
     const action = shown.tile.action;
     if (project === null) {
@@ -1552,7 +1672,14 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     }
     switch (action.type) {
       case 'flows':
-        setDialog({ type: 'creator', flowIds: shown.flowIds });
+        if (shown.starterIds.length === 0) {
+          setDialog({ type: 'creator', flowIds: shown.flowIds });
+          return;
+        }
+        setDialog({ type: 'make-choice', title: shown.tile.label, choices: tileChoices(shown) });
+        return;
+      case 'surprise':
+        setDialog({ type: 'surprise' });
         return;
       case 'rules':
         openRuleBook();
@@ -1731,6 +1858,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       }
       setDialog({ type: 'creator' });
     },
+    surpriseMe: () => setDialog({ type: 'surprise' }),
     play: playNow,
     reloadGame,
     tryIt: () => {
@@ -1807,6 +1935,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         ? null
         : () => aiController.askAboutElement(selected.id),
     creator: project === null ? null : handlers.creator,
+    surpriseMe: handlers.surpriseMe,
     play: project === null || !playConnected ? null : playNow,
     reloadGame: project === null || !canReloadGame ? null : reloadGame,
     tryIt: project === null ? null : () => handlers.tryIt(),
@@ -2175,6 +2304,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 onDuplicateThing={duplicateThing}
                 onDeleteThing={deleteThing}
                 onNewProject={handlers.new}
+                onSurprise={handlers.surpriseMe}
                 onOpenProject={handlers.open}
                 recentProjects={recentProjects}
                 onOpenRecent={openRecent}
@@ -2512,6 +2642,29 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 });
                 const first = result.created[0];
                 if (first !== undefined) select(first);
+              }}
+            />
+          )}
+          {dialog?.type === 'surprise' && (
+            <SurpriseDialog
+              roll={rollSurpriseFor}
+              newMod={project === null}
+              onMake={makeSurprise}
+              onClose={() => setDialog(null)}
+            />
+          )}
+          {dialog?.type === 'make-choice' && (
+            <MakeChooser
+              title={dialog.title}
+              choices={dialog.choices}
+              onClose={() => setDialog(null)}
+              onPick={(choice) => {
+                if (choice.type === 'flow') {
+                  setDialog({ type: 'creator', flowIds: [choice.id] });
+                  return;
+                }
+                setDialog(null);
+                addStarter(choice.id);
               }}
             />
           )}
