@@ -230,3 +230,5 @@ The hard limits of this batch, in the style of the coverage audit's L and S rows
 ## Notes from implementation
 
 Appended by the orchestrator from each brief's "Notes for the plan", with the brief number.
+
+- B309 (90a3d1e): stubs are bare `public class X {}` with a Javadoc and no imports; the filling brief adds imports. B314 fills `MsmContainerGameTest`, B316 `MsmMachineGameTest` and `MsmMachineRecipeGameTest`, B317 `MsmContainerScriptGameTest`, B325 `SampleMachinesParityTest`; none edits either `fabric.mod.json`. The baseline stays 309 GameTests per variant until a stub gets `@GameTest` methods. The parity description names `sample_machines_*`; `tools/run-fabric-server`'s `--gametest-filter` use is untouched and B325 may need to add the filter.
