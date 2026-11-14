@@ -14,8 +14,9 @@
  * - Spawning: natural `spawn` on or off, biomes (ids and `#` tags), weight, group sizes,
  *   placement, heightmap, rule.
  * - Spawn egg: on, or off as `"spawn_egg": false`; creative tab, texture, display name.
- * - Events: the trigger components (`msm:on_hurt`, `msm:on_death`, `msm:on_interact`) and the
- *   shared events editor, with `play_animation` over the chosen animation set.
+ * - Events: the trigger components (`msm:on_hurt`, `msm:on_death`, `msm:on_interact`), the
+ *   "Triggers" section (B239, ADR 0061 D3: `msm:on_tick` with its interval, `msm:on_spawn`)
+ *   and the shared events editor, with `play_animation` over the chosen animation set.
  *
  * Choices (categories, placements, heightmaps, rules) come from the schema. Everything else
  * stays behind "Advanced (all fields)".
@@ -38,6 +39,7 @@ import {
 } from '../blocks-items/blocks-items-model';
 import { EventsEditor } from '../blocks-items/EventsEditor';
 import { CheckField, EventSelect, ProblemsAt, TextField } from '../blocks-items/parts';
+import { TriggersSection } from '../blocks-items/triggers';
 import { projectHandlers } from '../scripting/script-model';
 import { useStructureStudioHost } from '../structures/host';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
@@ -868,6 +870,14 @@ export function EntityStudio(props: StudioProps) {
           pointer={pointerOf(['components', component, 'event'])}
         />
       ))}
+      <TriggersSection
+        kind={element.kind}
+        data={element.data}
+        node={node}
+        events={events}
+        problems={problems}
+        set={set}
+      />
     </>
   );
 

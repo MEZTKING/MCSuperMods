@@ -4,7 +4,9 @@
  * it), rarity, creative tab, food, tool (type and tier), durability, `msm:on_use` with
  * cooldown, `msm:throwable` (B205, ADR 0056 D1: damage, speed, gravity, spread, hold to
  * throw, what happens after the throw, cooldown, sound, dispensers and the two hit events), and
- * the events editor shared with the Block Studio. Choices come from the schema; everything
+ * the events editor shared with the Block Studio, with its "Triggers" section (B239, ADR 0061
+ * D1: on hit, on use on a block, while held, while worn) and "Fuel and compost" (ADR 0060 D4).
+ * Choices come from the schema; everything
  * else stays behind "Advanced (all fields)".
  */
 
@@ -24,6 +26,7 @@ import {
 } from './blocks-items-model';
 import { EventsEditor } from './EventsEditor';
 import { CheckField, EventSelect, ModelField, ProblemsAt, TextField } from './parts';
+import { FuelCompostFields, TriggersSection } from './triggers';
 
 /** New component values when a component is switched on (ADR 0025 D3 examples). */
 const NEW_FOOD = { nutrition: 4, saturation: 0.3 };
@@ -419,6 +422,14 @@ export function ItemStudio(props: StudioProps) {
       {toolSection}
       {behaviour}
       {throwableSection}
+      <FuelCompostFields
+        base={[]}
+        data={element.data}
+        node={node}
+        problems={problems}
+        set={set}
+        testId="item"
+      />
       <EventsEditor
         element={element}
         problems={problems}
@@ -426,6 +437,29 @@ export function ItemStudio(props: StudioProps) {
         onChange={onChange}
         handlers={projectHandlers(project)}
         effects={projectEffects(project)}
+        triggers={
+          <TriggersSection
+            kind={element.kind}
+            data={element.data}
+            node={node}
+            events={events}
+            problems={problems}
+            set={set}
+            notes={{
+              'msm:while_worn':
+                components['msm:armor'] === undefined ? (
+                  <p
+                    role="status"
+                    className="text-warning text-xs"
+                    data-testid="trigger-while-worn-no-armour"
+                  >
+                    Only armour can be worn: give the item an armour piece (msm:armor) under
+                    Advanced (all fields), or this trigger never fires.
+                  </p>
+                ) : undefined,
+            }}
+          />
+        }
       />
     </section>
   );

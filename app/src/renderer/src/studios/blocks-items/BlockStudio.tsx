@@ -8,9 +8,12 @@
  * - Mining: `msm:breakable` hardness, resistance, tool, minimum tier, requires tool.
  * - Light level (`msm:light_emitter`) and sound type.
  * - Drops: `loot` as drops itself, a loot table id, or none.
- * - Block item: on, or off as `"item": false`; stack size, rarity, creative tab.
+ * - Block item: on, or off as `"item": false`; stack size, rarity, creative tab, and "Fuel and
+ *   compost" (ADR 0060 D4).
  * - Behaviour: the trigger components (`msm:on_interact`, `msm:on_step` with cooldown,
- *   `msm:redstone`) pick events from the element's own events, and the shared events editor.
+ *   `msm:redstone`) pick events from the element's own events, and the shared events editor
+ *   with its "Triggers" section (ADR 0061 D2: on break, on place, on random tick, on entity
+ *   inside).
  *
  * Choices (sound types, tools, tiers, rarities) come from the schema. Everything else stays
  * behind "Advanced (all fields)".
@@ -30,6 +33,7 @@ import {
   choicesAt,
   effectiveBoxes,
   eventNames,
+  isFullCube,
   isWalkThrough,
   MAX_SHAPE_BOXES,
   type PixelBox,
@@ -49,6 +53,7 @@ import {
 import { EventsEditor } from './EventsEditor';
 import { useBlocksItemsStudioHost } from './host';
 import { CheckField, EventSelect, ModelField, ProblemsAt, ShapePreview, TextField } from './parts';
+import { FuelCompostFields, TriggersSection } from './triggers';
 
 type TextureLayer = 'solid' | 'cutout' | 'translucent';
 
@@ -535,7 +540,18 @@ export function BlockStudio(props: StudioProps) {
             onCommit={(value) => set(['item', 'creative_tab'], value === '' ? undefined : value)}
           />
         </div>
-      ) : (
+      ) : null}
+      {hasItem && (
+        <FuelCompostFields
+          base={['item']}
+          data={element.data}
+          node={node}
+          problems={problems}
+          set={set}
+          testId="block-item"
+        />
+      )}
+      {!hasItem && (
         <p className="text-muted text-xs">
           The block registers no item, so it cannot be held or placed by players.
         </p>
@@ -663,6 +679,29 @@ export function BlockStudio(props: StudioProps) {
         onChange={onChange}
         handlers={projectHandlers(project)}
         effects={projectEffects(project)}
+        triggers={
+          <TriggersSection
+            kind={element.kind}
+            data={element.data}
+            node={node}
+            events={events}
+            problems={problems}
+            set={set}
+            notes={{
+              'msm:on_entity_inside':
+                isWalkThrough(shape) || !isFullCube(effectiveBoxes(shape)) ? undefined : (
+                  <p
+                    role="status"
+                    className="text-warning text-xs"
+                    data-testid="trigger-on-entity-inside-full"
+                  >
+                    Entities can only be inside a block that is not a full cube or is walk-through:
+                    change the Shape, or this trigger never fires.
+                  </p>
+                ),
+            }}
+          />
+        }
       />
     </section>
   );

@@ -313,17 +313,27 @@ export const EVENT_FIELDS: Readonly<Record<string, readonly (readonly string[])[
       ['msm:on_step', 'event'],
       ['msm:redstone', 'on_powered'],
       ['msm:redstone', 'on_unpowered'],
+      ['msm:on_break', 'event'],
+      ['msm:on_place', 'event'],
+      ['msm:on_random_tick', 'event'],
+      ['msm:on_entity_inside', 'event'],
     ],
     [ITEM_KIND]: [
       ['msm:on_use', 'event'],
       ['msm:throwable', 'on_hit_entity', 'event'],
       ['msm:throwable', 'on_hit_block', 'event'],
+      ['msm:on_hit', 'event'],
+      ['msm:on_use_on_block', 'event'],
+      ['msm:while_held', 'event'],
+      ['msm:while_worn', 'event'],
     ],
     [ENTITY_KIND]: [
       ['msm:on_hurt', 'event'],
       ['msm:on_death', 'event'],
       ['msm:on_interact', 'event'],
       ['msm:attack', 'on_attack'],
+      ['msm:on_tick', 'event'],
+      ['msm:on_spawn', 'event'],
     ],
     [EFFECT_KIND]: [
       ['msm:on_start', 'event'],
@@ -332,6 +342,210 @@ export const EVENT_FIELDS: Readonly<Record<string, readonly (readonly string[])[
     ],
   },
 );
+
+/** The smallest interval of a repeating trigger, in ticks (ADR 0061 D4). */
+export const MIN_TRIGGER_INTERVAL = 5;
+
+/** One field of a trigger component besides its `event`. */
+export interface TriggerFieldSpec {
+  key: string;
+  label: string;
+  /** `int` and `float` are numbers; `choice` offers the schema's string values. */
+  type: 'int' | 'float' | 'choice';
+  /** The value the runtime uses when the field is absent (ADR 0061). */
+  defaultValue: number | string;
+  /** The `data-testid` suffix of the field, after the trigger's own. */
+  testId: string;
+  /** Values a `choice` offers when the schema names none. */
+  choices?: readonly string[];
+}
+
+/** One trigger component of ADR 0061 that the Triggers section edits. */
+export interface TriggerSpec {
+  /** The component id, for example `msm:on_hit`. */
+  component: string;
+  label: string;
+  /** What fires it and who self and other are. */
+  help: string;
+  fields: readonly TriggerFieldSpec[];
+}
+
+const intervalField = (): TriggerFieldSpec => ({
+  key: 'interval_ticks',
+  label: 'Every (ticks)',
+  type: 'int',
+  defaultValue: 20,
+  testId: 'interval',
+});
+
+/** The triggers of ADR 0061 per kind, in the order the Triggers section shows them. */
+export const TRIGGERS: Readonly<Record<string, readonly TriggerSpec[]>> = Object.freeze({
+  [ITEM_KIND]: [
+    {
+      component: 'msm:on_hit',
+      label: 'On hit',
+      help: 'After the item hits a mob, by a player or a mob holding it; self is the attacker, other the mob hit.',
+      fields: [],
+    },
+    {
+      component: 'msm:on_use_on_block',
+      label: 'On use on a block',
+      help: 'When the item is used on a block; the block is the one clicked.',
+      fields: [
+        {
+          key: 'cooldown_ticks',
+          label: 'Cooldown (ticks)',
+          type: 'int',
+          defaultValue: 0,
+          testId: 'cooldown',
+        },
+      ],
+    },
+    {
+      component: 'msm:while_held',
+      label: 'While held',
+      help: 'Repeatedly while an entity holds the item.',
+      fields: [
+        intervalField(),
+        {
+          key: 'hand',
+          label: 'Hand',
+          type: 'choice',
+          defaultValue: 'main',
+          testId: 'hand',
+          choices: ['main', 'off', 'either'],
+        },
+      ],
+    },
+    {
+      component: 'msm:while_worn',
+      label: 'While worn',
+      help: 'Repeatedly while an entity wears the item in its armour slot.',
+      fields: [intervalField()],
+    },
+  ],
+  [BLOCK_KIND]: [
+    {
+      component: 'msm:on_break',
+      label: 'On break',
+      help: 'When a player breaks the block, in any game mode; self is the player.',
+      fields: [],
+    },
+    {
+      component: 'msm:on_place',
+      label: 'On place',
+      help: 'When an entity places the block; self is the placer.',
+      fields: [],
+    },
+    {
+      component: 'msm:on_random_tick',
+      label: 'On random tick',
+      help: 'On a random block tick (about once every 68 seconds per block on average).',
+      fields: [
+        {
+          key: 'chance',
+          label: 'Chance (0 to 1)',
+          type: 'float',
+          defaultValue: 1,
+          testId: 'chance',
+        },
+      ],
+    },
+    {
+      component: 'msm:on_entity_inside',
+      label: 'On entity inside',
+      help: 'While an entity is inside the block, at most once per cooldown for each entity.',
+      fields: [
+        {
+          key: 'cooldown_ticks',
+          label: 'Cooldown (ticks)',
+          type: 'int',
+          defaultValue: 20,
+          testId: 'cooldown',
+        },
+      ],
+    },
+  ],
+  [ENTITY_KIND]: [
+    {
+      component: 'msm:on_tick',
+      label: 'On tick',
+      help: 'Repeatedly while the mob is alive.',
+      fields: [intervalField()],
+    },
+    {
+      component: 'msm:on_spawn',
+      label: 'On spawn',
+      help: 'When the mob spawns naturally, from an egg or from a spawner; not when its chunk loads.',
+      fields: [],
+    },
+  ],
+} satisfies Record<string, TriggerSpec[]>);
+
+/** The `data-testid` stem of a trigger component: `msm:on_use_on_block` is `trigger-on-use-on-block`. */
+export function triggerTestId(component: string): string {
+  return `trigger-${component.replace(/^msm:/, '').replaceAll('_', '-')}`;
+}
+
+/**
+ * The node of field `key` of `node` for `value`, also through a union (the first struct member
+ * that has the field, preferring the member the value fits); `undefined` when none has it.
+ */
+export function fieldNodeThrough(
+  node: SchemaNode | undefined,
+  value: Json | undefined,
+  key: string,
+): SchemaNode | undefined {
+  if (node === undefined) return undefined;
+  const resolved = resolveNode(node);
+  if (resolved.kind !== 'union') return fieldNode(resolved, value, key);
+  for (const member of flattenUnion(resolved)) {
+    const found = fieldNode(member, value, key);
+    if (found !== undefined) return found;
+  }
+  return undefined;
+}
+
+/**
+ * The string choices of the value at `path` under `node` (keys and list indices), following
+ * unions and lists; `[]` when the schema has no such place.
+ */
+export function choicesThrough(
+  node: SchemaNode | undefined,
+  value: Json | undefined,
+  path: readonly (string | number)[],
+): string[] {
+  let current: SchemaNode | undefined = node;
+  let currentValue: Json | undefined = value;
+  for (const key of path) {
+    if (typeof key === 'number') {
+      const resolved = current === undefined ? undefined : resolveNode(current);
+      current = resolved?.kind === 'list' ? resolved.item : undefined;
+      currentValue = Array.isArray(currentValue) ? currentValue[key] : undefined;
+    } else {
+      current = fieldNodeThrough(current, currentValue, key);
+      currentValue = asObject(currentValue)[key];
+    }
+    if (current === undefined) return [];
+  }
+  const direct = stringChoices(current);
+  if (direct.length > 0 || current === undefined) return direct;
+  const resolved = resolveNode(current);
+  if (resolved.kind !== 'union') return [];
+  return [...new Set(flattenUnion(resolved).flatMap((member) => stringChoices(member)))];
+}
+
+/** Compost chances (`CompostChance` in `element.mcdoc`), when the schema names none. */
+export const COMPOST_CHANCES: readonly string[] = Object.freeze([
+  '30%',
+  '50%',
+  '65%',
+  '85%',
+  '100%',
+]);
+
+/** The fuel "Burns in a furnace" writes: 10 seconds, enough to smelt one item. */
+export const NEW_FUEL: Readonly<{ burn_seconds: number }> = Object.freeze({ burn_seconds: 10 });
 
 /** `value` with the string at `path` replaced by `to` when it equals `from`; else `value`. */
 function renamedAt(value: Json, path: readonly string[], from: string, to: string): Json {
@@ -551,6 +765,14 @@ export function effectiveBoxes(shape: Json | undefined): PixelBox[] {
   }
   const written = writtenBoxes(shape);
   return written.length > 0 ? written : [[...FULL_CUBE] as PixelBox];
+}
+
+/** Whether `boxes` fill the whole block (one box equal to the full cube). */
+export function isFullCube(boxes: readonly PixelBox[]): boolean {
+  const [only] = boxes;
+  return (
+    boxes.length === 1 && only !== undefined && only.every((value, i) => value === FULL_CUBE[i])
+  );
 }
 
 /** Whether a block with this shape is walk-through (`collision` false; `cross` by default). */
