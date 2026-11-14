@@ -3642,3 +3642,11 @@ Decisions
 
 Next
 - Orchestrator: review and set ADR 0079's status line. D4 (gzip) only if `app.asar` comes within 1 MB of 32 MB.
+
+## 2026-11-14 — orchestrator — toolbar tooltips open only on hover or keyboard focus
+
+What: CI run 43602928640 (f6b671a) failed `creator-path.spec.ts:678` again: the Export tooltip stayed open ("instant-open") over `dock-tab-problems`. The earlier hold (a press on the trigger keeps the tooltip shut until the pointer leaves) did not cover the export menu: the pointer leaves the trigger for a menu item, which lifted the hold before the menu handed focus back. `Tip` now opens only while the pointer is over the trigger or when the last input in the window was the keyboard (document-level `keydown`/`pointerdown` listeners); focus handed back after a mouse interaction no longer shows it. Two new `Tip` tests (menu case; keyboard after pointer). `openDockTab` also waits for any tooltip to detach before clicking. App tests 1541, `creator-path` 3 runs green (24 of 24), full e2e 41 of 41.
+
+Decisions: gate on input modality rather than more pointer bookkeeping; keyboard users still get tooltips on focus.
+
+Next: none.

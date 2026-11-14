@@ -148,11 +148,17 @@ export async function launchApp(options: LaunchOptions = {}): Promise<LaunchedAp
 }
 
 /**
- * Opens a dock tab (`dock-tab-<name>`). Moves the mouse away and presses Escape first so that no
- * toolbar tooltip left open by an earlier click can sit over the tab and swallow the click.
+ * Opens a dock tab (`dock-tab-<name>`). Moves the mouse away, presses Escape and waits until no
+ * tooltip is shown, so that a toolbar tooltip left open by an earlier click cannot sit over the
+ * tab and swallow the click (the app keeps such tooltips shut; this guards the test as well).
  */
 export async function openDockTab(window: Page, name: string): Promise<void> {
   await window.mouse.move(0, 0);
   await window.keyboard.press('Escape');
+  await window
+    .getByRole('tooltip')
+    .first()
+    .waitFor({ state: 'detached', timeout: 5_000 })
+    .catch(() => undefined);
   await window.getByTestId(`dock-tab-${name}`).click();
 }
