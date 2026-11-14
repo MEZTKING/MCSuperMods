@@ -4165,3 +4165,21 @@ Decisions
 Next
 - B374: client hooks (play request, requests, status); a reopen request also refills the chests.
 - B381: forbid `[msm_runtime] dev mode for` on dedicated servers with an `msm-dev/` folder.
+## 2026-11-14 — executor — B388 Sim: player (Try it)
+
+What
+- New `packages/sim/src/player/`: `constants.ts` (the movement numbers, each commented as an approximation: box 0.6 by 1.8, eye 1.62 (1.27 sneaking), gravity 0.08, vertical drag 0.98, jump 0.42 (about 1.25 blocks), step-up 0.6, walk 0.216 a tick (about 4.3 blocks a second), sneak factor 0.3, flying 0.546 across and 0.375 up and down, reach 4.5, a ceiling 8 blocks above the area), `collide.ts` (`BlockLookup`, the area's invisible walls, floor at y 0 and ceiling, `collectObstacles`, `sweep` y then x then z, `moveWithStep`), `pick.ts` (a ray through the blocks it passes against outline boxes: block, face, hit point relative to the block, world point, distance, box index; `lookDirection`, `faceOffset`, `adjacentPos`), `controller.ts` (`PlayerController` with `step(input)` at 20 ticks a second, `view()`, `interpolatedPosition`, `eyePosition`, `pick`, `wouldOverlap`, `teleport`, `setFlying`), `index.ts`; one export line in `src/index.ts`.
+- Tests under `packages/sim/test/player/` (27 new, 28 in the package) with fake `BlockShapes` (full cube, bottom slab, stair, a door's thin box closed and open, a flower without collision): walking speed, a wall, a full block not climbed but jumped onto, a slab and stairs walked up, stepping off a block and landing, a jump of 1.25 blocks within 0.02, flying up, hovering, flying down and landing, toggling flight off, the edge walls and ceiling, the invisible floor, sneaking at about a third without edge safety, interpolation values, overlap with a placed block, a 1,000-tick seeded scripted run giving the same end position twice; pick on a door's lower and upper boxes, an open door's empty part, a slab's top, front and empty upper half, the reach, a block without outline.
+- `pnpm --filter @msm/sim test`, `pnpm lint` and `pnpm typecheck` green.
+
+Decisions
+- The controller reads blocks through `BlockLookup = (x, y, z) => BlockState | null`, so B387's world plugs in with a one-line adapter; nothing here imports `src/world`.
+- Coming down onto the ground ends flying, as in the game's creative flight; flight starts with `toggleFly` and climbs with `jump`, sinks with `sneak`.
+- The area is closed by invisible walls at x and z 0 and 48, a floor at y 0 and a ceiling at y 40 (32 plus `CEILING_MARGIN` 8), so a flying player can look down on the area but not leave it.
+- Accelerations are derived from the settled speeds (`accelerationFor`), so the constants name speeds that can be checked against the game.
+- Pointing visits blocks in the order the ray passes them; an outline box reaching outside its own block is hit only where the ray passes that block. A ray starting inside a box ignores it.
+- Biome sorts `src/index.ts`'s exports, so the player line sits above `types.js`.
+
+Next
+- B389/B390: draw the camera from `eyePosition(alpha)` (or `view()`), pass the view's own look to `pick(alpha, yaw, pitch)`, refuse placement where `wouldOverlap` is true.
+- B391/B390: the world adapter `(x, y, z) => world.get(...)` and the catalogue as `BlockShapes`.

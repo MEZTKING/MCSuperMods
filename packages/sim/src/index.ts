@@ -3,4 +3,5 @@
  * app imports. The wave 1 briefs add the world, blocks and player beside `types.ts`.
  */
 
+export * from './player/index.js';
 export * from './types.js';
