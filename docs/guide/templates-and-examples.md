@@ -4,9 +4,9 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (141) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (29) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
-| **Examples** (82) | **Help → Examples…** | A commented project or element to open or copy |
+| **Element templates** (151) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (32) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
+| **Examples** (112) | **Help → Examples…** | A commented project or element to open or copy |
 
 Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, and scripting plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
 
@@ -69,6 +69,12 @@ The id is the template's identifier (the app uses it as `template-<id>` in tests
 |---|---|---|---|
 | Sounds | `sounds` | `minecraft:sounds` | Sound events of the namespace (one per namespace), starting with one event that plays vanilla sound files. (name fixed to `sounds`) |
 
+#### Fonts
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Icon font | `font_icons` | `minecraft:font` | A font with one icon: a bitmap glyph drawn from the texture `font/<name>.png`. Show it in text with `{"text": "\uE000", "font": "<namespace>:<name>"}`. See [Icon fonts](adding-to-vanilla.md#icon-fonts). |
+
 #### Pack
 
 | Template | id | Kind | Notes |
@@ -88,6 +94,8 @@ The id is the template's identifier (the app uses it as `template-<id>` in tests
 | Stonecutter recipe | `recipe_stonecutting` | `minecraft:recipe` | One ingredient cut into a fixed number of results on the stonecutter. |
 | Smithing upgrade recipe | `recipe_smithing_transform` | `minecraft:recipe` | A smithing table upgrade: template, base item and addition give a new item. |
 | Smithing trim recipe | `recipe_smithing_trim` | `minecraft:recipe` | Applies an armour trim pattern on the smithing table. |
+| Brewing recipe | `recipe_brewing` | `minecraft:recipe` | A brewing stand recipe: a potion plus an ingredient gives another potion. Names vanilla potions only. |
+| Brewing recipe: splash potion | `recipe_brewing_splash` | `minecraft:recipe` | Turns a potion into its splash version with gunpowder; copy it per potion and per bottle. |
 
 #### Loot tables
 
@@ -180,6 +188,16 @@ The id is the template's identifier (the app uses it as `template-<id>` in tests
 | Armour trim pattern | `trim_pattern` | `minecraft:trim_pattern` | A trim pattern; uses a vanilla texture until you add your own. |
 | Notice dialog | `dialog_notice` | `minecraft:dialog` | A message screen with one button, shown with /dialog show. |
 | Confirmation dialog | `dialog_confirmation` | `minecraft:dialog` | A yes or no question; each button can run a command. |
+| Goat horn instrument | `instrument` | `minecraft:instrument` | A goat horn call; uses a vanilla sound event, named by id. Give it to players with a goat horn recipe or loot. See [Goat horns](adding-to-vanilla.md#goat-horns). |
+
+#### Mobs
+
+New skins for vanilla animals; see [Mob skins](adding-to-vanilla.md#mob-skins).
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Wolf variant | `wolf_variant` | `minecraft:wolf_variant` | A wolf skin that appears in taiga biomes; uses vanilla textures until you add your own. |
+| Cat variant | `cat_variant` | `minecraft:cat_variant` | A cat skin that appears in swamps; uses vanilla textures until you add your own. |
 
 #### Trades
 
@@ -283,13 +301,15 @@ Armour, custom tool materials, weapons, consumables and totems are explained in 
 
 #### Effects
 
-Status effects of your own (`msm:effect`), like the vanilla ones, need the Fabric mod jar too. Each shows a blank icon until you paint `textures/mob_effect/<name>.png` (see [Effect icons](effects-and-throwables.md#effect-icons)).
+Status effects (`msm:effect`) and potions (`msm:potion`) of your own need the Fabric mod jar too. Each effect shows a blank icon until you paint `textures/mob_effect/<name>.png` (see [Effect icons](effects-and-throwables.md#effect-icons)); potions are explained in [Potions and brewing](potions.md).
 
 | Template | id | Kind | Notes |
 |---|---|---|---|
 | Status effect | `msm_effect_status` | `msm:effect` | A good effect with its own colour that plays a chime and sparkles once when it starts. Give it with a drink, a throwable or the /effect command. |
 | Damage over time effect | `msm_effect_damage_over_time` | `msm:effect` | A harmful effect like poison: it hurts its holder by half a heart every second, faster at higher levels. |
 | Stat boost effect | `msm_effect_stat_boost` | `msm:effect` | A good effect that makes its holder 20% faster and hit 1 harder per level, removed again when the effect ends. |
+| Potion of a custom effect | `msm_potion_custom_effect` | `msm:potion` | A potion of the status effect "<this id>_effect", brewed from an awkward potion and glow berries, with splash and lingering versions and tipped arrows. Make that status effect (or pick your own), and export the project as a Fabric mod. |
+| Potion with longer and stronger versions | `msm_potion_long_strong` | `msm:potion` | A Haste potion brewed from an awkward potion and a honeycomb. Redstone makes it last 8 minutes, glowstone dust makes it Haste II for 1:30, like vanilla potions. Splash and lingering versions and tipped arrows included. Needs the Fabric mod export. |
 
 #### Additions
 
@@ -341,6 +361,8 @@ Scripts (`msm:script`) are TypeScript that the `msm_runtime` mod runs in the gam
 | Entity hurt script | `msm_script_entity_hurt` | `msm:script` | An iron golem heals half of every hit back and shows heart particles. |
 | Scheduled effect script | `msm_script_scheduled_effect` | `msm:script` | Using a clock plays five rising chimes with particles, half a second apart, with `msm.schedule`. |
 | Action handler script | `msm_script_action_handler` | `msm:script` | A named handler for the "Run script" (`run_script`) action, using the script's own id as the handler id. |
+| Full set bonus | `msm_script_full_set_bonus` | `msm:script` | Gives a bonus to players wearing a whole armour set: every second, a player in full golden armour gets Speed and Haste. Uses the player.tick event and entity equipment (runtime 1.5.0 or later). Change the item ids to your own armour. |
+| Boss bar countdown | `msm_script_boss_bar_countdown` | `msm:script` | Shows a countdown to every player as a boss bar: using an echo shard starts 30 seconds, the bar empties and turns red near the end, and a title says when time is up. Uses msm.bossBars and titles (runtime 1.5.0 or later). |
 
 ## Project starters
 
@@ -371,12 +393,15 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Consumable (Creator: Food) | `consumable` | resource, data, mod | A food with effects, a potion-like drink or a charm that gives effects when used, with a texture, model and optional recipe. |
 | Totem (Creator: Gear) | `totem` | resource, data, mod | An item that saves its holder from death like a totem of undying and gives the effects you choose, with a texture, model and optional recipe. |
 | Throwable (Creator: Gear) | `throwable` | resource, data, mod | An item you throw: a ball, a knife you pick up again, a boomerang that comes back or a bomb, with its damage, speed, weight and what happens when it hits, a texture and model, and an optional recipe. |
-| Status effect (Creator: Magic) | `status-effect` | resource, data, mod | A new status effect with its own name, colour and icon: what it does every few seconds, the stats it changes and how players get it (a drink or a throwable flask, with an optional recipe). |
+| Status effect (Creator: Magic) | `status-effect` | resource, data, mod | A new status effect with its own name, colour and icon: what it does every few seconds, the stats it changes and how players get it (a drink or a throwable flask with an optional recipe, or a brewed potion). |
+| Potion (Creator: Magic) | `potion` | resource, data, mod | A new potion for the brewing stand: the effect it gives (a vanilla one or a new one with its icon), how long and how strong, the ingredient that brews it, longer and stronger versions, and splash and lingering bottles with tipped arrows. |
 | Enchantment (Creator: Gear) | `enchantment` | data | A new enchantment: what it goes on, its highest level, how rare it is and what it does, offered at the enchanting table. |
 | Painting (Creator: Blocks) | `painting` | resource, data | A new painting with its title, author, size and your own picture (or a placeholder landscape), in the `minecraft:placeable` tag. |
 | Music disc (Creator: Blocks) | `music-disc-item` | resource, data, mod | A new jukebox song and a music disc that plays it: a real disc item in the Fabric mod jar, or music disc 13 with a new look in vanilla packs. |
 | Villager trade (Creator: Worlds) | `villager-trade` | data | A new trade for a vanilla villager or the wandering trader: what it costs, what it gives and which profession and level offer it. A candidate among the villager's trades, not a certainty. |
 | Extra drop (Creator: Worlds) | `extra-drop` | mod | An extra item in the loot of a vanilla mob, block or chest, with a count, a chance and, for mobs, whether a player must make the kill. The vanilla drops stay. |
+| Mob skin (Creator: Mobs) | `mob-skin` | resource, data | A new skin for a vanilla wolf, cat, pig, cow, chicken or frog, with placeholder textures of the right size to paint over, appearing in a biome you choose or everywhere. |
+| Goat horn (Creator: Gear) | `goat-horn` | resource, data | A new goat horn call: its name, a vanilla sound or your own `.ogg`, how long it plays and how far it is heard, a recipe and, if you choose, goats dropping it. |
 | Dimension (Creator: Worlds) | `dimension` | resource, data, mod | A new dimension to explore: pick the terrain, the biome and the sky, and travel there and back with a key item (Fabric mod jar) or a command (vanilla packs). |
 | Recipe pack | `recipe_pack` | data | Shaped, shapeless, smelting, blasting and stonecutting recipes, an item tag used as an ingredient, a crafting advancement and a load message. |
 | Custom music disc | `music_disc` | resource, data | A jukebox song, its sound event, a disc model and texture, and a `give_disc` function. |
@@ -443,7 +468,7 @@ The script examples use `msm:script`, which runs only in the Fabric mod jar (see
 
 ### All examples
 
-There is one example for each of the 67 element kinds, eleven more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; entities: a hostile mob and natural spawning; scripts: scheduled effects, an action handler, a scripted effect and a kill counter), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Throwable, Villager trade, Extra drop) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 93 element kinds, fifteen more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; a potion brewed with your own item; entities: a hostile mob and natural spawning; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -454,6 +479,8 @@ There is one example for each of the 67 element kinds, eleven more behaviour exa
 | Sound events | `example_sounds` | Sounds | `minecraft:sounds` | A new sound event that plays vanilla sound files at random. |
 | Pack metadata | `example_pack_mcmeta` | Pack | `minecraft:pack_mcmeta` | The pack.mcmeta description shown in the pack lists. |
 | Worn armour look | `example_equipment` | Models | `minecraft:equipment` | An equipment asset: how armour of one material looks on a player. |
+| Atlas source | `example_atlas` | Atlases | `minecraft:atlas` | Adds a texture from a folder of its own to the block atlas, so block models can use it. |
+| Icon font | `example_font` | Fonts | `minecraft:font` | A font with one icon glyph drawn from a texture, for use in chat and signs. |
 | Shaped recipe with a named result | `example_recipe` | Recipes | `minecraft:recipe` | A crafting recipe whose result carries a custom name and lore. |
 | Chest loot table | `example_loot_table` | Loot tables | `minecraft:loot_table` | A treasure table with weighted entries and a rare bonus roll. |
 | Advancement tab | `example_advancement` | Advancements | `minecraft:advancement` | A root advancement with its own tab and a child that rewards experience. |
@@ -469,6 +496,14 @@ There is one example for each of the 67 element kinds, eleven more behaviour exa
 | Damage type tag | `example_tag_damage_type` | Tags | `minecraft:tag/damage_type` | A group of damage types, used in damage predicates and enchantments. |
 | Enchantment tag | `example_tag_enchantment` | Tags | `minecraft:tag/enchantment` | A group of enchantments, used for exclusivity and enchanting tables. |
 | Villager trade tag | `example_tag_villager_trade` | Tags | `minecraft:tag/villager_trade` | A group of villager trades; vanilla villagers draw theirs from tags such as `minecraft:fletcher/level_1`. |
+| Banner pattern tag | `example_tag_banner_pattern` | Tags | `minecraft:tag/banner_pattern` | A group of banner patterns, such as those a banner pattern item unlocks in the loom. |
+| Dialog tag | `example_tag_dialog` | Tags | `minecraft:tag/dialog` | A group of dialogs; vanilla tags put dialogs on the pause screen and the quick actions key. |
+| Instrument tag | `example_tag_instrument` | Tags | `minecraft:tag/instrument` | A group of goat horn calls, used by goats and by loot that hands out horns. |
+| Point of interest tag | `example_tag_point_of_interest_type` | Tags | `minecraft:tag/point_of_interest_type` | A group of point of interest types, the job sites, beds and nests villagers and bees look for. |
+| Potion tag | `example_tag_potion` | Tags | `minecraft:tag/potion` | A group of potions, used by brewing recipes and by the trader potion list. |
+| Timeline tag | `example_tag_timeline` | Tags | `minecraft:tag/timeline` | A group of timelines; a dimension type runs the timelines of its tag. |
+| Feature tag | `example_tag_worldgen_feature` | Tags | `minecraft:tag/worldgen/feature` | A group of configured features, such as the flowers bone meal can grow. |
+| Superflat preset tag | `example_tag_worldgen_flat_level_generator_preset` | Tags | `minecraft:tag/worldgen/flat_level_generator_preset` | A group of superflat presets; minecraft:visible lists those on the Presets screen. |
 | Painting variant tag | `example_tag_painting_variant` | Tags | `minecraft:tag/painting_variant` | A group of painting variants; `minecraft:placeable` lists those a placed painting can pick. |
 | Biome tag | `example_tag_worldgen_biome` | Tags | `minecraft:tag/worldgen/biome` | A group of biomes, used to decide where structures generate. |
 | Structure tag | `example_tag_worldgen_structure` | Tags | `minecraft:tag/worldgen/structure` | A group of structures, used by /locate, maps and explorer trades. |
@@ -485,6 +520,21 @@ There is one example for each of the 67 element kinds, eleven more behaviour exa
 | Notice dialog | `example_dialog` | Dialogs | `minecraft:dialog` | A welcome screen with a message and an OK button, opened from a function. |
 | Villager trade | `example_villager_trade` | Villager trades | `minecraft:villager_trade` | A fletcher trade selling spectral arrows for emeralds, offered to apprentice fletchers through their trade tag. |
 | Trade set | `example_trade_set` | Villager trades | `minecraft:trade_set` | Draws three different trades from a villager trade tag. |
+| Snowy wolf skin | `example_snowy_wolf_skin` | Mob variants | `minecraft:wolf_variant` | A frost-white wolf skin, tame and angry looks and baby textures included, for snowy taigas and groves. |
+| Cat variant | `example_cat_variant` | Mob variants | `minecraft:cat_variant` | A ruby-red cat skin that stray cats can have anywhere. |
+| Pig variant | `example_pig_variant` | Mob variants | `minecraft:pig_variant` | A pink-violet pig skin for cherry groves. |
+| Cow variant | `example_cow_variant` | Mob variants | `minecraft:cow_variant` | An amber cow skin for meadows. |
+| Chicken variant | `example_chicken_variant` | Mob variants | `minecraft:chicken_variant` | A jade-green chicken skin for flower forests. |
+| Frog variant | `example_frog_variant` | Mob variants | `minecraft:frog_variant` | A sapphire frog skin for mangrove swamps. |
+| Zombie nautilus variant | `example_zombie_nautilus_variant` | Mob variants | `minecraft:zombie_nautilus_variant` | A slate-grey zombie nautilus skin that can appear in any ocean. |
+| Cat sound variant | `example_cat_sound_variant` | Mob sounds | `minecraft:cat_sound_variant` | A cat that purrs like the royal cat but meows like the classic one. |
+| Pig sound variant | `example_pig_sound_variant` | Mob sounds | `minecraft:pig_sound_variant` | A pig that grunts like the big pig and squeals like the mini one when hurt. |
+| Cow sound variant | `example_cow_sound_variant` | Mob sounds | `minecraft:cow_sound_variant` | A cow that moos like the moody cow but steps like the classic one. |
+| Chicken sound variant | `example_chicken_sound_variant` | Mob sounds | `minecraft:chicken_sound_variant` | A chicken that clucks like the picky chicken. |
+| Custom goat horn | `example_custom_goat_horn` | Goat horns | `minecraft:instrument` | A goat horn with its own call, length and range, crafted from a goat horn and an echo shard, that goats can drop. |
+| Enchantment provider | `example_enchantment_provider` | Enchantments | `minecraft:enchantment_provider` | A rule that enchants gear like a level 5 to 20 enchanting table. |
+| Timeline: slime moons | `example_timeline` | Time | `minecraft:timeline` | A timeline that doubles the surface slime chance every other day, added to the overworld timelines. |
+| World clock | `example_world_clock` | Time | `minecraft:world_clock` | A clock of its own that timelines and dimension types can follow. |
 | Structure template | `example_structure_template` | Structures | `minecraft:structure_template` | A small stone well, stored as JSON and exported as a structure `.nbt` file. |
 | Template pool | `example_template_pool` | Structures | `minecraft:worldgen/template_pool` | A pool that picks a flower bed or nothing, as jigsaw blocks do. |
 | Jigsaw structure | `example_structure` | Structures | `minecraft:worldgen/structure` | A lone tower in mountains and hills, built from one template. |
@@ -507,6 +557,7 @@ There is one example for each of the 67 element kinds, eleven more behaviour exa
 | Switch lamp | `example_msm_block` | Blocks | `msm:block` | A custom block that lights up when used or powered by redstone, by swapping itself for a lit twin. |
 | Sparkle berries | `example_msm_item` | Items | `msm:item` | A custom food item that sparkles and chimes when you start eating it. |
 | Frost bomb | `example_msm_effect` | Effects | `msm:effect` | A custom Frostbite effect that slows and chills its holder, and a throwable Frost Bomb that gives it to the mob it hits. |
+| Potion of the custom effect | `example_msm_potion` | Potions | `msm:potion` | A custom Featherweight effect and its potion, brewed from an awkward potion and a feather, with a longer version and splash and lingering bottles. |
 | Ore that generates | `example_msm_biome_addition` | Additions | `msm:biome_addition` | Jade ore that generates underground in every overworld biome: the ore block, its ore feature, the placed feature and the world addition that adds it to vanilla biomes. |
 | Zombie drops a ruby | `example_msm_loot_addition` | Additions | `msm:loot_addition` | Zombies killed by a player sometimes drop a ruby, on top of their usual drops: a ruby item and the extra drop that adds it to the vanilla zombie loot table. |
 | Mod metadata | `example_msm_mod` | Mod | `msm:mod` | The name, version, authors and licence of the Fabric mod jar. |
@@ -515,6 +566,7 @@ There is one example for each of the 67 element kinds, eleven more behaviour exa
 | Fuel log | `example_msm_fuel_log` | Blocks | `msm:block` | A dense log block whose item burns in a furnace three times as long as an oak log. |
 | Life-steal sword | `example_msm_life_steal_sword` | Items | `msm:item` | An iron sword that heals you by one heart each time it hits a mob. |
 | Night-vision helmet | `example_msm_night_vision_helmet` | Items | `msm:item` | An iron helmet that gives night vision while you wear it. |
+| Brewed with your own item | `example_msm_brewed_with_own_item` | Potions | `msm:potion` | A Moon Shard item of your own as a brewing ingredient: an awkward potion and a moon shard brew a Potion of Levitation, which vanilla does not have, with a stronger version. |
 | Wandering creature | `example_msm_entity` | Entities | `msm:entity` | A peaceful mob that strolls about, looks at players and has a spawn egg, with its model, animations and textures. |
 | Cube creature model | `example_msm_geo_model` | Entity models | `msm:geo_model` | A box-shaped GeckoLib model with a body and a head bone over a 64x64 texture, shown on a small mob. |
 | Idle and walk animations | `example_msm_animation` | Entity animations | `msm:animation` | An idle bob and a walk cycle that swings the arms and legs of a biped model, shown on a small mob. |
@@ -525,6 +577,9 @@ There is one example for each of the 67 element kinds, eleven more behaviour exa
 | Script: action handler | `example_msm_script_action` | Scripts | `msm:script` | A chime block whose use event runs a script through a `run_script` action, and the script that defines that handler. |
 | Script: scripted effect | `example_msm_scripted_effect` | Scripts | `msm:effect` | An Antidote status effect whose tick event runs a script: it cures poison and heals more at higher levels. |
 | Script: kill counter | `example_msm_kill_counter` | Scripts | `msm:script` | A script that counts each player's kills in saved player data and the world's total in `msm.storage`, and tells players their count when they join. |
+| Script: full set bonus | `example_msm_full_set_bonus` | Scripts | `msm:script` | A script that checks the armour of every player once a second and gives Haste and Luck to those wearing a full set of golden armour. |
+| Script: teleport staff | `example_msm_teleport_staff` | Scripts | `msm:script` | A script that turns a breeze rod into a teleport staff: use it to blink to the block you look at, sneak-use it to mark home or, from another dimension, to go home. |
+| Script: boss fight bar | `example_msm_boss_fight_bar` | Scripts | `msm:script` | A script that summons a ravager boss with a nether star and shows its health on a boss bar to every player, with a title and a reward when it falls. |
 | Custom ore project | `starter_custom_ore` | Starters | `msm:block` | The Custom ore starter: a real ruby ore block, the ruby item and a block of ruby, with loot, recipes, a tag, advancements and the mod metadata. |
 | Recipe pack project | `starter_recipe_pack` | Starters | `minecraft:recipe` | The Recipe pack starter: one recipe of each common type and an advancement. |
 | Custom music disc project | `starter_music_disc` | Starters | `minecraft:jukebox_song` | The Custom music disc starter: a jukebox song, its disc model and texture. |
@@ -536,10 +591,10 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 
 | Folder | Namespace | Contents |
 |---|---|---|
-| `examples/all-kinds/` | `msm_examples` | The 62 per-kind examples in one project |
-| `examples/blocks-items/` | `msm_examples` | The two blocks and items behaviour examples (Sturdy pickaxe, Beacon stone) |
+| `examples/all-kinds/` | `msm_examples` | The 93 per-kind examples in one project |
+| `examples/blocks-items/` | `msm_examples` | The blocks and items behaviour examples (Sturdy pickaxe, Beacon stone, Fuel log, Life-steal sword, Night-vision helmet, Brewed with your own item) |
 | `examples/entities/` | `msm_examples` | The two entity behaviour examples (Hostile mob, Natural spawning), each with its model, animations and textures |
-| `examples/scripts/` | `msm_examples` | The three script behaviour examples (Script: scheduled effects, Script: action handler, Script: scripted effect) |
+| `examples/scripts/` | `msm_examples` | The script behaviour examples (Script: scheduled effects, Script: action handler, Script: scripted effect, Script: kill counter, Script: full set bonus, Script: teleport staff, Script: boss fight bar) |
 | `examples/starters/custom_ore/` | `msm_starter` | The Custom ore starter |
 | `examples/starters/recipe_pack/` | `msm_starter` | The Recipe pack starter |
 | `examples/starters/music_disc/` | `msm_starter` | The Custom music disc starter |
@@ -563,6 +618,10 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 | `examples/starters/dimension/` | `msm_starter` | The Dimension starter |
 | `examples/starters/status-effect/` | `msm_starter` | The Status effect starter |
 | `examples/starters/throwable/` | `msm_starter` | The Throwable starter |
+| `examples/starters/extra-drop/` | `msm_starter` | The Extra drop starter |
+| `examples/starters/potion/` | `msm_starter` | The Potion starter |
+| `examples/starters/mob-skin/` | `msm_starter` | The Mob skin starter |
+| `examples/starters/goat-horn/` | `msm_starter` | The Goat horn starter |
 
 Copy a folder somewhere else before opening it, so your edits do not change the repository. See [examples/README.md](https://github.com/MEZTKING/MCSuperMods/blob/main/examples/README.md).
 

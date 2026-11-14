@@ -23,6 +23,15 @@
  *    by default; a smaller vein size gives an ore feature, a placed feature and a world addition
  *    (sidebar "World additions") next to the ore, with no problems at all; the Fabric mod jar
  *    holds the world addition under `msm/` and the two worldgen files as data.
+ * 5. Potion (ADR 0063): the Potion flow under "Magic" with its defaults makes a potion of a new
+ *    effect with longer, stronger, splash and lingering versions; the Potion Studio shows the
+ *    three ids, the names and fifteen brewing steps; zero problems; the Fabric mod jar holds the
+ *    three potion definitions, fifteen brewing recipes and the name keys; the vanilla data pack
+ *    leaves the brewing out and lists `blocks-items.potion-needs-jar` under "Last export".
+ * 6. Mob skin and Goat horn (ADR 0064): a wolf skin (sidebar "Wolf skins") and a goat horn call
+ *    (sidebar "Horn sounds") with zero problems; the vanilla resource pack holds the six wolf
+ *    textures and the call's name, the data pack the variant, the instrument, its recipe and the
+ *    `minecraft:regular_goat_horns` tag, and no `msm/` files.
  */
 
 import {
@@ -660,4 +669,192 @@ test('Creator: Custom ore that generates in the world (ADR 0060 D6)', async () =
   };
   expect(feature.type).toBe('minecraft:ore');
   expect(feature.config?.size ?? feature.size).toBe(5);
+});
+
+test('Creator: Potion with its own effect, brewing chain and jar export (ADR 0063)', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-creator-potion-'));
+  const folders = {
+    projectDir: join(base, NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  const launched = await launchApp({ reuse: folders });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-new-project').click();
+  await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
+
+  // The Potion flow, from the Magic group, with its defaults: Moon Leap, an effect of its own,
+  // longer, stronger, splash and lingering versions.
+  await window.getByTestId('toolbar-creator').click();
+  const picker = window.getByTestId('creator-dialog');
+  const potion = await openFlowFrom(picker, 'creator-group-magic', 'potion');
+  await expect(potion.getByRole('heading', { name: 'Create: Potion' })).toBeVisible();
+  await expect(potion.getByTestId('param-potion_name')).toHaveValue('Moon Leap');
+  await potion.getByTestId('creator-tab-elements').click();
+  for (const element of ['moon_leap', 'moon_leap_effect']) {
+    await expect(potion.getByTestId(`creator-element-${id(element)}`)).toBeVisible();
+  }
+  await potion.getByTestId('creator-create').click();
+  await expect(potion).toBeHidden();
+  await expect(
+    window.getByText(/^Create Potion: \d+ element\(s\) and file\(s\) changed/),
+  ).toBeVisible();
+  await expect(window.getByRole('heading', { name: /^Potions\b/ })).toBeVisible();
+
+  // The Potion Studio: the three registry ids, the four names and the fifteen brewing steps.
+  await window.getByTestId(`element-row-${id('moon_leap')}`).click();
+  const studio = window.getByTestId('potion-studio');
+  await expect(studio).toBeVisible();
+  await expect(studio.getByTestId('potion-display-name')).toHaveValue('Moon Leap');
+  await expect(studio.getByTestId('potion-preview-ids')).toHaveText(
+    `Potion ids: ${id('moon_leap')}, ${id('long_moon_leap')}, ${id('strong_moon_leap')}`,
+  );
+  await expect(studio.getByTestId('potion-preview-names')).toContainText('Potion of Moon Leap');
+  await expect(studio.getByTestId('potion-preview-names')).toContainText('Arrow of Moon Leap');
+  await expect(studio.getByTestId('potion-chain-steps').locator('li')).toHaveCount(15);
+
+  // Zero problems, not only zero errors.
+  await window.getByTestId('dock-tab-problems').click();
+  await expect(
+    window.getByTestId('problems-panel').locator('[data-testid="problem-row"]'),
+  ).toHaveCount(0);
+  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await save(window);
+
+  // The jar: three potion definitions, the effect, fifteen brewing recipes and the names.
+  const jar = await exportJar(window, folders.outDir);
+  const names = Object.keys(jar.files);
+  expect(names).toEqual(
+    expect.arrayContaining([
+      `msm/${NAMESPACE}/effect/moon_leap_effect.json`,
+      `msm/${NAMESPACE}/potion/moon_leap.json`,
+      `msm/${NAMESPACE}/potion/long_moon_leap.json`,
+      `msm/${NAMESPACE}/potion/strong_moon_leap.json`,
+    ]),
+  );
+  const brewing = names.filter((name) => name.startsWith(`data/${NAMESPACE}/recipe/brewing/`));
+  expect(brewing).toHaveLength(15);
+  const definition = JSON.parse(
+    strFromU8(jar.files[`msm/${NAMESPACE}/potion/moon_leap.json`] ?? new Uint8Array()),
+  ) as { effects: { id: string }[] };
+  expect(definition.effects.map((effect) => effect.id)).toEqual([id('moon_leap_effect')]);
+  const recipe = JSON.parse(
+    strFromU8(
+      jar.files[`data/${NAMESPACE}/recipe/brewing/potion_moon_leap.json`] ?? new Uint8Array(),
+    ),
+  ) as { type: string; reagent: { item: string } };
+  expect(recipe).toMatchObject({
+    type: 'minecraft:brewing',
+    reagent: { item: 'minecraft:amethyst_shard' },
+  });
+  const lang = JSON.parse(
+    strFromU8(jar.files[`assets/${NAMESPACE}/lang/en_us.json`] ?? new Uint8Array()),
+  ) as Record<string, string>;
+  expect(lang[`item.minecraft.potion.effect.${NAMESPACE}.moon_leap`]).toBe('Potion of Moon Leap');
+
+  // The vanilla data pack leaves the potion and its brewing out, with one warning.
+  await window.getByTestId('toolbar-export-menu').click();
+  await window.getByTestId('export-data-zip').click();
+  const data = await newZip(folders.outDir, '.zip');
+  expect(Object.keys(data.files).filter((name) => name.includes('/recipe/brewing/'))).toEqual([]);
+  await window.getByTestId('dock-tab-problems').click();
+  await expect(
+    window
+      .getByTestId('export-problems')
+      .locator('[data-testid="problem-row"][data-code="blocks-items.potion-needs-jar"]'),
+  ).toHaveCount(1);
+  await window.screenshot({ path: join(outputDir, 'creator-path-potion.png') });
+});
+
+test('Creator: Mob skin and Goat horn in vanilla packs (ADR 0064)', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-creator-data-kinds-'));
+  const folders = {
+    projectDir: join(base, NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  const launched = await launchApp({ reuse: folders });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-new-project').click();
+  await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
+
+  // Mob skin, from the Mobs group: a wolf skin in forests (the defaults).
+  await window.getByTestId('toolbar-creator').click();
+  const picker = window.getByTestId('creator-dialog');
+  const skin = await openFlowFrom(picker, 'creator-group-mobs', 'mob-skin');
+  await expect(skin.getByRole('heading', { name: 'Create: Mob skin' })).toBeVisible();
+  await expect(skin.getByTestId('param-animal')).toHaveValue('wolf');
+  await skin.getByTestId('creator-create').click();
+  await expect(skin).toBeHidden();
+  await expect(
+    window.getByText(/^Create Mob skin: \d+ element\(s\) and file\(s\) changed/),
+  ).toBeVisible();
+  await expect(window.getByTestId(`element-row-${id('ember_coat')}`)).toBeVisible();
+  await expect(window.getByRole('heading', { name: /^Wolf skins\b/ })).toBeVisible();
+
+  // Goat horn, from the Gear group: a vanilla call, a recipe and the goats' tag.
+  await window.getByTestId('toolbar-creator').click();
+  const horn = await openFlowFrom(
+    window.getByTestId('creator-dialog'),
+    'creator-group-gear',
+    'goat-horn',
+  );
+  await expect(horn.getByRole('heading', { name: 'Create: Goat horn' })).toBeVisible();
+  await expect(horn.getByTestId('param-goats_drop')).toBeChecked();
+  await horn.getByTestId('creator-create').click();
+  await expect(horn).toBeHidden();
+  await expect(
+    window.getByText(/^Create Goat horn: \d+ element\(s\) and file\(s\) changed/),
+  ).toBeVisible();
+  for (const element of ['storm_call', 'storm_call_goat_horn']) {
+    await expect(window.getByTestId(`element-row-${id(element)}`)).toBeVisible();
+  }
+  await expect(window.getByRole('heading', { name: /^Horn sounds\b/ })).toBeVisible();
+
+  await window.getByTestId('dock-tab-problems').click();
+  await expect(
+    window.getByTestId('problems-panel').locator('[data-testid="problem-row"]'),
+  ).toHaveCount(0);
+  await save(window);
+
+  // Vanilla packs: the textures and the call's name in the resource pack, the variant, the
+  // instrument, its recipe and the merged goat horn tag in the data pack.
+  await window.getByTestId('toolbar-export-zip').click();
+  const resource = await newZip(folders.outDir, '.zip');
+  const resourceNames = Object.keys(resource.files);
+  for (const suffix of ['', '_tame', '_angry', '_baby', '_tame_baby', '_angry_baby']) {
+    expect(resourceNames).toContain(
+      `assets/${NAMESPACE}/textures/entity/wolf/ember_coat${suffix}.png`,
+    );
+  }
+  const lang = JSON.parse(
+    strFromU8(resource.files[`assets/${NAMESPACE}/lang/en_us.json`] ?? new Uint8Array()),
+  ) as Record<string, string>;
+  expect(lang[`instrument.${NAMESPACE}.storm_call`]).toBe('Storm Call');
+  await window.getByTestId('toolbar-export-menu').click();
+  await window.getByTestId('export-data-zip').click();
+  const data = await newZip(folders.outDir, '.zip', [resource.name]);
+  expect(Object.keys(data.files)).toEqual(
+    expect.arrayContaining([
+      `data/${NAMESPACE}/wolf_variant/ember_coat.json`,
+      `data/${NAMESPACE}/instrument/storm_call.json`,
+      `data/${NAMESPACE}/recipe/storm_call_goat_horn.json`,
+      'data/minecraft/tags/instrument/regular_goat_horns.json',
+    ]),
+  );
+  const variant = JSON.parse(
+    strFromU8(data.files[`data/${NAMESPACE}/wolf_variant/ember_coat.json`] ?? new Uint8Array()),
+  ) as { assets: { wild: string } };
+  expect(variant.assets.wild).toBe(id('entity/wolf/ember_coat'));
+  const tag = JSON.parse(
+    strFromU8(
+      data.files['data/minecraft/tags/instrument/regular_goat_horns.json'] ?? new Uint8Array(),
+    ),
+  ) as { values: string[] };
+  expect(tag.values).toContain(id('storm_call'));
+  expect(Object.keys(data.files).some((name) => name.startsWith('msm/'))).toBe(false);
 });

@@ -34,6 +34,12 @@
  * time in "Fuel and compost". The jar holds the extra drop under `msm/`, the item's
  * `msm:on_hit` and the fuel lowered to `minecraft:cooking_fuel` with no editor-only `fuel`.
  *
+ * A sixth test (ADR 0063) chooses "Make a potion" in the Effect Studio: the new potion
+ * `<effect>_potion` opens in the Potion Studio (sidebar "Potions") brewed from an awkward potion
+ * with an amethyst shard, five brewing steps; "Longer version" adds the `long_` id and five more
+ * steps and Undo takes it away; one more Undo removes the potion; the jar holds its definition
+ * and five brewing recipes.
+ *
  * "Test in Minecraft" is not covered here. Preview and WebGL are unavailable headless.
  */
 
@@ -742,6 +748,95 @@ test('blocks and items: an extra drop and an on-hit trigger, with Undo, in the j
   expect(blade.components['msm:components']?.['minecraft:cooking_fuel']).toMatchObject({
     burn_time: 800,
   });
+
+  await window.getByTestId('toolbar-save').click();
+  await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
+});
+
+test('blocks and items: Make a potion from an effect, with Undo, in the jar', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-potions-'));
+  const folders = {
+    projectDir: join(base, NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  mkdirSync(outputDir, { recursive: true });
+  const launched = await launchApp({ reuse: folders });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-new-project').click();
+  await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
+
+  // The Effect Studio's Potion section. -----------------------------------------------------
+  const effectId = `${NAMESPACE}:frost_step`;
+  const potionId = `${effectId}_potion`;
+  await addFromTemplate(window, 'status effect', 'msm_effect_status', 'frost_step');
+  const effect = window.getByTestId('effect-studio');
+  await expect(effect).toBeVisible();
+  await expect(effect.getByTestId('effect-potions')).toHaveCount(0);
+  await effect.getByTestId('effect-make-potion').click();
+
+  // The new potion opens in the Potion Studio, brewed from an awkward potion. ---------------
+  const potionRow = window.getByTestId(`element-row-${potionId}`);
+  await expect(potionRow).toBeVisible();
+  await expect(window.getByRole('heading', { name: /^Potions\b/ })).toBeVisible();
+  const studio = window.getByTestId('potion-studio');
+  await expect(studio).toBeVisible();
+  await expect(studio.getByTestId('potion-display-name')).toHaveValue('Frost Step');
+  await expect(studio.getByTestId('potion-effect-0-id')).toHaveValue(effectId);
+  await expect(studio.getByTestId('potion-brewing-reagent')).toHaveValue(
+    'minecraft:amethyst_shard',
+  );
+  await expect(studio.getByTestId('potion-preview-ids')).toHaveText(`Potion ids: ${potionId}`);
+  // Potion, splash and lingering from the awkward potion, then splash and lingering bottles.
+  await expect(studio.getByTestId('potion-chain-steps').locator('li')).toHaveCount(5);
+  await expect(await problemRows(window, 'error')).toHaveCount(0);
+
+  // A longer version adds its id and five steps; Undo takes it away again. -----------------
+  const longer = studio.getByTestId('potion-long');
+  await longer.check();
+  await expect(studio.getByTestId('potion-long-duration')).toHaveValue('7200');
+  await expect(studio.getByTestId('potion-preview-ids')).toHaveText(
+    `Potion ids: ${potionId}, ${NAMESPACE}:long_frost_step_potion`,
+  );
+  await expect(studio.getByTestId('potion-chain-steps').locator('li')).toHaveCount(10);
+  await window.getByTestId('toolbar-undo').click();
+  await expect(longer).not.toBeChecked();
+  await expect(studio.getByTestId('potion-chain-steps').locator('li')).toHaveCount(5);
+
+  // One Undo removes the potion that "Make a potion" added. ---------------------------------
+  await window.getByTestId('toolbar-undo').click();
+  await expect(potionRow).toHaveCount(0);
+  await window.getByTestId(`element-row-${effectId}`).click();
+  await expect(effect).toBeVisible();
+  await effect.getByTestId('effect-make-potion').click();
+  await expect(potionRow).toBeVisible();
+  await window.getByTestId(`element-row-${effectId}`).click();
+  await expect(effect.getByTestId('effect-potions')).toHaveText(
+    `Potions with this effect: ${potionId}`,
+  );
+  await expect(await problemRows(window, 'error')).toHaveCount(0);
+
+  // The jar: the effect, the potion and its five brewing recipes. ---------------------------
+  const palette = await openPalette(window, 'fabric mod jar');
+  await palette.getByTestId('command-exportFabricJar').click();
+  const jarDialog = window.getByTestId('fabric-jar-dialog');
+  await expect(jarDialog).toBeVisible();
+  await jarDialog.getByTestId('exporter-option-separateRuntime').check();
+  await jarDialog.getByTestId('fabric-jar-dialog-submit').click();
+  await expect(jarDialog).toBeHidden();
+  const jarPath = join(folders.outDir, `${NAMESPACE}.jar`);
+  await expect.poll(() => isCompleteZip(jarPath), { timeout: 20_000 }).toBe(true);
+  const jar = readZip(jarPath);
+  const potion = zipJson(jar, `msm/${NAMESPACE}/potion/frost_step_potion.json`) as {
+    effects: { id: string; duration_ticks: number }[];
+  };
+  expect(potion.effects).toEqual([{ id: effectId, duration_ticks: 3600 }]);
+  expect(
+    Object.keys(jar).filter((name) => name.startsWith(`data/${NAMESPACE}/recipe/brewing/`)),
+  ).toHaveLength(5);
+  expect(Object.keys(jar)).toContain(`msm/${NAMESPACE}/effect/frost_step.json`);
 
   await window.getByTestId('toolbar-save').click();
   await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();

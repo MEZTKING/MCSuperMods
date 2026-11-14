@@ -51,6 +51,7 @@ export default defineConfig({
           { text: 'Blocks and items', link: '/blocks-and-items' },
           { text: 'The Creator', link: '/creator' },
           { text: 'Status effects and throwables', link: '/effects-and-throwables' },
+          { text: 'Potions and brewing', link: '/potions' },
           { text: 'Adding to vanilla', link: '/adding-to-vanilla' },
           { text: 'Entities and models', link: '/entities-and-models' },
           { text: 'Scripting', link: '/scripting' },

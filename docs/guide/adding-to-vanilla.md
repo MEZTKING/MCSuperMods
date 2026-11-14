@@ -1,6 +1,6 @@
 # Adding to vanilla
 
-Most of MCSuperMods makes new things: a block, an item, a mob. This page is about changing what the game already has without replacing its files: your ore in the normal overworld, an extra drop for a zombie, an item that burns in a furnace or goes in a composter, and a new trade for a villager. Each addition keeps the vanilla content as it is and adds to it, so it works next to other mods that add to the same things.
+Most of MCSuperMods makes new things: a block, an item, a mob. This page is about changing what the game already has without replacing its files: your ore in the normal overworld, an extra drop for a zombie, an item that burns in a furnace or goes in a composter, a new trade for a villager, a new skin for a wolf or a cow, a new goat horn call, and icons in chat text. Each addition keeps the vanilla content as it is and adds to it, so it works next to other mods that add to the same things.
 
 | Addition | How you make it | Where it works |
 |---|---|---|
@@ -8,6 +8,10 @@ Most of MCSuperMods makes new things: a block, an item, a mob. This page is abou
 | Extra drops from vanilla mobs, blocks and chests | The **Extra drop** flow, the **Extra mob drop** template, or an **Extra drops** element | Fabric mod jar only |
 | Fuel and compost | **Fuel and compost** in the Item Studio, or in the Block Studio's **Block item** section | Fabric mod jar only (on your own items) |
 | A new villager or wandering trader trade | The **Villager trade** flow, or the trade templates and a villager trade tag | Data pack and Fabric mod jar |
+| A new skin for a wolf, cat, pig, cow, chicken, frog or zombie nautilus | The **Mob skin** flow, or the **Wolf variant** and **Cat variant** templates | Data and resource pack, and Fabric mod jar |
+| A new goat horn call | The **Goat horn** flow, or the **Goat horn instrument** template | Data and resource pack, and Fabric mod jar |
+| Other sounds for cats, pigs, cows and chickens, enchantment providers, timelines and world clocks | Add element, by kind (see [Other data kinds](#other-data-kinds)) | Data pack and Fabric mod jar |
+| Icons in text (fonts) and texture atlas sources | The **Icon font** template, or a font or atlas element | Resource pack and Fabric mod jar |
 
 World additions and extra drops are MCSuperMods kinds (`msm:biome_addition` and `msm:loot_addition`): the `msm_runtime` mod applies them when the game starts, so they reach the game only through the **Fabric mod jar** export ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)). The resource and data pack exports leave them out. Trades are plain data and work in a data pack too.
 
@@ -80,21 +84,66 @@ It makes two elements: a villager trade (kind `minecraft:villager_trade`) and th
 
 Trades work in a plain data pack as well as in the Fabric mod jar. A villager picks the offers of a level when it reaches that level, so villagers that already passed it keep the offers they have: look at new villagers, or at ones still below the level.
 
+## Mob skins
+
+The **Mob skin** flow (Creator group **Mobs**) gives a vanilla animal a new skin that the game picks when the animal spawns, next to its vanilla skins:
+
+- **Skin**: **Name** (ids come from it: "Ember Coat" gives `ember_coat`), **Animal** (**Wolf**, **Cat**, **Pig**, **Cow**, **Chicken** or **Frog**) and **Colour**, the colour of the placeholder textures.
+- **Where**: **Where it appears** is **In a biome**, with the **Biome** (forests, taigas, snowy taiga, savannas, plains, swamp and others), or **Everywhere**.
+
+It makes one element of the animal's variant kind (sidebar **Wolf skins**, **Cat skins**, **Pig skins**, **Cow skins**, **Chicken skins** or **Frog skins**) and the placeholder textures under `textures/entity/<animal>/`, in the sizes the game needs: a wolf has six (wild, tame and angry, each for a grown wolf, 64 by 32 pixels, and a pup, 32 by 32); a cat, pig, cow or chicken has one for a grown animal and one for a baby; a frog has one, 48 by 48. Paint over them, keeping their size, in the texture editor or with **Picture to texture** ([The Creator](creator.md#picture-to-texture)); MCSuperMods never copies the vanilla skins.
+
+**Which skin an animal gets.** Each skin has spawn conditions with a priority. When an animal spawns, the game takes the skins whose condition matches where it spawns, keeps those with the highest priority and picks one of them at random. **In a biome** gives your skin priority 1 in that biome, so it joins the vanilla skins of that biome (for a wolf in a snowy taiga, the snowy wolf and yours). **Everywhere** gives it priority 0 with no condition, so it is picked only where no biome skin applies. The animal must spawn in the biome you pick: wolves in forests, taigas, groves, savannas and badlands, cats in villages and swamp huts, frogs in swamps (a tadpole picks its skin when it grows up). `/summon minecraft:wolf ~ ~ ~ {variant:"<namespace>:ember_coat"}` shows the skin at once.
+
+By hand, the templates **Wolf variant** and **Cat variant** (category **Mobs**) start from a wolf skin for taigas and a cat skin for swamps that use vanilla textures until you add your own; the other animals start from their kind's default in **Add element**. Zombie nautilus skins (sidebar **Zombie nautilus skins**) have no flow. The examples **Snowy wolf skin**, **Cat variant**, **Pig variant**, **Cow variant**, **Chicken variant**, **Frog variant** and **Zombie nautilus variant** show each kind.
+
+## Goat horns
+
+The **Goat horn** flow (Creator group **Gear**) adds a new call that a goat horn can play:
+
+- **Horn**: **Name** (shown on the horn), **Sound** (one of the eight vanilla calls: **Ponder**, **Sing**, **Seek**, **Feel**, **Admire**, **Call**, **Yearn**, **Dream**), **Sound file** (your own call as an Ogg Vorbis `.ogg` file of at most 4 MB, which replaces the vanilla sound; a mono file fades with distance), **Seconds per blow** (vanilla horns take 7, and the horn then cools down as long) and **Heard from (blocks)** (vanilla horns reach 256).
+- **Getting it**: **Crafted from** (any goat horn and one echo shard, amethyst shard, copper ingot, gold ingot or note block in the crafting grid make a horn with the new call; or **No recipe**) and **Goats drop it**.
+
+It makes an instrument element (sidebar **Horn sounds**), the call's name in `en_us`, the crafting recipe, and with **Goats drop it** the vanilla tag `minecraft:regular_goat_horns`, which the export merges with vanilla's, so goats that ram a tree or stone drop your call as well as the eight vanilla ones. With a sound file it also adds a `sounds` element and the `.ogg`. `/give @s minecraft:goat_horn[minecraft:instrument="<namespace>:storm_call"]` gives the horn. The template **Goat horn instrument** (category **Other data**) and the example **Custom goat horn** show the instrument by hand.
+
+## Other data kinds
+
+These vanilla data kinds have no Studio: **Add element** offers each with its default content (and the form, **Advanced (all fields)** and **Raw JSON** as for any vanilla kind). They work in a plain data pack.
+
+| Kind | Sidebar | What it does |
+|---|---|---|
+| `minecraft:cat_sound_variant`, `pig_sound_variant`, `cow_sound_variant`, `chicken_sound_variant` | **Cat sounds**, **Pig sounds**, **Cow sounds**, **Chicken sounds** | Another set of sounds for that animal, picked like a skin |
+| `minecraft:enchantment_provider` | **Enchantment providers** | A named choice of enchantments, as the game uses for the gear some mobs spawn with |
+| `minecraft:timeline` | **Timelines** | Values that change over time, following a world clock |
+| `minecraft:world_clock` | **World clocks** | A clock that timelines follow |
+
+There are also tags for eight more registries: banner patterns, dialogs, instruments, points of interest, potions, timelines, features and superflat presets (the tag kinds in **Add element**). The examples gallery has an example of each kind and tag ([Templates, starters and examples](templates-and-examples.md#all-examples)).
+
+## Icon fonts
+
+A resource pack can add a font: pictures that text shows as characters, for icons in chat, signs, books, titles and item names. The **Icon font** template (category **Fonts**; sidebar **Fonts**) makes a font with one icon, drawn from the texture `font/<name>.png` in the same namespace. Show it in text with `{"text": "\uE000", "font": "<namespace>:<name>"}`; each further icon is another character in the font's `chars`. An atlas element (kind `minecraft:atlas`, sidebar **Texture atlases**) adds texture sources to a vanilla atlas, for textures the game reads only through an atlas. The examples **Icon font** and **Atlas source** show both.
+
 ## What is not possible yet
+
 
 These are planned for later, so nobody waits for them in this release:
 
 - flammable blocks (fire spreading to your blocks) and block pairs: stripping a log with an axe, waxing, or copper that oxidises;
 - fuel or compost values on vanilla items, and compost chances other than the five vanilla ones;
 - removing vanilla features or spawns from biomes, cave carvers, new villager professions;
-- a trigger when an item is crafted (`on_crafted`).
+- a trigger when an item is crafted (`on_crafted`);
+- wolf sound variants and trial spawners: the schema data MCSuperMods checks them against is out of date for the current Minecraft versions, so these kinds are left out until it is updated;
+- other data kinds MCSuperMods leaves out on purpose for now: sulfur cube archetypes (they differ between Minecraft versions), test environments and test instances, block transformers, slot sources, shaders, post effects, waypoint styles and particle definitions.
 
 ## Try it in the game
 
-1. Export the **Fabric mod jar** ([Export a Fabric mod jar](blocks-and-items.md#export-a-fabric-mod-jar)), or use **Test in Minecraft**.
+1. Export the **Fabric mod jar** ([Export a Fabric mod jar](blocks-and-items.md#export-a-fabric-mod-jar)), or use **Test in Minecraft**. Mob skins, goat horns, trades and fonts also work from the vanilla data and resource packs.
 2. **Ore**: create a **new** world and look at the heights you chose, for example in a cave or in spectator mode. Chunks generated before the mod was installed have no ore.
 3. **Extra drops**: kill a few zombies (with a player kill when the drop asks for it); a chance of 10% needs about ten.
 4. **Fuel and compost**: put the item in a furnace's fuel slot with something to smelt, and into a composter.
-5. **Trades**: give a few new villagers the profession's workstation (a fletching table for a fletcher) and look at their offers, trading with them to reach higher levels; try several villagers, because a trade is a candidate.
+5. **Mob skins**: `/summon` the animal with the skin's id, then look for it where it spawns in a new chunk of the biome you chose, also as a baby.
+6. **Goat horns**: craft the horn and blow it; with **Goats drop it**, let a goat ram a tree or a stone block.
+7. **Fonts**: `/tellraw @s {"text": "\uE000", "font": "<namespace>:<name>"}`.
+8. **Trades**: give a few new villagers the profession's workstation (a fletching table for a fletcher) and look at their offers, trading with them to reach higher levels; try several villagers, because a trade is a candidate.
 
 When something does not appear, the runtime's summary line in the game log counts what it loaded ([Troubleshooting](blocks-and-items.md#troubleshooting)), and a missing id or a broken pool has its own warning or error line.

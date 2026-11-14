@@ -195,6 +195,17 @@ What that means in practice:
 - **Server side only.** Scripts run on the server (in single player, the built-in server). They cannot draw on screen, read keys or change client settings.
 - **Saved data is small.** Variables are reset by `/reload` and by restarting the world; keep what must last in `msm.storage` or `entity.data`, within 64-character keys, 16 KiB per entity and 1 MiB per world for each namespace (see [Saved data](#saved-data)).
 - **Fabric mod jar only.** The Java project export leaves scripts and `run_script` actions out (see [Eject to a Java project](eject.md)).
+- **Script API limits.** At most 32 boss bars per namespace (creating one more is a script error); a ray reaches at most 128 blocks (a longer one is a `RangeError`); `player.tick` runs at most every 5 ticks for each player, and an item component value read or written in one call is at most 64 KiB.
+
+### Not possible yet
+
+These are planned for later, so nobody waits for them in this release:
+
+- **A block placed event** (`block.place`): the game has no place event a script can listen to without changing Minecraft's code. Blocks of your project have the **On place** trigger, which can run a script through `run_script` ([Triggers](blocks-and-items.md#triggers)).
+- **Changing the amount of damage**: `entity.hurt` can cancel damage but not make it larger or smaller, and `entity.damaged` only reports the final amount.
+- **Commands of your own** (`/mycommand`): use functions, or an item or block that runs a script.
+- **Creative tabs of your own**: your items go into the vanilla tabs.
+- Dropped items and projectiles in `entitiesNear`, and anything on the player's screen beyond titles, the action bar and boss bars (scripts run on the server).
 
 ## The in-game check
 

@@ -1,6 +1,6 @@
 # The Creator
 
-The **Creator** makes a finished piece of content from a few questions: a whole set of tools and armour, one weapon, a food or drink, a totem, an enchantment, a status effect, a throwable, a painting, a music disc, a block, a mob, a dimension, a villager trade, an extra drop for a vanilla mob, block or chest, or a scripted item. You answer in a form on the left and watch the result on the right; **Create** adds every element, texture, recipe, tag and name it needs to the open project in one step that a single Undo takes back. Later, **Edit in Creator** reopens the set with the same answers, so you can change the colour or add a piece without losing the changes you made by hand.
+The **Creator** makes a finished piece of content from a few questions: a whole set of tools and armour, one weapon, a food or drink, a totem, an enchantment, a status effect, a potion, a throwable, a goat horn, a painting, a music disc, a block, a mob, a new skin for a vanilla animal, a dimension, a villager trade, an extra drop for a vanilla mob, block or chest, or a scripted item. You answer in a form on the left and watch the result on the right; **Create** adds every element, texture, recipe, tag and name it needs to the open project in one step that a single Undo takes back. Later, **Edit in Creator** reopens the set with the same answers, so you can change the colour or add a piece without losing the changes you made by hand.
 
 The Creator uses the same flows as the project starters ([Templates, starters and examples](templates-and-examples.md#project-starters)), but adds to the project you have open instead of making a new one. Its results are ordinary elements: every form, Studio and **Raw JSON** works on them as on anything else.
 
@@ -21,7 +21,7 @@ When the project has more than one namespace, choose where the new content goes 
 
 Every flow asks for a name and a colour first. Ids come from the name: "Sapphire" in the Gear set gives `sapphire`, `sapphire_sword`, `sapphire_helmet` and so on. The colour tints the placeholder textures the Creator draws (see [Replacing the placeholders](#replacing-the-placeholders)). The fields are grouped as in the form; empty or out-of-range fields show a message under them and **Create** stays disabled until they are fixed.
 
-Flows that make new items or blocks need the **Fabric mod jar** export ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)); **Enchantment**, **Painting** and **Villager trade** work in plain data and resource packs. **Extra drop** and the Custom ore's world generation also need the Fabric mod jar ([Adding to vanilla](adding-to-vanilla.md)).
+Flows that make new items or blocks need the **Fabric mod jar** export ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)); **Enchantment**, **Painting**, **Villager trade**, **Mob skin** and **Goat horn** work in plain data and resource packs. **Potion** needs the Fabric mod jar too ([Potions and brewing](potions.md#vanilla-packs)). **Extra drop** and the Custom ore's world generation also need the Fabric mod jar ([Adding to vanilla](adding-to-vanilla.md)).
 
 | Flow | Group | What it makes | Fields |
 |---|---|---|---|
@@ -40,7 +40,10 @@ Flows that make new items or blocks need the **Fabric mod jar** export ([Blocks 
 | **Food** | Food | Something to eat | **Food**: **Food name**, **Colour**. **Eating**: **Hunger restored**, **Saturation**, **Can be eaten when not hungry**. **Recipe**: **Crafted from**. |
 | **Consumable** | Food | A food with effects, a potion-like drink or a charm | **Item**: **Name**, **Colour**, **Kind** (food, drink or charm). **Using**: **Hunger restored**, **Saturation**, **Can be eaten when not hungry**, **Seconds to eat or drink**, **Cooldown in seconds**, **Leaves a glass bottle**. **Effects**: two effects with seconds, level and chance. **Recipe**: **Crafted from**. |
 | **Custom mob** | Mobs | An animated mob with behaviour, spawning, a spawn egg and drops | **Mob**: **Mob name**, **Skin colour**, **Skin** (a player skin PNG), **Arms**, spawn egg colours. **Behaviour**: **Health**, **Walking speed**, **Behaviour**. **Spawning**: **Spawns in**. |
-| **Status effect** | Magic | A status effect of your own with its icon, and a drink or a throwable flask that gives it | **Effect**: **Name**, **Colour**, **Good or bad**. **Behaviour**: **What it does** (nothing extra, heals, hurts, shows particles or runs a function), **Amount**, **Every how many seconds**, **Stronger levels act faster**, **Particles**. **Stats**: **Stat change 1** and **Stat change 2** with their amounts per level. **Getting it**: **How players get it**, **Seconds it lasts**, **Level**, **Crafted from**. |
+| **Status effect** | Magic | A status effect of your own with its icon, and a drink, a throwable flask or a brewed potion that gives it | **Effect**: **Name**, **Colour**, **Good or bad**. **Behaviour**: **What it does** (nothing extra, heals, hurts, shows particles or runs a function), **Amount**, **Every how many seconds**, **Stronger levels act faster**, **Particles**. **Stats**: **Stat change 1** and **Stat change 2** with their amounts per level. **Getting it**: **How players get it**, **Seconds it lasts**, **Level**, **Crafted from**, **Brewed from**. |
+| **Potion** | Magic | A potion for the brewing stand of a new effect or a vanilla one, with longer, stronger, splash and lingering versions and tipped arrows | **Potion**: **Name**. **Effect**: **Effect** (a new effect of its own, or a vanilla effect), **Colour**, **Stat change 1** and **Stat change 2** with their amounts per level (new effect only), **Seconds it lasts**, **Level**. **Brewing**: **Brewed from**, **Ingredient**. **Versions**: **Longer version**, **Longer version: seconds**, **Stronger version**, **Stronger version: seconds**, **Splash potion**, **Lingering potion and tipped arrows**. |
+| **Mob skin** | Mobs | A new skin for a vanilla wolf, cat, pig, cow, chicken or frog, with placeholder textures of the right size | **Skin**: **Name**, **Animal**, **Colour**. **Where**: **Where it appears** (**In a biome** or **Everywhere**), **Biome**. |
+| **Goat horn** | Gear | A goat horn with a call of its own | **Horn**: **Name**, **Sound** (one of the eight vanilla calls), **Sound file** (your own `.ogg`), **Seconds per blow**, **Heard from (blocks)**. **Getting it**: **Crafted from** (or **No recipe**), **Goats drop it**. |
 | **Scripted behaviour** | Scripts | An item whose use runs a script you can open and change | **Item**: **Item name**, **Colour**, **Cooldown in seconds**. **Behaviour**: **What it does when used** (heal, launch upward, strike lightning, give an effect) and its numbers. |
 
 Some notes on the Gear set:
@@ -90,6 +93,14 @@ Change what you like: another colour, another tier, a piece more or less. **Crea
 ## Make a status effect or a throwable
 
 The **Status effect** flow (under **Magic**) and the **Throwable** flow (under **Gear**) are explained step by step, with the Effect Studio, effect icons and the limits, in [Status effects and throwables](effects-and-throwables.md). Both need the Fabric mod jar. A status effect's icon is an 18 by 18 placeholder badge in its colour at `textures/mob_effect/<name>.png`; paint over it like any other placeholder.
+
+## Make a potion
+
+The **Potion** flow (under **Magic**) makes a potion for the brewing stand, of a new effect with its icon or of a vanilla effect, with longer and stronger versions brewed with redstone and glowstone dust, and splash and lingering bottles with tipped arrows. [Potions and brewing](potions.md) explains it with the Potion Studio, the ids of the versions and the limits. The Status effect flow's **A brewed potion** makes one for its effect. Potions need the Fabric mod jar.
+
+## Make a mob skin or a goat horn
+
+The **Mob skin** flow (under **Mobs**) and the **Goat horn** flow (under **Gear**) add to vanilla mobs and items with data only, so they work in plain packs; [Adding to vanilla](adding-to-vanilla.md#mob-skins) explains both.
 
 ## Make a dimension
 

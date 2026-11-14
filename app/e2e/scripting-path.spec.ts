@@ -9,6 +9,11 @@
  * TypeScript source); `.msm/msm-runtime.d.ts` is in the project folder; a second launch
  * reopens the project with no problems.
  *
+ * A second test (Script API 1.1, ADR 0065) adds the "Full set bonus" template (`player.tick`),
+ * finds the Inventory members in the completion list after `e.player.inventory.`, finishes a
+ * `player.respawn` handler that counts diamonds with no problems, and checks the ES5 script in
+ * the jar.
+ *
  * Nothing here runs Minecraft or Rhino; the in-game check is `fixtures/sample-script`.
  */
 
@@ -334,4 +339,81 @@ test('scripting: template, Monaco TypeScript, problems, Fabric jar with ES5 scri
   await expect.poll(() => monacoText(w2)).toBe(templateText);
   await expectNoProblems(w2);
   await w2.screenshot({ path: join(outputDir, 'scripting-path-reopened.png') });
+});
+
+test('scripting: Script API 1.1, player.inventory completes and the script exports', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-scripting-inventory-'));
+  const folders = {
+    projectDir: join(base, NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  mkdirSync(outputDir, { recursive: true });
+  const launched = await launchApp({ reuse: folders });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-new-project').click();
+  await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
+
+  // The "Full set bonus" template: player.tick with an interval and entity equipment. -------
+  const scriptId = `${NAMESPACE}:bonus`;
+  await window.getByTestId('toolbar-add-element').click();
+  const dialog = window.getByTestId('new-element-dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByTestId('new-element-filter').fill('full set');
+  const template = dialog.getByTestId('template-msm_script_full_set_bonus');
+  await expect(template).toBeVisible();
+  await template.check();
+  await dialog.getByTestId('new-element-name').fill('bonus');
+  await dialog.getByTestId('new-element-dialog-submit').click();
+  await expect(dialog).toBeHidden();
+  await window.getByTestId(`element-row-${scriptId}`).click();
+  const studio = window.getByTestId('script-studio');
+  await expect(studio.getByTestId('script-editor').locator('.monaco-editor')).toBeVisible();
+  await expect(studio.getByTestId('script-summary-event')).toHaveText('Event player.tick');
+  await expect.poll(() => monacoText(window)).toContain('"player.tick"');
+  await expectNoProblems(window);
+
+  // Completion after `player.inventory.` lists the Inventory members. -----------------------
+  await newLastLine(window);
+  // insertText skips Monaco's auto-closing brackets and quotes; the dot is typed to open the list.
+  await window.keyboard.insertText('msm.events.on("player.respawn", (e) => e.player.inventory');
+  await window.keyboard.type('.');
+  const suggest = window.locator('.monaco-editor .suggest-widget');
+  await expect(suggest).toBeVisible({ timeout: 30_000 });
+  for (const member of ['count', 'find', 'get', 'remove', 'set']) {
+    await expect(
+      suggest.locator('.monaco-list-row', { hasText: new RegExp(`^${member}\\b`) }).first(),
+    ).toBeVisible({ timeout: 30_000 });
+  }
+  await window.keyboard.press('Escape');
+  await expect(suggest).toBeHidden();
+  await window.keyboard.insertText('count("minecraft:diamond"));');
+  await expect
+    .poll(() => lastLine(window))
+    .toBe('msm.events.on("player.respawn", (e) => e.player.inventory.count("minecraft:diamond"));');
+  await expectNoProblems(window);
+  await expect(studio.getByTestId('script-summary-event')).toHaveCount(2);
+
+  // The jar holds the script as ES5 with both handlers. -------------------------------------
+  const jarItem = await exportItem(window, 'export-fabric-jar');
+  await expect(jarItem).not.toHaveAttribute('data-disabled', /.*/);
+  await jarItem.click();
+  const jarDialog = window.getByTestId('fabric-jar-dialog');
+  await expect(jarDialog).toBeVisible();
+  await jarDialog.getByTestId('exporter-option-separateRuntime').check();
+  await jarDialog.getByTestId('fabric-jar-dialog-submit').click();
+  await expect(jarDialog).toBeHidden();
+  const jarPath = join(folders.outDir, `${NAMESPACE}.jar`);
+  await expect.poll(() => isCompleteZip(jarPath), { timeout: 20_000 }).toBe(true);
+  const bytes = readZip(jarPath)[`msm/${NAMESPACE}/script/bonus.js`];
+  if (bytes === undefined) throw new Error('The script is missing from the jar.');
+  const js = strFromU8(bytes);
+  expect(js).toContain('player.tick');
+  expect(js).toContain('e.player.inventory.count("minecraft:diamond")');
+  expect(es2015Tokens(js)).toEqual([]);
+
+  await window.getByTestId('toolbar-save').click();
+  await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
 });

@@ -4,6 +4,8 @@ MCSuperMods makes **status effects** of your own, like speed or poison, with the
 
 The quickest way to both is the [Creator](creator.md): the **Status effect** flow under **Magic** and the **Throwable** flow under **Gear**. Everything they make is ordinary elements you can change afterwards in the **Effect Studio** and the **Item Studio**.
 
+To brew an effect in a brewing stand, make a potion of it: [Potions and brewing](potions.md) explains the **Potion** flow, **Make a potion** and the Potion Studio.
+
 ## Make a status effect
 
 1. Open or create a project, then choose **Create…** on the toolbar.
@@ -12,8 +14,8 @@ The quickest way to both is the [Creator](creator.md): the **Status effect** flo
    - **Effect**: **Name**, **Colour** (the swirling particles and the bar) and **Good or bad** (**Good**, **Bad** or **Neutral**; good and neutral effects have a blue name in tooltips, bad ones a red name).
    - **Behaviour**: **What it does** every few seconds: **Nothing extra**, **Heals**, **Hurts**, **Shows particles** (pick the **Particles**) or **Runs a function** (a function you can edit, run at the holder). **Amount** is in half hearts, **Every how many seconds** sets how often, and **Stronger levels act faster** makes level II act twice as often, level III three times, and so on.
    - **Stats**: up to two stat changes (**Stat change 1** and **Stat change 2**), such as movement speed, attack damage, max health, armour, jump strength or size, each with its **amount per level**. They last while the effect does.
-   - **Getting it**: **How players get it**: **A drink** (a tonic that leaves a glass bottle), **A throwable flask** (it gives the effect to the mob or player it hits) or **Nothing (commands and other elements)**; **Seconds it lasts**, **Level** and **Crafted from** (or **No recipe**).
-4. Choose **Create**. The effect, its icon, the drink or flask with its model, texture and recipe, and the names are added in one step that one Undo takes back.
+   - **Getting it**: **How players get it**: **A drink** (a tonic that leaves a glass bottle), **A throwable flask** (it gives the effect to the mob or player it hits), **A brewed potion** (brewed in a brewing stand from an awkward potion and the ingredient in **Brewed from**, with splash and lingering bottles and tipped arrows; see [Potions and brewing](potions.md)) or **Nothing (commands and other elements)**; **Seconds it lasts**, **Level** and **Crafted from** (or **No recipe**).
+4. Choose **Create**. The effect, its icon, the drink, flask or potion (a drink or flask with its model, texture and recipe), and the names are added in one step that one Undo takes back.
 
 Select any of them later and choose **Edit in Creator** to change an answer, for example to make the effect a bad one.
 
@@ -38,6 +40,7 @@ To make an effect by hand, choose **Add element** (Ctrl+N) and pick a template u
 - **Behaviour**: three triggers, each naming one of the effect's events. **When it starts** runs once when the effect is added. **While active** runs every **Every (ticks, default 20)** ticks (20 ticks are one second); **Stronger levels act faster** divides that time by the level. **When it ends** runs when the effect runs out or is removed (by milk or `/effect clear`). **New event** next to a trigger adds an empty event and picks it.
 - **Events**: the events and their actions, as in [Events and actions](blocks-and-items.md#events-and-actions). In an effect's events the holder is both "self" and "other", so **Hurt**, **Heal** and **Apply effect** act on it.
 - **Preview**: the icon, the name in its category's colour and what levels I and II do.
+- **Potion**: the potions of the project that give this effect ("Potions with this effect: ...") and **Make a potion**, which adds a potion of the effect and opens it in the Potion Studio, in one step that one Undo takes back (see [Potions and brewing](potions.md#make-a-potion-from-an-effect)).
 
 **Problems** reports an event a trigger names that the effect does not have, as for blocks and items.
 
@@ -64,6 +67,7 @@ A custom effect works everywhere a vanilla effect does:
 - a drink or food: the `effects` of `msm:consumable` (the **Consumable** flow and the **Drink** template);
 - a totem: the `effects` of `msm:death_protection`;
 - an **Apply effect** action in any event, for example an item's **On use** or a throwable's **On hit entity** with **Target** `other`;
+- a potion: brewed in a brewing stand, drunk, thrown as a splash or lingering potion or shot on a tipped arrow ([Potions and brewing](potions.md));
 - the command `/effect give @s <namespace>:<effect name> 30 1` (30 seconds at level II).
 
 ## Throwables in the Item Studio
@@ -84,7 +88,7 @@ The runtime registers every sound of your project's `sounds` element as a sound 
 
 ## Limits
 
-- Custom effects cannot be brewed: there are no brewing stand recipes and they are not in the vanilla potion lists. Give them with drinks, totems, throwables, events or `/effect`.
+- Custom effects are brewed through a potion of your own ([Potions and brewing](potions.md)), which needs the Fabric mod jar; a vanilla data pack cannot add a potion.
 - Effects act over time; an instant effect (like instant health) is not possible yet.
 - A thrown item is drawn flat, as its item picture facing the camera, like a snowball, whatever its style. There is no 3D model in flight, like a trident's.
 - `return` puts the item back when it lands; it does not fly back to the thrower.
