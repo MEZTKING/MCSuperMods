@@ -188,6 +188,17 @@ export class PlayerController {
     if (flying) this.vel = { ...this.vel, y: 0 };
   }
 
+  /**
+   * Pushes the player (the `launch` action, B396): `velocity` in blocks per tick replaces the
+   * current speed, or adds to it with `add`; an upward push lifts it off the ground.
+   */
+  launch(velocity: Vec3, add = false): void {
+    this.vel = add
+      ? { x: this.vel.x + velocity.x, y: this.vel.y + velocity.y, z: this.vel.z + velocity.z }
+      : { ...velocity };
+    if (this.vel.y > 0) this.ground = false;
+  }
+
   /** Steps one tick (a twentieth of a second) with this tick's input. */
   step(input: PlayerInput): void {
     this.prevPos = this.pos;

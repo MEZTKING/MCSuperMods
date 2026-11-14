@@ -8,11 +8,13 @@
  * One tick (call {@link LocalWorldSource.tick} once per `SimClock` tick):
  * 1. the player moves with the last `move` input (`toggleFly` counts once);
  * 2. every mob steps, and the snapshots go out as an `entities` event;
- * 3. the timers run with the player's and the mobs' boxes (buttons let go, plates press).
+ * 3. the timers run with the player's and the mobs' boxes (buttons let go, plates press);
+ * 4. the tick triggers (B396): steps, entities inside blocks, mobs' timers, random ticks.
  *
  * The view's own per-tick work (ambient particles, the particle field) follows the tick.
- * Triggers and actions (B396) plug in where `use`, `place`, `break`, `hit` and the timers make
- * their changes: see the `TODO(B396)` notes below.
+ * Triggers and actions (B396, `events/`) fire where `use`, `interact`, `place`, `break`, `hit`,
+ * the Power tool and the tick make their changes; their effects (particles, sounds, chips,
+ * animations) go out as `effect` events, and every step is in {@link LocalWorldSource.trace}.
  */
 
 import { type BlockCatalogue, buildCatalogue, type CatalogueTarget } from './blocks/catalogue.js';
@@ -21,6 +23,10 @@ import { breakBlock, placeBlock } from './blocks/placement.js';
 import { buildEntityCatalogue, type EntityCatalogue } from './entities/catalogue.js';
 import { EntityWorld } from './entities/entity-world.js';
 import type { EntityHit } from './entities/spawn.js';
+import type { SimInventory } from './events/actions.js';
+import { type RuleBookInfo, readEventDefinitions } from './events/definitions.js';
+import { SimTrace, type TraceEntry } from './events/trace.js';
+import { type ChanceMode, TriggerEngine } from './events/triggers.js';
 import type { BlockLookup } from './player/collide.js';
 import { REACH } from './player/constants.js';
 import { IDLE_INPUT, PlayerController, type PlayerInput } from './player/controller.js';
@@ -61,6 +67,10 @@ export interface LocalSourceOptions {
   readonly start?: Vec3;
   /** The most log lines kept for {@link LocalWorldSource.lines}; default {@link LOG_LIMIT}. */
   readonly logLimit?: number;
+  /** How trigger chances are decided (B396); default `random` (seeded by `seed`). */
+  readonly chance?: ChanceMode;
+  /** The project's rule books, to name the rule behind each plain action (B396). */
+  readonly ruleBooks?: readonly RuleBookInfo[];
 }
 
 /** The most log lines the source keeps. */
@@ -125,6 +135,8 @@ export class LocalWorldSource implements WorldSource {
   private blockCatalogue: BlockCatalogue;
   private entityCatalogue: EntityCatalogue;
   private readonly timers: BlockTimers;
+  private readonly triggers: TriggerEngine;
+  private readonly traceNow: SimTrace;
   private readonly listeners = new Set<WorldListener>();
   private readonly logLines: SimLogLine[] = [];
   private readonly logLimit: number;
@@ -176,6 +188,19 @@ export class LocalWorldSource implements WorldSource {
     this.unsubscribeWorld = this.world.onChange((change: WorldChange) =>
       this.emit({ type: 'blockChanged', pos: change.pos, state: change.state }),
     );
+    this.traceNow = new SimTrace(this.log, () => this.ticks);
+    this.triggers = new TriggerEngine(readEventDefinitions(this.files, this.target), {
+      world: this.world,
+      catalogue: () => this.blockCatalogue,
+      player: this.player,
+      entities: this.entities,
+      trace: this.traceNow,
+      now: () => this.ticks,
+      effect: (effect) => this.emit({ type: 'effect', effect }),
+      seed: options.seed ?? 1,
+      ...(options.chance === undefined ? {} : { chance: options.chance }),
+      ...(options.ruleBooks === undefined ? {} : { ruleBooks: options.ruleBooks }),
+    });
   }
 
   private buildBlocks(): BlockCatalogue {
@@ -217,6 +242,31 @@ export class LocalWorldSource implements WorldSource {
     return this.logLines;
   }
 
+  /** The "What happened" trace (B396): triggers, actions and "Only in Minecraft" entries. */
+  get trace(): readonly TraceEntry[] {
+    return this.traceNow.entries;
+  }
+
+  /** The simple hotbar inventory `give_item` fills (B396). */
+  get inventory(): SimInventory {
+    return this.triggers.inventory;
+  }
+
+  /** How trigger chances are decided now. */
+  get chance(): ChanceMode {
+    return this.triggers.chance;
+  }
+
+  /** `always` ("Run every time"), `never` or `random` (seeded) for trigger chances. */
+  setChanceMode(mode: ChanceMode): void {
+    this.triggers.setChanceMode(mode);
+  }
+
+  /** The project's rule books, to name the rule behind each plain action (B396). */
+  setRuleBooks(books: readonly RuleBookInfo[]): void {
+    this.triggers.setRuleBooks(books);
+  }
+
   subscribe(listener: WorldListener): () => void {
     this.listeners.add(listener);
     return () => {
@@ -241,19 +291,25 @@ export class LocalWorldSource implements WorldSource {
         this.place(action.pos, action.face, action.hit, action.block);
         return;
       case 'break':
-        // TODO(B396): fire `on_break` of the block here, before it goes.
+        // `msm:on_break` fires before the block goes (`playerWillDestroy`).
+        if (this.world.get(action.pos) !== null) this.triggers.blockBreaking(action.pos);
         breakBlock(this.world, this.blockCatalogue, action.pos);
         return;
       case 'use':
         this.use(action);
         return;
       case 'hit':
-        // TODO(B396): fire the mob's `on_death` here (a hit removes it).
-        this.entities.hit(action.entity);
+        this.hit(action.entity);
         return;
-      case 'tool':
+      case 'interact':
+        this.interact(action.entity);
+        return;
+      case 'tool': {
+        const before = this.world.get(action.pos);
         applyTool(this.world, this.blockCatalogue, this.log, action.tool, action.pos);
+        this.triggers.powerChanged(action.pos, before, this.world.get(action.pos));
         return;
+      }
       case 'clear':
         this.clear();
         return;
@@ -267,8 +323,8 @@ export class LocalWorldSource implements WorldSource {
     if (this.input.toggleFly) this.input = { ...this.input, toggleFly: false };
     const snapshots = this.entities.step();
     this.emit({ type: 'entities', entities: snapshots });
-    // TODO(B396): plates pressed here fire `on_step`/`on_entity_inside`; read the changes.
     this.timers.tick([this.player.box, ...this.entities.boxes()]);
+    this.triggers.tick();
   }
 
   /**
@@ -338,6 +394,7 @@ export class LocalWorldSource implements WorldSource {
     }
     this.entities.setCatalogue(this.entityCatalogue, this.shapes);
     this.timers.setCatalogue(this.blockCatalogue);
+    this.triggers.setDefinitions(readEventDefinitions(files, target));
   }
 
   /** Empties the area: blocks, mobs and timers ("Clear the area"). The player stays. */
@@ -345,6 +402,8 @@ export class LocalWorldSource implements WorldSource {
     this.timers.clear();
     this.entities.clear();
     this.world.clear();
+    this.triggers.clear();
+    this.traceNow.clear();
     this.emit({ type: 'entities', entities: [] });
     this.log.info('You cleared the area.');
   }
@@ -355,36 +414,80 @@ export class LocalWorldSource implements WorldSource {
     this.listeners.clear();
   }
 
+  /**
+   * A right click on a block, in the order of the runtime (see `events/triggers.ts`): the block
+   * first (its use by hand, then `msm:on_interact`) unless the player sneaks with something in
+   * hand; then the held item on the block (`msm:on_use_on_block`, a block placed, an egg
+   * hatched); then the item's own `msm:on_use` when nothing took the click.
+   */
   private use(action: Extract<PlayerAction, { type: 'use' }>): void {
     const item = action.item;
     const target = this.world.get(action.pos);
     const block = target === null ? undefined : this.blockCatalogue.blockFor(target.name);
-    const usable =
-      block !== undefined &&
-      ['door', 'trapdoor', 'fence_gate', 'button'].includes(block.type) &&
-      !this.player.sneaking;
-    if (usable) {
-      // TODO(B396): fire `on_interact` of the block here (after the hand's own use).
-      const result = useBlock(this.world, this.blockCatalogue, {
-        pos: action.pos,
-        yaw: this.player.yaw,
-      });
-      if (result.handled && result.message !== undefined) this.log.info(result.message);
-      this.timers.afterUse(action.pos, result);
+    const secondaryUse = this.player.sneaking && item !== undefined;
+    if (target !== null && !secondaryUse) {
+      let taken = false;
+      if (
+        block !== undefined &&
+        ['door', 'trapdoor', 'fence_gate', 'button'].includes(block.type)
+      ) {
+        const result = useBlock(this.world, this.blockCatalogue, {
+          pos: action.pos,
+          yaw: this.player.yaw,
+        });
+        if (result.handled && result.message !== undefined) this.log.info(result.message);
+        this.timers.afterUse(action.pos, result);
+        taken = result.handled;
+      }
+      // `{handled: false}` falls through to the block's triggers.
+      if (this.triggers.blockUsed(action.pos).fired) taken = true;
+      if (taken) return;
+    }
+    if (item === undefined) return;
+    const point = {
+      x: action.pos.x + action.hit.x,
+      y: action.pos.y + action.hit.y,
+      z: action.pos.z + action.hit.z,
+    };
+    if (this.triggers.itemUsedOn(item, action.pos, point).fired) return;
+    if (this.entityCatalogue.entityForEgg(item) !== undefined) {
+      const spawned = this.entities.spawnFromEgg(item, { pos: action.pos, face: action.face });
+      if (spawned.spawned) this.triggers.mobSpawned(spawned.entity.id);
       return;
     }
-    if (item !== undefined && this.entityCatalogue.entityForEgg(item) !== undefined) {
-      // TODO(B396): fire the mob's `on_spawn` here.
-      this.entities.spawnFromEgg(item, { pos: action.pos, face: action.face });
-      return;
-    }
-    if (item !== undefined && this.blockCatalogue.blockFor(item) !== undefined) {
+    if (this.blockCatalogue.blockFor(item) !== undefined) {
       this.place(action.pos, action.face, action.hit, item);
       return;
     }
-    if (item !== undefined) {
-      this.log.info(`${item} is not a block or a spawn egg of the project`);
+    if (this.triggers.itemUsed(item).fired) return;
+    if (this.triggers.events.get('item', item) !== undefined) {
+      this.log.info(
+        `You used ${this.triggers.events.get('item', item)?.displayName}; nothing happens.`,
+      );
+      return;
     }
+    this.log.info(`${item} is not a block or a spawn egg of the project`);
+  }
+
+  /** A right click on a mob: its `msm:on_interact`. */
+  private interact(id: number): void {
+    const mob = this.entities.entity(id);
+    if (mob === undefined) return;
+    if (!this.triggers.mobInteracted(id).fired) {
+      this.log.info(
+        `You used ${mob.kind.displayName}; nothing happens in the preview.`,
+        mob.kind.origin,
+      );
+    }
+  }
+
+  /** A hit removes the mob (B393) and fires its `msm:on_death`. */
+  private hit(id: number): void {
+    const mob = this.entities.entity(id);
+    if (mob === undefined) return;
+    const type = mob.kind.id;
+    const position = mob.position;
+    if (this.entities.hit(id)) this.triggers.mobDied(type, id, position);
   }
 
   private place(pos: BlockPos, face: Face, hit: Vec3, block: string): void {
@@ -421,7 +524,7 @@ export class LocalWorldSource implements WorldSource {
       this.log.info(`${this.nameOf(block)} was not placed: you or a mob stand where it would go.`);
       return;
     }
-    // TODO(B396): fire `on_place` of the block here.
+    this.triggers.blockPlaced(result.pos);
   }
 
   private nameOf(id: string): string {

@@ -4,7 +4,7 @@
  * (ADR 0028 D1) and the `en_us` names. Only what Try it uses is kept: the hitbox, the model's
  * render scale, the movement mode and speeds, and the model, texture and animation ids the view
  * draws with. Everything else a definition holds (goals, attacks, taming, breeding, riding,
- * variants, boss bars, natural spawning, events) is listed in plain words so the first spawn of
+ * variants, boss bars, natural spawning) is listed in plain words so the first spawn of
  * the mob can say it works only in Minecraft (ADR 0085 D5, limit L3).
  */
 import type { Json, JsonObject, TargetFacts } from '@msm/plugin-api';
@@ -112,15 +112,23 @@ const COMPONENT_WORDS: Readonly<Record<string, string>> = {
   'msm:rideable': 'riding',
   'msm:variants': 'texture variants',
   'msm:boss_bar': 'boss bar',
-  'msm:on_hurt': 'event when hurt',
-  'msm:on_death': 'event on death',
-  'msm:on_interact': 'event when used',
-  'msm:on_tick': 'repeating event',
-  'msm:on_spawn': 'event on spawning',
 };
 
-/** Components Try it uses, or that are about survival and say so when the mob is hit. */
-const HANDLED_COMPONENTS = new Set(['msm:animated_model', 'msm:movement', 'msm:health']);
+/**
+ * Components Try it uses, or that are about survival and say so when the mob is hit. The event
+ * components are the triggers' (B396, `events/triggers.ts`): `msm:on_spawn`, `msm:on_interact`,
+ * `msm:on_tick` and `msm:on_death` fire, and `msm:on_hurt` is said when the mob is first hit.
+ */
+const HANDLED_COMPONENTS = new Set([
+  'msm:animated_model',
+  'msm:movement',
+  'msm:health',
+  'msm:on_hurt',
+  'msm:on_death',
+  'msm:on_interact',
+  'msm:on_tick',
+  'msm:on_spawn',
+]);
 
 /** `ranged_attack` as `ranged attack`. */
 const goalWords = (type: string): string => type.replaceAll('_', ' ');

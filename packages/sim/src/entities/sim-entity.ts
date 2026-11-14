@@ -175,6 +175,17 @@ export class SimEntity {
     return overlappingBlocks(lookup, shapes, this.box).length === 0;
   }
 
+  /**
+   * Pushes the mob (the `launch` action, B396): `velocity` in blocks per tick replaces its speed,
+   * or adds to it with `add`.
+   */
+  launch(velocity: Vec3, add = false): void {
+    this.vel = add
+      ? { x: this.vel.x + velocity.x, y: this.vel.y + velocity.y, z: this.vel.z + velocity.z }
+      : { ...velocity };
+    if (this.vel.y > 0) this.ground = false;
+  }
+
   /** Steps one tick (a twentieth of a second). */
   step(lookup: BlockLookup, shapes: BlockShapes): void {
     this.prevPos = this.pos;

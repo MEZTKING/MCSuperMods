@@ -4608,3 +4608,23 @@ Next
 - Main session: merge `b384`, clean-worktree run and CI on the merged commit; record the totals.
 - The user: Windows test of the 1.5.1 draft (Play with Prism, Reload, Restart, the sample rules, a Very easy first run), then publish with `publish-release.yml`.
 - Try it: slice 2 onward and its close B392. Follow-ups in ROADMAP and HANDOFF ("Copy as my own script", `kind_schema` truncation, `elementId` on lowered files).
+
+## 2026-11-14 — executor — B396 Sim: triggers and actions
+
+What
+- New `packages/sim/src/events/`: `definitions.ts` (`TRIGGER_SPECS`, every trigger field of the format with `handled`, words, cooldown, interval, chance and hand fields; `readEventDefinitions(files, target)` -> `EventDefinitions` of `EventOwner {id, kind, displayName, events, triggers, maxStackSize?, origin}`; `readScripts` reads Rules' `run_script` handlers and their `// rule:<key>` markers and the `msm.events.on` listeners; `ruleBooksFrom`, `rulesForActions`, `ruleEventOf`), `trace.ts` (`SimTrace`, `TraceEntry {tick, kind trigger|action|skipped|onlyInMinecraft, text, origin, trigger?, action?, actionIndex?, depth?}`, `TRACE_LIMIT` 500; every entry also goes to the log), `actions.ts` (`SIM_ACTIONS` for all 13 action types, `runEvent`, `SimInventory` of 9 slots, `parseBlockState`, `soundName`, `MAX_EVENT_DEPTH` 16), `triggers.ts` (`TriggerEngine`, `ChanceMode` random|always|never, `RANDOM_TICK_ODDS` 3/4096).
+- `local-source.ts`: the `TODO(B396)` markers wired: `on_interact` (and a container's `on_open`) after the block's own use, `on_use_on_block`, `on_place` after placing, `on_spawn` after a hatch, `on_use` when nothing took the click, `on_break` before breaking, `on_death` after a hit, the Power tool's `on_powered`/`on_unpowered`, and per tick `on_step`, `on_entity_inside`, mob `on_tick` and random ticks. New action `interact` (right-click a mob: `on_interact`). Getters `trace`, `inventory`, `chance`; `setChanceMode`, `setRuleBooks`; options `chance`, `ruleBooks`.
+- `types.ts`: `SimEffect` gains kind `animation` and optional `velocity`, `options`, `volume`, `pitch`, `target`, `controller`, `origin`; `SimOrigin` gains `eventId`, `ruleKey`, `ruleBook`; `PlayerAction` gains `interact`. `PlayerController.launch` and `SimEntity.launch` (the `launch` action). `entities/catalogue.ts`: the five entity event components left `COMPONENT_WORDS` (the trigger engine fires or says them). `test/lower-fixture.ts` knows `msm.rules`.
+- Tests under `packages/sim/test/events/` (31): the schema walk (`ActionType` in `action.mcdoc` equals `SIM_ACTIONS`; each action fired leaves a trace; the validators' `EVENT_FIELDS` and `definition.mcdoc`'s trigger fields are all in `TRIGGER_SPECS`; every unhandled trigger is said), triggers and actions on a small `ev` project, and Rules through lowering: `fixtures/sample-rules`' "Ring the chime" and "Keep watch" fire with their rule names, the script rules and the library's Rules examples are said with their keys. `@msm/sim` 318 tests; app `test/components/tryit` 99 green.
+
+Decisions
+- Clean room: the trigger order follows MSM's own runtime (`BlockBehaviourDriver`, the type block classes, `MsmItem`, `MobDriver`, `EventRunner`, `EventContext`), read only for the order and the `self`/`other` rules; no Mojang code was read.
+- The block's own use comes first, then `on_interact`; a sneaking player with something in hand skips the block (secondary use), so a sneak with an empty hand now opens doors (B390 skipped every sneak-use).
+- A hit fires `on_death` only (the runtime fires `on_hurt` only when the mob survives); `on_hurt` is said at the first spawn.
+- Random ticks are simulated at the game's average odds so `msm:on_random_tick`'s `chance` (the only trigger chance in the format) runs; `always` and `never` decide chances, not the random ticks themselves.
+- Plain rule actions are mapped to their rule from the rule books when the view passes them (`ruleBooks`); without them a plain rule's event is named by its trigger. Script rules are named from the generated script's markers.
+- Spawned particles are emitted one effect per particle with a seeded spread, so the effects are deterministic.
+
+Next
+- B398: wire `effect` events in `session-source.ts` (particles to `ParticleField.emit(options ?? id, {x,y,z,xd,yd,zd}, origin)`, sounds, chips, animations to the mob field), show `source.trace` and `inventory`, pass `ruleBooks` from the session, send `interact` on a right-click at a mob, the "Run every time" option to `setChanceMode('always')`.
+- B397: check the trigger order in the runtime (see the B396 report's notes).

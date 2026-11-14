@@ -31,6 +31,7 @@ const PLUGIN_FOLDERS: Readonly<Record<string, string>> = {
   'msm.models-anim': 'models-anim',
   'msm.entities': 'entities',
   'msm.scripting': 'scripting',
+  'msm.rules': 'rules',
 };
 
 /** Imports a workspace module by its path from the repository root. */

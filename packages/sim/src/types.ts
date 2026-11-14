@@ -81,12 +81,34 @@ export interface EntitySnapshot {
 
 /** A visible or audible effect the simulation asks the view to show. */
 export interface SimEffect {
-  /** What kind of effect it is. */
-  readonly kind: 'particle' | 'sound' | 'chip';
-  /** The particle or sound id, or the chip's plain words. */
+  /**
+   * What kind of effect it is: one particle, a sound, a chip (a short label such as "Glowing
+   * for 3 seconds", ADR 0085 D6) or a mob animation to play once (B396).
+   */
+  readonly kind: 'particle' | 'sound' | 'chip' | 'animation';
+  /** The particle type or sound event id, the chip's plain words, or the animation's name. */
   readonly id: string;
   /** Where it happens, when it has a place. */
   readonly position?: Vec3;
+  /** A particle's starting speed in blocks per tick (B396). */
+  readonly velocity?: Vec3;
+  /**
+   * A particle's vanilla options object (`{ type, color, scale }`, ADR 0080 D5) when the action
+   * gave one; `id` is then its `type` (B396).
+   */
+  readonly options?: Readonly<Record<string, unknown>>;
+  /** A sound's volume and pitch (B396); absent means 1. */
+  readonly volume?: number;
+  readonly pitch?: number;
+  /**
+   * Who a chip or an animation is about: `player`, or a mob's entity id (B396). Absent for a
+   * chip about nobody in particular.
+   */
+  readonly target?: 'player' | number;
+  /** An animation's GeckoLib controller (B396). */
+  readonly controller?: string;
+  /** Where the effect comes from, as the trace entry that made it (B396). */
+  readonly origin?: SimOrigin;
 }
 
 /** What a log line points back to, so the side panel can link to the rule card or Studio field. */
@@ -95,6 +117,15 @@ export interface SimOrigin {
   readonly elementId?: string;
   /** A JSON pointer into that element, when one field is meant. */
   readonly pointer?: string;
+  /** The event of the element the line is about, when an event ran (B396). */
+  readonly eventId?: string;
+  /**
+   * The rule key, when the event is one Rules generated (`<subject>_rules_<trigger>`, ADR 0082
+   * D3) and the rule is known (B396).
+   */
+  readonly ruleKey?: string;
+  /** The rule book of {@link ruleKey}, when known (B396). */
+  readonly ruleBook?: string;
 }
 
 /** One line of the "What happened" panel (ADR 0085 D8). */
@@ -196,6 +227,15 @@ export type PlayerAction =
       /** Hit (left-click) a mob by its id (B390). */
       readonly type: 'hit';
       readonly entity: number;
+    }
+  | {
+      /**
+       * Use (right-click) a mob by its id, with the held thing's id when the hand is not empty
+       * (B396): it fires the mob's `msm:on_interact`.
+       */
+      readonly type: 'interact';
+      readonly entity: number;
+      readonly item?: string;
     }
   | {
       /** "Clear the area": every block, mob, timer and effect goes (ADR 0085 D13). */
